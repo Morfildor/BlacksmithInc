@@ -7,10 +7,18 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- Shop reputation and hero loyalty now raise the price heroes treat as fair (bounded at +25 % each), regulars return
+  with commission requests, and the Gazette records premium sales and names the shop's regulars.
+
 ### Changed
+- Weapon histories are bounded at End Day: the newest 10 combat entries (victories, sieges) per weapon are kept,
+  ownership entries (forged, sold, commissioned, inherited, lost, seized, recovered, returned) forever; gameplay,
+  legends and the Gazette are unchanged, and existing saves compact on their next End Day (save schema still v1).
 - Headless simulator: new `BALANCED_INVEST` policy (buys the best core and augment within `gold - reserve`,
-  `--reserve N`), `--impactPolicy` also drives the maxed-legacy run, and `--json` reports the reserve; 10,000-seed
-  review of every policy recorded in DECISIONS.md.
+  `--reserve N`) and `BALANCED_REPUTED` policy (lists at the reputation-raised fair price), `--impactPolicy` also
+  drives the maxed-legacy run, and `--json` reports the reserve; 10,000-seed review of every policy recorded in
+  DECISIONS.md.
 
 ## [0.2.0] - 2026-10-08
 Launch content by default, balance v2, all 24 signatures and 25 world events, bounded saves, decluttered UI.

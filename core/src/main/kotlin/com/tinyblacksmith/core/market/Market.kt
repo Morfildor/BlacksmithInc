@@ -1,6 +1,7 @@
 package com.tinyblacksmith.core.market
 
 import com.tinyblacksmith.core.battle.Power
+import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.engine.WorldEvents
@@ -61,8 +62,8 @@ object Market {
         val elementTaste = (if (weapon.element != null && weapon.element == hero.elementTaste) 1.0 else 0.0) +
             (if (weapon.element != null) hero.traits.sumOf { content.trait(it).noveltyTaste } else 0.0)
         val sensitivity = hero.traits.fold(1.0) { acc, t -> acc * content.trait(t).priceSensitivity }
-        val fairPrice = maxOf(1, weapon.power * config.fairGoldPerPower)
-        val pricePenalty = maxOf(0.0, price.toDouble() / fairPrice - 1.0) * sensitivity
+        val ceiling = maxOf(1, weapon.power * config.fairGoldPerPower) * priceCeilingMultiplier(ctx.reputation, hero.loyalty, config)
+        val pricePenalty = maxOf(0.0, price.toDouble() / ceiling - 1.0) * sensitivity
         val noise = (noiseRoll - 0.5) * 2 * config.utilityNoise
         val utility = improvement * config.utilityImprovementWeight +
             (fit - 1.0) * config.utilityClassFitWeight +
@@ -73,13 +74,29 @@ object Market {
         return Evaluation(weapon, utility, affordable = price <= hero.gold, improvement = improvement, fit = fit, pricePenalty = pricePenalty)
     }
 
+    /**
+     * GDD 5 "Reputation ... affects willingness to pay; individual loyalty influences repeat customers": the price a hero
+     * treats as fair is the base fair price times this bounded multiplier (shop reputation for everyone, the hero's own
+     * loyalty on top). Fair-priced listings are unaffected; the multiplier only shrinks the overpricing penalty.
+     */
+    fun priceCeilingMultiplier(reputation: Int, loyalty: Int, config: BalanceConfig): Double =
+        1.0 + (reputation * config.reputationPricePerPoint).coerceIn(0.0, config.reputationPriceCap) +
+            (loyalty * config.loyaltyPricePerPoint).coerceIn(0.0, config.loyaltyPriceCap)
+
+    fun isRegular(hero: Hero, config: BalanceConfig): Boolean = hero.loyalty >= config.regularLoyaltyThreshold
+
     fun purchase(ctx: ResolutionContext, hero: Hero, weapon: Weapon, price: Int) {
         val bonus = price * ctx.blessingMagnitude(BlessingEffect.SALE_GOLD_BONUS) / 100
         ctx.gold += price + bonus
         ctx.reputation += 1
         val loyaltyGain = hero.traits.fold(1.0) { acc, t -> acc * ctx.content.trait(t).loyaltyGain }.toInt().coerceAtLeast(1)
         ctx.updateHero(hero.copy(gold = hero.gold - price, loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP))
-        ctx.emit(EventType.WEAPON_SOLD, 4, "${hero.fullName} bought ${weapon.name} for $price gold.", listOf(hero.id.value, weapon.id.value), mapOf("price" to price.toString()))
+        // Gazette-visible consequences: a regular is named as one; gold paid above the base fair price is recorded as a premium.
+        val premium = price - weapon.power * ctx.config.fairGoldPerPower
+        val who = if (isRegular(hero, ctx.config)) "${hero.fullName}, a regular of the shop," else hero.fullName
+        val text = "$who bought ${weapon.name} for $price gold" + (if (premium > 0) ", $premium above the going rate on the shop's good name." else ".")
+        val data = mapOf("price" to price.toString()) + (if (premium > 0) mapOf("premium" to premium.toString()) else emptyMap())
+        ctx.emit(EventType.WEAPON_SOLD, 4, text, listOf(hero.id.value, weapon.id.value), data)
         ctx.addWeaponHistory(weapon.id, "SOLD", "Sold to ${hero.fullName} for $price gold.", listOf(hero.id.value))
         giveAndEquip(ctx, ctx.hero(hero.id), ctx.weapon(weapon.id))
         ctx.milestone("FIRST_SALE", "The shop made its first sale: ${weapon.name} to ${hero.fullName}.")
@@ -138,7 +155,8 @@ object Market {
         if (!rng.chance(ctx.config.commissionChancePerDay)) return
         val heroes = ctx.aliveHeroes()
         if (heroes.isEmpty()) return
-        val buyer = rng.pick(heroes)
+        // Regulars come back with requests (GDD 5: loyalty influences repeat customers and story continuity).
+        val buyer = rng.pickWeighted(heroes.map { it to 1.0 + minOf(it.loyalty, ctx.config.commissionLoyaltyCap) * ctx.config.commissionLoyaltyWeight })
         val cls = ctx.content.heroClass(buyer.classId)
         val family = rng.pick(cls.preferredFamilies)
         val minQuality = rng.nextInt(35, 60)
@@ -146,6 +164,7 @@ object Market {
         val id = ctx.newCommissionId()
         val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, ctx.day + ctx.config.commissionDeadlineDays, CommissionStatus.OFFERED)
         ctx.commissions[id] = c
-        ctx.emit(EventType.COMMISSION_OFFERED, 3, "${buyer.fullName} asks for a fine ${ctx.content.family(family).name} by day ${c.deadlineDay}, offering $reward gold.", listOf(buyer.id.value, id.value))
+        val who = if (isRegular(buyer, ctx.config)) "${buyer.fullName}, a regular of the shop," else buyer.fullName
+        ctx.emit(EventType.COMMISSION_OFFERED, 3, "$who asks for a fine ${ctx.content.family(family).name} by day ${c.deadlineDay}, offering $reward gold.", listOf(buyer.id.value, id.value))
     }
 }

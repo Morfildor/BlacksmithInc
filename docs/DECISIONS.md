@@ -359,6 +359,55 @@ HERO_DIED 12, GUILD_FOUNDED 11, HERO_ARRIVED 9, WEAPON_RECOVERED 9, MILESTONE 7,
 save shrank from 2.01 MB to 0.98 MB; weapons (926, with histories) now dominate a 400-day save. If the retained
 set ever needs trimming, WEAPON_INHERITED (one per weapon per retirement) is the lever.
 
+## Weapon history bounds and schema v2 (2026-10-08, session 4)
+Readers of `Weapon.history` (audit of `core/src/main` and `app/src/main`): `Legacy.closeRun` (SOLD/COMMISSION
+subjects become a legend's owners), `WorldEvents.fallenOwnerName` (the last LOST/SEIZED subject names who carried a
+lost blade), and nothing else; the app never renders it (no `history`/`HistoryEntry` reference in `app/`). Writers
+and kinds: FORGED and SIGNATURE (forge), SOLD, EQUIPPED, COMMISSION (market), INHERITED (retirement, inheritance
+event), LOST/SEIZED/RECOVERED (hero death), RETURNED (famous blade), COLLECTED (collector), all bounded by ownership
+changes, plus VICTORY (one per won expedition) and SIEGE (one per siege a champion's weapon survives), the only
+kinds that grow without bound per weapon. Their counts already live in `Weapon.kills/victories/siegesDefended/fame`.
+
+Policy (`persistence/WeaponHistoryCompaction.kt`, called once in `GameEngine.endDay` right after
+`EventCompaction`; `BalanceConfig.weaponHistoryCap = 10`, 0 disables): per weapon keep the newest 10 VICTORY/SIEGE
+entries and drop the older ones; every other kind, including kinds added later, is kept verbatim (a denylist of
+compactable kinds, so a new kind is safe by default). Order is preserved. Keeping the newest N commutes with daily
+application, so one filter at the final End Day gives the same list as 400 daily passes; `WeaponHistoryCompactionTest`
+plays a 400-day forced-survival pair (cap 10 vs cap 0) and asserts state equality outside histories, per-weapon
+`compact(unbounded) == bounded`, identical ownership entries, and identical reader inputs (owners, fallen owner).
+No RNG is drawn and no counter is touched, so `BalanceConfig.version` stays 2 (not a semantic balance change).
+
+Measured on the 400-day pair (seed 77, after balance v2): 1,812 -> 1,721 history entries across 930 weapons, max
+combat entries per weapon 21 -> 10, 14 weapons were over the cap, encoded save 973,919 -> 961,841 bytes. The
+saving is small at 400 days because combat entries are 340 of 1,812 (FORGED is 930, INHERITED 223); what the cap
+removes is the unbounded tail on a champion's weapon (one entry per siege, forever). `--perf` (`--runs 200 --seed 1
+--perf`, 1,000 days, 2,330 weapons) before: p50 0.26 / p95 0.53 / max 0.94 ms; after, three runs: p50 0.34-0.40 /
+p95 0.68-1.01 ms; a control with the cap disabled on the same (by then loaded) machine gave p50 0.39-0.71 ms, so
+the daily pass over all weapons is below the run-to-run noise. The remaining growth is the `weapons` map itself
+(one FORGED entry and one record per weapon forged, never pruned), noted in PROGRESS.
+
+Schema: still v1. The cap changes no serialised shape (`history` stays `List<HistoryEntry>`, no field added), and
+the codec already tolerates fields added with defaults (`ignoreUnknownKeys = true`, defaults fill missing keys), so
+no migration step is registered and `SaveCodec.SCHEMA_VERSION` stays 1; a v2 bump with an identity step would only
+break the two tests that pin the version. Instead the regression anchor the next bump needs is checked in:
+`core/src/test/resources/saves/v1_forced_seed4242_day61.json` is a real mid-run save (forced survival, seed 4242,
+60 End Days, 235 weapons, one with 15 combat entries) encoded by the codec as it stood before this change (its own
+commit precedes the compaction commit). `SaveFixtureTest` decodes it, checks the captured fields, decode/encode
+stability, invariants, that `GameEngine.handle` accepts an End Day on it, and that the 15-entry weapon is bounded to
+10 on that End Day with its ownership entries intact. Byte-equality against the fixture is deliberately not asserted
+because `encodeDefaults = true` changes the text whenever a defaulted field is added. Room needs nothing: the
+envelope version is inside the JSON row (`SaveEntity.schemaVersion` mirrors it but is not read for migration).
+
+`GameEngine.RULES_VERSION` stays 1 although balance v2 changed hero targeting and RNG draw order. It is mixed
+into `RngState.seeded(seed, rulesVersion)` and stored on `GameState.rulesVersion`, so a mismatch is detectable at
+load. It must flip at the first public release that can meet existing saves, and from then on whenever a change
+alters the outcome of an already-saved command sequence (draw order, targeting, formulas; content-only changes go
+through `contentVersion`). A run in progress cannot be finished on the old rules (the engine ships only the current
+ones) and replaying it on new rules would silently change its past, so the policy is: on load, if
+`state.rulesVersion != RULES_VERSION`, end the run with cause "the rules changed" and route to the claim screen;
+the legacy (knowledge, upgrades, legends, lineages) is kept and claimed once, run-only state resets, as LOCKED.
+Not implemented; until the first release every save is a developer save.
+
 ## Art sources (2026-10-08, session 3)
 - The pixel artist's V2 pack (200 true 1x sprites) and the AI concept sheets (high-resolution pseudo-pixel art)
   both exist in `Pixel art assets/`. At phone display sizes (48–72 dp icons, a 100 dp scene strip) the concept
@@ -370,6 +419,14 @@ set ever needs trimming, WEAPON_INHERITED (one per weapon per retirement) is the
   hero class, faction siege name → monster set); poses follow the step being shown, idle frames tick on a UI
   timer, static under reduced motion. No gameplay RNG is touched (GDD 11, 15.1).
 - Portrait variants are chosen by a stable hash of the hero ID (decorative, deterministic, save-independent).
+- `Pixel art assets/Tiny_Blacksmith_UI_Backgrounds_v3` (dropped 2026-10-08 22:45, session 4): a script-generated 1x
+  chrome pack (96x48 panel banners, 24 px nine-slice frames, buttons, 24 px status and 40 px nav icons, 16 px
+  tiles, 270x150 title/run-end backdrops, a second siege wall). Not adopted: at phone sizes the current 64 px
+  concept icons, the forge scene and the parchment texture are richer, the frames would read as chunky 21 px
+  borders over the calm Material surfaces of the decluttered layout, and the banners would replace the one
+  persistent forge scene the layout is built around. The importer lists the folder in `PACK_SKIP` so a re-import
+  does not silently swap `siege_wall` for the newer file (packs are read in folder order). Reversible: delete the
+  entry and run `import_assets.py --pack-all` or widen `PACK_PREFIXES`.
 - Weapon art (2026-10-08, later the same day): the weapon master sheet gives every family an element row and
   eight visual levels, so the per-core recoloured icons and the element overlays were retired. The level column is
   core tier (iron 1 … moonsteel 6) + 1 for epic + 2 for legendary, clamped to 8; the preview shows the "base" row
@@ -392,6 +449,62 @@ set ever needs trimming, WEAPON_INHERITED (one per weapon per retirement) is the
   the active catalog has a signature whose journal entry is UNKNOWN. It sets that entry to OBSERVED (the journal
   then shows the base recipe and the descriptive "wants" hint, never the condition itself), adds one of the
   recipe's core and one of its augment, and emits a DISCOVERY record plus the Gazette story. No new state fields.
+
+## Reputation and loyalty depth (2026-10-08, session 4)
+GDD 5 text this implements. LOCKED: "Relaxed economy with manual prices, automatic sales, complex buyer preferences,
+suppliers, hero loot and random material events." Unlabelled requirement text in the same section (treated as a
+requirement): "Market visitors independently compare affordable displayed weapons to their current gear according to
+class, existing stats, elemental preference, traits, current wealth, planned activities, shop reputation/loyalty,
+material tastes and relative price." PROPOSED (tunable):
+"**Reputation:** Grows through sales, commissions, renowned blades and hero success; affects visitors and willingness
+to pay. ... Individual loyalty influences repeat customers and story continuity." and the purchase algorithm's
+`utility = equipmentImprovement + classFit + elementTaste + individualPreference + loyalty - pricePenalty`.
+Before this session reputation and loyalty only moved visit chance (plus a tiny loyalty utility term); "willingness
+to pay" and "repeat customers / story continuity" were unimplemented (plan P2/P6 items).
+
+Design, the smallest that covers both PROPOSED sentences, all numbers appended to `BalanceConfig` (version stays 2:
+no existing number changed, and `version` seeds the RNG, so a bump would reshuffle every run):
+- **Willingness to pay** (`Market.priceCeilingMultiplier`): the price a hero treats as fair is
+  `fair x (1 + min(reputation x 0.01, 0.25) + min(loyalty x 0.03, 0.25))`; the overpricing penalty is measured against
+  that ceiling. Fair-priced listings are untouched (penalty already 0), so this only lets a known shop, or a regular,
+  accept prices up to 25 % (50 % combined) above the suggested price. Caps keep sixfold prices unsellable
+  (`overpricedWeaponIsRejectedWithReason` still passes; combined ceiling <= 1.5x).
+- **Repeat customers / story continuity**: commission patrons are drawn with `pickWeighted` at weight
+  `1 + min(loyalty, 10) x 0.5` instead of uniformly, so a hero who keeps buying here comes back with requests. The
+  existing `loyalty x 0.01 x utilityLoyaltyWeight` term and the loyalty share of visit chance stay as they were.
+  Note: `pick` and `pickWeighted` consume one draw each but map it differently, so commission patrons change from
+  day 1 even at zero loyalty; that is the feature, not a tuning knob.
+- **Gazette** (reused `EventType`s, compaction untouched): `WEAPON_SOLD` keeps `data.price` (the simulator reads it)
+  and adds `data.premium` = gold above the base fair price when > 0, with the text "..., N above the going rate on the
+  shop's good name."; a buyer or patron with loyalty >= `regularLoyaltyThreshold` (3) is written as "X, a regular of
+  the shop,". `suggestedPrice` deliberately stays the base fair price so the UI never shows the weights (GDD 5).
+- Not built (DEFERRED by the brief): loyalty steering the hero's choice between shopping and other activities;
+  shopping stays a morning errand independent of the day's activity.
+
+Evidence (`ReputationAndLoyaltyTest`, 7 tests): at 190 % of fair with 10,000 gold, regulars (loyalty 10) bought
+40/40 seeds, strangers 29/40; the regular received 22 of 58 first commission offers (uniform would be 1/8, expected
+6/13); `evaluate()` on the same hero and weapon at 120 % gives penalty > 0 for a stranger and 0 for a regular or at
+reputation 25; caps hold at loyalty/reputation 100,000; two identical seeds encode byte-equal after 8 days.
+
+Balance (`:core:simulate --runs 1000 --seed 1`, launch content, new account unless noted; survived = sieges
+survived/run):
+
+| Policy | Before: median (p10/p90) mean, sell rate, survived | After: median (p10/p90) mean, sell rate, survived |
+|---|---|---|
+| RANDOM | 25 (15/40) 26.7, 33 %, 2.0 | 25 (15/40) 26.2, 33 %, 1.9 |
+| SAFE_FAIR | 25 (15/30) 23.6, 14 %, 1.5 | 25 (15/30) 23.2, 14 %, 1.5 |
+| RECKLESS_FAIR | 25 (15/35) 24.8, 14 %, 1.7 | 25 (15/35) 24.7, 14 %, 1.8 |
+| BALANCED_CHEAP | 30 (20/35) 29.6, 14 %, 2.8 | 30 (20/35) 29.2, 15 %, 2.7 |
+| BALANCED_EXPENSIVE | 15 (10/20) 14.1, 8 %, 0.2 | 15 (10/20) 13.9, 8 %, 0.2 |
+| SYNERGY | 40 (20/50) 38.9, 26 %, 4.4 | 40 (20/50) 38.8, 27 %, 4.4 |
+| OVERWORK | 25 (15/35) 24.5, 14 %, 1.7 | 25 (15/35) 24.3, 14 %, 1.7 |
+| BALANCED_FAIR | 25 (15/35) 24.0, 14 %, 1.6 | 25 (15/30) 23.7, 14 %, 1.5 |
+| BALANCED_FAIR, all upgrades maxed | 40 (25/50) 38.5, 9 %, 2.9 | 40 (25/50) 37.9, 9 %, 2.8 |
+
+Medians and sell rates are unchanged; means drift 0.1–0.6 days from the reshuffled commission patrons. The bot
+prices at a fixed factor and never raises prices as reputation grows, so the sell-rate gain the ceiling offers a
+player (up to +25 % on a known shop) is invisible to the harness; 1.8x stays beyond the combined ceiling, as intended.
+No tuning was needed and no siege number moved.
 
 ## SLICE reductions still in force
 - Default catalog is now `LaunchContent` (balance v2 above); `SliceContent` remains only for slice-specific tests

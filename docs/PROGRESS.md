@@ -10,8 +10,10 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
   guilds/mentoring, battles/sieges with weapon seizure, world-event pool (23 events + 2 deterministic rules = all 25 GDD
   events), legacy with famous-blade returns, Gazette, JSON save codec with a migration scaffold, End Day event-log
   compaction (30-day window, history-grade types kept), headless simulator (GDD policy set, `--content`,
-  `--rarityTable`, `--impactPolicy`, `BALANCED_INVEST` purchasing rule with `--reserve`, forge-damage overrides,
-  JSON report, perf probe). 85 JVM tests.
+  `--rarityTable`, `--impactPolicy`, `BALANCED_INVEST` purchasing rule with `--reserve`, `BALANCED_REPUTED`
+  pricing, forge-damage overrides, JSON report, perf probe), reputation/loyalty depth (bounded price ceiling,
+  loyalty-weighted commission patrons, premium/regular Gazette records), weapon-history cap, a checked-in v1 save
+  fixture. 102 JVM tests.
 - `app/` Compose portrait workshop (session 4 layout: three-stat top bar, pinned forge summary over collapsible
   auto-advancing steps, row-based market, per-panel tip banners, single End Day action, full-width paper day report;
   principles in DECISIONS.md), six panels, technique chips,
@@ -35,11 +37,13 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 | 10,000-seed review | `./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy all --impactPolicy BALANCED_INVEST --reserve 0 --perf --json <out>"` | every policy at 10,000 seeds, maxed legacy for BALANCED_FAIR and BALANCED_INVEST, upgrade impact under BALANCED_INVEST; full table in DECISIONS.md ("Balance review at 10,000 seeds") |
 | Slice regression | `--content slice --policy SAFE_FAIR` | 30 (20/35), rarity 18/51/28/2/0 (was 1/43/52/4/0; accepted, see DECISIONS) |
 | Event compaction | `EventCompactionTest` + `:core:simulate --runs 200 --seed 1 --perf` | 400-day forced-survival pair: gameplay identical with/without compaction; perf run ends at events=1,834 (was 13,275) |
+| Weapon-history cap + v1 fixture | `./gradlew :core:test` (`WeaponHistoryCompactionTest`, `SaveFixtureTest`) + `:core:simulate --runs 200 --seed 1 --perf` | 92/92 pass; 400-day pair: gameplay identical with/without the cap, entries 1,812 -> 1,721, max combat entries 21 -> 10, save 973,919 -> 961,841 bytes; `saves/v1_forced_seed4242_day61.json` decodes, accepts an End Day and compacts; perf p50 0.34-0.40 ms vs 0.26 before, within machine noise (cap-disabled control 0.39-0.71) |
 | Debug APK + install | `./gradlew :app:installDebug` | BUILD SUCCESSFUL |
 | Instrumented | `./gradlew :app:connectedDebugAndroidTest` | 5/5 pass (Room atomic save/restore x2, title screen, forge hint x2) |
 | Device loop | `tools/emulator/smoke.sh` | Re-run on the merged 0.2.0 build (launch content, new layout): shelf/town/resume checks ok, SMOKE_DONE; screenshots sent to the user |
 | Instrumented on merged main | `./gradlew :app:connectedDebugAndroidTest` | 5/5 pass on the 0.2.0 build |
 | Art import | `python tools/pixelart/import_assets.py` | 5 sheets + weapon master + 1 pack -> 488 sprites; contact sheet reviewed; weapon shelf verified on device |
+| Reputation/loyalty depth (session 4) | `./gradlew :core:test`, `./gradlew :core:simulate --args="--runs 1000 --seed 1"` before/after | 89/89 pass (82 + 7 in `ReputationAndLoyaltyTest`: caps, evaluate() stranger vs regular, reputation ceiling, premium sales 40/40 vs 29/40 at 190 %, commission bias 22/58 offers to the regular, event text, determinism); BALANCED_FAIR 25 (15/30) mean 23.7 (was 25 (15/35) mean 24.0), sell rate 14 % unchanged; tables in DECISIONS.md |
 | UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
 ## Obstacles hit and resolved
@@ -58,16 +62,20 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 - Starting energy/gold upgrades still measure ~0 days even under the `BALANCED_INVEST` purchasing rule: sales are
   demand-bound (14-21 per run for every policy) and day-1 heroes hold ~85 gold, so the extra premium weapons do not
   sell before the first sieges. Evidence and proposals in DECISIONS.md ("Balance review at 10,000 seeds").
-- `Weapon.history` is unbounded (1,766 entries across 926 weapons after a forced 400-day run); the next list to watch.
+- `Weapon.history` combat entries are capped (10 per weapon), but the per-weapon FORGED/INHERITED entries and the
+  `weapons` map itself still grow with every weapon forged (930 weapons, 1,721 entries after a forced 400-day run;
+  2,330 weapons after 1,000 days); lost/destroyed weapons are never pruned. The next list to watch.
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
 - Package name is still `com.example.blacksmithproject`; no release signing.
-- `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order; bump with the first release.
+- `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order and session-4 commission
+  patron weighting changes which hero asks on a given seed; bump with the first release.
 - Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.2.0 (versionCode 2).
 
 ## Next executable actions (P7)
 1. Re-run the device smoke loop and instrumented tests on the launch default (three factions, five classes in the UI).
 2. Harness purchasing rule (buy the best affordable core) so starting gold/energy upgrades register; tier-5 epic
    centring if a new lever appears.
-3. Room migration test when the envelope schema first changes; bound `Weapon.history` if long runs grow it further.
+3. Register the first migration step against `saves/v1_forced_seed4242_day61.json` when the envelope schema changes;
+   prune or cap the `weapons` map (lost/destroyed records) if 1,000-day saves matter.
 4. Package rename from `com.example.blacksmithproject`, release signing.
