@@ -1,0 +1,52 @@
+id,path,width,height,category,integration,notes
+bg_forge_warm,drawable-nodpi/bg_forge_warm.png,96,48,background,new,"96x48 decorative forge; optional custom background, do not replace existing animated scene without code"
+bg_forge_hot,drawable-nodpi/bg_forge_hot.png,96,48,background,new,96x48 furnace hot; background only
+bg_forge_cold,drawable-nodpi/bg_forge_cold.png,96,48,background,new,96x48 furnace cold; background only
+bg_forge_night,drawable-nodpi/bg_forge_night.png,96,48,background,new,96x48 night forge; optional scene variant
+bg_market,drawable-nodpi/bg_market.png,96,48,background,new,96x48 market panel art; header image requires code
+bg_town,drawable-nodpi/bg_town.png,96,48,background,new,96x48 champion/town panel art; header image requires code
+bg_journal,drawable-nodpi/bg_journal.png,96,48,background,new,96x48 journal panel art; header image requires code
+bg_gazette,drawable-nodpi/bg_gazette.png,96,48,background,new,96x48 Gazette panel art; header image requires code
+bg_legacy,drawable-nodpi/bg_legacy.png,96,48,background,new,96x48 Legacy panel art; header image requires code
+bg_title_workshop_night,drawable-nodpi/bg_title_workshop_night.png,270,150,background,new,270x150 title backdrop; TitleScreen code required
+bg_run_end_fallen_forge,drawable-nodpi/bg_run_end_fallen_forge.png,270,150,background,new,270x150 run-end art; RunEndScreen code required
+siege_wall,drawable-nodpi/siege_wall.png,96,32,siege,drop-in,Replaces existing 96x32 siege stage sprite
+siege_wall_damaged,drawable-nodpi/siege_wall_damaged.png,96,32,siege,drop-in,Replaces existing 96x32 damaged siege stage sprite
+ui_tile_soot,drawable-nodpi/ui_tile_soot.png,16,16,tile,new,"Seamless 16x16 texture; new UI tile, needs explicit integration"
+ui_tile_parchment,drawable-nodpi/ui_tile_parchment.png,16,16,tile,new,"Seamless 16x16 texture; new UI tile, needs explicit integration"
+ui_tile_wood,drawable-nodpi/ui_tile_wood.png,16,16,tile,new,"Seamless 16x16 texture; new UI tile, needs explicit integration"
+ui_tile_iron,drawable-nodpi/ui_tile_iron.png,16,16,tile,new,"Seamless 16x16 texture; new UI tile, needs explicit integration"
+tile_paper,drawable-nodpi/tile_paper.png,16,16,tile,drop-in,"16x16 seamless Gazette paper, matching paperBackground() tiling branch"
+ui_frame_forge,drawable-nodpi/ui_frame_forge.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_market,drawable-nodpi/ui_frame_market.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_town,drawable-nodpi/ui_frame_town.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_journal,drawable-nodpi/ui_frame_journal.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_gazette,drawable-nodpi/ui_frame_gazette.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_legacy,drawable-nodpi/ui_frame_legacy.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_weapon_result,drawable-nodpi/ui_frame_weapon_result.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_day_report,drawable-nodpi/ui_frame_day_report.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_run_end,drawable-nodpi/ui_frame_run_end.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_blessing,drawable-nodpi/ui_frame_blessing.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_card,drawable-nodpi/ui_frame_card.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_frame_warning,drawable-nodpi/ui_frame_warning.png,24,24,nine_slice,new,"24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+ui_button_primary,drawable-nodpi/ui_button_primary.png,64,24,chrome,new,No text; decorative Compose button/slot layer; requires code
+ui_button_secondary,drawable-nodpi/ui_button_secondary.png,64,24,chrome,new,No text; decorative Compose button/slot layer; requires code
+ui_button_disabled,drawable-nodpi/ui_button_disabled.png,64,24,chrome,new,No text; decorative Compose button/slot layer; requires code
+ui_button_warning,drawable-nodpi/ui_button_warning.png,64,24,chrome,new,No text; decorative Compose button/slot layer; requires code
+ui_slot_empty,drawable-nodpi/ui_slot_empty.png,24,24,chrome,new,No text; decorative Compose button/slot layer; requires code
+ui_slot_selected,drawable-nodpi/ui_slot_selected.png,24,24,chrome,new,No text; decorative Compose button/slot layer; requires code
+icon_nav_forge,drawable-nodpi/icon_nav_forge.png,40,40,navigation,drop-in,40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent
+icon_nav_market,drawable-nodpi/icon_nav_market.png,40,40,navigation,drop-in,40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent
+icon_nav_town,drawable-nodpi/icon_nav_town.png,40,40,navigation,drop-in,40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent
+icon_nav_journal,drawable-nodpi/icon_nav_journal.png,40,40,navigation,drop-in,40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent
+icon_nav_gazette,drawable-nodpi/icon_nav_gazette.png,40,40,navigation,drop-in,40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent
+icon_nav_legacy,drawable-nodpi/icon_nav_legacy.png,40,40,navigation,drop-in,40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent
+icon_energy,drawable-nodpi/icon_energy.png,24,24,status,drop-in,"24x24; used by TopStrip, keeps essential numbers/text in Compose"
+icon_gold,drawable-nodpi/icon_gold.png,24,24,status,drop-in,"24x24; used by TopStrip, keeps essential numbers/text in Compose"
+icon_integrity,drawable-nodpi/icon_integrity.png,24,24,status,drop-in,"24x24; used by TopStrip, keeps essential numbers/text in Compose"
+icon_militia,drawable-nodpi/icon_militia.png,24,24,status,drop-in,"24x24; used by TopStrip, keeps essential numbers/text in Compose"
+icon_reputation,drawable-nodpi/icon_reputation.png,24,24,status,drop-in,"24x24; used by TopStrip, keeps essential numbers/text in Compose"
+icon_day,drawable-nodpi/icon_day.png,24,24,status,drop-in,"24x24; used by TopStrip, keeps essential numbers/text in Compose"
+ui_divider_fire,drawable-nodpi/ui_divider_fire.png,96,8,chrome,new,96x8 decorative divider; optional UI
+ui_divider_town,drawable-nodpi/ui_divider_town.png,96,8,chrome,new,96x8 decorative divider; optional UI
+ui_divider_legacy,drawable-nodpi/ui_divider_legacy.png,96,8,chrome,new,96x8 decorative divider; optional UI

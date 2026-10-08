@@ -1,0 +1,467 @@
+{
+  "version": "3.0",
+  "sourceRepo": "Morfildor/BlacksmithInc",
+  "concept": "Clean Crafted Fantasy A+E",
+  "palette": "V2 exact shared 48 RGB colors",
+  "sprites": [
+    {
+      "id": "bg_forge_warm",
+      "path": "drawable-nodpi/bg_forge_warm.png",
+      "width": 96,
+      "height": 48,
+      "category": "background",
+      "integration": "new",
+      "notes": "96x48 decorative forge; optional custom background, do not replace existing animated scene without code"
+    },
+    {
+      "id": "bg_forge_hot",
+      "path": "drawable-nodpi/bg_forge_hot.png",
+      "width": 96,
+      "height": 48,
+      "category": "background",
+      "integration": "new",
+      "notes": "96x48 furnace hot; background only"
+    },
+    {
+      "id": "bg_forge_cold",
+      "path": "drawable-nodpi/bg_forge_cold.png",
+      "width": 96,
+      "height": 48,
+      "category": "background",
+      "integration": "new",
+      "notes": "96x48 furnace cold; background only"
+    },
+    {
+      "id": "bg_forge_night",
+      "path": "drawable-nodpi/bg_forge_night.png",
+      "width": 96,
+      "height": 48,
+      "category": "background",
+      "integration": "new",
+      "notes": "96x48 night forge; optional scene variant"
+    },
+    {
+      "id": "bg_market",
+      "path": "drawable-nodpi/bg_market.png",
+      "width": 96,
+      "height": 48,
+      "category": "background",
+      "integration": "new",
+      "notes": "96x48 market panel art; header image requires code"
+    },
+    {
+      "id": "bg_town",
+      "path": "drawable-nodpi/bg_town.png",
+      "width": 96,
+      "height": 48,
+      "category": "background",
+      "integration": "new",
+      "notes": "96x48 champion/town panel art; header image requires code"
+    },
+    {
+      "id": "bg_journal",
+      "path": "drawable-nodpi/bg_journal.png",
+      "width": 96,
+      "height": 48,
+      "category": "background",
+      "integration": "new",
+      "notes": "96x48 journal panel art; header image requires code"
+    },
+    {
+      "id": "bg_gazette",
+      "path": "drawable-nodpi/bg_gazette.png",
+      "width": 96,
+      "height": 48,
+      "category": "background",
+      "integration": "new",
+      "notes": "96x48 Gazette panel art; header image requires code"
+    },
+    {
+      "id": "bg_legacy",
+      "path": "drawable-nodpi/bg_legacy.png",
+      "width": 96,
+      "height": 48,
+      "category": "background",
+      "integration": "new",
+      "notes": "96x48 Legacy panel art; header image requires code"
+    },
+    {
+      "id": "bg_title_workshop_night",
+      "path": "drawable-nodpi/bg_title_workshop_night.png",
+      "width": 270,
+      "height": 150,
+      "category": "background",
+      "integration": "new",
+      "notes": "270x150 title backdrop; TitleScreen code required"
+    },
+    {
+      "id": "bg_run_end_fallen_forge",
+      "path": "drawable-nodpi/bg_run_end_fallen_forge.png",
+      "width": 270,
+      "height": 150,
+      "category": "background",
+      "integration": "new",
+      "notes": "270x150 run-end art; RunEndScreen code required"
+    },
+    {
+      "id": "siege_wall",
+      "path": "drawable-nodpi/siege_wall.png",
+      "width": 96,
+      "height": 32,
+      "category": "siege",
+      "integration": "drop-in",
+      "notes": "Replaces existing 96x32 siege stage sprite"
+    },
+    {
+      "id": "siege_wall_damaged",
+      "path": "drawable-nodpi/siege_wall_damaged.png",
+      "width": 96,
+      "height": 32,
+      "category": "siege",
+      "integration": "drop-in",
+      "notes": "Replaces existing 96x32 damaged siege stage sprite"
+    },
+    {
+      "id": "ui_tile_soot",
+      "path": "drawable-nodpi/ui_tile_soot.png",
+      "width": 16,
+      "height": 16,
+      "category": "tile",
+      "integration": "new",
+      "notes": "Seamless 16x16 texture; new UI tile, needs explicit integration"
+    },
+    {
+      "id": "ui_tile_parchment",
+      "path": "drawable-nodpi/ui_tile_parchment.png",
+      "width": 16,
+      "height": 16,
+      "category": "tile",
+      "integration": "new",
+      "notes": "Seamless 16x16 texture; new UI tile, needs explicit integration"
+    },
+    {
+      "id": "ui_tile_wood",
+      "path": "drawable-nodpi/ui_tile_wood.png",
+      "width": 16,
+      "height": 16,
+      "category": "tile",
+      "integration": "new",
+      "notes": "Seamless 16x16 texture; new UI tile, needs explicit integration"
+    },
+    {
+      "id": "ui_tile_iron",
+      "path": "drawable-nodpi/ui_tile_iron.png",
+      "width": 16,
+      "height": 16,
+      "category": "tile",
+      "integration": "new",
+      "notes": "Seamless 16x16 texture; new UI tile, needs explicit integration"
+    },
+    {
+      "id": "tile_paper",
+      "path": "drawable-nodpi/tile_paper.png",
+      "width": 16,
+      "height": 16,
+      "category": "tile",
+      "integration": "drop-in",
+      "notes": "16x16 seamless Gazette paper, matching paperBackground() tiling branch"
+    },
+    {
+      "id": "ui_frame_forge",
+      "path": "drawable-nodpi/ui_frame_forge.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_market",
+      "path": "drawable-nodpi/ui_frame_market.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_town",
+      "path": "drawable-nodpi/ui_frame_town.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_journal",
+      "path": "drawable-nodpi/ui_frame_journal.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_gazette",
+      "path": "drawable-nodpi/ui_frame_gazette.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_legacy",
+      "path": "drawable-nodpi/ui_frame_legacy.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_weapon_result",
+      "path": "drawable-nodpi/ui_frame_weapon_result.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_day_report",
+      "path": "drawable-nodpi/ui_frame_day_report.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_run_end",
+      "path": "drawable-nodpi/ui_frame_run_end.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_blessing",
+      "path": "drawable-nodpi/ui_frame_blessing.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_card",
+      "path": "drawable-nodpi/ui_frame_card.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_frame_warning",
+      "path": "drawable-nodpi/ui_frame_warning.png",
+      "width": 24,
+      "height": 24,
+      "category": "nine_slice",
+      "integration": "new",
+      "notes": "24x24 frame; split at x/y = 8,16 into 8px caps and 8px stretch center"
+    },
+    {
+      "id": "ui_button_primary",
+      "path": "drawable-nodpi/ui_button_primary.png",
+      "width": 64,
+      "height": 24,
+      "category": "chrome",
+      "integration": "new",
+      "notes": "No text; decorative Compose button/slot layer; requires code"
+    },
+    {
+      "id": "ui_button_secondary",
+      "path": "drawable-nodpi/ui_button_secondary.png",
+      "width": 64,
+      "height": 24,
+      "category": "chrome",
+      "integration": "new",
+      "notes": "No text; decorative Compose button/slot layer; requires code"
+    },
+    {
+      "id": "ui_button_disabled",
+      "path": "drawable-nodpi/ui_button_disabled.png",
+      "width": 64,
+      "height": 24,
+      "category": "chrome",
+      "integration": "new",
+      "notes": "No text; decorative Compose button/slot layer; requires code"
+    },
+    {
+      "id": "ui_button_warning",
+      "path": "drawable-nodpi/ui_button_warning.png",
+      "width": 64,
+      "height": 24,
+      "category": "chrome",
+      "integration": "new",
+      "notes": "No text; decorative Compose button/slot layer; requires code"
+    },
+    {
+      "id": "ui_slot_empty",
+      "path": "drawable-nodpi/ui_slot_empty.png",
+      "width": 24,
+      "height": 24,
+      "category": "chrome",
+      "integration": "new",
+      "notes": "No text; decorative Compose button/slot layer; requires code"
+    },
+    {
+      "id": "ui_slot_selected",
+      "path": "drawable-nodpi/ui_slot_selected.png",
+      "width": 24,
+      "height": 24,
+      "category": "chrome",
+      "integration": "new",
+      "notes": "No text; decorative Compose button/slot layer; requires code"
+    },
+    {
+      "id": "icon_nav_forge",
+      "path": "drawable-nodpi/icon_nav_forge.png",
+      "width": 40,
+      "height": 40,
+      "category": "navigation",
+      "integration": "drop-in",
+      "notes": "40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent"
+    },
+    {
+      "id": "icon_nav_market",
+      "path": "drawable-nodpi/icon_nav_market.png",
+      "width": 40,
+      "height": 40,
+      "category": "navigation",
+      "integration": "drop-in",
+      "notes": "40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent"
+    },
+    {
+      "id": "icon_nav_town",
+      "path": "drawable-nodpi/icon_nav_town.png",
+      "width": 40,
+      "height": 40,
+      "category": "navigation",
+      "integration": "drop-in",
+      "notes": "40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent"
+    },
+    {
+      "id": "icon_nav_journal",
+      "path": "drawable-nodpi/icon_nav_journal.png",
+      "width": 40,
+      "height": 40,
+      "category": "navigation",
+      "integration": "drop-in",
+      "notes": "40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent"
+    },
+    {
+      "id": "icon_nav_gazette",
+      "path": "drawable-nodpi/icon_nav_gazette.png",
+      "width": 40,
+      "height": 40,
+      "category": "navigation",
+      "integration": "drop-in",
+      "notes": "40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent"
+    },
+    {
+      "id": "icon_nav_legacy",
+      "path": "drawable-nodpi/icon_nav_legacy.png",
+      "width": 40,
+      "height": 40,
+      "category": "navigation",
+      "integration": "drop-in",
+      "notes": "40x40; references in WorkshopScreen.kt; monochrome silhouette plus minimal accent"
+    },
+    {
+      "id": "icon_energy",
+      "path": "drawable-nodpi/icon_energy.png",
+      "width": 24,
+      "height": 24,
+      "category": "status",
+      "integration": "drop-in",
+      "notes": "24x24; used by TopStrip, keeps essential numbers/text in Compose"
+    },
+    {
+      "id": "icon_gold",
+      "path": "drawable-nodpi/icon_gold.png",
+      "width": 24,
+      "height": 24,
+      "category": "status",
+      "integration": "drop-in",
+      "notes": "24x24; used by TopStrip, keeps essential numbers/text in Compose"
+    },
+    {
+      "id": "icon_integrity",
+      "path": "drawable-nodpi/icon_integrity.png",
+      "width": 24,
+      "height": 24,
+      "category": "status",
+      "integration": "drop-in",
+      "notes": "24x24; used by TopStrip, keeps essential numbers/text in Compose"
+    },
+    {
+      "id": "icon_militia",
+      "path": "drawable-nodpi/icon_militia.png",
+      "width": 24,
+      "height": 24,
+      "category": "status",
+      "integration": "drop-in",
+      "notes": "24x24; used by TopStrip, keeps essential numbers/text in Compose"
+    },
+    {
+      "id": "icon_reputation",
+      "path": "drawable-nodpi/icon_reputation.png",
+      "width": 24,
+      "height": 24,
+      "category": "status",
+      "integration": "drop-in",
+      "notes": "24x24; used by TopStrip, keeps essential numbers/text in Compose"
+    },
+    {
+      "id": "icon_day",
+      "path": "drawable-nodpi/icon_day.png",
+      "width": 24,
+      "height": 24,
+      "category": "status",
+      "integration": "drop-in",
+      "notes": "24x24; used by TopStrip, keeps essential numbers/text in Compose"
+    },
+    {
+      "id": "ui_divider_fire",
+      "path": "drawable-nodpi/ui_divider_fire.png",
+      "width": 96,
+      "height": 8,
+      "category": "chrome",
+      "integration": "new",
+      "notes": "96x8 decorative divider; optional UI"
+    },
+    {
+      "id": "ui_divider_town",
+      "path": "drawable-nodpi/ui_divider_town.png",
+      "width": 96,
+      "height": 8,
+      "category": "chrome",
+      "integration": "new",
+      "notes": "96x8 decorative divider; optional UI"
+    },
+    {
+      "id": "ui_divider_legacy",
+      "path": "drawable-nodpi/ui_divider_legacy.png",
+      "width": 96,
+      "height": 8,
+      "category": "chrome",
+      "integration": "new",
+      "notes": "96x8 decorative divider; optional UI"
+    }
+  ]
+}
