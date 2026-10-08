@@ -1,0 +1,201 @@
+id,width,height,kind,anchor,durationMs,extra,notes
+tile_wall,16,16,forge,tile,,False,Low-contrast masonry; seamless horizontally and vertically
+tile_floor,16,8,forge,tile,,False,Seamless timber floor strip
+furnace_cold,24,24,forge,bottom-left,,False,"Identical housing, cold fire state"
+furnace_warm,24,24,forge,bottom-left,,False,"Identical housing, warm fire state"
+furnace_hot,24,24,forge,bottom-left,,False,"Identical housing, hot fire state"
+anvil,24,12,forge,bottom-left,,False,Forge anvil with pronounced beak
+tool_rack,12,24,forge,top-left,,False,"Rack for hammer, tongs, file"
+shelf,32,12,forge,bottom-left,,False,Empty wood display shelf; weapon slots remain free
+ember_0,8,8,animation,top-left,180,False,Ember loop frame 0
+ember_1,8,8,animation,top-left,180,False,Ember loop frame 1
+ember_2,8,8,animation,top-left,180,False,Ember loop frame 2
+ember_3,8,8,animation,top-left,180,False,Ember loop frame 3
+weapon_sword_iron,16,16,weapon,bottom-center,,False,sword silhouette in iron
+weapon_sword_bronze,16,16,weapon,bottom-center,,False,sword silhouette in bronze
+weapon_sword_silver,16,16,weapon,bottom-center,,False,sword silhouette in silver
+weapon_sword_obsidian,16,16,weapon,bottom-center,,False,sword silhouette in obsidian
+weapon_sword_starsteel,16,16,weapon,bottom-center,,False,sword silhouette in starsteel
+weapon_sword_moonsteel,16,16,weapon,bottom-center,,False,sword silhouette in moonsteel
+weapon_axe_iron,16,16,weapon,bottom-center,,False,axe silhouette in iron
+weapon_axe_bronze,16,16,weapon,bottom-center,,False,axe silhouette in bronze
+weapon_axe_silver,16,16,weapon,bottom-center,,False,axe silhouette in silver
+weapon_axe_obsidian,16,16,weapon,bottom-center,,False,axe silhouette in obsidian
+weapon_axe_starsteel,16,16,weapon,bottom-center,,False,axe silhouette in starsteel
+weapon_axe_moonsteel,16,16,weapon,bottom-center,,False,axe silhouette in moonsteel
+weapon_spear_iron,16,16,weapon,bottom-center,,False,spear silhouette in iron
+weapon_spear_bronze,16,16,weapon,bottom-center,,False,spear silhouette in bronze
+weapon_spear_silver,16,16,weapon,bottom-center,,False,spear silhouette in silver
+weapon_spear_obsidian,16,16,weapon,bottom-center,,False,spear silhouette in obsidian
+weapon_spear_starsteel,16,16,weapon,bottom-center,,False,spear silhouette in starsteel
+weapon_spear_moonsteel,16,16,weapon,bottom-center,,False,spear silhouette in moonsteel
+weapon_bow_iron,16,16,weapon,bottom-center,,False,bow silhouette in iron
+weapon_bow_bronze,16,16,weapon,bottom-center,,False,bow silhouette in bronze
+weapon_bow_silver,16,16,weapon,bottom-center,,False,bow silhouette in silver
+weapon_bow_obsidian,16,16,weapon,bottom-center,,False,bow silhouette in obsidian
+weapon_bow_starsteel,16,16,weapon,bottom-center,,False,bow silhouette in starsteel
+weapon_bow_moonsteel,16,16,weapon,bottom-center,,False,bow silhouette in moonsteel
+weapon_dagger_iron,16,16,weapon,bottom-center,,False,dagger silhouette in iron
+weapon_dagger_bronze,16,16,weapon,bottom-center,,False,dagger silhouette in bronze
+weapon_dagger_silver,16,16,weapon,bottom-center,,False,dagger silhouette in silver
+weapon_dagger_obsidian,16,16,weapon,bottom-center,,False,dagger silhouette in obsidian
+weapon_dagger_starsteel,16,16,weapon,bottom-center,,False,dagger silhouette in starsteel
+weapon_dagger_moonsteel,16,16,weapon,bottom-center,,False,dagger silhouette in moonsteel
+weapon_staff_iron,16,16,weapon,bottom-center,,False,staff silhouette in iron
+weapon_staff_bronze,16,16,weapon,bottom-center,,False,staff silhouette in bronze
+weapon_staff_silver,16,16,weapon,bottom-center,,False,staff silhouette in silver
+weapon_staff_obsidian,16,16,weapon,bottom-center,,False,staff silhouette in obsidian
+weapon_staff_starsteel,16,16,weapon,bottom-center,,False,staff silhouette in starsteel
+weapon_staff_moonsteel,16,16,weapon,bottom-center,,False,staff silhouette in moonsteel
+weapon_sig_dawnbrand,16,16,signature,bottom-center,,False,"dawnbrand, distinctive sun ornament"
+weapon_sig_winterwake,16,16,signature,bottom-center,,False,"winterwake, distinctive ice ornament"
+weapon_sig_tempest_edge,16,16,signature,bottom-center,,False,"tempest_edge, distinctive bolt ornament"
+weapon_sig_ashen_vow,16,16,signature,bottom-center,,False,"ashen_vow, distinctive grave ornament"
+weapon_sig_hearthcleaver,16,16,signature,bottom-center,,False,"hearthcleaver, distinctive flame ornament"
+weapon_sig_glacier_maul,16,16,signature,bottom-center,,False,"glacier_maul, distinctive ice ornament"
+weapon_sig_thunderhead,16,16,signature,bottom-center,,False,"thunderhead, distinctive bolt ornament"
+weapon_sig_emberfall,16,16,signature,bottom-center,,False,"emberfall, distinctive flame ornament"
+weapon_sig_stormsong,16,16,signature,bottom-center,,False,"stormsong, distinctive bolt ornament"
+weapon_sig_frostwhisper,16,16,signature,bottom-center,,False,"frostwhisper, distinctive ice ornament"
+weapon_sig_cinder_arc,16,16,signature,bottom-center,,False,"cinder_arc, distinctive flame ornament"
+weapon_sig_galewood,16,16,signature,bottom-center,,False,"galewood, distinctive thorn ornament"
+overlay_fire,16,16,overlay,top-left,,False,~60% alpha; drawn over base weapon
+overlay_frost,16,16,overlay,top-left,,False,~60% alpha; drawn over base weapon
+overlay_storm,16,16,overlay,top-left,,False,~60% alpha; drawn over base weapon
+overlay_grave,16,16,overlay,top-left,,False,~60% alpha; drawn over base weapon
+overlay_verdant,16,16,overlay,top-left,,False,~60% alpha; drawn over base weapon
+overlay_sun,16,16,overlay,top-left,,False,~60% alpha; drawn over base weapon
+badge_common,8,8,badge,top-left,,False,Unique geometry for color-blind readability
+badge_uncommon,8,8,badge,top-left,,False,Unique geometry for color-blind readability
+badge_rare,8,8,badge,top-left,,False,Unique geometry for color-blind readability
+badge_epic,8,8,badge,top-left,,False,Unique geometry for color-blind readability
+badge_legendary,8,8,badge,top-left,,False,Unique geometry for color-blind readability
+badge_flaw,8,8,badge,top-left,,False,Unique geometry for color-blind readability
+portrait_guardian,16,16,portrait,top-left,,False,human guardian variant 0; motif: standard
+portrait_guardian_1,16,16,portrait,top-left,,True,dwarf guardian variant 1; motif: beard
+portrait_guardian_2,16,16,portrait,top-left,,True,elf guardian variant 2; motif: wing
+portrait_guardian_3,16,16,portrait,top-left,,True,orc guardian variant 3; motif: scar
+portrait_guardian_4,16,16,portrait,top-left,,True,dragonkin guardian variant 4; motif: horn
+portrait_ranger,16,16,portrait,top-left,,False,human ranger variant 0; motif: braid
+portrait_ranger_1,16,16,portrait,top-left,,True,elf ranger variant 1; motif: leaf
+portrait_ranger_2,16,16,portrait,top-left,,True,goblin ranger variant 2; motif: hood
+portrait_ranger_3,16,16,portrait,top-left,,True,satyr ranger variant 3; motif: horn
+portrait_ranger_4,16,16,portrait,top-left,,True,lizardfolk ranger variant 4; motif: mask
+portrait_duelist,16,16,portrait,top-left,,False,human duelist variant 0; motif: feather
+portrait_duelist_1,16,16,portrait,top-left,,True,halfling duelist variant 1; motif: bow
+portrait_duelist_2,16,16,portrait,top-left,,True,elf duelist variant 2; motif: curl
+portrait_duelist_3,16,16,portrait,top-left,,True,tiefling duelist variant 3; motif: horn
+portrait_duelist_4,16,16,portrait,top-left,,True,feline duelist variant 4; motif: ear
+portrait_battlemage,16,16,portrait,top-left,,False,human battlemage variant 0; motif: star
+portrait_battlemage_1,16,16,portrait,top-left,,True,dwarf battlemage variant 1; motif: beard
+portrait_battlemage_2,16,16,portrait,top-left,,True,elf battlemage variant 2; motif: moon
+portrait_battlemage_3,16,16,portrait,top-left,,True,tiefling battlemage variant 3; motif: horn
+portrait_battlemage_4,16,16,portrait,top-left,,True,undead battlemage variant 4; motif: mask
+portrait_warden,16,16,portrait,top-left,,False,elf warden variant 0; motif: antler
+portrait_warden_1,16,16,portrait,top-left,,True,dwarf warden variant 1; motif: horn
+portrait_warden_2,16,16,portrait,top-left,,True,orc warden variant 2; motif: root
+portrait_warden_3,16,16,portrait,top-left,,True,dryad warden variant 3; motif: flower
+portrait_warden_4,16,16,portrait,top-left,,True,beastkin warden variant 4; motif: mask
+faction_ashclaw_raider,16,16,monster,bottom-center,,False,Faction grunt
+faction_ashclaw_brute,16,16,monster,bottom-center,,False,Elite has distinctive silhouette
+faction_hollowbound_shade,16,16,monster,bottom-center,,False,Faction grunt
+faction_hollowbound_wraith,16,16,monster,bottom-center,,False,Elite has distinctive silhouette
+faction_embermaw_whelp,16,16,monster,bottom-center,,False,Faction grunt
+faction_embermaw_drake,16,16,monster,bottom-center,,False,Elite has distinctive silhouette
+material_iron,12,12,material,top-left,,False,Crafting ingredient
+material_bronze,12,12,material,top-left,,False,Crafting ingredient
+material_silver,12,12,material,top-left,,False,Crafting ingredient
+material_obsidian,12,12,material,top-left,,False,Crafting ingredient
+material_starsteel,12,12,material,top-left,,False,Crafting ingredient
+material_moonsteel,12,12,material,top-left,,False,Crafting ingredient
+material_ember_resin,12,12,material,top-left,,False,Crafting ingredient
+material_frost_bloom,12,12,material,top-left,,False,Crafting ingredient
+material_stormglass,12,12,material,top-left,,False,Crafting ingredient
+material_grave_dust,12,12,material,top-left,,False,Crafting ingredient
+material_verdant_sap,12,12,material,top-left,,False,Crafting ingredient
+material_sun_ash,12,12,material,top-left,,False,Crafting ingredient
+material_binding_salt,12,12,material,top-left,,False,Crafting ingredient
+material_runestone_shard,12,12,material,top-left,,False,Crafting ingredient
+material_dragon_oil,12,12,material,top-left,,False,Crafting ingredient
+material_void_ink,12,12,material,top-left,,False,Crafting ingredient
+blessing_forgefire,12,12,blessing,top-left,,False,Survived-siege reward
+blessing_tireless_hands,12,12,blessing,top-left,,False,Survived-siege reward
+blessing_merchants_favor,12,12,blessing,top-left,,False,Survived-siege reward
+blessing_runic_insight,12,12,blessing,top-left,,False,Survived-siege reward
+blessing_stalwart_town,12,12,blessing,top-left,,False,Survived-siege reward
+blessing_hunters_edge,12,12,blessing,top-left,,False,Survived-siege reward
+blessing_lucky_alloy,12,12,blessing,top-left,,False,Survived-siege reward
+blessing_guild_patronage,12,12,blessing,top-left,,False,Survived-siege reward
+icon_nav_forge,12,12,ui_nav,top-left,,False,Monochrome tintable nav icon
+icon_nav_market,12,12,ui_nav,top-left,,False,Monochrome tintable nav icon
+icon_nav_town,12,12,ui_nav,top-left,,False,Monochrome tintable nav icon
+icon_nav_journal,12,12,ui_nav,top-left,,False,Monochrome tintable nav icon
+icon_nav_gazette,12,12,ui_nav,top-left,,False,Monochrome tintable nav icon
+icon_nav_legacy,12,12,ui_nav,top-left,,False,Monochrome tintable nav icon
+icon_energy,8,8,ui_status,top-left,,False,Top status icon
+icon_gold,8,8,ui_status,top-left,,False,Top status icon
+icon_integrity,8,8,ui_status,top-left,,False,Top status icon
+icon_militia,8,8,ui_status,top-left,,False,Top status icon
+icon_reputation,8,8,ui_status,top-left,,False,Top status icon
+icon_day,8,8,ui_status,top-left,,False,Top status icon
+panel_gazette,24,24,ui_panel,tile,,False,9-patch style; 8px frame on all sides
+panel_journal,24,24,ui_panel,tile,,False,9-patch style; 8px frame on all sides
+tile_paper,16,16,ui_tile,tile,,False,Subtle paper texture; seamless
+hero_guardian_idle_0,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_guardian_idle_1,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_guardian_attack_0,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_guardian_attack_1,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_ranger_idle_0,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_ranger_idle_1,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_ranger_attack_0,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_ranger_attack_1,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_duelist_idle_0,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_duelist_idle_1,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_duelist_attack_0,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_duelist_attack_1,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_battlemage_idle_0,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_battlemage_idle_1,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_battlemage_attack_0,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_battlemage_attack_1,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_warden_idle_0,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_warden_idle_1,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_warden_attack_0,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+hero_warden_attack_1,16,16,animation,bottom-center,120,False,Side view facing right; empty attack hand
+monster_ashclaw_raider_idle_0,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_ashclaw_raider_idle_1,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_ashclaw_raider_attack_0,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_ashclaw_raider_attack_1,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_ashclaw_raider_hit,16,16,animation,bottom-center,120,False,Combat hit frame
+monster_ashclaw_brute_idle_0,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_ashclaw_brute_idle_1,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_ashclaw_brute_attack_0,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_ashclaw_brute_attack_1,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_ashclaw_brute_hit,16,16,animation,bottom-center,120,False,Combat hit frame
+monster_hollowbound_shade_idle_0,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_hollowbound_shade_idle_1,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_hollowbound_shade_attack_0,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_hollowbound_shade_attack_1,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_hollowbound_shade_hit,16,16,animation,bottom-center,120,False,Combat hit frame
+monster_hollowbound_wraith_idle_0,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_hollowbound_wraith_idle_1,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_hollowbound_wraith_attack_0,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_hollowbound_wraith_attack_1,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_hollowbound_wraith_hit,16,16,animation,bottom-center,120,False,Combat hit frame
+monster_embermaw_whelp_idle_0,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_embermaw_whelp_idle_1,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_embermaw_whelp_attack_0,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_embermaw_whelp_attack_1,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_embermaw_whelp_hit,16,16,animation,bottom-center,120,False,Combat hit frame
+monster_embermaw_drake_idle_0,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_embermaw_drake_idle_1,16,16,animation,bottom-center,120,False,Combat idle frame
+monster_embermaw_drake_attack_0,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_embermaw_drake_attack_1,16,16,animation,bottom-center,120,False,Combat attack frame
+monster_embermaw_drake_hit,16,16,animation,bottom-center,120,False,Combat hit frame
+siege_wall,96,32,siege,tile,,False,Siege backdrop 96x32
+siege_wall_damaged,96,32,siege,tile,,False,Siege backdrop 96x32
+fx_milestone_0,16,16,animation,top-left,100,False,Milestone burst
+fx_milestone_1,16,16,animation,top-left,100,False,Milestone burst
+fx_milestone_2,16,16,animation,top-left,100,False,Milestone burst
+fx_milestone_3,16,16,animation,top-left,100,False,Milestone burst
+marker_dead,8,8,marker,top-left,,False,Gravestone
+marker_retired,8,8,marker,top-left,,False,Laurel wreath

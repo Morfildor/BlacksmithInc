@@ -1,0 +1,1990 @@
+{
+  "version": 1,
+  "pixelGrid": "1px = 1 game pixel; scale with nearest-neighbour only",
+  "lightSource": "upper-left",
+  "sprites": [
+    {
+      "id": "weapon_sword_iron",
+      "file": "drawable-nodpi/weapon_sword_iron.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "sword",
+      "core": "iron",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_bronze",
+      "file": "drawable-nodpi/weapon_sword_bronze.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "sword",
+      "core": "bronze",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_silver",
+      "file": "drawable-nodpi/weapon_sword_silver.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "sword",
+      "core": "silver",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_obsidian",
+      "file": "drawable-nodpi/weapon_sword_obsidian.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "sword",
+      "core": "obsidian",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_starsteel",
+      "file": "drawable-nodpi/weapon_sword_starsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "sword",
+      "core": "starsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_moonsteel",
+      "file": "drawable-nodpi/weapon_sword_moonsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "sword",
+      "core": "moonsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_iron",
+      "file": "drawable-nodpi/weapon_axe_iron.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "axe",
+      "core": "iron",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_bronze",
+      "file": "drawable-nodpi/weapon_axe_bronze.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "axe",
+      "core": "bronze",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_silver",
+      "file": "drawable-nodpi/weapon_axe_silver.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "axe",
+      "core": "silver",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_obsidian",
+      "file": "drawable-nodpi/weapon_axe_obsidian.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "axe",
+      "core": "obsidian",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_starsteel",
+      "file": "drawable-nodpi/weapon_axe_starsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "axe",
+      "core": "starsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_moonsteel",
+      "file": "drawable-nodpi/weapon_axe_moonsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "axe",
+      "core": "moonsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_iron",
+      "file": "drawable-nodpi/weapon_bow_iron.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "bow",
+      "core": "iron",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_bronze",
+      "file": "drawable-nodpi/weapon_bow_bronze.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "bow",
+      "core": "bronze",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_silver",
+      "file": "drawable-nodpi/weapon_bow_silver.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "bow",
+      "core": "silver",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_obsidian",
+      "file": "drawable-nodpi/weapon_bow_obsidian.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "bow",
+      "core": "obsidian",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_starsteel",
+      "file": "drawable-nodpi/weapon_bow_starsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "bow",
+      "core": "starsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_moonsteel",
+      "file": "drawable-nodpi/weapon_bow_moonsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "bow",
+      "core": "moonsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_iron",
+      "file": "drawable-nodpi/weapon_spear_iron.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "spear",
+      "core": "iron",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_bronze",
+      "file": "drawable-nodpi/weapon_spear_bronze.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "spear",
+      "core": "bronze",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_silver",
+      "file": "drawable-nodpi/weapon_spear_silver.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "spear",
+      "core": "silver",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_obsidian",
+      "file": "drawable-nodpi/weapon_spear_obsidian.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "spear",
+      "core": "obsidian",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_starsteel",
+      "file": "drawable-nodpi/weapon_spear_starsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "spear",
+      "core": "starsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_moonsteel",
+      "file": "drawable-nodpi/weapon_spear_moonsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "spear",
+      "core": "moonsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_iron",
+      "file": "drawable-nodpi/weapon_dagger_iron.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "dagger",
+      "core": "iron",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_bronze",
+      "file": "drawable-nodpi/weapon_dagger_bronze.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "dagger",
+      "core": "bronze",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_silver",
+      "file": "drawable-nodpi/weapon_dagger_silver.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "dagger",
+      "core": "silver",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_obsidian",
+      "file": "drawable-nodpi/weapon_dagger_obsidian.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "dagger",
+      "core": "obsidian",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_starsteel",
+      "file": "drawable-nodpi/weapon_dagger_starsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "dagger",
+      "core": "starsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_moonsteel",
+      "file": "drawable-nodpi/weapon_dagger_moonsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "dagger",
+      "core": "moonsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_iron",
+      "file": "drawable-nodpi/weapon_staff_iron.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "staff",
+      "core": "iron",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_bronze",
+      "file": "drawable-nodpi/weapon_staff_bronze.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "staff",
+      "core": "bronze",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_silver",
+      "file": "drawable-nodpi/weapon_staff_silver.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "staff",
+      "core": "silver",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_obsidian",
+      "file": "drawable-nodpi/weapon_staff_obsidian.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "staff",
+      "core": "obsidian",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_starsteel",
+      "file": "drawable-nodpi/weapon_staff_starsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "staff",
+      "core": "starsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_moonsteel",
+      "file": "drawable-nodpi/weapon_staff_moonsteel.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "bottom-center",
+      "layer": "weapon",
+      "family": "staff",
+      "core": "moonsteel",
+      "source": "handmade"
+    },
+    {
+      "id": "overlay_fire",
+      "file": "drawable-nodpi/overlay_fire.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "overlay",
+      "element": "FIRE",
+      "source": "handmade"
+    },
+    {
+      "id": "overlay_frost",
+      "file": "drawable-nodpi/overlay_frost.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "overlay",
+      "element": "FROST",
+      "source": "handmade"
+    },
+    {
+      "id": "overlay_storm",
+      "file": "drawable-nodpi/overlay_storm.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "overlay",
+      "element": "STORM",
+      "source": "handmade"
+    },
+    {
+      "id": "overlay_grave",
+      "file": "drawable-nodpi/overlay_grave.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "overlay",
+      "element": "GRAVE",
+      "source": "handmade"
+    },
+    {
+      "id": "overlay_verdant",
+      "file": "drawable-nodpi/overlay_verdant.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "overlay",
+      "element": "VERDANT",
+      "source": "handmade"
+    },
+    {
+      "id": "overlay_sun",
+      "file": "drawable-nodpi/overlay_sun.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "overlay",
+      "element": "SUN",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_guardian",
+      "file": "drawable-nodpi/portrait_guardian.png",
+      "width": 16,
+      "height": 16,
+      "anchor": "top-left",
+      "layer": "portrait",
+      "heroClass": "guardian",
+      "source": "generated"
+    },
+    {
+      "id": "portrait_ranger",
+      "file": "drawable-nodpi/portrait_ranger.png",
+      "width": 16,
+      "height": 16,
+      "anchor": "top-left",
+      "layer": "portrait",
+      "heroClass": "ranger",
+      "source": "generated"
+    },
+    {
+      "id": "portrait_duelist",
+      "file": "drawable-nodpi/portrait_duelist.png",
+      "width": 16,
+      "height": 16,
+      "anchor": "top-left",
+      "layer": "portrait",
+      "heroClass": "duelist",
+      "source": "generated"
+    },
+    {
+      "id": "portrait_battlemage",
+      "file": "drawable-nodpi/portrait_battlemage.png",
+      "width": 16,
+      "height": 16,
+      "anchor": "top-left",
+      "layer": "portrait",
+      "heroClass": "battlemage",
+      "source": "generated"
+    },
+    {
+      "id": "portrait_warden",
+      "file": "drawable-nodpi/portrait_warden.png",
+      "width": 16,
+      "height": 16,
+      "anchor": "top-left",
+      "layer": "portrait",
+      "heroClass": "warden",
+      "source": "generated"
+    },
+    {
+      "id": "faction_ashclaw_raider",
+      "file": "drawable-nodpi/faction_ashclaw_raider.png",
+      "width": 80,
+      "height": 80,
+      "anchor": "bottom-center",
+      "layer": "enemy",
+      "faction": "ashclaw_raiders",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_ashclaw_brute",
+      "file": "drawable-nodpi/faction_ashclaw_brute.png",
+      "width": 112,
+      "height": 112,
+      "anchor": "bottom-center",
+      "layer": "enemy",
+      "faction": "ashclaw_raiders",
+      "variant": "elite",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_hollowbound_shade",
+      "file": "drawable-nodpi/faction_hollowbound_shade.png",
+      "width": 80,
+      "height": 80,
+      "anchor": "bottom-center",
+      "layer": "enemy",
+      "faction": "hollowbound",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_hollowbound_wraith",
+      "file": "drawable-nodpi/faction_hollowbound_wraith.png",
+      "width": 112,
+      "height": 112,
+      "anchor": "bottom-center",
+      "layer": "enemy",
+      "faction": "hollowbound",
+      "variant": "elite",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_embermaw_whelp",
+      "file": "drawable-nodpi/faction_embermaw_whelp.png",
+      "width": 80,
+      "height": 80,
+      "anchor": "bottom-center",
+      "layer": "enemy",
+      "faction": "embermaw_brood",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_embermaw_drake",
+      "file": "drawable-nodpi/faction_embermaw_drake.png",
+      "width": 112,
+      "height": 112,
+      "anchor": "bottom-center",
+      "layer": "enemy",
+      "faction": "embermaw_brood",
+      "variant": "elite",
+      "source": "handmade"
+    },
+    {
+      "id": "badge_common",
+      "file": "drawable-nodpi/badge_common.png",
+      "width": 24,
+      "height": 24,
+      "layer": "badge",
+      "rarity": "COMMON",
+      "source": "handmade"
+    },
+    {
+      "id": "badge_uncommon",
+      "file": "drawable-nodpi/badge_uncommon.png",
+      "width": 24,
+      "height": 24,
+      "layer": "badge",
+      "rarity": "UNCOMMON",
+      "source": "handmade"
+    },
+    {
+      "id": "badge_rare",
+      "file": "drawable-nodpi/badge_rare.png",
+      "width": 24,
+      "height": 24,
+      "layer": "badge",
+      "rarity": "RARE",
+      "source": "handmade"
+    },
+    {
+      "id": "badge_epic",
+      "file": "drawable-nodpi/badge_epic.png",
+      "width": 24,
+      "height": 24,
+      "layer": "badge",
+      "rarity": "EPIC",
+      "source": "handmade"
+    },
+    {
+      "id": "badge_legendary",
+      "file": "drawable-nodpi/badge_legendary.png",
+      "width": 24,
+      "height": 24,
+      "layer": "badge",
+      "rarity": "LEGENDARY",
+      "source": "handmade"
+    },
+    {
+      "id": "badge_flaw",
+      "file": "drawable-nodpi/badge_flaw.png",
+      "width": 24,
+      "height": 24,
+      "layer": "badge",
+      "meaning": "flaw",
+      "source": "handmade"
+    },
+    {
+      "id": "material_iron",
+      "file": "drawable-nodpi/material_iron.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "iron",
+      "category": "CORE",
+      "source": "handmade"
+    },
+    {
+      "id": "material_bronze",
+      "file": "drawable-nodpi/material_bronze.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "bronze",
+      "category": "CORE",
+      "source": "handmade"
+    },
+    {
+      "id": "material_silver",
+      "file": "drawable-nodpi/material_silver.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "silver",
+      "category": "CORE",
+      "source": "handmade"
+    },
+    {
+      "id": "material_obsidian",
+      "file": "drawable-nodpi/material_obsidian.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "obsidian",
+      "category": "CORE",
+      "source": "handmade"
+    },
+    {
+      "id": "material_starsteel",
+      "file": "drawable-nodpi/material_starsteel.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "starsteel",
+      "category": "CORE",
+      "source": "handmade"
+    },
+    {
+      "id": "material_moonsteel",
+      "file": "drawable-nodpi/material_moonsteel.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "moonsteel",
+      "category": "CORE",
+      "source": "handmade"
+    },
+    {
+      "id": "material_ember_resin",
+      "file": "drawable-nodpi/material_ember_resin.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "ember_resin",
+      "category": "AUGMENT",
+      "source": "handmade"
+    },
+    {
+      "id": "material_frost_bloom",
+      "file": "drawable-nodpi/material_frost_bloom.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "frost_bloom",
+      "category": "AUGMENT",
+      "source": "handmade"
+    },
+    {
+      "id": "material_stormglass",
+      "file": "drawable-nodpi/material_stormglass.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "stormglass",
+      "category": "AUGMENT",
+      "source": "handmade"
+    },
+    {
+      "id": "material_grave_dust",
+      "file": "drawable-nodpi/material_grave_dust.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "grave_dust",
+      "category": "AUGMENT",
+      "source": "handmade"
+    },
+    {
+      "id": "material_verdant_sap",
+      "file": "drawable-nodpi/material_verdant_sap.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "verdant_sap",
+      "category": "AUGMENT",
+      "source": "handmade"
+    },
+    {
+      "id": "material_sun_ash",
+      "file": "drawable-nodpi/material_sun_ash.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "sun_ash",
+      "category": "AUGMENT",
+      "source": "handmade"
+    },
+    {
+      "id": "material_binding_salt",
+      "file": "drawable-nodpi/material_binding_salt.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "binding_salt",
+      "category": "CATALYST",
+      "source": "handmade"
+    },
+    {
+      "id": "material_runestone_shard",
+      "file": "drawable-nodpi/material_runestone_shard.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "runestone_shard",
+      "category": "CATALYST",
+      "source": "handmade"
+    },
+    {
+      "id": "material_dragon_oil",
+      "file": "drawable-nodpi/material_dragon_oil.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "dragon_oil",
+      "category": "CATALYST",
+      "source": "handmade"
+    },
+    {
+      "id": "material_void_ink",
+      "file": "drawable-nodpi/material_void_ink.png",
+      "width": 48,
+      "height": 48,
+      "layer": "material",
+      "material": "void_ink",
+      "category": "CATALYST",
+      "source": "handmade"
+    },
+    {
+      "id": "blessing_forgefire",
+      "file": "drawable-nodpi/blessing_forgefire.png",
+      "width": 48,
+      "height": 48,
+      "layer": "blessing",
+      "blessing": "forgefire",
+      "source": "handmade"
+    },
+    {
+      "id": "blessing_tireless_hands",
+      "file": "drawable-nodpi/blessing_tireless_hands.png",
+      "width": 48,
+      "height": 48,
+      "layer": "blessing",
+      "blessing": "tireless_hands",
+      "source": "handmade"
+    },
+    {
+      "id": "blessing_merchants_favor",
+      "file": "drawable-nodpi/blessing_merchants_favor.png",
+      "width": 48,
+      "height": 48,
+      "layer": "blessing",
+      "blessing": "merchants_favor",
+      "source": "handmade"
+    },
+    {
+      "id": "blessing_runic_insight",
+      "file": "drawable-nodpi/blessing_runic_insight.png",
+      "width": 48,
+      "height": 48,
+      "layer": "blessing",
+      "blessing": "runic_insight",
+      "source": "handmade"
+    },
+    {
+      "id": "blessing_stalwart_town",
+      "file": "drawable-nodpi/blessing_stalwart_town.png",
+      "width": 48,
+      "height": 48,
+      "layer": "blessing",
+      "blessing": "stalwart_town",
+      "source": "handmade"
+    },
+    {
+      "id": "blessing_hunters_edge",
+      "file": "drawable-nodpi/blessing_hunters_edge.png",
+      "width": 48,
+      "height": 48,
+      "layer": "blessing",
+      "blessing": "hunters_edge",
+      "source": "handmade"
+    },
+    {
+      "id": "blessing_lucky_alloy",
+      "file": "drawable-nodpi/blessing_lucky_alloy.png",
+      "width": 48,
+      "height": 48,
+      "layer": "blessing",
+      "blessing": "lucky_alloy",
+      "source": "handmade"
+    },
+    {
+      "id": "blessing_guild_patronage",
+      "file": "drawable-nodpi/blessing_guild_patronage.png",
+      "width": 48,
+      "height": 48,
+      "layer": "blessing",
+      "blessing": "guild_patronage",
+      "source": "handmade"
+    },
+    {
+      "id": "ember_0",
+      "file": "drawable-nodpi/ember_0.png",
+      "width": 32,
+      "height": 32,
+      "layer": "fx",
+      "frames": 1,
+      "source": "handmade"
+    },
+    {
+      "id": "ember_1",
+      "file": "drawable-nodpi/ember_1.png",
+      "width": 32,
+      "height": 32,
+      "layer": "fx",
+      "frames": 1,
+      "source": "handmade"
+    },
+    {
+      "id": "ember_2",
+      "file": "drawable-nodpi/ember_2.png",
+      "width": 32,
+      "height": 32,
+      "layer": "fx",
+      "frames": 1,
+      "source": "handmade"
+    },
+    {
+      "id": "tile_wall",
+      "file": "drawable-nodpi/tile_wall.png",
+      "width": 64,
+      "height": 64,
+      "layer": "background",
+      "tile": true,
+      "source": "handmade"
+    },
+    {
+      "id": "tile_floor",
+      "file": "drawable-nodpi/tile_floor.png",
+      "width": 64,
+      "height": 32,
+      "layer": "background",
+      "tile": true,
+      "source": "handmade"
+    },
+    {
+      "id": "tile_paper",
+      "file": "drawable-nodpi/tile_paper.png",
+      "width": 64,
+      "height": 64,
+      "layer": "ui",
+      "tile": true,
+      "source": "handmade"
+    },
+    {
+      "id": "panel_gazette",
+      "file": "drawable-nodpi/panel_gazette.png",
+      "width": 256,
+      "height": 126,
+      "layer": "ui",
+      "tile": true,
+      "source": "handmade"
+    },
+    {
+      "id": "panel_journal",
+      "file": "drawable-nodpi/panel_journal.png",
+      "width": 256,
+      "height": 163,
+      "layer": "ui",
+      "tile": true,
+      "source": "handmade"
+    },
+    {
+      "id": "furnace_cold",
+      "file": "drawable-nodpi/furnace_cold.png",
+      "width": 77,
+      "height": 96,
+      "anchor": "bottom-left",
+      "layer": "scene",
+      "state": "cold",
+      "source": "handmade"
+    },
+    {
+      "id": "furnace_warm",
+      "file": "drawable-nodpi/furnace_warm.png",
+      "width": 79,
+      "height": 96,
+      "anchor": "bottom-left",
+      "layer": "scene",
+      "state": "warm",
+      "source": "handmade"
+    },
+    {
+      "id": "furnace_hot",
+      "file": "drawable-nodpi/furnace_hot.png",
+      "width": 80,
+      "height": 96,
+      "anchor": "bottom-left",
+      "layer": "scene",
+      "state": "hot",
+      "source": "handmade"
+    },
+    {
+      "id": "anvil",
+      "file": "drawable-nodpi/anvil.png",
+      "width": 109,
+      "height": 72,
+      "anchor": "bottom-left",
+      "layer": "scene",
+      "source": "handmade"
+    },
+    {
+      "id": "tool_rack",
+      "file": "drawable-nodpi/tool_rack.png",
+      "width": 54,
+      "height": 88,
+      "anchor": "top-left",
+      "layer": "scene",
+      "source": "handmade"
+    },
+    {
+      "id": "shelf",
+      "file": "drawable-nodpi/shelf.png",
+      "width": 122,
+      "height": 64,
+      "anchor": "bottom-left",
+      "layer": "scene",
+      "source": "handmade"
+    },
+    {
+      "id": "ember_3",
+      "file": "drawable-nodpi/ember_3.png",
+      "width": 32,
+      "height": 32,
+      "layer": "ember",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_ashclaw_alt_0",
+      "file": "drawable-nodpi/faction_ashclaw_alt_0.png",
+      "width": 64,
+      "height": 64,
+      "layer": "faction",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_ashclaw_alt_1",
+      "file": "drawable-nodpi/faction_ashclaw_alt_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "faction",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_embermaw_alt_0",
+      "file": "drawable-nodpi/faction_embermaw_alt_0.png",
+      "width": 64,
+      "height": 64,
+      "layer": "faction",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_embermaw_alt_1",
+      "file": "drawable-nodpi/faction_embermaw_alt_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "faction",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_hollowbound_alt_0",
+      "file": "drawable-nodpi/faction_hollowbound_alt_0.png",
+      "width": 64,
+      "height": 64,
+      "layer": "faction",
+      "source": "handmade"
+    },
+    {
+      "id": "faction_hollowbound_alt_1",
+      "file": "drawable-nodpi/faction_hollowbound_alt_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "faction",
+      "source": "handmade"
+    },
+    {
+      "id": "fx_milestone_0",
+      "file": "drawable-nodpi/fx_milestone_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "top-left",
+      "durationMs": 100,
+      "notes": "Milestone burst"
+    },
+    {
+      "id": "fx_milestone_1",
+      "file": "drawable-nodpi/fx_milestone_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "top-left",
+      "durationMs": 100,
+      "notes": "Milestone burst"
+    },
+    {
+      "id": "fx_milestone_2",
+      "file": "drawable-nodpi/fx_milestone_2.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "top-left",
+      "durationMs": 100,
+      "notes": "Milestone burst"
+    },
+    {
+      "id": "fx_milestone_3",
+      "file": "drawable-nodpi/fx_milestone_3.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "top-left",
+      "durationMs": 100,
+      "notes": "Milestone burst"
+    },
+    {
+      "id": "hero_battlemage_attack_0",
+      "file": "drawable-nodpi/hero_battlemage_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_battlemage_attack_1",
+      "file": "drawable-nodpi/hero_battlemage_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_battlemage_idle_0",
+      "file": "drawable-nodpi/hero_battlemage_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_battlemage_idle_1",
+      "file": "drawable-nodpi/hero_battlemage_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_duelist_attack_0",
+      "file": "drawable-nodpi/hero_duelist_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_duelist_attack_1",
+      "file": "drawable-nodpi/hero_duelist_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_duelist_idle_0",
+      "file": "drawable-nodpi/hero_duelist_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_duelist_idle_1",
+      "file": "drawable-nodpi/hero_duelist_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_guardian_attack_0",
+      "file": "drawable-nodpi/hero_guardian_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_guardian_attack_1",
+      "file": "drawable-nodpi/hero_guardian_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_guardian_idle_0",
+      "file": "drawable-nodpi/hero_guardian_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_guardian_idle_1",
+      "file": "drawable-nodpi/hero_guardian_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_ranger_attack_0",
+      "file": "drawable-nodpi/hero_ranger_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_ranger_attack_1",
+      "file": "drawable-nodpi/hero_ranger_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_ranger_idle_0",
+      "file": "drawable-nodpi/hero_ranger_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_ranger_idle_1",
+      "file": "drawable-nodpi/hero_ranger_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_warden_attack_0",
+      "file": "drawable-nodpi/hero_warden_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_warden_attack_1",
+      "file": "drawable-nodpi/hero_warden_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_warden_idle_0",
+      "file": "drawable-nodpi/hero_warden_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "hero_warden_idle_1",
+      "file": "drawable-nodpi/hero_warden_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Side view facing right; empty attack hand"
+    },
+    {
+      "id": "icon_day",
+      "file": "drawable-nodpi/icon_day.png",
+      "width": 24,
+      "height": 24,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_energy",
+      "file": "drawable-nodpi/icon_energy.png",
+      "width": 24,
+      "height": 24,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_gold",
+      "file": "drawable-nodpi/icon_gold.png",
+      "width": 24,
+      "height": 24,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_integrity",
+      "file": "drawable-nodpi/icon_integrity.png",
+      "width": 24,
+      "height": 24,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_militia",
+      "file": "drawable-nodpi/icon_militia.png",
+      "width": 24,
+      "height": 24,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_nav_forge",
+      "file": "drawable-nodpi/icon_nav_forge.png",
+      "width": 40,
+      "height": 40,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_nav_gazette",
+      "file": "drawable-nodpi/icon_nav_gazette.png",
+      "width": 40,
+      "height": 40,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_nav_journal",
+      "file": "drawable-nodpi/icon_nav_journal.png",
+      "width": 40,
+      "height": 40,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_nav_legacy",
+      "file": "drawable-nodpi/icon_nav_legacy.png",
+      "width": 40,
+      "height": 40,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_nav_market",
+      "file": "drawable-nodpi/icon_nav_market.png",
+      "width": 40,
+      "height": 40,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_nav_town",
+      "file": "drawable-nodpi/icon_nav_town.png",
+      "width": 40,
+      "height": 40,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "icon_reputation",
+      "file": "drawable-nodpi/icon_reputation.png",
+      "width": 24,
+      "height": 24,
+      "layer": "icon",
+      "source": "handmade"
+    },
+    {
+      "id": "marker_dead",
+      "file": "drawable-nodpi/marker_dead.png",
+      "width": 8,
+      "height": 8,
+      "layer": "marker",
+      "source": "handmade",
+      "anchor": "top-left",
+      "notes": "Gravestone"
+    },
+    {
+      "id": "marker_retired",
+      "file": "drawable-nodpi/marker_retired.png",
+      "width": 8,
+      "height": 8,
+      "layer": "marker",
+      "source": "handmade",
+      "anchor": "top-left",
+      "notes": "Laurel wreath"
+    },
+    {
+      "id": "monster_ashclaw_brute_attack_0",
+      "file": "drawable-nodpi/monster_ashclaw_brute_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_ashclaw_brute_attack_1",
+      "file": "drawable-nodpi/monster_ashclaw_brute_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_ashclaw_brute_hit",
+      "file": "drawable-nodpi/monster_ashclaw_brute_hit.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat hit frame"
+    },
+    {
+      "id": "monster_ashclaw_brute_idle_0",
+      "file": "drawable-nodpi/monster_ashclaw_brute_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_ashclaw_brute_idle_1",
+      "file": "drawable-nodpi/monster_ashclaw_brute_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_ashclaw_raider_attack_0",
+      "file": "drawable-nodpi/monster_ashclaw_raider_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_ashclaw_raider_attack_1",
+      "file": "drawable-nodpi/monster_ashclaw_raider_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_ashclaw_raider_hit",
+      "file": "drawable-nodpi/monster_ashclaw_raider_hit.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat hit frame"
+    },
+    {
+      "id": "monster_ashclaw_raider_idle_0",
+      "file": "drawable-nodpi/monster_ashclaw_raider_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_ashclaw_raider_idle_1",
+      "file": "drawable-nodpi/monster_ashclaw_raider_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_embermaw_drake_attack_0",
+      "file": "drawable-nodpi/monster_embermaw_drake_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_embermaw_drake_attack_1",
+      "file": "drawable-nodpi/monster_embermaw_drake_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_embermaw_drake_hit",
+      "file": "drawable-nodpi/monster_embermaw_drake_hit.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat hit frame"
+    },
+    {
+      "id": "monster_embermaw_drake_idle_0",
+      "file": "drawable-nodpi/monster_embermaw_drake_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_embermaw_drake_idle_1",
+      "file": "drawable-nodpi/monster_embermaw_drake_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_embermaw_whelp_attack_0",
+      "file": "drawable-nodpi/monster_embermaw_whelp_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_embermaw_whelp_attack_1",
+      "file": "drawable-nodpi/monster_embermaw_whelp_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_embermaw_whelp_hit",
+      "file": "drawable-nodpi/monster_embermaw_whelp_hit.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat hit frame"
+    },
+    {
+      "id": "monster_embermaw_whelp_idle_0",
+      "file": "drawable-nodpi/monster_embermaw_whelp_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_embermaw_whelp_idle_1",
+      "file": "drawable-nodpi/monster_embermaw_whelp_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_hollowbound_shade_attack_0",
+      "file": "drawable-nodpi/monster_hollowbound_shade_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_hollowbound_shade_attack_1",
+      "file": "drawable-nodpi/monster_hollowbound_shade_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_hollowbound_shade_hit",
+      "file": "drawable-nodpi/monster_hollowbound_shade_hit.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat hit frame"
+    },
+    {
+      "id": "monster_hollowbound_shade_idle_0",
+      "file": "drawable-nodpi/monster_hollowbound_shade_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_hollowbound_shade_idle_1",
+      "file": "drawable-nodpi/monster_hollowbound_shade_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_hollowbound_wraith_attack_0",
+      "file": "drawable-nodpi/monster_hollowbound_wraith_attack_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_hollowbound_wraith_attack_1",
+      "file": "drawable-nodpi/monster_hollowbound_wraith_attack_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat attack frame"
+    },
+    {
+      "id": "monster_hollowbound_wraith_hit",
+      "file": "drawable-nodpi/monster_hollowbound_wraith_hit.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat hit frame"
+    },
+    {
+      "id": "monster_hollowbound_wraith_idle_0",
+      "file": "drawable-nodpi/monster_hollowbound_wraith_idle_0.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "monster_hollowbound_wraith_idle_1",
+      "file": "drawable-nodpi/monster_hollowbound_wraith_idle_1.png",
+      "width": 16,
+      "height": 16,
+      "layer": "animation",
+      "source": "handmade",
+      "anchor": "bottom-center",
+      "durationMs": 120,
+      "notes": "Combat idle frame"
+    },
+    {
+      "id": "portrait_battlemage_0",
+      "file": "drawable-nodpi/portrait_battlemage_0.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_battlemage_1",
+      "file": "drawable-nodpi/portrait_battlemage_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_battlemage_2",
+      "file": "drawable-nodpi/portrait_battlemage_2.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_battlemage_3",
+      "file": "drawable-nodpi/portrait_battlemage_3.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_battlemage_4",
+      "file": "drawable-nodpi/portrait_battlemage_4.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_duelist_0",
+      "file": "drawable-nodpi/portrait_duelist_0.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_duelist_1",
+      "file": "drawable-nodpi/portrait_duelist_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_duelist_2",
+      "file": "drawable-nodpi/portrait_duelist_2.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_duelist_3",
+      "file": "drawable-nodpi/portrait_duelist_3.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_duelist_4",
+      "file": "drawable-nodpi/portrait_duelist_4.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_guardian_0",
+      "file": "drawable-nodpi/portrait_guardian_0.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_guardian_1",
+      "file": "drawable-nodpi/portrait_guardian_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_guardian_2",
+      "file": "drawable-nodpi/portrait_guardian_2.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_guardian_3",
+      "file": "drawable-nodpi/portrait_guardian_3.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_guardian_4",
+      "file": "drawable-nodpi/portrait_guardian_4.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_ranger_0",
+      "file": "drawable-nodpi/portrait_ranger_0.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_ranger_1",
+      "file": "drawable-nodpi/portrait_ranger_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_ranger_2",
+      "file": "drawable-nodpi/portrait_ranger_2.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_ranger_3",
+      "file": "drawable-nodpi/portrait_ranger_3.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_ranger_4",
+      "file": "drawable-nodpi/portrait_ranger_4.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_warden_0",
+      "file": "drawable-nodpi/portrait_warden_0.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_warden_1",
+      "file": "drawable-nodpi/portrait_warden_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_warden_2",
+      "file": "drawable-nodpi/portrait_warden_2.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_warden_3",
+      "file": "drawable-nodpi/portrait_warden_3.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "portrait_warden_4",
+      "file": "drawable-nodpi/portrait_warden_4.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "handmade"
+    },
+    {
+      "id": "siege_wall",
+      "file": "drawable-nodpi/siege_wall.png",
+      "width": 96,
+      "height": 32,
+      "layer": "siege",
+      "source": "handmade",
+      "anchor": "tile",
+      "notes": "Siege backdrop 96x32"
+    },
+    {
+      "id": "siege_wall_damaged",
+      "file": "drawable-nodpi/siege_wall_damaged.png",
+      "width": 96,
+      "height": 32,
+      "layer": "siege",
+      "source": "handmade",
+      "anchor": "tile",
+      "notes": "Siege backdrop 96x32"
+    }
+  ],
+  "animations": [
+    {
+      "id": "embers",
+      "frames": [
+        "ember_0",
+        "ember_1",
+        "ember_2",
+        "ember_3"
+      ],
+      "frameMs": 180,
+      "loop": true
+    }
+  ]
+}

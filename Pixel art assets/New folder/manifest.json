@@ -1,0 +1,1914 @@
+{
+  "name": "Tiny Blacksmith V2 pixel-grid working pack",
+  "palette": {
+    "ink": "1A1210",
+    "deep": "2B2320",
+    "wood0": "4A3B33",
+    "wood1": "6B4B32",
+    "wood2": "8C6239",
+    "bone": "E8E4DA",
+    "cream": "FFF0A0",
+    "stone0": "55595D",
+    "stone1": "7D8186",
+    "stone2": "B0B4B8",
+    "ash": "5C6166",
+    "fire0": "B3301A",
+    "fire1": "E2601F",
+    "fire2": "FFC14D",
+    "skin": "E0B08A",
+    "leather": "7A4A2A",
+    "blue": "3A5A8A",
+    "red": "A03030",
+    "gold": "D8A030",
+    "iron0": "5C6166",
+    "iron1": "8A8F94",
+    "bronze0": "8A5A22",
+    "bronze1": "C7883A",
+    "silver0": "9AA3AD",
+    "silver1": "D9DDE3",
+    "obs0": "423254",
+    "obs1": "78608C",
+    "star0": "5C86B8",
+    "star1": "AAD2EC",
+    "moon0": "867EBE",
+    "moon1": "CEC8F0",
+    "frost0": "3AA0D8",
+    "frost1": "7FD8FF",
+    "storm0": "6A4BD6",
+    "storm1": "B48CFF",
+    "grave0": "506854",
+    "grave1": "B2CE96",
+    "verd0": "5AA05A",
+    "verd1": "9CDE78",
+    "skin_dark": "946647",
+    "skin_olive": "A7B078",
+    "skin_pale": "EAD0BA",
+    "skin_orc": "709156",
+    "skin_lizard": "4B9087",
+    "teal": "43BDA6",
+    "hair": "47342F",
+    "hairlight": "CBA66F",
+    "purple": "8058A5",
+    "pink": "E4A1BF"
+  },
+  "assets": [
+    {
+      "id": "tile_wall",
+      "width": 16,
+      "height": 16,
+      "kind": "forge",
+      "anchor": "tile",
+      "notes": "Low-contrast masonry; seamless horizontally and vertically",
+      "extra": false
+    },
+    {
+      "id": "tile_floor",
+      "width": 16,
+      "height": 8,
+      "kind": "forge",
+      "anchor": "tile",
+      "notes": "Seamless timber floor strip",
+      "extra": false
+    },
+    {
+      "id": "furnace_cold",
+      "width": 24,
+      "height": 24,
+      "kind": "forge",
+      "anchor": "bottom-left",
+      "notes": "Identical housing, cold fire state",
+      "extra": false
+    },
+    {
+      "id": "furnace_warm",
+      "width": 24,
+      "height": 24,
+      "kind": "forge",
+      "anchor": "bottom-left",
+      "notes": "Identical housing, warm fire state",
+      "extra": false
+    },
+    {
+      "id": "furnace_hot",
+      "width": 24,
+      "height": 24,
+      "kind": "forge",
+      "anchor": "bottom-left",
+      "notes": "Identical housing, hot fire state",
+      "extra": false
+    },
+    {
+      "id": "anvil",
+      "width": 24,
+      "height": 12,
+      "kind": "forge",
+      "anchor": "bottom-left",
+      "notes": "Forge anvil with pronounced beak",
+      "extra": false
+    },
+    {
+      "id": "tool_rack",
+      "width": 12,
+      "height": 24,
+      "kind": "forge",
+      "anchor": "top-left",
+      "notes": "Rack for hammer, tongs, file",
+      "extra": false
+    },
+    {
+      "id": "shelf",
+      "width": 32,
+      "height": 12,
+      "kind": "forge",
+      "anchor": "bottom-left",
+      "notes": "Empty wood display shelf; weapon slots remain free",
+      "extra": false
+    },
+    {
+      "id": "ember_0",
+      "width": 8,
+      "height": 8,
+      "kind": "animation",
+      "anchor": "top-left",
+      "notes": "Ember loop frame 0",
+      "extra": false,
+      "durationMs": 180
+    },
+    {
+      "id": "ember_1",
+      "width": 8,
+      "height": 8,
+      "kind": "animation",
+      "anchor": "top-left",
+      "notes": "Ember loop frame 1",
+      "extra": false,
+      "durationMs": 180
+    },
+    {
+      "id": "ember_2",
+      "width": 8,
+      "height": 8,
+      "kind": "animation",
+      "anchor": "top-left",
+      "notes": "Ember loop frame 2",
+      "extra": false,
+      "durationMs": 180
+    },
+    {
+      "id": "ember_3",
+      "width": 8,
+      "height": 8,
+      "kind": "animation",
+      "anchor": "top-left",
+      "notes": "Ember loop frame 3",
+      "extra": false,
+      "durationMs": 180
+    },
+    {
+      "id": "weapon_sword_iron",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "sword silhouette in iron",
+      "extra": false
+    },
+    {
+      "id": "weapon_sword_bronze",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "sword silhouette in bronze",
+      "extra": false
+    },
+    {
+      "id": "weapon_sword_silver",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "sword silhouette in silver",
+      "extra": false
+    },
+    {
+      "id": "weapon_sword_obsidian",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "sword silhouette in obsidian",
+      "extra": false
+    },
+    {
+      "id": "weapon_sword_starsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "sword silhouette in starsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_sword_moonsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "sword silhouette in moonsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_axe_iron",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "axe silhouette in iron",
+      "extra": false
+    },
+    {
+      "id": "weapon_axe_bronze",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "axe silhouette in bronze",
+      "extra": false
+    },
+    {
+      "id": "weapon_axe_silver",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "axe silhouette in silver",
+      "extra": false
+    },
+    {
+      "id": "weapon_axe_obsidian",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "axe silhouette in obsidian",
+      "extra": false
+    },
+    {
+      "id": "weapon_axe_starsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "axe silhouette in starsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_axe_moonsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "axe silhouette in moonsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_spear_iron",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "spear silhouette in iron",
+      "extra": false
+    },
+    {
+      "id": "weapon_spear_bronze",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "spear silhouette in bronze",
+      "extra": false
+    },
+    {
+      "id": "weapon_spear_silver",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "spear silhouette in silver",
+      "extra": false
+    },
+    {
+      "id": "weapon_spear_obsidian",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "spear silhouette in obsidian",
+      "extra": false
+    },
+    {
+      "id": "weapon_spear_starsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "spear silhouette in starsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_spear_moonsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "spear silhouette in moonsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_bow_iron",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "bow silhouette in iron",
+      "extra": false
+    },
+    {
+      "id": "weapon_bow_bronze",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "bow silhouette in bronze",
+      "extra": false
+    },
+    {
+      "id": "weapon_bow_silver",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "bow silhouette in silver",
+      "extra": false
+    },
+    {
+      "id": "weapon_bow_obsidian",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "bow silhouette in obsidian",
+      "extra": false
+    },
+    {
+      "id": "weapon_bow_starsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "bow silhouette in starsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_bow_moonsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "bow silhouette in moonsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_dagger_iron",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "dagger silhouette in iron",
+      "extra": false
+    },
+    {
+      "id": "weapon_dagger_bronze",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "dagger silhouette in bronze",
+      "extra": false
+    },
+    {
+      "id": "weapon_dagger_silver",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "dagger silhouette in silver",
+      "extra": false
+    },
+    {
+      "id": "weapon_dagger_obsidian",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "dagger silhouette in obsidian",
+      "extra": false
+    },
+    {
+      "id": "weapon_dagger_starsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "dagger silhouette in starsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_dagger_moonsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "dagger silhouette in moonsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_staff_iron",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "staff silhouette in iron",
+      "extra": false
+    },
+    {
+      "id": "weapon_staff_bronze",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "staff silhouette in bronze",
+      "extra": false
+    },
+    {
+      "id": "weapon_staff_silver",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "staff silhouette in silver",
+      "extra": false
+    },
+    {
+      "id": "weapon_staff_obsidian",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "staff silhouette in obsidian",
+      "extra": false
+    },
+    {
+      "id": "weapon_staff_starsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "staff silhouette in starsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_staff_moonsteel",
+      "width": 16,
+      "height": 16,
+      "kind": "weapon",
+      "anchor": "bottom-center",
+      "notes": "staff silhouette in moonsteel",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_dawnbrand",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "dawnbrand, distinctive sun ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_winterwake",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "winterwake, distinctive ice ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_tempest_edge",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "tempest_edge, distinctive bolt ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_ashen_vow",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "ashen_vow, distinctive grave ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_hearthcleaver",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "hearthcleaver, distinctive flame ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_glacier_maul",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "glacier_maul, distinctive ice ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_thunderhead",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "thunderhead, distinctive bolt ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_emberfall",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "emberfall, distinctive flame ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_stormsong",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "stormsong, distinctive bolt ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_frostwhisper",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "frostwhisper, distinctive ice ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_cinder_arc",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "cinder_arc, distinctive flame ornament",
+      "extra": false
+    },
+    {
+      "id": "weapon_sig_galewood",
+      "width": 16,
+      "height": 16,
+      "kind": "signature",
+      "anchor": "bottom-center",
+      "notes": "galewood, distinctive thorn ornament",
+      "extra": false
+    },
+    {
+      "id": "overlay_fire",
+      "width": 16,
+      "height": 16,
+      "kind": "overlay",
+      "anchor": "top-left",
+      "notes": "~60% alpha; drawn over base weapon",
+      "extra": false
+    },
+    {
+      "id": "overlay_frost",
+      "width": 16,
+      "height": 16,
+      "kind": "overlay",
+      "anchor": "top-left",
+      "notes": "~60% alpha; drawn over base weapon",
+      "extra": false
+    },
+    {
+      "id": "overlay_storm",
+      "width": 16,
+      "height": 16,
+      "kind": "overlay",
+      "anchor": "top-left",
+      "notes": "~60% alpha; drawn over base weapon",
+      "extra": false
+    },
+    {
+      "id": "overlay_grave",
+      "width": 16,
+      "height": 16,
+      "kind": "overlay",
+      "anchor": "top-left",
+      "notes": "~60% alpha; drawn over base weapon",
+      "extra": false
+    },
+    {
+      "id": "overlay_verdant",
+      "width": 16,
+      "height": 16,
+      "kind": "overlay",
+      "anchor": "top-left",
+      "notes": "~60% alpha; drawn over base weapon",
+      "extra": false
+    },
+    {
+      "id": "overlay_sun",
+      "width": 16,
+      "height": 16,
+      "kind": "overlay",
+      "anchor": "top-left",
+      "notes": "~60% alpha; drawn over base weapon",
+      "extra": false
+    },
+    {
+      "id": "badge_common",
+      "width": 8,
+      "height": 8,
+      "kind": "badge",
+      "anchor": "top-left",
+      "notes": "Unique geometry for color-blind readability",
+      "extra": false
+    },
+    {
+      "id": "badge_uncommon",
+      "width": 8,
+      "height": 8,
+      "kind": "badge",
+      "anchor": "top-left",
+      "notes": "Unique geometry for color-blind readability",
+      "extra": false
+    },
+    {
+      "id": "badge_rare",
+      "width": 8,
+      "height": 8,
+      "kind": "badge",
+      "anchor": "top-left",
+      "notes": "Unique geometry for color-blind readability",
+      "extra": false
+    },
+    {
+      "id": "badge_epic",
+      "width": 8,
+      "height": 8,
+      "kind": "badge",
+      "anchor": "top-left",
+      "notes": "Unique geometry for color-blind readability",
+      "extra": false
+    },
+    {
+      "id": "badge_legendary",
+      "width": 8,
+      "height": 8,
+      "kind": "badge",
+      "anchor": "top-left",
+      "notes": "Unique geometry for color-blind readability",
+      "extra": false
+    },
+    {
+      "id": "badge_flaw",
+      "width": 8,
+      "height": 8,
+      "kind": "badge",
+      "anchor": "top-left",
+      "notes": "Unique geometry for color-blind readability",
+      "extra": false
+    },
+    {
+      "id": "portrait_guardian",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "human guardian variant 0; motif: standard",
+      "extra": false
+    },
+    {
+      "id": "portrait_guardian_1",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "dwarf guardian variant 1; motif: beard",
+      "extra": true
+    },
+    {
+      "id": "portrait_guardian_2",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "elf guardian variant 2; motif: wing",
+      "extra": true
+    },
+    {
+      "id": "portrait_guardian_3",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "orc guardian variant 3; motif: scar",
+      "extra": true
+    },
+    {
+      "id": "portrait_guardian_4",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "dragonkin guardian variant 4; motif: horn",
+      "extra": true
+    },
+    {
+      "id": "portrait_ranger",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "human ranger variant 0; motif: braid",
+      "extra": false
+    },
+    {
+      "id": "portrait_ranger_1",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "elf ranger variant 1; motif: leaf",
+      "extra": true
+    },
+    {
+      "id": "portrait_ranger_2",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "goblin ranger variant 2; motif: hood",
+      "extra": true
+    },
+    {
+      "id": "portrait_ranger_3",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "satyr ranger variant 3; motif: horn",
+      "extra": true
+    },
+    {
+      "id": "portrait_ranger_4",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "lizardfolk ranger variant 4; motif: mask",
+      "extra": true
+    },
+    {
+      "id": "portrait_duelist",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "human duelist variant 0; motif: feather",
+      "extra": false
+    },
+    {
+      "id": "portrait_duelist_1",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "halfling duelist variant 1; motif: bow",
+      "extra": true
+    },
+    {
+      "id": "portrait_duelist_2",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "elf duelist variant 2; motif: curl",
+      "extra": true
+    },
+    {
+      "id": "portrait_duelist_3",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "tiefling duelist variant 3; motif: horn",
+      "extra": true
+    },
+    {
+      "id": "portrait_duelist_4",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "feline duelist variant 4; motif: ear",
+      "extra": true
+    },
+    {
+      "id": "portrait_battlemage",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "human battlemage variant 0; motif: star",
+      "extra": false
+    },
+    {
+      "id": "portrait_battlemage_1",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "dwarf battlemage variant 1; motif: beard",
+      "extra": true
+    },
+    {
+      "id": "portrait_battlemage_2",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "elf battlemage variant 2; motif: moon",
+      "extra": true
+    },
+    {
+      "id": "portrait_battlemage_3",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "tiefling battlemage variant 3; motif: horn",
+      "extra": true
+    },
+    {
+      "id": "portrait_battlemage_4",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "undead battlemage variant 4; motif: mask",
+      "extra": true
+    },
+    {
+      "id": "portrait_warden",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "elf warden variant 0; motif: antler",
+      "extra": false
+    },
+    {
+      "id": "portrait_warden_1",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "dwarf warden variant 1; motif: horn",
+      "extra": true
+    },
+    {
+      "id": "portrait_warden_2",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "orc warden variant 2; motif: root",
+      "extra": true
+    },
+    {
+      "id": "portrait_warden_3",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "dryad warden variant 3; motif: flower",
+      "extra": true
+    },
+    {
+      "id": "portrait_warden_4",
+      "width": 16,
+      "height": 16,
+      "kind": "portrait",
+      "anchor": "top-left",
+      "notes": "beastkin warden variant 4; motif: mask",
+      "extra": true
+    },
+    {
+      "id": "faction_ashclaw_raider",
+      "width": 16,
+      "height": 16,
+      "kind": "monster",
+      "anchor": "bottom-center",
+      "notes": "Faction grunt",
+      "extra": false
+    },
+    {
+      "id": "faction_ashclaw_brute",
+      "width": 16,
+      "height": 16,
+      "kind": "monster",
+      "anchor": "bottom-center",
+      "notes": "Elite has distinctive silhouette",
+      "extra": false
+    },
+    {
+      "id": "faction_hollowbound_shade",
+      "width": 16,
+      "height": 16,
+      "kind": "monster",
+      "anchor": "bottom-center",
+      "notes": "Faction grunt",
+      "extra": false
+    },
+    {
+      "id": "faction_hollowbound_wraith",
+      "width": 16,
+      "height": 16,
+      "kind": "monster",
+      "anchor": "bottom-center",
+      "notes": "Elite has distinctive silhouette",
+      "extra": false
+    },
+    {
+      "id": "faction_embermaw_whelp",
+      "width": 16,
+      "height": 16,
+      "kind": "monster",
+      "anchor": "bottom-center",
+      "notes": "Faction grunt",
+      "extra": false
+    },
+    {
+      "id": "faction_embermaw_drake",
+      "width": 16,
+      "height": 16,
+      "kind": "monster",
+      "anchor": "bottom-center",
+      "notes": "Elite has distinctive silhouette",
+      "extra": false
+    },
+    {
+      "id": "material_iron",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_bronze",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_silver",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_obsidian",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_starsteel",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_moonsteel",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_ember_resin",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_frost_bloom",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_stormglass",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_grave_dust",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_verdant_sap",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_sun_ash",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_binding_salt",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_runestone_shard",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_dragon_oil",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "material_void_ink",
+      "width": 12,
+      "height": 12,
+      "kind": "material",
+      "anchor": "top-left",
+      "notes": "Crafting ingredient",
+      "extra": false
+    },
+    {
+      "id": "blessing_forgefire",
+      "width": 12,
+      "height": 12,
+      "kind": "blessing",
+      "anchor": "top-left",
+      "notes": "Survived-siege reward",
+      "extra": false
+    },
+    {
+      "id": "blessing_tireless_hands",
+      "width": 12,
+      "height": 12,
+      "kind": "blessing",
+      "anchor": "top-left",
+      "notes": "Survived-siege reward",
+      "extra": false
+    },
+    {
+      "id": "blessing_merchants_favor",
+      "width": 12,
+      "height": 12,
+      "kind": "blessing",
+      "anchor": "top-left",
+      "notes": "Survived-siege reward",
+      "extra": false
+    },
+    {
+      "id": "blessing_runic_insight",
+      "width": 12,
+      "height": 12,
+      "kind": "blessing",
+      "anchor": "top-left",
+      "notes": "Survived-siege reward",
+      "extra": false
+    },
+    {
+      "id": "blessing_stalwart_town",
+      "width": 12,
+      "height": 12,
+      "kind": "blessing",
+      "anchor": "top-left",
+      "notes": "Survived-siege reward",
+      "extra": false
+    },
+    {
+      "id": "blessing_hunters_edge",
+      "width": 12,
+      "height": 12,
+      "kind": "blessing",
+      "anchor": "top-left",
+      "notes": "Survived-siege reward",
+      "extra": false
+    },
+    {
+      "id": "blessing_lucky_alloy",
+      "width": 12,
+      "height": 12,
+      "kind": "blessing",
+      "anchor": "top-left",
+      "notes": "Survived-siege reward",
+      "extra": false
+    },
+    {
+      "id": "blessing_guild_patronage",
+      "width": 12,
+      "height": 12,
+      "kind": "blessing",
+      "anchor": "top-left",
+      "notes": "Survived-siege reward",
+      "extra": false
+    },
+    {
+      "id": "icon_nav_forge",
+      "width": 12,
+      "height": 12,
+      "kind": "ui_nav",
+      "anchor": "top-left",
+      "notes": "Monochrome tintable nav icon",
+      "extra": false
+    },
+    {
+      "id": "icon_nav_market",
+      "width": 12,
+      "height": 12,
+      "kind": "ui_nav",
+      "anchor": "top-left",
+      "notes": "Monochrome tintable nav icon",
+      "extra": false
+    },
+    {
+      "id": "icon_nav_town",
+      "width": 12,
+      "height": 12,
+      "kind": "ui_nav",
+      "anchor": "top-left",
+      "notes": "Monochrome tintable nav icon",
+      "extra": false
+    },
+    {
+      "id": "icon_nav_journal",
+      "width": 12,
+      "height": 12,
+      "kind": "ui_nav",
+      "anchor": "top-left",
+      "notes": "Monochrome tintable nav icon",
+      "extra": false
+    },
+    {
+      "id": "icon_nav_gazette",
+      "width": 12,
+      "height": 12,
+      "kind": "ui_nav",
+      "anchor": "top-left",
+      "notes": "Monochrome tintable nav icon",
+      "extra": false
+    },
+    {
+      "id": "icon_nav_legacy",
+      "width": 12,
+      "height": 12,
+      "kind": "ui_nav",
+      "anchor": "top-left",
+      "notes": "Monochrome tintable nav icon",
+      "extra": false
+    },
+    {
+      "id": "icon_energy",
+      "width": 8,
+      "height": 8,
+      "kind": "ui_status",
+      "anchor": "top-left",
+      "notes": "Top status icon",
+      "extra": false
+    },
+    {
+      "id": "icon_gold",
+      "width": 8,
+      "height": 8,
+      "kind": "ui_status",
+      "anchor": "top-left",
+      "notes": "Top status icon",
+      "extra": false
+    },
+    {
+      "id": "icon_integrity",
+      "width": 8,
+      "height": 8,
+      "kind": "ui_status",
+      "anchor": "top-left",
+      "notes": "Top status icon",
+      "extra": false
+    },
+    {
+      "id": "icon_militia",
+      "width": 8,
+      "height": 8,
+      "kind": "ui_status",
+      "anchor": "top-left",
+      "notes": "Top status icon",
+      "extra": false
+    },
+    {
+      "id": "icon_reputation",
+      "width": 8,
+      "height": 8,
+      "kind": "ui_status",
+      "anchor": "top-left",
+      "notes": "Top status icon",
+      "extra": false
+    },
+    {
+      "id": "icon_day",
+      "width": 8,
+      "height": 8,
+      "kind": "ui_status",
+      "anchor": "top-left",
+      "notes": "Top status icon",
+      "extra": false
+    },
+    {
+      "id": "panel_gazette",
+      "width": 24,
+      "height": 24,
+      "kind": "ui_panel",
+      "anchor": "tile",
+      "notes": "9-patch style; 8px frame on all sides",
+      "extra": false
+    },
+    {
+      "id": "panel_journal",
+      "width": 24,
+      "height": 24,
+      "kind": "ui_panel",
+      "anchor": "tile",
+      "notes": "9-patch style; 8px frame on all sides",
+      "extra": false
+    },
+    {
+      "id": "tile_paper",
+      "width": 16,
+      "height": 16,
+      "kind": "ui_tile",
+      "anchor": "tile",
+      "notes": "Subtle paper texture; seamless",
+      "extra": false
+    },
+    {
+      "id": "hero_guardian_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_guardian_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_guardian_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_guardian_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_ranger_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_ranger_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_ranger_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_ranger_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_duelist_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_duelist_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_duelist_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_duelist_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_battlemage_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_battlemage_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_battlemage_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_battlemage_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_warden_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_warden_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_warden_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "hero_warden_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Side view facing right; empty attack hand",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_ashclaw_raider_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_ashclaw_raider_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_ashclaw_raider_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_ashclaw_raider_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_ashclaw_raider_hit",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat hit frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_ashclaw_brute_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_ashclaw_brute_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_ashclaw_brute_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_ashclaw_brute_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_ashclaw_brute_hit",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat hit frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_hollowbound_shade_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_hollowbound_shade_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_hollowbound_shade_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_hollowbound_shade_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_hollowbound_shade_hit",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat hit frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_hollowbound_wraith_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_hollowbound_wraith_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_hollowbound_wraith_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_hollowbound_wraith_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_hollowbound_wraith_hit",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat hit frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_embermaw_whelp_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_embermaw_whelp_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_embermaw_whelp_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_embermaw_whelp_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_embermaw_whelp_hit",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat hit frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_embermaw_drake_idle_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_embermaw_drake_idle_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat idle frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_embermaw_drake_attack_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_embermaw_drake_attack_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat attack frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "monster_embermaw_drake_hit",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "bottom-center",
+      "notes": "Combat hit frame",
+      "extra": false,
+      "durationMs": 120
+    },
+    {
+      "id": "siege_wall",
+      "width": 96,
+      "height": 32,
+      "kind": "siege",
+      "anchor": "tile",
+      "notes": "Siege backdrop 96x32",
+      "extra": false
+    },
+    {
+      "id": "siege_wall_damaged",
+      "width": 96,
+      "height": 32,
+      "kind": "siege",
+      "anchor": "tile",
+      "notes": "Siege backdrop 96x32",
+      "extra": false
+    },
+    {
+      "id": "fx_milestone_0",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "top-left",
+      "notes": "Milestone burst",
+      "extra": false,
+      "durationMs": 100
+    },
+    {
+      "id": "fx_milestone_1",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "top-left",
+      "notes": "Milestone burst",
+      "extra": false,
+      "durationMs": 100
+    },
+    {
+      "id": "fx_milestone_2",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "top-left",
+      "notes": "Milestone burst",
+      "extra": false,
+      "durationMs": 100
+    },
+    {
+      "id": "fx_milestone_3",
+      "width": 16,
+      "height": 16,
+      "kind": "animation",
+      "anchor": "top-left",
+      "notes": "Milestone burst",
+      "extra": false,
+      "durationMs": 100
+    },
+    {
+      "id": "marker_dead",
+      "width": 8,
+      "height": 8,
+      "kind": "marker",
+      "anchor": "top-left",
+      "notes": "Gravestone",
+      "extra": false
+    },
+    {
+      "id": "marker_retired",
+      "width": 8,
+      "height": 8,
+      "kind": "marker",
+      "anchor": "top-left",
+      "notes": "Laurel wreath",
+      "extra": false
+    }
+  ]
+}

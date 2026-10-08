@@ -1,0 +1,186 @@
+package com.tinyblacksmith.core.content
+
+import com.tinyblacksmith.core.model.*
+
+enum class Element { FIRE, FROST, STORM, GRAVE, VERDANT, SUN }
+enum class MaterialCategory { CORE, AUGMENT, CATALYST }
+enum class AffixKind { BENEFICIAL, FLAW }
+
+data class WeaponFamilyDef(
+    val id: WeaponFamilyId,
+    val name: String,
+    val basePower: Int,
+    /** Multiplier applied when a hero of this class wields the family (GDD 4.1 synergy). Missing = offFamilyFit. */
+    val classFit: Map<HeroClassId, Double>,
+    /** Relative contribution to town defense when used by a champion. */
+    val defensiveWeight: Double,
+)
+
+data class MaterialDef(
+    val id: MaterialId,
+    val name: String,
+    val category: MaterialCategory,
+    val tier: Int,
+    val price: Int,
+    val element: Element? = null,
+    /** null = supplier reliably stocks it every day without limit (GDD 5: basic materials always available). */
+    val dailySupplierStock: Int? = null,
+    val flavor: String = "",
+)
+
+data class AffixDef(
+    val id: AffixId,
+    val name: String,
+    val kind: AffixKind,
+    val power: Int,
+    val element: Element? = null,
+    val description: String,
+    /** Multiplier on hero attack power in combat (1.0 = neutral). */
+    val attackMultiplier: Double = 1.0,
+    /** Multiplier on hero defensive power when defending the town. */
+    val defenseMultiplier: Double = 1.0,
+)
+
+data class HeroClassDef(
+    val id: HeroClassId,
+    val name: String,
+    val basePower: Int,
+    val powerPerLevel: Int,
+    val preferredFamilies: List<WeaponFamilyId>,
+    val preferredElement: Element?,
+    val startingGoldMin: Int,
+    val startingGoldMax: Int,
+)
+
+data class TraitDef(
+    val id: TraitId,
+    val name: String,
+    val expeditionWeight: Double = 0.0,
+    val patrolWeight: Double = 0.0,
+    val restWeight: Double = 0.0,
+    val shopWeight: Double = 0.0,
+    /** Scales the price penalty when evaluating shelf items (>1 = stingier). */
+    val priceSensitivity: Double = 1.0,
+    /** Added to element taste for any elemental weapon. */
+    val noveltyTaste: Double = 0.0,
+    val loyaltyGain: Double = 1.0,
+    val combatModifier: Double = 1.0,
+)
+
+data class FactionDef(
+    val id: FactionId,
+    val name: String,
+    val weakTo: Element?,
+    val resists: Element?,
+    val dailyGrowth: Int,
+    val encounterNames: List<String>,
+    val siegeName: String,
+)
+
+/**
+ * DISCOVERY_BONUS = extra journal experiment progress per forge (Journal.recordExperiment); EXCEPTIONAL_CHANCE =
+ * percentage points added to the exceptional roll (Forge.apply); HERO_VISIT_CHANCE = percentage points added to hero
+ * visit chance (Market.resolveShelfVisits).
+ */
+enum class BlessingEffect { QUALITY_BONUS, EXTRA_ENERGY, SALE_GOLD_BONUS, INTEGRITY_RECOVERY, HERO_POWER, DISCOVERY_BONUS, EXCEPTIONAL_CHANCE, HERO_VISIT_CHANCE }
+
+data class BlessingDef(
+    val id: BlessingId,
+    val name: String,
+    val effect: BlessingEffect,
+    val magnitude: Int,
+    val durationDays: Int,
+    val description: String,
+)
+
+/**
+ * MATERIAL_EFFICIENCY = percent chance per level that a forge does not consume its augment (Forge.apply);
+ * STARTING_MATERIALS = extra units per level of every material in the starting kit (GameEngine.newRun);
+ * EXCEPTIONAL_CHANCE = percentage points per level added to the exceptional roll (Forge.apply).
+ */
+enum class UpgradeEffect { STARTING_ENERGY, STARTING_GOLD, QUALITY_BONUS, STARTING_INTEGRITY, STARTING_REPUTATION, MATERIAL_EFFICIENCY, STARTING_MATERIALS, EXCEPTIONAL_CHANCE }
+
+data class UpgradeDef(
+    val id: UpgradeId,
+    val name: String,
+    val effect: UpgradeEffect,
+    val magnitudePerLevel: Int,
+    val maxLevel: Int,
+    val costPerLevel: List<Int>,
+    val description: String,
+)
+
+data class ContentCatalog(
+    val version: Int,
+    val families: List<WeaponFamilyDef>,
+    val materials: List<MaterialDef>,
+    val affixes: List<AffixDef>,
+    val classes: List<HeroClassDef>,
+    val traits: List<TraitDef>,
+    val factions: List<FactionDef>,
+    val blessings: List<BlessingDef>,
+    val upgrades: List<UpgradeDef>,
+    /** Hidden affinity between a core and an augment (positive = good). */
+    val coreAugmentAffinity: Map<Pair<MaterialId, MaterialId>, Int>,
+    /** Affinity between an augment and a weapon family. */
+    val augmentFamilyAffinity: Map<Pair<MaterialId, WeaponFamilyId>, Int>,
+    val firstNames: List<String>,
+    val surnames: List<String>,
+) {
+    val familyById: Map<WeaponFamilyId, WeaponFamilyDef> = families.associateBy { it.id }
+    val materialById: Map<MaterialId, MaterialDef> = materials.associateBy { it.id }
+    val affixById: Map<AffixId, AffixDef> = affixes.associateBy { it.id }
+    val classById: Map<HeroClassId, HeroClassDef> = classes.associateBy { it.id }
+    val traitById: Map<TraitId, TraitDef> = traits.associateBy { it.id }
+    val factionById: Map<FactionId, FactionDef> = factions.associateBy { it.id }
+    val blessingById: Map<BlessingId, BlessingDef> = blessings.associateBy { it.id }
+    val upgradeById: Map<UpgradeId, UpgradeDef> = upgrades.associateBy { it.id }
+
+    fun family(id: WeaponFamilyId) = familyById[id] ?: error("Unknown family ${id.value}")
+    fun material(id: MaterialId) = materialById[id] ?: error("Unknown material ${id.value}")
+    fun affix(id: AffixId) = affixById[id] ?: error("Unknown affix ${id.value}")
+    fun heroClass(id: HeroClassId) = classById[id] ?: error("Unknown class ${id.value}")
+    fun trait(id: TraitId) = traitById[id] ?: error("Unknown trait ${id.value}")
+    fun faction(id: FactionId) = factionById[id] ?: error("Unknown faction ${id.value}")
+    fun blessing(id: BlessingId) = blessingById[id] ?: error("Unknown blessing ${id.value}")
+    fun upgrade(id: UpgradeId) = upgradeById[id] ?: error("Unknown upgrade ${id.value}")
+
+    fun materials(category: MaterialCategory) = materials.filter { it.category == category }
+
+    /** Validates every cross reference. Empty list means valid. */
+    fun validate(): List<String> {
+        val problems = mutableListOf<String>()
+        fun <T> dup(name: String, ids: List<T>) {
+            val d = ids.groupBy { it }.filterValues { it.size > 1 }.keys
+            if (d.isNotEmpty()) problems += "Duplicate $name ids: $d"
+        }
+        dup("family", families.map { it.id }); dup("material", materials.map { it.id })
+        dup("affix", affixes.map { it.id }); dup("class", classes.map { it.id })
+        dup("trait", traits.map { it.id }); dup("faction", factions.map { it.id })
+        dup("blessing", blessings.map { it.id }); dup("upgrade", upgrades.map { it.id })
+        families.forEach { f -> f.classFit.keys.forEach { c -> if (c !in classById) problems += "Family ${f.id.value} fit references unknown class ${c.value}" } }
+        classes.forEach { c -> c.preferredFamilies.forEach { f -> if (f !in familyById) problems += "Class ${c.id.value} prefers unknown family ${f.value}" } }
+        coreAugmentAffinity.keys.forEach { (c, a) ->
+            if (materialById[c]?.category != MaterialCategory.CORE) problems += "Affinity core ${c.value} is not a core"
+            if (materialById[a]?.category != MaterialCategory.AUGMENT) problems += "Affinity augment ${a.value} is not an augment"
+        }
+        augmentFamilyAffinity.keys.forEach { (a, f) ->
+            if (materialById[a]?.category != MaterialCategory.AUGMENT) problems += "Affinity augment ${a.value} is not an augment"
+            if (f !in familyById) problems += "Affinity family ${f.value} unknown"
+        }
+        upgrades.forEach { u -> if (u.costPerLevel.size != u.maxLevel) problems += "Upgrade ${u.id.value} cost list must have maxLevel entries" }
+        if (materials(MaterialCategory.CORE).isEmpty()) problems += "No core materials"
+        if (materials(MaterialCategory.AUGMENT).isEmpty()) problems += "No augment materials"
+        if (families.isEmpty()) problems += "No weapon families"
+        if (classes.isEmpty()) problems += "No hero classes"
+        if (factions.isEmpty()) problems += "No factions"
+        if (firstNames.isEmpty() || surnames.isEmpty()) problems += "Name pools empty"
+        // Only elements an augment can actually imbue need an affix (the slice catalog uses three of the six).
+        materials.mapNotNull { it.element }.distinct().forEach { e ->
+            if (affixes.none { it.kind == AffixKind.BENEFICIAL && it.element == e }) problems += "No beneficial affix for element $e"
+        }
+        if (affixes.none { it.kind == AffixKind.FLAW }) problems += "No flaw affixes"
+        if (blessings.size < 3) problems += "Need at least 3 blessings to offer a choice"
+        return problems
+    }
+}

@@ -1,0 +1,1200 @@
+{
+ "anvil": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 109,
+  "height": 72
+ },
+ "badge_common": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 24,
+  "height": 24
+ },
+ "badge_epic": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 24,
+  "height": 24
+ },
+ "badge_flaw": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 24,
+  "height": 24
+ },
+ "badge_legendary": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 24,
+  "height": 24
+ },
+ "badge_rare": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 24,
+  "height": 24
+ },
+ "badge_uncommon": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 24,
+  "height": 24
+ },
+ "blessing_forgefire": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "blessing_guild_patronage": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "blessing_hunters_edge": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "blessing_lucky_alloy": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "blessing_merchants_favor": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "blessing_runic_insight": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "blessing_stalwart_town": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "blessing_tireless_hands": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "ember_0": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 32,
+  "height": 32
+ },
+ "ember_1": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 32,
+  "height": 32
+ },
+ "ember_2": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 32,
+  "height": 32
+ },
+ "ember_3": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 32,
+  "height": 32
+ },
+ "faction_ashclaw_alt_0": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 64,
+  "height": 64
+ },
+ "faction_ashclaw_alt_1": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 64,
+  "height": 64
+ },
+ "faction_ashclaw_brute": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 112,
+  "height": 112
+ },
+ "faction_ashclaw_raider": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 80,
+  "height": 80
+ },
+ "faction_embermaw_alt_0": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 64,
+  "height": 64
+ },
+ "faction_embermaw_alt_1": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 64,
+  "height": 64
+ },
+ "faction_embermaw_drake": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 112,
+  "height": 112
+ },
+ "faction_embermaw_whelp": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 80,
+  "height": 80
+ },
+ "faction_hollowbound_alt_0": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 64,
+  "height": 64
+ },
+ "faction_hollowbound_alt_1": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 64,
+  "height": 64
+ },
+ "faction_hollowbound_shade": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 80,
+  "height": 80
+ },
+ "faction_hollowbound_wraith": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "width": 112,
+  "height": 112
+ },
+ "furnace_cold": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 77,
+  "height": 96
+ },
+ "furnace_hot": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 80,
+  "height": 96
+ },
+ "furnace_warm": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 79,
+  "height": 96
+ },
+ "fx_milestone_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "top-left",
+  "kind": "animation",
+  "durationMs": 100,
+  "notes": "Milestone burst"
+ },
+ "fx_milestone_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "top-left",
+  "kind": "animation",
+  "durationMs": 100,
+  "notes": "Milestone burst"
+ },
+ "fx_milestone_2": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "top-left",
+  "kind": "animation",
+  "durationMs": 100,
+  "notes": "Milestone burst"
+ },
+ "fx_milestone_3": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "top-left",
+  "kind": "animation",
+  "durationMs": 100,
+  "notes": "Milestone burst"
+ },
+ "hero_battlemage_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_battlemage_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_battlemage_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_battlemage_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_duelist_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_duelist_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_duelist_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_duelist_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_guardian_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_guardian_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_guardian_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_guardian_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_ranger_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_ranger_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_ranger_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_ranger_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_warden_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_warden_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_warden_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "hero_warden_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Side view facing right; empty attack hand"
+ },
+ "icon_day": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 24,
+  "height": 24
+ },
+ "icon_energy": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 24,
+  "height": 24
+ },
+ "icon_gold": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 24,
+  "height": 24
+ },
+ "icon_integrity": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 24,
+  "height": 24
+ },
+ "icon_militia": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 24,
+  "height": 24
+ },
+ "icon_nav_forge": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 40,
+  "height": 40
+ },
+ "icon_nav_gazette": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 40,
+  "height": 40
+ },
+ "icon_nav_journal": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 40,
+  "height": 40
+ },
+ "icon_nav_legacy": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 40,
+  "height": 40
+ },
+ "icon_nav_market": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 40,
+  "height": 40
+ },
+ "icon_nav_town": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 40,
+  "height": 40
+ },
+ "icon_reputation": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 24,
+  "height": 24
+ },
+ "marker_dead": {
+  "sheet": "pack:New folder",
+  "width": 8,
+  "height": 8,
+  "anchor": "top-left",
+  "kind": "marker",
+  "notes": "Gravestone"
+ },
+ "marker_retired": {
+  "sheet": "pack:New folder",
+  "width": 8,
+  "height": 8,
+  "anchor": "top-left",
+  "kind": "marker",
+  "notes": "Laurel wreath"
+ },
+ "material_binding_salt": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_bronze": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_dragon_oil": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_ember_resin": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_frost_bloom": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_grave_dust": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_iron": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_moonsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_obsidian": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_runestone_shard": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_silver": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_starsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_stormglass": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_sun_ash": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_verdant_sap": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "material_void_ink": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 48,
+  "height": 48
+ },
+ "monster_ashclaw_brute_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_ashclaw_brute_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_ashclaw_brute_hit": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat hit frame"
+ },
+ "monster_ashclaw_brute_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_ashclaw_brute_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_ashclaw_raider_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_ashclaw_raider_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_ashclaw_raider_hit": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat hit frame"
+ },
+ "monster_ashclaw_raider_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_ashclaw_raider_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_embermaw_drake_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_embermaw_drake_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_embermaw_drake_hit": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat hit frame"
+ },
+ "monster_embermaw_drake_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_embermaw_drake_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_embermaw_whelp_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_embermaw_whelp_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_embermaw_whelp_hit": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat hit frame"
+ },
+ "monster_embermaw_whelp_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_embermaw_whelp_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_hollowbound_shade_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_hollowbound_shade_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_hollowbound_shade_hit": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat hit frame"
+ },
+ "monster_hollowbound_shade_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_hollowbound_shade_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_hollowbound_wraith_attack_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_hollowbound_wraith_attack_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat attack frame"
+ },
+ "monster_hollowbound_wraith_hit": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat hit frame"
+ },
+ "monster_hollowbound_wraith_idle_0": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "monster_hollowbound_wraith_idle_1": {
+  "sheet": "pack:New folder",
+  "width": 16,
+  "height": 16,
+  "anchor": "bottom-center",
+  "kind": "animation",
+  "durationMs": 120,
+  "notes": "Combat idle frame"
+ },
+ "overlay_fire": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "overlay_frost": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "overlay_grave": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "overlay_storm": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "overlay_sun": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "overlay_verdant": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "panel_gazette": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 256,
+  "height": 126
+ },
+ "panel_journal": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 256,
+  "height": 163
+ },
+ "portrait_battlemage_0": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_battlemage_1": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_battlemage_2": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_battlemage_3": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_battlemage_4": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_duelist_0": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_duelist_1": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_duelist_2": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_duelist_3": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_duelist_4": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_guardian_0": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_guardian_1": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_guardian_2": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_guardian_3": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_guardian_4": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_ranger_0": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_ranger_1": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_ranger_2": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_ranger_3": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_ranger_4": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_warden_0": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_warden_1": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_warden_2": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_warden_3": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "portrait_warden_4": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+  "width": 64,
+  "height": 64
+ },
+ "shelf": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 122,
+  "height": 64
+ },
+ "siege_wall": {
+  "sheet": "pack:New folder",
+  "width": 96,
+  "height": 32,
+  "anchor": "tile",
+  "kind": "siege",
+  "notes": "Siege backdrop 96x32"
+ },
+ "siege_wall_damaged": {
+  "sheet": "pack:New folder",
+  "width": 96,
+  "height": 32,
+  "anchor": "tile",
+  "kind": "siege",
+  "notes": "Siege backdrop 96x32"
+ },
+ "tile_floor": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 64,
+  "height": 32
+ },
+ "tile_paper": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "width": 64,
+  "height": 64
+ },
+ "tile_wall": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 64,
+  "height": 64
+ },
+ "tool_rack": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "width": 54,
+  "height": 88
+ },
+ "weapon_axe_bronze": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_axe_iron": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_axe_moonsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_axe_obsidian": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_axe_silver": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_axe_starsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_bow_bronze": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_bow_iron": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_bow_moonsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_bow_obsidian": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_bow_silver": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_bow_starsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_dagger_bronze": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_dagger_iron": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_dagger_moonsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_dagger_obsidian": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_dagger_silver": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_dagger_starsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_spear_bronze": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_spear_iron": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_spear_moonsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_spear_obsidian": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_spear_silver": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_spear_starsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_staff_bronze": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_staff_iron": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_staff_moonsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_staff_obsidian": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_staff_silver": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_staff_starsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_sword_bronze": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_sword_iron": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_sword_moonsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_sword_obsidian": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_sword_silver": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ },
+ "weapon_sword_starsteel": {
+  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+  "width": 64,
+  "height": 64
+ }
+}
