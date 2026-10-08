@@ -3,6 +3,7 @@ package com.tinyblacksmith.core.engine
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.crafting.Journal
+import com.tinyblacksmith.core.crafting.SignatureCatalog
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
@@ -76,6 +77,12 @@ object WorldEvents {
         val j = ctx.legacy.journal
         val experiments = if (state == KnowledgeState.UNDERSTOOD) ctx.config.experimentsToUnderstand else maxOf(1, j.experiments[key] ?: 0)
         ctx.legacy = ctx.legacy.copy(journal = j.copy(interactions = j.interactions + (key to state), experiments = j.experiments + (key to experiments)))
+    }
+
+    /** Signatures the active catalog can forge whose journal entry is still blank (catalog order, so picks are deterministic). */
+    private fun unknownSignatures(ctx: ResolutionContext) = SignatureCatalog.all.filter { s ->
+        s.familyId in ctx.content.familyById && s.coreId in ctx.content.materialById && s.augmentId in ctx.content.materialById &&
+            (s.catalystId == null || s.catalystId in ctx.content.materialById) && ctx.legacy.journal.state(s.journalKey) == KnowledgeState.UNKNOWN
     }
 
     private fun hasFaction(id: String): (ResolutionContext) -> Boolean = { ctx -> ctx.factions.containsKey(FactionId(id)) }
@@ -276,7 +283,20 @@ object WorldEvents {
             },
             story = "A wandering master smith shared a trade secret: {subject} is {label}.",
         ),
-        // 20 Strange Weapon Fragment (signature clue) is not implemented: signature recipes live in crafting (other owner).
+        // 20
+        WorldEventDef(
+            id = "weapon_fragment", name = "Strange Weapon Fragment", weight = 1.5, eligibility = { unknownSignatures(it).isNotEmpty() }, maxPerRun = 2, cooldownDays = 5,
+            apply = { ctx ->
+                val sig = ctx.rng(RngStream.EVENTS).pick(unknownSignatures(ctx))
+                val j = ctx.legacy.journal
+                ctx.legacy = ctx.legacy.copy(journal = j.copy(interactions = j.interactions + (sig.journalKey to KnowledgeState.OBSERVED)))
+                for (id in listOf(sig.coreId, sig.augmentId)) ctx.materials[id] = (ctx.materials[id] ?: 0) + 1
+                val subject = Journal.subjectName(ctx.content, sig.journalKey)
+                ctx.emit(EventType.DISCOVERY, 3, "Journal: $subject — ${Journal.hint(ctx.legacy.journal, ctx.content, sig.journalKey)}.", data = mapOf("key" to sig.journalKey))
+                WorldEventOutcome(mapOf("subject" to subject, "key" to sig.journalKey))
+            },
+            story = "A strange weapon fragment was dug from the river mud; melted down it proved to be {subject}, worked by hands that knew something more.",
+        ),
         // 21
         WorldEventDef(
             id = "famous_blade", name = "A Famous Blade Returns", weight = 1.0, eligibility = { it.legacy.legendBoard.isNotEmpty() }, maxPerRun = 1, cooldownDays = 0,

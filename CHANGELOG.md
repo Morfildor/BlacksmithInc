@@ -7,6 +7,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- The remaining 12 signature recipes (spear, dagger, staff) for launch content, so all 24 exist; every core,
+  element and catalyst now appears in at least one recipe.
+- World event "Strange Weapon Fragment": reveals one unknown signature recipe in the journal (observed, with its
+  descriptive wants) and leaves one of its core and augment at the forge; the 25th scripted event.
+
 ### Changed
 - Weapons are drawn from the artist's weapon master sheet: every family has an element row and eight visual levels
   (core tier plus epic/legendary bonus); the forge preview shows the plain base weapon until an augment is chosen.

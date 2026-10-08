@@ -9,7 +9,10 @@ import com.tinyblacksmith.core.TestSupport.quickSword
 import com.tinyblacksmith.core.TestSupport.run
 import com.tinyblacksmith.core.TestSupport.withMaterials
 import com.tinyblacksmith.core.battle.Battle
+import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.content.SliceContent
+import com.tinyblacksmith.core.crafting.Journal as JournalRules
+import com.tinyblacksmith.core.crafting.SignatureCatalog
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.Invariants
@@ -76,7 +79,7 @@ class WorldEventsAndGenerationsTest {
     fun supplyAndTownEventsApplyTheirEffects() {
         val s = engine.newRun(LegacyProfile(), 3)
         for (id in listOf("ore_merchant", "caravan_delayed", "merchant_festival", "abandoned_mine", "noble_commission", "new_adventurers",
-            "veteran_returns", "raider_encampment", "successful_patrol", "border_ambush", "ancient_notes", "mysterious_alloy", "forgotten_shrine")) {
+            "veteran_returns", "raider_encampment", "successful_patrol", "border_ambush", "ancient_notes", "mysterious_alloy", "forgotten_shrine", "weapon_fragment")) {
             assertTrue(eligible(s, id), "$id eligible on a fresh run")
         }
         for (id in listOf("restless_graves", "volcanic_tremors", "heroic_inheritance", "wandering_master", "collector", "ballad")) {
@@ -130,6 +133,46 @@ class WorldEventsAndGenerationsTest {
 
         val ballad = fire(s.copy(milestones = setOf("FIRST_SALE")), "ballad")
         assertEquals(engine.config.balladReputation, ballad.reputation - s.reputation)
+    }
+
+    @Test
+    fun strangeWeaponFragmentRevealsASignatureRecipeDeterministically() {
+        val s = engine.newRun(LegacyProfile(), 5)
+        val after = fire(s, "weapon_fragment")
+        val record = after.events.last { it.type == EventType.WORLD_EVENT }
+        val key = record.data.getValue("key")
+        val def = SignatureCatalog.byId.getValue(key.removePrefix("sig:"))
+        assertTrue(def.familyId in engine.content.familyById, "only signatures the active catalog can forge")
+        assertEquals(KnowledgeState.OBSERVED, after.legacy.journal.state(key))
+        assertEquals(1, after.legacy.journal.interactions.size, "one clue per fragment")
+        assertEquals(1, after.materials.getValue(def.coreId) - (s.materials[def.coreId] ?: 0))
+        assertEquals(1, after.materials.getValue(def.augmentId) - (s.materials[def.augmentId] ?: 0))
+        assertEquals(s.discoveriesThisRun, after.discoveriesThisRun, "a clue is not a discovery")
+        val subject = JournalRules.subjectName(engine.content, key)
+        assertTrue(record.text.contains(subject), record.text)
+        val clue = after.events.single { it.type == EventType.DISCOVERY && it.data["key"] == key }
+        assertTrue(clue.text.contains("something more") && !clue.text.contains('%'), clue.text)
+        val hint = JournalRules.hint(after.legacy.journal, engine.content, key)
+        assertTrue(hint != "Unknown" && !hint.contains('%') && !hint.contains(def.name), hint)
+
+        // Same state, same pick.
+        val again = fire(s, "weapon_fragment")
+        assertEquals(after.events, again.events)
+        assertEquals(after.legacy, again.legacy)
+
+        // Nothing left to reveal: ineligible.
+        val allKnown = LegacyProfile(journal = Journal(interactions = SignatureCatalog.all.associate { it.journalKey to KnowledgeState.OBSERVED }))
+        assertFalse(eligible(engine.newRun(allKnown, 5), "weapon_fragment"))
+
+        // Under launch content the pool covers all six families.
+        val launch = GameEngine(content = LaunchContent.catalog, config = engine.config)
+        val keys = mutableSetOf<String>()
+        for (seed in 1L..40L) {
+            val c = ResolutionContext(launch.newRun(LegacyProfile(), seed), launch.content, launch.config)
+            keys += WorldEvents.fire(c, WorldEvents.byId("weapon_fragment")).data.getValue("key")
+            assertEquals(emptyList(), Invariants.check(c.toState(), launch.config))
+        }
+        assertTrue(keys.map { SignatureCatalog.byId.getValue(it.removePrefix("sig:")).familyId }.toSet().size >= 4, "spread across families: $keys")
     }
 
     @Test
@@ -216,6 +259,7 @@ class WorldEventsAndGenerationsTest {
             seen += counts.keys
         }
         assertTrue(seen.size >= 12, "variety across 200 runs: $seen")
+        assertTrue("weapon_fragment" in seen, "the fragment turns up in seeded runs: $seen")
     }
 
     @Test
