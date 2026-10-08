@@ -7,6 +7,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- The remaining 12 signature recipes (spear, dagger, staff) for launch content, so all 24 exist; every core,
+  element and catalyst now appears in at least one recipe.
+- World event "Strange Weapon Fragment": reveals one unknown signature recipe in the journal (observed, with its
+  descriptive wants) and leaves one of its core and augment at the forge; the 25th scripted event.
+
 ### Changed
 - Launch content is the engine default (`GameEngine()` now builds on `LaunchContent`; `SliceContent` stays for
   slice-specific tests and `--content slice` in the simulator).
@@ -16,6 +22,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   against the most pressing faction instead of the first by ID.
 - Simulator: `--content launch|slice`, `--rarityTable [N]` (rarity per core x augment x risk through the real forge
   path), `--impactPolicy`, forge-damage overrides; the RANDOM policy only picks materials it can afford.
+- Saves stay bounded over long runs: End Day now compacts the event log, keeping full records for the last
+  30 days (`BalanceConfig.eventRetentionDays`) and history-grade events (sieges, deaths, retirements, guilds,
+  signatures, milestones, world events, weapon fates) for the whole run. Gameplay, Gazette headlines for the
+  window and the save schema are unchanged; older Gazette days show only the retained headlines.
 - Weapons are drawn from the artist's weapon master sheet: every family has an element row and eight visual levels
   (core tier plus epic/legendary bonus); the forge preview shows the plain base weapon until an augment is chosen.
   The old per-core recolours and element auras are gone.

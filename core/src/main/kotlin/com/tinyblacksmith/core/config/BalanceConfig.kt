@@ -168,6 +168,8 @@ data class BalanceConfig(
     val guildFameThreshold: Int = 3,
     /** When a dead hero's weapon is not recovered, chance that monsters seize it (else plain loss). */
     val weaponSeizureChance: Double = 0.5,
+    // --- Event-log compaction (GDD 13.3): full records for the last N days; rare history-grade types are kept forever. 0 = never compact. ---
+    val eventRetentionDays: Int = 30,
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

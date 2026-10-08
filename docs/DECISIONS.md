@@ -10,8 +10,8 @@ Tags: **LOCKED** (GDD requirement, implemented as stated) · **PROPOSED** (GDD s
   Kotlin, and opting out (`android.builtInKotlin=false` + KGP 2.2.21) crashes on AGP 9.3.3's removed `BaseExtension`,
   so neither older path works; KSP ≥ 2.3 is required with AGP 9.
 - Saves are a versioned JSON envelope (kotlinx.serialization) stored as one Room row for the run and one for the
-  legacy profile, written in a single `@Transaction`. Event log is embedded in the run (runs are short); compaction
-  of mundane events is a P7 task once sizes are measured.
+  legacy profile, written in a single `@Transaction`. Event log is embedded in the run and compacted at End Day
+  (see "Event-log compaction" below).
 - `GameEngine` is a class holding `ContentCatalog` + `BalanceConfig`; `ResolutionContext` is a mutable scratch
   copy used only inside one command, so the public boundary stays immutable.
 - End Day idempotence: command ID = `"<runId>:day<N>"`; processed IDs and the last `DayResolution` are stored in
@@ -90,11 +90,11 @@ bot forging ~3 items/day; it is not a market defect.
   element affix at −3 quality) and ETCH (+1 affix slot, more defects). Quench is deliberately a trade, not the GDD's
   literal "guarantee the element affix when a slot exists", which `Forge.apply` already did.
 - World events are a weighted daily pool (`engine/WorldEvents.kt`, one pick per day at 30 %, eligibility, cooldown,
-  max-per-run); 23 of the 25 GDD events are in the pool, Guild Founded and Champion Retirement are deterministic
-  rules in step 8, Strange Weapon Fragment is not built. Retirement at level 8 or 10 victories (15 %/day), guild at
+  max-per-run); 22 of the 25 GDD events were in the pool, Guild Founded and Champion Retirement are deterministic
+  rules in step 8, Strange Weapon Fragment came later (see below). Retirement at level 8 or 10 victories (15 %/day), guild at
   fame 3, every retiree mentors a newcomer who inherits the retiree's weapons (one-owner invariant).
-- Events are never compacted in saves (GDD 15.1 forbids rewriting histories); the simulator trims its own copy
-  for soak runs. Save growth is a P7 item (see PROGRESS).
+- Events were not compacted in P6; the engine policy below replaced that in P7. The simulator's own trimming hook
+  (`SimulationDriver.eventRetentionDays`, type-blind) is still used by the 5,000-day soak and is independent of it.
 - Invariant check for "one equipped weapon per hero" is a single pass over weapons instead of heroes × weapons.
 - `BalanceConfig.version` stays 1: fields were only added with defaults; every pre-existing value is unchanged.
 - `GameEngine.RULES_VERSION` is held at 1 until the first public build even though P6 changed RNG draw order
@@ -221,6 +221,46 @@ down to ~3 gold on top-tier cores, Family Savings measures +5 median / +1.4 mean
 the GDD values (+1 energy, +100 gold per level); the honest next lever is a harness purchasing rule (buy the best
 affordable core), which would move every baseline and is left for the next balance review.
 
+## Event-log compaction (2026-10-08, session 3, ENGINEERING)
+GDD 13.3 asks to "compact ordinary events and retain rare milestones"; 15.1's "migration does not mutate histories"
+is honoured because the save schema is unchanged (still v1) and no stored record is rewritten, only dropped by a
+rule that runs inside End Day. Audit of every reader of `GameState.events` and the other append-only lists:
+
+| Reader | Needs |
+|---|---|
+| `GameEngine.endDay` → `DayResolution` (events, headlines, visits, replays) | Today's events only (`ctx.newEvents`); never reads `state.events` |
+| `GameState.lastResolution` (day report dialog, Market panel visits, End Day retry) | One day, replaced daily; bounded by construction |
+| `GazettePanel` (`InfoPanels.kt`): every distinct day → `Gazette.headlines(eventsForDay(day))` | Full records for recent days; older days show only the retained history-grade headlines, days with none vanish from the archive (intended) |
+| `Legacy.closeRun` (legends, lineage) | `Weapon.history` SOLD/COMMISSION owners, `Weapon.fame/kills`, `Hero.fame/fate` — not events |
+| `WorldEvents` (famous blade, descendant, inheritance, cooldowns) | `legacy.legendBoard`/`lineages`, `Weapon.history` LOST/SEIZED, `eventCounters`/`eventLastDay` — not events |
+| Milestones, siege tallies, discoveries | `milestones` set, `Town.siegesSurvived/Lost`, `discoveriesThisRun`, `Journal` — not events |
+| Simulator (`RunStats`, perf `events=`) | `lastResolution.events` for sales; `events.size` as a size probe only |
+| Tests (`WorldEventsAndGenerationsTest` 200-seed counter reconciliation, signature counts, FORGE_DESTROYED at run end) | `WORLD_EVENT` and `SIGNATURE_DISCOVERED` for the whole run; today's events |
+
+No gameplay rule reads past events, so compaction cannot change outcomes; it only bounds the save and the
+Gazette archive. `legendBoard` (20) and `lineages` (10) were already bounded. `Weapon.history` (VICTORY per
+fight, SIEGE per siege) is left alone: its readers need it, it is per-weapon, and its writers live in files owned
+by other agents; a 400-day forced-survival run ends with 1,766 history entries across 926 weapons, so it is
+the next list to watch, not a problem today.
+
+Policy (`persistence/EventCompaction.kt`, called once in `GameEngine.endDay` after the Gazette is built, before the
+new morning; `BalanceConfig.eventRetentionDays = 30`, 0 disables): keep every record of the last 30 days, keep
+forever RUN_STARTED, HERO_ARRIVED, HERO_DIED, HERO_RETIRED, GUILD_FOUNDED, HERO_MENTORED, SIEGE_WON/LOST,
+FORGE_DESTROYED, SIGNATURE_DISCOVERED, MILESTONE, LEGEND_RECORDED, WORLD_EVENT, ARTIFACT_RETURNED,
+WEAPON_STOLEN/INHERITED/RECOVERED/LOST; drop the rest (forged/listed/sold/equipped, rest/patrol/expedition,
+wounded/leveled, commissions, pressure, warnings, damage/recovery, blessings, discovery clues), all of which are
+already folded into `Weapon`/`Hero`/`Town`/`Journal` fields. Daily compaction equals one filter at the final End
+Day, so a seed replays identically with or without it (`EventCompactionTest`: 400-day paired run, state equal
+except `events`). Runs of 30 days or fewer never compact; longer runs lose only ordinary records older than 30 days.
+
+Measured (`:core:simulate --runs 200 --seed 1 --perf`, forced survival, 1,000 days, JVM): before p50 0.37 ms /
+p95 0.91 ms / max 7.52 ms, events=13,275 at the end; after p50 0.38 ms / p95 0.89 ms / max 2.48 ms,
+events=1,834. 400-day paired test: 860 compacted vs 5,705 unbounded records (486 retained from
+before the window: WEAPON_INHERITED 185, WORLD_EVENT 117, SIEGE_WON 74, HERO_RETIRED 29, HERO_MENTORED 29,
+HERO_DIED 12, GUILD_FOUNDED 11, HERO_ARRIVED 9, WEAPON_RECOVERED 9, MILESTONE 7, the rest <= 2). The encoded
+save shrank from 2.01 MB to 0.98 MB; weapons (926, with histories) now dominate a 400-day save. If the retained
+set ever needs trimming, WEAPON_INHERITED (one per weapon per retirement) is the lever.
+
 ## Art sources (2026-10-08, session 3)
 - The pixel artist's V2 pack (200 true 1x sprites) and the AI concept sheets (high-resolution pseudo-pixel art)
   both exist in `Pixel art assets/`. At phone display sizes (48–72 dp icons, a 100 dp scene strip) the concept
@@ -237,6 +277,23 @@ affordable core), which would move every baseline and is left for the next balan
   core tier (iron 1 … moonsteel 6) + 1 for epic + 2 for legendary, clamped to 8; the preview shows the "base" row
   until an augment is chosen. The choice is in `Sprites.weaponLevel` and reversible. Cost: 336 PNGs at 56 px,
   about 2.5 MB of drawables (fine for a premium title; pngquant is an option if the APK ever matters).
+
+## Signatures 13–24 and the fragment event (2026-10-08, session 3)
+- `SignatureCatalog` now holds all 24 PROPOSED recipes, keyed by `LaunchContent` IDs (identical to the slice IDs
+  for shared content; spear/dagger/staff recipes are unreachable under `SliceContent` because Forge validation
+  rejects unknown families). Lookup by family+core+augment is a map. The 12 new recipes, by family:
+  spear Thornwall (iron+verdant, salt, q50), Hoarfrost Pike (moonsteel+frost, no catalyst, safe, q70), Sunlance
+  (starsteel+sun, dragon oil, reckless, q75), Gravewarden (bronze+grave, runestone, q60); dagger Nightletter
+  (bronze+grave, void ink, q60), Sparkfang (silver+storm, no catalyst, reckless, q60), Emberneedle (obsidian+ember,
+  salt, q55), Rimeshard (iron+frost, runestone, safe, q50); staff Noonward (starsteel+sun, void ink, q75),
+  Greenheart (bronze+verdant, no catalyst, balanced, q55), Stormcaller (silver+storm, runestone, q65), Mourning Rod
+  (obsidian+grave, dragon oil, safe, q65). Each grants its element affix plus one neutral affix and +4…+9 power.
+  Floors sit a few points under the pre-retune median quality of the recipe (the six "excellent affinity" pairs
+  carry the tier-4+ recipes); re-check reachability (`everyLaunchSignatureIsReachable…`) after the quality retune.
+- Strange Weapon Fragment (GDD event 20, "signature clue"): weight 1.5, max 2 per run, cooldown 5, eligible while
+  the active catalog has a signature whose journal entry is UNKNOWN. It sets that entry to OBSERVED (the journal
+  then shows the base recipe and the descriptive "wants" hint, never the condition itself), adds one of the
+  recipe's core and one of its augment, and emits a DISCOVERY record plus the Gazette story. No new state fields.
 
 ## SLICE reductions still in force
 - Default catalog is now `LaunchContent` (balance v2 above); `SliceContent` remains only for slice-specific tests

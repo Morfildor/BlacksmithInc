@@ -4,11 +4,16 @@ import com.tinyblacksmith.core.TestSupport.endDayAccepted
 import com.tinyblacksmith.core.TestSupport.engine
 import com.tinyblacksmith.core.TestSupport.forgeAccepted
 import com.tinyblacksmith.core.TestSupport.withMaterials
+import com.tinyblacksmith.core.content.Element
+import com.tinyblacksmith.core.content.LaunchContent
+import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.content.SliceContent
 import com.tinyblacksmith.core.crafting.Journal as JournalRules
 import com.tinyblacksmith.core.crafting.SignatureCatalog
+import com.tinyblacksmith.core.crafting.SignatureDef
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
+import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.legacy.LegacyOutcome
@@ -26,18 +31,92 @@ class SignatureAndTechniqueTest {
 
     private fun fresh(seed: Long, legacy: LegacyProfile = LegacyProfile()) = engine.newRun(legacy, seed).withMaterials().copy(energy = 100)
 
+    /** Launch engine with the signature roll forced, so reachability depends only on the recipe, conditions and quality floor. */
+    private val launch = GameEngine(content = LaunchContent.catalog, config = engine.config.copy(signatureBaseChance = 1.0, signatureMaxChance = 1.0))
+
+    private fun freshLaunch(seed: Long, e: GameEngine = launch) =
+        e.newRun(LegacyProfile(), seed).copy(materials = LaunchContent.catalog.materials.associate { it.id to 50 }, energy = 100)
+
+    private fun exactCommand(def: SignatureDef) =
+        Command.Forge(ForgeMode.ADVANCED, def.familyId, def.coreId, def.augmentId, def.catalystId, def.risk ?: Risk.BALANCED)
+
     @Test
-    fun catalogIsConsistentWithSliceContent() {
-        val content = SliceContent.catalog  // the 12 slice recipes; launch families get theirs in P7
-        assertEquals(12, SignatureCatalog.all.size)
+    fun catalogIsConsistentWithLaunchContent() {
+        val content = LaunchContent.catalog
+        assertEquals(24, SignatureCatalog.all.size)
         assertEquals(SignatureCatalog.all.size, SignatureCatalog.all.map { it.id }.toSet().size, "ids unique")
+        assertEquals(SignatureCatalog.all.size, SignatureCatalog.all.map { it.name }.toSet().size, "names unique")
         assertEquals(SignatureCatalog.all.size, SignatureCatalog.all.map { Triple(it.familyId, it.coreId, it.augmentId) }.toSet().size, "one signature per recipe")
-        for (f in content.families) assertEquals(4, SignatureCatalog.all.count { it.familyId == f.id }, "4 per family")
+        for (f in content.families) assertEquals(4, SignatureCatalog.all.count { it.familyId == f.id }, "4 per family (${f.name})")
         for (s in SignatureCatalog.all) {
-            content.family(s.familyId); content.material(s.coreId); content.material(s.augmentId)
-            s.catalystId?.let { content.material(it) }
+            assertEquals(MaterialCategory.CORE, content.material(s.coreId).category, s.id)
+            assertEquals(MaterialCategory.AUGMENT, content.material(s.augmentId).category, s.id)
+            s.catalystId?.let { assertEquals(MaterialCategory.CATALYST, content.material(it).category, s.id) }
             s.grantedAffixes.forEach { content.affix(it) }
-            assertTrue(s.minQuality in 1..100 && s.bonusPower > 0)
+            assertTrue(s.minQuality in 1..100 && s.bonusPower > 0, s.id)
+            assertEquals(s, SignatureCatalog.forRecipe(exactCommand(s)), "recipe lookup")
+        }
+        assertEquals(content.materials(MaterialCategory.CORE).map { it.id }.toSet(), SignatureCatalog.all.map { it.coreId }.toSet(), "every core appears")
+        val elements = SignatureCatalog.all.map { content.material(it.augmentId).element }.toSet()
+        assertEquals(Element.entries.toSet(), elements, "every element appears")
+        assertEquals(content.materials(MaterialCategory.CATALYST).map { it.id }.toSet(), SignatureCatalog.all.mapNotNull { it.catalystId }.toSet(), "every catalyst appears")
+        assertTrue(SignatureCatalog.all.count { it.catalystId == null } in 4..8, "a few recipes need no catalyst")
+    }
+
+    @Test
+    fun everyLaunchSignatureIsReachableAndNoneFiresWithoutItsConditions() {
+        for (def in SignatureCatalog.all) {
+            val exactCmd = exactCommand(def)
+            var transforms = 0
+            for (seed in 1L..60L) {
+                val out = launch.handle(freshLaunch(seed), exactCmd) as CommandOutcome.Accepted
+                val w = out.state.weapon(out.forgedWeaponId!!)
+                if (w.signatureId == null) {
+                    assertTrue(w.quality < def.minQuality, "${def.id} seed $seed: eligible forge did not transform at quality ${w.quality}")
+                    continue
+                }
+                transforms++
+                assertEquals(def.id, w.signatureId)
+                assertEquals(def.name, w.name)
+                assertTrue(w.quality >= def.minQuality)
+                assertTrue(w.affixes.containsAll(def.grantedAffixes), "${def.id} granted affixes present: ${w.affixes}")
+                assertEquals(KnowledgeState.SIGNATURE_DISCOVERED, out.state.legacy.journal.state(def.journalKey))
+                assertEquals(1, out.events.count { it.type == EventType.SIGNATURE_DISCOVERED })
+            }
+            assertTrue(transforms > 0, "${def.id} never transformed in 60 seeds with a forced roll")
+
+            // Wrong or missing catalyst, wrong risk: never, whatever the roll.
+            val wrong = mutableListOf<Command.Forge>()
+            if (def.catalystId != null) {
+                wrong += exactCmd.copy(catalystId = null)
+                wrong += exactCmd.copy(catalystId = LaunchContent.catalog.materials(MaterialCategory.CATALYST).first { it.id != def.catalystId }.id)
+            }
+            if (def.risk != null) Risk.entries.filter { it != def.risk }.forEach { wrong += exactCmd.copy(risk = it) }
+            for (cmd in wrong) for (seed in 1L..20L) {
+                val out = launch.handle(freshLaunch(seed), cmd) as CommandOutcome.Accepted
+                val w = out.state.weapon(out.forgedWeaponId!!)
+                assertNull(w.signatureId, "${def.id} fired with $cmd")
+                assertFalse(w.name == def.name)
+                assertTrue(out.events.none { it.type == EventType.SIGNATURE_DISCOVERED })
+            }
+            // Below the quality floor: never, and the first attempt leaves a clue asking for finer work.
+            val poor = GameEngine(content = LaunchContent.catalog, config = launch.config.copy(qualityBase = -100))
+            val out = poor.handle(freshLaunch(1, poor), exactCmd) as CommandOutcome.Accepted
+            assertNull(out.state.weapon(out.forgedWeaponId!!).signatureId, def.id)
+            assertEquals(KnowledgeState.OBSERVED, out.state.legacy.journal.state(def.journalKey))
+            val clue = out.events.single { it.type == EventType.DISCOVERY && it.data["key"] == def.journalKey }
+            assertTrue(clue.text.contains("finer work"), clue.text)
+        }
+    }
+
+    @Test
+    fun launchSignatureForgesAreDeterministic() {
+        for (def in SignatureCatalog.all) {
+            val cmd = exactCommand(def)
+            val a = launch.handle(freshLaunch(11), cmd) as CommandOutcome.Accepted
+            val b = launch.handle(freshLaunch(11), cmd) as CommandOutcome.Accepted
+            assertEquals(a.state, b.state, def.id)
+            assertEquals(a.events, b.events, def.id)
         }
     }
 

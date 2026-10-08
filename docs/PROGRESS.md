@@ -1,15 +1,16 @@
 # Progress — 2026-10-08 (session 4)
 
 ## Current phase
-P7 in progress. Launch content is the engine default and balance v2 is tuned against it (this session); the
-remaining P7 items are signatures for the three new families, the Strange Weapon Fragment event and save compaction.
+P7 in progress. Launch content is the engine default and balance v2 is tuned against it; all 24 signature recipes,
+the Strange Weapon Fragment event and End Day event-log compaction landed the same day (parallel agents, merged).
 
 ## What exists
 - `core/` pure Kotlin engine: RNG, slice + launch content catalogs (launch is the default), balance config v2, model,
-  commands, End Day resolver, crafting with techniques and signature recipes, market, hero AI with retirement/guilds/
-  mentoring, battles/sieges with weapon seizure, world-event pool (23 events), legacy with famous-blade returns,
-  Gazette, JSON save codec with a migration scaffold, headless simulator (GDD policy set, `--content`, `--rarityTable`,
-  `--impactPolicy`, forge-damage overrides, JSON report, perf probe). 72 JVM tests.
+  commands, End Day resolver, crafting with techniques and all 24 signature recipes, market, hero AI with retirement/
+  guilds/mentoring, battles/sieges with weapon seizure, world-event pool (23 events + 2 deterministic rules = all 25 GDD
+  events), legacy with famous-blade returns, Gazette, JSON save codec with a migration scaffold, End Day event-log
+  compaction (30-day window, history-grade types kept), headless simulator (GDD policy set, `--content`,
+  `--rarityTable`, `--impactPolicy`, forge-damage overrides, JSON report, perf probe). 82 JVM tests.
 - `app/` Compose portrait workshop with the forge palette theme, onboarding tips, six panels, technique chips,
   newspaper day report with stepped replay, blessing choice (dismissable for the day), run-end/legacy screen; Room
   atomic save store; DataStore settings (reduced motion, seen tips). Hand-made pixel art on every screen.
@@ -23,15 +24,17 @@ remaining P7 items are signatures for the three new families, the Strange Weapon
 ## Checks run this session (balance v2, launch default)
 | Check | Command | Result |
 |---|---|---|
-| Core tests | `./gradlew :core:test` | 72/72 pass (68 previous + 4 `RarityShapeTest`); the soak now runs on launch content |
-| App compiles | `./gradlew :app:compileDebugKotlin -q` | BUILD SUCCESSFUL (UI untouched; all launch IDs already had sprites) |
+| Core tests | `./gradlew :core:test` | 82/82 pass (13 classes incl. RarityShape, EventCompaction, SignatureAndTechnique on the launch catalog); the soak runs on launch content |
+| App compiles | `./gradlew :app:compileDebugKotlin -q` | BUILD SUCCESSFUL |
 | Rarity tables | `./gradlew :core:simulate --args="--rarityTable 1000 --seed 1 --content launch"` | before/after tables in DECISIONS.md |
 | Policy sweep | `./gradlew :core:simulate --args="--runs 1000 --seed 1 --content launch"` | BALANCED_FAIR 25 (15/35), mean 23.8, 1.6 sieges survived/run, 0 hard-locks; full table in DECISIONS.md |
 | Confirmation | `--runs 10000 --policy BALANCED_FAIR` / `SAFE_FAIR` | 25 (15/35) mean 23.7 survived 1.5 / 25 (15/30) mean 23.2 survived 1.5 |
 | Slice regression | `--content slice --policy SAFE_FAIR` | 30 (20/35), rarity 18/51/28/2/0 (was 1/43/52/4/0; accepted, see DECISIONS) |
-
-Previous sessions: debug APK, instrumented tests (5/5), device smoke loop and art import were verified on the Pixel 10
-Pro AVD before this session; they were not re-run here (no `app/` changes).
+| Event compaction | `EventCompactionTest` + `:core:simulate --runs 200 --seed 1 --perf` | 400-day forced-survival pair: gameplay identical with/without compaction; perf run ends at events=1,834 (was 13,275) |
+| Debug APK + install | `./gradlew :app:installDebug` | BUILD SUCCESSFUL |
+| Instrumented | `./gradlew :app:connectedDebugAndroidTest` | 5/5 pass (Room atomic save/restore x2, title screen, forge hint x2) |
+| Device loop | `tools/emulator/smoke.sh` | New run -> forge -> list -> End Day -> Gazette -> Town -> resume after process death on day 2 (screenshots sent to the user) |
+| Art import | `python tools/pixelart/import_assets.py` | 5 sheets + weapon master + 1 pack -> 488 sprites; contact sheet reviewed; weapon shelf verified on device |
 
 ## Obstacles hit and resolved
 - Launch content with the v1 siege numbers gave 0 survived sieges: heroes always fought the first faction by ID and
@@ -48,15 +51,16 @@ Pro AVD before this session; they were not re-run here (no `app/` changes).
 ## Known limitations
 - Starting energy/gold upgrades measure ~0 days under BALANCED_FAIR because the bot never spends its ~500 gold on
   better cores; gold registers under `--impactPolicy SYNERGY` (+5 median). A harness purchasing rule is the next lever.
-- 12 of 24 signature recipes (launch families spear/dagger/staff have none); event "Strange Weapon Fragment" missing.
-- Save events are never compacted; a 400-day run stores ~4,500 event records (P7 soak item).
-- `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used.
+- `Weapon.history` is unbounded (1,766 entries across 926 weapons after a forced 400-day run); the next list to watch.
+- `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
+  signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
 - Package name is still `com.example.blacksmithproject`; no release signing.
 - `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order; bump with the first release.
 - Git: `main` tracks https://github.com/Morfildor/BlacksmithInc. Commit/push only on request.
 
 ## Next executable actions (P7)
-1. Add the 12 spear/dagger/staff signatures and the Strange Weapon Fragment event; extend `catalogIsConsistentWithSliceContent` to the launch catalog once they exist.
-2. Event-log compaction policy in `SaveCodec` that keeps histories intact; Room migration test for schema v2.
-3. Re-run the device smoke loop and instrumented tests on the launch default (three factions, five classes in the UI).
-4. Balance review after the signatures land: harness purchasing rule so starting gold/energy upgrades register; tier-5 epic centring if a new lever appears.
+1. Re-run the device smoke loop and instrumented tests on the launch default (three factions, five classes in the UI).
+2. Harness purchasing rule (buy the best affordable core) so starting gold/energy upgrades register; tier-5 epic
+   centring if a new lever appears.
+3. Room migration test when the envelope schema first changes; bound `Weapon.history` if long runs grow it further.
+4. Package rename from `com.example.blacksmithproject`, release signing.
