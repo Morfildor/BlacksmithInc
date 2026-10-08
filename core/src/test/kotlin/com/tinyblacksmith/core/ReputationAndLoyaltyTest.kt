@@ -102,12 +102,15 @@ class ReputationAndLoyaltyTest {
         }
         assertTrue(seen, "no premium sale in 40 seeds")
         // A fair-priced sale by a stranger carries neither marker.
+        var fairSeen = false
         for (seed in 1L..40L) {
             val (s, id) = listed(seed, factor = 1.0)
             val sale = s.endDay().events.firstOrNull { it.type == EventType.WEAPON_SOLD && id.value in it.subjectIds } ?: continue
             assertTrue("premium" !in sale.data && "regular" !in sale.text, sale.text)
-            return
+            fairSeen = true
+            break
         }
+        assertTrue(fairSeen, "no fair-priced sale in 40 seeds")
     }
 
     @Test

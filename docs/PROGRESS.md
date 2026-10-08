@@ -61,7 +61,8 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
 - Package name is still `com.example.blacksmithproject`; no release signing.
-- `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order; bump with the first release.
+- `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order and session-4 commission
+  patron weighting changes which hero asks on a given seed; bump with the first release.
 - Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.2.0 (versionCode 2).
 
 ## Next executable actions (P7)
