@@ -132,6 +132,11 @@ Forge Mastery +2.4, starting energy/gold ≈ 0 (tuning signal for P7). 0 hard-lo
   hero class, faction siege name → monster set); poses follow the step being shown, idle frames tick on a UI
   timer, static under reduced motion. No gameplay RNG is touched (GDD 11, 15.1).
 - Portrait variants are chosen by a stable hash of the hero ID (decorative, deterministic, save-independent).
+- Weapon art (2026-10-08, later the same day): the weapon master sheet gives every family an element row and
+  eight visual levels, so the per-core recoloured icons and the element overlays were retired. The level column is
+  core tier (iron 1 … moonsteel 6) + 1 for epic + 2 for legendary, clamped to 8; the preview shows the "base" row
+  until an augment is chosen. The choice is in `Sprites.weaponLevel` and reversible. Cost: 336 PNGs at 56 px,
+  about 2.5 MB of drawables (fine for a premium title; pngquant is an option if the APK ever matters).
 
 ## SLICE reductions still in force
 - Default catalog: 3 families, 6 materials + 1 catalyst, 2 classes, 1 faction, 5 blessings, 4 upgrades, 6 affixes,

@@ -5,48 +5,6 @@ Essential text is never baked into bitmaps; Compose draws labels over the art.
 
 | id | size | layer | notes |
 |---|---|---|---|
-| weapon_sword_iron | 64×64 | weapon | anchor=bottom-center, family=sword, core=iron (hand-made) |
-| weapon_sword_bronze | 64×64 | weapon | anchor=bottom-center, family=sword, core=bronze (hand-made) |
-| weapon_sword_silver | 64×64 | weapon | anchor=bottom-center, family=sword, core=silver (hand-made) |
-| weapon_sword_obsidian | 64×64 | weapon | anchor=bottom-center, family=sword, core=obsidian (hand-made) |
-| weapon_sword_starsteel | 64×64 | weapon | anchor=bottom-center, family=sword, core=starsteel (hand-made) |
-| weapon_sword_moonsteel | 64×64 | weapon | anchor=bottom-center, family=sword, core=moonsteel (hand-made) |
-| weapon_axe_iron | 64×64 | weapon | anchor=bottom-center, family=axe, core=iron (hand-made) |
-| weapon_axe_bronze | 64×64 | weapon | anchor=bottom-center, family=axe, core=bronze (hand-made) |
-| weapon_axe_silver | 64×64 | weapon | anchor=bottom-center, family=axe, core=silver (hand-made) |
-| weapon_axe_obsidian | 64×64 | weapon | anchor=bottom-center, family=axe, core=obsidian (hand-made) |
-| weapon_axe_starsteel | 64×64 | weapon | anchor=bottom-center, family=axe, core=starsteel (hand-made) |
-| weapon_axe_moonsteel | 64×64 | weapon | anchor=bottom-center, family=axe, core=moonsteel (hand-made) |
-| weapon_bow_iron | 64×64 | weapon | anchor=bottom-center, family=bow, core=iron (hand-made) |
-| weapon_bow_bronze | 64×64 | weapon | anchor=bottom-center, family=bow, core=bronze (hand-made) |
-| weapon_bow_silver | 64×64 | weapon | anchor=bottom-center, family=bow, core=silver (hand-made) |
-| weapon_bow_obsidian | 64×64 | weapon | anchor=bottom-center, family=bow, core=obsidian (hand-made) |
-| weapon_bow_starsteel | 64×64 | weapon | anchor=bottom-center, family=bow, core=starsteel (hand-made) |
-| weapon_bow_moonsteel | 64×64 | weapon | anchor=bottom-center, family=bow, core=moonsteel (hand-made) |
-| weapon_spear_iron | 64×64 | weapon | anchor=bottom-center, family=spear, core=iron (hand-made) |
-| weapon_spear_bronze | 64×64 | weapon | anchor=bottom-center, family=spear, core=bronze (hand-made) |
-| weapon_spear_silver | 64×64 | weapon | anchor=bottom-center, family=spear, core=silver (hand-made) |
-| weapon_spear_obsidian | 64×64 | weapon | anchor=bottom-center, family=spear, core=obsidian (hand-made) |
-| weapon_spear_starsteel | 64×64 | weapon | anchor=bottom-center, family=spear, core=starsteel (hand-made) |
-| weapon_spear_moonsteel | 64×64 | weapon | anchor=bottom-center, family=spear, core=moonsteel (hand-made) |
-| weapon_dagger_iron | 64×64 | weapon | anchor=bottom-center, family=dagger, core=iron (hand-made) |
-| weapon_dagger_bronze | 64×64 | weapon | anchor=bottom-center, family=dagger, core=bronze (hand-made) |
-| weapon_dagger_silver | 64×64 | weapon | anchor=bottom-center, family=dagger, core=silver (hand-made) |
-| weapon_dagger_obsidian | 64×64 | weapon | anchor=bottom-center, family=dagger, core=obsidian (hand-made) |
-| weapon_dagger_starsteel | 64×64 | weapon | anchor=bottom-center, family=dagger, core=starsteel (hand-made) |
-| weapon_dagger_moonsteel | 64×64 | weapon | anchor=bottom-center, family=dagger, core=moonsteel (hand-made) |
-| weapon_staff_iron | 64×64 | weapon | anchor=bottom-center, family=staff, core=iron (hand-made) |
-| weapon_staff_bronze | 64×64 | weapon | anchor=bottom-center, family=staff, core=bronze (hand-made) |
-| weapon_staff_silver | 64×64 | weapon | anchor=bottom-center, family=staff, core=silver (hand-made) |
-| weapon_staff_obsidian | 64×64 | weapon | anchor=bottom-center, family=staff, core=obsidian (hand-made) |
-| weapon_staff_starsteel | 64×64 | weapon | anchor=bottom-center, family=staff, core=starsteel (hand-made) |
-| weapon_staff_moonsteel | 64×64 | weapon | anchor=bottom-center, family=staff, core=moonsteel (hand-made) |
-| overlay_fire | 64×64 | overlay | anchor=top-left, element=FIRE (hand-made) |
-| overlay_frost | 64×64 | overlay | anchor=top-left, element=FROST (hand-made) |
-| overlay_storm | 64×64 | overlay | anchor=top-left, element=STORM (hand-made) |
-| overlay_grave | 64×64 | overlay | anchor=top-left, element=GRAVE (hand-made) |
-| overlay_verdant | 64×64 | overlay | anchor=top-left, element=VERDANT (hand-made) |
-| overlay_sun | 64×64 | overlay | anchor=top-left, element=SUN (hand-made) |
 | portrait_guardian | 16×16 | portrait | anchor=top-left, heroClass=guardian |
 | portrait_ranger | 16×16 | portrait | anchor=top-left, heroClass=ranger |
 | portrait_duelist | 16×16 | portrait | anchor=top-left, heroClass=duelist |
@@ -204,6 +162,342 @@ Essential text is never baked into bitmaps; Compose draws labels over the art.
 | portrait_warden_4 | 64×64 | portrait |  (hand-made) |
 | siege_wall | 96×32 | siege | anchor=tile, notes=Siege backdrop 96x32 (hand-made) |
 | siege_wall_damaged | 96×32 | siege | anchor=tile, notes=Siege backdrop 96x32 (hand-made) |
+| weapon_axe_base_1 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_base_2 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_base_3 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_base_4 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_base_5 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_base_6 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_base_7 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_base_8 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_fire_1 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_fire_2 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_fire_3 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_fire_4 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_fire_5 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_fire_6 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_fire_7 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_fire_8 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_frost_1 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_frost_2 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_frost_3 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_frost_4 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_frost_5 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_frost_6 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_frost_7 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_frost_8 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_grave_1 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_grave_2 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_grave_3 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_grave_4 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_grave_5 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_grave_6 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_grave_7 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_grave_8 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_storm_1 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_storm_2 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_storm_3 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_storm_4 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_storm_5 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_storm_6 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_storm_7 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_storm_8 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_sun_1 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_sun_2 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_sun_3 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_sun_4 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_sun_5 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_sun_6 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_sun_7 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_sun_8 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_verdant_1 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_verdant_2 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_verdant_3 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_verdant_4 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_verdant_5 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_verdant_6 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_verdant_7 | 56×56 | weapon |  (hand-made) |
+| weapon_axe_verdant_8 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_base_1 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_base_2 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_base_3 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_base_4 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_base_5 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_base_6 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_base_7 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_base_8 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_fire_1 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_fire_2 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_fire_3 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_fire_4 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_fire_5 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_fire_6 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_fire_7 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_fire_8 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_frost_1 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_frost_2 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_frost_3 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_frost_4 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_frost_5 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_frost_6 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_frost_7 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_frost_8 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_grave_1 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_grave_2 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_grave_3 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_grave_4 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_grave_5 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_grave_6 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_grave_7 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_grave_8 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_storm_1 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_storm_2 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_storm_3 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_storm_4 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_storm_5 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_storm_6 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_storm_7 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_storm_8 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_sun_1 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_sun_2 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_sun_3 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_sun_4 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_sun_5 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_sun_6 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_sun_7 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_sun_8 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_verdant_1 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_verdant_2 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_verdant_3 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_verdant_4 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_verdant_5 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_verdant_6 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_verdant_7 | 56×56 | weapon |  (hand-made) |
+| weapon_bow_verdant_8 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_base_1 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_base_2 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_base_3 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_base_4 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_base_5 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_base_6 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_base_7 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_base_8 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_fire_1 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_fire_2 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_fire_3 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_fire_4 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_fire_5 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_fire_6 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_fire_7 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_fire_8 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_frost_1 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_frost_2 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_frost_3 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_frost_4 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_frost_5 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_frost_6 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_frost_7 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_frost_8 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_grave_1 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_grave_2 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_grave_3 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_grave_4 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_grave_5 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_grave_6 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_grave_7 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_grave_8 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_storm_1 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_storm_2 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_storm_3 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_storm_4 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_storm_5 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_storm_6 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_storm_7 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_storm_8 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_sun_1 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_sun_2 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_sun_3 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_sun_4 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_sun_5 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_sun_6 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_sun_7 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_sun_8 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_verdant_1 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_verdant_2 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_verdant_3 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_verdant_4 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_verdant_5 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_verdant_6 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_verdant_7 | 56×56 | weapon |  (hand-made) |
+| weapon_dagger_verdant_8 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_base_1 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_base_2 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_base_3 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_base_4 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_base_5 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_base_6 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_base_7 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_base_8 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_fire_1 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_fire_2 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_fire_3 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_fire_4 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_fire_5 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_fire_6 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_fire_7 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_fire_8 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_frost_1 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_frost_2 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_frost_3 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_frost_4 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_frost_5 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_frost_6 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_frost_7 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_frost_8 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_grave_1 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_grave_2 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_grave_3 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_grave_4 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_grave_5 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_grave_6 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_grave_7 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_grave_8 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_storm_1 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_storm_2 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_storm_3 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_storm_4 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_storm_5 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_storm_6 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_storm_7 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_storm_8 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_sun_1 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_sun_2 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_sun_3 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_sun_4 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_sun_5 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_sun_6 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_sun_7 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_sun_8 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_verdant_1 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_verdant_2 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_verdant_3 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_verdant_4 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_verdant_5 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_verdant_6 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_verdant_7 | 56×56 | weapon |  (hand-made) |
+| weapon_spear_verdant_8 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_base_1 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_base_2 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_base_3 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_base_4 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_base_5 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_base_6 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_base_7 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_base_8 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_fire_1 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_fire_2 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_fire_3 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_fire_4 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_fire_5 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_fire_6 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_fire_7 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_fire_8 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_frost_1 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_frost_2 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_frost_3 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_frost_4 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_frost_5 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_frost_6 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_frost_7 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_frost_8 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_grave_1 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_grave_2 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_grave_3 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_grave_4 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_grave_5 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_grave_6 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_grave_7 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_grave_8 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_storm_1 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_storm_2 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_storm_3 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_storm_4 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_storm_5 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_storm_6 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_storm_7 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_storm_8 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_sun_1 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_sun_2 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_sun_3 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_sun_4 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_sun_5 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_sun_6 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_sun_7 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_sun_8 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_verdant_1 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_verdant_2 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_verdant_3 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_verdant_4 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_verdant_5 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_verdant_6 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_verdant_7 | 56×56 | weapon |  (hand-made) |
+| weapon_staff_verdant_8 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_base_1 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_base_2 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_base_3 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_base_4 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_base_5 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_base_6 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_base_7 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_base_8 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_fire_1 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_fire_2 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_fire_3 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_fire_4 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_fire_5 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_fire_6 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_fire_7 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_fire_8 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_frost_1 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_frost_2 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_frost_3 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_frost_4 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_frost_5 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_frost_6 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_frost_7 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_frost_8 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_grave_1 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_grave_2 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_grave_3 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_grave_4 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_grave_5 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_grave_6 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_grave_7 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_grave_8 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_storm_1 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_storm_2 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_storm_3 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_storm_4 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_storm_5 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_storm_6 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_storm_7 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_storm_8 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_sun_1 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_sun_2 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_sun_3 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_sun_4 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_sun_5 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_sun_6 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_sun_7 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_sun_8 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_verdant_1 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_verdant_2 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_verdant_3 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_verdant_4 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_verdant_5 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_verdant_6 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_verdant_7 | 56×56 | weapon |  (hand-made) |
+| weapon_sword_verdant_8 | 56×56 | weapon |  (hand-made) |
 
 Animations: embers = ember_0, ember_1, ember_2, ember_3, 180 ms per frame, looping (disabled under reduced motion).
 

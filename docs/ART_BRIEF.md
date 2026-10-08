@@ -177,6 +177,11 @@ Deliver into the `Pixel art assets/` folder, in either form:
   fitted to that ID's size from the tables above and imported on its own. This is the simplest route.
 - **Numbered sheets** (`…-6.png`, `…-7.png`): only after we agree the cell layout, because sheets are sliced by
   fixed rectangles; a sheet with no registered layout is skipped with a message.
+- **Weapon master sheet** (file name starting `Weapons master`): six family panels, each 8 levels (+1..+8) by
+  7 rows (base, fire, frost, storm, grave, verdant, sun) on a flat dark background. It is keyed and sliced into
+  336 `weapon_<family>_<row>_<level>` sprites; a re-export must keep the same panel/grid proportions (the slicer
+  scales with the image width). This sheet replaces the per-core weapon icons and the element overlays: the level
+  column shows the core tier (+1 iron … +6 moonsteel) plus +1 for epic and +2 for legendary rolls.
 
 `python tools/pixelart/import_assets.py` then writes the drawables and records the IDs as hand-made, and the
 placeholder generator leaves those IDs alone. Any sprite you do not deliver keeps its placeholder, so partial

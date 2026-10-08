@@ -15,7 +15,9 @@ signatures/techniques, world events, generations, balance harness, UI polish). N
 - `tools/pixelart/import_assets.py` (slices concept sheets, copies selected pack sprites, prunes stale imports),
   `generate_assets.py` (placeholders), `tools/emulator/smoke.sh` (device loop). `docs/ART_BRIEF.md` is the brief.
 - Animated siege diorama in the day report (artist pack frames), dead/retired markers, milestone burst on the result
-  card for signature or epic+ weapons, 194 hand-made sprites in total (136 sheet slices + 58 pack sprites).
+  card for signature or epic+ weapons.
+- Weapon master sheet sliced into 336 `weapon_<family>_<row>_<level>` sprites with a generated `ui/WeaponArt.kt`
+  lookup; 488 hand-made sprites in total (94 sheet slices + 336 weapons + 58 pack sprites).
 
 ## Checks run this session
 | Check | Command | Result |

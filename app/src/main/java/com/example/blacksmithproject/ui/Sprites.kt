@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.drawBehind
@@ -49,32 +48,18 @@ import com.tinyblacksmith.core.model.Weapon
  * touches gameplay state or RNG (GDD §14, §15.1).
  */
 object Sprites {
-    fun weapon(w: Weapon): Int = weapon(w.familyId, w.coreId)
+    private val coreStep = mapOf("iron" to 1, "bronze" to 2, "silver" to 3, "obsidian" to 4, "starsteel" to 5, "moonsteel" to 6)
 
-    private val weapons: Map<String, Map<String, Int>> = mapOf(
-        "sword" to mapOf("iron" to R.drawable.weapon_sword_iron, "bronze" to R.drawable.weapon_sword_bronze, "silver" to R.drawable.weapon_sword_silver, "moonsteel" to R.drawable.weapon_sword_moonsteel, "obsidian" to R.drawable.weapon_sword_obsidian, "starsteel" to R.drawable.weapon_sword_starsteel),
-        "axe" to mapOf("iron" to R.drawable.weapon_axe_iron, "bronze" to R.drawable.weapon_axe_bronze, "silver" to R.drawable.weapon_axe_silver, "moonsteel" to R.drawable.weapon_axe_moonsteel, "obsidian" to R.drawable.weapon_axe_obsidian, "starsteel" to R.drawable.weapon_axe_starsteel),
-        "bow" to mapOf("iron" to R.drawable.weapon_bow_iron, "bronze" to R.drawable.weapon_bow_bronze, "silver" to R.drawable.weapon_bow_silver, "moonsteel" to R.drawable.weapon_bow_moonsteel, "obsidian" to R.drawable.weapon_bow_obsidian, "starsteel" to R.drawable.weapon_bow_starsteel),
-        "dagger" to mapOf("iron" to R.drawable.weapon_dagger_iron, "bronze" to R.drawable.weapon_dagger_bronze, "silver" to R.drawable.weapon_dagger_silver, "moonsteel" to R.drawable.weapon_dagger_moonsteel, "obsidian" to R.drawable.weapon_dagger_obsidian, "starsteel" to R.drawable.weapon_dagger_starsteel),
-        "spear" to mapOf("iron" to R.drawable.weapon_spear_iron, "bronze" to R.drawable.weapon_spear_bronze, "silver" to R.drawable.weapon_spear_silver, "moonsteel" to R.drawable.weapon_spear_moonsteel, "obsidian" to R.drawable.weapon_spear_obsidian, "starsteel" to R.drawable.weapon_spear_starsteel),
-        "staff" to mapOf("iron" to R.drawable.weapon_staff_iron, "bronze" to R.drawable.weapon_staff_bronze, "silver" to R.drawable.weapon_staff_silver, "moonsteel" to R.drawable.weapon_staff_moonsteel, "obsidian" to R.drawable.weapon_staff_obsidian, "starsteel" to R.drawable.weapon_staff_starsteel),
-    )
+    /** Visual step of a weapon on the master sheet: the core's tier plus +1 for epic and +2 for legendary, 1..8. */
+    fun weaponLevel(coreId: MaterialId, rarity: Rarity?): Int =
+        ((coreStep[coreId.value] ?: 1) + when (rarity) { Rarity.LEGENDARY -> 2; Rarity.EPIC -> 1; else -> 0 }).coerceIn(1, WeaponArt.LEVELS)
 
-    /** Also used for the forge preview of a draft that has no Weapon yet; unmapped pairs fall back gracefully. */
-    fun weapon(familyId: WeaponFamilyId, coreId: MaterialId): Int {
-        val family = weapons[familyId.value] ?: weapons.getValue("sword")
-        return family[coreId.value] ?: family.getValue("iron")
-    }
+    fun weapon(w: Weapon): Int = weapon(w.familyId, w.coreId, w.element, w.rarity)
 
-    fun overlay(element: Element?): Int? = when (element) {
-        Element.FIRE -> R.drawable.overlay_fire
-        Element.FROST -> R.drawable.overlay_frost
-        Element.STORM -> R.drawable.overlay_storm
-        Element.GRAVE -> R.drawable.overlay_grave
-        Element.VERDANT -> R.drawable.overlay_verdant
-        Element.SUN -> R.drawable.overlay_sun
-        null -> null
-    }
+    /** Also used for the forge preview of a draft that has no Weapon yet: the "base" row until an augment is chosen. */
+    fun weapon(familyId: WeaponFamilyId, coreId: MaterialId, element: Element?, rarity: Rarity? = null): Int =
+        WeaponArt.sprite(familyId.value, element?.name?.lowercase() ?: "base", weaponLevel(coreId, rarity))
+            ?: WeaponArt.sprite("sword", "base", 1)!!
 
     private val portraits: Map<String, List<Int>> = mapOf(
         "guardian" to listOf(R.drawable.portrait_guardian_0, R.drawable.portrait_guardian_1, R.drawable.portrait_guardian_2, R.drawable.portrait_guardian_3, R.drawable.portrait_guardian_4),
@@ -194,8 +179,6 @@ fun PixelImage(resId: Int, size: Dp, description: String?, modifier: Modifier = 
 fun WeaponSprite(w: Weapon, size: Dp = 48.dp, modifier: Modifier = Modifier) {
     val element = w.element?.name?.lowercase()?.let { ", $it" } ?: ""
     Box(modifier.size(size).semantics { contentDescription = "${w.name}, ${w.rarity.name.lowercase()}$element" }) {
-        // Element aura sits behind the weapon so the blade stays readable.
-        Sprites.overlay(w.element)?.let { PixelImage(it, size, description = null, modifier = Modifier.alpha(0.85f)) }
         PixelImage(Sprites.weapon(w), size, description = null)
         PixelImage(Sprites.badge(w.rarity), size / 3, description = null, modifier = Modifier.size(size / 3))
     }

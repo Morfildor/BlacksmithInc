@@ -92,8 +92,8 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel) {
                 val core = d.coreId
                 val label = if (family != null && core != null) "${content.material(core).name} ${content.family(family).name}" else "no weapon chosen yet"
                 Box(Modifier.size(64.dp).alpha(if (family != null && core != null) 1f else 0.35f)) {
-                    d.augmentId?.let { content.material(it).element }?.let { Sprites.overlay(it) }?.let { PixelImage(it, 64.dp, description = null, modifier = Modifier.alpha(0.85f)) }
-                    PixelImage(Sprites.weapon(family ?: content.families.first().id, core ?: content.materials(MaterialCategory.CORE).first().id), 64.dp, description = "Preview: $label")
+                    val element = d.augmentId?.let { content.material(it).element }
+                    PixelImage(Sprites.weapon(family ?: content.families.first().id, core ?: content.materials(MaterialCategory.CORE).first().id, element), 64.dp, description = "Preview: $label")
                 }
                 Spacer(Modifier.width(12.dp))
                 Column {

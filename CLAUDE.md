@@ -24,7 +24,8 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 - Content names are PROPOSED; counts are LOCKED. Vertical slice content lives in `content/SliceContent.kt`.
 - Pixel art has three sources, never hand-edited PNGs, all imported by `tools/pixelart/import_assets.py` into
   `tools/pixelart/overrides.json`: concept sheets in `Pixel art assets/` (sliced by cell layout, rich 64 px icons
-  and the forge scene), loose `<id>.png` files, and the artist's 1x production pack (a subfolder with
+  and the forge scene), the weapon master sheet (`Weapons master`, 6 families × 7 element rows × 8 levels, sliced into
+  336 sprites and the generated `ui/WeaponArt.kt` lookup), loose `<id>.png` files, and the artist's 1x production pack (a subfolder with
   `drawable-nodpi/` + `manifest.json`), from which only battle frames, siege wall, milestone burst and hero markers
   are taken by default (`--pack-all` takes everything). `generate_assets.py` draws placeholders only for IDs without
   hand-made art. The brief for new art

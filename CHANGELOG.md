@@ -7,6 +7,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Changed
+- Weapons are drawn from the artist's weapon master sheet: every family has an element row and eight visual levels
+  (core tier plus epic/legendary bonus); the forge preview shows the plain base weapon until an augment is chosen.
+  The old per-core recolours and element auras are gone.
+
 ## [0.1.0] - 2026-10-08
 First tracked build (vertical slice content, launch content data-complete but not default).
 

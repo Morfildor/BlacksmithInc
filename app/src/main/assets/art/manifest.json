@@ -4,462 +4,6 @@
   "lightSource": "upper-left",
   "sprites": [
     {
-      "id": "weapon_sword_iron",
-      "file": "drawable-nodpi/weapon_sword_iron.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "sword",
-      "core": "iron",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_sword_bronze",
-      "file": "drawable-nodpi/weapon_sword_bronze.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "sword",
-      "core": "bronze",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_sword_silver",
-      "file": "drawable-nodpi/weapon_sword_silver.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "sword",
-      "core": "silver",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_sword_obsidian",
-      "file": "drawable-nodpi/weapon_sword_obsidian.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "sword",
-      "core": "obsidian",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_sword_starsteel",
-      "file": "drawable-nodpi/weapon_sword_starsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "sword",
-      "core": "starsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_sword_moonsteel",
-      "file": "drawable-nodpi/weapon_sword_moonsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "sword",
-      "core": "moonsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_axe_iron",
-      "file": "drawable-nodpi/weapon_axe_iron.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "axe",
-      "core": "iron",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_axe_bronze",
-      "file": "drawable-nodpi/weapon_axe_bronze.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "axe",
-      "core": "bronze",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_axe_silver",
-      "file": "drawable-nodpi/weapon_axe_silver.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "axe",
-      "core": "silver",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_axe_obsidian",
-      "file": "drawable-nodpi/weapon_axe_obsidian.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "axe",
-      "core": "obsidian",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_axe_starsteel",
-      "file": "drawable-nodpi/weapon_axe_starsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "axe",
-      "core": "starsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_axe_moonsteel",
-      "file": "drawable-nodpi/weapon_axe_moonsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "axe",
-      "core": "moonsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_bow_iron",
-      "file": "drawable-nodpi/weapon_bow_iron.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "bow",
-      "core": "iron",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_bow_bronze",
-      "file": "drawable-nodpi/weapon_bow_bronze.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "bow",
-      "core": "bronze",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_bow_silver",
-      "file": "drawable-nodpi/weapon_bow_silver.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "bow",
-      "core": "silver",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_bow_obsidian",
-      "file": "drawable-nodpi/weapon_bow_obsidian.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "bow",
-      "core": "obsidian",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_bow_starsteel",
-      "file": "drawable-nodpi/weapon_bow_starsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "bow",
-      "core": "starsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_bow_moonsteel",
-      "file": "drawable-nodpi/weapon_bow_moonsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "bow",
-      "core": "moonsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_spear_iron",
-      "file": "drawable-nodpi/weapon_spear_iron.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "spear",
-      "core": "iron",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_spear_bronze",
-      "file": "drawable-nodpi/weapon_spear_bronze.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "spear",
-      "core": "bronze",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_spear_silver",
-      "file": "drawable-nodpi/weapon_spear_silver.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "spear",
-      "core": "silver",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_spear_obsidian",
-      "file": "drawable-nodpi/weapon_spear_obsidian.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "spear",
-      "core": "obsidian",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_spear_starsteel",
-      "file": "drawable-nodpi/weapon_spear_starsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "spear",
-      "core": "starsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_spear_moonsteel",
-      "file": "drawable-nodpi/weapon_spear_moonsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "spear",
-      "core": "moonsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_dagger_iron",
-      "file": "drawable-nodpi/weapon_dagger_iron.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "dagger",
-      "core": "iron",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_dagger_bronze",
-      "file": "drawable-nodpi/weapon_dagger_bronze.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "dagger",
-      "core": "bronze",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_dagger_silver",
-      "file": "drawable-nodpi/weapon_dagger_silver.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "dagger",
-      "core": "silver",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_dagger_obsidian",
-      "file": "drawable-nodpi/weapon_dagger_obsidian.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "dagger",
-      "core": "obsidian",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_dagger_starsteel",
-      "file": "drawable-nodpi/weapon_dagger_starsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "dagger",
-      "core": "starsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_dagger_moonsteel",
-      "file": "drawable-nodpi/weapon_dagger_moonsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "dagger",
-      "core": "moonsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_staff_iron",
-      "file": "drawable-nodpi/weapon_staff_iron.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "staff",
-      "core": "iron",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_staff_bronze",
-      "file": "drawable-nodpi/weapon_staff_bronze.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "staff",
-      "core": "bronze",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_staff_silver",
-      "file": "drawable-nodpi/weapon_staff_silver.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "staff",
-      "core": "silver",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_staff_obsidian",
-      "file": "drawable-nodpi/weapon_staff_obsidian.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "staff",
-      "core": "obsidian",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_staff_starsteel",
-      "file": "drawable-nodpi/weapon_staff_starsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "staff",
-      "core": "starsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "weapon_staff_moonsteel",
-      "file": "drawable-nodpi/weapon_staff_moonsteel.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "bottom-center",
-      "layer": "weapon",
-      "family": "staff",
-      "core": "moonsteel",
-      "source": "handmade"
-    },
-    {
-      "id": "overlay_fire",
-      "file": "drawable-nodpi/overlay_fire.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "top-left",
-      "layer": "overlay",
-      "element": "FIRE",
-      "source": "handmade"
-    },
-    {
-      "id": "overlay_frost",
-      "file": "drawable-nodpi/overlay_frost.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "top-left",
-      "layer": "overlay",
-      "element": "FROST",
-      "source": "handmade"
-    },
-    {
-      "id": "overlay_storm",
-      "file": "drawable-nodpi/overlay_storm.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "top-left",
-      "layer": "overlay",
-      "element": "STORM",
-      "source": "handmade"
-    },
-    {
-      "id": "overlay_grave",
-      "file": "drawable-nodpi/overlay_grave.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "top-left",
-      "layer": "overlay",
-      "element": "GRAVE",
-      "source": "handmade"
-    },
-    {
-      "id": "overlay_verdant",
-      "file": "drawable-nodpi/overlay_verdant.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "top-left",
-      "layer": "overlay",
-      "element": "VERDANT",
-      "source": "handmade"
-    },
-    {
-      "id": "overlay_sun",
-      "file": "drawable-nodpi/overlay_sun.png",
-      "width": 64,
-      "height": 64,
-      "anchor": "top-left",
-      "layer": "overlay",
-      "element": "SUN",
-      "source": "handmade"
-    },
-    {
       "id": "portrait_guardian",
       "file": "drawable-nodpi/portrait_guardian.png",
       "width": 16,
@@ -1972,6 +1516,2694 @@
       "source": "handmade",
       "anchor": "tile",
       "notes": "Siege backdrop 96x32"
+    },
+    {
+      "id": "weapon_axe_base_1",
+      "file": "drawable-nodpi/weapon_axe_base_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_base_2",
+      "file": "drawable-nodpi/weapon_axe_base_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_base_3",
+      "file": "drawable-nodpi/weapon_axe_base_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_base_4",
+      "file": "drawable-nodpi/weapon_axe_base_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_base_5",
+      "file": "drawable-nodpi/weapon_axe_base_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_base_6",
+      "file": "drawable-nodpi/weapon_axe_base_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_base_7",
+      "file": "drawable-nodpi/weapon_axe_base_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_base_8",
+      "file": "drawable-nodpi/weapon_axe_base_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_fire_1",
+      "file": "drawable-nodpi/weapon_axe_fire_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_fire_2",
+      "file": "drawable-nodpi/weapon_axe_fire_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_fire_3",
+      "file": "drawable-nodpi/weapon_axe_fire_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_fire_4",
+      "file": "drawable-nodpi/weapon_axe_fire_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_fire_5",
+      "file": "drawable-nodpi/weapon_axe_fire_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_fire_6",
+      "file": "drawable-nodpi/weapon_axe_fire_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_fire_7",
+      "file": "drawable-nodpi/weapon_axe_fire_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_fire_8",
+      "file": "drawable-nodpi/weapon_axe_fire_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_frost_1",
+      "file": "drawable-nodpi/weapon_axe_frost_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_frost_2",
+      "file": "drawable-nodpi/weapon_axe_frost_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_frost_3",
+      "file": "drawable-nodpi/weapon_axe_frost_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_frost_4",
+      "file": "drawable-nodpi/weapon_axe_frost_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_frost_5",
+      "file": "drawable-nodpi/weapon_axe_frost_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_frost_6",
+      "file": "drawable-nodpi/weapon_axe_frost_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_frost_7",
+      "file": "drawable-nodpi/weapon_axe_frost_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_frost_8",
+      "file": "drawable-nodpi/weapon_axe_frost_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_grave_1",
+      "file": "drawable-nodpi/weapon_axe_grave_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_grave_2",
+      "file": "drawable-nodpi/weapon_axe_grave_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_grave_3",
+      "file": "drawable-nodpi/weapon_axe_grave_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_grave_4",
+      "file": "drawable-nodpi/weapon_axe_grave_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_grave_5",
+      "file": "drawable-nodpi/weapon_axe_grave_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_grave_6",
+      "file": "drawable-nodpi/weapon_axe_grave_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_grave_7",
+      "file": "drawable-nodpi/weapon_axe_grave_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_grave_8",
+      "file": "drawable-nodpi/weapon_axe_grave_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_storm_1",
+      "file": "drawable-nodpi/weapon_axe_storm_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_storm_2",
+      "file": "drawable-nodpi/weapon_axe_storm_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_storm_3",
+      "file": "drawable-nodpi/weapon_axe_storm_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_storm_4",
+      "file": "drawable-nodpi/weapon_axe_storm_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_storm_5",
+      "file": "drawable-nodpi/weapon_axe_storm_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_storm_6",
+      "file": "drawable-nodpi/weapon_axe_storm_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_storm_7",
+      "file": "drawable-nodpi/weapon_axe_storm_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_storm_8",
+      "file": "drawable-nodpi/weapon_axe_storm_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_sun_1",
+      "file": "drawable-nodpi/weapon_axe_sun_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_sun_2",
+      "file": "drawable-nodpi/weapon_axe_sun_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_sun_3",
+      "file": "drawable-nodpi/weapon_axe_sun_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_sun_4",
+      "file": "drawable-nodpi/weapon_axe_sun_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_sun_5",
+      "file": "drawable-nodpi/weapon_axe_sun_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_sun_6",
+      "file": "drawable-nodpi/weapon_axe_sun_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_sun_7",
+      "file": "drawable-nodpi/weapon_axe_sun_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_sun_8",
+      "file": "drawable-nodpi/weapon_axe_sun_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_verdant_1",
+      "file": "drawable-nodpi/weapon_axe_verdant_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_verdant_2",
+      "file": "drawable-nodpi/weapon_axe_verdant_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_verdant_3",
+      "file": "drawable-nodpi/weapon_axe_verdant_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_verdant_4",
+      "file": "drawable-nodpi/weapon_axe_verdant_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_verdant_5",
+      "file": "drawable-nodpi/weapon_axe_verdant_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_verdant_6",
+      "file": "drawable-nodpi/weapon_axe_verdant_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_verdant_7",
+      "file": "drawable-nodpi/weapon_axe_verdant_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_axe_verdant_8",
+      "file": "drawable-nodpi/weapon_axe_verdant_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_base_1",
+      "file": "drawable-nodpi/weapon_bow_base_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_base_2",
+      "file": "drawable-nodpi/weapon_bow_base_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_base_3",
+      "file": "drawable-nodpi/weapon_bow_base_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_base_4",
+      "file": "drawable-nodpi/weapon_bow_base_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_base_5",
+      "file": "drawable-nodpi/weapon_bow_base_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_base_6",
+      "file": "drawable-nodpi/weapon_bow_base_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_base_7",
+      "file": "drawable-nodpi/weapon_bow_base_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_base_8",
+      "file": "drawable-nodpi/weapon_bow_base_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_fire_1",
+      "file": "drawable-nodpi/weapon_bow_fire_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_fire_2",
+      "file": "drawable-nodpi/weapon_bow_fire_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_fire_3",
+      "file": "drawable-nodpi/weapon_bow_fire_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_fire_4",
+      "file": "drawable-nodpi/weapon_bow_fire_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_fire_5",
+      "file": "drawable-nodpi/weapon_bow_fire_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_fire_6",
+      "file": "drawable-nodpi/weapon_bow_fire_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_fire_7",
+      "file": "drawable-nodpi/weapon_bow_fire_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_fire_8",
+      "file": "drawable-nodpi/weapon_bow_fire_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_frost_1",
+      "file": "drawable-nodpi/weapon_bow_frost_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_frost_2",
+      "file": "drawable-nodpi/weapon_bow_frost_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_frost_3",
+      "file": "drawable-nodpi/weapon_bow_frost_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_frost_4",
+      "file": "drawable-nodpi/weapon_bow_frost_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_frost_5",
+      "file": "drawable-nodpi/weapon_bow_frost_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_frost_6",
+      "file": "drawable-nodpi/weapon_bow_frost_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_frost_7",
+      "file": "drawable-nodpi/weapon_bow_frost_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_frost_8",
+      "file": "drawable-nodpi/weapon_bow_frost_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_grave_1",
+      "file": "drawable-nodpi/weapon_bow_grave_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_grave_2",
+      "file": "drawable-nodpi/weapon_bow_grave_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_grave_3",
+      "file": "drawable-nodpi/weapon_bow_grave_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_grave_4",
+      "file": "drawable-nodpi/weapon_bow_grave_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_grave_5",
+      "file": "drawable-nodpi/weapon_bow_grave_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_grave_6",
+      "file": "drawable-nodpi/weapon_bow_grave_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_grave_7",
+      "file": "drawable-nodpi/weapon_bow_grave_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_grave_8",
+      "file": "drawable-nodpi/weapon_bow_grave_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_storm_1",
+      "file": "drawable-nodpi/weapon_bow_storm_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_storm_2",
+      "file": "drawable-nodpi/weapon_bow_storm_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_storm_3",
+      "file": "drawable-nodpi/weapon_bow_storm_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_storm_4",
+      "file": "drawable-nodpi/weapon_bow_storm_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_storm_5",
+      "file": "drawable-nodpi/weapon_bow_storm_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_storm_6",
+      "file": "drawable-nodpi/weapon_bow_storm_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_storm_7",
+      "file": "drawable-nodpi/weapon_bow_storm_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_storm_8",
+      "file": "drawable-nodpi/weapon_bow_storm_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_sun_1",
+      "file": "drawable-nodpi/weapon_bow_sun_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_sun_2",
+      "file": "drawable-nodpi/weapon_bow_sun_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_sun_3",
+      "file": "drawable-nodpi/weapon_bow_sun_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_sun_4",
+      "file": "drawable-nodpi/weapon_bow_sun_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_sun_5",
+      "file": "drawable-nodpi/weapon_bow_sun_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_sun_6",
+      "file": "drawable-nodpi/weapon_bow_sun_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_sun_7",
+      "file": "drawable-nodpi/weapon_bow_sun_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_sun_8",
+      "file": "drawable-nodpi/weapon_bow_sun_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_verdant_1",
+      "file": "drawable-nodpi/weapon_bow_verdant_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_verdant_2",
+      "file": "drawable-nodpi/weapon_bow_verdant_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_verdant_3",
+      "file": "drawable-nodpi/weapon_bow_verdant_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_verdant_4",
+      "file": "drawable-nodpi/weapon_bow_verdant_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_verdant_5",
+      "file": "drawable-nodpi/weapon_bow_verdant_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_verdant_6",
+      "file": "drawable-nodpi/weapon_bow_verdant_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_verdant_7",
+      "file": "drawable-nodpi/weapon_bow_verdant_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_bow_verdant_8",
+      "file": "drawable-nodpi/weapon_bow_verdant_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_base_1",
+      "file": "drawable-nodpi/weapon_dagger_base_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_base_2",
+      "file": "drawable-nodpi/weapon_dagger_base_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_base_3",
+      "file": "drawable-nodpi/weapon_dagger_base_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_base_4",
+      "file": "drawable-nodpi/weapon_dagger_base_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_base_5",
+      "file": "drawable-nodpi/weapon_dagger_base_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_base_6",
+      "file": "drawable-nodpi/weapon_dagger_base_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_base_7",
+      "file": "drawable-nodpi/weapon_dagger_base_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_base_8",
+      "file": "drawable-nodpi/weapon_dagger_base_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_fire_1",
+      "file": "drawable-nodpi/weapon_dagger_fire_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_fire_2",
+      "file": "drawable-nodpi/weapon_dagger_fire_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_fire_3",
+      "file": "drawable-nodpi/weapon_dagger_fire_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_fire_4",
+      "file": "drawable-nodpi/weapon_dagger_fire_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_fire_5",
+      "file": "drawable-nodpi/weapon_dagger_fire_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_fire_6",
+      "file": "drawable-nodpi/weapon_dagger_fire_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_fire_7",
+      "file": "drawable-nodpi/weapon_dagger_fire_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_fire_8",
+      "file": "drawable-nodpi/weapon_dagger_fire_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_frost_1",
+      "file": "drawable-nodpi/weapon_dagger_frost_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_frost_2",
+      "file": "drawable-nodpi/weapon_dagger_frost_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_frost_3",
+      "file": "drawable-nodpi/weapon_dagger_frost_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_frost_4",
+      "file": "drawable-nodpi/weapon_dagger_frost_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_frost_5",
+      "file": "drawable-nodpi/weapon_dagger_frost_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_frost_6",
+      "file": "drawable-nodpi/weapon_dagger_frost_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_frost_7",
+      "file": "drawable-nodpi/weapon_dagger_frost_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_frost_8",
+      "file": "drawable-nodpi/weapon_dagger_frost_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_grave_1",
+      "file": "drawable-nodpi/weapon_dagger_grave_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_grave_2",
+      "file": "drawable-nodpi/weapon_dagger_grave_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_grave_3",
+      "file": "drawable-nodpi/weapon_dagger_grave_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_grave_4",
+      "file": "drawable-nodpi/weapon_dagger_grave_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_grave_5",
+      "file": "drawable-nodpi/weapon_dagger_grave_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_grave_6",
+      "file": "drawable-nodpi/weapon_dagger_grave_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_grave_7",
+      "file": "drawable-nodpi/weapon_dagger_grave_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_grave_8",
+      "file": "drawable-nodpi/weapon_dagger_grave_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_storm_1",
+      "file": "drawable-nodpi/weapon_dagger_storm_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_storm_2",
+      "file": "drawable-nodpi/weapon_dagger_storm_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_storm_3",
+      "file": "drawable-nodpi/weapon_dagger_storm_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_storm_4",
+      "file": "drawable-nodpi/weapon_dagger_storm_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_storm_5",
+      "file": "drawable-nodpi/weapon_dagger_storm_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_storm_6",
+      "file": "drawable-nodpi/weapon_dagger_storm_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_storm_7",
+      "file": "drawable-nodpi/weapon_dagger_storm_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_storm_8",
+      "file": "drawable-nodpi/weapon_dagger_storm_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_sun_1",
+      "file": "drawable-nodpi/weapon_dagger_sun_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_sun_2",
+      "file": "drawable-nodpi/weapon_dagger_sun_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_sun_3",
+      "file": "drawable-nodpi/weapon_dagger_sun_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_sun_4",
+      "file": "drawable-nodpi/weapon_dagger_sun_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_sun_5",
+      "file": "drawable-nodpi/weapon_dagger_sun_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_sun_6",
+      "file": "drawable-nodpi/weapon_dagger_sun_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_sun_7",
+      "file": "drawable-nodpi/weapon_dagger_sun_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_sun_8",
+      "file": "drawable-nodpi/weapon_dagger_sun_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_verdant_1",
+      "file": "drawable-nodpi/weapon_dagger_verdant_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_verdant_2",
+      "file": "drawable-nodpi/weapon_dagger_verdant_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_verdant_3",
+      "file": "drawable-nodpi/weapon_dagger_verdant_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_verdant_4",
+      "file": "drawable-nodpi/weapon_dagger_verdant_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_verdant_5",
+      "file": "drawable-nodpi/weapon_dagger_verdant_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_verdant_6",
+      "file": "drawable-nodpi/weapon_dagger_verdant_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_verdant_7",
+      "file": "drawable-nodpi/weapon_dagger_verdant_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_dagger_verdant_8",
+      "file": "drawable-nodpi/weapon_dagger_verdant_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_base_1",
+      "file": "drawable-nodpi/weapon_spear_base_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_base_2",
+      "file": "drawable-nodpi/weapon_spear_base_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_base_3",
+      "file": "drawable-nodpi/weapon_spear_base_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_base_4",
+      "file": "drawable-nodpi/weapon_spear_base_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_base_5",
+      "file": "drawable-nodpi/weapon_spear_base_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_base_6",
+      "file": "drawable-nodpi/weapon_spear_base_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_base_7",
+      "file": "drawable-nodpi/weapon_spear_base_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_base_8",
+      "file": "drawable-nodpi/weapon_spear_base_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_fire_1",
+      "file": "drawable-nodpi/weapon_spear_fire_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_fire_2",
+      "file": "drawable-nodpi/weapon_spear_fire_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_fire_3",
+      "file": "drawable-nodpi/weapon_spear_fire_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_fire_4",
+      "file": "drawable-nodpi/weapon_spear_fire_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_fire_5",
+      "file": "drawable-nodpi/weapon_spear_fire_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_fire_6",
+      "file": "drawable-nodpi/weapon_spear_fire_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_fire_7",
+      "file": "drawable-nodpi/weapon_spear_fire_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_fire_8",
+      "file": "drawable-nodpi/weapon_spear_fire_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_frost_1",
+      "file": "drawable-nodpi/weapon_spear_frost_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_frost_2",
+      "file": "drawable-nodpi/weapon_spear_frost_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_frost_3",
+      "file": "drawable-nodpi/weapon_spear_frost_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_frost_4",
+      "file": "drawable-nodpi/weapon_spear_frost_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_frost_5",
+      "file": "drawable-nodpi/weapon_spear_frost_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_frost_6",
+      "file": "drawable-nodpi/weapon_spear_frost_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_frost_7",
+      "file": "drawable-nodpi/weapon_spear_frost_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_frost_8",
+      "file": "drawable-nodpi/weapon_spear_frost_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_grave_1",
+      "file": "drawable-nodpi/weapon_spear_grave_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_grave_2",
+      "file": "drawable-nodpi/weapon_spear_grave_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_grave_3",
+      "file": "drawable-nodpi/weapon_spear_grave_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_grave_4",
+      "file": "drawable-nodpi/weapon_spear_grave_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_grave_5",
+      "file": "drawable-nodpi/weapon_spear_grave_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_grave_6",
+      "file": "drawable-nodpi/weapon_spear_grave_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_grave_7",
+      "file": "drawable-nodpi/weapon_spear_grave_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_grave_8",
+      "file": "drawable-nodpi/weapon_spear_grave_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_storm_1",
+      "file": "drawable-nodpi/weapon_spear_storm_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_storm_2",
+      "file": "drawable-nodpi/weapon_spear_storm_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_storm_3",
+      "file": "drawable-nodpi/weapon_spear_storm_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_storm_4",
+      "file": "drawable-nodpi/weapon_spear_storm_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_storm_5",
+      "file": "drawable-nodpi/weapon_spear_storm_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_storm_6",
+      "file": "drawable-nodpi/weapon_spear_storm_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_storm_7",
+      "file": "drawable-nodpi/weapon_spear_storm_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_storm_8",
+      "file": "drawable-nodpi/weapon_spear_storm_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_sun_1",
+      "file": "drawable-nodpi/weapon_spear_sun_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_sun_2",
+      "file": "drawable-nodpi/weapon_spear_sun_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_sun_3",
+      "file": "drawable-nodpi/weapon_spear_sun_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_sun_4",
+      "file": "drawable-nodpi/weapon_spear_sun_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_sun_5",
+      "file": "drawable-nodpi/weapon_spear_sun_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_sun_6",
+      "file": "drawable-nodpi/weapon_spear_sun_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_sun_7",
+      "file": "drawable-nodpi/weapon_spear_sun_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_sun_8",
+      "file": "drawable-nodpi/weapon_spear_sun_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_verdant_1",
+      "file": "drawable-nodpi/weapon_spear_verdant_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_verdant_2",
+      "file": "drawable-nodpi/weapon_spear_verdant_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_verdant_3",
+      "file": "drawable-nodpi/weapon_spear_verdant_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_verdant_4",
+      "file": "drawable-nodpi/weapon_spear_verdant_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_verdant_5",
+      "file": "drawable-nodpi/weapon_spear_verdant_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_verdant_6",
+      "file": "drawable-nodpi/weapon_spear_verdant_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_verdant_7",
+      "file": "drawable-nodpi/weapon_spear_verdant_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_spear_verdant_8",
+      "file": "drawable-nodpi/weapon_spear_verdant_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_base_1",
+      "file": "drawable-nodpi/weapon_staff_base_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_base_2",
+      "file": "drawable-nodpi/weapon_staff_base_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_base_3",
+      "file": "drawable-nodpi/weapon_staff_base_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_base_4",
+      "file": "drawable-nodpi/weapon_staff_base_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_base_5",
+      "file": "drawable-nodpi/weapon_staff_base_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_base_6",
+      "file": "drawable-nodpi/weapon_staff_base_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_base_7",
+      "file": "drawable-nodpi/weapon_staff_base_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_base_8",
+      "file": "drawable-nodpi/weapon_staff_base_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_fire_1",
+      "file": "drawable-nodpi/weapon_staff_fire_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_fire_2",
+      "file": "drawable-nodpi/weapon_staff_fire_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_fire_3",
+      "file": "drawable-nodpi/weapon_staff_fire_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_fire_4",
+      "file": "drawable-nodpi/weapon_staff_fire_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_fire_5",
+      "file": "drawable-nodpi/weapon_staff_fire_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_fire_6",
+      "file": "drawable-nodpi/weapon_staff_fire_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_fire_7",
+      "file": "drawable-nodpi/weapon_staff_fire_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_fire_8",
+      "file": "drawable-nodpi/weapon_staff_fire_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_frost_1",
+      "file": "drawable-nodpi/weapon_staff_frost_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_frost_2",
+      "file": "drawable-nodpi/weapon_staff_frost_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_frost_3",
+      "file": "drawable-nodpi/weapon_staff_frost_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_frost_4",
+      "file": "drawable-nodpi/weapon_staff_frost_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_frost_5",
+      "file": "drawable-nodpi/weapon_staff_frost_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_frost_6",
+      "file": "drawable-nodpi/weapon_staff_frost_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_frost_7",
+      "file": "drawable-nodpi/weapon_staff_frost_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_frost_8",
+      "file": "drawable-nodpi/weapon_staff_frost_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_grave_1",
+      "file": "drawable-nodpi/weapon_staff_grave_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_grave_2",
+      "file": "drawable-nodpi/weapon_staff_grave_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_grave_3",
+      "file": "drawable-nodpi/weapon_staff_grave_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_grave_4",
+      "file": "drawable-nodpi/weapon_staff_grave_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_grave_5",
+      "file": "drawable-nodpi/weapon_staff_grave_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_grave_6",
+      "file": "drawable-nodpi/weapon_staff_grave_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_grave_7",
+      "file": "drawable-nodpi/weapon_staff_grave_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_grave_8",
+      "file": "drawable-nodpi/weapon_staff_grave_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_storm_1",
+      "file": "drawable-nodpi/weapon_staff_storm_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_storm_2",
+      "file": "drawable-nodpi/weapon_staff_storm_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_storm_3",
+      "file": "drawable-nodpi/weapon_staff_storm_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_storm_4",
+      "file": "drawable-nodpi/weapon_staff_storm_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_storm_5",
+      "file": "drawable-nodpi/weapon_staff_storm_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_storm_6",
+      "file": "drawable-nodpi/weapon_staff_storm_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_storm_7",
+      "file": "drawable-nodpi/weapon_staff_storm_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_storm_8",
+      "file": "drawable-nodpi/weapon_staff_storm_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_sun_1",
+      "file": "drawable-nodpi/weapon_staff_sun_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_sun_2",
+      "file": "drawable-nodpi/weapon_staff_sun_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_sun_3",
+      "file": "drawable-nodpi/weapon_staff_sun_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_sun_4",
+      "file": "drawable-nodpi/weapon_staff_sun_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_sun_5",
+      "file": "drawable-nodpi/weapon_staff_sun_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_sun_6",
+      "file": "drawable-nodpi/weapon_staff_sun_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_sun_7",
+      "file": "drawable-nodpi/weapon_staff_sun_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_sun_8",
+      "file": "drawable-nodpi/weapon_staff_sun_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_verdant_1",
+      "file": "drawable-nodpi/weapon_staff_verdant_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_verdant_2",
+      "file": "drawable-nodpi/weapon_staff_verdant_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_verdant_3",
+      "file": "drawable-nodpi/weapon_staff_verdant_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_verdant_4",
+      "file": "drawable-nodpi/weapon_staff_verdant_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_verdant_5",
+      "file": "drawable-nodpi/weapon_staff_verdant_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_verdant_6",
+      "file": "drawable-nodpi/weapon_staff_verdant_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_verdant_7",
+      "file": "drawable-nodpi/weapon_staff_verdant_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_staff_verdant_8",
+      "file": "drawable-nodpi/weapon_staff_verdant_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_base_1",
+      "file": "drawable-nodpi/weapon_sword_base_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_base_2",
+      "file": "drawable-nodpi/weapon_sword_base_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_base_3",
+      "file": "drawable-nodpi/weapon_sword_base_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_base_4",
+      "file": "drawable-nodpi/weapon_sword_base_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_base_5",
+      "file": "drawable-nodpi/weapon_sword_base_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_base_6",
+      "file": "drawable-nodpi/weapon_sword_base_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_base_7",
+      "file": "drawable-nodpi/weapon_sword_base_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_base_8",
+      "file": "drawable-nodpi/weapon_sword_base_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_fire_1",
+      "file": "drawable-nodpi/weapon_sword_fire_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_fire_2",
+      "file": "drawable-nodpi/weapon_sword_fire_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_fire_3",
+      "file": "drawable-nodpi/weapon_sword_fire_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_fire_4",
+      "file": "drawable-nodpi/weapon_sword_fire_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_fire_5",
+      "file": "drawable-nodpi/weapon_sword_fire_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_fire_6",
+      "file": "drawable-nodpi/weapon_sword_fire_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_fire_7",
+      "file": "drawable-nodpi/weapon_sword_fire_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_fire_8",
+      "file": "drawable-nodpi/weapon_sword_fire_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_frost_1",
+      "file": "drawable-nodpi/weapon_sword_frost_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_frost_2",
+      "file": "drawable-nodpi/weapon_sword_frost_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_frost_3",
+      "file": "drawable-nodpi/weapon_sword_frost_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_frost_4",
+      "file": "drawable-nodpi/weapon_sword_frost_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_frost_5",
+      "file": "drawable-nodpi/weapon_sword_frost_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_frost_6",
+      "file": "drawable-nodpi/weapon_sword_frost_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_frost_7",
+      "file": "drawable-nodpi/weapon_sword_frost_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_frost_8",
+      "file": "drawable-nodpi/weapon_sword_frost_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_grave_1",
+      "file": "drawable-nodpi/weapon_sword_grave_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_grave_2",
+      "file": "drawable-nodpi/weapon_sword_grave_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_grave_3",
+      "file": "drawable-nodpi/weapon_sword_grave_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_grave_4",
+      "file": "drawable-nodpi/weapon_sword_grave_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_grave_5",
+      "file": "drawable-nodpi/weapon_sword_grave_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_grave_6",
+      "file": "drawable-nodpi/weapon_sword_grave_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_grave_7",
+      "file": "drawable-nodpi/weapon_sword_grave_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_grave_8",
+      "file": "drawable-nodpi/weapon_sword_grave_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_storm_1",
+      "file": "drawable-nodpi/weapon_sword_storm_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_storm_2",
+      "file": "drawable-nodpi/weapon_sword_storm_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_storm_3",
+      "file": "drawable-nodpi/weapon_sword_storm_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_storm_4",
+      "file": "drawable-nodpi/weapon_sword_storm_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_storm_5",
+      "file": "drawable-nodpi/weapon_sword_storm_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_storm_6",
+      "file": "drawable-nodpi/weapon_sword_storm_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_storm_7",
+      "file": "drawable-nodpi/weapon_sword_storm_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_storm_8",
+      "file": "drawable-nodpi/weapon_sword_storm_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_sun_1",
+      "file": "drawable-nodpi/weapon_sword_sun_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_sun_2",
+      "file": "drawable-nodpi/weapon_sword_sun_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_sun_3",
+      "file": "drawable-nodpi/weapon_sword_sun_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_sun_4",
+      "file": "drawable-nodpi/weapon_sword_sun_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_sun_5",
+      "file": "drawable-nodpi/weapon_sword_sun_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_sun_6",
+      "file": "drawable-nodpi/weapon_sword_sun_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_sun_7",
+      "file": "drawable-nodpi/weapon_sword_sun_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_sun_8",
+      "file": "drawable-nodpi/weapon_sword_sun_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_verdant_1",
+      "file": "drawable-nodpi/weapon_sword_verdant_1.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_verdant_2",
+      "file": "drawable-nodpi/weapon_sword_verdant_2.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_verdant_3",
+      "file": "drawable-nodpi/weapon_sword_verdant_3.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_verdant_4",
+      "file": "drawable-nodpi/weapon_sword_verdant_4.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_verdant_5",
+      "file": "drawable-nodpi/weapon_sword_verdant_5.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_verdant_6",
+      "file": "drawable-nodpi/weapon_sword_verdant_6.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_verdant_7",
+      "file": "drawable-nodpi/weapon_sword_verdant_7.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
+    },
+    {
+      "id": "weapon_sword_verdant_8",
+      "file": "drawable-nodpi/weapon_sword_verdant_8.png",
+      "width": 56,
+      "height": 56,
+      "layer": "weapon",
+      "source": "handmade"
     }
   ],
   "animations": [

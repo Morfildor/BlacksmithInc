@@ -13,6 +13,11 @@ Sheets are matched by the trailing "-N" in the file name (…-1.png = scene, -2 
 message. A loose file named exactly `<sprite_id>.png` (e.g. `weapon_staff_iron.png`) is imported on its own: it is
 tight-cropped, fitted to that ID's box and recorded as an override too.
 
+The weapon master sheet (a file whose name starts with "Weapons master", any or no extension; 6 family panels of
+8 levels x 7 rows: base + fire, frost, storm, grave, verdant, sun) is keyed against its flat dark background and
+sliced into `weapon_<family>_<row>_<level>` (336 sprites, padded to 56 px, never enlarged). It also regenerates
+`ui/WeaponArt.kt`, the drawable lookup table the UI uses for every weapon.
+
 A production pack (a subfolder holding `drawable-nodpi/*.png` plus `manifest.json`, as delivered by the pixel artist)
 is copied verbatim for the IDs in PACK_PREFIXES: those are 1x sprites the concept sheets do not provide (battle
 animation frames, siege wall, milestone burst, hero markers). Pass `--pack-all` to take every pack sprite instead.
@@ -21,7 +26,6 @@ IDs imported earlier but no longer produced are pruned from the drawable folder.
 from __future__ import annotations
 
 import argparse
-import colorsys
 import json
 import re
 import sys
@@ -55,6 +59,14 @@ def grid(x0, y0, x1, y1, cols, rows):
 
 CLASSES = ["guardian", "ranger", "duelist", "battlemage", "warden"]
 CORES = ["iron", "bronze", "silver", "obsidian", "starsteel", "moonsteel"]
+WEAPON_ROWS = ["base", "fire", "frost", "storm", "grave", "verdant", "sun"]
+WEAPON_LEVELS = 8
+WEAPON_BOX = 56
+WEAPON_ART_KT = ROOT / "app/src/main/java/com/example/blacksmithproject/ui/WeaponArt.kt"
+# Weapon master sheet geometry, measured on the 1672x941 export: panel origin per family, grid at +97/+52, 55x57 cells.
+MASTER_WIDTH = 1672
+MASTER_PANELS = {"sword": (9, 10), "axe": (565, 10), "spear": (1119, 10), "bow": (9, 475), "dagger": (565, 475), "staff": (1119, 475)}
+MASTER_GRID = (97, 52, 55, 57)
 FAMILIES = ["sword", "axe", "spear", "bow", "dagger", "staff"]
 ELEMENTS = ["fire", "frost", "storm", "grave", "verdant", "sun"]
 AUGMENTS = ["ember_resin", "frost_bloom", "stormglass", "grave_dust", "verdant_sap", "sun_ash"]
@@ -82,15 +94,8 @@ def layout_1():  # forge scene, 1448x1086
     return cells
 
 
-def layout_2():  # weapons, element overlays, rarity badges, 1448x1086
+def layout_2():  # rarity badges, 1448x1086 (its weapon and overlay cells are superseded by the weapon master sheet)
     cells = {}
-    weapon_cells = {"sword": (45, 55, 250, 530), "axe": (285, 55, 535, 530), "spear": (540, 55, 690, 530),
-                    "bow": (735, 55, 995, 535), "dagger": (995, 55, 1145, 535), "staff": (1220, 55, 1430, 530)}
-    for fam, cell in weapon_cells.items():
-        cells[f"weapon_{fam}_iron"] = dict(cell=cell, box=(64, 64), recolor_cores=True)
-    xs = [23, 262, 500, 725, 965, 1200, 1441]
-    for i, el in enumerate(ELEMENTS):
-        cells[f"overlay_{el}"] = dict(cell=(xs[i], 532, xs[i + 1], 886), box=(64, 64))
     badge_cells = [(127, 870, 278, 1040), (325, 873, 483, 1040), (526, 872, 686, 1040), (735, 876, 896, 1050), (946, 874, 1117, 1040), (1161, 873, 1323, 1058)]
     for rid, cell in zip(["common", "uncommon", "rare", "epic", "legendary", "flaw"], badge_cells):
         cells[f"badge_{rid}"] = dict(cell=cell, box=(24, 24))
@@ -178,33 +183,108 @@ def stretch(im: Image.Image, box) -> Image.Image:
     return im.resize(box, Image.LANCZOS)
 
 
-def recolor_metal(im: Image.Image, core: str) -> Image.Image:
-    """Tint low-saturation bright pixels (the blade metal); leaves wood, leather, gold and gems alone."""
-    tints = {  # hue (deg), saturation, value multiplier
-        "bronze": (28, 0.55, 0.95), "silver": (210, 0.04, 1.15), "obsidian": (272, 0.42, 0.62),
-        "starsteel": (208, 0.38, 1.0), "moonsteel": (252, 0.26, 1.05),
-    }
-    if core == "iron":
-        return im
-    hue, sat, vmul = tints[core]
-    arr = np.array(im).astype(np.float32)
-    rgb = arr[:, :, :3] / 255.0
-    out = arr.copy()
-    for y in range(arr.shape[0]):
-        for x in range(arr.shape[1]):
-            if arr[y, x, 3] < 8:
+def key_background(im: Image.Image) -> Image.Image:
+    """RGB sheet on a flat dark background -> RGBA: alpha ramps with colour distance from the dominant dark colour."""
+    arr = np.array(im.convert("RGB")).astype(np.int32)
+    flat = arr.reshape(-1, 3)
+    dark = flat[flat.sum(1) < 150]
+    vals, counts = np.unique(dark, axis=0, return_counts=True)
+    bg = vals[counts.argmax()]
+    dist = np.abs(arr - bg).sum(2)
+    alpha = np.clip((dist - 30) / 60.0, 0.0, 1.0) * 255
+    return Image.fromarray(np.dstack([arr, alpha]).astype(np.uint8), "RGBA")
+
+
+def main_component_only(cell: Image.Image, threshold=40) -> Image.Image:
+    """Drop blobs that touch the cell edge and are not the largest one: neighbour spill and header labels."""
+    a = np.array(cell)
+    solid = a[:, :, 3] > threshold
+    h, w = solid.shape
+    labels = np.zeros((h, w), dtype=np.int32)
+    sizes, touches = [], []
+    for y in range(h):
+        for x in range(w):
+            if not solid[y, x] or labels[y, x]:
                 continue
-            r, g, b = rgb[y, x]
-            h, s, v = colorsys.rgb_to_hsv(r, g, b)
-            if s < 0.22 and v > 0.28:  # metal
-                nr, ng, nb = colorsys.hsv_to_rgb(hue / 360.0, sat, min(1.0, v * vmul))
-                out[y, x, :3] = (nr * 255, ng * 255, nb * 255)
-    return Image.fromarray(out.clip(0, 255).astype(np.uint8), "RGBA")
+            n = len(sizes) + 1
+            labels[y, x] = n
+            stack, size, touch = [(y, x)], 0, False
+            while stack:
+                cy, cx = stack.pop()
+                size += 1
+                touch = touch or cy in (0, h - 1) or cx in (0, w - 1)
+                for ny in (cy - 1, cy, cy + 1):
+                    for nx in (cx - 1, cx, cx + 1):
+                        if 0 <= ny < h and 0 <= nx < w and solid[ny, nx] and not labels[ny, nx]:
+                            labels[ny, nx] = n
+                            stack.append((ny, nx))
+            sizes.append(size)
+            touches.append(touch)
+    if not sizes:
+        raise ValueError("empty cell")
+    main = int(np.argmax(sizes)) + 1
+    for i, touch in enumerate(touches, start=1):
+        if i != main and touch:
+            a[labels == i, 3] = 0
+    return Image.fromarray(a, "RGBA")
+
+
+def pad_square(im: Image.Image, size: int) -> Image.Image:
+    """Centre on a transparent square; shrink only when the crop is larger than the box (never enlarge pixel art)."""
+    if max(im.width, im.height) > size:
+        im = fit(im, (size, size))
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    canvas.paste(im, ((size - im.width) // 2, (size - im.height) // 2))
+    return canvas
+
+
+def master_cells(scale: float = 1.0) -> dict:
+    gx, gy, cw, ch = MASTER_GRID
+    cells = {}
+    for fam, (px, py) in MASTER_PANELS.items():
+        for j, row in enumerate(WEAPON_ROWS):
+            for k in range(WEAPON_LEVELS):
+                x0, y0 = px + gx + k * cw, py + gy + j * ch
+                cells[f"weapon_{fam}_{row}_{k + 1}"] = tuple(int(round(v * scale)) for v in (x0, y0, x0 + cw, y0 + ch))
+    return cells
+
+
+def import_master(path: Path, overrides: dict, produced: list):
+    im = key_background(Image.open(path))
+    for sid, cell in master_cells(im.width / MASTER_WIDTH).items():
+        region = main_component_only(im.crop(cell))
+        result = pad_square(tight_crop(region, (0, 0, region.width, region.height)), WEAPON_BOX)
+        result.save(OUT / f"{sid}.png", optimize=True)
+        overrides[sid] = {"sheet": path.name, "width": result.width, "height": result.height}
+        produced.append((sid, result))
+    write_weapon_art()
+
+
+def write_weapon_art():
+    lines = [
+        "// GENERATED by tools/pixelart/import_assets.py from the weapon master sheet; do not edit by hand.",
+        "package com.example.blacksmithproject.ui", "", "import com.example.blacksmithproject.R", "",
+        "/** Drawable per weapon family, element row (base = no augment) and visual level 1..LEVELS. */",
+        "internal object WeaponArt {",
+        f"    const val LEVELS = {WEAPON_LEVELS}",
+        "    private val rows = listOf(" + ", ".join(f'"{r}"' for r in WEAPON_ROWS) + ")",
+        "    private val table: Map<String, Array<IntArray>> = mapOf(",
+    ]
+    for fam in FAMILIES:
+        lines.append(f'        "{fam}" to arrayOf(')
+        for row in WEAPON_ROWS:
+            lines.append("            intArrayOf(" + ", ".join(f"R.drawable.weapon_{fam}_{row}_{k}" for k in range(1, WEAPON_LEVELS + 1)) + "),")
+        lines.append("        ),")
+    lines += ["    )", "",
+              "    fun sprite(family: String, row: String, level: Int): Int? =",
+              "        table[family]?.get(rows.indexOf(row).coerceAtLeast(0))?.get((level - 1).coerceIn(0, LEVELS - 1))",
+              "}", ""]
+    WEAPON_ART_KT.write_text("\n".join(lines), encoding="utf-8")
 
 
 def known_specs() -> dict:
     """Every sprite ID with its layout spec, across all sheets (for loose single-file imports)."""
-    specs = {}
+    specs = {sid: dict(box=(WEAPON_BOX, WEAPON_BOX)) for sid in master_cells()}
     for layout in LAYOUTS.values():
         specs.update(layout())
     return specs
@@ -266,14 +346,9 @@ def import_sheet(n: int, path: Path, overrides: dict, produced: list):
         else:
             s = spec["size"] / max(crop.width, crop.height)
             result = crop.resize((max(1, round(crop.width * s)), max(1, round(crop.height * s))), Image.LANCZOS)
-        variants = {sid: result}
-        if spec.get("recolor_cores"):
-            base = sid[: -len("_iron")]
-            variants = {f"{base}_{core}": recolor_metal(result, core) for core in CORES}
-        for vid, img in variants.items():
-            img.save(OUT / f"{vid}.png", optimize=True)
-            overrides[vid] = {"sheet": path.name, "width": img.width, "height": img.height}
-            produced.append((vid, img))
+        result.save(OUT / f"{sid}.png", optimize=True)
+        overrides[sid] = {"sheet": path.name, "width": result.width, "height": result.height}
+        produced.append((sid, result))
 
 
 def contact_sheet(produced):
@@ -305,14 +380,22 @@ def main():
     produced = []
     found = 0
     specs = known_specs()
+    masters = [p for p in sorted(SRC.iterdir()) if p.is_file() and p.name.lower().startswith("weapons master")]
+    for path in masters:
+        if args.sheet:
+            continue
+        import_master(path, overrides, produced)
+        found += 1
+        print(f"weapon master: {path.name}")
     for path in sorted(SRC.glob("*.png")):
+        if path in masters:
+            continue
         m = re.search(r"-(\d+)\.png$", path.name)
         if not m:
-            if path.stem in specs or re.fullmatch(r"weapon_(sword|axe|spear|bow|dagger|staff)_(iron|bronze|silver|obsidian|starsteel|moonsteel)", path.stem):
-                spec = specs.get(path.stem) or dict(box=(64, 64))
+            if path.stem in specs:
                 if args.sheet:
                     continue
-                import_single(path, spec, overrides, produced)
+                import_single(path, specs[path.stem], overrides, produced)
                 found += 1
                 print(f"single sprite: {path.name}")
             else:
