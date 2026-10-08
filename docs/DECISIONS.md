@@ -151,7 +151,7 @@ WEAPON_STOLEN/INHERITED/RECOVERED/LOST; drop the rest (forged/listed/sold/equipp
 wounded/leveled, commissions, pressure, warnings, damage/recovery, blessings, discovery clues), all of which are
 already folded into `Weapon`/`Hero`/`Town`/`Journal` fields. Daily compaction equals one filter at the final End
 Day, so a seed replays identically with or without it (`EventCompactionTest`: 400-day paired run, state equal
-except `events`). A typical 20–45-day run never compacts at all.
+except `events`). Runs of 30 days or fewer never compact; longer runs lose only ordinary records older than 30 days.
 
 Measured (`:core:simulate --runs 200 --seed 1 --perf`, forced survival, 1,000 days, JVM): before p50 0.37 ms /
 p95 0.91 ms / max 7.52 ms, events=13,275 at the end; after p50 0.38 ms / p95 0.89 ms / max 2.48 ms,
