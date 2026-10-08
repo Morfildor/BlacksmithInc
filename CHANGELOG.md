@@ -7,6 +7,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-08
+Launch content by default, balance v2, all 24 signatures and 25 world events, bounded saves, decluttered UI.
+
 ### Added
 - The remaining 12 signature recipes (spear, dagger, staff) for launch content, so all 24 exist; every core,
   element and catalyst now appears in at least one recipe.

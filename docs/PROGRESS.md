@@ -35,7 +35,8 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 | Event compaction | `EventCompactionTest` + `:core:simulate --runs 200 --seed 1 --perf` | 400-day forced-survival pair: gameplay identical with/without compaction; perf run ends at events=1,834 (was 13,275) |
 | Debug APK + install | `./gradlew :app:installDebug` | BUILD SUCCESSFUL |
 | Instrumented | `./gradlew :app:connectedDebugAndroidTest` | 5/5 pass (Room atomic save/restore x2, title screen, forge hint x2) |
-| Device loop | `tools/emulator/smoke.sh` | New run -> forge -> list -> End Day -> Gazette -> Town -> resume after process death on day 2 (screenshots sent to the user) |
+| Device loop | `tools/emulator/smoke.sh` | Re-run on the merged 0.2.0 build (launch content, new layout): shelf/town/resume checks ok, SMOKE_DONE; screenshots sent to the user |
+| Instrumented on merged main | `./gradlew :app:connectedDebugAndroidTest` | 5/5 pass on the 0.2.0 build |
 | Art import | `python tools/pixelart/import_assets.py` | 5 sheets + weapon master + 1 pack -> 488 sprites; contact sheet reviewed; weapon shelf verified on device |
 | UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
@@ -59,7 +60,7 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
 - Package name is still `com.example.blacksmithproject`; no release signing.
 - `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order; bump with the first release.
-- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc. Commit/push only on request.
+- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.2.0 (versionCode 2).
 
 ## Next executable actions (P7)
 1. Re-run the device smoke loop and instrumented tests on the launch default (three factions, five classes in the UI).
