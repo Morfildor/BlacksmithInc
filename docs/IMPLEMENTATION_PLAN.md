@@ -53,8 +53,8 @@ Legend: [x] done and verified · [~] partial · [ ] not started. Verification ev
 
 ## P6 — Launch content, art, replays
 - [~] Launch catalog (`content/LaunchContent.kt`): 6 families, 16 materials, 5 classes, 3 factions, 12 affixes, 6 flaws, 8 blessings, 8 upgrades — validated and simulated, **not yet the engine default** (quality formula saturates at tier 6; P7 retune)
-- [~] 23 of 25 scripted world events in a weighted pool + 2 deterministic rules; Strange Weapon Fragment not built
-- [~] 12 of 24 signature recipes (slice families only); SIGNATURE_DISCOVERED journal stage, clues, hints
+- [x] 25 scripted world events: 23 in a weighted pool (incl. Strange Weapon Fragment, a signature clue) + 2 deterministic rules
+- [x] 24 signature recipes (4 per launch family; spear/dagger/staff reachable once launch content is the default); SIGNATURE_DISCOVERED journal stage, clues, hints
 - [x] Advanced Forge techniques (Temper/Quench/Etch) in engine and Forge panel
 - [x] Guild/retirement/mentoring, weapon seizure and inheritance, famous-blade return from the Legend Board
 - [ ] Reputation/loyalty depth (willingness to pay, repeat customers)

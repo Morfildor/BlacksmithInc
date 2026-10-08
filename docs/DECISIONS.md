@@ -90,8 +90,8 @@ bot forging ~3 items/day; it is not a market defect.
   element affix at −3 quality) and ETCH (+1 affix slot, more defects). Quench is deliberately a trade, not the GDD's
   literal "guarantee the element affix when a slot exists", which `Forge.apply` already did.
 - World events are a weighted daily pool (`engine/WorldEvents.kt`, one pick per day at 30 %, eligibility, cooldown,
-  max-per-run); 23 of the 25 GDD events are in the pool, Guild Founded and Champion Retirement are deterministic
-  rules in step 8, Strange Weapon Fragment is not built. Retirement at level 8 or 10 victories (15 %/day), guild at
+  max-per-run); 22 of the 25 GDD events were in the pool, Guild Founded and Champion Retirement are deterministic
+  rules in step 8, Strange Weapon Fragment came later (see below). Retirement at level 8 or 10 victories (15 %/day), guild at
   fame 3, every retiree mentors a newcomer who inherits the retiree's weapons (one-owner invariant).
 - Events were not compacted in P6; the engine policy below replaced that in P7. The simulator's own trimming hook
   (`SimulationDriver.eventRetentionDays`, type-blind) is still used by the 5,000-day soak and is independent of it.
@@ -177,6 +177,23 @@ set ever needs trimming, WEAPON_INHERITED (one per weapon per retirement) is the
   core tier (iron 1 … moonsteel 6) + 1 for epic + 2 for legendary, clamped to 8; the preview shows the "base" row
   until an augment is chosen. The choice is in `Sprites.weaponLevel` and reversible. Cost: 336 PNGs at 56 px,
   about 2.5 MB of drawables (fine for a premium title; pngquant is an option if the APK ever matters).
+
+## Signatures 13–24 and the fragment event (2026-10-08, session 3)
+- `SignatureCatalog` now holds all 24 PROPOSED recipes, keyed by `LaunchContent` IDs (identical to the slice IDs
+  for shared content; spear/dagger/staff recipes are unreachable under `SliceContent` because Forge validation
+  rejects unknown families). Lookup by family+core+augment is a map. The 12 new recipes, by family:
+  spear Thornwall (iron+verdant, salt, q50), Hoarfrost Pike (moonsteel+frost, no catalyst, safe, q70), Sunlance
+  (starsteel+sun, dragon oil, reckless, q75), Gravewarden (bronze+grave, runestone, q60); dagger Nightletter
+  (bronze+grave, void ink, q60), Sparkfang (silver+storm, no catalyst, reckless, q60), Emberneedle (obsidian+ember,
+  salt, q55), Rimeshard (iron+frost, runestone, safe, q50); staff Noonward (starsteel+sun, void ink, q75),
+  Greenheart (bronze+verdant, no catalyst, balanced, q55), Stormcaller (silver+storm, runestone, q65), Mourning Rod
+  (obsidian+grave, dragon oil, safe, q65). Each grants its element affix plus one neutral affix and +4…+9 power.
+  Floors sit a few points under the pre-retune median quality of the recipe (the six "excellent affinity" pairs
+  carry the tier-4+ recipes); re-check reachability (`everyLaunchSignatureIsReachable…`) after the quality retune.
+- Strange Weapon Fragment (GDD event 20, "signature clue"): weight 1.5, max 2 per run, cooldown 5, eligible while
+  the active catalog has a signature whose journal entry is UNKNOWN. It sets that entry to OBSERVED (the journal
+  then shows the base recipe and the descriptive "wants" hint, never the condition itself), adds one of the
+  recipe's core and one of its augment, and emits a DISCOVERY record plus the Gazette story. No new state fields.
 
 ## SLICE reductions still in force
 - Default catalog: 3 families, 6 materials + 1 catalyst, 2 classes, 1 faction, 5 blessings, 4 upgrades, 6 affixes,
