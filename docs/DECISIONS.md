@@ -221,6 +221,104 @@ down to ~3 gold on top-tier cores, Family Savings measures +5 median / +1.4 mean
 the GDD values (+1 energy, +100 gold per level); the honest next lever is a harness purchasing rule (buy the best
 affordable core), which would move every baseline and is left for the next balance review.
 
+## Balance review at 10,000 seeds (2026-10-08, session 4)
+Numbers are provisional: reputation/loyalty economy effects were being added in parallel and the commands below are
+meant to be re-run after both merge. The durable parts are the purchasing rule, the methodology and the command lines.
+
+### Harness purchasing rule: `BALANCED_INVEST` (new policy, `--reserve N`)
+The v2 review could not measure the starting-gold and starting-energy upgrades because the BALANCED_FAIR bot keeps
+~500 gold and only restocks iron. Rather than change the FAIR policies (every earlier table would move), a new policy
+`BALANCED_INVEST` = BALANCED_FAIR plus a purchasing rule: before each forge it takes the highest-tier core that is
+already owned or in supplier stock with price <= `gold - reserve`, then the highest-tier augment the same way against
+what is left; when nothing fits it falls back to the best owned pair, then the cheapest (iron + ember), so the reserve
+gates premium purchases only and never stops a forge. Affinity-blind, so it stays distinct from SYNERGY. Everything
+goes through `Command.BuyMaterial`/`Command.Forge` via `GameEngine.handle`; the driver reads state only to decide.
+`GDD_SET` is unchanged (`--policy all` includes the new one); `--impactPolicy` still defaults to BALANCED_FAIR and now
+also drives a second maxed-legacy run (the "all maxed" delta previously compared a BALANCED_FAIR maxed run with
+whatever impact policy was chosen); `--json` records the reserve.
+
+Reserve sweep (`--runs 1000 --seed 1 --policy BALANCED_INVEST --impactPolicy BALANCED_INVEST --reserve R`):
+
+| Reserve | Median (p10/p90) | Mean | Forged / sold per run | Sell rate | Gold on hand (median) | Family Savings / Tireless Smith (mean delta) |
+|---|---|---|---|---|---|---|
+| 0 **(default)** | 35 (20/45) | 33.0 | 44 / 20.0 | 45 % | 3 | -0.5 / -0.2 |
+| 50 | 35 (15/40) | 31.3 | 77 / 19.5 | 25 % | 4 | +0.2 / -0.0 |
+| 100 | 30 (15/40) | 30.7 | 98 / 19.5 | 20 % | 10 | +0.3 / -0.3 |
+| 150 | 30 (15/40) | 30.3 | 110 / 19.4 | 18 % | 38 | +0.2 / -0.2 |
+| 250 | 30 (15/40) | 29.1 | 118 / 19.1 | 16 % | 95 | +1.3 / -0.6 |
+
+Lower reserves live longer (fewer, better weapons beat more iron ones), so 0 is the default; the flag stays for
+sensitivity runs. No reserve makes the two upgrades register (see below).
+
+### Full table
+`./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy all --impactPolicy BALANCED_INVEST --reserve 0 --perf --json <out>"`
+(launch content v2, balance v2, rules v1, 400-day cap, seeds 1..10000 per policy; 170 s on 16 threads). The
+BALANCED_FAIR impact list came from `--runs 10000 --seed 1 --policy BALANCED_FAIR` (default impact policy).
+
+| Policy (10,000 seeds) | Median (p10/p90) | Mean | Sell rate | Survived / lost sieges | Hero deaths | Hard-lock days | Rarity C/U/R/E/L % |
+|---|---|---|---|---|---|---|---|
+| BALANCED_FAIR | 25 (15/35) | 23.9 | 14 % | 1.6 / 3.2 | 0.5 | 0 | 19/44/31/5/0 |
+| SAFE_FAIR | 25 (15/30) | 23.2 | 14 % | 1.5 / 3.2 | 0.5 | 0 | 19/49/29/3/0 |
+| RECKLESS_FAIR | 25 (15/35) | 24.9 | 14 % | 1.7 / 3.3 | 0.5 | 0 | 20/38/35/7/1 |
+| BALANCED_CHEAP | 30 (20/35) | 29.3 | 14 % | 2.7 / 3.2 | 0.5 | 0 | 19/44/32/5/1 |
+| BALANCED_EXPENSIVE | 15 (10/20) | 14.2 | 8 % | 0.2 / 2.6 | 0.3 | 0 | 20/44/31/5/0 |
+| SYNERGY | 40 (20/50) | 38.8 | 26 % | 4.4 / 3.3 | 0.6 | 0 | 3/27/46/16/8 |
+| OVERWORK | 25 (15/35) | 24.3 | 14 % | 1.6 / 3.2 | 0.5 | 0 | 19/44/31/5/0 |
+| RANDOM | 25 (15/40) | 26.2 | 33 % | 2.0 / 3.3 | 0.5 | 0 | 7/29/44/15/5 |
+| **BALANCED_INVEST** (new) | 35 (15/45) | 32.5 | 45 % | 3.1 / 3.4 | 0.6 | 0 | 5/21/41/23/10 |
+| SAFE_CHEAP | 30 (20/35) | 28.3 | 15 % | 2.5 / 3.2 | 0.5 | 0 | 18/48/29/3/0 |
+| RECKLESS_EXPENSIVE | 15 (10/25) | 15.1 | 8 % | 0.3 / 2.7 | 0.4 | 0 | 20/38/35/7/1 |
+| PASSIVE | 10 (10/10) | 10.0 | 0 % | 0.0 / 2.0 | 0.3 | 0 | - |
+| Maxed upgrades, BALANCED_FAIR | 40 (25/50) | 38.5 | 9 % | 2.9 / 4.8 | 0.7 | 0 | 1/24/55/15/5 |
+| Maxed upgrades, BALANCED_INVEST | 45 (25/55) | 43.0 | 25 % | 3.6 / 5.0 | 0.7 | 0 | 0/9/37/30/25 |
+
+Maximum run lengths: 45-55 days for the FAIR family, 65 SYNERGY, 55 INVEST, 70 INVEST maxed; `ended` = 10,000 for
+every policy (nobody reaches the 400-day cap). Perf probe (forced survival, 1,000 days): End Day p50 0.30 ms,
+p95 0.65 ms, max 2.55 ms, 2,330 weapons / 94 heroes / 1,680 events at the end.
+
+Upgrade impact, single upgrade maxed vs none, 10,000 seeds (median delta / mean delta in days):
+
+| Upgrade (L3) | BALANCED_INVEST (base 35 / 32.5) | BALANCED_FAIR (base 25 / 23.9) |
+|---|---|---|
+| Stalwart Walls | +5 / +7.4 | +5 / +6.3 |
+| Forge Mastery | +0 / +1.7 | +0 / +2.6 |
+| Thrifty Hands | +0 / +1.3 | +0 / +1.5 |
+| Lucky Hammer | +0 / +0.6 | +0 / +0.7 |
+| Tireless Smith (energy) | +0 / +0.1 | +0 / +0.3 |
+| Known Name | +0 / -0.0 | +0 / +0.1 |
+| Well-Stocked Cellar | +0 / -0.3 | +5 / +4.2 |
+| Family Savings (gold) | +0 / -0.4 | +0 / +0.0 |
+| All maxed | +10 / +10.4 | +15 / +14.6 |
+
+### Targets
+- Early median 15-25 days: **holds** for the baselines (BALANCED_FAIR 25 (15/35), SAFE_FAIR 25, OVERWORK 25,
+  RECKLESS_FAIR 25, RANDOM 25); the mean sits at 23-26. The cheap shelves and the invest rule sit above it
+  (30 and 35), the expensive shelves below (15).
+- Viable longer paths: **holds**. SYNERGY 40 (mean 38.8) and BALANCED_INVEST 35 (32.5) are clearly longer than the
+  FAIR baselines; maxed legacy adds +15 median under BALANCED_FAIR (40) and +10 under BALANCED_INVEST (45, max 70).
+- Hard-locks: 0 days in all 140,000 runs. No run-length outlier: every policy ends before day 70.
+
+### Why starting gold and energy still measure ~0 (investigated, not fixed)
+The purchasing rule removes the hoarding (gold on hand median 3, forged weapons 5/21/41/23/10 instead of
+19/44/31/5/0) and the bot lives 8.6 days longer, yet Family Savings (+300 gold) and Tireless Smith (+3 energy) still
+measure within noise under every reserve. A 300-run visit diagnostic (temporary test, not kept) shows why:
+
+- Sales are demand-bound, not supply-bound: every forging policy sells 14-21 weapons per run (FAIR 16.3, INVEST
+  19.6, SYNERGY 21.0, maxed 20.0-20.2) because a hero buys only when the weapon is affordable *and* an improvement.
+  TOO_EXPENSIVE is the most common visit outcome (38/run under FAIR, 61/run under INVEST), then NOT_BETTER.
+- Heroes hold ~85 gold on day 1. The two extra premium weapons that +300 gold buys on day 1 cost several hundred
+  gold at 4 gold/power, so by day 5 (first siege) tier 5-6 sales are 0.05-0.1 per run with or without the upgrade;
+  the extra gold only shifts which premium weapon sits on the shelf, not what the champions carry at the first sieges.
+- Extra energy under INVEST is unspent (the bot is gold-limited: 44 forges per run, 1.3/day) and under FAIR buys
+  more iron that nobody wants (117 forged, 16 sold).
+
+Proposals (evidence above, no engine change made): (a) measure these two upgrades by what they are for, i.e. the
+first-siege champion weapon power or the day of the first tier-4+ sale, rather than run length; (b) if run length
+must move, the lever is hero purchasing power in the first week (hero starting gold / expedition gold), not the
+upgrade magnitudes, which were already tested at double size in v2 without effect. Well-Stocked Cellar also flips
+from +4.4 (FAIR) to -0.3 (INVEST): its common materials are exactly what a spending bot skips, so its value is a
+beginner's convenience, not a run-length lever.
+
 ## Event-log compaction (2026-10-08, session 3, ENGINEERING)
 GDD 13.3 asks to "compact ordinary events and retain rare milestones"; 15.1's "migration does not mutate histories"
 is honoured because the save schema is unchanged (still v1) and no stored record is rewritten, only dropped by a

@@ -7,6 +7,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Changed
+- Headless simulator: new `BALANCED_INVEST` policy (buys the best core and augment within `gold - reserve`,
+  `--reserve N`), `--impactPolicy` also drives the maxed-legacy run, and `--json` reports the reserve; 10,000-seed
+  review of every policy recorded in DECISIONS.md.
+
 ## [0.2.0] - 2026-10-08
 Launch content by default, balance v2, all 24 signatures and 25 world events, bounded saves, decluttered UI.
 

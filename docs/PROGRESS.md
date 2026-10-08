@@ -10,7 +10,8 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
   guilds/mentoring, battles/sieges with weapon seizure, world-event pool (23 events + 2 deterministic rules = all 25 GDD
   events), legacy with famous-blade returns, Gazette, JSON save codec with a migration scaffold, End Day event-log
   compaction (30-day window, history-grade types kept), headless simulator (GDD policy set, `--content`,
-  `--rarityTable`, `--impactPolicy`, forge-damage overrides, JSON report, perf probe). 82 JVM tests.
+  `--rarityTable`, `--impactPolicy`, `BALANCED_INVEST` purchasing rule with `--reserve`, forge-damage overrides,
+  JSON report, perf probe). 85 JVM tests.
 - `app/` Compose portrait workshop (session 4 layout: three-stat top bar, pinned forge summary over collapsible
   auto-advancing steps, row-based market, per-panel tip banners, single End Day action, full-width paper day report;
   principles in DECISIONS.md), six panels, technique chips,
@@ -26,11 +27,12 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 ## Checks run this session (balance v2, launch default)
 | Check | Command | Result |
 |---|---|---|
-| Core tests | `./gradlew :core:test` | 82/82 pass (13 classes incl. RarityShape, EventCompaction, SignatureAndTechnique on the launch catalog); the soak runs on launch content |
+| Core tests | `./gradlew :core:test` | 85/85 pass (14 classes incl. RarityShape, EventCompaction, SignatureAndTechnique, SimulatorPolicy on the launch catalog); the soak runs on launch content |
 | App compiles | `./gradlew :app:compileDebugKotlin -q` | BUILD SUCCESSFUL |
 | Rarity tables | `./gradlew :core:simulate --args="--rarityTable 1000 --seed 1 --content launch"` | before/after tables in DECISIONS.md |
 | Policy sweep | `./gradlew :core:simulate --args="--runs 1000 --seed 1 --content launch"` | BALANCED_FAIR 25 (15/35), mean 23.8, 1.6 sieges survived/run, 0 hard-locks; full table in DECISIONS.md |
 | Confirmation | `--runs 10000 --policy BALANCED_FAIR` / `SAFE_FAIR` | 25 (15/35) mean 23.7 survived 1.5 / 25 (15/30) mean 23.2 survived 1.5 |
+| 10,000-seed review | `./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy all --impactPolicy BALANCED_INVEST --reserve 0 --perf --json <out>"` | every policy at 10,000 seeds, maxed legacy for BALANCED_FAIR and BALANCED_INVEST, upgrade impact under BALANCED_INVEST; full table in DECISIONS.md ("Balance review at 10,000 seeds") |
 | Slice regression | `--content slice --policy SAFE_FAIR` | 30 (20/35), rarity 18/51/28/2/0 (was 1/43/52/4/0; accepted, see DECISIONS) |
 | Event compaction | `EventCompactionTest` + `:core:simulate --runs 200 --seed 1 --perf` | 400-day forced-survival pair: gameplay identical with/without compaction; perf run ends at events=1,834 (was 13,275) |
 | Debug APK + install | `./gradlew :app:installDebug` | BUILD SUCCESSFUL |
@@ -53,8 +55,9 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
   obtainable materials; 0 hard-locks in all runs.
 
 ## Known limitations
-- Starting energy/gold upgrades measure ~0 days under BALANCED_FAIR because the bot never spends its ~500 gold on
-  better cores; gold registers under `--impactPolicy SYNERGY` (+5 median). A harness purchasing rule is the next lever.
+- Starting energy/gold upgrades still measure ~0 days even under the `BALANCED_INVEST` purchasing rule: sales are
+  demand-bound (14-21 per run for every policy) and day-1 heroes hold ~85 gold, so the extra premium weapons do not
+  sell before the first sieges. Evidence and proposals in DECISIONS.md ("Balance review at 10,000 seeds").
 - `Weapon.history` is unbounded (1,766 entries across 926 weapons after a forced 400-day run); the next list to watch.
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).

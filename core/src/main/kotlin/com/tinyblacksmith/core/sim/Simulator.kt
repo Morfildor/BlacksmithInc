@@ -19,7 +19,7 @@ import java.util.stream.Collectors
 import java.util.stream.IntStream
 
 /** Scripted shop policies for the headless harness (GDD 15.2). Policy randomness uses its own stream, never gameplay RNG. */
-enum class Policy(val risk: Risk?, val priceFactor: Double, val overwork: Boolean, val synergy: Boolean = false) {
+enum class Policy(val risk: Risk?, val priceFactor: Double, val overwork: Boolean, val synergy: Boolean = false, val invest: Boolean = false) {
     /** Random legal actions: random recipe, risk, price and forging effort. */
     RANDOM(null, 1.0, false),
     /** Safe forging, fair prices. */
@@ -36,6 +36,13 @@ enum class Policy(val risk: Risk?, val priceFactor: Double, val overwork: Boolea
     OVERWORK(Risk.BALANCED, 1.0, true),
     /** Baseline: balanced risk, fair prices, no overworking. */
     BALANCED_FAIR(Risk.BALANCED, 1.0, false),
+    /**
+     * BALANCED_FAIR plus a purchasing rule: before each forge it buys the highest-tier core, then augment, whose
+     * supplier price fits in `gold - reserve` ([SimulationDriver.reserve]); affinity-blind, so it is distinct from
+     * SYNERGY. Lets the starting-gold and starting-energy upgrades register (a spent-down bot turns extra gold or
+     * an extra forge into a better weapon).
+     */
+    BALANCED_INVEST(Risk.BALANCED, 1.0, false, invest = true),
     SAFE_CHEAP(Risk.SAFE, 0.7, false),
     RECKLESS_EXPENSIVE(Risk.RECKLESS, 1.8, false),
     /** Never forges: measures the floor. */
@@ -85,9 +92,18 @@ class SimulationDriver(
     val eventRetentionDays: Int = 0,
     /** Caps forges per day (soak runs keep the weapon count bounded); null = as many as energy allows. */
     val maxForgesPerDay: Int? = null,
+    /**
+     * Gold the invest rule never spends on premium materials ([Policy.invest]). The cheapest fallback (iron + ember,
+     * what every other policy restocks) is still bought below the reserve, so the bot forges whenever it can.
+     */
+    val reserve: Int = DEFAULT_RESERVE,
     /** Called after each resolved day with the new state and the End Day wall-clock nanoseconds. */
     val onDayResolved: ((GameState, Long) -> Unit)? = null,
 ) {
+    companion object {
+        /** Reserve sweep (DECISIONS.md, 10,000-seed review): 0 gold lives longest; the flag exists for sensitivity runs. */
+        const val DEFAULT_RESERVE = 0
+    }
 
     fun playRun(legacy: LegacyProfile, seed: Long, policy: Policy): Pair<RunStats, GameState> {
         var state = engine.newRun(legacy, seed)
@@ -178,8 +194,10 @@ class SimulationDriver(
         val family = synergy?.first ?: rng.pick(content.families)
         // RANDOM draws only among legal (obtainable) materials: launch cores cost up to 180 gold, and an unaffordable pick is not a hard-lock.
         val core = synergy?.second ?: if (policy == Policy.RANDOM) rng.pick(cores.filter { obtainable(state, it) }.ifEmpty { listOf(cores.minBy { it.price }) })
+            else if (policy.invest) bestInvestment(state, cores, state.gold - reserve)
             else cores.filter { (state.materials[it.id] ?: 0) > 0 }.maxByOrNull { it.tier } ?: cores.minBy { it.price }
         val augment = synergy?.third ?: if (policy == Policy.RANDOM) rng.pick(augments.filter { obtainable(state, core, it) }.ifEmpty { listOf(augments.minBy { it.price }) })
+            else if (policy.invest) bestInvestment(state, augments, state.gold - reserve - purchaseCost(state, core))
             else augments.filter { (state.materials[it.id] ?: 0) > 0 }.maxByOrNull { it.tier } ?: augments.minBy { it.price }
         val risk = policy.risk ?: rng.pick(Risk.entries)
         return Command.Forge(ForgeMode.QUICK, family.id, core.id, augment.id, null, risk)
@@ -207,6 +225,14 @@ class SimulationDriver(
         }
         return best
     }
+
+    /** Highest tier that is owned, or in supplier stock and priced within [budget]; the cheapest when nothing qualifies. */
+    private fun bestInvestment(state: GameState, options: List<MaterialDef>, budget: Int): MaterialDef =
+        options.filter { (state.materials[it.id] ?: 0) > 0 || (state.supplierStock[it.id] ?: 1) >= 1 && purchaseCost(state, it) <= budget }
+            .maxByOrNull { it.tier } ?: options.minBy { it.price }
+
+    /** Gold the next forge spends on [m]: 0 when a unit is already owned. */
+    private fun purchaseCost(state: GameState, m: MaterialDef): Int = if ((state.materials[m.id] ?: 0) > 0) 0 else engine.materialPrice(state, m.id)
 
     private fun obtainable(state: GameState, vararg materials: MaterialDef): Boolean {
         var cost = 0
@@ -334,6 +360,7 @@ data class SimReport(
     val baseSeed: Long,
     val maxDays: Int,
     val overrides: Map<String, String>,
+    val reserve: Int,
     val policies: List<PolicySummary>,
     val upgradeImpact: List<UpgradeImpact>,
     val perf: PerfSummary?,
@@ -344,8 +371,9 @@ object Simulator {
     fun run(
         runs: Int, baseSeed: Long, policies: List<Policy>, legacy: LegacyProfile = LegacyProfile(), config: BalanceConfig = BalanceConfig.DEFAULT,
         maxDays: Int = config.maxSimulatedDays, label: String = "new account", content: ContentCatalog = LaunchContent.catalog,
+        reserve: Int = SimulationDriver.DEFAULT_RESERVE,
     ): List<Report> {
-        val driver = SimulationDriver(GameEngine(content, config), maxDays = maxDays)
+        val driver = SimulationDriver(GameEngine(content, config), maxDays = maxDays, reserve = reserve)
         // Runs are independent and the engine is pure, so seeds run in parallel; results are collected in seed order.
         return policies.map { p ->
             Report(p, IntStream.range(0, runs).parallel().mapToObj { i -> driver.playRun(legacy, baseSeed + i, p).first }.collect(Collectors.toList()), label)
@@ -359,12 +387,12 @@ object Simulator {
     /** Relative impact of each permanent upgrade: [policy] (BALANCED_FAIR by default) with that single upgrade maxed vs [baselineMedianDays]. */
     fun upgradeImpact(
         runs: Int, baseSeed: Long, config: BalanceConfig, baselineMedianDays: Int, baselineMeanDays: Double, maxDays: Int = config.maxSimulatedDays,
-        content: ContentCatalog = LaunchContent.catalog, policy: Policy = Policy.BALANCED_FAIR,
+        content: ContentCatalog = LaunchContent.catalog, policy: Policy = Policy.BALANCED_FAIR, reserve: Int = SimulationDriver.DEFAULT_RESERVE,
     ): List<UpgradeImpact> {
         val engine = GameEngine(content, config)
         return engine.content.upgrades.map { u ->
             val legacy = LegacyProfile(upgrades = mapOf(u.id to u.maxLevel))
-            val s = run(runs, baseSeed, listOf(policy), legacy, config, maxDays, label = u.name, content = content).single().summary()
+            val s = run(runs, baseSeed, listOf(policy), legacy, config, maxDays, label = u.name, content = content, reserve = reserve).single().summary()
             UpgradeImpact(u.id.value, u.name, u.maxLevel, s.daysMedian, s.daysMedian - baselineMedianDays, s.daysMean, s.daysMean - baselineMeanDays)
         }
     }
@@ -404,11 +432,11 @@ object Simulator {
     /** Times End Day over [days] days of one forced-survival run; includes JIT warm-up and grows with state size. */
     fun measureEndDay(
         days: Int = 1000, seed: Long = 1, config: BalanceConfig = forcedSurvival(), policy: Policy = Policy.BALANCED_FAIR, maxForgesPerDay: Int? = null,
-        content: ContentCatalog = LaunchContent.catalog,
+        content: ContentCatalog = LaunchContent.catalog, reserve: Int = SimulationDriver.DEFAULT_RESERVE,
     ): PerfSummary {
         val samples = ArrayList<Long>(days)
         var last: GameState? = null
-        val driver = SimulationDriver(GameEngine(content, config), maxDays = days, maxForgesPerDay = maxForgesPerDay) { s, nanos -> samples += nanos; last = s }
+        val driver = SimulationDriver(GameEngine(content, config), maxDays = days, maxForgesPerDay = maxForgesPerDay, reserve = reserve) { s, nanos -> samples += nanos; last = s }
         driver.playRun(LegacyProfile(), seed, policy)
         val sorted = samples.sorted()
         fun ms(p: Double) = if (sorted.isEmpty()) 0.0 else sorted[((sorted.size - 1) * p).toInt()] / 1_000_000.0
@@ -434,9 +462,11 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
 
 /**
  * CLI: --runs N --seed S --policy NAME|all|gdd --days CAP --json PATH --perf --content launch|slice --impactPolicy NAME
+ *      --reserve N (gold the BALANCED_INVEST rule keeps back from premium purchases)
  *      [--siegeModifier X --recoveryCap N --forgeDamageBase X --forgeDamageSlope X --maxForgeDamage N]
  *      --rarityTable [N]: instead of runs, forges N weapons per core x augment x risk and prints the rarity shares.
- * Default: launch content, the GDD 15.2 policy set, a maxed legacy account and the per-upgrade impact sweep.
+ * Default: launch content, the GDD 15.2 policy set, maxed legacy accounts (BALANCED_FAIR and the impact policy) and
+ * the per-upgrade impact sweep for the impact policy (BALANCED_FAIR by default).
  */
 fun main(args: Array<String>) {
     val argMap = parseArgs(args)
@@ -457,9 +487,11 @@ fun main(args: Array<String>) {
     argMap["--forgeDamageSlope"]?.let { config = config.copy(forgeDamageSlope = it.toDouble()); overrides["forgeDamageSlope"] = it }
     argMap["--maxForgeDamage"]?.let { config = config.copy(maxForgeDamagePerSiege = it.toInt()); overrides["maxForgeDamage"] = it }
     val maxDays = argMap["--days"]?.toInt() ?: config.maxSimulatedDays
+    val reserve = argMap["--reserve"]?.toInt() ?: SimulationDriver.DEFAULT_RESERVE
+    val impactPolicy = argMap["--impactPolicy"]?.let { Policy.valueOf(it) } ?: Policy.BALANCED_FAIR
     val engine = GameEngine(content, config)
     println("Tiny Blacksmith headless simulator - content v${engine.content.version}, balance v${engine.config.version}, rules v${GameEngine.RULES_VERSION}")
-    println("runs=$runs baseSeed=$seed days=$maxDays content=${argMap["--content"] ?: "launch"} siegeModifier=${config.siegeModifier} recoveryCap=${config.maxIntegrityRecoveryPerDay} forgeDamage=${config.forgeDamageBase}+${config.forgeDamageSlope}x(ratio-1) max ${config.maxForgeDamagePerSiege} threads=${Runtime.getRuntime().availableProcessors()}")
+    println("runs=$runs baseSeed=$seed days=$maxDays content=${argMap["--content"] ?: "launch"} siegeModifier=${config.siegeModifier} recoveryCap=${config.maxIntegrityRecoveryPerDay} forgeDamage=${config.forgeDamageBase}+${config.forgeDamageSlope}x(ratio-1) max ${config.maxForgeDamagePerSiege} reserve=$reserve impactPolicy=$impactPolicy threads=${Runtime.getRuntime().availableProcessors()}")
     println()
     val start = System.nanoTime()
     argMap["--rarityTable"]?.let { arg ->
@@ -477,22 +509,21 @@ fun main(args: Array<String>) {
         return
     }
     println("== New legacy account ==")
-    val reports = Simulator.run(runs, seed, policies, config = config, maxDays = maxDays, content = content)
+    val reports = Simulator.run(runs, seed, policies, config = config, maxDays = maxDays, content = content, reserve = reserve)
     reports.forEach { println(it.render()) }
     println("== Maxed legacy account (all upgrades) ==")
-    val maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR), legacy = Simulator.maxedLegacy(engine), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content)
+    val maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve)
     maxed.forEach { println(it.render()) }
-    val impactPolicy = argMap["--impactPolicy"]?.let { Policy.valueOf(it) } ?: Policy.BALANCED_FAIR
     val baseline = reports.firstOrNull { it.policy == impactPolicy }
-        ?: Simulator.run(runs, seed, listOf(impactPolicy), config = config, maxDays = maxDays, content = content).single()
+        ?: Simulator.run(runs, seed, listOf(impactPolicy), config = config, maxDays = maxDays, content = content, reserve = reserve).single()
     val baseSummary = baseline.summary()
     println("== Upgrade impact ($impactPolicy, single upgrade maxed vs none: median ${baseSummary.daysMedian} mean ${"%.1f".format(baseSummary.daysMean)} days) ==")
-    val impact = Simulator.upgradeImpact(runs, seed, config, baseSummary.daysMedian, baseSummary.daysMean, maxDays, content, impactPolicy)
+    val impact = Simulator.upgradeImpact(runs, seed, config, baseSummary.daysMedian, baseSummary.daysMean, maxDays, content, impactPolicy, reserve)
     impact.forEach { println("  ${it.name} (${it.upgradeId} L${it.level}): median=${it.daysMedian} (${"%+d".format(it.deltaVsNone)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.deltaMeanVsNone)})") }
-    maxed.single().summary().let { println("  all maxed: median=${it.daysMedian} (${"%+d".format(it.daysMedian - baseSummary.daysMedian)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.daysMean - baseSummary.daysMean)})") }
+    maxed.single { it.policy == impactPolicy }.summary().let { println("  all maxed: median=${it.daysMedian} (${"%+d".format(it.daysMedian - baseSummary.daysMedian)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.daysMean - baseSummary.daysMean)})") }
     var perf: PerfSummary? = null
     if (argMap["--perf"] == "true") {
-        perf = Simulator.measureEndDay(config = Simulator.forcedSurvival(config), seed = seed, content = content)
+        perf = Simulator.measureEndDay(config = Simulator.forcedSurvival(config), seed = seed, content = content, reserve = reserve)
         println("== End Day timing (forced survival, ${perf.days} days, JVM) ==")
         println("  p50=${"%.2f".format(perf.p50Ms)} ms p95=${"%.2f".format(perf.p95Ms)} ms max=${"%.2f".format(perf.maxMs)} ms  state at end: weapons=${perf.weaponsAtEnd} heroes=${perf.heroesAtEnd} events=${perf.eventsAtEnd}")
     }
@@ -501,7 +532,7 @@ fun main(args: Array<String>) {
     argMap["--json"]?.let { path ->
         val report = SimReport(
             contentVersion = engine.content.version, balanceVersion = engine.config.version, rulesVersion = GameEngine.RULES_VERSION,
-            runs = runs, baseSeed = seed, maxDays = maxDays, overrides = overrides,
+            runs = runs, baseSeed = seed, maxDays = maxDays, overrides = overrides, reserve = reserve,
             policies = reports.map { it.summary() } + maxed.map { it.summary() }, upgradeImpact = impact, perf = perf, elapsedMs = elapsedMs,
         )
         File(path).writeText(reportJson.encodeToString(SimReport.serializer(), report))
