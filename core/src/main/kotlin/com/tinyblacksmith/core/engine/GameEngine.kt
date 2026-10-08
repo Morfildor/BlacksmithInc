@@ -13,6 +13,7 @@ import com.tinyblacksmith.core.legacy.LegacyOutcome
 import com.tinyblacksmith.core.legacy.RunEndResult
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
+import com.tinyblacksmith.core.persistence.EventCompaction
 import com.tinyblacksmith.core.rng.RngState
 import com.tinyblacksmith.core.rng.RngStream
 
@@ -203,6 +204,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.S
         )
         ctx.lastResolution = resolution
         ctx.processedEndDayIds += commandId.value
+        EventCompaction.compact(ctx.events, day, config.eventRetentionDays)  // after the Gazette; keeps saves bounded (GDD 13.3)
         if (ctx.phase != Phase.ENDED) newMorning(ctx)
         return accept(ctx, resolution = resolution)
     }

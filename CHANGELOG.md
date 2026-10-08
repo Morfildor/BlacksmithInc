@@ -8,6 +8,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Changed
+- Saves stay bounded over long runs: End Day now compacts the event log, keeping full records for the last
+  30 days (`BalanceConfig.eventRetentionDays`) and history-grade events (sieges, deaths, retirements, guilds,
+  signatures, milestones, world events, weapon fates) for the whole run. Gameplay, Gazette headlines for the
+  window and the save schema are unchanged; older Gazette days show only the retained headlines.
 - Weapons are drawn from the artist's weapon master sheet: every family has an element row and eight visual levels
   (core tier plus epic/legendary bonus); the forge preview shows the plain base weapon until an augment is chosen.
   The old per-core recolours and element auras are gone.

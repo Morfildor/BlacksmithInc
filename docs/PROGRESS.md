@@ -8,7 +8,8 @@ signatures/techniques, world events, generations, balance harness, UI polish). N
 - `core/` pure Kotlin engine: RNG, slice + launch content catalogs, balance config, model, commands, End Day resolver,
   crafting with techniques and signature recipes, market, hero AI with retirement/guilds/mentoring, battles/sieges with
   weapon seizure, world-event pool (23 events), legacy with famous-blade returns, Gazette, JSON save codec with a
-  migration scaffold, headless simulator (GDD policy set, JSON report, perf probe). 68 JVM tests.
+  migration scaffold, End Day event-log compaction (30-day window, history-grade types kept), headless simulator
+  (GDD policy set, JSON report, perf probe). 75 JVM tests.
 - `app/` Compose portrait workshop with the forge palette theme, onboarding tips, six panels, technique chips,
   newspaper day report with stepped replay, blessing choice (dismissable for the day), run-end/legacy screen; Room
   atomic save store; DataStore settings (reduced motion, seen tips). Hand-made pixel art on every screen.
@@ -22,7 +23,8 @@ signatures/techniques, world events, generations, balance harness, UI polish). N
 ## Checks run this session
 | Check | Command | Result |
 |---|---|---|
-| Core tests | `./gradlew :core:test` | 68/68 pass (11 classes incl. LaunchContent, SignatureAndTechnique, WorldEventsAndGenerations, Migration, Soak, LaunchEffects); the 5,000-day soak adds ~100 s |
+| Core tests | `./gradlew :core:test` | 75/75 pass (12 classes incl. LaunchContent, SignatureAndTechnique, WorldEventsAndGenerations, Migration, Soak, LaunchEffects, EventCompaction); the 5,000-day soak adds ~100 s |
+| Event compaction | `EventCompactionTest` + `:core:simulate --runs 200 --seed 1 --perf` | 400-day forced-survival pair: gameplay identical with/without compaction; 860 vs 5,705 records; perf run ends at events=1,834 (was 13,275); numbers in DECISIONS.md |
 | Full Gradle tests | `./gradlew test` | 69 tests, 0 failures |
 | Simulator | `./gradlew :core:simulate --args="--runs 1000 --seed 1"` | 8 policies + maxed account + upgrade impact in ~20 s; BALANCED_FAIR median 35 (p10 20 / p90 40), 0 hard-locks; table in DECISIONS.md |
 | Debug APK + install | `./gradlew :app:installDebug` | BUILD SUCCESSFUL |
@@ -45,7 +47,6 @@ signatures/techniques, world events, generations, balance harness, UI polish). N
 ## Known limitations
 - `SliceContent` is still the engine default; `LaunchContent` is data-complete but needs the quality formula retuned.
 - 12 of 24 signature recipes; event "Strange Weapon Fragment" missing.
-- Save events are never compacted; a 400-day run stores ~4,500 event records (fine for play, a P7 soak item).
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
 - Package name is still `com.example.blacksmithproject`; no release signing.
@@ -57,4 +58,5 @@ signatures/techniques, world events, generations, balance harness, UI polish). N
 2. Add the 12 spear/dagger/staff signatures and the Strange Weapon Fragment event.
 3. Tune forge damage per lost siege toward the 15-25-day early median without starving survived sieges.
 4. Give starting energy/gold upgrades measurable effect (simulator shows about 0 days).
-5. Event-log compaction policy in `SaveCodec` that keeps histories intact; Room migration test for schema v2.
+5. ~~Event-log compaction policy~~ done (`persistence/EventCompaction.kt`, schema unchanged, see DECISIONS); a Room
+   migration test is still owed when the envelope schema first changes.
