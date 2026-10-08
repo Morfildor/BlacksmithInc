@@ -47,7 +47,7 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 - The quality formula could not separate six core tiers (20-point core span vs 27-point roll); base 25 + 6/tier
   spreads them. Tier 5 remains a rare/epic split; the excellent top-tier pairs are 33-41 % legendary by design.
 - Two tests encoded slice facts (12 signatures = 4 per slice family; `restless_graves` ineligible without
-  Hollowbound): the signature test now checks the slice catalog explicitly; the world-event test expects the launch
+  Hollowbound): the signature test now checks the launch catalog (24 recipes); the world-event test expects the launch
   factions and the most pressing faction for Successful Patrol.
 - The RANDOM policy reported 53 "hard-lock" days on launch content: it drew unaffordable moonsteel. It now draws only
   obtainable materials; 0 hard-locks in all runs.
