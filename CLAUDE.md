@@ -51,3 +51,5 @@ Compose BOM 2026.02.01, Room 2.8.5, DataStore 1.2.1, JDK 21 launcher / JDK 25 da
 - Balance changes: run the simulator, record numbers in DECISIONS.md, bump `BalanceConfig.version` on semantic change.
 - New gameplay numbers go in `BalanceConfig`, never inline. New content goes through `ContentCatalog.validate()`.
 - Tests must pass before claiming a phase done; do not commit/push without being asked.
+- Every user-visible change gets a line under `[Unreleased]` in `CHANGELOG.md`; on a version bump, rename that section
+  to the version and date and raise `versionName` (SemVer `0.y.z` while in early development) in `app/build.gradle.kts`.

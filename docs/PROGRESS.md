@@ -42,14 +42,12 @@ signatures/techniques, world events, generations, balance harness, UI polish). N
 
 ## Known limitations
 - `SliceContent` is still the engine default; `LaunchContent` is data-complete but needs the quality formula retuned.
-- 12 of 24 signature recipes; event "Strange Weapon Fragment" missing; no sprite-animated battles.
+- 12 of 24 signature recipes; event "Strange Weapon Fragment" missing.
 - Save events are never compacted; a 400-day run stores ~4,500 event records (fine for play, a P7 soak item).
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
 - Package name is still `com.example.blacksmithproject`; no release signing.
-- Git: the folder is not a repository. Linking it to https://github.com/Morfildor/BlacksmithInc (empty, branch
-  `main`) was blocked by the session's permission layer; run `git init -b main && git remote add origin <url>`
-  yourself, then ask for a commit when wanted.
+- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc (first commit 2026-10-08). Commit/push only on request.
 
 ## Next executable actions (P7)
 1. Rarity-distribution sweep with `GameEngine(content = LaunchContent.catalog)`; retune the quality formula for tiers
@@ -57,5 +55,4 @@ signatures/techniques, world events, generations, balance harness, UI polish). N
 2. Add the 12 spear/dagger/staff signatures and the Strange Weapon Fragment event.
 3. Tune forge damage per lost siege toward the 15-25-day early median without starving survived sieges.
 4. Give starting energy/gold upgrades measurable effect (simulator shows about 0 days).
-5. Replay animation with the faction/hero sprites (consume `CombatReplay` only; reduced motion).
-6. Event-log compaction policy in `SaveCodec` that keeps histories intact; Room migration test for schema v2.
+5. Event-log compaction policy in `SaveCodec` that keeps histories intact; Room migration test for schema v2.
