@@ -295,7 +295,7 @@ object WorldEvents {
                 ctx.emit(EventType.DISCOVERY, 3, "Journal: $subject — ${Journal.hint(ctx.legacy.journal, ctx.content, sig.journalKey)}.", data = mapOf("key" to sig.journalKey))
                 WorldEventOutcome(mapOf("subject" to subject, "key" to sig.journalKey))
             },
-            story = "A strange weapon fragment was dug from the river mud; melted down it proved to be {subject}, worked by hands that knew something more.",
+            story = "A strange weapon fragment was dug from the river mud; melted down it proved to be a {subject}, worked by hands that knew something more.",
         ),
         // 21
         WorldEventDef(
