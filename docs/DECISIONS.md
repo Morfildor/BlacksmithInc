@@ -272,6 +272,14 @@ set ever needs trimming, WEAPON_INHERITED (one per weapon per retirement) is the
   hero class, faction siege name → monster set); poses follow the step being shown, idle frames tick on a UI
   timer, static under reduced motion. No gameplay RNG is touched (GDD 11, 15.1).
 - Portrait variants are chosen by a stable hash of the hero ID (decorative, deterministic, save-independent).
+- `Pixel art assets/Tiny_Blacksmith_UI_Backgrounds_v3` (dropped 2026-10-08 22:45, session 4): a script-generated 1x
+  chrome pack (96x48 panel banners, 24 px nine-slice frames, buttons, 24 px status and 40 px nav icons, 16 px
+  tiles, 270x150 title/run-end backdrops, a second siege wall). Not adopted: at phone sizes the current 64 px
+  concept icons, the forge scene and the parchment texture are richer, the frames would read as chunky 21 px
+  borders over the calm Material surfaces of the decluttered layout, and the banners would replace the one
+  persistent forge scene the layout is built around. The importer lists the folder in `PACK_SKIP` so a re-import
+  does not silently swap `siege_wall` for the newer file (packs are read in folder order). Reversible: delete the
+  entry and run `import_assets.py --pack-all` or widen `PACK_PREFIXES`.
 - Weapon art (2026-10-08, later the same day): the weapon master sheet gives every family an element row and
   eight visual levels, so the per-core recoloured icons and the element overlays were retired. The level column is
   core tier (iron 1 … moonsteel 6) + 1 for epic + 2 for legendary, clamped to 8; the preview shows the "base" row

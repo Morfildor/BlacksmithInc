@@ -42,6 +42,8 @@ CONTACT = ROOT / "docs/art_contact_handmade.png"
 
 # Sprites taken from a production pack by default (the sheets cover the rest at higher fidelity).
 PACK_PREFIXES = ("hero_", "monster_", "siege_wall", "fx_milestone_", "marker_")
+# Packs that are deliberately not imported (see docs/DECISIONS.md "Art sources"). Remove a name here to adopt it.
+PACK_SKIP = ("Tiny_Blacksmith_UI_Backgrounds_v3",)
 
 # Logical scene unit: the forge scene is laid out in 96x48 "scene pixels"; hand-made scene pieces are exported at
 # SCENE_UNIT bitmap pixels per scene pixel so ForgeScene can keep positioning in scene coordinates.
@@ -412,6 +414,9 @@ def main():
         print(f"sheet {n}: {path.name}")
     if not args.sheet:
         for pack in [d for d in sorted(SRC.iterdir()) if d.is_dir() and (d / "drawable-nodpi").is_dir()]:
+            if pack.name in PACK_SKIP:
+                print(f"pack {pack.name}: skipped (PACK_SKIP)")
+                continue
             n = import_pack(pack, overrides, produced, args.pack_all)
             found += 1
             print(f"pack {pack.name}: {n} sprites copied verbatim")
