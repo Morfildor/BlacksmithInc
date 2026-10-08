@@ -3,18 +3,21 @@ package com.example.blacksmithproject.ui
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -30,19 +33,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.blacksmithproject.GameViewModel
-import com.example.blacksmithproject.R
 import com.example.blacksmithproject.Panel
+import com.example.blacksmithproject.R
 import com.example.blacksmithproject.UiState
-import com.tinyblacksmith.core.battle.Battle
+import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.CommissionStatus
 
-/** One portrait workshop with panels (GDD 12). The top strip, forge art and End Day are always visible. */
+/**
+ * One portrait workshop with six panels (GDD 12). Chrome is deliberately thin: a three-stat top bar, the panel,
+ * one End Day action and the nav bar. Forge integrity and the siege live on the Forge and Town panels.
+ */
 @Composable
 fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
     val state = s.state
@@ -51,7 +55,9 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
     Scaffold(
         bottomBar = {
             Column {
-                NavigationBar {
+                EndDayButton(s, vm)
+                // 64dp instead of the 80dp default: the workshop needs the vertical space more than the nav bar does.
+                NavigationBar(tonalElevation = 0.dp, windowInsets = WindowInsets(0, 0, 0, 0), modifier = Modifier.navigationBarsPadding().height(64.dp)) {
                     Panel.entries.forEach { p ->
                         NavigationBarItem(
                             selected = s.panel == p,
@@ -62,43 +68,31 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
                         )
                     }
                 }
-                val warning = when {
-                    state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
-                    state.commissions.values.any { it.status == CommissionStatus.OFFERED } -> "A commission is waiting"
-                    state.energy > 0 -> "${state.energy} energy unused"
-                    else -> null
-                }
-                if (warning != null) {
-                    Text(
-                        "Before you rest: $warning",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 2.dp),
-                    )
-                }
-                Button(
-                    onClick = vm::endDay,
-                    enabled = !s.busy,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).padding(horizontal = 16.dp, vertical = 6.dp),
-                ) { Text("End Day ${state.day}", style = MaterialTheme.typography.titleMedium) }
             }
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
-            TopStrip(s)
-            ForgeScene(heat = state.energy / vm.engine.config.baseDailyEnergy.toFloat(), reducedMotion = reducedMotion)
-            // Each panel keeps its own scroll position; switching panels must not land mid-list.
-            val scroll = remember(s.panel) { ScrollState(0) }
-            Column(Modifier.fillMaxWidth().verticalScroll(scroll).padding(horizontal = 16.dp, vertical = 8.dp)) {
-                // One onboarding tip at a time, in order; dismissing one reveals the next.
-                Tips.ORDER.firstOrNull { it.id !in seenTips }?.let { TipCard(it, vm) }
-                when (s.panel) {
-                    Panel.FORGE -> ForgePanel(s, vm)
-                    Panel.MARKET -> MarketPanel(s, vm)
-                    Panel.TOWN -> TownPanel(s, vm)
-                    Panel.JOURNAL -> JournalPanel(s, vm)
-                    Panel.GAZETTE -> GazettePanel(s)
-                    Panel.LEGACY -> LegacyPanel(s, vm, reducedMotion)
+            TopBar(s)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            // Each tip belongs to one panel and shows one at a time; dismissal lives in settings.
+            val tip = Tips.forPanel(s.panel).firstOrNull { it.id !in seenTips }
+            when (s.panel) {
+                Panel.FORGE -> ForgePanel(s, vm, reducedMotion, tip)
+                else -> {
+                    // Each panel keeps its own scroll position; switching panels must not land mid-list.
+                    val scroll = remember(s.panel) { ScrollState(0) }
+                    Column(Modifier.fillMaxWidth().verticalScroll(scroll).padding(horizontal = Space.md, vertical = Space.sm)) {
+                        tip?.let { TipBanner(it, vm) }
+                        when (s.panel) {
+                            Panel.MARKET -> MarketPanel(s, vm)
+                            Panel.TOWN -> TownPanel(s, vm)
+                            Panel.JOURNAL -> JournalPanel(s, vm)
+                            Panel.GAZETTE -> GazettePanel(s)
+                            Panel.LEGACY -> LegacyPanel(s, vm, reducedMotion)
+                            Panel.FORGE -> Unit
+                        }
+                        Spacer(Modifier.heightIn(min = Space.lg))
+                    }
                 }
             }
         }
@@ -114,58 +108,75 @@ private fun UiState.Playing.pendingBlessingOffer() =
 
 /** First-run tips (GDD 3.3 onboarding): dismissed IDs live in settings, never in the save. */
 object Tips {
-    data class Tip(val id: String, val title: String, val body: String)
-    val FORGE = Tip("forge", "Your first weapon", "Pick a family, a core metal and an augment, then tap Forge weapon. Every valid forge yields a usable blade.")
-    val END_DAY = Tip("end_day", "What happens at End Day", "Heroes shop, then fight, patrol or rest; factions press on the town. Read it all in the Gazette at dawn.")
-    val MARKET = Tip("market", "Selling to heroes", "Heroes buy what suits them and their purse. List weapons in the Market at a price you like.")
+    data class Tip(val id: String, val body: String)
+    val FORGE = Tip("forge", "Pick a family, a core and an augment, then forge. Every valid forge yields a usable weapon.")
+    val END_DAY = Tip("end_day", "At End Day heroes shop, then fight or rest, and factions press on the town. Read it all in the Gazette.")
+    val MARKET = Tip("market", "Heroes buy what suits them and their purse. List weapons here at a price you like.")
     val ORDER = listOf(FORGE, END_DAY, MARKET)
     val ALL = ORDER.map { it.id }.toSet()
+    fun forPanel(p: Panel): List<Tip> = when (p) { Panel.FORGE -> listOf(FORGE, END_DAY); Panel.MARKET -> listOf(MARKET); else -> emptyList() }
 }
 
+/** One slim line of guidance with a dismiss action; never a card that stays on every panel. */
 @Composable
-private fun TipCard(tip: Tips.Tip, vm: GameViewModel, modifier: Modifier = Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer, contentColor = MaterialTheme.colorScheme.onTertiaryContainer),
-        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
+fun TipBanner(tip: Tips.Tip, vm: GameViewModel, modifier: Modifier = Modifier) {
+    Surface(
+        color = MaterialTheme.colorScheme.tertiaryContainer,
+        contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        shape = MaterialTheme.shapes.small,
+        modifier = modifier.fillMaxWidth().padding(bottom = Space.sm),
     ) {
-        Column(Modifier.padding(start = 14.dp, end = 4.dp, top = 2.dp, bottom = 8.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text(tip.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f).semantics { heading() })
-                TextButton(onClick = { vm.dismissTip(tip.id) }) { Text("Got it") }
-            }
-            Text(tip.body, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(end = 10.dp))
+        Row(Modifier.padding(start = Space.md, end = Space.sm, top = Space.sm, bottom = Space.sm), verticalAlignment = Alignment.CenterVertically) {
+            Text(tip.body, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+            TextButton(onClick = { vm.dismissTip(tip.id) }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Got it") }
+        }
+    }
+}
+
+/** The single rest action with its contextual sublabel (GDD 12 "End Day with contextual warning"). */
+@Composable
+private fun EndDayButton(s: UiState.Playing, vm: GameViewModel) {
+    val state = s.state
+    val note = when {
+        state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
+        state.commissions.values.any { it.status == CommissionStatus.OFFERED } -> "A commission is waiting"
+        state.overworkToday > 0 -> "Tomorrow starts ${state.overworkToday} energy short"
+        state.energy > 0 -> "${state.energy} energy unused"
+        else -> "Rest until dawn"
+    }
+    FilledTonalButton(
+        onClick = vm::endDay,
+        enabled = !s.busy,
+        contentPadding = PaddingValues(horizontal = Space.md, vertical = Space.xs),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.xs).heightIn(min = 48.dp),
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("End Day", style = MaterialTheme.typography.titleMedium)
+            Text(note, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
 
 @Composable
-private fun TopStrip(s: UiState.Playing) {
+private fun TopBar(s: UiState.Playing) {
     val st = s.state
-    val faction = st.factions.values.maxByOrNull { it.pressure }
-    Surface(tonalElevation = 2.dp) {
-        FlowRow(
-            Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Stat(R.drawable.icon_day, "Day", "${st.day}")
-            Stat(R.drawable.icon_gold, "Gold", "${st.gold}")
-            Stat(R.drawable.icon_energy, "Energy", if (st.overworkToday > 0) "${st.energy} (−${st.overworkToday} tomorrow)" else "${st.energy}")
-            Stat(R.drawable.icon_integrity, "Forge", "${st.town.integrity}")
-            Stat(R.drawable.icon_militia, "Siege day ${st.town.nextSiegeDay}", faction?.let { Battle.describePressure(it.pressure) } ?: "quiet")
-        }
+    Row(
+        Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(Space.lg),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Stat(R.drawable.icon_day, "Day", "Day ${st.day}")
+        Stat(R.drawable.icon_gold, "Gold", "${st.gold}")
+        Stat(R.drawable.icon_energy, "Energy", "${st.energy}")
     }
 }
 
 @Composable
 private fun Stat(icon: Int, label: String, value: String) {
     Row(Modifier.semantics(mergeDescendants = true) { contentDescription = "$label $value" }, verticalAlignment = Alignment.CenterVertically) {
-        PixelImage(icon, 20.dp, description = null)
-        Spacer(Modifier.width(3.dp))
-        Column {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-        }
+        PixelImage(icon, 22.dp, description = null)
+        Spacer(Modifier.width(6.dp))
+        Text(value, style = MaterialTheme.typography.titleMedium, maxLines = 1)
     }
 }
 
@@ -178,7 +189,14 @@ private fun panelIcon(p: Panel) = when (p) {
     Panel.JOURNAL -> R.drawable.icon_nav_journal; Panel.GAZETTE -> R.drawable.icon_nav_gazette; Panel.LEGACY -> R.drawable.icon_nav_legacy
 }
 
+/** Section heading: serif title with a generous top gap so sections read as separate blocks. */
 @Composable
-fun SectionTitle(text: String) {
-    Text(text, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 14.dp, bottom = 6.dp).semantics { heading() })
+fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    Text(text, style = MaterialTheme.typography.titleLarge, modifier = modifier.padding(top = Space.lg, bottom = Space.sm).semantics { heading() })
+}
+
+/** One line of secondary text in the muted colour; the only way secondary text is styled. */
+@Composable
+fun Secondary(text: String, modifier: Modifier = Modifier) {
+    Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = modifier)
 }

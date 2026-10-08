@@ -3,38 +3,37 @@ package com.example.blacksmithproject.ui
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import com.tinyblacksmith.core.model.CombatReplay
-import com.tinyblacksmith.core.model.Rarity
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
@@ -42,14 +41,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.PaperInk
 import com.example.blacksmithproject.ui.theme.PaperInkMuted
 import com.example.blacksmithproject.ui.theme.PaperRule
+import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.gazette.Gazette
+import com.tinyblacksmith.core.model.CombatReplay
 import com.tinyblacksmith.core.model.DayResolution
+import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.WeaponId
 import kotlinx.coroutines.delay
 
@@ -58,36 +62,39 @@ import kotlinx.coroutines.delay
 fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel, reducedMotion: Boolean) {
     val w = s.state.weapons[weaponId] ?: run { vm.dismissReveal(); return }
     val content = vm.engine.content
+    val suggested = vm.engine.suggestedPrice(w)
     val reveal by animateFloatAsState(targetValue = 1f, animationSpec = tween(if (reducedMotion) 0 else 600), label = "reveal")
     AlertDialog(
         onDismissRequest = vm::dismissReveal,
-        title = { Text(w.name, modifier = Modifier.graphicsLayer { alpha = reveal }) },
-        text = {
-            Column(Modifier.graphicsLayer { alpha = reveal }) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.size(72.dp)) {
-                        WeaponSprite(w, size = 72.dp)
-                        if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(72.dp, reducedMotion)
-                    }
-                    Spacer(Modifier.width(12.dp))
-                    Text(Labels.weaponSummary(w, content))
+        title = {
+            Column(Modifier.fillMaxWidth().graphicsLayer { alpha = reveal }, horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(Modifier.size(96.dp)) {
+                    WeaponSprite(w, size = 96.dp)
+                    if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(96.dp, reducedMotion)
                 }
-                Text("${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}", style = MaterialTheme.typography.bodySmall)
-                w.affixes.forEach { Text("+ ${content.affix(it).name}: ${content.affix(it).description}", style = MaterialTheme.typography.bodySmall) }
-                w.flaws.forEach { Text("− ${content.affix(it).name}: ${content.affix(it).description}", style = MaterialTheme.typography.bodySmall) }
-                Text("Suggested price ${vm.engine.suggestedPrice(w)} gold; set your own in the Market.", modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall)
+                Text(w.name, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, modifier = Modifier.padding(top = Space.sm))
+                Text("${Labels.rarity(w.rarity)} · ${Labels.quality(w.quality)}", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+            }
+        },
+        text = {
+            Column(Modifier.graphicsLayer { alpha = reveal }.verticalScroll(rememberScrollState())) {
+                Secondary("${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}" + (w.title?.let { " · \"$it\"" } ?: ""))
+                if (w.affixes.isNotEmpty() || w.flaws.isNotEmpty()) Spacer(Modifier.heightIn(min = Space.sm))
+                w.affixes.forEach { Text("+ ${content.affix(it).name}: ${content.affix(it).description}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 2.dp)) }
+                w.flaws.forEach { Text("− ${content.affix(it).name}: ${content.affix(it).description}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 2.dp)) }
+                Secondary("Suggested price $suggested gold. Set your own in the Market.", Modifier.padding(top = Space.md))
             }
         },
         confirmButton = {
-            Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, vm.engine.suggestedPrice(w))); vm.dismissReveal() }, enabled = w.isInStorage) { Text("List at ${vm.engine.suggestedPrice(w)}") }
+            Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, suggested)); vm.dismissReveal() }, enabled = w.isInStorage, modifier = Modifier.heightIn(min = 48.dp)) { Text("List at $suggested") }
         },
-        dismissButton = { OutlinedButton(onClick = vm::dismissReveal) { Text("Store") } },
+        dismissButton = { OutlinedButton(onClick = vm::dismissReveal, modifier = Modifier.heightIn(min = 48.dp)) { Text("Store") } },
     )
 }
 
 /**
- * The Gazette as a newspaper: masthead, rules, headlines and a step-by-step text replay. Every line derives from
- * real event records; stepping is purely presentational and skippable (GDD 11).
+ * The Gazette as a newspaper: masthead, siege diorama, headlines, then the step-by-step field report. Every line
+ * derives from real event records; stepping is purely presentational and skippable (GDD 11).
  */
 @Composable
 fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, reducedMotion: Boolean) {
@@ -97,63 +104,61 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
         if (reducedMotion) { shown = totalSteps; return@LaunchedEffect }
         while (shown < totalSteps) { delay(700); shown += 1 }
     }
-    AlertDialog(
-        onDismissRequest = vm::dismissReport,
-        containerColor = Color.Transparent,
-        titleContentColor = PaperInk,
-        textContentColor = PaperInk,
-        modifier = Modifier.clip(AlertDialogDefaults.shape).paperBackground(),
-        title = {
-            Column(Modifier.fillMaxWidth()) {
-                Text(
-                    Gazette.masthead(r.day),
-                    style = MaterialTheme.typography.titleLarge,
-                    fontFamily = FontFamily.Serif,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth().semantics { heading() },
-                )
-                PaperRuleLine(top = 6.dp, bottom = 2.dp)
-                PaperRuleLine(top = 0.dp, bottom = 0.dp)
-            }
-        },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                r.replays.firstOrNull()?.let { replay -> ReplayStage(replay, shown, s, vm, reducedMotion) }
-                if (r.headlines.isEmpty()) Text("A quiet day in Emberfall.", fontFamily = FontFamily.Serif)
-                r.headlines.forEachIndexed { i, h ->
-                    Text(
-                        h,
-                        fontFamily = FontFamily.Serif,
-                        fontWeight = if (i == 0) FontWeight.Bold else FontWeight.Normal,
-                        style = if (i == 0) MaterialTheme.typography.titleMedium else MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier.padding(vertical = 3.dp),
-                    )
+    Dialog(onDismissRequest = vm::dismissReport, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Surface(
+            color = Color.Transparent,
+            contentColor = PaperInk,
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier.fillMaxWidth().heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp).padding(horizontal = Space.md).paperBackground(),
+        ) {
+            Column(Modifier.padding(horizontal = Space.lg, vertical = Space.md)) {
+                // "EMBERFALL GAZETTE — DAY 3": the paper's name large, the date as a dateline under it.
+                val masthead = Gazette.masthead(r.day)
+                Column(Modifier.fillMaxWidth().semantics(mergeDescendants = true) { heading() }, horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(masthead.substringBefore(" — "), style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, maxLines = 1)
+                    if (" — " in masthead) Text(masthead.substringAfter(" — "), style = MaterialTheme.typography.labelMedium, color = PaperInkMuted)
                 }
-                if (r.replays.isNotEmpty()) {
-                    PaperRuleLine(top = 8.dp, bottom = 4.dp)
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("FROM THE FIELD", style = MaterialTheme.typography.labelMedium, color = PaperInkMuted, modifier = Modifier.semantics { heading() })
-                        if (shown < totalSteps) TextButton(onClick = { shown = totalSteps }, colors = ButtonDefaults.textButtonColors(contentColor = PaperInk)) { Text("Skip") }
+                PaperRuleLine(top = Space.sm, bottom = 2.dp)
+                PaperRuleLine(top = 0.dp, bottom = Space.sm)
+                Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
+                    r.replays.firstOrNull()?.let { replay -> ReplayStage(replay, shown, s, vm, reducedMotion) }
+                    if (r.headlines.isEmpty()) Text("A quiet day in Emberfall.", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium)
+                    r.headlines.forEachIndexed { i, h ->
+                        Text(
+                            h,
+                            fontFamily = FontFamily.Serif,
+                            style = if (i == 0) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(top = if (i == 0) 0.dp else Space.sm, bottom = if (i == 0) Space.sm else 0.dp),
+                        )
                     }
-                    var step = 0
-                    r.replays.forEach { replay ->
-                        Text(replay.title, fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 6.dp))
-                        replay.rounds.forEachIndexed { i, round ->
-                            if (step < shown) Text("${i + 1}. ${round.attacker} ${round.note} (${round.damage})", style = MaterialTheme.typography.bodySmall, color = PaperInkMuted)
+                    if (r.replays.isNotEmpty()) {
+                        PaperRuleLine(top = Space.md, bottom = Space.sm)
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text("FROM THE FIELD", style = MaterialTheme.typography.labelMedium, color = PaperInkMuted, modifier = Modifier.semantics { heading() })
+                            if (shown < totalSteps) TextButton(onClick = { shown = totalSteps }, colors = ButtonDefaults.textButtonColors(contentColor = PaperInk)) { Text("Skip") }
+                        }
+                        var step = 0
+                        r.replays.forEach { replay ->
+                            Text(replay.title, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Space.sm))
+                            replay.rounds.forEachIndexed { i, round ->
+                                if (step < shown) Text("${i + 1}. ${round.attacker} ${round.note} (${round.damage})", style = MaterialTheme.typography.bodySmall, color = PaperInkMuted, modifier = Modifier.padding(top = 2.dp))
+                                step += 1
+                            }
+                            if (step < shown) Text(replay.outcome, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = Space.xs))
                             step += 1
                         }
-                        if (step < shown) Text(replay.outcome, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
-                        step += 1
+                    }
+                    if (r.defeated) {
+                        PaperRuleLine(top = Space.md, bottom = Space.sm)
+                        Text("THE FORGE HAS FALLEN", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
-                if (r.defeated) {
-                    PaperRuleLine(top = 8.dp, bottom = 4.dp)
-                    Text("THE FORGE HAS FALLEN", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                Button(onClick = vm::dismissReport, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 52.dp)) {
+                    Text(if (r.defeated) "See the legacy" else "Begin day ${s.state.day}", style = MaterialTheme.typography.titleMedium)
                 }
             }
-        },
-        confirmButton = { Button(onClick = vm::dismissReport) { Text(if (r.defeated) "See the legacy" else "Begin day ${s.state.day}") } },
-    )
+        }
+    }
 }
 
 @Composable
@@ -168,12 +173,15 @@ fun BlessingDialog(s: UiState.Playing, vm: GameViewModel) {
         onDismissRequest = {},
         title = { Text("The town offers a blessing") },
         text = {
-            Column {
+            Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
                 s.state.pendingBlessingOffer.forEach { id ->
                     val b = content.blessing(id)
-                    OutlinedButton(onClick = { vm.dispatch(Command.ChooseBlessing(id)) }, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-                        Sprites.blessing(id)?.let { PixelImage(it, 32.dp, description = null); Spacer(Modifier.width(10.dp)) }
-                        Text("${b.name} — ${b.description}", modifier = Modifier.weight(1f))
+                    OutlinedButton(onClick = { vm.dispatch(Command.ChooseBlessing(id)) }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                        Sprites.blessing(id)?.let { PixelImage(it, 32.dp, description = null); Spacer(Modifier.width(12.dp)) }
+                        Column(Modifier.weight(1f)) {
+                            Text(b.name, style = MaterialTheme.typography.titleSmall)
+                            Text(b.description, style = MaterialTheme.typography.bodySmall)
+                        }
                     }
                 }
             }
@@ -209,5 +217,5 @@ private fun ReplayStage(replay: CombatReplay, shown: Int, s: UiState.Playing, vm
             StageActor({ p, tick -> Sprites.monsterFrame(f.id, elite, p, tick) }, pose, flipped = false)
         }
     } ?: emptyList()
-    SiegeStage(defenders, raiders, damaged = lost, reducedMotion = reducedMotion, modifier = Modifier.padding(bottom = 8.dp))
+    SiegeStage(defenders, raiders, damaged = lost, reducedMotion = reducedMotion, modifier = Modifier.padding(bottom = Space.md))
 }

@@ -1,24 +1,22 @@
 package com.example.blacksmithproject.ui
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -32,11 +30,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.theme.Space
+import com.tinyblacksmith.core.content.ContentCatalog
+import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.Weapon
@@ -49,130 +48,141 @@ fun MarketPanel(s: UiState.Playing, vm: GameViewModel) {
     val listed = st.listedWeapons()
     val slots = vm.engine.config.shelfSlots
 
-    SectionTitle("Shelves (${listed.size}/$slots)")
-    (0 until slots).chunked(4).forEach { rowSlots ->
-        Row(Modifier.fillMaxWidth().padding(bottom = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            rowSlots.forEach { i -> ShelfSlot(listed.getOrNull(i), i + 1, Modifier.weight(1f)) }
-        }
-    }
-    if (listed.isEmpty()) Text("Nothing on display. Heroes browse at dawn.", style = MaterialTheme.typography.bodySmall)
+    SectionTitle("Shelves (${listed.size}/$slots)", Modifier.padding(top = Space.sm))
+    if (listed.isEmpty()) Secondary("Nothing on display. Heroes browse at dawn.")
     listed.forEach { w ->
-        WeaponPriceRow(w, initialPrice = w.listedPrice ?: 0, vm = vm, actionLabel = "Unlist",
-            onPrice = { vm.dispatch(Command.SetPrice(w.id, it)) },
-            onAction = { vm.dispatch(Command.ToggleShelf(w.id, false)) })
+        WeaponListing(w, s, vm, listed = true)
     }
+    val empty = slots - listed.size
+    if (empty > 0 && listed.isNotEmpty()) Secondary(if (empty == 1) "1 empty shelf" else "$empty empty shelves", Modifier.padding(vertical = Space.sm))
 
     SectionTitle("Storage (${st.storedWeapons().size})")
-    if (st.storedWeapons().isEmpty()) Text("Nothing in storage. Forge something, then list it here.", style = MaterialTheme.typography.bodySmall)
-    st.storedWeapons().forEach { w ->
-        WeaponPriceRow(w, initialPrice = vm.engine.suggestedPrice(w), vm = vm, actionLabel = "List",
-            onPrice = null,
-            onAction = { price -> vm.dispatch(Command.ToggleShelf(w.id, true, price)) })
-    }
+    if (st.storedWeapons().isEmpty()) Secondary("Nothing in storage. Forge something, then list it here.")
+    st.storedWeapons().forEach { w -> WeaponListing(w, s, vm, listed = false) }
 
     st.lastResolution?.takeIf { it.visits.isNotEmpty() }?.let { res ->
         SectionTitle("Yesterday's customers")
         res.visits.forEach { v ->
             val bought = v.purchasedWeaponId?.let { id -> st.weapons[id]?.name ?: "a weapon" }
-            Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(bought?.let { "${v.heroName} bought $it" } ?: "${v.heroName} left", modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
-                ReasonChip(reasonLabel(v.reason), bought != null)
+            Column(Modifier.fillMaxWidth().padding(vertical = 6.dp)) {
+                Text(bought?.let { "${v.heroName} bought $it" } ?: "${v.heroName} left", style = MaterialTheme.typography.bodyMedium)
+                Secondary(reasonLabel(v.reason).replaceFirstChar { it.uppercase() })
             }
         }
     }
 
     SectionTitle("Commissions")
     val open = st.commissions.values.filter { it.status == CommissionStatus.OFFERED || it.status == CommissionStatus.ACCEPTED }.sortedBy { it.deadlineDay }
-    if (open.isEmpty()) Text("No requests today.", style = MaterialTheme.typography.bodySmall)
+    if (open.isEmpty()) Secondary("No requests today.")
     open.forEach { c ->
         val buyer = st.heroes[c.buyerId]?.fullName ?: "Someone"
-        Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-            Column(Modifier.padding(12.dp)) {
-                Text("$buyer wants a ${Labels.quality(c.minQuality)} ${content.family(c.familyId).name} by day ${c.deadlineDay} for ${c.reward} gold.")
+        Card(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
+            Column(Modifier.padding(Space.md)) {
+                Text("${Labels.quality(c.minQuality).replaceFirstChar { it.uppercase() }} ${content.family(c.familyId).name} for $buyer", style = MaterialTheme.typography.titleSmall)
+                Secondary("${c.reward} gold · due day ${c.deadlineDay}", Modifier.padding(top = 2.dp))
                 if (c.status == CommissionStatus.OFFERED) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-                        Button(onClick = { vm.dispatch(Command.AcceptCommission(c.id)) }) { Text("Accept") }
-                        OutlinedButton(onClick = { vm.dispatch(Command.DeclineCommission(c.id)) }) { Text("Decline") }
+                    Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
+                        Button(onClick = { vm.dispatch(Command.AcceptCommission(c.id)) }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Accept") }
+                        OutlinedButton(onClick = { vm.dispatch(Command.DeclineCommission(c.id)) }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Decline") }
                     }
-                } else Text("Accepted — a matching weapon in storage or on the shelf is delivered at End Day.", style = MaterialTheme.typography.bodySmall)
+                } else Secondary("Accepted. A matching weapon in storage or on the shelf is delivered at End Day.", Modifier.padding(top = Space.sm))
             }
         }
     }
 
     SectionTitle("Supplier")
-    content.materials.forEach { m ->
-        val price = vm.engine.materialPrice(st, m.id)
-        val stock = st.supplierStock[m.id]
-        Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Sprites.material(m.id)?.let { PixelImage(it, 28.dp, description = null) }
-            Column(Modifier.weight(1f)) {
-                Text("${m.name} · you have ${st.materials[m.id] ?: 0}")
-                Text("$price gold" + (stock?.let { " · $it left today" } ?: " · always stocked"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            OutlinedButton(enabled = (stock == null || stock > 0) && st.gold >= price && !s.busy, onClick = { vm.dispatch(Command.BuyMaterial(m.id, 1)) }) { Text("Buy") }
-        }
-    }
-}
-
-/** One of the eight shelf slots: a weapon on display, or a labelled empty slot. */
-@Composable
-private fun ShelfSlot(w: Weapon?, number: Int, modifier: Modifier) {
-    val description = w?.let { "Slot $number: ${it.name}, ${it.listedPrice ?: 0} gold" } ?: "Slot $number: empty"
-    OutlinedCard(
-        modifier = modifier.height(84.dp).semantics(mergeDescendants = true) { contentDescription = description },
-        border = BorderStroke(1.dp, if (w != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline),
-        colors = CardDefaults.outlinedCardColors(containerColor = if (w != null) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface),
-    ) {
-        Column(Modifier.fillMaxWidth().padding(4.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            if (w != null) {
-                WeaponSprite(w, size = 40.dp)
-                Text("${w.listedPrice ?: 0} g", style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            } else {
-                Box(Modifier.height(40.dp), contentAlignment = Alignment.Center) { Text("·", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.outline) }
-                Text("Empty", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+    Secondary("Buy one at a time. Basic metals are always in stock.")
+    MaterialCategory.entries.forEach { category ->
+        val group = content.materials(category)
+        if (group.isEmpty()) return@forEach
+        Text(
+            when (category) { MaterialCategory.CORE -> "Cores"; MaterialCategory.AUGMENT -> "Augments"; MaterialCategory.CATALYST -> "Catalysts" },
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(top = Space.md, bottom = Space.xs),
+        )
+        group.forEach { m ->
+            val price = vm.engine.materialPrice(st, m.id)
+            val stock = st.supplierStock[m.id]
+            val have = st.materials[m.id] ?: 0
+            Row(Modifier.fillMaxWidth().padding(vertical = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                Sprites.material(m.id)?.let { PixelImage(it, 28.dp, description = null) }
+                Column(Modifier.weight(1f)) {
+                    Text("${m.name} · $price gold", style = MaterialTheme.typography.bodyMedium)
+                    Secondary("You have $have" + (stock?.let { " · $it left today" } ?: ""))
+                }
+                OutlinedButton(
+                    enabled = (stock == null || stock > 0) && st.gold >= price && !s.busy,
+                    onClick = { vm.dispatch(Command.BuyMaterial(m.id, 1)) },
+                    modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = "Buy ${m.name} for $price gold" },
+                ) { Text("Buy") }
             }
         }
     }
 }
 
-@Composable
-private fun ReasonChip(label: String, sold: Boolean) {
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        color = if (sold) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-        contentColor = if (sold) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-    ) { Text(label, style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) }
+/** Which hero classes favour this family: a content read, never a sale prediction. */
+private fun demandHint(familyId: com.tinyblacksmith.core.model.WeaponFamilyId, content: ContentCatalog): String? {
+    val fans = content.classes.filter { familyId in it.preferredFamilies }.map { it.name + "s" }
+    return if (fans.isEmpty()) null else "${fans.joinToString(" and ")} favour the ${content.family(familyId).name.lowercase()}"
 }
 
+/**
+ * One weapon on a shelf or in storage: sprite, name, what it is, who wants it, and its price. Tapping the row opens
+ * the price editor; listing from storage uses the suggested price unless the player changes it.
+ */
 @Composable
-private fun WeaponPriceRow(w: Weapon, initialPrice: Int, vm: GameViewModel, actionLabel: String, onPrice: ((Int) -> Unit)?, onAction: (Int) -> Unit) {
-    var priceText by rememberSaveable(w.id.value, w.listedPrice) { mutableStateOf(initialPrice.toString()) }
+private fun WeaponListing(w: Weapon, s: UiState.Playing, vm: GameViewModel, listed: Boolean) {
+    val content = vm.engine.content
+    val suggested = vm.engine.suggestedPrice(w)
+    var expanded by rememberSaveable(w.id.value) { mutableStateOf(false) }
+    var priceText by rememberSaveable(w.id.value, w.listedPrice) { mutableStateOf((w.listedPrice ?: suggested).toString()) }
     val price = priceText.toIntOrNull() ?: 0
-    Card(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
-        Column(Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                WeaponSprite(w, size = 44.dp)
-                Column {
+    val priceLabel = if (listed) "${w.listedPrice ?: 0} g" else "List at $suggested"
+    Surface(
+        tonalElevation = 1.dp,
+        shape = MaterialTheme.shapes.medium,
+        modifier = Modifier.fillMaxWidth().padding(vertical = Space.xs),
+    ) {
+        Column(Modifier.fillMaxWidth()) {
+            Row(
+                Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(horizontal = 12.dp, vertical = 10.dp)
+                    .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${Labels.weaponSummary(w, content)}, ${if (listed) "${w.listedPrice ?: 0} gold" else "in storage"}. Tap to set a price." },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                WeaponSprite(w, size = 48.dp)
+                Column(Modifier.weight(1f)) {
                     Text(w.name, style = MaterialTheme.typography.titleSmall)
-                    Text(Labels.weaponSummary(w, vm.engine.content), style = MaterialTheme.typography.bodySmall)
+                    Secondary(Labels.weaponSummary(w, content))
+                    demandHint(w.familyId, content)?.let { Secondary(it) }
                 }
+                if (listed) Text(priceLabel, style = MaterialTheme.typography.titleMedium)
+                else Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, suggested)) }, enabled = !s.busy, modifier = Modifier.heightIn(min = 48.dp)) { Text(priceLabel, maxLines = 1) }
             }
-            FlowRow(verticalArrangement = Arrangement.spacedBy(4.dp), horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(top = 8.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    StepButton("−10", "Lower price by 10") { priceText = (price - 10).coerceAtLeast(0).toString() }
-                    OutlinedTextField(
-                        value = priceText,
-                        onValueChange = { priceText = it.filter { c -> c.isDigit() }.take(6) },
-                        label = { Text("Price") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.width(104.dp),
-                    )
-                    StepButton("+10", "Raise price by 10") { priceText = (price + 10).coerceAtMost(999999).toString() }
-                }
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.height(56.dp)) {
-                    if (onPrice != null) OutlinedButton(onClick = { onPrice(price) }) { Text("Set") }
-                    Button(onClick = { onAction(price) }) { Text(actionLabel) }
+            AnimatedVisibility(visible = expanded) {
+                Column(Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp)) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(bottom = Space.sm))
+                    Secondary("Suggested price $suggested gold.")
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
+                        StepButton("−10", "Lower price by 10") { priceText = (price - 10).coerceAtLeast(0).toString() }
+                        OutlinedTextField(
+                            value = priceText,
+                            onValueChange = { priceText = it.filter { c -> c.isDigit() }.take(6) },
+                            label = { Text("Price") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.width(112.dp),
+                        )
+                        StepButton("+10", "Raise price by 10") { priceText = (price + 10).coerceAtMost(999999).toString() }
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
+                        if (listed) {
+                            Button(onClick = { vm.dispatch(Command.SetPrice(w.id, price)); expanded = false }, enabled = !s.busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("Set price") }
+                            OutlinedButton(onClick = { vm.dispatch(Command.ToggleShelf(w.id, false)) }, enabled = !s.busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("Unlist") }
+                        } else {
+                            Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, price)) }, enabled = !s.busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("List at $price") }
+                        }
+                    }
                 }
             }
         }

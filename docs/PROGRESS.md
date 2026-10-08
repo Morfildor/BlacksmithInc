@@ -10,7 +10,9 @@ signatures/techniques, world events, generations, balance harness, UI polish). N
   weapon seizure, world-event pool (23 events + 2 deterministic rules = all 25 GDD events), 24 signature recipes,
   legacy with famous-blade returns, Gazette, JSON save codec with a migration scaffold, End Day event-log compaction
   (30-day window, history-grade types kept), headless simulator (GDD policy set, JSON report, perf probe). 78 JVM tests.
-- `app/` Compose portrait workshop with the forge palette theme, onboarding tips, six panels, technique chips,
+- `app/` Compose portrait workshop (session 4 layout: three-stat top bar, pinned forge summary over collapsible
+  auto-advancing steps, row-based market, per-panel tip banners, single End Day action, full-width paper day report;
+  principles in DECISIONS.md), six panels, technique chips,
   newspaper day report with stepped replay, blessing choice (dismissable for the day), run-end/legacy screen; Room
   atomic save store; DataStore settings (reduced motion, seen tips). Hand-made pixel art on every screen.
 - `tools/pixelart/import_assets.py` (slices concept sheets, copies selected pack sprites, prunes stale imports),
@@ -32,6 +34,7 @@ signatures/techniques, world events, generations, balance harness, UI polish). N
 | Device loop | `tools/emulator/smoke.sh` | New run -> forge -> list -> End Day -> Gazette with a real sale and a battle using the sword -> Town -> resume after process death on day 2 (screenshots sent to the user) |
 | Art import | `python tools/pixelart/import_assets.py` | 5 sheets + 1 pack -> 194 sprites; contact sheet `docs/art_contact_handmade.png` reviewed; siege diorama verified on device at day 5 |
 | Re-verification after the diorama | smoke + `connectedDebugAndroidTest` | SMOKE_DONE, 5/5 instrumented |
+| UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
 ## Obstacles hit and resolved
 - Six parallel agents on one tree: transient compile breaks and Gradle lock waits; integrated by re-running the whole

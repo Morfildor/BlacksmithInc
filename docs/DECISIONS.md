@@ -200,3 +200,23 @@ set ever needs trimming, WEAPON_INHERITED (one per weapon per retirement) is the
   3 flaws (launch catalog exists, see above).
 - World modifiers are three fixed variants.
 - Weapons bought by heroes stay with them unless the hero dies (recovered, lost or seized) or retires (inherited).
+
+## UI layout principles (2026-10-08, session 4, PROPOSED)
+- One primary action per screen: Forge weapon on the Forge panel; End Day is a tonal button so it never competes.
+  The six-panel nav bar (LOCKED) stays but is 64dp; no other bars stack at the bottom.
+- Global chrome shows only what every panel needs: Day, Gold, Energy. Forge integrity and the next siege are the
+  run-over condition and belong to the Forge (threat line) and Town (header card), not the global strip.
+- Forge flow is a pinned summary (preview sprite, recipe in words, cost, button) over collapsible steps. The first
+  unfinished step opens; a pick advances to the next unfinished one and the open step scrolls into view. A familiar
+  recipe is three taps (GDD 12). Step headers always show the chosen value, so launch content (6 families,
+  16 materials) adds chips inside a step, never a wall. Disabled choices use `GameViewModel.describe(GameError)` as
+  their reason, so the UI never invents rules.
+- Hierarchy comes from four styles: serif `titleLarge` for section headings, bold `titleMedium` for card titles and
+  key numbers, `bodyMedium` (16sp floor) for body, `bodySmall` (14sp) only via `Secondary()` in the muted colour.
+  Spacing uses `Space.sm/md/lg` (8/16/24dp). `InkMuted` darkened to 7.6:1 on parchment.
+- Onboarding tips are per-panel slim banners shown one at a time; dismissal is a setting, not save state.
+- Empty state is one sentence, never a grid of placeholders ("6 empty shelves").
+- Day report uses a full-width `Dialog` (not `AlertDialog`) so the diorama and headlines get the whole phone width;
+  anchor texts kept for scripts: "EMBERFALL GAZETTE", "Begin day", "Skip", "Suggested price", "List at".
+- Verification anchors in `tools/emulator/smoke.sh` moved from "Weapon family"/"End Day 2" to
+  "Forge weapon"/"Day 2".

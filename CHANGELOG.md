@@ -14,6 +14,14 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   descriptive wants) and leaves one of its core and augment at the forge; the 25th scripted event.
 
 ### Changed
+- Workshop UI decluttered: a three-stat top bar (day, gold, energy); forge integrity and the siege countdown live on
+  the Forge panel's threat line and the Town header; one End Day button with a contextual sublabel; a 64dp nav bar.
+  The Forge panel pins the weapon preview, recipe, cost and Forge button above collapsible steps (mode, family,
+  core, augment, catalyst/technique when advanced, risk) that auto-advance; out-of-stock materials are disabled with
+  the engine's own reason. Market lists shelf weapons as rows with a tap-to-edit price and folds empty slots into
+  one line; commissions and the supplier (grouped by category) are separate sections. Tips are one slim banner per
+  panel, dismissed once. The day report is a full-width paper sheet (diorama, headlines, replay, one action).
+  Typography collapsed to four working styles with spacing tokens (`ui/theme/Spacing.kt`); muted ink darkened.
 - Saves stay bounded over long runs: End Day now compacts the event log, keeping full records for the last
   30 days (`BalanceConfig.eventRetentionDays`) and history-grade events (sieges, deaths, retirements, guilds,
   signatures, milestones, world events, weapon fates) for the whole run. Gameplay, Gazette headlines for the

@@ -211,7 +211,7 @@ fun Modifier.paperBackground(): Modifier {
 
 /** The workshop scene: tiled wall and floor, furnace heat from energy, animated embers unless reduced motion. */
 @Composable
-fun ForgeScene(heat: Float, reducedMotion: Boolean, modifier: Modifier = Modifier) {
+fun ForgeScene(heat: Float, reducedMotion: Boolean, modifier: Modifier = Modifier, height: Dp = 100.dp) {
     val wall = ImageBitmap.imageResource(R.drawable.tile_wall)
     val floor = ImageBitmap.imageResource(R.drawable.tile_floor)
     val furnace = ImageBitmap.imageResource(
@@ -234,7 +234,7 @@ fun ForgeScene(heat: Float, reducedMotion: Boolean, modifier: Modifier = Modifie
     Canvas(
         modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .height(height)
             .clipToBounds()
             .semantics { contentDescription = "The forge: furnace, anvil, tool rack and shelf" },
     ) {

@@ -30,7 +30,7 @@ $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && shot 01_title
 tap "Light the forge" || exit 1
-wait_text "Weapon family" && shot 02_workshop
+wait_text "Forge weapon" && shot 02_workshop
 scroll_to "Sword" && tap "Sword"; scroll_to "Iron" && tap "Iron"; scroll_to "Ember Resin" && tap "Ember Resin"
 scroll_to "Forge weapon"; shot 03_forge_ready
 tap "Forge weapon" || exit 1
@@ -47,6 +47,6 @@ has "Champions" && echo "CHECK town panel: ok"
 # Process-death resume: kill and relaunch, expect the same day.
 $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
 # A saved run resumes straight into the workshop (no title detour).
-wait_text "End Day 2" && echo "CHECK resume after process death on day 2: ok" || echo "CHECK resume: FAIL"
+wait_text "Day 2" && echo "CHECK resume after process death on day 2: ok" || echo "CHECK resume: FAIL"
 shot 08_resumed
 echo SMOKE_DONE

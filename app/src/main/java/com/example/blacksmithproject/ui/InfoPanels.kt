@@ -6,12 +6,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,52 +21,62 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.battle.Battle
-import com.tinyblacksmith.core.crafting.Journal
 import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.model.Hero
 import com.tinyblacksmith.core.model.HeroFate
-import com.tinyblacksmith.core.model.KnowledgeState
 
 @Composable
 fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     val st = s.state
     val faction = st.factions.values.maxByOrNull { it.pressure }
-    SectionTitle("Threat")
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        faction?.let { f -> Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 48.dp, description = content.faction(f.id).name); Spacer(Modifier.width(12.dp)) } }
-        Column {
-            faction?.let { f -> Text("${content.faction(f.id).name}: ${Battle.describePressure(f.pressure)}. Next invasion on day ${st.town.nextSiegeDay}.") }
-            Text("Forge integrity ${st.town.integrity} · militia ${st.town.militia} · sieges held ${st.town.siegesSurvived}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("World: ${st.world.name}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    val daysLeft = st.town.nextSiegeDay - st.day
+
+    // Header: the threat in one card, numbers second.
+    Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
+        Row(Modifier.padding(Space.md), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+            faction?.let { f -> Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 56.dp, description = content.faction(f.id).name) } }
+            Column(Modifier.weight(1f)) {
+                Text(faction?.let { content.faction(it.id).name } ?: "No threat", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    faction?.let { Battle.describePressure(it.pressure).replaceFirstChar { c -> c.uppercase() } + " · " } .orEmpty() +
+                        when { daysLeft <= 0 -> "siege today"; daysLeft == 1 -> "siege tomorrow"; else -> "siege on day ${st.town.nextSiegeDay}, in $daysLeft days" },
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Secondary("Forge ${st.town.integrity} · militia ${st.town.militia} · sieges held ${st.town.siegesSurvived}", Modifier.padding(top = Space.xs))
+                Secondary("World: ${st.world.name}")
+            }
         }
     }
 
     SectionTitle("Champions")
-    Text("The three strongest heroes fit to stand at the walls.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Secondary("The three strongest heroes fit to stand at the walls.")
     val champions = st.town.championIds.mapNotNull { st.heroes[it] }
     (0 until 3).forEach { i ->
         val h = champions.getOrNull(i)
-        Card(
-            Modifier.fillMaxWidth().padding(vertical = 4.dp),
-            colors = CardDefaults.cardColors(containerColor = if (h != null) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant),
+        Surface(
+            tonalElevation = if (h != null) 1.dp else 0.dp,
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.fillMaxWidth().padding(top = Space.sm),
         ) {
             Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (h == null) {
-                    Text("${i + 1}.", style = MaterialTheme.typography.titleMedium)
-                    Text("No hero stands here yet.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                    Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Secondary("No hero stands here yet.", Modifier.weight(1f))
                 } else {
                     val w = st.equippedWeapon(h.id)
                     PixelImage(Sprites.portrait(h), 56.dp, description = "${h.fullName}, ${content.heroClass(h.classId).name}")
                     Column(Modifier.weight(1f)) {
                         Text("${i + 1}. ${h.fullName}", style = MaterialTheme.typography.titleSmall)
-                        Text("${content.heroClass(h.classId).name} level ${h.level} · ${Labels.health(h)}", style = MaterialTheme.typography.bodySmall)
-                        Text(w?.let { "Wields ${it.name}" } ?: "Unarmed", style = MaterialTheme.typography.bodySmall)
+                        Secondary("${content.heroClass(h.classId).name} level ${h.level} · ${Labels.health(h)}")
+                        Secondary(w?.let { "Wields ${it.name}" } ?: "Unarmed")
                     }
                     w?.let { WeaponSprite(it, size = 44.dp) }
                 }
@@ -74,7 +85,10 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
     }
 
     SectionTitle("Adventurers (${st.aliveHeroes().size} alive)")
-    st.heroes.values.sortedWith(compareBy<Hero> { !it.isAlive }.thenByDescending { it.fame }).forEach { h -> HeroRow(h, s, vm) }
+    st.heroes.values.sortedWith(compareBy<Hero> { !it.isAlive }.thenByDescending { it.fame }).forEachIndexed { i, h ->
+        if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        HeroRow(h, s, vm)
+    }
 }
 
 @Composable
@@ -88,27 +102,22 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
         HeroFate.RETIRED -> "Retired"
     }
     Row(
-        Modifier.fillMaxWidth().padding(vertical = 5.dp).alpha(if (h.isAlive) 1f else 0.55f).semantics(mergeDescendants = true) {},
+        Modifier.fillMaxWidth().padding(vertical = 10.dp).alpha(if (h.isAlive) 1f else 0.6f).semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Box {
-            PixelImage(Sprites.portrait(h), 40.dp, description = content.heroClass(h.classId).name)
-            Sprites.marker(h.fate)?.let { PixelImage(it, 16.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
+            PixelImage(Sprites.portrait(h), 44.dp, description = content.heroClass(h.classId).name)
+            Sprites.marker(h.fate)?.let { PixelImage(it, 16.dp, description = fateLabel, modifier = Modifier.align(Alignment.BottomEnd)) }
         }
         Column(Modifier.weight(1f)) {
-            Text(
-                "${h.fullName} · ${content.heroClass(h.classId).name} ${h.level} · " + (fateLabel ?: Labels.health(h)) + (h.descendantOf?.let { " · of ${it}'s line" } ?: ""),
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Text(
-                if (h.isAlive) "${Heroes.describeTraits(h, content)} · ${h.gold} gold · ${w?.name ?: "unarmed"} · fame ${h.fame}"
+            Text(h.fullName + (h.descendantOf?.let { " · of $it's line" } ?: ""), style = MaterialTheme.typography.titleSmall)
+            Secondary("${content.heroClass(h.classId).name} ${h.level} · " + (fateLabel ?: Labels.health(h)) + " · " + (w?.name ?: "unarmed"))
+            Secondary(
+                if (h.isAlive) "${Heroes.describeTraits(h, content)} · ${h.gold} gold · fame ${h.fame}"
                 else "${Heroes.describeTraits(h, content)} · fame ${h.fame} · ${h.kills} kills",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        if (fateLabel != null) Text(fateLabel.substringBefore(" "), style = MaterialTheme.typography.labelMedium)
     }
 }
 
@@ -116,18 +125,12 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
 fun JournalPanel(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     val journal = s.state.legacy.journal
-    SectionTitle("Experiment Journal")
-    Text("Knowledge survives the forge's fall. Repeat a pairing to understand it.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    SectionTitle("Experiment Journal", Modifier.padding(top = Space.sm))
+    Secondary("Knowledge survives the forge's fall. Repeat a pairing to understand it.")
     val entries = journal.interactions.entries.sortedBy { it.key }
-    if (entries.isEmpty()) Text("No experiments recorded yet. Forge something!", modifier = Modifier.padding(top = 8.dp))
-    entries.forEach { (key, state) ->
-        val label = when (state) {
-            KnowledgeState.UNKNOWN -> "unknown"
-            KnowledgeState.OBSERVED -> "observed"
-            KnowledgeState.UNDERSTOOD -> "understood"
-            KnowledgeState.SIGNATURE_DISCOVERED -> "signature"
-        }
-        Text("${Journal.subjectName(content, key)} — $label: ${Journal.hint(journal, content, key)}", modifier = Modifier.padding(vertical = 2.dp))
+    if (entries.isEmpty()) Text("No experiments recorded yet. Forge something.", modifier = Modifier.padding(top = Space.md))
+    Column(Modifier.padding(top = Space.sm)) {
+        entries.forEach { (key, _) -> AffinityHint(journal, content, key) }
     }
 }
 
@@ -135,10 +138,17 @@ fun JournalPanel(s: UiState.Playing, vm: GameViewModel) {
 fun GazettePanel(s: UiState.Playing) {
     val st = s.state
     val days = st.events.map { it.day }.distinct().sortedDescending()
-    if (days.isEmpty()) Text("The presses are quiet.")
+    if (days.isEmpty()) Text("The presses are quiet.", modifier = Modifier.padding(top = Space.md))
     days.forEach { day ->
         SectionTitle(Gazette.masthead(day))
-        Gazette.headlines(st.eventsForDay(day)).forEach { Text("• $it", modifier = Modifier.padding(vertical = 2.dp)) }
+        Gazette.headlines(st.eventsForDay(day)).forEachIndexed { i, h ->
+            Text(
+                h,
+                fontFamily = FontFamily.Serif,
+                style = if (i == 0) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(vertical = Space.xs),
+            )
+        }
     }
 }
 
@@ -146,39 +156,57 @@ fun GazettePanel(s: UiState.Playing) {
 fun LegacyPanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean) {
     val content = vm.engine.content
     val legacy = s.state.legacy
-    SectionTitle("Era ${s.state.era}")
+    SectionTitle("Era ${s.state.era}", Modifier.padding(top = Space.sm))
     if (s.state.pendingBlessingOffer.isNotEmpty()) {
-        Button(onClick = vm::reopenBlessingOffer, modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)) { Text("Choose a blessing") }
+        Button(onClick = vm::reopenBlessingOffer, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(bottom = Space.sm)) { Text("Choose a blessing") }
     }
-    Text("Legacy points banked: ${legacy.points}. Rewards are claimed when the forge falls.", style = MaterialTheme.typography.bodySmall)
+    Text("${legacy.points} legacy points banked", style = MaterialTheme.typography.titleMedium)
+    Secondary("Rewards are claimed when the forge falls; they survive every era.")
+
     SectionTitle("Permanent upgrades")
     content.upgrades.forEach { u ->
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 2.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 6.dp)) {
             LevelDots(legacy.upgradeLevel(u.id), u.maxLevel)
-            Spacer(Modifier.width(8.dp))
-            Text("${u.name} — ${u.description}", style = MaterialTheme.typography.bodySmall)
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(u.name, style = MaterialTheme.typography.titleSmall)
+                Secondary(u.description)
+            }
         }
     }
     if (s.state.blessings.isNotEmpty()) {
         SectionTitle("Active blessings")
         s.state.blessings.forEach { b ->
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(vertical = 2.dp)) {
-                Sprites.blessing(b.id)?.let { PixelImage(it, 28.dp, description = null) }
-                Text("${content.blessing(b.id).name} until day ${b.expiresDay}", style = MaterialTheme.typography.bodySmall)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 6.dp)) {
+                Sprites.blessing(b.id)?.let { PixelImage(it, 32.dp, description = null) }
+                Column {
+                    Text(content.blessing(b.id).name, style = MaterialTheme.typography.titleSmall)
+                    Secondary("Until day ${b.expiresDay}")
+                }
             }
         }
     }
     SectionTitle("Legend Board")
-    if (legacy.legendBoard.isEmpty()) Text("No blade has earned a legend yet.", style = MaterialTheme.typography.bodySmall)
-    legacy.legendBoard.forEach { Text("${it.title} — era ${it.era}, ${it.kills} kills, carried by ${it.owners.joinToString().ifEmpty { "no one" }}", style = MaterialTheme.typography.bodySmall) }
+    if (legacy.legendBoard.isEmpty()) Secondary("No blade has earned a legend yet.")
+    legacy.legendBoard.forEach {
+        Column(Modifier.padding(vertical = 6.dp)) {
+            Text(it.title, style = MaterialTheme.typography.titleSmall)
+            Secondary("Era ${it.era} · ${it.kills} kills · carried by ${it.owners.joinToString().ifEmpty { "no one" }}")
+        }
+    }
     SectionTitle("Lineages")
-    if (legacy.lineages.isEmpty()) Text("No lineage has been founded yet.", style = MaterialTheme.typography.bodySmall)
-    legacy.lineages.forEach { Text("${it.heroName} (era ${it.era}) ${it.deed}", style = MaterialTheme.typography.bodySmall) }
+    if (legacy.lineages.isEmpty()) Secondary("No lineage has been founded yet.")
+    legacy.lineages.forEach {
+        Column(Modifier.padding(vertical = 6.dp)) {
+            Text(it.heroName, style = MaterialTheme.typography.titleSmall)
+            Secondary("Era ${it.era} · ${it.deed}")
+        }
+    }
     SectionTitle("Settings")
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
         Column(Modifier.weight(1f)) {
-            Text("Reduced motion")
-            Text("Stops the ember animation, the reveal fade and the stepped battle replay.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Reduced motion", style = MaterialTheme.typography.titleSmall)
+            Secondary("Stops the ember animation, the reveal fade and the stepped battle replay.")
         }
         Switch(checked = reducedMotion, onCheckedChange = { vm.setReducedMotion(it) })
     }

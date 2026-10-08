@@ -166,7 +166,8 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     fun setReducedMotion(value: Boolean) = viewModelScope.launch { settings.setReducedMotion(value) }
     fun dismissTip(id: String) = viewModelScope.launch { settings.markTipSeen(id) }
 
-    private fun describe(e: GameError): String = when (e) {
+    /** Player-facing text for an engine error; the UI also uses it to explain disabled choices. */
+    fun describe(e: GameError): String = when (e) {
         GameError.RunEnded -> "The forge has fallen; this era is over."
         is GameError.NotEnoughEnergy -> "Not enough energy (need ${e.needed}, have ${e.available}, overwork left ${e.overworkAvailable})."
         is GameError.MissingMaterial -> "You are out of ${engine.content.material(e.materialId).name}."

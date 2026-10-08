@@ -20,8 +20,8 @@ val ParchmentBg = Color(0xFFF3E6CF)
 val ParchmentSurface = Color(0xFFFAF1E0)
 val ParchmentVariant = Color(0xFFE8D9BE)
 val Ink = Color(0xFF2B2118)
-val InkMuted = Color(0xFF5C4D3C)
-val OutlineLight = Color(0xFF8A7A62)
+val InkMuted = Color(0xFF4A3B2C)  // 7.6:1 on parchment surface; secondary text stays readable
+val OutlineLight = Color(0xFF7D6C54)
 
 val SootBg = Color(0xFF1B1512)
 val SootSurface = Color(0xFF241C17)
