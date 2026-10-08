@@ -154,8 +154,9 @@ separate and tiers 1-4 all landed rare. Thresholds stay at the GDD's 35/50/70/85
 | Moonsteel + Frost Bloom (excellent) | 0/0/27/47/26 | 0/0/21/47/33 |
 | Starsteel + Sun Ash (excellent) | 0/0/11/49/41 | 0/0/11/49/41 |
 
-Targets met: tiers 1-2 are mostly common/uncommon, 3-4 rare-centred, 6 epic-centred with legendary 26 % on
-average and 23 % for Moonsteel + Sun Ash; iron is never legendary. Tier 5 is a rare/epic split (42/41): raising
+What the tables show: tier 1 is mostly common/uncommon (63 %); tier 2 splits uncommon/rare (36/51, down from
+20/60); tiers 3-4 are rare-centred; tier 6 is epic-centred with legendary 26 % on average and 23 % for
+Moonsteel + Sun Ash; iron is never legendary. Tier 5 is a rare/epic split (42/41): raising
 `qualityPerCoreTier` to 7 fixes that but pushes tier-6 legendary past 30 % (grid: base 21-22, core 7 -> moonsteel
 L 31-33 %), so 6 was kept. The excellent top-tier pairs (Starsteel + Sun Ash, Moonsteel + Frost Bloom) stay at
 33-41 % legendary; that is the affinity-discovery reward and no base/tier value changes it without flattening the
@@ -174,7 +175,7 @@ faction), and launch growth is 4/3/2.
 
 | Config (growth 4/3/2, heroes on max pressure) | Median (p10/p90) | Mean | Survived / lost per run | Maxed median |
 |---|---|---|---|---|
-| siegeModifier 2.75, damage 12 + 25x(ratio-1) | 25 (20/35) | 26.3 | 0.2 / 5.0 | - |
+| siegeModifier 2.75, damage 12 + 25x(ratio-1) (v1 siege numbers) | 25 (20/30) | 24.3 | 0.2 / 4.7 | 40 |
 | 2.0, 12 + 25x | 35 (25/45) | 35.5 | 1.6 / 5.5 | 55 |
 | 2.0, 12 + 45x | 30 (20/40) | 29.9 | 1.6 / 4.4 | 50 |
 | 2.0, 12 + 75x | 25 (15/35) | 26.3 | 1.6 / 3.7 | 45 |
