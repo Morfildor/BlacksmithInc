@@ -24,7 +24,7 @@ Legend: [x] done and verified · [~] partial · [ ] not started. Verification ev
 - [x] GDD utility purchase algorithm with reason codes (great fit / overpriced / not suited / too expensive / not better)
 - [x] Equip-if-better ownership transfer; single authoritative weapon location
 - [x] Commissions: offered → accept/decline → delivered at End Day → reputation/loyalty; small expiry penalty
-- [ ] Shop reputation effects on willingness to pay; loyalty-driven repeat customers beyond visit chance (P6)
+- [x] Shop reputation effects on willingness to pay; loyalty-driven repeat customers beyond visit chance (P6)
 
 ## P3 — Town and battles
 - [x] One faction (Ashclaw Raiders) with pressure, growth, suppression, weakness/resistance, encampment event
@@ -57,7 +57,7 @@ Legend: [x] done and verified · [~] partial · [ ] not started. Verification ev
 - [x] 24 signature recipes (4 per launch family); SIGNATURE_DISCOVERED journal stage, clues, hints
 - [x] Advanced Forge techniques (Temper/Quench/Etch) in engine and Forge panel
 - [x] Guild/retirement/mentoring, weapon seizure and inheritance, famous-blade return from the Legend Board
-- [ ] Reputation/loyalty depth (willingness to pay, repeat customers)
+- [x] Reputation/loyalty depth (willingness to pay, repeat customers): bounded price ceiling, loyalty-weighted commission patrons, Gazette premium/regular records (DECISIONS session 4)
 - [x] Pixel-art pipeline: hand-made sheets imported by `tools/pixelart/import_assets.py` (136 sprites: scene, 36 weapons, 6 overlays, 6 badges, 25 portraits, 12 faction sprites, 16 materials, 8 blessings, nav/status icons), placeholders generated for the rest; wired into every screen
 - [x] Battle replay: stepped Gazette text plus an animated siege diorama (hero/monster frames from the artist pack) consuming `CombatReplay` only; Skip and reduced-motion honoured
 - [x] Forge palette theme, onboarding tips, font-scale 1.5 pass, 8-slot shelf grid, ±10 price buttons, level dots, run-end claim flow

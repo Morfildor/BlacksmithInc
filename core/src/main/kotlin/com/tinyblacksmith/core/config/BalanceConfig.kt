@@ -170,6 +170,18 @@ data class BalanceConfig(
     val weaponSeizureChance: Double = 0.5,
     // --- Event-log compaction (GDD 13.3): full records for the last N days; rare history-grade types are kept forever. 0 = never compact. ---
     val eventRetentionDays: Int = 30,
+    // --- Reputation and loyalty depth (GDD 5 "Reputation", PROPOSED; docs/DECISIONS.md session 4). ---
+    /** Each point of shop reputation raises every hero's price ceiling (the price they treat as fair) by this fraction, up to [reputationPriceCap]. */
+    val reputationPricePerPoint: Double = 0.01,
+    val reputationPriceCap: Double = 0.25,
+    /** Each point of a hero's loyalty raises that hero's own price ceiling by this fraction, up to [loyaltyPriceCap]. */
+    val loyaltyPricePerPoint: Double = 0.03,
+    val loyaltyPriceCap: Double = 0.25,
+    /** Commission patrons are drawn with weight 1 + min(loyalty, cap) * weight, so regulars return with requests. */
+    val commissionLoyaltyWeight: Double = 0.5,
+    val commissionLoyaltyCap: Int = 10,
+    /** Loyalty at which the Gazette calls a hero a regular of the shop. */
+    val regularLoyaltyThreshold: Int = 3,
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

@@ -7,6 +7,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- Shop reputation and hero loyalty now raise the price heroes treat as fair (bounded at +25 % each), regulars return
+  with commission requests, and the Gazette records premium sales and names the shop's regulars.
+
 ## [0.2.0] - 2026-10-08
 Launch content by default, balance v2, all 24 signatures and 25 world events, bounded saves, decluttered UI.
 

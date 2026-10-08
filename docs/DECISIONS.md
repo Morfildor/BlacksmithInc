@@ -295,6 +295,62 @@ set ever needs trimming, WEAPON_INHERITED (one per weapon per retirement) is the
   then shows the base recipe and the descriptive "wants" hint, never the condition itself), adds one of the
   recipe's core and one of its augment, and emits a DISCOVERY record plus the Gazette story. No new state fields.
 
+## Reputation and loyalty depth (2026-10-08, session 4)
+GDD 5 text this implements. LOCKED: "Relaxed economy with manual prices, automatic sales, complex buyer preferences,
+suppliers, hero loot and random material events." Unlabelled requirement text in the same section (treated as a
+requirement): "Market visitors independently compare affordable displayed weapons to their current gear according to
+class, existing stats, elemental preference, traits, current wealth, planned activities, shop reputation/loyalty,
+material tastes and relative price." PROPOSED (tunable):
+"**Reputation:** Grows through sales, commissions, renowned blades and hero success; affects visitors and willingness
+to pay. ... Individual loyalty influences repeat customers and story continuity." and the purchase algorithm's
+`utility = equipmentImprovement + classFit + elementTaste + individualPreference + loyalty - pricePenalty`.
+Before this session reputation and loyalty only moved visit chance (plus a tiny loyalty utility term); "willingness
+to pay" and "repeat customers / story continuity" were unimplemented (plan P2/P6 items).
+
+Design, the smallest that covers both PROPOSED sentences, all numbers appended to `BalanceConfig` (version stays 2:
+no existing number changed, and `version` seeds the RNG, so a bump would reshuffle every run):
+- **Willingness to pay** (`Market.priceCeilingMultiplier`): the price a hero treats as fair is
+  `fair x (1 + min(reputation x 0.01, 0.25) + min(loyalty x 0.03, 0.25))`; the overpricing penalty is measured against
+  that ceiling. Fair-priced listings are untouched (penalty already 0), so this only lets a known shop, or a regular,
+  accept prices up to 25 % (50 % combined) above the suggested price. Caps keep sixfold prices unsellable
+  (`overpricedWeaponIsRejectedWithReason` still passes; combined ceiling <= 1.5x).
+- **Repeat customers / story continuity**: commission patrons are drawn with `pickWeighted` at weight
+  `1 + min(loyalty, 10) x 0.5` instead of uniformly, so a hero who keeps buying here comes back with requests. The
+  existing `loyalty x 0.01 x utilityLoyaltyWeight` term and the loyalty share of visit chance stay as they were.
+  Note: `pick` and `pickWeighted` consume one draw each but map it differently, so commission patrons change from
+  day 1 even at zero loyalty; that is the feature, not a tuning knob.
+- **Gazette** (reused `EventType`s, compaction untouched): `WEAPON_SOLD` keeps `data.price` (the simulator reads it)
+  and adds `data.premium` = gold above the base fair price when > 0, with the text "..., N above the going rate on the
+  shop's good name."; a buyer or patron with loyalty >= `regularLoyaltyThreshold` (3) is written as "X, a regular of
+  the shop,". `suggestedPrice` deliberately stays the base fair price so the UI never shows the weights (GDD 5).
+- Not built (DEFERRED by the brief): loyalty steering the hero's choice between shopping and other activities;
+  shopping stays a morning errand independent of the day's activity.
+
+Evidence (`ReputationAndLoyaltyTest`, 7 tests): at 190 % of fair with 10,000 gold, regulars (loyalty 10) bought
+40/40 seeds, strangers 29/40; the regular received 22 of 58 first commission offers (uniform would be 1/8, expected
+6/13); `evaluate()` on the same hero and weapon at 120 % gives penalty > 0 for a stranger and 0 for a regular or at
+reputation 25; caps hold at loyalty/reputation 100,000; two identical seeds encode byte-equal after 8 days.
+
+Balance (`:core:simulate --runs 1000 --seed 1`, launch content, new account unless noted; survived = sieges
+survived/run):
+
+| Policy | Before: median (p10/p90) mean, sell rate, survived | After: median (p10/p90) mean, sell rate, survived |
+|---|---|---|
+| RANDOM | 25 (15/40) 26.7, 33 %, 2.0 | 25 (15/40) 26.2, 33 %, 1.9 |
+| SAFE_FAIR | 25 (15/30) 23.6, 14 %, 1.5 | 25 (15/30) 23.2, 14 %, 1.5 |
+| RECKLESS_FAIR | 25 (15/35) 24.8, 14 %, 1.7 | 25 (15/35) 24.7, 14 %, 1.8 |
+| BALANCED_CHEAP | 30 (20/35) 29.6, 14 %, 2.8 | 30 (20/35) 29.2, 15 %, 2.7 |
+| BALANCED_EXPENSIVE | 15 (10/20) 14.1, 8 %, 0.2 | 15 (10/20) 13.9, 8 %, 0.2 |
+| SYNERGY | 40 (20/50) 38.9, 26 %, 4.4 | 40 (20/50) 38.8, 27 %, 4.4 |
+| OVERWORK | 25 (15/35) 24.5, 14 %, 1.7 | 25 (15/35) 24.3, 14 %, 1.7 |
+| BALANCED_FAIR | 25 (15/35) 24.0, 14 %, 1.6 | 25 (15/30) 23.7, 14 %, 1.5 |
+| BALANCED_FAIR, all upgrades maxed | 40 (25/50) 38.5, 9 %, 2.9 | 40 (25/50) 37.9, 9 %, 2.8 |
+
+Medians and sell rates are unchanged; means drift 0.1–0.6 days from the reshuffled commission patrons. The bot
+prices at a fixed factor and never raises prices as reputation grows, so the sell-rate gain the ceiling offers a
+player (up to +25 % on a known shop) is invisible to the harness; 1.8x stays beyond the combined ceiling, as intended.
+No tuning was needed and no siege number moved.
+
 ## SLICE reductions still in force
 - Default catalog is now `LaunchContent` (balance v2 above); `SliceContent` remains only for slice-specific tests
   and `--content slice`.
