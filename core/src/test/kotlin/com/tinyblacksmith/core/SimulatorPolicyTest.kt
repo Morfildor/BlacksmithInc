@@ -1,13 +1,16 @@
 package com.tinyblacksmith.core
 
 import com.tinyblacksmith.core.content.LaunchContent
+import com.tinyblacksmith.core.content.UpgradeEffect
+import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.LegacyProfile
 import com.tinyblacksmith.core.sim.Policy
 import com.tinyblacksmith.core.sim.SimulationDriver
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-/** The BALANCED_INVEST purchasing rule: best affordable tier within `gold - reserve`, cheapest fallback otherwise. */
+/** The BALANCED_INVEST purchasing rule (best affordable tier within `gold - reserve`) and the BALANCED_REPUTED pricing rule. */
 class SimulatorPolicyTest {
     private val content = LaunchContent.catalog
 
@@ -32,6 +35,21 @@ class SimulatorPolicyTest {
         val fair = SimulationDriver().playRun(LegacyProfile(), 1234, Policy.BALANCED_FAIR).first
         val invest = SimulationDriver(reserve = 1_000_000).playRun(LegacyProfile(), 1234, Policy.BALANCED_INVEST).first
         assertEquals(fair, invest)
+    }
+
+    @Test
+    fun reputedListsAtTheReputationCeiling() {
+        // Known Name L3 starts the run with reputation 15, so the ceiling is +15 % over the fair price.
+        val engine = GameEngine()
+        val knownName = content.upgrades.first { it.effect == UpgradeEffect.STARTING_REPUTATION }
+        val legacy = LegacyProfile(upgrades = mapOf(knownName.id to knownName.maxLevel))
+        val startingReputation = engine.newRun(legacy, 7).reputation
+        assertTrue(startingReputation > 0)
+        val factor = 1.0 + (startingReputation * engine.config.reputationPricePerPoint).coerceIn(0.0, engine.config.reputationPriceCap)
+        val (_, state) = SimulationDriver(engine, maxDays = 1).playRun(legacy, 7, Policy.BALANCED_REPUTED)
+        val listed = state.listedWeapons()
+        assertTrue(listed.isNotEmpty())
+        for (w in listed) assertEquals((engine.suggestedPrice(w) * factor).toInt(), w.listedPrice)
     }
 
     @Test

@@ -13,7 +13,7 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
   `--rarityTable`, `--impactPolicy`, `BALANCED_INVEST` purchasing rule with `--reserve`, `BALANCED_REPUTED`
   pricing, forge-damage overrides, JSON report, perf probe), reputation/loyalty depth (bounded price ceiling,
   loyalty-weighted commission patrons, premium/regular Gazette records), weapon-history cap, a checked-in v1 save
-  fixture. 102 JVM tests.
+  fixture. 103 JVM tests.
 - `app/` Compose portrait workshop (session 4 layout: three-stat top bar, pinned forge summary over collapsible
   auto-advancing steps, row-based market, per-panel tip banners, single End Day action, full-width paper day report;
   principles in DECISIONS.md), six panels, technique chips,

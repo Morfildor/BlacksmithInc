@@ -19,7 +19,11 @@ import java.util.stream.Collectors
 import java.util.stream.IntStream
 
 /** Scripted shop policies for the headless harness (GDD 15.2). Policy randomness uses its own stream, never gameplay RNG. */
-enum class Policy(val risk: Risk?, val priceFactor: Double, val overwork: Boolean, val synergy: Boolean = false, val invest: Boolean = false) {
+enum class Policy(
+    val risk: Risk?, val priceFactor: Double, val overwork: Boolean, val synergy: Boolean = false, val invest: Boolean = false,
+    /** Lists at the reputation-raised fair price: `suggestedPrice x (1 + min(reputation x reputationPricePerPoint, reputationPriceCap))`. */
+    val reputed: Boolean = false,
+) {
     /** Random legal actions: random recipe, risk, price and forging effort. */
     RANDOM(null, 1.0, false),
     /** Safe forging, fair prices. */
@@ -43,6 +47,8 @@ enum class Policy(val risk: Risk?, val priceFactor: Double, val overwork: Boolea
      * sales are demand-bound (DECISIONS.md, "Balance review at 10,000 seeds").
      */
     BALANCED_INVEST(Risk.BALANCED, 1.0, false, invest = true),
+    /** BALANCED_FAIR priced at the shop's reputation ceiling, so the reputation price bonus is visible to the sweep. */
+    BALANCED_REPUTED(Risk.BALANCED, 1.0, false, reputed = true),
     SAFE_CHEAP(Risk.SAFE, 0.7, false),
     RECKLESS_EXPENSIVE(Risk.RECKLESS, 1.8, false),
     /** Never forges: measures the floor. */
@@ -139,7 +145,11 @@ class SimulationDriver(
             var listed = state.listedWeapons().size
             for (w in state.storedWeapons()) {
                 if (listed >= engine.config.shelfSlots) break
-                val factor = if (policy == Policy.RANDOM) 0.5 + policyRng.nextDouble() * 1.5 else policy.priceFactor
+                val factor = when {
+                    policy == Policy.RANDOM -> 0.5 + policyRng.nextDouble() * 1.5
+                    policy.reputed -> 1.0 + (state.reputation * engine.config.reputationPricePerPoint).coerceIn(0.0, engine.config.reputationPriceCap)
+                    else -> policy.priceFactor
+                }
                 val price = (engine.suggestedPrice(w) * factor).toInt()
                 state = engine.handle(state, Command.ToggleShelf(w.id, true, price)).state()
                 listed++
