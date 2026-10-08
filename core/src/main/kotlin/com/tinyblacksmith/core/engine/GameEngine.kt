@@ -20,7 +20,7 @@ import com.tinyblacksmith.core.rng.RngStream
  * Pure, deterministic command handler (GDD 13.2). No Android, no coroutines, no platform randomness.
  * Same content version + seed + command sequence => identical state and ordered events.
  */
-class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.SliceContent.catalog, val config: BalanceConfig = BalanceConfig.DEFAULT) {
+class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.LaunchContent.catalog, val config: BalanceConfig = BalanceConfig.DEFAULT) {
 
     companion object {
         const val RULES_VERSION = 1

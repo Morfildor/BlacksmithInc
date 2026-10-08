@@ -1,6 +1,7 @@
 package com.tinyblacksmith.core
 
 import com.tinyblacksmith.core.content.LaunchContent
+import com.tinyblacksmith.core.content.SliceContent
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.GameEngine
@@ -79,7 +80,7 @@ class LaunchEffectsTest {
     @Test
     fun heroTastesOnlyUseElementsTheCatalogCanForge() {
         val sliceElements = engine.content.materials.mapNotNull { it.element }.toSet()
-        val slice = GameEngine()
+        val slice = GameEngine(content = SliceContent.catalog)
         val sliceSet = slice.content.materials.mapNotNull { it.element }.toSet()
         for (seed in 1..40) {
             slice.newRun(LegacyProfile(), seed.toLong()).heroes.values.forEach { h ->

@@ -74,7 +74,7 @@ the slice has only four upgrades; P6/P7 will widen the gap. Sell rate (~12 % of 
 bot forging ~3 items/day; it is not a market defect.
 
 ## P6 integration decisions (2026-10-08, session 2)
-- **Default content stays `SliceContent`.** `LaunchContent` (version 2, all LOCKED counts) is complete data and
+- **Default content stays `SliceContent`** (superseded by balance v2 below). `LaunchContent` (version 2, all LOCKED counts) is complete data and
   passes `validate()` plus 50 seeded headless runs, but the quality formula was tuned for tiers 1–3; tier-6 cores
   push the base term so high that output saturates at epic/legendary. The switch to launch content is P7 work
   gated on a rarity-distribution sweep and a quality-formula retune, not a silent flip.
@@ -121,6 +121,105 @@ kept. The median moved 30 → 35 because the raider-encampment event now fires �
 siege (`forgeDamageBase`/`forgeDamagePerRatio`), not raid power. Upgrade impact: Stalwart Walls +4.7 mean days,
 Forge Mastery +2.4, starting energy/gold ≈ 0 (tuning signal for P7). 0 hard-locks in 13,000 runs.
 
+## Balance v2: launch content becomes the default (2026-10-08, session 4)
+`GameEngine()` now builds on `LaunchContent.catalog`; `BalanceConfig.version` is 2; `GameEngine.RULES_VERSION` stays 1
+(no user saves exist; the first release bumps it). `SaveCodec` was not touched: it has no content-version check and
+`GameState.contentVersion` simply records 2 for new runs. Simulator gained `--content launch|slice` and
+`--rarityTable [N]` (N forges per core x augment x risk through `Command.Forge` on a stocked fresh run, families cycled,
+energy reset between forges; only the CRAFTING stream is consumed).
+
+### Quality formula retune (rarity tables, 1,000 forges per cell, seed 1, BALANCED risk, families cycled)
+The GDD shape is kept (`base + core*tier + aug*tier + affinity + mastery + roll[-13,13] + 20 exc - 12 defect`);
+only `qualityBase` 35 -> 25 and `qualityPerCoreTier` 4 -> 6 changed (tier 5 is the pivot: 35+4*5 = 25+6*5). The
+diagnosis: the core span was 20 points against a 27-point roll and a 20-point exceptional bonus, so tiers could not
+separate and tiers 1-4 all landed rare. Thresholds stay at the GDD's 35/50/70/85.
+
+| Core (mean over augments) | v1 C/U/R/E/L % (mean q) | v2 C/U/R/E/L % (mean q) |
+|---|---|---|
+| Iron (t1) | 3/35/54/8/1 (54.1) | 17/46/33/4/0 (45.8) |
+| Bronze (t2) | 1/20/60/16/4 (59.9) | 4/36/51/8/1 (53.3) |
+| Silver (t3) | 1/16/56/22/5 (62.5) | 2/23/55/16/3 (58.6) |
+| Obsidian (t4) | 0/9/53/30/8 (66.4) | 0/12/55/27/6 (64.3) |
+| Starsteel (t5) | 0/2/42/41/15 (71.7) | 0/2/42/41/15 (71.7) |
+| Moonsteel (t6) | 0/1/33/45/20 (74.7) | 0/1/28/45/26 (76.6) |
+
+| Pair (BALANCED) | v1 C/U/R/E/L % | v2 C/U/R/E/L % |
+|---|---|---|
+| Iron + Ember Resin | 3/41/49/8/0 | 22/47/28/3/0 |
+| Iron + Verdant Sap (excellent affinity) | 1/24/62/11/2 | 8/45/42/6/0 |
+| Bronze + Frost Bloom | 1/19/66/12/3 | 2/37/53/7/0 |
+| Silver + Stormglass | 0/3/52/37/9 | 0/6/58/29/7 |
+| Obsidian + Grave Dust | 0/1/43/45/12 | 0/2/49/40/9 |
+| Moonsteel + Sun Ash (top tiers, affinity -4) | 0/1/35/47/16 | 0/0/28/48/23 |
+| Moonsteel + Frost Bloom (excellent) | 0/0/27/47/26 | 0/0/21/47/33 |
+| Starsteel + Sun Ash (excellent) | 0/0/11/49/41 | 0/0/11/49/41 |
+
+Targets met: tiers 1-2 are mostly common/uncommon, 3-4 rare-centred, 6 epic-centred with legendary 26 % on
+average and 23 % for Moonsteel + Sun Ash; iron is never legendary. Tier 5 is a rare/epic split (42/41): raising
+`qualityPerCoreTier` to 7 fixes that but pushes tier-6 legendary past 30 % (grid: base 21-22, core 7 -> moonsteel
+L 31-33 %), so 6 was kept. The excellent top-tier pairs (Starsteel + Sun Ash, Moonsteel + Frost Bloom) stay at
+33-41 % legendary; that is the affinity-discovery reward and no base/tier value changes it without flattening the
+tiers, so it is accepted and recorded rather than chased with a new term. Known cost: the slice's SAFE_FAIR rarity
+moves from 1/43/52/4/0 to 18/51/28/2/0 (iron+ember is centred at 44 instead of 50); the launch targets and the
+slice's old feel could not both hold, and the launch shape wins because it is the shipped catalog.
+`RarityShapeTest` locks the shape (2,000 forges per cell).
+
+### Siege balance (BALANCED_FAIR, 1,000 runs, seed 1, launch content, quality v2)
+Baseline with the v1 siege numbers: median 20 (15/25) but 0.0 sieges survived per run and 99 % faction wins. Two
+causes, neither a siege-modifier problem: (1) `Heroes.resolveActivities` sent every expedition and patrol against
+the first faction by ID, so with three factions two grew unchecked; (2) even with heroes on the most pressing
+faction, growth 6+5+4 = 15/day exceeds what eight heroes suppress (about 10-14/day), so all three saturate at 100
+pressure by day 20. Fixes: heroes act against the most pressing faction (tie by ID; identical behaviour with one
+faction), and launch growth is 4/3/2.
+
+| Config (growth 4/3/2, heroes on max pressure) | Median (p10/p90) | Mean | Survived / lost per run | Maxed median |
+|---|---|---|---|---|
+| siegeModifier 2.75, damage 12 + 25x(ratio-1) | 25 (20/35) | 26.3 | 0.2 / 5.0 | - |
+| 2.0, 12 + 25x | 35 (25/45) | 35.5 | 1.6 / 5.5 | 55 |
+| 2.0, 12 + 45x | 30 (20/40) | 29.9 | 1.6 / 4.4 | 50 |
+| 2.0, 12 + 75x | 25 (15/35) | 26.3 | 1.6 / 3.7 | 45 |
+| 2.25, 24 + 30x | 20 (15/30) | 22.0 | 0.8 / 3.6 | 35 |
+| 2.1, 24 + 30x | 25 (15/30) | 24.0 | 1.2 / 3.6 | 40 |
+| 2.0, 24 + 30x | 25 (20/35) | 25.6 | 1.6 / 3.6 | 40 |
+| 2.0, 24 + 30x, recovery cap 1 | 25 (15/30) | 23.3 | 1.6 / 3.1 | 40 |
+| 2.0, 20 + 50x | 25 (15/35) | 25.6 | 1.6 / 3.6 | 45 |
+| 2.0, 30 + 30x | 20 (15/30) | 22.1 | 1.6 / 2.9 | 35 |
+| 2.0, 24 + 50x **(adopted)** | 25 (15/35) | 23.8 | 1.6 / 3.2 | 40 |
+
+Why 2.0 + 24/50: survived sieges need the first one or two sieges winnable (raid ~200 vs defence ~170 on day 5),
+which only the modifier controls; run length is then set by damage per lost siege. Slope-only changes barely move
+the median because early losses sit at ratio 1.1-1.3. 30/30 lands the median at 20 but charges a narrowly won
+siege 27 integrity, which erases the win; 24/50 charges a 0.9-ratio win 19 and a 1.25-ratio loss 37, keeping
+win/lose meaningfully different while the mean stays inside 15-25. Recovery cap stayed at 2/day.
+
+Final 1,000-run table (seed 1, adopted config):
+
+| Policy | Median (p10/p90) | Mean | Sell rate | Survived / lost | Rarity C/U/R/E/L % |
+|---|---|---|---|---|---|
+| BALANCED_FAIR | 25 (15/35) | 23.8 | 14 % | 1.6 / 3.2 | 19/44/31/5/0 |
+| SAFE_FAIR | 25 (15/30) | 23.4 | 14 % | 1.5 / 3.2 | 19/49/29/3/0 |
+| RECKLESS_FAIR | 25 (15/35) | 24.8 | 14 % | 1.7 / 3.2 | 20/38/35/7/1 |
+| BALANCED_CHEAP | 30 (20/35) | 29.3 | 14 % | 2.7 / 3.2 | 19/44/31/5/1 |
+| BALANCED_EXPENSIVE | 15 (10/20) | 14.1 | 8 % | 0.2 / 2.7 | 20/44/31/5/0 |
+| SYNERGY | 40 (20/50) | 39.0 | 26 % | 4.4 / 3.4 | 3/27/46/16/8 |
+| OVERWORK | 25 (15/35) | 24.3 | 14 % | 1.7 / 3.2 | 19/44/31/5/0 |
+| RANDOM | 25 (15/40) | 26.6 | 33 % | 2.0 / 3.3 | 7/29/44/15/5 |
+| Maxed upgrades, BALANCED_FAIR | 40 (25/50) | 38.5 | 9 % | 2.9 / 4.8 | 1/24/55/15/5 |
+
+10,000-run confirmation (seed 1): BALANCED_FAIR median 25 (15/35), mean 23.7, survived 1.5, lost 3.2, sell rate
+14 %, 0 hard-lock days; SAFE_FAIR median 25 (15/30), mean 23.2, survived 1.5. Hard-locks: 0 in all runs after the
+RANDOM policy was limited to materials it can afford (its 53 "hard-lock" days were unaffordable moonsteel picks,
+not a game lock). Hero deaths 0.5/run.
+
+Upgrade impact (BALANCED_FAIR, mean days vs 23.8): Stalwart Walls +6.4, Well-Stocked Cellar +4.4, Forge Mastery
++2.7, Thrifty Hands +1.8, Lucky Hammer +0.7, Tireless Smith +0.5, Known Name +0.4, Family Savings 0.0; all maxed
++14.7. **Starting energy and gold still show ~0 and this was not fixed by magnitude:** Tireless Smith at +2
+energy/level measured +0.8 (vs +0.5 at +1), and gold cannot register because the BALANCED_FAIR bot keeps a median
+~500 gold on hand (it restocks iron at 10 gold and never buys up). Under `--impactPolicy SYNERGY`, which spends
+down to ~3 gold on top-tier cores, Family Savings measures +5 median / +1.4 mean. Magnitudes were therefore left at
+the GDD values (+1 energy, +100 gold per level); the honest next lever is a harness purchasing rule (buy the best
+affordable core), which would move every baseline and is left for the next balance review.
+
 ## Art sources (2026-10-08, session 3)
 - The pixel artist's V2 pack (200 true 1x sprites) and the AI concept sheets (high-resolution pseudo-pixel art)
   both exist in `Pixel art assets/`. At phone display sizes (48–72 dp icons, a 100 dp scene strip) the concept
@@ -139,7 +238,7 @@ Forge Mastery +2.4, starting energy/gold ≈ 0 (tuning signal for P7). 0 hard-lo
   about 2.5 MB of drawables (fine for a premium title; pngquant is an option if the APK ever matters).
 
 ## SLICE reductions still in force
-- Default catalog: 3 families, 6 materials + 1 catalyst, 2 classes, 1 faction, 5 blessings, 4 upgrades, 6 affixes,
-  3 flaws (launch catalog exists, see above).
+- Default catalog is now `LaunchContent` (balance v2 above); `SliceContent` remains only for slice-specific tests
+  and `--content slice`.
 - World modifiers are three fixed variants.
 - Weapons bought by heroes stay with them unless the hero dies (recovered, lost or seized) or retires (inherited).

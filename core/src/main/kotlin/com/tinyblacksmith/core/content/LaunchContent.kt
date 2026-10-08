@@ -7,7 +7,7 @@ import com.tinyblacksmith.core.model.*
  * 12 beneficial affixes, 6 flaws, 8 blessings, 8 upgrade tracks. Names are PROPOSED (GDD 4.2); IDs are stable.
  * Every ID, value and affinity that also exists in [SliceContent] is kept identical so saves, legacy profiles and
  * the persistent Experiment Journal stay valid. Numbers without GDD guidance are marked PROPOSED inline.
- * Not yet the engine default: GameEngine still constructs with SliceContent.
+ * The engine default since balance v2; [SliceContent] remains for slice-specific tests.
  */
 object LaunchContent {
     val SWORD = WeaponFamilyId("sword")
@@ -176,20 +176,23 @@ object LaunchContent {
             TraitDef(RESTLESS, "Restless", expeditionWeight = 0.8, patrolWeight = 0.5, restWeight = -0.6),
         ),
         factions = listOf(
+            // Daily growth is PROPOSED and summed across three factions (4+3+2 = 9/day) against roughly the same hero
+            // suppression the slice spent on one faction at 6/day; balance v2 (docs/DECISIONS.md) found 6/5/4 saturated all
+            // three at 100 pressure, making every siege unwinnable.
             FactionDef(
-                ASHCLAW, "Ashclaw Raiders", weakTo = Element.FROST, resists = Element.FIRE, dailyGrowth = 6,
+                ASHCLAW, "Ashclaw Raiders", weakTo = Element.FROST, resists = Element.FIRE, dailyGrowth = 4,
                 encounterNames = listOf("Ashclaw scouts", "an Ashclaw warband", "Ashclaw foragers", "an Ashclaw brute"),
                 siegeName = "Ashclaw horde",
             ),
             // GDD 8: undead/curses with specialized counters. PROPOSED: weak to Sun (not Fire) so the counter stays specialized.
             FactionDef(
-                HOLLOWBOUND, "Hollowbound", weakTo = Element.SUN, resists = Element.GRAVE, dailyGrowth = 5,
+                HOLLOWBOUND, "Hollowbound", weakTo = Element.SUN, resists = Element.GRAVE, dailyGrowth = 3,
                 encounterNames = listOf("Hollowbound shamblers", "a Hollowbound cortege", "a bone warden", "a gravecaller and its thralls"),
                 siegeName = "Hollowbound procession",
             ),
-            // GDD 8: fire elites, frost counters. PROPOSED growth 4: fewer, stronger foes. Shares Ashclaw's frost weakness by brief.
+            // GDD 8: fire elites, frost counters. PROPOSED: the slowest growth (fewer, stronger foes). Shares Ashclaw's frost weakness by brief.
             FactionDef(
-                EMBERMAW, "Embermaw Brood", weakTo = Element.FROST, resists = Element.FIRE, dailyGrowth = 4,
+                EMBERMAW, "Embermaw Brood", weakTo = Element.FROST, resists = Element.FIRE, dailyGrowth = 2,
                 encounterNames = listOf("Embermaw whelps", "an Embermaw drake", "Embermaw cinder-knights", "an Embermaw matriarch"),
                 siegeName = "Embermaw Brood",
             ),

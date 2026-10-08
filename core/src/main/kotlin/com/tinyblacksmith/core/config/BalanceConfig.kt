@@ -10,7 +10,8 @@ import com.tinyblacksmith.core.model.Risk
 data class RiskProfile(val exceptionalChance: Double, val defectChance: Double)
 
 data class BalanceConfig(
-    val version: Int = 1,
+    /** v2 (2026-10-08): launch-content retune of the quality formula and siege damage; see docs/DECISIONS.md. */
+    val version: Int = 2,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -25,9 +26,10 @@ data class BalanceConfig(
     val maxRollChance: Double = 0.75,
     val catalystExceptionalBonus: Double = 0.05,
     val catalystQualityBonus: Int = 4,
-    // Quality formula (GDD 4.4): 35 + 4*core + 3*aug + affinity + mastery + roll[-13,13] + 20 exc - 12 defect
-    val qualityBase: Int = 35,
-    val qualityPerCoreTier: Int = 4,
+    // Quality formula (GDD 4.4 shape): base + core*tier + aug*tier + affinity + mastery + roll[-13,13] + 20 exc - 12 defect.
+    // GDD proposed 35 + 4*core; v2 uses 25 + 6*core so six core tiers spread common -> epic (docs/DECISIONS.md rarity tables).
+    val qualityBase: Int = 25,
+    val qualityPerCoreTier: Int = 6,
     val qualityPerAugmentTier: Int = 3,
     val qualityRollSpread: Int = 13,
     val qualityExceptionalBonus: Int = 20,
@@ -105,10 +107,11 @@ data class BalanceConfig(
     val raidBase: Double = 32.0,
     val raidPerDay: Double = 5.0,
     val raidPerPressure: Double = 0.65,
-    /** Tuned 2026-10-08 by headless sweep (see docs/DECISIONS.md): 1.0 gave ~130-day medians. */
-    val siegeModifier: Double = 2.75,
-    val forgeDamageBase: Double = 12.0,
-    val forgeDamageSlope: Double = 25.0,
+    /** v1 slice sweep adopted 2.75; v2 (launch content, three factions) lowered it to 2.0 so early sieges are winnable and moved run length to forge damage (docs/DECISIONS.md). */
+    val siegeModifier: Double = 2.0,
+    /** GDD scaffold 12 + 25x(ratio-1); v2 uses 24 + 50x(ratio-1) so a lost siege costs the forge about a third of its integrity. */
+    val forgeDamageBase: Double = 24.0,
+    val forgeDamageSlope: Double = 50.0,
     val maxForgeDamagePerSiege: Int = 60,
     val championCount: Int = 3,
     val championSiegeDamageOnLoss: Int = 40,

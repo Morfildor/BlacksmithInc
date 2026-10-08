@@ -36,7 +36,8 @@ object Heroes {
         val config = ctx.config
         val content = ctx.content
         val rng = ctx.rng(RngStream.HEROES)
-        val faction = ctx.factions.values.minByOrNull { it.id.value } ?: return
+        // Heroes act against the most pressing faction (the one that would besiege next); ties break by ID for determinism.
+        val faction = ctx.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure } ?: return
         val factionDef = content.faction(faction.id)
         for (h in ctx.aliveHeroes()) {
             val hero = ctx.hero(h.id)

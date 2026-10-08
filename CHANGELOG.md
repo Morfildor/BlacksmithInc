@@ -8,6 +8,14 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Changed
+- Launch content is the engine default (`GameEngine()` now builds on `LaunchContent`; `SliceContent` stays for
+  slice-specific tests and `--content slice` in the simulator).
+- Balance v2: quality formula `25 + 6*coreTier + 3*augmentTier + ...` (was `35 + 4*coreTier`), so the six launch core
+  tiers spread common -> epic instead of saturating; siege modifier 2.0 (was 2.75) with forge damage
+  `24 + 50*(ratio-1)` (was `12 + 25*(ratio-1)`); launch faction growth 4/3/2 per day (was 6/5/4). Heroes now act
+  against the most pressing faction instead of the first by ID.
+- Simulator: `--content launch|slice`, `--rarityTable [N]` (rarity per core x augment x risk through the real forge
+  path), `--impactPolicy`, forge-damage overrides; the RANDOM policy only picks materials it can afford.
 - Weapons are drawn from the artist's weapon master sheet: every family has an element row and eight visual levels
   (core tier plus epic/legendary bonus); the forge preview shows the plain base weapon until an augment is chosen.
   The old per-core recolours and element auras are gone.

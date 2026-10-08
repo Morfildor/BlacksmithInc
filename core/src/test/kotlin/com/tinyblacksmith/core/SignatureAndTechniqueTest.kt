@@ -28,7 +28,7 @@ class SignatureAndTechniqueTest {
 
     @Test
     fun catalogIsConsistentWithSliceContent() {
-        val content = engine.content
+        val content = SliceContent.catalog  // the 12 slice recipes; launch families get theirs in P7
         assertEquals(12, SignatureCatalog.all.size)
         assertEquals(SignatureCatalog.all.size, SignatureCatalog.all.map { it.id }.toSet().size, "ids unique")
         assertEquals(SignatureCatalog.all.size, SignatureCatalog.all.map { Triple(it.familyId, it.coreId, it.augmentId) }.toSet().size, "one signature per recipe")
