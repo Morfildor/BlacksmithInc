@@ -79,10 +79,10 @@ class WorldEventsAndGenerationsTest {
     fun supplyAndTownEventsApplyTheirEffects() {
         val s = engine.newRun(LegacyProfile(), 3)
         for (id in listOf("ore_merchant", "caravan_delayed", "merchant_festival", "abandoned_mine", "noble_commission", "new_adventurers",
-            "veteran_returns", "raider_encampment", "successful_patrol", "border_ambush", "ancient_notes", "mysterious_alloy", "forgotten_shrine", "weapon_fragment")) {
+            "veteran_returns", "raider_encampment", "restless_graves", "volcanic_tremors", "successful_patrol", "border_ambush", "ancient_notes", "mysterious_alloy", "forgotten_shrine", "weapon_fragment")) {
             assertTrue(eligible(s, id), "$id eligible on a fresh run")
         }
-        for (id in listOf("restless_graves", "volcanic_tremors", "heroic_inheritance", "wandering_master", "collector", "ballad")) {
+        for (id in listOf("heroic_inheritance", "wandering_master", "collector", "ballad")) {
             assertFalse(eligible(s, id), "$id ineligible on a fresh run")
         }
 
@@ -94,13 +94,15 @@ class WorldEventsAndGenerationsTest {
         assertEquals(engine.config.abandonedMineMaterials, mine.materials.values.sum() - s.materials.values.sum())
 
         val shrine = fire(s, "forgotten_shrine")
-        assertEquals(2, shrine.materials.getValue(SliceContent.BINDING_SALT) - s.materials.getValue(SliceContent.BINDING_SALT))
+        val catalysts = engine.content.materials(com.tinyblacksmith.core.content.MaterialCategory.CATALYST).map { it.id }
+        assertEquals(2, catalysts.sumOf { (shrine.materials[it] ?: 0) - (s.materials[it] ?: 0) })
 
         val camp = fire(s, "raider_encampment")
         assertEquals(engine.config.encampmentPressure, camp.factions.getValue(SliceContent.ASHCLAW).pressure - s.factions.getValue(SliceContent.ASHCLAW).pressure)
 
         val patrol = fire(s, "successful_patrol")
-        assertEquals(-engine.config.successfulPatrolPressureDrop, patrol.factions.getValue(SliceContent.ASHCLAW).pressure - s.factions.getValue(SliceContent.ASHCLAW).pressure)
+        val pressing = s.factions.values.maxWith(compareBy<FactionState> { it.pressure }.thenBy { it.id.value }).id
+        assertEquals(-engine.config.successfulPatrolPressureDrop, patrol.factions.getValue(pressing).pressure - s.factions.getValue(pressing).pressure)
         assertEquals(engine.config.successfulPatrolMilitia, patrol.town.militia - s.town.militia)
 
         val ambush = fire(s, "border_ambush")
