@@ -70,5 +70,6 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 1. Re-run the device smoke loop and instrumented tests on the launch default (three factions, five classes in the UI).
 2. Harness purchasing rule (buy the best affordable core) so starting gold/energy upgrades register; tier-5 epic
    centring if a new lever appears.
-3. Room migration test when the envelope schema first changes; bound `Weapon.history` if long runs grow it further.
+3. Register the first migration step against `saves/v1_forced_seed4242_day61.json` when the envelope schema changes;
+   prune or cap the `weapons` map (lost/destroyed records) if 1,000-day saves matter.
 4. Package rename from `com.example.blacksmithproject`, release signing.
