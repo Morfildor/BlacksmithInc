@@ -261,6 +261,55 @@ HERO_DIED 12, GUILD_FOUNDED 11, HERO_ARRIVED 9, WEAPON_RECOVERED 9, MILESTONE 7,
 save shrank from 2.01 MB to 0.98 MB; weapons (926, with histories) now dominate a 400-day save. If the retained
 set ever needs trimming, WEAPON_INHERITED (one per weapon per retirement) is the lever.
 
+## Weapon history bounds and schema v2 (2026-10-08, session 4)
+Readers of `Weapon.history` (audit of `core/src/main` and `app/src/main`): `Legacy.closeRun` (SOLD/COMMISSION
+subjects become a legend's owners), `WorldEvents.fallenOwnerName` (the last LOST/SEIZED subject names who carried a
+lost blade), and nothing else; the app never renders it (no `history`/`HistoryEntry` reference in `app/`). Writers
+and kinds: FORGED and SIGNATURE (forge), SOLD, EQUIPPED, COMMISSION (market), INHERITED (retirement, inheritance
+event), LOST/SEIZED/RECOVERED (hero death), RETURNED (famous blade), COLLECTED (collector), all bounded by ownership
+changes, plus VICTORY (one per won expedition) and SIEGE (one per siege a champion's weapon survives), the only
+kinds that grow without bound per weapon. Their counts already live in `Weapon.kills/victories/siegesDefended/fame`.
+
+Policy (`persistence/WeaponHistoryCompaction.kt`, called once in `GameEngine.endDay` right after
+`EventCompaction`; `BalanceConfig.weaponHistoryCap = 10`, 0 disables): per weapon keep the newest 10 VICTORY/SIEGE
+entries and drop the older ones; every other kind, including kinds added later, is kept verbatim (a denylist of
+compactable kinds, so a new kind is safe by default). Order is preserved. Keeping the newest N commutes with daily
+application, so one filter at the final End Day gives the same list as 400 daily passes; `WeaponHistoryCompactionTest`
+plays a 400-day forced-survival pair (cap 10 vs cap 0) and asserts state equality outside histories, per-weapon
+`compact(unbounded) == bounded`, identical ownership entries, and identical reader inputs (owners, fallen owner).
+No RNG is drawn and no counter is touched, so `BalanceConfig.version` stays 2 (not a semantic balance change).
+
+Measured on the 400-day pair (seed 77, after balance v2): 1,812 -> 1,721 history entries across 930 weapons, max
+combat entries per weapon 21 -> 10, 14 weapons were over the cap, encoded save 973,919 -> 961,841 bytes. The
+saving is small at 400 days because combat entries are 340 of 1,812 (FORGED is 930, INHERITED 223); what the cap
+removes is the unbounded tail on a champion's weapon (one entry per siege, forever). `--perf` (`--runs 200 --seed 1
+--perf`, 1,000 days, 2,330 weapons) before: p50 0.26 / p95 0.53 / max 0.94 ms; after, three runs: p50 0.34-0.40 /
+p95 0.68-1.01 ms; a control with the cap disabled on the same (by then loaded) machine gave p50 0.39-0.71 ms, so
+the daily pass over all weapons is below the run-to-run noise. The remaining growth is the `weapons` map itself
+(one FORGED entry and one record per weapon forged, never pruned), noted in PROGRESS.
+
+Schema: still v1. The cap changes no serialised shape (`history` stays `List<HistoryEntry>`, no field added), and
+the codec already tolerates fields added with defaults (`ignoreUnknownKeys = true`, defaults fill missing keys), so
+no migration step is registered and `SaveCodec.SCHEMA_VERSION` stays 1; a v2 bump with an identity step would only
+break the two tests that pin the version. Instead the regression anchor the next bump needs is checked in:
+`core/src/test/resources/saves/v1_forced_seed4242_day61.json` is a real mid-run save (forced survival, seed 4242,
+60 End Days, 235 weapons, one with 15 combat entries) encoded by the codec as it stood before this change (its own
+commit precedes the compaction commit). `SaveFixtureTest` decodes it, checks the captured fields, decode/encode
+stability, invariants, that `GameEngine.handle` accepts an End Day on it, and that the 15-entry weapon is bounded to
+10 on that End Day with its ownership entries intact. Byte-equality against the fixture is deliberately not asserted
+because `encodeDefaults = true` changes the text whenever a defaulted field is added. Room needs nothing: the
+envelope version is inside the JSON row (`SaveEntity.schemaVersion` mirrors it but is not read for migration).
+
+`GameEngine.RULES_VERSION` stays 1 although balance v2 changed hero targeting and RNG draw order. It is mixed
+into `RngState.seeded(seed, rulesVersion)` and stored on `GameState.rulesVersion`, so a mismatch is detectable at
+load. It must flip at the first public release that can meet existing saves, and from then on whenever a change
+alters the outcome of an already-saved command sequence (draw order, targeting, formulas; content-only changes go
+through `contentVersion`). A run in progress cannot be finished on the old rules (the engine ships only the current
+ones) and replaying it on new rules would silently change its past, so the policy is: on load, if
+`state.rulesVersion != RULES_VERSION`, end the run with cause "the rules changed" and route to the claim screen;
+the legacy (knowledge, upgrades, legends, lineages) is kept and claimed once, run-only state resets, as LOCKED.
+Not implemented; until the first release every save is a developer save.
+
 ## Art sources (2026-10-08, session 3)
 - The pixel artist's V2 pack (200 true 1x sprites) and the AI concept sheets (high-resolution pseudo-pixel art)
   both exist in `Pixel art assets/`. At phone display sizes (48–72 dp icons, a 100 dp scene strip) the concept

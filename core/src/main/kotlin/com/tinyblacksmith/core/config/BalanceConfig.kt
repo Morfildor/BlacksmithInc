@@ -182,6 +182,8 @@ data class BalanceConfig(
     val commissionLoyaltyCap: Int = 10,
     /** Loyalty at which the Gazette calls a hero a regular of the shop. */
     val regularLoyaltyThreshold: Int = 3,
+    // --- Weapon-history compaction: newest combat entries (VICTORY per fight, SIEGE per siege) kept per weapon; ownership-grade entries are kept forever. 0 = never compact. ---
+    val weaponHistoryCap: Int = 10,
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

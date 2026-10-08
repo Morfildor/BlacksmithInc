@@ -11,6 +11,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Shop reputation and hero loyalty now raise the price heroes treat as fair (bounded at +25 % each), regulars return
   with commission requests, and the Gazette records premium sales and names the shop's regulars.
 
+### Changed
+- Weapon histories are bounded at End Day: the newest 10 combat entries (victories, sieges) per weapon are kept,
+  ownership entries (forged, sold, commissioned, inherited, lost, seized, recovered, returned) forever; gameplay,
+  legends and the Gazette are unchanged, and existing saves compact on their next End Day (save schema still v1).
+
 ## [0.2.0] - 2026-10-08
 Launch content by default, balance v2, all 24 signatures and 25 world events, bounded saves, decluttered UI.
 

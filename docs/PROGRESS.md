@@ -11,7 +11,8 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
   events), legacy with famous-blade returns, Gazette, JSON save codec with a migration scaffold, End Day event-log
   compaction (30-day window, history-grade types kept), headless simulator (GDD policy set, `--content`,
   `--rarityTable`, `--impactPolicy`, forge-damage overrides, JSON report, perf probe), reputation/loyalty depth
-  (bounded price ceiling, loyalty-weighted commission patrons, premium/regular Gazette records). 89 JVM tests.
+  (bounded price ceiling, loyalty-weighted commission patrons, premium/regular Gazette records), weapon-history cap,
+  a checked-in v1 save fixture. 99 JVM tests.
 - `app/` Compose portrait workshop (session 4 layout: three-stat top bar, pinned forge summary over collapsible
   auto-advancing steps, row-based market, per-panel tip banners, single End Day action, full-width paper day report;
   principles in DECISIONS.md), six panels, technique chips,
@@ -34,6 +35,7 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 | Confirmation | `--runs 10000 --policy BALANCED_FAIR` / `SAFE_FAIR` | 25 (15/35) mean 23.7 survived 1.5 / 25 (15/30) mean 23.2 survived 1.5 |
 | Slice regression | `--content slice --policy SAFE_FAIR` | 30 (20/35), rarity 18/51/28/2/0 (was 1/43/52/4/0; accepted, see DECISIONS) |
 | Event compaction | `EventCompactionTest` + `:core:simulate --runs 200 --seed 1 --perf` | 400-day forced-survival pair: gameplay identical with/without compaction; perf run ends at events=1,834 (was 13,275) |
+| Weapon-history cap + v1 fixture | `./gradlew :core:test` (`WeaponHistoryCompactionTest`, `SaveFixtureTest`) + `:core:simulate --runs 200 --seed 1 --perf` | 92/92 pass; 400-day pair: gameplay identical with/without the cap, entries 1,812 -> 1,721, max combat entries 21 -> 10, save 973,919 -> 961,841 bytes; `saves/v1_forced_seed4242_day61.json` decodes, accepts an End Day and compacts; perf p50 0.34-0.40 ms vs 0.26 before, within machine noise (cap-disabled control 0.39-0.71) |
 | Debug APK + install | `./gradlew :app:installDebug` | BUILD SUCCESSFUL |
 | Instrumented | `./gradlew :app:connectedDebugAndroidTest` | 5/5 pass (Room atomic save/restore x2, title screen, forge hint x2) |
 | Device loop | `tools/emulator/smoke.sh` | Re-run on the merged 0.2.0 build (launch content, new layout): shelf/town/resume checks ok, SMOKE_DONE; screenshots sent to the user |
@@ -57,7 +59,9 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 ## Known limitations
 - Starting energy/gold upgrades measure ~0 days under BALANCED_FAIR because the bot never spends its ~500 gold on
   better cores; gold registers under `--impactPolicy SYNERGY` (+5 median). A harness purchasing rule is the next lever.
-- `Weapon.history` is unbounded (1,766 entries across 926 weapons after a forced 400-day run); the next list to watch.
+- `Weapon.history` combat entries are capped (10 per weapon), but the per-weapon FORGED/INHERITED entries and the
+  `weapons` map itself still grow with every weapon forged (930 weapons, 1,721 entries after a forced 400-day run;
+  2,330 weapons after 1,000 days); lost/destroyed weapons are never pruned. The next list to watch.
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
 - Package name is still `com.example.blacksmithproject`; no release signing.
@@ -69,5 +73,6 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 1. Re-run the device smoke loop and instrumented tests on the launch default (three factions, five classes in the UI).
 2. Harness purchasing rule (buy the best affordable core) so starting gold/energy upgrades register; tier-5 epic
    centring if a new lever appears.
-3. Room migration test when the envelope schema first changes; bound `Weapon.history` if long runs grow it further.
+3. Register the first migration step against `saves/v1_forced_seed4242_day61.json` when the envelope schema changes;
+   prune or cap the `weapons` map (lost/destroyed records) if 1,000-day saves matter.
 4. Package rename from `com.example.blacksmithproject`, release signing.
