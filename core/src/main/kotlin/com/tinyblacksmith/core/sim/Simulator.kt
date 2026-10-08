@@ -39,8 +39,8 @@ enum class Policy(val risk: Risk?, val priceFactor: Double, val overwork: Boolea
     /**
      * BALANCED_FAIR plus a purchasing rule: before each forge it buys the highest-tier core, then augment, whose
      * supplier price fits in `gold - reserve` ([SimulationDriver.reserve]); affinity-blind, so it is distinct from
-     * SYNERGY. Lets the starting-gold and starting-energy upgrades register (a spent-down bot turns extra gold or
-     * an extra forge into a better weapon).
+     * SYNERGY. Intended to let the starting-gold and starting-energy upgrades register; they still measure ~0 because
+     * sales are demand-bound (DECISIONS.md, "Balance review at 10,000 seeds").
      */
     BALANCED_INVEST(Risk.BALANCED, 1.0, false, invest = true),
     SAFE_CHEAP(Risk.SAFE, 0.7, false),

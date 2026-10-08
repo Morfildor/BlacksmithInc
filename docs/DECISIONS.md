@@ -248,7 +248,7 @@ Reserve sweep (`--runs 1000 --seed 1 --policy BALANCED_INVEST --impactPolicy BAL
 | 250 | 30 (15/40) | 29.1 | 118 / 19.1 | 16 % | 95 | +1.3 / -0.6 |
 
 Lower reserves live longer (fewer, better weapons beat more iron ones), so 0 is the default; the flag stays for
-sensitivity runs. No reserve makes the two upgrades register (see below).
+sensitivity runs. No reserve value makes the two upgrades register (see below).
 
 ### Full table
 `./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy all --impactPolicy BALANCED_INVEST --reserve 0 --perf --json <out>"`
@@ -316,7 +316,7 @@ Proposals (evidence above, no engine change made): (a) measure these two upgrade
 first-siege champion weapon power or the day of the first tier-4+ sale, rather than run length; (b) if run length
 must move, the lever is hero purchasing power in the first week (hero starting gold / expedition gold), not the
 upgrade magnitudes, which were already tested at double size in v2 without effect. Well-Stocked Cellar also flips
-from +4.4 (FAIR) to -0.3 (INVEST): its common materials are exactly what a spending bot skips, so its value is a
+from +4.2 (FAIR; +4.4 in the v2 1,000-run list) to -0.3 (INVEST): its common materials are exactly what a spending bot skips, so its value is a
 beginner's convenience, not a run-length lever.
 
 ## Event-log compaction (2026-10-08, session 3, ENGINEERING)
