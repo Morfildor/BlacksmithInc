@@ -170,6 +170,8 @@ data class BalanceConfig(
     val weaponSeizureChance: Double = 0.5,
     // --- Event-log compaction (GDD 13.3): full records for the last N days; rare history-grade types are kept forever. 0 = never compact. ---
     val eventRetentionDays: Int = 30,
+    // --- Weapon-history compaction: newest combat entries (VICTORY per fight, SIEGE per siege) kept per weapon; ownership-grade entries are kept forever. 0 = never compact. ---
+    val weaponHistoryCap: Int = 10,
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

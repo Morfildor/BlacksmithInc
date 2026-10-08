@@ -70,4 +70,19 @@ class SaveFixtureTest {
         if (!next.isEnded) assertEquals(62, next.day)
         assertTrue(next.events.any { it.day == 61 }, "the End Day emitted events")
     }
+
+    /** An uncompacted v1 history (15 combat entries) is bounded on the first End Day; ownership entries survive verbatim. */
+    @Test
+    fun oldLongHistoriesAreCompactedOnTheFirstEndDay() {
+        val cap = engine.config.weaponHistoryCap
+        assertTrue(cap in 1..14, "the fixture's 15-entry weapon must exceed the cap; cap=$cap")
+        val longest = decoded.weapons.values.maxBy { w -> w.history.count { it.kind in combatKinds } }
+        val outcome = engine.handle(decoded, Command.EndDay(endDayId(decoded)))
+        val next = assertIs<CommandOutcome.Accepted>(outcome).state
+        assertTrue(next.weapons.values.all { w -> w.history.count { it.kind in combatKinds } <= cap })
+        val after = next.weapon(longest.id)
+        assertEquals(cap, after.history.count { it.kind in combatKinds })
+        assertEquals(longest.history.filter { it.kind !in combatKinds }, after.history.filter { it.kind !in combatKinds && it.day < 61 })
+        assertTrue(after.kills >= longest.kills && after.siegesDefended >= longest.siegesDefended && after.fame >= longest.fame, "counters are never reduced")
+    }
 }

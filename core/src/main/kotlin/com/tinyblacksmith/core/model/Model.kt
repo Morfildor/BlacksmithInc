@@ -50,6 +50,7 @@ data class Weapon(
     val siegesDefended: Int = 0,
     val fame: Int = 0,
     val title: String? = null,
+    /** Chronological; ownership-grade kinds are kept forever, combat kinds (VICTORY, SIEGE) are bounded by `WeaponHistoryCompaction` at End Day. */
     val history: List<HistoryEntry> = emptyList(),
     /** Set when a hidden signature recipe transformed this weapon (GDD 4.5). */
     val signatureId: String? = null,
