@@ -71,7 +71,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T1.1 | `GameSession` | INT | todo | | | |
 | T1.2 | Failure and recovery | INT + AB | todo | | | |
 | T1.3 | ViewModel on the session | AB | todo | | | |
-| T1.4 | Complete day edition | CB | todo | | | |
+| T1.4 | Complete day edition | CB | merged | 6c88919 | core 191/191; golden unchanged; v1 fixture day 60 returns 20 of 20 records; app build ok; device not run | |
 | T1.5a | Versions, part 1 (neutral, first) | INT | todo | | | |
 | T1.5b | Versions, part 2 (after T1.2: rules 2, schema 2) | INT | todo | | | |
 | T1.6 | Typed money, field results, locale | CA + CB | todo | | | |
