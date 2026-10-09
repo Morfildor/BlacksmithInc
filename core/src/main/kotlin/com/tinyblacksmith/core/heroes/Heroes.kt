@@ -177,6 +177,7 @@ object Heroes {
     /** Player-facing line for the Town panel; progress is shown as plain counts, never weights. */
     fun describeAmbition(hero: Hero, weapon: Weapon?, config: com.tinyblacksmith.core.config.BalanceConfig): String? {
         val a = hero.ambition ?: return null
+        if (!hero.isAlive && !hero.ambitionDone) return null
         if (hero.ambitionDone) return when (a) {
             Ambition.SLAYER -> "Kept a slayer's vow"
             Ambition.DEFENDER -> "Held the walls as sworn"

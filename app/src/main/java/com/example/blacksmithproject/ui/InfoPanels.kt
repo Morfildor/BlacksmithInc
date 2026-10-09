@@ -34,6 +34,7 @@ import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.model.Hero
 import com.tinyblacksmith.core.model.HeroFate
+import kotlin.math.roundToInt
 
 @Composable
 fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
@@ -54,6 +55,17 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 faction?.let { weakness(content.faction(it.id).weakTo) }?.let { Secondary(it, Modifier.padding(top = Space.xs)) }
+                vm.engine.siegeForecast(st)?.let { o ->
+                    val outlook = when (o.odds) {
+                        Battle.SiegeOdds.STRONG -> "the town should hold"
+                        Battle.SiegeOdds.EVEN -> "evenly matched"
+                        Battle.SiegeOdds.OUTMATCHED -> "the walls are outmatched"
+                        Battle.SiegeOdds.DIRE -> "grave danger"
+                    }
+                    Secondary("Outlook: $outlook · defense ${o.townDefense.roundToInt()} vs raid ${o.raidPower.roundToInt()}", Modifier.padding(top = Space.xs))
+                    if (o.warlord) Secondary("${o.faction.warlordName} leads them")
+                }
+                if (st.town.armory > 0) Secondary("Town watch armory: ${st.town.armory}/${vm.engine.config.armoryMax}")
                 Secondary("Forge ${st.town.integrity} · militia ${st.town.militia} · sieges held ${st.town.siegesSurvived}", Modifier.padding(top = Space.xs))
                 Secondary("World: ${st.world.name}")
             }
@@ -139,6 +151,7 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
                 if (h.isAlive) "${Heroes.describeTraits(h, content)} · ${h.gold} gold · fame ${h.fame}"
                 else "${Heroes.describeTraits(h, content)} · fame ${h.fame} · ${h.kills} kills",
             )
+            Heroes.describeAmbition(h, w, vm.engine.config)?.let { Secondary(it) }
         }
     }
 }

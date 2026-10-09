@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,7 +47,7 @@ fun MarketPanel(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     val st = s.state
     val listed = st.listedWeapons()
-    val slots = vm.engine.config.shelfSlots
+    val slots = vm.engine.shelfSlots(st)
 
     SectionTitle("Shelves (${listed.size}/$slots)", Modifier.padding(top = Space.sm))
     if (listed.isEmpty()) Secondary("Nothing on display. Heroes browse at dawn.")
@@ -78,7 +79,7 @@ fun MarketPanel(s: UiState.Playing, vm: GameViewModel) {
         val buyer = st.heroes[c.buyerId]?.fullName ?: "Someone"
         Card(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
             Column(Modifier.padding(Space.md)) {
-                Text("${Labels.quality(c.minQuality).replaceFirstChar { it.uppercase() }} ${content.family(c.familyId).name} for $buyer", style = MaterialTheme.typography.titleSmall)
+                Text("${Labels.quality(c.minQuality).replaceFirstChar { it.uppercase() }} ${c.element?.let { it.name.lowercase() + " " }.orEmpty()}${content.family(c.familyId).name} for $buyer", style = MaterialTheme.typography.titleSmall)
                 Secondary("${c.reward} gold · due day ${c.deadlineDay}", Modifier.padding(top = 2.dp))
                 if (c.status == CommissionStatus.OFFERED) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
@@ -116,6 +117,24 @@ fun MarketPanel(s: UiState.Playing, vm: GameViewModel) {
                     modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = "Buy ${m.name} for $price gold" },
                 ) { Text("Buy") }
             }
+        }
+    }
+
+    SectionTitle("Workshop tools")
+    Secondary("Bought with gold; they last until the forge falls.")
+    content.tools.forEach { t ->
+        val cost = vm.engine.toolCost(st, t.id)
+        Row(Modifier.fillMaxWidth().padding(vertical = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+            Column(Modifier.weight(1f)) {
+                Text("${t.name} · level ${st.tools[t.id] ?: 0}/${t.maxLevel}", style = MaterialTheme.typography.bodyMedium)
+                Secondary(t.description)
+            }
+            if (cost == null) Secondary("Maxed")
+            else OutlinedButton(
+                enabled = st.gold >= cost && !s.busy,
+                onClick = { vm.dispatch(Command.BuyTool(t.id)) },
+                modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = "Buy ${t.name} for $cost gold" },
+            ) { Text("Buy · $cost g") }
         }
     }
 }
@@ -182,6 +201,17 @@ private fun WeaponListing(w: Weapon, s: UiState.Playing, vm: GameViewModel, list
                         } else {
                             Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, price)) }, enabled = !s.busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("List at $price") }
                         }
+                    }
+                    val config = vm.engine.config
+                    val armoryRoom = config.armoryMax - s.state.town.armory
+                    TextButton(onClick = { vm.dispatch(Command.Salvage(w.id)) }, enabled = !s.busy) {
+                        Text("Salvage (${config.salvageEnergy} energy, returns 1 ${content.material(w.coreId).name})")
+                    }
+                    TextButton(onClick = { vm.dispatch(Command.Hone(w.id)) }, enabled = !w.honed && !s.busy) {
+                        Text(if (w.honed) "Honed" else "Hone (${config.honeEnergy} energy, 1 ${content.material(w.coreId).name})")
+                    }
+                    TextButton(onClick = { vm.dispatch(Command.DonateWeapon(w.id)) }, enabled = armoryRoom > 0 && !s.busy) {
+                        Text(if (armoryRoom > 0) "Arm the watch (+${minOf(vm.engine.armoryValue(w), armoryRoom)} defense)" else "Arm the watch (armory full)")
                     }
                 }
             }

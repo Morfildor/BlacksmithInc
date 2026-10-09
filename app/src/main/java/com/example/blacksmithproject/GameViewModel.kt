@@ -177,7 +177,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         is GameError.TechniqueRequiresAdvanced -> "Techniques need the Advanced Forge."
         is GameError.WeaponNotFound -> "That weapon is gone."
         is GameError.WeaponNotAvailable -> "That weapon is not in the shop."
-        GameError.ShelfFull -> "All ${engine.config.shelfSlots} shelf slots are full."
+        GameError.ShelfFull -> "All ${(_ui.value as? UiState.Playing)?.let { engine.shelfSlots(it.state) } ?: engine.config.shelfSlots} shelf slots are full."
         is GameError.InvalidPrice -> "Price must be zero or more."
         is GameError.InvalidQuantity -> "Quantity must be positive."
         is GameError.NotEnoughGold -> "Not enough gold (need ${e.needed}, have ${e.available})."
@@ -188,6 +188,9 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         is GameError.AlreadyClaimed -> "This era's legacy was already claimed."
         is GameError.NotEnoughLegacyPoints -> "Need ${e.needed} legacy points, have ${e.available}."
         is GameError.UpgradeMaxed -> "That upgrade is already at its highest level."
+        is GameError.AlreadyHoned -> "That weapon has already been honed."
+        is GameError.ToolMaxed -> "That tool is already at its highest level."
+        GameError.ArmoryFull -> "The town watch armory is full."
         // Core grows concurrently; unmapped errors still get a readable line instead of a build break.
         else -> "The forge cannot do that right now."
     }

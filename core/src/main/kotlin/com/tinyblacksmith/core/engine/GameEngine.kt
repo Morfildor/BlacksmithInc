@@ -207,7 +207,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val power = weapon.power + quality / config.powerPerQualityDivisor - weapon.quality / config.powerPerQualityDivisor
         ctx.updateWeapon(weapon.copy(quality = quality, power = power, rarity = Forge.rarityFor(quality, config), honed = true))
         ctx.addWeaponHistory(weapon.id, "HONED", "Honed on the anvil (quality ${weapon.quality} to $quality).")
-        ctx.emit(EventType.WEAPON_HONED, 1, "The smith honed ${weapon.name} to quality $quality.", listOf(weapon.id.value), mapOf("quality" to quality.toString()))
+        ctx.emit(EventType.WEAPON_HONED, 2, "The smith honed ${weapon.name} to quality $quality.", listOf(weapon.id.value), mapOf("quality" to quality.toString()))
         return accept(ctx)
     }
 
