@@ -6,6 +6,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 `app/build.gradle.kts` (`versionName`, `versionCode` increments on every store-facing build).
 
 ## [Unreleased]
+### Changed
+- Run-end screen: the Begin era action stays pinned under the scrolling summary instead of sitting below the
+  eight upgrade cards.
 
 ## [0.3.0] - 2026-10-09
 Reputation and loyalty economy, bounded weapon histories, simulator purchasing and pricing policies, UI wave 2.

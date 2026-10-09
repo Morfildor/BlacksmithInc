@@ -46,6 +46,7 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 | Art import | `python tools/pixelart/import_assets.py` | 5 sheets + weapon master + 1 pack -> 488 sprites; contact sheet reviewed; weapon shelf verified on device |
 | Reputation/loyalty depth (session 4) | `./gradlew :core:test`, `./gradlew :core:simulate --args="--runs 1000 --seed 1"` before/after | 89/89 pass (82 + 7 in `ReputationAndLoyaltyTest`: caps, evaluate() stranger vs regular, reputation ceiling, premium sales 40/40 vs 29/40 at 190 %, commission bias 22/58 offers to the regular, event text, determinism); BALANCED_FAIR 25 (15/30) mean 23.7 (was 25 (15/35) mean 24.0), sell rate 14 % unchanged; tables in DECISIONS.md |
 | Simulator wave 2 + UI wave 2 (session 5) | `./gradlew :core:test`; `:core:simulate --runs 10000 --seed 1 --policy BALANCED_REPUTED`; `:app:assembleDebug`, `:app:installDebug`, `tools/emulator/smoke.sh scratchpad/ui_v4`, `:app:connectedDebugAndroidTest` | 103/103 pass (SimulatorPolicyTest added); BALANCED_REPUTED 25 (15/30) mean 23.6, within 0.3 days of FAIR (DECISIONS); build ok, SMOKE_DONE with shelf/town/resume checks ok, instrumented 5/5; title/forge/town screenshots sent |
+| Run-end route + large fonts (session 5) | `tools/emulator/runend.sh scratchpad/runend`; Town at font scale 1.3 and 1.5 | passive run falls on day 10; final Gazette -> claim -> pinned Begin era -> era 2 day 1, all checks ok, RUNEND_DONE; Town wraps without clipping at both scales |
 | UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
 ## Obstacles hit and resolved
@@ -69,6 +70,8 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
   2,330 weapons after 1,000 days); lost/destroyed weapons are never pruned. The next list to watch.
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
+- A passive first run banks 7 legacy points and the cheapest upgrade costs 8, so the worst-case first loss buys
+  nothing (median first runs bank ~24). PROPOSED numbers; left for the user to decide.
 - Package name is still `com.example.blacksmithproject`; no release signing.
 - `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order and session-4 commission
   patron weighting changes which hero asks on a given seed; bump with the first release.
@@ -77,8 +80,7 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 ## Next executable actions (P7)
 1. Measure starting gold/energy upgrades by first-siege champion power or first tier-4+ sale (DECISIONS proposal a)
    instead of run length; hero first-week purchasing power is the lever if run length must move.
-2. Run-end screen on device (needs a lost run: a scripted route in smoke.sh or a forced-defeat debug seed) and a
-   font-scale 1.3 pass over Town's faction list.
+2. 720x1280 pass over every panel; nav labels are tight at font scale 1.5.
 3. Register the first migration step against `saves/v1_forced_seed4242_day61.json` when the envelope schema changes;
    prune or cap the `weapons` map (lost/destroyed records) if 1,000-day saves matter.
 4. Package rename from `com.example.blacksmithproject`, release signing.

@@ -37,73 +37,77 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
     val content = vm.engine.content
     val end = s.runEnd
     val nextEra = maxOf(s.legacy.nextEra, end.era + 1)
-    Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = Space.md, vertical = Space.lg)) {
-        Text("The forge has fallen", style = MaterialTheme.typography.titleLarge)
-        Text(end.cause, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs))
-        Secondary("Era ${end.era} lasted ${end.daysSurvived} days.", Modifier.padding(top = Space.xs))
+    // The next step stays pinned under the scrolling summary, so it never hides below the upgrade list.
+    Column(Modifier.fillMaxSize().safeDrawingPadding()) {
+        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Space.md, vertical = Space.lg)) {
+            Text("The forge has fallen", style = MaterialTheme.typography.titleLarge)
+            Text(end.cause, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs))
+            Secondary("Era ${end.era} lasted ${end.daysSurvived} days.", Modifier.padding(top = Space.xs))
 
-        Card(
-            Modifier.fillMaxWidth().padding(top = Space.md),
-            colors = CardDefaults.cardColors(containerColor = if (s.claimed) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer),
-        ) {
-            Column(Modifier.padding(Space.md)) {
-                Text(if (s.claimed) "Legacy claimed ✓" else "Legacy reward", style = MaterialTheme.typography.titleMedium)
-                Text("${end.totalPoints} points", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = Space.xs))
-                Secondary("Baseline ${end.basePoints} · survival ${end.survivalPoints} · discoveries ${end.discoveryPoints} · milestones ${end.milestonePoints}")
-                end.milestones.forEach { Secondary("• ${milestoneLabel(it)}") }
-                Secondary(
-                    if (s.claimed) "This era's reward is banked. Each era can be claimed only once." else "Claim once to bank these points for good. They survive every future era.",
-                    Modifier.padding(top = Space.sm),
-                )
-                if (!s.claimed) {
-                    Button(onClick = vm::claimLegacy, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp)) {
-                        Text("Claim ${end.totalPoints} legacy points", style = MaterialTheme.typography.titleMedium)
-                    }
-                }
-                s.lastError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs)) }
-            }
-        }
-
-        if (end.legends.isNotEmpty()) {
-            SectionTitle("Blades remembered")
-            end.legends.forEach { Text("${it.title} · ${it.kills} kills", style = MaterialTheme.typography.bodyMedium) }
-        }
-        end.lineage?.let { SectionTitle("Lineage"); Text("${it.heroName} ${it.deed}; their line may return.", style = MaterialTheme.typography.bodyMedium) }
-
-        SectionTitle("Permanent upgrades · ${s.legacy.points} points")
-        if (!s.claimed) Secondary("Claim your legacy first to spend points.")
-        content.upgrades.forEach { u ->
-            val level = s.legacy.upgradeLevel(u.id)
-            val cost = u.costPerLevel.getOrNull(level)
-            Card(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
-                Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text(u.name, style = MaterialTheme.typography.titleSmall)
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            LevelDots(level, u.maxLevel)
-                            Spacer(Modifier.width(6.dp))
-                            Secondary("level $level of ${u.maxLevel}")
+            Card(
+                Modifier.fillMaxWidth().padding(top = Space.md),
+                colors = CardDefaults.cardColors(containerColor = if (s.claimed) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer),
+            ) {
+                Column(Modifier.padding(Space.md)) {
+                    Text(if (s.claimed) "Legacy claimed ✓" else "Legacy reward", style = MaterialTheme.typography.titleMedium)
+                    Text("${end.totalPoints} points", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = Space.xs))
+                    Secondary("Baseline ${end.basePoints} · survival ${end.survivalPoints} · discoveries ${end.discoveryPoints} · milestones ${end.milestonePoints}")
+                    end.milestones.forEach { Secondary("• ${milestoneLabel(it)}") }
+                    Secondary(
+                        if (s.claimed) "This era's reward is banked. Each era can be claimed only once." else "Claim once to bank these points for good. They survive every future era.",
+                        Modifier.padding(top = Space.sm),
+                    )
+                    if (!s.claimed) {
+                        Button(onClick = vm::claimLegacy, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp)) {
+                            Text("Claim ${end.totalPoints} legacy points", style = MaterialTheme.typography.titleMedium)
                         }
-                        Secondary(u.description)
                     }
-                    OutlinedButton(
-                        enabled = s.claimed && cost != null && s.legacy.points >= cost,
-                        onClick = { vm.buyUpgrade(u.id) },
-                        modifier = Modifier.padding(start = Space.sm).heightIn(min = 48.dp).semantics { contentDescription = cost?.let { "Buy ${u.name} level ${level + 1} for $it points" } ?: "${u.name} at maximum level" },
-                    ) { Text(cost?.let { "$it pts" } ?: "Max") }
+                    s.lastError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs)) }
+                }
+            }
+
+            if (end.legends.isNotEmpty()) {
+                SectionTitle("Blades remembered")
+                end.legends.forEach { Text("${it.title} · ${it.kills} kills", style = MaterialTheme.typography.bodyMedium) }
+            }
+            end.lineage?.let { SectionTitle("Lineage"); Text("${it.heroName} ${it.deed}; their line may return.", style = MaterialTheme.typography.bodyMedium) }
+
+            SectionTitle("Permanent upgrades · ${s.legacy.points} points")
+            if (!s.claimed) Secondary("Claim your legacy first to spend points.")
+            content.upgrades.forEach { u ->
+                val level = s.legacy.upgradeLevel(u.id)
+                val cost = u.costPerLevel.getOrNull(level)
+                Card(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
+                    Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(u.name, style = MaterialTheme.typography.titleSmall)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                LevelDots(level, u.maxLevel)
+                                Spacer(Modifier.width(6.dp))
+                                Secondary("level $level of ${u.maxLevel}")
+                            }
+                            Secondary(u.description)
+                        }
+                        OutlinedButton(
+                            enabled = s.claimed && cost != null && s.legacy.points >= cost,
+                            onClick = { vm.buyUpgrade(u.id) },
+                            modifier = Modifier.padding(start = Space.sm).heightIn(min = 48.dp).semantics { contentDescription = cost?.let { "Buy ${u.name} level ${level + 1} for $it points" } ?: "${u.name} at maximum level" },
+                        ) { Text(cost?.let { "$it pts" } ?: "Max") }
+                    }
                 }
             }
         }
-
-        if (s.claimed) {
-            Button(onClick = vm::beginNextEra, modifier = Modifier.fillMaxWidth().padding(top = Space.lg).heightIn(min = 52.dp)) {
-                Text("Begin era $nextEra", style = MaterialTheme.typography.titleMedium)
+        Column(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm)) {
+            if (s.claimed) {
+                Button(onClick = vm::beginNextEra, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                    Text("Begin era $nextEra", style = MaterialTheme.typography.titleMedium)
+                }
+            } else {
+                FilledTonalButton(onClick = vm::beginNextEra, enabled = false, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                    Text("Begin era $nextEra", style = MaterialTheme.typography.titleMedium)
+                }
+                Secondary("Claim the legacy above to begin the next era.", Modifier.padding(top = Space.xs))
             }
-        } else {
-            FilledTonalButton(onClick = vm::beginNextEra, enabled = false, modifier = Modifier.fillMaxWidth().padding(top = Space.lg).heightIn(min = 52.dp)) {
-                Text("Begin era $nextEra", style = MaterialTheme.typography.titleMedium)
-            }
-            Secondary("Claim the legacy above to begin the next era.", Modifier.padding(top = Space.xs))
         }
     }
 }
