@@ -32,7 +32,17 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
 
-enum class Panel { HOME, FORGE, MARKET, TOWN, JOURNAL, GAZETTE, LEGACY }
+/** The four places the player goes (plan 1.2); the bar shows these and nothing else. */
+enum class Dest { SHOP, FORGE, TOWN, RECORDS }
+
+/**
+ * The fine-grained page inside a destination: HOME and MARKET are the two pages of Shop until the real Shop panel
+ * (T2.8b) replaces them, GAZETTE ("News"), JOURNAL and LEGACY are the three segments of Records. Blocks on Home still
+ * navigate with these names.
+ */
+enum class Panel(val dest: Dest) {
+    HOME(Dest.SHOP), MARKET(Dest.SHOP), FORGE(Dest.FORGE), TOWN(Dest.TOWN), JOURNAL(Dest.RECORDS), GAZETTE(Dest.RECORDS), LEGACY(Dest.RECORDS)
+}
 
 data class ForgeDraft(
     val mode: ForgeMode = ForgeMode.QUICK,
@@ -65,6 +75,7 @@ sealed interface UiState {
         val blessingOfferDismissedDay: Int? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
+        val dest: Dest get() = panel.dest
     }
     /** The ended run stays stored, so this screen is rebuilt from it and the legacy row after any restart. */
     data class RunEnded(
@@ -193,6 +204,8 @@ class GameViewModel(val engine: GameEngine, private val session: GameSession, va
     }
 
     fun selectPanel(panel: Panel) = edit { it.copy(panel = panel) }
+    /** A bar tap: the destination's first page, unless the screen is already inside it. */
+    fun selectDest(dest: Dest) = edit { if (it.panel.dest == dest) it else it.copy(panel = when (dest) { Dest.SHOP -> Panel.HOME; Dest.FORGE -> Panel.FORGE; Dest.TOWN -> Panel.TOWN; Dest.RECORDS -> Panel.GAZETTE }) }
     fun updateDraft(transform: (ForgeDraft) -> ForgeDraft) = edit { it.copy(draft = transform(it.draft)) }
     fun dismissReveal() = edit { it.copy(revealWeaponId = null) }
     fun dismissError() = edit { it.copy(lastError = null) }
@@ -208,13 +221,13 @@ class GameViewModel(val engine: GameEngine, private val session: GameSession, va
 
     /**
      * System back and a tap outside a dialog. Returns true when it was consumed. It never acknowledges a report:
-     * only the report's own button does. Away from Home it returns to Home; on Home it is not consumed (leaves the app).
+     * only the report's own button does. Away from Shop it returns to Shop; on Shop it is not consumed (leaves the app).
      */
     fun back(): Boolean {
         val s = now() as? UiState.Playing ?: return false
         if (s.showReport != null) return true
-        if (s.panel == Panel.HOME) return false
-        selectPanel(Panel.HOME)
+        if (s.dest == Dest.SHOP) return false
+        selectDest(Dest.SHOP)
         return true
     }
 
