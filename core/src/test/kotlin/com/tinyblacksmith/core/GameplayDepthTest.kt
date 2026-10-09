@@ -295,6 +295,20 @@ class GameplayDepthTest {
         assertEquals(config.shelfSlots + 1, s.listedWeapons().size)
     }
 
+    @Test
+    fun theSignboardLetsOneMoreCustomerInPerLevel() {
+        val signboard = content.tool("signboard")!!
+        assertEquals(1, signboard.magnitudePerLevel)
+        // Same seed, same purchase stream: the day differs only in where the customer cap stops the queue.
+        val extra = (1L..40L).map { seed ->
+            val plain = fresh(seed).copy(gold = 5_000)
+            val signed = plain.run(Command.BuyTool("signboard")).run(Command.BuyTool("signboard"))
+            signed.endDay().lastResolution!!.visits.size - plain.endDay().lastResolution!!.visits.size
+        }
+        assertTrue(extra.all { it in 0..signboard.maxLevel }, "never more than one extra customer per level: $extra")
+        assertTrue(extra.any { it == signboard.maxLevel }, "a busy day fills both extra places: $extra")
+    }
+
     // --- Demand ---
 
     @Test

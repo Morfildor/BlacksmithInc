@@ -14,8 +14,9 @@ data class BalanceConfig(
      * v2 (2026-10-08): launch-content retune of the quality formula and siege damage.
      * v3 (2026-10-09): elite encounters, warlord sieges, hero ambitions, affix effects, shop actions, tools, trade-ins, raid growth 6. See docs/DECISIONS.md.
      * v4 (2026-10-09): weapon wear, weapon fame, whetstone 120/300, warlord pressure 50 with no raid bonus. See docs/DECISIONS.md.
+     * v5 (2026-10-09): signboard adds a customer a day per level, stronger affix magnitudes (catalog numbers). See docs/DECISIONS.md.
      */
-    val version: Int = 4,
+    val version: Int = 5,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,

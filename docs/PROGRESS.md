@@ -29,8 +29,13 @@ kept in `:core` with plain text surfaces because the UI will be redesigned. On `
 an instrumented End Day budget test (`EndDayPerfTest`). In flight in three agent worktrees branched from f73e5a1, not
 merged: legacy upgrade tracks (catalog access, recipe odds, legacy artifacts), hero daily life (guild and ambition as
 scored activities), and fight replays for elites and deaths plus weapon fates (guild inheritance, merchant resale).
-In flight on `main`: the signboard effect and the affix magnitudes from the v3 review. `BalanceConfig.version` is
-bumped to 5 once, when the branches merge. Evidence in DECISIONS.md ("Weapon pruning and day-report recovery").
+Also on `main`: the signboard now adds a customer a day per level and six affix magnitudes are stronger; that is
+balance config v5 (the branches join v5 when they merge). Evidence in DECISIONS.md ("Weapon pruning and day-report
+recovery", "Balance v5, part 1").
+Two documents arrived in `docs/` during the session and are not part of this work (untracked, left as found):
+`Tiny_Blacksmith_Thorough_Review_2026-10-09.md` (an external review pinned to b39ad76, findings F01-F11) and
+`MAJOR_UPDATE_PLAN.md` (a draft plan for a shop-day update, written by another session). None of the review findings
+is fixed by session 8 except the signboard (its section 6.2); the checklist corrections it lists are still to apply.
 
 ## What exists
 - `core/` pure Kotlin engine: RNG, slice + launch content catalogs (launch is the default), balance config v2, model,
@@ -43,7 +48,7 @@ bumped to 5 once, when the branches merge. Evidence in DECISIONS.md ("Weapon pru
   loyalty-weighted commission patrons, premium/regular Gazette records), weapon-history cap, a checked-in v1 save
   fixture. Balance v3 (session 6): affix effects (bane, elite, heal, loot, wound, shatter, self-harm), elite
   encounters, warlord sieges, hero ambitions, element commissions, `Salvage` / `Hone` / `DonateWeapon` / `BuyTool`
-  commands, workshop tools, `siegeForecast`, `BALANCED_ACTIVE` simulator policy, trade-ins and patrol pay. Balance v4 (session 7): weapon wear and condition, weapon fame effects (capped), whetstone 120/300, warlords from pressure 50; `Gazette.edition`; simulator catalog sweeps. Session 8: `WeaponPruning` (blades gone for good leave the save after 30 days). 144 JVM tests.
+  commands, workshop tools, `siegeForecast`, `BALANCED_ACTIVE` simulator policy, trade-ins and patrol pay. Balance v4 (session 7): weapon wear and condition, weapon fame effects (capped), whetstone 120/300, warlords from pressure 50; `Gazette.edition`; simulator catalog sweeps. Session 8: `WeaponPruning` (blades gone for good leave the save after 30 days); balance v5 part 1 (signboard +1 customer a day per level, stronger affix magnitudes). 145 JVM tests.
 - `app/` Compose portrait workshop (session 4 layout: three-stat top bar, pinned forge summary over collapsible
   auto-advancing steps, row-based market, per-panel tip banners, single End Day action, full-width paper day report;
   principles in DECISIONS.md; session 5: title/run-end on the spacing tokens with one primary action, Town lists
@@ -88,6 +93,7 @@ bumped to 5 once, when the branches merge. Evidence in DECISIONS.md ("Weapon pru
 | Weapon pruning (session 8) | `./gradlew :core:test` (`WeaponPruningTest`); `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE` before/after | 144/144 pass (4 new: prunable rule, 400-day pair identical but for the weapons map, every Lost reason classified, save round-trip); 400-day active pair: weapons 1,727 -> 857, save 1,745,453 -> 1,012,913 bytes; simulator output identical to 0.5.0 except the `affix weapons/run` line, which counts the end-of-run map |
 | Day report recovery (session 8) | `:app:installDebug`; `scratchpad/drive_report_recovery.sh` on the emulator | End Day -> kill with the report open -> relaunch shows the report -> Begin day 2 -> Home -> kill -> relaunch stays on Home day 2; all checks ok, RECOVERY_DONE |
 | End Day budget on the Android runtime (session 8) | `./gradlew :app:connectedDebugAndroidTest` (`EndDayPerfTest`) | 1/1 pass on the Pixel_10_Pro AVD (API 37, x86_64): 120 forced-survival days as the active smith, p50 4.38 ms, p95 8.45 ms, max 35.5 ms against the 200 ms budget; real mid-range hardware not measured |
+| Balance v5 part 1: signboard and affixes (session 8) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE`; `--policy BALANCED_ACTIVE --noTool signboard --noImpact`; per-affix `--noAffixEffect <id>` under BALANCED_ACTIVE and SYNERGY before and after (32 runs, JSON); `:app:compileDebugKotlin -q` | 145/145 pass (1 new: the signboard lets 0-2 more customers in on the same seed); BALANCED_ACTIVE 25 (20/35) mean 27.2, sold 31.6 (was 26.4 / 26.9); signboard alone +0.4 days and +3.5 sales over no signboard (the old one was -0.1 / -0.9); Giant Slayer worth 0.42 elite kills a run (was 0.26), Reinforced -0.09 deaths (was -0.04), Heavy +0.07 (was +0.03), Swift, Cursed and Bloodbound unchanged in the aggregate; every other policy within 0.2 mean days; 0 hard-locks; app compiles; tables in DECISIONS.md |
 | UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
 ## Obstacles hit and resolved
@@ -113,9 +119,12 @@ bumped to 5 once, when the branches merge. Evidence in DECISIONS.md ("Weapon pru
   moves to forge-time counting when the agent branches (which all edit the simulator) are merged.
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
-- Of the v3 review recommendations (DECISIONS.md), whetstone 120/300 and warlord pressure 50 are applied in v4; the
-  signboard effect (capped out by `maxCustomersPerDay`), the affix magnitudes and Known Name are not. v4 itself is
-  checked at 1,000 seeds only.
+- Of the v3 review recommendations (DECISIONS.md), whetstone 120/300 and warlord pressure 50 are applied in v4, the
+  signboard effect and the affix magnitudes in v5; the Lucky loot and Known Name are not. Guild Patronage still
+  raises the visit chance, which the customer cap mostly swallows (the old signboard problem). v4 and v5 are checked
+  at 1,000 seeds only.
+- Cursed and Bloodbound self-harm (15 / 20 health a win) does not show in deaths or run length; the simulator has no
+  per-wielder or expedition-count metric to show the rest days it costs.
 - The simulator's other policies ignore the new shop actions, so their rows measure a smith who never uses them.
 - Sell rate is 25-26 % at fair prices after weapon wear (NOT_BETTER down by a fifth); wear costs every policy 1-2 mean
   days, so the active smith leads the plain one by 5 days median (was 10). Levers if the margin should return: a
@@ -129,7 +138,7 @@ bumped to 5 once, when the branches merge. Evidence in DECISIONS.md ("Weapon pru
 - Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.5.0 (versionCode 5); session 8 work sits under `[Unreleased]` in CHANGELOG.md until 0.6.0.
 
 ## Next executable actions (P7)
-0. Session 8, in order: finish the signboard effect and the affix magnitudes with sweeps; merge the three agent
+0. Session 8, in order: merge the three agent
    branches (replays and fates, hero daily life, legacy tracks), classify any new Lost reason in `WeaponPruning`,
    bump the balance config to 5; a 10,000-seed v5 review; device run; release 0.6.0 and tick GDD_CHECKLIST.
    Left for the UI redesign: Home first-run tip and the Yesterday / Shelf repeat.

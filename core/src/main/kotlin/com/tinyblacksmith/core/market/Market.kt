@@ -19,8 +19,8 @@ object Market {
         val rng = ctx.rng(RngStream.PURCHASES)
         val listed = ctx.weapons.values.filter { it.isListed }
         val festival = ctx.worldFlags[WorldEvents.FLAG_FESTIVAL] == ctx.day
-        val maxCustomers = config.maxCustomersPerDay + (if (festival) config.festivalExtraCustomers else 0)
-        val festivalBonus = (if (festival) config.festivalVisitBonus else 0.0) + (ctx.blessingMagnitude(BlessingEffect.HERO_VISIT_CHANCE) + ctx.toolTotal(ToolEffect.HERO_VISIT_CHANCE)) / 100.0  // + Guild Patronage, signboard
+        val maxCustomers = config.maxCustomersPerDay + ctx.toolTotal(ToolEffect.EXTRA_CUSTOMERS) + (if (festival) config.festivalExtraCustomers else 0)  // + signboard
+        val festivalBonus = (if (festival) config.festivalVisitBonus else 0.0) + ctx.blessingMagnitude(BlessingEffect.HERO_VISIT_CHANCE) / 100.0  // + Guild Patronage
         var customers = 0
         for (hero in ctx.aliveHeroes()) {
             if (customers >= maxCustomers) break

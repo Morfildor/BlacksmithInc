@@ -1064,3 +1064,90 @@ event types still grow with the run (695 of 2,099 events at day 1,000).
 the command ID of the last report the player closed (DataStore, not gameplay state) and reopens an unread one on
 launch, including the final report of a fallen forge. Checked on the emulator: End Day, kill with the report open,
 relaunch (report back), close, kill, relaunch (stays closed, Home on day 2).
+
+## Balance v5, part 1: signboard and affix magnitudes (session 8)
+
+Two recommendations of the v3 review (items 1 and 6 above), applied on top of v4 as merged. Catalog numbers
+(`LaunchContent`), one engine line (`Market.resolveShelfVisits`). All runs: 1,000 seeds, seed 1.
+
+### Signboard: +1 customer a day per level (was +8 points of visit chance)
+`ToolEffect.HERO_VISIT_CHANCE` is replaced by `ToolEffect.EXTRA_CUSTOMERS` (magnitude 1 per level, prices 150 / 400
+unchanged); the tool total is added to `maxCustomersPerDay` and no longer to the visit chance. Guild Patronage (a
+blessing) still raises the visit chance.
+
+| BALANCED_ACTIVE | Median (p10/p90) | Mean days | Sold/run | Gold earned (median) | Visits/run (per day) | Elites slain |
+|---|---|---|---|---|---|---|
+| No signboard (`--noTool signboard`) | 25 (20/35) | 26.5 | 27.8 | 2,403 | 99.3 (3.75) | 3.6 |
+| v4: +8 points visit chance | 25 (20/35) | 26.4 (-0.1) | 26.9 (-0.9) | 2,319 | 102.5 (3.88) | 3.6 |
+| **v5: +1 customer per level** | 25 (20/35) | **26.9 (+0.4)** | **31.3 (+3.5)** | 2,706 | 127.3 (4.73) | 3.9 |
+
+- The v4 signboard was still a trap (worse than not buying it); the v5 one is worth +0.4 days and +3.5 sales over no
+  signboard, bought in 100 % of runs on day 2.2 (mean level 1.7), the same order as before.
+- In gold alone it returns about 300 of the roughly 430 spent on it in a 27-day run: level 1 (150) pays, level 2
+  (400) is a sales and survival purchase, not a profit. Left as is; the lever is the level-2 price.
+- Only the tool buyer moves: every other policy is identical to v4 (none buys tools).
+- `GameplayDepthTest.theSignboardLetsOneMoreCustomerInPerLevel`: on the same seed the signed shop sees 0 to 2 more
+  visitors than the plain one, and 2 on a busy day.
+
+### Affix magnitudes
+| Affix | v4 | v5 |
+|---|---|---|
+| Giant Slayer, attack against elites and warlord sieges | x1.25 | x1.5 |
+| Reinforced, wound of a lost expedition | x0.85 | x0.7 |
+| Swift, wound of a lost expedition | x0.8 | x0.6 |
+| Heavy (flaw), wound of a lost expedition | x1.2 | x1.5 |
+| Cursed (flaw), health lost per won expedition | 4 | 15 |
+| Bloodbound (flaw), health lost per won expedition | 7 | 20 |
+
+Kept: Undead Bane x1.2 (the review: it already registers once common). Not done: Lucky (its loot should be
+something scarce; that line is in `Battle.resolveExpedition`, which a feature branch is editing; after the merge).
+
+What each effect is worth, measured the review way (the effect neutralised with `--noAffixEffect <id>`, delta against
+the baseline of the same build; signboard v5 in both columns):
+
+| Effect | Carried / run (ACTIVE / SYNERGY) | BALANCED_ACTIVE v4 | BALANCED_ACTIVE v5 | SYNERGY v4 | SYNERGY v5 |
+|---|---|---|---|---|---|
+| Giant Slayer, elite kills a run | 4.9 / 6.9 | +0.26 of 3.87 | **+0.42 of 3.96** | +0.26 of 5.84 | **+0.32 of 5.90** |
+| Reinforced, deaths a run | 4.8 / 7.0 | -0.04 | **-0.09** | -0.04 | -0.06 |
+| Swift, deaths a run | 4.9 / 6.9 | -0.05 | -0.05 | -0.08 | -0.08 |
+| Heavy, deaths a run | 1.5 / 1.1 | +0.03 | **+0.07** | +0.01 | **+0.06** |
+| Cursed, deaths a run | 1.6 / 1.2 | 0.00 | 0.00 | 0.00 | -0.01 |
+| Bloodbound, deaths a run | 1.5 / 1.1 | +0.02 | 0.00 | +0.01 | +0.02 |
+| All ten effects, mean days | - | +0.5 | +0.7 | +1.0 | +0.7 |
+
+| Baseline of each build | BALANCED_ACTIVE | SYNERGY |
+|---|---|---|
+| v4 magnitudes | 25 (20/35), mean 26.9, sold 31.3, deaths 0.92 | 35 (25/40), mean 34.0, sold 28.7, deaths 0.92 |
+| v5 magnitudes | 25 (20/35), mean 27.2, sold 31.6, deaths 0.94 | 35 (25/40), mean 33.8, sold 28.5, deaths 0.96 |
+
+- Giant Slayer is now worth about a tenth of the elite kills of an active smith (was 7 %), Reinforced and Heavy move
+  deaths twice as much as before. Swift did not register a change at 1,000 seeds; Cursed and Bloodbound still do not
+  show in deaths or run length: the wielder rests the health back (at 15-20 health a win a hero is under the wounded
+  threshold of 50 after three or four wins instead of eight or more). The simulator has no per-wielder or expedition-count
+  metric, so that cost is not measured here.
+- No policy moved by more than 0.3 mean days, no median or p10/p90 moved: the aggregate stays inside the noise floor
+  (about 0.3 days at 1,000 seeds), as the review predicted (each of these lands on 1-5 of about 113 weapons a run).
+  The change is felt per weapon, not per run.
+- Stacking: an Etched blade can carry Reinforced and Swift together (wound x0.42, 8-23 health instead of 20-55).
+  Rare (two exceptional affixes on one weapon) and bounded by the win roll, left uncapped.
+
+### Baseline for the feature branches (v5 part 1, `--policy all --impactPolicy BALANCED_ACTIVE`)
+| Policy | v4 as merged | v5 part 1 |
+|---|---|---|
+| BALANCED_FAIR | 20 (15/25), mean 20.5, sold 19.6 | 20 (15/25), mean 20.5, sold 19.6 |
+| BALANCED_ACTIVE | 25 (20/35), mean 26.4, sold 26.9 | 25 (20/35), mean 27.2, sold 31.6 |
+| SYNERGY | 35 (25/40), mean 34.0, sold 28.7 | 35 (25/40), mean 33.8, sold 28.5 |
+| BALANCED_INVEST | 30 (20/40), mean 29.5, sold 28.3 | 30 (20/40), mean 29.6, sold 28.5 |
+| BALANCED_FAIR, all upgrades | 35 (25/40), mean 33.5 | 35 (25/40), mean 33.9, sold 27.3 |
+| BALANCED_ACTIVE, all upgrades | 40 (30/45), mean 37.7, sold 30.6 | 40 (30/45), mean 39.5, sold 40.1 |
+
+0 hard-locks in every policy. Upgrade impact under BALANCED_ACTIVE (median / mean days): Tireless Smith +5 / +0.6
+(was +0 / +0.3), Family Savings +5 / +0.3 (was +0 / +0.1), Forge Mastery +5 / +2.8, Stalwart Walls +10 / +6.4, Thrifty
+Hands +5 / +1.6, Well-Stocked Cellar +5 / +3.5, Lucky Hammer +5 / +0.6, Known Name +0 / 0.0 (was -0.5), all maxed
++15 / +12.3. With a fifth and sixth customer a day sales are less demand-bound, so starting energy and gold register
+for the first time.
+
+- The active smith now leads the plain one by 6.7 mean days (was 5.9); the medians are 25 and 20 as before. The wear
+  margin question (PROGRESS, known limitations) is unchanged and still open.
+- The three feature branches measured against v4 as merged (20.5 / 26.4); after the merge they are compared against
+  this table.

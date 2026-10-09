@@ -97,7 +97,7 @@ data class FactionDef(
 )
 
 /** In-run workshop improvements bought with gold; they reset with the run (GDD 9: shop state does not persist). */
-enum class ToolEffect { EXTRA_ENERGY, QUALITY_BONUS, HERO_VISIT_CHANCE, SHELF_SLOTS }
+enum class ToolEffect { EXTRA_ENERGY, QUALITY_BONUS, EXTRA_CUSTOMERS, SHELF_SLOTS }
 
 data class ToolDef(
     val id: String,

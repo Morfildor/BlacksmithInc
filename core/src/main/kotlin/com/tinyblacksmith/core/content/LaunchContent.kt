@@ -136,23 +136,23 @@ object LaunchContent {
             // Multipliers are PROPOSED and bounded (0.85..1.15); the engine has no faction-specific or luck effects yet, so
             // Undead Bane, Giant Slayer and Lucky are flat multipliers for now.
             AffixDef(KEEN, "Keen", AffixKind.BENEFICIAL, power = 3, description = "Sharper than it looks.", attackMultiplier = 1.06),
-            AffixDef(REINFORCED, "Reinforced", AffixKind.BENEFICIAL, power = 2, description = "Hard to break; shields its wielder in a rout.", defenseMultiplier = 1.1, damageTakenMultiplier = 0.85),
+            AffixDef(REINFORCED, "Reinforced", AffixKind.BENEFICIAL, power = 2, description = "Hard to break; shields its wielder in a rout.", defenseMultiplier = 1.1, damageTakenMultiplier = 0.7),
             AffixDef(FLAMING, "Flaming", AffixKind.BENEFICIAL, power = 4, element = Element.FIRE, description = "Burns foes; raiders fear it.", attackMultiplier = 1.08),
             AffixDef(FROSTBOUND, "Frostbound", AffixKind.BENEFICIAL, power = 4, element = Element.FROST, description = "Slows enemies.", attackMultiplier = 1.05, defenseMultiplier = 1.05),
             AffixDef(STORMCHARGED, "Stormcharged", AffixKind.BENEFICIAL, power = 5, element = Element.STORM, description = "Crackles with lightning.", attackMultiplier = 1.1),
             AffixDef(VAMPIRIC, "Vampiric", AffixKind.BENEFICIAL, power = 4, element = Element.GRAVE, description = "Drinks the strength of what it cuts; mends its wielder after a victory.", attackMultiplier = 1.06, defenseMultiplier = 1.04, healOnWin = 12),
-            AffixDef(SWIFT, "Swift", AffixKind.BENEFICIAL, power = 3, description = "Light in the hand, quick to strike and quicker to retreat.", attackMultiplier = 1.05, defenseMultiplier = 1.03, damageTakenMultiplier = 0.8),
-            AffixDef(GIANT_SLAYER, "Giant Slayer", AffixKind.BENEFICIAL, power = 5, description = "Bites deepest into elites and warlords.", attackMultiplier = 1.03, eliteMultiplier = 1.25),
+            AffixDef(SWIFT, "Swift", AffixKind.BENEFICIAL, power = 3, description = "Light in the hand, quick to strike and quicker to retreat.", attackMultiplier = 1.05, defenseMultiplier = 1.03, damageTakenMultiplier = 0.6),
+            AffixDef(GIANT_SLAYER, "Giant Slayer", AffixKind.BENEFICIAL, power = 5, description = "Bites deepest into elites and warlords.", attackMultiplier = 1.03, eliteMultiplier = 1.5),
             AffixDef(UNDEAD_BANE, "Undead Bane", AffixKind.BENEFICIAL, power = 4, element = Element.SUN, description = "Noon-light folded into steel; the Hollowbound cannot bear it.", attackMultiplier = 1.03, baneFaction = HOLLOWBOUND, baneMultiplier = 1.2),
             AffixDef(GUARDIANS, "Guardian's", AffixKind.BENEFICIAL, power = 2, description = "Steadies the wielder in defense.", defenseMultiplier = 1.15),
             AffixDef(LUCKY, "Lucky", AffixKind.BENEFICIAL, power = 2, description = "Things go its wielder's way; spoils turn up more often.", attackMultiplier = 1.03, defenseMultiplier = 1.03, lootChanceBonus = 0.25),
             AffixDef(RESONANT, "Resonant", AffixKind.BENEFICIAL, power = 4, element = Element.VERDANT, description = "Hums with living sap; magic flows through it.", attackMultiplier = 1.04, defenseMultiplier = 1.06),
             // Flaws (6). GDD 4.4: predictable trade-offs, no secret behaviour. Power values are PROPOSED.
             AffixDef(BRITTLE, "Brittle", AffixKind.FLAW, power = -3, description = "Chips under stress and may shatter in a rout.", defenseMultiplier = 0.9, breakChanceOnLoss = 0.2),
-            AffixDef(HEAVY, "Heavy", AffixKind.FLAW, power = -2, description = "Tires the wielder; slow to get clear of a lost fight.", attackMultiplier = 0.92, damageTakenMultiplier = 1.2),
+            AffixDef(HEAVY, "Heavy", AffixKind.FLAW, power = -2, description = "Tires the wielder; slow to get clear of a lost fight.", attackMultiplier = 0.92, damageTakenMultiplier = 1.5),
             AffixDef(UNSTABLE, "Unstable", AffixKind.FLAW, power = -4, description = "Unreliable in a pinch.", attackMultiplier = 0.9),
-            AffixDef(CURSED, "Cursed", AffixKind.FLAW, power = -2, description = "Strikes harder, guards worse, and bites the hand that wins with it.", attackMultiplier = 1.08, defenseMultiplier = 0.85, selfDamageOnWin = 4),
-            AffixDef(BLOODBOUND, "Bloodbound", AffixKind.FLAW, power = -3, description = "Feeds on its wielder: fierce on the attack, weak when holding the line.", attackMultiplier = 1.05, defenseMultiplier = 0.9, selfDamageOnWin = 7),
+            AffixDef(CURSED, "Cursed", AffixKind.FLAW, power = -2, description = "Strikes harder, guards worse, and bites the hand that wins with it.", attackMultiplier = 1.08, defenseMultiplier = 0.85, selfDamageOnWin = 15),
+            AffixDef(BLOODBOUND, "Bloodbound", AffixKind.FLAW, power = -3, description = "Feeds on its wielder: fierce on the attack, weak when holding the line.", attackMultiplier = 1.05, defenseMultiplier = 0.9, selfDamageOnWin = 20),
             AffixDef(SENTIENT, "Sentient", AffixKind.FLAW, power = -1, description = "Has opinions. Fights well for its home, balks on the road.", attackMultiplier = 0.94, defenseMultiplier = 1.05),
         ),
         classes = listOf(
@@ -253,7 +253,7 @@ object LaunchContent {
         tools = listOf(
             ToolDef("bellows", "Great Bellows", ToolEffect.EXTRA_ENERGY, magnitudePerLevel = 1, costPerLevel = listOf(300, 700), description = "+1 daily energy per level."),
             ToolDef("whetstone", "Master Whetstone", ToolEffect.QUALITY_BONUS, magnitudePerLevel = 3, costPerLevel = listOf(120, 300), description = "+3 forged quality per level."),
-            ToolDef("signboard", "Painted Signboard", ToolEffect.HERO_VISIT_CHANCE, magnitudePerLevel = 8, costPerLevel = listOf(150, 400), description = "More heroes stop by the shop each day."),
+            ToolDef("signboard", "Painted Signboard", ToolEffect.EXTRA_CUSTOMERS, magnitudePerLevel = 1, costPerLevel = listOf(150, 400), description = "+1 customer a day per level."),
             ToolDef("display_case", "Display Case", ToolEffect.SHELF_SLOTS, magnitudePerLevel = 2, costPerLevel = listOf(200), description = "+2 shelf slots."),
         ),
     )
