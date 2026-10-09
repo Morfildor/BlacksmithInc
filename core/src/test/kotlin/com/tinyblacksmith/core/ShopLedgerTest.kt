@@ -72,15 +72,15 @@ class ShopLedgerTest {
             val s = out.state.copy(commissions = mapOf(c.id to c), nextCommissionSerial = 2)
             val gone = quiet.handle(s, Command.EndDay(endDayId(s))) as CommandOutcome.Accepted
             val r = gone.resolution!!
-            if (r.visits.isEmpty()) continue
+            if (r.browsers.isEmpty()) continue
             checked = true
             assertEquals(CommissionStatus.COMPLETED, gone.state.commissions.getValue(c.id).status)
-            assertTrue(r.visits.all { it.purchasedWeaponId == null }, "the shelf was bare: nobody browsing bought")
+            assertTrue(r.browsers.all { it.purchasedWeaponId == null }, "the shelf was bare: nobody browsing bought")
             val ledger = assertNotNull(r.ledger)
             assertEquals(mapOf(IncomeKind.COMMISSION to 140), ledger.income)
             balances(ledger)
             val tally = edition(gone.state, r).tally
-            assertEquals(listOf("Shop took 140 gold", "0 of ${r.visits.size} visitor${if (r.visits.size == 1) "" else "s"} bought", "1 commission delivered"), tally.take(3))
+            assertEquals(listOf("Shop took 140 gold", "0 of ${r.browsers.size} visitor${if (r.browsers.size == 1) "" else "s"} bought", "1 commission delivered"), tally.take(3))
             // The same day read from its records alone (the archive, an older build's report) says the same.
             assertEquals(tally.take(3), Gazette.edition(r.events, names(gone.state), r.visits).tally.take(3))
         }
@@ -137,7 +137,7 @@ class ShopLedgerTest {
             val r = out.resolution!!
             val ledger = assertNotNull(r.ledger)
             balances(ledger)
-            val bought = r.visits.count { it.purchasedWeaponId != null }
+            val bought = r.browsers.count { it.purchasedWeaponId != null }
             sales += bought
             if (bought > 0) {
                 assertEquals(0, ledger.income[IncomeKind.SHELF_SALE], "a free blade is a sale of zero coin, not a missing one")
@@ -151,7 +151,7 @@ class ShopLedgerTest {
         repeat(3) { s = s.forgeAccepted(quickSword()).state }
         for (w in s.storedWeapons()) s = s.run(Command.ToggleShelf(w.id, true, 999_999))
         val r = s.endDayAccepted().resolution!!
-        assertTrue(r.visits.none { it.purchasedWeaponId != null })
+        assertTrue(r.browsers.none { it.purchasedWeaponId != null })
         balances(r.ledger!!)
         assertNull(r.ledger!!.income[IncomeKind.SHELF_SALE])
     }
@@ -224,8 +224,8 @@ class ShopLedgerTest {
                 val sold = r.events.filter { it.type == EventType.WEAPON_SOLD }
                 assertEquals(sold.sumOf { it.data.getValue("price").toInt() - (it.data["tradeIn"]?.toInt() ?: 0) }, ledger.income[IncomeKind.SHELF_SALE] ?: 0, at)
                 assertEquals(sold.sumOf { it.data["tradeIn"]?.toInt() ?: 0 }, ledger.tradeInCredit, at)
-                assertTrue(r.visits.count { it.purchasedWeaponId != null } <= r.visits.size, at)
-                assertEquals(sold.size, r.visits.count { it.purchasedWeaponId != null }, "$at: every buyer is a browser and every browser who bought is a sale")
+                assertTrue(r.browsers.count { it.purchasedWeaponId != null } <= r.browsers.size, at)
+                assertEquals(sold.size, r.browsers.count { it.purchasedWeaponId != null }, "$at: every buyer is a browser and every browser who bought is a sale")
                 // The paper's till is the same whether it is counted from the ledger or from the day's records.
                 val typed = edition(out.state, r).tally
                 val recorded = Gazette.edition(r.events, names(out.state), r.visits).tally

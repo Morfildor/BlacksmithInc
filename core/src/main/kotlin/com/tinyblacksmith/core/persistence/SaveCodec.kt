@@ -16,7 +16,7 @@ import kotlinx.serialization.json.jsonObject
 data class SaveEnvelope(val schemaVersion: Int, val payload: String)
 
 object SaveCodec {
-    const val SCHEMA_VERSION = 2
+    const val SCHEMA_VERSION = 3
 
     val json: Json = Json {
         encodeDefaults = true
@@ -49,8 +49,13 @@ object SaveCodec {
      * a step written for one is never applied to the other. Raising [SCHEMA_VERSION] needs an entry in BOTH tables
      * for the version left behind; the entry is `{ it }` for a document that does not change.
      */
-    internal val runMigrations: Map<Int, (String) -> String> = mapOf(1 to { lowerOffBandCommissions(stampBalanceVersion(it)) })
-    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it })
+    internal val runMigrations: Map<Int, (String) -> String> = mapOf(
+        1 to { lowerOffBandCommissions(stampBalanceVersion(it)) },
+        // Schema 3 adds the visit record, two event types (SHOP_DAY, MATERIAL_BOUGHT) and the visit enums. Nothing stored is
+        // converted: the number rises so that an older build refuses a save it would otherwise read as corrupt.
+        2 to { it },
+    )
+    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it })
 
     /** Every schema-1 run was written by a build that had balance 5 and did not yet record it (0 = untracked). */
     private const val BALANCE_BEFORE_TRACKING = 5

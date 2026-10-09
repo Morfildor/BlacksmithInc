@@ -55,7 +55,7 @@ class MarketAndOwnershipTest {
             assertTrue(after.weapon(id).isListed)
             val visits = after.lastResolution!!.visits
             assertTrue(visits.all { it.purchasedWeaponId == null })
-            assertTrue(visits.isEmpty() || visits.all { it.reason == "TOO_EXPENSIVE" }, "reasons: ${visits.map { it.reason }}")
+            assertTrue(visits.isEmpty() || visits.all { it.reason == VisitReason.TOO_EXPENSIVE }, "reasons: ${visits.map { it.reason }}")
         }
     }
 
@@ -70,7 +70,7 @@ class MarketAndOwnershipTest {
             val rich = out.state.copy(heroes = out.state.heroes.mapValues { it.value.copy(gold = 10_000) })
             val s = rich.run(Command.ToggleShelf(id, true, engine.suggestedPrice(w) * 6))
             val after = s.endDay()
-            if (after.lastResolution!!.visits.any { it.reason == "OVERPRICED" }) overpriced++
+            if (after.lastResolution!!.visits.any { it.reason == VisitReason.OVERPRICED }) overpriced++
             assertTrue(after.weapon(id).isListed, "sixfold price should not sell")
         }
         assertTrue(overpriced > 10)

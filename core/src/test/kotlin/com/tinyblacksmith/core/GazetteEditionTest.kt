@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.LegacyProfile
 import com.tinyblacksmith.core.model.MarketVisit
+import com.tinyblacksmith.core.model.VisitReason
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.sim.Policy
 import com.tinyblacksmith.core.sim.SimulationDriver
@@ -58,10 +59,10 @@ class GazetteEditionTest {
             ev(EventType.COMMISSION_OFFERED, 3, "Torvald Ferris asks for a fine verdant Spear by day 8, offering 222 gold.", listOf("h7", "c1")),
         )
         val visits = listOf(
-            MarketVisit(HeroId("h1"), "Cassia Ellery", WeaponId("w13"), "GREAT_FIT"),
-            MarketVisit(HeroId("h2"), "Sten Dunmore", null, "TOO_EXPENSIVE"),
-            MarketVisit(HeroId("h4"), "Thane Kestrel", null, "NOT_BETTER"),
-            MarketVisit(HeroId("h5"), "Sable Stonebrook", null, "TOO_EXPENSIVE"),
+            MarketVisit(HeroId("h1"), "Cassia Ellery", WeaponId("w13"), VisitReason.GREAT_FIT),
+            MarketVisit(HeroId("h2"), "Sten Dunmore", null, VisitReason.TOO_EXPENSIVE),
+            MarketVisit(HeroId("h4"), "Thane Kestrel", null, VisitReason.NOT_BETTER),
+            MarketVisit(HeroId("h5"), "Sable Stonebrook", null, VisitReason.TOO_EXPENSIVE),
         )
         val e = Gazette.edition(events, names, visits)
         assertEquals(
@@ -190,7 +191,7 @@ class GazetteEditionTest {
                 val needle = (if (hero != null) ev.text.removePrefix("$hero ") else ev.text).trimEnd('.')
                 val folded = ev.type in setOf(
                     EventType.WEAPON_FORGED, EventType.WEAPON_LISTED, EventType.WEAPON_HONED, EventType.WEAPON_DONATED, EventType.WEAPON_SALVAGED,
-                    EventType.TOOL_BOUGHT, EventType.MATERIAL_BOUGHT,
+                    EventType.TOOL_BOUGHT, EventType.MATERIAL_BOUGHT, EventType.SHOP_DAY,
                 ) || ev.type in quiet || (ev.type == EventType.SIEGE_WARNING)
                 assertTrue(folded || lines.any { needle in it }, "day $day: record not in the paper: ${ev.type} ${ev.text}")
                 if (ev.type in quiet) assertTrue(lines.any { hero!! in it && (":" in it) }, "day $day: $hero missing from the quiet line")

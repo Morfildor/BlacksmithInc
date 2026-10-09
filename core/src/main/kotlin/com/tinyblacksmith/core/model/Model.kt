@@ -179,6 +179,7 @@ enum class EventType {
     GUILD_TRAINED, GUILD_JOINED, GUILD_MENTORED, AMBITION_PURSUED,
     WEAPON_SURFACED, WEAPON_RESOLD,
     MATERIAL_BOUGHT,
+    SHOP_DAY,
 }
 
 /** Source of truth for the Gazette and replays (GDD Appendix B). Subjects are real entity IDs. */
@@ -210,9 +211,6 @@ data class CombatReplay(
 )
 
 @Serializable
-data class MarketVisit(val heroId: HeroId, val heroName: String, val purchasedWeaponId: WeaponId?, val reason: String)
-
-@Serializable
 data class DayResolution(
     val commandId: CommandId,
     val day: Int,
@@ -224,7 +222,15 @@ data class DayResolution(
     /** The till and every hero's day, typed. Null and empty on a day resolved before they were recorded. */
     val ledger: ShopLedger? = null,
     val field: List<FieldResult> = emptyList(),
-)
+    /** The opening shelf with nothing sold yet, plus any stored blade a commission took: every blade a visit refers to. */
+    val shopWeapons: List<WeaponSnapshot> = emptyList(),
+    val shelfPrices: Map<WeaponId, Int> = emptyMap(),
+    val turnedAway: List<HeroId> = emptyList(),           // filled from T3.1
+    val recordVersion: Int = 0,                           // 0 = a 0.5.x day without snapshots, 1 = this record
+) {
+    /** The heroes who came to look at the shelf; a commission patron and the collector are visits of their own kind. */
+    val browsers: List<MarketVisit> get() = visits.filter { it.kind == VisitKind.BROWSE }
+}
 
 @Serializable
 data class Journal(

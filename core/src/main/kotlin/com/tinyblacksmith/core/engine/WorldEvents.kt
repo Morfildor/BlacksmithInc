@@ -29,7 +29,8 @@ data class WorldEventDef(
     val story: String,
 )
 
-data class WorldEventOutcome(val vars: Map<String, String> = emptyMap(), val subjects: List<String> = emptyList())
+/** [visit] is set by an event that is a customer at the counter (the collector); [WorldEvents.fire] adds it to the day's visits with the record's ID. */
+data class WorldEventOutcome(val vars: Map<String, String> = emptyMap(), val subjects: List<String> = emptyList(), val visit: MarketVisit? = null)
 
 /** Data-driven, seeded world events: at most one per day, chosen by weight on the EVENTS stream. */
 object WorldEvents {
@@ -71,7 +72,9 @@ object WorldEvents {
         ctx.eventCounters[def.id] = (ctx.eventCounters[def.id] ?: 0) + 1
         ctx.eventLastDay[def.id] = ctx.day
         val text = outcome.vars.entries.fold(def.story) { acc, (k, v) -> acc.replace("{$k}", v) }
-        return ctx.emit(EventType.WORLD_EVENT, 4, text, outcome.subjects, outcome.vars + ("event" to def.id))
+        val record = ctx.emit(EventType.WORLD_EVENT, 4, text, outcome.subjects, outcome.vars + ("event" to def.id))
+        outcome.visit?.let { ctx.visits += it.copy(seq = ctx.visits.size, eventIds = listOf(record.id)) }
+        return record
     }
 
     fun byId(id: String): WorldEventDef = all.first { it.id == id }
@@ -380,7 +383,13 @@ object WorldEvents {
                 ctx.reputation += 1
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "sold to a collector")))
                 ctx.addWeaponHistory(w.id, "COLLECTED", "Bought by a collector for $price gold and taken to a distant vault.")
-                WorldEventOutcome(mapOf("weapon" to w.name, "price" to price.toString()), listOf(w.id.value))
+                WorldEventOutcome(
+                    mapOf("weapon" to w.name, "price" to price.toString()), listOf(w.id.value),
+                    MarketVisit(
+                        null, "A collector", w.id, VisitReason.COLLECTOR_PURCHASE, kind = VisitKind.COLLECTOR,
+                        considered = listOf(Considered(w.id, w.listedPrice ?: 0, listOf(VisitFactor.COLLECTOR_PRIZE))), sale = Sale(listedPrice = w.listedPrice, cashPaid = price),
+                    ),
+                )
             },
             story = "A collector paid {price} gold for {weapon} and carried it off to a distant vault.",
         ),

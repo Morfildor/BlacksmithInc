@@ -132,7 +132,7 @@ class EventCompactionTest {
     @Test
     fun uncompactedSaveFromOlderBuildLoadsAndCompactsOnNextEndDay() {
         val legacy = uncompacted
-        assertEquals(2, SaveCodec.SCHEMA_VERSION, "compaction changed no schema; schema 2 only stamps the balance version")
+        assertEquals(3, SaveCodec.SCHEMA_VERSION, "compaction changed no schema; schema 2 only stamps the balance version and schema 3 converts nothing")
         val loaded = SaveCodec.decodeRun(SaveCodec.encodeRun(legacy))
         assertEquals(legacy, loaded)
         val next = loaded.endDay()  // TestSupport engine: default config, retention 30, sieges enabled

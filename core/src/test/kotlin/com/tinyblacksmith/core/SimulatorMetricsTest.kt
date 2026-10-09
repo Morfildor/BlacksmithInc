@@ -39,12 +39,12 @@ class SimulatorMetricsTest {
             val alive = before.aliveHeroes()
             val festival = before.worldFlags[WorldEvents.FLAG_FESTIVAL] == before.day
             days++; heroDays += alive.size
-            visits += res.visits.size; buys += res.visits.count { it.purchasedWeaponId != null }
-            perCount.merge(res.visits.size, 1, Int::plus)
-            if (res.visits.size >= cap + (if (festival) engine.config.festivalExtraCustomers else 0)) atCap++
-            if (res.visits.size <= 2) twoOrFewer++
-            for (v in res.visits) { reasons.merge(v.reason, 1, Int::plus); served += v.heroId.value }
-            firstPositionVisits += res.visits.count { it.heroId == alive.first().id }
+            visits += res.browsers.size; buys += res.browsers.count { it.purchasedWeaponId != null }
+            perCount.merge(res.browsers.size, 1, Int::plus)
+            if (res.browsers.size >= cap + (if (festival) engine.config.festivalExtraCustomers else 0)) atCap++
+            if (res.browsers.size <= 2) twoOrFewer++
+            for (v in res.browsers) { reasons.merge(v.reason.name, 1, Int::plus); served += v.heroId!!.value }
+            firstPositionVisits += res.browsers.count { it.heroId == alive.first().id }
             if (alive.map { it.name }.toSet().size < alive.size) firstNameDays++
             if (alive.map { it.surname }.toSet().size < alive.size) surnameDays++
             lost += res.events.count { it.type == EventType.EXPEDITION_LOST }

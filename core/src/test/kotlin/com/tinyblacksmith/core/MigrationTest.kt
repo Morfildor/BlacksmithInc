@@ -120,7 +120,7 @@ class MigrationTest {
         val migrated = SaveCodec.migrate(env, SaveCodec.legacyMigrations)
         assertEquals(env, migrated)
         assertTrue(migrated.payload === payload, "the current schema must not rewrite the payload")
-        assertEquals(2, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")
+        assertEquals(3, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")
     }
 
     private fun v1Fixture(): String = javaClass.getResource("/saves/v1_forced_seed4242_day61.json")?.readText() ?: error("missing v1 fixture")
@@ -132,7 +132,7 @@ class MigrationTest {
     @Test
     fun theRunStepStampsTheBalanceVersionAndNothingElse() {
         val env = json.decodeFromString(SaveEnvelope.serializer(), v1Fixture())
-        val migrated = SaveCodec.migrate(env, SaveCodec.runMigrations)
+        val migrated = SaveCodec.migrate(env, SaveCodec.runMigrations, target = 2)
         assertEquals(2, migrated.schemaVersion)
         val before = json.parseToJsonElement(env.payload).jsonObject
         val after = json.parseToJsonElement(migrated.payload).jsonObject
@@ -144,7 +144,22 @@ class MigrationTest {
         assertEquals(4, SaveCodec.decodeRun(tracked).balanceVersion, "a recorded balance version is not overwritten")
 
         val legacy = SaveEnvelope(1, json.encodeToString(LegacyProfile.serializer(), LegacyProfile(points = 9)))
-        assertEquals(SaveEnvelope(2, legacy.payload), SaveCodec.migrate(legacy, SaveCodec.legacyMigrations))
+        assertEquals(SaveEnvelope(2, legacy.payload), SaveCodec.migrate(legacy, SaveCodec.legacyMigrations, target = 2))
+    }
+
+    /** Schema 2 -> 3 converts nothing: the number rises only so that an older build refuses the new enum constants. Shown on the real v2 fixture. */
+    @Test
+    fun theSchemaThreeStepCarriesBothDocumentsOverUnchanged() {
+        val v2 = javaClass.getResource("/saves/v2_forced_seed4242_day61.json")?.readText() ?: error("missing v2 fixture")
+        val env = json.decodeFromString(SaveEnvelope.serializer(), v2)
+        assertEquals(2, env.schemaVersion)
+        assertEquals(SaveEnvelope(3, env.payload), SaveCodec.migrate(env, SaveCodec.runMigrations, target = 3))
+        val legacy = SaveEnvelope(2, json.encodeToString(LegacyProfile.serializer(), LegacyProfile(points = 9)))
+        assertEquals(SaveEnvelope(3, legacy.payload), SaveCodec.migrate(legacy, SaveCodec.legacyMigrations, target = 3))
+        // A day stored before the visit record reads as one: no snapshots, record version 0, the reasons typed.
+        val last = SaveCodec.decodeRun(v2).lastResolution!!
+        assertEquals(0, last.recordVersion)
+        assertTrue(last.shopWeapons.isEmpty() && last.visits.isNotEmpty() && last.visits.all { it.customer == null && it.considered.isEmpty() && it.kind == VisitKind.BROWSE })
     }
 
     /** `MarketVisit.reason` is a String today and an enum from M2 whose first nine constants keep these spellings; every v1 day must still read. */
@@ -153,7 +168,7 @@ class MigrationTest {
         val nine = setOf("EMPTY_SHELVES", "TOO_EXPENSIVE", "NOT_BETTER", "OVERPRICED", "NOT_SUITED", "UNDECIDED", "WORN_OUT", "GREAT_FIT", "GOOD_ENOUGH")
         val visits = SaveCodec.decodeRun(v1Fixture()).lastResolution!!.visits
         assertTrue(visits.size >= 3, "the fixture's last day has visits: ${visits.size}")
-        assertTrue(visits.all { it.reason in nine }, visits.map { it.reason }.toString())
+        assertTrue(visits.all { it.reason.name in nine }, visits.map { it.reason }.toString())
     }
 
     /**
