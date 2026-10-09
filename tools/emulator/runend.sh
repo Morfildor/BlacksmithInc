@@ -29,9 +29,12 @@ $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && tap "Light the forge" || exit 1
 wait_text "End Day" || exit 1
 fallen=0
-for day in $(seq 1 40); do
+# Each day: End Day, Skip day (to the day's last card), then Begin day; the day the forge falls ends on "See the legacy".
+for day in $(seq 1 160); do
   if has "See the legacy"; then fallen=1; break; fi
   if has "Begin day"; then tap "Begin day"; continue; fi
+  if has "Decide later"; then tap "Decide later"; continue; fi
+  if has "Skip day"; then tap "Skip day"; continue; fi
   if has "End Day"; then tap "End Day"; continue; fi
   echo "UNEXPECTED SCREEN:"; texts; shot "stuck_$day"; exit 1
 done
