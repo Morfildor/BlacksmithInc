@@ -120,6 +120,7 @@ object Lines {
             RecognitionCue.MENTORS_BLADE -> blade?.let { b -> visit.customer?.mentorName?.let { "$hero trained under $it and carries $it's old $b." } }
             RecognitionCue.OF_THE_LINE -> visit.heroId?.let { state.heroes[it]?.lineageId }?.let { id -> state.legacy.lineages.firstOrNull { it.id == id } }?.let { "$hero, of the line of ${it.heroName}, who ${it.deed}." }
             RecognitionCue.WAITED_YESTERDAY -> "$hero could not get in yesterday and is first through the door."
+            RecognitionCue.WANT_ANSWERED -> blade?.let { b -> r.day?.let { "$hero left without such a blade on day $it; today $b was on the shelf." } }
         }
     }
 
@@ -183,7 +184,14 @@ object Lines {
                 "Arm the defenders",
                 listOfNotNull(listOfNotNull(faction, days).joinToString(" ").ifEmpty { null }, lead.element?.let { "weak to ${it.name.lowercase()}" }).joinToString(", ").ifEmpty { null }?.plus("."),
             )
-            LeadKind.ANSWER_WANT -> LeadLine("Answer a want", null)
+            LeadKind.ANSWER_WANT -> LeadLine(
+                "Forge ${lead.familyId?.let { content.familyById[it] }?.let { withArticle(it.name.lowercase()) } ?: "a blade"}${hero?.let { " for $it" }.orEmpty()}",
+                listOfNotNull(
+                    lead.power?.let { "Nothing on the shelf was what they came for: it wants power $it or better" },
+                    lead.gold?.let { "they can spend about ${about(it)} gold" },
+                    lead.days?.let { if (it <= 0) "they stop asking tomorrow" else "they ask for ${count(it + 1, "more day")}" },
+                ).joinToString("; ").ifEmpty { null }?.plus("."),
+            )
             LeadKind.FORGE_FOR_BUYERS -> LeadLine(
                 "Forge for today's buyers",
                 when {
@@ -195,6 +203,16 @@ object Lines {
             )
         }
     }
+
+    /** A hero's standing want in a line: "Wren Kestrel wants a bow; can spend about 90 gold." Null without one. The numbers are `Hero.want`'s own. */
+    fun want(hero: Hero, content: ContentCatalog): String? = hero.want?.let { w ->
+        "${hero.fullName} wants ${content.familyById[w.familyId]?.let { withArticle(it.name.lowercase()) } ?: "a blade"}; can spend about ${about(w.budget)} gold."
+    }
+
+    /** A purse as the counter would say it: to the ten below, exact under twenty. */
+    private fun about(gold: Int) = if (gold < 20) gold else gold / 10 * 10
+
+    private fun withArticle(noun: String) = (if (noun.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an " else "a ") + noun
 
     private fun count(n: Int, noun: String) = "$n $noun" + if (n == 1) "" else if (noun == "hero") "es" else "s"
 

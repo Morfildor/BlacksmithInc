@@ -143,10 +143,19 @@ data class Hero(
     val milestoneLines: Set<RecognitionCue> = emptySet(),
     /** Guild Patronage: the `expiresDay` of the blessing whose stipend this hero has spent (one per member per blessing). */
     val stipendSpentFor: Int? = null,
+    /** What this hero last left the counter without (`Market.wantOf`); cleared by a purchase or after `CustomerConfig.wantLapseDays`. */
+    val want: Want? = null,
 ) {
     val fullName: String get() = "$name $surname"
     val isAlive: Boolean get() = fate == HeroFate.ALIVE
 }
+
+/**
+ * A standing want: what would have sold when a served hero left with nothing. A blade of [familyId] with at least
+ * [minPower] (keen, in this hero's hands) priced within [budget] (purse plus trade-in on [sinceDay]) is one they would have taken.
+ */
+@Serializable
+data class Want(val familyId: WeaponFamilyId, val minPower: Int, val budget: Int, val sinceDay: Int)
 
 /** A guild founded by a retiring famous hero (GDD 6). */
 @Serializable

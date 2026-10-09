@@ -17,8 +17,9 @@ data class BalanceConfig(
      * v5 (2026-10-09): signboard adds a customer a day per level, stronger affix magnitudes (catalog numbers), guild hall and ambition days ([HeroLifeConfig]), fight replays and weapon fates ([WeaponFatesConfig]), three legacy tracks and Known Name regulars ([LegacyTracksConfig]). See docs/DECISIONS.md.
      * v6 (2026-10-09): commissions ask for a quality band floor ([CommissionConfig]; a noble one for the superb floor, `nobleCommissionMinQuality` removed), COLLECTOR ambition at the fine floor 50 (was 60). See docs/DECISIONS.md.
      * v7 (2026-10-09): fair customer selection ([CustomerConfig]: one intent draw per living hero, weighted seats, a waiting bound; the loyalty and reputation terms of the visit chance are capped); a larger town (12 residents with all five classes, refill toward 12, floor 9, event cap 16; 6 seats, festival +3) with expedition suppression 2 and raid growth 6.5. Prices, purses and wear are unchanged. Guild Patronage is no longer +15 points of visit chance: guild members come at the ceiling and their guild pays [CustomerConfig.patronageStipend] toward one purchase each. See docs/DECISIONS.md.
+     * v8 (2026-10-09): standing wants ([CustomerConfig.needWantMet], [CustomerConfig.seatWantWeight], [CustomerConfig.wantLapseDays]): a hero who left with nothing comes back more readily while the shelf holds what they asked for. See docs/DECISIONS.md.
      */
-    val version: Int = 7,
+    val version: Int = 8,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -365,6 +366,12 @@ data class CustomerConfig(
     // Guild Patronage (blessing): while it lasts every guild member is willing at [visitCeiling].
     /** Gold a member's guild pays toward one purchase per member per blessing; it counts toward what they can afford and reaches the till as its own income. */
     val patronageStipend: Int = 30,
+    // v8: standing wants (plan 4.6 E1). A served hero who buys nothing leaves a want; it lapses after [wantLapseDays] days or on a purchase.
+    /** Added to the visit chance while a listed blade answers the hero's want (`Market.answersWant`). 0 switches the loop off: wants are still recorded and move nothing. */
+    val needWantMet: Double = 0.3,
+    /** Added to the seat weight in the same case. */
+    val seatWantWeight: Double = 0.5,
+    val wantLapseDays: Int = 3,
 )
 
 /** v5: replays and weapon fates. What is told of a fight, and what becomes of a fallen hero's blade (GDD 7, 11; all PROPOSED). */

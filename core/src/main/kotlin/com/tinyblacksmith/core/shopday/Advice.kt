@@ -11,10 +11,11 @@ import com.tinyblacksmith.core.model.*
 /** One thing worth doing today and the recorded facts behind it; only the fields its kind uses are set. */
 data class Lead(val kind: LeadKind, val heroId: HeroId? = null, val weaponId: WeaponId? = null,
                 val commissionId: CommissionId? = null, val factionId: FactionId? = null,
-                val gold: Int? = null, val count: Int? = null, val days: Int? = null, val element: Element? = null)
+                val gold: Int? = null, val count: Int? = null, val days: Int? = null, val element: Element? = null,
+                val familyId: WeaponFamilyId? = null, val power: Int? = null)
 
 enum class LeadKind { FIRST_BLADE, CHOOSE_BLESSING, ANSWER_REQUEST, FORGE_FOR_REQUEST, LIST_STOCK, FORGE_STOCK,
-                      PRICES_TOO_HIGH, ARM_DEFENDERS, ANSWER_WANT /* M4 */, FORGE_FOR_BUYERS }
+                      PRICES_TOO_HIGH, ARM_DEFENDERS, ANSWER_WANT, FORGE_FOR_BUYERS }
 
 object Advice {
     /**
@@ -57,10 +58,14 @@ object Advice {
             }
         }
 
-        // ANSWER_WANT joins here with the standing wants of M4.
+        // A standing want nothing on the shelf answers: the oldest first (it lapses first), then by ID.
+        val demand = Demand.summary(state, content, config)
+        demand.wants.filter { it !in demand.wantsAnswered }.map { state.hero(it) }.minWithOrNull(compareBy<Hero> { it.want!!.sinceDay }.thenBy(IdOrder.numeric) { it.id.value })?.let { h ->
+            val want = h.want!!
+            return Lead(LeadKind.ANSWER_WANT, heroId = h.id, gold = want.budget, days = want.sinceDay + config.customers.wantLapseDays - state.day, familyId = want.familyId, power = want.minPower)
+        }
 
         // Otherwise: forge for today's buyers, with the first demand fact that holds.
-        val demand = Demand.summary(state, content, config)
         return when {
             demand.unarmed.isNotEmpty() -> Lead(LeadKind.FORGE_FOR_BUYERS, count = demand.unarmed.size)
             demand.worn.isNotEmpty() -> demand.worn.first().let { Lead(LeadKind.FORGE_FOR_BUYERS, heroId = it, weaponId = state.equippedWeapon(it)?.id) }

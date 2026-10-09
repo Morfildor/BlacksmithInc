@@ -60,7 +60,7 @@ enum class VisitFactor {
 )   // the shop's gold rises by cashPaid + saleBonus + stipend
 
 enum class RecognitionCue { FIRST_VISIT, FIRST_BLADE, BECAME_REGULAR, REGULAR_RETURNS, STILL_CARRIES, BLADE_WORN, HELD_THE_WALL,
-                           SLEW_AN_ELITE, KEPT_THE_VOW, MENTORS_BLADE, OF_THE_LINE, WAITED_YESTERDAY }
+                           SLEW_AN_ELITE, KEPT_THE_VOW, MENTORS_BLADE, OF_THE_LINE, WAITED_YESTERDAY, WANT_ANSWERED }
 /** Typed, like everything else on the record: the cue and only the fields its template needs. */
 @Serializable data class Recognition(val cue: RecognitionCue, @EncodeDefault(NEVER) val weaponId: WeaponId? = null, @EncodeDefault(NEVER) val otherHeroId: HeroId? = null,
                                      @EncodeDefault(NEVER) val day: Int? = null, @EncodeDefault(NEVER) val count: Int? = null)

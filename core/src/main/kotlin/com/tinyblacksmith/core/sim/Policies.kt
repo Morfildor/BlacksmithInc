@@ -51,7 +51,7 @@ data class BotRules(
     val catalyst: Boolean = false,
     /** Forge in Advanced mode with this technique (Quick on the spare energy). */
     val technique: Technique? = null,
-    /** Forge what accepted commissions ask for (family, element, quality) before anything else. T4.1 adds wants in [BotPlay.requests]. */
+    /** Forge what accepted commissions ask for (family, element, quality) before anything else, then what heroes left the counter wanting (`Hero.want`). */
     val requests: Boolean = false,
     /** In the siege warning window, forge the faction's weak element and give stock to the watch until the forecast holds. */
     val siegePrep: Boolean = false,
@@ -69,8 +69,8 @@ data class BotRules(
 /** What a bot counted in one run. */
 enum class BotCounter {
     ADVANCED_FORGES, QUICK_FORGES, TEMPER_FORGES, QUENCH_FORGES, ETCH_FORGES, CATALYST_FORGES,
-    /** Forges made for an accepted commission, for the siege window, for a signature recipe, for the scarce recipe. */
-    REQUEST_FORGES, SIEGE_FORGES, SIGNATURE_FORGES, SCARCE_FORGES,
+    /** Forges made for an accepted commission, for a hero's standing want, for the siege window, for a signature recipe, for the scarce recipe. */
+    REQUEST_FORGES, WANT_FORGES, SIEGE_FORGES, SIGNATURE_FORGES, SCARCE_FORGES,
     COMMISSIONS_COMPLETED, COMMISSIONS_EXPIRED,
     /** Forges whose recipe, catalyst, risk and quality all qualified for a signature, and how many of them transformed. */
     SIGNATURE_TRIES, SIGNATURE_HITS,
@@ -214,54 +214,89 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
             ?: catalysts.firstOrNull { d.obtainable(state, content.material(base.coreId), content.material(base.augmentId), it) })?.id
     }
 
-    // ---- requests (commissions today, wants from T4.1) ----------------------------------------------------------
+    // ---- requests (commissions and standing wants) -----------------------------------------------------------------
 
-    private class Request(private val commission: Commission) {
-        val key get() = commission.id.value
-        val familyId get() = commission.familyId
-        val minQuality get() = commission.minQuality
-        val element get() = commission.element
-        fun fits(w: Weapon) = (w.isInStorage || w.isListed) && Commissions.fit(w, commission) == Commissions.Fit.OK
+    /** A commission ([want] null: a quality floor, perhaps an element, the blade is kept off the shelf) or a hero's want (a power floor and a price the hero can pay). */
+    private inner class Request(val key: String, val familyId: WeaponFamilyId, val minQuality: Int, val element: com.tinyblacksmith.core.content.Element?, private val commission: Commission?, val want: Want?) {
+        fun fits(w: Weapon) = (w.isInStorage || w.isListed) && (
+            if (commission != null) Commissions.fit(w, commission) == Commissions.Fit.OK
+            else w.familyId == familyId && w.power >= want!!.minPower && engine.suggestedPrice(w) * policy.priceFactor * WANT_PRICE_FLOOR <= want.budget)
     }
 
-    /** What the shop is asked for, most urgent first. T4.1 adds the heroes' wants here; nothing else in the bot reads commissions directly. */
-    private fun requests(state: GameState): List<Request> =
-        state.commissions.values.filter { it.status == CommissionStatus.ACCEPTED }.sortedBy { it.deadlineDay }.map { Request(it) }
+    /**
+     * "Price it inside her budget": the shelf price of a blade that answers a standing want whose asker cannot pay the
+     * usual price but can pay most of it: the deepest such purse. Null for every other blade (the policy's own price).
+     */
+    fun wantPrice(state: GameState, w: Weapon): Int? {
+        if (!rules.requests) return null
+        val usual = (engine.suggestedPrice(w) * policy.priceFactor).toInt()
+        val purses = state.aliveHeroes().mapNotNull { it.want }.filter { it.familyId == w.familyId && w.power >= it.minPower }.map { it.budget }
+        if (purses.any { it >= usual }) return null
+        return purses.filter { it >= usual * WANT_PRICE_FLOOR }.maxOrNull()
+    }
 
-    /** The cheapest recipe (owned materials cost nothing) whose average quality clears the request, forged Quick and Balanced, a few tries per request. */
+    /** What the shop is asked for: accepted commissions, most urgent first, then the wants of the living, deepest purse first. Nothing else in the bot reads either directly. */
+    private fun requests(state: GameState): List<Request> =
+        state.commissions.values.filter { it.status == CommissionStatus.ACCEPTED }.sortedBy { it.deadlineDay }.map { Request(it.id.value, it.familyId, it.minQuality, it.element, it, null) } +
+            state.aliveHeroes().mapNotNull { h -> h.want?.let { Request("want:${h.id.value}:${it.sinceDay}", it.familyId, 0, null, null, it) } }.sortedByDescending { it.want!!.budget }
+
+    /** The power a forge averages: formula of `Forge.apply` without affixes or a signature. */
+    private fun expectedPower(family: WeaponFamilyDef, core: MaterialDef, quality: Int) = family.basePower + cfg.powerPerCoreTier * core.tier + quality / cfg.powerPerQualityDivisor
+
+    /**
+     * The cheapest recipe (owned materials cost nothing) whose average quality clears the request, forged Quick and
+     * Balanced, a few tries per request. For a want: whose average power clears it and whose going rate the hero can pay.
+     */
     private fun requestForge(state: GameState): Command.Forge? {
         for (r in requests(state)) {
-            if (state.weapons.values.any { r.fits(it) } || (attempts[r.key] ?: 0) >= MAX_REQUEST_FORGES) continue
+            if (state.weapons.values.any { r.fits(it) } || (attempts[r.key] ?: 0) >= (if (r.want == null) MAX_REQUEST_FORGES else MAX_WANT_FORGES)) continue
             val family = content.familyById[r.familyId] ?: continue
             val best = content.materials(MaterialCategory.CORE).flatMap { core ->
                 content.materials(MaterialCategory.AUGMENT).filter { r.element == null || it.element == r.element }.map { core to it }
-            }.filter { (core, aug) -> d.obtainable(state, core, aug) && expectedQuality(state, family, core, aug, false) >= r.minQuality + REQUEST_QUALITY_MARGIN }
-                .minByOrNull { (core, aug) -> d.purchaseCost(state, core) + d.purchaseCost(state, aug) } ?: continue
+            }.filter { (core, aug) ->
+                val quality = expectedQuality(state, family, core, aug, false)
+                val power = expectedPower(family, core, quality)
+                d.obtainable(state, core, aug) && quality >= r.minQuality + REQUEST_QUALITY_MARGIN &&
+                    (r.want == null || (power >= r.want.minPower + WANT_POWER_MARGIN && power * cfg.fairGoldPerPower * policy.priceFactor * WANT_PRICE_FLOOR <= r.want.budget))
+            }.minByOrNull { (core, aug) -> d.purchaseCost(state, core) + d.purchaseCost(state, aug) } ?: continue
             attempts[r.key] = (attempts[r.key] ?: 0) + 1
-            source = BotCounter.REQUEST_FORGES
+            source = if (r.want == null) BotCounter.REQUEST_FORGES else BotCounter.WANT_FORGES
             return Command.Forge(ForgeMode.QUICK, family.id, best.first.id, best.second.id, null, Risk.BALANCED)
         }
         return null
     }
 
-    /** Unlists the best blade for each open request and keeps it off the shelf: shop visits run before commissions are collected. */
+    /** Unlists the best blade for each open commission and keeps it off the shelf: a browser must not walk off with it. A want's blade belongs on the shelf. */
     fun reserve(state: GameState): GameState {
         if (!rules.requests) return state
         var s = state
         val ids = mutableSetOf<WeaponId>()
-        for (r in requests(s)) {
+        for (r in requests(s).filter { it.want == null }) {
             val w = s.weapons.values.filter { r.fits(it) }.maxByOrNull { it.quality } ?: continue
             ids += w.id
             if (w.isListed) s = send(s, Command.ToggleShelf(w.id, false))
         }
         reserved = ids
+        // A blade somebody asked for must reach the shelf: when it is full, the weakest listed blade nobody asked for makes room.
+        var waiting = s.storedWeapons().count { it.id !in ids && asked(s, it) } - (engine.shelfSlots(s) - s.listedWeapons().size)
+        for (w in s.listedWeapons().filter { !asked(s, it) }.sortedBy { it.power }) {
+            if (waiting-- <= 0) break
+            s = send(s, Command.ToggleShelf(w.id, false))
+        }
         return s
     }
 
-    /** The stored weapons in listing order, without the ones kept for a request. */
+    /** Some living hero's standing want is for a blade like [w], at a price the bot would come down to. */
+    private fun asked(state: GameState, w: Weapon): Boolean {
+        val floor = engine.suggestedPrice(w) * policy.priceFactor * WANT_PRICE_FLOOR
+        return state.aliveHeroes().any { h -> h.want?.let { it.familyId == w.familyId && w.power >= it.minPower && floor <= it.budget } == true }
+    }
+
+    /** The stored weapons in listing order, without the ones kept for a request; a requests bot lists what was asked for first. */
     fun stockToList(state: GameState): List<Weapon> {
         val stored = state.storedWeapons().filter { it.id !in reserved }
-        return if (policy.active || (rules.siegePrep && inWindow(state))) stored.sortedByDescending { it.power } else stored
+        val ordered = if (policy.active || (rules.siegePrep && inWindow(state))) stored.sortedByDescending { it.power } else stored
+        return if (rules.requests) ordered.sortedByDescending { asked(state, it) } else ordered
     }
 
     // ---- siege --------------------------------------------------------------------------------------------------
@@ -410,6 +445,11 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
         /** Bot habits, not game rules. */
         const val NOVICE_FORGES_PER_DAY = 2
         const val MAX_REQUEST_FORGES = 3
+        /** One forge per want: it stands three days and the blade stays on the shelf for the next asker. */
+        const val MAX_WANT_FORGES = 1
+        const val WANT_POWER_MARGIN = 2
+        /** The bot comes down to this share of its usual price to meet an asker's purse, no further. */
+        const val WANT_PRICE_FLOOR = 0.75
         const val REQUEST_QUALITY_MARGIN = 4
         const val MIN_SIGNATURE_REACH = 0.2
         const val SIEGE_MARGIN = 1.1

@@ -83,6 +83,8 @@ object Recognitions {
             if (!bought && before.mentorName != null) entry("INHERITED")?.subjectIds?.getOrNull(1)?.let { HeroId(it) }
                 ?.takeIf { ctx.heroes[it]?.fullName == before.mentorName }?.let { add(Recognition(RecognitionCue.MENTORS_BLADE, carried?.id, otherHeroId = it)) }
             if (seatedFirst && before.turnedAwayStreak >= 1) add(Recognition(RecognitionCue.WAITED_YESTERDAY, count = before.turnedAwayStreak))
+            // A standing want met: they took a blade of the family they had left without.
+            before.want?.takeIf { w -> visit.purchasedWeaponId?.let { ctx.weapons[it]?.familyId } == w.familyId }?.let { add(Recognition(RecognitionCue.WANT_ANSWERED, visit.purchasedWeaponId, day = it.sinceDay)) }
         }
     }
 

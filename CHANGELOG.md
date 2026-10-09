@@ -44,6 +44,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   separate rows. The other visitors are tallied with faces and names, the till closes by kind, up to three cards tell
   what happened beyond the door, and the day ends on one lead for tomorrow, the blessing choice or the fall of the
   forge. Nothing moves on by itself unless you pick 1x or 2x; a tap anywhere is Next and Skip day is one tap.
+- Standing wants. A hero who is served and leaves with nothing now leaves a want behind: the kind of weapon they would
+  have taken, how strong it has to be for them, and what they can spend. While a blade on your shelf answers it they
+  come back more readily and are likelier to get a seat; the want lapses after three days, or when they buy anything.
+  The day's lead can now be "Forge a bow for Wren Kestrel" with the numbers behind it, and a visit can be recognised as
+  the answer to a want. (The screens that list wants arrive with the next interface update; the rule is live now.)
 
 ### Changed
 - The walls can cost a champion. When a siege is lost badly (the raid at one and a half times the town's defense or

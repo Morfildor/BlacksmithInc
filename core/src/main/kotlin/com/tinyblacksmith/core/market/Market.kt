@@ -89,6 +89,7 @@ object Market {
             ctx.updateHero(served.copy(
                 shopVisits = served.shopVisits + 1, lastServedDay = ctx.day, turnedAwayStreak = 0,
                 shopPurchases = served.shopPurchases + (if (bought) 1 else 0), lastPurchaseDay = if (bought) ctx.day else served.lastPurchaseDay,
+                want = if (bought) null else wantOf(ctx, served, current, evaluations),
             ))
         }
     }
@@ -99,8 +100,41 @@ object Market {
         if (hero.guildId != null && ctx.activeBlessing(BlessingEffect.GUILD_PATRONAGE) != null) return cfg.visitCeiling
         return (cfg.baseVisitChance + hero.traits.sumOf { ctx.content.trait(it).shopWeight } * cfg.visitTraitScale +
             minOf(hero.loyalty, cfg.visitLoyaltyCap) * cfg.visitPerLoyalty + minOf(ctx.reputation, cfg.visitReputationCap) * cfg.visitPerReputation +
-            (if (festival) cfg.festivalVisitBonus else 0.0)
+            (if (festival) cfg.festivalVisitBonus else 0.0) +
+            (if (wantMet(ctx, hero)) cfg.needWantMet else 0.0)
             ).coerceIn(cfg.visitFloor, cfg.visitCeiling)
+    }
+
+    /**
+     * Whether [weapon], as listed, is what [hero] left without: a blade of the wanted family they can pay for and would
+     * take by the counter's own rule ([evaluate] at the middle of its noise). Draws nothing.
+     */
+    fun answersWant(ctx: ResolutionContext, hero: Hero, weapon: Weapon): Boolean {
+        val want = hero.want ?: return false
+        if (!weapon.isListed || weapon.familyId != want.familyId) return false
+        val e = evaluate(ctx, hero, ctx.equippedWeapon(hero.id), weapon, 0.5)
+        return e.affordable && e.improvement > 0 && e.utility >= ctx.config.purchaseUtilityThreshold
+    }
+
+    /** The need term of the visit chance and of the seat weight: the shelf holds what this hero asked for. Off when `needWantMet` is 0. */
+    fun wantMet(ctx: ResolutionContext, hero: Hero): Boolean =
+        ctx.config.customers.needWantMet > 0 && hero.want != null && ctx.weapons.values.any { answersWant(ctx, hero, it) }
+
+    /**
+     * What would have sold to a hero who was served and bought nothing: the family of the blade for their class they
+     * valued most on the shelf (their class's first family when none suited), the power it would need before the
+     * counter's rule lets them take it, and what they can pay today. A want already standing keeps its family and its
+     * day, so it lapses on time however often they look in; its power and budget are today's. No draw.
+     */
+    fun wantOf(ctx: ResolutionContext, hero: Hero, current: Weapon?, evaluations: List<Evaluation>): Want {
+        val config = ctx.config
+        val familyId = hero.want?.familyId ?: evaluations.filter { it.fit >= 1.0 }.maxByOrNull { it.utility }?.weapon?.familyId ?: ctx.content.heroClass(hero.classId).preferredFamilies.first()
+        val fit = ctx.content.family(familyId).classFit[hero.classId] ?: config.offFamilyFit
+        val held = Power.weaponPower(current, config) * Power.conditionFactor(current, config) * Power.classFit(hero, current, ctx.content, config)
+        val worn = current != null && current.condition < config.wornConditionThreshold
+        val given = (fit - 1.0) * config.utilityClassFitWeight + hero.loyalty * 0.01 * config.utilityLoyaltyWeight + (if (worn) config.wornReplacementUtility else 0.0)
+        val gain = maxOf(0.0, (config.purchaseUtilityThreshold - given) / config.utilityImprovementWeight)
+        return Want(familyId, ((held + gain) / fit).toInt() + 1, hero.gold + tradeInCredit(current, config), hero.want?.sinceDay ?: ctx.day)
     }
 
     /** A willing hero's weight in the draw for a seat: regulars, newcomers, those kept waiting and those in need of a blade count for more. */
@@ -110,7 +144,8 @@ object Market {
         val weight = 1.0 + cfg.seatLoyaltyWeight * hero.loyalty.coerceIn(0, cfg.seatLoyaltyCap) / cfg.seatLoyaltyCap +
             (if (hero.shopVisits == 0) cfg.seatNewcomerWeight else 0.0) +
             cfg.seatWaitWeight * hero.turnedAwayStreak +
-            (if (own == null || own.condition < ctx.config.wornConditionThreshold) cfg.seatNeedWeight else 0.0)
+            (if (own == null || own.condition < ctx.config.wornConditionThreshold) cfg.seatNeedWeight else 0.0) +
+            (if (wantMet(ctx, hero)) cfg.seatWantWeight else 0.0)
         val browsedYesterday = hero.lastServedDay == ctx.day - 1 && hero.lastPurchaseDay != ctx.day - 1
         return if (browsedYesterday) weight * cfg.seatBrowsedYesterday else weight
     }
@@ -236,7 +271,7 @@ object Market {
         ctx.reputation += 1
         val loyaltyGain = hero.traits.fold(1.0) { acc, t -> acc * ctx.content.trait(t).loyaltyGain }.toInt().coerceAtLeast(1)
         ctx.updateHero(hero.copy(
-            gold = hero.gold - paid, loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP,
+            gold = hero.gold - paid, loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP, want = null,
             stipendSpentFor = if (stipend > 0) ctx.activeBlessing(BlessingEffect.GUILD_PATRONAGE)?.expiresDay else hero.stipendSpentFor,
         ))
         // Gazette-visible consequences: a regular is named as one; gold paid above the base fair price is recorded as a premium.
@@ -292,7 +327,7 @@ object Market {
                 .filter { (_, e) -> e.improvement > 0 && e.utility >= config.purchaseUtilityThreshold }
                 .maxByOrNull { (_, e) -> e.utility }?.first
             if (buyer != null) {
-                ctx.updateHero(buyer.copy(gold = buyer.gold - price))
+                ctx.updateHero(buyer.copy(gold = buyer.gold - price, want = null))
                 ctx.addWeaponHistory(w.id, "RESOLD", "Sold to ${buyer.fullName} by a travelling merchant for $price gold.", listOf(buyer.id.value))
                 giveAndEquip(ctx, ctx.hero(buyer.id), ctx.weapon(w.id))
                 ctx.emit(EventType.WEAPON_RESOLD, 5, "${buyer.fullName} bought ${w.name}, the blade $fallen fell with, from a travelling merchant for $price gold.", listOf(buyer.id.value, w.id.value), mapOf("price" to price.toString(), WeaponFate.KEY to WeaponFate.RESOLD.name))
@@ -320,7 +355,7 @@ object Market {
                 ctx.earn(IncomeKind.COMMISSION, c.reward)
                 ctx.reputation += 2
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.COMPLETED, deliveredWeaponId = candidate.id)
-                ctx.updateHero(buyer.copy(loyalty = buyer.loyalty + 2))
+                ctx.updateHero(buyer.copy(loyalty = buyer.loyalty + 2, want = null))
                 ctx.emit(EventType.COMMISSION_COMPLETED, 5, "${buyer.fullName} collected the commissioned ${candidate.name} and paid ${c.reward} gold.", listOf(buyer.id.value, candidate.id.value, c.id.value), mapOf("reward" to c.reward.toString()))
                 ctx.addWeaponHistory(candidate.id, "COMMISSION", "Delivered to ${buyer.fullName} on commission.", listOf(buyer.id.value))
                 giveAndEquip(ctx, ctx.hero(buyer.id), ctx.weapon(candidate.id))
