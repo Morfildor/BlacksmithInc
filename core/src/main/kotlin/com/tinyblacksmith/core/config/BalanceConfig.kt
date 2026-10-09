@@ -13,6 +13,7 @@ data class BalanceConfig(
     /**
      * v2 (2026-10-08): launch-content retune of the quality formula and siege damage.
      * v3 (2026-10-09): elite encounters, warlord sieges, hero ambitions, affix effects, shop actions, tools, trade-ins, raid growth 6. See docs/DECISIONS.md.
+     * v4 (pending): weapon wear (the "Weapon wear" block below); bump on merge.
      */
     val version: Int = 3,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
@@ -233,6 +234,18 @@ data class BalanceConfig(
     val tradeInShare: Double = 0.4,
     /** The town pays a hero this much for a day's patrol. */
     val patrolGold: Int = 12,
+    // --- Weapon wear (PROPOSED): most fair-price visits ended NOT_BETTER in the v3 sweep; blades now wear out and are replaced. ---
+    // v4 (pending): weapon wear
+    /** Condition the equipped weapon loses per expedition (a rout is harder on the blade) and per siege stood as champion; floor 0. */
+    val wearPerExpeditionWin: Int = 6,
+    val wearPerExpeditionLoss: Int = 10,
+    val wearPerSiege: Int = 15,
+    /** Weapon-power multiplier at condition 0; 1.0 at 100, linear between (Power.conditionFactor). */
+    val conditionFloorFactor: Double = 0.75,
+    /** Below this condition the shop calls a blade worn and its owner is keen to replace it. */
+    val wornConditionThreshold: Int = 50,
+    /** Purchase utility a hero adds to every listing while their own weapon is below [wornConditionThreshold]. */
+    val wornReplacementUtility: Double = 0.6,
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

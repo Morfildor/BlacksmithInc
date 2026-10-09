@@ -150,7 +150,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
     fun materialPrice(state: GameState, materialId: MaterialId): Int =
         (content.material(materialId).price * config.supplierPriceMultiplier * state.world.marketMultiplier).toInt()
 
-    fun suggestedPrice(weapon: Weapon): Int = weapon.power * config.fairGoldPerPower
+    fun suggestedPrice(weapon: Weapon): Int = Market.fairPrice(weapon, config)
 
     fun shelfSlots(state: GameState): Int = config.shelfSlots + toolTotal(state, ToolEffect.SHELF_SLOTS)
 
@@ -198,16 +198,19 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
     private fun hone(state: GameState, cmd: Command.Hone): CommandOutcome {
         val (weapon, error) = inShop(state, cmd.weaponId)
         if (weapon == null) return CommandOutcome.Rejected(error!!)
-        if (weapon.honed) return CommandOutcome.Rejected(GameError.AlreadyHoned(weapon.id))
+        if (!weapon.canBeHoned) return CommandOutcome.Rejected(GameError.AlreadyHoned(weapon.id))
         if ((state.materials[weapon.coreId] ?: 0) < 1) return CommandOutcome.Rejected(GameError.MissingMaterial(weapon.coreId))
         val ctx = ResolutionContext(state, content, config)
         spendEnergy(ctx, config.honeEnergy)?.let { return CommandOutcome.Rejected(it) }
         ctx.materials[weapon.coreId] = ctx.materials.getValue(weapon.coreId) - 1
-        val quality = minOf(100, weapon.quality + config.honeQualityBonus)
+        // Hone always restores condition; the quality bonus is granted the first time only.
+        val quality = if (weapon.honed) weapon.quality else minOf(100, weapon.quality + config.honeQualityBonus)
         val power = weapon.power + quality / config.powerPerQualityDivisor - weapon.quality / config.powerPerQualityDivisor
-        ctx.updateWeapon(weapon.copy(quality = quality, power = power, rarity = Forge.rarityFor(quality, config), honed = true))
-        ctx.addWeaponHistory(weapon.id, "HONED", "Honed on the anvil (quality ${weapon.quality} to $quality).")
-        ctx.emit(EventType.WEAPON_HONED, 2, "The smith honed ${weapon.name} to quality $quality.", listOf(weapon.id.value), mapOf("quality" to quality.toString()))
+        ctx.updateWeapon(weapon.copy(quality = quality, power = power, rarity = Forge.rarityFor(quality, config), honed = true, condition = 100))
+        val note = if (weapon.honed) "condition ${weapon.condition} to 100" else "quality ${weapon.quality} to $quality"
+        ctx.addWeaponHistory(weapon.id, "HONED", "Honed on the anvil ($note).")
+        val text = if (weapon.honed) "The smith honed ${weapon.name} back to a keen edge." else "The smith honed ${weapon.name} to quality $quality."
+        ctx.emit(EventType.WEAPON_HONED, 2, text, listOf(weapon.id.value), mapOf("quality" to quality.toString(), "condition" to "100"))
         return accept(ctx)
     }
 

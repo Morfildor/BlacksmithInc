@@ -25,6 +25,7 @@ object Battle {
         val winProbability = (0.5 + (heroPower - enemyPower) / config.winProbabilityScale).coerceIn(config.winProbabilityFloor, config.winProbabilityCeiling)
         val encounter = rng.pick(if (elite) faction.eliteNames else faction.encounterNames)
         val won = rng.chance(winProbability)
+        if (weapon != null) wear(ctx, weapon.id, if (won) config.wearPerExpeditionWin else config.wearPerExpeditionLoss)
         val weaponText = weapon?.let { " using ${it.name}" } ?: " bare-handed"
         val affixDefs = weapon?.let { w -> (w.affixes + w.flaws).map { ctx.content.affix(it) } } ?: emptyList()
         if (won) {
@@ -82,6 +83,12 @@ object Battle {
                 }
             }
         }
+    }
+
+    /** A fight or a siege wears the blade; Hone restores it (GDD 6 condition factor). */
+    private fun wear(ctx: ResolutionContext, weaponId: WeaponId, amount: Int) {
+        val w = ctx.weapon(weaponId)
+        ctx.updateWeapon(w.copy(condition = maxOf(0, w.condition - amount)))
     }
 
     /** GDD 7 artifact cycle on death: recovered to the forge, seized by monsters (may return later) or lost with the hero. */
@@ -173,6 +180,7 @@ object Battle {
         ctx.town = ctx.town.copy(integrity = ctx.town.integrity - forgeDamage, championIds = champions.map { it.first.id }, nextSiegeDay = ctx.town.nextSiegeDay + config.siegeInterval,
             armory = (ctx.town.armory * (1.0 - config.armorySiegeWear)).toInt())
         if (forgeDamage > 0) ctx.emit(EventType.FORGE_DAMAGED, 7, "The forge took $forgeDamage damage in the siege.", data = mapOf("damage" to forgeDamage.toString()))
+        for ((_, w) in champions) if (w != null) wear(ctx, w.id, config.wearPerSiege)
 
         if (won) {
             ctx.town = ctx.town.copy(siegesSurvived = ctx.town.siegesSurvived + 1)

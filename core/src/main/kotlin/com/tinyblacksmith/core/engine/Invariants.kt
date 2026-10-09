@@ -23,6 +23,7 @@ object Invariants {
                 else if (!owner.isAlive) problems += "Weapon ${w.id.value} owned by ${owner.fate.name.lowercase()} hero ${owner.fullName}"
             }
             if (loc is WeaponLocation.Shelf && loc.price < 0) problems += "Weapon ${w.id.value} has negative price"
+            if (w.condition !in 0..100) problems += "Weapon ${w.id.value} condition out of bounds ${w.condition}"
         }
         state.weapons.values.filter { it.isEquipped }.groupingBy { it.ownerId!! }.eachCount().forEach { (heroId, equipped) ->
             if (equipped > 1) problems += "Hero ${state.heroes[heroId]?.fullName ?: heroId.value} has $equipped equipped weapons"

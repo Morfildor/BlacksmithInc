@@ -51,8 +51,16 @@ object Labels {
         else -> "grave"
     }
 
+    /** Wear in words; null while the blade is still sound. */
+    fun condition(w: Weapon): String? = when {
+        w.condition < 40 -> "battered"
+        w.condition < 70 -> "worn"
+        else -> null
+    }
+
     fun weaponSummary(w: Weapon, content: ContentCatalog): String = buildString {
         append(rarity(w.rarity)); append(" · "); append(quality(w.quality))
+        condition(w)?.let { append(" · ").append(it) }
         if (w.affixes.isNotEmpty()) append(" · ").append(w.affixes.joinToString { content.affix(it).name })
         if (w.flaws.isNotEmpty()) append(" · flaw: ").append(w.flaws.joinToString { content.affix(it).name })
         w.title?.let { append(" · \"").append(it).append('"') }

@@ -207,8 +207,8 @@ private fun WeaponListing(w: Weapon, s: UiState.Playing, vm: GameViewModel, list
                     TextButton(onClick = { vm.dispatch(Command.Salvage(w.id)) }, enabled = !s.busy) {
                         Text("Salvage (${config.salvageEnergy} energy, returns 1 ${content.material(w.coreId).name})")
                     }
-                    TextButton(onClick = { vm.dispatch(Command.Hone(w.id)) }, enabled = !w.honed && !s.busy) {
-                        Text(if (w.honed) "Honed" else "Hone (${config.honeEnergy} energy, 1 ${content.material(w.coreId).name})")
+                    TextButton(onClick = { vm.dispatch(Command.Hone(w.id)) }, enabled = w.canBeHoned && !s.busy) {
+                        Text(if (!w.canBeHoned) "Honed" else "${if (w.honed) "Re-hone" else "Hone"} (${config.honeEnergy} energy, 1 ${content.material(w.coreId).name})")
                     }
                     TextButton(onClick = { vm.dispatch(Command.DonateWeapon(w.id)) }, enabled = armoryRoom > 0 && !s.busy) {
                         Text(if (armoryRoom > 0) "Arm the watch (+${minOf(vm.engine.armoryValue(w), armoryRoom)} defense)" else "Arm the watch (armory full)")
@@ -231,6 +231,7 @@ private fun StepButton(label: String, description: String, onClick: () -> Unit) 
 fun reasonLabel(reason: String): String = when (reason) {
     "GREAT_FIT" -> "a great fit"
     "GOOD_ENOUGH" -> "good enough for their purse"
+    "WORN_OUT" -> "their own blade was worn out"
     "EMPTY_SHELVES" -> "nothing on the shelves"
     "TOO_EXPENSIVE" -> "could not afford anything"
     "NOT_BETTER" -> "nothing better than their own gear"

@@ -441,6 +441,77 @@ The simulator now prints shop visits per run by outcome (`visitsPerRun` in the J
 - Tool prices and the individual affix magnitudes were set by judgement and checked only through the aggregate
   BALANCED_ACTIVE run; no per-tool or per-affix sweep was done.
 
+## Balance v4 (pending merge): weapon wear (2026-10-09, session 7)
+The v3 sweep left demand as the bottleneck: at fair prices NOT_BETTER was the commonest visit outcome (45.8 of about
+77 visits per BALANCED_FAIR run, 58.3 of about 107 for BALANCED_ACTIVE). A hero buys only a strict upgrade, keeps
+one weapon for the whole run, and of the ~5 weapons forged a day ~1 sells. GDD 6's power formula carries a
+`condition` factor and GDD 7 gives weapons lives; wear gives heroes a reason to come back and makes what the smith
+forges, and re-hones, matter. Every number is PROPOSED and lives in `BalanceConfig` under `// v4 (pending): weapon
+wear`; `BalanceConfig.version` stays 3 until the owner bumps it to 4 on merge.
+
+### What was built
+- `Weapon.condition` 0-100, default 100. Save schema stays v1: older saves decode with every blade keen
+  (`SaveFixtureTest` and `WeaponWearTest` check the v1 fixture).
+- **Wear** (`Battle`): the equipped weapon loses 6 condition per won expedition, 10 per lost one and 15 per siege it
+  stands as a champion's weapon, floor 0, applied after the fight resolves (a fight uses the condition it went in
+  with). Fixed amounts, no new RNG draws. Bare hands do not wear; the armory's own siege wear is unchanged.
+- **Power** (`Power.conditionFactor`): 1.0 at condition 100 down to 0.75 at 0, linear, multiplying the weapon's
+  share only: `(heroBase + weaponPower x conditionFactor) x classFit x ...`. The GDD's `condition` slot is already
+  the hero's health (`Power.condition`); discounting the hero's own base as well would have hit veterans hardest and
+  spiked deaths. One function, one token in each of `attackPower` / `defensePower`.
+- **Demand** (`Market`): `evaluate` compares worn power on both sides (the hero's current weapon and the listing: a
+  traded-in blade relisted as it is counts for less), a hero whose weapon is below condition 50 adds a flat +0.6
+  utility to every listing and the purchase is reported as `WORN_OUT`; `fairPrice` (the suggested price, the price
+  ceiling, the trade-in credit and the Gazette premium) is discounted for wear, so a worn trade-in listed at the
+  suggested price is not read as overpriced; `giveAndEquip` compares worn power, so a commissioned or inherited
+  blade replaces a battered one.
+- **Hone** always restores condition to 100. The +6 quality and the `honed` flag apply the first time only, so a
+  worn trade-in can be re-honed for the usual 2 energy and one core (`Weapon.canBeHoned`); Hone on a keen,
+  already-honed blade is still `AlreadyHoned`. Salvage and Arm the watch are unchanged (a donated weapon's armory
+  value ignores wear; it is bounded by the cap of 30 and the 50 % siege wear).
+- UI, one line each: `Labels.condition` ("worn" below 70, "battered" below 40) in the weapon summary and the Town
+  hero lines; the Hone button reads "Re-hone" on a worn honed blade; the day report says "their own blade was worn
+  out". Simulator: `BALANCED_ACTIVE` re-hones worn (< 50) trade-ins as well as unhoned stock; no other policy changed.
+
+### Sweep (`--runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE`, launch content)
+Cells: median (p10/p90), mean days, sold/run, NOT_BETTER visits/run (NB), hero deaths/run, sieges survived/run.
+
+| Wear win/loss/siege, floor, threshold/urge | BALANCED_FAIR | BALANCED_ACTIVE | SYNERGY | Maxed FAIR / ACTIVE |
+|---|---|---|---|---|
+| v3, no wear | 20 (15/30), 21.7, sold 17.7, NB 45.8, deaths 0.8, sieges 1.2 | 30 (20/35), 27.5, sold 23.4, NB 58.3, deaths 0.9, sieges 2.3 | 40 (25/45), 36.7, sold 24.3 | 35 / 35.5; 40 / 39.3 |
+| 5/8/12, 0.6, 50/0.6 | 20 (15/25), 19.6, sold 19.7, NB 33.8, deaths 0.9, sieges 0.9 | 25 (20/30), 24.7, sold 26.1, NB 39.3, deaths 1.0, sieges 1.8 | 35 (20/40), 31.8, sold 29.1 | 35 / 31.8; 35 / 35.6 |
+| 4/6/10, 0.6, 50/0.6 | 20 (15/25), 19.9, sold 19.3, NB 35.7, deaths 0.9, sieges 1.0 | 25 (20/30), 25.2, sold 25.7, NB 42.5, deaths 0.9, sieges 1.9 | 35 (25/40), 32.5, sold 28.2 | 35 / 32.3; 40 / 36.0 |
+| 5/8/12, 0.75, 50/0.6 | 20 (15/25), 20.2, sold 18.9, NB 37.7, deaths 0.9, sieges 1.0 | 25 (20/35), 25.6, sold 25.5, NB 45.8, deaths 1.0, sieges 2.0 | 35 (25/40), 33.3, sold 27.4 | 35 / 32.9; 40 / 36.7 |
+| 5/8/12, 0.75, 60/0.8 | 20 (15/25), 20.2, sold 18.9, NB 37.9, deaths 0.9, sieges 1.0 | 25 (20/35), 25.6, sold 25.6, NB 45.8, deaths 1.0, sieges 2.0 | 35 (25/40), 33.3, sold 27.5 | 35 / 32.9; 40 / 36.8 |
+| **6/10/15, 0.75, 50/0.6 (adopted)** | 20 (15/25), 20.0, sold 19.3, NB 36.3, deaths 0.9, sieges 1.0, WORN_OUT 1.3 | 25 (20/35), 25.4, sold 25.9, NB 43.5, deaths 0.9, sieges 1.9, WORN_OUT 2.7 | 35 (25/40), 33.0, sold 28.0 | 35 / 32.5; 40 / 36.3 |
+
+Reading the table:
+- Every variant keeps BALANCED_FAIR at 20 (band 15-25), lifts sales (FAIR +1.2 to +2.0 a run, ACTIVE +2.1 to
+  +2.7) and cuts NOT_BETTER by a fifth to a quarter, with hero deaths flat at 0.9-1.0 and 0 hard-lock days.
+- Wear costs every policy about 1.5-2 mean days, mostly at the walls: champions' blades are worn by siege day
+  (sieges survived 1.2 -> 1.0 for FAIR, 2.3 -> 1.9 for ACTIVE). It narrows ACTIVE's lead over FAIR from 10 to 5
+  days at the median (+5.4 mean): the active smith's extra sales are now partly replacements, and it spends cores
+  re-honing trade-ins. The "ACTIVE at least 5 above FAIR" target holds, but only just.
+- The floor matters more than the wear rate. 0.6 shortens the maxed-legacy ACTIVE run to 35 (from 40); 0.75 keeps
+  it at 40, so the gentler floor was adopted together with heavier wear, which makes wear visible sooner (a blade
+  reads "worn" after about five fights and "battered" after about ten) at the same run length.
+- Threshold and urge barely move anything (60/0.8 against 50/0.6 is identical to the first decimal): the
+  worn-power comparison does the work; the urge mainly decides when a purchase is labelled WORN_OUT.
+- Upgrade impact under BALANCED_ACTIVE (base 25 / 25.4; median / mean delta): Stalwart Walls +5 / +6.0 (v3 +5 /
+  +6.3), Well-Stocked Cellar +5 / +3.2 (+0 / +3.7), Forge Mastery +5 / +1.9 (+0 / +2.8), Thrifty Hands +0 / +1.3,
+  Tireless Smith +0 / +0.4, Lucky Hammer +0 / +0.4, Family Savings +0 / +0.1, Known Name +0 / -0.1, all maxed
+  +15 / +11.0 (+10 / +11.8). The order is v3's; two more upgrades now register at the median only because the base
+  median sits at 25 and the 5-day siege rhythm quantises it.
+
+### Not changed, and open
+- `RULES_VERSION` stays 1 (bump with the first release). A given seed plays differently from 0.4.0: worn blades
+  change win rolls from the first expedition.
+- The returned famous blade (`famous_blade` world event) still arrives at condition 100 although its story says
+  "dented and dormant"; making it arrive worn is a one-line decision for the owner.
+- `Labels.condition` thresholds (70 / 40) are presentation words, not gameplay numbers, so they stay in the UI
+  like the quality words.
+- The 10,000-seed table is still v2; all rows above are 1,000 seeds.
+
 ## Event-log compaction (2026-10-08, session 3, ENGINEERING)
 GDD 13.3 asks to "compact ordinary events and retain rare milestones"; 15.1's "migration does not mutate histories"
 is honoured because the save schema is unchanged (still v1) and no stored record is rewritten, only dropped by a

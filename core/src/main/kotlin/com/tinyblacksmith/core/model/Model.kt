@@ -56,10 +56,14 @@ data class Weapon(
     val history: List<HistoryEntry> = emptyList(),
     /** Set when a hidden signature recipe transformed this weapon (GDD 4.5). */
     val signatureId: String? = null,
-    /** A weapon can be honed once (Command.Hone). */
+    /** The quality bonus of Command.Hone has been spent; honing again only restores [condition]. */
     val honed: Boolean = false,
+    /** Wear, 100 (keen) to 0: expeditions and sieges lower it, Hone restores it (GDD 6 condition factor, GDD 7 lives). */
+    val condition: Int = 100,
 ) {
     val isListed: Boolean get() = location is WeaponLocation.Shelf
+    /** Hone is allowed on an unhoned weapon or one worn below full condition. */
+    val canBeHoned: Boolean get() = !honed || condition < 100
     val isInStorage: Boolean get() = location is WeaponLocation.Storage
     val ownerId: HeroId? get() = (location as? WeaponLocation.Owned)?.heroId
     val isEquipped: Boolean get() = (location as? WeaponLocation.Owned)?.equipped == true
