@@ -10,6 +10,7 @@ import com.tinyblacksmith.core.content.WeaponFamilyDef
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.Rng
 import kotlinx.serialization.Serializable
@@ -27,6 +28,8 @@ enum class Policy(
     val reputed: Boolean = false,
     /** Uses the v3 shop actions: buys tools, hones the best unsold weapon, arms the town watch with surplus stock, salvages the rest. */
     val active: Boolean = false,
+    /** The T0.7 bots ([BotRules]); null for the classic policies, which play exactly as before. */
+    val rules: BotRules? = null,
 ) {
     /** Random legal actions: random recipe, risk, price and forging effort. */
     RANDOM(null, 1.0, false),
@@ -62,11 +65,45 @@ enum class Policy(
     SAFE_CHEAP(Risk.SAFE, 0.7, false),
     RECKLESS_EXPENSIVE(Risk.RECKLESS, 1.8, false),
     /** Never forges: measures the floor. */
-    PASSIVE(null, 1.0, false);
+    PASSIVE(null, 1.0, false),
+
+    // The T0.7 bots (Policies.kt): BALANCED_FAIR (or SYNERGY) forging plus one extra behaviour, all through real commands.
+    /** Advanced Forge with the cheapest catalyst it can get; Quick when no catalyst is at hand or energy is under 4. */
+    ADVANCED_SMITH(Risk.BALANCED, 1.0, false, rules = BotRules(advanced = true, catalyst = true)),
+    /** Advanced Forge with the Temper technique (fewer defects, fewer exceptional pieces); Quick on the spare energy. */
+    TECHNIQUE_TEMPER(Risk.BALANCED, 1.0, false, rules = BotRules(technique = Technique.TEMPER)),
+    /** Advanced Forge with the Quench technique (the augment's element affix is forced, at a quality cost). */
+    TECHNIQUE_QUENCH(Risk.BALANCED, 1.0, false, rules = BotRules(technique = Technique.QUENCH)),
+    /** Advanced Forge with the Etch technique (one more affix slot, more defects). */
+    TECHNIQUE_ETCH(Risk.BALANCED, 1.0, false, rules = BotRules(technique = Technique.ETCH)),
+    /** Commission-led: accepts every commission and forges the family, element and quality it asks for. */
+    REQUEST_DRIVEN(Risk.BALANCED, 1.0, false, rules = BotRules(requests = true)),
+    /** In the siege warning window forges the faction's weak element and arms the watch until the forecast holds. */
+    SIEGE_PREP(Risk.BALANCED, 1.0, false, rules = BotRules(siegePrep = true)),
+    /** Hunts hidden signature recipes (the cheapest that can reach the quality floor), undiscovered ones first. */
+    SIGNATURE_PURSUIT(Risk.BALANCED, 1.0, false, rules = BotRules(signatures = true)),
+    /** Buys and repeats the best recipe made of limited-stock materials, stocking up to a day's forges each morning. */
+    SCARCE_RECIPE(Risk.BALANCED, 1.0, false, rules = BotRules(scarce = true)),
+    /** The tripwire bot of plan 4.3: SYNERGY forging, counter-element stock in the warning window, commissions answered, Patronage when offered. */
+    EXPERT(Risk.BALANCED, 1.0, false, synergy = true, rules = BotRules(requests = true, siegePrep = true, blessing = BlessingPref.PATRONAGE)),
+    /** EXPERT plus the BALANCED_ACTIVE shop actions (tools, hone, watch, salvage): a harder-playing tripwire, reported beside EXPERT. */
+    EXPERT_ACTIVE(Risk.BALANCED, 1.0, false, synergy = true, active = true, rules = BotRules(requests = true, siegePrep = true, blessing = BlessingPref.PATRONAGE)),
+    /** Shock: spends every coin each morning on the dearest tool, then the best materials it can pay for. */
+    SPENDTHRIFT(Risk.BALANCED, 1.0, false, invest = true, rules = BotRules(spendthrift = true)),
+    /** Shock: a first-timer: random recipe and risk, two forges a day, fair prices, ignores commissions. */
+    NOVICE(Risk.BALANCED, 1.0, false, rules = BotRules(novice = true, acceptsCommissions = false)),
+    /** Shock: BALANCED_FAIR from a run that starts with no gold (the starting kit stays). */
+    BROKE_START(Risk.BALANCED, 1.0, false, rules = BotRules(startingGold = 0)),
+    /** Adverse: BALANCED_FAIR that lists everything at 0 gold, to see whether reputation or loyalty run away. */
+    FREE_LISTINGS(Risk.BALANCED, 0.0, false, rules = BotRules());
 
     companion object {
         /** The GDD 15.2 policy list; the CLI runs it by default. */
         val GDD_SET: List<Policy> = listOf(RANDOM, SAFE_FAIR, RECKLESS_FAIR, BALANCED_CHEAP, BALANCED_EXPENSIVE, SYNERGY, OVERWORK, BALANCED_FAIR)
+        /** The 14 policies that `--policy all` has always meant. */
+        val CLASSIC: List<Policy> = entries.filter { it.rules == null }
+        /** The T0.7 bots (`--policy bots`). */
+        val BOTS: List<Policy> = entries.filter { it.rules != null }
     }
 }
 
@@ -128,6 +165,8 @@ data class RunStats(
     val legendsReturned: Int = 0,
     /** Customer and identity counters (`--customers`, [CustomerCollector]); null unless the driver collects them. */
     val customers: RunCustomers? = null,
+    /** What a T0.7 bot did (forge modes, techniques, requests, signature tries, rejected commands, ...); null for the classic policies. */
+    val bot: BotRunStats? = null,
 )
 
 /**
@@ -150,6 +189,8 @@ class SimulationDriver(
     val reserve: Int = DEFAULT_RESERVE,
     /** Observes every End Day for the customer metrics ([RunStats.customers]); read-only, so the run is the same with or without. */
     val customerMetrics: Boolean = false,
+    /** The blessing taken when the town offers a choice (`--blessing`); null = the policy's own habit (the first offered, except EXPERT). */
+    val blessing: BlessingPref? = null,
     /** Called after each resolved day with the new state and the End Day wall-clock nanoseconds. */
     val onDayResolved: ((GameState, Long) -> Unit)? = null,
 ) {
@@ -161,6 +202,8 @@ class SimulationDriver(
     fun playRun(legacy: LegacyProfile, seed: Long, policy: Policy): Pair<RunStats, GameState> {
         var state = engine.newRun(legacy, seed)
         val policyRng = Rng(seed xor 0x5EEDL)
+        val bots = policy.rules?.let { BotPlay(this, policy, it, policyRng) }
+        if (bots != null) state = bots.start(state)
         var forged = 0
         var sold = 0
         var goldEarned = 0
@@ -191,10 +234,17 @@ class SimulationDriver(
         var legendsReturned = 0
         val collector = if (customerMetrics) CustomerCollector(engine) else null
         while (!state.isEnded && state.day <= maxDays) {
-            if (state.pendingBlessingOffer.isNotEmpty()) state = engine.handle(state, Command.ChooseBlessing(state.pendingBlessingOffer.first())).state()
-            for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
+            if (state.pendingBlessingOffer.isNotEmpty()) {
+                val pick = (blessing ?: policy.rules?.blessing)?.choose(state.pendingBlessingOffer, engine.content) ?: state.pendingBlessingOffer.first()
+                state = engine.handle(state, Command.ChooseBlessing(pick)).state()
+            }
+            if (policy.rules?.acceptsCommissions != false) for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
             if (policy.active) {
                 state = toolsAndHone(state)
+                for (id in state.tools.keys) toolFirstDay.putIfAbsent(id, state.day)
+            }
+            if (bots != null) {
+                state = bots.morning(state)
                 for (id in state.tools.keys) toolFirstDay.putIfAbsent(id, state.day)
             }
             if (policy != Policy.PASSIVE) {
@@ -202,7 +252,7 @@ class SimulationDriver(
                 var forgesToday = 0
                 while (maxForgesPerDay == null || forgesToday < maxForgesPerDay) {
                     if (policy == Policy.RANDOM && forgesToday > 0 && policyRng.chance(0.3)) break // random effort
-                    val cmd = chooseForge(state, policy, policyRng) ?: break
+                    val cmd = (if (bots != null) bots.forge(state) else chooseForge(state, policy, policyRng)) ?: break
                     val rareInStock = state.supplierStock.values.sum()
                     state = ensureMaterials(state, cmd)
                     rareMaterialsBought += rareInStock - state.supplierStock.values.sum()
@@ -213,14 +263,16 @@ class SimulationDriver(
                             val w = state.weapon(out.forgedWeaponId!!)
                             rarity[w.rarity] = rarity.getValue(w.rarity) + 1
                             for (a in w.affixes + w.flaws) affixWeapons[a.value] = (affixWeapons[a.value] ?: 0) + 1
+                            bots?.noteForge(cmd, w)
                         }
-                        is CommandOutcome.Rejected -> break
+                        is CommandOutcome.Rejected -> { bots?.noteRejected(); break }
                     }
                 }
                 if (!couldForge && state.day > 1 && state.weapons.values.none { it.isListed }) hardLocks++
             }
+            if (bots != null) state = bots.reserve(state)
             var listed = state.listedWeapons().size
-            for (w in if (policy.active) state.storedWeapons().sortedByDescending { it.power } else state.storedWeapons()) {
+            for (w in bots?.stockToList(state) ?: if (policy.active) state.storedWeapons().sortedByDescending { it.power } else state.storedWeapons()) {
                 if (listed >= engine.shelfSlots(state)) break
                 val factor = when {
                     policy == Policy.RANDOM -> 0.5 + policyRng.nextDouble() * 1.5
@@ -231,6 +283,7 @@ class SimulationDriver(
                 state = engine.handle(state, Command.ToggleShelf(w.id, true, price)).state()
                 listed++
             }
+            if (bots != null) state = bots.evening(state)
             if (policy.active) state = armWatchAndSalvage(state)
             materialSamples += state.materials.values.sum()
             goldSamples += state.gold
@@ -243,6 +296,7 @@ class SimulationDriver(
             val res = out.lastResolution
             if (res != null) {
                 collector?.afterEndDay(state, out, res)
+                bots?.observe(state, res)
                 for (v in res.visits) visitReasons[v.reason] = (visitReasons[v.reason] ?: 0) + 1
                 val sales = res.events.filter { it.type == EventType.WEAPON_SOLD }
                 sold += sales.size
@@ -289,8 +343,8 @@ class SimulationDriver(
             activityDays = activityDays, heroLevelUps = heroLevelUps, mentorings = mentorings, guilds = state.town.guilds.size,
             weaponFates = weaponFates,
             firstSiegeDefense = firstSiegeDefense, firstSiegeHeld = firstSiegeHeld, forgedByFirstSiege = forgedByFirstSiege, soldByFirstSiege = soldByFirstSiege,
-            toolsByFirstSiege = toolsByFirstSiege, firstPremiumSaleDay = firstPremiumSaleDay, rareMaterialsBought = rareMaterialsBought, legendsReturned = legendsReturned,
-            customers = collector?.finish(state),
+            toolsByFirstSiege = toolsByFirstSiege, firstPremiumSaleDay = firstPremiumSaleDay, rareMaterialsBought = rareMaterialsBought + (bots?.stockpiled ?: 0), legendsReturned = legendsReturned,
+            customers = collector?.finish(state), bot = bots?.finish(state),
         )
         return stats to state
     }
@@ -339,7 +393,7 @@ class SimulationDriver(
         is CommandOutcome.Rejected -> error("Policy issued an invalid command: $error")
     }
 
-    private fun chooseForge(state: GameState, policy: Policy, rng: Rng): Command.Forge? {
+    internal fun chooseForge(state: GameState, policy: Policy, rng: Rng): Command.Forge? {
         val cfg = engine.config
         val cost = cfg.quickForgeEnergy
         val overworkRoom = cfg.maxOverworkPerDay - state.overworkToday
@@ -385,14 +439,14 @@ class SimulationDriver(
     }
 
     /** Highest tier that is owned, or in supplier stock and priced within [budget]; the cheapest when nothing qualifies. */
-    private fun bestInvestment(state: GameState, options: List<MaterialDef>, budget: Int): MaterialDef =
+    internal fun bestInvestment(state: GameState, options: List<MaterialDef>, budget: Int): MaterialDef =
         options.filter { (state.materials[it.id] ?: 0) > 0 || (state.supplierStock[it.id] ?: 1) >= 1 && purchaseCost(state, it) <= budget }
             .maxByOrNull { it.tier } ?: options.minBy { it.price }
 
     /** Gold the next forge spends on [m]: 0 when a unit is already owned. */
-    private fun purchaseCost(state: GameState, m: MaterialDef): Int = if ((state.materials[m.id] ?: 0) > 0) 0 else engine.materialPrice(state, m.id)
+    internal fun purchaseCost(state: GameState, m: MaterialDef): Int = if ((state.materials[m.id] ?: 0) > 0) 0 else engine.materialPrice(state, m.id)
 
-    private fun obtainable(state: GameState, vararg materials: MaterialDef): Boolean {
+    internal fun obtainable(state: GameState, vararg materials: MaterialDef): Boolean {
         var cost = 0
         for (m in materials) {
             if ((state.materials[m.id] ?: 0) > 0) continue
@@ -406,7 +460,7 @@ class SimulationDriver(
     /** Buys missing materials when affordable; otherwise falls back to the cheapest reliably stocked ones. */
     private fun ensureMaterials(state: GameState, cmd: Command.Forge): GameState {
         var s = state
-        for (m in listOf(cmd.coreId, cmd.augmentId)) {
+        for (m in listOfNotNull(cmd.coreId, cmd.augmentId, cmd.catalystId)) {
             if ((s.materials[m] ?: 0) > 0) continue
             val out = engine.handle(s, Command.BuyMaterial(m, 1))
             if (out is CommandOutcome.Accepted) s = out.state
@@ -478,6 +532,8 @@ data class PolicySummary(
     val artifactRecoveryRate: Double = 0.0,
     /** Customer and identity metrics (`--customers`); absent from the report otherwise. */
     val customers: CustomerSummary? = null,
+    /** What the T0.7 bots did, per run (`BotRunStats`); absent for the classic policies. */
+    val bot: BotSummary? = null,
 )
 
 data class Report(val policy: Policy, val runs: List<RunStats>, val label: String = "new account") {
@@ -518,7 +574,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             heroLevelUpsPerRun = runs.map { it.heroLevelUps }.average(), mentoringsPerRun = runs.map { it.mentorings }.average(),
             guildsPerRun = runs.map { it.guilds }.average(), guildRunShare = runs.count { it.guilds > 0 }.toDouble() / runs.size,
             weaponFatesPerRun = fates.mapValues { it.value.toDouble() / runs.size }, artifactRecoveryRate = if (settled == 0) 0.0 else returned.toDouble() / settled,
-            customers = CustomerSummary.of(runs),
+            customers = CustomerSummary.of(runs), bot = BotSummary.of(runs),
         )
     }
 
@@ -543,6 +599,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  hero-days/run: ${f1(s.heroDaysPerRun)}  activity shares: " + s.activityShare.entries.joinToString("  ") { "${it.key}=${"%.1f%%".format(100.0 * it.value)}" })
             appendLine("  level-ups/run: ${f1(s.heroLevelUpsPerRun)}  mentorings/run: ${f1(s.mentoringsPerRun)}  guilds/run: ${f1(s.guildsPerRun)}  runs with a guild: ${pct(s.guildRunShare)}")
             appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}")
+            s.bot?.let { append(it.render()) }
             s.customers?.let { append(it.render()) }
         }
     }
@@ -615,15 +672,17 @@ data class SimReport(
     val upgradeImpact: List<UpgradeImpact>,
     val perf: PerfSummary?,
     val elapsedMs: Long,
+    /** `--eras N`: one account played through N eras per policy ([EraPlaySummary]); then `policies` and `upgradeImpact` are empty. */
+    val eraPlay: List<EraPlaySummary>? = null,
 )
 
 object Simulator {
     fun run(
         runs: Int, baseSeed: Long, policies: List<Policy>, legacy: LegacyProfile = LegacyProfile(), config: BalanceConfig = BalanceConfig.DEFAULT,
         maxDays: Int = config.maxSimulatedDays, label: String = "new account", content: ContentCatalog = LaunchContent.catalog,
-        reserve: Int = SimulationDriver.DEFAULT_RESERVE, customerMetrics: Boolean = false,
+        reserve: Int = SimulationDriver.DEFAULT_RESERVE, customerMetrics: Boolean = false, blessing: BlessingPref? = null,
     ): List<Report> {
-        val driver = SimulationDriver(GameEngine(content, config), maxDays = maxDays, reserve = reserve, customerMetrics = customerMetrics)
+        val driver = SimulationDriver(GameEngine(content, config), maxDays = maxDays, reserve = reserve, customerMetrics = customerMetrics, blessing = blessing)
         // Runs are independent and the engine is pure, so seeds run in parallel; results are collected in seed order.
         return policies.map { p ->
             Report(p, IntStream.range(0, runs).parallel().mapToObj { i -> driver.playRun(legacy, baseSeed + i, p).first }.collect(Collectors.toList()), label)
@@ -652,12 +711,12 @@ object Simulator {
     fun upgradeImpact(
         runs: Int, baseSeed: Long, config: BalanceConfig, baselineMedianDays: Int, baselineMeanDays: Double, maxDays: Int = config.maxSimulatedDays,
         content: ContentCatalog = LaunchContent.catalog, policy: Policy = Policy.BALANCED_FAIR, reserve: Int = SimulationDriver.DEFAULT_RESERVE,
-        legendBoard: List<LegendEntry> = emptyList(),
+        legendBoard: List<LegendEntry> = emptyList(), blessing: BlessingPref? = null,
     ): List<UpgradeImpact> {
         val engine = GameEngine(content, config)
         return engine.content.upgrades.map { u ->
             val legacy = LegacyProfile(upgrades = mapOf(u.id to u.maxLevel), legendBoard = legendBoard)
-            val report = run(runs, baseSeed, listOf(policy), legacy, config, maxDays, label = u.name, content = content, reserve = reserve).single()
+            val report = run(runs, baseSeed, listOf(policy), legacy, config, maxDays, label = u.name, content = content, reserve = reserve, blessing = blessing).single()
             val s = report.summary()
             UpgradeImpact(u.id.value, u.name, u.maxLevel, s.daysMedian, s.daysMedian - baselineMedianDays, s.daysMean, s.daysMean - baselineMeanDays, report.yardsticks())
         }
@@ -779,6 +838,9 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
  *      --knownNameGold N: coin each Known Name regular starts with (v5 sweep).
  *      --customers: adds the customer and identity metrics ([CustomerSummary]) to the policy rows, the text and the --json report.
  *      --set key=value[,key=value]: overrides allowlisted BalanceConfig numbers ([applySet]); an unknown key stops the run with exit code 2.
+ *      --policy NAME[,NAME]|all|gdd|bots|every: `all` is the 14 classic policies (unchanged), `bots` the T0.7 bots, `every` both.
+ *      --blessing first|energy|quality|sales|patronage|defense: the blessing every policy takes when offered (default: the first offered).
+ *      --eras N [--buy cheapest|walls|track=ID]: plays N eras per seed on one account (claim, buy upgrades by the rule, carry journal, Legend Board, lineages).
  * Default: launch content, the GDD 15.2 policy set, maxed legacy accounts (BALANCED_FAIR and the impact policy) and
  * the per-upgrade impact sweep for the impact policy (BALANCED_FAIR by default).
  */
@@ -791,7 +853,7 @@ fun main(args: Array<String>) {
         "slice" -> SliceContent.catalog
         else -> error("Unknown --content $c (launch|slice)")
     }
-    val policies = argMap["--policy"]?.let { p -> when (p) { "all" -> Policy.entries; "gdd" -> Policy.GDD_SET; else -> listOf(Policy.valueOf(p)) } } ?: Policy.GDD_SET
+    val policies = argMap["--policy"]?.let { p -> when (p) { "all" -> Policy.CLASSIC; "gdd" -> Policy.GDD_SET; "bots" -> Policy.BOTS; "every" -> Policy.entries.toList(); else -> p.split(',').map { Policy.valueOf(it) } } } ?: Policy.GDD_SET
     // Tuning overrides (balance sweeps only; defaults live in BalanceConfig).
     var config = BalanceConfig.DEFAULT
     val overrides = mutableMapOf<String, String>()
@@ -835,6 +897,12 @@ fun main(args: Array<String>) {
         overrides["set"] = arg
     }
     val customers = argMap["--customers"] == "true"
+    val blessing = argMap["--blessing"]?.let { arg ->
+        val pref = BlessingPref.entries.firstOrNull { it.name.equals(arg, ignoreCase = true) }
+        if (pref == null) { System.err.println("--blessing: unknown '$arg'; allowed: ${BlessingPref.entries.joinToString(", ") { it.name.lowercase() }}"); exitProcess(2) }
+        overrides["blessing"] = arg
+        pref
+    }
     val maxDays = argMap["--days"]?.toInt() ?: config.maxSimulatedDays
     val reserve = argMap["--reserve"]?.toInt() ?: SimulationDriver.DEFAULT_RESERVE
     val impactPolicy = argMap["--impactPolicy"]?.let { Policy.valueOf(it) } ?: Policy.BALANCED_FAIR
@@ -865,8 +933,27 @@ fun main(args: Array<String>) {
             def.id to pair.substringAfter('=').toInt().coerceIn(0, def.maxLevel)
         }
     }
+    argMap["--eras"]?.let { arg ->
+        val eras = requireNotNull(arg.toIntOrNull()?.takeIf { it > 0 }) { "--eras needs a positive number, got '$arg'" }
+        val rule = try { BuyRule.parse(argMap["--buy"] ?: "cheapest", content) } catch (e: IllegalArgumentException) { System.err.println("--buy: ${e.message}"); exitProcess(2) }
+        overrides["eras"] = arg; overrides["buy"] = rule.label
+        val summaries = EraPlay.run(GameEngine(content, config), policies, runs, seed, eras, rule, LegacyProfile(upgrades = upgrades ?: emptyMap()), maxDays, reserve, blessing)
+        summaries.forEach { println(it.render()) }
+        val elapsedMs = (System.nanoTime() - start) / 1_000_000
+        println("elapsed $elapsedMs ms")
+        argMap["--json"]?.let { path ->
+            val report = SimReport(
+                contentVersion = engine.content.version, balanceVersion = engine.config.version, rulesVersion = GameEngine.RULES_VERSION,
+                runs = runs, baseSeed = seed, maxDays = maxDays, overrides = overrides, reserve = reserve,
+                policies = emptyList(), upgradeImpact = emptyList(), perf = null, elapsedMs = elapsedMs, eraPlay = summaries,
+            )
+            File(path).writeText(reportJson.encodeToString(SimReport.serializer(), report))
+            println("report written to $path")
+        }
+        return
+    }
     println(if (upgrades == null) "== New legacy account ==" else "== Legacy account with ${argMap["--upgrades"]} ==")
-    val reports = Simulator.run(runs, seed, policies, legacy = LegacyProfile(upgrades = upgrades ?: emptyMap()), config = config, maxDays = maxDays, label = if (upgrades == null) "new account" else "upgraded account", content = content, reserve = reserve, customerMetrics = customers)
+    val reports = Simulator.run(runs, seed, policies, legacy = LegacyProfile(upgrades = upgrades ?: emptyMap()), config = config, maxDays = maxDays, label = if (upgrades == null) "new account" else "upgraded account", content = content, reserve = reserve, customerMetrics = customers, blessing = blessing)
     reports.forEach { println(it.render()) }
     if (argMap["--yardsticks"] == "true") {
         println("== Second yardsticks per policy (means per run; columns as in the upgrade table) ==")
@@ -880,13 +967,13 @@ fun main(args: Array<String>) {
         val legends = if (argMap["--legends"] == "true") Simulator.veteranLegendBoard(engine, impactPolicy, seed) else emptyList()
         if (legends.isNotEmpty()) println("== Veteran Legend Board for the runs below: ${legends.size} blades, mean quality ${"%.0f".format(legends.map { it.quality }.average())}, mean power ${"%.0f".format(legends.map { it.power }.average())} ==")
         println("== Maxed legacy account (all upgrades) ==")
-        maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine).copy(legendBoard = legends), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve, customerMetrics = customers)
+        maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine).copy(legendBoard = legends), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve, customerMetrics = customers, blessing = blessing)
         maxed.forEach { println(it.render()) }
         val baseline = reports.firstOrNull { it.policy == impactPolicy }?.takeIf { upgrades == null && legends.isEmpty() }
-            ?: Simulator.run(runs, seed, listOf(impactPolicy), legacy = LegacyProfile(legendBoard = legends), config = config, maxDays = maxDays, content = content, reserve = reserve).single()
+            ?: Simulator.run(runs, seed, listOf(impactPolicy), legacy = LegacyProfile(legendBoard = legends), config = config, maxDays = maxDays, content = content, reserve = reserve, blessing = blessing).single()
         val baseSummary = baseline.summary()
         println("== Upgrade impact ($impactPolicy, single upgrade maxed vs none: median ${baseSummary.daysMedian} mean ${"%.1f".format(baseSummary.daysMean)} days) ==")
-        impact = Simulator.upgradeImpact(runs, seed, config, baseSummary.daysMedian, baseSummary.daysMean, maxDays, content, impactPolicy, reserve, legends)
+        impact = Simulator.upgradeImpact(runs, seed, config, baseSummary.daysMedian, baseSummary.daysMean, maxDays, content, impactPolicy, reserve, legends, blessing)
         impact.forEach { println("  ${it.name} (${it.upgradeId} L${it.level}): median=${it.daysMedian} (${"%+d".format(it.deltaVsNone)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.deltaMeanVsNone)})") }
         val allMaxed = maxed.single { it.policy == impactPolicy }
         allMaxed.summary().let { println("  all maxed: median=${it.daysMedian} (${"%+d".format(it.daysMedian - baseSummary.daysMedian)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.daysMean - baseSummary.daysMean)})") }
