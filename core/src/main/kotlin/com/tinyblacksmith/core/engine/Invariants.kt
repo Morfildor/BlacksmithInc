@@ -60,6 +60,7 @@ object Invariants {
         state.factions.values.forEach { f -> if (f.pressure !in 0..100) problems += "Faction pressure out of range" }
         state.town.guilds.forEach { g -> if (g.founderId !in state.heroes) problems += "Guild ${g.id} founded by unknown hero" }
         state.eventCounters.forEach { (id, n) ->
+            if (id == WorldEvents.RUMOUR) return@forEach   // not a pooled event: the run's rumours, capped by `customers.maxRumoursPerRun` where they are told
             val def = WorldEvents.all.firstOrNull { it.id == id }
             if (def == null) problems += "Unknown world event counter $id" else if (n > def.maxPerRun) problems += "World event $id fired $n times (max ${def.maxPerRun})"
         }

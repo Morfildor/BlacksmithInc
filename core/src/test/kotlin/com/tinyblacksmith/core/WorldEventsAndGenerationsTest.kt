@@ -292,7 +292,7 @@ class WorldEventsAndGenerationsTest {
                 assertFalse(id in setOf("famous_blade", "descendant"), "seed $seed: $id needs legacy history")
                 if (id == "guild_banner") assertTrue(state.town.guilds.isNotEmpty(), "seed $seed: banner without eras needs an in-run guild")
             }
-            assertEquals(counts, state.eventCounters, "seed $seed counters mismatch")
+            assertEquals(counts, state.eventCounters - WorldEvents.RUMOUR, "seed $seed counters mismatch")
             seen += counts.keys
         }
         assertTrue(seen.size >= 12, "variety across 200 runs: $seen")

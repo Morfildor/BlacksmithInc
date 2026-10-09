@@ -59,6 +59,8 @@ object Battle {
             val told = if (elite) {
                 val slain = ctx.emit(EventType.ELITE_SLAIN, 7, "${hero.fullName} slew $encounter$weaponText and returned with $loot gold in spoils.", listOfNotNull(hero.id.value, weapon?.id?.value))
                 ctx.milestone("ELITE_SLAIN", "An elite foe fell to a hero of Emberfall: $encounter.")
+                // A kill like that with a blade of the forge makes talk: a rumour of a recipe (plan 4.6 E3).
+                if (weapon != null) com.tinyblacksmith.core.engine.WorldEvents.rumour(ctx, "${hero.fullName}, back from the kill,", hero.id)
                 ctx.replays += fightReplay(ctx, hero, weapon, encounter, heroPower, enemyPower, winProbability, slain, heroWon = true, loot, "struck the killing blow and took the spoils", "${hero.fullName} slew $encounter")
                 slain
             } else {

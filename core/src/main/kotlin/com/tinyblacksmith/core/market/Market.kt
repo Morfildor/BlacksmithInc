@@ -413,6 +413,7 @@ object Market {
                 ctx.updateHero(buyer.copy(loyalty = buyer.loyalty + 2, want = null))
                 ctx.emit(EventType.COMMISSION_COMPLETED, 5, "${buyer.fullName} collected the commissioned ${candidate.name} and paid ${c.reward} gold.", listOf(buyer.id.value, candidate.id.value, c.id.value), mapOf("reward" to c.reward.toString()))
                 ctx.addWeaponHistory(candidate.id, "COMMISSION", "Delivered to ${buyer.fullName} on commission.", listOf(buyer.id.value))
+                WorldEvents.rumour(ctx, "${buyer.fullName}, collecting the commission,", buyer.id)   // a satisfied patron talks (plan 4.6 E3)
                 giveAndEquip(ctx, ctx.hero(buyer.id), ctx.weapon(candidate.id))
                 // The patron is a visit of its own kind: the reward is the coin; the shelf price, if the blade had one, is only what it was listed at.
                 ctx.visits += MarketVisit(

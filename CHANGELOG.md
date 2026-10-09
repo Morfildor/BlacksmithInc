@@ -49,8 +49,18 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   come back more readily and are likelier to get a seat; the want lapses after three days, or when they buy anything.
   The day's lead can now be "Forge a bow for Wren Kestrel" with the numbers behind it, and a visit can be recognised as
   the answer to a want. (The screens that list wants arrive with the next interface update; the rule is live now.)
+- The journal keeps answering. A hidden recipe now has four clues to earn: that the base recipe hides something more,
+  what kind of catalyst it wants, the temper, and how fine the work must be. Every forge at the base recipe that does
+  not take earns the next one (the journal used to speak once and fall silent), and the hint shows exactly the clues
+  you hold, never a chance. Each catalyst has its own phrase: "wants something to bind it", "wants a word cut into
+  it", "wants a hotter fire", "wants a rule rewritten". Clues stay with your legacy across eras.
+- Rumours. A hero who slays an elite foe with one of your blades, or a patron collecting a commission, may bring word
+  of a recipe you have not found: one clue for it, a few times an era.
 
 ### Changed
+- Catalysts say what they do. All four steady the forge in the same way today; their descriptions now say so, and name
+  what a recipe asks for when it asks for that one. (A description used to promise that Runestone Shard "guides an
+  affix", which it never did.) The strange weapon fragment now gives the first clue of a recipe instead of a general hint.
 - Customers weigh a blade the way it fights. What a blade is worth to a buyer now counts its properties and its fame as
   well as power, wear and class fit, on the blade in hand and on the one on your shelf alike, and a small gain is a gain
   (it used to be rounded away). A blade as good as their own, give or take a little, can be bought once for something

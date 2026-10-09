@@ -27,15 +27,31 @@ data class SignatureDef(
 ) {
     val journalKey: String get() = "sig:$id"
 
-    /** Which condition the attempt misses, or null when the recipe is exact. */
-    fun missing(cmd: Command.Forge, quality: Int): Miss? = when {
-        catalystId != null && cmd.catalystId != catalystId -> Miss.CATALYST
-        risk != null && cmd.risk != risk -> Miss.RISK
-        quality < minQuality -> Miss.QUALITY
-        else -> null
-    }
+    /** Every condition the attempt misses, in ladder order; empty when the recipe is exact. */
+    fun misses(cmd: Command.Forge, quality: Int): List<Miss> = listOfNotNull(
+        Miss.CATALYST.takeIf { catalystId != null && cmd.catalystId != catalystId },
+        Miss.RISK.takeIf { risk != null && cmd.risk != risk },
+        Miss.QUALITY.takeIf { quality < minQuality },
+    )
 
-    enum class Miss { CATALYST, RISK, QUALITY }
+    /** The first condition the attempt misses, or null when the recipe is exact. */
+    fun missing(cmd: Command.Forge, quality: Int): Miss? = misses(cmd, quality).firstOrNull()
+
+    enum class Miss(val rung: ClueRung) { CATALYST(ClueRung.CATALYST), RISK(ClueRung.TEMPER), QUALITY(ClueRung.QUALITY) }
+}
+
+/**
+ * The clue ladder of one signature (plan 4.7, G07): the base recipe ("hides something more"), what kind of catalyst it
+ * wants, the temper, how fine the work must be. Stored as bits of `Journal.signatureClues`; never an odd at any rung.
+ */
+enum class ClueRung {
+    RECIPE, CATALYST, TEMPER, QUALITY;
+
+    val bit: Int get() = 1 shl ordinal
+
+    companion object {
+        val ALL: Int = entries.sumOf { it.bit }
+    }
 }
 
 /**
@@ -111,6 +127,10 @@ object SignatureCatalog {
 
     /** The signature whose base recipe (family + core + augment) this attempt uses, if any. */
     fun forRecipe(cmd: Command.Forge): SignatureDef? = byRecipe[Triple(cmd.familyId, cmd.coreId, cmd.augmentId)]
+
+    /** The forge a known signature asks for, for "Use this recipe": Advanced when it needs a catalyst, its temper (Balanced when it has none). Quality is the smith's to reach. */
+    fun recipe(def: SignatureDef): Command.Forge =
+        Command.Forge(if (def.catalystId != null) com.tinyblacksmith.core.model.ForgeMode.ADVANCED else com.tinyblacksmith.core.model.ForgeMode.QUICK, def.familyId, def.coreId, def.augmentId, def.catalystId, def.risk ?: Risk.BALANCED)
 
     /** The signature this attempt fully qualifies for (exact recipe, conditions met, quality floor reached). */
     fun eligible(cmd: Command.Forge, quality: Int): SignatureDef? = forRecipe(cmd)?.takeIf { it.missing(cmd, quality) == null }

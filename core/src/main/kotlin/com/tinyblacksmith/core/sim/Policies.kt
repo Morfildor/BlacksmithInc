@@ -337,24 +337,33 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
 
     // ---- signatures ---------------------------------------------------------------------------------------------
 
-    /** The signature recipe with the best chance of reaching its quality floor per gold, undiscovered ones first. The bot knows the recipes: an upper bound on a player who reads clues. */
+    /**
+     * Follows the journal's clue ladder (`crafting.Journal.rungs`) and nothing else: a signature is tried only once its
+     * first rung is held, with the catalyst and the temper only where their rungs say them (no catalyst and Balanced
+     * until then), and judged against its quality floor only once that rung is held. Unfound signatures first, the ones
+     * with more rungs before the others, then the cheapest. Every miss earns the next rung. With no clue at all it forges
+     * as its policy does (and the plain iron and ember sword is itself a base recipe).
+     */
     private fun signatureForge(state: GameState): Command.Forge? {
         val journal = state.legacy.journal
         var best: Command.Forge? = null
-        var bestKey = Pair(false, 0.0)
+        var bestKey = Triple(false, 0, 0.0)
         for (sig in SignatureCatalog.all) {
             val family = content.familyById[sig.familyId] ?: continue
             val core = content.materialById[sig.coreId] ?: continue
             val augment = content.materialById[sig.augmentId] ?: continue
-            val catalyst = sig.catalystId?.let { content.materialById[it] }
-            if (sig.catalystId != null && catalyst == null) continue
-            val cmd = Command.Forge(if (catalyst != null) ForgeMode.ADVANCED else ForgeMode.QUICK, family.id, core.id, augment.id, catalyst?.id, sig.risk ?: Risk.BALANCED)
+            val have = com.tinyblacksmith.core.crafting.Journal.rungs(journal, sig)
+            if (com.tinyblacksmith.core.crafting.ClueRung.RECIPE !in have) continue
+            val catalyst = sig.catalystId?.takeIf { com.tinyblacksmith.core.crafting.ClueRung.CATALYST in have }?.let { content.materialById[it] ?: return@let null }
+            if (sig.catalystId != null && com.tinyblacksmith.core.crafting.ClueRung.CATALYST in have && catalyst == null) continue
+            val risk = (if (com.tinyblacksmith.core.crafting.ClueRung.TEMPER in have) sig.risk else null) ?: Risk.BALANCED
+            val cmd = Command.Forge(if (catalyst != null) ForgeMode.ADVANCED else ForgeMode.QUICK, family.id, core.id, augment.id, catalyst?.id, risk)
             if (!feasible(state, cmd)) continue
-            val chance = reachChance(expectedQuality(state, family, core, augment, catalyst != null), sig.minQuality)
+            val chance = if (com.tinyblacksmith.core.crafting.ClueRung.QUALITY in have) reachChance(expectedQuality(state, family, core, augment, catalyst != null), sig.minQuality) else 1.0
             if (chance < MIN_SIGNATURE_REACH) continue
             val gold = listOfNotNull(core, augment, catalyst).sumOf { d.purchaseCost(state, it) }
-            val key = Pair(journal.state(sig.journalKey) != KnowledgeState.SIGNATURE_DISCOVERED, chance / (gold + 20))
-            if (best == null || key.first > bestKey.first || (key.first == bestKey.first && key.second > bestKey.second)) { best = cmd; bestKey = key }
+            val key = Triple(journal.state(sig.journalKey) != KnowledgeState.SIGNATURE_DISCOVERED, have.size, chance / (gold + 20))
+            if (best == null || compareValuesBy(key, bestKey, { it.first }, { it.second }, { it.third }) > 0) { best = cmd; bestKey = key }
         }
         if (best != null) source = BotCounter.SIGNATURE_FORGES
         return best
@@ -487,13 +496,15 @@ class BuyRule private constructor(val label: String, private val first: UpgradeI
 }
 
 /** One era of an account: the run, the account at its start, and the artifacts that came back during it. */
-class EraRun(val era: Int, val stats: RunStats, val boardAtStart: Int, val levelsAtStart: Int, val returns: Int, val genuineReturns: Int, val ended: Boolean)
+class EraRun(val era: Int, val stats: RunStats, val boardAtStart: Int, val levelsAtStart: Int, val returns: Int, val genuineReturns: Int, val ended: Boolean, val signaturesKnown: Int = 0)
 
 @Serializable
 data class EraRow(
     val era: Int, val runs: Int, val daysP10: Int, val daysMedian: Int, val daysMean: Double, val daysP90: Int, val daysMax: Int,
     val pointsMean: Double, val levelsAtStartMean: Double, val boardAtStartMean: Double,
     val returnsPerRun: Double, val genuineReturnsPerRun: Double, val runsWithGenuineReturn: Double, val unfinished: Int,
+    /** Signatures in the account's journal when the era ends (mean), the share of accounts with at least one by then, and rumours a run. */
+    val signaturesKnownMean: Double = 0.0, val accountsWithSignature: Double = 0.0, val rumoursPerRun: Double = 0.0,
 )
 
 /** [policy] played [eras] eras on one account per seed. A return is genuine when the artifact's era is earlier than the run's and the blade is on the Legend Board the run started with. */
@@ -508,7 +519,8 @@ data class EraPlaySummary(
         for (r in eras) appendLine(
             "  era ${r.era}: days p10=${r.daysP10} median=${r.daysMedian} mean=${"%.1f".format(r.daysMean)} p90=${r.daysP90} max=${r.daysMax}  runs=${r.runs} unfinished=${r.unfinished}  " +
                 "points/run=${"%.1f".format(r.pointsMean)}  upgrade levels at start=${"%.1f".format(r.levelsAtStartMean)}  legend board at start=${"%.1f".format(r.boardAtStartMean)}  " +
-                "artifact returns/run=${"%.3f".format(r.returnsPerRun)} (genuine ${"%.3f".format(r.genuineReturnsPerRun)}, runs with one ${pct(r.runsWithGenuineReturn)})",
+                "artifact returns/run=${"%.3f".format(r.returnsPerRun)} (genuine ${"%.3f".format(r.genuineReturnsPerRun)}, runs with one ${pct(r.runsWithGenuineReturn)})  " +
+                "signatures known at the end=${"%.2f".format(r.signaturesKnownMean)} (accounts with one ${pct(r.accountsWithSignature)})  rumours/run=${"%.2f".format(r.rumoursPerRun)}",
         )
         appendLine("  genuine cross-era artifact returns per account=${"%.3f".format(genuineReturnsPerAccount)}  accounts with at least one=${pct(accountsWithGenuineReturn)}")
     }
@@ -522,6 +534,9 @@ data class EraPlaySummary(
                     era, runs.size, percentile(days, 0.1), percentile(days, 0.5), days.average(), percentile(days, 0.9), days.max(),
                     runs.map { it.stats.legacyPoints }.average(), runs.map { it.levelsAtStart }.average(), runs.map { it.boardAtStart }.average(),
                     runs.map { it.returns }.average(), runs.map { it.genuineReturns }.average(), runs.count { it.genuineReturns > 0 }.toDouble() / runs.size, runs.count { !it.ended },
+                    // An account whose earlier era did not end has no later era: it counts with what it knew then.
+                    signaturesKnownMean = runs.map { it.signaturesKnown }.average(), accountsWithSignature = runs.count { it.signaturesKnown > 0 }.toDouble() / runs.size,
+                    rumoursPerRun = runs.map { it.stats.rumours }.average(),
                 )
             }
             return EraPlaySummary(
@@ -548,7 +563,8 @@ object EraPlay {
                 val from = ev.data["era"]?.toIntOrNull()
                 from != null && from < state.era && legacy.legendBoard.any { it.era == from && ev.text.startsWith("${it.weaponName}, ${it.title},") }
             }
-            result += EraRun(state.era, stats, legacy.legendBoard.size, legacy.upgrades.values.sum(), returned.size, genuine, state.isEnded)
+            val known = state.legacy.journal.interactions.count { it.key.startsWith("sig:") && it.value == KnowledgeState.SIGNATURE_DISCOVERED }
+            result += EraRun(state.era, stats, legacy.legendBoard.size, legacy.upgrades.values.sum(), returned.size, genuine, state.isEnded, known)
             if (!state.isEnded) break
             val claimed = engine.claimLegacy(legacy, engine.closeRun(state)) as LegacyOutcome.Updated
             legacy = rule.spend(engine, claimed.legacy)

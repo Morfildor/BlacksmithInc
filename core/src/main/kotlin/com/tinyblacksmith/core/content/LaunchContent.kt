@@ -129,10 +129,10 @@ object LaunchContent {
             MaterialDef(GRAVE_DUST, "Grave Dust", MaterialCategory.AUGMENT, tier = 4, price = 55, element = Element.GRAVE, dailySupplierStock = 1, flavor = "Swept from old tombs; it drinks warmth."),
             MaterialDef(SUN_ASH, "Sun Ash", MaterialCategory.AUGMENT, tier = 5, price = 85, element = Element.SUN, dailySupplierStock = 1, flavor = "Ash from a fire that burned at noon; the dead shun it."),
             // Catalysts. The engine currently treats every catalyst alike (Forge.kt); identities are for Advanced Forge techniques.
-            MaterialDef(BINDING_SALT, "Binding Salt", MaterialCategory.CATALYST, tier = 1, price = 15, dailySupplierStock = 2, flavor = "Steadies volatile forgings."),
-            MaterialDef(RUNESTONE_SHARD, "Runestone Shard", MaterialCategory.CATALYST, tier = 2, price = 30, dailySupplierStock = 1, flavor = "Carved by hands long gone; it guides an affix."),
-            MaterialDef(DRAGON_OIL, "Dragon Oil", MaterialCategory.CATALYST, tier = 3, price = 55, dailySupplierStock = 1, flavor = "Burns hotter than any bellows."),
-            MaterialDef(VOID_INK, "Void Ink", MaterialCategory.CATALYST, tier = 4, price = 90, dailySupplierStock = 1, flavor = "Writes rules the metal did not agree to."),
+            MaterialDef(BINDING_SALT, "Binding Salt", MaterialCategory.CATALYST, tier = 1, price = 15, dailySupplierStock = 2, flavor = "Steadies the forge. Some recipes ask for something to bind them."),
+            MaterialDef(RUNESTONE_SHARD, "Runestone Shard", MaterialCategory.CATALYST, tier = 2, price = 30, dailySupplierStock = 1, flavor = "Steadies the forge. Some recipes ask for a word cut into them."),
+            MaterialDef(DRAGON_OIL, "Dragon Oil", MaterialCategory.CATALYST, tier = 3, price = 55, dailySupplierStock = 1, flavor = "Steadies the forge. Some recipes ask for a hotter fire."),
+            MaterialDef(VOID_INK, "Void Ink", MaterialCategory.CATALYST, tier = 4, price = 90, dailySupplierStock = 1, flavor = "Steadies the forge. Some recipes ask for a rule rewritten."),
         ),
         affixes = listOf(
             // Beneficial (12). Exactly one per element: Forge.kt picks the first beneficial affix matching the augment element.

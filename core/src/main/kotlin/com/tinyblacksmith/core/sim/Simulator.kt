@@ -174,6 +174,10 @@ data class RunStats(
     /** Sieges lost as a rout (`weaponFates.wallsRoutRatio`) and champions who died on the walls in them. */
     val routs: Int = 0,
     val wallDeaths: Int = 0,
+    /** The clue ladder: rumours told, rungs earned (rumours, fragments and misses at a base recipe) and signatures found for the first time on the account. */
+    val rumours: Int = 0,
+    val clueRungs: Int = 0,
+    val signatureFirsts: Int = 0,
     /** What a T0.7 bot did (forge modes, techniques, requests, signature tries, rejected commands, ...); null for the classic policies. */
     val bot: BotRunStats? = null,
 )
@@ -248,6 +252,9 @@ class SimulationDriver(
         var stipendGold = 0
         var routs = 0
         var wallDeaths = 0
+        var rumours = 0
+        var clueRungs = 0
+        var signatureFirsts = 0
         val collector = if (customerMetrics) CustomerCollector(engine) else null
         while (!state.isEnded && state.day <= maxDays) {
             collector?.morning(state)
@@ -342,6 +349,9 @@ class SimulationDriver(
                 stipendGold += res.ledger?.income?.get(IncomeKind.STIPEND) ?: 0
                 routs += res.events.count { it.type == EventType.SIEGE_LOST && it.data["rout"] == "true" }
                 wallDeaths += res.field.count { it.outcome == FieldOutcome.FELL_AT_THE_WALL }
+                rumours += res.events.count { it.type == EventType.DISCOVERY && it.data["rumour"] == "true" }
+                clueRungs += res.events.count { it.type == EventType.DISCOVERY && "rung" in it.data } + res.events.count { it.type == EventType.WORLD_EVENT && it.data["event"] == "weapon_fragment" }
+                signatureFirsts += res.events.count { it.type == EventType.SIGNATURE_DISCOVERED && it.data["first"] == "true" }
             }
             if (eventRetentionDays > 0) {
                 val cutoff = out.day - eventRetentionDays
@@ -366,7 +376,8 @@ class SimulationDriver(
             weaponFates = weaponFates,
             firstSiegeDefense = firstSiegeDefense, firstSiegeHeld = firstSiegeHeld, forgedByFirstSiege = forgedByFirstSiege, soldByFirstSiege = soldByFirstSiege,
             toolsByFirstSiege = toolsByFirstSiege, firstPremiumSaleDay = firstPremiumSaleDay, rareMaterialsBought = rareMaterialsBought + (bots?.stockpiled ?: 0), legendsReturned = legendsReturned,
-            customers = collector?.finish(state), patronageTaken = patronageTaken, stipendSales = stipendSales, stipendGold = stipendGold, routs = routs, wallDeaths = wallDeaths, bot = bots?.finish(state),
+            customers = collector?.finish(state), patronageTaken = patronageTaken, stipendSales = stipendSales, stipendGold = stipendGold, routs = routs, wallDeaths = wallDeaths,
+            rumours = rumours, clueRungs = clueRungs, signatureFirsts = signatureFirsts, bot = bots?.finish(state),
         )
         return stats to state
     }
@@ -563,6 +574,11 @@ data class PolicySummary(
     val routsPerRun: Double = 0.0,
     val wallDeathsPerRun: Double = 0.0,
     val wallDeathRunShare: Double = 0.0,
+    /** The clue ladder per run: rumours, rungs earned, signatures first found; and the share of runs that found one. */
+    val rumoursPerRun: Double = 0.0,
+    val clueRungsPerRun: Double = 0.0,
+    val signatureFirstsPerRun: Double = 0.0,
+    val signatureFirstRunShare: Double = 0.0,
     /** What the T0.7 bots did, per run (`BotRunStats`); absent for the classic policies. */
     val bot: BotSummary? = null,
 )
@@ -609,6 +625,8 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             patronageTakenPerRun = runs.map { it.patronageTaken }.average(), stipendSalesPerRun = runs.map { it.stipendSales }.average(), stipendGoldPerRun = runs.map { it.stipendGold }.average(),
             stipendShareOfIncome = runs.sumOf { it.stipendGold }.toDouble() / runs.sumOf { it.goldEarned }.coerceAtLeast(1),
             routsPerRun = runs.map { it.routs }.average(), wallDeathsPerRun = runs.map { it.wallDeaths }.average(), wallDeathRunShare = runs.count { it.wallDeaths > 0 }.toDouble() / runs.size,
+            rumoursPerRun = runs.map { it.rumours }.average(), clueRungsPerRun = runs.map { it.clueRungs }.average(),
+            signatureFirstsPerRun = runs.map { it.signatureFirsts }.average(), signatureFirstRunShare = runs.count { it.signatureFirsts > 0 }.toDouble() / runs.size,
             bot = BotSummary.of(runs),
         )
     }
@@ -635,7 +653,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  level-ups/run: ${f1(s.heroLevelUpsPerRun)}  mentorings/run: ${f1(s.mentoringsPerRun)}  guilds/run: ${f1(s.guildsPerRun)}  runs with a guild: ${pct(s.guildRunShare)}")
             appendLine("  wall: routs/run=${"%.2f".format(s.routsPerRun)}  champions fallen/run=${"%.3f".format(s.wallDeathsPerRun)}  runs with a champion fallen=${"%.1f%%".format(100.0 * s.wallDeathRunShare)}")
             appendLine("  guild patronage/run: taken=${"%.2f".format(s.patronageTakenPerRun)}  purchases with a stipend=${"%.2f".format(s.stipendSalesPerRun)}  stipend gold=${f1(s.stipendGoldPerRun)} (${"%.1f%%".format(100.0 * s.stipendShareOfIncome)} of gold earned)")
-            appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}")
+            appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}  rumours/run: ${"%.2f".format(s.rumoursPerRun)}  clue rungs/run: ${"%.2f".format(s.clueRungsPerRun)}  signatures first found/run: ${"%.3f".format(s.signatureFirstsPerRun)} (runs with one ${"%.1f".format(100 * s.signatureFirstRunShare)}%)")
             s.bot?.let { append(it.render()) }
             s.customers?.let { append(it.render()) }
         }
@@ -842,6 +860,8 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
             "sidegradeTolerance" -> c.copy(customers = c.customers.copy(sidegradeTolerance = dbl()))
             "threatUtility" -> c.copy(customers = c.customers.copy(threatUtility = dbl()))
             "championSiegeWillingness" -> c.copy(customers = c.customers.copy(championSiegeWillingness = dbl()))
+            "maxRumoursPerRun" -> c.copy(customers = c.customers.copy(maxRumoursPerRun = int()))
+            "rumourCooldownDays" -> c.copy(customers = c.customers.copy(rumourCooldownDays = int()))
             "wallsRoutDamage" -> c.copy(weaponFates = c.weaponFates.copy(wallsRoutDamage = int()))
             "wallsRoutRatio" -> c.copy(weaponFates = c.weaponFates.copy(wallsRoutRatio = dbl()))
             "newAdventurerCount" -> c.copy(newAdventurerCount = int())

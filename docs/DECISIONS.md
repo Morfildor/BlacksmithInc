@@ -2629,3 +2629,72 @@ customers act on them.
 `aResistedBladeIsRefusedWithItsOwnReason`. `WeaponFameTest` now expects fame in the worth of a blade as well as in its desire.
 **Golden `state_rules3.txt` re-recorded: 232 of 300 lines, all 20 seeds, the RNG column on 222** (fractional gains and the warning
 days change who buys, from day 4 or 5 on in most seeds).
+
+## The clue ladder, rumours and recall (2026-10-09, task T4.3; G07, E3, A02)
+
+**The ladder (PROPOSED, plan 4.7).** A signature has four rungs, stored as a bit set per signature in the legacy journal
+(`Journal.signatureClues`, merged across eras by OR): RECIPE ("it hides something more"), CATALYST (one authored phrase per catalyst:
+Binding Salt "wants something to bind it", Runestone Shard "wants a word cut into it", Dragon Oil "wants a hotter fire", Void Ink "wants a
+rule rewritten"; a recipe with none "wants nothing added"), TEMPER ("more patience", "a steady temper", "more daring", or "it takes any
+temper"), QUALITY ("finer work: at least fine"). Every forge at a base recipe that does not become the signature earns one rung: the
+first rung first; then the lowest rung not yet held among the conditions that attempt missed; when it missed none of those, the lowest
+rung not yet held. `Journal.recordSignatureClue` used to answer once per signature and then say nothing. The hint
+(`Journal.hint`, same signature as before) shows the rungs held and nothing else; no rung states an odd or a number
+(`ClueLadderTest.noOddsAtAnyRung`). A found signature holds all four. A profile from before the ladder that had "observed" a signature
+holds the first rung. **This part draws no RNG**: with the ladder in and rumours not yet written, the golden file's RNG column was
+identical on all 300 lines; only the extra DISCOVERY records differed.
+
+**Catalyst identity (G07, the review's second branch).** Through the phrases above and an honest description: the four catalysts'
+flavour text now reads "Steadies the forge. Some recipes ask for ...", and `Journal.CATALYST_EFFECT` says what any catalyst does today.
+The old text promised that Runestone Shard "guides an affix"; it did not. Four mechanical jobs stay deferred (plan 10.3). Flavour text
+is not hashed, so content stays 3.
+
+**Rumours (PROPOSED, plan 4.6 E3; outcome-changing as the plan says).** A hero who slays an elite with a blade, and a patron who
+collects a commission, each tell of one signature not yet found: its next rung. At most `customers.maxRumoursPerRun` **4** a run and
+none within `customers.rumourCooldownDays` **3** days of the last (both mine; the plan gives the target "2-4 a run", not the numbers).
+A rumour is one pick on the EVENTS stream among the signatures with a rung left, as the fragment event's pick is, so later world events
+of that run differ. The weapon fragment event now grants the RECIPE rung through the same function instead of writing the entry itself.
+The count lives in `eventCounters["rumour"]` (the invariant that every counter is a pooled event's makes this one exception).
+**Not done, and stated:** the plan's E3 row also lists the "ancient notes" and "wandering master" events as rumour sources. They teach
+core-and-augment and augment-and-family affinities, not signatures, and are left as they were.
+
+**Recall (A02).** `SignatureCatalog.recipe(def)` is the forge a found signature asks for (Advanced when it needs a catalyst, its
+temper); `Journal.coreAugmentOf(key)` is the pair of an understood journal row; `Journal.rungs(journal, def)` is the ladder as a set.
+The buttons are the app's.
+
+**What it measures** (1,000 runs or accounts at base seeds 1 / 10001 / 20001).
+
+| | before | after |
+|---|---|---|
+| SIGNATURE_PURSUIT, how it plays | knows every recipe (an upper bound) | follows the ladder: tries a signature only once its first rung is held, with the catalyst and temper only where their rungs say them |
+| accounts with a first discovery by the end of era 1 / era 2 | not measured | **98.3 / 98.7 / 98.3 %** / **100 %** (acceptance: 70 % by era 2) |
+| signatures known at the end of era 1 / era 2 | not measured | 3.76 / 3.83 / 3.78 and 8.70 / 8.85 / 8.88 of 24 |
+| the same with rumours off | | 97.4-97.6 % by era 1; 2.45-2.53 and 4.41-4.45 known |
+| signature weapons forged a run | 8.1 / 8.1 / 8.0 | 5.3 |
+| SIGNATURE_PURSUIT mean days | 28.2 / 28.4 / 28.2 | 28.0 / 27.9 / 27.8 |
+| rumours a run | 0 | plain smith 3.4, REQUEST_DRIVEN 4.0, SIGNATURE_PURSUIT 3.7, EXPERT 4.0 (the cap) |
+| clue rungs earned a run | at most one per signature | plain smith 15, SIGNATURE_PURSUIT 24, EXPERT 26 |
+
+A plain smith who forges only iron-and-ember swords completes the Dawnbrand ladder on day 1 or 2 and never finds it (it needs Binding
+Salt in the Advanced Forge): the journal now tells them so.
+
+Other rows (the rumours' picks move later world events, so every row is re-measured): BALANCED_FAIR 22.215 / 22.505 / 22.350 ->
+**22.510 / 22.325 / 22.435** (median 25 / 20 / 20; p90 25); BALANCED_ACTIVE 29.720 / 29.770 / 29.985 -> 29.760 / 29.930 / 29.830; SYNERGY
+34.945 / 35.030 / 35.335 -> 35.175 / 35.300 / 35.230; REQUEST_DRIVEN 30.145 / 30.300 / 29.925 -> 30.160 / 29.920 / 30.385; SIEGE_PREP 43.020 /
+43.395 / 43.170 -> 43.120 / 43.505 / 43.500; EXPERT 45.405 / 45.820 / 45.485 -> 45.400 / 45.640 / 45.530 (p90 50, longest 55); maxed
+BALANCED_FAIR 37.135 / 37.315 / 37.235 -> 37.080 / 37.385 / 37.235; maxed SYNERGY 45.430 / 45.250 / 45.540 -> 45.415 / 45.370 / 45.430 (over
+new: +10.240 / +10.070 / +10.200); maxed EXPERT 54.415 / 54.810 / 54.515 -> 54.570 / 54.800 / 54.730 (p90 60, longest 65). All within the
+noise floor of 0.3: rumours move no survival number. The plain smith's median and its 22.5 edge now trip at seed 1 instead of seed
+10001 (mean 22.510, median 25), which is the same thin margin seen from another side. Deaths per hero-day FAIR 0.00486 / 0.00494 /
+0.00472 against 0.00518. Tripwire not crossed.
+
+**Acceptance.** SIGNATURE_PURSUIT makes a first discovery by the end of era 2 in 70 % of accounts: **met (100 %; 98 % in era 1).** No
+signature is first found without rung 1: met by construction (a discovery writes the whole ladder; asserted over 120 runs). 2-4
+rumours a run: met (3.4 to 4.0).
+
+**Tests.** `ClueLadderTest` (6): `aSecondMissEarnsTheCatalystRung`, `eachCatalystHasItsOwnPhrase`, `noOddsAtAnyRung`,
+`cluesMergeAcrossEras`, `noSignatureIsFirstFoundWithoutRungOne`, `aRumourEarnsOneRungForARealEventWithinItsLimits`. Two tests of
+`SignatureAndTechniqueTest` now expect the ladder's first sentence, then the second. `ReplaysAndWeaponFatesTest.buildingAReplayDrawsNoRng`
+switches rumours off (it asserts that only COMBAT moves in a fight). **Golden `state_rules3.txt` re-recorded: all 300 lines** (the
+golden script forges an iron-and-ember sword, a base recipe, so day 1 of every seed records further clues), **the RNG column on 168
+lines in 15 seeds** (from the first rumour of each). Balance 8 re-pinned (the two rumour numbers).
