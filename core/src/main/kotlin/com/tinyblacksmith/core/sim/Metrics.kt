@@ -1,8 +1,11 @@
 package com.tinyblacksmith.core.sim
 
+import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.content.ToolEffect
 import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.engine.WorldEvents
+import com.tinyblacksmith.core.market.Commissions
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
 import kotlinx.serialization.Serializable
@@ -46,8 +49,10 @@ data class RunCustomers(
     val goldHeroes: List<Int>, val goldSum: List<Int>, val shelfHeroes: List<Int>, val cannotAfford: List<Int>,
     val firstNameDays: Int, val surnameDays: Int, val faceDays: Int, val facePairs: Int, val worstFace: Int, val fullNameRepeat: Boolean,
     val expWon: Int, val expLost: Int, val expFatal: Int,
+    /** [droughtDays] here is the empty-shelf count (listed blades at End Day = 0); the G10 drought is [RunRecovery.droughtDays]. */
     val sellOutDays: Int, val droughtDays: Int,
     val sieges: List<SiegeSnap>,
+    val recovery: RunRecovery,
 )
 
 /** Observes one run through [beforeEndDay] and [afterEndDay]; read-only on every state it is handed. */
@@ -82,6 +87,10 @@ class CustomerCollector(private val engine: GameEngine) {
     private var expWon = 0; private var expLost = 0; private var expFatal = 0
     private var sellOutDays = 0; private var droughtDays = 0
     private val sieges = ArrayList<SiegeSnap>()
+    private val recovery = RecoveryProbe(engine)
+
+    /** Call with the state the policy sees at the start of the day, before it acts (recovery states, [RecoveryProbe]). */
+    fun morning(s: GameState) = recovery.morning(s)
 
     /** Call with the state the End Day command is about to resolve (after the day's shop actions). */
     fun beforeEndDay(s: GameState) {
@@ -176,7 +185,7 @@ class CustomerCollector(private val engine: GameEngine) {
             goldHeroes = goldHeroes.toList(), goldSum = goldSum.toList(), shelfHeroes = shelfHeroes.toList(), cannotAfford = cannotAfford.toList(),
             firstNameDays = firstNameDays, surnameDays = surnameDays, faceDays = faceDays, facePairs = facePairs, worstFace = worstFace,
             fullNameRepeat = last.heroes.values.groupBy { it.fullName }.any { it.value.size > 1 },
-            expWon = expWon, expLost = expLost, expFatal = expFatal, sellOutDays = sellOutDays, droughtDays = droughtDays, sieges = sieges,
+            expWon = expWon, expLost = expLost, expFatal = expFatal, sellOutDays = sellOutDays, droughtDays = droughtDays, sieges = sieges, recovery = recovery.finish(),
         )
     }
 }
@@ -210,6 +219,7 @@ data class CustomerSummary(
     val expeditionsWonPerRun: Double, val expeditionsLostPerRun: Double, val expeditionsFatalPerRun: Double, val deathsPerHeroDay: Double,
     val sellOutDays: Double, val droughtDays: Double,
     val sieges: List<SiegeRow>,
+    val recovery: RecoverySummary,
 ) {
     companion object {
         private fun ratio(a: Number, b: Number) = if (b.toDouble() == 0.0) 0.0 else a.toDouble() / b.toDouble()
@@ -262,6 +272,7 @@ data class CustomerSummary(
                 expeditionsWonPerRun = rs.map { it.expWon }.average(), expeditionsLostPerRun = rs.map { it.expLost }.average(), expeditionsFatalPerRun = rs.map { it.expFatal }.average(),
                 deathsPerHeroDay = ratio(runs.sumOf { it.heroDeaths }, heroDays),
                 sellOutDays = ratio(rs.sumOf { it.sellOutDays }, days), droughtDays = ratio(rs.sumOf { it.droughtDays }, days),
+                recovery = RecoverySummary.of(rs.map { it.recovery }),
                 sieges = rs.flatMap { it.sieges }.groupBy { it.siege }.toSortedMap().map { (n, s) ->
                     SiegeRow(n, s.size, s.count { it.held }.toDouble() / s.size, s.map { it.pressure }.average(), s.map { it.militia }.average(), s.map { it.armory }.average(),
                         s.map { it.championPower }.average(), s.map { it.forecastDefense }.average(), s.map { it.forecastRaid }.average(), s.map { it.defense }.average(), s.map { it.raid }.average())
@@ -289,9 +300,99 @@ data class CustomerSummary(
             appendLine("    hero gold at the start of day: " + heroGold.entries.joinToString("  ") { "${it.key}=${"%.0f".format(it.value)}" } + "   cannot pay for the cheapest listed blade: " + cannotAffordCheapest.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" })
             appendLine("    names: first name shared=${pct(firstNameClashDays)} of days  surname shared=${pct(surnameClashDays)}  face shared=${pct(faceClashDays)} (pairs/day=${f2(sameFacePairsPerDay)}, worst=$worstSameFace)  full name repeats in ${pct(fullNameRepeatRuns)} of runs")
             appendLine("    expeditions/run: won=${f2(expeditionsWonPerRun)} lost=${f2(expeditionsLostPerRun)} fatal=${f2(expeditionsFatalPerRun)}  deaths per hero-day=${"%.4f".format(deathsPerHeroDay)}  sell-out days=${pct(sellOutDays)}  empty-shelf days=${pct(droughtDays)}")
+            append(recovery.render())
             if (sieges.isNotEmpty()) appendLine("    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): " + sieges.joinToString("; ") {
                 "#${it.siege} n=${it.runs} ${pct(it.held)} p=${"%.0f".format(it.pressure)} m=${"%.0f".format(it.militia)} a=${"%.0f".format(it.armory)} c=${"%.0f".format(it.championPower)} f=${"%.0f".format(it.forecastDefense)}/${"%.0f".format(it.forecastRaid)} r=${"%.0f".format(it.defense)}/${"%.0f".format(it.raid)}"
             })
         }
+    }
+}
+
+/*
+ * Recovery (plan 4.7, G10): three states told apart, read from the morning state before the policy acts, so a number
+ * describes the position the player is in and not what the bot then did.
+ *   resting - could act and chose not to (not measured here: it depends on the policy, not on the position);
+ *   drought - no possible sale today, but a legal forge exists;
+ *   stuck   - no possible sale today and no legal forge.
+ * A possible sale is a blade in the shop (shelf or storage) that some living hero could afford at the going rate
+ * (`suggestedPrice`) and would be stronger with (`Market.evaluate`: affordable and improvement > 0, neutral noise), or a
+ * blade that closes an offered or accepted commission. A legal forge is a Quick forge: energy (with the day's overwork
+ * allowance) for it, and a core and an augment each on hand or buyable in stock with the gold on hand. Salvage, hone and
+ * donating are not counted as ways out. The driver's `hardLocks` is a different, older count (see [RunStats.hardLockDays]).
+ */
+
+/** One run's recovery counters; [days] is the number of mornings observed. */
+@Serializable
+data class RunRecovery(val days: Int, val stuckDays: Int, val droughtDays: Int, val longestStuckStreak: Int)
+
+/** Classifies each morning as sale-possible, drought or stuck. Read-only. */
+class RecoveryProbe(private val engine: GameEngine) {
+    private var days = 0; private var stuckDays = 0; private var droughtDays = 0; private var streak = 0; private var longest = 0
+
+    /** Call with the day's opening state. A drought day ends a stuck streak, like a day with a possible sale. */
+    fun morning(s: GameState) {
+        days++
+        if (canSell(s)) { streak = 0; return }
+        if (canForge(s)) { droughtDays++; streak = 0; return }
+        stuckDays++; streak++; longest = maxOf(longest, streak)
+    }
+
+    fun finish() = RunRecovery(days, stuckDays, droughtDays, longest)
+
+    internal fun canForge(s: GameState): Boolean {
+        val cfg = engine.config
+        if (s.energy + (cfg.maxOverworkPerDay - s.overworkToday) < cfg.quickForgeEnergy) return false
+        fun cheapest(category: MaterialCategory): Int? = engine.content.materials(category).mapNotNull { m ->
+            when {
+                (s.materials[m.id] ?: 0) > 0 -> 0
+                (s.supplierStock[m.id] ?: Int.MAX_VALUE) > 0 -> engine.materialPrice(s, m.id)
+                else -> null
+            }
+        }.minOrNull()
+        val core = cheapest(MaterialCategory.CORE) ?: return false
+        val augment = cheapest(MaterialCategory.AUGMENT) ?: return false
+        return core + augment <= s.gold
+    }
+
+    internal fun canSell(s: GameState): Boolean {
+        val cfg = engine.config
+        val stock = s.weapons.values.filter { it.isListed || it.isInStorage }
+        if (stock.isEmpty()) return false
+        val open = s.commissions.values.filter { it.status == CommissionStatus.OFFERED || it.status == CommissionStatus.ACCEPTED }
+        if (open.any { c -> s.heroes[c.buyerId]?.isAlive == true && Commissions.pick(stock, c, cfg) != null }) return true
+        val ctx = ResolutionContext(s, engine.content, cfg)
+        val alive = s.aliveHeroes()
+        return stock.any { w ->
+            val offer = w.copy(location = WeaponLocation.Shelf(Market.askingPrice(w, cfg)))
+            alive.any { h -> Market.evaluate(ctx, h, ctx.equippedWeapon(h.id), offer, 0.5).let { it.affordable && it.improvement > 0 } }
+        }
+    }
+}
+
+/** Recovery numbers for one policy row; shares are 0-1 of runs or of observed mornings. */
+@Serializable
+data class RecoverySummary(
+    val stuckDayShare: Double, val droughtDayShare: Double, val stuckDaysPerRun: Double, val droughtDaysPerRun: Double,
+    val runsWithStuckDay: Double, val runsWithStreak2: Double, val runsWithStreak3: Double, val runsWithStreak5: Double, val longestStuckStreak: Int,
+) {
+    companion object {
+        private fun share(rs: List<RunRecovery>, f: (RunRecovery) -> Boolean) = if (rs.isEmpty()) 0.0 else rs.count(f).toDouble() / rs.size
+
+        fun of(rs: List<RunRecovery>): RecoverySummary {
+            val days = rs.sumOf { it.days }.coerceAtLeast(1)
+            return RecoverySummary(
+                stuckDayShare = rs.sumOf { it.stuckDays }.toDouble() / days, droughtDayShare = rs.sumOf { it.droughtDays }.toDouble() / days,
+                stuckDaysPerRun = rs.map { it.stuckDays }.average(), droughtDaysPerRun = rs.map { it.droughtDays }.average(),
+                runsWithStuckDay = share(rs) { it.stuckDays > 0 }, runsWithStreak2 = share(rs) { it.longestStuckStreak >= 2 },
+                runsWithStreak3 = share(rs) { it.longestStuckStreak >= 3 }, runsWithStreak5 = share(rs) { it.longestStuckStreak >= 5 },
+                longestStuckStreak = rs.maxOfOrNull { it.longestStuckStreak } ?: 0,
+            )
+        }
+    }
+
+    fun render(): String {
+        fun pct(v: Double) = "%.2f%%".format(100.0 * v)
+        return "    recovery (morning state): stuck days=${pct(stuckDayShare)} of days (${"%.3f".format(stuckDaysPerRun)}/run)  drought days=${pct(droughtDayShare)} (${"%.3f".format(droughtDaysPerRun)}/run)" +
+            "  runs with a stuck day=${pct(runsWithStuckDay)}  stuck streak 2+ days=${pct(runsWithStreak2)}  3+ days=${pct(runsWithStreak3)}  5+ days=${pct(runsWithStreak5)}  longest=$longestStuckStreak\n"
     }
 }
