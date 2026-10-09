@@ -43,7 +43,7 @@ $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && shot 01_title
 tap_id title_new_run || exit 1
-# A new run lands on the Home dashboard; the forge is one tab over.
+# A new run lands on the Shop destination (its Home page); the forge is one destination over.
 wait_text "Today" && shot 02_home
 tap_id nav_forge || exit 1
 wait_text "Forge weapon" && shot 02_workshop
@@ -52,7 +52,7 @@ scroll_to "Forge weapon"; shot 03_forge_ready
 tap_id forge_weapon || exit 1
 wait_text "Suggested price" && shot 04_result
 tap_id reveal_list || exit 1
-tap_id nav_market; $ADB shell sleep 1; shot 05_market
+tap_id nav_shop; tap_id page_market; $ADB shell sleep 1; shot 05_market
 has "Shelves (1/8)" && echo "CHECK shelf listed: ok" || echo "CHECK shelf listed: FAIL"
 tap_id end_day || exit 1
 wait_text "EMBERFALL GAZETTE" && shot 06_gazette
@@ -60,6 +60,15 @@ dump | grep -o 'text="[^"]*"' | grep -iE "gazette|bought|forged|patrolled|routed
 tap_id report_close || exit 1
 tap_id nav_town; $ADB shell sleep 1; shot 07_town
 has "Champions" && echo "CHECK town panel: ok"
+# Records: three segments; the gear opens the settings sheet; Back closes it, then returns from a destination to Shop.
+tap_id nav_records; shot 07b_records
+has_id page_gazette && has_id page_journal && has_id page_legacy && echo "CHECK records segments: ok" || echo "CHECK records segments: FAIL"
+tap_id page_legacy; wait_text "Permanent upgrades" && echo "CHECK legacy segment: ok" || echo "CHECK legacy segment: FAIL"
+tap_id nav_settings; wait_text "Reduced motion" && shot 07c_settings
+has_id settings_version && echo "CHECK settings sheet: ok" || echo "CHECK settings sheet: FAIL"
+$ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 1
+$ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 1
+has_id page_market && echo "CHECK back returns to Shop: ok" || echo "CHECK back returns to Shop: FAIL"
 # Process-death resume: kill and relaunch, expect the same day.
 $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
 # A saved run resumes straight into the workshop (no title detour).

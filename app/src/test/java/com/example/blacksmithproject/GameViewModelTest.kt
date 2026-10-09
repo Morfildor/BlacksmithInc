@@ -97,11 +97,18 @@ class GameViewModelTest {
         assertTrue(vm.playing().state.gold < gold)
         assertNull("closed stays closed in a new process", open(repo).playing().showReport)
 
-        // With no report open, back goes to Home from another panel and is not consumed on Home.
-        vm.selectPanel(Panel.MARKET)
+        // With no report open, back goes to Shop from another destination and is not consumed on Shop (any page of it).
+        vm.selectDest(Dest.RECORDS); advanceUntilIdle()
+        assertEquals(Panel.GAZETTE, vm.playing().panel)
         assertTrue(vm.back()); advanceUntilIdle()
-        assertEquals(Panel.HOME, vm.playing().panel)
+        assertEquals(Dest.SHOP to Panel.HOME, vm.playing().dest to vm.playing().panel)
         assertFalse(vm.back())
+        vm.selectPanel(Panel.MARKET); advanceUntilIdle()
+        assertEquals(Dest.SHOP, vm.playing().dest)
+        assertFalse(vm.back())
+        // A bar tap inside the destination already shown keeps its page.
+        vm.selectPanel(Panel.LEGACY); vm.selectDest(Dest.RECORDS); advanceUntilIdle()
+        assertEquals(Panel.LEGACY, vm.playing().panel)
     }
 
     @Test

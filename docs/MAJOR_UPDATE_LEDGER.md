@@ -69,15 +69,15 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T0.6 | Golden gameplay projection | INT | merged | dc81778 | core 187/187; fails when an RNG stream or an outcome hash is altered (both shown), passes twice unrecorded | |
 | T0.7 | Bots (Advanced, techniques, commissions, signatures, scarce recipes, multi-era, shock, EXPERT) | SIM | merged | 486a062 | core 206/206; 13 bots, 0 rejected commands, deterministic; classic output byte-identical; EXPERT new 42.4 mean p90 50 longest 55; maxed 52.2 p90 60 longest 65; all eleven tracks non-zero under some bot; SIEGE_PREP 39.6 | |
 | T1.1 | `GameSession` | INT | merged | 97a2f7f | app unit 21/21 (GameSessionTest 19), core green, lint 0 errors; with the Mutex removed 9 of 19 fail incl. both headline tests; ViewModel not yet on the session | |
-| T1.2 | Failure and recovery | INT + AB | todo | | | |
-| T1.3 | ViewModel on the session | AB | todo | | | |
+| T1.2 | Failure and recovery | INT + AB | merged | d4a223a | JVM failure tests green; emulator: corrupt row -> recovery screen, row untouched, Try again loads after restore, Start over leaves run.bak row; old-format day-1 save opens and accepts End Day (schema 2 after); Newer/Incompatible screens not seen on device | |
+| T1.3 | ViewModel on the session | AB | merged | d0ab3ed | app unit 40, instrumented 7/7, smoke and runend DONE; force-stop after Claim reopens claimed with upgrades; kill around End Day never half-committed; genuine 0.6.0 APK upgrade not run | |
 | T1.4 | Complete day edition | CB | merged | 6c88919 | core 191/191; golden unchanged; v1 fixture day 60 returns 20 of 20 records; app build ok; device not run | |
 | T1.5a | Versions, part 1 (neutral, first) | INT | merged | fcbad57 | core 197/197; golden unchanged; simulator output identical; WeaponLocation strings pinned against the unmodified model first | |
 | T1.5b | Versions, part 2 (after T1.2: rules 2, schema 2) | INT | merged (device gate with T1.2) | 4be4b32 | core 210/210; state_rules2 byte-identical to state_rules1; simulator numbers identical; v2 fixture; device check not run | |
-| T1.6 | Typed money, field results, locale | CA + CB | todo | | | |
-| T1.7 | Champion context | CB | todo | | | |
-| T1.8 | Commissions | CA + CON + AB | todo | | | |
-| T1.9 | Small engine corrections (faction ties, ore merchant) | CB | todo | | | |
+| T1.6 | Typed money, field results, locale | CA + CB | merged (app passes ledger in T1.8) | 8fe4c0e | core 234/234; neutral part: golden unrecorded and 200-seed output identical; collector cap moves only the four policies that list above the going rate (gold median -1 to -13, survival unchanged); nothing re-recorded | |
+| T1.7 | Champion context | CB | merged | f4e2279 | core tests green; all policy means within 0.1 day at 1,000 seeds; golden 17 lines moved (champion IDs under a warlord) | |
+| T1.8 | Commissions | CA + CON + AB | merged (device screenshot pending) | 9c4a041 | core 247/247; balance v6; 8 of 28 policy rows lose 0.7-1.3 mean days from the least-sufficient pick (see ruling); request card not yet seen on device | |
+| T1.9 | Small engine corrections (faction ties, ore merchant) | CB | merged | 917207f | all rows within 0.1 day; golden 23 lines moved (tie-break, merchant flag) | |
 | T2.1 | Visit record | CA | todo | | | |
 | T2.2 | Script and lead | CB | todo | | | |
 | T2.3 | Cursor | INT | todo | | | |
@@ -85,7 +85,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T2.5 | Counter screen | AA | todo | | | |
 | T2.6 | Aftermath, Tomorrow, endings | AA | todo | | | |
 | T2.7 | Hero and item sheets | AA | todo | | | |
-| T2.8a | Four destinations | AB | todo | | | |
+| T2.8a | Four destinations | AB | merged (shop-day speed setting moves to T2.5) | 14f04c2 | app unit 40, instrumented 10/10, smoke and runend DONE on emulator; four destinations screenshotted at font scale 1.0, 1.3, 2.0 (bar degrades at 2.0: T6.1); debug SQL moved to the debug source set; release build not built | |
 | T2.8b | The Shop destination | AB | todo | | | |
 | T2.8c | Forge, Town, Supplies | AB | todo | | | |
 | T2.9 | Device scripts and scenario saves | INT | todo | | | |
@@ -137,3 +137,6 @@ live copy and is copied back to the main checkout at each milestone boundary.
 - Ruling: the tripwire of plan 4.3 is restated on the measured EXPERT baseline, because its original lines (34.8 + 8 = 42.8 new, p90 60 maxed) were set before EXPERT existed and EXPERT already sits at 42.4 and 60 with no change made. New lines: new-account EXPERT mean above 42.4 + 8; maxed EXPERT p90 above 70; any run at 100 days or the day cap. When a line is crossed the integrator first uses the compensation levers of 4.3 (raid pressure, expedition suppression) and records the arms; it is reported to the owner, not a stop. Why: the execution instruction says the 45-day median is evidence, not a ceiling, and to tune stacked changes on distributions. Cost if wrong: late-game runs get longer than the owner wants; one config group reverts it.
 - Ruling: the M4 per-loop bound for SIEGE_PREP is restated as "at most +3 mean days over its own M0 value (39.6)", since the bot is +19 over FAIR today from counter-element forging alone (36.2). Cost if wrong: siege demand is stronger than intended; its weight is one number.
 - Ruling: RNG streams keep their rules-1 seed salt (`GameEngine.STREAM_SEED_VERSION = 1`) for every later rules bump; an outcome-changing task re-records only what it moves. Why: re-seeding every run on each bump would make before/after simulations incomparable and hide real effects in noise. Cost if wrong: none for players; the constant can still be raised with a re-record.
+- Owner instruction 2026-10-09 (during execution): "Keep the version history clean with appropriate commits" and "When everything is implemented, push". Applied as: one descriptive commit per task; at the end the cleaned branch is fast-forwarded onto `main` and pushed once, without force. `docs/major_update_evidence/`, the review document and the atlas PNG stay out unless the owner names them.
+- Ruling: T1.8's pick rule stands (storage first, then the least sufficient blade) although it costs 0.3-1.3 mean days (SYNERGY 34.7 -> 33.4, REQUEST_DRIVEN 24.3 -> 23.0) and misses the 0.6-day M1 gate on 8 of 28 rows. Why: the rule is what makes a request predictable ("this is the blade it will take") and keeps the player's best blade for the shelf; the cost is patrons carrying weaker blades into fights, and M3 (more residents and seats) moves survival up by several days and is tuned afterwards. Cost if wrong: first eras are slightly shorter until M3; the pick is one function (`Commissions.pick`).
+- Ruling: balance version 6 was taken by T1.8 (three commission numbers changed and the fingerprint test forbids re-pinning). M3 therefore lands as balance 7 and M4 as balance 8; rules and schema numbers of plan 6.7 are unchanged.
