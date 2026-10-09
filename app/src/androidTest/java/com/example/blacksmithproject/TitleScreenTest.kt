@@ -18,11 +18,10 @@ class TitleScreenTest {
     val compose = createComposeRule()
 
     @Test
-    fun titleOffersNewRunAndContinueWhenSaved() {
+    fun titleOffersANewRun() {
         var started = false
-        compose.setContent { TitleScreen(UiState.Title(LegacyProfile(), hasSavedRun = true), onNewRun = { started = true }, onContinue = {}) }
+        compose.setContent { TitleScreen(UiState.Title(LegacyProfile()), onNewRun = { started = true }) }
         compose.onNodeWithText("Tiny Blacksmith").assertIsDisplayed()
-        compose.onNodeWithText("Continue").assertIsDisplayed()
         compose.onNodeWithText("Light the forge").performClick()
         assertTrue(started)
     }

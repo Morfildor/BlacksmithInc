@@ -31,7 +31,8 @@ import com.example.blacksmithproject.ui.theme.Space
 
 /**
  * Defeat flow (GDD 3.2): summary -> claim-once legacy -> spend on permanent upgrades -> next era.
- * One primary action at a time: Claim until it is claimed, then Begin era.
+ * One primary action at a time: Claim until it is claimed, then Begin era. Each is one serialized operation, so all
+ * three kinds of button are disabled while one is being saved; a failed save is shown by the app-wide dialog.
  */
 @Composable
 fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
@@ -59,7 +60,7 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
                         Modifier.padding(top = Space.sm),
                     )
                     if (!s.claimed) {
-                        Button(onClick = vm::claimLegacy, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("run_claim")) {
+                        Button(onClick = vm::claimLegacy, enabled = !s.busy, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("run_claim")) {
                             Text("Claim ${end.totalPoints} legacy points", style = MaterialTheme.typography.titleMedium)
                         }
                     }
@@ -90,7 +91,7 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
                             Secondary(u.description)
                         }
                         OutlinedButton(
-                            enabled = s.claimed && cost != null && s.legacy.points >= cost,
+                            enabled = s.claimed && cost != null && s.legacy.points >= cost && !s.busy,
                             onClick = { vm.buyUpgrade(u.id) },
                             modifier = Modifier.padding(start = Space.sm).heightIn(min = 48.dp).semantics { contentDescription = cost?.let { "Buy ${u.name} level ${level + 1} for $it points" } ?: "${u.name} at maximum level" },
                         ) { Text(cost?.let { "$it pts" } ?: "Max") }
@@ -100,7 +101,7 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
         }
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm)) {
             if (s.claimed) {
-                Button(onClick = vm::beginNextEra, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag("run_begin_era")) {
+                Button(onClick = vm::beginNextEra, enabled = !s.busy, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag("run_begin_era")) {
                     Text("Begin era $nextEra", style = MaterialTheme.typography.titleMedium)
                 }
             } else {

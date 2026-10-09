@@ -47,5 +47,8 @@ class FakeGameRepository(var run: String? = null, var legacy: String? = null) : 
         this.cursor = cursor
     }
 
-    override suspend fun quarantine(key: String) { if (key == "run") { run?.let { quarantined["run.bak"] = it }; run = null } }
+    override suspend fun quarantine(key: String) {
+        if (key == "run") { run?.let { quarantined["run.bak"] = it }; run = null }
+        if (key == "legacy") { legacy?.let { quarantined["legacy.bak"] = it }; legacy = null }
+    }
 }

@@ -12,7 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,6 +24,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.blacksmithproject.GameSession
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Space
@@ -36,16 +36,19 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
     Surface(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }, color = MaterialTheme.colorScheme.background) {
         when (val s = ui) {
             UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-            is UiState.Title -> TitleScreen(s, onNewRun = vm::newRun, onContinue = vm::continueRun)
+            is UiState.LoadFailed -> LoadFailedScreen(s.failure, s.working, onRetry = vm::retry, onStartOver = vm::startOver)
+            is UiState.Title -> TitleScreen(s, onNewRun = vm::newRun)
             is UiState.Playing -> WorkshopScreen(s, vm)
             is UiState.RunEnded -> RunEndScreen(s, vm)
         }
+        // A save that failed leaves the last saved state on screen under this dialog; nothing is lost by dismissing it.
+        (ui.op as? GameSession.Status.Failed)?.let { SaveFailureDialog(it.op, onRetry = vm::retry, onKeepWorking = vm::dismissSaveFailure) }
     }
 }
 
-/** Title: one primary action. Continue leads when a run is saved, since a new run writes over it. */
+/** Title: one primary action. It shows only when no run is saved; a saved run opens straight into the workshop. */
 @Composable
-fun TitleScreen(s: UiState.Title, onNewRun: () -> Unit, onContinue: () -> Unit) {
+fun TitleScreen(s: UiState.Title, onNewRun: () -> Unit) {
     val newRunLabel = if (s.legacy.eras.isEmpty()) "Light the forge" else "Begin a new era"
     Column(
         Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(Space.lg),
@@ -56,11 +59,6 @@ fun TitleScreen(s: UiState.Title, onNewRun: () -> Unit, onContinue: () -> Unit) 
         Text("Tiny Blacksmith", style = MaterialTheme.typography.headlineLarge, textAlign = TextAlign.Center)
         Text("Era ${s.legacy.nextEra} awaits", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = Space.sm))
         Secondary("Legacy points: ${s.legacy.points} · eras survived: ${s.legacy.eras.size}", Modifier.padding(top = Space.xs, bottom = Space.lg))
-        if (s.hasSavedRun) {
-            Button(onClick = onContinue, modifier = Modifier.heightIn(min = 52.dp).testTag("title_continue")) { Text("Continue", style = MaterialTheme.typography.titleMedium) }
-            OutlinedButton(onClick = onNewRun, modifier = Modifier.padding(top = Space.sm).heightIn(min = 48.dp).testTag("title_new_run")) { Text(newRunLabel) }
-        } else {
-            Button(onClick = onNewRun, modifier = Modifier.heightIn(min = 52.dp).testTag("title_new_run")) { Text(newRunLabel, style = MaterialTheme.typography.titleMedium) }
-        }
+        Button(onClick = onNewRun, enabled = s.op !is GameSession.Status.Working, modifier = Modifier.heightIn(min = 52.dp).testTag("title_new_run")) { Text(newRunLabel, style = MaterialTheme.typography.titleMedium) }
     }
 }

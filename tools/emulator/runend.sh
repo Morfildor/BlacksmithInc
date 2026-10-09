@@ -43,6 +43,16 @@ shot 01_runend_unclaimed
 tap "Claim [0-9]" || exit 1
 wait_text "Legacy claimed" && echo "CHECK claimed: ok" || echo "CHECK claimed: FAIL"
 shot 02_runend_claimed
+# Process death after the claim: the ended run stays saved, so run end reopens, claimed, with upgrades still to buy.
+$ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
+wait_text "Legacy claimed" && echo "CHECK run end reopens after process death: ok" || { echo "CHECK run end reopens after process death: FAIL"; texts; shot stuck_reopen; exit 1; }
+upgrades=0
+for i in 1 2 3 4 5 6; do
+  if dump | grep -q 'content-desc="Buy [^"]*"[^>]*enabled="true"'; then upgrades=1; break; fi
+  $ADB shell input swipe 540 1500 540 900 400; $ADB shell sleep 1
+done
+[ $upgrades = 1 ] && echo "CHECK upgrades available after reopening: ok" || echo "CHECK upgrades available after reopening: FAIL"
+shot 02b_runend_reopened
 for i in 1 2 3 4 5 6; do has "Begin era" && break; $ADB shell input swipe 540 1500 540 500 400; $ADB shell sleep 1; done
 shot 03_runend_bottom
 tap "Begin era" || exit 1
