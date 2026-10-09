@@ -10,14 +10,14 @@ import com.tinyblacksmith.core.model.WeaponLocation
  * the per-command idempotence. A weapon goes only when all of these hold:
  *  - it is gone for good: Destroyed (salvaged or shattered) or Lost for one of the [terminalReasons]. A blade lost
  *    with a hero or seized can still come home (`WorldEvents` Heroic Inheritance reads those), so it stays, and so
- *    does any reason added later;
+ *    does a blade a travelling merchant still holds (`Market.resolveMerchant` may sell it) and any reason added later;
  *  - that happened at least `retentionDays` ago, the same window the event log keeps in full;
  *  - it is neither a Legend Board candidate (`Legacy.closeRun` reads fame at or above the threshold) nor a signature weapon.
  * No rule reads such a weapon and IDs come from a serial counter, so a seed replays identically with or without it.
  */
 object WeaponPruning {
-    /** [WeaponLocation.Lost] reasons no rule brings a blade back from: `GameEngine` Arm the watch, `WorldEvents` The Collector Arrives. */
-    val terminalReasons: Set<String> = setOf("given to the town watch", "sold to a collector")
+    /** [WeaponLocation.Lost] reasons no rule brings a blade back from: `GameEngine` Arm the watch, `WorldEvents` The Collector Arrives, `Market.resolveMerchant` unsold. */
+    val terminalReasons: Set<String> = setOf("given to the town watch", "sold to a collector", "carried off by a travelling merchant")
 
     fun prunable(w: Weapon, today: Int, retentionDays: Int, legendFame: Int): Boolean {
         if (retentionDays <= 0 || w.fame >= legendFame || w.signatureId != null) return false

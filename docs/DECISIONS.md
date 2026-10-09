@@ -1328,3 +1328,226 @@ The branch measured against v4 as merged; main had since taken the signboard and
 median crosses a siege boundary (25 -> 30) on a +0.3 mean, so the active smith leads the plain one by 10 days at the
 median again (7.0 mean days). BALANCED_ACTIVE spends 8.1 % of hero-days at the hall and 6.5 % on ambitions; 4.1
 lessons and 1.5 guilds a run, a guild in 97 % of runs. 158 JVM tests pass on the merged tree.
+## Balance v5, part 3: replays and weapon fates (session 8)
+Built on f73e5a1 (0.5.0, balance v4) in a worktree, measured at config version 4 and merged into v5.
+Two features: text replays for significant expeditions (GDD 6, 11) and the missing fates of a fallen hero's blade
+(GDD 7 PROPOSED "surviving comrades, guild inheritance, merchant resale, monster seizure or permanent loss"). All
+numbers PROPOSED.
+
+### Replays for significant expeditions
+- **What earns one**: an expedition against an elite (won or lost) and any expedition the hero dies on. Siege deaths
+  stay inside the siege replay.
+- **How the rounds are derived** (`Battle.fightReplay`, three rounds and an outcome): the hero meets the foe (number
+  = the hero's attack power as rolled), the foe answers (number = the encounter's power as rolled; "gave ground" at
+  win probability 0.65 or more, "pressed hard" at 0.35 or less, "stood firm" between), then the decisive blow (a win:
+  the gold already looted; a rout or a death: the wound already rolled). The outcome line is the event's. Each replay
+  carries `kind = EXPEDITION` and the `eventId` of the record it illustrates (ELITE_SLAIN, EXPEDITION_LOST or
+  HERO_DIED), so a test can hold it to the record.
+- **No RNG**: the builder reads locals of `resolveExpedition` and draws nothing; the wording varies with the odds
+  already computed. Proof below.
+- **Cap**: `Battle.dayReplays` puts the siege first (it alone feeds the diorama) and keeps the
+  `maxExpeditionReplaysPerDay` (3) most significant fights by the priority of their event (death 8, elite slain 7,
+  elite rout 3), ties in resolution order. `ctx.replays` is per-day scratch and `GameState.lastResolution` is the only
+  place a replay is saved, so a save holds at most 1 + 3 replays of 3 rounds each.
+- **Old saves**: `CombatReplay.kind` defaults to SIEGE and `eventId` to null, which is what every replay saved before
+  v5 was. `SaveCodec.SCHEMA_VERSION` and `GameEngine.RULES_VERSION` are unchanged.
+- **UI**: `DayReportDialog` lists every replay under "From the field" with the existing "N rounds" fold; the diorama
+  is fed only when the first replay is the siege. No new screen, panel or dialog, and nothing is computed in the UI.
+
+### Weapon fates on a hero's death
+The blade the hero carried meets one fate; spare blades are lost with the hero as before. The two rolls the callers
+already made keep their place and their short-circuit; their odds now depend on where and how the hero fell.
+
+| Where the hero fell | Comrades recover | Enemy seizes (when not recovered) | Recovered / seized / left over |
+|---|---|---|---|
+| On the road, ordinary foe | `weaponRecoveryChance` 0.5 (unchanged) | `weaponSeizureChance` 0.5 (unchanged) | 50 % / 25 % / 25 % |
+| To an elite | `eliteRecoveryChance` 0.4 | `eliteSeizureChance` 0.7 | 40 % / 42 % / 18 % |
+| On the walls, in a lost siege | `wallsRecoveryChance` 0.7 | `wallsSeizureChance` 0.3 | 70 % / 9 % / 21 % |
+
+Then, inside `Battle.kill`:
+1. **Guild inheritance**: if the enemy did not seize the blade and the fallen hero's guild has another living member,
+   `guildInheritanceChance` 0.6 that the guildmate it serves best (largest gain over the blade in hand by
+   `Market.evaluate`, ties by ID, no draw) takes it instead of the forge or the road. `Market.giveAndEquip` applies
+   the rule `Heroes.retire` uses for a mentee: wielded only if it beats their own blade by worn power, else kept as a
+   spare.
+2. **Comrades** (the existing fate): a recovered blade returns to storage.
+3. **Seizure** (existing).
+4. **Merchant**: a blade that is left over surfaces with a travelling merchant with chance
+   `min(merchantMaxChance 0.7, merchantBaseChance 0.3 + merchantChancePerFame 0.05 x min(fame, weaponFameCap 10))`:
+   30 % for an unknown blade, 55 % at fame 5, 70 % from fame 8. Fame raises it, capped twice, never to certainty.
+5. **Loss** (existing).
+
+**The merchant** (`Market.resolveMerchant`, End Day step 2 after shelf visits and commissions; no player command, no
+RNG). The blade sits at `WeaponLocation.Lost(dayTheHeroFell, "held by a travelling merchant")`
+(`WeaponLocation.Lost.WITH_MERCHANT`, `Weapon.isWithMerchant`; no new location type). On End Day
+`fell + merchantDelayDays` (2) the merchant arrives and offers it at `Market.askingPrice` on that day and the
+following ones, `merchantStayDays` (3) End Days in all. The buyer is the living hero with the highest
+`Market.evaluate` utility (zero noise) among those who hold the full price in gold (no trade-in credit), gain power
+from it and clear `purchaseUtilityThreshold`; ties by hero ID. The gold leaves the economy: nothing for the smith, no
+reputation, no loyalty, and the sale is WEAPON_RESOLD, not WEAPON_SOLD, so the shop tally ignores it. Unsold on the
+last day, the blade goes to `Lost(day, "carried off by a travelling merchant")` for good. **Longest stay in the
+merchant's hands: delay + stay - 1 = 4 days after the death.** `Invariants.check` flags a blade still held after day
+fell + delay + stay, one day of slack so that a delay of 0 stays a legal setting.
+
+| Fate | Location after | History kind | Event (`data["fate"]`) |
+|---|---|---|---|
+| Recovered | Storage | RECOVERED | WEAPON_RECOVERED (RECOVERED) |
+| Inherited | Owned by the guildmate | INHERITED (+ EQUIPPED) | WEAPON_INHERITED (INHERITED) |
+| Seized | Lost "seized" | SEIZED | WEAPON_STOLEN (SEIZED) |
+| Taken by a merchant | Lost "held by a travelling merchant" | SCAVENGED | WEAPON_LOST (MERCHANT): "... was gone from the field where ... fell." |
+| ... arrives | unchanged | none | WEAPON_SURFACED |
+| ... resold | Owned by the buyer | RESOLD (+ EQUIPPED) | WEAPON_RESOLD (RESOLD) |
+| ... unsold | Lost "carried off by a travelling merchant" | LOST | WEAPON_LOST (LOST) |
+| Lost | Lost "lost with <hero>" | LOST | WEAPON_LOST (LOST) |
+
+Subjects are real IDs (weapon, hero, and the fallen hero where one is named). WEAPON_RESOLD joins
+`EventCompaction.keptForever` with the other ownership records; WEAPON_SURFACED and WEAPON_RESOLD join the Gazette's
+hero lines. **Lost reasons and what can still come back**: "seized" and "lost with <hero>" (both existing) can return
+through the Heroic Inheritance event; "held by a travelling merchant" returns by resale within four days and must
+never be pruned; "carried off by a travelling merchant" is final (the inheritance event does not match it).
+
+**A seized blade's way back**: it already has one. `WorldEvents` "heroic_inheritance" (weight 2.0 in the 30 % daily
+pool, at most 3 a run, 3 days apart) hands a random blade that is Lost "seized" or "lost with ..." to a random living
+hero; `seizedWeaponsCanReturnThroughHeroicInheritance` covers it. No second path was added.
+
+**New RNG draws** (COMBAT stream, death path only, after the callers' two rolls; a fate whose chance is 0 draws
+nothing): one for the guild's claim, only when the blade was not seized and a living guildmate exists; one for the
+merchant, only when the blade was neither recovered, seized nor inherited. At most two per death, none for a
+bare-handed hero. The elite and walls odds also change how often the callers' second roll (seizure) happens.
+
+### Numbers
+`BalanceConfig` is at the JVM limit of 255 constructor parameter slots (a Double or Long takes two): 176 fields used
+250 slots at f73e5a1. Past the limit the class compiles and then fails at load ("Too many arguments in method
+signature"), so every v5 number lives in one nested field, `weaponFates: WeaponFatesConfig` (one slot):
+
+| Field | Value | Meaning |
+|---|---|---|
+| `maxExpeditionReplaysPerDay` | 3 | Fight replays kept in a day's report |
+| `wallsRecoveryChance` / `wallsSeizureChance` | 0.7 / 0.3 | Odds for a champion who dies in a lost siege |
+| `eliteRecoveryChance` / `eliteSeizureChance` | 0.4 / 0.7 | Odds for a hero who dies to an elite |
+| `guildInheritanceChance` | 0.6 | A living guildmate claims an unseized blade |
+| `merchantBaseChance` / `merchantChancePerFame` / `merchantMaxChance` | 0.3 / 0.05 / 0.7 | A left-over blade surfaces with a merchant |
+| `merchantDelayDays` / `merchantStayDays` | 2 / 3 | Days until the merchant arrives; End Days the blade is on offer |
+
+### Proof that replays draw no RNG
+Simulator output on the untouched tree, then after the replay feature alone, compared with Gradle and timing lines
+removed:
+- `--runs 200 --seed 1 --policy all --noImpact`: **identical** (158 lines; two runs of the untouched tree are also
+  identical to each other, so the comparison has no noise floor).
+- `--runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE`: **identical** (192 lines: 14 policies, both
+  maxed-legacy rows, the per-upgrade impact).
+
+On the finished tree `--noFates` (road odds everywhere, guild and merchant chances 0, so no new draw) gives the same
+two outputs again, apart from the new "weapon fates" report line: identical at 200 and at 1,000 seeds. The unit test
+`buildingAReplayDrawsNoRng` pins the draw count of an elite win (6) and an elite rout (5).
+
+### Evidence (`--runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE`, launch content)
+Median (p10/p90), mean. The v4 column is the untouched tree; its fate counters come from the v5 tree with `--noFates`.
+
+| Policy | v4 (0.5.0) | v5 |
+|---|---|---|
+| BALANCED_FAIR | 20 (15/25), mean 20.5, sold 19.6, deaths 0.9 | 20 (15/25), mean 20.4, sold 19.6, deaths 0.9 |
+| **BALANCED_ACTIVE** | 25 (20/35), mean 26.4, sold 26.9, deaths 1.0 | 25 (20/35), mean 26.4, sold 26.9, deaths 1.0 |
+| SYNERGY | 35 (25/40), mean 34.0, sold 28.7 | 35 (25/40), mean 34.0, sold 28.6 |
+| BALANCED_INVEST | 30 (20/40), mean 29.5, sold 28.3 | 30 (20/40), mean 29.5, sold 28.2 |
+| SAFE_FAIR / RECKLESS_FAIR / OVERWORK | 20 (20.2) / 20 (21.0) / 20 (20.5) | 20 (20.2) / 20 (21.0) / 20 (20.5) |
+| BALANCED_CHEAP / EXPENSIVE / REPUTED | 25 (24.0) / 10 (12.4) / 20 (20.3) | 25 (24.0) / 10 (12.4) / 20 (20.2) |
+| SAFE_CHEAP / RECKLESS_EXPENSIVE | 25 (23.3) / 10 (12.6) | 25 (23.3) / 10 (12.6) |
+| RANDOM / PASSIVE | 20 (15/35), mean 23.0 / 10 | 20 (15/35), mean 23.0 / 10 |
+| Maxed upgrades, BALANCED_FAIR | 35 (25/40), mean 33.5 | 35 (25/40), mean 33.6 |
+| Maxed upgrades, BALANCED_ACTIVE | 40 (30/45), mean 37.7 | 40 (30/45), mean 37.7 |
+
+0 hard-lock days in all 16,000 runs. Upgrade impact under BALANCED_ACTIVE is unchanged to 0.1 day (Stalwart Walls
++10 / +6.1, Well-Stocked Cellar +5 / +3.3, Forge Mastery +5 / +2.1, Thrifty Hands +5 / +1.2, Lucky Hammer +5 / +0.6,
+Tireless Smith +0 / +0.3, Family Savings +0 / +0.1, Known Name +0 / -0.5, all maxed +15 / +11.3).
+
+Blades of fallen heroes per run, and artifact recovery = (recovered + inherited + resold) / (recovered + inherited +
+resold + seized + lost), over the blades whose fate settled within the run (a blade still with a merchant at the end
+counts in neither). The GDD 15.2 metric, now in the text and JSON reports (`weaponFatesPerRun`,
+`artifactRecoveryRate`).
+
+| Run | Recovered | Inherited | Resold | Seized | Lost | Taken by a merchant | Artifact recovery |
+|---|---|---|---|---|---|---|---|
+| BALANCED_FAIR v4 | 0.41 | 0 | n/a | 0.18 | 0.19 | n/a | 53 % |
+| BALANCED_FAIR v5 | 0.36 | 0.00 | 0.02 | 0.25 | 0.11 | 0.06 | 52 % |
+| BALANCED_ACTIVE v4 | 0.39 | 0 | n/a | 0.20 | 0.19 | n/a | 50 % |
+| BALANCED_ACTIVE v5 | 0.34 | 0.00 | 0.02 | 0.27 | 0.14 | 0.06 | 48 % |
+| SYNERGY v4 / v5 | 0.38 / 0.33 | 0 / 0.00 | n/a / 0.03 | 0.18 / 0.25 | 0.17 / 0.10 | n/a / 0.06 | 52 % / 51 % |
+| BALANCED_INVEST v4 / v5 | 0.35 / 0.32 | 0 / 0.00 | n/a / 0.02 | 0.21 / 0.28 | 0.17 / 0.10 | n/a / 0.05 | 48 % / 47 % |
+| Maxed, BALANCED_FAIR v4 / v5 | 0.36 / 0.31 | 0 / 0.00 | n/a / 0.03 | 0.15 / 0.23 | 0.19 / 0.12 | n/a / 0.08 | 51 % / 48 % |
+| Maxed, BALANCED_ACTIVE v4 / v5 | 0.22 / 0.20 | 0 / 0.00 | n/a / 0.03 | 0.10 / 0.15 | 0.10 / 0.04 | n/a / 0.04 | 52 % / 53 % |
+| 300 days forced survival, BALANCED_ACTIVE v4 | 5.53 | 0 | n/a | 2.91 | 3.00 | n/a | 48 % |
+| 300 days forced survival, BALANCED_ACTIVE v5 | 4.84 | 0.00 | 0.51 | 4.22 | 1.99 | 1.28 | 46 % |
+
+The last two rows are 200 seeds of `--policy BALANCED_ACTIVE --siegeModifier 0 --days 300 --noImpact` (12.6 and 12.8
+deaths a run, 136.6 and 135.4 sold): a first-era run sees one death, so the long run is where the fates show. About
+two blades in five that a merchant takes are resold; the rest find no hero with the gold and the need.
+
+**Tuning.** Run length does not move with any setting tried (FAIR 20.4-20.5, ACTIVE 26.4, both within 0.1 day of
+v4), because a first-era run has under one armed death. What moves is where the blades go. The first elite odds
+(recovery 0.35, seizure 0.75) cut artifact recovery to 47 % / 45 % (FAIR / ACTIVE) and 44 % over 300 days: an elite
+kills harder, so about 70 % of armed deaths in a long run are elite deaths and the elite row is the common case, not
+the exception. 0.4 / 0.7 keeps the contrast (42 % seized against 25 % on the road) and holds recovery within two
+points of v4 (52 % / 48 %, 46 % over 300 days). The forge gets about one blade in eight fewer back; the smith's
+sales do not notice (19.6 and 26.9 a run, 135.4 against 136.6 over 300 days).
+
+### Two rules that cannot fire yet
+- **Guild inheritance**: `guildId` is set only in `Heroes.retire` (the founder, who is retired, and the mentee), so
+  a guild has at most one living member at a time and no guildmate is ever alive to inherit. 0 inheritances in the
+  16,000 runs above and in 200 runs of 300 days (22.5 retirements a run). The rule is covered by unit tests on built
+  states and becomes live the day heroes can join a guild; its effect on balance is then unmeasured (it takes
+  recovered blades from the forge as well as lost ones from the road).
+- **Death on the walls**: champions are chosen at health 50 or more (`heroWoundedThreshold`) and a lost siege costs
+  them 40 (`championSiegeDamageOnLoss`), so none can die there: 0 of 272 deaths in 300 BALANCED_ACTIVE runs. The walls
+  odds are reached only in unit tests. Sensitivity, not adopted (1,000 seeds, measured with the first elite odds):
+
+| `championSiegeDamageOnLoss` | BALANCED_FAIR mean, deaths | BALANCED_ACTIVE mean, deaths | Recovered a run (FAIR) | Artifact recovery (FAIR) |
+|---|---|---|---|---|
+| 40 (today) | 20.4, 0.9 | 26.4, 1.0 | 0.33 | 47 % |
+| 55 | 20.3, 1.4 | 26.2, 1.5 | 0.70 | 60 % |
+| 70 | 20.0, 3.3 | 25.8, 3.4 | 2.05 | 70 % |
+
+### Commands
+```
+./gradlew :core:simulate --args="--runs 200 --seed 1 --policy all --noImpact"                       # baseline, replay feature, and with --noFates
+./gradlew :core:simulate --args="--runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE"   # same three, and the v5 table (add --json PATH)
+./gradlew :core:simulate --args="--runs 200 --seed 1 --policy BALANCED_ACTIVE --siegeModifier 0 --days 300 --noImpact"   # long run, with and without --noFates
+./gradlew :core:test                                                                              # 154 tests (140 + 14 in ReplaysAndWeaponFatesTest)
+```
+`--noFates` is new in the simulator: the v4 rules for a fallen hero's blade, with the v4 draw sequence.
+
+### Not changed, and not measured
+- Not changed: spare (unequipped) blades are still lost quietly with the hero; the Heroic Inheritance event; hero
+  death rates; `championSiegeDamageOnLoss`; `BalanceConfig.version`, the save schema and the rules version.
+- Not measured: 10,000 seeds; guild inheritance and wall deaths in play (see above); the merchant's price and stay
+  as levers (only 2 / 3 days at the going rate was run); several eras; the tree merged with the other v5 branches.
+- Open: a seized blade returns only through the inheritance event (3 a run at most), and seizure is now the largest
+  single loss (4.2 of 12.8 deaths over 300 days). A bounded recovery from the faction that holds it would need the
+  seizing faction recorded on the blade, which it is not.
+
+### As merged on top of v5 parts 1 and 2 (1,000 seeds, seed 1, `--policy all --impactPolicy BALANCED_ACTIVE`)
+The branch measured against v4 as merged and could not see guild inheritance, because a guild never had two living
+members there. Part 2 lets heroes join a guild in life, so on the merged tree the rule fires.
+
+| Policy | v5 parts 1-2 | + replays and fates |
+|---|---|---|
+| BALANCED_FAIR | 20 (15/25), mean 20.5, sold 19.3 | 20 (15/25), mean 20.5, sold 19.3 |
+| BALANCED_ACTIVE | 30 (20/35), mean 27.5, sold 31.5 | 30 (20/35), mean 27.4, sold 31.4 |
+| SYNERGY | 35 (25/40), mean 34.7, sold 28.2 | 35 (25/40), mean 34.7, sold 28.2 |
+| BALANCED_INVEST | 30 (20/40), mean 30.1, sold 28.4 | 30 (20/40), mean 30.2, sold 28.5 |
+| BALANCED_FAIR, all upgrades | 35 (25/40), mean 34.7 | 35 (25/40), mean 34.7 |
+| BALANCED_ACTIVE, all upgrades | 40 (35/45), mean 40.6 | 40 (30/45), mean 40.6 |
+
+| Fates per run, merged tree | Recovered | Inherited by a guildmate | Resold by a merchant | Seized | Lost | Taken by a merchant | Artifact recovery |
+|---|---|---|---|---|---|---|---|
+| BALANCED_FAIR | 0.26 | 0.04 | 0.03 | 0.22 | 0.10 | 0.06 | 51 % |
+| BALANCED_ACTIVE | 0.27 | 0.07 | 0.01 | 0.22 | 0.09 | 0.05 | 53 % |
+| SYNERGY | 0.20 | 0.12 | 0.02 | 0.23 | 0.07 | 0.03 | 53 % |
+
+0 hard-locks; no mean moves by more than 0.1 day. A guildmate inherits in about one armed death in seven (ACTIVE)
+to one in five (SYNERGY). Pruning: "held by a travelling merchant" is kept (the merchant may still sell it),
+"carried off by a travelling merchant" is terminal and prunable (`WeaponPruning.terminalReasons`,
+`WeaponPruningTest`). `HeroDailyLifeTest.woundedDeadAndRetiredHeroesNeverTrainOrPursue` plays 60 seeds instead of 25:
+the new combat draws moved the runs and no lesson at the hall fell inside the first 25. 172 JVM tests pass.
+Still true on the merged tree: no champion can die on the walls (health 50 or more, a lost siege costs 40), so the
+walls odds are reached only in unit tests.

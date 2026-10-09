@@ -14,7 +14,7 @@ data class BalanceConfig(
      * v2 (2026-10-08): launch-content retune of the quality formula and siege damage.
      * v3 (2026-10-09): elite encounters, warlord sieges, hero ambitions, affix effects, shop actions, tools, trade-ins, raid growth 6. See docs/DECISIONS.md.
      * v4 (2026-10-09): weapon wear, weapon fame, whetstone 120/300, warlord pressure 50 with no raid bonus. See docs/DECISIONS.md.
-     * v5 (2026-10-09): signboard adds a customer a day per level, stronger affix magnitudes (catalog numbers), guild hall and ambition days ([HeroLifeConfig]). See docs/DECISIONS.md.
+     * v5 (2026-10-09): signboard adds a customer a day per level, stronger affix magnitudes (catalog numbers), guild hall and ambition days ([HeroLifeConfig]), fight replays and weapon fates ([WeaponFatesConfig]). See docs/DECISIONS.md.
      */
     val version: Int = 5,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
@@ -263,6 +263,13 @@ data class BalanceConfig(
     // v5: hero daily life
     /** GUILD and AMBITION as scored daily activities, and the money and prior-history inputs (GDD 6 utility model); the numbers are in [HeroLifeConfig]. */
     val heroLife: HeroLifeConfig = HeroLifeConfig(),
+    // v5: replays and weapon fates
+    /**
+     * One nested object, not flat fields: this constructor is at the JVM limit of 255 parameter slots (a Double or Long
+     * takes two). 176 fields used 250 of them before v5; past 255 the class still compiles and then fails at load
+     * ("Too many arguments in method signature"). New groups of numbers must be nested like this one (one slot).
+     */
+    val weaponFates: WeaponFatesConfig = WeaponFatesConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()
@@ -295,4 +302,25 @@ data class HeroLifeConfig(
     /** Prior history: a hero driven back from an expedition yesterday leans toward rest and toward the hall. */
     val setbackRestWeight: Double = 0.5,
     val setbackGuildWeight: Double = 0.4,
+)
+
+/** v5: replays and weapon fates. What is told of a fight, and what becomes of a fallen hero's blade (GDD 7, 11; all PROPOSED). */
+data class WeaponFatesConfig(
+    /** Fight replays kept in a day's report (elite fights and expeditions a hero died on, most significant first); the siege replay is always kept. */
+    val maxExpeditionReplaysPerDay: Int = 3,
+    // Weapon fates on a hero's death (GDD 7 "context-driven seeded recovery"). A fall on the road keeps
+    // BalanceConfig.weaponRecoveryChance / weaponSeizureChance; comrades are close on the walls, and an elite keeps its trophy.
+    val wallsRecoveryChance: Double = 0.7,
+    val wallsSeizureChance: Double = 0.3,
+    val eliteRecoveryChance: Double = 0.4,
+    val eliteSeizureChance: Double = 0.7,
+    /** Chance that a living guildmate inherits a fallen member's blade the enemy did not seize (it then never reaches the forge). */
+    val guildInheritanceChance: Double = 0.6,
+    /** A blade that would be lost surfaces with a travelling merchant at base + counted fame x perFame (fame up to BalanceConfig.weaponFameCap), never above the maximum. */
+    val merchantBaseChance: Double = 0.3,
+    val merchantChancePerFame: Double = 0.05,
+    val merchantMaxChance: Double = 0.7,
+    /** The merchant reaches Emberfall this many days after the hero fell and offers the blade on that End Day and the following ones, [merchantStayDays] in all, then moves on. */
+    val merchantDelayDays: Int = 2,
+    val merchantStayDays: Int = 3,
 )

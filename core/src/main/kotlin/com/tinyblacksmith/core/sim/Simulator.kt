@@ -110,6 +110,8 @@ data class RunStats(
     val heroLevelUps: Int = 0,
     val mentorings: Int = 0,
     val guilds: Int = 0,
+    /** What became of the blades fallen heroes carried (GDD 7), counted from the events that tell it. MERCHANT counts blades a merchant took; each ends RESOLD or LOST unless the run ends first. */
+    val weaponFates: Map<WeaponFate, Int> = emptyMap(),
 )
 
 /**
@@ -158,6 +160,7 @@ class SimulationDriver(
         val activityDays = sortedMapOf<String, Int>()
         var heroLevelUps = 0
         var mentorings = 0
+        val weaponFates = WeaponFate.entries.associateWith { 0 }.toMutableMap()
         while (!state.isEnded && state.day <= maxDays) {
             if (state.pendingBlessingOffer.isNotEmpty()) state = engine.handle(state, Command.ChooseBlessing(state.pendingBlessingOffer.first())).state()
             for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
@@ -217,6 +220,7 @@ class SimulationDriver(
                 for (h in state.aliveHeroes()) activityOf(h, res.events).let { activityDays[it] = (activityDays[it] ?: 0) + 1 }
                 heroLevelUps += res.events.count { it.type == EventType.HERO_LEVELED }
                 mentorings += res.events.count { it.type == EventType.GUILD_MENTORED }
+                for (e in res.events) e.data[WeaponFate.KEY]?.let { f -> WeaponFate.valueOf(f).let { weaponFates[it] = weaponFates.getValue(it) + 1 } }
             }
             if (eventRetentionDays > 0) {
                 val cutoff = out.day - eventRetentionDays
@@ -238,6 +242,7 @@ class SimulationDriver(
             toolLevels = state.tools.toSortedMap(), toolFirstDay = toolFirstDay,
             affixWeapons = state.weapons.values.flatMap { it.affixes + it.flaws }.groupingBy { it.value }.eachCount().toSortedMap(),
             activityDays = activityDays, heroLevelUps = heroLevelUps, mentorings = mentorings, guilds = state.town.guilds.size,
+            weaponFates = weaponFates,
         )
         return stats to state
     }
@@ -419,6 +424,10 @@ data class PolicySummary(
     /** Guilds standing at run end per run, and the share of runs that end with at least one. */
     val guildsPerRun: Double = 0.0,
     val guildRunShare: Double = 0.0,
+    /** Per run: what became of the blades fallen heroes carried. MERCHANT is in transit (it ends RESOLD or LOST, or the run ends first). */
+    val weaponFatesPerRun: Map<WeaponFate, Double> = emptyMap(),
+    /** GDD 15.2 artifact recovery: of those blades whose fate settled, the share that came back to Emberfall (forge, guildmate or merchant resale). */
+    val artifactRecoveryRate: Double = 0.0,
 )
 
 data class Report(val policy: Policy, val runs: List<RunStats>, val label: String = "new account") {
@@ -429,6 +438,9 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
         val siegesFought = runs.sumOf { it.siegesSurvived + it.siegesLost }
         val toolIds = runs.flatMap { it.toolLevels.keys }.toSortedSet()
         val heroDays = runs.sumOf { it.activityDays.values.sum() }
+        val fates = WeaponFate.entries.associateWith { f -> runs.sumOf { it.weaponFates[f] ?: 0 } }
+        val returned = fates.getValue(WeaponFate.RECOVERED) + fates.getValue(WeaponFate.INHERITED) + fates.getValue(WeaponFate.RESOLD)
+        val settled = returned + fates.getValue(WeaponFate.SEIZED) + fates.getValue(WeaponFate.LOST)
         return PolicySummary(
             policy = policy, label = label, runs = runs.size,
             daysP10 = percentile(days, 0.1), daysMedian = percentile(days, 0.5), daysMean = days.average(), daysP90 = percentile(days, 0.9), daysMax = days.maxOrNull() ?: 0,
@@ -455,6 +467,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             activityShare = runs.flatMap { it.activityDays.keys }.toSortedSet().associateWith { k -> runs.sumOf { it.activityDays[k] ?: 0 }.toDouble() / heroDays.coerceAtLeast(1) },
             heroLevelUpsPerRun = runs.map { it.heroLevelUps }.average(), mentoringsPerRun = runs.map { it.mentorings }.average(),
             guildsPerRun = runs.map { it.guilds }.average(), guildRunShare = runs.count { it.guilds > 0 }.toDouble() / runs.size,
+            weaponFatesPerRun = fates.mapValues { it.value.toDouble() / runs.size }, artifactRecoveryRate = if (settled == 0) 0.0 else returned.toDouble() / settled,
         )
     }
 
@@ -472,6 +485,8 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  hard-lock days total: ${s.hardLockDaysTotal}  runs with any hard-lock: ${s.runsWithHardLock}")
             appendLine("  shop visits/run: " + s.visitsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
             appendLine("  elites slain/run: ${f1(s.elitesSlainPerRun)}  weapons broken/run: ${f1(s.weaponsBrokenPerRun)}  warlord sieges/run: ${f1(s.warlordSiegesPerRun)}  warlords defeated/run: ${f1(s.warlordsDefeatedPerRun)}")
+            appendLine("  weapon fates on death/run: " + listOf(WeaponFate.RECOVERED, WeaponFate.INHERITED, WeaponFate.RESOLD, WeaponFate.SEIZED, WeaponFate.LOST).joinToString("  ") { "${it.name.lowercase()}=${"%.2f".format(s.weaponFatesPerRun[it] ?: 0.0)}" } +
+                "  (taken by a merchant=${"%.2f".format(s.weaponFatesPerRun[WeaponFate.MERCHANT] ?: 0.0)})  artifact recovery: ${pct(s.artifactRecoveryRate)}")
             if (s.toolLevelPerRun.isNotEmpty()) appendLine("  tools (share of runs / mean level / first day): " + s.toolLevelPerRun.keys.joinToString("  ") { t -> "$t=${pct(s.toolBoughtShare.getValue(t))}/${f1(s.toolLevelPerRun.getValue(t))}/${f1(s.toolFirstDayMean.getValue(t))}" })
             appendLine("  affix weapons/run: " + s.affixWeaponsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
             appendLine("  hero-days/run: ${f1(s.heroDaysPerRun)}  activity shares: " + s.activityShare.entries.joinToString("  ") { "${it.key}=${"%.1f%%".format(100.0 * it.value)}" })
@@ -612,6 +627,7 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
  *      --noTool id[,id] / --toolCost id=mult[,id=mult]: catalog sweeps that drop a workshop tool or scale its costs.
  *      --noAffixEffect id[,id]|all: keeps the affix but neutralises its v3 effect (bane, elite, heal, loot, wound, shatter, self-harm).
  *      --noImpact: skips the maxed-legacy and per-upgrade runs (sweeps that only need the policy rows).
+ *      --noFates: the v4 rules for a fallen hero's blade (road odds everywhere, no guild claim, no merchant); the same draws as v4.
  * Default: launch content, the GDD 15.2 policy set, maxed legacy accounts (BALANCED_FAIR and the impact policy) and
  * the per-upgrade impact sweep for the impact policy (BALANCED_FAIR by default).
  */
@@ -654,6 +670,14 @@ fun main(args: Array<String>) {
     argMap["--forgeDamageBase"]?.let { config = config.copy(forgeDamageBase = it.toDouble()); overrides["forgeDamageBase"] = it }
     argMap["--forgeDamageSlope"]?.let { config = config.copy(forgeDamageSlope = it.toDouble()); overrides["forgeDamageSlope"] = it }
     argMap["--maxForgeDamage"]?.let { config = config.copy(maxForgeDamagePerSiege = it.toInt()); overrides["maxForgeDamage"] = it }
+    if (argMap["--noFates"] == "true") {
+        config = config.copy(weaponFates = config.weaponFates.copy(
+            wallsRecoveryChance = config.weaponRecoveryChance, wallsSeizureChance = config.weaponSeizureChance,
+            eliteRecoveryChance = config.weaponRecoveryChance, eliteSeizureChance = config.weaponSeizureChance,
+            guildInheritanceChance = 0.0, merchantBaseChance = 0.0, merchantChancePerFame = 0.0,
+        ))
+        overrides["noFates"] = "true"
+    }
     val maxDays = argMap["--days"]?.toInt() ?: config.maxSimulatedDays
     val reserve = argMap["--reserve"]?.toInt() ?: SimulationDriver.DEFAULT_RESERVE
     val impactPolicy = argMap["--impactPolicy"]?.let { Policy.valueOf(it) } ?: Policy.BALANCED_FAIR

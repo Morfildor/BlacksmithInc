@@ -56,6 +56,7 @@ import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.model.CombatReplay
 import com.tinyblacksmith.core.model.DayResolution
 import com.tinyblacksmith.core.model.Rarity
+import com.tinyblacksmith.core.model.ReplayKind
 import com.tinyblacksmith.core.model.WeaponId
 import kotlinx.coroutines.delay
 
@@ -96,7 +97,7 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
 
 /**
  * The Gazette as a newspaper: masthead, siege diorama, the day's edition (lede, tally, Shop / Heroes / Town / Forge),
- * then the field report with each siege's rounds folded behind its outcome. Every line derives from real event
+ * then the field report with the rounds of each siege and each notable fight folded behind its outcome. Every line derives from real event
  * records; stepping is purely presentational and skippable (GDD 11).
  */
 @Composable
@@ -124,7 +125,7 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
                 PaperRuleLine(top = Space.sm, bottom = 2.dp)
                 PaperRuleLine(top = 0.dp, bottom = Space.sm)
                 Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
-                    r.replays.firstOrNull()?.let { replay -> ReplayStage(replay, shown, s, vm, reducedMotion) }
+                    r.replays.firstOrNull()?.takeIf { it.kind == ReplayKind.SIEGE }?.let { replay -> ReplayStage(replay, shown, s, vm, reducedMotion) }  // the siege comes first; fights are text only
                     val edition = remember(r.commandId) { Gazette.edition(r.events, s.state.heroes.values.associate { it.id.value to it.fullName }, r.visits) }
                     EditionBody(edition)
                     if (r.replays.isNotEmpty()) {

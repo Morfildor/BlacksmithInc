@@ -351,7 +351,7 @@ class HeroDailyLifeTest {
         val eager = GameEngine(config = config.copy(retirementLevel = 3, retirementVictories = 2, retirementChance = 0.5, ambitionActivityWeight = 1.5, heroLife = life.copy(guildBaseWeight = 1.5)))
         val seen = mutableMapOf<EventType, Int>()
         var gone = 0
-        for (seed in 1L..25L) {
+        for (seed in 1L..60L) {
             var state = eager.newRun(LegacyProfile(), seed)
             while (!state.isEnded && state.day < 30) {
                 val unable = state.heroes.values.filter { !it.isAlive || it.health < config.heroWoundedThreshold }.map { it.id.value }.toSet()

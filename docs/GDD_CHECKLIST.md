@@ -5,8 +5,8 @@ One line per GDD feature, by GDD section. `[x]` = built and verified (evidence i
 IMPLEMENTATION_PLAN.md is the phase-gate view; this is the feature view. DEFERRED scope (GDD 16.2: multiplayer,
 manual equip/combat, walking, idle production, online, accounts, achievements, ads, IAP) is not listed and is not built.
 
-Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 158 JVM tests.
-In flight, not merged (session 8): legacy upgrade tracks, fight replays and weapon fates.
+Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 172 JVM tests.
+In flight, not merged (session 8): legacy upgrade tracks.
 
 ## 3 Player loop
 - [x] Run creation: seed, era, random faction pressures and world modifiers, 100 integrity, hero pool, legacy unlocks
@@ -49,7 +49,7 @@ In flight, not merged (session 8): legacy upgrade tracks, fight replays and weap
 - [x] On death: recovered by the shop, seized by the enemy, or lost; on retirement: inherited by the mentee
 - [x] Bounded Legend Board; a famous blade returns dormant (reduced quality) in a later era, keeping its fame
 - [x] Fame as a capped mechanical effect (power, desire, price); wear and condition
-- [ ] Merchant resale as a death outcome
+- [x] Fates of a fallen hero's blade by where the hero fell: guild inheritance, merchant resale (fame raises the chance), seizure, loss
 
 ## 8 Town, factions, sieges
 - [x] 3 factions with pressure 0-100, growth, suppression, weakness / resistance, elites, warlords
@@ -74,7 +74,7 @@ In flight, not merged (session 8): legacy upgrade tracks, fight replays and weap
 - [x] Daily paper from real event records, priority order, 3-5 headlines, archive
 - [x] Edition layout: lede, tally, Shop / Heroes / Town / Forge
 - [x] Siege replay: stepped text and an animated diorama fed by the CombatReplay only; skippable; reduced motion honoured
-- [ ] Replays for significant expeditions (sieges only today)
+- [x] Replays for significant expeditions: elite fights and deaths, folded text in the day report, at most three a day
 
 ## 12 Workshop UX and accessibility
 - [x] Portrait single workshop: top strip (day, gold, energy / debt, integrity, next siege), forge scene, panels, End Day with contextual sublabel
@@ -102,12 +102,12 @@ In flight, not merged (session 8): legacy upgrade tracks, fight replays and weap
 - [ ] Full custom art pass after the UI redesign
 
 ## 15 Testing and balance
-- [x] 158 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
+- [x] 172 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
 - [x] Headless simulator with the GDD policy set, upgrade impact, catalog sweeps, JSON report
 - [x] Balance v2 and v3 reviewed at 10,000 seeds; first-era median 20-25 days, longer paths with upgrades, 0 hard-locks
 - [x] Instrumented tests: Room save / restore, title, forge hint, End Day budget (6)
 - [ ] Balance v4 (wear + fame) reviewed at 10,000 seeds; affix magnitudes the v3 review flagged
-- [ ] Artifact recovery as a simulator metric
+- [x] Artifact recovery as a simulator metric (51-53 % of fallen heroes' blades come back at 1,000 seeds)
 - [ ] Compose screenshot / accessibility tests
 - [ ] Day-sim p95 < 200 ms on real mid-range hardware (8.5 ms on the emulator Android runtime, 0.99 ms on a desktop JVM)
 

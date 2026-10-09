@@ -60,6 +60,8 @@ class WeaponPruningTest {
         assertTrue(prunable(w.copy(location = WeaponLocation.Destroyed(old))))
         assertTrue(prunable(w.copy(location = WeaponLocation.Lost(old, "given to the town watch"))))
         assertTrue(prunable(w.copy(location = WeaponLocation.Lost(old, "sold to a collector"))))
+        assertTrue(prunable(w.copy(location = WeaponLocation.Lost(old, "carried off by a travelling merchant"))))
+        assertFalse(prunable(w.copy(location = WeaponLocation.Lost(old, WeaponLocation.Lost.WITH_MERCHANT))), "a merchant may still sell it")
         assertFalse(prunable(w.copy(location = WeaponLocation.Destroyed(old + 1))), "still inside the window")
         assertFalse(prunable(w.copy(location = WeaponLocation.Lost(old, "seized"))), "a seized blade can come home")
         assertFalse(prunable(w.copy(location = WeaponLocation.Lost(old, "lost with Mira Ashwood"))), "a blade lost with a hero can come home")
@@ -93,7 +95,7 @@ class WeaponPruningTest {
     @Test
     fun everyLostReasonIsClassified() {
         val reasons = unpruned.weapons.values.mapNotNull { (it.location as? WeaponLocation.Lost)?.reason }.toSet()
-        val unclassified = reasons.filterNot { it in WeaponPruning.terminalReasons || it == "seized" || it.startsWith("lost with ") }
+        val unclassified = reasons.filterNot { it in WeaponPruning.terminalReasons || it == "seized" || it.startsWith("lost with ") || it == WeaponLocation.Lost.WITH_MERCHANT }
         assertTrue(unclassified.isEmpty(), "unclassified reasons: $unclassified")
     }
 
