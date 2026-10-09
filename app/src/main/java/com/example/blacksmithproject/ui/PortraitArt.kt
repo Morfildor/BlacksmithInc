@@ -11,7 +11,7 @@ internal object PortraitArt {
     /** [resName] is the drawable's resource name; the box (left, top, right, bottom; right and bottom exclusive) holds the pixels that are not empty. */
     class Entry(val drawable: Int, val resName: String, val left: Int, val top: Int, val right: Int, val bottom: Int)
 
-    /** The 25 busts of concept sheet 3: transparent cut-outs, five per class. */
+    /** The 25 busts of concept sheet 3: transparent cut-outs, five per class. Kept as assets; heroes no longer draw them (Sprites maps their keys onto the hero set). */
     val base: Map<String, Entry> = mapOf(
         "portrait_guardian_0" to Entry(R.drawable.portrait_guardian_0, "portrait_guardian_0", 1, 1, 63, 60),
         "portrait_guardian_1" to Entry(R.drawable.portrait_guardian_1, "portrait_guardian_1", 1, 1, 63, 62),
@@ -71,6 +71,81 @@ internal object PortraitArt {
 
     /** The same keys as keyed cut-outs: only the tiles that passed the importer's checks and the review. */
     val secondSetCutouts: Map<String, Entry> = mapOf(
+    )
+
+    /** The hero set: opaque 64 px tiles, one per hero, keyed by the drawable name of the base face. Every hero draws from this set. */
+    val heroes: Map<String, Entry> = mapOf(
+        "portrait_hero_01" to Entry(R.drawable.portrait_hero_01, "portrait_hero_01", 0, 0, 64, 64),
+        "portrait_hero_02" to Entry(R.drawable.portrait_hero_02, "portrait_hero_02", 0, 0, 64, 64),
+        "portrait_hero_03" to Entry(R.drawable.portrait_hero_03, "portrait_hero_03", 0, 0, 64, 64),
+        "portrait_hero_04" to Entry(R.drawable.portrait_hero_04, "portrait_hero_04", 0, 0, 64, 64),
+        "portrait_hero_05" to Entry(R.drawable.portrait_hero_05, "portrait_hero_05", 0, 0, 64, 64),
+        "portrait_hero_06" to Entry(R.drawable.portrait_hero_06, "portrait_hero_06", 0, 0, 64, 64),
+        "portrait_hero_07" to Entry(R.drawable.portrait_hero_07, "portrait_hero_07", 0, 0, 64, 64),
+        "portrait_hero_08" to Entry(R.drawable.portrait_hero_08, "portrait_hero_08", 0, 0, 64, 64),
+        "portrait_hero_09" to Entry(R.drawable.portrait_hero_09, "portrait_hero_09", 0, 0, 64, 64),
+        "portrait_hero_10" to Entry(R.drawable.portrait_hero_10, "portrait_hero_10", 0, 0, 64, 64),
+        "portrait_hero_11" to Entry(R.drawable.portrait_hero_11, "portrait_hero_11", 0, 0, 64, 64),
+        "portrait_hero_12" to Entry(R.drawable.portrait_hero_12, "portrait_hero_12", 0, 0, 64, 64),
+        "portrait_hero_13" to Entry(R.drawable.portrait_hero_13, "portrait_hero_13", 0, 0, 64, 64),
+        "portrait_hero_14" to Entry(R.drawable.portrait_hero_14, "portrait_hero_14", 0, 0, 64, 64),
+        "portrait_hero_15" to Entry(R.drawable.portrait_hero_15, "portrait_hero_15", 0, 0, 64, 64),
+        "portrait_hero_16" to Entry(R.drawable.portrait_hero_16, "portrait_hero_16", 0, 0, 64, 64),
+        "portrait_hero_17" to Entry(R.drawable.portrait_hero_17, "portrait_hero_17", 0, 0, 64, 64),
+        "portrait_hero_18" to Entry(R.drawable.portrait_hero_18, "portrait_hero_18", 0, 0, 64, 64),
+        "portrait_hero_19" to Entry(R.drawable.portrait_hero_19, "portrait_hero_19", 0, 0, 64, 64),
+        "portrait_hero_20" to Entry(R.drawable.portrait_hero_20, "portrait_hero_20", 0, 0, 64, 64),
+    )
+
+    /** The same keys with each hero's upgraded face. */
+    val heroesUpgraded: Map<String, Entry> = mapOf(
+        "portrait_hero_01" to Entry(R.drawable.portrait_hero_01_up, "portrait_hero_01_up", 0, 0, 64, 64),
+        "portrait_hero_02" to Entry(R.drawable.portrait_hero_02_up, "portrait_hero_02_up", 0, 0, 64, 64),
+        "portrait_hero_03" to Entry(R.drawable.portrait_hero_03_up, "portrait_hero_03_up", 0, 0, 64, 64),
+        "portrait_hero_04" to Entry(R.drawable.portrait_hero_04_up, "portrait_hero_04_up", 0, 0, 64, 64),
+        "portrait_hero_05" to Entry(R.drawable.portrait_hero_05_up, "portrait_hero_05_up", 0, 0, 64, 64),
+        "portrait_hero_06" to Entry(R.drawable.portrait_hero_06_up, "portrait_hero_06_up", 0, 0, 64, 64),
+        "portrait_hero_07" to Entry(R.drawable.portrait_hero_07_up, "portrait_hero_07_up", 0, 0, 64, 64),
+        "portrait_hero_08" to Entry(R.drawable.portrait_hero_08_up, "portrait_hero_08_up", 0, 0, 64, 64),
+        "portrait_hero_09" to Entry(R.drawable.portrait_hero_09_up, "portrait_hero_09_up", 0, 0, 64, 64),
+        "portrait_hero_10" to Entry(R.drawable.portrait_hero_10_up, "portrait_hero_10_up", 0, 0, 64, 64),
+        "portrait_hero_11" to Entry(R.drawable.portrait_hero_11_up, "portrait_hero_11_up", 0, 0, 64, 64),
+        "portrait_hero_12" to Entry(R.drawable.portrait_hero_12_up, "portrait_hero_12_up", 0, 0, 64, 64),
+        "portrait_hero_13" to Entry(R.drawable.portrait_hero_13_up, "portrait_hero_13_up", 0, 0, 64, 64),
+        "portrait_hero_14" to Entry(R.drawable.portrait_hero_14_up, "portrait_hero_14_up", 0, 0, 64, 64),
+        "portrait_hero_15" to Entry(R.drawable.portrait_hero_15_up, "portrait_hero_15_up", 0, 0, 64, 64),
+        "portrait_hero_16" to Entry(R.drawable.portrait_hero_16_up, "portrait_hero_16_up", 0, 0, 64, 64),
+        "portrait_hero_17" to Entry(R.drawable.portrait_hero_17_up, "portrait_hero_17_up", 0, 0, 64, 64),
+        "portrait_hero_18" to Entry(R.drawable.portrait_hero_18_up, "portrait_hero_18_up", 0, 0, 64, 64),
+        "portrait_hero_19" to Entry(R.drawable.portrait_hero_19_up, "portrait_hero_19_up", 0, 0, 64, 64),
+        "portrait_hero_20" to Entry(R.drawable.portrait_hero_20_up, "portrait_hero_20_up", 0, 0, 64, 64),
+    )
+
+    /** Tighter tiles for small list rows, only for the heroes whose face is small on the full tile. */
+    val heroesSmall: Map<String, Entry> = mapOf(
+        "portrait_hero_11" to Entry(R.drawable.portrait_hero_11_sm, "portrait_hero_11_sm", 0, 0, 48, 48),
+        "portrait_hero_12" to Entry(R.drawable.portrait_hero_12_sm, "portrait_hero_12_sm", 0, 0, 48, 48),
+        "portrait_hero_13" to Entry(R.drawable.portrait_hero_13_sm, "portrait_hero_13_sm", 0, 0, 48, 48),
+        "portrait_hero_14" to Entry(R.drawable.portrait_hero_14_sm, "portrait_hero_14_sm", 0, 0, 48, 48),
+        "portrait_hero_15" to Entry(R.drawable.portrait_hero_15_sm, "portrait_hero_15_sm", 0, 0, 48, 48),
+    )
+
+    /** The same for the upgraded faces. */
+    val heroesUpgradedSmall: Map<String, Entry> = mapOf(
+        "portrait_hero_11" to Entry(R.drawable.portrait_hero_11_up_sm, "portrait_hero_11_up_sm", 0, 0, 48, 48),
+        "portrait_hero_12" to Entry(R.drawable.portrait_hero_12_up_sm, "portrait_hero_12_up_sm", 0, 0, 48, 48),
+        "portrait_hero_13" to Entry(R.drawable.portrait_hero_13_up_sm, "portrait_hero_13_up_sm", 0, 0, 48, 48),
+        "portrait_hero_14" to Entry(R.drawable.portrait_hero_14_up_sm, "portrait_hero_14_up_sm", 0, 0, 48, 48),
+        "portrait_hero_15" to Entry(R.drawable.portrait_hero_15_up_sm, "portrait_hero_15_up_sm", 0, 0, 48, 48),
+    )
+
+    /** Hero keys per class in hero order: the faces a class has (guardian 5, ranger 4, duelist 4, battlemage 4, warden 3). */
+    val heroFaces: Map<String, List<String>> = mapOf(
+        "guardian" to listOf("portrait_hero_01", "portrait_hero_06", "portrait_hero_09", "portrait_hero_11", "portrait_hero_16"),
+        "ranger" to listOf("portrait_hero_02", "portrait_hero_07", "portrait_hero_12", "portrait_hero_17"),
+        "duelist" to listOf("portrait_hero_03", "portrait_hero_10", "portrait_hero_13", "portrait_hero_18"),
+        "battlemage" to listOf("portrait_hero_04", "portrait_hero_08", "portrait_hero_14", "portrait_hero_19"),
+        "warden" to listOf("portrait_hero_05", "portrait_hero_15", "portrait_hero_20"),
     )
 
     fun find(key: String, secondSet: Boolean = SECOND_SET_ENABLED): Entry? = base[key] ?: if (secondSet) this.secondSet[key] else null

@@ -35,9 +35,12 @@ import com.example.blacksmithproject.ui.theme.BlacksmithProjectTheme
 import com.tinyblacksmith.core.model.HeroClassId
 
 /**
- * Debug builds only. Lays out every portrait through the real `Sprites.portrait(...)` call at 56 dp and 112 dp, and
- * the counter backdrop at full width, so the art can be checked in the renderer the game uses.
- * `--ei section N` (0..5; 5 is the side-by-side of both face sets at the counter size) shows one section at the top of the screen; without it the whole page scrolls.
+ * Debug builds only. Lays out the hero set through the real `Sprites.portrait(...)` call, the two older portrait sets
+ * and the backdrops, so the art can be checked in the renderer the game uses.
+ * `--ei section N` shows one section at the top of the screen; without it the whole page scrolls. 0..5 are the older
+ * sets and the backdrops (5 is their side-by-side at the counter size). 6 is the hero set, base and upgraded face of
+ * each hero side by side: `--ei dp N` sets the size (44 and 56 are the Town rows, 85 the counter, 112 a sheet) and
+ * `--es cls guardian` keeps one class, `--ez small true` asks for the tiles of small list rows.
  */
 class ArtGalleryActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,12 +50,13 @@ class ArtGalleryActivity : ComponentActivity() {
             BlacksmithProjectTheme {
                 Surface(Modifier.fillMaxSize()) {
                     Column(Modifier.safeDrawingPadding().verticalScroll(rememberScrollState())) {
-                        if (section in listOf(-1, 0)) { Backdrops(); Portraits("Sheet-3 busts, 56 dp", PortraitArt.base.keys, 56.dp, secondSet = false) }
-                        if (section in listOf(-1, 1)) Portraits("Sheet-3 busts, 112 dp", PortraitArt.base.keys, 112.dp, secondSet = false)
-                        if (section in listOf(-1, 2)) Portraits("Second set (candidates, switched off), 56 dp", PortraitArt.secondSet.keys, 56.dp, secondSet = true)
-                        if (section in listOf(-1, 3)) Portraits("Second set (candidates, switched off), 112 dp", PortraitArt.secondSet.keys, 112.dp, secondSet = true)
+                        if (section in listOf(-1, 0)) { Backdrops(); Portraits("Sheet-3 busts (no longer used for heroes), 56 dp", PortraitArt.base, 56.dp) }
+                        if (section in listOf(-1, 1)) Portraits("Sheet-3 busts (no longer used for heroes), 112 dp", PortraitArt.base, 112.dp)
+                        if (section in listOf(-1, 2)) Portraits("Second set (candidates, switched off), 56 dp", PortraitArt.secondSet, 56.dp)
+                        if (section in listOf(-1, 3)) Portraits("Second set (candidates, switched off), 112 dp", PortraitArt.secondSet, 112.dp)
                         if (section in listOf(-1, 4)) OtherBackdrops()
                         if (section in listOf(-1, 5)) Gate()
+                        if (section in listOf(-1, 6)) Heroes(intent.getIntExtra("dp", 56).dp, intent.getStringExtra("cls"), intent.getBooleanExtra("small", false))
                     }
                 }
             }
@@ -64,12 +68,30 @@ private val classes = listOf("guardian", "ranger", "duelist", "battlemage", "war
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Portraits(title: String, keys: Set<String>, size: Dp, secondSet: Boolean) {
+private fun Portraits(title: String, set: Map<String, PortraitArt.Entry>, size: Dp) {
     Text(title, style = MaterialTheme.typography.titleMedium)
     for (cls in classes) {
         // One row per class on the dark tile a portrait sits on in the game; a wrong class in a row is a wrong mapping.
         FlowRow(Modifier.fillMaxWidth().background(Color(0xFF2B2320)), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            for (key in keys.filter { "_${cls}_" in it }) PixelImage(Sprites.portrait(key, HeroClassId(cls), secondSet), size, description = key)
+            for ((key, entry) in set) if ("_${cls}_" in key) PixelImage(entry.drawable, size, description = key)
+        }
+    }
+}
+
+/** The hero set: per class, each hero's number over its base and upgraded face, both through `Sprites.portrait`. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun Heroes(size: Dp, only: String?, small: Boolean) {
+    Text("Hero set, base | upgraded, ${size.value.toInt()} dp" + (if (small) ", small-row tiles" else ""), style = MaterialTheme.typography.titleMedium)
+    for (cls in classes) if (only == null || only == cls) {
+        FlowRow(Modifier.fillMaxWidth().background(Color(0xFF2B2320)), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            for (key in PortraitArt.heroFaces.getValue(cls)) Column {
+                Text("${key.takeLast(2)} $cls", style = MaterialTheme.typography.labelSmall, color = Color.White)
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    PixelImage(Sprites.portrait(key, HeroClassId(cls), small = small), size, description = key)
+                    PixelImage(Sprites.portrait(key, HeroClassId(cls), upgraded = true, small = small), size, description = "$key upgraded")
+                }
+            }
         }
     }
 }
@@ -81,7 +103,7 @@ private fun Gate() {
     for (cls in classes) {
         Row(Modifier.fillMaxWidth().background(Color(0xFF2B2320)), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             for (key in listOf("portrait_${cls}_1", "portrait_v2_${cls}_1", "portrait_${cls}_3", "portrait_v2_${cls}_4")) {
-                PixelImage(Sprites.portrait(key, HeroClassId(cls), secondSet = true), 85.dp, description = key)
+                PixelImage((PortraitArt.base[key] ?: PortraitArt.secondSet.getValue(key)).drawable, 85.dp, description = key)
             }
         }
     }

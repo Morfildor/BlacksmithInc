@@ -65,11 +65,41 @@ Grave (green-grey, lowest contrast today) needs the most work.
 `badge_common` (grey), `badge_uncommon` (green), `badge_rare` (blue), `badge_epic` (purple), `badge_legendary`
 (gold), `badge_flaw` (red crack). Shape must differ as well as colour (colour-blind players).
 
-### 2.5 Hero portraits (16×16, anchor top-left, shown at 48 dp in Town and 32 dp in lists)
+### 2.5 Hero portraits (64×64 opaque tiles, shown at 44 and 56 dp in Town, larger at the counter and on sheets)
 
-Five fixed class portraits: `portrait_guardian` (helmeted, shield), `portrait_ranger` (hood, green),
-`portrait_duelist` (feathered hat), `portrait_battlemage` (pointed hat, purple), `portrait_warden` (horned bronze
-helm, green). Bust, facing slightly left, same head size across all five.
+The game draws heroes from one set of 20: `portrait_hero_01` to `portrait_hero_20` (base face) and
+`portrait_hero_01_up` to `portrait_hero_20_up` (the same hero after earning the upgraded look). Faces per class:
+guardian 5 (01, 06, 09, 11, 16), ranger 4 (02, 07, 12, 17), duelist 4 (03, 10, 13, 18), battlemage 4 (04, 08, 14, 19),
+warden 3 (05, 15, 20). A class with fewer faces repeats them sooner; more faces for warden first.
+
+Provenance: the set was supplied by the owner as the folder `Assets/Heroes/` (40 PNGs, `manifest.json`, `README.txt`).
+Its README describes the portraits as generated: heroes 01-10 as 1254 px renders, heroes 11-20 as native 64 px
+tiles. They are AI-generated images, imported and resized by `tools/pixelart/import_assets.py`; nothing is hand-drawn
+or retouched. The folder is not in Git (large sources); only the 64 px imports are. To re-import:
+
+```
+python tools/pixelart/import_assets.py --heroes "<path>/Assets/Heroes"   # default <repo root>/Assets/Heroes, or TINY_BLACKSMITH_HEROES
+python tools/pixelart/generate_assets.py
+```
+
+Without the folder the importer says so, skips the step and keeps the committed files. Two runs give byte-identical
+output.
+
+What the import does, and why: the 64 px files are taken pixel for pixel. The 1254 px renders sit on pixel grids of
+about 117 to 290 cells, so no output size reproduces them cell for cell; they are reduced to 64 px (Lanczos) and to 96
+colours without dithering (the native tiles use 81 to 96). 128 and 256 px were compared on the emulator at 44, 56, 85
+and 112 dp: sharper on their own, but beside the native 64 px heroes they read as a second, finer art style. At 64 px
+all twenty share one pixel size and are drawn nearest-neighbour. Heroes 11-15 are framed from further away, so their
+faces are small at 44 dp: they also have `_sm` tiles for small list rows, a 48 px square of the same tile around the
+head (not resampled).
+
+For new portraits: a 64×64 opaque tile with a dark background, head and shoulders, the face at least a third of the
+tile wide (as in heroes 16-20), and an upgraded state that differs in silhouette or colour, not only in armour detail
+(18 and 04 read at a glance; 12 and 15 barely differ at list size).
+
+The 25 older busts (`portrait_<class>_<0..4>`, concept sheet 3) and the 25 second-set tiles
+(`portrait_v2_<class>_<1..5>`) stay in the repository and are not used for heroes; saved keys of either set map onto
+the hero set in `ui/Sprites.kt`.
 
 ### 2.6 Faction monsters (16×16, anchor bottom-center, side view facing left)
 
