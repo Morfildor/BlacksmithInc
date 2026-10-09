@@ -12,9 +12,11 @@ import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.acceptedOrThrow
 import com.tinyblacksmith.core.model.CommandId
+import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.LegacyProfile
 import com.tinyblacksmith.core.persistence.SaveCodec
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -31,6 +33,11 @@ class SaveStoreTest {
         val db = Room.inMemoryDatabaseBuilder(context, SaveDatabase::class.java).build()
         return SaveStore(db.saveDao())
     }
+
+    // Decoding without admission is for this test only; the game reads the store through GameSession.
+    private suspend fun SaveStore.loadRun(): GameState? = load().run?.let { SaveCodec.decodeRun(it) }
+    private suspend fun SaveStore.loadLegacy(): LegacyProfile = load().legacy?.let { SaveCodec.decodeLegacy(it) } ?: LegacyProfile()
+    private suspend fun SaveStore.saveAtomically(run: GameState?, legacy: LegacyProfile) = commit(run?.let { SaveCodec.encodeRun(it) }, SaveCodec.encodeLegacy(legacy))
 
     @Test
     fun savesAndRestoresRunAndLegacyTogether() = runBlocking {
@@ -86,5 +93,45 @@ class SaveStoreTest {
             assertEquals("the unreadable row is still in the table under its backup key", garbage, rows.getString(0))
         }
         assertEquals(legacy, session.snapshot.value?.legacy)
+    }
+
+    /**
+     * Review I5: a database FILE that SQLite calls corrupt is not deleted by opening it. It is reported, left byte for
+     * byte, and moved to "<name>.corrupt.<millis>" only by Start over, after which the game has an empty, working save.
+     */
+    @Test
+    fun aCorruptDatabaseFileIsKeptAndOnlyStartOverMovesItAside() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val name = "corrupt_file_test.db"
+        val file = context.getDatabasePath(name)
+        val dir = file.parentFile!!
+        fun leftovers() = dir.listFiles { f -> f.name.startsWith(name) }!!.toList()
+        leftovers().forEach { it.delete() }
+        dir.mkdirs()
+        val garbage = ByteArray(20_000) { (it * 31 + 7).toByte() }
+        try {
+            file.writeBytes(garbage)
+            val session = GameSession(engine, SaveStore.create(context, name))
+
+            val failure = (session.load() as GameSession.Result.Failed).failure
+            assertTrue("got $failure: ${failure.cause}", failure is SaveFailure.FileDamaged)
+            assertArrayEquals("opening a damaged file leaves it byte for byte", garbage, file.readBytes())
+            assertTrue((session.retry() as GameSession.Result.Failed).failure is SaveFailure.FileDamaged)
+            assertArrayEquals(garbage, file.readBytes())
+
+            assertTrue(session.startOverKeepingBackup() is GameSession.Result.Done)
+            val aside = leftovers().single { it.name.matches(Regex(Regex.escape(name) + "\\.corrupt\\.\\d+")) }
+            assertArrayEquals("the damaged file is kept under its backup name", garbage, aside.readBytes())
+            assertEquals(GameSession.Snapshot(null, LegacyProfile(), null), session.snapshot.value)
+
+            // The new file is a working save: a run begun now is there for the next process.
+            assertTrue(session.run(GameSession.Op.BeginEra(7L, null)) is GameSession.Result.Done)
+            val again = GameSession(engine, SaveStore.create(context, name))
+            assertTrue(again.load() is GameSession.Result.Done)
+            assertEquals(session.snapshot.value?.run, again.snapshot.value?.run)
+            assertArrayEquals(garbage, aside.readBytes())
+        } finally {
+            leftovers().forEach { it.delete() }
+        }
     }
 }

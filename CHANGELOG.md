@@ -32,6 +32,13 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   out there included) no longer change or vanish once the next day is played. Applies to days played from this version.
 - Two quick taps on the run-end screen (two upgrades, or an upgrade and Begin era) can no longer lose a purchase or
   write over the new era.
+- A damaged legacy record no longer costs a readable run: the recovery screen offers to rebuild the legacy from the
+  copy the run carries, sets only the damaged record aside, and the run goes on. When points, upgrades and legends
+  really would be lost, the screen now says so before you confirm.
+- A damaged save file is no longer deleted silently on launch. The game says the file is damaged, leaves it untouched,
+  and Start over keeps it on the device under a backup name before beginning a new save.
+- Storage errors of any kind now reach the recovery screen or the "Could not save" dialog instead of closing the game,
+  and that dialog no longer claims nothing changed when the game could not check.
 ### Changed
 - A collector pays at most one and a half times the going rate for a blade, whatever its shelf price.
 - Commissions say exactly what they need. A request is always for a quality the game names (decent 35+, fine 50+; a

@@ -53,13 +53,14 @@ class GameSession(
         data class Rejected(val error: GameError) : Result
         data object Stale : Result               // issued against a run that is no longer current: nothing written
         data object DayNotWatched : Result       // a planning command while the counter or aftermath is unwatched
-        data class Failed(val failure: SaveFailure) : Result
+        /** [unconfirmed]: the save failed and so did the read that would have said whether it landed. */
+        data class Failed(val failure: SaveFailure, val unconfirmed: Boolean = false) : Result
         data class EngineFault(val message: String) : Result      // the engine threw: nothing written, never retried
     }
     sealed interface Status {
         data object Idle : Status
         data class Working(val op: Op) : Status
-        data class Failed(val op: Op, val failure: SaveFailure) : Status
+        data class Failed(val op: Op, val failure: SaveFailure, val unconfirmed: Boolean = false) : Status
     }
 
     private val mutex = Mutex()
@@ -88,16 +89,25 @@ class GameSession(
     fun dismissFailure() { _status.update { if (it is Status.Failed) Status.Idle else it } }
 
     /**
-     * The way out of a save that cannot be loaded: every row this build cannot read is moved to a backup key (never
-     * deleted), the run row always, the legacy row only when it is the unreadable one. Then the store is read again.
+     * The way out of a save that cannot be loaded: only what this build cannot read is moved aside (never deleted),
+     * a row under a backup key, a damaged file under a backup name. A run that loads is never set aside: when the
+     * legacy row beside it is the unreadable one, that row is rebuilt from the copy the run carries (as of the last
+     * saved action of the run, so an ended run comes back unclaimed and is claimed again for the same award).
+     * Then the store is read again.
      */
     suspend fun startOverKeepingBackup(): Result = mutex.withLock {
         if (_snapshot.value != null) return Result.Done()      // only ever the way out of a failed load
         try {
-            val rows = repo.load()
-            if (rows.legacy != null && runCatching { withContext(compute) { decodeLegacy(rows.legacy) } }.isFailure) repo.quarantine("legacy")
-            if (rows.run != null) repo.quarantine("run")
-            repo.saveCursor(null)
+            val rows = try { repo.load() } catch (_: SaveFailure.FileDamaged) { repo.quarantineFile(); return loadLocked() }
+            val run = withContext(compute) { soundRun(rows) }
+            if (rows.legacy != null && runCatching { withContext(compute) { decodeLegacy(rows.legacy) } }.isFailure) {
+                repo.quarantine("legacy")
+                if (run != null) repo.commit(rows.run, SaveCodec.encodeLegacy(run.legacy))
+            }
+            if (rows.run != null && run == null) {
+                repo.quarantine("run")
+                repo.saveCursor(null)
+            }
         } catch (e: SaveFailure) {
             return Result.Failed(e)
         }
@@ -120,27 +130,40 @@ class GameSession(
         try {
             result = execute(snap, op)
         } finally {
-            _status.value = (result as? Result.Failed)?.let { Status.Failed(op, it.failure) } ?: Status.Idle
+            _status.value = (result as? Result.Failed)?.let { Status.Failed(op, it.failure, it.unconfirmed) } ?: Status.Idle
         }
         return result
     }
 
     /**
-     * The legacy row is read first, so a bad run never hides a bad legacy. The published run is the admitted one
-     * (versions stamped to this build); the stored bytes are left alone until the next accepted command.
-     * A cursor that cannot be read is no cursor.
+     * The legacy row is read first, so a bad run never hides a bad legacy; its failure says whether the run beside it
+     * loads. The published run is the admitted one (versions stamped to this build); the stored bytes are left alone
+     * until the next accepted command. A cursor that cannot be read is no cursor.
      */
     private fun decode(rows: StoredRows): Snapshot {
-        val legacy = rows.legacy?.let { decodeLegacy(it) } ?: LegacyProfile()
-        val run = rows.run?.let { text ->
-            when (val admitted = Compatibility.admit(readRow("run", text) { SaveCodec.decodeRun(text) }, engine.content, engine.config)) {
-                is Compatibility.Result.Admitted -> admitted.state
-                is Compatibility.Result.Unsupported -> throw SaveFailure.Incompatible(admitted.problems)
+        val legacy = try {
+            rows.legacy?.let { decodeLegacy(it) } ?: LegacyProfile()
+        } catch (e: SaveFailure) {
+            throw when {
+                soundRun(rows) == null -> e
+                e is SaveFailure.Corrupt -> SaveFailure.Corrupt(e.key, e.cause ?: e, runSound = true)
+                e is SaveFailure.Newer -> SaveFailure.Newer(e.key, e.found, e.supported, runSound = true)
+                else -> e
             }
         }
+        val run = rows.run?.let { admitRun(it) }
         val cursor = rows.cursor?.let { text -> runCatching { DayCursor.decode(text) }.getOrNull() }
         return Snapshot(run, legacy, cursor)
     }
+
+    private fun admitRun(text: String): GameState =
+        when (val admitted = Compatibility.admit(readRow("run", text) { SaveCodec.decodeRun(text) }, engine.content, engine.config)) {
+            is Compatibility.Result.Admitted -> admitted.state
+            is Compatibility.Result.Unsupported -> throw SaveFailure.Incompatible(admitted.problems)
+        }
+
+    /** The stored run when it decodes and is admitted, else null. */
+    private fun soundRun(rows: StoredRows): GameState? = rows.run?.let { text -> try { admitRun(text) } catch (_: SaveFailure) { null } }
 
     private fun decodeLegacy(text: String): LegacyProfile = readRow("legacy", text) { SaveCodec.decodeLegacy(text) }
 
@@ -172,7 +195,7 @@ class GameSession(
                 } catch (e: SaveFailure) {
                     // The transaction may have committed before the failure surfaced: one confirmation read decides.
                     val rows = try { repo.load() } catch (_: SaveFailure) { null }
-                    if (rows == null || rows.run != step.runText || rows.legacy != step.legacyText) return@withContext Result.Failed(e)
+                    if (rows == null || rows.run != step.runText || rows.legacy != step.legacyText) return@withContext Result.Failed(e, unconfirmed = rows == null)
                 }
                 runText = step.runText
                 _snapshot.value = Snapshot(step.run, step.legacy, snap.cursor)
