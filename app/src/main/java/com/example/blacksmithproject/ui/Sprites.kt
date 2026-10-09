@@ -17,11 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.semantics.contentDescription
@@ -50,36 +52,52 @@ import com.tinyblacksmith.core.model.Weapon
 object Sprites {
     private val coreStep = mapOf("iron" to 1, "bronze" to 2, "silver" to 3, "obsidian" to 4, "starsteel" to 5, "moonsteel" to 6)
 
-    /** Visual step of a weapon on the master sheet: the core's tier plus +1 for epic and +2 for legendary, 1..8. */
-    fun weaponLevel(coreId: MaterialId, rarity: Rarity?): Int =
-        ((coreStep[coreId.value] ?: 1) + when (rarity) { Rarity.LEGENDARY -> 2; Rarity.EPIC -> 1; else -> 0 }).coerceIn(1, WeaponArt.LEVELS)
+    /**
+     * Visual step of a weapon on the master sheet: the core's tier plus +1 for epic and +2 for legendary, 1..8.
+     * A signature weapon has no sprite of its own yet: it draws two steps higher (clamped) as a stopgap.
+     */
+    fun weaponLevel(coreId: MaterialId, rarity: Rarity?, signature: Boolean = false): Int =
+        ((coreStep[coreId.value] ?: 1) + when (rarity) { Rarity.LEGENDARY -> 2; Rarity.EPIC -> 1; else -> 0 } + (if (signature) 2 else 0))
+            .coerceIn(1, WeaponArt.LEVELS)
 
-    fun weapon(w: Weapon): Int = weapon(w.familyId, w.coreId, w.element, w.rarity)
+    fun weapon(w: Weapon): Int = weapon(w.familyId, w.coreId, w.element, w.rarity, signature = w.signatureId != null)
 
     /** Also used for the forge preview of a draft that has no Weapon yet: the "base" row until an augment is chosen. */
-    fun weapon(familyId: WeaponFamilyId, coreId: MaterialId, element: Element?, rarity: Rarity? = null): Int =
-        WeaponArt.sprite(familyId.value, element?.name?.lowercase() ?: "base", weaponLevel(coreId, rarity))
+    fun weapon(familyId: WeaponFamilyId, coreId: MaterialId, element: Element?, rarity: Rarity? = null, signature: Boolean = false): Int =
+        WeaponArt.sprite(familyId.value, element?.name?.lowercase() ?: "base", weaponLevel(coreId, rarity, signature))
             ?: WeaponArt.sprite("sword", "base", 1)!!
 
-    private val portraits: Map<String, List<Int>> = mapOf(
-        "guardian" to listOf(R.drawable.portrait_guardian_0, R.drawable.portrait_guardian_1, R.drawable.portrait_guardian_2, R.drawable.portrait_guardian_3, R.drawable.portrait_guardian_4),
-        "ranger" to listOf(R.drawable.portrait_ranger_0, R.drawable.portrait_ranger_1, R.drawable.portrait_ranger_2, R.drawable.portrait_ranger_3, R.drawable.portrait_ranger_4),
-        "duelist" to listOf(R.drawable.portrait_duelist_0, R.drawable.portrait_duelist_1, R.drawable.portrait_duelist_2, R.drawable.portrait_duelist_3, R.drawable.portrait_duelist_4),
-        "battlemage" to listOf(R.drawable.portrait_battlemage_0, R.drawable.portrait_battlemage_1, R.drawable.portrait_battlemage_2, R.drawable.portrait_battlemage_3, R.drawable.portrait_battlemage_4),
-        "warden" to listOf(R.drawable.portrait_warden_0, R.drawable.portrait_warden_1, R.drawable.portrait_warden_2, R.drawable.portrait_warden_3, R.drawable.portrait_warden_4),
-    )
+    /** The face every hero had before appearance keys were saved: the ID hash over the five sheet-3 faces of the class. */
+    private fun legacyPortraitKey(classId: HeroClassId, heroId: String): String =
+        "portrait_${classId.value}_${Math.floorMod(heroId.hashCode(), 5)}"
 
-    /** One of five hand-made faces per class, chosen by a stable hash of the hero ID (decorative; no RNG). */
-    fun portrait(hero: Hero): Int {
-        val faces = portraits[hero.classId.value] ?: portraits.getValue("guardian")
-        return faces[Math.floorMod(hero.id.value.hashCode(), faces.size)]
-    }
+    /**
+     * Portrait art for a saved appearance key (an asset ID such as "portrait_guardian_0"). An unknown key, or a key of
+     * the second set while that set is switched off, falls back to the first face of [classId], so a face of the right
+     * class always renders. [secondSet] is for the debug gallery only; everything else leaves it at the switch.
+     */
+    internal fun portraitArt(appearanceKey: String, classId: HeroClassId, secondSet: Boolean = PortraitArt.SECOND_SET_ENABLED): PortraitArt.Entry =
+        PortraitArt.find(appearanceKey, secondSet) ?: PortraitArt.base["portrait_${classId.value}_0"] ?: PortraitArt.base.getValue("portrait_guardian_0")
+
+    fun portrait(appearanceKey: String, classId: HeroClassId, secondSet: Boolean = PortraitArt.SECOND_SET_ENABLED): Int =
+        portraitArt(appearanceKey, classId, secondSet).drawable
+
+    /** One of five faces per class, chosen by a stable hash of the hero ID (decorative; no RNG). */
+    fun portrait(hero: Hero): Int = portrait(legacyPortraitKey(hero.classId, hero.id.value), hero.classId)
 
     /** Faction sprite for the threat line: the elite variant once pressure is high. Null for factions without art. */
     fun faction(id: FactionId, elite: Boolean = false): Int? = when (id.value) {
         "ashclaw_raiders" -> if (elite) R.drawable.faction_ashclaw_brute else R.drawable.faction_ashclaw_raider
         "hollowbound" -> if (elite) R.drawable.faction_hollowbound_wraith else R.drawable.faction_hollowbound_shade
         "embermaw_brood" -> if (elite) R.drawable.faction_embermaw_drake else R.drawable.faction_embermaw_whelp
+        else -> null
+    }
+
+    /** The two extra figures each faction has on the sheet (variant 0 or 1), for variety in Town and aftermath cards. */
+    fun factionAlt(id: FactionId, variant: Int): Int? = when (id.value) {
+        "ashclaw_raiders" -> if (variant % 2 == 0) R.drawable.faction_ashclaw_alt_0 else R.drawable.faction_ashclaw_alt_1
+        "hollowbound" -> if (variant % 2 == 0) R.drawable.faction_hollowbound_alt_0 else R.drawable.faction_hollowbound_alt_1
+        "embermaw_brood" -> if (variant % 2 == 0) R.drawable.faction_embermaw_alt_0 else R.drawable.faction_embermaw_alt_1
         else -> null
     }
 
@@ -157,6 +175,12 @@ object Sprites {
         Rarity.EPIC -> R.drawable.badge_epic
         Rarity.LEGENDARY -> R.drawable.badge_legendary
     }
+
+    /** Pip for a weapon that carries at least one flaw. */
+    val badgeFlaw: Int = R.drawable.badge_flaw
+
+    /** Ring drawn around a signature weapon until signature sprites exist (palette `gold`). */
+    val signatureRing = Color(0xFFD8A030)
 }
 
 /**
@@ -178,7 +202,11 @@ fun PixelImage(resId: Int, size: Dp, description: String?, modifier: Modifier = 
 @Composable
 fun WeaponSprite(w: Weapon, size: Dp = 48.dp, modifier: Modifier = Modifier) {
     val element = w.element?.name?.lowercase()?.let { ", $it" } ?: ""
-    Box(modifier.size(size).semantics { contentDescription = "${w.name}, ${w.rarity.name.lowercase()}$element" }) {
+    val signature = w.signatureId != null
+    Box(
+        modifier.size(size).semantics { contentDescription = "${w.name}, ${w.rarity.name.lowercase()}$element" }
+            .drawBehind { if (signature) drawCircle(Sprites.signatureRing, radius = this.size.minDimension / 2 - 1.dp.toPx(), style = Stroke(2.dp.toPx())) },
+    ) {
         PixelImage(Sprites.weapon(w), size, description = null)
         PixelImage(Sprites.badge(w.rarity), size / 3, description = null, modifier = Modifier.size(size / 3))
     }
