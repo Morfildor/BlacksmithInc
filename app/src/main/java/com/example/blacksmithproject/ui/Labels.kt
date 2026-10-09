@@ -51,6 +51,13 @@ object Labels {
         else -> "grave"
     }
 
+    /** Wear in words; null while the blade is still sound. */
+    fun condition(w: Weapon): String? = when {
+        w.condition < 40 -> "battered"
+        w.condition < 70 -> "worn"
+        else -> null
+    }
+
     /** Fame bands, descriptive only: the first starts at the Legend Board threshold (3), the last at the cap on the fame effect (BalanceConfig.weaponFameCap, 10). */
     fun fame(f: Int): String? = when {
         f >= 10 -> "renowned"
@@ -61,6 +68,7 @@ object Labels {
 
     fun weaponSummary(w: Weapon, content: ContentCatalog): String = buildString {
         append(rarity(w.rarity)); append(" · "); append(quality(w.quality))
+        condition(w)?.let { append(" · ").append(it) }
         if (w.affixes.isNotEmpty()) append(" · ").append(w.affixes.joinToString { content.affix(it).name })
         if (w.flaws.isNotEmpty()) append(" · flaw: ").append(w.flaws.joinToString { content.affix(it).name })
         fame(w.fame)?.let { append(" · ").append(it) }

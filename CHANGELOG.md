@@ -28,6 +28,19 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   the per-tool / per-affix sweeps are recorded in `docs/DECISIONS.md` (recommendations only, no balance change).
 
 
+### Added
+- Weapon wear: a hero's blade loses condition in every expedition (6 on a win, 10 on a rout) and every siege it
+  defends (15). Worn power counts in battle (down to three quarters of the weapon's power at condition 0), at the
+  shelf (a hero weighs listings against the worn power of their own weapon and is keen to replace one below half
+  condition) and in the shop's suggested price and trade-in credit. The weapon summary and the Town hero lines say
+  "worn" or "battered"; the day report names a replacement purchase ("their own blade was worn out"). Older saves
+  load with every blade keen.
+
+### Changed
+- Hone always restores a weapon's condition to full; the +6 quality bonus still applies once per weapon, so a worn
+  trade-in can be re-honed ("Re-hone") for the same energy and core.
+- Headless simulator: `BALANCED_ACTIVE` also re-hones worn trade-ins; the visits report gains a `WORN_OUT` outcome.
+
 ## [0.4.0] - 2026-10-09
 Gameplay depth (balance v3): shop actions, workshop tools, elite foes and warlords, hero ambitions, trade-ins.
 

@@ -229,12 +229,13 @@ class SimulationDriver(
         return stats to state
     }
 
-    /** Morning routine of [Policy.active]: one tool when affordable (cheapest first), then one hone when the core is on hand. */
+    /** Morning routine of [Policy.active]: one tool when affordable (cheapest first), then one hone (unhoned, or a worn trade-in) when the core is on hand. */
     private fun toolsAndHone(state: GameState): GameState {
         var s = state
         val tool = engine.content.tools.mapNotNull { t -> engine.toolCost(s, t.id)?.let { t.id to it } }.filter { it.second <= s.gold - reserve }.minByOrNull { it.second }
         if (tool != null) s = engine.handle(s, Command.BuyTool(tool.first)).state()
-        val candidate = (s.listedWeapons() + s.storedWeapons()).filter { !it.honed && (s.materials[it.coreId] ?: 0) > 0 }.maxByOrNull { it.power }
+        val candidate = (s.listedWeapons() + s.storedWeapons())
+            .filter { (!it.honed || it.condition < engine.config.wornConditionThreshold) && (s.materials[it.coreId] ?: 0) > 0 }.maxByOrNull { it.power }
         if (candidate != null && s.energy >= engine.config.honeEnergy) s = engine.handle(s, Command.Hone(candidate.id)).state()
         return s
     }

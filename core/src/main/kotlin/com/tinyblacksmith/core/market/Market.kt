@@ -12,7 +12,7 @@ import com.tinyblacksmith.core.rng.RngStream
 /** Autonomous shelf visits and purchases (GDD 5 PROPOSED purchase algorithm) plus commission delivery. */
 object Market {
 
-    data class Evaluation(val weapon: Weapon, val utility: Double, val affordable: Boolean, val improvement: Int, val fit: Double, val pricePenalty: Double)
+    data class Evaluation(val weapon: Weapon, val utility: Double, val affordable: Boolean, val improvement: Int, val fit: Double, val pricePenalty: Double, val worn: Boolean = false)
 
     fun resolveShelfVisits(ctx: ResolutionContext) {
         val config = ctx.config
@@ -37,7 +37,7 @@ object Market {
             val best = evaluations.filter { it.affordable && it.improvement > 0 }.maxByOrNull { it.utility }
             if (best != null && best.utility >= config.purchaseUtilityThreshold) {
                 purchase(ctx, hero, best.weapon, best.weapon.listedPrice ?: 0)
-                ctx.visits += MarketVisit(hero.id, hero.fullName, best.weapon.id, if (best.fit >= 1.0) "GREAT_FIT" else "GOOD_ENOUGH")
+                ctx.visits += MarketVisit(hero.id, hero.fullName, best.weapon.id, if (best.worn) "WORN_OUT" else if (best.fit >= 1.0) "GREAT_FIT" else "GOOD_ENOUGH")
             } else {
                 val reason = when {
                     evaluations.none { it.affordable } -> "TOO_EXPENSIVE"
@@ -57,9 +57,11 @@ object Market {
         val price = weapon.listedPrice ?: Int.MAX_VALUE
         val fit = Power.classFit(hero, weapon, content, config)
         val currentFit = Power.classFit(hero, current, content, config)
-        val currentEffective = (Power.weaponPower(current, config) * currentFit).toInt()
-        val candidateEffective = (weapon.power * fit).toInt()
+        // Worn power on both sides: a battered blade is worth less in the hand and on the shelf (a traded-in weapon relisted as is).
+        val currentEffective = (Power.weaponPower(current, config) * Power.conditionFactor(current, config) * currentFit).toInt()
+        val candidateEffective = (weapon.power * Power.conditionFactor(weapon, config) * fit).toInt()
         val improvement = candidateEffective - currentEffective
+        val worn = current != null && current.condition < config.wornConditionThreshold
         val elementTaste = (if (weapon.element != null && weapon.element == hero.elementTaste) 1.0 else 0.0) +
             (if (weapon.element != null) hero.traits.sumOf { content.trait(it).noveltyTaste } else 0.0)
         val drive = if (hero.ambitionDone) null else hero.ambition
@@ -68,7 +70,7 @@ object Market {
         val collector = if (drive == Ambition.COLLECTOR && weapon.quality >= config.ambitionCollectorQuality) config.collectorUtilityBonus else 0.0
         // GDD 7: a storied blade is wanted for its name. Counted fame is capped like its power; a COLLECTOR wants it more.
         val fame = weapon.fame.coerceIn(0, config.weaponFameCap) * config.weaponFameUtilityPerPoint * (if (drive == Ambition.COLLECTOR) config.collectorFameMultiplier else 1.0)
-        val ceiling = maxOf(1, weapon.power * config.fairGoldPerPower) * priceCeilingMultiplier(ctx.reputation, hero.loyalty, config)
+        val ceiling = maxOf(1, fairPrice(weapon, config)) * priceCeilingMultiplier(ctx.reputation, hero.loyalty, config)
         val pricePenalty = maxOf(0.0, price.toDouble() / ceiling - 1.0) * sensitivity
         val noise = (noiseRoll - 0.5) * 2 * config.utilityNoise
         val utility = improvement * config.utilityImprovementWeight +
@@ -77,14 +79,18 @@ object Market {
             hero.loyalty * 0.01 * config.utilityLoyaltyWeight +
             collector +
             fame +
+            (if (worn) config.wornReplacementUtility else 0.0) +
             noise -
             pricePenalty * config.utilityPricePenaltyWeight
-        return Evaluation(weapon, utility, affordable = price <= hero.gold + tradeInCredit(current, config), improvement = improvement, fit = fit, pricePenalty = pricePenalty)
+        return Evaluation(weapon, utility, affordable = price <= hero.gold + tradeInCredit(current, config), improvement = improvement, fit = fit, pricePenalty = pricePenalty, worn = worn)
     }
+
+    /** Gold heroes consider fair for this weapon as it is: power, discounted for wear. The shop's suggested price. */
+    fun fairPrice(weapon: Weapon, config: BalanceConfig): Int = (weapon.power * Power.conditionFactor(weapon, config) * config.fairGoldPerPower).toInt()
 
     /** Credit the shop gives for the weapon a hero currently wields when they buy a replacement. */
     fun tradeInCredit(current: Weapon?, config: BalanceConfig): Int =
-        current?.let { (it.power * config.fairGoldPerPower * config.tradeInShare).toInt() } ?: 0
+        current?.let { (fairPrice(it, config) * config.tradeInShare).toInt() } ?: 0
 
     /**
      * GDD 5 "Reputation ... affects willingness to pay; individual loyalty influences repeat customers": the price a hero
@@ -111,7 +117,7 @@ object Market {
         val loyaltyGain = hero.traits.fold(1.0) { acc, t -> acc * ctx.content.trait(t).loyaltyGain }.toInt().coerceAtLeast(1)
         ctx.updateHero(hero.copy(gold = hero.gold - (price - credit), loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP))
         // Gazette-visible consequences: a regular is named as one; gold paid above the base fair price is recorded as a premium.
-        val premium = price - weapon.power * ctx.config.fairGoldPerPower
+        val premium = price - fairPrice(weapon, ctx.config)
         val who = if (isRegular(hero, ctx.config)) "${hero.fullName}, a regular of the shop," else hero.fullName
         val text = "$who bought ${weapon.name} for $price gold" + (if (premium > 0) ", $premium above the going rate on the shop's good name." else ".") +
             (if (old != null) " ${old.name} came back to the shop in part payment ($credit gold)." else "")
@@ -127,7 +133,8 @@ object Market {
     fun giveAndEquip(ctx: ResolutionContext, hero: Hero, weapon: Weapon) {
         val current = ctx.equippedWeapon(hero.id)
         val better = current == null ||
-            weapon.power * Power.classFit(hero, weapon, ctx.content, ctx.config) > current.power * Power.classFit(hero, current, ctx.content, ctx.config)
+            weapon.power * Power.conditionFactor(weapon, ctx.config) * Power.classFit(hero, weapon, ctx.content, ctx.config) >
+            current.power * Power.conditionFactor(current, ctx.config) * Power.classFit(hero, current, ctx.content, ctx.config)
         if (better) {
             if (current != null) ctx.updateWeapon(current.copy(location = WeaponLocation.Owned(hero.id, equipped = false)))
             ctx.updateWeapon(weapon.copy(location = WeaponLocation.Owned(hero.id, equipped = true)))

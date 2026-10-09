@@ -112,7 +112,7 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
                     Column(Modifier.weight(1f)) {
                         Text("${i + 1}. ${h.fullName}", style = MaterialTheme.typography.titleSmall)
                         Secondary("${content.heroClass(h.classId).name} level ${h.level} · ${Labels.health(h)}")
-                        Secondary(w?.let { "Wields ${it.name}" } ?: "Unarmed")
+                        Secondary(w?.let { "Wields ${it.name}" + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "Unarmed")
                     }
                     w?.let { WeaponSprite(it, size = 44.dp) }
                 }
@@ -151,7 +151,7 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
         }
         Column(Modifier.weight(1f)) {
             Text(h.fullName + (h.descendantOf?.let { " · of $it's line" } ?: ""), style = MaterialTheme.typography.titleSmall)
-            Secondary("${content.heroClass(h.classId).name} ${h.level} · " + (fateLabel ?: Labels.health(h)) + " · " + (w?.name ?: "unarmed"))
+            Secondary("${content.heroClass(h.classId).name} ${h.level} · " + (fateLabel ?: Labels.health(h)) + " · " + (w?.let { it.name + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "unarmed"))
             Secondary(
                 if (h.isAlive) "${Heroes.describeTraits(h, content)} · ${h.gold} gold · fame ${h.fame}"
                 else "${Heroes.describeTraits(h, content)} · fame ${h.fame} · ${h.kills} kills",
