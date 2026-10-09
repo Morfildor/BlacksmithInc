@@ -66,10 +66,12 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             val legacy = withContext(Dispatchers.IO) { store.loadLegacy() }
             val run = withContext(Dispatchers.IO) { store.loadRun() }
+            // The engine saves the last day's report with the run; one the player never closed reopens (GDD 3.3).
+            val unread = run?.lastResolution?.let { r -> r.takeIf { it.commandId.value != settings.dismissedReport() } }
             _ui.value = when {
                 run == null -> UiState.Title(legacy, hasSavedRun = false)
-                run.isEnded -> UiState.RunEnded(engine.closeRun(run), legacy, claimed = run.runId.value in legacy.claimedRunIds)
-                else -> UiState.Playing(run, showReport = null)
+                run.isEnded && unread == null -> UiState.RunEnded(engine.closeRun(run), legacy, claimed = run.runId.value in legacy.claimedRunIds)
+                else -> UiState.Playing(run, showReport = unread)
             }
         }
     }
@@ -96,6 +98,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
 
     fun dismissReport() {
         val current = _ui.value as? UiState.Playing ?: return
+        current.showReport?.let { r -> viewModelScope.launch { settings.setDismissedReport(r.commandId.value) } }
         if (current.state.isEnded) {
             _ui.value = UiState.RunEnded(engine.closeRun(current.state), current.state.legacy, claimed = false)
         } else {

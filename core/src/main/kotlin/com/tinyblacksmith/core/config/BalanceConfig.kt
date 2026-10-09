@@ -190,6 +190,8 @@ data class BalanceConfig(
     val regularLoyaltyThreshold: Int = 3,
     // --- Weapon-history compaction: newest combat entries (VICTORY per fight, SIEGE per siege) kept per weapon; ownership-grade entries are kept forever. 0 = never compact. ---
     val weaponHistoryCap: Int = 10,
+    // --- Weapon pruning: a salvaged, shattered, donated or collected blade leaves the save this many days later (Legend Board candidates and signatures stay). 0 = never prune. ---
+    val weaponRetentionDays: Int = 30,
     // --- Elite encounters and warlord sieges (GDD 8 elite/boss variants, PROPOSED). ---
     /** Chance that an expedition meets an elite: base + pressure x perPressure. */
     val eliteBaseChance: Double = 0.06,

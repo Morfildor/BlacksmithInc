@@ -7,6 +7,14 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- The day's report reopens if the app is closed or killed before it was read, and stays closed once dismissed.
+
+### Changed
+- Long runs keep smaller saves: a blade that was salvaged, shattered, given to the watch or sold to a collector
+  leaves the save 30 days later, unless it is a signature weapon or famous enough for the Legend Board. Play is
+  unchanged (the same seed gives the same run); a 400-day save of an active smith shrinks by about two fifths.
+
 ## [0.5.0] - 2026-10-09
 Home dashboard, a readable Gazette, weapon wear and weapon fame (balance v4).
 

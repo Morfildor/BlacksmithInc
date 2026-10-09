@@ -1028,3 +1028,39 @@ Known Name +0 / -0.5, all maxed +15 / +11.3.
   price is no longer reported as a premium "on the shop's good name".
 - Not applied from the review: the signboard effect, affix magnitudes, Known Name. Not measured: v4 at 10,000 seeds;
   wear and fame interacting with returned legends over several eras (unit tests only).
+
+## Weapon pruning and day-report recovery (session 8, no balance change)
+
+**What a long save is made of** (forced survival, seed 77, `Weapon` JSON bytes are 52-57 % of the save):
+
+| Policy, days | Weapons | Storage | Destroyed | Given to the watch | Lost with a hero / seized | Owned + shelf | Save bytes |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| BALANCED_FAIR, 400 | 1,242 | 1,157 | 0 | 0 | 52 | 31 | 1,207,457 |
+| BALANCED_FAIR, 1,000 | 3,140 | 2,932 | 0 | 0 | 184 | 22 | 2,933,776 |
+| BALANCED_ACTIVE, 400 | 1,727 | 701 | 713 | 233 | 10 | 68 | 1,745,453 |
+| BALANCED_ACTIVE, 1,000 | 4,524 | 1,901 | 1,871 | 568 | 96 | 86 | 4,426,371 |
+
+**Rule** (`persistence/WeaponPruning.kt`, called in End Day after the history cap; `weaponRetentionDays = 30`, 0 = off):
+a weapon leaves the map when it is `Destroyed` (salvaged or shattered) or `Lost` for a terminal reason ("given to the
+town watch", "sold to a collector"), that happened at least 30 days ago, its fame is below `legendFameThreshold` and it
+is not a signature weapon. Everything else stays: a blade lost with a hero or seized is read by the Heroic Inheritance
+event and can come home, and a `Lost` reason added later is kept until it is classified
+(`WeaponPruningTest.everyLostReasonIsClassified` fails on an unknown reason). Weapon IDs come from a serial counter,
+so pruning cannot cause a collision.
+
+**Evidence that play is unchanged:** `WeaponPruningTest` plays the active smith for 400 forced-survival days with and
+without pruning: every field of the state except the weapons map is equal, the surviving weapons are equal and in the
+same order, exactly the prunable set is gone, the Legend Board candidates match. Weapons 1,727 -> 857, save
+1,745,453 -> 1,012,913 bytes (-42 %). `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy
+BALANCED_ACTIVE` before and after: every survival, sales, visit and upgrade-impact line is identical; only the
+`affix weapons/run` line moves (it counted the end-of-run map; to be counted at forge time).
+
+**Not done, on purpose:** unsold storage is the plain smith's whole problem (93 % of weapons at day 1,000) and it is
+the player's property, so it is not pruned; a storage cap would be a design decision. Blades lost with heroes grow by
+about one every five days and stay because a rule can still read them. `WEAPON_INHERITED` and the other kept-forever
+event types still grow with the run (695 of 2,099 events at day 1,000).
+
+**Day-report recovery (GDD 3.3):** the engine already saved the last `DayResolution` with the run; the app now stores
+the command ID of the last report the player closed (DataStore, not gameplay state) and reopens an unread one on
+launch, including the final report of a fallen forge. Checked on the emulator: End Day, kill with the report open,
+relaunch (report back), close, kill, relaunch (stays closed, Home on day 2).

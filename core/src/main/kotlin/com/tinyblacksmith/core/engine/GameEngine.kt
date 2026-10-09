@@ -17,6 +17,7 @@ import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.persistence.EventCompaction
 import com.tinyblacksmith.core.persistence.WeaponHistoryCompaction
+import com.tinyblacksmith.core.persistence.WeaponPruning
 import com.tinyblacksmith.core.rng.RngState
 import com.tinyblacksmith.core.rng.RngStream
 
@@ -303,6 +304,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.processedEndDayIds += commandId.value
         EventCompaction.compact(ctx.events, day, config.eventRetentionDays)  // after the Gazette; keeps saves bounded (GDD 13.3)
         WeaponHistoryCompaction.compact(ctx.weapons, config.weaponHistoryCap)  // newest combat entries per weapon; ownership entries kept
+        WeaponPruning.prune(ctx.weapons, day, config.weaponRetentionDays, config.legendFameThreshold)  // blades gone for good leave the save
         if (ctx.phase != Phase.ENDED) newMorning(ctx)
         return accept(ctx, resolution = resolution)
     }
