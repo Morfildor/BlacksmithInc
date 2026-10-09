@@ -210,6 +210,37 @@ class SaveFixtureTest {
     }
 
     /**
+     * The larger town (T3.4) meets every older save: each fixture was written when a town began with eight heroes and
+     * refilled only below five, so it holds nine to eleven. It decodes, is admitted and accepts End Days under the new
+     * numbers; nobody is added at admission, and from then on newcomers arrive one a day at most until it holds twelve.
+     */
+    @Test
+    fun olderSavesJoinTheLargerTown() {
+        val customers = engine.config.customers
+        var arrivals = 0
+        for (name in listOf("v1_forced_seed4242_day61.json", "v1_release060_active_seed4242_day61.json", "v2_forced_seed4242_day61.json", "v2_balance6_expert_seed4242_day33.json", "v3_forced_seed4242_day61.json")) {
+            val s = SaveCodec.decodeRun(fixture(name))
+            assertTrue(s.balanceVersion < engine.config.version, name)
+            val admitted = s.admitted()
+            assertEquals(s.heroes, admitted.heroes, "$name: admission adds nobody")
+            assertTrue(admitted.aliveHeroes().size in customers.minHeroPopulation until customers.populationTarget, "$name: ${admitted.aliveHeroes().size} alive")
+            var next = admitted
+            repeat(10) {
+                if (next.isEnded) return@repeat
+                val out = assertIs<CommandOutcome.Accepted>(engine.handle(next, Command.EndDay(endDayId(next))), "$name day ${next.day}")
+                assertEquals(emptyList(), Invariants.check(out.state, engine.config, engine.shelfSlots(out.state), engine.content), "$name day ${next.day}")
+                val seats = customers.shopCapacity + engine.toolTotal(next, com.tinyblacksmith.core.content.ToolEffect.EXTRA_CUSTOMERS) + customers.festivalExtraSeats
+                assertTrue(out.resolution!!.browsers.size <= seats, "$name day ${next.day}: ${out.resolution!!.browsers.size} at the counter")
+                arrivals += out.resolution!!.events.count { it.type == EventType.HERO_ARRIVED }
+                assertTrue(out.state.aliveHeroes().size <= customers.maxHeroPopulation + 1, "$name day ${next.day}")
+                next = out.state
+            }
+            assertTrue(next.day > admitted.day, "$name played on")
+        }
+        assertTrue(arrivals > 0, "towns below twelve draw newcomers")
+    }
+
+    /**
      * What release 0.6.0 itself wrote (the codec of tag v0.6.0: schema 1, rules 1, balance not yet recorded): forced
      * survival, seed 4242, BALANCED_ACTIVE, 60 End Days, so it owns tools and has delivered commissions. It is migrated
      * on decode, admitted, and plays; the day it stored reads as a day without snapshots.

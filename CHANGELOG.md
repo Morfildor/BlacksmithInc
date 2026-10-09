@@ -22,6 +22,14 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   sound.
 
 ### Changed
+- A bigger town. An era now opens with twelve heroes instead of eight, and every class is among them from the first
+  morning. When the town thins, newcomers drift in one a day until it is back at twelve (always, once it drops below
+  nine); events can still swell it to sixteen.
+- A busier counter. The shop seats six customers a day instead of four (seven or eight with the Signboard), and a
+  festival brings three more. Expect five or six faces on an ordinary day and almost never an empty counter.
+- The raiders keep pace with the larger town: a won expedition pushes a faction back a little less, and siege strength
+  grows a little faster by the day. A first era lasts about as long as before; prices, purses and weapon wear are
+  unchanged. A run saved before this update continues with the heroes it has and fills up as newcomers arrive.
 - Every permanent upgrade now says what its next level does in concrete numbers ("Next era: 11 starting energy instead of 10"), on
   the run-end screen and in Records > Legacy; a maxed track says so. Thrifty Hands and Lucky Hammer no longer describe their
   effect as a percent chance.

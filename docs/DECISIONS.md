@@ -2119,3 +2119,188 @@ These numbers are re-measured after the customer changes of M3 (T3.1 seats and f
   change 8 further lines of one seed (14, from day 3) and no RNG hash: the projection includes the text "lost with <hero name>" of a lost
   blade. `ReplaysAndWeaponFatesTest.theGazetteTellsEveryFate` moved from seed 3 to seed 4 (the sorts left seed 3 with four fate records
   where the test wants six).
+
+## Balance v7, a larger, fairer town: 12 residents, 6 seats, pressure retuned (2026-10-09, task T3.4; N01, N02)
+The plan names this section "Balance v6: a larger, fairer town"; balance 6 was taken by T1.8, so M3 is balance 7 (ledger ruling). Balance
+stays 7, rules 3, schema 4, `STREAM_SEED_VERSION` 1: M3 is one unreleased step, and the v7 fingerprint pin of T3.1 was re-pinned for it.
+
+Owner instructions this tuning is bound by (quoted):
+- "Treat the 45-day median as baseline evidence, not a hard survival ceiling. Tune stacked customer/economy changes using distributions and
+  player decisions."
+- "Do not automatically nerf wear or maxed-account survival because the median is 45 days."
+
+Weapon wear, hero purses, expedition gold, patrol pay, `tradeInShare`, `fairGoldPerPower` and the newcomer's empty hands are untouched. No
+number was chosen to pull a maxed account toward a median: the pressure numbers below were chosen as the smallest step that keeps the
+first-era bands of plan 4.3 (BALANCED_FAIR, BALANCED_ACTIVE), and they leave every maxed-account row at or above its baseline.
+
+- **Numbers (`BalanceConfig.customers`, all PROPOSED):** `startingHeroes` 8 -> **12**; new `populationTarget` **12**,
+  `arrivalChancePerMissing` **0.15**, `arrivalChanceMax` **0.6**; `minHeroPopulation` 5 -> **9**; `maxHeroPopulation` 12 -> **16**;
+  `shopCapacity` 4 -> **6** (7 / 8 with the Signboard); `festivalExtraSeats` 2 -> **3**. Flat: `expeditionSuppression` 3 -> **2**,
+  `raidPerDay` 6.0 -> **6.5**. `--set` accepts the three new keys.
+- **Rules:** (1) every run starts with all five classes: until all are present a starting hero draws its class from the classes still
+  missing (one HEROES draw, as before), so the first five heroes are one of each in a seeded order; a descendant keeps the lineage's class
+  and counts. (2) Arrivals: each End Day one HEROES draw is made whatever the population. Below the floor a newcomer always arrives; below
+  the target one arrives when the draw is under min(0.6, 0.15 x missing); at or above the target nobody does. At most one a day. Event
+  arrivals (New Adventurers, Veteran Returns, a descendant) are as before and stop at 16. (3) A newcomer is unarmed with class gold, as
+  before.
+- **Old saves:** nothing is added at admission. A town saved with 8-11 heroes keeps them and fills up by rule 2 (certain below 9, then by
+  chance), and meets the new pressure numbers at once. Sweep step 4b (below) measures that case; it stays under the plan's 2-day line, so
+  no "keep the old threat numbers until the next siege" rule was built.
+
+### What a player will notice
+- **Faces.** Five or six customers on an ordinary day instead of three or four (5.6 against 3.6 served a day; 7.1 against 4.7 with the
+  Signboard). The shop is full (six served) on three days in four. A day with two or fewer visitors was one day in eight and is now one in
+  eighty; a day with nobody at the counter was one in 250 and is now below one in 2,000. Over a first era about 14 different heroes are
+  served instead of 9, eleven of them by day 5, and in practice every class has bought something by day 10 (99.9 % of runs, was 83 %).
+- **Turned away.** On six days in ten somebody willing finds the shop full (1.5 heroes a day; 45 % of days and 0.8 before). That is the
+  room the Signboard sells: with it the count falls to 1.0 a day. Nobody waits long: a newcomer's first visit is the day they first want to
+  come (median 0 days, p90 2).
+- **Gold.** About 40 % more sales a day on the same ten energy (BALANCED_FAIR 0.97 -> 1.36; BALANCED_ACTIVE 1.18 -> 1.71), so a careful
+  player's stock runs down and what to forge next matters on more days. Gold earned over a first era rises by about 45 % (median 1,888 ->
+  2,716; active 3,356 -> 5,363). Purses per hero are the same: on day 1 a third of the town still cannot pay for the cheapest blade, and
+  "too expensive" is the same 20 % of visits. "Not better than what I carry" stays the main refusal (55 -> 57 % of visits), and conversion
+  falls about two points (23.4 -> 21.6 %) because more people look at the same shelf. That is M4's subject (wants, sidegrades).
+- **Difficulty.** The first siege is held more often (BALANCED_FAIR 65 -> 80 %, a novice 48 -> 61 %) because twelve heroes give the wall
+  three better champions, and so is the second (35 -> 47 %). The faster raid growth takes it back from the third (10 -> 12 %): a plain
+  first era still ends around day 20-25 (mean 20.8 -> 22.3, median 20, p10 15, p90 25). Other ways of playing gain two to three and a half
+  days: counter-element stock for sieges 40.1 -> 43.3, SYNERGY 32.6 -> 35.2, a novice 23.2 -> 26.8. A hero is no likelier to die on a
+  given day than before.
+- **Dead ends.** Stuck mornings (nothing sellable and nothing forgeable) nearly vanish: runs with a stuck streak of three days or more fall
+  from 2.6-3.6 % to 0-0.1 % for the hardest-spending bot, and to zero for the novice.
+- **Not better:** warlord sieges are rarer (BALANCED_FAIR 0.8 -> 0.3 a run): twelve heroes hold faction pressure lower even at suppression
+  2 (31 against 36 at the second siege). Reported, not tuned.
+
+### Baseline against final (1,000 runs, base seed 1; days are mean / median / p10 / p90 / longest; the other two base seeds are in the tables file)
+| policy | days before | days after | gold earned (median) | served a day | distinct heroes served | conversion % | nobody at the counter, % of days | never served, % of heroes | stuck streak 3+, % of runs | deaths per hero-day | first siege held % |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| BALANCED_FAIR | 20.8 / 20 / 15 / 25 / 40 | 22.3 / 20 / 15 / 25 / 35 | 1888 -> 2716 | 3.55 -> 5.63 | 9.2 -> 14.2 | 23.4 -> 21.6 | 0.4 -> 0.0 | 1.6 -> 1.2 | 0 -> 0 | 0.0045 -> 0.0042 | 64.8 -> 79.7 |
+| BALANCED_ACTIVE | 27.4 / 25 / 20 / 35 / 45 | 29.4 / 30 / 20 / 35 / 45 | 3356 -> 5363 | 4.67 -> 7.10 | 10.8 -> 16.6 | 22.6 -> 22.1 | 0.2 -> 0.0 | 1.1 -> 1.1 | 1.3 -> 0 | 0.0035 -> 0.0031 | 86.0 -> 89.2 |
+| BALANCED_EXPENSIVE | 12.4 / 10 / 10 / 15 / 30 | 13.4 / 15 / 10 / 15 / 30 | 771 -> 1342 | 3.18 -> 5.00 | 8.4 -> 12.8 | 10.2 -> 10.6 | 1.0 -> 0.1 | 1.5 -> 1.6 | 0 -> 0 | 0.0068 -> 0.0065 | 3.7 -> 6.5 |
+| PASSIVE | 10.0 / 10 / 10 / 10 / 10 | 10.0 / 10 / 10 / 10 / 10 | 0 -> 0 | 3.10 -> 4.77 | 8.2 -> 12.4 | 0 -> 0 | 1.3 -> 0.1 | 2.6 -> 2.3 | 0 -> 0 | 0.0060 -> 0.0063 | 0 -> 0 |
+| NOVICE | 23.2 / 25 / 15 / 35 / 40 | 26.8 / 30 / 20 / 35 / 45 | 2060 -> 3548 | 3.53 -> 5.62 | 9.8 -> 15.7 | 23.8 -> 21.5 | 0.5 -> 0.0 | 1.8 -> 1.4 | 0.1 -> 0 | 0.0047 -> 0.0040 | 47.7 -> 61.3 |
+| SYNERGY | 32.6 / 35 / 25 / 40 / 45 | 35.2 / 35 / 30 / 40 / 45 | 3166 -> 4547 | 3.69 -> 5.78 | 12.4 -> 19.0 | 20.7 -> 18.8 | 0.2 -> 0.0 | 1.7 -> 1.5 | 0 -> 0 | 0.0029 -> 0.0026 | 88.8 -> 96.3 |
+| SIEGE_PREP | 40.1 / 40 / 30 / 50 / 55 | 43.3 / 45 / 40 / 50 / 55 | 5210 -> 7870 | 3.79 -> 5.85 | 14.3 -> 22.0 | 23.2 -> 22.0 | 0.1 -> 0.0 | 1.4 -> 1.3 | 0.1 -> 0 | 0.0027 -> 0.0023 | 90.3 -> 97.0 |
+| EXPERT | 42.8 / 45 / 35 / 50 / 55 | 44.4 / 45 / 40 / 50 / 55 | 6510 -> 9142 | 3.83 -> 5.86 | 15.7 -> 23.3 | 21.9 -> 21.3 | 0.1 -> 0.0 | 1.6 -> 1.4 | 0.4 -> 0 | 0.0019 -> 0.0019 | 95.2 -> 98.6 |
+| EXPERT_ACTIVE | 43.1 / 45 / 35 / 50 / 55 | 46.4 / 45 / 40 / 50 / 55 | 7023 -> 11088 | 4.81 -> 7.26 | 15.7 -> 24.1 | 22.9 -> 22.0 | 0.1 -> 0.0 | 0.9 -> 1.0 | 2.6 -> 0 | 0.0021 -> 0.0019 | 92.8 -> 98.7 |
+| maxed BALANCED_FAIR | 35.8 / 35 / 30 / 40 / 50 | 36.8 / 35 / 30 / 40 / 45 | 4413 -> 5618 | 3.84 -> 5.90 | 13.0 -> 19.6 | 19.8 -> 18.0 | 0.1 -> 0.0 | 1.7 -> 1.5 | 0 -> 0 | 0.0029 -> 0.0025 | 79.4 -> 89.9 |
+| maxed BALANCED_ACTIVE | 42.4 / 45 / 35 / 50 / 55 | 43.8 / 45 / 40 / 50 / 60 | 6529 -> 9192 | 5.18 -> 7.45 | 14.8 -> 22.0 | 18.4 -> 18.3 | 0.0 -> 0.0 | 0.9 -> 0.8 | 0.1 -> 0 | 0.0019 -> 0.0018 | 93.1 -> 96.2 |
+| maxed SYNERGY | 43.9 / 45 / 35 / 50 / 55 | 45.2 / 45 / 40 / 50 / 55 | 4745 -> 6441 | 3.88 -> 5.92 | 15.2 -> 22.7 | 18.3 -> 17.2 | 0.1 -> 0.0 | 1.4 -> 1.2 | 0 -> 0 | 0.0022 -> 0.0022 | 89.7 -> 94.9 |
+| maxed EXPERT | 53.2 / 55 / 50 / 60 / 65 | 53.6 / 55 / 50 / 60 / 60 | 8881 -> 11592 | 3.92 -> 5.95 | 18.3 -> 26.2 | 20.9 -> 19.5 | 0.0 -> 0.0 | 1.2 -> 1.1 | 0 -> 0 | 0.0017 -> 0.0018 | 95.6 -> 98.0 |
+| maxed EXPERT_ACTIVE | 55.4 / 55 / 50 / 60 / 70 | 56.0 / 55 / 50 / 60 / 65 | 10383 -> 14091 | 5.16 -> 7.46 | 19.2 -> 27.6 | 19.1 -> 18.5 | 0.0 -> 0.0 | 0.7 -> 0.7 | 1.4 -> 0 | 0.0015 -> 0.0015 | 96.3 -> 98.0 |
+
+Refusal mix, share of visits (NOT_BETTER / TOO_EXPENSIVE): BALANCED_FAIR 54.9 / 20.0 -> 57.1 / 20.0; BALANCED_ACTIVE 48.6 / 27.1 -> 46.0 / 30.5;
+NOVICE 42.7 / 32.2 -> 43.2 / 34.2; EXPERT 57.1 / 19.6 -> 54.6 / 23.1; maxed BALANCED_ACTIVE 33.9 / 46.8 -> 33.3 / 47.6. Mean days at the
+three base seeds (1 / 10001 / 20001) after: BALANCED_FAIR 22.3 / 22.5 / 22.2, BALANCED_ACTIVE 29.4 / 29.4 / 29.9, EXPERT 44.4 / 44.8 / 44.7,
+maxed EXPERT 53.6 / 54.1 / 53.9, NOVICE 26.8 / 26.8 / 26.9. All 28 new-account rows and the five maxed rows, three seeds each, are in the
+tables file. Upgrade impact on the new numbers (BALANCED_FAIR, seed 1): all maxed +14.6 mean days (was +15.0), Stalwart Walls +6.0,
+Well-Stocked Cellar +5.1, Forge Mastery +2.3; for EXPERT all maxed +9.1 (was +10.4).
+
+### The sweep (plan 4.3; 1,000 runs, base seed 1 unless noted)
+- **Step 2, residents alone (4 seats, uncompensated).** Mean days at 8 / 10 / 12 / 14 / 16 residents: BALANCED_FAIR 21.1 / 23.0 / 24.2 /
+  25.7 / 26.5; BALANCED_ACTIVE 27.4 / 30.9 / 32.9 / 34.9 / 36.2; SYNERGY 32.8 / 35.7 / 37.2 / 38.2 / 38.9; BALANCED_EXPENSIVE 12.3 / 13.1 /
+  13.8 / 14.2 / 15.1; PASSIVE 10.0 throughout. About +0.8 mean days per extra resident for a plain smith from 8 to 12, less after. Sales a
+  day (FAIR) 1.00 / 1.11 / 1.22 / 1.30 / 1.39; distinct heroes served 9.7 / 12.1 / 14.4 / 16.7 / 18.9; first siege held 67 / 80 / 83 / 90 /
+  93 %. At four seats served a day stays at 4.0 and the turned-away count climbs to 3.2 a day at twelve: residents without seats do not
+  make a busier counter. The "as today" arm (8, refill below 5, cap 12) reproduces the unedited tree within 0.3 days on every policy.
+- **Step 3, seats alone.** At 12 residents, seats 4 / 5 / 6 / 8: served a day (FAIR) 3.97 / 4.88 / 5.67 / 6.79; shop full on 96 / 90 / 79 /
+  48 % of days; conversion 27.3 / 23.0 / 20.3 / 17.5 %; sales a day 1.22 / 1.26 / 1.30 / 1.33; mean days 24.2 / 24.6 / 24.7 / 24.7. Seats
+  move who is seen, hardly who buys or how long the town lives. At 8 residents six seats fill on 27 % of days and eight on 4 %: the
+  Signboard would be dead. Six at twelve leaves the Signboard two seats that are wanted (7.2 served a day with it).
+- **Step 4, compensation at (12, 6).** Mean days (median):
+
+| expedition suppression, raid growth | BALANCED_FAIR | BALANCED_ACTIVE | BALANCED_EXPENSIVE | SYNERGY | NOVICE | EXPERT | maxed FAIR | maxed ACTIVE | maxed EXPERT (p90, longest) |
+|---|---|---|---|---|---|---|---|---|---|
+| before T3.4 (8 residents, 4 seats, 3, 6.0) | 20.8 (20) | 27.4 (25) | 12.4 (10) | 32.6 (35) | 23.2 (25) | 42.8 (45) | 35.8 | 42.4 | 53.2 (60, 65) |
+| 3, 6.0 (uncompensated) | 24.7 (25) | 33.0 (35) | 14.0 (15) | 37.5 (40) | 30.0 (30) | 47.6 (50) | 39.7 | 46.8 | 57.0 (60, 65) |
+| 3, 6.5 | 23.4 (25) | 30.9 (30) | 13.6 (15) | 35.5 (35) | 27.9 (30) | 44.9 (45) | 37.6 | 44.4 | 54.2 (60, 60) |
+| 3, 7.0 | 22.1 (20) | 29.0 (30) | 13.2 (15) | 33.8 (35) | 26.1 (25) | 42.7 (45) | 35.7 | 42.2 | 51.7 (55, 60) |
+| 2, 6.0 | 23.6 (25) | 31.6 (30) | 13.8 (15) | 37.1 (35) | 28.7 (30) | 47.2 (50) | 39.0 | 46.3 | 56.6 (60, 65) |
+| **2, 6.5 (chosen)** | **22.3 (20)** | **29.4 (30)** | 13.4 (15) | 35.2 (35) | 26.8 (30) | 44.4 (45) | 36.8 | 43.8 | 53.6 (60, 60) |
+| 2, 7.0 | 21.0 (20) | 27.6 (30) | 13.0 (15) | 33.4 (35) | 25.1 (25) | 42.3 (45) | 35.2 | 41.5 | 51.1 (55, 60) |
+
+  Uncompensated, a plain first era is four days longer (median 25) and the active one 33.0: outside the band (FAIR median 20, mean at most
+  22.5; ACTIVE mean at most 30.5). Three arms hold both rows. **(2, 6.5) is chosen** because it is the plan's first lever in full (the one
+  channel that grows with head count) and half of the second, and it is the only passing arm that leaves no maxed-account row below its
+  baseline (maxed EXPERT 53.6 against 53.2; at raid 7.0 it would be 51.1-51.7, a reduction nobody asked for). It is also the only passing
+  arm under the 2-day line of step 4b for both policies. Suppression 2 alone or raid 6.5 alone leaves FAIR at 23.4-23.6, median 25.
+  Finer values at suppression 2, FAIR mean at seeds 1 / 10001 / 20001: raid 6.5 22.3 / 22.5 (22.455) / 22.2; 6.6 22.1 / 22.2 / 21.9; 6.75
+  21.7 / 21.8 / 21.6. 6.5 holds at all three seeds with 0.05 days to spare at one of them; 6.6 would buy margin by taking maxed EXPERT
+  slightly under its baseline, so the round number stands. `populationTarget` 12 -> 10 (the third lever) was not needed.
+- **Step 4b, a run saved before this update.** 1,000 towns per base seed played to the morning of day 8 under the old numbers, then
+  continued: under the chosen numbers BALANCED_FAIR loses 0.75 / 0.81 / 0.75 mean days against continuing under the old ones (20.2 against
+  20.95 at seed 1) and BALANCED_ACTIVE 1.25 / 1.25 / 1.19 (26.1 against 27.3). Under the plan's line of 2 days, so admitted runs get no
+  special case. (At raid 7.0 the active loss is 2.1-2.75 days.) Comparator: the tree before T3.4, not balance v5.
+
+### The M3 band of plan 4.3 (1,000 runs at each of base seeds 1 / 10001 / 20001)
+| measure | threshold | before | after | 1 | 10001 | 20001 |
+|---|---|---|---|---|---|---|
+| BALANCED_FAIR days: median (p10/p90) mean | median 20, p10 >= 15, p90 <= 30, mean 19.5-22.5 | 20 (15/25) 20.8 / 21.0 / 20.8 | 20 (15/25) 22.3; 20 (15/30) 22.5; 20 (15/25) 22.2 | HOLDS | HOLDS (22.455) | HOLDS |
+| BALANCED_ACTIVE days | median 25-30, mean <= 30.5 | 27.4 / 27.4 / 27.1 | 30 (20/35) 29.4; 30 (20/35) 29.4; 30 (25/35) 29.9 | HOLDS | HOLDS | HOLDS |
+| BALANCED_EXPENSIVE, PASSIVE median | 10-15 and 10 | 10, 10 | 15, 10 | HOLDS | HOLDS | HOLDS |
+| every run ends (28 new-account rows, 5 maxed) | all | all | all | HOLDS | HOLDS | HOLDS |
+| maxed above new, mean days: FAIR / ACTIVE / SYNERGY | at least +10 (distributions reported, not capped) | +15.0 / +15.0 / +11.3 | +14.5 / +14.4 / +10.0; +14.5 / +14.4 / +10.2; +14.9 / +13.8 / +10.3 | HOLDS | HOLDS | HOLDS |
+| served a day, BALANCED_FAIR | 5.0-6.0 | 3.55 | 5.63 / 5.65 / 5.65 | HOLDS | HOLDS | HOLDS |
+| days with two or fewer visitors, BALANCED_FAIR | <= 5 % | 12.5 / 12.7 / 11.9 % | 1.2 / 1.2 / 1.2 % | HOLDS | HOLDS | HOLDS |
+| served a day, BALANCED_ACTIVE | 6.0-7.5 | 4.67 | 7.10 / 7.10 / 7.14 | HOLDS | HOLDS | HOLDS |
+| distinct heroes served, BALANCED_FAIR: by day 5 / in a run (means) | >= 9 / >= 13 | 7.5 / 9.2 | 11.4 / 14.2 at each seed | HOLDS | HOLDS | HOLDS |
+| fairness by position (worst / best visit rate, positions 1-12) | max / min <= 2.5 | 0.97 (1-8) | 0.96 / 0.97 / 0.96 | HOLDS | HOLDS | HOLDS |
+| newcomer wait, days: median / p90 | <= 2 / <= 4 | 1 / 3 | 0 / 2 | HOLDS | HOLDS | HOLDS |
+| sales a day: FAIR / ACTIVE | 1.2-2.0 / 1.5-2.4 | 0.97 / 1.18 | 1.36 / 1.71; 1.34 / 1.71; 1.35 / 1.71 | HOLDS | HOLDS | HOLDS |
+| conversion: FAIR / ACTIVE | not more than 3 points below baseline | 23.4 / 22.6; 23.1 / 22.4; 23.4 / 22.5 % | 21.6 / 22.1; 21.2 / 22.0; 21.5 / 22.0 % | HOLDS | HOLDS | HOLDS |
+| 4 of 5 classes have bought by day 10: FAIR / ACTIVE | >= 90 % of runs | 83.1 / 82.5 % | 99.9 / 99.7; 100 / 100; 100 / 99.9 % | HOLDS | HOLDS | HOLDS |
+| deaths per hero-day: FAIR / ACTIVE | <= 1.15 x baseline | 0.0045 / 0.0035 | 0.0042 / 0.0031; 0.0041 / 0.0032; 0.0042 / 0.0030 | HOLDS | HOLDS | HOLDS |
+| legacy points, median, BALANCED_FAIR | within 2 of baseline | 26 | 27 | HOLDS | HOLDS | HOLDS |
+| hard-lock days | 0 | 0 in every row | 0 in 32 of 33 rows; SPENDTHRIFT 1 / 3 / 3 days in 1,000 runs | **FAILS** (SPENDTHRIFT) | **FAILS** (SPENDTHRIFT) | **FAILS** (SPENDTHRIFT) |
+| stuck days (T5.2 probe): FAIR / worst row | <= 0.5 % of days | 0 / 1.21-1.45 % (EXPERT_ACTIVE) | 0 / 0.10-0.11 % (SPENDTHRIFT) | HOLDS | HOLDS | HOLDS |
+| shared first name / surname among the living | 0 % of days | 0 / 0 | 0 / 0 | HOLDS | HOLDS | HOLDS |
+| shared face among the living, BALANCED_FAIR | reported (T3.3 saves a face per hero) | 49.9 / 53.8 / 47.9 % | 88.4 / 90.3 / 88.7 % | reported | reported | reported |
+
+Reported, not gated: served share max / min among heroes alive ten days or more, per run, median 2.2 and p90 3.2-3.3 (2.2 and 3.3-3.45
+before; ruling of T3.1); refusal mix above; SYNERGY 35 (30/40) 35.2 and the maxed distributions in the table above.
+
+**The one failing line.** The "hard-lock" counter is the old simulator count of days on which a policy forged nothing and had nothing on
+the shelf from the day before (T5.2 showed it is not a stuck state). SPENDTHRIFT, the bot that spends every coin on tools each morning,
+now has 1, 3 and 3 such days in 1,000 runs at the three seeds (it had none), because six customers sell its shelf out on a day it cannot
+buy iron. The stuck-state probe that replaced the counter improves for the same bot (stuck days 0.56 % -> 0.11 %, streaks of three or more
+1.0 % -> 0.2 % of runs). Left failing as written: no lever of this task addresses a bot emptying its own purse, and none was tried.
+
+**Margins worth knowing.** BALANCED_FAIR's mean sits at the top of its band (22.2-22.5 against 22.5) and maxed SYNERGY is +10.0 to +10.3
+over a new account against the gate of +10. Every M4 loop pushes the first up; sweep step 6b re-runs this grid when FAIR or ACTIVE moves.
+
+### Tripwire (restated by ruling: new-account EXPERT mean above 50.4, maxed EXPERT p90 above 70, or any 100-day run)
+Not crossed. New-account EXPERT mean 44.4 / 44.8 / 44.7 (42.8 / 43.0 / 43.3 before). Maxed EXPERT mean 53.6 / 54.1 / 53.9, p90 60 at
+every seed, longest 60 / 60 / 65 (before: 53.2 / 53.4 / 53.5, p90 60, longest 65). Longest run of any of the 99 policy-seed rows: 65 days
+(maxed accounts; 70 before). Uncompensated (3, 6.0) the same rows read 47.6 and 57.0 (p90 60, longest 65): also under the lines, so
+the compensation was chosen for the first-era band, not for the tripwire.
+
+### Tests, golden file, fingerprint
+- New `PopulationTest`: `everyRunStartsWithAllFiveClasses` (1,000 seeds; each class opens 150-250 of them; a descendant of each class
+  keeps it and counts), `arrivalsRefillTowardTheTarget` (4,000 draws per population: 0, 0.15, 0.30, 0.45 at 12, 11, 10, 9 alive, certain
+  below 9, capped at 0.6; 200 played runs stay at nine or more on 97 % of days and never pass 17), `oneHeroesDrawPerDayForArrivals` (the
+  stream advances by one draw at 3 to 16 alive when nobody comes, and by one draw plus the newcomer's when somebody does).
+- `SaveFixtureTest.olderSavesJoinTheLargerTown`: all five fixtures (schema 1, 1, 2, 2, 3; 9-11 living heroes) decode, are admitted with
+  nobody added, accept ten End Days with invariants held and the counter within its seats, and draw newcomers. There is no schema-4 fixture
+  yet (T3.3 still adds a schema-4 field; the gate records one).
+- `VersionFingerprintTest`: the balance-7 row was **re-pinned** (66214786... -> 33af5dfb...). The file's own rule is a new row per changed
+  number; the dispatch keeps balance at 7 because no balance-7 build has left development. If that is wrong, the fix is one line: version 8.
+- Adjusted for twelve heroes: `ChampionSelectionTest` (tie-break compared in numeric ID order now that h10-h12 exist on day 1; every
+  second town starts under a warlord, since twelve armed heroes no longer let pressure reach one in 12 seeds),
+  `CustomerSelectionTest.turnedAwayIsStoredOnTheDayAndCounted` (pins four seats, as its siblings do), `HeroDailyLifeTest` (the four heroes
+  beyond the eight it scripts are wounded and guildless), `EventCompactionTest` (a 400-day compacted log is 1,408 events with twelve
+  residents; the bound moves from 1,200 to 1,700).
+- **Golden file `state_rules3.txt` re-recorded** (20 seeds x 15 days): all 300 lines and all 300 RNG hashes differ, from day 1 of every
+  seed (twelve starting heroes are four more generations on the HEROES stream before day 1, and every End Day has four more willingness
+  draws and one arrival draw). Fifteen of the old lines were "ended" (runs of the golden script that fell by day 15); none is now.
+  `state_rules1.txt` and `state_rules2.txt` are untouched.
+
+### Commands and evidence
+`./gradlew :core:simulate --args="--runs 1000 --seed <1|10001|20001> --policy <all|bots> --customers --noImpact"`, the same with
+`--policy EXPERT,EXPERT_ACTIVE,BALANCED_FAIR,BALANCED_ACTIVE,SYNERGY --upgrades <all eleven>=3` for the maxed rows, and at seed 1 without
+`--noImpact` (`--policy all`, and `--policy bots --impactPolicy EXPERT`). Sweep arms through `--set` (new keys `populationTarget`,
+`arrivalChancePerMissing`, `arrivalChanceMax`). Step 4b through `SimulationDriver.playRun(from = state)` (new optional parameter) from a
+probe test that is not committed. Raw outputs `T3.4-*.txt` and the full tables `T3.4-tables.md` are in the session scratchpad (`exec/`).
+
+### Not changed, and not measured
+Wear, purses, prices, trade-ins, energy, siege interval, champions: unchanged. Guild Patronage and festival seats 2 against 3 are sweep
+step 5 (T3.6). 10,000 seeds are step 7 (T5.5). The Town list and the counter at 16 heroes on a device are T3.7. Faces repeat among twelve
+heroes on about 89 % of days until T3.3 gives each hero a saved face.

@@ -200,8 +200,9 @@ class SimulationDriver(
         const val DEFAULT_RESERVE = 0
     }
 
-    fun playRun(legacy: LegacyProfile, seed: Long, policy: Policy): Pair<RunStats, GameState> {
-        var state = engine.newRun(legacy, seed)
+    /** [from] continues a run another driver began (the transition sweep: a town raised under other numbers); null starts a new one. */
+    fun playRun(legacy: LegacyProfile, seed: Long, policy: Policy, from: GameState? = null): Pair<RunStats, GameState> {
+        var state = from ?: engine.newRun(legacy, seed)
         val policyRng = Rng(seed xor 0x5EEDL)
         val bots = policy.rules?.let { BotPlay(this, policy, it, policyRng) }
         if (bots != null) state = bots.start(state)
@@ -798,6 +799,9 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
             "startingHeroes", "startingHeroCount" -> c.copy(customers = c.customers.copy(startingHeroes = int()))
             "minHeroPopulation" -> c.copy(customers = c.customers.copy(minHeroPopulation = int()))
             "maxHeroPopulation" -> c.copy(customers = c.customers.copy(maxHeroPopulation = int()))
+            "populationTarget" -> c.copy(customers = c.customers.copy(populationTarget = int()))
+            "arrivalChancePerMissing" -> c.copy(customers = c.customers.copy(arrivalChancePerMissing = dbl()))
+            "arrivalChanceMax" -> c.copy(customers = c.customers.copy(arrivalChanceMax = dbl()))
             "newAdventurerCount" -> c.copy(newAdventurerCount = int())
             "raidBase" -> c.copy(raidBase = dbl())
             "raidPerDay" -> c.copy(raidPerDay = dbl())
@@ -810,7 +814,7 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
             "veteranGold" -> c.copy(veteranGold = int())
             "tradeInShare" -> c.copy(tradeInShare = dbl())
             "fairGoldPerPower" -> c.copy(fairGoldPerPower = int())
-            else -> throw IllegalArgumentException("unknown key '$key'; allowed: shopCapacity, baseVisitChance, festivalExtraSeats, maxTurnedAwayDays, classSeats, shelfSlots, startingHeroes, minHeroPopulation, maxHeroPopulation, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower")
+            else -> throw IllegalArgumentException("unknown key '$key'; allowed: shopCapacity, baseVisitChance, festivalExtraSeats, maxTurnedAwayDays, classSeats, shelfSlots, startingHeroes, minHeroPopulation, maxHeroPopulation, populationTarget, arrivalChancePerMissing, arrivalChanceMax, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower")
         }
     }
     return c

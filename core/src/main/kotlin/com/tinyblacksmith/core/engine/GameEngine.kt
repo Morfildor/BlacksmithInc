@@ -75,8 +75,11 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         for (f in content.factions) ctx.factions[f.id] = FactionState(f.id, fRng.nextInt(config.startingPressureMin, config.startingPressureMax))
         val hRng = ctx.rng(RngStream.HEROES)
         val descendant = legacy.lineages.lastOrNull()
+        // Every class has a buyer from day one: until all are present, a starting hero draws from the classes still missing (a descendant keeps the lineage's and counts).
+        val missing = content.classes.toMutableList()
         repeat(config.customers.startingHeroes) { i ->
-            val h = Heroes.generate(ctx, hRng, if (i == 0) descendant else null)
+            val h = Heroes.generate(ctx, hRng, if (i == 0) descendant else null, missing.ifEmpty { content.classes })
+            missing.removeAll { it.id == h.classId }
             ctx.updateHero(h)
         }
         // Known Name: the shop is known before its doors open. One starting hero per level is already a regular with coin saved for a blade.

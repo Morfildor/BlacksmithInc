@@ -97,13 +97,13 @@ class HeroDailyLifeTest {
     fun onlyAHigherLevelGuildmateAtTheHallMentorsAndOnlyOnceADay() {
         val s0 = fresh()
         val h = s0.aliveHeroes()
-        // Guild g1: levels 5, 4 and 2, and two level-9 members who are wounded today. Guild g2: levels 6, 6 and 1.
+        // Guild g1: levels 5, 4 and 2, and two level-9 members who are wounded today. Guild g2: levels 6, 6 and 1. The rest of the town has no guild and is wounded.
         val levels = listOf(5, 4, 2, 6, 6, 1, 9, 9)
         val guildOf = listOf("g1", "g1", "g1", "g2", "g2", "g2", "g1", "g1")
         val s = s0.withGuild("g1", h[0]).withGuild("g2", h[3]).withHeroes { hero ->
             val i = h.indexOfFirst { it.id == hero.id }
             hero.copy(
-                guildId = guildOf[i], level = levels[i], xp = 0, health = if (i >= 6) config.heroWoundedThreshold - 1 else 100,
+                guildId = guildOf.getOrNull(i), level = levels.getOrElse(i) { 1 }, xp = 0, health = if (i >= 6) config.heroWoundedThreshold - 1 else 100,
                 mentorName = if (i == 2) "Old Master" else null,
             )
         }

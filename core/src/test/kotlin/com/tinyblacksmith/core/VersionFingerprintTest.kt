@@ -29,7 +29,7 @@ class VersionFingerprintTest {
     private val balancePins = mapOf(
         5 to "a9d576db13b2983ebb4e45ed97ff6ddc9ece108aebb4738a14bfd90dc9ae37c1",
         6 to "adb451f9d456482d788d612daefebdbda892de44215fe4a3877152490d6c8e60",
-        7 to "66214786ec96489c50453f2dc76ade2bb0d749d18275b30fa14586bc8370129f",
+        7 to "33af5dfb6a3505b42e313b07929b8d7b82ad65526107159521d1ef08562cf076",  // re-pinned inside the unreleased M3 step: T3.1 pinned 66214786..., T3.4 changed the town and pressure numbers
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames")

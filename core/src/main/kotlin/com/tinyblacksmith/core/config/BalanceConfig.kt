@@ -16,7 +16,7 @@ data class BalanceConfig(
      * v4 (2026-10-09): weapon wear, weapon fame, whetstone 120/300, warlord pressure 50 with no raid bonus. See docs/DECISIONS.md.
      * v5 (2026-10-09): signboard adds a customer a day per level, stronger affix magnitudes (catalog numbers), guild hall and ambition days ([HeroLifeConfig]), fight replays and weapon fates ([WeaponFatesConfig]), three legacy tracks and Known Name regulars ([LegacyTracksConfig]). See docs/DECISIONS.md.
      * v6 (2026-10-09): commissions ask for a quality band floor ([CommissionConfig]; a noble one for the superb floor, `nobleCommissionMinQuality` removed), COLLECTOR ambition at the fine floor 50 (was 60). See docs/DECISIONS.md.
-     * v7 (2026-10-09): fair customer selection ([CustomerConfig]: one intent draw per living hero, weighted seats, a waiting bound; the loyalty and reputation terms of the visit chance are capped). Seats, population and prices are unchanged. See docs/DECISIONS.md.
+     * v7 (2026-10-09): fair customer selection ([CustomerConfig]: one intent draw per living hero, weighted seats, a waiting bound; the loyalty and reputation terms of the visit chance are capped); a larger town (12 residents with all five classes, refill toward 12, floor 9, event cap 16; 6 seats, festival +3) with expedition suppression 2 and raid growth 6.5. Prices, purses and wear are unchanged. See docs/DECISIONS.md.
      */
     val version: Int = 7,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
@@ -97,7 +97,8 @@ data class BalanceConfig(
     val expeditionLootChance: Double = 0.35,
     val expeditionDamageMin: Int = 20,
     val expeditionDamageMax: Int = 55,
-    val expeditionSuppression: Int = 3,
+    /** v7: 2 (was 3). Suppression is the one channel that grows with head count; a town of twelve wins half again as many expeditions (docs/DECISIONS.md). */
+    val expeditionSuppression: Int = 2,
     val patrolSuppression: Int = 1,
     val patrolMilitiaGain: Int = 3,
     val militiaDecayPerDay: Int = 1,
@@ -108,8 +109,8 @@ data class BalanceConfig(
     val startingPressureMin: Int = 20,
     val startingPressureMax: Int = 45,
     val raidBase: Double = 32.0,
-    /** v3: 6.0 (was 5.0) after trade-ins and patrol pay armed heroes better (docs/DECISIONS.md). */
-    val raidPerDay: Double = 6.0,
+    /** v3: 6.0 (was 5.0) after trade-ins and patrol pay armed heroes better; v7: 6.5 for a town of twelve (docs/DECISIONS.md). */
+    val raidPerDay: Double = 6.5,
     val raidPerPressure: Double = 0.65,
     /** v1 slice sweep adopted 2.75; v2 (launch content, three factions) lowered it to 2.0 so early sieges are winnable and moved run length to forge damage (docs/DECISIONS.md). */
     val siegeModifier: Double = 2.0,
@@ -320,15 +321,19 @@ data class CommissionConfig(
  * flat fields of [BalanceConfig] and keep their values; the visit terms were inline constants of the market.
  */
 data class CustomerConfig(
-    // Population (was startingHeroCount, minHeroPopulation, maxHeroPopulation).
-    val startingHeroes: Int = 8,
-    /** Below this many living heroes a newcomer arrives each day. */
-    val minHeroPopulation: Int = 5,
+    // Population (was startingHeroCount, minHeroPopulation, maxHeroPopulation). The first heroes of a run take one class each.
+    val startingHeroes: Int = 12,
+    /** While fewer heroes than this are alive, one newcomer may arrive each day: chance [arrivalChancePerMissing] per missing resident, at most [arrivalChanceMax]. */
+    val populationTarget: Int = 12,
+    val arrivalChancePerMissing: Double = 0.15,
+    val arrivalChanceMax: Double = 0.6,
+    /** Below this many living heroes the day's newcomer is certain. */
+    val minHeroPopulation: Int = 9,
     /** Event arrivals never raise the living population above this. */
-    val maxHeroPopulation: Int = 12,
+    val maxHeroPopulation: Int = 16,
     // Seats (was maxCustomersPerDay, festivalExtraCustomers). The Signboard adds one per level on top.
-    val shopCapacity: Int = 4,
-    val festivalExtraSeats: Int = 2,
+    val shopCapacity: Int = 6,
+    val festivalExtraSeats: Int = 3,
     // Willingness: the chance that a living hero wants to visit today, one draw each.
     val baseVisitChance: Double = 0.35,
     val festivalVisitBonus: Double = 0.2,
