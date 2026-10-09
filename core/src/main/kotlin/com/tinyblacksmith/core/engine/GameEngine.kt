@@ -32,9 +32,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
 
         /**
          * The rules version that salts every stream seed ([RngState.seeded]). Rules 2 is a number only (a run now has to be
-         * admitted before it is played, see [Compatibility]): no draw order or outcome changed, so new runs keep the rules-1
-         * streams and every seed plays as before. The first slice that changes an outcome raises this with its re-recorded
-         * seed-pinned tests and golden file.
+         * admitted before it is played, see [Compatibility]) and its outcome changes are rule fixes that draw from the same
+         * streams, so new runs keep the rules-1 seeds: each fix re-records only the seed-pinned tests and golden lines it
+         * moves. Raised only if a later rules version is meant to re-seed every run.
          */
         const val STREAM_SEED_VERSION = 1
     }
@@ -350,8 +350,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             ctx.emit(EventType.TOWN_RECOVERED, 1, "Heroes shored up the forge defenses (+$applied integrity).", data = mapOf("amount" to applied.toString()))
         }
         ctx.town = ctx.town.copy(militia = maxOf(0, ctx.town.militia - config.militiaDecayPerDay))
-        val faction = ctx.factions.values.maxByOrNull { it.pressure }?.let { content.faction(it.id) }
-        if (faction != null) ctx.town = ctx.town.copy(championIds = Battle.selectChampions(ctx, faction).map { it.first.id })
+        // The forecast's own champions: the same faction, warlord flag and ranking the siege will use.
+        Battle.outlook(ctx, ctx.town.nextSiegeDay)?.let { o -> ctx.town = ctx.town.copy(championIds = o.champions.map { it.first.id }) }
     }
 
     private fun newMorning(ctx: ResolutionContext) {

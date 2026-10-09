@@ -7,7 +7,19 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Changed
+- A collector pays at most one and a half times the going rate for a blade, whatever its shelf price.
+
+### Added
+- The Forge line of the Gazette says what was spent on materials.
+
 ### Fixed
+- The three champions are chosen against the foe they will face: when a warlord leads the siege, a blade that bites
+  deepest into warlords (Giant Slayer) counts at its full worth in deciding who stands on the wall, the same worth the
+  siege forecast already gave it. The champions shown in town are now always the ones the forecast names.
+- The Gazette's tally counts only visitors who bought (no more "2 of 1 visitors bought"), shows a delivered commission
+  and the town's tribute on their own lines, and counts the sale bonus and a collector's payment in the shop's takings.
+- Saved records no longer contain numbers formatted for the device language.
 - The day's report now tells the whole day, including the blades you forged, listed or honed and the tools you bought
   while planning; before, those lines appeared only in the Gazette archive.
 
