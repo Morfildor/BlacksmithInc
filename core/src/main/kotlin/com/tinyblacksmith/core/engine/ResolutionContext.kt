@@ -54,6 +54,9 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     var expeditionWinsToday = 0
     val visits: MutableList<MarketVisit> = mutableListOf()
     val replays: MutableList<CombatReplay> = mutableListOf()
+    val income: MutableMap<IncomeKind, Int> = mutableMapOf()
+    var tradeInCreditToday = 0
+    val field: MutableList<FieldResult> = mutableListOf()
 
     private val openStreams: MutableMap<RngStream, Rng> = mutableMapOf()
     private var rngState: RngState = base.rng
@@ -75,6 +78,12 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
         events += e
         newEvents += e
         return e
+    }
+
+    /** The only way End Day adds gold to the till: the amount is entered under its kind, so the day's ledger balances by construction. */
+    fun earn(kind: IncomeKind, amount: Int) {
+        gold += amount
+        income[kind] = (income[kind] ?: 0) + amount
     }
 
     fun milestone(key: String, text: String) {

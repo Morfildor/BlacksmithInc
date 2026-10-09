@@ -2,9 +2,13 @@ package com.tinyblacksmith.core.gazette
 
 import com.tinyblacksmith.core.model.EventRecord
 import com.tinyblacksmith.core.model.EventType
+import com.tinyblacksmith.core.model.FieldOutcome
+import com.tinyblacksmith.core.model.FieldResult
 import com.tinyblacksmith.core.model.GameState
+import com.tinyblacksmith.core.model.IncomeKind
 import com.tinyblacksmith.core.model.MarketVisit
 import com.tinyblacksmith.core.model.Rarity
+import com.tinyblacksmith.core.model.ShopLedger
 
 /** The Emberfall Gazette (GDD 11): headlines derive only from real event records, ordered by priority. */
 object Gazette {
@@ -56,7 +60,7 @@ object Gazette {
     private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)
     private val forgeTypes = setOf(
         EventType.WEAPON_FORGED, EventType.WEAPON_LISTED, EventType.WEAPON_HONED, EventType.WEAPON_DONATED, EventType.WEAPON_SALVAGED,
-        EventType.TOOL_BOUGHT, EventType.DISCOVERY, EventType.SIGNATURE_DISCOVERED,
+        EventType.TOOL_BOUGHT, EventType.DISCOVERY, EventType.SIGNATURE_DISCOVERED, EventType.MATERIAL_BOUGHT,
     )
 
     /** Why a visitor left without buying (`MarketVisit.reason`), as the paper puts it. */
@@ -73,10 +77,14 @@ object Gazette {
      * Lays one day's records out as a paper: Shop (sales, commissions, who left and why), Heroes (one sentence per
      * hero, the quiet ones on one line), Town (siege, forge, blessings, world events, the standing siege warning last)
      * and Forge (the smith's own work in one line, then what the journal learned). [heroNames] maps hero id to full
-     * name so a hero's several records fold into one sentence; [visits] is only known for the fresh resolution.
+     * name so a hero's several records fold into one sentence; [visits], [ledger] and [field] are only known for the
+     * fresh resolution, and the tally is counted from the ledger and the field results when the day has them.
      * Pure: the same records always give the same edition, and every line comes from a real record (GDD 11).
      */
-    fun edition(dayEvents: List<EventRecord>, heroNames: Map<String, String>, visits: List<MarketVisit> = emptyList()): Edition {
+    fun edition(
+        dayEvents: List<EventRecord>, heroNames: Map<String, String>, visits: List<MarketVisit> = emptyList(),
+        ledger: ShopLedger? = null, field: List<FieldResult> = emptyList(),
+    ): Edition {
         val events = dayEvents.sortedBy { it.serial }
         val types = events.map { it.type }.toSet()
         val arrivedByEvent = events.filter { it.type == EventType.WORLD_EVENT }.flatMap { it.subjectIds }.toSet()
@@ -99,28 +107,42 @@ object Gazette {
             section(TOWN, townLines(rest)),
             section(FORGE, forgeLines(rest)),
         )
-        return Edition(ledeEvents.map { it.text }, tally(events, visits), sections)
+        return Edition(ledeEvents.map { it.text }, tally(events, visits, ledger, field), sections)
     }
 
     private fun section(title: String, lines: List<String>) = if (lines.isEmpty()) null else Section(title, lines)
 
-    private fun tally(events: List<EventRecord>, visits: List<MarketVisit>): List<String> {
-        val sold = events.count { it.type == EventType.WEAPON_SOLD || it.type == EventType.COMMISSION_COMPLETED }
-        val gold = events.sumOf { e ->
-            when (e.type) {
-                EventType.WEAPON_SOLD -> (e.data["price"]?.toIntOrNull() ?: 0) - (e.data["tradeIn"]?.toIntOrNull() ?: 0)
-                EventType.COMMISSION_COMPLETED -> e.data["reward"]?.toIntOrNull() ?: 0
-                EventType.MILESTONE -> e.data["tribute"]?.toIntOrNull() ?: 0
-                else -> 0
-            }
-        }
-        val won = events.count { it.type == EventType.ELITE_SLAIN || (it.type == EventType.EXPEDITION_WON && "winProbability" in it.data) }
-        val lost = events.count { it.type == EventType.EXPEDITION_LOST }
+    /** The till by kind as the day's records tell it: for a day without a ledger (resolved by an older build, or read from the archive). */
+    private fun recordedIncome(events: List<EventRecord>): Map<IncomeKind, Int> {
+        fun sum(kind: EventType, amount: (EventRecord) -> Int?) = events.filter { it.type == kind }.sumOf { amount(it) ?: 0 }
+        return mapOf(
+            IncomeKind.SHELF_SALE to sum(EventType.WEAPON_SOLD) { e -> (e.data["price"]?.toIntOrNull() ?: 0) - (e.data["tradeIn"]?.toIntOrNull() ?: 0) },
+            IncomeKind.SALE_BONUS to sum(EventType.WEAPON_SOLD) { it.data["bonus"]?.toIntOrNull() },
+            IncomeKind.COMMISSION to sum(EventType.COMMISSION_COMPLETED) { it.data["reward"]?.toIntOrNull() },
+            IncomeKind.COLLECTOR to sum(EventType.WORLD_EVENT) { e -> e.data["price"]?.toIntOrNull()?.takeIf { e.data["event"] == "collector" } },
+            IncomeKind.TRIBUTE to sum(EventType.MILESTONE) { it.data["tribute"]?.toIntOrNull() },
+        )
+    }
+
+    private fun tally(events: List<EventRecord>, visits: List<MarketVisit>, ledger: ShopLedger?, field: List<FieldResult>): List<String> {
+        val commissions = events.count { it.type == EventType.COMMISSION_COMPLETED }
+        val sold = events.count { it.type == EventType.WEAPON_SOLD } + commissions
+        val income = ledger?.income ?: recordedIncome(events)
+        val tribute = income[IncomeKind.TRIBUTE] ?: 0  // the town's thanks is not shop takings
+        val gold = income.values.sum() - tribute
+        // A fatal expedition is a loss; only the field results tell it from a death at the walls, so an older day counts as it did.
+        val won = if (ledger != null) field.count { it.outcome == FieldOutcome.WON }
+            else events.count { it.type == EventType.ELITE_SLAIN || (it.type == EventType.EXPEDITION_WON && "material" !in it.data) }
+        val lost = if (ledger != null) field.count { it.outcome == FieldOutcome.DRIVEN_BACK || it.outcome == FieldOutcome.DIED }
+            else events.count { it.type == EventType.EXPEDITION_LOST }
         val fallen = events.count { it.type == EventType.HERO_DIED }
         return buildList {
             if (gold > 0 || sold > 0 || visits.isNotEmpty()) add("Shop took $gold gold")
-            if (visits.isNotEmpty()) add("$sold of ${count(visits.size, "visitor")} bought")
-            else if (sold > 0) add("$sold sold")
+            if (tribute > 0) add("Town tribute: $tribute gold")
+            if (visits.isNotEmpty()) {
+                add("${visits.count { it.purchasedWeaponId != null }} of ${count(visits.size, "visitor")} bought")
+                if (commissions > 0) add("${count(commissions, "commission")} delivered")
+            } else if (sold > 0) add("$sold sold")
             if (won + lost > 0) add("Expeditions: $won won, $lost lost")
             if (fallen > 0) add(if (fallen == 1) "1 hero fell" else "$fallen heroes fell")
         }
@@ -185,6 +207,7 @@ object Gazette {
             events.count { it.type == EventType.WEAPON_DONATED }.takeIf { it > 0 }?.let { add("armed the watch with $it") }
             events.count { it.type == EventType.WEAPON_SALVAGED }.takeIf { it > 0 }?.let { add("melted down $it") }
             events.filter { it.type == EventType.TOOL_BOUGHT }.forEach { add("bought ${it.data["name"] ?: it.text.substringAfter(": ").trimEnd('.')}") }
+            events.filter { it.type == EventType.MATERIAL_BOUGHT }.sumOf { it.data["cost"]?.toIntOrNull() ?: 0 }.takeIf { it > 0 }?.let { add("spent $it gold on materials") }
         }
         val work = if (parts.isEmpty()) emptyList() else listOf(parts.joinToString(", ").replaceFirstChar { it.uppercase() } + ".")
         return work + events.filter { it.type == EventType.DISCOVERY || it.type == EventType.SIGNATURE_DISCOVERED }.map { it.text }

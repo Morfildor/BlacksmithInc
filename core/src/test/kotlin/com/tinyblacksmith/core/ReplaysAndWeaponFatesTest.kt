@@ -159,8 +159,8 @@ class ReplaysAndWeaponFatesTest {
         val last = s.lastResolution!!
         assertTrue(busiestDay in 2..1 + base.weaponFates.maxExpeditionReplaysPerDay, "busiest day held $busiestDay replays")
         assertTrue(last.replays.all { it.day == last.day })
-        // CombatReplay is the only saved type with an "outcome" field: the save holds the last day's replays and no others.
-        assertEquals(last.replays.size, Regex("""\\"outcome\\":""").findAll(SaveCodec.encodeRun(s)).count())
+        // CombatReplay is the only saved type with a "rounds" field: the save holds the last day's replays and no others.
+        assertEquals(last.replays.size, Regex("""\\"rounds\\":""").findAll(SaveCodec.encodeRun(s)).count())
         // A replay saved before v5 has no kind: it was a siege.
         val old = SaveCodec.json.decodeFromString(CombatReplay.serializer(), """{"title":"Siege of Emberfall, day 5","day":5,"rounds":[],"outcome":"Town held"}""")
         assertEquals(ReplayKind.SIEGE, old.kind)

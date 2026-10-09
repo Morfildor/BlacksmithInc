@@ -103,7 +103,8 @@ object Heroes {
     private fun rest(ctx: ResolutionContext, hero: Hero) {
         val healed = minOf(100, hero.health + ctx.config.heroRestHeal)
         ctx.updateHero(hero.copy(health = healed, lastActivity = HeroActivity.REST))
-        ctx.emit(EventType.HERO_RESTED, 0, "${hero.fullName} rested and recovered.", listOf(hero.id.value))
+        val e = ctx.emit(EventType.HERO_RESTED, 0, "${hero.fullName} rested and recovered.", listOf(hero.id.value))
+        ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.RESTED, eventIds = listOf(e.id))
     }
 
     private fun patrol(ctx: ResolutionContext, hero: Hero, factionId: FactionId) {
@@ -113,7 +114,8 @@ object Heroes {
         val f = ctx.factions.getValue(factionId)
         ctx.factions[factionId] = f.copy(suppressionToday = f.suppressionToday + config.patrolSuppression)
         grantXp(ctx, hero.copy(lastActivity = HeroActivity.PATROL, gold = hero.gold + config.patrolGold), config.patrolXp)
-        ctx.emit(EventType.HERO_PATROLLED, 1, "${hero.fullName} patrolled the town walls.", listOf(hero.id.value))
+        val e = ctx.emit(EventType.HERO_PATROLLED, 1, "${hero.fullName} patrolled the town walls.", listOf(hero.id.value))
+        ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.PATROLLED, factionId = factionId, gold = config.patrolGold, eventIds = listOf(e.id))
     }
 
     /**
@@ -133,7 +135,8 @@ object Heroes {
             h = ctx.hero(h.id)
         }
         val guild = ctx.town.guilds.first { it.id == h.guildId }
-        ctx.emit(EventType.GUILD_TRAINED, 0, "${h.fullName} trained at the hall of ${guild.name}.", listOf(h.id.value), mapOf("guild" to guild.id))
+        val e = ctx.emit(EventType.GUILD_TRAINED, 0, "${h.fullName} trained at the hall of ${guild.name}.", listOf(h.id.value), mapOf("guild" to guild.id))
+        ctx.field += FieldResult(h.id, h.fullName, FieldOutcome.GUILD_TRAINED, eventIds = listOf(e.id))
         grantXp(ctx, h.copy(health = minOf(100, h.health + config.heroLife.guildHeal), lastActivity = HeroActivity.GUILD), config.heroLife.guildXp)
     }
 
@@ -145,7 +148,9 @@ object Heroes {
         val present = atHall.map { ctx.hero(it) }
         for (pupil in present) {
             val mentor = present.filter { it.guildId == pupil.guildId && it.level > pupil.level }.sortedBy { it.id.value }.maxByOrNull { it.level } ?: continue
-            ctx.emit(EventType.GUILD_MENTORED, 2, "${pupil.fullName} was taught by ${mentor.fullName} at the guild hall.", listOf(pupil.id.value, mentor.id.value))
+            val e = ctx.emit(EventType.GUILD_MENTORED, 2, "${pupil.fullName} was taught by ${mentor.fullName} at the guild hall.", listOf(pupil.id.value, mentor.id.value))
+            ctx.field += FieldResult(pupil.id, pupil.fullName, FieldOutcome.GUILD_LESSON, withHeroId = mentor.id, eventIds = listOf(e.id))
+            ctx.field += FieldResult(mentor.id, mentor.fullName, FieldOutcome.GUILD_TAUGHT, withHeroId = pupil.id, eventIds = listOf(e.id))
             grantXp(ctx, pupil.copy(mentorName = pupil.mentorName ?: mentor.fullName), ctx.config.heroLife.mentorXp)
         }
     }
@@ -164,13 +169,15 @@ object Heroes {
             // A sworn defender drills the watch: more militia than a patrol raises, but no suppression and no pay.
             Ambition.DEFENDER -> {
                 ctx.town = ctx.town.copy(militia = minOf(config.militiaMax, ctx.town.militia + config.heroLife.defenderDrillMilitia))
-                ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} drilled the town watch.", listOf(hero.id.value), data)
+                val e = ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} drilled the town watch.", listOf(hero.id.value), data)
+                ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.AMBITION_DAY, eventIds = listOf(e.id))
             }
             // A prized weapon and a fortune both take gold: a day of paid work, and nothing else.
             Ambition.COLLECTOR, Ambition.FORTUNE -> {
                 ctx.updateHero(hero.copy(gold = hero.gold + config.heroLife.ambitionWorkGold))
                 val goal = if (ambition == Ambition.COLLECTOR) "saving for a prized weapon" else "building a fortune"
-                ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} took guard work for ${config.heroLife.ambitionWorkGold} gold, $goal.", listOf(hero.id.value), data + ("gold" to config.heroLife.ambitionWorkGold.toString()))
+                val e = ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} took guard work for ${config.heroLife.ambitionWorkGold} gold, $goal.", listOf(hero.id.value), data + ("gold" to config.heroLife.ambitionWorkGold.toString()))
+                ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.AMBITION_DAY, gold = config.heroLife.ambitionWorkGold, eventIds = listOf(e.id))
             }
         }
         ctx.hero(hero.id).let { if (it.isAlive) ctx.updateHero(it.copy(lastActivity = HeroActivity.AMBITION)) }

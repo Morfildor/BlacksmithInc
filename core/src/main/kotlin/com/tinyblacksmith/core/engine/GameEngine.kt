@@ -162,6 +162,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.gold -= cost
         ctx.materials[def.id] = (ctx.materials[def.id] ?: 0) + cmd.quantity
         if (stock != null) ctx.supplierStock[def.id] = stock - cmd.quantity
+        ctx.emit(EventType.MATERIAL_BOUGHT, 0, "The smith bought ${cmd.quantity} ${def.name} for $cost gold.", data = mapOf("material" to def.id.value, "quantity" to cmd.quantity.toString(), "cost" to cost.toString()))
         return accept(ctx)
     }
 
@@ -255,7 +256,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.gold -= cost
         ctx.tools[def.id] = (ctx.tools[def.id] ?: 0) + 1
         if (def.effect == ToolEffect.EXTRA_ENERGY) ctx.energy += def.magnitudePerLevel  // usable the day it is bought
-        ctx.emit(EventType.TOOL_BOUGHT, 2, "The forge gained a new tool: ${def.name}.", data = mapOf("tool" to def.id, "name" to def.name, "level" to ctx.tools.getValue(def.id).toString()))
+        ctx.emit(EventType.TOOL_BOUGHT, 2, "The forge gained a new tool: ${def.name}.", data = mapOf("tool" to def.id, "name" to def.name, "level" to ctx.tools.getValue(def.id).toString(), "cost" to cost.toString()))
         return accept(ctx)
     }
 
@@ -314,9 +315,11 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.blessings = ctx.blessings.filter { it.expiresDay > day }
         // 10. Gazette and new morning. The edition is the whole day, preparation included (taken before compaction).
         val dayEvents = ctx.events.filter { it.era == ctx.era && it.day == day }
+        val spent = dayEvents.filter { it.type == EventType.MATERIAL_BOUGHT || it.type == EventType.TOOL_BOUGHT }.sumOf { it.data["cost"]?.toIntOrNull() ?: 0 }
         val resolution = DayResolution(
             commandId = commandId, day = day, events = dayEvents, headlines = Gazette.headlines(dayEvents),
             visits = ctx.visits.toList(), replays = Battle.dayReplays(ctx), defeated = ctx.phase == Phase.ENDED,
+            ledger = ShopLedger(state.gold, ctx.gold, ctx.income.toMap(), ctx.tradeInCreditToday, spent), field = ctx.field.toList(),
         )
         ctx.lastResolution = resolution
         ctx.processedEndDayIds += commandId.value

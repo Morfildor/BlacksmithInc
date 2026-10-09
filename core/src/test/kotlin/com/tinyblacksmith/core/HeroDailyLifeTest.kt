@@ -196,7 +196,7 @@ class HeroDailyLifeTest {
                     assertEquals(1, ctx.newEvents.count { it.type == EventType.AMBITION_PURSUED && it.subjectIds.firstOrNull() == h.id.value && it.data["ambition"] == "SLAYER" })
                     val fight = ctx.newEvents.filter {
                         it.subjectIds.firstOrNull() == h.id.value &&
-                            (it.type == EventType.ELITE_SLAIN || it.type == EventType.EXPEDITION_LOST || it.type == EventType.HERO_DIED || (it.type == EventType.EXPEDITION_WON && "winProbability" in it.data))
+                            (it.type == EventType.ELITE_SLAIN || it.type == EventType.EXPEDITION_LOST || it.type == EventType.HERO_DIED || (it.type == EventType.EXPEDITION_WON && "material" !in it.data))
                     }
                     assertEquals(1, fight.size, "a hunt is one expedition")
                     fights++

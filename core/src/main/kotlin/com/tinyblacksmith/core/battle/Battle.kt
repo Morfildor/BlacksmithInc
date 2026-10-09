@@ -27,7 +27,11 @@ object Battle {
         val heroPower = Power.attackPower(hero, weapon, faction, ctx.content, config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite)
         val winProbability = (0.5 + (heroPower - enemyPower) / config.winProbabilityScale).coerceIn(config.winProbabilityFloor, config.winProbabilityCeiling)
         val encounter = rng.pick(if (elite) faction.eliteNames else faction.encounterNames)
-        val won = rng.chance(winProbability)
+        val roll = rng.nextDouble()  // the single draw of Rng.chance, kept so the day can say what the blade was worth
+        val won = roll < winProbability
+        // The same fight with another blade in hand: same foe, same roll, same formula. Draws nothing.
+        fun losesWith(other: Weapon?): Boolean = roll >= (0.5 + (Power.attackPower(hero, other, faction, ctx.content, config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite) - enemyPower) /
+            config.winProbabilityScale).coerceIn(config.winProbabilityFloor, config.winProbabilityCeiling)
         if (weapon != null) wear(ctx, weapon.id, if (won) config.wearPerExpeditionWin else config.wearPerExpeditionLoss)
         val weaponText = weapon?.let { " using ${it.name}" } ?: " bare-handed"
         val affixDefs = weapon?.let { w -> (w.affixes + w.flaws).map { ctx.content.affix(it) } } ?: emptyList()
@@ -52,21 +56,32 @@ object Battle {
                     ctx.milestone("WEAPON_FIVE_KILLS", "${weapon.name} earned a title after five victories.")
                 }
             }
-            if (elite) {
-                val slain = ctx.emit(EventType.ELITE_SLAIN, 7, "${hero.fullName} slew $encounter$weaponText and returned with $loot gold in spoils.", listOfNotNull(hero.id.value, weapon?.id?.value), mapOf("winProbability" to "%.2f".format(winProbability)))
+            val told = if (elite) {
+                val slain = ctx.emit(EventType.ELITE_SLAIN, 7, "${hero.fullName} slew $encounter$weaponText and returned with $loot gold in spoils.", listOfNotNull(hero.id.value, weapon?.id?.value))
                 ctx.milestone("ELITE_SLAIN", "An elite foe fell to a hero of Emberfall: $encounter.")
                 ctx.replays += fightReplay(ctx, hero, weapon, encounter, heroPower, enemyPower, winProbability, slain, heroWon = true, loot, "struck the killing blow and took the spoils", "${hero.fullName} slew $encounter")
+                slain
             } else {
-                ctx.emit(EventType.EXPEDITION_WON, if (weapon != null) 5 else 3, "${hero.fullName} routed $encounter$weaponText.", listOfNotNull(hero.id.value, weapon?.id?.value), mapOf("winProbability" to "%.2f".format(winProbability)))
+                ctx.emit(EventType.EXPEDITION_WON, if (weapon != null) 5 else 3, "${hero.fullName} routed $encounter$weaponText.", listOfNotNull(hero.id.value, weapon?.id?.value))
             }
+            var found: EventRecord? = null
             if (elite || rng.chance(config.expeditionLootChance + affixDefs.sumOf { it.lootChanceBonus })) {
                 val lootable = ctx.content.materials.filter { it.category != MaterialCategory.CATALYST }
                 // Elites carry the good stuff: catalysts and high-tier materials when the catalog has them. A Lucky blade finds the same.
                 val pool = if (elite || affixDefs.any { it.scarceLoot }) ctx.content.materials.filter { it.category == MaterialCategory.CATALYST || it.tier >= 3 }.ifEmpty { lootable } else lootable
                 val m = rng.pick(pool)
                 ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + 1
-                ctx.emit(EventType.EXPEDITION_WON, 2, "${hero.fullName} brought ${m.name} back to the forge.", listOf(hero.id.value), mapOf("material" to m.id.value))
+                found = ctx.emit(EventType.EXPEDITION_WON, 2, "${hero.fullName} brought ${m.name} back to the forge.", listOf(hero.id.value), mapOf("material" to m.id.value))
             }
+            // A blade bought this morning is judged against the one it replaced (traded in, so still in the shop as it was).
+            val bought = ctx.newEvents.lastOrNull { it.type == EventType.WEAPON_SOLD && it.subjectIds.firstOrNull() == hero.id.value }?.takeIf { weapon != null && weapon.id.value in it.subjectIds }
+            ctx.field += FieldResult(
+                hero.id, hero.fullName, FieldOutcome.WON, encounter, elite, factionId,
+                lostBareHanded = weapon != null && losesWith(null),
+                lostWithOldBlade = bought?.let { sale -> losesWith(sale.data["tradedWeapon"]?.let { ctx.weapons[WeaponId(it)] }) },
+                matchupHelped = weapon != null && ((weapon.element != null && weapon.element == faction.weakTo) || affixDefs.any { it.baneFaction == faction.id }),
+                gold = loot, materialId = found?.data?.get("material")?.let { MaterialId(it) }, eventIds = listOfNotNull(told.id, found?.id),
+            )
             Heroes.grantXp(ctx, h, config.expeditionXp)
         } else {
             val damage = (rng.nextInt(config.expeditionDamageMin, config.expeditionDamageMax) *
@@ -76,10 +91,12 @@ object Battle {
                 val recovered = rng.chance(if (elite) config.weaponFates.eliteRecoveryChance else config.weaponRecoveryChance)
                 val died = kill(ctx, hero, "fell to $encounter", recovered, weaponSeized = !recovered && rng.chance(if (elite) config.weaponFates.eliteSeizureChance else config.weaponSeizureChance))
                 ctx.replays += fightReplay(ctx, hero, weapon, encounter, heroPower, enemyPower, winProbability, died, heroWon = false, damage, "struck ${hero.name} down", "${hero.fullName} fell")
+                ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.DIED, encounter, elite, factionId, eventIds = listOf(died.id))
             } else {
                 ctx.updateHero(hero.copy(health = health, lastActivity = HeroActivity.EXPEDITION))
                 val lost = ctx.emit(EventType.EXPEDITION_LOST, 3, "${hero.fullName} was driven back by $encounter$weaponText.", listOfNotNull(hero.id.value, weapon?.id?.value))
                 if (elite) ctx.replays += fightReplay(ctx, hero, weapon, encounter, heroPower, enemyPower, winProbability, lost, heroWon = false, damage, "drove ${hero.name} from the field", "${hero.fullName} was driven back")
+                ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.DRIVEN_BACK, encounter, elite, factionId, eventIds = listOf(lost.id))
                 if (health < config.heroWoundedThreshold) ctx.emit(EventType.HERO_WOUNDED, 2, "${hero.fullName} returned wounded.", listOf(hero.id.value))
                 val breakChance = affixDefs.sumOf { it.breakChanceOnLoss }
                 if (weapon != null && breakChance > 0 && rng.chance(breakChance)) {
@@ -255,7 +272,7 @@ object Battle {
         if (won) {
             ctx.town = ctx.town.copy(siegesSurvived = ctx.town.siegesSurvived + 1)
             ctx.factions[factionState.id] = factionState.copy(pressure = maxOf(0, factionState.pressure - config.siegeWinPressureDrop - (if (o.warlord) config.warlordPressureDrop else 0)))
-            ctx.emit(EventType.SIEGE_WON, 9, "Emberfall repelled $attacker! Champions: $championNames.", champions.map { it.first.id.value },
+            val held = ctx.emit(EventType.SIEGE_WON, 9, "Emberfall repelled $attacker! Champions: $championNames.", champions.map { it.first.id.value },
                 mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()))
             for ((h, w) in champions) {
                 val hero = ctx.hero(h.id)
@@ -268,9 +285,10 @@ object Battle {
                     ctx.milestone("CHAMPION_ARMED", "A champion defended the town with a weapon from this forge: ${w.name}.")
                 }
                 Heroes.fulfilAmbition(ctx, h.id, Ambition.DEFENDER)
+                ctx.field += FieldResult(h.id, h.fullName, FieldOutcome.HELD_THE_WALL, faction.siegeName, factionId = factionState.id, eventIds = listOf(held.id))
             }
             if (o.warlord) {
-                ctx.gold += config.warlordTribute
+                ctx.earn(IncomeKind.TRIBUTE, config.warlordTribute)
                 ctx.emit(EventType.MILESTONE, 6, "${faction.warlordName} was thrown back from the walls. The town paid the smith ${config.warlordTribute} gold in thanks.", data = mapOf("tribute" to config.warlordTribute.toString()))
                 ctx.milestone("WARLORD_DEFEATED", "Emberfall broke a warlord at its walls.")
             }
@@ -278,7 +296,7 @@ object Battle {
             offerBlessing(ctx)
         } else {
             ctx.town = ctx.town.copy(siegesLost = ctx.town.siegesLost + 1)
-            ctx.emit(EventType.SIEGE_LOST, 9, "${attacker.replaceFirstChar { it.uppercase() }} overran the defenders ($championNames).", champions.map { it.first.id.value },
+            val overrun = ctx.emit(EventType.SIEGE_LOST, 9, "${attacker.replaceFirstChar { it.uppercase() }} overran the defenders ($championNames).", champions.map { it.first.id.value },
                 mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()))
             val rng = ctx.rng(RngStream.COMBAT)
             for ((h, _) in champions) {
@@ -286,7 +304,8 @@ object Battle {
                 val health = hero.health - config.championSiegeDamageOnLoss
                 if (health <= config.heroDeathHealthFloor) {
                     val recovered = rng.chance(config.weaponFates.wallsRecoveryChance)
-                    kill(ctx, hero, "died defending the walls", recovered, weaponSeized = !recovered && rng.chance(config.weaponFates.wallsSeizureChance))
+                    val died = kill(ctx, hero, "died defending the walls", recovered, weaponSeized = !recovered && rng.chance(config.weaponFates.wallsSeizureChance))
+                    ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.FELL_AT_THE_WALL, faction.siegeName, factionId = factionState.id, eventIds = listOf(overrun.id, died.id))
                 }
                 else ctx.updateHero(hero.copy(health = health, lastActivity = HeroActivity.DEFEND))
             }

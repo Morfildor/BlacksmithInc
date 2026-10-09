@@ -178,6 +178,7 @@ enum class EventType {
     ELITE_SLAIN, AMBITION_FULFILLED, WEAPON_SALVAGED, WEAPON_HONED, WEAPON_DONATED, TOOL_BOUGHT, WEAPON_BROKEN,
     GUILD_TRAINED, GUILD_JOINED, GUILD_MENTORED, AMBITION_PURSUED,
     WEAPON_SURFACED, WEAPON_RESOLD,
+    MATERIAL_BOUGHT,
 }
 
 /** Source of truth for the Gazette and replays (GDD Appendix B). Subjects are real entity IDs. */
@@ -220,6 +221,9 @@ data class DayResolution(
     val visits: List<MarketVisit>,
     val replays: List<CombatReplay>,
     val defeated: Boolean,
+    /** The till and every hero's day, typed. Null and empty on a day resolved before they were recorded. */
+    val ledger: ShopLedger? = null,
+    val field: List<FieldResult> = emptyList(),
 )
 
 @Serializable

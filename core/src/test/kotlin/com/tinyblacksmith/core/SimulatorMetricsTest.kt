@@ -49,7 +49,7 @@ class SimulatorMetricsTest {
             if (alive.map { it.surname }.toSet().size < alive.size) surnameDays++
             lost += res.events.count { it.type == EventType.EXPEDITION_LOST }
             fatal += res.events.count { it.type == EventType.HERO_DIED }
-            won += res.events.count { it.type == EventType.ELITE_SLAIN || (it.type == EventType.EXPEDITION_WON && it.data.containsKey("winProbability")) }
+            won += res.events.count { it.type == EventType.ELITE_SLAIN || (it.type == EventType.EXPEDITION_WON && !it.data.containsKey("material")) }
             before = after
         }
 

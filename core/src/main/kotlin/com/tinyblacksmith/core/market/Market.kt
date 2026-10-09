@@ -107,7 +107,7 @@ object Market {
 
     fun isRegular(hero: Hero, config: BalanceConfig): Boolean = hero.loyalty >= config.regularLoyaltyThreshold
 
-    fun purchase(ctx: ResolutionContext, hero: Hero, weapon: Weapon, price: Int) {
+    fun purchase(ctx: ResolutionContext, hero: Hero, weapon: Weapon, price: Int): Sale {
         val bonus = price * ctx.blessingMagnitude(BlessingEffect.SALE_GOLD_BONUS) / 100
         // Trade-in: the weapon being replaced comes back to the shop as part payment (GDD 7: weapons change hands).
         val old = ctx.equippedWeapon(hero.id)
@@ -116,7 +116,9 @@ object Market {
             ctx.updateWeapon(old.copy(location = WeaponLocation.Storage))
             ctx.addWeaponHistory(old.id, "TRADED_IN", "Traded in by ${hero.fullName} for ${weapon.name}.", listOf(hero.id.value))
         }
-        ctx.gold += price - credit + bonus
+        ctx.earn(IncomeKind.SHELF_SALE, price - credit)
+        if (bonus > 0) ctx.earn(IncomeKind.SALE_BONUS, bonus)
+        ctx.tradeInCreditToday += credit
         ctx.reputation += 1
         val loyaltyGain = hero.traits.fold(1.0) { acc, t -> acc * ctx.content.trait(t).loyaltyGain }.toInt().coerceAtLeast(1)
         ctx.updateHero(hero.copy(gold = hero.gold - (price - credit), loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP))
@@ -125,12 +127,13 @@ object Market {
         val who = if (isRegular(hero, ctx.config)) "${hero.fullName}, a regular of the shop," else hero.fullName
         val text = "$who bought ${weapon.name} for $price gold" + (if (premium > 0) ", $premium above the going rate on the shop's good name." else ".") +
             (if (old != null) " ${old.name} came back to the shop in part payment ($credit gold)." else "")
-        val data = mapOf("price" to price.toString()) + (if (premium > 0) mapOf("premium" to premium.toString()) else emptyMap()) +
+        val data = mapOf("price" to price.toString()) + (if (premium > 0) mapOf("premium" to premium.toString()) else emptyMap()) + (if (bonus > 0) mapOf("bonus" to bonus.toString()) else emptyMap()) +
             (if (old != null) mapOf("tradeIn" to credit.toString(), "tradedWeapon" to old.id.value) else emptyMap())
         ctx.emit(EventType.WEAPON_SOLD, 4, text, listOf(hero.id.value, weapon.id.value), data)
         ctx.addWeaponHistory(weapon.id, "SOLD", "Sold to ${hero.fullName} for $price gold.", listOf(hero.id.value))
         giveAndEquip(ctx, ctx.hero(hero.id), ctx.weapon(weapon.id))
         ctx.milestone("FIRST_SALE", "The shop made its first sale: ${weapon.name} to ${hero.fullName}.")
+        return Sale(listedPrice = price, tradeInCredit = credit, tradeInWeaponId = old?.id, cashPaid = price - credit, saleBonus = bonus)
     }
 
     /** Transfers ownership and equips when the weapon is better for this hero than the current one. */
@@ -196,7 +199,7 @@ object Market {
                 .filter { (it.isInStorage || it.isListed) && it.familyId == c.familyId && it.quality >= c.minQuality && (c.element == null || it.element == c.element) }
                 .maxByOrNull { it.quality }
             if (candidate != null) {
-                ctx.gold += c.reward
+                ctx.earn(IncomeKind.COMMISSION, c.reward)
                 ctx.reputation += 2
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.COMPLETED, deliveredWeaponId = candidate.id)
                 ctx.updateHero(buyer.copy(loyalty = buyer.loyalty + 2))
