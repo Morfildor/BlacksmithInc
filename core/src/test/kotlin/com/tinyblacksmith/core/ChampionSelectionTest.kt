@@ -71,14 +71,14 @@ class ChampionSelectionTest {
             val ctx = ResolutionContext(s, content, config)
             fun power(h: Hero, elite: Boolean) = Power.defensePower(h, s.equippedWeapon(h.id), o.faction, content, config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite)
             val fit = s.aliveHeroes().filter { it.health >= config.heroWoundedThreshold }
-            val ranked = fit.sortedWith(compareByDescending<Hero> { power(it, o.warlord) }.thenBy { it.id.value }).take(config.championCount)
+            val ranked = fit.sortedWith(compareByDescending<Hero> { power(it, o.warlord) }.thenBy(IdOrder.numeric) { it.id.value }).take(config.championCount)
             assertEquals(ranked.map { it.id }, o.champions.map { it.first.id }, "seed $seed pressure $pressure")
             assertEquals(ranked.map { power(it, o.warlord) }, o.championPowers, "each champion is valued in the context it was ranked in")
             assertEquals(o.championPowers.sortedDescending(), o.championPowers)
             assertEquals(o.champions.map { it.first.id }, Battle.selectChampions(ctx, o.faction, o.warlord).map { it.first.id })
             if (o.warlord) {
                 warlordSieges++
-                if (ranked.map { it.id } != fit.sortedWith(compareByDescending<Hero> { power(it, false) }.thenBy { it.id.value }).take(config.championCount).map { it.id }) reordered++
+                if (ranked.map { it.id } != fit.sortedWith(compareByDescending<Hero> { power(it, false) }.thenBy(IdOrder.numeric) { it.id.value }).take(config.championCount).map { it.id }) reordered++
             }
         }
         assertEquals(20, warlordSieges)
@@ -90,7 +90,8 @@ class ChampionSelectionTest {
         var mornings = 0
         var warlordMornings = 0
         for (seed in 1L..12L) {
-            var s = armed(seed)
+            // A town of twelve armed heroes holds the pressure down, so every second town starts with a warlord already gathering.
+            var s = armed(seed).let { if (seed % 2 == 0L) it.pressure(LaunchContent.HOLLOWBOUND, config.warlordPressure + 30) else it }
             repeat(20) {
                 if (s.isEnded) return@repeat
                 s = s.endDay()

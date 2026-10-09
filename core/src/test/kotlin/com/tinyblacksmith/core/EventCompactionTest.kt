@@ -78,7 +78,7 @@ class EventCompactionTest {
         val a = compacted
         val b = uncompacted
         assertTrue(b.events.size == b.nextEventSerial - 1 && b.events.size > 4000, "unbounded log must be large to make the comparison meaningful: ${b.events.size}")
-        assertTrue(a.events.size <= 1200, "compacted log too large: ${a.events.size}")
+        assertTrue(a.events.size <= 1700, "compacted log too large: ${a.events.size}")  // 1,408 with twelve residents (the bound was 1,200 for a town of eight)
         assertTrue(a.events.size * 4 < b.events.size, "compacted ${a.events.size} vs unbounded ${b.events.size}")
         val cutoff = lastEndDay(a) - retention
         assertTrue(a.events.all { it.type in EventCompaction.keptForever || it.day > cutoff })

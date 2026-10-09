@@ -253,7 +253,7 @@ class CustomerSelectionTest {
     /** Through End Day: the day names who found the shop full, their streak grows, and being served ends a streak. */
     @Test
     fun turnedAwayIsStoredOnTheDayAndCounted() {
-        val keen = GameEngine(config = config { keen() })
+        val keen = GameEngine(config = config { keen().copy(shopCapacity = 4) })
         var seen = 0
         for (seed in 1L..10L) {
             val s = town(8, seed) { i, h -> if (i == 1) h.copy(turnedAwayStreak = 5) else h }

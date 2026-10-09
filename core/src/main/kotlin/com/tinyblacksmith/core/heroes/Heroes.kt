@@ -4,6 +4,7 @@ import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.content.FactionDef
+import com.tinyblacksmith.core.content.HeroClassDef
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
@@ -13,9 +14,10 @@ import com.tinyblacksmith.core.rng.RngStream
 /** Hero generation and daily autonomous activity selection (GDD 6 PROPOSED utility model). */
 object Heroes {
 
-    fun generate(ctx: ResolutionContext, rng: Rng, descendantOf: LineageAnchor? = null): Hero {
+    /** [classes] is what a hero without a lineage draws a class from: the whole catalog, or the classes a new town still lacks. One draw either way. */
+    fun generate(ctx: ResolutionContext, rng: Rng, descendantOf: LineageAnchor? = null, classes: List<HeroClassDef> = ctx.content.classes): Hero {
         val content = ctx.content
-        val cls = descendantOf?.let { content.classById[it.classId] } ?: rng.pick(content.classes)
+        val cls = descendantOf?.let { content.classById[it.classId] } ?: rng.pick(classes)
         val name = Names.first(ctx, rng, descendantOf)
         val surname = descendantOf?.surname ?: Names.surname(ctx, rng, name)
         val traitCount = rng.nextInt(2, 3)
@@ -193,9 +195,17 @@ object Heroes {
         ctx.updateHero(h)
     }
 
-    /** Keeps the world alive: when the population thins, newcomers arrive (GDD event 6, simplified). */
-    private fun arrivals(ctx: ResolutionContext, rng: Rng) {
-        if (ctx.aliveHeroes().size >= ctx.config.customers.minHeroPopulation) return
+    /**
+     * Keeps the world alive (GDD event 6, simplified): while the town is below its target one newcomer may arrive each
+     * day, the likelier the emptier it is, and below the floor one always does. The day's draw is made whatever the
+     * population, so the stream moves by one on every day nobody comes.
+     */
+    internal fun arrivals(ctx: ResolutionContext, rng: Rng) {
+        val cfg = ctx.config.customers
+        val roll = rng.nextDouble()
+        val alive = ctx.aliveHeroes().size
+        val chance = minOf(cfg.arrivalChanceMax, cfg.arrivalChancePerMissing * (cfg.populationTarget - alive))
+        if (alive >= cfg.minHeroPopulation && roll >= chance) return
         val h = generate(ctx, rng)
         ctx.updateHero(h)
         ctx.emit(EventType.HERO_ARRIVED, 3, "A new adventurer, ${h.fullName} the ${ctx.content.heroClass(h.classId).name}, arrived in Emberfall.", listOf(h.id.value))
