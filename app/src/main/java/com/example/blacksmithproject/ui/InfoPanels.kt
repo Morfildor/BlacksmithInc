@@ -1,5 +1,6 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -169,20 +174,31 @@ fun JournalPanel(s: UiState.Playing, vm: GameViewModel) {
     }
 }
 
+/** The archive: one edition per day, newest first; the newest is open, older days show their lede until tapped. */
 @Composable
 fun GazettePanel(s: UiState.Playing) {
     val st = s.state
     val days = st.events.map { it.day }.distinct().sortedDescending()
+    val heroNames = remember(st.heroes) { st.heroes.values.associate { it.id.value to it.fullName } }
+    var open by remember(days.firstOrNull()) { mutableStateOf(days.firstOrNull()) }
     if (days.isEmpty()) Text("The presses are quiet.", modifier = Modifier.padding(top = Space.md))
     days.forEach { day ->
-        SectionTitle(Gazette.masthead(day))
-        Gazette.headlines(st.eventsForDay(day)).forEachIndexed { i, h ->
-            Text(
-                h,
-                fontFamily = FontFamily.Serif,
-                style = if (i == 0) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(vertical = Space.xs),
-            )
+        val edition = remember(st.events, day) {
+            Gazette.edition(st.eventsForDay(day), heroNames, st.lastResolution?.takeIf { it.day == day }?.visits ?: emptyList())
+        }
+        val expanded = open == day
+        Row(
+            Modifier.fillMaxWidth().clickable { open = if (expanded) null else day }.semantics { contentDescription = "${Gazette.masthead(day)}, ${if (expanded) "open" else "closed"}. Tap to ${if (expanded) "close" else "open"}." },
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            SectionTitle(Gazette.masthead(day), Modifier.weight(1f))
+            Secondary(if (expanded) "Close" else "Open", Modifier.padding(bottom = Space.sm))
+        }
+        if (expanded) EditionBody(edition)
+        else {
+            val first = edition.lede.firstOrNull() ?: edition.sections.firstOrNull()?.lines?.firstOrNull() ?: "A quiet day in Emberfall."
+            Text(first, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium)
+            if (edition.tally.isNotEmpty()) Secondary(edition.tally.joinToString(" · "), Modifier.padding(top = Space.xs))
         }
     }
 }

@@ -18,6 +18,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -93,8 +95,9 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
 }
 
 /**
- * The Gazette as a newspaper: masthead, siege diorama, headlines, then the step-by-step field report. Every line
- * derives from real event records; stepping is purely presentational and skippable (GDD 11).
+ * The Gazette as a newspaper: masthead, siege diorama, the day's edition (lede, tally, Shop / Heroes / Town / Forge),
+ * then the field report with each siege's rounds folded behind its outcome. Every line derives from real event
+ * records; stepping is purely presentational and skippable (GDD 11).
  */
 @Composable
 fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, reducedMotion: Boolean) {
@@ -122,15 +125,8 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
                 PaperRuleLine(top = 0.dp, bottom = Space.sm)
                 Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
                     r.replays.firstOrNull()?.let { replay -> ReplayStage(replay, shown, s, vm, reducedMotion) }
-                    if (r.headlines.isEmpty()) Text("A quiet day in Emberfall.", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium)
-                    r.headlines.forEachIndexed { i, h ->
-                        Text(
-                            h,
-                            fontFamily = FontFamily.Serif,
-                            style = if (i == 0) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(top = if (i == 0) 0.dp else Space.sm, bottom = if (i == 0) Space.sm else 0.dp),
-                        )
-                    }
+                    val edition = remember(r.commandId) { Gazette.edition(r.events, s.state.heroes.values.associate { it.id.value to it.fullName }, r.visits) }
+                    EditionBody(edition)
                     if (r.replays.isNotEmpty()) {
                         PaperRuleLine(top = Space.md, bottom = Space.sm)
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
@@ -139,9 +135,15 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
                         }
                         var step = 0
                         r.replays.forEach { replay ->
-                            Text(replay.title, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Space.sm))
+                            var open by remember(r.commandId, replay.title) { mutableStateOf(false) }
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Text(replay.title, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f).padding(top = Space.sm))
+                                TextButton(onClick = { open = !open }, colors = ButtonDefaults.textButtonColors(contentColor = PaperInkMuted)) {
+                                    Text(if (open) "Hide rounds" else "${replay.rounds.size} rounds")
+                                }
+                            }
                             replay.rounds.forEachIndexed { i, round ->
-                                if (step < shown) Text("${i + 1}. ${round.attacker} ${round.note} (${round.damage})", style = MaterialTheme.typography.bodySmall, color = PaperInkMuted, modifier = Modifier.padding(top = 2.dp))
+                                if (open && step < shown) Text("${i + 1}. ${round.attacker} ${round.note} (${round.damage})", style = MaterialTheme.typography.bodySmall, color = PaperInkMuted, modifier = Modifier.padding(top = 2.dp))
                                 step += 1
                             }
                             if (step < shown) Text(replay.outcome, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = Space.xs))
@@ -155,6 +157,28 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
                 }
                 Button(onClick = vm::dismissReport, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 52.dp)) {
                     Text(if (r.defeated) "See the legacy" else "Begin day ${s.state.day}", style = MaterialTheme.typography.titleMedium)
+                }
+            }
+        }
+    }
+}
+
+/** One day's edition below its masthead: the lede, the tally line, then each section as a bulleted list. */
+@Composable
+fun EditionBody(edition: Gazette.Edition, modifier: Modifier = Modifier) {
+    val muted = LocalContentColor.current.copy(alpha = 0.7f)
+    Column(modifier) {
+        if (edition.lede.isEmpty() && edition.sections.isEmpty()) Text("A quiet day in Emberfall.", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium)
+        edition.lede.forEachIndexed { i, h ->
+            Text(h, fontFamily = FontFamily.Serif, style = if (i == 0) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = Space.sm))
+        }
+        if (edition.tally.isNotEmpty()) Text(edition.tally.joinToString(" · "), style = MaterialTheme.typography.labelMedium, color = muted)
+        edition.sections.forEach { section ->
+            Text(section.title.uppercase(), style = MaterialTheme.typography.labelMedium, color = muted, modifier = Modifier.padding(top = Space.md, bottom = 2.dp).semantics { heading() })
+            section.lines.forEach { line ->
+                Row(Modifier.padding(top = Space.xs)) {
+                    Text("•", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.width(14.dp))
+                    Text(line, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                 }
             }
         }

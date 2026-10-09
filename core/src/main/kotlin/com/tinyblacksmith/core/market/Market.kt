@@ -152,7 +152,7 @@ object Market {
                 ctx.reputation += 2
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.COMPLETED, deliveredWeaponId = candidate.id)
                 ctx.updateHero(buyer.copy(loyalty = buyer.loyalty + 2))
-                ctx.emit(EventType.COMMISSION_COMPLETED, 5, "${buyer.fullName} collected the commissioned ${candidate.name} and paid ${c.reward} gold.", listOf(buyer.id.value, candidate.id.value, c.id.value))
+                ctx.emit(EventType.COMMISSION_COMPLETED, 5, "${buyer.fullName} collected the commissioned ${candidate.name} and paid ${c.reward} gold.", listOf(buyer.id.value, candidate.id.value, c.id.value), mapOf("reward" to c.reward.toString()))
                 ctx.addWeaponHistory(candidate.id, "COMMISSION", "Delivered to ${buyer.fullName} on commission.", listOf(buyer.id.value))
                 giveAndEquip(ctx, ctx.hero(buyer.id), ctx.weapon(candidate.id))
             } else if (ctx.day >= c.deadlineDay) {

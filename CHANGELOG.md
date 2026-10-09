@@ -6,6 +6,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 `app/build.gradle.kts` (`versionName`, `versionCode` increments on every store-facing build).
 
 ## [Unreleased]
+### Changed
+- The end-of-day report and the Gazette archive are laid out as an edition: the biggest news as the lede, a one-line
+  tally (gold taken, visitors who bought, expeditions won and lost), then Shop (sales, commissions, who left and why),
+  Heroes (one sentence per hero, the quiet ones on one line), Town and Forge (the smith at the anvil in one line, then
+  journal discoveries). Milestones already told by the news fold away; siege rounds fold behind the outcome. The
+  archive opens the latest day and shows older days as a lede until tapped.
 
 ## [0.4.0] - 2026-10-09
 Gameplay depth (balance v3): shop actions, workshop tools, elite foes and warlords, hero ambitions, trade-ins.

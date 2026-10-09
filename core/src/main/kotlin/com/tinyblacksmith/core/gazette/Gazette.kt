@@ -1,6 +1,9 @@
 package com.tinyblacksmith.core.gazette
 
 import com.tinyblacksmith.core.model.EventRecord
+import com.tinyblacksmith.core.model.EventType
+import com.tinyblacksmith.core.model.MarketVisit
+import com.tinyblacksmith.core.model.Rarity
 
 /** The Emberfall Gazette (GDD 11): headlines derive only from real event records, ordered by priority. */
 object Gazette {
@@ -8,9 +11,178 @@ object Gazette {
 
     fun headlines(dayEvents: List<EventRecord>): List<String> =
         dayEvents.filter { it.priority >= 2 }
-            .sortedWith(compareByDescending<EventRecord> { it.priority }.thenBy { it.id.drop(1).toIntOrNull() ?: 0 })
+            .sortedWith(compareByDescending<EventRecord> { it.priority }.thenBy { it.serial })
             .take(MAX_HEADLINES)
             .map { it.text }
 
     fun masthead(day: Int): String = "EMBERFALL GAZETTE — DAY $day"
+
+    /** One day's paper: the lede (the day's biggest news, at most two lines), a short tally and the record by section. */
+    data class Edition(val lede: List<String>, val tally: List<String>, val sections: List<Section>)
+    data class Section(val title: String, val lines: List<String>)
+
+    const val SHOP = "Shop"
+    const val HEROES = "Heroes"
+    const val TOWN = "Town"
+    const val FORGE = "Forge"
+
+    /** Milestones whose fact another record of the same day already tells; the milestone line is folded away. */
+    private val impliedMilestones = mapOf(
+        "ELITE_SLAIN" to EventType.ELITE_SLAIN, "AMBITION_FULFILLED" to EventType.AMBITION_FULFILLED,
+        "SIEGE_SURVIVED" to EventType.SIEGE_WON, "CHAMPION_ARMED" to EventType.SIEGE_WON,
+        "LEGENDARY_FORGED" to EventType.WEAPON_FORGED, "EPIC_FORGED" to EventType.WEAPON_FORGED,
+        "FIRST_SALE" to EventType.WEAPON_SOLD, "HERO_LEVEL_5" to EventType.HERO_LEVELED,
+    )
+
+    private val heroTypes = setOf(
+        EventType.ELITE_SLAIN, EventType.EXPEDITION_WON, EventType.EXPEDITION_LOST, EventType.HERO_WOUNDED, EventType.HERO_LEVELED,
+        EventType.HERO_DIED, EventType.WEAPON_BROKEN, EventType.WEAPON_RECOVERED, EventType.WEAPON_STOLEN, EventType.WEAPON_LOST,
+        EventType.AMBITION_FULFILLED, EventType.HERO_RETIRED, EventType.GUILD_FOUNDED, EventType.HERO_MENTORED, EventType.WEAPON_INHERITED,
+        EventType.HERO_ARRIVED,
+    )
+    private val quietTypes = setOf(EventType.HERO_PATROLLED, EventType.HERO_RESTED)
+    private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)
+    private val forgeTypes = setOf(
+        EventType.WEAPON_FORGED, EventType.WEAPON_LISTED, EventType.WEAPON_HONED, EventType.WEAPON_DONATED, EventType.WEAPON_SALVAGED,
+        EventType.TOOL_BOUGHT, EventType.DISCOVERY, EventType.SIGNATURE_DISCOVERED,
+    )
+
+    /** Why a visitor left without buying (`MarketVisit.reason`), as the paper puts it. */
+    fun visitReason(code: String): String = when (code) {
+        "TOO_EXPENSIVE" -> "could afford nothing on the shelf"
+        "NOT_BETTER" -> "found nothing better than the weapon in hand"
+        "EMPTY_SHELVES" -> "found the shelves bare"
+        "OVERPRICED" -> "balked at the prices"
+        "NOT_SUITED" -> "found nothing to suit"
+        else -> "left undecided"
+    }
+
+    /**
+     * Lays one day's records out as a paper: Shop (sales, commissions, who left and why), Heroes (one sentence per
+     * hero, the quiet ones on one line), Town (siege, forge, blessings, world events, the standing siege warning last)
+     * and Forge (the smith's own work in one line, then what the journal learned). [heroNames] maps hero id to full
+     * name so a hero's several records fold into one sentence; [visits] is only known for the fresh resolution.
+     * Pure: the same records always give the same edition, and every line comes from a real record (GDD 11).
+     */
+    fun edition(dayEvents: List<EventRecord>, heroNames: Map<String, String>, visits: List<MarketVisit> = emptyList()): Edition {
+        val events = dayEvents.sortedBy { it.serial }
+        val types = events.map { it.type }.toSet()
+        val arrivedByEvent = events.filter { it.type == EventType.WORLD_EVENT }.flatMap { it.subjectIds }.toSet()
+        val pool = events.filter { e ->
+            when (e.type) {
+                EventType.WEAPON_EQUIPPED -> false  // always follows a sale or an inheritance line
+                EventType.MILESTONE -> impliedMilestones[e.data["milestone"]]?.let { it !in types } ?: true
+                EventType.HERO_ARRIVED -> e.subjectIds.none { it in arrivedByEvent }  // the world event tells the arrival
+                else -> true
+            }
+        }
+        val ledeEvents = pool.filter { it.priority >= 6 && it.type != EventType.SIEGE_WARNING }
+            .sortedWith(compareByDescending<EventRecord> { it.priority }.thenBy { it.serial })
+            .take(2).filterIndexed { i, e -> i == 0 || e.priority >= 7 }
+        val rest = pool - ledeEvents.toSet()
+
+        val sections = listOfNotNull(
+            section(SHOP, shopLines(rest, visits)),
+            section(HEROES, heroLines(rest, heroNames)),
+            section(TOWN, townLines(rest)),
+            section(FORGE, forgeLines(rest)),
+        )
+        return Edition(ledeEvents.map { it.text }, tally(events, visits), sections)
+    }
+
+    private fun section(title: String, lines: List<String>) = if (lines.isEmpty()) null else Section(title, lines)
+
+    private fun tally(events: List<EventRecord>, visits: List<MarketVisit>): List<String> {
+        val sold = events.count { it.type == EventType.WEAPON_SOLD || it.type == EventType.COMMISSION_COMPLETED }
+        val gold = events.sumOf { e ->
+            when (e.type) {
+                EventType.WEAPON_SOLD -> (e.data["price"]?.toIntOrNull() ?: 0) - (e.data["tradeIn"]?.toIntOrNull() ?: 0)
+                EventType.COMMISSION_COMPLETED -> e.data["reward"]?.toIntOrNull() ?: 0
+                EventType.MILESTONE -> e.data["tribute"]?.toIntOrNull() ?: 0
+                else -> 0
+            }
+        }
+        val won = events.count { it.type == EventType.ELITE_SLAIN || (it.type == EventType.EXPEDITION_WON && "winProbability" in it.data) }
+        val lost = events.count { it.type == EventType.EXPEDITION_LOST }
+        val fallen = events.count { it.type == EventType.HERO_DIED }
+        return buildList {
+            if (gold > 0 || sold > 0 || visits.isNotEmpty()) add("Shop took $gold gold")
+            if (visits.isNotEmpty()) add("$sold of ${count(visits.size, "visitor")} bought")
+            else if (sold > 0) add("$sold sold")
+            if (won + lost > 0) add("Expeditions: $won won, $lost lost")
+            if (fallen > 0) add(if (fallen == 1) "1 hero fell" else "$fallen heroes fell")
+        }
+    }
+
+    private fun shopLines(events: List<EventRecord>, visits: List<MarketVisit>): List<String> {
+        val lines = events.filter { it.type in shopTypes }.map { it.text }.toMutableList()
+        val left = visits.filter { it.purchasedWeaponId == null }
+        for (reason in left.map { it.reason }.distinct()) {
+            lines += "${names(left.filter { it.reason == reason }.map { it.heroName })} ${visitReason(reason)}."
+        }
+        return lines
+    }
+
+    private fun heroLines(events: List<EventRecord>, heroNames: Map<String, String>): List<String> {
+        val byHero = events.filter { it.type in heroTypes }.groupBy { e -> e.subjectIds.firstOrNull { it.startsWith("h") } ?: e.id }
+        val groups = byHero.entries.sortedWith(
+            compareByDescending<Map.Entry<String, List<EventRecord>>> { g -> g.value.maxOf { it.priority } }.thenBy { it.value.first().serial },
+        )
+        val lines = groups.map { (hero, es) -> compose(heroNames[hero], es.map { it.text }) }.toMutableList()
+        val patrolled = events.filter { it.type == EventType.HERO_PATROLLED }.mapNotNull { heroNames[it.subjectIds.firstOrNull()] }
+        val rested = events.filter { it.type == EventType.HERO_RESTED }.mapNotNull { heroNames[it.subjectIds.firstOrNull()] }
+        val quiet = listOfNotNull(
+            patrolled.takeIf { it.isNotEmpty() }?.let { "On the walls: ${it.joinToString(", ")}." },
+            rested.takeIf { it.isNotEmpty() }?.let { "Resting: ${it.joinToString(", ")}." },
+        )
+        if (quiet.isNotEmpty()) lines += quiet.joinToString(" ")
+        return lines
+    }
+
+    /** "Name did A. Name did B." becomes "Name did A; did B."; sentences that do not start with the name stay whole. */
+    private fun compose(name: String?, texts: List<String>): String {
+        val sb = StringBuilder()
+        for (t in texts) {
+            val tail = if (name != null) t.removePrefix("$name ") else t
+            when {
+                sb.isEmpty() -> sb.append(t.trimEnd('.'))
+                tail.length < t.length -> sb.append("; ").append(tail.trimEnd('.'))
+                else -> sb.append(". ").append(t.trimEnd('.'))
+            }
+        }
+        return sb.append('.').toString()
+    }
+
+    private fun townLines(events: List<EventRecord>): List<String> {
+        val town = events.filter { it.type !in heroTypes && it.type !in quietTypes && it.type !in shopTypes && it.type !in forgeTypes }
+        return town.filter { it.type != EventType.SIEGE_WARNING }.map { it.text } + town.filter { it.type == EventType.SIEGE_WARNING }.map { it.text }.takeLast(1)
+    }
+
+    private fun forgeLines(events: List<EventRecord>): List<String> {
+        val forged = events.filter { it.type == EventType.WEAPON_FORGED }
+        val fine = forged.mapNotNull { e -> e.data["rarity"]?.let { r -> Rarity.entries.firstOrNull { it.name == r } } }.filter { it >= Rarity.EPIC }
+        val parts = buildList {
+            if (forged.isNotEmpty()) {
+                val detail = Rarity.entries.reversed().mapNotNull { r -> fine.count { it == r }.takeIf { it > 0 }?.let { "$it ${r.name.lowercase()}" } }
+                add("forged ${count(forged.size, "weapon")}" + if (detail.isEmpty()) "" else " (${detail.joinToString(", ")})")
+            }
+            events.count { it.type == EventType.WEAPON_LISTED }.takeIf { it > 0 }?.let { add("listed $it") }
+            events.count { it.type == EventType.WEAPON_HONED }.takeIf { it > 0 }?.let { add("honed $it") }
+            events.count { it.type == EventType.WEAPON_DONATED }.takeIf { it > 0 }?.let { add("armed the watch with $it") }
+            events.count { it.type == EventType.WEAPON_SALVAGED }.takeIf { it > 0 }?.let { add("melted down $it") }
+            events.filter { it.type == EventType.TOOL_BOUGHT }.forEach { add("bought ${it.data["name"] ?: it.text.substringAfter(": ").trimEnd('.')}") }
+        }
+        val work = if (parts.isEmpty()) emptyList() else listOf(parts.joinToString(", ").replaceFirstChar { it.uppercase() } + ".")
+        return work + events.filter { it.type == EventType.DISCOVERY || it.type == EventType.SIGNATURE_DISCOVERED }.map { it.text }
+    }
+
+    private fun count(n: Int, noun: String) = "$n $noun" + if (n == 1) "" else "s"
+
+    private fun names(list: List<String>): String = when (list.size) {
+        0 -> ""
+        1 -> list[0]
+        else -> list.dropLast(1).joinToString(", ") + " and " + list.last()
+    }
+
+    private val EventRecord.serial: Int get() = id.drop(1).toIntOrNull() ?: 0
 }

@@ -233,7 +233,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.gold -= cost
         ctx.tools[def.id] = (ctx.tools[def.id] ?: 0) + 1
         if (def.effect == ToolEffect.EXTRA_ENERGY) ctx.energy += def.magnitudePerLevel  // usable the day it is bought
-        ctx.emit(EventType.TOOL_BOUGHT, 2, "The forge gained a new tool: ${def.name}.", data = mapOf("tool" to def.id, "level" to ctx.tools.getValue(def.id).toString()))
+        ctx.emit(EventType.TOOL_BOUGHT, 2, "The forge gained a new tool: ${def.name}.", data = mapOf("tool" to def.id, "name" to def.name, "level" to ctx.tools.getValue(def.id).toString()))
         return accept(ctx)
     }
 
