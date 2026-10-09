@@ -69,6 +69,8 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
     val content = vm.engine.content
     val suggested = vm.engine.suggestedPrice(w)
     val reveal by animateFloatAsState(targetValue = 1f, animationSpec = tween(if (reducedMotion) 0 else 600), label = "reveal")
+    val haptics = LocalHaptics.current
+    LaunchedEffect(weaponId) { haptics.play(if (w.signatureId != null || w.rarity >= Rarity.EPIC) Moment.FORGE_SIGNATURE else Moment.FORGE_STRIKE) }
     AlertDialog(
         modifier = Modifier.semantics { testTagsAsResourceId = true },
         onDismissRequest = vm::dismissReveal,
@@ -222,6 +224,8 @@ fun BlessingDialog(s: UiState.Playing, vm: GameViewModel) {
 
 @Composable
 fun ErrorDialog(message: String, onDismiss: () -> Unit) {
+    val haptics = LocalHaptics.current
+    LaunchedEffect(message) { haptics.play(Moment.REJECTED) }
     AlertDialog(
         modifier = Modifier.semantics { testTagsAsResourceId = true },
         onDismissRequest = onDismiss,

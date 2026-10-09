@@ -16,6 +16,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   and Legacy as three segments). The four labels share one fixed size and do not shrink or clip at larger text sizes.
   Back returns to Shop from any other destination.
 - A settings sheet behind a gear in the top bar: reduced motion (moved here from the Legacy page) and the version.
+- Haptic feedback: a short, distinct vibration when a blade is revealed (stronger for a signature or epic result), when you
+  end the day, when a request is refused and when an era ends; the shop-day counter will use the same for a sale. A
+  Haptics switch in settings (on by default) turns all of it off. The game asks for no vibration permission and has no
+  sound.
 
 ### Changed
 - After you claim a fallen era's legacy, the run-end screen survives closing the game: it reopens claimed, with your

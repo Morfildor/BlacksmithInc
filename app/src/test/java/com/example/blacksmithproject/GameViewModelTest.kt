@@ -32,9 +32,11 @@ import org.junit.Test
 
 class FakeSettings(var dismissed: String? = null) : Settings {
     override val reducedMotion = MutableStateFlow(false)
+    override val haptics = MutableStateFlow(true)
     override val seenTips = MutableStateFlow(emptySet<String>())
     var dismissedReads = 0
     override suspend fun setReducedMotion(value: Boolean) { reducedMotion.value = value }
+    override suspend fun setHaptics(value: Boolean) { haptics.value = value }
     override suspend fun markTipSeen(id: String) { seenTips.value += id }
     override suspend fun dismissedReport(): String? { dismissedReads++; return dismissed }
 }

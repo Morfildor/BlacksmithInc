@@ -115,7 +115,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T6.3c | Storage tools | AB | todo | | | |
 | T6.4 | Lifecycle tests | AB | todo | | | |
 | T6.5 | Main thread | AB | todo | | | |
-| T6.7 | Haptics with a toggle; audio controls with real audio | AB | todo | | | |
+| T6.7 | Haptics with a toggle; audio controls with real audio | AB | done (emulator); motor feel not run | 6f025b1 | unit HapticsTest 4, instrumented SettingsSheetTest 2 (12/12 on agent base); toggle persists across force-stop on emulator; SALE moment waits for T2.5 to call it; no audio asset, no sound setting; physical feel NOT RUN (no hardware) | |
 | T6.6 | Physical device | INT | blocked: no device attached | | | |
 | T7.1 | Documents and version | INT | todo | | | |
 | T7.2 | Fresh-player sessions | owner + INT | blocked: needs five first-time players | | | |

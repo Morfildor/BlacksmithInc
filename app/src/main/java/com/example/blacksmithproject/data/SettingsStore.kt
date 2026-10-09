@@ -17,8 +17,10 @@ private val Context.settingsDataStore: DataStore<Preferences> by preferencesData
 /** What the ViewModel and the screens need from settings; the seam that lets the ViewModel run in a JVM test. */
 interface Settings {
     val reducedMotion: Flow<Boolean>
+    val haptics: Flow<Boolean>
     val seenTips: Flow<Set<String>>
     suspend fun setReducedMotion(value: Boolean)
+    suspend fun setHaptics(value: Boolean)
     suspend fun markTipSeen(id: String)
     suspend fun dismissedReport(): String?
 }
@@ -26,6 +28,7 @@ interface Settings {
 /** Non-authoritative player settings (GDD 13.3): never gameplay state. */
 class SettingsStore(private val context: Context) : Settings {
     private val reducedMotionKey = booleanPreferencesKey("reduced_motion")
+    private val hapticsKey = booleanPreferencesKey("haptics")
     private val seenTipsKey = stringSetPreferencesKey("seen_tips")
     private val dismissedReportKey = stringPreferencesKey("dismissed_report")
 
@@ -33,6 +36,13 @@ class SettingsStore(private val context: Context) : Settings {
 
     override suspend fun setReducedMotion(value: Boolean) {
         context.settingsDataStore.edit { it[reducedMotionKey] = value }
+    }
+
+    /** On by default; off silences every vibration. */
+    override val haptics: Flow<Boolean> = context.settingsDataStore.data.map { it[hapticsKey] ?: true }
+
+    override suspend fun setHaptics(value: Boolean) {
+        context.settingsDataStore.edit { it[hapticsKey] = value }
     }
 
     /** Onboarding tips the player has dismissed (IDs only; never gameplay state). */
