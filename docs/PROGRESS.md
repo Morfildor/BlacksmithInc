@@ -58,6 +58,7 @@ simulator evidence are in DECISIONS.md ("Balance v3: gameplay depth").
 | Gameplay depth (session 6) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all`; `--policy BALANCED_ACTIVE --impactPolicy BALANCED_ACTIVE` | 122/122 pass (18 new in `GameplayDepthTest`, 1 in `SimulatorPolicyTest`); BALANCED_FAIR 20 (15/30) mean 21.7 (was 25 / 23.7), BALANCED_ACTIVE 30 (20/35) mean 27.5, sales 17.7 / 23.4 a run (was 16.2), 0 hard-locks; armory and raid sweeps and the full table in DECISIONS.md |
 | 0.4.0 on device (session 6) | `:app:installDebug`, `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest`, manual adb pass | SMOKE_DONE (shelf/town/resume ok), instrumented 5/5; Hone, Arm the watch, Salvage and a tool purchase each changed state on device; not exercised on device: commission element text, warlord line, Maxed tool state, trade-in sale text, run-end route |
 | Weapon fame (session 7, pending merge) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all` with the fame numbers at 0 / desire+price only / half power / adopted; `:app:compileDebugKotlin -q` | 127/127 pass (5 new in `WeaponFameTest`: capped factor, famous beats plain in `evaluate`, capped price premium, returned legend at the cap, determinism); BALANCED_FAIR 20 (15/30) mean 22.5, sold 18.0, deaths 0.9 (was 20 (15/30) 21.7 / 17.7 / 0.8), BALANCED_ACTIVE 30 (20/35) mean 28.4, sold 24.0, deaths 1.0 (was 30 (20/35) 27.5 / 23.4 / 0.9), 0 hard-locks; desire and price alone change nothing, the +5 % power cap carries the shift (the brief's +10 % example overshoots the band: FAIR median 25, ACTIVE p90 40); app compiles; table in DECISIONS.md "Balance v4 (pending merge)" |
+| Balance v3 review at 10k + per-tool / per-affix sweeps (session 6) | `:core:simulate --runs 10000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE --perf --json`; 1,000-seed `--noTool` / `--toolCost` / `--noAffixEffect` sweeps under BALANCED_ACTIVE (noise floor at seeds 10001 / 20001, SYNERGY cross-check); `./gradlew :core:test` | BALANCED_ACTIVE 30 (20/35) mean 27.7 at 10k (27.5 at 1k), BALANCED_FAIR 20 (15/30) 21.8, every 1k mean holds within 0.5 days, 0 hard-locks in 160,000 runs; all four tools removed +0.3 days (tools buy no run length), signboard capped out by `maxCustomersPerDay` (removed: +0.7 days, +1.2 sales), whetstone pays only at 100/250 (+0.8); single affix effects inside the 0.3-day noise floor, all ten off -0.3 (ACTIVE) / -0.9 (SYNERGY, Undead Bane alone -0.7); warlord-led sieges 0.02-0.03/run, never won; perf p50 0.51 / p95 0.99 ms warm; 122/122 pass; tables, commands and recommendations in DECISIONS.md |
 | UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
 ## Obstacles hit and resolved
@@ -81,8 +82,10 @@ simulator evidence are in DECISIONS.md ("Balance v3: gameplay depth").
   2,330 weapons after 1,000 days); lost/destroyed weapons are never pruned. The next list to watch.
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
-- Balance v3 was checked at 1,000 seeds only; the 10,000-seed table in DECISIONS.md is still v2. Tool prices and
-  single affix magnitudes were set by judgement and checked only through the aggregate `BALANCED_ACTIVE` run.
+- Balance v3 at 10,000 seeds and the per-tool / per-affix sweeps are in DECISIONS.md: tools buy no run length (the
+  signboard is capped out by `maxCustomersPerDay`), single affix effects sit inside the noise floor and warlords are
+  never fought; the recommendations there (signboard effect, whetstone 120/300, warlord pressure 45-50, affix
+  magnitudes) are not applied yet.
 - The simulator's other policies ignore the new shop actions, so their rows measure a smith who never uses them.
 - Sell rate is still modest (16-23 % at fair prices): trade-ins and patrol pay raised sales by about a third, but
   most visits now end NOT_BETTER (a hero only buys an upgrade). Salvage, Hone and the watch use the surplus.
@@ -93,7 +96,8 @@ simulator evidence are in DECISIONS.md ("Balance v3: gameplay depth").
 
 ## Next executable actions (P7)
 0. More gameplay, in the order the harness suggests: more reasons to buy (most visits end NOT_BETTER; newcomers,
-   sidearms or wear would widen demand), a 10,000-seed v3 review, per-tool and per-affix sweeps.
+   sidearms or wear would widen demand), then the v3 review recommendations in DECISIONS.md (signboard effect,
+   whetstone 120/300, warlord pressure 45-50, affix magnitudes).
 1. Measure starting gold/energy upgrades by first-siege champion power or first tier-4+ sale (DECISIONS proposal a)
    instead of run length; hero first-week purchasing power is the lever if run length must move.
 2. 720x1280 pass over every panel; nav labels are tight at font scale 1.5.

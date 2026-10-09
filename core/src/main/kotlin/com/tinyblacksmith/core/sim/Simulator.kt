@@ -17,6 +17,7 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.stream.Collectors
 import java.util.stream.IntStream
+import kotlin.math.roundToInt
 
 /** Scripted shop policies for the headless harness (GDD 15.2). Policy randomness uses its own stream, never gameplay RNG. */
 enum class Policy(
@@ -93,6 +94,16 @@ data class RunStats(
     val medianGoldOnHand: Int = 0,
     /** Shop visits over the run by outcome code (`MarketVisit.reason`). */
     val visitReasons: Map<String, Int> = emptyMap(),
+    /** Elite encounters won, weapons shattered on a lost expedition, warlord-led sieges fought and won (v3 affix and foe sweeps). */
+    val elitesSlain: Int = 0,
+    val weaponsBroken: Int = 0,
+    val warlordSieges: Int = 0,
+    val warlordsDefeated: Int = 0,
+    /** Tool levels at run end and the day each tool was first bought (`Policy.active` only). */
+    val toolLevels: Map<String, Int> = emptyMap(),
+    val toolFirstDay: Map<String, Int> = emptyMap(),
+    /** Weapons in the run that carry each affix or flaw, counted at run end. */
+    val affixWeapons: Map<String, Int> = emptyMap(),
 )
 
 /**
@@ -132,10 +143,19 @@ class SimulationDriver(
         val materialSamples = ArrayList<Int>()
         val goldSamples = ArrayList<Int>()
         val visitReasons = sortedMapOf<String, Int>()
+        var elitesSlain = 0
+        var weaponsBroken = 0
+        var warlordSieges = 0
+        var warlordsDefeated = 0
+        val warlordNames = engine.content.factions.mapNotNull { it.warlordName }
+        val toolFirstDay = sortedMapOf<String, Int>()
         while (!state.isEnded && state.day <= maxDays) {
             if (state.pendingBlessingOffer.isNotEmpty()) state = engine.handle(state, Command.ChooseBlessing(state.pendingBlessingOffer.first())).state()
             for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
-            if (policy.active) state = toolsAndHone(state)
+            if (policy.active) {
+                state = toolsAndHone(state)
+                for (id in state.tools.keys) toolFirstDay.putIfAbsent(id, state.day)
+            }
             if (policy != Policy.PASSIVE) {
                 var couldForge = false
                 var forgesToday = 0
@@ -180,6 +200,11 @@ class SimulationDriver(
                 sold += sales.size
                 goldEarned += sales.sumOf { (it.data["price"]?.toInt() ?: 0) - (it.data["tradeIn"]?.toInt() ?: 0) }
                 sold += res.events.count { it.type == EventType.COMMISSION_COMPLETED }
+                elitesSlain += res.events.count { it.type == EventType.ELITE_SLAIN }
+                weaponsBroken += res.events.count { it.type == EventType.WEAPON_BROKEN }
+                // The siege line names the warlord when one leads (a lost siege capitalises it); the WARLORD_DEFEATED milestone fires once per run, the tribute line on every warlord siege won.
+                warlordSieges += res.events.count { (it.type == EventType.SIEGE_WON || it.type == EventType.SIEGE_LOST) && warlordNames.any { n -> it.text.contains(n, ignoreCase = true) } }
+                warlordsDefeated += res.events.count { it.type == EventType.MILESTONE && "tribute" in it.data }
             }
             if (eventRetentionDays > 0) {
                 val cutoff = out.day - eventRetentionDays
@@ -197,6 +222,9 @@ class SimulationDriver(
             signatureDiscoveries = state.weapons.values.count { it.signatureId != null },
             medianMaterialsOnHand = percentile(materialSamples, 0.5), medianGoldOnHand = percentile(goldSamples, 0.5),
             visitReasons = visitReasons,
+            elitesSlain = elitesSlain, weaponsBroken = weaponsBroken, warlordSieges = warlordSieges, warlordsDefeated = warlordsDefeated,
+            toolLevels = state.tools.toSortedMap(), toolFirstDay = toolFirstDay,
+            affixWeapons = state.weapons.values.flatMap { it.affixes + it.flaws }.groupingBy { it.value }.eachCount().toSortedMap(),
         )
         return stats to state
     }
@@ -341,6 +369,16 @@ data class PolicySummary(
     val signatureDiscoveriesPerRun: Double,
     /** Shop visits per run by outcome code. */
     val visitsPerRun: Map<String, Double> = emptyMap(),
+    val elitesSlainPerRun: Double = 0.0,
+    val weaponsBrokenPerRun: Double = 0.0,
+    val warlordSiegesPerRun: Double = 0.0,
+    val warlordsDefeatedPerRun: Double = 0.0,
+    /** Per tool: share of runs that bought it, mean level at run end, mean day of the first purchase (over runs that bought it). */
+    val toolBoughtShare: Map<String, Double> = emptyMap(),
+    val toolLevelPerRun: Map<String, Double> = emptyMap(),
+    val toolFirstDayMean: Map<String, Double> = emptyMap(),
+    /** Weapons per run carrying each affix or flaw. */
+    val affixWeaponsPerRun: Map<String, Double> = emptyMap(),
 )
 
 data class Report(val policy: Policy, val runs: List<RunStats>, val label: String = "new account") {
@@ -349,6 +387,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
         val rarityTotals = Rarity.entries.associateWith { r -> runs.sumOf { it.rarity[r] ?: 0 } }
         val forged = rarityTotals.values.sum().coerceAtLeast(1)
         val siegesFought = runs.sumOf { it.siegesSurvived + it.siegesLost }
+        val toolIds = runs.flatMap { it.toolLevels.keys }.toSortedSet()
         return PolicySummary(
             policy = policy, label = label, runs = runs.size,
             daysP10 = percentile(days, 0.1), daysMedian = percentile(days, 0.5), daysMean = days.average(), daysP90 = percentile(days, 0.9), daysMax = days.maxOrNull() ?: 0,
@@ -365,6 +404,12 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             legacyPointsMedian = percentile(runs.map { it.legacyPoints }, 0.5), discoveriesPerRun = runs.map { it.discoveries }.average(),
             signatureDiscoveriesPerRun = runs.map { it.signatureDiscoveries }.average(),
             visitsPerRun = runs.flatMap { it.visitReasons.keys }.toSortedSet().associateWith { k -> runs.sumOf { it.visitReasons[k] ?: 0 }.toDouble() / runs.size },
+            elitesSlainPerRun = runs.map { it.elitesSlain }.average(), weaponsBrokenPerRun = runs.map { it.weaponsBroken }.average(),
+            warlordSiegesPerRun = runs.map { it.warlordSieges }.average(), warlordsDefeatedPerRun = runs.map { it.warlordsDefeated }.average(),
+            toolBoughtShare = toolIds.associateWith { t -> runs.count { (it.toolLevels[t] ?: 0) > 0 }.toDouble() / runs.size },
+            toolLevelPerRun = toolIds.associateWith { t -> runs.sumOf { it.toolLevels[t] ?: 0 }.toDouble() / runs.size },
+            toolFirstDayMean = toolIds.associateWith { t -> runs.mapNotNull { it.toolFirstDay[t] }.average() },
+            affixWeaponsPerRun = runs.flatMap { it.affixWeapons.keys }.toSortedSet().associateWith { a -> runs.sumOf { it.affixWeapons[a] ?: 0 }.toDouble() / runs.size },
         )
     }
 
@@ -381,6 +426,9 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  hero deaths/run: ${f1(s.heroDeathsPerRun)}  retirements/run: ${f1(s.heroRetirementsPerRun)}  sieges survived/run: ${f1(s.siegesSurvivedPerRun)}  lost/run: ${f1(s.siegesLostPerRun)}  faction win proportion: ${pct(s.factionWinProportion)}")
             appendLine("  hard-lock days total: ${s.hardLockDaysTotal}  runs with any hard-lock: ${s.runsWithHardLock}")
             appendLine("  shop visits/run: " + s.visitsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
+            appendLine("  elites slain/run: ${f1(s.elitesSlainPerRun)}  weapons broken/run: ${f1(s.weaponsBrokenPerRun)}  warlord sieges/run: ${f1(s.warlordSiegesPerRun)}  warlords defeated/run: ${f1(s.warlordsDefeatedPerRun)}")
+            if (s.toolLevelPerRun.isNotEmpty()) appendLine("  tools (share of runs / mean level / first day): " + s.toolLevelPerRun.keys.joinToString("  ") { t -> "$t=${pct(s.toolBoughtShare.getValue(t))}/${f1(s.toolLevelPerRun.getValue(t))}/${f1(s.toolFirstDayMean.getValue(t))}" })
+            appendLine("  affix weapons/run: " + s.affixWeaponsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
             appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}")
         }
     }
@@ -514,6 +562,9 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
  *      --reserve N (gold the BALANCED_INVEST rule keeps back from premium purchases)
  *      [--siegeModifier X --recoveryCap N --forgeDamageBase X --forgeDamageSlope X --maxForgeDamage N]
  *      --rarityTable [N]: instead of runs, forges N weapons per core x augment x risk and prints the rarity shares.
+ *      --noTool id[,id] / --toolCost id=mult[,id=mult]: catalog sweeps that drop a workshop tool or scale its costs.
+ *      --noAffixEffect id[,id]|all: keeps the affix but neutralises its v3 effect (bane, elite, heal, loot, wound, shatter, self-harm).
+ *      --noImpact: skips the maxed-legacy and per-upgrade runs (sweeps that only need the policy rows).
  * Default: launch content, the GDD 15.2 policy set, maxed legacy accounts (BALANCED_FAIR and the impact policy) and
  * the per-upgrade impact sweep for the impact policy (BALANCED_FAIR by default).
  */
@@ -521,7 +572,7 @@ fun main(args: Array<String>) {
     val argMap = parseArgs(args)
     val runs = argMap["--runs"]?.toInt() ?: 1000
     val seed = argMap["--seed"]?.toLong() ?: 1L
-    val content = when (val c = argMap["--content"] ?: "launch") {
+    var content = when (val c = argMap["--content"] ?: "launch") {
         "launch" -> LaunchContent.catalog
         "slice" -> SliceContent.catalog
         else -> error("Unknown --content $c (launch|slice)")
@@ -530,6 +581,27 @@ fun main(args: Array<String>) {
     // Tuning overrides (balance sweeps only; defaults live in BalanceConfig).
     var config = BalanceConfig.DEFAULT
     val overrides = mutableMapOf<String, String>()
+    // Catalog overrides (per-tool and per-affix sweeps; defaults live in LaunchContent).
+    argMap["--noTool"]?.let { arg ->
+        val ids = arg.split(',')
+        ids.forEach { id -> requireNotNull(content.tool(id)) { "Unknown tool $id" } }
+        content = content.copy(tools = content.tools.filterNot { it.id in ids }); overrides["noTool"] = arg
+    }
+    argMap["--toolCost"]?.let { arg ->
+        val factors = arg.split(',').associate { pair -> pair.substringBefore('=') to pair.substringAfter('=').toDouble() }
+        factors.keys.forEach { id -> requireNotNull(content.tool(id)) { "Unknown tool $id" } }
+        content = content.copy(tools = content.tools.map { t -> factors[t.id]?.let { f -> t.copy(costPerLevel = t.costPerLevel.map { (it * f).roundToInt() }) } ?: t })
+        overrides["toolCost"] = arg
+    }
+    argMap["--noAffixEffect"]?.let { arg ->
+        val ids = if (arg == "all") content.affixes.map { it.id.value } else arg.split(',')
+        ids.forEach { id -> require(AffixId(id) in content.affixById) { "Unknown affix $id" } }
+        content = content.copy(affixes = content.affixes.map { a ->
+            if (a.id.value in ids) a.copy(baneMultiplier = 1.0, eliteMultiplier = 1.0, healOnWin = 0, selfDamageOnWin = 0, lootChanceBonus = 0.0, damageTakenMultiplier = 1.0, breakChanceOnLoss = 0.0) else a
+        })
+        overrides["noAffixEffect"] = arg
+    }
+    content.validate().let { require(it.isEmpty()) { "Catalog overrides left the catalog invalid: $it" } }
     argMap["--siegeModifier"]?.let { config = config.copy(siegeModifier = it.toDouble()); overrides["siegeModifier"] = it }
     argMap["--recoveryCap"]?.let { config = config.copy(maxIntegrityRecoveryPerDay = it.toInt()); overrides["recoveryCap"] = it }
     argMap["--forgeDamageBase"]?.let { config = config.copy(forgeDamageBase = it.toDouble()); overrides["forgeDamageBase"] = it }
@@ -560,16 +632,20 @@ fun main(args: Array<String>) {
     println("== New legacy account ==")
     val reports = Simulator.run(runs, seed, policies, config = config, maxDays = maxDays, content = content, reserve = reserve)
     reports.forEach { println(it.render()) }
-    println("== Maxed legacy account (all upgrades) ==")
-    val maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve)
-    maxed.forEach { println(it.render()) }
-    val baseline = reports.firstOrNull { it.policy == impactPolicy }
-        ?: Simulator.run(runs, seed, listOf(impactPolicy), config = config, maxDays = maxDays, content = content, reserve = reserve).single()
-    val baseSummary = baseline.summary()
-    println("== Upgrade impact ($impactPolicy, single upgrade maxed vs none: median ${baseSummary.daysMedian} mean ${"%.1f".format(baseSummary.daysMean)} days) ==")
-    val impact = Simulator.upgradeImpact(runs, seed, config, baseSummary.daysMedian, baseSummary.daysMean, maxDays, content, impactPolicy, reserve)
-    impact.forEach { println("  ${it.name} (${it.upgradeId} L${it.level}): median=${it.daysMedian} (${"%+d".format(it.deltaVsNone)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.deltaMeanVsNone)})") }
-    maxed.single { it.policy == impactPolicy }.summary().let { println("  all maxed: median=${it.daysMedian} (${"%+d".format(it.daysMedian - baseSummary.daysMedian)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.daysMean - baseSummary.daysMean)})") }
+    var maxed: List<Report> = emptyList()
+    var impact: List<UpgradeImpact> = emptyList()
+    if (argMap["--noImpact"] != "true") {
+        println("== Maxed legacy account (all upgrades) ==")
+        maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve)
+        maxed.forEach { println(it.render()) }
+        val baseline = reports.firstOrNull { it.policy == impactPolicy }
+            ?: Simulator.run(runs, seed, listOf(impactPolicy), config = config, maxDays = maxDays, content = content, reserve = reserve).single()
+        val baseSummary = baseline.summary()
+        println("== Upgrade impact ($impactPolicy, single upgrade maxed vs none: median ${baseSummary.daysMedian} mean ${"%.1f".format(baseSummary.daysMean)} days) ==")
+        impact = Simulator.upgradeImpact(runs, seed, config, baseSummary.daysMedian, baseSummary.daysMean, maxDays, content, impactPolicy, reserve)
+        impact.forEach { println("  ${it.name} (${it.upgradeId} L${it.level}): median=${it.daysMedian} (${"%+d".format(it.deltaVsNone)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.deltaMeanVsNone)})") }
+        maxed.single { it.policy == impactPolicy }.summary().let { println("  all maxed: median=${it.daysMedian} (${"%+d".format(it.daysMedian - baseSummary.daysMedian)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.daysMean - baseSummary.daysMean)})") }
+    }
     var perf: PerfSummary? = null
     if (argMap["--perf"] == "true") {
         perf = Simulator.measureEndDay(config = Simulator.forcedSurvival(config), seed = seed, content = content, reserve = reserve)

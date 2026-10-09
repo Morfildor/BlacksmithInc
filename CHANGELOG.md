@@ -13,6 +13,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   yesterday's visitors and why they left; open commissions with reward and deadline; the champions, their weapons
   and the wounded; yesterday's lede and tally; a pending blessing; and the materials that have run out. A siege within two
   days or against the odds, then commissions waiting for an answer, come first.
+- Weapon fame now matters, within limits: a storied blade fights a little better (up to +5 % at ten fame), heroes
+  want it more on the shelf (collectors most of all), its suggested price carries a small premium (up to +5 %), a
+  legend returning from an earlier era keeps its fame, and the shelf line says "storied", "famed" or "renowned".
 
 ### Changed
 - The end-of-day report and the Gazette archive are laid out as an edition: the biggest news as the lede, a one-line
@@ -20,11 +23,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   Heroes (one sentence per hero, the quiet ones on one line), Town and Forge (the smith at the anvil in one line, then
   journal discoveries). Milestones already told by the news fold away; siege rounds fold behind the outcome. The
   archive opens the latest day and shows older days as a lede until tapped.
+- Simulator: catalog sweeps (`--noTool`, `--toolCost`, `--noAffixEffect`), `--noImpact`, and per-run counters for
+  elites slain, shattered weapons, warlord sieges, tool purchases and affix occurrence; the 10,000-seed v3 review and
+  the per-tool / per-affix sweeps are recorded in `docs/DECISIONS.md` (recommendations only, no balance change).
 
-### Added
-- Weapon fame now matters, within limits: a storied blade fights a little better (up to +5 % at ten fame), heroes
-  want it more on the shelf (collectors most of all), its suggested price carries a small premium (up to +5 %), a
-  legend returning from an earlier era keeps its fame, and the shelf line says "storied", "famed" or "renowned".
 
 ## [0.4.0] - 2026-10-09
 Gameplay depth (balance v3): shop actions, workshop tools, elite foes and warlords, hero ambitions, trade-ins.
