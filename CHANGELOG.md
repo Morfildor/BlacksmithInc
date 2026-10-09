@@ -8,6 +8,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
+- Main menu: the game opens on a menu with Continue (or the first forge of a new era) and Settings; Settings in the workshop has a "Main menu" entry to return to it.
 - A save that cannot be opened no longer crashes the game. A recovery screen says what happened and what is safe, and
   offers Try again or, for a damaged or incompatible run, Start over (the unreadable run is kept as a backup on the
   device and your legacy stays).

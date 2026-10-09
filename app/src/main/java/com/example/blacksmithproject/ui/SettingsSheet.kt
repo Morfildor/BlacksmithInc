@@ -15,6 +15,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,7 +37,7 @@ import com.example.blacksmithproject.ui.theme.Space
 @Composable
 fun SettingsSheet(
     reducedMotion: Boolean, onReducedMotion: (Boolean) -> Unit, haptics: Boolean, onHaptics: (Boolean) -> Unit, onDismiss: () -> Unit,
-    shopDaySpeed: ShopDaySpeed = ShopDaySpeed.TAP, onShopDaySpeed: ((ShopDaySpeed) -> Unit)? = null,
+    shopDaySpeed: ShopDaySpeed = ShopDaySpeed.TAP, onShopDaySpeed: ((ShopDaySpeed) -> Unit)? = null, onMainMenu: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "unknown" }
@@ -47,6 +48,7 @@ fun SettingsSheet(
             SwitchRow("Reduced motion", "Stops the ember animation, the reveal fade and the stepped battle replay.", reducedMotion, onReducedMotion, "settings_reduced_motion")
             SwitchRow("Haptics", "A short vibration when a blade is revealed, a day ends, a request is refused or an era ends.", haptics, onHaptics, "settings_haptics")
             if (onShopDaySpeed != null) SpeedRow(if (reducedMotion) ShopDaySpeed.TAP else shopDaySpeed, enabled = !reducedMotion, onShopDaySpeed)
+            onMainMenu?.let { TextButton(onClick = it, modifier = Modifier.padding(top = Space.sm).heightIn(min = 48.dp).testTag("settings_main_menu")) { Text("Main menu") } }
             Secondary("Version $version", Modifier.padding(top = Space.md).testTag("settings_version"))
         }
     }

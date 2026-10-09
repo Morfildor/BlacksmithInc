@@ -48,6 +48,7 @@ wait_text "Legacy claimed" && echo "CHECK claimed: ok" || echo "CHECK claimed: F
 shot 02_runend_claimed
 # Process death after the claim: the ended run stays saved, so run end reopens, claimed, with upgrades still to buy.
 $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
+wait_text "Continue" && tap "Continue"
 wait_text "Legacy claimed" && echo "CHECK run end reopens after process death: ok" || { echo "CHECK run end reopens after process death: FAIL"; texts; shot stuck_reopen; exit 1; }
 upgrades=0
 for i in 1 2 3 4 5 6; do
