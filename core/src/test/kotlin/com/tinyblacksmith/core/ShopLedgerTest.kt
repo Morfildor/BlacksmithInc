@@ -175,6 +175,30 @@ class ShopLedgerTest {
         assertEquals(listOf("Expeditions: 0 won, 1 lost", "1 hero fell"), Gazette.edition(ctx.newEvents, names(s), ledger = ledger, field = ctx.field).tally)
     }
 
+    /** M1 review I3: a day is tallied from the archive as its report tallied it, a fatal expedition included. */
+    @Test
+    fun aFatalExpeditionIsALossInTheArchiveToo() {
+        val fatal = GameEngine(config = config.copy(winProbabilityFloor = 0.0, winProbabilityCeiling = 0.0, expeditionDamageMin = 500, expeditionDamageMax = 500, worldEventChancePerDay = 0.0))
+        var checked = 0
+        for (seed in 1L..10L) {
+            val s = fatal.newRun(LegacyProfile(), seed)
+            val out = fatal.handle(s, Command.EndDay(endDayId(s))) as CommandOutcome.Accepted
+            val r = out.resolution!!
+            val died = r.field.count { it.outcome == FieldOutcome.DIED }
+            if (died == 0 || out.state.isEnded) continue
+            val lost = died + r.field.count { it.outcome == FieldOutcome.DRIVEN_BACK }
+            // The report as the app asks for it, with the day's ledger and field results.
+            val report = Gazette.edition(Gazette.dayRecords(out.state, r.day), names(out.state), r.visits, r.ledger, r.field).tally
+            assertTrue("Expeditions: 0 won, $lost lost" in report, "seed $seed: $report")
+            // A day later only the log is left of it.
+            val later = (fatal.handle(out.state, Command.EndDay(endDayId(out.state))) as CommandOutcome.Accepted).state
+            assertTrue(later.lastResolution!!.day != r.day)
+            assertEquals(report, Gazette.edition(Gazette.dayRecords(later, r.day), names(later)).tally, "seed $seed")
+            checked++
+        }
+        assertTrue(checked > 0, "no seed sent a hero out on day 1")
+    }
+
     @Test
     fun tributeIsNotShopTakings() {
         val weakRaids = GameEngine(config = config.copy(siegeModifier = config.siegeModifier / 10, worldEventChancePerDay = 0.0))
@@ -229,7 +253,7 @@ class ShopLedgerTest {
                 // The paper's till is the same whether it is counted from the ledger or from the day's records.
                 val typed = edition(out.state, r).tally
                 val recorded = Gazette.edition(r.events, names(out.state), r.visits).tally
-                assertEquals(recorded.filter { "gold" in it || "bought" in it || "delivered" in it }, typed.filter { "gold" in it || "bought" in it || "delivered" in it }, at)
+                assertEquals(recorded, typed, at)
                 // Every hero who acted has a result; the dead are counted where they fell.
                 assertEquals(r.events.count { it.type == EventType.ELITE_SLAIN || (it.type == EventType.EXPEDITION_WON && "material" !in it.data) }, r.field.count { it.outcome == FieldOutcome.WON }, at)
                 assertEquals(r.events.count { it.type == EventType.EXPEDITION_LOST }, r.field.count { it.outcome == FieldOutcome.DRIVEN_BACK }, at)

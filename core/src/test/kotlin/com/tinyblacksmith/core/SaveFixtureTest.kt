@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.TestSupport.engine
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.Invariants
+import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.Phase
@@ -40,6 +41,7 @@ class SaveFixtureTest {
         val fixtureTextV3: String by lazy { SaveFixtureTest::class.java.getResource(FIXTURE_V3)?.readText() ?: error("missing $FIXTURE_V3") }
         val decodedV3: GameState by lazy { SaveCodec.decodeRun(fixtureTextV3) }
 
+        fun fixture(name: String): String = SaveFixtureTest::class.java.getResource("/saves/$name")?.readText() ?: error("missing $name")
     }
 
     @Test
@@ -135,5 +137,52 @@ class SaveFixtureTest {
         assertEquals((31..60).toList(), s.events.filter { it.type == EventType.SHOP_DAY }.map { it.day }, "one small record per day of the kept log")
         val next = assertIs<CommandOutcome.Accepted>(engine.handle(s, Command.EndDay(endDayId(s)))).state
         assertTrue(next.isEnded || next.day == 62)
+    }
+
+    /**
+     * What release 0.6.0 itself wrote (the codec of tag v0.6.0: schema 1, rules 1, balance not yet recorded): forced
+     * survival, seed 4242, BALANCED_ACTIVE, 60 End Days, so it owns tools and has delivered commissions. It is migrated
+     * on decode, admitted, and plays; the day it stored reads as a day without snapshots.
+     */
+    @Test
+    fun aSaveWrittenByRelease060MigratesIsAdmittedAndPlays() {
+        val text = fixture("v1_release060_active_seed4242_day61.json")
+        assertTrue(text.startsWith("""{"schemaVersion":1,"payload":"""), text.take(40))
+        val s = SaveCodec.decodeRun(text)
+        assertEquals(listOf(1, 5, 61), listOf(s.rulesVersion, s.balanceVersion, s.day))
+        assertTrue(s.tools.isNotEmpty() && s.commissions.values.any { it.status == CommissionStatus.COMPLETED })
+        assertEquals(s, SaveCodec.decodeRun(SaveCodec.encodeRun(s)))
+        val stored = s.lastResolution!!
+        assertEquals(0, stored.recordVersion)
+        assertTrue(stored.visits.isNotEmpty() && stored.visits.all { it.customer == null } && stored.ledger == null && stored.shopWeapons.isEmpty())
+        val out = assertIs<CommandOutcome.Accepted>(s.admitted().let { engine.handle(it, Command.EndDay(endDayId(it))) })
+        assertEquals(emptyList(), Invariants.check(out.state, engine.config, engine.shelfSlots(out.state), engine.content))
+        assertEquals(listOf(61, 1), listOf(out.resolution!!.day, out.resolution!!.recordVersion))
+    }
+
+    /**
+     * The stored shape of the M1 gate (schema 2, rules 2, balance 6; commit 0f529c5): forced survival, seed 4242,
+     * EXPERT_ACTIVE, 32 End Days. The day was chosen because the save then holds everything T1.6-T1.9 added: a till
+     * with a trade-in, field results, material and tool purchases with their cost, an ore merchant's flag and an open
+     * commission.
+     */
+    @Test
+    fun theSchemaTwoSaveOfTheM1GateMigratesAndPlays() {
+        val text = fixture("v2_balance6_expert_seed4242_day33.json")
+        assertTrue(text.startsWith("""{"schemaVersion":2,"payload":"""), text.take(40))
+        val s = SaveCodec.decodeRun(text)
+        assertEquals(listOf(2, 6, 33), listOf(s.rulesVersion, s.balanceVersion, s.day))
+        assertEquals(emptyList(), Invariants.check(s, engine.config, engine.shelfSlots(s), engine.content))
+        assertEquals(s, SaveCodec.decodeRun(SaveCodec.encodeRun(s)))
+        val stored = s.lastResolution!!
+        assertEquals(0, stored.recordVersion)
+        assertTrue(stored.ledger!!.tradeInCredit > 0 && stored.field.isNotEmpty() && stored.visits.isNotEmpty() && stored.shopWeapons.isEmpty())
+        for (type in listOf(EventType.MATERIAL_BOUGHT, EventType.TOOL_BOUGHT)) assertTrue(s.events.any { it.type == type && it.data.getValue("cost").toInt() > 0 }, "$type")
+        assertTrue(s.worldFlags.keys.any { it.startsWith("ore_merchant:") })
+        assertTrue(s.commissions.values.any { it.status == CommissionStatus.ACCEPTED })
+        val out = assertIs<CommandOutcome.Accepted>(s.admitted().let { engine.handle(it, Command.EndDay(endDayId(it))) })
+        assertEquals(emptyList(), Invariants.check(out.state, engine.config, engine.shelfSlots(out.state), engine.content))
+        assertEquals(listOf(33, 1), listOf(out.resolution!!.day, out.resolution!!.recordVersion))
+        assertEquals(1, out.state.events.count { it.type == EventType.SHOP_DAY })
     }
 }

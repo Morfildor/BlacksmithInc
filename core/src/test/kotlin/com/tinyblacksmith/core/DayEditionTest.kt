@@ -49,7 +49,7 @@ class DayEditionTest {
         val prepared = forged.state.run(Command.ToggleShelf(id, listed = true)).run(Command.Hone(id)).run(Command.BuyTool("whetstone"))
         val out = prepared.endDayAccepted()
         val res = out.resolution!!
-        val fromReport = Gazette.edition(res.events, names(out.state), res.visits)
+        val fromReport = Gazette.edition(res.events, names(out.state), res.visits, res.ledger, res.field)
         val fromArchive = Gazette.edition(out.state.eventsForDay(res.day), names(out.state), res.visits)
         assertEquals(fromArchive, fromReport)
         assertEquals(fromReport, Gazette.edition(Gazette.dayRecords(out.state, res.day), names(out.state), res.visits))
