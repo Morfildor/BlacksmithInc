@@ -50,7 +50,8 @@ Compose BOM 2026.02.01, Room 2.8.5, DataStore 1.2.1, JDK 21 launcher / JDK 25 da
 
 ## Working rules
 - Surgical edits; keep docs in `docs/` current: IMPLEMENTATION_PLAN (phase gates), DECISIONS (locked vs proposed,
-  tuning evidence), PROGRESS (state, checks run, next actions). Update PROGRESS before ending a session.
+  tuning evidence), PROGRESS (state, checks run, next actions), GDD_CHECKLIST (feature view: tick an item when it
+  ships and is verified). Update PROGRESS before ending a session.
 - Balance changes: run the simulator, record numbers in DECISIONS.md, bump `BalanceConfig.version` on semantic change.
 - New gameplay numbers go in `BalanceConfig`, never inline. New content goes through `ContentCatalog.validate()`.
 - Tests must pass before claiming a phase done; do not commit/push without being asked.
