@@ -2,6 +2,7 @@ package com.tinyblacksmith.core.model
 
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.rng.RngState
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 enum class Phase { PLANNING, ENDED }
@@ -15,19 +16,24 @@ enum class CommissionStatus { OFFERED, ACCEPTED, COMPLETED, EXPIRED, DECLINED }
 enum class Ambition { SLAYER, DEFENDER, COLLECTOR, FORTUNE }
 enum class KnowledgeState { UNKNOWN, OBSERVED, UNDERSTOOD, SIGNATURE_DISCOVERED }
 
-/** Exactly one authoritative location per weapon (GDD 7 ownership invariant). */
+/**
+ * Exactly one authoritative location per weapon (GDD 7 ownership invariant).
+ * The serial names are the strings every existing save stores as the `type` of a location (the class names of
+ * 0.6.0); they are pinned so that renaming or moving a class cannot orphan a save. Never edit them.
+ */
 @Serializable
+@SerialName("com.tinyblacksmith.core.model.WeaponLocation")
 sealed class WeaponLocation {
-    @Serializable object Storage : WeaponLocation()
-    @Serializable data class Shelf(val price: Int) : WeaponLocation()
-    @Serializable data class Owned(val heroId: HeroId, val equipped: Boolean) : WeaponLocation()
-    @Serializable data class Lost(val day: Int, val reason: String) : WeaponLocation() {
+    @Serializable @SerialName("com.tinyblacksmith.core.model.WeaponLocation.Storage") object Storage : WeaponLocation()
+    @Serializable @SerialName("com.tinyblacksmith.core.model.WeaponLocation.Shelf") data class Shelf(val price: Int) : WeaponLocation()
+    @Serializable @SerialName("com.tinyblacksmith.core.model.WeaponLocation.Owned") data class Owned(val heroId: HeroId, val equipped: Boolean) : WeaponLocation()
+    @Serializable @SerialName("com.tinyblacksmith.core.model.WeaponLocation.Lost") data class Lost(val day: Int, val reason: String) : WeaponLocation() {
         companion object {
             /** [reason] while a travelling merchant holds a fallen hero's blade (GDD 7 merchant resale); [day] is the day the hero fell. */
             const val WITH_MERCHANT = "held by a travelling merchant"
         }
     }
-    @Serializable data class Destroyed(val day: Int) : WeaponLocation()
+    @Serializable @SerialName("com.tinyblacksmith.core.model.WeaponLocation.Destroyed") data class Destroyed(val day: Int) : WeaponLocation()
 }
 
 /**
@@ -308,6 +314,8 @@ data class GameState(
     val worldFlags: Map<String, Int> = emptyMap(),
     /** Level of each in-run workshop tool (ToolDef.id). */
     val tools: Map<String, Int> = emptyMap(),
+    /** `BalanceConfig.version` the run was last admitted under (`Compatibility.admit`); 0 = written before it was tracked. */
+    val balanceVersion: Int = 0,
 ) {
     val isEnded: Boolean get() = phase == Phase.ENDED
     fun weapon(id: WeaponId): Weapon = weapons[id] ?: error("Unknown weapon ${id.value}")

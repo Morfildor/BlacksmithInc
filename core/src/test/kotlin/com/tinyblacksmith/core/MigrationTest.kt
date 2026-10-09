@@ -117,10 +117,68 @@ class MigrationTest {
     fun migrateIsANoOpForTheCurrentSchema() {
         val payload = json.encodeToString(LegacyProfile.serializer(), LegacyProfile(points = 9))
         val env = SaveEnvelope(SaveCodec.SCHEMA_VERSION, payload)
-        val migrated = SaveCodec.migrate(env)
+        val migrated = SaveCodec.migrate(env, SaveCodec.legacyMigrations)
         assertEquals(env, migrated)
         assertTrue(migrated.payload === payload, "v1 -> v1 must not rewrite the payload")
         assertEquals(1, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")
+    }
+
+    /**
+     * The run and the legacy profile share one schema number but not one migration table. Both production tables are
+     * empty at schema 1, so the routing is shown with a step of the kind M1 registers (it stamps the run), run to
+     * schema 2 through each table.
+     */
+    @Test
+    fun aRunStepIsNotAppliedToTheLegacyDocument() {
+        val stampRun: (String) -> String = { payload ->
+            JsonObject(json.parseToJsonElement(payload).jsonObject + ("balanceVersion" to JsonPrimitive(5))).toString()
+        }
+        val runSteps = mapOf(1 to stampRun)
+        val legacySteps = mapOf<Int, (String) -> String>(1 to { it })
+        val runPayload = json.encodeToString(GameState.serializer(), engine.newRun(LegacyProfile(), 1))
+        val legacyPayload = json.encodeToString(LegacyProfile.serializer(), LegacyProfile(points = 9))
+
+        val run = SaveCodec.migrate(SaveEnvelope(1, runPayload), runSteps, target = 2)
+        assertEquals(2, run.schemaVersion)
+        assertEquals(5, json.decodeFromString(GameState.serializer(), run.payload).balanceVersion)
+
+        val legacy = SaveCodec.migrate(SaveEnvelope(1, legacyPayload), legacySteps, target = 2)
+        assertEquals(SaveEnvelope(2, legacyPayload), legacy, "the legacy document is carried to the new schema unchanged")
+        assertTrue("balanceVersion" !in legacy.payload)
+
+        // A table without the step refuses; it never borrows the other document's step.
+        assertFailsWith<IllegalStateException> { SaveCodec.migrate(SaveEnvelope(1, legacyPayload), emptyMap(), target = 2) }
+        assertTrue(SaveCodec.runMigrations.keys == (1 until SaveCodec.SCHEMA_VERSION).toSet(), "one run step per schema version left behind")
+        assertTrue(SaveCodec.legacyMigrations.keys == (1 until SaveCodec.SCHEMA_VERSION).toSet(), "one legacy step per schema version left behind")
+    }
+
+    /**
+     * The strings every save written so far stores for a weapon's location (they were the class names until they were
+     * pinned with `@SerialName`). Renaming or moving the classes must not change them; a new subclass adds a line.
+     */
+    @Test
+    fun weaponLocationDiscriminatorsArePinned() {
+        val stored = listOf(
+            WeaponLocation.Storage to """{"type":"com.tinyblacksmith.core.model.WeaponLocation.Storage"}""",
+            WeaponLocation.Shelf(84) to """{"type":"com.tinyblacksmith.core.model.WeaponLocation.Shelf","price":84}""",
+            WeaponLocation.Owned(HeroId("h4"), true) to """{"type":"com.tinyblacksmith.core.model.WeaponLocation.Owned","heroId":"h4","equipped":true}""",
+            WeaponLocation.Lost(22, "seized") to """{"type":"com.tinyblacksmith.core.model.WeaponLocation.Lost","day":22,"reason":"seized"}""",
+            WeaponLocation.Destroyed(9) to """{"type":"com.tinyblacksmith.core.model.WeaponLocation.Destroyed","day":9}""",
+        )
+        val subclasses = WeaponLocation::class.java.declaredClasses.filter { WeaponLocation::class.java.isAssignableFrom(it) }
+        assertEquals(subclasses.map { it.simpleName }.sorted(), stored.map { it.first::class.java.simpleName }.sorted(), "every WeaponLocation subclass is pinned")
+        for ((location, text) in stored) {
+            assertEquals(text, json.encodeToString(WeaponLocation.serializer(), location))
+            assertEquals(location, json.decodeFromString(WeaponLocation.serializer(), text))
+        }
+        // The same strings inside a whole save: one weapon per location, through the envelope and back.
+        val forged = engine.newRun(LegacyProfile(), 7).forgeAccepted(quickSword())
+        val blade = forged.state.weapon(forged.forgedWeaponId!!)
+        val weapons = stored.mapIndexed { i, (location, _) -> WeaponId("pin$i").let { it to blade.copy(id = it, location = location) } }.toMap()
+        val state = forged.state.copy(weapons = weapons)
+        val payload = json.decodeFromString(SaveEnvelope.serializer(), SaveCodec.encodeRun(state)).payload
+        for ((_, text) in stored) assertTrue(""""location":$text""" in payload, "missing $text")
+        assertEquals(state, SaveCodec.decodeRun(SaveCodec.encodeRun(state)))
     }
 
     private fun without(obj: JsonObject, vararg keys: String): JsonObject = JsonObject(obj.filterKeys { it !in keys })
