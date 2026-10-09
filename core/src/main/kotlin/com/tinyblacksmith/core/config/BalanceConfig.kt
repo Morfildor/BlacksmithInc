@@ -16,8 +16,9 @@ data class BalanceConfig(
      * v4 (2026-10-09): weapon wear, weapon fame, whetstone 120/300, warlord pressure 50 with no raid bonus. See docs/DECISIONS.md.
      * v5 (2026-10-09): signboard adds a customer a day per level, stronger affix magnitudes (catalog numbers), guild hall and ambition days ([HeroLifeConfig]), fight replays and weapon fates ([WeaponFatesConfig]), three legacy tracks and Known Name regulars ([LegacyTracksConfig]). See docs/DECISIONS.md.
      * v6 (2026-10-09): commissions ask for a quality band floor ([CommissionConfig]; a noble one for the superb floor, `nobleCommissionMinQuality` removed), COLLECTOR ambition at the fine floor 50 (was 60). See docs/DECISIONS.md.
+     * v7 (2026-10-09): fair customer selection ([CustomerConfig]: one intent draw per living hero, weighted seats, a waiting bound; the loyalty and reputation terms of the visit chance are capped). Seats, population and prices are unchanged. See docs/DECISIONS.md.
      */
-    val version: Int = 6,
+    val version: Int = 7,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -58,10 +59,8 @@ data class BalanceConfig(
         "ember_resin" to 4, "frost_bloom" to 3, "stormglass" to 1,
         "binding_salt" to 1,
     ),
-    val maxCustomersPerDay: Int = 4,
     /** Gold per point of weapon power that heroes consider a fair price. */
     val fairGoldPerPower: Int = 4,
-    val baseVisitChance: Double = 0.35,
     val purchaseUtilityThreshold: Double = 0.5,
     val utilityImprovementWeight: Double = 0.12,
     val utilityClassFitWeight: Double = 1.5,
@@ -74,8 +73,6 @@ data class BalanceConfig(
     val commissionRewardPerQuality: Int = 2,
     val commissionRewardBase: Int = 40,
     // Heroes (GDD 6 PROPOSED).
-    val startingHeroCount: Int = 8,
-    val minHeroPopulation: Int = 5,
     val heroWoundedThreshold: Int = 50,
     val heroRestHeal: Int = 35,
     val heroLevelXp: Int = 120,
@@ -155,12 +152,9 @@ data class BalanceConfig(
     val encampmentPressure: Int = 10,
     val successfulPatrolPressureDrop: Int = 8,
     val successfulPatrolMilitia: Int = 3,
-    val festivalExtraCustomers: Int = 2,
-    val festivalVisitBonus: Double = 0.2,
     val abandonedMineMaterials: Int = 3,
     val nobleCommissionRewardMultiplier: Int = 3,
     val newAdventurerCount: Int = 2,
-    val maxHeroPopulation: Int = 12,
     val veteranLevel: Int = 5,
     val veteranGold: Int = 150,
     val ambushDamage: Int = 35,
@@ -276,6 +270,8 @@ data class BalanceConfig(
     val legacyTracks: LegacyTracksConfig = LegacyTracksConfig(),
     // v6: commission bands
     val commissions: CommissionConfig = CommissionConfig(),
+    // v7: customers and population
+    val customers: CustomerConfig = CustomerConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()
@@ -317,6 +313,50 @@ data class HeroLifeConfig(
  */
 data class CommissionConfig(
     val fineShare: Double = 0.4,
+)
+
+/**
+ * v7: who lives in town and who gets a turn at the counter (all PROPOSED; plan 4.1, 4.2). The first seven numbers were
+ * flat fields of [BalanceConfig] and keep their values; the visit terms were inline constants of the market.
+ */
+data class CustomerConfig(
+    // Population (was startingHeroCount, minHeroPopulation, maxHeroPopulation).
+    val startingHeroes: Int = 8,
+    /** Below this many living heroes a newcomer arrives each day. */
+    val minHeroPopulation: Int = 5,
+    /** Event arrivals never raise the living population above this. */
+    val maxHeroPopulation: Int = 12,
+    // Seats (was maxCustomersPerDay, festivalExtraCustomers). The Signboard adds one per level on top.
+    val shopCapacity: Int = 4,
+    val festivalExtraSeats: Int = 2,
+    // Willingness: the chance that a living hero wants to visit today, one draw each.
+    val baseVisitChance: Double = 0.35,
+    val festivalVisitBonus: Double = 0.2,
+    val visitTraitScale: Double = 0.1,
+    /** Per point of loyalty, counted up to [visitLoyaltyCap]. */
+    val visitPerLoyalty: Double = 0.01,
+    val visitLoyaltyCap: Int = 10,
+    /** Per point of shop reputation, counted up to [visitReputationCap]. */
+    val visitPerReputation: Double = 0.005,
+    val visitReputationCap: Int = 50,
+    val visitFloor: Double = 0.05,
+    val visitCeiling: Double = 0.9,
+    // Seats among the willing: one weighted draw per seat (weight 1 for a stranger with nothing else to say for them).
+    /** A willing hero turned away this many days running is seated before anyone else. */
+    val maxTurnedAwayDays: Int = 2,
+    /** The first ordinary seats go to heroes of classes not yet seated, while the willing allow. */
+    val classSeats: Int = 3,
+    /** Added at loyalty [seatLoyaltyCap] or more, in proportion below it: a regular is at most 1.5x a stranger. */
+    val seatLoyaltyWeight: Double = 0.5,
+    val seatLoyaltyCap: Int = 10,
+    /** Added for a hero who has never been served at a stocked shelf. */
+    val seatNewcomerWeight: Double = 1.0,
+    /** Added per day of the current turned-away streak. */
+    val seatWaitWeight: Double = 0.75,
+    /** Added for a hero who is unarmed or whose own blade is worn. */
+    val seatNeedWeight: Double = 0.5,
+    /** Multiplies the weight of a hero who was served yesterday and bought nothing. */
+    val seatBrowsedYesterday: Double = 0.5,
 )
 
 /** v5: replays and weapon fates. What is told of a fight, and what becomes of a fallen hero's blade (GDD 7, 11; all PROPOSED). */

@@ -215,16 +215,24 @@ class WorldEventsAndGenerationsTest {
         assertTrue(morning.worldFlags.isEmpty() || morning.worldFlags.values.all { it >= morning.day }, "stale flags are dropped")
         assertEquals(1, morning.endDay().supplierStock.getValue(SliceContent.SILVER), "normal restock resumes")
 
+        // The shop seats its capacity and no more; whoever else was willing is recorded as turned away. A festival adds seats.
+        val seats = engine.config.customers.shopCapacity
         var maxNormal = 0
         var maxFestival = 0
+        var turnedAway = 0
         for (seed in 1L..30L) {
             val base = engine.newRun(LegacyProfile(), seed).copy(reputation = 200)
-            maxNormal = maxOf(maxNormal, base.endDayAccepted().resolution!!.browsers.size)
-            val festival = base.copy(worldFlags = mapOf(WorldEvents.FLAG_FESTIVAL to base.day))
-            maxFestival = maxOf(maxFestival, festival.endDayAccepted().resolution!!.browsers.size)
+            val normal = base.endDayAccepted().resolution!!
+            maxNormal = maxOf(maxNormal, normal.browsers.size)
+            assertTrue(normal.turnedAway.isEmpty() || normal.browsers.size == seats, "seed $seed: nobody is turned away from a shop with a free seat")
+            turnedAway += normal.turnedAway.size
+            val festival = base.copy(worldFlags = mapOf(WorldEvents.FLAG_FESTIVAL to base.day)).endDayAccepted().resolution!!
+            maxFestival = maxOf(maxFestival, festival.browsers.size)
+            assertTrue((festival.browsers.mapNotNull { it.heroId } + festival.turnedAway).containsAll(normal.browsers.mapNotNull { it.heroId } + normal.turnedAway), "seed $seed: a festival only adds to the willing")
         }
-        assertEquals(engine.config.maxCustomersPerDay, maxNormal)
-        assertEquals(engine.config.maxCustomersPerDay + engine.config.festivalExtraCustomers, maxFestival)
+        assertEquals(seats, maxNormal)
+        assertEquals(seats + engine.config.customers.festivalExtraSeats, maxFestival)
+        assertTrue(turnedAway > 0, "on a busy day someone finds the shop full")
     }
 
     @Test

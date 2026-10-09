@@ -120,7 +120,7 @@ class MigrationTest {
         val migrated = SaveCodec.migrate(env, SaveCodec.legacyMigrations)
         assertEquals(env, migrated)
         assertTrue(migrated.payload === payload, "the current schema must not rewrite the payload")
-        assertEquals(3, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")
+        assertEquals(4, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")
     }
 
     private fun v1Fixture(): String = javaClass.getResource("/saves/v1_forced_seed4242_day61.json")?.readText() ?: error("missing v1 fixture")
@@ -160,6 +160,20 @@ class MigrationTest {
         val last = SaveCodec.decodeRun(v2).lastResolution!!
         assertEquals(0, last.recordVersion)
         assertTrue(last.shopWeapons.isEmpty() && last.visits.isNotEmpty() && last.visits.all { it.customer == null && it.considered.isEmpty() && it.kind == VisitKind.BROWSE })
+    }
+
+    /** Schema 3 -> 4 converts nothing either: a hero written before the counter remembered them reads as a newcomer nobody has kept waiting. Shown on the real v3 fixture. */
+    @Test
+    fun theSchemaFourStepCarriesBothDocumentsOverUnchanged() {
+        val v3 = javaClass.getResource("/saves/v3_forced_seed4242_day61.json")?.readText() ?: error("missing v3 fixture")
+        val env = json.decodeFromString(SaveEnvelope.serializer(), v3)
+        assertEquals(3, env.schemaVersion)
+        assertEquals(SaveEnvelope(4, env.payload), SaveCodec.migrate(env, SaveCodec.runMigrations, target = 4))
+        val legacy = SaveEnvelope(3, json.encodeToString(LegacyProfile.serializer(), LegacyProfile(points = 9)))
+        assertEquals(SaveEnvelope(4, legacy.payload), SaveCodec.migrate(legacy, SaveCodec.legacyMigrations, target = 4))
+        val run = SaveCodec.decodeRun(v3)
+        assertTrue(run.heroes.isNotEmpty() && run.heroes.values.all { it.shopVisits == 0 && it.shopPurchases == 0 && it.turnedAwayStreak == 0 && it.lastServedDay == null && it.lastPurchaseDay == null && it.arrivedOnDay == 1 })
+        assertTrue(run.lastResolution!!.turnedAway.isEmpty())
     }
 
     /** `MarketVisit.reason` is a String today and an enum from M2 whose first nine constants keep these spellings; every v1 day must still read. */

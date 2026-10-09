@@ -184,7 +184,7 @@ object WorldEvents {
         // 6
         WorldEventDef(
             id = "new_adventurers", name = "New Adventurers Arrive", weight = 2.0,
-            eligibility = { ctx -> ctx.aliveHeroes().size + ctx.config.newAdventurerCount <= ctx.config.maxHeroPopulation }, maxPerRun = 3, cooldownDays = 4,
+            eligibility = { ctx -> ctx.aliveHeroes().size + ctx.config.newAdventurerCount <= ctx.config.customers.maxHeroPopulation }, maxPerRun = 3, cooldownDays = 4,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)
                 val arrived = (1..ctx.config.newAdventurerCount).map { Heroes.generate(ctx, rng).also { h ->
@@ -197,7 +197,7 @@ object WorldEvents {
         ),
         // 7
         WorldEventDef(
-            id = "veteran_returns", name = "Veteran Returns", weight = 1.5, eligibility = { ctx -> ctx.aliveHeroes().size < ctx.config.maxHeroPopulation }, maxPerRun = 2, cooldownDays = 6,
+            id = "veteran_returns", name = "Veteran Returns", weight = 1.5, eligibility = { ctx -> ctx.aliveHeroes().size < ctx.config.customers.maxHeroPopulation }, maxPerRun = 2, cooldownDays = 6,
             apply = { ctx ->
                 val base = Heroes.generate(ctx, ctx.rng(RngStream.EVENTS))
                 val h = base.copy(level = maxOf(base.level, ctx.config.veteranLevel), gold = base.gold + ctx.config.veteranGold, fame = 2)
@@ -347,7 +347,7 @@ object WorldEvents {
         // 22
         WorldEventDef(
             id = "descendant", name = "Descendant of a Champion", weight = 1.0,
-            eligibility = { ctx -> ctx.aliveHeroes().size < ctx.config.maxHeroPopulation && ctx.legacy.lineages.any { l -> ctx.heroes.values.none { it.descendantOf == l.heroName } } },
+            eligibility = { ctx -> ctx.aliveHeroes().size < ctx.config.customers.maxHeroPopulation && ctx.legacy.lineages.any { l -> ctx.heroes.values.none { it.descendantOf == l.heroName } } },
             maxPerRun = 2, cooldownDays = 5,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)

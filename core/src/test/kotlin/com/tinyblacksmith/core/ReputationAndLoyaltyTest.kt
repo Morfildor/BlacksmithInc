@@ -78,11 +78,18 @@ class ReputationAndLoyaltyTest {
         // 190 % of fair sits between a stranger's ceiling (100 %) and a capped regular's (125 %) once the penalty is weighed.
         var strangers = 0
         var regulars = 0
-        for (seed in 1L..40L) {
-            if (listed(seed, factor = 1.9, loyalty = 0).let { (s, id) -> s.endDay().weapon(id).ownerId != null }) strangers++
-            if (listed(seed, factor = 1.9, loyalty = 10).let { (s, id) -> s.endDay().weapon(id).ownerId != null }) regulars++
+        // Counted on the first visitor of the day, who has the one blade to themselves: with the seats spread over classes
+        // somebody among four visitors nearly always takes it, whoever they are.
+        var days = 0
+        for (seed in 1L..80L) {
+            val stranger = listed(seed, factor = 1.9, loyalty = 0).first.endDay().lastResolution!!.browsers.firstOrNull()
+            val regular = listed(seed, factor = 1.9, loyalty = 10).first.endDay().lastResolution!!.browsers.firstOrNull()
+            if (stranger == null || regular == null) continue
+            days++
+            if (stranger.purchasedWeaponId != null) strangers++
+            if (regular.purchasedWeaponId != null) regulars++
         }
-        assertTrue(regulars >= strangers + 6, "regulars bought $regulars/40, strangers $strangers/40")
+        assertTrue(days >= 60 && regulars >= strangers + 12, "the first visitor bought: regulars $regulars/$days, strangers $strangers/$days")
     }
 
     @Test
@@ -93,7 +100,7 @@ class ReputationAndLoyaltyTest {
             val after = s.endDay()
             val sale = after.events.firstOrNull { it.type == EventType.WEAPON_SOLD && id.value in it.subjectIds } ?: continue
             val premium = sale.data.getValue("premium").toInt()
-            assertEquals(sale.data.getValue("price").toInt() - engine.suggestedPrice(after.weapon(id)), premium)
+            assertEquals(sale.data.getValue("price").toInt() - engine.suggestedPrice(s.weapon(id)), premium, "against the going rate of the blade as it lay on the shelf")
             assertTrue(premium > 0)
             assertTrue("a regular of the shop" in sale.text, sale.text)
             assertTrue("above the going rate" in sale.text, sale.text)

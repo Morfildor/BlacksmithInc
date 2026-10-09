@@ -53,6 +53,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     var patrolsToday = 0
     var expeditionWinsToday = 0
     val visits: MutableList<MarketVisit> = mutableListOf()
+    val turnedAway: MutableList<HeroId> = mutableListOf()
     val replays: MutableList<CombatReplay> = mutableListOf()
     val income: MutableMap<IncomeKind, Int> = mutableMapOf()
     var tradeInCreditToday = 0
@@ -98,7 +99,8 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     fun equippedWeapon(heroId: HeroId): Weapon? =
         weapons.values.firstOrNull { it.location is WeaponLocation.Owned && it.ownerId == heroId && it.isEquipped }
 
-    fun aliveHeroes(): List<Hero> = heroes.values.filter { it.isAlive }.sortedBy { it.id.value }
+    /** In numeric ID order (h2 before h10). The order only assigns draws and breaks ties; it never decides who is served. */
+    fun aliveHeroes(): List<Hero> = heroes.values.filter { it.isAlive }.sortedWith(compareBy(IdOrder.numeric) { it.id.value })
 
     fun blessingMagnitude(effect: BlessingEffect): Int =
         blessings.filter { it.expiresDay >= day }.sumOf { b -> content.blessing(b.id).let { if (it.effect == effect) it.magnitude else 0 } }

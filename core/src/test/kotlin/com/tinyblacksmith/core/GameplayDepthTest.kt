@@ -311,11 +311,16 @@ class GameplayDepthTest {
     fun theSignboardLetsOneMoreCustomerInPerLevel() {
         val signboard = content.tool("signboard")!!
         assertEquals(1, signboard.magnitudePerLevel)
-        // Same seed, same purchase stream: the day differs only in where the customer cap stops the queue.
+        // Same seed, same purchase stream: every hero decides the same way whatever the seats, so the same heroes are willing
+        // and the Signboard seats exactly the ones the plain shop turned away, up to one per level.
         val extra = (1L..40L).map { seed ->
             val plain = fresh(seed).copy(gold = 5_000)
-            val signed = plain.run(Command.BuyTool("signboard")).run(Command.BuyTool("signboard"))
-            signed.endDay().lastResolution!!.browsers.size - plain.endDay().lastResolution!!.browsers.size
+            val signed = plain.run(Command.BuyTool("signboard")).run(Command.BuyTool("signboard")).endDay().lastResolution!!
+            val before = plain.endDay().lastResolution!!
+            fun willing(r: DayResolution) = (r.browsers.mapNotNull { it.heroId } + r.turnedAway).toSet()
+            assertEquals(willing(before), willing(signed), "seed $seed: the same heroes came")
+            assertEquals(maxOf(0, before.turnedAway.size - signboard.maxLevel), signed.turnedAway.size, "seed $seed: fewer found the shop full")
+            signed.browsers.size - before.browsers.size
         }
         assertTrue(extra.all { it in 0..signboard.maxLevel }, "never more than one extra customer per level: $extra")
         assertTrue(extra.any { it == signboard.maxLevel }, "a busy day fills both extra places: $extra")

@@ -788,13 +788,16 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
         fun int() = requireNotNull(v.toIntOrNull()) { "$key needs an integer, got '$v'" }
         fun dbl() = requireNotNull(v.toDoubleOrNull()) { "$key needs a number, got '$v'" }
         c = when (key) {
-            "maxCustomersPerDay" -> c.copy(maxCustomersPerDay = int())
-            "baseVisitChance" -> c.copy(baseVisitChance = dbl())
-            "festivalExtraCustomers" -> c.copy(festivalExtraCustomers = int())
+            // The CustomerConfig names; the flat names they had before balance v7 still work.
+            "shopCapacity", "maxCustomersPerDay" -> c.copy(customers = c.customers.copy(shopCapacity = int()))
+            "baseVisitChance" -> c.copy(customers = c.customers.copy(baseVisitChance = dbl()))
+            "festivalExtraSeats", "festivalExtraCustomers" -> c.copy(customers = c.customers.copy(festivalExtraSeats = int()))
+            "maxTurnedAwayDays" -> c.copy(customers = c.customers.copy(maxTurnedAwayDays = int()))
+            "classSeats" -> c.copy(customers = c.customers.copy(classSeats = int()))
             "shelfSlots" -> c.copy(shelfSlots = int())
-            "startingHeroCount" -> c.copy(startingHeroCount = int())
-            "minHeroPopulation" -> c.copy(minHeroPopulation = int())
-            "maxHeroPopulation" -> c.copy(maxHeroPopulation = int())
+            "startingHeroes", "startingHeroCount" -> c.copy(customers = c.customers.copy(startingHeroes = int()))
+            "minHeroPopulation" -> c.copy(customers = c.customers.copy(minHeroPopulation = int()))
+            "maxHeroPopulation" -> c.copy(customers = c.customers.copy(maxHeroPopulation = int()))
             "newAdventurerCount" -> c.copy(newAdventurerCount = int())
             "raidBase" -> c.copy(raidBase = dbl())
             "raidPerDay" -> c.copy(raidPerDay = dbl())
@@ -807,7 +810,7 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
             "veteranGold" -> c.copy(veteranGold = int())
             "tradeInShare" -> c.copy(tradeInShare = dbl())
             "fairGoldPerPower" -> c.copy(fairGoldPerPower = int())
-            else -> throw IllegalArgumentException("unknown key '$key'; allowed: maxCustomersPerDay, baseVisitChance, festivalExtraCustomers, shelfSlots, startingHeroCount, minHeroPopulation, maxHeroPopulation, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower")
+            else -> throw IllegalArgumentException("unknown key '$key'; allowed: shopCapacity, baseVisitChance, festivalExtraSeats, maxTurnedAwayDays, classSeats, shelfSlots, startingHeroes, minHeroPopulation, maxHeroPopulation, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower")
         }
     }
     return c

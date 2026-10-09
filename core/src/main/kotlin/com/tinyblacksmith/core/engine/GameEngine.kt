@@ -28,13 +28,14 @@ import com.tinyblacksmith.core.rng.RngStream
 class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.LaunchContent.catalog, val config: BalanceConfig = BalanceConfig.DEFAULT) {
 
     companion object {
-        const val RULES_VERSION = 2
+        const val RULES_VERSION = 3
 
         /**
          * The rules version that salts every stream seed ([RngState.seeded]). Rules 2 is a number only (a run now has to be
          * admitted before it is played, see [Compatibility]) and its outcome changes are rule fixes that draw from the same
          * streams, so new runs keep the rules-1 seeds: each fix re-records only the seed-pinned tests and golden lines it
-         * moves. Raised only if a later rules version is meant to re-seed every run.
+         * moves. Rules 3 (fair customer selection: a new draw order on the PURCHASES stream, heroes in numeric ID order) keeps
+         * them too. Raised only if a later rules version is meant to re-seed every run.
          */
         const val STREAM_SEED_VERSION = 1
     }
@@ -74,7 +75,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         for (f in content.factions) ctx.factions[f.id] = FactionState(f.id, fRng.nextInt(config.startingPressureMin, config.startingPressureMax))
         val hRng = ctx.rng(RngStream.HEROES)
         val descendant = legacy.lineages.lastOrNull()
-        repeat(config.startingHeroCount) { i ->
+        repeat(config.customers.startingHeroes) { i ->
             val h = Heroes.generate(ctx, hRng, if (i == 0) descendant else null)
             ctx.updateHero(h)
         }
@@ -327,7 +328,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             commandId = commandId, day = day, events = dayEvents, headlines = Gazette.headlines(dayEvents),
             visits = ctx.visits.toList(), replays = Battle.dayReplays(ctx), defeated = ctx.phase == Phase.ENDED,
             ledger = ledger, field = ctx.field.toList(),
-            shopWeapons = (shelf + fromStorage).map { WeaponSnapshot.of(it) }, shelfPrices = shelf.associate { it.id to (it.listedPrice ?: 0) }, recordVersion = 1,
+            shopWeapons = (shelf + fromStorage).map { WeaponSnapshot.of(it) }, shelfPrices = shelf.associate { it.id to (it.listedPrice ?: 0) },
+            turnedAway = ctx.turnedAway.toList(), recordVersion = 1,
         )
         ctx.lastResolution = resolution
         ctx.processedEndDayIds += commandId.value

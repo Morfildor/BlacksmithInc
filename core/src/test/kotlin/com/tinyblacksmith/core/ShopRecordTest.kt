@@ -68,6 +68,8 @@ class ShopRecordTest {
         val inShop = r.shopWeapons.map { it.weaponId }.toSet()
         assertTrue(pre.listedWeapons().all { it.id in inShop }, "$at: the whole opening shelf")
         assertEquals(r.visits.indices.toList(), r.visits.map { it.seq }, "$at: visits are numbered in the order they happened")
+        val heroesSeen = r.visits.mapNotNull { it.heroId } + r.turnedAway
+        assertEquals(heroesSeen.size, heroesSeen.toSet().size, "$at: one appearance per hero per day, served or turned away")
         for (v in r.visits) {
             assertTrue(v.considered.size <= Market.MAX_CONSIDERED && v.considered.all { it.weaponId in inShop }, "$at: ${v.heroName} weighed blades of this shop")
             assertTrue(v.eventIds.all { id -> r.events.any { it.id == id } }, "$at: the visit points at records of the day")
@@ -76,8 +78,6 @@ class ShopRecordTest {
             if (v.kind == VisitKind.COLLECTOR) { assertNull(v.customer, at); continue }
             val hero = pre.hero(v.heroId!!)
             val c = assertNotNull(v.customer, at)
-            // A patron who also browses the same day walks in a second time, already paid and carrying the commissioned blade.
-            if (v.kind == VisitKind.BROWSE && r.visits.any { it.kind == VisitKind.COMMISSION && it.heroId == v.heroId }) continue
             assertEquals(listOf(hero.id, hero.fullName, hero.classId, hero.gold, hero.loyalty), listOf(c.heroId, c.name, c.classId, c.gold, c.loyalty), "$at: the customer as they walked in")
             assertEquals(pre.equippedWeapon(hero.id)?.let { WeaponSnapshot.of(it) }, c.equipped, "$at: what ${hero.fullName} carried in")
             if (v.kind != VisitKind.BROWSE) continue
@@ -201,6 +201,29 @@ class ShopRecordTest {
         assertEquals(listOf(Considered(a, 60, listOf(VisitFactor.COLLECTOR_PRIZE))), c.considered)
     }
 
+    /**
+     * A patron who collects today has had their turn: they are not also seated as a browser, and not turned away either.
+     * Their own decision is still drawn, so everyone else is as willing as on the same day without the commission.
+     */
+    @Test
+    fun aPatronAppearsOncePerDay() {
+        val crowded = GameEngine(config = config.copy(customers = config.customers.copy(shopCapacity = 20, baseVisitChance = 2.0)))  // everyone at the ceiling, whatever the reputation
+        fun GameState.day() = (crowded.handle(this, Command.EndDay(endDayId(this))) as CommandOutcome.Accepted).resolution!!
+        var wouldHaveBrowsed = 0
+        for (seed in 1L..20L) {
+            val plain = shop(seed) { listOf(it.as_("a"), it.as_("b", location = WeaponLocation.Shelf(1_000_000))) }
+            val patron = plain.aliveHeroes().first()
+            val without = plain.day()
+            val with = plain.asking(patron).day()
+            consistent(plain.asking(patron), with, "seed $seed")
+            assertEquals(listOf(VisitKind.COMMISSION), with.visits.filter { it.heroId == patron.id }.map { it.kind }, "seed $seed: the patron is seen once, collecting")
+            assertTrue(patron.id !in with.turnedAway, "seed $seed")
+            assertEquals(without.browsers.mapNotNull { it.heroId }.toSet() - patron.id, with.browsers.mapNotNull { it.heroId }.toSet(), "seed $seed: the others decide as they would have")
+            if (without.browsers.any { it.heroId == patron.id }) wouldHaveBrowsed++
+        }
+        assertTrue(wouldHaveBrowsed >= 10, "the patron would have browsed on most of these days: $wouldHaveBrowsed")
+    }
+
     @Test
     fun aShelfBladeTakenByAPatronIsStillInShopWeapons() {
         val a = WeaponId("a")
@@ -227,7 +250,7 @@ class ShopRecordTest {
      */
     @Test
     fun aTenVisitorDayEncodesUnderTwelveKilobytes() {
-        val busy = GameEngine(config = config.copy(maxCustomersPerDay = 10, baseVisitChance = 0.9, startingHeroCount = 12))
+        val busy = GameEngine(config = config.copy(customers = config.customers.copy(shopCapacity = 10, baseVisitChance = 0.9, startingHeroes = 12)))
         fun payload(r: DayResolution) = SaveCodec.json.encodeToString(ListSerializer(MarketVisit.serializer()), r.visits).toByteArray().size +
             SaveCodec.json.encodeToString(ListSerializer(WeaponSnapshot.serializer()), r.shopWeapons).toByteArray().size +
             SaveCodec.json.encodeToString(MapSerializer(WeaponId.serializer(), Int.serializer()), r.shelfPrices).toByteArray().size +

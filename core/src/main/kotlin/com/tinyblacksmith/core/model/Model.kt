@@ -125,6 +125,14 @@ data class Hero(
     val elitesSlain: Int = 0,
     /** Day of the last expedition this hero was driven back from; yesterday's rout weighs on today's choice (GDD 6 "prior history"). */
     val drivenBackOnDay: Int? = null,
+    /** The counter's memory of this hero (fair seating, plan 4.2). Visits and purchases count browsing at a stocked shelf, not commissions. */
+    val arrivedOnDay: Int = 1,
+    val shopVisits: Int = 0,
+    val shopPurchases: Int = 0,
+    val lastServedDay: Int? = null,
+    val lastPurchaseDay: Int? = null,
+    /** Willing days in a row on which the shop was full before this hero got a seat; 0 again once served. */
+    val turnedAwayStreak: Int = 0,
 ) {
     val fullName: String get() = "$name $surname"
     val isAlive: Boolean get() = fate == HeroFate.ALIVE
@@ -225,7 +233,8 @@ data class DayResolution(
     /** The opening shelf with nothing sold yet, plus any stored blade a commission took: every blade a visit refers to. */
     val shopWeapons: List<WeaponSnapshot> = emptyList(),
     val shelfPrices: Map<WeaponId, Int> = emptyMap(),
-    val turnedAway: List<HeroId> = emptyList(),           // filled from T3.1
+    /** Heroes who came to browse and found every seat taken, in ID order. */
+    val turnedAway: List<HeroId> = emptyList(),
     val recordVersion: Int = 0,                           // 0 = a 0.5.x day without snapshots, 1 = this record
 ) {
     /** The heroes who came to look at the shelf; a commission patron and the collector are visits of their own kind. */
@@ -334,7 +343,7 @@ data class GameState(
         weapons.values.firstOrNull { it.location is WeaponLocation.Owned && it.ownerId == heroId && it.isEquipped }
     fun listedWeapons(): List<Weapon> = weapons.values.filter { it.isListed }.sortedBy { it.id.value }
     fun storedWeapons(): List<Weapon> = weapons.values.filter { it.isInStorage }.sortedBy { it.id.value }
-    fun aliveHeroes(): List<Hero> = heroes.values.filter { it.isAlive }.sortedBy { it.id.value }
+    fun aliveHeroes(): List<Hero> = heroes.values.filter { it.isAlive }.sortedWith(compareBy(IdOrder.numeric) { it.id.value })
     fun retiredHeroes(): List<Hero> = heroes.values.filter { it.fate == HeroFate.RETIRED }.sortedBy { it.id.value }
     fun eventsForDay(day: Int): List<EventRecord> = events.filter { it.day == day }
 }
