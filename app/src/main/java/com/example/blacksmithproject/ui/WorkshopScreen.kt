@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -62,6 +63,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
                         NavigationBarItem(
                             selected = s.panel == p,
                             onClick = { vm.selectPanel(p) },
+                            modifier = Modifier.testTag("nav_${p.name.lowercase()}"),
                             icon = { PixelImage(panelIcon(p), 24.dp, description = null) },
                             // Shrinks rather than clips at large font scales (GDD 12: scalable text).
                             label = { Text(panelName(p), style = MaterialTheme.typography.labelSmall, maxLines = 1, softWrap = false, autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 12.sp, stepSize = 0.5.sp)) },
@@ -149,7 +151,7 @@ private fun EndDayButton(s: UiState.Playing, vm: GameViewModel) {
         onClick = vm::endDay,
         enabled = !s.busy,
         contentPadding = PaddingValues(horizontal = Space.md, vertical = Space.xs),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.xs).heightIn(min = 48.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.xs).heightIn(min = 48.dp).testTag("end_day"),
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("End Day", style = MaterialTheme.typography.titleMedium)

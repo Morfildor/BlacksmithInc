@@ -28,6 +28,9 @@ abstract class SaveDao {
     @Query("SELECT * FROM saves WHERE `key` = :key")
     abstract suspend fun get(key: String): SaveEntity?
 
+    @Query("SELECT * FROM saves WHERE `key` IN (:keys)")
+    abstract suspend fun getAll(keys: List<String>): List<SaveEntity>
+
     @Upsert
     abstract suspend fun upsert(entity: SaveEntity)
 
@@ -47,22 +50,27 @@ abstract class SaveDatabase : RoomDatabase() {
     abstract fun saveDao(): SaveDao
 }
 
-class SaveStore(private val dao: SaveDao) {
+class SaveStore(private val dao: SaveDao) : GameRepository {
+    override suspend fun load(): StoredRows {
+        val rows = dao.getAll(listOf(KEY_RUN, KEY_LEGACY, KEY_CURSOR)).associate { it.key to it.payload }
+        return StoredRows(rows[KEY_RUN], rows[KEY_LEGACY], rows[KEY_CURSOR])
+    }
+
+    override suspend fun commit(run: String?, legacy: String) {
+        val now = System.currentTimeMillis()
+        dao.saveBoth(run?.let { SaveEntity(KEY_RUN, SaveCodec.SCHEMA_VERSION, it, now) }, SaveEntity(KEY_LEGACY, SaveCodec.SCHEMA_VERSION, legacy, now))
+    }
+
     suspend fun loadRun(): GameState? = dao.get(KEY_RUN)?.let { SaveCodec.decodeRun(it.payload) }
 
     suspend fun loadLegacy(): LegacyProfile = dao.get(KEY_LEGACY)?.let { SaveCodec.decodeLegacy(it.payload) } ?: LegacyProfile()
 
-    suspend fun saveAtomically(run: GameState?, legacy: LegacyProfile) {
-        val now = System.currentTimeMillis()
-        dao.saveBoth(
-            run?.let { SaveEntity(KEY_RUN, SaveCodec.SCHEMA_VERSION, SaveCodec.encodeRun(it), now) },
-            SaveEntity(KEY_LEGACY, SaveCodec.SCHEMA_VERSION, SaveCodec.encodeLegacy(legacy), now),
-        )
-    }
+    suspend fun saveAtomically(run: GameState?, legacy: LegacyProfile) = commit(run?.let { SaveCodec.encodeRun(it) }, SaveCodec.encodeLegacy(legacy))
 
     companion object {
         const val KEY_RUN = "run"
         const val KEY_LEGACY = "legacy"
+        const val KEY_CURSOR = "cursor"
 
         fun create(context: Context): SaveStore =
             SaveStore(Room.databaseBuilder(context.applicationContext, SaveDatabase::class.java, "tiny_blacksmith.db").build().saveDao())
