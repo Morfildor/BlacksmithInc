@@ -3,7 +3,11 @@ package com.tinyblacksmith.core
 import com.tinyblacksmith.core.TestSupport.engine
 import com.tinyblacksmith.core.TestSupport.forgeAccepted
 import com.tinyblacksmith.core.TestSupport.quickSword
+import com.tinyblacksmith.core.TestSupport.endDayId
+import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.Compatibility
+import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.persistence.SaveCodec
@@ -31,7 +35,7 @@ class CompatibilityTest {
     fun theV1FixtureIsAdmittedWithoutTouchingHistory() {
         val text = javaClass.getResource("/saves/v1_forced_seed4242_day61.json")?.readText() ?: error("missing fixture")
         val saved = SaveCodec.decodeRun(text)
-        assertEquals(0, saved.balanceVersion, "written before the balance version was tracked")
+        assertEquals(5, saved.balanceVersion, "written before the balance version was tracked; the schema 1 -> 2 step stamps 5")
         val admitted = assertIs<Compatibility.Result.Admitted>(admit(saved)).state
         assertEquals(GameEngine.RULES_VERSION, admitted.rulesVersion)
         assertEquals(engine.content.version, admitted.contentVersion)
@@ -44,6 +48,39 @@ class CompatibilityTest {
             listOf(saved.nextWeaponSerial, saved.nextHeroSerial, saved.nextCommissionSerial, saved.nextEventSerial),
             listOf(admitted.nextWeaponSerial, admitted.nextHeroSerial, admitted.nextCommissionSerial, admitted.nextEventSerial),
         )
+    }
+
+    private fun v1Fixture(): GameState = SaveCodec.decodeRun(javaClass.getResource("/saves/v1_forced_seed4242_day61.json")?.readText() ?: error("missing fixture"))
+
+    /** Rules and content are the engine's to enforce: an older run is brought forward by `admit`, never silently by `handle`. */
+    @Test
+    fun handleRejectsAnUnadmittedOlderRun() {
+        val saved = v1Fixture()
+        assertEquals(1, saved.rulesVersion)
+        val rejected = engine.handle(saved, Command.EndDay(endDayId(saved)))
+        assertEquals(GameError.IncompatibleRun(saved.rulesVersion, saved.contentVersion), assertIs<CommandOutcome.Rejected>(rejected).error)
+
+        val fresh = engine.newRun(LegacyProfile(), 7)
+        fun rejects(run: GameState) = assertIs<GameError.IncompatibleRun>(assertIs<CommandOutcome.Rejected>(engine.handle(run, quickSword())).error)
+        rejects(fresh.copy(rulesVersion = GameEngine.RULES_VERSION - 1))
+        rejects(fresh.copy(rulesVersion = GameEngine.RULES_VERSION + 1))
+        rejects(fresh.copy(contentVersion = engine.content.version - 1))
+        rejects(fresh.copy(contentVersion = engine.content.version + 1))
+        // A rejected ended run does not slip through the "run ended" gate either.
+        assertIs<GameError.IncompatibleRun>(assertIs<CommandOutcome.Rejected>(engine.handle(saved.copy(phase = Phase.ENDED), Command.EndDay(endDayId(saved)))).error)
+        assertIs<CommandOutcome.Accepted>(engine.handle(fresh, quickSword()))
+    }
+
+    @Test
+    fun admittedFixtureAcceptsAnEndDay() {
+        val saved = v1Fixture()
+        val admitted = assertIs<Compatibility.Result.Admitted>(admit(saved)).state
+        val accepted = assertIs<CommandOutcome.Accepted>(engine.handle(admitted, Command.EndDay(endDayId(admitted))))
+        val next = accepted.state
+        assertEquals(61, accepted.resolution?.day)
+        assertEquals(listOf(GameEngine.RULES_VERSION, engine.content.version, engine.config.version), listOf(next.rulesVersion, next.contentVersion, next.balanceVersion), "the stamps survive a command")
+        assertTrue(endDayId(admitted).value in next.processedEndDayIds, "the End Day is recorded")
+        assertTrue(next.isEnded || next.day == 62)
     }
 
     @Test
