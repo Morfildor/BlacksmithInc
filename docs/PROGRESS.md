@@ -1,4 +1,4 @@
-# Progress — 2026-10-09 (session 6)
+# Progress — 2026-10-09 (session 7)
 
 ## Current phase
 P7 in progress. Launch content is the engine default and balance v2 is tuned against it; all 24 signature recipes,
@@ -9,6 +9,18 @@ The owner asked for function and features over UI ("not fun yet, not much in it"
 Added in `:core`, each with one plain UI surface: affix effects, elite foes and warlords, hero ambitions, element
 commissions, the Salvage / Hone / Arm the watch shop actions, workshop tools, a siege forecast. Design, numbers and
 simulator evidence are in DECISIONS.md ("Balance v3: gameplay depth").
+
+## Session 7 focus: readable Gazette, Home dashboard, demand (balance v4, app 0.5.0)
+The owner found the between-days journal "a text block" and asked for a home screen "like a dashboard", then for all
+agents on gameplay. `Gazette.edition` (core) lays a day out as a paper: lede (priority >= 6, at most two lines, never
+the standing siege warning), a tally line (gold taken net of trade-ins, visitors who bought, expeditions won/lost,
+heroes fallen), then Shop / Heroes / Town / Forge; a hero's several records fold into one sentence, quiet heroes share
+a line, visitors who left are named with the reason, milestones already told by the news fold away, the smith's own
+work is one line. The report dialog and the archive render it (`EditionBody`); siege rounds fold behind the outcome.
+Four agents then worked in worktrees and were merged: the Home panel (first tab, landing panel, one block per
+concern), weapon wear (`Weapon.condition`, worn-power demand, Hone restores), weapon fame as a bounded effect, and
+the v3 review at 10,000 seeds with per-tool / per-affix sweeps (two of its recommendations applied: whetstone
+120/300, warlord pressure 50 without a raid bonus). Evidence in DECISIONS.md ("Balance v4 ...").
 
 ## What exists
 - `core/` pure Kotlin engine: RNG, slice + launch content catalogs (launch is the default), balance config v2, model,
@@ -21,11 +33,11 @@ simulator evidence are in DECISIONS.md ("Balance v3: gameplay depth").
   loyalty-weighted commission patrons, premium/regular Gazette records), weapon-history cap, a checked-in v1 save
   fixture. Balance v3 (session 6): affix effects (bane, elite, heal, loot, wound, shatter, self-harm), elite
   encounters, warlord sieges, hero ambitions, element commissions, `Salvage` / `Hone` / `DonateWeapon` / `BuyTool`
-  commands, workshop tools, `siegeForecast`, `BALANCED_ACTIVE` simulator policy, trade-ins and patrol pay. 122 JVM tests.
+  commands, workshop tools, `siegeForecast`, `BALANCED_ACTIVE` simulator policy, trade-ins and patrol pay. Balance v4 (session 7): weapon wear and condition, weapon fame effects (capped), whetstone 120/300, warlords from pressure 50; `Gazette.edition`; simulator catalog sweeps. 140 JVM tests.
 - `app/` Compose portrait workshop (session 4 layout: three-stat top bar, pinned forge summary over collapsible
   auto-advancing steps, row-based market, per-panel tip banners, single End Day action, full-width paper day report;
   principles in DECISIONS.md; session 5: title/run-end on the spacing tokens with one primary action, Town lists
-  every faction with pressure and weakness, screen-reader descriptions on disabled actions), six panels, technique chips,
+  every faction with pressure and weakness, screen-reader descriptions on disabled actions), seven panels (Home dashboard first, session 7), technique chips,
   newspaper day report with stepped replay, blessing choice (dismissable for the day), run-end/legacy screen; Room
   atomic save store; DataStore settings (reduced motion, seen tips). Hand-made pixel art on every screen.
 - `tools/pixelart/import_assets.py` (slices concept sheets, copies selected pack sprites, prunes stale imports),
@@ -56,10 +68,13 @@ simulator evidence are in DECISIONS.md ("Balance v3: gameplay depth").
 | Simulator wave 2 + UI wave 2 (session 5) | `./gradlew :core:test`; `:core:simulate --runs 10000 --seed 1 --policy BALANCED_REPUTED`; `:app:assembleDebug`, `:app:installDebug`, `tools/emulator/smoke.sh scratchpad/ui_v4`, `:app:connectedDebugAndroidTest` | 103/103 pass (SimulatorPolicyTest added); BALANCED_REPUTED 25 (15/30) mean 23.6, within 0.3 days of FAIR (DECISIONS); build ok, SMOKE_DONE with shelf/town/resume checks ok, instrumented 5/5; title/forge/town screenshots sent |
 | Run-end route + large fonts (session 5) | `tools/emulator/runend.sh scratchpad/runend`; Town at font scale 1.3 and 1.5 | passive run falls on day 10; final Gazette -> claim -> pinned Begin era -> era 2 day 1, all checks ok, RUNEND_DONE; Town wraps without clipping at both scales |
 | Gameplay depth (session 6) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all`; `--policy BALANCED_ACTIVE --impactPolicy BALANCED_ACTIVE` | 122/122 pass (18 new in `GameplayDepthTest`, 1 in `SimulatorPolicyTest`); BALANCED_FAIR 20 (15/30) mean 21.7 (was 25 / 23.7), BALANCED_ACTIVE 30 (20/35) mean 27.5, sales 17.7 / 23.4 a run (was 16.2), 0 hard-locks; armory and raid sweeps and the full table in DECISIONS.md |
-| Weapon wear (session 7, balance v4 pending merge) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE` before/after plus a 4-variant wear sweep; `:app:compileDebugKotlin -q` | 130/130 pass (8 new in `WeaponWearTest`: bounds, worn power, expedition and siege wear, worn replacement, re-hone, save defaults, determinism); BALANCED_FAIR 20 (15/25) mean 20.0, sold 19.3, NOT_BETTER 36.3 (was 20 (15/30) 21.7 / 17.7 / 45.8); BALANCED_ACTIVE 25 (20/35) mean 25.4, sold 25.9, NOT_BETTER 43.5 (was 30 (20/35) 27.5 / 23.4 / 58.3); deaths 0.9, 0 hard-locks; app compiles; sweep table in DECISIONS.md ("Balance v4 (pending merge)") |
+| Weapon wear (session 7, merged into v4) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE` before/after plus a 4-variant wear sweep; `:app:compileDebugKotlin -q` | 130/130 pass (8 new in `WeaponWearTest`: bounds, worn power, expedition and siege wear, worn replacement, re-hone, save defaults, determinism); BALANCED_FAIR 20 (15/25) mean 20.0, sold 19.3, NOT_BETTER 36.3 (was 20 (15/30) 21.7 / 17.7 / 45.8); BALANCED_ACTIVE 25 (20/35) mean 25.4, sold 25.9, NOT_BETTER 43.5 (was 30 (20/35) 27.5 / 23.4 / 58.3); deaths 0.9, 0 hard-locks; app compiles; sweep table in DECISIONS.md ("Balance v4 (pending merge)") |
 | 0.4.0 on device (session 6) | `:app:installDebug`, `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest`, manual adb pass | SMOKE_DONE (shelf/town/resume ok), instrumented 5/5; Hone, Arm the watch, Salvage and a tool purchase each changed state on device; not exercised on device: commission element text, warlord line, Maxed tool state, trade-in sale text, run-end route |
-| Weapon fame (session 7, pending merge) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all` with the fame numbers at 0 / desire+price only / half power / adopted; `:app:compileDebugKotlin -q` | 127/127 pass (5 new in `WeaponFameTest`: capped factor, famous beats plain in `evaluate`, capped price premium, returned legend at the cap, determinism); BALANCED_FAIR 20 (15/30) mean 22.5, sold 18.0, deaths 0.9 (was 20 (15/30) 21.7 / 17.7 / 0.8), BALANCED_ACTIVE 30 (20/35) mean 28.4, sold 24.0, deaths 1.0 (was 30 (20/35) 27.5 / 23.4 / 0.9), 0 hard-locks; desire and price alone change nothing, the +5 % power cap carries the shift (the brief's +10 % example overshoots the band: FAIR median 25, ACTIVE p90 40); app compiles; table in DECISIONS.md "Balance v4 (pending merge)" |
+| Weapon fame (session 7, merged into v4) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all` with the fame numbers at 0 / desire+price only / half power / adopted; `:app:compileDebugKotlin -q` | 127/127 pass (5 new in `WeaponFameTest`: capped factor, famous beats plain in `evaluate`, capped price premium, returned legend at the cap, determinism); BALANCED_FAIR 20 (15/30) mean 22.5, sold 18.0, deaths 0.9 (was 20 (15/30) 21.7 / 17.7 / 0.8), BALANCED_ACTIVE 30 (20/35) mean 28.4, sold 24.0, deaths 1.0 (was 30 (20/35) 27.5 / 23.4 / 0.9), 0 hard-locks; desire and price alone change nothing, the +5 % power cap carries the shift (the brief's +10 % example overshoots the band: FAIR median 25, ACTIVE p90 40); app compiles; table in DECISIONS.md "Balance v4 (pending merge)" |
 | Balance v3 review at 10k + per-tool / per-affix sweeps (session 6) | `:core:simulate --runs 10000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE --perf --json`; 1,000-seed `--noTool` / `--toolCost` / `--noAffixEffect` sweeps under BALANCED_ACTIVE (noise floor at seeds 10001 / 20001, SYNERGY cross-check); `./gradlew :core:test` | BALANCED_ACTIVE 30 (20/35) mean 27.7 at 10k (27.5 at 1k), BALANCED_FAIR 20 (15/30) 21.8, every 1k mean holds within 0.5 days, 0 hard-locks in 160,000 runs; all four tools removed +0.3 days (tools buy no run length), signboard capped out by `maxCustomersPerDay` (removed: +0.7 days, +1.2 sales), whetstone pays only at 100/250 (+0.8); single affix effects inside the 0.3-day noise floor, all ten off -0.3 (ACTIVE) / -0.9 (SYNERGY, Undead Bane alone -0.7); warlord-led sieges 0.02-0.03/run, never won; perf p50 0.51 / p95 0.99 ms warm; 122/122 pass; tables, commands and recommendations in DECISIONS.md |
+| Gazette edition (session 7) | `./gradlew :core:test`; `:app:installDebug`; scripted days on the emulator (`scratchpad/drive_gazette.sh`, `drive_home*.sh`) | 127/127 at the time (5 new in `GazetteEditionTest`: hero folding, shop reasons, lede and implied milestones, forge line, a simulated run fully accounted for and order-independent); day 1-4 and day 10 (siege, run end) reports and the archive (latest open, older days as a lede, one opened) screenshotted and sent; the rounds toggle renders collapsed but was not tapped |
+| Home panel on device (session 7) | `:app:installDebug` over a saved day-5 run; `tools/emulator/smoke.sh`; `:app:connectedDebugAndroidTest` | resumes on Home (siege-today block first, commission to answer, shelf with yesterday's visitors, champions, yesterday's lede); End Day returns to Home; smoke.sh SMOKE_DONE with shelf/town/resume checks ok on the 0.5.0 build; instrumented 5/5 |
+| Balance v4 as merged (session 7) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE` before/after the whetstone and warlord changes; warlord sweep `--policy all --noImpact` x3 | 140/140 pass; BALANCED_FAIR 20 (15/25) mean 20.5, sold 19.6; BALANCED_ACTIVE 25 (20/35) mean 26.4, sold 26.9; 0 hard-locks; warlord sieges 0.5-0.6/run (was 0.0), p10 kept by dropping the 1.15 raid bonus; full table in DECISIONS.md |
 | UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
 ## Obstacles hit and resolved
@@ -83,22 +98,25 @@ simulator evidence are in DECISIONS.md ("Balance v3: gameplay depth").
   2,330 weapons after 1,000 days); lost/destroyed weapons are never pruned. The next list to watch.
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
-- Balance v3 at 10,000 seeds and the per-tool / per-affix sweeps are in DECISIONS.md: tools buy no run length (the
-  signboard is capped out by `maxCustomersPerDay`), single affix effects sit inside the noise floor and warlords are
-  never fought; the recommendations there (signboard effect, whetstone 120/300, warlord pressure 45-50, affix
-  magnitudes) are not applied yet.
+- Of the v3 review recommendations (DECISIONS.md), whetstone 120/300 and warlord pressure 50 are applied in v4; the
+  signboard effect (capped out by `maxCustomersPerDay`), the affix magnitudes and Known Name are not. v4 itself is
+  checked at 1,000 seeds only.
 - The simulator's other policies ignore the new shop actions, so their rows measure a smith who never uses them.
-- Sell rate is still modest (16-23 % at fair prices): trade-ins and patrol pay raised sales by about a third, but
-  most visits now end NOT_BETTER (a hero only buys an upgrade). Salvage, Hone and the watch use the surplus.
+- Sell rate is 25-26 % at fair prices after weapon wear (NOT_BETTER down by a fifth); wear costs every policy 1-2 mean
+  days, so the active smith leads the plain one by 5 days median (was 10). Levers if the margin should return: a
+  gentler condition floor (~0.8) or less siege wear.
+- Not exercised on device: the rounds toggle in the field report (renders collapsed; a plain state toggle), Re-hone,
+  the worn / storied labels and the WORN_OUT visit reason (need a played run). Home repeats the Shelf line in its
+  Yesterday block when yesterday had no lede, and has no first-run tip.
 - Package name is still `com.example.blacksmithproject`; no release signing.
 - `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order and session-4 commission
   patron weighting changes which hero asks on a given seed; bump with the first release.
-- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.4.0 (versionCode 4).
+- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.5.0 (versionCode 5).
 
 ## Next executable actions (P7)
-0. More gameplay, in the order the harness suggests: more reasons to buy (most visits end NOT_BETTER; newcomers,
-   sidearms or wear would widen demand), then the v3 review recommendations in DECISIONS.md (signboard effect,
-   whetstone 120/300, warlord pressure 45-50, affix magnitudes).
+0. More gameplay: the signboard effect (+1 customer a day per level is an engine change; or reprice it), the affix
+   magnitudes the review flagged (Giant Slayer 1.5, Cursed / Bloodbound 15-20, Reinforced / Swift 0.6-0.7, Heavy 1.5)
+   with a sweep, a 10,000-seed v4 review; Home: a first-run tip and the Yesterday / Shelf repeat.
 1. Measure starting gold/energy upgrades by first-siege champion power or first tier-4+ sale (DECISIONS proposal a)
    instead of run length; hero first-week purchasing power is the lever if run length must move.
 2. 720x1280 pass over every panel; nav labels are tight at font scale 1.5.

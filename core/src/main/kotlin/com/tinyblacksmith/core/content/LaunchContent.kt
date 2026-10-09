@@ -252,7 +252,7 @@ object LaunchContent {
         // In-run workshop tools (PROPOSED): the gold sink of a run. Costs are per level.
         tools = listOf(
             ToolDef("bellows", "Great Bellows", ToolEffect.EXTRA_ENERGY, magnitudePerLevel = 1, costPerLevel = listOf(300, 700), description = "+1 daily energy per level."),
-            ToolDef("whetstone", "Master Whetstone", ToolEffect.QUALITY_BONUS, magnitudePerLevel = 3, costPerLevel = listOf(200, 500), description = "+3 forged quality per level."),
+            ToolDef("whetstone", "Master Whetstone", ToolEffect.QUALITY_BONUS, magnitudePerLevel = 3, costPerLevel = listOf(120, 300), description = "+3 forged quality per level."),
             ToolDef("signboard", "Painted Signboard", ToolEffect.HERO_VISIT_CHANCE, magnitudePerLevel = 8, costPerLevel = listOf(150, 400), description = "More heroes stop by the shop each day."),
             ToolDef("display_case", "Display Case", ToolEffect.SHELF_SLOTS, magnitudePerLevel = 2, costPerLevel = listOf(200), description = "+2 shelf slots."),
         ),

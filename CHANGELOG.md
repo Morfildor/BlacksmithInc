@@ -6,6 +6,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 `app/build.gradle.kts` (`versionName`, `versionCode` increments on every store-facing build).
 
 ## [Unreleased]
+
+## [0.5.0] - 2026-10-09
+Home dashboard, a readable Gazette, weapon wear and weapon fame (balance v4).
+
 ### Added
 - Home panel: the first tab and the panel the workshop opens on (and returns to after the day report or a deferred
   blessing). One block per concern, each tapping through to the panel where the action happens: today's day, era,
@@ -16,6 +20,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Weapon fame now matters, within limits: a storied blade fights a little better (up to +5 % at ten fame), heroes
   want it more on the shelf (collectors most of all), its suggested price carries a small premium (up to +5 %), a
   legend returning from an earlier era keeps its fame, and the shelf line says "storied", "famed" or "renowned".
+- Weapon wear: a hero's blade loses condition in every expedition (6 on a win, 10 on a rout) and every siege it
+  defends (15). Worn power counts in battle (down to three quarters of the weapon's power at condition 0), at the
+  shelf (a hero weighs listings against the worn power of their own weapon and is keen to replace one below half
+  condition) and in the shop's suggested price and trade-in credit. The weapon summary and the Town hero lines say
+  "worn" or "battered"; the day report names a replacement purchase ("their own blade was worn out"). Older saves
+  load with every blade keen.
 
 ### Changed
 - The end-of-day report and the Gazette archive are laid out as an edition: the biggest news as the lede, a one-line
@@ -26,20 +36,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Simulator: catalog sweeps (`--noTool`, `--toolCost`, `--noAffixEffect`), `--noImpact`, and per-run counters for
   elites slain, shattered weapons, warlord sieges, tool purchases and affix occurrence; the 10,000-seed v3 review and
   the per-tool / per-affix sweeps are recorded in `docs/DECISIONS.md` (recommendations only, no balance change).
-
-
-### Added
-- Weapon wear: a hero's blade loses condition in every expedition (6 on a win, 10 on a rout) and every siege it
-  defends (15). Worn power counts in battle (down to three quarters of the weapon's power at condition 0), at the
-  shelf (a hero weighs listings against the worn power of their own weapon and is keen to replace one below half
-  condition) and in the shop's suggested price and trade-in credit. The weapon summary and the Town hero lines say
-  "worn" or "battered"; the day report names a replacement purchase ("their own blade was worn out"). Older saves
-  load with every blade keen.
-
-### Changed
 - Hone always restores a weapon's condition to full; the +6 quality bonus still applies once per weapon, so a worn
   trade-in can be re-honed ("Re-hone") for the same energy and core.
 - Headless simulator: `BALANCED_ACTIVE` also re-hones worn trade-ins; the visits report gains a `WORN_OUT` outcome.
+- Balance v4: the Master Whetstone costs 120/300 (was 200/500), so a thrifty smith takes it before the signboard;
+  a faction's warlord leads the siege from pressure 50 (was 70) and no longer strengthens the raid (the pressure
+  already does), so a warlord is seen in about half of first-era runs instead of one in fifty. Balance config version 4.
 
 ## [0.4.0] - 2026-10-09
 Gameplay depth (balance v3): shop actions, workshop tools, elite foes and warlords, hero ambitions, trade-ins.

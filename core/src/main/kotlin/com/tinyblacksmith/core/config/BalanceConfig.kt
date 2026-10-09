@@ -13,9 +13,9 @@ data class BalanceConfig(
     /**
      * v2 (2026-10-08): launch-content retune of the quality formula and siege damage.
      * v3 (2026-10-09): elite encounters, warlord sieges, hero ambitions, affix effects, shop actions, tools, trade-ins, raid growth 6. See docs/DECISIONS.md.
-     * v4 (pending): weapon wear (the "Weapon wear" block below); bump on merge.
+     * v4 (2026-10-09): weapon wear, weapon fame, whetstone 120/300, warlord pressure 50 with no raid bonus. See docs/DECISIONS.md.
      */
-    val version: Int = 3,
+    val version: Int = 4,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -200,8 +200,8 @@ data class BalanceConfig(
     val eliteFame: Int = 2,
     val eliteSuppression: Int = 4,
     /** At or above this pressure the faction's warlord leads the siege. */
-    val warlordPressure: Int = 70,
-    val warlordRaidMultiplier: Double = 1.15,
+    val warlordPressure: Int = 50,
+    val warlordRaidMultiplier: Double = 1.0,
     val warlordPressureDrop: Int = 15,
     /** Gold the town pays the smith when a warlord is beaten at the walls. */
     val warlordTribute: Int = 120,
@@ -235,7 +235,7 @@ data class BalanceConfig(
     /** The town pays a hero this much for a day's patrol. */
     val patrolGold: Int = 12,
     // --- Weapon wear (PROPOSED): most fair-price visits ended NOT_BETTER in the v3 sweep; blades now wear out and are replaced. ---
-    // v4 (pending): weapon wear
+    // v4: weapon wear
     /** Condition the equipped weapon loses per expedition (a rout is harder on the blade) and per siege stood as champion; floor 0. */
     val wearPerExpeditionWin: Int = 6,
     val wearPerExpeditionLoss: Int = 10,
@@ -246,7 +246,7 @@ data class BalanceConfig(
     val wornConditionThreshold: Int = 50,
     /** Purchase utility a hero adds to every listing while their own weapon is below [wornConditionThreshold]. */
     val wornReplacementUtility: Double = 0.6,
-    // v4 (pending): weapon fame (GDD 7 PROPOSED "a limited mechanical effect, with caps against runaway snowballing").
+    // v4: weapon fame (GDD 7 PROPOSED "a limited mechanical effect, with caps against runaway snowballing").
     // Fame keeps growing as a record (+1 per won expedition, +2 per siege held, +2 for an elite); only the first
     // [weaponFameCap] points count for any effect, so fame earned through the bonus can never feed itself past the cap.
     val weaponFameCap: Int = 10,

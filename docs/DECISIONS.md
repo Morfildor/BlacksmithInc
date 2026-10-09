@@ -639,10 +639,10 @@ Findings:
    because trade-ins return replaced weapons to the shop; prune or cap lost, destroyed and salvaged records before
    long saves matter (PROGRESS next action 3).
 
-## Balance v4 (pending merge): weapon fame (2026-10-09, session 7)
+## Balance v4: weapon fame (2026-10-09, session 7)
 GDD 7 PROPOSED: "Weapon fame can grant a limited mechanical effect, with caps against runaway snowballing." Until now
 fame was only a record (titles, the Legend Board, the collector event). Every number lives in `BalanceConfig` under a
-`// v4 (pending)` marker; `version` is bumped once on merge, together with the weapon-wear work.
+`// v4: weapon fame` marker (`version` 4, merged with the weapon-wear work below; combined evidence in "Balance v4 as merged").
 
 ### What was added
 - **Counted fame**: only the first `weaponFameCap` = 10 fame points of a weapon count for any effect. Fame itself keeps
@@ -694,13 +694,13 @@ the effect stronger at merge.
   keeps the stronger one.
 - No multi-era harness run: the returned-legend path is covered by `WeaponFameTest` and `WorldEventsAndGenerationsTest`.
 
-## Balance v4 (pending merge): weapon wear (2026-10-09, session 7)
+## Balance v4: weapon wear (2026-10-09, session 7)
 The v3 sweep left demand as the bottleneck: at fair prices NOT_BETTER was the commonest visit outcome (45.8 of about
 77 visits per BALANCED_FAIR run, 58.3 of about 107 for BALANCED_ACTIVE). A hero buys only a strict upgrade, keeps
 one weapon for the whole run, and of the ~5 weapons forged a day ~1 sells. GDD 6's power formula carries a
 `condition` factor and GDD 7 gives weapons lives; wear gives heroes a reason to come back and makes what the smith
-forges, and re-hones, matter. Every number is PROPOSED and lives in `BalanceConfig` under `// v4 (pending): weapon
-wear`; `BalanceConfig.version` stays 3 until the owner bumps it to 4 on merge.
+forges, and re-hones, matter. Every number is PROPOSED and lives in `BalanceConfig` under `// v4: weapon wear`
+(`BalanceConfig.version` 4; combined evidence in "Balance v4 as merged").
 
 ### What was built
 - `Weapon.condition` 0-100, default 100. Save schema stays v1: older saves decode with every blade keen
@@ -977,3 +977,54 @@ No tuning was needed and no siege number moved.
   anchor texts kept for scripts: "EMBERFALL GAZETTE", "Begin day", "Skip", "Suggested price", "List at".
 - Verification anchors in `tools/emulator/smoke.sh` moved from "Weapon family"/"End Day 2" to
   "Forge weapon"/"Day 2".
+
+## Balance v4 as merged: wear + fame, whetstone 120/300, warlord pressure 50 (2026-10-09, session 7)
+The two v4 branches above were built in parallel against v3 and merged together (`BalanceConfig.version` 4; app
+0.5.0). Two of the recommendations from "Balance v3 review at 10,000 seeds" were applied at the same time, both
+PROPOSED:
+- **Master Whetstone 200/500 -> 120/300**: the cheapest-first buyer now reaches level 2 in every BALANCED_ACTIVE run
+  (mean level 2.0, was 1.8); the review measured +0.8 days at half price. The signboard (capped out by
+  `maxCustomersPerDay`) and the affix magnitudes are untouched.
+- **Warlord pressure 70 -> 50, raid multiplier 1.15 -> 1.0**: at 70 a warlord led one siege in about fifty runs and
+  was never beaten in 160,000 runs, so the tribute, the pressure drop and the WARLORD_DEFEATED milestone were dead
+  content. Sweep under the merged rules (`--runs 1000 --seed 1 --policy all --noImpact`):
+
+| warlordPressure / raid multiplier | Warlord sieges per run (FAIR / ACTIVE / INVEST) | Beaten per run | BALANCED_ACTIVE | BALANCED_INVEST |
+|---|---|---|---|---|
+| 70 / 1.15 (v3) | 0.0 / 0.0 / 0.0 | 0.0 | 25 (20/35), 25.9 | 30 (20/40), 29.4 |
+| 50 / 1.15 | 0.6 / 0.5 / 0.5 | 0.0 | 25 (15/35), 26.1 | 30 (15/40), 29.0 |
+| **50 / 1.0 (adopted)** | 0.6 / 0.5 / 0.5 | 0.0 / 0.0 / 0.1 | 25 (20/35), 26.4 | 30 (20/40), 29.5 |
+| 60 / 1.15 | 0.2 / 0.2 / 0.2 | 0.0 | 25 (20/35), 26.3 | 30 (15/40), 29.3 |
+
+The 1.15 raid bonus is what cost the p10 five days: a warlord-led siege on day 10 or 15 against a faction already at
+pressure 50 is the siege that ends weak runs, and the pressure alone already makes it the hard one. The warlord now
+names and leads that siege (the forecast says who) without adding to it. Beating one stays rare in the first era
+(0.1 per run under BALANCED_INVEST, 0.2 with maxed upgrades), which is what a boss should be.
+
+### Evidence for v4 as merged (`--runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE`, launch content)
+| Policy | v3 (0.4.0) | v4 (0.5.0) |
+|---|---|---|
+| BALANCED_FAIR | 20 (15/30), mean 21.7, sold 17.7, survived 1.2, deaths 0.8, gold on hand 590 | 20 (15/25), mean 20.5, sold 19.6, survived 1.1, deaths 0.9, gold on hand 653 |
+| **BALANCED_ACTIVE** | 30 (20/35), mean 27.5, sold 23.4, survived 2.3, deaths 0.9, gold on hand 91 | 25 (20/35), mean 26.4, sold 26.9, survived 2.1, deaths 1.0, gold on hand 112 |
+| SAFE_FAIR / RECKLESS_FAIR / OVERWORK | 20 (21.3) / 20 (22.4) / 20 (21.8) | 20 (20.2) / 20 (21.0) / 20 (20.5) |
+| SYNERGY | 40 (25/45), mean 36.7, sold 24.3 | 35 (25/40), mean 34.0, sold 28.7 |
+| BALANCED_INVEST | 35 (20/40), mean 31.5, sold 25.6 | 30 (20/40), mean 29.5, sold 28.3 |
+| BALANCED_CHEAP / EXPENSIVE | 25 (25.8) / 10 (12.5) | 25 (24.0) / 10 (12.4) |
+| RANDOM | 25 (15/35), mean 24.4 | 20 (15/35), mean 23.0 |
+| PASSIVE | 10 | 10 |
+| Maxed upgrades, BALANCED_FAIR | 35 (25/45), mean 35.5 | 35 (25/40), mean 33.5 |
+| Maxed upgrades, BALANCED_ACTIVE | 40 (30/50), mean 39.3 | 40 (30/45), mean 37.7 |
+
+0 hard-lock days in all 16,000 runs. Shop visits per BALANCED_FAIR / BALANCED_ACTIVE run: NOT_BETTER about 38 / 45
+(v3: 46 / 58), TOO_EXPENSIVE 17 / 31, WORN_OUT 1.4 / 2.8. Sales are up by about a tenth over v3 and a quarter of
+visits now buy; wear costs every policy 1-2 mean days, mostly at the walls (the champions' blades are worn by siege
+day), so the active smith's lead over the plain one is now 5 days median (v3: 10). Upgrade impact under
+BALANCED_ACTIVE (median / mean delta): Stalwart Walls +10 / +6.1, Well-Stocked Cellar +5 / +3.4, Forge Mastery
++5 / +2.1, Thrifty Hands +5 / +1.3, Lucky Hammer +5 / +0.6, Tireless Smith +0 / +0.3, Family Savings +0 / +0.1,
+Known Name +0 / -0.5, all maxed +15 / +11.3.
+
+### Not changed, and not measured
+- The fame price premium sits in `Market.askingPrice` (the going rate), so a renowned blade sold at its suggested
+  price is no longer reported as a premium "on the shop's good name".
+- Not applied from the review: the signboard effect, affix magnitudes, Known Name. Not measured: v4 at 10,000 seeds;
+  wear and fame interacting with returned legends over several eras (unit tests only).

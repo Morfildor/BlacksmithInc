@@ -88,6 +88,10 @@ object Market {
     /** Gold heroes consider fair for this weapon as it is: power, discounted for wear. The shop's suggested price. */
     fun fairPrice(weapon: Weapon, config: BalanceConfig): Int = (weapon.power * Power.conditionFactor(weapon, config) * config.fairGoldPerPower).toInt()
 
+    /** The going rate: the fair price plus a small premium for a storied blade (GDD 7; only the first [BalanceConfig.weaponFameCap] fame points count). */
+    fun askingPrice(weapon: Weapon, config: BalanceConfig): Int =
+        (fairPrice(weapon, config) * (1.0 + weapon.fame.coerceIn(0, config.weaponFameCap) * config.weaponFamePricePerPoint)).toInt()
+
     /** Credit the shop gives for the weapon a hero currently wields when they buy a replacement. */
     fun tradeInCredit(current: Weapon?, config: BalanceConfig): Int =
         current?.let { (fairPrice(it, config) * config.tradeInShare).toInt() } ?: 0
@@ -117,7 +121,7 @@ object Market {
         val loyaltyGain = hero.traits.fold(1.0) { acc, t -> acc * ctx.content.trait(t).loyaltyGain }.toInt().coerceAtLeast(1)
         ctx.updateHero(hero.copy(gold = hero.gold - (price - credit), loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP))
         // Gazette-visible consequences: a regular is named as one; gold paid above the base fair price is recorded as a premium.
-        val premium = price - fairPrice(weapon, ctx.config)
+        val premium = price - askingPrice(weapon, ctx.config)
         val who = if (isRegular(hero, ctx.config)) "${hero.fullName}, a regular of the shop," else hero.fullName
         val text = "$who bought ${weapon.name} for $price gold" + (if (premium > 0) ", $premium above the going rate on the shop's good name." else ".") +
             (if (old != null) " ${old.name} came back to the shop in part payment ($credit gold)." else "")
