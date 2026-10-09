@@ -153,7 +153,7 @@ private fun YesterdayBlock(s: UiState.Playing, vm: GameViewModel) {
     val st = s.state
     val edition = remember(st.events, st.day) {
         val heroNames = st.heroes.values.associate { it.id.value to it.fullName }
-        Gazette.edition(st.eventsForDay(st.day - 1), heroNames, st.lastResolution?.takeIf { it.day == st.day - 1 }?.visits ?: emptyList())
+        Gazette.edition(Gazette.dayRecords(st, st.day - 1), heroNames, st.lastResolution?.takeIf { it.day == st.day - 1 }?.visits ?: emptyList())
     }
     val first = edition.lede.firstOrNull() ?: edition.sections.firstOrNull()?.lines?.firstOrNull()
     val lines = if (first == null) listOf("No news yet.") else listOfNotNull(first, edition.tally.takeIf { it.isNotEmpty() }?.joinToString(" · "))

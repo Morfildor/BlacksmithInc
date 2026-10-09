@@ -7,6 +7,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Fixed
+- The day's report now tells the whole day, including the blades you forged, listed or honed and the tools you bought
+  while planning; before, those lines appeared only in the Gazette archive.
+
 ## [0.6.0] - 2026-10-09
 Heroes with lives of their own, fight replays, the fates of fallen blades and three new legacy tracks (balance v5).
 
