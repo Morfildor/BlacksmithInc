@@ -141,7 +141,7 @@ class CustomerCollector(private val engine: GameEngine) {
         if (worst > 1) faceDays++
         worstFace = maxOf(worstFace, worst)
         facePairs += faces.sumOf { it.size * (it.size - 1) / 2 }
-        expWon += res.events.count { it.type == EventType.ELITE_SLAIN || (it.type == EventType.EXPEDITION_WON && "winProbability" in it.data) }
+        expWon += res.events.count { it.type == EventType.ELITE_SLAIN || (it.type == EventType.EXPEDITION_WON && "material" !in it.data) }
         expLost += res.events.count { it.type == EventType.EXPEDITION_LOST }
         expFatal += res.events.count { it.type == EventType.HERO_DIED }
         res.events.firstOrNull { it.type == EventType.SIEGE_WON || it.type == EventType.SIEGE_LOST }?.let { e ->

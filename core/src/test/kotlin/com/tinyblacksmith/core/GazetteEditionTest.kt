@@ -99,7 +99,7 @@ class GazetteEditionTest {
         assertTrue(all.none { "An elite foe fell" in it || "survived its first siege" in it }, "milestones the news already tells are folded")
         assertEquals(listOf("Torvald Ferris brought Stormglass back to the forge."), section(e, Gazette.HEROES))
         assertEquals(listOf(events[4].text, events[7].text, events[8].text, events[9].text, events[3].text), section(e, Gazette.TOWN), "the siege warning stands last")
-        assertEquals(listOf("Shop took 120 gold", "Expeditions: 1 won, 0 lost"), e.tally)
+        assertEquals(listOf("Town tribute: 120 gold", "Expeditions: 1 won, 0 lost"), e.tally)
     }
 
     @Test
@@ -190,7 +190,7 @@ class GazetteEditionTest {
                 val needle = (if (hero != null) ev.text.removePrefix("$hero ") else ev.text).trimEnd('.')
                 val folded = ev.type in setOf(
                     EventType.WEAPON_FORGED, EventType.WEAPON_LISTED, EventType.WEAPON_HONED, EventType.WEAPON_DONATED, EventType.WEAPON_SALVAGED,
-                    EventType.TOOL_BOUGHT,
+                    EventType.TOOL_BOUGHT, EventType.MATERIAL_BOUGHT,
                 ) || ev.type in quiet || (ev.type == EventType.SIEGE_WARNING)
                 assertTrue(folded || lines.any { needle in it }, "day $day: record not in the paper: ${ev.type} ${ev.text}")
                 if (ev.type in quiet) assertTrue(lines.any { hero!! in it && (":" in it) }, "day $day: $hero missing from the quiet line")

@@ -300,7 +300,7 @@ class SimulationDriver(
                 for (v in res.visits) visitReasons[v.reason] = (visitReasons[v.reason] ?: 0) + 1
                 val sales = res.events.filter { it.type == EventType.WEAPON_SOLD }
                 sold += sales.size
-                goldEarned += sales.sumOf { (it.data["price"]?.toInt() ?: 0) - (it.data["tradeIn"]?.toInt() ?: 0) }
+                goldEarned += res.ledger?.income?.get(IncomeKind.SHELF_SALE) ?: 0
                 sold += res.events.count { it.type == EventType.COMMISSION_COMPLETED }
                 elitesSlain += res.events.count { it.type == EventType.ELITE_SLAIN }
                 weaponsBroken += res.events.count { it.type == EventType.WEAPON_BROKEN }

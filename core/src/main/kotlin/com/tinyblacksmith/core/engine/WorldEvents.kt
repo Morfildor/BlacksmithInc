@@ -370,7 +370,7 @@ object WorldEvents {
                 val w = ctx.weapons.values.filter { it.isListed && (it.fame > 0 || it.rarity >= Rarity.EPIC) }
                     .maxWith(compareBy<Weapon> { it.fame }.thenBy { it.quality }.thenBy { it.id.value })
                 val price = ((w.listedPrice ?: 0) * ctx.config.collectorPriceMultiplier).toInt()
-                ctx.gold += price
+                ctx.earn(IncomeKind.COLLECTOR, price)
                 ctx.reputation += 1
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "sold to a collector")))
                 ctx.addWeaponHistory(w.id, "COLLECTED", "Bought by a collector for $price gold and taken to a distant vault.")
