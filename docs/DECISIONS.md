@@ -2765,3 +2765,99 @@ arm lost board entries to that (20 -> 18.9); real keys carry their era and are u
 **Tests.** `ArtifactFidelityTest` (8): `aReturnedLegendKeepsAffixesFlawsCatalystAndSignature`, `theOwnerLineIncludesHeirsAndCommissionPatrons`,
 `aReturnedNameNeverPromisesAnAffixTheBladeLacks`, `aLegendCannotReEnterTheBoardOwnerless`, `threeNaturalErasKeepOneBladesStoryTruthful`,
 `entriesFromOlderProfilesRenderAsLostToTime`, `aReturnedLegendsAffixesAreDormantUntilHoned`, `aNameCarriesAtMostOnePrefix`.
+
+## Balance v8, commission situations (2026-10-10, task T4.6; E4)
+
+**The rule (PROPOSED, plan 4.6 E4).** The daily commission roll (chance unchanged, EVENTS stream) first picks a kind among the
+situations somebody in town is in, by the weights of `CommissionConfig`, then the patron among the heroes with that reason (loyalty
+weighted as before), then family, band and element as before:
+- REPLACEMENT (weight 1): the hero carries a blade below the worn threshold, or carried one this era and now has none.
+- SIEGE_PREP (weight 1): a current champion who does not carry the element the besieger fears, with the siege 1 to
+  `siegePrepDays` **4** days off. Asks for that element, due on the siege day (commissions are collected before the raid that evening).
+- AMBITION (weight 1): an unfulfilled COLLECTOR; asks for the fine floor.
+- FIRST_BLADE (weight 1): a living guild member orders for an unarmed hero who has never bought here (their own guild's newcomer
+  first, else the earliest arrival); the patron pays and the blade is given to that hero (`Commission.recipientId`). Should the
+  recipient be gone at delivery, the patron keeps it.
+- ORDINARY (weight **0.75**): no reason needed. NOBLE: the world event, as before, now a kind and counted against the same cap.
+`customers.maxOpenCommissions` **2** (the plan's) requests may be offered or accepted at once; no hero is named on two. A blade
+ordered for the wall is taken up when it is worth more against the besieger than the blade in hand (`Market.valueInHand` with the
+matchup), where every other delivery compares power, wear and fit as before. Balance stays **8** (re-pinned); schema 4
+(`Commission.kind`, `recipientId` defaulted; a stored commission without them is ORDINARY).
+
+**Measured** (1,000 runs at base seeds 1 / 10001 / 20001; `T4.6-tables.md`).
+
+| | REQUEST_DRIVEN | BALANCED_FAIR | EXPERT |
+|---|---|---|---|
+| offers a run, one open -> two | 9.9-10.2 -> 10.0-10.3 | 5.1 -> 6.8 | 13.9-14.1 -> 14.4-14.6 |
+| accepted commissions collected | 97.7-97.9 % | 48-50 % (it forges nothing for them) | 96.0-96.4 % |
+| offers by kind (two open) | ORDINARY 31, SIEGE_PREP 26, REPLACEMENT 22, AMBITION 12, NOBLE 5, FIRST_BLADE 3 % | 29, 22, 18, 20, 5, 5 % | 35, 18, 28, 10, 5, 4 % |
+| siege-prep blades still wielded after their siege | 68.7-69.7 % | 55.7-62.2 % | 44.4-47.0 % |
+| mean days, one open -> two | 31.960 / 32.230 / 32.075 -> 31.965 / 32.195 / 32.255 | 22.440 / 22.525 / 22.405 -> 22.385 / 22.650 / 22.515 | 45.410 / 45.725 / 45.555 -> 45.570 / 45.845 / 45.615 |
+| mean days before this task (T4.5) | 30.160 / 29.920 / 30.385 | 22.510 / 22.325 / 22.435 | 45.400 / 45.640 / 45.530 |
+
+**Acceptance.** REQUEST_DRIVEN completes at least 70 % of accepted commissions: **met (98 %).** No kind above 40 % of offers: **met**
+(largest 35.5 %; with the ordinary weight at 1.0 EXPERT measured 41.0 % ordinary, hence 0.75). A SIEGE_PREP blade wielded at its
+siege in 60 % of completions: **met for the bot that answers requests (69 %), not for EXPERT (44-47 %)**, whose shop is full of
+counter-element blades: the least-sufficient pick (T1.8 ruling) hands the champion the weakest blade that fits, and a champion does
+not take up a blade worse than their own. Two open at most +2 mean days over the same bot with one: **met (+0.0 / -0.0 / +0.2).**
+The kinds themselves add **+1.8 to +2.3 days** to REQUEST_DRIVEN (a well-made blade for a champion before each siege).
+
+## M4 gate: the band of plan 4.3 on the final tree, and step 6b (2026-10-10)
+
+All of T4.1 to T4.6 in, uncompensated (suppression 2, raid 6.5 as M3 left them). 1,000 runs at base seeds 1 / 10001 / 20001; means
+from the json reports. "Pre-M4" is the tree after T3.8.
+
+| row | pre-M4 mean | M4 mean | median / p10 / p90 / longest |
+|---|---|---|---|
+| BALANCED_FAIR | 22.215 / 22.465 / 22.315 | **22.385 / 22.650 / 22.515** | 20 / 25 / 20; 15 / 20 / 20; 25 / 30 / 30; 35 / 40 / 35 |
+| BALANCED_ACTIVE | 29.53 / 29.63 / 30.02 | 30.040 / 30.040 / 29.940 | 30; 20 / 25 / 25; 35; 45 |
+| SYNERGY | 35.1 / 35.2 / 35.2 | 35.385 / 35.295 / 35.495 | 35; 30; 40; 45 |
+| REQUEST_DRIVEN | 24.5 / 24.8 / 24.6 | 31.965 / 32.195 / 32.255 | 35; 25; 40; 45 |
+| SIEGE_PREP | 43.3 / 43.6 / 43.4 | 43.435 / 43.495 / 43.370 | 45; 40; 50; 55 |
+| EXPERT | 44.7 / 44.9 / 45.0 | 45.570 / 45.845 / 45.615 | 45; 40; 50; 55 |
+| maxed BALANCED_FAIR | 36.9 / 37.2 / 37.2 | 37.460 / 37.540 / 37.300 | 40; 35 / 30 / 30; 40; 50 |
+| maxed BALANCED_ACTIVE | 43.8 / 43.9 / 43.9 | 44.010 / 44.045 / 43.830 | 45; 40; 50; 55 |
+| maxed SYNERGY | 45.2 / 45.4 / 45.4 | 45.340 / 45.410 / 45.555 | 45; 40; 50; 55 |
+| maxed EXPERT | 53.8 / 54.2 / 54.1 | 54.445 / 54.780 / 54.600 | 55; 50; 60; 65 |
+
+| band line | seed 1 | 10001 | 20001 |
+|---|---|---|---|
+| FAIR mean 19.5-22.5, p10 at least 15, p90 at most 30 (median reported: 20 / 25 / 20) | holds | **over by 0.150** | **over by 0.015** |
+| ACTIVE median 25-30, mean at most 30.5 | holds | holds | holds |
+| maxed at least 10 mean days over new: SYNERGY +9.955 / +10.115 / +10.060 (FAIR +14.8 to +15.1; ACTIVE +13.9 to +14.0) | **under by 0.045** | holds | holds |
+| deaths per hero-day FAIR at most 0.00518 (0.00497 / 0.00487 / 0.00480) | holds | holds | holds |
+| conversion at least M3 + 2: FAIR 24.7 / 24.2 / 24.6 (+3.1 / +3.0 / +3.1); REQUEST_DRIVEN 28.9 / 28.7 / 28.8 (+9.7) | holds | holds | holds |
+| NOT_BETTER at least 8 points below M3, FAIR: 51.8 / 52.6 / 52.5 (-5.5 / -4.9 / -5.0) | **fails** | **fails** | **fails** |
+| TOO_EXPENSIVE at most M3 + 2, FAIR: 21.0 / 20.8 / 20.4 (+1.2 / +0.9 / +0.7) | holds | holds | holds |
+| new codes 1-15 % of visits: COUNTERS_THREAT 1.9-7.9, RESISTED up to 1.2; TASTE_MATCH 0.4, STORIED 0.6, PRIZED 0.0 at most | three of five fail the 1 % floor | same | same |
+| REQUEST_DRIVEN at most +5 over FAIR: **+9.6 / +9.5 / +9.7** (before M4: +2.3) | **fails** | **fails** | **fails** |
+| SIEGE_PREP at most +3 over its M0 value 39.6 (ruling): +3.8 / +3.9 / +3.8 (before M4: +3.7 / +4.0 / +3.8) | fails as before M4 | same | same |
+| two open commissions at most +2 over one | holds | holds | holds |
+| tripwire: new EXPERT above 50.4 (45.8 at most); maxed EXPERT p90 above 70 (60); any run of 100 days (longest 65) | not crossed | not crossed | not crossed |
+
+**Step 6b.** The plan runs the step-4 grid again "only if FAIR or ACTIVE moved by more than twice the noise floor during step 6",
+that is by more than 0.6 mean days. They moved: BALANCED_FAIR **+0.170 / +0.185 / +0.200**, BALANCED_ACTIVE **+0.51 / +0.41 / -0.08**.
+**The trigger is not met, so by the plan's rule 6b does not run and nothing is compensated.** Because the plain smith's mean is
+nevertheless over its 22.5 edge at two seeds (it sat 0.035 under it before M4), the arms of the grid that compensate more than the
+shipped pair were measured as evidence (suppression is already at the grid's lowest, 2; the three arms with suppression 3 ease):
+
+| raid per day (suppression 2) | FAIR mean | FAIR band | maxed FAIR | maxed ACTIVE | maxed SYNERGY | maxed EXPERT | maxed row below its pre-M4 value? |
+|---|---|---|---|---|---|---|---|
+| **6.5 (shipped)** | 22.385 / 22.650 / 22.515 | over at two seeds | 37.460 / 37.540 / 37.300 | 44.010 / 44.045 / 43.830 | 45.340 / 45.410 / 45.555 | 54.445 / 54.780 / 54.600 | no |
+| 6.6 | 22.210 / 22.375 / 22.305 | holds (median 20 at all three) | 36.995 / 37.160 / 36.990 | 43.580 / 43.570 / 43.365 | 44.920 / 45.050 / 45.225 | 53.920 / 54.235 / 54.130 | **yes**: FAIR -0.2 at seed 20001, ACTIVE -0.2 to -0.5, SYNERGY -0.2 to -0.35 |
+| 6.75 | 21.890 / 22.050 / 21.965 | holds | 36.485 / 36.625 / 36.515 | 42.955 / 42.875 / 42.730 | 44.250 / 44.370 / 44.590 | 53.200 / 53.450 / 53.420 | yes, every row |
+| 7.0 | 21.415 / 21.495 / 21.375 | holds | 35.555 / 35.655 / 35.665 | 41.850 / 41.750 / 41.695 | 43.400 / 43.475 / 43.445 | 52.020 / 52.230 / 52.170 | yes, every row |
+
+No arm restores the band without putting a maxed row below where it stood before M4 (M4 raised the maxed EXPERT rows and left the
+other maxed rows where they were, so there is no room under them). **The features ship uncompensated.** The smallest lever, as a
+proposal for the owner and not applied: `raidPerDay` 6.5 -> 6.6 restores the plain smith's band at all three seeds (mean 22.2-22.4,
+median 20) for 0.2 to 0.5 mean days off the maxed FAIR, ACTIVE and SYNERGY rows and 0.6 off a new EXPERT. It does not help the
+maxed-over-new SYNERGY margin (+9.885 / +10.105 / +10.145). Alternatively the band's top can be restated at 22.7: the overshoot is
+half the noise floor.
+
+**Tests.** `CommissionSituationsTest` (5): `aBrokenBladeProducesAReplacementRequest`, `aChampionAsksBeforeASiege`,
+`noKindExceedsFortyPercentOfOffers`, `twoOpenAtOnceNeverThree`, `aFirstBladeGoesToTheHeroItWasOrderedFor`.
+`ShopDayScriptTest.aCommissionAndACollectorNeverSqueezeOutThePurchaseAndTheRefusal` already covered a two-commission day and passes
+unchanged. `ReputationAndLoyaltyTest`: a regular's share of offers is asserted at 20 % (it was 30 %: a reason the regular lacks goes
+to someone else). **Golden `state_rules3.txt` re-recorded: 243 of 300 lines, all 20 seeds, the RNG column on 242** (the kind draw and
+the second open request move the EVENTS stream from the first offer on).

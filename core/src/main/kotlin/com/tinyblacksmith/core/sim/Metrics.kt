@@ -61,6 +61,9 @@ data class RunCustomers(
     val wantsRecorded: Int = 0, val wantsSatisfied: Int = 0, val wantsOtherPurchase: Int = 0, val wantsLapsed: Int = 0,
     /** Browsing visits on days under a siege warning (`Battle.warnedFaction`): all, those that bought nothing, and of those the RESISTED ones. */
     val windowVisits: Int = 0, val windowRefusals: Int = 0, val windowResisted: Int = 0,
+    /** Commissions: offers by kind, how many the policy accepted and how many were collected; SIEGE_PREP ones collected by their siege day and, of those, the ones their champion still held equipped after that siege. */
+    val commissionOffers: Map<String, Int> = emptyMap(), val commissionsAccepted: Int = 0, val commissionsCompleted: Int = 0,
+    val prepDelivered: Int = 0, val prepWielded: Int = 0,
 )
 
 /** Observes one run through [beforeEndDay] and [afterEndDay]; read-only on every state it is handed. */
@@ -100,6 +103,8 @@ class CustomerCollector(private val engine: GameEngine) {
     private var sellOutDays = 0; private var droughtDays = 0
     private var wantsRecorded = 0; private var wantsSatisfied = 0; private var wantsOtherPurchase = 0; private var wantsLapsed = 0
     private var windowVisits = 0; private var windowRefusals = 0; private var windowResisted = 0
+    private val commissionOffers = java.util.TreeMap<String, Int>(); private val accepted = HashSet<String>(); private var commissionsCompleted = 0
+    private var prepDelivered = 0; private var prepWielded = 0
     private val sieges = ArrayList<SiegeSnap>()
     private val recovery = RecoveryProbe(engine)
     private val lineBandVisits = IntArray(LINE_BANDS.size); private val lineBandLines = IntArray(LINE_BANDS.size); private val lineCues = sortedMapOf<String, Int>()
@@ -158,6 +163,15 @@ class CustomerCollector(private val engine: GameEngine) {
             if (bought) posBuys[p]++
             if (day <= 5) classesDay5 += t.classId
             if (day <= 10) { classesDay10 += t.classId; if (bought) boughtDay10 += t.classId }
+        }
+        accepted += pre.commissions.values.filter { it.status == CommissionStatus.ACCEPTED }.map { it.id.value }
+        commissionsCompleted += res.events.count { it.type == EventType.COMMISSION_COMPLETED }
+        for (c in out.commissions.values) if (c.id !in pre.commissions) commissionOffers.merge(c.kind.name, 1, Int::plus)
+        if (res.events.any { it.type == EventType.SIEGE_WON || it.type == EventType.SIEGE_LOST }) {
+            for (c in out.commissions.values) if (c.kind == CommissionKind.SIEGE_PREP && c.status == CommissionStatus.COMPLETED && c.deadlineDay == day) {
+                prepDelivered++
+                if (c.deliveredWeaponId?.let { out.weapons[it] }?.let { it.isEquipped && it.ownerId == c.buyerId } == true) prepWielded++
+            }
         }
         if (pre.town.nextSiegeDay - day in 0 until com.tinyblacksmith.core.battle.Battle.WARNING_DAYS) {
             windowVisits += served.size
@@ -223,6 +237,7 @@ class CustomerCollector(private val engine: GameEngine) {
             lineBandVisits = lineBandVisits.toList(), lineBandLines = lineBandLines.toList(), lineCues = lineCues,
             wantsRecorded = wantsRecorded, wantsSatisfied = wantsSatisfied, wantsOtherPurchase = wantsOtherPurchase, wantsLapsed = wantsLapsed,
             windowVisits = windowVisits, windowRefusals = windowRefusals, windowResisted = windowResisted,
+            commissionOffers = commissionOffers, commissionsAccepted = accepted.size, commissionsCompleted = commissionsCompleted, prepDelivered = prepDelivered, prepWielded = prepWielded,
         )
     }
 }
@@ -264,6 +279,9 @@ data class CustomerSummary(
     val wantsPerRun: Double = 0.0, val wantsSatisfied: Double = 0.0, val wantsOtherPurchase: Double = 0.0, val wantsLapsed: Double = 0.0,
     /** Under a siege warning: share of all browsing visits that fall there, conversion there, and RESISTED as a share of the refusals there. */
     val windowVisitShare: Double = 0.0, val windowConversion: Double = 0.0, val windowResistedOfRefusals: Double = 0.0,
+    /** Commissions a run: offered, accepted, collected (and as a share of the accepted); each kind's share of the offers; SIEGE_PREP blades collected by their siege a run and the share still wielded after it. */
+    val commissionsOfferedPerRun: Double = 0.0, val commissionsAcceptedPerRun: Double = 0.0, val commissionsCompletedPerRun: Double = 0.0, val commissionCompletion: Double = 0.0,
+    val commissionKindShare: Map<String, Double> = emptyMap(), val prepDeliveredPerRun: Double = 0.0, val prepWieldedShare: Double = 0.0,
 ) {
     companion object {
         private fun ratio(a: Number, b: Number) = if (b.toDouble() == 0.0) 0.0 else a.toDouble() / b.toDouble()
@@ -324,6 +342,10 @@ data class CustomerSummary(
                 wantsOtherPurchase = ratio(rs.sumOf { it.wantsOtherPurchase }, rs.sumOf { it.wantsRecorded }), wantsLapsed = ratio(rs.sumOf { it.wantsLapsed }, rs.sumOf { it.wantsRecorded }),
                 windowVisitShare = ratio(rs.sumOf { it.windowVisits }, visits), windowConversion = ratio(rs.sumOf { it.windowVisits - it.windowRefusals }, rs.sumOf { it.windowVisits }),
                 windowResistedOfRefusals = ratio(rs.sumOf { it.windowResisted }, rs.sumOf { it.windowRefusals }),
+                commissionsOfferedPerRun = rs.map { it.commissionOffers.values.sum() }.average(), commissionsAcceptedPerRun = rs.map { it.commissionsAccepted }.average(),
+                commissionsCompletedPerRun = rs.map { it.commissionsCompleted }.average(), commissionCompletion = ratio(rs.sumOf { it.commissionsCompleted }, rs.sumOf { it.commissionsAccepted }),
+                commissionKindShare = rs.flatMap { it.commissionOffers.keys }.toSortedSet().associateWith { k -> ratio(rs.sumOf { it.commissionOffers[k] ?: 0 }, rs.sumOf { it.commissionOffers.values.sum() }) },
+                prepDeliveredPerRun = rs.map { it.prepDelivered }.average(), prepWieldedShare = ratio(rs.sumOf { it.prepWielded }, rs.sumOf { it.prepDelivered }),
                 lineCueShare = rs.flatMap { it.lineCues.keys }.toSortedSet().associateWith { c -> ratio(rs.sumOf { it.lineCues[c] ?: 0 }, rs.sumOf { it.lineBandLines.sum() }) },
                 sieges = rs.flatMap { it.sieges }.groupBy { it.siege }.toSortedMap().map { (n, s) ->
                     SiegeRow(n, s.size, s.count { it.held }.toDouble() / s.size, s.map { it.pressure }.average(), s.map { it.militia }.average(), s.map { it.armory }.average(),
@@ -356,6 +378,9 @@ data class CustomerSummary(
             appendLine("    recognition: visits with a line " + lineShareByBand.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" } + "  lines/day=${f2(linesPerDay)}  by cue (of lines): " + lineCueShare.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" })
             appendLine("    wants: voiced/run=${f2(wantsPerRun)}  ended by a blade of the family asked for=${pct(wantsSatisfied)}  by another purchase=${pct(wantsOtherPurchase)}  lapsed=${pct(wantsLapsed)}")
             appendLine("    siege warning days: ${pct(windowVisitShare)} of visits  conversion there=${pct(windowConversion)}  RESISTED=${pct(windowResistedOfRefusals)} of the refusals there")
+            appendLine("    commissions/run: offered=${f2(commissionsOfferedPerRun)}  accepted=${f2(commissionsAcceptedPerRun)}  completed=${f2(commissionsCompletedPerRun)} (${pct(commissionCompletion)} of accepted)")
+            appendLine("    offers by kind: " + commissionKindShare.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" })
+            appendLine("    siege-prep blades wielded at their siege=${pct(prepWieldedShare)} (${f2(prepDeliveredPerRun)} collected by their siege day a run)")
             append(recovery.render())
             if (sieges.isNotEmpty()) appendLine("    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): " + sieges.joinToString("; ") {
                 "#${it.siege} n=${it.runs} ${pct(it.held)} p=${"%.0f".format(it.pressure)} m=${"%.0f".format(it.militia)} a=${"%.0f".format(it.armory)} c=${"%.0f".format(it.championPower)} f=${"%.0f".format(it.forecastDefense)}/${"%.0f".format(it.forecastRaid)} r=${"%.0f".format(it.defense)}/${"%.0f".format(it.raid)}"

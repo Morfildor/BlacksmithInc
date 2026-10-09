@@ -46,6 +46,19 @@ object Commissions {
         weapons.filter { (it.isInStorage || it.isListed) && fit(it, commission) == Fit.OK }
             .minWithOrNull(compareBy<Weapon> { it.isListed }.thenBy { it.quality }.thenBy { Market.askingPrice(it, config) }.thenBy(IdOrder.numeric) { it.id.value })
 
+    /**
+     * Why a request is made, as its kind and the names on it say: stable for the life of the request (it reads nothing
+     * that can change after the offer). Null for an ordinary one. [recipient] is the hero a FIRST_BLADE is for.
+     */
+    fun why(commission: Commission, buyer: String, recipient: String?): String? = when (commission.kind) {
+        com.tinyblacksmith.core.model.CommissionKind.ORDINARY -> null
+        com.tinyblacksmith.core.model.CommissionKind.NOBLE -> "A noble patron's order, carried by $buyer."
+        com.tinyblacksmith.core.model.CommissionKind.REPLACEMENT -> "$buyer needs a blade to replace their own."
+        com.tinyblacksmith.core.model.CommissionKind.SIEGE_PREP -> "$buyer stands on the wall when the siege comes on day ${commission.deadlineDay}."
+        com.tinyblacksmith.core.model.CommissionKind.AMBITION -> "$buyer collects fine blades and has none yet."
+        com.tinyblacksmith.core.model.CommissionKind.FIRST_BLADE -> "A first blade for ${recipient ?: "a newcomer"}, who carries nothing; $buyer pays."
+    }
+
     /** What a request asks for, in the terms the rule checks: "fine frost Spear (quality 50+)". */
     fun describe(commission: Commission, content: ContentCatalog, config: BalanceConfig): String =
         "${QualityBand.of(commission.minQuality, config).word} ${commission.element?.let { it.name.lowercase() + " " }.orEmpty()}${content.family(commission.familyId).name} (quality ${commission.minQuality}+)"

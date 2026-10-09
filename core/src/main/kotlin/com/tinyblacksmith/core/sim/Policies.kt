@@ -218,6 +218,8 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
 
     /** A commission ([want] null: a quality floor, perhaps an element, the blade is kept off the shelf) or a hero's want (a power floor and a price the hero can pay). */
     private inner class Request(val key: String, val familyId: WeaponFamilyId, val minQuality: Int, val element: com.tinyblacksmith.core.content.Element?, private val commission: Commission?, val want: Want?) {
+        /** A blade for the wall is worth making well: the champion only takes it up if it beats what they carry. */
+        val forTheWall get() = commission?.kind == CommissionKind.SIEGE_PREP
         fun fits(w: Weapon) = (w.isInStorage || w.isListed) && (
             if (commission != null) Commissions.fit(w, commission) == Commissions.Fit.OK
             else w.familyId == familyId && w.power >= want!!.minPower && engine.suggestedPrice(w) * policy.priceFactor * WANT_PRICE_FLOOR <= want.budget)
@@ -251,14 +253,16 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
         for (r in requests(state)) {
             if (state.weapons.values.any { r.fits(it) } || (attempts[r.key] ?: 0) >= (if (r.want == null) MAX_REQUEST_FORGES else MAX_WANT_FORGES)) continue
             val family = content.familyById[r.familyId] ?: continue
-            val best = content.materials(MaterialCategory.CORE).flatMap { core ->
+            val fitting = content.materials(MaterialCategory.CORE).flatMap { core ->
                 content.materials(MaterialCategory.AUGMENT).filter { r.element == null || it.element == r.element }.map { core to it }
             }.filter { (core, aug) ->
                 val quality = expectedQuality(state, family, core, aug, false)
                 val power = expectedPower(family, core, quality)
                 d.obtainable(state, core, aug) && quality >= r.minQuality + REQUEST_QUALITY_MARGIN &&
                     (r.want == null || (power >= r.want.minPower + WANT_POWER_MARGIN && power * cfg.fairGoldPerPower * policy.priceFactor * WANT_PRICE_FLOOR <= r.want.budget))
-            }.minByOrNull { (core, aug) -> d.purchaseCost(state, core) + d.purchaseCost(state, aug) } ?: continue
+            }
+            val best = (if (r.forTheWall) fitting.maxByOrNull { (core, aug) -> expectedPower(family, core, expectedQuality(state, family, core, aug, false)) }
+                else fitting.minByOrNull { (core, aug) -> d.purchaseCost(state, core) + d.purchaseCost(state, aug) }) ?: continue
             attempts[r.key] = (attempts[r.key] ?: 0) + 1
             source = if (r.want == null) BotCounter.REQUEST_FORGES else BotCounter.WANT_FORGES
             return Command.Forge(ForgeMode.QUICK, family.id, best.first.id, best.second.id, null, Risk.BALANCED)

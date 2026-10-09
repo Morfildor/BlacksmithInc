@@ -56,6 +56,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   it", "wants a hotter fire", "wants a rule rewritten". Clues stay with your legacy across eras.
 - Rumours. A hero who slays an elite foe with one of your blades, or a patron collecting a commission, may bring word
   of a recipe you have not found: one clue for it, a few times an era.
+- Requests have reasons. A commission now comes from what is happening in town: a hero whose blade is worn or gone
+  wants a replacement; a champion asks, in the days before a siege, for a blade of the element the besieger fears,
+  due on the siege day; a collector asks for fine work; a guild member orders a first blade for a newcomer who carries
+  nothing, and the newcomer is the one who walks out with it. Ordinary and noble requests remain. The request says why.
+- Two requests can be open at once (it was one), never two from the same hero.
 
 ### Changed
 - A legend that returns is the blade it was. It keeps its signature, its flaws, its catalyst, its title and its story

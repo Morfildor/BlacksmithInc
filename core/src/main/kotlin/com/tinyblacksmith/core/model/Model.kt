@@ -12,6 +12,11 @@ enum class Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY }
 enum class HeroActivity { REST, SHOP, EXPEDITION, PATROL, DEFEND, IDLE, GUILD, AMBITION }
 enum class HeroFate { ALIVE, DEAD, RETIRED }
 enum class CommissionStatus { OFFERED, ACCEPTED, COMPLETED, EXPIRED, DECLINED }
+/**
+ * Why a commission is asked (plan 4.6 E4), read from the state when it is offered. ORDINARY and NOBLE are the two that
+ * existed before the situations; a commission stored without the field is ORDINARY. Constants are only ever appended.
+ */
+enum class CommissionKind { ORDINARY, NOBLE, REPLACEMENT, SIEGE_PREP, AMBITION, FIRST_BLADE }
 /** GDD 6 hero ambitions: a personal goal that shifts daily choices and makes news when fulfilled. */
 enum class Ambition { SLAYER, DEFENDER, COLLECTOR, FORTUNE }
 enum class KnowledgeState { UNKNOWN, OBSERVED, UNDERSTOOD, SIGNATURE_DISCOVERED }
@@ -196,6 +201,9 @@ data class Commission(
     val deliveredWeaponId: WeaponId? = null,
     /** GDD 5 "desirable effect": when set, only a weapon of this element closes the commission. */
     val element: Element? = null,
+    val kind: CommissionKind = CommissionKind.ORDINARY,
+    /** FIRST_BLADE: the hero the blade is ordered for; [buyerId] pays and collects. Null for every other kind. */
+    val recipientId: HeroId? = null,
 )
 
 @Serializable

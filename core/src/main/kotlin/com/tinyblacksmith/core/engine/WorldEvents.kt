@@ -202,17 +202,17 @@ object WorldEvents {
         // 5
         WorldEventDef(
             id = "noble_commission", name = "Noble Commission", weight = 2.0,
-            eligibility = { ctx -> ctx.aliveHeroes().isNotEmpty() && ctx.commissions.values.none { it.status == CommissionStatus.OFFERED || it.status == CommissionStatus.ACCEPTED } },
+            eligibility = { ctx -> Market.openCommissions(ctx).let { open -> open.size < ctx.config.customers.maxOpenCommissions && ctx.aliveHeroes().any { h -> open.none { it.buyerId == h.id || it.recipientId == h.id } } } },
             maxPerRun = 3, cooldownDays = 5,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)
                 val config = ctx.config
-                val buyer = rng.pick(ctx.aliveHeroes())
+                val buyer = rng.pick(Market.openCommissions(ctx).let { open -> ctx.aliveHeroes().filter { h -> open.none { it.buyerId == h.id || it.recipientId == h.id } } })
                 val family = rng.pick(ctx.content.heroClass(buyer.classId).preferredFamilies)
                 val minQuality = QualityBand.SUPERB.floor(config)
                 val reward = (config.commissionRewardBase + minQuality * config.commissionRewardPerQuality) * config.nobleCommissionRewardMultiplier
                 val id = ctx.newCommissionId()
-                val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, ctx.day + config.commissionDeadlineDays + 2, CommissionStatus.OFFERED)
+                val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, ctx.day + config.commissionDeadlineDays + 2, CommissionStatus.OFFERED, kind = CommissionKind.NOBLE)
                 ctx.commissions[id] = c
                 WorldEventOutcome(mapOf("hero" to buyer.fullName, "family" to ctx.content.family(family).name, "request" to Commissions.describe(c, ctx.content, config), "reward" to reward.toString(), "day" to c.deadlineDay.toString()), listOf(buyer.id.value, id.value))
             },
