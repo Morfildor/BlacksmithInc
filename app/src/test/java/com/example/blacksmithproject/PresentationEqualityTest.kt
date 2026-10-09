@@ -93,7 +93,7 @@ class PresentationEqualityTest : ShopDayTestBase() {
         vm.next(); advanceUntilIdle()
         vm.back(); advanceUntilIdle()
         vm.openGazette(); vm.closeGazette()
-        vm.openSheet(ShopDaySheet.Hero(vm.day().state.heroes.keys.first())); vm.closeSheet()
+        vm.openSheet(Sheet.Hero(vm.day().state.heroes.keys.first())); vm.closeSheet()
         vm.setSpeed(ShopDaySpeed.X2); advanceUntilIdle()
         assertEquals(ShopDaySpeed.X2, vm.day().speed)
         watchToTheEnd(vm)

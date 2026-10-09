@@ -32,6 +32,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   descendant of an earlier era, or the hero who could not get in yesterday. Each hero hears a milestone once per era,
   and other lines no more than every third day; the opening three days stay introductions, one line a day at most.
   The line is stored with the day, so it reads the same after a relaunch.
+- Hero and blade sheets. Tap a hero in Town to see their face, class, health, element taste, traits, purse, whether
+  they are a regular, ambition, guild, mentor, the blade they carry, their dealings with your shop and their recent
+  days. Tap a blade on the Market page to see its rarity and quality in words, every property and flaw with what it
+  does, its recipe, who holds it and its history, newest first; pricing, listing, salvage, hone and arming the watch
+  now live on that sheet. The two sheets open each other (a hero's blade, a blade's holder, a hero's mentor).
 
 ### Changed
 - Guild Patronage does what its name says. For its five days every member of a guild wants to come to the shop, and the

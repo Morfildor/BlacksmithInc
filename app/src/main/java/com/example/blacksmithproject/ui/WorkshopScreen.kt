@@ -32,6 +32,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,9 +51,18 @@ import com.example.blacksmithproject.Dest
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.Panel
 import com.example.blacksmithproject.R
+import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.detail.HeroDetailSheet
+import com.example.blacksmithproject.ui.detail.ItemDetailSheet
+import com.example.blacksmithproject.ui.detail.customerSnapshot
+import com.example.blacksmithproject.ui.detail.heroDetail
+import com.example.blacksmithproject.ui.detail.itemDetail
+import com.example.blacksmithproject.ui.detail.toCommand
+import com.example.blacksmithproject.ui.detail.weaponSnapshot
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.CommissionStatus
+import com.tinyblacksmith.core.model.HeroId
 
 /**
  * One portrait workshop with four destinations (plan 1.2) and a settings sheet behind a gear. Chrome is deliberately
@@ -103,9 +113,36 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
     }
     val haptics by vm.settings.haptics.collectAsStateWithLifecycle(initialValue = false)
     if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, haptics, vm::setHaptics, onDismiss = { settingsOpen = false })
+    s.sheet?.let { DetailSheet(s, it, vm) }
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)
     s.lastError?.let { ErrorDialog(it, vm::dismissError) }
+}
+
+/**
+ * The open hero or blade sheet, rebuilt from the save on every change. One that has left the save opens from the last
+ * day's record; with neither, the sheet closes. Stock can be changed here while no day report is on screen.
+ */
+@Composable
+private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel) {
+    val st = s.state
+    val openHero = { id: HeroId -> vm.openSheet(Sheet.Hero(id)) }
+    when (sheet) {
+        is Sheet.Hero -> {
+            val detail = remember(st, sheet) { vm.engine.heroDetail(st, sheet.id, st.lastResolution?.takeIf { sheet.id !in st.heroes }?.customerSnapshot(sheet.id)) }
+            if (detail == null) LaunchedEffect(sheet) { vm.closeSheet() }
+            else HeroDetailSheet(detail, openHero, onOpenItem = { vm.openSheet(Sheet.Item(it)) }, onDismiss = vm::closeSheet)
+        }
+        is Sheet.Item -> {
+            val detail = remember(st, sheet) { vm.engine.itemDetail(st, sheet.id, st.lastResolution?.takeIf { sheet.id !in st.weapons }?.weaponSnapshot(sheet.id)) }
+            if (detail == null) LaunchedEffect(sheet) { vm.closeSheet() }
+            else ItemDetailSheet(
+                detail, planning = true, openHero,
+                onStock = { vm.dispatch(it.toCommand(sheet.id)) },
+                onDismiss = vm::closeSheet, enabled = !s.busy,
+            )
+        }
+    }
 }
 
 /**

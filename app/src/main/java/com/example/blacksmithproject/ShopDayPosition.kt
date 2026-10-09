@@ -66,9 +66,3 @@ data class ShopDayPosition(val beats: List<Beat>, val at: Int) {
         }
     }
 }
-
-/** A detail sheet opened from the shop day; read-only there. */
-sealed interface ShopDaySheet {
-    data class Hero(val heroId: HeroId) : ShopDaySheet
-    data class Blade(val weaponId: WeaponId) : ShopDaySheet
-}
