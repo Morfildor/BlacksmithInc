@@ -111,7 +111,8 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
         if (reducedMotion) { shown = totalSteps; return@LaunchedEffect }
         while (shown < totalSteps) { delay(700); shown += 1 }
     }
-    Dialog(onDismissRequest = vm::dismissReport, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    // Back and a tap outside never mean "Begin day": only the button below closes the report.
+    Dialog(onDismissRequest = { vm.back() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
             color = Color.Transparent,
             contentColor = PaperInk,

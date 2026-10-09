@@ -7,7 +7,24 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- A save that cannot be opened no longer crashes the game. A recovery screen says what happened and what is safe, and
+  offers Try again or, for a damaged or incompatible run, Start over (the unreadable run is kept as a backup on the
+  device and your legacy stays).
+- When a save fails while you play, a dialog says nothing has changed and offers Try again or Keep working.
+- Back returns to Home from any other panel.
+
+### Changed
+- After you claim a fallen era's legacy, the run-end screen survives closing the game: it reopens claimed, with your
+  points and upgrades still there to spend, until you begin the next era.
+- The Back button and a tap outside the day's report no longer close it; only its "Begin day" button does.
+- The forge panel you were on, the recipe you were drafting and an open forge result come back if the system closes
+  the game in the background.
+- Android's automatic cloud backup of the save is off until restoring one is tested.
+
 ### Fixed
+- Two quick taps on the run-end screen (two upgrades, or an upgrade and Begin era) can no longer lose a purchase or
+  write over the new era.
 - The day's report now tells the whole day, including the blades you forged, listed or honed and the tools you bought
   while planning; before, those lines appeared only in the Gazette archive.
 

@@ -36,6 +36,11 @@ android {
     }
 }
 
+// Room writes the schema of each database version here; the files are committed so a later migration can be tested against them.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
     implementation(project(":core"))
     implementation(platform(libs.androidx.compose.bom))

@@ -4,14 +4,17 @@ import com.example.blacksmithproject.GameSession.Op
 import com.example.blacksmithproject.GameSession.Result
 import com.example.blacksmithproject.GameSession.Status
 import com.example.blacksmithproject.data.SaveFailure
+import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.model.CommandId
+import com.tinyblacksmith.core.model.ForgeMode
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.LegacyProfile
+import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.persistence.DayCursor
 import com.tinyblacksmith.core.persistence.SaveCodec
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -374,17 +377,19 @@ class GameSessionTest {
 
     @Test
     fun anEngineFaultIsNotRetried() = sessionTest {
-        // A decodable save the engine refuses: its invariant check throws on the next accepted command.
-        val broken = engine.newRun(LegacyProfile(), 42L).copy(gold = -1000)
-        val repo = liveRepo(broken)
+        // The save is sound (load admits it); the fault is in the engine: a config with no risk table throws inside the forge.
+        val faulty = GameEngine(config = BalanceConfig.DEFAULT.copy(risk = emptyMap()))
+        val start = faulty.newRun(LegacyProfile(), 42L)
+        val repo = liveRepo(start)
         val runRow = repo.run
-        val session = session(repo)
-        session.load()
+        val session = GameSession(faulty, repo, compute = StandardTestDispatcher(testScheduler))
+        assertTrue(session.load() is Result.Done)
         val before = session.snapshot.value
 
-        val result = session.run(Op.Dispatch(endDay(broken), broken.runId))
+        val result = session.run(Op.Dispatch(Command.Forge(ForgeMode.QUICK, LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, null, Risk.BALANCED), start.runId))
         assertTrue("got $result", result is Result.EngineFault)
         assertEquals("nothing is held for a retry", Status.Idle, session.status.value)
+        assertTrue("a retry has nothing to run", session.retry().let { it is Result.Done && it.accepted == null })
         assertEquals(0, repo.commitCount)
         assertEquals(runRow, repo.run)
         assertEquals(before, session.snapshot.value)

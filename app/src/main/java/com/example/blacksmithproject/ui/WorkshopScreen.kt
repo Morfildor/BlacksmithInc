@@ -1,5 +1,6 @@
 package com.example.blacksmithproject.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,6 +54,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
     val state = s.state
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
     val seenTips by vm.settings.seenTips.collectAsStateWithLifecycle(initialValue = Tips.ALL)
+    // Back returns to Home from any other panel; on Home it is not handled here, so it leaves the app.
+    BackHandler(enabled = s.panel != Panel.HOME) { vm.back() }
     Scaffold(
         bottomBar = {
             Column {
