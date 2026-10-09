@@ -2,177 +2,275 @@
  "anvil": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 109,
-  "height": 72
+  "height": 72,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "badge_common": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
  },
  "badge_epic": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
  },
  "badge_flaw": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
  },
  "badge_legendary": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
  },
  "badge_rare": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
  },
  "badge_uncommon": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
+ },
+ "bg_counter_forge": {
+  "sheet": "approved_hybrid_direction.png",
+  "width": 540,
+  "height": 270,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7841d827153ba86dad8f4b059658cf6e8a3e3a08d4b09c5b4abc8f85f1e8a5e6"
+ },
+ "bg_forge_night": {
+  "sheet": "Tiny Blacksmith RPG Asset Atlas.png",
+  "width": 232,
+  "height": 211,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "966f57c874a9f12e5d122a927878ddc64353ba96b4f2359e93dfc3b7b7f3404a"
+ },
+ "bg_run_end_fallen_forge": {
+  "sheet": "pack:Tiny_Blacksmith_UI_Backgrounds_v3",
+  "width": 270,
+  "height": 150,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "a2fb6139bf1bfb05dc3318d48536f172ceb95b86e3f9f1b07e07cb93e573e749"
+ },
+ "bg_title_workshop_night": {
+  "sheet": "pack:Tiny_Blacksmith_UI_Backgrounds_v3",
+  "width": 270,
+  "height": 150,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3fdc02d8605bdb5124b9c1666dcfe9d22577eb83d2321f758657d4c5cf7c17a7"
  },
  "blessing_forgefire": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "blessing_guild_patronage": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "blessing_hunters_edge": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "blessing_lucky_alloy": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "blessing_merchants_favor": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "blessing_runic_insight": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "blessing_stalwart_town": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "blessing_tireless_hands": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "ember_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 32,
-  "height": 32
+  "height": 32,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "ember_1": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 32,
-  "height": 32
+  "height": 32,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "ember_2": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 32,
-  "height": 32
+  "height": 32,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "ember_3": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 32,
-  "height": 32
+  "height": 32,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "faction_ashclaw_alt_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_ashclaw_alt_1": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_ashclaw_brute": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 112,
-  "height": 112
+  "height": 112,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_ashclaw_raider": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 80,
-  "height": 80
+  "height": 80,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_embermaw_alt_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_embermaw_alt_1": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_embermaw_drake": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 112,
-  "height": 112
+  "height": 112,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_embermaw_whelp": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 80,
-  "height": 80
+  "height": 80,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_hollowbound_alt_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_hollowbound_alt_1": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_hollowbound_shade": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 80,
-  "height": 80
+  "height": 80,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_hollowbound_wraith": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
   "width": 112,
-  "height": 112
+  "height": 112,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "furnace_cold": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 77,
-  "height": 96
+  "height": 96,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "furnace_hot": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 80,
-  "height": 96
+  "height": 96,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "furnace_warm": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 79,
-  "height": 96
+  "height": 96,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "fx_milestone_0": {
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "76bb7f9426cf627969e90f8ce3a70a72c9d34be5825e3332e0698af7980efa66",
   "anchor": "top-left",
   "kind": "animation",
   "durationMs": 100,
@@ -182,6 +280,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "4ce09d1271fd314a030be53948ed0b496826af48a4048db71d9d684986dc5e7a",
   "anchor": "top-left",
   "kind": "animation",
   "durationMs": 100,
@@ -191,6 +291,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "0a2b928637b4a3351204e63c8fd93d54b72db4fcba8f7931697a88e47708a642",
   "anchor": "top-left",
   "kind": "animation",
   "durationMs": 100,
@@ -200,6 +302,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "2435f64f3ab1687b1d72c0dd2e110c73ac46052f73ced9a0eeb2342aa9479107",
   "anchor": "top-left",
   "kind": "animation",
   "durationMs": 100,
@@ -209,6 +313,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "dbf632a24f7ff9c4a25083afd0c64f41efcebeea899cb77062a65be0f71f79c3",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -218,6 +324,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3285bf388af7ae38c317a4cbdf65da16105653cdcb2faa059370332527c5e696",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -227,6 +335,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "aaaccfd9523c6aa60b369ac2bef231f7742832474ce5fa18d501ffa9553c4ab9",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -236,6 +346,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "07e9ba9bd4ad631554b05b12517f7374c18e04150f8f8944563a7c60138f8a3c",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -245,6 +357,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "7850d26f009c5b2e04b4137c1c26a33ae0e57207788c4195d75b189e55d53a6b",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -254,6 +368,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "0685dc382bc91d90d56cd90f31dc95e0565be157ef6debfd29b2dd43802c74f8",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -263,6 +379,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "9691da6245a6b9a2c0d8f02e8029472f5c1be7232b29d756589aeb66eb19492d",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -272,6 +390,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "660bd60291df83413f8200c60504027ae5df51385bd25c727707bb48b3cb841d",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -281,6 +401,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "4007f4e1763978c40f898d7a4eb6c719d887b54ade65519ea880094a3a51ba04",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -290,6 +412,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "59847190f581342aefcbc4f2ea5e5de09f7019386879038ac610ad47d7603de7",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -299,6 +423,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "c656117f6c8ad87e0a03cb2be0c5154bf66c0f9e0b6bd71f7a0bf9c45d9d6d17",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -308,6 +434,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "d35ab8b94bf48036965c53404fbf2556d292f5f9b3f3e9b3da061780dd364a02",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -317,6 +445,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "a24bcdcf194876c716038ac9c92ba70cace36567fd7ba51d1773b5c8fd4cf46d",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -326,6 +456,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "93b192e752fc1faf61610923dd1f0cd2c4885c216b7f516a38f6f3f0db112fd4",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -335,6 +467,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "e2a541646c403ae6efcabb314ce3486ee1fc41f003f815568e884777cfc6d51f",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -344,6 +478,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "abebe93bea5307d262bf833ed91315afeb69ab5e6c63fa00431ee75e303e4baf",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -353,6 +489,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "c1f61e827e6f4600a571855a3ce6e58d59675c94ebc1a18224d6dbae2ac08966",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -362,6 +500,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "884f09be0d50cd919a1cb2e0c895b7b6d9a992f30d47ce03e8e7fb5e50f5f6c1",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -371,6 +511,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3a6482c25178617cf97a16e1cfcccfa222397289f0ed6226d020b51e231e704c",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -380,6 +522,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "d2cdc0170d26843a050c02714a8e2655815e05863cdc5c47fecd3393b28e853e",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -388,67 +532,114 @@
  "icon_day": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_energy": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_gold": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_integrity": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_militia": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_nav_forge": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 40,
-  "height": 40
+  "height": 40,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_nav_gazette": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 40,
-  "height": 40
+  "height": 40,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+ },
+ "icon_nav_home": {
+  "sheet": "Tiny Blacksmith RPG Asset Atlas.png",
+  "width": 40,
+  "height": 40,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "966f57c874a9f12e5d122a927878ddc64353ba96b4f2359e93dfc3b7b7f3404a"
  },
  "icon_nav_journal": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 40,
-  "height": 40
+  "height": 40,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_nav_legacy": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 40,
-  "height": 40
+  "height": 40,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_nav_market": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 40,
-  "height": 40
+  "height": 40,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_nav_town": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 40,
-  "height": 40
+  "height": 40,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+ },
+ "icon_purse": {
+  "sheet": "Tiny Blacksmith RPG Asset Atlas.png",
+  "width": 40,
+  "height": 40,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "966f57c874a9f12e5d122a927878ddc64353ba96b4f2359e93dfc3b7b7f3404a"
  },
  "icon_reputation": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 24,
-  "height": 24
+  "height": 24,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+ },
+ "icon_settings": {
+  "sheet": "Tiny Blacksmith RPG Asset Atlas.png",
+  "width": 40,
+  "height": 40,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "966f57c874a9f12e5d122a927878ddc64353ba96b4f2359e93dfc3b7b7f3404a"
  },
  "marker_dead": {
   "sheet": "pack:New folder",
   "width": 8,
   "height": 8,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "c9149086da46f05e1761bdc668d7b3ad812b7ecadc890dccc15c6bff77638a22",
   "anchor": "top-left",
   "kind": "marker",
   "notes": "Gravestone"
@@ -457,6 +648,8 @@
   "sheet": "pack:New folder",
   "width": 8,
   "height": 8,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "143c4ecc5a71816ff5858e7b46cd806ead48af6a45f97148321afba869bfc59e",
   "anchor": "top-left",
   "kind": "marker",
   "notes": "Laurel wreath"
@@ -464,87 +657,121 @@
  "material_binding_salt": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_bronze": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_dragon_oil": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_ember_resin": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_frost_bloom": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_grave_dust": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_iron": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_moonsteel": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_obsidian": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_runestone_shard": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_silver": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_starsteel": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_stormglass": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_sun_ash": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_verdant_sap": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "material_void_ink": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 48,
-  "height": 48
+  "height": 48,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "monster_ashclaw_brute_attack_0": {
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "0576951db2b2ef9a2800777ecece80376c0b1172da528df99b38d99e3b12a832",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -554,6 +781,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "7852ea11acc952b0e48fa899e10f977c96ceddfd11462cf5c1ac98a5dadc8581",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -563,6 +792,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "55c70ae06580dc14b372fedfe9a0b738f868ffb4789a8ab498c666f1a3c0c6ec",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -572,6 +803,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3bff0901b692bb9c9ce072e611fa9f365aa361b3779dc65a384f35be22a5c4cd",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -581,6 +814,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "f28fa389ff8dcb2db6f5fa79ec742d10e8b783e983938cf6a975ff29fa9faf11",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -590,6 +825,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "24f9a978ffd1376347677fe95eeee471ff17733ffe17a744bd442f6506abc7a1",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -599,6 +836,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "9c7a60420020cfd4f93351337caf51a54024ade81f99a606d8efab84f5215f38",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -608,6 +847,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "7e5871b2429c2f4cf5bfe1d1264d2dbeb5c9876b8db3d1f80f5000c1bf49a4c3",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -617,6 +858,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "7e6aafe0e43e847622d1319239a7113dfaa2d9804b9a32c513b694724f7805e5",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -626,6 +869,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "fae1fa608663911a48b193f3b27f8b0ba3ebee4bad3aba7def409f368e5bb672",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -635,6 +880,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "b62ec65ad83c478503a85cd2f79f4edecd3ce453bb60abfe231fa933bc2ad625",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -644,6 +891,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "7abb0dee3ee9b65f0a24fbf5e04696cc84c2402c192d227fbea0351c1bb26e01",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -653,6 +902,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "8fbbf6007d4c0a2674012f8b79769c255be702f0760592e424d12c588ad6e7ba",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -662,6 +913,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "44a5e811445bdfb0026a7bdc276aa99265168b3a18c7ac077777fbe8f9682fee",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -671,6 +924,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "2840f8be72709bfe3419b10d86c84309f5f181e43dc353f2f22729488f695198",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -680,6 +935,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "7b713144f211c038efac7aade73dbaff50bc04afd661c5a502a1c38ade953b52",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -689,6 +946,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "e3c8685319167bd88e32f03a02ba55cacf9f0d8d59e62a280da2a05d1f5df0b9",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -698,6 +957,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "cfe2eb022403e9811f7e66ff21e7062386c62042390a1b9c9866aba90a47cf13",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -707,6 +968,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "456c36bd65453a6639b425be550ac5de73e4c68e1a90fb00c3a1cfa854f1bf46",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -716,6 +979,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "9cca1548a38a4707a34fe6cb3938afdebca185033ea5306832b80a2a93592b8d",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -725,6 +990,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "9ba21b143e87467a004807011f34b1c682c9784e8d7f310da55f6ad368397155",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -734,6 +1001,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "08adec01d16bfef1a8f929a8a238db334428b59e71b9039e07462029f21eb0ec",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -743,6 +1012,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "03ee68d183f39b7bfe275ca724d99c65bec5f8629ce3fd745ce633aad94174a7",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -752,6 +1023,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "b35ba98f39f22fadc06624dbea358ae9a9a342e66804b356b7af71cee5f22176",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -761,6 +1034,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3ce9ddbc6d310bc7bb71b67495e93e8f983d217456089b0f0b97b14d6b517e2a",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -770,6 +1045,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "585ad1df5d222ac6e465c4bdab044440a418e23dd7c62f2988015b73188c976b",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -779,6 +1056,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "afbad7161f2f7e24dc4c314d86dc5976207cb5e442bedc3d878c306e67de6baf",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -788,6 +1067,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "840fcbeaed90e9e475b3e8cf3e4b6d4370c2af28bb87d99a48ee06f9678e6a27",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -797,6 +1078,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "60e2dfb0c8f294b4d51bd6e51285db3fde49df6094359ba392d1e29a958f97e7",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -806,6 +1089,8 @@
   "sheet": "pack:New folder",
   "width": 16,
   "height": 16,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "dd6517d2c1503fad4c620bd43706e926f4fe09dad6745082a0887b0a0b924d81",
   "anchor": "bottom-center",
   "kind": "animation",
   "durationMs": 120,
@@ -814,147 +1099,530 @@
  "panel_gazette": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 256,
-  "height": 126
+  "height": 126,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "panel_journal": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 256,
-  "height": 163
+  "height": 163,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "portrait_battlemage_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   58
+  ]
  },
  "portrait_battlemage_1": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   58
+  ]
  },
  "portrait_battlemage_2": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   58
+  ]
  },
  "portrait_battlemage_3": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   57
+  ]
  },
  "portrait_battlemage_4": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   61
+  ]
  },
  "portrait_duelist_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   54
+  ]
  },
  "portrait_duelist_1": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   57
+  ]
  },
  "portrait_duelist_2": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   54
+  ]
  },
  "portrait_duelist_3": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   53
+  ]
  },
  "portrait_duelist_4": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   57
+  ]
  },
  "portrait_guardian_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   60
+  ]
  },
  "portrait_guardian_1": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   62
+  ]
  },
  "portrait_guardian_2": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   2,
+   1,
+   63,
+   59
+  ]
  },
  "portrait_guardian_3": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   54
+  ]
  },
  "portrait_guardian_4": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   62,
+   63
+  ]
  },
  "portrait_ranger_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   54
+  ]
  },
  "portrait_ranger_1": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   59
+  ]
  },
  "portrait_ranger_2": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   58
+  ]
  },
  "portrait_ranger_3": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   56
+  ]
  },
  "portrait_ranger_4": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   57
+  ]
+ },
+ "portrait_v2_battlemage_1": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_battlemage_2": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_battlemage_3": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_battlemage_4": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_battlemage_5": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_duelist_1": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_duelist_2": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_duelist_3": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_duelist_4": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_duelist_5": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_guardian_1": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_guardian_2": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_guardian_3": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_guardian_4": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_guardian_5": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_ranger_1": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_ranger_2": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_ranger_3": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_ranger_4": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_ranger_5": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_warden_1": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_warden_2": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_warden_3": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_warden_4": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
+ },
+ "portrait_v2_warden_5": {
+  "sheet": "v2_concept_reference.png",
+  "width": 64,
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9ad02a303d89fc213543f72977dc74ae0032d05e49c85880af0dca6ab328c16e"
  },
  "portrait_warden_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   60
+  ]
  },
  "portrait_warden_1": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   58
+  ]
  },
  "portrait_warden_2": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   59
+  ]
  },
  "portrait_warden_3": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   62
+  ]
  },
  "portrait_warden_4": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "6ed99db67dd78c66dab1484bd2665c2dd5be1157f3cc6433ad3d0584c2fb581d",
+  "contentBox": [
+   1,
+   1,
+   63,
+   60
+  ]
  },
  "shelf": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 122,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "siege_wall": {
   "sheet": "pack:New folder",
   "width": 96,
   "height": 32,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "dc649c510f79b375f2336c0fb4bddb652290fc53dc9f1e8007aeb57a810eb490",
   "anchor": "tile",
   "kind": "siege",
   "notes": "Siege backdrop 96x32"
@@ -963,6 +1631,8 @@
   "sheet": "pack:New folder",
   "width": 96,
   "height": 32,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "5d0e7857a42aca6c572bea665f1e24a373f770a785629083af2245b16bd6a7c4",
   "anchor": "tile",
   "kind": "siege",
   "notes": "Siege backdrop 96x32"
@@ -970,1701 +1640,2381 @@
  "tile_floor": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 64,
-  "height": 32
+  "height": 32,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "tile_paper": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "tile_wall": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 64,
-  "height": 64
+  "height": 64,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "tool_rack": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 54,
-  "height": 88
+  "height": 88,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
  "weapon_axe_base_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_base_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_base_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_base_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_base_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_base_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_base_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_base_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_fire_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_fire_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_fire_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_fire_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_fire_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_fire_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_fire_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_fire_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_frost_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_frost_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_frost_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_frost_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_frost_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_frost_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_frost_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_frost_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_grave_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_grave_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_grave_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_grave_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_grave_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_grave_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_grave_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_grave_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_storm_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_storm_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_storm_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_storm_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_storm_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_storm_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_storm_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_storm_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_sun_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_sun_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_sun_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_sun_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_sun_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_sun_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_sun_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_sun_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_verdant_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_verdant_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_verdant_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_verdant_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_verdant_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_verdant_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_verdant_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_axe_verdant_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_base_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_base_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_base_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_base_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_base_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_base_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_base_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_base_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_fire_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_fire_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_fire_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_fire_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_fire_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_fire_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_fire_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_fire_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_frost_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_frost_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_frost_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_frost_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_frost_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_frost_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_frost_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_frost_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_grave_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_grave_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_grave_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_grave_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_grave_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_grave_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_grave_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_grave_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_storm_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_storm_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_storm_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_storm_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_storm_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_storm_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_storm_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_storm_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_sun_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_sun_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_sun_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_sun_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_sun_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_sun_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_sun_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_sun_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_verdant_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_verdant_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_verdant_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_verdant_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_verdant_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_verdant_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_verdant_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_bow_verdant_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_base_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_base_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_base_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_base_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_base_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_base_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_base_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_base_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_fire_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_fire_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_fire_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_fire_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_fire_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_fire_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_fire_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_fire_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_frost_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_frost_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_frost_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_frost_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_frost_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_frost_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_frost_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_frost_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_grave_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_grave_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_grave_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_grave_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_grave_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_grave_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_grave_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_grave_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_storm_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_storm_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_storm_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_storm_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_storm_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_storm_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_storm_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_storm_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_sun_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_sun_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_sun_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_sun_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_sun_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_sun_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_sun_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_sun_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_verdant_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_verdant_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_verdant_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_verdant_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_verdant_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_verdant_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_verdant_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_dagger_verdant_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_base_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_base_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_base_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_base_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_base_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_base_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_base_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_base_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_fire_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_fire_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_fire_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_fire_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_fire_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_fire_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_fire_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_fire_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_frost_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_frost_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_frost_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_frost_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_frost_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_frost_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_frost_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_frost_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_grave_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_grave_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_grave_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_grave_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_grave_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_grave_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_grave_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_grave_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_storm_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_storm_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_storm_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_storm_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_storm_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_storm_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_storm_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_storm_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_sun_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_sun_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_sun_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_sun_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_sun_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_sun_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_sun_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_sun_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_verdant_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_verdant_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_verdant_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_verdant_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_verdant_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_verdant_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_verdant_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_spear_verdant_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_base_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_base_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_base_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_base_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_base_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_base_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_base_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_base_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_fire_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_fire_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_fire_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_fire_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_fire_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_fire_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_fire_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_fire_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_frost_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_frost_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_frost_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_frost_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_frost_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_frost_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_frost_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_frost_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_grave_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_grave_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_grave_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_grave_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_grave_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_grave_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_grave_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_grave_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_storm_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_storm_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_storm_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_storm_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_storm_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_storm_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_storm_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_storm_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_sun_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_sun_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_sun_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_sun_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_sun_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_sun_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_sun_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_sun_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_verdant_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_verdant_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_verdant_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_verdant_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_verdant_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_verdant_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_verdant_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_staff_verdant_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_base_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_base_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_base_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_base_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_base_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_base_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_base_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_base_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_fire_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_fire_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_fire_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_fire_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_fire_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_fire_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_fire_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_fire_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_frost_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_frost_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_frost_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_frost_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_frost_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_frost_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_frost_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_frost_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_grave_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_grave_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_grave_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_grave_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_grave_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_grave_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_grave_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_grave_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_storm_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_storm_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_storm_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_storm_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_storm_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_storm_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_storm_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_storm_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_sun_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_sun_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_sun_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_sun_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_sun_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_sun_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_sun_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_sun_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_verdant_1": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_verdant_2": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_verdant_3": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_verdant_4": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_verdant_5": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_verdant_6": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_verdant_7": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
  "weapon_sword_verdant_8": {
   "sheet": "Weapons master",
   "width": 56,
-  "height": 56
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  }
 }
