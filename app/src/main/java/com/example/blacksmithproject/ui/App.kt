@@ -15,7 +15,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -32,17 +37,27 @@ import com.example.blacksmithproject.ui.theme.Space
 @Composable
 fun TinyBlacksmithApp(vm: GameViewModel) {
     val ui by vm.ui.collectAsStateWithLifecycle()
+    val hapticsOn by vm.settings.haptics.collectAsStateWithLifecycle(initialValue = false)
+    val haptics = rememberHaptics(hapticsOn)
+    // The toll sounds when a run ends while playing, not each time the game is reopened onto an ended run.
+    var wasPlaying by remember { mutableStateOf(false) }
+    LaunchedEffect(ui is UiState.RunEnded, ui is UiState.Playing) {
+        if (ui is UiState.RunEnded && wasPlaying) haptics.play(Moment.RUN_END)
+        wasPlaying = ui is UiState.Playing
+    }
     // Test tags double as Android resource IDs for uiautomator scripts (tools/emulator).
-    Surface(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }, color = MaterialTheme.colorScheme.background) {
-        when (val s = ui) {
-            UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-            is UiState.LoadFailed -> LoadFailedScreen(s.failure, s.working, onRetry = vm::retry, onStartOver = vm::startOver)
-            is UiState.Title -> TitleScreen(s, onNewRun = vm::newRun)
-            is UiState.Playing -> WorkshopScreen(s, vm)
-            is UiState.RunEnded -> RunEndScreen(s, vm)
+    CompositionLocalProvider(LocalHaptics provides haptics) {
+        Surface(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }, color = MaterialTheme.colorScheme.background) {
+            when (val s = ui) {
+                UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+                is UiState.LoadFailed -> LoadFailedScreen(s.failure, s.working, onRetry = vm::retry, onStartOver = vm::startOver)
+                is UiState.Title -> TitleScreen(s, onNewRun = vm::newRun)
+                is UiState.Playing -> WorkshopScreen(s, vm)
+                is UiState.RunEnded -> RunEndScreen(s, vm)
+            }
+            // A save that failed leaves the last saved state on screen under this dialog; nothing is lost by dismissing it.
+            (ui.op as? GameSession.Status.Failed)?.let { SaveFailureDialog(it.op, it.unconfirmed, onRetry = vm::retry, onKeepWorking = vm::dismissSaveFailure) }
         }
-        // A save that failed leaves the last saved state on screen under this dialog; nothing is lost by dismissing it.
-        (ui.op as? GameSession.Status.Failed)?.let { SaveFailureDialog(it.op, it.unconfirmed, onRetry = vm::retry, onKeepWorking = vm::dismissSaveFailure) }
     }
 }
 

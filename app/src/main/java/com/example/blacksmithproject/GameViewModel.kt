@@ -271,6 +271,7 @@ class GameViewModel(val engine: GameEngine, private val session: GameSession, va
     fun dismissSaveFailure() = session.dismissFailure()
 
     fun setReducedMotion(value: Boolean) = viewModelScope.launch { settings.setReducedMotion(value) }
+    fun setHaptics(value: Boolean) = viewModelScope.launch { settings.setHaptics(value) }
     fun dismissTip(id: String) = viewModelScope.launch { settings.markTipSeen(id) }
 
     /** Player-facing text for an engine error; the UI also uses it to explain disabled choices. */

@@ -101,7 +101,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
             }
         }
     }
-    if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, onDismiss = { settingsOpen = false })
+    val haptics by vm.settings.haptics.collectAsStateWithLifecycle(initialValue = false)
+    if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, haptics, vm::setHaptics, onDismiss = { settingsOpen = false })
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
     s.showReport?.let { DayReportDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)
@@ -177,6 +178,7 @@ fun TipBanner(tip: Tips.Tip, vm: GameViewModel, modifier: Modifier = Modifier) {
 @Composable
 private fun EndDayButton(s: UiState.Playing, vm: GameViewModel) {
     val state = s.state
+    val haptics = LocalHaptics.current
     val note = when {
         state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
         state.commissions.values.any { it.status == CommissionStatus.OFFERED } -> "A commission is waiting"
@@ -185,7 +187,7 @@ private fun EndDayButton(s: UiState.Playing, vm: GameViewModel) {
         else -> "Rest until dawn"
     }
     FilledTonalButton(
-        onClick = vm::endDay,
+        onClick = { haptics.play(Moment.END_DAY); vm.endDay() },
         enabled = !s.busy,
         contentPadding = PaddingValues(horizontal = Space.md, vertical = Space.xs),
         modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.xs).heightIn(min = 48.dp).testTag("end_day"),

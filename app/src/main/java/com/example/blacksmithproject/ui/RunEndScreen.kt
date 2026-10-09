@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -39,6 +40,8 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
     val content = vm.engine.content
     val end = s.runEnd
     val nextEra = maxOf(s.legacy.nextEra, end.era + 1)
+    val haptics = LocalHaptics.current
+    LaunchedEffect(s.lastError) { if (s.lastError != null) haptics.play(Moment.REJECTED) }
     // The next step stays pinned under the scrolling summary, so it never hides below the upgrade list.
     Column(Modifier.fillMaxSize().safeDrawingPadding()) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Space.md, vertical = Space.lg)) {
