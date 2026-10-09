@@ -22,8 +22,18 @@ android {
 
     buildTypes {
         release {
+            // R8 trial (T7.4): code shrinking, obfuscation and resource shrinking. AGP 9 reads the keep rules
+            // from src/main/keepRules/ (the `files` property is deprecated); see rules.keep there.
             optimization {
-                enable = false
+                enable = true
+            }
+            isShrinkResources = true
+            // TRIAL ONLY: `-PtrialSuffix` installs the release build next to the debug build under a different
+            // application ID, debug-signed so a device accepts it. Off by default; replace with the real
+            // release signing before any upload (docs/RELEASE_RUNBOOK.md).
+            if (providers.gradleProperty("trialSuffix").isPresent) {
+                applicationIdSuffix = ".r8trial"
+                signingConfig = signingConfigs.getByName("debug")
             }
         }
     }
