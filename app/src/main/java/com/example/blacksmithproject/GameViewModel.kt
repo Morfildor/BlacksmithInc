@@ -1,8 +1,12 @@
 package com.example.blacksmithproject
 
 import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.blacksmithproject.data.GameRepository
 import com.example.blacksmithproject.data.SaveStore
 import com.example.blacksmithproject.data.SettingsStore
 import com.tinyblacksmith.core.engine.Command
@@ -13,10 +17,12 @@ import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.legacy.LegacyOutcome
 import com.tinyblacksmith.core.legacy.RunEndResult
 import com.tinyblacksmith.core.model.*
+import com.tinyblacksmith.core.persistence.SaveCodec
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,18 +60,16 @@ sealed interface UiState {
  * UI is an observer (GDD 13.2): it dispatches typed commands to the pure engine and persists accepted results
  * atomically before showing them. It never computes gameplay outcomes itself.
  */
-class GameViewModel(app: Application) : AndroidViewModel(app) {
+class GameViewModel(private val repo: GameRepository, val settings: SettingsStore) : ViewModel() {
     val engine = GameEngine()
-    private val store = SaveStore.create(app)
-    val settings = SettingsStore(app)
 
     private val _ui = MutableStateFlow<UiState>(UiState.Loading)
     val ui: StateFlow<UiState> = _ui.asStateFlow()
 
     init {
         viewModelScope.launch {
-            val legacy = withContext(Dispatchers.IO) { store.loadLegacy() }
-            val run = withContext(Dispatchers.IO) { store.loadRun() }
+            val legacy = loadLegacy()
+            val run = loadRun()
             // The engine saves the last day's report with the run; one the player never closed reopens (GDD 3.3).
             val unread = run?.lastResolution?.let { r -> r.takeIf { it.commandId.value != settings.dismissedReport() } }
             _ui.value = when {
@@ -76,16 +80,29 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun newRun() = viewModelScope.launch {
-        val legacy = withContext(Dispatchers.IO) { store.loadLegacy() }
-        val seed = System.nanoTime() xor legacy.eras.size.toLong()
-        val state = engine.newRun(legacy, seed)
-        withContext(Dispatchers.IO) { store.saveAtomically(state, state.legacy) }
+    private suspend fun loadRun(): GameState? = withContext(Dispatchers.IO) { repo.load().run?.let { SaveCodec.decodeRun(it) } }
+
+    private suspend fun loadLegacy(): LegacyProfile = withContext(Dispatchers.IO) { repo.load().legacy?.let { SaveCodec.decodeLegacy(it) } ?: LegacyProfile() }
+
+    private suspend fun save(run: GameState?, legacy: LegacyProfile) =
+        withContext(Dispatchers.IO) { repo.commit(run?.let { SaveCodec.encodeRun(it) }, SaveCodec.encodeLegacy(legacy)) }
+
+    fun newRun() = startRun(null)
+
+    /** Debug launch extra only (MainActivity checks the debuggable flag): a fixed-seed run, and only when no run is saved. */
+    fun startSeededRun(seed: Long) {
+        viewModelScope.launch { if (_ui.first { it !is UiState.Loading } is UiState.Title) startRun(seed) }
+    }
+
+    private fun startRun(seed: Long?) = viewModelScope.launch {
+        val legacy = loadLegacy()
+        val state = engine.newRun(legacy, seed ?: (System.nanoTime() xor legacy.eras.size.toLong()))
+        save(state, state.legacy)
         _ui.value = UiState.Playing(state)
     }
 
     fun continueRun() = viewModelScope.launch {
-        val run = withContext(Dispatchers.IO) { store.loadRun() } ?: return@launch
+        val run = loadRun() ?: return@launch
         _ui.value = if (run.isEnded) UiState.RunEnded(engine.closeRun(run), run.legacy, claimed = false) else UiState.Playing(run)
     }
 
@@ -113,7 +130,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             when (val out = engine.handle(current.state, command)) {
                 is CommandOutcome.Accepted -> {
-                    withContext(Dispatchers.IO) { store.saveAtomically(out.state, out.state.legacy) }
+                    save(out.state, out.state.legacy)
                     _ui.update { ui ->
                         if (ui !is UiState.Playing) ui
                         else ui.copy(state = out.state, busy = false, revealWeaponId = out.forgedWeaponId ?: ui.revealWeaponId, showReport = out.resolution ?: ui.showReport, lastError = null)
@@ -133,14 +150,14 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     fun claimLegacy() {
         val current = _ui.value as? UiState.RunEnded ?: return
         viewModelScope.launch {
-            val legacy = withContext(Dispatchers.IO) { store.loadLegacy() }
+            val legacy = loadLegacy()
             when (val out = engine.claimLegacy(legacy, current.runEnd)) {
                 is LegacyOutcome.Updated -> {
-                    withContext(Dispatchers.IO) { store.saveAtomically(null, out.legacy) }
+                    save(null, out.legacy)
                     _ui.value = current.copy(legacy = out.legacy, claimed = true, lastError = null)
                 }
                 is LegacyOutcome.Rejected -> {
-                    withContext(Dispatchers.IO) { store.saveAtomically(null, out.legacy) }
+                    save(null, out.legacy)
                     _ui.value = current.copy(legacy = out.legacy, claimed = true, lastError = describe(out.error))
                 }
             }
@@ -152,7 +169,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             when (val out = engine.purchaseUpgrade(current.legacy, id)) {
                 is LegacyOutcome.Updated -> {
-                    withContext(Dispatchers.IO) { store.saveAtomically(null, out.legacy) }
+                    save(null, out.legacy)
                     _ui.value = current.copy(legacy = out.legacy, lastError = null)
                 }
                 is LegacyOutcome.Rejected -> _ui.value = current.copy(lastError = describe(out.error))
@@ -196,5 +213,14 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         GameError.ArmoryFull -> "The town watch armory is full."
         // Core grows concurrently; unmapped errors still get a readable line instead of a build break.
         else -> "The forge cannot do that right now."
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as Application
+                GameViewModel(SaveStore.create(app), SettingsStore(app))
+            }
+        }
     }
 }

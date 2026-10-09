@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
@@ -272,7 +273,7 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
                     onClick = { vm.dispatch(Command.Forge(d.mode, d.familyId!!, d.coreId!!, d.augmentId!!, d.catalystId, d.risk, d.technique)) },
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = Space.sm),
                     // A disabled button says why, so a screen reader is not left with a dead "Forge weapon".
-                    modifier = Modifier.width(116.dp).heightIn(min = 56.dp).semantics { if (!enabled) contentDescription = "Forge weapon, unavailable: $note" },
+                    modifier = Modifier.width(116.dp).heightIn(min = 56.dp).testTag("forge_weapon").semantics { if (!enabled) contentDescription = "Forge weapon, unavailable: $note" },
                 ) { Text("Forge weapon", style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.Center, maxLines = 2) }
             }
             Text(note, style = MaterialTheme.typography.bodySmall, color = if (ready && canAfford && missing == null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))

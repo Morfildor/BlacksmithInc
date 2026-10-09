@@ -22,6 +22,19 @@ if m:
   if [ -z "$x" ]; then echo "MISSING: $1"; return 1; fi
   $ADB shell input tap $x; echo "tapped '$1' at $x"; $ADB shell sleep 1.2
 }
+# tap the node whose resource-id (a Compose testTag, exposed through testTagsAsResourceId) is exactly $1
+has_id() { dump | grep -q "resource-id=\"$1\""; }
+tap_id() {
+  local x=$(dump | python -c "
+import sys,re
+s=sys.stdin.read()
+m=re.search(r'resource-id=\"$1\"[^>]*?bounds=\"\[(\d+),(\d+)\]\[(\d+),(\d+)\]', s)
+if m:
+  x1,y1,x2,y2=map(int,m.groups()); print((x1+x2)//2,(y1+y2)//2)
+")
+  if [ -z "$x" ]; then echo "MISSING id: $1"; return 1; fi
+  $ADB shell input tap $x; echo "tapped id '$1' at $x"; $ADB shell sleep 1.2
+}
 scroll_to() { for i in 1 2 3 4 5 6 7 8; do if has "$1"; then return 0; fi; $ADB shell input swipe 540 1200 540 950 600; $ADB shell sleep 1; done; has "$1" && return 0; echo "SCROLL MISSING: $1"; return 1; }
 shot() { $ADB exec-out screencap -p > "$OUT/$1.png"; echo "screenshot $1"; }
 wait_text() { for i in $(seq 1 20); do if has "$1"; then return 0; fi; $ADB shell sleep 1; done; echo "TIMEOUT waiting for '$1'"; return 1; }
@@ -29,23 +42,23 @@ wait_text() { for i in $(seq 1 20); do if has "$1"; then return 0; fi; $ADB shel
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && shot 01_title
-tap "Light the forge" || exit 1
+tap_id title_new_run || exit 1
 # A new run lands on the Home dashboard; the forge is one tab over.
 wait_text "Today" && shot 02_home
-tap "Forge" || exit 1
+tap_id nav_forge || exit 1
 wait_text "Forge weapon" && shot 02_workshop
 scroll_to "Sword" && tap "Sword"; scroll_to "Iron" && tap "Iron"; scroll_to "Ember Resin" && tap "Ember Resin"
 scroll_to "Forge weapon"; shot 03_forge_ready
-tap "Forge weapon" || exit 1
+tap_id forge_weapon || exit 1
 wait_text "Suggested price" && shot 04_result
-tap "List at" || exit 1
-tap "Market"; $ADB shell sleep 1; shot 05_market
+tap_id reveal_list || exit 1
+tap_id nav_market; $ADB shell sleep 1; shot 05_market
 has "Shelves (1/8)" && echo "CHECK shelf listed: ok" || echo "CHECK shelf listed: FAIL"
-tap "End Day" || exit 1
+tap_id end_day || exit 1
 wait_text "EMBERFALL GAZETTE" && shot 06_gazette
 dump | grep -o 'text="[^"]*"' | grep -iE "gazette|bought|forged|patrolled|routed|invasion" | head -8
-tap "Begin day" || exit 1
-tap "Town"; $ADB shell sleep 1; shot 07_town
+tap_id report_close || exit 1
+tap_id nav_town; $ADB shell sleep 1; shot 07_town
 has "Champions" && echo "CHECK town panel: ok"
 # Process-death resume: kill and relaunch, expect the same day.
 $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null

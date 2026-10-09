@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,7 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
                         Modifier.padding(top = Space.sm),
                     )
                     if (!s.claimed) {
-                        Button(onClick = vm::claimLegacy, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp)) {
+                        Button(onClick = vm::claimLegacy, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("run_claim")) {
                             Text("Claim ${end.totalPoints} legacy points", style = MaterialTheme.typography.titleMedium)
                         }
                     }
@@ -99,7 +100,7 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
         }
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm)) {
             if (s.claimed) {
-                Button(onClick = vm::beginNextEra, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                Button(onClick = vm::beginNextEra, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag("run_begin_era")) {
                     Text("Begin era $nextEra", style = MaterialTheme.typography.titleMedium)
                 }
             } else {
