@@ -297,7 +297,7 @@ class SimulationDriver(
                     policy.reputed -> 1.0 + (state.reputation * engine.config.reputationPricePerPoint).coerceIn(0.0, engine.config.reputationPriceCap)
                     else -> policy.priceFactor
                 }
-                val price = (engine.suggestedPrice(w) * factor).toInt()
+                val price = bots?.wantPrice(state, w) ?: (engine.suggestedPrice(w) * factor).toInt()
                 state = engine.handle(state, Command.ToggleShelf(w.id, true, price)).state()
                 listed++
             }
@@ -836,6 +836,9 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
             "arrivalChancePerMissing" -> c.copy(customers = c.customers.copy(arrivalChancePerMissing = dbl()))
             "arrivalChanceMax" -> c.copy(customers = c.customers.copy(arrivalChanceMax = dbl()))
             "patronageStipend" -> c.copy(customers = c.customers.copy(patronageStipend = int()))
+            "needWantMet" -> c.copy(customers = c.customers.copy(needWantMet = dbl()))
+            "seatWantWeight" -> c.copy(customers = c.customers.copy(seatWantWeight = dbl()))
+            "wantLapseDays" -> c.copy(customers = c.customers.copy(wantLapseDays = int()))
             "wallsRoutDamage" -> c.copy(weaponFates = c.weaponFates.copy(wallsRoutDamage = int()))
             "wallsRoutRatio" -> c.copy(weaponFates = c.weaponFates.copy(wallsRoutRatio = dbl()))
             "newAdventurerCount" -> c.copy(newAdventurerCount = int())

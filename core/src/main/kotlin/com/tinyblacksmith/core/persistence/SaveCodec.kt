@@ -60,6 +60,9 @@ object SaveCodec {
         // Schema 4 adds the counter's memory of each hero (visits, purchases, turned-away streak, arrival day), all defaulted:
         // a hero written before them starts as a newcomer with no streak. Its conversions give lineages their IDs and every
         // hero, as a stored key, the face they have always shown.
+        // Added since, all defaulted and still schema 4 (no build that writes it has left the machine): `Hero.lastLineDay`,
+        // `lastLineCue`, `milestoneLines` (recognition, T3.5), `stipendSpentFor` and `Sale.stipend` (Guild Patronage, T3.6),
+        // `Hero.want` (standing wants, T4.1).
         3 to { stampAppearances(linkDescendants(it)) },
     )
     internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 3 to { json.parseToJsonElement(it).jsonObject.let { l -> identifyLineages(l).takeIf { n -> n != l }?.toString() ?: it } })

@@ -127,9 +127,9 @@ class AdviceTest {
         assertNotEquals(LeadKind.ARM_DEFENDERS, lead(safe).kind, "the odds are with the town")
     }
 
-    /** Standing wants arrive with M4; until then the constant exists and is never returned. */
+    /** Every lead a run meets has its words; a want is led only for a living hero who has one that nothing listed answers. */
     @Test
-    fun answerWantIsNotLedBeforeWantsExist() {
+    fun everyLeadOfARunHasItsWordsAndAWantIsLedOnlyWhenOneStands() {
         var leads = 0
         val kinds = mutableSetOf<LeadKind>()
         for (seed in 1L..10L) {
@@ -142,7 +142,10 @@ class AdviceTest {
                 for (state in listOf(s, forged, listed)) {
                     val l = lead(state)
                     leads++; kinds += l.kind
-                    assertNotEquals(LeadKind.ANSWER_WANT, l.kind)
+                    if (l.kind == LeadKind.ANSWER_WANT) {
+                        val demand = Demand.summary(state, content, config)
+                        assertTrue(l.heroId in demand.wants && l.heroId !in demand.wantsAnswered && state.hero(l.heroId!!).want?.familyId == l.familyId, "$l")
+                    }
                     val text = Lines.lead(l, state, content, config)
                     assertTrue(text.action.isNotBlank() && text.reason?.isBlank() != true, "$l")
                     assertFalse("%" in text.action + text.reason, "$text")
@@ -152,7 +155,8 @@ class AdviceTest {
             }
         }
         assertTrue(leads > 300 && kinds.size >= 6, "leads=$leads kinds=$kinds")
-        assertEquals(LeadLine("Answer a want", null), Lines.lead(Lead(LeadKind.ANSWER_WANT), fresh, content, config))
+        assertTrue(LeadKind.ANSWER_WANT in kinds, "wants are voiced in ordinary play: $kinds")
+        assertEquals(LeadLine("Forge a blade", null), Lines.lead(Lead(LeadKind.ANSWER_WANT), fresh, content, config))
     }
 
     @Test

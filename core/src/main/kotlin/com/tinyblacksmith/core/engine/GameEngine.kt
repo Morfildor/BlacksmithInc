@@ -383,6 +383,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         }
         ctx.worldFlags.entries.removeIf { it.value < ctx.day }
         for (h in ctx.aliveHeroes()) if (h.lastActivity == HeroActivity.SHOP) ctx.updateHero(h.copy(lastActivity = HeroActivity.IDLE))
+        // A want stands for the mornings after it was voiced, `wantLapseDays` of them; the planning screen never shows one End Day would ignore.
+        for (h in ctx.aliveHeroes()) if (h.want != null && ctx.day - h.want.sinceDay > config.customers.wantLapseDays) ctx.updateHero(h.copy(want = null))
     }
 
     /** The day's stock of the limited materials; Caravan Ties (CATALOG_ACCESS) deepens every one of them. */

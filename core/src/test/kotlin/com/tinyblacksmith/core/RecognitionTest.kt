@@ -81,6 +81,7 @@ class RecognitionTest {
                 RecognitionCue.MENTORS_BLADE -> assertTrue(!bought && before.mentorName != null && d.pre.hero(r.otherHeroId!!).fullName == before.mentorName && history("INHERITED").any { it.subjectIds.getOrNull(1) == r.otherHeroId.value }, at)
                 RecognitionCue.OF_THE_LINE -> assertTrue(before.shopVisits == 0 && before.lineageId == lineage.id, at)
                 RecognitionCue.WAITED_YESTERDAY -> assertTrue(before.turnedAwayStreak >= 1 && d.res.browsers.first() === v, at)
+                RecognitionCue.WANT_ANSWERED -> assertTrue(bought && r.weaponId == v.purchasedWeaponId && before.want != null && r.day == before.want.sinceDay && d.post.weapon(v.purchasedWeaponId!!).familyId == before.want.familyId, at)
             }
             // The sentence is the cue's own and names the customer; no clause without its field.
             val text = assertNotNull(Lines.recognition(v, ShopDay.script(d.res, d.post, content, config), d.post), at)

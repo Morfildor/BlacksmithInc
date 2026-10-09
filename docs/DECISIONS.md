@@ -2489,3 +2489,69 @@ and from then on some rest instead of acting (HEROES and COMBAT draws differ) an
 
 **Simulator.** A "wall" line on every policy row (routs a run, champions fallen a run, share of runs with one); `--set wallsRoutDamage=N`,
 `--set wallsRoutRatio=X`. `FieldOutcome.FELL_AT_THE_WALL` now occurs.
+
+## Balance v8, standing wants (2026-10-09, task T4.1; E1, G02, B02)
+
+**The rule (PROPOSED, plan 4.6 E1).** A hero who is served at a stocked shelf and buys nothing leaves a want on the hero:
+`Hero.want = Want(familyId, minPower, budget, sinceDay)`. The family is that of the listed blade for their class they valued most
+(their class's first family when nothing suited); `minPower` is the power a keen blade of that family needs before the counter's own
+rule lets them take it (what they carry, as worth in the hand, plus the gain that clears the purchase threshold without luck); `budget`
+is purse plus trade-in. A standing want keeps its family and its day when the hero looks in again; its power and budget are refreshed.
+While a listed blade answers it (`Market.answersWant`: the wanted family, affordable, and bought by `Market.evaluate` at the middle
+of its noise) the hero's visit chance is **+0.30** (`customers.needWantMet`, the plan's value) and their seat weight **+0.5**
+(`customers.seatWantWeight`, chosen equal to `seatNeedWeight`; the plan names no number). It lapses on the morning after
+`customers.wantLapseDays` **3** days, or at once on any purchase (shelf, commission, travelling merchant). Recording draws no RNG and
+with `needWantMet = 0` a want moves nothing (`WantsTest.wantsLeaveEveryRngStreamUnchanged`), which is the plan's fallback switch.
+Balance **8** (new fingerprint row, 7 kept); rules 3; schema stays 4 (`Hero.want` is defaulted; no build that writes schema 4 has left
+the machine). One recognition cue was added, `WANT_ANSWERED`.
+
+**What it measures** (1,000 runs at base seeds 1 / 10001 / 20001; "before" is the tree after T3.8; full tables `T4.1-tables.md` in the
+session scratchpad; exact means from the json runs).
+
+| row | days before | need terms off (`needWantMet=0`) | after | conversion before -> after |
+|---|---|---|---|---|
+| BALANCED_FAIR | 22.215 / 22.465 / 22.315 | 22.2 / 22.5 / 22.3 | **22.500 / 22.470 / 22.440** | 21.6 / 21.2 / 21.5 -> 21.7 / 21.6 / 21.6 % |
+| BALANCED_ACTIVE | 29.5 / 29.6 / 30.0 | 29.5 / 29.6 / 30.0 | 29.785 / 29.820 / 29.890 | 22.3 / 22.1 / 22.1 -> 22.3 / 22.4 / 22.4 % |
+| SYNERGY | 35.1 / 35.2 / 35.2 | same | 35.195 / 35.370 / 35.245 | 18.8 / 18.6 / 18.7 -> 19.2 / 19.1 / 19.0 % |
+| REQUEST_DRIVEN (answers wants) | 24.5 / 24.8 / 24.6 | 30.5 / 30.8 / 30.6 | **30.875 / 30.995 / 30.865** | 19.2 / 19.0 / 19.2 -> 29.7 / 29.6 / 29.6 % |
+| SIEGE_PREP | 43.3 / 43.6 / 43.4 | same | 43.6 / 43.7 / 43.6 | 22.0 / 21.9 / 21.9 -> 22.4 / 22.2 / 22.4 % |
+| EXPERT (answers wants) | 44.7 / 44.9 / 45.0 | 45.6 / 45.7 / 45.4 | 45.740 / 46.050 / 46.030 (p90 50, longest 55) | 21.2 / 21.2 / 21.3 -> 30.0 / 30.1 / 30.1 % |
+| maxed BALANCED_FAIR | 36.9 / 37.2 / 37.2 | same | 37.080 / 37.295 / 37.360 | |
+| maxed SYNERGY | 45.2 / 45.4 / 45.4 | same | 45.385 / 45.350 / 45.560 | |
+| maxed EXPERT | 53.8 / 54.2 / 54.1 (p90 60, longest 60) | 54.8 / 54.9 / 54.8 | 54.955 / 55.045 / 55.010 (p90 60, longest 65) | |
+
+Wants themselves: a plain smith hears 52 a run and 10.7 % of them end with a blade of the family asked for (8.5-8.8 % with the term
+off); the want-answering bot hears 76 and answers **33.6-33.8 %** (28.3-28.5 % with the term off), another 8.5 % end with some other
+purchase, 42 % lapse. NOT_BETTER as a share of visits: BALANCED_FAIR 57.3 / 57.5 / 57.5 -> 57.1 / 56.9 / 57.6 %; REQUEST_DRIVEN 62.3 ->
+50.5 %; EXPERT 57.0 -> 45.1 %.
+
+**Reading.** The willingness term alone is small (+0.3 to +0.4 mean days for a bot that answers wants, +0.1 to +0.3 for one that does
+not: inside the noise floor of 0.3). What moves a run is the information: a smith who forges what was asked for, shelves it first and
+comes down to the asker's purse sells 2.04 blades a day instead of 1.39 and lives 6 days longer. That is the loop working as designed,
+and it is the size of the reward for reading the counter.
+
+**Acceptance of plan 4.6 E1 and the M4 band, stated plainly.**
+- REQUEST_DRIVEN satisfies at least 60 % of wants within three days: **NOT MET, 34 %.** About a quarter of all wants come from heroes
+  who cannot pay for any blade (TOO_EXPENSIVE) and many of the rest need more power than their purse buys at three quarters of the
+  going rate, the lowest the bot goes. BALANCED_FAIR at most 25 %: met (10.7 %).
+- REQUEST_DRIVEN at most +5 mean days over FAIR: **NOT MET, +8.4** (it was +2.3 before this task).
+- Conversion at least the M3 value + 2 points: met for REQUEST_DRIVEN (+10.5), **not met for BALANCED_FAIR (+0.1 to +0.4)**: a shop
+  that does not read wants converts as before. NOT_BETTER 8 points below M3 under BALANCED_FAIR: **not met here (0 to -0.6)**; the
+  sidegrade gate of T4.2 is the lever for that row.
+- First-era band: BALANCED_FAIR mean 22.500 / 22.470 / 22.440 against a top of 22.5 (holds, on the line at seed 1); median 20, p10 15,
+  p90 30; BALANCED_ACTIVE at most 30.5 (holds). Deaths per hero-day FAIR 0.00480 / 0.00479 / 0.00485 against 0.00518 (holds).
+- Maxed stays 10 mean days above new: SYNERGY **+10.190 / +9.980 / +10.315**: under the gate by 0.02 at seed 10001 (it was +10.1 to
+  +10.2 before). BALANCED_FAIR +14.6 to +14.9, BALANCED_ACTIVE +14.0 to +14.2.
+- Tripwire (new EXPERT mean above 50.4, maxed EXPERT p90 above 70, any 100-day run): not crossed (46.1; 60; 65).
+Nothing was retuned to meet the missed lines: the numbers are the plan's defaults, weapon wear and maxed-account survival are untouched,
+and plan step 6b (pressure compensation) is decided once for the whole milestone after T4.6.
+
+**Simulator.** REQUEST_DRIVEN, EXPERT and EXPERT_ACTIVE read wants: after commissions they forge, once per want, the cheapest recipe
+whose average power clears the want by 2 and whose going rate is within 4/3 of the purse; a blade somebody asked for is listed before
+other stock (the weakest unasked blade is unlisted when the shelf is full) and priced at the asker's purse when that is at least 75 %
+of the usual price. A "wants" line under `--customers`; `--set needWantMet`, `seatWantWeight`, `wantLapseDays`.
+
+**Tests.** `WantsTest` (5): `aRefusalRecordsWhatWouldHaveSold`, `aWantLapsesAfterThreeDaysOrAPurchase`, `anAnsweredWantRaisesWillingness`,
+`wantsLeaveEveryRngStreamUnchanged`, `theShopNamesAnUnansweredWant`. `AdviceTest` no longer asserts that a want is never led.
+**Golden `state_rules3.txt` re-recorded: 179 of 300 lines, 18 of 20 seeds, the RNG column on 161** (a hero asking for a blade that is
+on the shelf comes on days they otherwise would not, so the seat and evaluation draws differ).
