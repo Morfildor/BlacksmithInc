@@ -26,11 +26,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
+import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.battle.Battle
@@ -102,7 +104,7 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth().padding(top = Space.sm),
         ) {
-            Row(Modifier.padding(12.dp).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.then(if (h == null) Modifier else Modifier.clickable(onClickLabel = "Open details") { vm.openSheet(Sheet.Hero(h.id)) }).padding(12.dp).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (h == null) {
                     Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Secondary("No hero stands here yet.", Modifier.weight(1f))
@@ -141,7 +143,8 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
         HeroFate.RETIRED -> "Retired"
     }
     Row(
-        Modifier.fillMaxWidth().padding(vertical = 10.dp).alpha(if (h.isAlive) 1f else 0.6f).semantics(mergeDescendants = true) {},
+        Modifier.fillMaxWidth().clickable(onClickLabel = "Open details") { vm.openSheet(Sheet.Hero(h.id)) }.testTag("town_hero_${h.id.value}")
+            .heightIn(min = 48.dp).padding(vertical = 10.dp).alpha(if (h.isAlive) 1f else 0.6f),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {

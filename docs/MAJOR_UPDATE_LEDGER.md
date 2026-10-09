@@ -84,7 +84,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T2.4 | Assets for the scene | ART | merged (second set off) | 2950931 | 25 of 25 portraits clean in the Compose renderer at 56 and 112 dp on emulator (density 2.625) and viewed by INT; import byte-identical twice; 287 sources unchanged by hash; second set 0 of 25 as cut-outs, tiles differ in style | |
 | T2.5 | Counter screen | AA | todo | | | |
 | T2.6 | Aftermath, Tomorrow, endings | AA | todo | | | |
-| T2.7 | Hero and item sheets | AA | todo | | | |
+| T2.7 | Hero and item sheets | AA | done | 1689a9c | Hero and blade sheets in ui/detail; core 346 / app unit 85 green on tip after merge; DetailSheetTest 6/6 on emulator (agent, before a no-UI amend); device at font 1.0 and 2.0: town row -> hero sheet, back, carried blade -> item sheet, storage row -> stock editor (m2-shots/sheets). NOT exercised on device: List / Set price / Salvage from the sheet, holder and mentor links, snapshot-first. Integration: one Sheet type shared by planning and the shop day (ShopDaySheet removed). Market inline editor removed; the sheet is the editor. T2.7-report.md | |
 | T2.8a | Four destinations | AB | merged (shop-day speed setting moves to T2.5) | 14f04c2 | app unit 40, instrumented 10/10, smoke and runend DONE on emulator; four destinations screenshotted at font scale 1.0, 1.3, 2.0 (bar degrades at 2.0: T6.1); debug SQL moved to the debug source set; release build not built | |
 | T2.8b | The Shop destination | AB | todo | | | |
 | T2.8c | Forge, Town, Supplies | AB | todo | | | |

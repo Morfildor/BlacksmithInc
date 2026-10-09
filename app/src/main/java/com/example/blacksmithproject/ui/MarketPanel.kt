@@ -1,38 +1,27 @@
 package com.example.blacksmithproject.ui
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
+import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.ContentCatalog
@@ -150,85 +139,34 @@ private fun demandHint(familyId: com.tinyblacksmith.core.model.WeaponFamilyId, c
 
 /**
  * One weapon on a shelf or in storage: sprite, name, what it is, who wants it, and its price. Tapping the row opens
- * the price editor; listing from storage uses the suggested price unless the player changes it.
+ * the blade's sheet, where it is priced, listed, unlisted, salvaged, honed or given to the watch.
  */
 @Composable
 private fun WeaponListing(w: Weapon, s: UiState.Playing, vm: GameViewModel, listed: Boolean) {
     val content = vm.engine.content
     val suggested = vm.engine.suggestedPrice(w)
-    var expanded by rememberSaveable(w.id.value) { mutableStateOf(false) }
-    var priceText by rememberSaveable(w.id.value, w.listedPrice) { mutableStateOf((w.listedPrice ?: suggested).toString()) }
-    val price = priceText.toIntOrNull() ?: 0
     val priceLabel = if (listed) "${w.listedPrice ?: 0} g" else "List at $suggested"
     Surface(
         tonalElevation = 1.dp,
         shape = MaterialTheme.shapes.medium,
         modifier = Modifier.fillMaxWidth().padding(vertical = Space.xs),
     ) {
-        Column(Modifier.fillMaxWidth()) {
-            Row(
-                Modifier.fillMaxWidth().clickable { expanded = !expanded }.padding(horizontal = 12.dp, vertical = 10.dp)
-                    .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${Labels.weaponSummary(w, content)}, ${if (listed) "${w.listedPrice ?: 0} gold" else "in storage"}. Tap to set a price." },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                WeaponSprite(w, size = 48.dp)
-                Column(Modifier.weight(1f)) {
-                    Text(w.name, style = MaterialTheme.typography.titleSmall)
-                    Secondary(Labels.weaponSummary(w, content))
-                    demandHint(w.familyId, content)?.let { Secondary(it) }
-                }
-                if (listed) Text(priceLabel, style = MaterialTheme.typography.titleMedium)
-                else Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, suggested)) }, enabled = !s.busy, modifier = Modifier.heightIn(min = 48.dp)) { Text(priceLabel, maxLines = 1) }
+        Row(
+            Modifier.fillMaxWidth().clickable { vm.openSheet(Sheet.Item(w.id)) }.testTag("stock_${w.id.value}").padding(horizontal = 12.dp, vertical = 10.dp)
+                .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${Labels.weaponSummary(w, content)}, ${if (listed) "${w.listedPrice ?: 0} gold" else "in storage"}. Tap for details and price." },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            WeaponSprite(w, size = 48.dp)
+            Column(Modifier.weight(1f)) {
+                Text(w.name, style = MaterialTheme.typography.titleSmall)
+                Secondary(Labels.weaponSummary(w, content))
+                demandHint(w.familyId, content)?.let { Secondary(it) }
             }
-            AnimatedVisibility(visible = expanded) {
-                Column(Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp)) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(bottom = Space.sm))
-                    Secondary("Suggested price $suggested gold.")
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
-                        StepButton("−10", "Lower price by 10") { priceText = (price - 10).coerceAtLeast(0).toString() }
-                        OutlinedTextField(
-                            value = priceText,
-                            onValueChange = { priceText = it.filter { c -> c.isDigit() }.take(6) },
-                            label = { Text("Price") },
-                            singleLine = true,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            modifier = Modifier.width(112.dp),
-                        )
-                        StepButton("+10", "Raise price by 10") { priceText = (price + 10).coerceAtMost(999999).toString() }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
-                        if (listed) {
-                            Button(onClick = { vm.dispatch(Command.SetPrice(w.id, price)); expanded = false }, enabled = !s.busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("Set price") }
-                            OutlinedButton(onClick = { vm.dispatch(Command.ToggleShelf(w.id, false)) }, enabled = !s.busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("Unlist") }
-                        } else {
-                            Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, price)) }, enabled = !s.busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("List at $price") }
-                        }
-                    }
-                    val config = vm.engine.config
-                    val armoryRoom = config.armoryMax - s.state.town.armory
-                    TextButton(onClick = { vm.dispatch(Command.Salvage(w.id)) }, enabled = !s.busy) {
-                        Text("Salvage (${config.salvageEnergy} energy, returns 1 ${content.material(w.coreId).name})")
-                    }
-                    TextButton(onClick = { vm.dispatch(Command.Hone(w.id)) }, enabled = w.canBeHoned && !s.busy) {
-                        Text(if (!w.canBeHoned) "Honed" else "${if (w.honed) "Re-hone" else "Hone"} (${config.honeEnergy} energy, 1 ${content.material(w.coreId).name})")
-                    }
-                    TextButton(onClick = { vm.dispatch(Command.DonateWeapon(w.id)) }, enabled = armoryRoom > 0 && !s.busy) {
-                        Text(if (armoryRoom > 0) "Arm the watch (+${minOf(vm.engine.armoryValue(w), armoryRoom)} defense)" else "Arm the watch (armory full)")
-                    }
-                }
-            }
+            if (listed) Text(priceLabel, style = MaterialTheme.typography.titleMedium)
+            else Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, suggested)) }, enabled = !s.busy, modifier = Modifier.heightIn(min = 48.dp)) { Text(priceLabel, maxLines = 1) }
         }
     }
-}
-
-@Composable
-private fun StepButton(label: String, description: String, onClick: () -> Unit) {
-    OutlinedButton(
-        onClick = onClick,
-        contentPadding = PaddingValues(4.dp),
-        modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp).semantics { contentDescription = description },
-    ) { Text(label) }
 }
 
 fun reasonLabel(reason: VisitReason): String = when (reason) {

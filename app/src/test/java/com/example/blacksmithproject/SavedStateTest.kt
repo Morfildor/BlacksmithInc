@@ -40,6 +40,8 @@ class SavedStateTest {
             vm.selectPanel(Panel.FORGE)
             val draft = ForgeDraft(ForgeMode.ADVANCED, LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, null, Risk.SAFE, Technique.TEMPER)
             vm.updateDraft { draft }
+            val sheet = Sheet.Hero(start.heroes.keys.first())
+            vm.openSheet(sheet)
             advanceUntilIdle()
             val before = vm.ui.value as UiState.Playing
             assertNotNull("the forged blade's card is open", before.revealWeaponId)
@@ -49,8 +51,13 @@ class SavedStateTest {
             val kept = handle.keys().associateWith { handle.get<Any?>(it) }
             kept.values.forEach { v -> assertTrue("$v", v == null || v is String || v is Int || (v is ArrayList<*> && v.all { it == null || it is String })) }
 
-            val after = open(SavedStateHandle(kept)).also { advanceUntilIdle() }.ui.value as UiState.Playing
+            val reopened = open(SavedStateHandle(kept)).also { advanceUntilIdle() }
+            val after = reopened.ui.value as UiState.Playing
             assertEquals(Panel.FORGE, after.panel)
+            assertEquals("the open hero sheet comes back", sheet, after.sheet)
+            // Back closes the sheet before it leaves the destination.
+            assertTrue(reopened.back()); advanceUntilIdle()
+            assertEquals(null to Panel.FORGE, (reopened.ui.value as UiState.Playing).let { it.sheet to it.panel })
             assertEquals(draft, after.draft)
             assertEquals(before.revealWeaponId, after.revealWeaponId)
             assertEquals(before.state, after.state)
@@ -59,6 +66,7 @@ class SavedStateTest {
             val cold = open(SavedStateHandle()).also { advanceUntilIdle() }.ui.value as UiState.Playing
             assertEquals(Panel.HOME to ForgeDraft(), cold.panel to cold.draft)
             assertEquals(null, cold.revealWeaponId)
+            assertEquals(null, cold.sheet)
         } finally {
             Dispatchers.resetMain()
         }

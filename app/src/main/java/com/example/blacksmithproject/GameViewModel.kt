@@ -52,6 +52,12 @@ enum class Panel(val dest: Dest) {
     HOME(Dest.SHOP), MARKET(Dest.SHOP), FORGE(Dest.FORGE), TOWN(Dest.TOWN), JOURNAL(Dest.RECORDS), GAZETTE(Dest.RECORDS), LEGACY(Dest.RECORDS)
 }
 
+/** The detail sheet that is open over the workshop: only who or what it shows; its content is read from the save on every render. */
+sealed interface Sheet {
+    data class Hero(val id: HeroId) : Sheet
+    data class Item(val id: WeaponId) : Sheet
+}
+
 data class ForgeDraft(
     val mode: ForgeMode = ForgeMode.QUICK,
     val familyId: WeaponFamilyId? = null,
@@ -79,6 +85,7 @@ sealed interface UiState {
         override val op: Status = Status.Idle,
         /** Day on which the player chose "Decide later" for the blessing offer; UI-only, the offer itself stays in core state. */
         val blessingOfferDismissedDay: Int? = null,
+        val sheet: Sheet? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
         val dest: Dest get() = panel.dest
@@ -93,7 +100,7 @@ sealed interface UiState {
         val script: ShopDayScript,
         val position: ShopDayPosition,
         val speed: ShopDaySpeed = ShopDaySpeed.TAP,
-        val sheet: ShopDaySheet? = null,
+        val sheet: Sheet? = null,
         val gazetteOpen: Boolean = false,
         val resumed: Boolean = false,
         override val op: Status = Status.Idle,
@@ -135,6 +142,7 @@ class GameViewModel(
         val draft: ForgeDraft = ForgeDraft(),
         val revealWeaponId: WeaponId? = null,
         val blessingOfferDismissedDay: Int? = null,
+        val sheet: Sheet? = null,
         val lastError: String? = null,
         val loadFailure: SaveFailure? = null,
         /** True until the first load (and the hand-over of the old report key) has finished, and again during Retry. */
@@ -142,7 +150,6 @@ class GameViewModel(
         /** The shop day on screen: the card reached in [dayId] (the day's command ID); another day starts from its cursor. */
         val dayId: String? = null,
         val dayAt: Int = 0,
-        val sheet: ShopDaySheet? = null,
         val gazetteOpen: Boolean = false,
         val resumed: Boolean = false,
         val speed: ShopDaySpeed = ShopDaySpeed.TAP,
@@ -194,7 +201,7 @@ class GameViewModel(
             val end = closed?.takeIf { it.first === run }?.second ?: engine.closeRun(run).also { closed = run to it }
             return UiState.RunEnded(run, end, snap.legacy, claimed = run.runId.value in snap.legacy.claimedRunIds, lastError = l.lastError, op = op)
         }
-        return UiState.Playing(run, l.panel, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay)
+        return UiState.Playing(run, l.panel, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -229,6 +236,7 @@ class GameViewModel(
         saved[KEY_PANEL] = l.panel.name
         saved[KEY_REVEAL] = l.revealWeaponId?.value
         saved[KEY_BLESSING_DAY] = l.blessingOfferDismissedDay
+        saved[KEY_SHEET] = when (val sheet = l.sheet) { is Sheet.Hero -> "hero:${sheet.id.value}"; is Sheet.Item -> "item:${sheet.id.value}"; null -> null }
         saved[KEY_DRAFT] = with(l.draft) { arrayListOf(mode.name, familyId?.value, coreId?.value, augmentId?.value, catalystId?.value, risk.name, technique?.name) }
     }
 
@@ -244,6 +252,10 @@ class GameViewModel(
             ),
             revealWeaponId = saved.get<String>(KEY_REVEAL)?.let(::WeaponId),
             blessingOfferDismissedDay = saved.get<Int>(KEY_BLESSING_DAY),
+            sheet = saved.get<String>(KEY_SHEET)?.let { s ->
+                val id = s.substringAfter(':')
+                when (s.substringBefore(':')) { "hero" -> Sheet.Hero(HeroId(id)); "item" -> Sheet.Item(WeaponId(id)); else -> null }
+            },
         )
     }
 
@@ -281,6 +293,8 @@ class GameViewModel(
     fun selectDest(dest: Dest) = edit { if (it.panel.dest == dest) it else it.copy(panel = when (dest) { Dest.SHOP -> Panel.HOME; Dest.FORGE -> Panel.FORGE; Dest.TOWN -> Panel.TOWN; Dest.RECORDS -> Panel.GAZETTE }) }
     fun updateDraft(transform: (ForgeDraft) -> ForgeDraft) = edit { it.copy(draft = transform(it.draft)) }
     fun dismissReveal() = edit { it.copy(revealWeaponId = null) }
+    fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet) }
+    fun closeSheet() = edit { it.copy(sheet = null) }
     fun dismissError() = edit { it.copy(lastError = null) }
     fun dismissBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = session.snapshot.value?.run?.day, panel = Panel.HOME) }
     fun reopenBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = null) }
@@ -327,8 +341,6 @@ class GameViewModel(
     fun setSpeed(speed: ShopDaySpeed) = viewModelScope.launch { settings.setShopDaySpeed(speed) }
     fun openGazette() = local.update { it.copy(gazetteOpen = true) }
     fun closeGazette() = local.update { it.copy(gazetteOpen = false) }
-    fun openSheet(sheet: ShopDaySheet) = local.update { it.copy(sheet = sheet) }
-    fun closeSheet() = local.update { it.copy(sheet = null) }
 
     /** The one command the shop day issues: a next-day planning command that draws no RNG. Then the Tomorrow card. */
     fun chooseBlessing(id: BlessingId) {
@@ -378,6 +390,7 @@ class GameViewModel(
             return true
         }
         val s = now() as? UiState.Playing ?: return false
+        if (s.sheet != null) { closeSheet(); return true }
         if (s.dest == Dest.SHOP) return false
         selectDest(Dest.SHOP)
         return true
@@ -460,6 +473,7 @@ class GameViewModel(
         private const val KEY_DRAFT = "draft"
         private const val KEY_REVEAL = "reveal"
         private const val KEY_BLESSING_DAY = "blessing_day"
+        private const val KEY_SHEET = "sheet"
 
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
