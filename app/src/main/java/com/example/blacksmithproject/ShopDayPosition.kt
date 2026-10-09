@@ -44,7 +44,7 @@ data class ShopDayPosition(val beats: List<Beat>, val at: Int) {
                 add(Beat.ShopOpens)
                 script.featured.indices.forEach { add(Beat.Visit(it)) }
                 if (script.tally.isNotEmpty()) add(Beat.Tally)
-                add(Beat.ShopCloses)
+                if (script.ledger != null) add(Beat.ShopCloses)   // a day recorded before the ledger has no till card
             }
             script.aftermath.indices.forEach { add(Beat.Aftermath(it)) }
             when (script.ending) {

@@ -37,6 +37,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   days. Tap a blade on the Market page to see its rarity and quality in words, every property and flaw with what it
   does, its recipe, who holds it and its history, newest first; pricing, listing, salvage, hone and arming the watch
   now live on that sheet. The two sheets open each other (a hero's blade, a blade's holder, a hero's mentor).
+- The shop-day screen (not yet opened by End Day; a debug preview shows it): each featured customer comes to the
+  counter as a framed portrait with a name plate, the shelf shows what they looked at and what left it, and a card says
+  what they did and why with the recorded numbers. A sale lists its price, trade-in, bonus and coin to the till as
+  separate rows. The other visitors are tallied with faces and names, the till closes by kind, up to three cards tell
+  what happened beyond the door, and the day ends on one lead for tomorrow, the blessing choice or the fall of the
+  forge. Nothing moves on by itself unless you pick 1x or 2x; a tap anywhere is Next and Skip day is one tap.
 
 ### Changed
 - The walls can cost a champion. When a siege is lost badly (the raid at one and a half times the town's defense or

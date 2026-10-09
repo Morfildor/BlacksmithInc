@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.blacksmithproject.GameSession
 import com.example.blacksmithproject.GameViewModel
+import com.example.blacksmithproject.ui.shopday.ShopDayHost
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Space
 
@@ -53,7 +54,7 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
                 is UiState.LoadFailed -> LoadFailedScreen(s.failure, s.working, onRetry = vm::retry, onStartOver = vm::startOver)
                 is UiState.Title -> TitleScreen(s, onNewRun = vm::newRun)
                 is UiState.Playing -> WorkshopScreen(s, vm)
-                is UiState.ShopDay -> ShopDayPlaceholder(s, vm)
+                is UiState.ShopDay -> ShopDayHost(s, vm)
                 is UiState.RunEnded -> RunEndScreen(s, vm)
             }
             // A save that failed leaves the last saved state on screen under this dialog; nothing is lost by dismissing it.
