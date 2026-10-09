@@ -105,6 +105,9 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     fun blessingMagnitude(effect: BlessingEffect): Int =
         blessings.filter { it.expiresDay >= day }.sumOf { b -> content.blessing(b.id).let { if (it.effect == effect) it.magnitude else 0 } }
 
+    /** The running blessing with [effect], if any. */
+    fun activeBlessing(effect: BlessingEffect): ActiveBlessing? = blessings.firstOrNull { it.expiresDay >= day && content.blessing(it.id).effect == effect }
+
     fun toolTotal(effect: ToolEffect): Int =
         content.tools.filter { it.effect == effect }.sumOf { it.magnitudePerLevel * (tools[it.id] ?: 0) }
 

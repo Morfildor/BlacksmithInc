@@ -93,13 +93,13 @@ object Market {
         }
     }
 
-    /** The chance that a living hero wants to visit the shop today. */
+    /** The chance that a living hero wants to visit the shop today. Under Guild Patronage a guild member is as willing as anyone can be. */
     fun willingness(ctx: ResolutionContext, hero: Hero, festival: Boolean): Double {
         val cfg = ctx.config.customers
+        if (hero.guildId != null && ctx.activeBlessing(BlessingEffect.GUILD_PATRONAGE) != null) return cfg.visitCeiling
         return (cfg.baseVisitChance + hero.traits.sumOf { ctx.content.trait(it).shopWeight } * cfg.visitTraitScale +
             minOf(hero.loyalty, cfg.visitLoyaltyCap) * cfg.visitPerLoyalty + minOf(ctx.reputation, cfg.visitReputationCap) * cfg.visitPerReputation +
-            (if (festival) cfg.festivalVisitBonus else 0.0) +
-            ctx.blessingMagnitude(BlessingEffect.HERO_VISIT_CHANCE) / 100.0  // + Guild Patronage
+            (if (festival) cfg.festivalVisitBonus else 0.0)
             ).coerceIn(cfg.visitFloor, cfg.visitCeiling)
     }
 
@@ -131,7 +131,7 @@ object Market {
 
     /** At most [MAX_CONSIDERED] of the blades a visitor weighed: the one they took first, then the ones they valued most, each with the facts that counted. */
     private fun considered(ctx: ResolutionContext, hero: Hero, current: Weapon?, evaluations: List<Evaluation>, chosen: Evaluation?): List<Considered> {
-        val funds = hero.gold + tradeInCredit(current, ctx.config)
+        val funds = hero.gold + tradeInCredit(current, ctx.config) + stipend(ctx, hero)
         val regular = isRegular(hero, ctx.config)
         val ranked = listOfNotNull(chosen) + evaluations.filter { it !== chosen }.sortedWith(compareByDescending<Evaluation> { it.utility }.thenBy(IdOrder.numeric) { it.weapon.id.value })
         return ranked.take(MAX_CONSIDERED).map { e ->
@@ -183,7 +183,7 @@ object Market {
             noise -
             pricePenalty * config.utilityPricePenaltyWeight
         return Evaluation(
-            weapon, utility, affordable = price <= hero.gold + tradeInCredit(current, config), improvement = improvement, fit = fit, pricePenalty = pricePenalty, worn = worn,
+            weapon, utility, affordable = price <= hero.gold + tradeInCredit(current, config) + stipend(ctx, hero), improvement = improvement, fit = fit, pricePenalty = pricePenalty, worn = worn,
             tasteMatch = weapon.element != null && weapon.element == hero.elementTaste, novelty = weapon.element != null && hero.traits.sumOf { content.trait(it).noveltyTaste } > 0,
             collectorPrize = collector > 0, storied = fame > 0,
         )
@@ -211,6 +211,12 @@ object Market {
 
     fun isRegular(hero: Hero, config: BalanceConfig): Boolean = hero.loyalty >= config.regularLoyaltyThreshold
 
+    /** Guild Patronage: the gold [hero]'s guild would put toward a blade today; once per member per blessing, 0 without the blessing or a guild. */
+    fun stipend(ctx: ResolutionContext, hero: Hero): Int {
+        val patronage = ctx.activeBlessing(BlessingEffect.GUILD_PATRONAGE) ?: return 0
+        return if (hero.guildId != null && hero.stipendSpentFor != patronage.expiresDay) ctx.config.customers.patronageStipend else 0
+    }
+
     fun purchase(ctx: ResolutionContext, hero: Hero, weapon: Weapon, price: Int): Sale {
         val bonus = price * ctx.blessingMagnitude(BlessingEffect.SALE_GOLD_BONUS) / 100
         // Trade-in: the weapon being replaced comes back to the shop as part payment (GDD 7: weapons change hands).
@@ -220,24 +226,32 @@ object Market {
             ctx.updateWeapon(old.copy(location = WeaponLocation.Storage))
             ctx.addWeaponHistory(old.id, "TRADED_IN", "Traded in by ${hero.fullName} for ${weapon.name}.", listOf(hero.id.value))
         }
-        ctx.earn(IncomeKind.SHELF_SALE, price - credit)
+        // Guild Patronage: the guild pays its share of what is left after the trade-in, straight to the till.
+        val stipend = minOf(price - credit, stipend(ctx, hero))
+        val paid = price - credit - stipend
+        ctx.earn(IncomeKind.SHELF_SALE, paid)
+        if (stipend > 0) ctx.earn(IncomeKind.STIPEND, stipend)
         if (bonus > 0) ctx.earn(IncomeKind.SALE_BONUS, bonus)
         ctx.tradeInCreditToday += credit
         ctx.reputation += 1
         val loyaltyGain = hero.traits.fold(1.0) { acc, t -> acc * ctx.content.trait(t).loyaltyGain }.toInt().coerceAtLeast(1)
-        ctx.updateHero(hero.copy(gold = hero.gold - (price - credit), loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP))
+        ctx.updateHero(hero.copy(
+            gold = hero.gold - paid, loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP,
+            stipendSpentFor = if (stipend > 0) ctx.activeBlessing(BlessingEffect.GUILD_PATRONAGE)?.expiresDay else hero.stipendSpentFor,
+        ))
         // Gazette-visible consequences: a regular is named as one; gold paid above the base fair price is recorded as a premium.
         val premium = price - askingPrice(weapon, ctx.config)
         val who = if (isRegular(hero, ctx.config)) "${hero.fullName}, a regular of the shop," else hero.fullName
         val text = "$who bought ${weapon.name} for $price gold" + (if (premium > 0) ", $premium above the going rate on the shop's good name." else ".") +
-            (if (old != null) " ${old.name} came back to the shop in part payment ($credit gold)." else "")
+            (if (old != null) " ${old.name} came back to the shop in part payment ($credit gold)." else "") +
+            (if (stipend > 0) " Their guild paid $stipend gold of the price." else "")
         val data = mapOf("price" to price.toString()) + (if (premium > 0) mapOf("premium" to premium.toString()) else emptyMap()) + (if (bonus > 0) mapOf("bonus" to bonus.toString()) else emptyMap()) +
-            (if (old != null) mapOf("tradeIn" to credit.toString(), "tradedWeapon" to old.id.value) else emptyMap())
+            (if (old != null) mapOf("tradeIn" to credit.toString(), "tradedWeapon" to old.id.value) else emptyMap()) + (if (stipend > 0) mapOf("stipend" to stipend.toString()) else emptyMap())
         ctx.emit(EventType.WEAPON_SOLD, 4, text, listOf(hero.id.value, weapon.id.value), data)
         ctx.addWeaponHistory(weapon.id, "SOLD", "Sold to ${hero.fullName} for $price gold.", listOf(hero.id.value))
         giveAndEquip(ctx, ctx.hero(hero.id), ctx.weapon(weapon.id))
         ctx.milestone("FIRST_SALE", "The shop made its first sale: ${weapon.name} to ${hero.fullName}.")
-        return Sale(listedPrice = price, tradeInCredit = credit, tradeInWeaponId = old?.id, cashPaid = price - credit, saleBonus = bonus)
+        return Sale(listedPrice = price, tradeInCredit = credit, tradeInWeaponId = old?.id, cashPaid = paid, saleBonus = bonus, stipend = stipend)
     }
 
     /** Transfers ownership and equips when the weapon is better for this hero than the current one. */

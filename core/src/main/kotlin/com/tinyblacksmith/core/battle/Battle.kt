@@ -326,7 +326,8 @@ object Battle {
 
     private fun offerBlessing(ctx: ResolutionContext) {
         val rng = ctx.rng(RngStream.LEGACY)
-        val pool = ctx.content.blessings.map { it.id }.toMutableList()
+        // Guild Patronage needs a guild to send anybody; without one it is not among the choices.
+        val pool = ctx.content.blessings.filter { ctx.town.guilds.isNotEmpty() || it.effect != BlessingEffect.GUILD_PATRONAGE }.map { it.id }.toMutableList()
         val offer = mutableListOf<BlessingId>()
         repeat(minOf(ctx.config.blessingOfferSize, pool.size)) { val b = rng.pick(pool); offer += b; pool.remove(b) }
         ctx.pendingBlessingOffer = offer

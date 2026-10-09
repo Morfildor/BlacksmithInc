@@ -118,10 +118,11 @@ data class ToolDef(
 
 /**
  * DISCOVERY_BONUS = extra journal experiment progress per forge (Journal.recordExperiment); EXCEPTIONAL_CHANCE =
- * percentage points added to the exceptional roll (Forge.apply); HERO_VISIT_CHANCE = percentage points added to hero
- * visit chance (Market.resolveShelfVisits).
+ * percentage points added to the exceptional roll (Forge.apply); GUILD_PATRONAGE = a flag (magnitude unused): while it
+ * lasts every guild member wants to visit and their guild pays `CustomerConfig.patronageStipend` toward one purchase
+ * each (Market); never offered while the town has no guild (Battle.offerBlessing).
  */
-enum class BlessingEffect { QUALITY_BONUS, EXTRA_ENERGY, SALE_GOLD_BONUS, INTEGRITY_RECOVERY, HERO_POWER, DISCOVERY_BONUS, EXCEPTIONAL_CHANCE, HERO_VISIT_CHANCE }
+enum class BlessingEffect { QUALITY_BONUS, EXTRA_ENERGY, SALE_GOLD_BONUS, INTEGRITY_RECOVERY, HERO_POWER, DISCOVERY_BONUS, EXCEPTIONAL_CHANCE, GUILD_PATRONAGE }
 
 data class BlessingDef(
     val id: BlessingId,

@@ -200,6 +200,26 @@ class CustomerSelectionTest {
         assertTrue(mixed <= 2.5, "regulars against strangers, everyone willing: $mixed")
     }
 
+    /** Guild Patronage with the whole town in the guild: sixteen heroes at the ceiling every day, six seats. */
+    @Test
+    fun saturationUnderPatronageKeepsServedShareMaxOverMinAtMostTwoAndAHalf() {
+        fun spread(c: Map<HeroId, Int>) = c.values.max().toDouble() / c.values.min()
+        fun patronised(edit: (Int, Hero) -> Hero = { _, h -> h }) =
+            town(16) { i, h -> edit(i, h.copy(guildId = "g1")) }.copy(blessings = listOf(ActiveBlessing(com.tinyblacksmith.core.content.LaunchContent.GUILD_PATRONAGE, Int.MAX_VALUE)))
+        val start = patronised()
+        val ctx = ResolutionContext(start, content, default)
+        assertTrue(start.aliveHeroes().all { Market.willingness(ctx, it, false) == default.customers.visitCeiling }, "every member at the ceiling")
+        val equal = spread(seats(start, default, 5_000))
+        val mixed = spread(seats(patronised { i, h -> if (i % 2 == 0) h.copy(loyalty = 10) else h }, default, 5_000))
+        assertTrue(equal < 1.15, "equal members: $equal")
+        assertTrue(mixed <= 2.5, "regulars against strangers: $mixed")
+        // Half the town in the guild: members come more often than the rest, and equal heroes still get equal turns.
+        val half = seats(patronised { i, h -> if (i % 2 == 0) h.copy(guildId = null) else h }, default, 5_000)
+        val (others, members) = half.entries.partition { it.key.value.drop(1).toInt() % 2 == 0 }.let { (a, b) -> a.associate { it.toPair() } to b.associate { it.toPair() } }
+        assertTrue(spread(members) < 1.15 && spread(others) < 1.15, "members ${spread(members)}, the rest ${spread(others)}")
+        assertTrue(members.values.min() > others.values.max(), "the guild sends its members: $half")
+    }
+
     @Test
     fun theFirstSeatsGoToDistinctClasses() {
         val classes = content.classes.map { it.id }
