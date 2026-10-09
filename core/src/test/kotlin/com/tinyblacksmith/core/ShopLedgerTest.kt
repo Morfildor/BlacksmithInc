@@ -108,6 +108,25 @@ class ShopLedgerTest {
     }
 
     @Test
+    fun theCollectorNeverPaysAboveTheGoingRateTimesItsMultiplier() {
+        fun paid(listed: Int): Pair<Int, Int> {
+            val (s, id) = famousOnShelf(listed)
+            val ctx = ResolutionContext(s, content, config)
+            val asking = Market.askingPrice(ctx.weapon(id), config)
+            WorldEvents.fire(ctx, WorldEvents.byId("collector"))
+            assertEquals(ctx.gold - s.gold, ctx.income[IncomeKind.COLLECTOR])
+            return ctx.gold - s.gold to asking
+        }
+        val (absurd, asking) = paid(999_999)
+        assertTrue(asking > 0)
+        assertEquals((asking * config.collectorPriceMultiplier).toInt(), absurd, "an absurd price mints no gold")
+        assertEquals(absurd, paid(asking + 1).first, "one coin over the going rate is already capped")
+        assertEquals(absurd, paid(asking).first, "at the going rate the cap changes nothing")
+        assertEquals(((asking - 5) * config.collectorPriceMultiplier).toInt(), paid(asking - 5).first, "below the going rate the collector pays over the shelf price, as before")
+        assertEquals(0, paid(0).first, "a free blade stays free")
+    }
+
+    @Test
     fun aFreeBladeIsASaleOfZeroCoinAndTheLedgerBalances() {
         var sales = 0
         for (seed in 1L..20L) {

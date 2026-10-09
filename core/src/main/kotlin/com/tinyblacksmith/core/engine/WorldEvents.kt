@@ -369,7 +369,8 @@ object WorldEvents {
             apply = { ctx ->
                 val w = ctx.weapons.values.filter { it.isListed && (it.fame > 0 || it.rarity >= Rarity.EPIC) }
                     .maxWith(compareBy<Weapon> { it.fame }.thenBy { it.quality }.thenBy { it.id.value })
-                val price = ((w.listedPrice ?: 0) * ctx.config.collectorPriceMultiplier).toInt()
+                // The collector pays over the shelf price, but never above the going rate times the multiplier: an absurd price mints no gold.
+                val price = (minOf(w.listedPrice ?: 0, Market.askingPrice(w, ctx.config)) * ctx.config.collectorPriceMultiplier).toInt()
                 ctx.earn(IncomeKind.COLLECTOR, price)
                 ctx.reputation += 1
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "sold to a collector")))
