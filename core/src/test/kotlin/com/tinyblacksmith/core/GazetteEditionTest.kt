@@ -130,10 +130,54 @@ class GazetteEditionTest {
     }
 
     @Test
+    fun hallDaysShareALineAndMentoringAndAmbitionsJoinTheHeroSentence() {
+        val events = listOf(
+            ev(EventType.GUILD_FOUNDED, 5, "Cassia Ellery founded the Ellery Company in Emberfall.", listOf("h1"), mapOf("guild" to "g1")),
+            ev(EventType.GUILD_TRAINED, 0, "Cassia Ellery trained at the hall of the Ellery Company.", listOf("h1"), mapOf("guild" to "g1")),
+            ev(EventType.GUILD_JOINED, 2, "Sten Dunmore joined the Ellery Company.", listOf("h2"), mapOf("guild" to "g1")),
+            ev(EventType.GUILD_TRAINED, 0, "Sten Dunmore trained at the hall of the Ellery Company.", listOf("h2"), mapOf("guild" to "g1")),
+            ev(EventType.AMBITION_PURSUED, 2, "Thane Kestrel went hunting for a foe worth the vow.", listOf("h4"), mapOf("ambition" to "SLAYER")),
+            ev(EventType.ELITE_SLAIN, 7, "Thane Kestrel slew an Ashclaw warchief using Iron Sword and returned with 132 gold in spoils.", listOf("h4", "w7"), mapOf("winProbability" to "0.31")),
+            ev(EventType.AMBITION_PURSUED, 2, "Sable Stonebrook drilled the town watch.", listOf("h5"), mapOf("ambition" to "DEFENDER")),
+            ev(EventType.AMBITION_PURSUED, 2, "Torvald Ferris took guard work for 25 gold, building a fortune.", listOf("h7"), mapOf("ambition" to "FORTUNE", "gold" to "25")),
+            ev(EventType.GUILD_MENTORED, 2, "Sten Dunmore was taught by Cassia Ellery at the guild hall.", listOf("h2", "h1")),
+            ev(EventType.HERO_LEVELED, 2, "Sten Dunmore grew stronger (level 2).", listOf("h2")),
+        )
+        val e = Gazette.edition(events, names)
+        assertEquals(listOf(events[5].text), e.lede)
+        assertEquals(
+            listOf(
+                "Cassia Ellery founded the Ellery Company in Emberfall.",
+                "Sten Dunmore joined the Ellery Company; was taught by Cassia Ellery at the guild hall; grew stronger (level 2).",
+                "Thane Kestrel went hunting for a foe worth the vow.",
+                "Sable Stonebrook drilled the town watch.",
+                "Torvald Ferris took guard work for 25 gold, building a fortune.",
+                "At the guild hall: Cassia Ellery, Sten Dunmore.",
+            ),
+            section(e, Gazette.HEROES),
+        )
+        assertEquals(listOf(Gazette.HEROES), e.sections.map { it.title }, "nothing of a hero's day lands under Town")
+        assertEquals(listOf("Expeditions: 1 won, 0 lost"), e.tally, "a hunt is an expedition in the tally")
+    }
+
+    @Test
     fun aSimulatedDayIsFullyAccountedForAndDeterministic() {
-        val (_, state) = SimulationDriver(maxDays = 5).playRun(LegacyProfile(), 3, Policy.BALANCED_ACTIVE)
+        accountedFor(seed = 3, days = 5)
+    }
+
+    @Test
+    fun hallAndAmbitionDaysOfSimulatedRunsAreFullyAccountedFor() {
+        val seen = (1L..8L).flatMap { accountedFor(it, days = 15) }.toSet()
+        val mine = setOf(EventType.GUILD_FOUNDED, EventType.GUILD_TRAINED, EventType.GUILD_JOINED, EventType.GUILD_MENTORED, EventType.AMBITION_PURSUED)
+        assertTrue(seen.containsAll(mine), "not in play: ${mine - seen}")
+    }
+
+    /** Checks every record of the first [days] days of a simulated run against that day's edition; returns the record types met. */
+    private fun accountedFor(seed: Long, days: Int): Set<EventType> {
+        val (_, state) = SimulationDriver(maxDays = days).playRun(LegacyProfile(), seed, Policy.BALANCED_ACTIVE)
         val heroNames = state.heroes.values.associate { it.id.value to it.fullName }
-        for (day in 1..5) {
+        val quiet = setOf(EventType.HERO_PATROLLED, EventType.HERO_RESTED, EventType.GUILD_TRAINED)
+        for (day in 1..days) {
             val events = state.eventsForDay(day)
             val visits = state.lastResolution?.takeIf { it.day == day }?.visits ?: emptyList()
             val e = Gazette.edition(events, heroNames, visits)
@@ -146,11 +190,12 @@ class GazetteEditionTest {
                 val needle = (if (hero != null) ev.text.removePrefix("$hero ") else ev.text).trimEnd('.')
                 val folded = ev.type in setOf(
                     EventType.WEAPON_FORGED, EventType.WEAPON_LISTED, EventType.WEAPON_HONED, EventType.WEAPON_DONATED, EventType.WEAPON_SALVAGED,
-                    EventType.TOOL_BOUGHT, EventType.HERO_PATROLLED, EventType.HERO_RESTED,
-                ) || (ev.type == EventType.SIEGE_WARNING)
+                    EventType.TOOL_BOUGHT,
+                ) || ev.type in quiet || (ev.type == EventType.SIEGE_WARNING)
                 assertTrue(folded || lines.any { needle in it }, "day $day: record not in the paper: ${ev.type} ${ev.text}")
-                if (ev.type == EventType.HERO_PATROLLED || ev.type == EventType.HERO_RESTED) assertTrue(lines.any { hero!! in it }, "day $day: $hero missing from the quiet line")
+                if (ev.type in quiet) assertTrue(lines.any { hero!! in it && (":" in it) }, "day $day: $hero missing from the quiet line")
             }
         }
+        return state.events.filter { it.day <= days }.map { it.type }.toSet()
     }
 }

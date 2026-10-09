@@ -5,8 +5,8 @@ One line per GDD feature, by GDD section. `[x]` = built and verified (evidence i
 IMPLEMENTATION_PLAN.md is the phase-gate view; this is the feature view. DEFERRED scope (GDD 16.2: multiplayer,
 manual equip/combat, walking, idle production, online, accounts, achievements, ads, IAP) is not listed and is not built.
 
-Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 145 JVM tests.
-In flight, not merged (session 8): legacy upgrade tracks, hero daily life, fight replays and weapon fates.
+Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 158 JVM tests.
+In flight, not merged (session 8): legacy upgrade tracks, fight replays and weapon fates.
 
 ## 3 Player loop
 - [x] Run creation: seed, era, random faction pressures and world modifiers, 100 integrity, hero pool, legacy unlocks
@@ -42,7 +42,7 @@ In flight, not merged (session 8): legacy upgrade tracks, hero daily life, fight
 - [x] Three dynamic champions, 0-2 handled
 - [x] Level-ups, fame, retirement, guild founding, mentoring, newcomers when the population thins
 - [x] Lineage anchors across eras; descendants reference stored ancestors
-- [ ] Guild / mentor and ambition as scored daily activities (today: retirement rules and weight tilts)
+- [x] Guild hall (training, lessons from a higher-level guildmate, founding and joining) and ambition as scored daily activities; money and yesterday as inputs
 
 ## 7 Living weapons
 - [x] Lifecycle with one authoritative location, history entries, titles from real records
@@ -102,7 +102,7 @@ In flight, not merged (session 8): legacy upgrade tracks, hero daily life, fight
 - [ ] Full custom art pass after the UI redesign
 
 ## 15 Testing and balance
-- [x] 145 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
+- [x] 158 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
 - [x] Headless simulator with the GDD policy set, upgrade impact, catalog sweeps, JSON report
 - [x] Balance v2 and v3 reviewed at 10,000 seeds; first-era median 20-25 days, longer paths with upgrades, 0 hard-locks
 - [x] Instrumented tests: Room save / restore, title, forge hint, End Day budget (6)

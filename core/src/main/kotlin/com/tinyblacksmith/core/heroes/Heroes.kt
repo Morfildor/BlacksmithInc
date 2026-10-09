@@ -3,6 +3,7 @@ package com.tinyblacksmith.core.heroes
 import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.Element
+import com.tinyblacksmith.core.content.FactionDef
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
@@ -40,6 +41,7 @@ object Heroes {
         // Heroes act against the most pressing faction (the one that would besiege next); ties break by ID for determinism.
         val faction = ctx.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure } ?: return
         val factionDef = content.faction(faction.id)
+        val atHall = mutableListOf<HeroId>()
         for (h in ctx.aliveHeroes()) {
             val hero = ctx.hero(h.id)
             if (!hero.isAlive) continue
@@ -51,21 +53,51 @@ object Heroes {
                 continue
             }
             val weapon = ctx.equippedWeapon(hero.id)
-            val traitDefs = hero.traits.map { content.trait(it) }
-            // An unfulfilled ambition tilts the day: slayers and fortune seekers take the road, sworn defenders walk the walls.
-            val drive = if (hero.ambitionDone) null else hero.ambition
-            val expeditionDrive = when (drive) { Ambition.SLAYER -> config.ambitionActivityWeight; Ambition.FORTUNE -> config.ambitionActivityWeight / 2; else -> 0.0 }
-            val patrolDrive = if (drive == Ambition.DEFENDER) config.ambitionActivityWeight else 0.0
-            val expedition = (1.0 + traitDefs.sumOf { it.expeditionWeight } + faction.pressure / 100.0 * 0.5 + (if (weapon != null) 0.5 else -0.3) + expeditionDrive).coerceAtLeast(0.05)
-            val patrol = (0.8 + traitDefs.sumOf { it.patrolWeight } + (if (ctx.town.integrity < 60) 0.4 else 0.0) + patrolDrive).coerceAtLeast(0.05)
-            val rest = (0.2 + traitDefs.sumOf { it.restWeight } + (100 - hero.health) / 100.0).coerceAtLeast(0.02)
-            when (rng.pickWeighted(listOf(HeroActivity.EXPEDITION to expedition, HeroActivity.PATROL to patrol, HeroActivity.REST to rest))) {
-                HeroActivity.EXPEDITION -> Battle.resolveExpedition(ctx, hero, weapon, faction.id, factionDef)
+            when (rng.pickWeighted(activityWeights(ctx, hero, weapon, faction))) {
+                HeroActivity.EXPEDITION -> expedition(ctx, hero, weapon, faction.id, factionDef)
                 HeroActivity.PATROL -> patrol(ctx, hero, faction.id)
+                HeroActivity.GUILD -> { train(ctx, hero); atHall += hero.id }
+                HeroActivity.AMBITION -> pursue(ctx, hero, weapon, faction.id, factionDef)
                 else -> rest(ctx, hero)
             }
         }
+        mentor(ctx, atHall)
         arrivals(ctx, rng)
+    }
+
+    /**
+     * GDD 6 utility model: the activities open to a healthy hero today and their weights. Traits weigh on expedition,
+     * patrol, rest and the hall; the other inputs are faction pressure (expedition), wounds (rest), money (an unarmed
+     * hero short of gold takes the town's patrol pay) and prior history (a hero driven back yesterday lies low or goes
+     * to the hall). GUILD is listed only when the hero has a hall to go to ([canTrain]), AMBITION only while the
+     * hero's ambition is unfulfilled.
+     */
+    fun activityWeights(ctx: ResolutionContext, hero: Hero, weapon: Weapon?, faction: FactionState): List<Pair<HeroActivity, Double>> {
+        val config = ctx.config
+        val traitDefs = hero.traits.map { ctx.content.trait(it) }
+        val poor = weapon == null && hero.gold < config.heroLife.poorHeroGold
+        val setback = hero.drivenBackOnDay == ctx.day - 1
+        val expedition = (1.0 + traitDefs.sumOf { it.expeditionWeight } + faction.pressure / 100.0 * 0.5 + (if (weapon != null) 0.5 else -0.3)).coerceAtLeast(0.05)
+        val patrol = (0.8 + traitDefs.sumOf { it.patrolWeight } + (if (ctx.town.integrity < 60) 0.4 else 0.0) + (if (poor) config.heroLife.poorPatrolWeight else 0.0)).coerceAtLeast(0.05)
+        val rest = (0.2 + traitDefs.sumOf { it.restWeight } + (100 - hero.health) / 100.0 + (if (setback) config.heroLife.setbackRestWeight else 0.0)).coerceAtLeast(0.02)
+        return buildList {
+            add(HeroActivity.EXPEDITION to expedition)
+            add(HeroActivity.PATROL to patrol)
+            add(HeroActivity.REST to rest)
+            if (canTrain(ctx, hero)) add(HeroActivity.GUILD to (config.heroLife.guildBaseWeight + traitDefs.sumOf { it.guildWeight } + (if (setback) config.heroLife.setbackGuildWeight else 0.0)).coerceAtLeast(0.02))
+            if (hero.ambition != null && !hero.ambitionDone) add(HeroActivity.AMBITION to config.ambitionActivityWeight)
+        }
+    }
+
+    /** A hall is open to a guild's members, to anyone once a guild stands in town (training there enrols them), and to a hero famous enough to found the town's first. */
+    private fun canTrain(ctx: ResolutionContext, hero: Hero): Boolean =
+        hero.guildId != null || ctx.town.guilds.isNotEmpty() || hero.fame >= ctx.config.guildFameThreshold
+
+    /** An expedition, plain or a slayer's hunt. A hero who comes back beaten remembers the day ([Hero.drivenBackOnDay]). */
+    private fun expedition(ctx: ResolutionContext, hero: Hero, weapon: Weapon?, factionId: FactionId, faction: FactionDef, eliteChanceBonus: Double = 0.0) {
+        Battle.resolveExpedition(ctx, hero, weapon, factionId, faction, eliteChanceBonus)
+        val after = ctx.hero(hero.id)
+        if (after.isAlive && after.expeditionWins == hero.expeditionWins) ctx.updateHero(after.copy(drivenBackOnDay = ctx.day))
     }
 
     private fun rest(ctx: ResolutionContext, hero: Hero) {
@@ -82,6 +114,66 @@ object Heroes {
         ctx.factions[factionId] = f.copy(suppressionToday = f.suppressionToday + config.patrolSuppression)
         grantXp(ctx, hero.copy(lastActivity = HeroActivity.PATROL, gold = hero.gold + config.patrolGold), config.patrolXp)
         ctx.emit(EventType.HERO_PATROLLED, 1, "${hero.fullName} patrolled the town walls.", listOf(hero.id.value))
+    }
+
+    /**
+     * A day at the guild hall: bounded XP and a small heal; no gold, no suppression, no militia. A hero without a guild
+     * joins the oldest one in town, or founds the first (only a hero with the fame for it gets here, see [canTrain]).
+     */
+    private fun train(ctx: ResolutionContext, hero: Hero) {
+        val config = ctx.config
+        var h = hero
+        if (h.guildId == null) {
+            val standing = ctx.town.guilds.firstOrNull()
+            if (standing == null) foundGuild(ctx, h)
+            else {
+                ctx.updateHero(h.copy(guildId = standing.id))
+                ctx.emit(EventType.GUILD_JOINED, 2, "${h.fullName} joined ${standing.name}.", listOf(h.id.value), mapOf("guild" to standing.id))
+            }
+            h = ctx.hero(h.id)
+        }
+        val guild = ctx.town.guilds.first { it.id == h.guildId }
+        ctx.emit(EventType.GUILD_TRAINED, 0, "${h.fullName} trained at the hall of ${guild.name}.", listOf(h.id.value), mapOf("guild" to guild.id))
+        grantXp(ctx, h.copy(health = minOf(100, h.health + config.heroLife.guildHeal), lastActivity = HeroActivity.GUILD), config.heroLife.guildXp)
+    }
+
+    /**
+     * Mentoring at the hall: each hero who trained today learns from the highest-level guildmate who trained beside them
+     * and outranks them (ties by ID). Once a day per hero, no RNG; the first mentor's name stays on the hero's record.
+     */
+    private fun mentor(ctx: ResolutionContext, atHall: List<HeroId>) {
+        val present = atHall.map { ctx.hero(it) }
+        for (pupil in present) {
+            val mentor = present.filter { it.guildId == pupil.guildId && it.level > pupil.level }.sortedBy { it.id.value }.maxByOrNull { it.level } ?: continue
+            ctx.emit(EventType.GUILD_MENTORED, 2, "${pupil.fullName} was taught by ${mentor.fullName} at the guild hall.", listOf(pupil.id.value, mentor.id.value))
+            grantXp(ctx, pupil.copy(mentorName = pupil.mentorName ?: mentor.fullName), ctx.config.heroLife.mentorXp)
+        }
+    }
+
+    /** A day given to the hero's own ambition (GDD 6): one action per ambition, open only while it is unfulfilled. */
+    private fun pursue(ctx: ResolutionContext, hero: Hero, weapon: Weapon?, factionId: FactionId, faction: FactionDef) {
+        val config = ctx.config
+        val ambition = hero.ambition ?: return
+        val data = mapOf("ambition" to ambition.name)
+        when (ambition) {
+            // A slayer goes looking for the strongest foe in the field: an expedition with a raised elite chance.
+            Ambition.SLAYER -> {
+                ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} went hunting for a foe worth the vow.", listOf(hero.id.value), data)
+                expedition(ctx, hero, weapon, factionId, faction, config.heroLife.slayerHuntEliteChance)
+            }
+            // A sworn defender drills the watch: more militia than a patrol raises, but no suppression and no pay.
+            Ambition.DEFENDER -> {
+                ctx.town = ctx.town.copy(militia = minOf(config.militiaMax, ctx.town.militia + config.heroLife.defenderDrillMilitia))
+                ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} drilled the town watch.", listOf(hero.id.value), data)
+            }
+            // A prized weapon and a fortune both take gold: a day of paid work, and nothing else.
+            Ambition.COLLECTOR, Ambition.FORTUNE -> {
+                ctx.updateHero(hero.copy(gold = hero.gold + config.heroLife.ambitionWorkGold))
+                val goal = if (ambition == Ambition.COLLECTOR) "saving for a prized weapon" else "building a fortune"
+                ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} took guard work for ${config.heroLife.ambitionWorkGold} gold, $goal.", listOf(hero.id.value), data + ("gold" to config.heroLife.ambitionWorkGold.toString()))
+            }
+        }
+        ctx.hero(hero.id).let { if (it.isAlive) ctx.updateHero(it.copy(lastActivity = HeroActivity.AMBITION)) }
     }
 
     fun grantXp(ctx: ResolutionContext, hero: Hero, xp: Int) {
@@ -124,13 +216,7 @@ object Heroes {
         ctx.town = ctx.town.copy(championIds = ctx.town.championIds.filter { it != hero.id })
         ctx.emit(EventType.HERO_RETIRED, 6, "${hero.fullName} retired after a storied career (level ${hero.level}, ${hero.victories} victories).", listOf(hero.id.value))
         var guildId = hero.guildId
-        if (guildId == null && hero.fame >= ctx.config.guildFameThreshold) {
-            val guild = Guild(id = "g${ctx.town.guilds.size + 1}", name = "the ${hero.surname} Company", founderId = hero.id, foundedDay = ctx.day)
-            ctx.town = ctx.town.copy(guilds = ctx.town.guilds + guild)
-            ctx.updateHero(ctx.hero(hero.id).copy(guildId = guild.id))
-            guildId = guild.id
-            ctx.emit(EventType.GUILD_FOUNDED, 5, "${hero.fullName} founded ${guild.name} in Emberfall.", listOf(hero.id.value), mapOf("guild" to guild.id))
-        }
+        if (guildId == null && hero.fame >= ctx.config.guildFameThreshold) guildId = foundGuild(ctx, ctx.hero(hero.id)).id
         val newcomer = generate(ctx, rng)
         val mentee = newcomer.copy(level = newcomer.level + 1, elementTaste = hero.elementTaste, guildId = guildId, mentorName = hero.fullName)
         ctx.updateHero(mentee)
@@ -141,6 +227,15 @@ object Heroes {
             Market.giveAndEquip(ctx, ctx.hero(mentee.id), ctx.weapon(w.id))
             ctx.emit(EventType.WEAPON_INHERITED, 5, "${w.name} passed from ${hero.fullName} to ${mentee.fullName}.", listOf(w.id.value, mentee.id.value, hero.id.value))
         }
+    }
+
+    /** Founds a guild in [hero]'s name and enrols the founder: a retiring famous hero, or the first famous hero to spend a day on it. */
+    private fun foundGuild(ctx: ResolutionContext, hero: Hero): Guild {
+        val guild = Guild(id = "g${ctx.town.guilds.size + 1}", name = "the ${hero.surname} Company", founderId = hero.id, foundedDay = ctx.day)
+        ctx.town = ctx.town.copy(guilds = ctx.town.guilds + guild)
+        ctx.updateHero(hero.copy(guildId = guild.id))
+        ctx.emit(EventType.GUILD_FOUNDED, 5, "${hero.fullName} founded ${guild.name} in Emberfall.", listOf(hero.id.value), mapOf("guild" to guild.id))
+        return guild
     }
 
     /** GDD 6 ambitions: checked once a day (step 8); DEFENDER is fulfilled directly by a won siege. */

@@ -139,7 +139,8 @@ class GameplayDepthTest {
 
     @Test
     fun everyHeroHasAnAmbitionAndItTiltsTheirDays() {
-        val byAmbition = mutableMapOf<Ambition, IntArray>()  // [expeditions, patrols]
+        // v5: the tilt is the AMBITION activity itself. A slayer's hunt is an expedition; a defender's drill is a day on the walls.
+        val byAmbition = mutableMapOf<Ambition, IntArray>()  // [expeditions, days on the walls]
         for (seed in 1L..60L) {
             val s0 = fresh(seed)
             assertTrue(s0.heroes.values.all { it.ambition != null })
@@ -147,7 +148,7 @@ class GameplayDepthTest {
             for (h in s0.aliveHeroes()) {
                 val counts = byAmbition.getOrPut(h.ambition!!) { IntArray(2) }
                 if (s1.events.any { h.id.value in it.subjectIds && it.type in setOf(EventType.EXPEDITION_WON, EventType.EXPEDITION_LOST, EventType.ELITE_SLAIN, EventType.HERO_DIED) }) counts[0]++
-                if (s1.events.any { h.id.value in it.subjectIds && it.type == EventType.HERO_PATROLLED }) counts[1]++
+                if (s1.events.any { h.id.value in it.subjectIds && (it.type == EventType.HERO_PATROLLED || (it.type == EventType.AMBITION_PURSUED && it.data["ambition"] == Ambition.DEFENDER.name)) }) counts[1]++
             }
         }
         fun expeditionShare(a: Ambition) = byAmbition.getValue(a).let { it[0].toDouble() / (it[0] + it[1]) }

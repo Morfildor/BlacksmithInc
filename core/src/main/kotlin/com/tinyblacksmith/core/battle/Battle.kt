@@ -12,13 +12,13 @@ import kotlin.math.roundToInt
 /** Deterministic expeditions, champion selection and scheduled sieges (GDD 8). */
 object Battle {
 
-    fun resolveExpedition(ctx: ResolutionContext, hero: Hero, weapon: Weapon?, factionId: FactionId, faction: FactionDef) {
+    fun resolveExpedition(ctx: ResolutionContext, hero: Hero, weapon: Weapon?, factionId: FactionId, faction: FactionDef, eliteChanceBonus: Double = 0.0) {
         val config = ctx.config
         val rng = ctx.rng(RngStream.COMBAT)
         val pressure = ctx.factions.getValue(factionId).pressure
         val variance = 1.0 + (rng.nextDouble() * 2 - 1) * config.encounterVariance
         // GDD 8 elite variants: rarer, stronger, richer. More likely as the faction's pressure rises.
-        val elite = faction.eliteNames.isNotEmpty() && rng.chance(config.eliteBaseChance + pressure * config.eliteChancePerPressure)
+        val elite = faction.eliteNames.isNotEmpty() && rng.chance(config.eliteBaseChance + pressure * config.eliteChancePerPressure + eliteChanceBonus)
         val enemyPower = (config.encounterBasePower + config.encounterPowerPerDay * ctx.day + config.encounterPowerPerPressure * pressure) * variance *
             (if (elite) config.elitePowerMultiplier else 1.0)
         val heroPower = Power.attackPower(hero, weapon, faction, ctx.content, config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite)
