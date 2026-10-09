@@ -17,7 +17,7 @@ data class BalanceConfig(
      * v5 (2026-10-09): signboard adds a customer a day per level, stronger affix magnitudes (catalog numbers), guild hall and ambition days ([HeroLifeConfig]), fight replays and weapon fates ([WeaponFatesConfig]), three legacy tracks and Known Name regulars ([LegacyTracksConfig]). See docs/DECISIONS.md.
      * v6 (2026-10-09): commissions ask for a quality band floor ([CommissionConfig]; a noble one for the superb floor, `nobleCommissionMinQuality` removed), COLLECTOR ambition at the fine floor 50 (was 60). See docs/DECISIONS.md.
      * v7 (2026-10-09): fair customer selection ([CustomerConfig]: one intent draw per living hero, weighted seats, a waiting bound; the loyalty and reputation terms of the visit chance are capped); a larger town (12 residents with all five classes, refill toward 12, floor 9, event cap 16; 6 seats, festival +3) with expedition suppression 2 and raid growth 6.5. Prices, purses and wear are unchanged. Guild Patronage is no longer +15 points of visit chance: guild members come at the ceiling and their guild pays [CustomerConfig.patronageStipend] toward one purchase each. See docs/DECISIONS.md.
-     * v8 (2026-10-09): standing wants ([CustomerConfig.needWantMet], [CustomerConfig.seatWantWeight], [CustomerConfig.wantLapseDays]): a hero who left with nothing comes back more readily while the shelf holds what they asked for. See docs/DECISIONS.md.
+     * v8 (2026-10-09): standing wants ([CustomerConfig.needWantMet], [CustomerConfig.seatWantWeight], [CustomerConfig.wantLapseDays]): a hero who left with nothing comes back more readily while the shelf holds what they asked for. The sidegrade gate ([CustomerConfig.sidegradeTolerance]: the gain is no longer rounded, affixes and fame count on both sides, a near-equal blade may be bought once for taste, a prize or a name) and siege demand ([CustomerConfig.threatUtility], [CustomerConfig.championSiegeWillingness]: in the warning window the besieger's weakness is wanted and its resistance refused). See docs/DECISIONS.md.
      */
     val version: Int = 8,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
@@ -372,6 +372,14 @@ data class CustomerConfig(
     /** Added to the seat weight in the same case. */
     val seatWantWeight: Double = 0.5,
     val wantLapseDays: Int = 3,
+    // v8: the sidegrade gate (plan 4.7, G01). 0 switches it off: only a gain is bought.
+    /** A blade worth no less than this share below the one in hand may still be bought for a side reason its owner's blade lacks (taste, a collector's prize, a name), once per reason per hero. */
+    val sidegradeTolerance: Double = 0.05,
+    // v8: the town arms for the siege (plan 4.6 E2). In the warning window the faction matchup counts in what a blade is worth to a buyer.
+    /** Purchase utility added, in the window, to a blade of the element the besieger is weak to. 0 switches it off. */
+    val threatUtility: Double = 0.8,
+    /** Added to a current champion's visit chance in the window. */
+    val championSiegeWillingness: Double = 0.15,
 )
 
 /** v5: replays and weapon fates. What is told of a fight, and what becomes of a fallen hero's blade (GDD 7, 11; all PROPOSED). */

@@ -2555,3 +2555,77 @@ of the usual price. A "wants" line under `--customers`; `--set needWantMet`, `se
 `wantsLeaveEveryRngStreamUnchanged`, `theShopNamesAnUnansweredWant`. `AdviceTest` no longer asserts that a want is never led.
 **Golden `state_rules3.txt` re-recorded: 179 of 300 lines, 18 of 20 seeds, the RNG column on 161** (a hero asking for a blade that is
 on the shelf comes on days they otherwise would not, so the seat and evaluation draws differ).
+
+## Balance v8, the sidegrade gate and siege demand (2026-10-09, task T4.2; G01, E2, X17)
+
+**The rules (PROPOSED, plan 4.7 and 4.6 E2; the three numbers are the plan's).**
+- *Worth in the hand.* One function, `Market.valueInHand`, on both sides of a purchase: power x wear x class fit x the affix attack
+  multiplier x the capped fame factor (both already bounded in `battle.Power`), and x the faction matchup while a siege warning is out.
+  The gain is a Double: both sides used to be truncated to whole numbers first, so a 0.9 gain read as none, and affixes and fame
+  were ignored. Bare hands are `unarmedPower`.
+- *Sidegrade.* A blade worth no less than `customers.sidegradeTolerance` **0.05** of the hero's own below it may still be bought, if
+  its utility allows, for a one-way side reason: TASTE_MATCH (their favoured element, their own blade is not), PRIZED (an unfulfilled
+  COLLECTOR, the blade reaches the fine floor theirs lacks), STORIED (fame at the legend threshold, theirs below). Each reason is used
+  once per hero (`Hero.sideReasons`), so no hero ever makes more than three and a pair of blades cannot change hands for the same
+  reason twice. `sidegradeTolerance = 0` switches it off.
+- *Siege demand.* A warning goes out on the two evenings before a siege, so the days shopped under it are the eve and the siege day
+  (`Battle.warnedFaction`; two days in five). On those days a blade of the element the leading faction is weak to gains
+  `customers.threatUtility` **+0.8** and is bought as COUNTERS_THREAT; a current champion is `championSiegeWillingness` **+0.15**
+  likelier to come; a blade of the resisted element is worth the resist penalty less in the hand, and when that is what stopped a
+  purchase the same roll would have made on a calm day, the visit is RESISTED. A stronger resisted blade still sells: the warning
+  lowers its worth, it does not forbid it. `threatUtility = 0` switches all of it off.
+Balance stays **8** (re-pinned inside the unreleased step); rules 3; schema 4 (`Hero.sideReasons` defaulted; five `VisitReason` and
+two `VisitFactor` constants appended).
+
+**Each loop alone and together** (1,000 runs at base seeds 1 / 10001 / 20001; tables `T4.2-tables.md`; exact means from json).
+
+| BALANCED_FAIR | after T4.1 | siege demand alone | gate alone | both (shipped) |
+|---|---|---|---|---|
+| mean days | 22.500 / 22.470 / 22.440 | 22.3 / 22.5 / 22.4 | 22.3 / 22.4 / 22.3 | **22.215 / 22.505 / 22.350** (median 20 / **25** / 20; p90 25 / 30 / 25) |
+| conversion % | 21.7 / 21.6 / 21.6 | 24.4 / 24.0 / 24.4 | 22.9 / 22.6 / 22.7 | **25.1 / 24.6 / 25.1** (M3: 21.6 / 21.2 / 21.5) |
+| NOT_BETTER % of visits | 57.1 / 56.9 / 57.6 | 52.3 / 52.6 / 52.4 | 54.4 / 54.8 / 54.8 | **51.0 / 51.7 / 51.5** (M3: 57.3 / 57.5 / 57.5) |
+| TOO_EXPENSIVE % | 19.9 / 20.2 / 19.5 | 20.9 / 21.0 / 20.8 | 21.0 / 21.0 / 20.8 | 21.3 / 21.1 / 21.1 (M3: 19.8 / 19.9 / 19.7) |
+| sales a day | 1.37 / 1.36 / 1.37 | 1.54 / 1.51 / 1.54 | 1.44 / 1.42 / 1.43 | 1.58 / 1.55 / 1.58 |
+
+Other rows, mean days after T4.1 -> after T4.2: BALANCED_ACTIVE 29.785 / 29.820 / 29.890 -> 29.720 / 29.770 / 29.985; SYNERGY 35.195 /
+35.370 / 35.245 -> 34.945 / 35.030 / 35.335; REQUEST_DRIVEN 30.875 / 30.995 / 30.865 -> 30.145 / 30.300 / 29.925; SIEGE_PREP 43.615 /
+43.655 / 43.610 -> **43.020 / 43.395 / 43.170**; EXPERT 45.740 / 46.050 / 46.030 -> 45.405 / 45.820 / 45.485 (p90 50, longest 55); maxed
+BALANCED_FAIR 37.080 / 37.295 / 37.360 -> 37.135 / 37.315 / 37.235; maxed SYNERGY 45.385 / 45.350 / 45.560 -> 45.430 / 45.250 / 45.540;
+maxed EXPERT 54.955 / 55.045 / 55.010 -> 54.415 / 54.810 / 54.515 (p90 60, longest 65). More is sold and nobody lives longer for it:
+the extra purchases are small gains and counter-element swaps that cost the heroes gold without adding much defense.
+
+**The new reasons** (share of browsing visits): COUNTERS_THREAT 2.5 % plain, 1.9 % active, 5.0 % SYNERGY, 6.3-6.5 % SIEGE_PREP, 7.7 %
+EXPERT; RESISTED 0.9-1.2 % for shops that forge fire (plain, active, REQUEST_DRIVEN), 0.2-0.3 % for those that forge the counter
+element; STORIED 0.3-0.6 %; TASTE_MATCH 0.2-0.3 %; PRIZED under 0.05 %. Sidegrade purchases a run: 0.9 plain, 1.3-1.4 active, 1.7
+SYNERGY, 2.2 EXPERT. Under a warning (41 % of visits) RESISTED is 3.2 / 3.2 / 2.9 % of the refusals for a plain smith, 3.6-3.7 % active,
+4.0-4.1 % REQUEST_DRIVEN, under 1 % for the counter-forging bots. Champion power at the first two sieges, plain smith: 173 and 200
+(after T4.1: 173 and 201); SIEGE_PREP 198 and 297 (197 and 303); EXPERT 228 and 327 (228 and 329): within 2 %.
+
+**Acceptance, stated plainly.**
+- G01 "1-4 sidegrades a run, no hero more than three": 0.9 to 2.2 a run (a plain smith just under 1); three by construction. Met but
+  for the plain smith's 0.9.
+- M4 band, conversion at least M3 + 2 points under BALANCED_FAIR: **met, +3.4 to +3.6.** NOT_BETTER at least 8 points below M3:
+  **NOT MET, -5.8 to -6.3.** TOO_EXPENSIVE not above M3 + 2: met, +1.2 to +1.5.
+- Each new code in at least 1 % of visits under one bot and at most 15 % under any: COUNTERS_THREAT and RESISTED met;
+  **TASTE_MATCH (0.3 %), PRIZED (0.0 %) and STORIED (0.6 %) are under 1 % everywhere.** A 5 % tolerance with once-per-hero reasons
+  cannot reach it: a hero has at most three sidegrades in a life and makes about seventy visits.
+- E2 "RESISTED is 3-10 % of refusals in warning windows": met for shops that stock the resisted element (2.9 to 4.1 %; 2.9 at one
+  seed for the plain smith). "A SIEGE_PREP bot lands between FAIR and SYNERGY and at most +6 over FAIR": **not met and not caused
+  here**: the bot has been above SYNERGY since it was written (43.3 before M4); this task moves it -0.2 to -0.3. Against the ruling's
+  restated line (at most +3 over its M0 value of 39.6) it stands at +3.4 to +3.8, of which +3.7 came with the larger town in M3.
+- First-era band: BALANCED_FAIR **median 25 and mean 22.505 at seed 10001** (band: median 20, mean at most 22.5); seeds 1 and 20001
+  hold (22.215 and 22.350, median 20). BALANCED_ACTIVE holds (29.7-30.0, median 30). Deaths per hero-day FAIR 0.00499 / 0.00486 /
+  0.00480 against 0.00518. Maxed SYNERGY over new: +10.485 / +10.220 / +10.205 (holds again).
+- Tripwire: not crossed (new EXPERT 45.8; maxed EXPERT p90 60; longest 65).
+Nothing was retuned. Step 6b is decided after T4.6 for the milestone as a whole.
+
+**For the screens.** `Threats.of(state, content, config)` gives the besieger, what it fears and resists, the days to the siege and
+whether the warning is out; `Threats.mark(element, threat)` marks one blade or material; `Lines.threat` and `Lines.threatMark` are
+the words ("Frost bites the Ashclaw Raiders; fire glances off them."). The labels hold on every day; `warned` says whether today's
+customers act on them.
+
+**Tests.** `SidegradeTest` (4): `aNearEqualBladeIsBoughtForTasteOnce`, `noChurn`, `aNineTenthsGainIsAGain`,
+`affixesAndFameCountOnBothSides`. `SiegeDemandTest` (2): `counterElementIsValuedInTheWarningWindowOnly`,
+`aResistedBladeIsRefusedWithItsOwnReason`. `WeaponFameTest` now expects fame in the worth of a blade as well as in its desire.
+**Golden `state_rules3.txt` re-recorded: 232 of 300 lines, all 20 seeds, the RNG column on 222** (fractional gains and the warning
+days change who buys, from day 4 or 5 on in most seeds).

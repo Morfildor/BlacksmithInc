@@ -65,15 +65,17 @@ class WeaponFameTest {
         assertTrue(storied > base, "fame adds desire")
         assertTrue(capped > storied)
         assertEquals(capped, utility(plain.copy(fame = 1000)), 1e-9, "no desire past the cap")
-        assertEquals(base + cap * config.weaponFameUtilityPerPoint, capped, 1e-9)
+        // Since the sidegrade gate (G01) fame also counts in what the blade is worth in the hand, on both sides: its capped combat factor.
+        val worth = Market.valueInHand(ctx, hero, plain, null) * cap * config.weaponFamePowerPerPoint * config.utilityImprovementWeight
+        assertEquals(base + cap * config.weaponFameUtilityPerPoint + worth, capped, 1e-9)
         assertEquals(base, utility(plain.copy(fame = -3)), 1e-9)
-        // Same price, same power: fame changes desire only, never whether the blade counts as an upgrade.
-        assertEquals(Market.evaluate(ctx, hero, null, plain, 0.5).improvement, Market.evaluate(ctx, hero, null, plain.copy(fame = cap), 0.5).improvement)
+        // Same price, same power: the storied blade is worth exactly its combat factor more.
+        assertEquals(Market.evaluate(ctx, hero, null, plain, 0.5).gain + Market.valueInHand(ctx, hero, plain, null) * cap * config.weaponFamePowerPerPoint, Market.evaluate(ctx, hero, null, plain.copy(fame = cap), 0.5).gain, 1e-9)
         val collector = hero.copy(ambition = Ambition.COLLECTOR, ambitionDone = false)
         val collectorGain = utility(plain.copy(fame = cap), collector) - utility(plain, collector)
-        assertEquals(cap * config.weaponFameUtilityPerPoint * config.collectorFameMultiplier, collectorGain, 1e-9)
+        assertEquals(cap * config.weaponFameUtilityPerPoint * config.collectorFameMultiplier + worth, collectorGain, 1e-9)
         assertEquals(collectorGain, utility(plain.copy(fame = 1000), collector) - utility(plain, collector), 1e-9, "a collector's extra desire is capped too")
-        assertTrue(collectorGain <= 1.0 + 1e-9)
+        assertTrue(collectorGain - worth <= 1.0 + 1e-9)
     }
 
     @Test

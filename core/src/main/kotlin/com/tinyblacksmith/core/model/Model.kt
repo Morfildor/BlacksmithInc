@@ -145,6 +145,8 @@ data class Hero(
     val stipendSpentFor: Int? = null,
     /** What this hero last left the counter without (`Market.wantOf`); cleared by a purchase or after `CustomerConfig.wantLapseDays`. */
     val want: Want? = null,
+    /** The side reasons (TASTE_MATCH, PRIZED, STORIED) this hero has already bought a near-equal blade for: each once, so no churn. */
+    val sideReasons: Set<VisitReason> = emptySet(),
 ) {
     val fullName: String get() = "$name $surname"
     val isAlive: Boolean get() = fate == HeroFate.ALIVE

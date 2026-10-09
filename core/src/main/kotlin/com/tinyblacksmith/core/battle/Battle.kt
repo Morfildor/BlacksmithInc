@@ -193,7 +193,7 @@ object Battle {
     private fun guildHeir(ctx: ResolutionContext, fallen: Hero, blade: Weapon): Hero? {
         val guild = fallen.guildId ?: return null
         return ctx.aliveHeroes().filter { it.guildId == guild && it.id != fallen.id }
-            .maxByOrNull { Market.evaluate(ctx, it, ctx.equippedWeapon(it.id), blade, 0.5).improvement }
+            .maxByOrNull { Market.evaluate(ctx, it, ctx.equippedWeapon(it.id), blade, 0.5).gain }
     }
 
     /** GDD 7: "famous artifacts increase event eligibility but are not guaranteed to return". Counted fame is capped like every fame effect, and so is the chance. */
@@ -336,9 +336,19 @@ object Battle {
         ctx.emit(EventType.BLESSING_OFFERED, 3, "The grateful town offers the smith a blessing.", data = mapOf("offer" to offer.joinToString(",") { it.value }))
     }
 
+    /** A warning goes out on each of the last [WARNING_DAYS] evenings before a siege. */
+    const val WARNING_DAYS = 2
+
+    /**
+     * The besieger a warning is out for, on the days heroes shop under it: the [WARNING_DAYS] days that follow a warning
+     * evening (the day before the siege and the siege day itself). Null on every other day. The leader as it stands today.
+     */
+    fun warnedFaction(ctx: ResolutionContext): FactionDef? =
+        if (ctx.town.nextSiegeDay - ctx.day in 0 until WARNING_DAYS) leadingFaction(ctx)?.let { ctx.content.faction(it.id) } else null
+
     fun warnOfSiege(ctx: ResolutionContext) {
         val daysLeft = ctx.town.nextSiegeDay - ctx.day
-        if (daysLeft in 1..2) {
+        if (daysLeft in 1..WARNING_DAYS) {
             val f = leadingFaction(ctx) ?: return
             val def = ctx.content.faction(f.id)
             val led = if (def.warlordName != null && f.pressure >= ctx.config.warlordPressure) " ${def.warlordName} leads them." else ""

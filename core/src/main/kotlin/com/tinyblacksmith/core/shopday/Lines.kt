@@ -28,6 +28,11 @@ object Lines {
         VisitReason.GOOD_ENOUGH -> "bought a better blade"
         VisitReason.COMMISSION_DELIVERED -> "collected a commission"
         VisitReason.COLLECTOR_PURCHASE -> "bought for a collection"
+        VisitReason.TASTE_MATCH -> "took a blade of their favoured element"
+        VisitReason.PRIZED -> "took a prize for their collection"
+        VisitReason.STORIED -> "took a blade with a name"
+        VisitReason.COUNTERS_THREAT -> "armed against the besieger"
+        VisitReason.RESISTED -> "passed over a blade the besieger shrugs off"
     }
 
     fun factor(factor: VisitFactor): String = when (factor) {
@@ -45,6 +50,8 @@ object Lines {
         VisitFactor.CANNOT_AFFORD -> "beyond their purse"
         VisitFactor.ABOVE_THEIR_CEILING -> "priced above what they hold fair"
         VisitFactor.REGULAR -> "trusts the shop"
+        VisitFactor.COUNTERS_THREAT -> "bites the besieger"
+        VisitFactor.THREAT_RESISTS -> "the besieger shrugs it off"
     }
 
     /** "Mira Ashwood, Ranger, a regular. Carries a worn Iron Bow." */
@@ -89,12 +96,19 @@ object Lines {
             )
             VisitReason.COMMISSION_DELIVERED -> listOf(sale?.let { "Collected the commissioned ${blade ?: "blade"} and paid ${it.cashPaid} gold." })
             VisitReason.COLLECTOR_PURCHASE -> listOf(sale?.let { "Paid ${it.cashPaid} gold for ${blade ?: "a blade"} and carried it off." })
+            VisitReason.TASTE_MATCH -> listOf(sidegrade(blade, own, "it is of the element they favour"), bought(blade, sale))
+            VisitReason.PRIZED -> listOf(sidegrade(blade, own, "fine work is what they collect"), bought(blade, sale))
+            VisitReason.STORIED -> listOf(sidegrade(blade, own, "it has a name"), bought(blade, sale))
+            VisitReason.COUNTERS_THREAT -> listOf(blade?.let { "With the siege near, $it is of the element the besieger fears." }, bought(blade, sale))
+            VisitReason.RESISTED -> listOf(with(VisitFactor.THREAT_RESISTS)?.let { k -> day.blade(k.weaponId)?.let { "With the siege near, ${it.name} is of the element the besieger shrugs off; it stayed on the shelf." } })
         }
         val trade = sale?.takeIf { it.tradeInWeaponId != null && visit.kind == VisitKind.BROWSE }?.let { "${own ?: "Their old blade"} came back in part payment: ${it.tradeInCredit} gold off, ${it.cashPaid} gold in coin." }
         val bonus = sale?.takeIf { it.saleBonus > 0 }?.let { "The town's blessing added ${it.saleBonus} gold." }
         val stipend = sale?.takeIf { it.stipend > 0 }?.let { "Their guild paid ${it.stipend} gold of the price; ${it.cashPaid} gold came from their own purse." }
         return (clauses + trade + stipend + bonus).filterNotNull().joinToString(" ").ifEmpty { reason(visit.reason).replaceFirstChar { it.uppercase() } + "." }
     }
+
+    private fun sidegrade(blade: String?, own: String?, why: String): String? = blade?.let { b -> own?.let { "$b is no stronger than their $it, but $why." } }
 
     private fun bought(blade: String?, sale: Sale?): String? = sale?.listedPrice?.let { "Bought ${blade ?: "a blade"} for $it gold." }
 
@@ -202,6 +216,25 @@ object Lines {
                 },
             )
         }
+    }
+
+    /**
+     * The besieger and what tells against it, for the Forge and the shelf: "Frost bites the Ashclaw Raiders; fire glances
+     * off them." A clause whose element the faction lacks is dropped; null when nothing is left to say.
+     */
+    fun threat(threat: Threat, content: ContentCatalog): String? {
+        val name = content.factionById[threat.factionId]?.name ?: return null
+        fun word(e: com.tinyblacksmith.core.content.Element) = e.name.lowercase()
+        return listOfNotNull(
+            threat.weakTo?.let { "${word(it).replaceFirstChar { c -> c.uppercase() }} bites the $name" },
+            threat.resists?.let { if (threat.weakTo == null) "${word(it).replaceFirstChar { c -> c.uppercase() }} glances off the $name" else "${word(it)} glances off them" },
+        ).joinToString("; ").ifEmpty { null }?.plus(".")
+    }
+
+    /** The label beside one blade or one material of that element. */
+    fun threatMark(mark: ThreatMark, threat: Threat, content: ContentCatalog): String {
+        val name = content.factionById[threat.factionId]?.name ?: "besiegers"
+        return if (mark == ThreatMark.COUNTERS) "Bites the $name" else "The $name resist it"
     }
 
     /** A hero's standing want in a line: "Wren Kestrel wants a bow; can spend about 90 gold." Null without one. The numbers are `Hero.want`'s own. */

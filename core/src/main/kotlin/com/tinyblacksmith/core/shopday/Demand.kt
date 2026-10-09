@@ -20,6 +20,32 @@ data class DemandSummary(
     val wantsAnswered: List<HeroId> = emptyList(),   // those of them a listed blade answers today (`Market.answersWant`)
 )
 
+/**
+ * The besieger as things stand (the faction with the most pressure) and what its hide is weak to and resists. [warned]:
+ * the siege warning is out, so today's customers weigh it (`Battle.warnedFaction`); on other days the labels are advice only.
+ */
+data class Threat(val factionId: com.tinyblacksmith.core.model.FactionId, val weakTo: com.tinyblacksmith.core.content.Element?, val resists: com.tinyblacksmith.core.content.Element?, val daysToSiege: Int, val warned: Boolean)
+
+enum class ThreatMark { COUNTERS, RESISTED }
+
+object Threats {
+    /** Null only in a world without factions. Reads the state; draws nothing. */
+    fun of(state: GameState, content: ContentCatalog, config: BalanceConfig): Threat? {
+        val leader = state.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure } ?: return null   // Battle.leadingFaction's rule
+        val def = content.factionById[leader.id] ?: return null
+        val days = state.town.nextSiegeDay - state.day
+        return Threat(def.id, def.weakTo, def.resists, days, warned = config.customers.threatUtility > 0 && days in 0 until com.tinyblacksmith.core.battle.Battle.WARNING_DAYS)
+    }
+
+    /** How a blade or a material of [element] stands against [threat]; null for no element, no threat or an element the besieger does not care about. */
+    fun mark(element: com.tinyblacksmith.core.content.Element?, threat: Threat?): ThreatMark? = when {
+        element == null || threat == null -> null
+        element == threat.weakTo -> ThreatMark.COUNTERS
+        element == threat.resists -> ThreatMark.RESISTED
+        else -> null
+    }
+}
+
 object Demand {
     fun summary(state: GameState, content: ContentCatalog, config: BalanceConfig): DemandSummary {
         val heroes = state.aliveHeroes()

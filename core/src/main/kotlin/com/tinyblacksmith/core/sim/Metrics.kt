@@ -59,6 +59,8 @@ data class RunCustomers(
     val lineBandVisits: List<Int> = emptyList(), val lineBandLines: List<Int> = emptyList(), val lineCues: Map<String, Int> = emptyMap(),
     /** Standing wants: voiced (a new want, or one for another family), ended by a purchase of that family, by another purchase, or lapsed (the hero's death included). */
     val wantsRecorded: Int = 0, val wantsSatisfied: Int = 0, val wantsOtherPurchase: Int = 0, val wantsLapsed: Int = 0,
+    /** Browsing visits on days under a siege warning (`Battle.warnedFaction`): all, those that bought nothing, and of those the RESISTED ones. */
+    val windowVisits: Int = 0, val windowRefusals: Int = 0, val windowResisted: Int = 0,
 )
 
 /** Observes one run through [beforeEndDay] and [afterEndDay]; read-only on every state it is handed. */
@@ -97,6 +99,7 @@ class CustomerCollector(private val engine: GameEngine) {
     private var expWon = 0; private var expLost = 0; private var expFatal = 0
     private var sellOutDays = 0; private var droughtDays = 0
     private var wantsRecorded = 0; private var wantsSatisfied = 0; private var wantsOtherPurchase = 0; private var wantsLapsed = 0
+    private var windowVisits = 0; private var windowRefusals = 0; private var windowResisted = 0
     private val sieges = ArrayList<SiegeSnap>()
     private val recovery = RecoveryProbe(engine)
     private val lineBandVisits = IntArray(LINE_BANDS.size); private val lineBandLines = IntArray(LINE_BANDS.size); private val lineCues = sortedMapOf<String, Int>()
@@ -156,6 +159,11 @@ class CustomerCollector(private val engine: GameEngine) {
             if (day <= 5) classesDay5 += t.classId
             if (day <= 10) { classesDay10 += t.classId; if (bought) boughtDay10 += t.classId }
         }
+        if (pre.town.nextSiegeDay - day in 0 until com.tinyblacksmith.core.battle.Battle.WARNING_DAYS) {
+            windowVisits += served.size
+            windowRefusals += served.count { it.purchasedWeaponId == null }
+            windowResisted += served.count { it.reason == VisitReason.RESISTED }
+        }
         for (h in alive) {
             val before = h.want
             val after = out.heroes[h.id]?.want
@@ -214,6 +222,7 @@ class CustomerCollector(private val engine: GameEngine) {
             expWon = expWon, expLost = expLost, expFatal = expFatal, sellOutDays = sellOutDays, droughtDays = droughtDays, sieges = sieges, recovery = recovery.finish(),
             lineBandVisits = lineBandVisits.toList(), lineBandLines = lineBandLines.toList(), lineCues = lineCues,
             wantsRecorded = wantsRecorded, wantsSatisfied = wantsSatisfied, wantsOtherPurchase = wantsOtherPurchase, wantsLapsed = wantsLapsed,
+            windowVisits = windowVisits, windowRefusals = windowRefusals, windowResisted = windowResisted,
         )
     }
 }
@@ -253,6 +262,8 @@ data class CustomerSummary(
     val lineShareByBand: Map<String, Double> = emptyMap(), val linesPerDay: Double = 0.0, val lineCueShare: Map<String, Double> = emptyMap(),
     /** Standing wants voiced a run, and how they ended as shares of those voiced (a want still standing when the run ends is in none). */
     val wantsPerRun: Double = 0.0, val wantsSatisfied: Double = 0.0, val wantsOtherPurchase: Double = 0.0, val wantsLapsed: Double = 0.0,
+    /** Under a siege warning: share of all browsing visits that fall there, conversion there, and RESISTED as a share of the refusals there. */
+    val windowVisitShare: Double = 0.0, val windowConversion: Double = 0.0, val windowResistedOfRefusals: Double = 0.0,
 ) {
     companion object {
         private fun ratio(a: Number, b: Number) = if (b.toDouble() == 0.0) 0.0 else a.toDouble() / b.toDouble()
@@ -311,6 +322,8 @@ data class CustomerSummary(
                 linesPerDay = ratio(rs.sumOf { it.lineBandLines.sum() }, days),
                 wantsPerRun = rs.map { it.wantsRecorded }.average(), wantsSatisfied = ratio(rs.sumOf { it.wantsSatisfied }, rs.sumOf { it.wantsRecorded }),
                 wantsOtherPurchase = ratio(rs.sumOf { it.wantsOtherPurchase }, rs.sumOf { it.wantsRecorded }), wantsLapsed = ratio(rs.sumOf { it.wantsLapsed }, rs.sumOf { it.wantsRecorded }),
+                windowVisitShare = ratio(rs.sumOf { it.windowVisits }, visits), windowConversion = ratio(rs.sumOf { it.windowVisits - it.windowRefusals }, rs.sumOf { it.windowVisits }),
+                windowResistedOfRefusals = ratio(rs.sumOf { it.windowResisted }, rs.sumOf { it.windowRefusals }),
                 lineCueShare = rs.flatMap { it.lineCues.keys }.toSortedSet().associateWith { c -> ratio(rs.sumOf { it.lineCues[c] ?: 0 }, rs.sumOf { it.lineBandLines.sum() }) },
                 sieges = rs.flatMap { it.sieges }.groupBy { it.siege }.toSortedMap().map { (n, s) ->
                     SiegeRow(n, s.size, s.count { it.held }.toDouble() / s.size, s.map { it.pressure }.average(), s.map { it.militia }.average(), s.map { it.armory }.average(),
@@ -342,6 +355,7 @@ data class CustomerSummary(
             appendLine("    expeditions/run: won=${f2(expeditionsWonPerRun)} lost=${f2(expeditionsLostPerRun)} fatal=${f2(expeditionsFatalPerRun)}  deaths per hero-day=${"%.4f".format(deathsPerHeroDay)}  sell-out days=${pct(sellOutDays)}  empty-shelf days=${pct(droughtDays)}")
             appendLine("    recognition: visits with a line " + lineShareByBand.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" } + "  lines/day=${f2(linesPerDay)}  by cue (of lines): " + lineCueShare.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" })
             appendLine("    wants: voiced/run=${f2(wantsPerRun)}  ended by a blade of the family asked for=${pct(wantsSatisfied)}  by another purchase=${pct(wantsOtherPurchase)}  lapsed=${pct(wantsLapsed)}")
+            appendLine("    siege warning days: ${pct(windowVisitShare)} of visits  conversion there=${pct(windowConversion)}  RESISTED=${pct(windowResistedOfRefusals)} of the refusals there")
             append(recovery.render())
             if (sieges.isNotEmpty()) appendLine("    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): " + sieges.joinToString("; ") {
                 "#${it.siege} n=${it.runs} ${pct(it.held)} p=${"%.0f".format(it.pressure)} m=${"%.0f".format(it.militia)} a=${"%.0f".format(it.armory)} c=${"%.0f".format(it.championPower)} f=${"%.0f".format(it.forecastDefense)}/${"%.0f".format(it.forecastRaid)} r=${"%.0f".format(it.defense)}/${"%.0f".format(it.raid)}"
@@ -406,7 +420,7 @@ class RecoveryProbe(private val engine: GameEngine) {
         val alive = s.aliveHeroes()
         return stock.any { w ->
             val offer = w.copy(location = WeaponLocation.Shelf(Market.askingPrice(w, cfg)))
-            alive.any { h -> Market.evaluate(ctx, h, ctx.equippedWeapon(h.id), offer, 0.5).let { it.affordable && it.improvement > 0 } }
+            alive.any { h -> Market.evaluate(ctx, h, ctx.equippedWeapon(h.id), offer, 0.5).eligible }
         }
     }
 }
