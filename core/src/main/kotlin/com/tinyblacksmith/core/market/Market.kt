@@ -12,7 +12,11 @@ import com.tinyblacksmith.core.rng.RngStream
 /** Autonomous shelf visits and purchases (GDD 5 PROPOSED purchase algorithm) plus commission delivery. */
 object Market {
 
-    data class Evaluation(val weapon: Weapon, val utility: Double, val affordable: Boolean, val improvement: Int, val fit: Double, val pricePenalty: Double, val worn: Boolean = false)
+    /** The four flags say which of the terms of [evaluate] counted for this blade; they are recorded with the visit and decide nothing. */
+    data class Evaluation(
+        val weapon: Weapon, val utility: Double, val affordable: Boolean, val improvement: Int, val fit: Double, val pricePenalty: Double, val worn: Boolean = false,
+        val tasteMatch: Boolean = false, val novelty: Boolean = false, val collectorPrize: Boolean = false, val storied: Boolean = false,
+    )
 
     fun resolveShelfVisits(ctx: ResolutionContext) {
         val config = ctx.config
@@ -29,25 +33,64 @@ object Market {
             if (!rng.chance(visitChance)) continue
             customers++
             if (listed.none { it.isListed && ctx.weapon(it.id).isListed }) {
-                ctx.visits += MarketVisit(hero.id, hero.fullName, null, "EMPTY_SHELVES")
+                ctx.visits += MarketVisit(hero.id, hero.fullName, null, VisitReason.EMPTY_SHELVES, seq = ctx.visits.size, customer = customer(ctx, hero, ctx.equippedWeapon(hero.id)))
                 continue
             }
             val current = ctx.equippedWeapon(hero.id)
+            val customer = customer(ctx, hero, current)  // before the purchase moves the old blade and the purse
             val evaluations = ctx.weapons.values.filter { it.isListed }.map { evaluate(ctx, hero, current, it, rng.nextDouble()) }
             val best = evaluations.filter { it.affordable && it.improvement > 0 }.maxByOrNull { it.utility }
             if (best != null && best.utility >= config.purchaseUtilityThreshold) {
-                purchase(ctx, hero, best.weapon, best.weapon.listedPrice ?: 0)
-                ctx.visits += MarketVisit(hero.id, hero.fullName, best.weapon.id, if (best.worn) "WORN_OUT" else if (best.fit >= 1.0) "GREAT_FIT" else "GOOD_ENOUGH")
+                val mark = ctx.newEvents.size
+                val sale = purchase(ctx, hero, best.weapon, best.weapon.listedPrice ?: 0)
+                val reason = if (best.worn) VisitReason.WORN_OUT else if (best.fit >= 1.0) VisitReason.GREAT_FIT else VisitReason.GOOD_ENOUGH
+                ctx.visits += MarketVisit(
+                    hero.id, hero.fullName, best.weapon.id, reason, seq = ctx.visits.size, customer = customer,
+                    considered = considered(ctx, hero, current, evaluations, best), sale = sale, eventIds = ctx.newEvents.drop(mark).map { it.id },
+                )
             } else {
                 val reason = when {
-                    evaluations.none { it.affordable } -> "TOO_EXPENSIVE"
-                    evaluations.none { it.affordable && it.improvement > 0 } -> "NOT_BETTER"
-                    best != null && best.pricePenalty > 0.5 -> "OVERPRICED"
-                    best != null && best.fit < 1.0 -> "NOT_SUITED"
-                    else -> "UNDECIDED"
+                    evaluations.none { it.affordable } -> VisitReason.TOO_EXPENSIVE
+                    evaluations.none { it.affordable && it.improvement > 0 } -> VisitReason.NOT_BETTER
+                    best != null && best.pricePenalty > 0.5 -> VisitReason.OVERPRICED
+                    best != null && best.fit < 1.0 -> VisitReason.NOT_SUITED
+                    else -> VisitReason.UNDECIDED
                 }
-                ctx.visits += MarketVisit(hero.id, hero.fullName, null, reason)
+                ctx.visits += MarketVisit(hero.id, hero.fullName, null, reason, seq = ctx.visits.size, customer = customer, considered = considered(ctx, hero, current, evaluations, null))
             }
+        }
+    }
+
+    const val MAX_CONSIDERED = 3
+
+    /** The customer as they walked in. Copies of what the visit read; nothing here is an input to it. */
+    private fun customer(ctx: ResolutionContext, hero: Hero, current: Weapon?) = CustomerSnapshot(
+        heroId = hero.id, name = hero.fullName, classId = hero.classId, level = hero.level,
+        // The face the app draws today (`Sprites.portraitKey`); T3.3 replaces this with `Appearance.keyOf(hero)`.
+        appearance = "portrait_${hero.classId.value}_${Math.floorMod(hero.id.value.hashCode(), 5)}",
+        traits = hero.traits, elementTaste = hero.elementTaste, ambition = hero.ambition, gold = hero.gold, loyalty = hero.loyalty,
+        regular = isRegular(hero, ctx.config), guildId = hero.guildId, mentorName = hero.mentorName, equipped = current?.let { WeaponSnapshot.of(it) },
+    )
+
+    /** At most [MAX_CONSIDERED] of the blades a visitor weighed: the one they took first, then the ones they valued most, each with the facts that counted. */
+    private fun considered(ctx: ResolutionContext, hero: Hero, current: Weapon?, evaluations: List<Evaluation>, chosen: Evaluation?): List<Considered> {
+        val funds = hero.gold + tradeInCredit(current, ctx.config)
+        val regular = isRegular(hero, ctx.config)
+        val ranked = listOfNotNull(chosen) + evaluations.filter { it !== chosen }.sortedWith(compareByDescending<Evaluation> { it.utility }.thenBy { it.weapon.id.value })
+        return ranked.take(MAX_CONSIDERED).map { e ->
+            val price = e.weapon.listedPrice ?: 0
+            Considered(
+                e.weapon.id, price,
+                listOfNotNull(
+                    if (e.fit >= 1.0) VisitFactor.SUITS_CLASS else VisitFactor.OFF_CLASS,
+                    VisitFactor.ELEMENT_TASTE.takeIf { e.tasteMatch }, VisitFactor.LIKES_NOVELTY.takeIf { e.novelty },
+                    when { current == null -> VisitFactor.UNARMED; e.improvement > 0 -> VisitFactor.STRONGER_THAN_OWN; else -> VisitFactor.NOT_STRONGER_THAN_OWN },
+                    VisitFactor.OWN_BLADE_WORN.takeIf { e.worn }, VisitFactor.STORIED_BLADE.takeIf { e.storied }, VisitFactor.COLLECTOR_PRIZE.takeIf { e.collectorPrize },
+                    if (e.affordable) VisitFactor.CAN_AFFORD else VisitFactor.CANNOT_AFFORD,
+                    VisitFactor.ABOVE_THEIR_CEILING.takeIf { e.pricePenalty > 0 }, VisitFactor.REGULAR.takeIf { regular },
+                ),
+                shortBy = if (e.affordable) null else price - funds,
+            )
         }
     }
 
@@ -82,7 +125,11 @@ object Market {
             (if (worn) config.wornReplacementUtility else 0.0) +
             noise -
             pricePenalty * config.utilityPricePenaltyWeight
-        return Evaluation(weapon, utility, affordable = price <= hero.gold + tradeInCredit(current, config), improvement = improvement, fit = fit, pricePenalty = pricePenalty, worn = worn)
+        return Evaluation(
+            weapon, utility, affordable = price <= hero.gold + tradeInCredit(current, config), improvement = improvement, fit = fit, pricePenalty = pricePenalty, worn = worn,
+            tasteMatch = weapon.element != null && weapon.element == hero.elementTaste, novelty = weapon.element != null && hero.traits.sumOf { content.trait(it).noveltyTaste } > 0,
+            collectorPrize = collector > 0, storied = fame > 0,
+        )
     }
 
     /** Gold heroes consider fair for this weapon as it is: power, discounted for wear. The shop's suggested price. */
@@ -197,6 +244,8 @@ object Market {
             }
             val candidate = Commissions.pick(ctx.weapons.values, c, ctx.config)
             if (candidate != null) {
+                val mark = ctx.newEvents.size
+                val customer = customer(ctx, buyer, ctx.equippedWeapon(buyer.id))
                 ctx.earn(IncomeKind.COMMISSION, c.reward)
                 ctx.reputation += 2
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.COMPLETED, deliveredWeaponId = candidate.id)
@@ -204,6 +253,12 @@ object Market {
                 ctx.emit(EventType.COMMISSION_COMPLETED, 5, "${buyer.fullName} collected the commissioned ${candidate.name} and paid ${c.reward} gold.", listOf(buyer.id.value, candidate.id.value, c.id.value), mapOf("reward" to c.reward.toString()))
                 ctx.addWeaponHistory(candidate.id, "COMMISSION", "Delivered to ${buyer.fullName} on commission.", listOf(buyer.id.value))
                 giveAndEquip(ctx, ctx.hero(buyer.id), ctx.weapon(candidate.id))
+                // The patron is a visit of its own kind: the reward is the coin; the shelf price, if the blade had one, is only what it was listed at.
+                ctx.visits += MarketVisit(
+                    buyer.id, buyer.fullName, candidate.id, VisitReason.COMMISSION_DELIVERED, seq = ctx.visits.size, kind = VisitKind.COMMISSION, customer = customer,
+                    considered = listOf(Considered(candidate.id, candidate.listedPrice ?: 0)), sale = Sale(listedPrice = candidate.listedPrice, cashPaid = c.reward, commissionId = c.id),
+                    eventIds = ctx.newEvents.drop(mark).map { it.id },
+                )
             } else if (ctx.day >= c.deadlineDay) {
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.EXPIRED)
                 ctx.reputation = maxOf(0, ctx.reputation - 1)

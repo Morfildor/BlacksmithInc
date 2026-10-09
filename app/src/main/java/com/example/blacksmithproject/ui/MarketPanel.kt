@@ -39,6 +39,7 @@ import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.model.CommissionStatus
+import com.tinyblacksmith.core.model.VisitReason
 import com.tinyblacksmith.core.model.Weapon
 
 /** Market flow (GDD 12): inspect -> price -> list -> review customers/commissions. Prices are typed by the player. */
@@ -230,14 +231,16 @@ private fun StepButton(label: String, description: String, onClick: () -> Unit) 
     ) { Text(label) }
 }
 
-fun reasonLabel(reason: String): String = when (reason) {
-    "GREAT_FIT" -> "a great fit"
-    "GOOD_ENOUGH" -> "good enough for their purse"
-    "WORN_OUT" -> "their own blade was worn out"
-    "EMPTY_SHELVES" -> "nothing on the shelves"
-    "TOO_EXPENSIVE" -> "could not afford anything"
-    "NOT_BETTER" -> "nothing better than their own gear"
-    "OVERPRICED" -> "found the prices too steep"
-    "NOT_SUITED" -> "nothing suited their style"
-    else -> "undecided"
+fun reasonLabel(reason: VisitReason): String = when (reason) {
+    VisitReason.GREAT_FIT -> "a great fit"
+    VisitReason.GOOD_ENOUGH -> "good enough for their purse"
+    VisitReason.WORN_OUT -> "their own blade was worn out"
+    VisitReason.EMPTY_SHELVES -> "nothing on the shelves"
+    VisitReason.TOO_EXPENSIVE -> "could not afford anything"
+    VisitReason.NOT_BETTER -> "nothing better than their own gear"
+    VisitReason.OVERPRICED -> "found the prices too steep"
+    VisitReason.NOT_SUITED -> "nothing suited their style"
+    VisitReason.UNDECIDED -> "undecided"
+    VisitReason.COMMISSION_DELIVERED -> "collected their commission"
+    VisitReason.COLLECTOR_PURCHASE -> "paid a collector's price"
 }

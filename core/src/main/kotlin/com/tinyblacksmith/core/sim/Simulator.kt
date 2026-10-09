@@ -130,7 +130,7 @@ data class RunStats(
     val medianMaterialsOnHand: Int = 0,
     /** Median over the run of the gold on hand at End Day. */
     val medianGoldOnHand: Int = 0,
-    /** Shop visits over the run by outcome code (`MarketVisit.reason`). */
+    /** Browsing visits over the run by outcome code (`MarketVisit.reason`); patrons and the collector are counted as commissions and events. */
     val visitReasons: Map<String, Int> = emptyMap(),
     /** Elite encounters won, weapons shattered on a lost expedition, warlord-led sieges fought and won (v3 affix and foe sweeps). */
     val elitesSlain: Int = 0,
@@ -297,7 +297,7 @@ class SimulationDriver(
             if (res != null) {
                 collector?.afterEndDay(state, out, res)
                 bots?.observe(state, res)
-                for (v in res.visits) visitReasons[v.reason] = (visitReasons[v.reason] ?: 0) + 1
+                for (v in res.browsers) visitReasons[v.reason.name] = (visitReasons[v.reason.name] ?: 0) + 1
                 val sales = res.events.filter { it.type == EventType.WEAPON_SOLD }
                 sold += sales.size
                 goldEarned += res.ledger?.income?.values?.sum() ?: 0  // every kind: sales, sale bonus, commissions, the collector, tribute

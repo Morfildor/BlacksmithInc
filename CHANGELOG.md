@@ -24,8 +24,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - The forge panel you were on, the recipe you were drafting and an open forge result come back if the system closes
   the game in the background.
 - Android's automatic cloud backup of the save is off until restoring one is tested.
+- Yesterday's customers on the Market panel and the Shelf block on Home now also name the patron who collected a
+  commission and the collector who bought a storied blade.
 
 ### Fixed
+- A past day in the Gazette is tallied as its report was: visitors, shop takings and expeditions lost (a hero who died
+  out there included) no longer change or vanish once the next day is played. Applies to days played from this version.
 - Two quick taps on the run-end screen (two upgrades, or an upgrade and Begin era) can no longer lose a purchase or
   write over the new era.
 ### Changed

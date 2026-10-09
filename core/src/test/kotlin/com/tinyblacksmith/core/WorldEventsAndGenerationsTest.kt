@@ -219,9 +219,9 @@ class WorldEventsAndGenerationsTest {
         var maxFestival = 0
         for (seed in 1L..30L) {
             val base = engine.newRun(LegacyProfile(), seed).copy(reputation = 200)
-            maxNormal = maxOf(maxNormal, base.endDayAccepted().resolution!!.visits.size)
+            maxNormal = maxOf(maxNormal, base.endDayAccepted().resolution!!.browsers.size)
             val festival = base.copy(worldFlags = mapOf(WorldEvents.FLAG_FESTIVAL to base.day))
-            maxFestival = maxOf(maxFestival, festival.endDayAccepted().resolution!!.visits.size)
+            maxFestival = maxOf(maxFestival, festival.endDayAccepted().resolution!!.browsers.size)
         }
         assertEquals(engine.config.maxCustomersPerDay, maxNormal)
         assertEquals(engine.config.maxCustomersPerDay + engine.config.festivalExtraCustomers, maxFestival)
@@ -360,7 +360,7 @@ class WorldEventsAndGenerationsTest {
                 for (e in acc.resolution!!.events) {
                     if (e.type in acting) assertTrue(e.subjectIds.none { HeroId(it) in retiredBefore }, "seed $seed: retired hero acted: ${e.text}")
                 }
-                assertTrue(acc.resolution.visits.none { HeroId(it.heroId.value) in retiredBefore })
+                assertTrue(acc.resolution.visits.none { it.heroId in retiredBefore })
                 s = acc.state
                 assertTrue(s.town.championIds.none { it in s.retiredHeroes().map { h -> h.id } })
                 assertTrue(s.weapons.values.none { w -> w.ownerId != null && s.hero(w.ownerId!!).fate == HeroFate.RETIRED })

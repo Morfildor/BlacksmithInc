@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.TestSupport.engine
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.Invariants
+import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.Phase
 import com.tinyblacksmith.core.persistence.SaveCodec
@@ -34,6 +35,11 @@ class SaveFixtureTest {
         const val FIXTURE_V2 = "/saves/v2_forced_seed4242_day61.json"
         val fixtureTextV2: String by lazy { SaveFixtureTest::class.java.getResource(FIXTURE_V2)?.readText() ?: error("missing $FIXTURE_V2") }
         val decodedV2: GameState by lazy { SaveCodec.decodeRun(fixtureTextV2) }
+
+        const val FIXTURE_V3 = "/saves/v3_forced_seed4242_day61.json"
+        val fixtureTextV3: String by lazy { SaveFixtureTest::class.java.getResource(FIXTURE_V3)?.readText() ?: error("missing $FIXTURE_V3") }
+        val decodedV3: GameState by lazy { SaveCodec.decodeRun(fixtureTextV3) }
+
     }
 
     @Test
@@ -106,6 +112,27 @@ class SaveFixtureTest {
         assertEquals(engine.content.version, s.contentVersion)
         assertTrue(Invariants.check(s, engine.config, content = engine.content).isEmpty())
         assertEquals(s, SaveCodec.decodeRun(SaveCodec.encodeRun(s)))
+        val next = assertIs<CommandOutcome.Accepted>(engine.handle(s, Command.EndDay(endDayId(s)))).state
+        assertTrue(next.isEnded || next.day == 62)
+    }
+
+    /**
+     * The schema-3 anchor: the same recipe (forced survival, seed 4242, BALANCED_FAIR, 60 End Days) written with the
+     * visit record. Its stored day carries the counter snapshots; its log carries one `SHOP_DAY` record per kept day.
+     */
+    @Test
+    fun theV3FixtureCarriesTheVisitRecordAndPlaysWithoutAdmission() {
+        assertTrue(fixtureTextV3.startsWith("""{"schemaVersion":3,"payload":"""), fixtureTextV3.take(40))
+        val s = decodedV3
+        assertEquals(listOf(2, engine.config.version, 61), listOf(s.rulesVersion, s.balanceVersion, s.day))
+        assertEquals(engine.content.version, s.contentVersion)
+        assertTrue(Invariants.check(s, engine.config, content = engine.content).isEmpty())
+        assertEquals(s, SaveCodec.decodeRun(SaveCodec.encodeRun(s)))
+        val last = s.lastResolution!!
+        assertEquals(listOf(1, 60), listOf(last.recordVersion, last.day))
+        assertTrue(last.visits.isNotEmpty() && last.visits.all { it.customer != null } && last.shopWeapons.isNotEmpty() && last.ledger != null)
+        assertTrue(last.visits.flatMap { it.considered }.all { c -> last.shopWeapons.any { it.weaponId == c.weaponId } })
+        assertEquals((31..60).toList(), s.events.filter { it.type == EventType.SHOP_DAY }.map { it.day }, "one small record per day of the kept log")
         val next = assertIs<CommandOutcome.Accepted>(engine.handle(s, Command.EndDay(endDayId(s)))).state
         assertTrue(next.isEnded || next.day == 62)
     }

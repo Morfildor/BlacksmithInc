@@ -114,9 +114,9 @@ class CommissionRulesTest {
             val out = s.endDayAccepted()
             val done = out.state.request
             assertEquals(CommissionStatus.COMPLETED to WeaponId("a"), done.status to done.deliveredWeaponId, "seed $seed")
-            assertTrue(out.resolution!!.visits.none { it.purchasedWeaponId == WeaponId("a") })
+            assertTrue(out.resolution!!.browsers.none { it.purchasedWeaponId == WeaponId("a") })
             assertEquals(s.request.buyerId, out.state.weapon(WeaponId("a")).ownerId)
-            browsers += out.resolution!!.visits.size
+            browsers += out.resolution!!.browsers.size
         }
         assertTrue(browsers > 12, "browsers did come: $browsers")
     }

@@ -168,9 +168,9 @@ class WeaponWearTest {
             val forgedOut = world.forgeAccepted(quickSword(Risk.SAFE))
             world = forgedOut.state.run(Command.ToggleShelf(forgedOut.forgedWeaponId!!, true))
             val day = world.endDay()
-            replacements += day.lastResolution!!.visits.count { it.reason == "WORN_OUT" }
+            replacements += day.lastResolution!!.visits.count { it.reason == VisitReason.WORN_OUT }
             assertTrue(armed(seed).forgeAccepted(quickSword(Risk.SAFE)).let { o -> o.state.run(Command.ToggleShelf(o.forgedWeaponId!!, true)) }.endDay()
-                .lastResolution!!.visits.none { it.reason == "WORN_OUT" })
+                .lastResolution!!.visits.none { it.reason == VisitReason.WORN_OUT })
         }
         assertTrue(replacements > 0, "worn heroes replaced their blades $replacements times over 12 seeds")
     }

@@ -9,6 +9,8 @@ import com.tinyblacksmith.core.model.IncomeKind
 import com.tinyblacksmith.core.model.MarketVisit
 import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.ShopLedger
+import com.tinyblacksmith.core.model.VisitKind
+import com.tinyblacksmith.core.model.VisitReason
 
 /** The Emberfall Gazette (GDD 11): headlines derive only from real event records, ordered by priority. */
 object Gazette {
@@ -22,14 +24,11 @@ object Gazette {
 
     /**
      * The records one day's paper is set from: the stored report of the latest day, the archive for any other. A day
-     * resolved before the report carried the whole day (F03) stored only its End Day records, so its report holds
-     * fewer than the archive does and the archive is used instead.
+     * resolved by an older build (`recordVersion` 0) may have stored only its End Day records (F03), so the archive is
+     * used for it instead.
      */
-    fun dayRecords(state: GameState, day: Int): List<EventRecord> {
-        val archive = state.eventsForDay(day)
-        val reported = state.lastResolution?.takeIf { it.day == day }?.events ?: return archive
-        return if (reported.size >= archive.size) reported else archive
-    }
+    fun dayRecords(state: GameState, day: Int): List<EventRecord> =
+        state.lastResolution?.takeIf { it.day == day && it.recordVersion >= 1 }?.events ?: state.eventsForDay(day)
 
     fun masthead(day: Int): String = "EMBERFALL GAZETTE — DAY $day"
 
@@ -64,13 +63,32 @@ object Gazette {
     )
 
     /** Why a visitor left without buying (`MarketVisit.reason`), as the paper puts it. */
-    fun visitReason(code: String): String = when (code) {
-        "TOO_EXPENSIVE" -> "could afford nothing on the shelf"
-        "NOT_BETTER" -> "found nothing better than the weapon in hand"
-        "EMPTY_SHELVES" -> "found the shelves bare"
-        "OVERPRICED" -> "balked at the prices"
-        "NOT_SUITED" -> "found nothing to suit"
+    fun visitReason(reason: VisitReason): String = when (reason) {
+        VisitReason.TOO_EXPENSIVE -> "could afford nothing on the shelf"
+        VisitReason.NOT_BETTER -> "found nothing better than the weapon in hand"
+        VisitReason.EMPTY_SHELVES -> "found the shelves bare"
+        VisitReason.OVERPRICED -> "balked at the prices"
+        VisitReason.NOT_SUITED -> "found nothing to suit"
         else -> "left undecided"
+    }
+
+    private const val VISITORS = "visitors"
+    private const val BOUGHT = "bought"
+    private const val WON = "won"
+    private const val LOST = "lost"
+
+    /** The `SHOP_DAY` record (written once per End Day): the counts and the coin by kind that [tally] prints, so a past day needs no snapshot to be told the same way. */
+    fun shopDayData(visits: List<MarketVisit>, ledger: ShopLedger, field: List<FieldResult>): Map<String, String> {
+        val browsers = visits.filter { it.kind == VisitKind.BROWSE }
+        return mapOf(
+            VISITORS to browsers.size, BOUGHT to browsers.count { it.purchasedWeaponId != null },
+            WON to field.count { it.outcome == FieldOutcome.WON }, LOST to field.count { it.outcome == FieldOutcome.DRIVEN_BACK || it.outcome == FieldOutcome.DIED },
+        ).mapValues { it.value.toString() } + ledger.income.entries.sortedBy { it.key }.associate { it.key.name to it.value.toString() }
+    }
+
+    fun shopDayText(visits: List<MarketVisit>): String {
+        val browsers = visits.filter { it.kind == VisitKind.BROWSE }
+        return "The shop saw ${count(browsers.size, "visitor")}; ${browsers.count { it.purchasedWeaponId != null }} bought."
     }
 
     /**
@@ -91,6 +109,7 @@ object Gazette {
         val pool = events.filter { e ->
             when (e.type) {
                 EventType.WEAPON_EQUIPPED -> false  // always follows a sale or an inheritance line
+                EventType.SHOP_DAY -> false  // the tally's own numbers, not news
                 EventType.MILESTONE -> impliedMilestones[e.data["milestone"]]?.let { it !in types } ?: true
                 EventType.HERO_ARRIVED -> e.subjectIds.none { it in arrivedByEvent }  // the world event tells the arrival
                 else -> true
@@ -127,20 +146,25 @@ object Gazette {
     private fun tally(events: List<EventRecord>, visits: List<MarketVisit>, ledger: ShopLedger?, field: List<FieldResult>): List<String> {
         val commissions = events.count { it.type == EventType.COMMISSION_COMPLETED }
         val sold = events.count { it.type == EventType.WEAPON_SOLD } + commissions
-        val income = ledger?.income ?: recordedIncome(events)
+        val shopDay = events.firstOrNull { it.type == EventType.SHOP_DAY }?.data  // a day resolved since the visit record; null on an older one
+        val income = ledger?.income ?: shopDay?.let { d -> IncomeKind.entries.associateWith { d[it.name]?.toIntOrNull() ?: 0 } } ?: recordedIncome(events)
         val tribute = income[IncomeKind.TRIBUTE] ?: 0  // the town's thanks is not shop takings
         val gold = income.values.sum() - tribute
         // A fatal expedition is a loss; only the field results tell it from a death at the walls, so an older day counts as it did.
         val won = if (ledger != null) field.count { it.outcome == FieldOutcome.WON }
-            else events.count { it.type == EventType.ELITE_SLAIN || (it.type == EventType.EXPEDITION_WON && "material" !in it.data) }
+            else shopDay?.get(WON)?.toIntOrNull() ?: events.count { it.type == EventType.ELITE_SLAIN || (it.type == EventType.EXPEDITION_WON && "material" !in it.data) }
         val lost = if (ledger != null) field.count { it.outcome == FieldOutcome.DRIVEN_BACK || it.outcome == FieldOutcome.DIED }
-            else events.count { it.type == EventType.EXPEDITION_LOST }
+            else shopDay?.get(LOST)?.toIntOrNull() ?: events.count { it.type == EventType.EXPEDITION_LOST }
         val fallen = events.count { it.type == EventType.HERO_DIED }
+        // Browsers only: a commission patron and the collector are counted by their own lines.
+        val browsers = visits.filter { it.kind == VisitKind.BROWSE }
+        val visitors = if (visits.isNotEmpty()) browsers.size else shopDay?.get(VISITORS)?.toIntOrNull() ?: 0
+        val bought = if (visits.isNotEmpty()) browsers.count { it.purchasedWeaponId != null } else shopDay?.get(BOUGHT)?.toIntOrNull() ?: 0
         return buildList {
-            if (gold > 0 || sold > 0 || visits.isNotEmpty()) add("Shop took $gold gold")
+            if (gold > 0 || sold > 0 || visitors > 0) add("Shop took $gold gold")
             if (tribute > 0) add("Town tribute: $tribute gold")
-            if (visits.isNotEmpty()) {
-                add("${visits.count { it.purchasedWeaponId != null }} of ${count(visits.size, "visitor")} bought")
+            if (visitors > 0) {
+                add("$bought of ${count(visitors, "visitor")} bought")
                 if (commissions > 0) add("${count(commissions, "commission")} delivered")
             } else if (sold > 0) add("$sold sold")
             if (won + lost > 0) add("Expeditions: $won won, $lost lost")

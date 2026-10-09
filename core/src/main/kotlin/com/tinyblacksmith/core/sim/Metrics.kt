@@ -108,7 +108,7 @@ class CustomerCollector(private val engine: GameEngine) {
     /** Call with the same state, the state End Day returned and the resolution it carries. */
     fun afterEndDay(pre: GameState, out: GameState, res: DayResolution) {
         val day = pre.day
-        val served = res.visits
+        val served = res.browsers.filter { it.heroId != null }
         days++; heroDays += alive.size
         while (servedByCount.size <= served.size) servedByCount += 0
         servedByCount[served.size]++
@@ -119,19 +119,19 @@ class CustomerCollector(private val engine: GameEngine) {
         val rank = alive.withIndex().associate { it.value.id.value to it.index }
         val b = band(day)
         for (v in served) {
-            val t = tracks.getValue(v.heroId.value)
+            val t = tracks.getValue(v.heroId!!.value)
             val bought = v.purchasedWeaponId != null
             if (t.first < 0) t.first = day else { returnVisits++; gapDaysSum += day - t.last; gapCount++ }
             t.last = day; t.visits++
             visits++; bandVisits[b]++
             if (bought) { buys++; bandBuys[b]++ }
-            val p = minOf(rank.getValue(v.heroId.value), POSITIONS - 1)
+            val p = minOf(rank.getValue(v.heroId!!.value), POSITIONS - 1)
             posVisits[p]++
             if (bought) posBuys[p]++
             if (day <= 5) classesDay5 += t.classId
             if (day <= 10) { classesDay10 += t.classId; if (bought) boughtDay10 += t.classId }
         }
-        val servedClasses = served.map { tracks.getValue(it.heroId.value).classId }.toSet()
+        val servedClasses = served.map { tracks.getValue(it.heroId!!.value).classId }.toSet()
         classesServedSum += servedClasses.size
         classesAliveSum += alive.map { it.classId.value }.toSet().size
         if (alive.groupBy { it.name }.any { it.value.size > 1 }) firstNameDays++

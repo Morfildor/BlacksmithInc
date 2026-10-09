@@ -293,6 +293,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val ctx = ResolutionContext(state, content, config)
         val day = ctx.day
         // 1. Lock planning; RNG state is snapshotted implicitly (streams open lazily from the saved state).
+        // The shelf as the day opens, before a patron or a browser takes anything from it: what every visit of the day refers to.
+        val shelf = state.listedWeapons()
         // 2. Commissions, then customers: a patron collects before the browsers arrive, so the blade a request was promised is not sold first.
         Market.resolveCommissions(ctx)
         Market.resolveShelfVisits(ctx)
@@ -314,12 +316,18 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // 9. Histories and blessings expiry.
         ctx.blessings = ctx.blessings.filter { it.expiresDay > day }
         // 10. Gazette and new morning. The edition is the whole day, preparation included (taken before compaction).
+        val spent = ctx.events.filter { it.era == ctx.era && it.day == day && (it.type == EventType.MATERIAL_BOUGHT || it.type == EventType.TOOL_BOUGHT) }.sumOf { it.data["cost"]?.toIntOrNull() ?: 0 }
+        val ledger = ShopLedger(state.gold, ctx.gold, ctx.income.toMap(), ctx.tradeInCreditToday, spent)
+        // The day's counts and coin as one ordinary record: it stays in the log after the snapshots are gone, so a past edition tallies as the report did.
+        ctx.emit(EventType.SHOP_DAY, 0, Gazette.shopDayText(ctx.visits), data = Gazette.shopDayData(ctx.visits, ledger, ctx.field))
         val dayEvents = ctx.events.filter { it.era == ctx.era && it.day == day }
-        val spent = dayEvents.filter { it.type == EventType.MATERIAL_BOUGHT || it.type == EventType.TOOL_BOUGHT }.sumOf { it.data["cost"]?.toIntOrNull() ?: 0 }
+        // A blade a patron took from storage was never on the shelf; it is added as it was this morning.
+        val fromStorage = ctx.visits.mapNotNull { it.purchasedWeaponId }.filter { id -> shelf.none { it.id == id } }.map { state.weapon(it) }
         val resolution = DayResolution(
             commandId = commandId, day = day, events = dayEvents, headlines = Gazette.headlines(dayEvents),
             visits = ctx.visits.toList(), replays = Battle.dayReplays(ctx), defeated = ctx.phase == Phase.ENDED,
-            ledger = ShopLedger(state.gold, ctx.gold, ctx.income.toMap(), ctx.tradeInCreditToday, spent), field = ctx.field.toList(),
+            ledger = ledger, field = ctx.field.toList(),
+            shopWeapons = (shelf + fromStorage).map { WeaponSnapshot.of(it) }, shelfPrices = shelf.associate { it.id to (it.listedPrice ?: 0) }, recordVersion = 1,
         )
         ctx.lastResolution = resolution
         ctx.processedEndDayIds += commandId.value

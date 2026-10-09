@@ -23,7 +23,7 @@ class GoldenStateTest {
     private val resource = "golden/state_rules${GameEngine.RULES_VERSION}.txt"
 
     /** Records that describe a day without being gameplay. A task that adds such a type names it here on purpose. */
-    private val recordOnly = setOf("MATERIAL_BOUGHT")          // T1.6 adds "MATERIAL_BOUGHT"; T2.1 adds "SHOP_DAY"
+    private val recordOnly = setOf("MATERIAL_BOUGHT", "SHOP_DAY")
 
     private fun sha(text: String): String =
         MessageDigest.getInstance("SHA-256").digest(text.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }

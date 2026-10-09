@@ -2,7 +2,6 @@ package com.tinyblacksmith.core.sim
 
 import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.content.ContentCatalog
-import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.content.MaterialDef
@@ -15,6 +14,7 @@ import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.legacy.LegacyOutcome
+import com.tinyblacksmith.core.market.Commissions
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.Rng
 import kotlinx.serialization.Serializable
@@ -216,13 +216,17 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
 
     // ---- requests (commissions today, wants from T4.1) ----------------------------------------------------------
 
-    private class Request(val key: String, val familyId: WeaponFamilyId, val minQuality: Int, val element: Element?) {
-        fun fits(w: Weapon) = (w.isInStorage || w.isListed) && w.familyId == familyId && w.quality >= minQuality && (element == null || w.element == element)
+    private class Request(private val commission: Commission) {
+        val key get() = commission.id.value
+        val familyId get() = commission.familyId
+        val minQuality get() = commission.minQuality
+        val element get() = commission.element
+        fun fits(w: Weapon) = (w.isInStorage || w.isListed) && Commissions.fit(w, commission) == Commissions.Fit.OK
     }
 
     /** What the shop is asked for, most urgent first. T4.1 adds the heroes' wants here; nothing else in the bot reads commissions directly. */
     private fun requests(state: GameState): List<Request> =
-        state.commissions.values.filter { it.status == CommissionStatus.ACCEPTED }.sortedBy { it.deadlineDay }.map { Request(it.id.value, it.familyId, it.minQuality, it.element) }
+        state.commissions.values.filter { it.status == CommissionStatus.ACCEPTED }.sortedBy { it.deadlineDay }.map { Request(it) }
 
     /** The cheapest recipe (owned materials cost nothing) whose average quality clears the request, forged Quick and Balanced, a few tries per request. */
     private fun requestForge(state: GameState): Command.Forge? {

@@ -315,7 +315,7 @@ class GameplayDepthTest {
         val extra = (1L..40L).map { seed ->
             val plain = fresh(seed).copy(gold = 5_000)
             val signed = plain.run(Command.BuyTool("signboard")).run(Command.BuyTool("signboard"))
-            signed.endDay().lastResolution!!.visits.size - plain.endDay().lastResolution!!.visits.size
+            signed.endDay().lastResolution!!.browsers.size - plain.endDay().lastResolution!!.browsers.size
         }
         assertTrue(extra.all { it in 0..signboard.maxLevel }, "never more than one extra customer per level: $extra")
         assertTrue(extra.any { it == signboard.maxLevel }, "a busy day fills both extra places: $extra")
