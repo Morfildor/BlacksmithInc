@@ -55,17 +55,19 @@ tap_id reveal_list || exit 1
 tap_id nav_shop; tap_id page_market; $ADB shell sleep 1; shot 05_market
 has "Shelves (1/8)" && echo "CHECK shelf listed: ok" || echo "CHECK shelf listed: FAIL"
 tap_id end_day || exit 1
-# The shop day opens on its first card. The Gazette is read over it; closing the Gazette does not begin the next day.
+# The shop day opens on its first card: step a few cards, skip to the day's last card, read the Gazette over it (closing
+# it does not begin the next day), then begin the next day.
 has_id shopday_next && echo "CHECK shop day opens: ok" || echo "CHECK shop day opens: FAIL"
 shot 06_shopday
+tap_id shopday_next; shot 06b_shopday_card
+tap_id shopday_next; shot 06b2_shopday_card
+tap_id shopday_skip || exit 1
+shot 06c_tomorrow
 tap_id shopday_gazette || exit 1
 wait_text "EMBERFALL GAZETTE" && shot 06_gazette
 dump | grep -o 'text="[^"]*"' | grep -iE "gazette|bought|forged|patrolled|routed|invasion" | head -8
 tap_id report_close || exit 1
-has_id shopday_next && echo "CHECK gazette closes onto the day: ok" || echo "CHECK gazette closes onto the day: FAIL"
-tap_id shopday_next; shot 06b_shopday_card
-tap_id shopday_skip || exit 1
-shot 06c_tomorrow
+has_id shopday_close && echo "CHECK gazette closes onto the day: ok" || echo "CHECK gazette closes onto the day: FAIL"
 tap_id shopday_close || exit 1
 tap_id nav_town; $ADB shell sleep 1; shot 07_town
 has "Champions" && echo "CHECK town panel: ok"
@@ -75,8 +77,8 @@ has_id page_gazette && has_id page_journal && has_id page_legacy && echo "CHECK 
 tap_id page_legacy; wait_text "Permanent upgrades" && echo "CHECK legacy segment: ok" || echo "CHECK legacy segment: FAIL"
 tap_id nav_settings; wait_text "Reduced motion" && shot 07c_settings
 has_id settings_version && echo "CHECK settings sheet: ok" || echo "CHECK settings sheet: FAIL"
-$ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 1
-$ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 1
+$ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 2
+$ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 2
 has_id page_market && echo "CHECK back returns to Shop: ok" || echo "CHECK back returns to Shop: FAIL"
 # Process-death resume: kill and relaunch, expect the same day.
 $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
