@@ -104,6 +104,12 @@ data class RunStats(
     val toolFirstDay: Map<String, Int> = emptyMap(),
     /** Weapons in the run that carry each affix or flaw, counted at run end. */
     val affixWeapons: Map<String, Int> = emptyMap(),
+    /** Hero-days (heroes alive at End Day, summed over the run) by what the hero did that day (`SimulationDriver.activityOf`). */
+    val activityDays: Map<String, Int> = emptyMap(),
+    /** Hero level-ups and mentoring moments at a guild hall over the run; guilds standing at run end. */
+    val heroLevelUps: Int = 0,
+    val mentorings: Int = 0,
+    val guilds: Int = 0,
 )
 
 /**
@@ -149,6 +155,9 @@ class SimulationDriver(
         var warlordsDefeated = 0
         val warlordNames = engine.content.factions.mapNotNull { it.warlordName }
         val toolFirstDay = sortedMapOf<String, Int>()
+        val activityDays = sortedMapOf<String, Int>()
+        var heroLevelUps = 0
+        var mentorings = 0
         while (!state.isEnded && state.day <= maxDays) {
             if (state.pendingBlessingOffer.isNotEmpty()) state = engine.handle(state, Command.ChooseBlessing(state.pendingBlessingOffer.first())).state()
             for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
@@ -205,6 +214,9 @@ class SimulationDriver(
                 // The siege line names the warlord when one leads (a lost siege capitalises it); the WARLORD_DEFEATED milestone fires once per run, the tribute line on every warlord siege won.
                 warlordSieges += res.events.count { (it.type == EventType.SIEGE_WON || it.type == EventType.SIEGE_LOST) && warlordNames.any { n -> it.text.contains(n, ignoreCase = true) } }
                 warlordsDefeated += res.events.count { it.type == EventType.MILESTONE && "tribute" in it.data }
+                for (h in state.aliveHeroes()) activityOf(h, res.events).let { activityDays[it] = (activityDays[it] ?: 0) + 1 }
+                heroLevelUps += res.events.count { it.type == EventType.HERO_LEVELED }
+                mentorings += res.events.count { it.type == EventType.GUILD_MENTORED }
             }
             if (eventRetentionDays > 0) {
                 val cutoff = out.day - eventRetentionDays
@@ -225,8 +237,27 @@ class SimulationDriver(
             elitesSlain = elitesSlain, weaponsBroken = weaponsBroken, warlordSieges = warlordSieges, warlordsDefeated = warlordsDefeated,
             toolLevels = state.tools.toSortedMap(), toolFirstDay = toolFirstDay,
             affixWeapons = state.weapons.values.flatMap { it.affixes + it.flaws }.groupingBy { it.value }.eachCount().toSortedMap(),
+            activityDays = activityDays, heroLevelUps = heroLevelUps, mentorings = mentorings, guilds = state.town.guilds.size,
         )
         return stats to state
+    }
+
+    /**
+     * What a hero who was alive this morning did today, read from the day's records: AMBITION_<ambition> (a slayer's
+     * hunt is an ambition day, not an expedition), GUILD, PATROL, REST (REST_WOUNDED when the hero was below the wounded
+     * threshold and had no choice), else EXPEDITION (won, lost or fallen). NONE would be a living hero who did not act.
+     */
+    private fun activityOf(hero: Hero, events: List<EventRecord>): String {
+        val own = events.filter { e -> e.subjectIds.firstOrNull { it.startsWith("h") } == hero.id.value }
+        fun has(type: EventType) = own.any { it.type == type }
+        return when {
+            has(EventType.AMBITION_PURSUED) -> "AMBITION_" + own.first { it.type == EventType.AMBITION_PURSUED }.data["ambition"]
+            has(EventType.GUILD_TRAINED) -> "GUILD"
+            has(EventType.HERO_PATROLLED) -> "PATROL"
+            has(EventType.HERO_RESTED) -> if (hero.health < engine.config.heroWoundedThreshold) "REST_WOUNDED" else "REST"
+            has(EventType.EXPEDITION_WON) || has(EventType.ELITE_SLAIN) || has(EventType.EXPEDITION_LOST) || has(EventType.HERO_DIED) -> "EXPEDITION"
+            else -> "NONE"
+        }
     }
 
     /** Morning routine of [Policy.active]: one tool when affordable (cheapest first), then one hone (unhoned, or a worn trade-in) when the core is on hand. */
@@ -380,6 +411,14 @@ data class PolicySummary(
     val toolFirstDayMean: Map<String, Double> = emptyMap(),
     /** Weapons per run carrying each affix or flaw. */
     val affixWeaponsPerRun: Map<String, Double> = emptyMap(),
+    /** Hero-days per run and the share of them spent on each activity (`RunStats.activityDays`). */
+    val heroDaysPerRun: Double = 0.0,
+    val activityShare: Map<String, Double> = emptyMap(),
+    val heroLevelUpsPerRun: Double = 0.0,
+    val mentoringsPerRun: Double = 0.0,
+    /** Guilds standing at run end per run, and the share of runs that end with at least one. */
+    val guildsPerRun: Double = 0.0,
+    val guildRunShare: Double = 0.0,
 )
 
 data class Report(val policy: Policy, val runs: List<RunStats>, val label: String = "new account") {
@@ -389,6 +428,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
         val forged = rarityTotals.values.sum().coerceAtLeast(1)
         val siegesFought = runs.sumOf { it.siegesSurvived + it.siegesLost }
         val toolIds = runs.flatMap { it.toolLevels.keys }.toSortedSet()
+        val heroDays = runs.sumOf { it.activityDays.values.sum() }
         return PolicySummary(
             policy = policy, label = label, runs = runs.size,
             daysP10 = percentile(days, 0.1), daysMedian = percentile(days, 0.5), daysMean = days.average(), daysP90 = percentile(days, 0.9), daysMax = days.maxOrNull() ?: 0,
@@ -411,6 +451,10 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             toolLevelPerRun = toolIds.associateWith { t -> runs.sumOf { it.toolLevels[t] ?: 0 }.toDouble() / runs.size },
             toolFirstDayMean = toolIds.associateWith { t -> runs.mapNotNull { it.toolFirstDay[t] }.average() },
             affixWeaponsPerRun = runs.flatMap { it.affixWeapons.keys }.toSortedSet().associateWith { a -> runs.sumOf { it.affixWeapons[a] ?: 0 }.toDouble() / runs.size },
+            heroDaysPerRun = heroDays.toDouble() / runs.size,
+            activityShare = runs.flatMap { it.activityDays.keys }.toSortedSet().associateWith { k -> runs.sumOf { it.activityDays[k] ?: 0 }.toDouble() / heroDays.coerceAtLeast(1) },
+            heroLevelUpsPerRun = runs.map { it.heroLevelUps }.average(), mentoringsPerRun = runs.map { it.mentorings }.average(),
+            guildsPerRun = runs.map { it.guilds }.average(), guildRunShare = runs.count { it.guilds > 0 }.toDouble() / runs.size,
         )
     }
 
@@ -430,6 +474,8 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  elites slain/run: ${f1(s.elitesSlainPerRun)}  weapons broken/run: ${f1(s.weaponsBrokenPerRun)}  warlord sieges/run: ${f1(s.warlordSiegesPerRun)}  warlords defeated/run: ${f1(s.warlordsDefeatedPerRun)}")
             if (s.toolLevelPerRun.isNotEmpty()) appendLine("  tools (share of runs / mean level / first day): " + s.toolLevelPerRun.keys.joinToString("  ") { t -> "$t=${pct(s.toolBoughtShare.getValue(t))}/${f1(s.toolLevelPerRun.getValue(t))}/${f1(s.toolFirstDayMean.getValue(t))}" })
             appendLine("  affix weapons/run: " + s.affixWeaponsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
+            appendLine("  hero-days/run: ${f1(s.heroDaysPerRun)}  activity shares: " + s.activityShare.entries.joinToString("  ") { "${it.key}=${"%.1f%%".format(100.0 * it.value)}" })
+            appendLine("  level-ups/run: ${f1(s.heroLevelUpsPerRun)}  mentorings/run: ${f1(s.mentoringsPerRun)}  guilds/run: ${f1(s.guildsPerRun)}  runs with a guild: ${pct(s.guildRunShare)}")
             appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}")
         }
     }

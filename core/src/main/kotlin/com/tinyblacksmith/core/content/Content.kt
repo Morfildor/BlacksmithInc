@@ -74,6 +74,8 @@ data class TraitDef(
     val patrolWeight: Double = 0.0,
     val restWeight: Double = 0.0,
     val shopWeight: Double = 0.0,
+    /** Added to the weight of a day at the guild hall (HeroActivity.GUILD). */
+    val guildWeight: Double = 0.0,
     /** Scales the price penalty when evaluating shelf items (>1 = stingier). */
     val priceSensitivity: Double = 1.0,
     /** Added to element taste for any elemental weapon. */

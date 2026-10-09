@@ -38,9 +38,9 @@ object Gazette {
         EventType.ELITE_SLAIN, EventType.EXPEDITION_WON, EventType.EXPEDITION_LOST, EventType.HERO_WOUNDED, EventType.HERO_LEVELED,
         EventType.HERO_DIED, EventType.WEAPON_BROKEN, EventType.WEAPON_RECOVERED, EventType.WEAPON_STOLEN, EventType.WEAPON_LOST,
         EventType.AMBITION_FULFILLED, EventType.HERO_RETIRED, EventType.GUILD_FOUNDED, EventType.HERO_MENTORED, EventType.WEAPON_INHERITED,
-        EventType.HERO_ARRIVED,
+        EventType.HERO_ARRIVED, EventType.GUILD_JOINED, EventType.GUILD_MENTORED, EventType.AMBITION_PURSUED,
     )
-    private val quietTypes = setOf(EventType.HERO_PATROLLED, EventType.HERO_RESTED)
+    private val quietTypes = setOf(EventType.HERO_PATROLLED, EventType.HERO_RESTED, EventType.GUILD_TRAINED)
     private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)
     private val forgeTypes = setOf(
         EventType.WEAPON_FORGED, EventType.WEAPON_LISTED, EventType.WEAPON_HONED, EventType.WEAPON_DONATED, EventType.WEAPON_SALVAGED,
@@ -131,8 +131,10 @@ object Gazette {
         val lines = groups.map { (hero, es) -> compose(heroNames[hero], es.map { it.text }) }.toMutableList()
         val patrolled = events.filter { it.type == EventType.HERO_PATROLLED }.mapNotNull { heroNames[it.subjectIds.firstOrNull()] }
         val rested = events.filter { it.type == EventType.HERO_RESTED }.mapNotNull { heroNames[it.subjectIds.firstOrNull()] }
+        val trained = events.filter { it.type == EventType.GUILD_TRAINED }.mapNotNull { heroNames[it.subjectIds.firstOrNull()] }
         val quiet = listOfNotNull(
             patrolled.takeIf { it.isNotEmpty() }?.let { "On the walls: ${it.joinToString(", ")}." },
+            trained.takeIf { it.isNotEmpty() }?.let { "At the guild hall: ${it.joinToString(", ")}." },
             rested.takeIf { it.isNotEmpty() }?.let { "Resting: ${it.joinToString(", ")}." },
         )
         if (quiet.isNotEmpty()) lines += quiet.joinToString(" ")

@@ -209,7 +209,7 @@ data class BalanceConfig(
     val ambitionSlayerWins: Int = 4,
     val ambitionCollectorQuality: Int = 60,
     val ambitionFortuneGold: Int = 300,
-    /** Added to the activity weight an unfulfilled ambition favours. */
+    /** Weight of the AMBITION activity while the ambition is unfulfilled (v3 added it to the expedition or patrol weight instead). */
     val ambitionActivityWeight: Double = 0.6,
     /** Purchase utility a COLLECTOR adds to a weapon of [ambitionCollectorQuality] or better. */
     val collectorUtilityBonus: Double = 0.6,
@@ -257,8 +257,39 @@ data class BalanceConfig(
     val collectorFameMultiplier: Double = 2.0,
     /** Suggested-price premium per counted fame point (+5 % at the cap). Heroes do not raise their price ceiling for fame, so the premium must stay well under the utility bonus (3 x premium x the thriftiest sensitivity 1.6 x 1.3). */
     val weaponFamePricePerPoint: Double = 0.005,
+    // v5 (pending): hero daily life
+    /** GUILD and AMBITION as scored daily activities, and the money and prior-history inputs (GDD 6 utility model); the numbers are in [HeroLifeConfig]. */
+    val heroLife: HeroLifeConfig = HeroLifeConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()
     }
 }
+
+// v5 (pending): hero daily life
+/**
+ * All PROPOSED. A group of its own because [BalanceConfig] is at the JVM limit of 255 parameter slots for one method
+ * (a Double takes two): with eleven more flat numbers the class compiles but fails to load ("Too many arguments in
+ * method signature"). One reference costs one slot.
+ */
+data class HeroLifeConfig(
+    /** Weight of a day at the guild hall before trait weights (TraitDef.guildWeight); floor 0.02. */
+    val guildBaseWeight: Double = 0.35,
+    /** A day at the hall: XP and health, no gold, no suppression, no militia. With [mentorXp] it stays under one won expedition (BalanceConfig.expeditionXp). */
+    val guildXp: Int = 20,
+    val guildHeal: Int = 10,
+    /** Extra XP for a hero taught at the hall by a higher-level guildmate who is there the same day; at most once a day per hero. */
+    val mentorXp: Int = 15,
+    /** AMBITION, SLAYER: added to the elite chance of the hunt (an expedition otherwise by the usual rules). */
+    val slayerHuntEliteChance: Double = 0.3,
+    /** AMBITION, DEFENDER: militia a day of drilling the watch adds (a patrol adds BalanceConfig.patrolMilitiaGain and suppresses; a drill does not suppress or pay). */
+    val defenderDrillMilitia: Int = 5,
+    /** AMBITION, COLLECTOR and FORTUNE: gold for a day of paid work (a patrol pays BalanceConfig.patrolGold); no XP, suppression or militia. */
+    val ambitionWorkGold: Int = 40,
+    /** Money: an unarmed hero holding less gold than this leans toward the town's patrol pay by [poorPatrolWeight]. */
+    val poorHeroGold: Int = 60,
+    val poorPatrolWeight: Double = 0.6,
+    /** Prior history: a hero driven back from an expedition yesterday leans toward rest and toward the hall. */
+    val setbackRestWeight: Double = 0.5,
+    val setbackGuildWeight: Double = 0.4,
+)

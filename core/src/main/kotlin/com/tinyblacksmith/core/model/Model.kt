@@ -8,7 +8,7 @@ enum class Phase { PLANNING, ENDED }
 enum class Risk { SAFE, BALANCED, RECKLESS }
 enum class ForgeMode { QUICK, ADVANCED }
 enum class Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY }
-enum class HeroActivity { REST, SHOP, EXPEDITION, PATROL, DEFEND, IDLE }
+enum class HeroActivity { REST, SHOP, EXPEDITION, PATROL, DEFEND, IDLE, GUILD, AMBITION }
 enum class HeroFate { ALIVE, DEAD, RETIRED }
 enum class CommissionStatus { OFFERED, ACCEPTED, COMPLETED, EXPIRED, DECLINED }
 /** GDD 6 hero ambitions: a personal goal that shifts daily choices and makes news when fulfilled. */
@@ -99,6 +99,8 @@ data class Hero(
     /** Expedition victories only (sieges excluded); drives the SLAYER ambition. */
     val expeditionWins: Int = 0,
     val elitesSlain: Int = 0,
+    /** Day of the last expedition this hero was driven back from; yesterday's rout weighs on today's choice (GDD 6 "prior history"). */
+    val drivenBackOnDay: Int? = null,
 ) {
     val fullName: String get() = "$name $surname"
     val isAlive: Boolean get() = fate == HeroFate.ALIVE
@@ -150,6 +152,7 @@ enum class EventType {
     WORLD_EVENT, MILESTONE, LEGEND_RECORDED, HERO_ARRIVED,
     SIGNATURE_DISCOVERED, HERO_RETIRED, GUILD_FOUNDED, HERO_MENTORED, ARTIFACT_RETURNED, WEAPON_STOLEN, WEAPON_INHERITED,
     ELITE_SLAIN, AMBITION_FULFILLED, WEAPON_SALVAGED, WEAPON_HONED, WEAPON_DONATED, TOOL_BOUGHT, WEAPON_BROKEN,
+    GUILD_TRAINED, GUILD_JOINED, GUILD_MENTORED, AMBITION_PURSUED,
 }
 
 /** Source of truth for the Gazette and replays (GDD Appendix B). Subjects are real entity IDs. */

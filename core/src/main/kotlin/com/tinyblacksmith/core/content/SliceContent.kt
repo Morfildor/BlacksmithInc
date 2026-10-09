@@ -87,11 +87,11 @@ object SliceContent {
         traits = listOf(
             TraitDef(BRAVE, "Brave", expeditionWeight = 1.5, restWeight = -0.5, combatModifier = 1.05),
             TraitDef(CAUTIOUS, "Cautious", patrolWeight = 1.2, restWeight = 0.8, expeditionWeight = -0.6, combatModifier = 0.97),
-            TraitDef(GREEDY, "Greedy", expeditionWeight = 0.6, priceSensitivity = 1.6, shopWeight = 0.3),
+            TraitDef(GREEDY, "Greedy", expeditionWeight = 0.6, priceSensitivity = 1.6, shopWeight = 0.3, guildWeight = -0.2),
             TraitDef(AMBITIOUS, "Ambitious", expeditionWeight = 1.0, shopWeight = 0.5),
-            TraitDef(LOYAL, "Loyal", patrolWeight = 0.8, loyaltyGain = 2.0, shopWeight = 0.4),
-            TraitDef(CURIOUS, "Curious", shopWeight = 0.6, noveltyTaste = 0.8),
-            TraitDef(PATIENT, "Patient", priceSensitivity = 0.7, restWeight = 0.3),
+            TraitDef(LOYAL, "Loyal", patrolWeight = 0.8, loyaltyGain = 2.0, shopWeight = 0.4, guildWeight = 0.4),
+            TraitDef(CURIOUS, "Curious", shopWeight = 0.6, noveltyTaste = 0.8, guildWeight = 0.4),
+            TraitDef(PATIENT, "Patient", priceSensitivity = 0.7, restWeight = 0.3, guildWeight = 0.6),
         ),
         factions = listOf(
             FactionDef(

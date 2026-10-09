@@ -7,6 +7,26 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- Guild halls: heroes now spend some of their days training at a guild hall. A day there teaches a little and mends a
+  little, and pays nothing. When a higher-level guildmate trains the same day, the lower-level hero is taught by them
+  (once a day) and the mentor's name stays on their record. Patient, loyal and curious heroes go most often; greedy
+  and restless ones rarely.
+- Guilds form during a run, not only when a hero retires: the first hero with a name (fame 3) can found the town's
+  company, and others join it by training there.
+- Heroes pursue their ambitions on purpose, until the ambition is fulfilled: a slayer hunts an elite foe, a sworn
+  defender drills the town watch (more militia than a patrol, nothing else), a collector or a fortune seeker takes paid
+  guard work for gold.
+- The Gazette tells these days: one shared "At the guild hall:" line beside "On the walls:" and "Resting:", and a
+  founding, a joining, a lesson or an ambition day in the hero's own sentence.
+
+### Changed
+- An unfulfilled ambition no longer nudges a hero toward ordinary expeditions or patrols; it is a kind of day of its own.
+- A hero driven back from an expedition yesterday is more likely to rest or go to the hall today, and an unarmed hero
+  with little gold is more likely to take the town's patrol pay.
+- Simulator: the report shows how heroes spend their days (share of hero-days per activity, with wounded rest apart),
+  level-ups, lessons at the hall and guilds per run.
+
 ## [0.5.0] - 2026-10-09
 Home dashboard, a readable Gazette, weapon wear and weapon fame (balance v4).
 

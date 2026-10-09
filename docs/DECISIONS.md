@@ -1028,3 +1028,165 @@ Known Name +0 / -0.5, all maxed +15 / +11.3.
   price is no longer reported as a premium "on the shop's good name".
 - Not applied from the review: the signboard effect, affix magnitudes, Known Name. Not measured: v4 at 10,000 seeds;
   wear and fame interacting with returned legends over several eras (unit tests only).
+
+## Balance v5 (pending merge): hero daily life (2026-10-09)
+GDD 6 (PROPOSED utility model) names six activities: rest, shop, expedition, patrol/defense, guild/mentor and personal
+ambition, scored from traits, wounds, money, quest availability, faction pressure and prior history. Up to v4 the
+daily choice scored expedition, patrol and rest; guilds and mentoring were retirement rules and an ambition was a
+tilt on the expedition or patrol weight. This branch makes GUILD and AMBITION scored daily choices and adds money and
+prior history as inputs. Every number is PROPOSED. `BalanceConfig.version` is still 4 on this branch; it is bumped
+once on merge. `RULES_VERSION` and the save schema are unchanged.
+
+### Why guild founding had to move
+The brief for this work allowed widening who may train at an existing hall if membership proved too rare. A probe of
+the v4 rules (300 seeds, a temporary test, not kept) showed that halls themselves are the rare thing:
+
+| v4 rules | Runs that ever have a guild | First guild, mean day (of mean run length) | Hero-days with a hall in town | Hero-days lived by a guild member |
+|---|---|---|---|---|
+| BALANCED_FAIR | 41 % | 18.6 (of 20.9) | 17 % | 3.2 % |
+| BALANCED_ACTIVE | 69 % | 19.3 (of 26.8) | 33 % | 8.3 % |
+
+A guild appeared only when a famous hero retired, about two days before the forge fell, and its only living member
+was the retiree's mentee, who never had a guildmate to learn from. Opening existing halls to everyone would have
+produced hall days in the last two days of fewer than half the BALANCED_FAIR runs. A hero with fame 3
+(`guildFameThreshold`, the existing number) appeared in 299 of the 300 BALANCED_FAIR runs, on day 4.5 on average, so
+founding now also happens in life (GDD 6 LOCKED: heroes "join/found guilds" during a run). At 1,000 seeds a guild
+stands at the end of 91 % of BALANCED_FAIR runs (v4: 38 %).
+
+### What was built
+- **The choice** (`Heroes.activityWeights`): a healthy hero's viable activities and their weights, drawn with one
+  `RngStream.HEROES` draw per hero as before. Expedition, patrol and rest keep their v3 formulas. GUILD is listed
+  only when the hero has a hall to go to, AMBITION only while the ambition is unfulfilled. A wounded hero (health
+  under 50) still rests without a choice; dead and retired heroes are never asked.
+- **GUILD**: open to a guild's members, to any hero once a guild stands in town (the first day there enrols them in
+  the oldest guild, record `GUILD_JOINED`), and to a guildless hero with fame 3+ while the town has no guild (the day
+  founds "the <surname> Company", the existing `GUILD_FOUNDED` record). Weight 0.35 + trait weights, floor 0.02. The
+  day gives 20 XP and 10 health; no gold, no suppression, no militia, no forge recovery. Record `GUILD_TRAINED`.
+- **Mentoring**: after everyone has acted, each hero who trained that day is taught by the highest-level guildmate
+  who trained the same day and outranks them (ties by ID; no RNG): +15 XP, at most once a day per pupil, record
+  `GUILD_MENTORED` with pupil and mentor as subjects. `Hero.mentorName` takes the first mentor and is not
+  overwritten (a retiree's mentee keeps the retiree). A mentor may teach several pupils and gains nothing. A
+  mentored hall day (35 XP) stays under one won expedition (40).
+- **AMBITION** replaces the v3 tilt (SLAYER +0.6 expedition, FORTUNE +0.3 expedition, DEFENDER +0.6 patrol). The
+  existing `ambitionActivityWeight` 0.6 is now the weight of the activity itself, for all four ambitions. One record,
+  `AMBITION_PURSUED` (data `ambition`), per day:
+  - SLAYER hunts: an expedition with +0.30 on the elite roll (`Battle.resolveExpedition(..., eliteChanceBonus)`, the
+    same single roll, no draw added or moved). Wins count toward the vow as before.
+  - DEFENDER drills the watch: +5 militia (a patrol adds 3), capped at `militiaMax`; no suppression, pay, XP or forge
+    recovery.
+  - COLLECTOR and FORTUNE take paid guard work: +40 gold (a patrol pays 12); nothing else. They share the action; the
+    record says which goal it serves.
+  Fulfilment rules (`resolveAmbitions`, `fulfilAmbition`) are untouched.
+- **Money**: an unarmed hero holding under 60 gold adds 0.6 to the patrol weight (the town pays for patrols).
+- **Prior history**: new field `Hero.drivenBackOnDay` (default null), written by `Heroes` when a hero survives a lost
+  expedition or hunt. The day after, rest +0.5 and the hall +0.4. Older routs do not count.
+- **Traits** (`TraitDef.guildWeight`, both catalogs): Patient +0.6, Loyal +0.4, Curious +0.4, Greedy -0.2; Restless
+  -0.2 (launch catalog only, the slice has no Restless).
+- **Gazette**: `GUILD_TRAINED` is quiet news and folds into one shared line ("At the guild hall: A, B."), between
+  "On the walls:" and "Resting:". `GUILD_JOINED`, `GUILD_MENTORED` and `AMBITION_PURSUED` join the hero's sentence.
+  None of the four is kept forever by `EventCompaction`; `GUILD_FOUNDED` already was.
+- **Simulator**: per-run `activityDays` (what each hero alive at End Day did, read from the day's records: a hunt
+  counts as AMBITION_SLAYER, a wounded hero's forced rest as REST_WOUNDED), hero-days, level-ups, mentorings and
+  guilds; the report prints the shares.
+
+### Numbers (`HeroLifeConfig`, reached as `BalanceConfig.heroLife`)
+| Field | Value | Meaning |
+|---|---|---|
+| `guildBaseWeight` | 0.35 | hall weight before traits |
+| `guildXp` / `guildHeal` | 20 / 10 | a day at the hall |
+| `mentorXp` | 15 | extra for the pupil, once a day |
+| `slayerHuntEliteChance` | 0.30 | added to the elite roll of a hunt |
+| `defenderDrillMilitia` | 5 | militia from a drill |
+| `ambitionWorkGold` | 40 | gold from a day of paid work |
+| `poorHeroGold` / `poorPatrolWeight` | 60 / 0.6 | unarmed and under this gold: added to patrol |
+| `setbackRestWeight` / `setbackGuildWeight` | 0.5 / 0.4 | driven back yesterday: added to rest / hall |
+
+**`BalanceConfig` has no room for flat fields.** The JVM allows 255 parameter slots per method and a Double takes
+two. v4's 176 constructor parameters use 242 slots, and the generated `copy$default` adds 8 (six default masks, the
+instance, a marker): 250. Eleven more flat numbers (16 slots) compile and then fail at class load with
+"ClassFormatError: Too many arguments in method signature". The numbers therefore sit in a small data class,
+`HeroLifeConfig`, in `BalanceConfig.kt`, held by one field at the end of `BalanceConfig`. Four slots are left after
+this branch (two Doubles, or four Ints); other branches that add flat numbers will hit the same wall on merge and
+should group theirs the same way.
+
+### Evidence (launch content, 1,000 seeds, seed 1)
+Commands, both from the repository root with output redirected to a file:
+`./gradlew :core:simulate --args="--runs 1000 --seed 1 --policy all --noImpact"`, once on v4 rules with only the new
+simulator counters applied (survival, sales and deaths identical to the v4 table above) and once on this branch.
+
+| Policy | v4 (0.5.0) | v5 |
+|---|---|---|
+| BALANCED_FAIR | 20 (15/25), mean 20.5, sold 19.6, survived 1.1, deaths 0.9, retired 0.7, level-ups 14.8, elites 2.7 | 20 (15/25), mean 20.5, sold 19.3, survived 1.1, deaths 0.7, retired 0.5, level-ups 15.1, elites 2.7 |
+| BALANCED_ACTIVE | 25 (20/35), mean 26.4, sold 26.9, survived 2.1, deaths 1.0, retired 1.8, level-ups 22.9, elites 3.6 | 25 (20/35), mean 26.3, sold 26.4, survived 2.2, deaths 0.8, retired 1.4, level-ups 23.5, elites 3.7 |
+| SYNERGY | 35 (25/40), mean 34.0, sold 28.7, survived 3.6, deaths 0.9, retired 3.9, level-ups 37.2, elites 5.8 | 35 (25/40), mean 34.6, sold 28.1, survived 3.7, deaths 0.8, retired 3.6, level-ups 39.1, elites 5.9 |
+| BALANCED_INVEST | 30 (20/40), mean 29.5, sold 28.3, survived 2.6, deaths 0.9, retired 2.8, level-ups 29.6, elites 4.9 | 30 (20/40), mean 30.0, sold 28.5, survived 2.7, deaths 0.7, retired 2.6, level-ups 31.2, elites 5.1 |
+| SAFE_FAIR / RECKLESS_FAIR / OVERWORK | 20 (20.2) / 20 (21.0) / 20 (20.5) | 20 (20.2) / 20 (21.3) / 20 (20.7) |
+| BALANCED_CHEAP / EXPENSIVE | 25 (24.0) / 10 (12.4) | 25 (23.6) / 10 (12.8) |
+| SAFE_CHEAP / RECKLESS_EXPENSIVE | 25 (20/30), 23.3 / 10 (12.6) | 20 (20/30), 22.7 / 10 (13.0) |
+| BALANCED_REPUTED / RANDOM / PASSIVE | 20 (20.3) / 20 (15/35), 23.0 / 10 | 20 (20.3) / 25 (15/35), 23.3 / 10 |
+
+0 hard-lock days in all 14,000 runs on either side. Every mean is within 0.6 days of v4 and BALANCED_FAIR and
+BALANCED_ACTIVE within 0.1; the two medians that moved (SAFE_CHEAP 25 to 20, RANDOM 20 to 25) are the 5-day siege
+quantum with means 0.6 and 0.3 apart. Hero deaths fall by 0.1 to 0.2 a run for every policy and retirements by 0.2
+to 0.5 where there were any; heroes go on fewer expeditions (37 % of hero-days against 43 %). Sales fall by 1.2 to
+1.3 a run for the two cheap policies, rise by 0.7 to 0.8 for the two expensive ones and move by -0.6 to +0.3 for the
+rest (the v3 noise floor is 0.3). Shop visits per BALANCED_FAIR / BALANCED_ACTIVE run: TOO_EXPENSIVE
+16.7 / 31.1 to 15.3 / 29.1, NOT_BETTER 37.7 / 46.0 to 39.6 / 48.1. Legacy points (median) are unchanged for the four
+policies in the table.
+
+How heroes spend their days (share of hero-days, per cent; hero-days = heroes alive at End Day, summed over the run):
+
+| Policy | Hero-days per run | Expedition | Patrol | Rest (chosen) | Rest (wounded) | Guild hall | Hunt (SLAYER) | Drill (DEFENDER) | Paid work (COLLECTOR) | Paid work (FORTUNE) | Mentorings per run | Guilds per run | Runs ending with a guild |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| BALANCED_FAIR v4 | 165.7 | 43.4 | 29.4 | 8.5 | 18.7 | 0 | 0 | 0 | 0 | 0 | 0 | 0.7 | 38 % |
+| BALANCED_FAIR v5 | 167.5 | 37.1 | 25.0 | 7.9 | 16.0 | 6.7 | 1.7 | 1.9 | 1.6 | 2.2 | 2.4 | 1.1 | 91 % |
+| BALANCED_ACTIVE v4 | 215.2 | 43.7 | 30.4 | 9.0 | 16.9 | 0 | 0 | 0 | 0 | 0 | 0 | 1.7 | 67 % |
+| BALANCED_ACTIVE v5 | 217.2 | 37.4 | 25.6 | 8.1 | 14.4 | 7.9 | 1.6 | 1.8 | 1.1 | 2.2 | 3.9 | 1.4 | 96 % |
+| SYNERGY v4 | 283.6 | 45.1 | 31.8 | 9.4 | 13.7 | 0 | 0 | 0 | 0 | 0 | 0 | 3.7 | 89 % |
+| SYNERGY v5 | 290.4 | 38.5 | 26.8 | 8.3 | 11.1 | 9.1 | 1.4 | 1.7 | 1.0 | 2.1 | 6.5 | 1.8 | 99 % |
+| BALANCED_INVEST v4 | 243.7 | 44.5 | 31.8 | 9.1 | 14.6 | 0 | 0 | 0 | 0 | 0 | 0 | 2.7 | 76 % |
+| BALANCED_INVEST v5 | 250.1 | 38.1 | 26.6 | 8.1 | 12.1 | 8.4 | 1.5 | 1.9 | 1.1 | 2.2 | 5.0 | 1.7 | 97 % |
+
+In a BALANCED_FAIR run that is about 11 hall days, 2.4 lessons and 12 ambition days. Long runs end with fewer guilds
+than before (SYNERGY 3.7 to 1.8): heroes join the standing company, and a retiring member no longer founds one of
+their own. The hall is rare under policies whose heroes never earn a name (PASSIVE 0.5 % of hero-days, a guild in
+9 % of runs; BALANCED_EXPENSIVE 2.1 %, 37 %).
+
+Tuning sweep (`--policy BALANCED_FAIR` and `--policy BALANCED_ACTIVE`, same seeds; mean days / sold / hall share /
+mentorings per run):
+
+| `guildBaseWeight` / `ambitionWorkGold` | BALANCED_FAIR | BALANCED_ACTIVE |
+|---|---|---|
+| v4 | 20.5 / 19.6 / - / - | 26.4 / 26.9 / - / - |
+| 0.20 / 25 | 20.2 / 19.1 / 5.1 % / 1.4 | 25.9 / 25.9 / 6.1 % / 2.5 |
+| 0.35 / 25 | 20.2 / 19.1 / 6.6 % / 2.3 | 25.9 / 25.5 / 7.7 % / 3.7 |
+| 0.50 / 25 | 20.2 / 19.2 / 7.9 % / 3.2 | 25.8 / 25.3 / 9.3 % / 5.1 |
+| **0.35 / 40 (adopted)** | 20.5 / 19.3 / 6.7 % / 2.4 | 26.3 / 26.4 / 7.9 % / 3.9 |
+
+Run length did not move with the hall weight between 0.2 and 0.5, so 0.35 was kept for how often the hall and its
+lessons are seen. Raising the pay for guard work from 25 to 40 gold brought back the 0.3 to 0.5 days the first three
+rows lost and part of the sales (BALANCED_ACTIVE 25.5 to 26.4, against v4's 26.9). Which of the other changes cost
+those days (ambition days in place of the tilt, the money input or the history input) was not isolated.
+
+Measured shifts in choice (one morning, 40 seeds x 8 heroes = 320 hero-days; asserted in `HeroDailyLifeTest`):
+- Trait: members with only Patient are at the hall on 30.0 % of days, with no trait 16.9 %, with only Greedy 4.4 %.
+- Money: unarmed heroes with 0 gold patrol on 50.0 % of days, with 500 gold 41.6 %.
+- Prior history: healthy guild members driven back the day before rest or train on 34.1 % of days, others 24.7 %
+  (rest 11.9 % against 7.8 %, hall 22.2 % against 16.9 %).
+- Ambition: with every hero a slayer on a hunt (30 seeds, 240 fights), 104 fights are against an elite; with the
+  hunt bonus at 0 it is 44; at 1.0 all 240.
+
+### Not changed, and not measured
+- Quest availability, the one GDD input left, is not scored (commissions are the smith's quests, not the heroes').
+  Shop stays a morning errand outside the weighted choice, as before.
+- COLLECTOR and FORTUNE share one action. A collector buying a prized weapon as the ambition day was considered and
+  left out: it would be a second purchase path outside `Market.resolveShelfVisits`.
+- Guild founding in life changes two things beside the hall: `GUILD_FOUNDED` (kept forever by the event log) now
+  appears in nearly every run, and the Forgotten Guild Banner world event (eligible once a guild stands) can fire in a
+  first era. The retirement rule itself is unchanged: a retiree without a guild and with fame 3+ still founds one.
+- The content version is not bumped for `TraitDef.guildWeight`; bump it with the merge if the other branches change
+  content too.
+- Not measured: 10,000 seeds; maxed-legacy accounts and the per-upgrade impact (`--noImpact` was used throughout);
+  ambitions fulfilled per run (paid work at 40 gold should complete fortunes sooner; legacy point medians did not
+  move); the slice catalog under the simulator (it has no elites, so a slayer's hunt there is a plain expedition).
+- The UI shows the new days only through the Gazette. No screen reads `Hero.guildId`, `mentorName` or `lastActivity`.
