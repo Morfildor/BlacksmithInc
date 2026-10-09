@@ -7,6 +7,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-09
+Heroes with lives of their own, fight replays, the fates of fallen blades and three new legacy tracks (balance v5).
+
 ### Added
 - The day's report reopens if the app is closed or killed before it was read, and stays closed once dismissed.
 - Guild halls: heroes now spend some of their days training at a guild hall. A day there teaches a little and mends a
@@ -54,7 +57,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   brings back what elites carry (a catalyst or a rare core) instead of a common material.
 - Long runs keep smaller saves: a blade that was salvaged, shattered, given to the watch or sold to a collector
   leaves the save 30 days later, unless it is a signature weapon or famous enough for the Legend Board. Play is
-  unchanged (the same seed gives the same run); a 400-day save of an active smith shrinks by about two fifths.
+  unchanged (the same seed gives the same run); a 400-day save of an active smith shrinks by about a third.
 - An unfulfilled ambition no longer nudges a hero toward ordinary expeditions or patrols; it is a kind of day of its own.
 - A hero driven back from an expedition yesterday is more likely to rest or go to the hall today, and an unarmed hero
   with little gold is more likely to take the town's patrol pay.

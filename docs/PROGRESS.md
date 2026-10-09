@@ -1,8 +1,8 @@
 # Progress — 2026-10-09 (session 8)
 
 ## Current phase
-P7 in progress. Launch content is the engine default and balance v2 is tuned against it; all 24 signature recipes,
-the Strange Weapon Fragment event and End Day event-log compaction landed the same day (parallel agents, merged).
+P7 in progress. App 0.6.0, balance config v5 (reviewed at 10,000 seeds), 186 JVM tests, 6 instrumented tests.
+Launch content is the engine default; the sections below are the history of how it got here, newest focus last.
 
 ## Session 6 focus: gameplay depth (balance v3, app 0.4.0)
 The owner asked for function and features over UI ("not fun yet, not much in it"; the UI will be redesigned later).
@@ -22,7 +22,7 @@ concern), weapon wear (`Weapon.condition`, worn-power demand, Hone restores), we
 the v3 review at 10,000 seeds with per-tool / per-affix sweeps (two of its recommendations applied: whetstone
 120/300, warlord pressure 50 without a raid bonus). Evidence in DECISIONS.md ("Balance v4 ...").
 
-## Session 8 focus: major features from the checklist (app 0.6.0 and balance v5 in progress)
+## Session 8 focus: major features from the checklist (app 0.6.0, balance v5)
 `docs/GDD_CHECKLIST.md` now lists every GDD feature as built or open; the owner asked for the major open features,
 kept in `:core` with plain text surfaces because the UI will be redesigned. On `main` and pushed: weapons-map pruning
 (`WeaponPruning`, End Day tail), the day report reopening after process death (`SettingsStore.dismissedReport`), and
@@ -102,6 +102,8 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
 | Replays and weapon fates, merged (session 8) | `./gradlew :core:test`; `:app:compileDebugKotlin -q`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE` on the merged tree | 172/172 pass (14 new in `ReplaysAndWeaponFatesTest`; two more asserts in `WeaponPruningTest`; one seed range widened in `HeroDailyLifeTest`); app compiles (three lines in the day report); BALANCED_FAIR 20 (15/25) mean 20.5, BALANCED_ACTIVE 30 (20/35) mean 27.4, SYNERGY 35 (25/40) 34.7, no mean moved more than 0.1 day; artifact recovery 51-53 %, guild inheritance 0.04-0.12 a run (0 on the branch alone), merchant resale 0.01-0.03 a run; 0 hard-locks; the agent showed the replay feature alone leaves simulator output byte-identical; not run on a device yet; tables in DECISIONS.md ("Balance v5, part 3") |
 | Lucky loot and forge-time affix count (session 8) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE`; `--policy BALANCED_ACTIVE` and `SYNERGY` with `--noAffixEffect lucky` | 173/173 pass (1 new: Lucky loot is always scarce and more frequent); Lucky is inside the noise floor for both bots (+0.06 / +0.07 mean days), which do not spend scarce stock; BALANCED_ACTIVE 25 (20/35) mean 27.4, BALANCED_FAIR 20 (15/25) mean 20.5, 0 hard-locks; table in DECISIONS.md ("Balance v5, part 4") |
 | Legacy tracks, merged (session 8) | `./gradlew :core:test`; `:app:compileDebugKotlin -q`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE` on the merged tree | 186/186 pass (13 new in `LegacyTracksTest`); app compiles (no UI change: both upgrade lists iterate the catalog); new accounts identical to the part 4 baseline; maxed BALANCED_ACTIVE 45 (35/50) mean 42.2, longest 55 (was 40 (30/45) 40.4), maxed BALANCED_FAIR 35 (30/40) 36.5; Known Name +5 / +1.6 days (was +0 / -0.1), the three new tracks 0 days by construction (their own yardsticks in DECISIONS); 0 hard-locks; tables in DECISIONS.md ("Balance v5, part 5") |
+| Balance v5 review at 10,000 seeds (session 8) | `./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE --perf --json <out>"` | 290,000 runs: BALANCED_FAIR 20 (15/25) mean 20.7, BALANCED_ACTIVE 30 (20/35) mean 27.4, SYNERGY 35 (25/40) 34.8, BALANCED_INVEST 30 (20/40) 30.3, maxed FAIR 35 (30/40) 36.5, maxed ACTIVE 45 (35/50) 42.3, longest run 55, every run ends, 0 hard-locks; every 1,000-seed mean holds within 0.2 days; artifact recovery 49-55 %; perf p50 0.53 / p95 1.71 / max 2.24 ms over 1,000 forced days; full table in DECISIONS.md ("Balance v5 review at 10,000 seeds") |
+| 0.6.0 on device (session 8) | `:app:installDebug`; `tools/emulator/smoke.sh`; `scratchpad/drive_v5.sh` (8 passive days); manual adb pass; `:app:connectedDebugAndroidTest` | SMOKE_DONE (shelf / town / resume ok); day reports show ambition days and the "From the field" fights, the rounds toggle opens three rounds; the Legacy panel lists all 11 tracks; instrumented 6/6, `EndDayPerfTest` p50 8.3 / p95 21.3 / max 47.1 ms with 367 weapons at day 120 (was 4.4 / 8.5 / 35.5 with 157: the active bot keeps more stock and the day does more); two screenshots sent. Not seen on device: a hall day, a lesson, a merchant, an inherited blade (none fell inside the 8 passive days) |
 | UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
 ## Obstacles hit and resolved
@@ -145,21 +147,28 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
   regulars stack. Inside the band asked for (about 50) but at its top; to be confirmed at 10,000 seeds.
 - Noticed, not fixed: the Traveling Ore Merchant adds +2 supplier stock at End Day and the next morning restock
   overwrites it, so only its free unit is ever seen.
-- Not exercised on device: the rounds toggle in the field report (renders collapsed; a plain state toggle), Re-hone,
-  the worn / storied labels and the WORN_OUT visit reason (need a played run). Home repeats the Shelf line in its
-  Yesterday block when yesterday had no lede, and has no first-run tip.
+- Not exercised on device: Re-hone, the worn / storied labels, the WORN_OUT visit reason, and from 0.6.0 a hall
+  day, a lesson, the merchant lines and an inherited blade (they need a longer played run; covered by JVM tests).
+  Home repeats the Shelf line in its Yesterday block when yesterday had no lede, and has no first-run tip.
+- Records that now accumulate faster: `GUILD_FOUNDED` (kept forever) fires in about 92 % of runs instead of 38 %,
+  and a Known Name account writes a second `RUN_STARTED` record naming its regulars.
 - Package name is still `com.example.blacksmithproject`; no release signing.
-- `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order and session-4 commission
-  patron weighting changes which hero asks on a given seed; bump with the first release.
-- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.5.0 (versionCode 5); session 8 work sits under `[Unreleased]` in CHANGELOG.md until 0.6.0.
+- `GameEngine.RULES_VERSION` stays 1 although the rules and the RNG draw order have changed several times. It seeds
+  the run RNG, so raising it reshuffles every run, and nothing enforces it against a loaded save; it should move
+  together with a save-compatibility policy (the external review's F09), not alone.
+- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.6.0 (versionCode 6), tag `v0.6.0`.
 
 ## Next executable actions (P7)
-0. Session 8, in order: merge the three agent
-   branches (replays and fates, hero daily life, legacy tracks), classify any new Lost reason in `WeaponPruning`,
-   bump the balance config to 5; a 10,000-seed v5 review; device run; release 0.6.0 and tick GDD_CHECKLIST.
-   Left for the UI redesign: Home first-run tip and the Yesterday / Shelf repeat.
-1. Measure starting gold/energy upgrades by first-siege champion power or first tier-4+ sale (DECISIONS proposal a)
-   instead of run length; hero first-week purchasing power is the lever if run length must move.
+0. Owner decisions pending: what to do with the external review and the major-update plan in `docs/` (both
+   untracked), whether the maxed active account at median 45 days should come down, the wear margin, the release
+   application ID.
+1. From the external review, not started (new scope): F01 serialise legacy purchases and Begin Era, F02 storage
+   failure recovery, F03 day report from the whole day, F04 commission quality shown exactly, F05 fair visitor
+   selection, F08 champion ranking in a warlord siege, F11 locale-independent event payloads; then its shop-day
+   presentation. Its checklist corrections (section 9) are applied only where session 8 touched the entry.
+   Small engine items noticed in session 8: the Traveling Ore Merchant stock overwrite, the unreachable wall death,
+   Guild Patronage still on the visit-chance lever. Simulator policies that forge Advanced, hunt signatures or
+   spend scarce stock would make the v5 tracks and Lucky measurable.
 2. 720x1280 pass over every panel; nav labels are tight at font scale 1.5.
 3. Register the first migration step against `saves/v1_forced_seed4242_day61.json` when the envelope schema changes.
 4. Package rename from `com.example.blacksmithproject`, release signing.

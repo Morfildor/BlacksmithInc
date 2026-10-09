@@ -5,7 +5,7 @@ One line per GDD feature, by GDD section. `[x]` = built and verified (evidence i
 IMPLEMENTATION_PLAN.md is the phase-gate view; this is the feature view. DEFERRED scope (GDD 16.2: multiplayer,
 manual equip/combat, walking, idle production, online, accounts, achievements, ads, IAP) is not listed and is not built.
 
-Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 186 JVM tests.
+Last reviewed: 2026-10-09, app 0.6.0, balance config v5, 186 JVM tests.
 
 ## 3 Player loop
 - [x] Run creation: seed, era, random faction pressures and world modifiers, 100 integrity, hero pool, legacy unlocks
@@ -76,7 +76,7 @@ Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 18
 - [x] Replays for significant expeditions: elite fights and deaths, folded text in the day report, at most three a day
 
 ## 12 Workshop UX and accessibility
-- [x] Portrait single workshop: top strip (day, gold, energy / debt, integrity, next siege), forge scene, panels, End Day with contextual sublabel
+- [x] Portrait single workshop: top strip (day, gold, energy / debt; integrity and the next siege are on Home and Town), forge scene, panels, End Day with contextual sublabel
 - [x] Forge flow: mode -> family -> core -> augment -> catalyst -> hints -> risk -> cost -> reveal -> item card -> List / Store
 - [x] Market flow; Town flow (champions with equipment and condition, population, siege ETA and pressure in words)
 - [x] Descriptive labels only, rarity by icon and text, 48 dp targets, font scale 1.5 pass, screen-reader descriptions, reduced-motion toggle, portrait lock, resume after process death
@@ -92,7 +92,7 @@ Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 18
 - [x] Versioned JSON envelope, Room atomic save (run + legacy + events in one transaction), DataStore for settings
 - [x] Event-log compaction (30-day window, milestones kept), weapon-history cap, pruning of blades gone for good (30 days)
 - [x] Migration scaffold with a checked-in v1 save fixture
-- [ ] First real migration step (schema still 1); RULES_VERSION bump (still 1 after rule changes)
+- [ ] First real migration step (schema still 1); a save-compatibility policy and with it RULES_VERSION (still 1; it seeds the run RNG, so it does not move alone)
 
 ## 14 Pixel art
 - [x] Import pipeline (concept sheets, weapon master sheet 336 sprites, artist pack), placeholders for the rest, 488 hand-made sprites on every screen
@@ -103,12 +103,12 @@ Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 18
 ## 15 Testing and balance
 - [x] 186 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
 - [x] Headless simulator with the GDD policy set, upgrade impact, catalog sweeps, JSON report
-- [x] Balance v2 and v3 reviewed at 10,000 seeds; first-era median 20-25 days, longer paths with upgrades, 0 hard-locks
+- [x] Balance v2, v3 and v5 (with v4) reviewed at 10,000 seeds; first-era median 20 days at fair prices, 25-35 on the better paths, 35-45 with every upgrade, 0 hard-locks
 - [x] Instrumented tests: Room save / restore, title, forge hint, End Day budget (6)
-- [ ] Balance v4 (wear + fame) reviewed at 10,000 seeds; affix magnitudes the v3 review flagged
+- [x] Balance v4 (wear + fame) reviewed at 10,000 seeds as part of v5; affix magnitudes the v3 review flagged applied
 - [x] Artifact recovery as a simulator metric (51-53 % of fallen heroes' blades come back at 1,000 seeds)
 - [ ] Compose screenshot / accessibility tests
-- [ ] Day-sim p95 < 200 ms on real mid-range hardware (8.5 ms on the emulator Android runtime, 0.99 ms on a desktop JVM)
+- [ ] Day-sim p95 < 200 ms on real mid-range hardware (21 ms on the emulator Android runtime, 1.7 ms on a desktop JVM, balance v5)
 
 ## 16-19 Release
 - [x] Vertical-slice acceptance on device: forge -> sell -> hero fights -> Gazette -> siege -> defeat -> legacy -> upgraded next run

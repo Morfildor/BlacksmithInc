@@ -1831,3 +1831,80 @@ sale on day 8.1 (9.0). 186 JVM tests pass on the merged tree.
 
 `BalanceConfig` now holds three nested groups (`heroLife`, `weaponFates`, `legacyTracks`) and one slot is left under
 the JVM limit of 255 on its generated `copy$default`; every further number goes into a group.
+
+## Balance v5 review at 10,000 seeds (2026-10-09, session 8)
+
+`./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE --perf --json <out>"`
+on main after parts 1-5 (content v2, balance v5, rules v1): 16 policy rows and 13 impact rows, 290,000 runs.
+This is the first 10,000-seed review since v3; it covers v4 (wear, fame) and v5 together.
+
+| Policy (10,000 seeds) | Median (p10/p90) | Mean (1k) | Sold/run | Sieges survived | Deaths | Longest |
+|---|---|---|---|---|---|---|
+| PASSIVE | 10 (10/10) | 10.0 (10.0) | 0.0 | 0.0 | 0.5 | 10 |
+| BALANCED_EXPENSIVE | 10 (10/15) | 12.8 (12.9) | 5.5 | 0.1 | 0.6 | 30 |
+| RECKLESS_EXPENSIVE | 10 (10/20) | 13.2 (13.1) | 5.7 | 0.1 | 0.7 | 35 |
+| SAFE_FAIR | 20 (15/25) | 20.1 (20.2) | 18.6 | 1.0 | 0.7 | 40 |
+| BALANCED_REPUTED | 20 (15/25) | 20.5 (20.3) | 18.7 | 1.1 | 0.8 | 40 |
+| **BALANCED_FAIR** | 20 (15/25) | 20.7 (20.5) | 19.3 | 1.1 | 0.8 | 35 |
+| OVERWORK | 20 (15/25) | 20.8 (20.7) | 19.4 | 1.1 | 0.7 | 35 |
+| RECKLESS_FAIR | 20 (15/30) | 21.5 (21.4) | 20.3 | 1.2 | 0.8 | 40 |
+| SAFE_CHEAP | 25 (20/30) | 22.8 (22.8) | 19.5 | 1.6 | 0.6 | 40 |
+| RANDOM | 25 (15/35) | 23.3 (23.5) | 18.7 | 1.4 | 0.8 | 45 |
+| BALANCED_CHEAP | 25 (20/30) | 23.7 (23.5) | 20.2 | 1.7 | 0.6 | 40 |
+| **BALANCED_ACTIVE** | 30 (20/35) | 27.4 (27.4) | 31.3 | 2.3 | 0.8 | 45 |
+| BALANCED_INVEST | 30 (20/40) | 30.3 (30.2) | 28.6 | 2.8 | 0.8 | 55 |
+| SYNERGY | 35 (25/40) | 34.8 (34.7) | 28.3 | 3.8 | 0.8 | 50 |
+| BALANCED_FAIR, all upgrades | 35 (30/40) | 36.5 (36.5) | 28.8 | 2.8 | 0.8 | 55 |
+| BALANCED_ACTIVE, all upgrades | 45 (35/50) | 42.3 (42.2) | 45.3 | 3.9 | 0.7 | 55 |
+
+- **0 hard-lock days** in every row; **every run ends** (no immortal forge, with or without upgrades).
+- Every 1,000-seed mean holds within 0.2 days, so the 1,000-seed tables of parts 1-5 stand.
+- The fair-priced first-era smith sits at median 20 (GDD target 15-25); cheaper prices, shop actions, buying
+  materials and matching the element to the threat each buy a longer run (25 / 30 / 30 / 35); overpricing or doing
+  nothing ends at the second siege. The active median reads 30 here and 25 in some 1,000-seed runs: it sits on the
+  siege boundary (part 4); the mean is 27.4 in both.
+- A maxed account lives 35-45 median days and at most 55. The active one is at the top of the band the legacy
+  tracks were asked to keep (about 50): the signboard and the Known Name regulars both add sales and stack
+  (45.3 sold a run against 31.3). No change made; the lever, if it should come down, is the signboard level-2 price
+  or the Known Name savings (30 gold a regular).
+
+Upgrade impact under BALANCED_ACTIVE, level 3 against none (base 30 / 27.4; median / mean days): Stalwart Walls
++5 / +6.2, Well-Stocked Cellar +0 / +3.5, Forge Mastery +0 / +2.8, Known Name +0 / +1.6 (v3: -0.4), Thrifty Hands
++0 / +1.2, Lucky Hammer +0 / +0.6, Tireless Smith +0 / +0.4, Family Savings +0 / +0.2, Caravan Ties / Anvil Lore /
+Homing Steel +0 / 0.0, all maxed +15 / +14.9. Second yardsticks (means per run): Known Name holds the first siege
+in 93 % of runs (86 % without) and sells 9.8 weapons by day 5 (8.5); Tireless Smith forges 25.5 by day 5 (21.8)
+and 147 a run (114); Family Savings owns 4.5 tool levels by day 5 (3.6). The three v5 tracks need their own
+yardsticks (part 5): no bot hunts signatures, repeats a rare recipe or owns a Legend Board.
+
+| Per run, 10,000 seeds | BALANCED_FAIR | BALANCED_ACTIVE | SYNERGY | ACTIVE, all upgrades |
+|---|---|---|---|---|
+| Blade recovered to the forge | 0.25 | 0.24 | 0.22 | 0.10 |
+| Inherited by a guildmate | 0.06 | 0.08 | 0.10 | 0.07 |
+| Resold by a merchant (taken by one) | 0.02 (0.05) | 0.01 (0.04) | 0.02 (0.04) | 0.01 (0.02) |
+| Seized | 0.24 | 0.23 | 0.21 | 0.11 |
+| Lost | 0.09 | 0.09 | 0.08 | 0.04 |
+| Artifact recovery | 49 % | 51 % | 54 % | 55 % |
+| Hero-days at the hall / on an ambition | 6.7 % / 7.3 % | 8.1 % / 6.5 % | 9.2 % / 6.3 % | 9.9 % / 6.2 % |
+| Lessons at the hall | 2.4 | 4.3 | 6.6 | 9.0 |
+| Runs with a guild | 92 % | 98 % | 99 % | 100 % |
+| Elites slain | 2.8 | 4.2 | 6.1 | 8.1 |
+| Sell rate | 19 % | 28 % | 34 % | 18 % |
+
+- About half of the blades fallen heroes carried come back to Emberfall (forge, guildmate or merchant). The merchant
+  is the rare path (one or two runs in a hundred end with a resale): most blades are recovered, inherited or seized
+  before one is left over for him. If he should matter more, the lever is `merchantBaseChance` or letting him take
+  seized blades too.
+- **End Day timing** (`--perf`, forced survival, 1,000 days, desktop JVM): p50 0.53 ms, p95 1.71 ms, max 2.24 ms,
+  ending with 2,933 weapons, 115 heroes and 1,816 events. v3 measured p95 0.99 ms: the day does more now (activity
+  weights, hall lessons, merchant, fates); the budget is 200 ms.
+- **`RULES_VERSION` stays 1.** It seeds the run RNG, so raising it would reshuffle every run and void these tables;
+  and a number that nothing enforces protects no save. It moves together with a save-compatibility policy, not
+  before.
+
+Not measured: several eras played in sequence with a growing Legend Board; Advanced Forge, technique, catalyst,
+commission-led and signature-hunting policies (every bot forges Quick); a human player.
+
+Also on the merged tree: `WeaponPruningTest` (active smith, 400 forced days, seed 77) ends with 1,147 weapons
+against 1,852 unpruned, save 1,235,889 against 1,835,036 bytes (-33 %; -42 % before v5, the active bot now keeps
+more stock). On the emulator `EndDayPerfTest` reads p50 8.3 / p95 21.3 / max 47.1 ms with 367 weapons at day 120
+(4.4 / 8.5 / 35.5 with 157 before v5); one run, emulator noise not characterised, budget 200 ms.
