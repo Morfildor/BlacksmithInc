@@ -477,7 +477,7 @@ def import_pack(folder: Path, run: Run, allow: tuple) -> int:
     return count
 
 
-def import_flat(path: Path, entries: dict, run: Run):
+def import_flat(path: Path, entries: dict, run: Run, sheet: str):
     """
     Crops from a flat board. Modes: `opaque` = the cell copied 1:1 with alpha forced to 255 (backdrops; no resample);
     `icon` = the same, centred in its box (never enlarged); `tile` = centre square of the cell reduced to the box,
@@ -502,7 +502,7 @@ def import_flat(path: Path, entries: dict, run: Run):
                 dropped.append(f"{sid} ({defect})")
                 continue
             extra = {"contentBox": content_box(result)}
-        run.put(sid, result, path, KIND_AI, **extra)
+        run.put(sid, result, path, KIND_AI, sheet=sheet, **extra)  # the table's name, whatever --atlas PATH is called
     if dropped:
         print(f"  dropped {len(dropped)} keyed cut-outs: " + "; ".join(dropped))
 
@@ -637,7 +637,7 @@ def main():
                 absent.add(name)
                 print(f"flat source {name}: not found, skipped (its earlier sprites are kept)")
                 continue
-            import_flat(hits[0], entries, run)
+            import_flat(hits[0], entries, run, name)
             found += 1
             print(f"flat source: {name}")
         for pack in [d for d in sorted(SRC.iterdir()) if d.is_dir() and (d / "drawable-nodpi").is_dir()]:
