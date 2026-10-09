@@ -84,7 +84,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         for (h in regulars) ctx.updateHero(h.copy(loyalty = config.regularLoyaltyThreshold, gold = h.gold + config.legacyTracks.knownNameRegularGold))
         ctx.emit(EventType.RUN_STARTED, 5, "Era $era begins in Emberfall under a ${ctx.world.name.lowercase()}. The first invasion is expected on day ${config.siegeInterval}.")
         descendant?.let { d ->
-            val h = ctx.heroes.values.first { it.descendantOf == d.heroName }
+            val h = ctx.heroes.values.first { it.lineageId == d.id }
             ctx.emit(EventType.HERO_ARRIVED, 4, "${h.fullName}, descendant of ${d.heroName} who ${d.deed}, has come to Emberfall.", listOf(h.id.value))
         }
         if (regulars.isNotEmpty()) {

@@ -222,13 +222,60 @@ data class ContentCatalog(
         if (families.isEmpty()) problems += "No weapon families"
         if (classes.isEmpty()) problems += "No hero classes"
         if (factions.isEmpty()) problems += "No factions"
-        if (firstNames.isEmpty() || surnames.isEmpty()) problems += "Name pools empty"
+        if (firstNames.isEmpty() || surnames.isEmpty()) problems += "Name pools empty" else problems += nameProblems()
         // Only elements an augment can actually imbue need an affix (the slice catalog uses three of the six).
         materials.mapNotNull { it.element }.distinct().forEach { e ->
             if (affixes.none { it.kind == AffixKind.BENEFICIAL && it.element == e }) problems += "No beneficial affix for element $e"
         }
         if (affixes.none { it.kind == AffixKind.FLAW }) problems += "No flaw affixes"
         if (blessings.size < 3) problems += "Need at least 3 blessings to offer a choice"
+        return problems
+    }
+
+    /**
+     * The authoring rules of hero names that a machine can check (plan 4.4, rules 1, 3, 4 and 6, and the endings of 5),
+     * on whatever pools the catalog holds. What needs an ear (pronounceable, the four kinds of surname, no weapon titles)
+     * is the author's; the launch counts are pinned by its test.
+     */
+    private fun nameProblems(): List<String> {
+        val problems = mutableListOf<String>()
+        // 8 + 1 + 11: a full name is at most 20 characters, which fits a Town row and a counter caption at large font.
+        fun plain(name: String, length: IntRange) = name.length in length && name.first() in 'A'..'Z' && name.drop(1).all { it in 'a'..'z' }
+        fun edits(a: String, b: String): Int {
+            var row = IntArray(b.length + 1) { it }
+            for (i in 1..a.length) {
+                val next = IntArray(b.length + 1)
+                next[0] = i
+                for (j in 1..b.length) next[j] = minOf(row[j] + 1, next[j - 1] + 1, row[j - 1] + if (a[i - 1].equals(b[j - 1], ignoreCase = true)) 0 else 1)
+                row = next
+            }
+            return row[b.length]
+        }
+        fun pairs(names: List<String>) = names.indices.flatMap { i -> (i + 1 until names.size).map { j -> names[i] to names[j] } }
+        firstNames.filterNot { plain(it, 3..8) }.forEach { problems += "First name $it must be 3-8 plain letters with one capital" }
+        surnames.filterNot { plain(it, 4..11) }.forEach { problems += "Surname $it must be 4-11 plain letters with one capital" }
+        for ((a, b) in pairs(firstNames)) {
+            if (a.take(3) == b.take(3)) problems += "First names $a and $b share their first three letters"
+            else if (edits(a, b) < if (a.first() == b.first()) 3 else 2) problems += "First names $a and $b are too alike"
+        }
+        for ((a, b) in pairs(surnames)) {
+            if (a.take(4) == b.take(4)) problems += "Surnames $a and $b share their first four letters"
+            else if (edits(a, b) < 2) problems += "Surnames $a and $b are too alike"
+        }
+        val initials = firstNames.groupBy { it.first() }
+        initials.filterValues { it.size > 8 }.forEach { (c, names) -> problems += "${names.size} first names begin with $c (at most 8)" }
+        if (initials.size < 15) problems += "First names use ${initials.size} initials (at least 15)"
+        for (f in firstNames) surnames.filter { it.startsWith(f.take(4)) }.forEach { problems += "First name $f and surname $it share their first four letters" }
+        surnames.groupBy { it.takeLast(3) }.filterValues { it.size > 4 }.forEach { (end, names) -> problems += "${names.size} surnames end in -$end (at most 4)" }
+        // Game terms: every word of an ID or a display name of a family, material, affix, class or faction, and the elements.
+        // A name may not contain one, nor begin with the first five letters of one (its stem: "Holloway" and the Hollowbound).
+        val terms = (families.flatMap { listOf(it.id.value, it.name) } + materials.flatMap { listOf(it.id.value, it.name) } + affixes.flatMap { listOf(it.id.value, it.name) } +
+            classes.flatMap { listOf(it.id.value, it.name) } + factions.flatMap { listOf(it.id.value, it.name) } + Element.entries.map { it.name })
+            .flatMap { it.lowercase().split(Regex("[^a-z]+")) }.filter { it.length >= 3 }.toSet()
+        for (name in firstNames + surnames) {
+            val n = name.lowercase()
+            terms.firstOrNull { it in n || (it.length >= 5 && n.startsWith(it.take(5))) }?.let { problems += "Name $name carries the game term '$it'" }
+        }
         return problems
     }
 }

@@ -2071,3 +2071,51 @@ These numbers are re-measured after the customer changes of M3 (T3.1 seats and f
   stored `turnedAway`, one ID order. `ShopRecordTest.aPatronAppearsOncePerDay`. The newcomer line of the plan ("served within two days in
   four seeds of five") is met counted in days the newcomer chose to come (198 of 200); by the calendar it is 145 of 200, because a hero comes
   on 35 % of days at the base chance.
+
+## Content 3: hero names and lineage IDs (2026-10-09, task T3.2; N03, X07)
+- **Finding (base `b0035ca`, 1,000 seeds, BALANCED_FAIR):** two living heroes shared a first name on 66.9 % of days and a surname on 73.5 %;
+  a full name was given twice in 6.1 % of runs (17.4 % under EXPERT_ACTIVE). A descendant was matched to a lineage by the ancestor's name
+  string in three places of the engine and once in the siege scene.
+- **Decision (plan 4.4, 6.6):** 120 first names and 96 surnames in one shared pool (content version 3). `Names.first` picks among the first
+  names nobody in the run has carried (any fate) and not the ancestor's; `Names.surname` among the surnames no living hero carries, no guild
+  founder of the run carries and no lineage of the account holds. A descendant's surname is the lineage's. When a pool is spent, the names
+  of the heroes dead longest come round again, never a living hero's and never a full name already given. Each name is one draw on the
+  stream `Heroes.generate` was handed, as before (a descendant's surname is none), so no stream moves: 1,000 seeds x 28 policies give the
+  same simulator output with the old pools and the new, apart from the name clashes, which read 0.0 % / 0.0 % / 0.0 % for every policy.
+- **Authoring rules, checked by `ContentCatalog.validate()` on every catalog:** plain letters with one capital, 3-8 and 4-11 long (so a full
+  name is at most 20 characters); no two first names share three opening letters, any two are two edits apart, three if they share an
+  initial; at most eight per initial and at least fifteen initials; no two surnames share four opening letters or are one edit apart; at most
+  four surnames per ending (the last three letters); no first name opens a surname ("Rook Rooksbane"); no name contains a game term (a word
+  of an ID or display name of a family, material, affix, class or faction, or an element) or opens with the first five letters of one. The
+  four kinds of surname (24 each: nature compounds, places, trades, old family names), pronounceability and "nothing that reads as a weapon
+  title" are the author's and are not machine-checked. The counts 120 and 96 are pinned by `LaunchContentTest`.
+- **Names that left the pool:** `Ashwood`, `Holloway`, `Mossgrave`, `Rooksbane` and `Nessa` as the plan names them, and `Brackenridge`: at
+  twelve letters it breaks the plan's own 4-11 rule (with an eight-letter first name it makes 21 characters). `Imre`, a sample of the
+  plan, is two edits from the existing `Ione` and was not taken. Heroes and lineages that carry a departed name keep it. The slice catalog
+  swaps `Nessa`, `Ashwood` and `Holloway` for launch names and gains `Dagny` (fifteen initials).
+- **Identity:** `LineageAnchor.id` ("era2-h7": the era and the hero), `Hero.lineageId`, `CombatRound.attackerId`. `GameEngine.newRun`, the
+  "descendant" event (eligibility and pick) and the siege scene join by these. `Hero.descendantOf` stays as the ancestor's display name.
+  The schema-4 step, still a number no release has shipped, now converts once: a lineage written without an ID takes "era<N>" (at most one
+  is founded per era) in the legacy document and in the run's copy, and a hero recorded as a descendant is linked to the latest lineage of
+  that name. A siege replay stored before the update names no hero IDs, so its diorama shows the raiders without the champions until the
+  next siege; the text of the replay is unchanged.
+- **Numeric ID order, completed (ruling: rides on rules 3):** `GameState.listedWeapons` / `storedWeapons` / `retiredHeroes`, the pick among
+  lost blades (`heroic_inheritance`), the collector's tie-break, the guild-hall mentor's tie-break, the order a retiree's blades are handed
+  down, and the hero a lineage is founded on (`Legacy.closeRun`) use `IdOrder.numeric`. Left as they are: sorts of factions and classes
+  (content IDs, no serial), sorts on integer serials, and two tie-breaks in `shopday/Advice.kt` (text order of commission and weapon IDs;
+  advice only, no outcome; that package was outside this task).
+- **Effect of the sorts (1,000 seeds, base seed 1, mean days, before -> after):** the names contribute +0.0 to every row. Classic policies:
+  RANDOM 23.2 -> 22.8, SAFE_FAIR 19.9 -> 20.4, RECKLESS_FAIR 21.0 -> 21.5, BALANCED_CHEAP 23.3 -> 23.8, BALANCED_EXPENSIVE 12.5 -> 12.4,
+  SYNERGY 33.7 -> 32.6, OVERWORK 20.4 -> 20.8, BALANCED_FAIR 20.5 -> 20.8, BALANCED_INVEST 29.8 -> 29.1, BALANCED_REPUTED 20.3 -> 20.6,
+  BALANCED_ACTIVE 27.4 -> 27.4, SAFE_CHEAP 22.7 -> 23.3, RECKLESS_EXPENSIVE 12.5 -> 12.5, PASSIVE 10.0 -> 10.0. Bots: ADVANCED_SMITH
+  21.6 -> 21.9, TECHNIQUE_TEMPER 20.5 -> 20.9, TECHNIQUE_QUENCH 20.9 -> 21.3, TECHNIQUE_ETCH 22.9 -> 23.1, REQUEST_DRIVEN 23.1 -> 23.6,
+  SIEGE_PREP 40.3 -> 40.1, SIGNATURE_PURSUIT 25.6 -> 25.6, SCARCE_RECIPE 23.8 -> 24.0, EXPERT 42.9 -> 42.8, EXPERT_ACTIVE 43.1 -> 43.1,
+  SPENDTHRIFT 29.6 -> 28.8, NOVICE 23.4 -> 23.2, BROKE_START 20.5 -> 20.9, FREE_LISTINGS 24.1 -> 24.6. The policies that list their stock
+  in storage order now put the oldest blade on the shelf first once a tenth blade exists (text order put w10 before w2); the largest moves
+  are SYNERGY -1.1, SPENDTHRIFT -0.8, BALANCED_INVEST -0.7 and SAFE_CHEAP +0.6 against a noise floor of about 0.3. One base seed. Nothing
+  was tuned.
+- **Golden file `state_rules3.txt` re-recorded** (20 seeds x 15 days). The sorts change 188 of 300 lines (107 RNG hashes), in every seed,
+  first on days 4-10: the golden script lists stored blades in `storedWeapons()` order, and its tenth blade is forged on day 4. The names
+  change 8 further lines of one seed (14, from day 3) and no RNG hash: the projection includes the text "lost with <hero name>" of a lost
+  blade. `ReplaysAndWeaponFatesTest.theGazetteTellsEveryFate` moved from seed 3 to seed 4 (the sorts left seed 3 with four fate records
+  where the test wants six).

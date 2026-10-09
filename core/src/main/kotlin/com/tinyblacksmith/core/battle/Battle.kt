@@ -124,9 +124,9 @@ object Battle {
             else -> "stood firm"
         }
         val rounds = listOf(
-            CombatRound(hero.fullName, encounter, heroPower.roundToInt(), weapon?.let { "met $encounter with ${it.name}" } ?: "met $encounter bare-handed"),
+            CombatRound(hero.fullName, encounter, heroPower.roundToInt(), weapon?.let { "met $encounter with ${it.name}" } ?: "met $encounter bare-handed", hero.id.value),
             CombatRound(foe, hero.fullName, enemyPower.roundToInt(), stand),
-            if (heroWon) CombatRound(hero.fullName, encounter, amount, finish) else CombatRound(foe, hero.fullName, amount, finish),
+            if (heroWon) CombatRound(hero.fullName, encounter, amount, finish, hero.id.value) else CombatRound(foe, hero.fullName, amount, finish),
         )
         return CombatReplay("${hero.fullName} vs $encounter", ctx.day, rounds, outcome, ReplayKind.EXPEDITION, event.id)
     }
@@ -262,7 +262,7 @@ object Battle {
 
         val rounds = mutableListOf<CombatRound>()
         champions.forEachIndexed { i, (h, w) ->
-            rounds += CombatRound(h.fullName, faction.siegeName, championPowers[i].roundToInt(), w?.let { "strikes with ${it.name}" } ?: "fights bare-handed")
+            rounds += CombatRound(h.fullName, faction.siegeName, championPowers[i].roundToInt(), w?.let { "strikes with ${it.name}" } ?: "fights bare-handed", h.id.value)
         }
         if (ctx.town.militia > 0) rounds += CombatRound("Town militia", faction.siegeName, ctx.town.militia, "holds the gate")
         if (ctx.town.armory > 0) rounds += CombatRound("Town watch", faction.siegeName, ctx.town.armory, "fights with arms from the forge")

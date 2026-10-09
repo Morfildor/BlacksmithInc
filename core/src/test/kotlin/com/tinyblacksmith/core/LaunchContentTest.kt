@@ -63,6 +63,38 @@ class LaunchContentTest {
         for (a in augments) assertTrue(cores.any { (catalog.coreAugmentAffinity[it.id to a.id] ?: 0) >= 7 }, "${a.name} has no excellent core partner")
     }
 
+    /** Plan 4.4: the counts are the launch catalog's; the rules are `validate()`'s, shown here to hold and, one by one, to bite. */
+    @Test
+    fun namePoolsObeyTheAuthoringRules() {
+        assertEquals(120, catalog.firstNames.size)
+        assertEquals(96, catalog.surnames.size)
+        assertEquals(emptyList(), catalog.validate())
+        assertEquals(emptyList(), SliceContent.catalog.validate())
+        assertTrue(catalog.firstNames.maxOf { it.length } + 1 + catalog.surnames.maxOf { it.length } <= 20)
+
+        fun problems(first: List<String> = catalog.firstNames, sur: List<String> = catalog.surnames) = catalog.copy(firstNames = first, surnames = sur).validate()
+        fun firstName(name: String, problem: String) = assertTrue(problems(first = catalog.firstNames + name).any { problem in it }, "$name: expected '$problem' in ${problems(first = catalog.firstNames + name)}")
+        fun surname(name: String, problem: String) = assertTrue(problems(sur = catalog.surnames + name).any { problem in it }, "$name: expected '$problem' in ${problems(sur = catalog.surnames + name)}")
+        // Rule 1: plain letters, one capital, 3-8 and 4-11.
+        for (bad in listOf("Jo", "Maximilian", "Jean-Luc", "Renée", "ODell", "wren")) firstName(bad, "First name $bad must be")
+        for (bad in listOf("Lux", "Brackenridge", "O'Marrow", "Van Hoek")) surname(bad, "Surname $bad must be")
+        // Rule 3: distinct at a glance.
+        firstName("Mirabel", "First names Mira and Mirabel share their first three letters")
+        firstName("Nessa", "First names Tessa and Nessa are too alike")       // one edit, different initials
+        firstName("Myrna", "First names Mira and Myrna are too alike")        // two edits, the same initial
+        surname("Vancent", "Surnames Vance and Vancent share their first four letters")
+        surname("Mallow", "Surnames Tallow and Mallow are too alike")
+        assertTrue(problems(first = catalog.firstNames + listOf("Bolko", "Bystra")).any { "first names begin with B" in it })
+        assertTrue(problems(first = catalog.firstNames.filter { it.first() <= 'N' }).any { "initials (at least 15)" in it })
+        // Rule 4: no "Rook Rooksbane".
+        surname("Wrenfield", "First name Wren and surname Wrenfield share their first four letters")
+        // Rule 5: at most four per ending.
+        surname("Elmwood", "5 surnames end in -ood")
+        // Rule 6: no game terms or stems. The names that left the pool with content 3 are the ones the rules turn away.
+        surname("Ashwood", "'ash'"); surname("Mossgrave", "'grave'"); surname("Rooksbane", "'bane'"); surname("Holloway", "'hollowbound'")
+        firstName("Ember", "'ember'"); firstName("Sunna", "'sun'"); surname("Granger", "'ranger'")
+    }
+
     @Test
     fun sliceIdsAndAffinitiesSurviveUnchanged() {
         val slice = SliceContent.catalog

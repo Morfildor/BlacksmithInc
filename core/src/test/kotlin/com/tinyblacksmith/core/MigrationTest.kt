@@ -176,6 +176,41 @@ class MigrationTest {
         assertTrue(run.lastResolution!!.turnedAway.isEmpty())
     }
 
+    /**
+     * The one conversion of the schema-4 step: lineages written without an ID take "era<N>", in the legacy document and
+     * in the copy a run carries, and a hero already recorded as a descendant is linked to the latest lineage of that name.
+     */
+    @Test
+    fun theSchemaFourStepGivesOldLineagesAnIdAndLinksTheirDescendants() {
+        fun old(o: JsonObject) = without(o, "id")
+        val cls = engine.content.classes.first().id
+        val lineages = listOf(LineageAnchor(1, "Mira Vance", "Vance", cls, 5, "died on day 9"), LineageAnchor(2, "Bram Ferris", "Ferris", cls, 4, "retired on day 20"), LineageAnchor(3, "Mira Vance", "Vance", cls, 6, "died on day 4"))
+        val profile = LegacyProfile(lineages = lineages, eras = (1..3).map { EraSummary(it, 12, 8, "The forge fell.") })
+        val state = engine.newRun(profile, 9)
+        val heir = state.heroes.values.single { it.lineageId != null }
+        // The shapes a schema-3 build wrote: no `id` on a lineage, no `lineageId` on a hero.
+        fun oldLegacy(l: JsonObject) = JsonObject(l + ("lineages" to kotlinx.serialization.json.JsonArray(l.getValue("lineages").let { it as kotlinx.serialization.json.JsonArray }.map { old(it.jsonObject) })))
+        val run = json.encodeToJsonElement(GameState.serializer(), state).jsonObject
+        val oldRun = JsonObject(run + ("legacy" to oldLegacy(run.getValue("legacy").jsonObject)) +
+            ("heroes" to JsonObject(run.getValue("heroes").jsonObject.mapValues { (_, h) -> without(h.jsonObject, "lineageId") }))).toString()
+        assertTrue("lineageId" !in oldRun && "\"id\":\"era" !in oldRun)
+
+        val decoded = SaveCodec.decodeRun(envelope(3, oldRun))
+        assertEquals(listOf("era1", "era2", "era3"), decoded.legacy.lineages.map { it.id })
+        assertEquals("era3", decoded.hero(heir.id).lineageId, "the latest lineage of the ancestor's name")
+        assertEquals(heir.copy(lineageId = "era3"), decoded.hero(heir.id))
+        assertTrue(decoded.heroes.values.filter { it.id != heir.id }.all { it.lineageId == null })
+        assertEquals(state.copy(legacy = decoded.legacy, heroes = decoded.heroes), decoded, "nothing else is converted")
+        assertEquals(state.rng to state.events, decoded.rng to decoded.events)
+
+        val legacyDoc = oldLegacy(json.encodeToJsonElement(LegacyProfile.serializer(), profile).jsonObject).toString()
+        assertEquals(profile.copy(lineages = lineages.map { it.copy(id = "era${it.era}") }), SaveCodec.decodeLegacy(envelope(3, legacyDoc)))
+        // A lineage that has its ID keeps it, and a schema-4 document is not touched.
+        val current = profile.copy(lineages = lineages.map { it.copy(id = "era${it.era}-h4") })
+        assertEquals(current, SaveCodec.decodeLegacy(SaveCodec.encodeLegacy(current)))
+        assertEquals(current, SaveCodec.decodeLegacy(envelope(3, json.encodeToString(LegacyProfile.serializer(), current))))
+    }
+
     /** `MarketVisit.reason` is a String today and an enum from M2 whose first nine constants keep these spellings; every v1 day must still read. */
     @Test
     fun v1VisitReasonsDecode() {

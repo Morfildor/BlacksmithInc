@@ -66,13 +66,13 @@ object Legacy {
                     familyId = w.familyId, coreId = w.coreId, augmentId = w.augmentId, quality = w.quality, power = w.power, element = w.element,
                 )
             }
-        val anchorHero = state.heroes.values.filter { it.fame > 0 }.maxWithOrNull(compareBy<Hero> { it.fame }.thenBy { it.id.value })
+        val anchorHero = state.heroes.values.filter { it.fame > 0 }.maxWithOrNull(compareBy<Hero> { it.fame }.thenBy(IdOrder.numeric) { it.id.value })
         val lineage = anchorHero?.let {
             LineageAnchor(state.era, it.fullName, it.surname, it.classId, it.fame, when (it.fate) {
                 HeroFate.ALIVE -> "survived the fall of the forge"
                 HeroFate.RETIRED -> "retired on day ${it.retiredOnDay}"
                 HeroFate.DEAD -> "died on day ${it.diedOnDay}"
-            })
+            }, id = "era${state.era}-${it.id.value}")
         }
         val discovery = minOf(config.legacyDiscoveryPointCap, state.discoveriesThisRun)
         val milestoneBonus = state.milestones.sumOf { milestonePoints[it] ?: 0 }
