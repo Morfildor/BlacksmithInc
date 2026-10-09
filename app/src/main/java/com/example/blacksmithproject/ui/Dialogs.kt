@@ -129,7 +129,7 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
                 PaperRuleLine(top = 0.dp, bottom = Space.sm)
                 Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
                     r.replays.firstOrNull()?.takeIf { it.kind == ReplayKind.SIEGE }?.let { replay -> ReplayStage(replay, shown, s, vm, reducedMotion) }  // the siege comes first; fights are text only
-                    val edition = remember(r.commandId) { Gazette.edition(Gazette.dayRecords(s.state, r.day), s.state.heroes.values.associate { it.id.value to it.fullName }, r.visits) }
+                    val edition = remember(r.commandId) { Gazette.edition(Gazette.dayRecords(s.state, r.day), s.state.heroes.values.associate { it.id.value to it.fullName }, r.visits, r.ledger, r.field) }
                     EditionBody(edition)
                     if (r.replays.isNotEmpty()) {
                         PaperRuleLine(top = Space.md, bottom = Space.sm)

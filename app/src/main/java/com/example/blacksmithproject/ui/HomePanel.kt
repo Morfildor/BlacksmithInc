@@ -127,8 +127,8 @@ private fun CommissionsBlock(s: UiState.Playing, vm: GameViewModel, offered: Int
         val left = c.deadlineDay - st.day
         // A commission still counts on its deadline day: it lapses at that End Day if nothing was delivered.
         val due = when { left <= 0 -> "due today"; left == 1 -> "due tomorrow"; else -> "due day ${c.deadlineDay}, in $left days" }
-        "${Labels.quality(c.minQuality).replaceFirstChar { it.uppercase() }} ${c.element?.let { it.name.lowercase() + " " }.orEmpty()}${content.family(c.familyId).name} for $buyer · ${c.reward} gold · $due · " +
-            if (c.status == CommissionStatus.OFFERED) "needs an answer" else "accepted"
+        "${Labels.request(c, content, vm.engine.config)} for $buyer · ${c.reward} gold · $due · " +
+            if (c.status == CommissionStatus.OFFERED) "needs an answer" else "accepted · ${Labels.readiness(c, st.weapons.values, content, vm.engine.config)}"
     }
     HomeBlock(if (offered > 0) "Commissions · $offered to answer" else "Commissions", lines.ifEmpty { listOf("No requests today.") }, Panel.MARKET, vm)
 }
@@ -153,7 +153,8 @@ private fun YesterdayBlock(s: UiState.Playing, vm: GameViewModel) {
     val st = s.state
     val edition = remember(st.events, st.day) {
         val heroNames = st.heroes.values.associate { it.id.value to it.fullName }
-        Gazette.edition(Gazette.dayRecords(st, st.day - 1), heroNames, st.lastResolution?.takeIf { it.day == st.day - 1 }?.visits ?: emptyList())
+        val res = st.lastResolution?.takeIf { it.day == st.day - 1 }
+        Gazette.edition(Gazette.dayRecords(st, st.day - 1), heroNames, res?.visits ?: emptyList(), res?.ledger, res?.field ?: emptyList())
     }
     val first = edition.lede.firstOrNull() ?: edition.sections.firstOrNull()?.lines?.firstOrNull()
     val lines = if (first == null) listOf("No news yet.") else listOfNotNull(first, edition.tally.takeIf { it.isNotEmpty() }?.joinToString(" · "))

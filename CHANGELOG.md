@@ -9,9 +9,19 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ### Changed
 - A collector pays at most one and a half times the going rate for a blade, whatever its shelf price.
+- Commissions say exactly what they need. A request is always for a quality the game names (decent 35+, fine 50+; a
+  noble patron asks for superb 70+, no longer "masterwork") and is written that way everywhere: "Fine frost Spear
+  (quality 50+)". A request left open in an older save is lowered to the quality its word promised.
+- An accepted commission is collected before the day's browsers arrive, so nobody buys the promised blade first. The
+  patron takes the least blade that fits (from storage before the shelf, then the lowest quality), not your best work.
+- A hero who dreams of a fine blade (the collector ambition) is satisfied by quality 50, the start of "fine"; it was 60.
+- Balance version 6.
 
 ### Added
 - The Forge line of the Gazette says what was spent on materials.
+- A commission card lists each blade of the right kind in the shop with "fits" or the one thing it lacks (wrong
+  element, or its quality against the quality needed), and an accepted one names the blade that will be handed over at
+  End Day. The Home screen shows the same line.
 
 ### Fixed
 - The three champions are chosen against the foe they will face: when a warlord leads the siege, a blade that bites

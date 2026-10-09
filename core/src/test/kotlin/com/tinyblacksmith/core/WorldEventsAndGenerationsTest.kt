@@ -124,7 +124,7 @@ class WorldEventsAndGenerationsTest {
         val noble = fire(s, "noble_commission")
         val c = noble.commissions.values.single()
         assertEquals(CommissionStatus.OFFERED, c.status)
-        assertTrue(c.minQuality >= engine.config.nobleCommissionMinQuality && c.reward > engine.config.commissionRewardBase * 2)
+        assertTrue(c.minQuality == engine.config.epicMin && c.reward > engine.config.commissionRewardBase * 2, "a noble asks for the superb floor")
         assertFalse(eligible(noble, "noble_commission"), "no second commission while one is open")
 
         val arrivals = fire(s, "new_adventurers")

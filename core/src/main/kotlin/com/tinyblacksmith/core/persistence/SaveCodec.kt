@@ -1,5 +1,7 @@
 package com.tinyblacksmith.core.persistence
 
+import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.market.QualityBand
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.LegacyProfile
 import kotlinx.serialization.Serializable
@@ -47,7 +49,7 @@ object SaveCodec {
      * a step written for one is never applied to the other. Raising [SCHEMA_VERSION] needs an entry in BOTH tables
      * for the version left behind; the entry is `{ it }` for a document that does not change.
      */
-    internal val runMigrations: Map<Int, (String) -> String> = mapOf(1 to ::stampBalanceVersion)
+    internal val runMigrations: Map<Int, (String) -> String> = mapOf(1 to { lowerOffBandCommissions(stampBalanceVersion(it)) })
     internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it })
 
     /** Every schema-1 run was written by a build that had balance 5 and did not yet record it (0 = untracked). */
@@ -57,6 +59,25 @@ object SaveCodec {
         val run = json.parseToJsonElement(payload).jsonObject
         if ((run["balanceVersion"] as? JsonPrimitive)?.intOrNull?.takeIf { it != 0 } != null) return payload
         return JsonObject(run + ("balanceVersion" to JsonPrimitive(BALANCE_BEFORE_TRACKING))).toString()
+    }
+
+    /**
+     * Schema-1 builds drew a commission's quality anywhere in 35..60 (60..75 for a noble one) and showed only the band
+     * word; a commission now always asks for a band floor. An open one (offered or accepted) is lowered to the floor of
+     * the band it was shown as, in the player's favour; its reward and every closed commission stay as they were.
+     */
+    private fun lowerOffBandCommissions(payload: String): String {
+        val run = json.parseToJsonElement(payload).jsonObject
+        val commissions = run["commissions"] as? JsonObject ?: return payload
+        val bands = BalanceConfig.DEFAULT
+        val lowered = commissions.mapValues { (_, c) ->
+            val o = c.jsonObject
+            val quality = (o["minQuality"] as? JsonPrimitive)?.intOrNull
+            val floor = quality?.let { QualityBand.of(it, bands).floor(bands) }
+            if (quality == null || floor == quality || (o["status"] as? JsonPrimitive)?.content !in setOf("OFFERED", "ACCEPTED")) c
+            else JsonObject(o + ("minQuality" to JsonPrimitive(floor)))
+        }
+        return if (lowered == commissions) payload else JsonObject(run + ("commissions" to JsonObject(lowered))).toString()
     }
 
     /** [target] is a parameter only so tests can run a table past today's schema. */

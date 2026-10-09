@@ -1,7 +1,11 @@
 package com.example.blacksmithproject.ui
 
 import com.tinyblacksmith.core.content.ContentCatalog
+import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.engine.Technique
+import com.tinyblacksmith.core.market.Commissions
+import com.tinyblacksmith.core.market.QualityBand
+import com.tinyblacksmith.core.model.Commission
 import com.tinyblacksmith.core.model.Hero
 import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.Risk
@@ -9,12 +13,32 @@ import com.tinyblacksmith.core.model.Weapon
 
 /** Descriptive, never numeric, player-facing labels (GDD round 9 disclosure rule). */
 object Labels {
-    fun quality(q: Int): String = when {
-        q >= 85 -> "masterwork"
-        q >= 70 -> "superb"
-        q >= 50 -> "fine"
-        q >= 35 -> "decent"
-        else -> "crude"
+    /** The band word of the core rule ([QualityBand]); the app's engine runs the default balance. */
+    fun quality(q: Int): String = QualityBand.of(q, BalanceConfig.DEFAULT).word
+
+    /** A request in the terms End Day checks: "Fine frost Spear (quality 50+)". */
+    fun request(c: Commission, content: ContentCatalog, config: BalanceConfig): String =
+        Commissions.describe(c, content, config).replaceFirstChar { it.uppercase() }
+
+    /** "fits", or the one thing [w] lacks for [c], by [Commissions.fit]. */
+    fun fit(w: Weapon, c: Commission, content: ContentCatalog): String = when (Commissions.fit(w, c)) {
+        Commissions.Fit.OK -> "fits"
+        Commissions.Fit.FAMILY -> "not a ${content.family(c.familyId).name}"
+        Commissions.Fit.ELEMENT -> "not ${c.element?.name?.lowercase()}"
+        Commissions.Fit.QUALITY -> "quality ${w.quality}, needs ${c.minQuality}"
+    }
+
+    /** Before End Day: the blade an accepted request will take ([Commissions.pick]), or what the nearest blade in the shop lacks. */
+    fun readiness(c: Commission, weapons: Collection<Weapon>, content: ContentCatalog, config: BalanceConfig): String {
+        Commissions.pick(weapons, c, config)?.let { return "Ready: ${it.name} will be handed over at End Day." }
+        val family = content.family(c.familyId).name
+        val nearest = weapons.filter { it.isInStorage || it.isListed }.maxWithOrNull(compareBy<Weapon> { Commissions.fit(it, c).ordinal }.thenBy { it.quality })
+        val lacks = nearest?.let { Commissions.fit(it, c) }
+        return "Nothing fits yet: " + when {
+            nearest != null && lacks == Commissions.Fit.QUALITY -> "${nearest.name} is quality ${nearest.quality}, needs ${c.minQuality}."
+            lacks == Commissions.Fit.ELEMENT -> "no ${c.element?.name?.lowercase()} $family in the shop."
+            else -> "no $family in the shop."
+        }
     }
 
     fun rarity(r: Rarity): String = when (r) {

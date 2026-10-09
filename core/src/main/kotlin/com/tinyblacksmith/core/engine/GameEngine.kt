@@ -293,9 +293,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val ctx = ResolutionContext(state, content, config)
         val day = ctx.day
         // 1. Lock planning; RNG state is snapshotted implicitly (streams open lazily from the saved state).
-        // 2. Customers and commissions.
-        Market.resolveShelfVisits(ctx)
+        // 2. Commissions, then customers: a patron collects before the browsers arrive, so the blade a request was promised is not sold first.
         Market.resolveCommissions(ctx)
+        Market.resolveShelfVisits(ctx)
         Market.resolveMerchant(ctx)  // GDD 7 merchant resale, after the smith's own customers; draws no RNG
         // 3. Equipment/finances were applied inside purchases.
         // 4-5. Autonomous activities and encounters.

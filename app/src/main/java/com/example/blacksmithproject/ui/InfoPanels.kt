@@ -184,7 +184,8 @@ fun GazettePanel(s: UiState.Playing) {
     if (days.isEmpty()) Text("The presses are quiet.", modifier = Modifier.padding(top = Space.md))
     days.forEach { day ->
         val edition = remember(st.events, day) {
-            Gazette.edition(Gazette.dayRecords(st, day), heroNames, st.lastResolution?.takeIf { it.day == day }?.visits ?: emptyList())
+            val res = st.lastResolution?.takeIf { it.day == day }
+            Gazette.edition(Gazette.dayRecords(st, day), heroNames, res?.visits ?: emptyList(), res?.ledger, res?.field ?: emptyList())
         }
         val expanded = open == day
         Row(

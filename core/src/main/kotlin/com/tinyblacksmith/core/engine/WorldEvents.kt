@@ -6,7 +6,9 @@ import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.crafting.Journal
 import com.tinyblacksmith.core.crafting.SignatureCatalog
 import com.tinyblacksmith.core.heroes.Heroes
+import com.tinyblacksmith.core.market.Commissions
 import com.tinyblacksmith.core.market.Market
+import com.tinyblacksmith.core.market.QualityBand
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.RngStream
 import com.tinyblacksmith.core.model.Journal as JournalModel
@@ -164,14 +166,14 @@ object WorldEvents {
                 val config = ctx.config
                 val buyer = rng.pick(ctx.aliveHeroes())
                 val family = rng.pick(ctx.content.heroClass(buyer.classId).preferredFamilies)
-                val minQuality = rng.nextInt(config.nobleCommissionMinQuality, config.nobleCommissionMinQuality + 15)
+                val minQuality = QualityBand.SUPERB.floor(config)
                 val reward = (config.commissionRewardBase + minQuality * config.commissionRewardPerQuality) * config.nobleCommissionRewardMultiplier
                 val id = ctx.newCommissionId()
                 val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, ctx.day + config.commissionDeadlineDays + 2, CommissionStatus.OFFERED)
                 ctx.commissions[id] = c
-                WorldEventOutcome(mapOf("hero" to buyer.fullName, "family" to ctx.content.family(family).name, "reward" to reward.toString(), "day" to c.deadlineDay.toString()), listOf(buyer.id.value, id.value))
+                WorldEventOutcome(mapOf("hero" to buyer.fullName, "family" to ctx.content.family(family).name, "request" to Commissions.describe(c, ctx.content, config), "reward" to reward.toString(), "day" to c.deadlineDay.toString()), listOf(buyer.id.value, id.value))
             },
-            story = "A noble patron, speaking through {hero}, commissions a masterwork {family} by day {day} for {reward} gold.",
+            story = "A noble patron, speaking through {hero}, commissions a {request} by day {day} for {reward} gold.",
         ),
         // 6
         WorldEventDef(
