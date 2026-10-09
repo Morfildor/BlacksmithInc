@@ -105,7 +105,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T4.5 | Artifact fidelity and the ledger | CB + AA | todo | | | |
 | T4.6 | Commission situations | CA + AB | todo | | | |
 | T5.2 | Recovery and reachability | SIM | done at balance 6; re-measure after M3 | 8f87adb | core 265 pass; all 23 pooled events fire (famous_blade, descendant on veteran accounts only); NOVICE stuck streak 3+ in 0.00 % of 1,000 runs: valve trigger not crossed; EXPERT_ACTIVE 1.9-3.0 % reported; shock arms without a simulator option not run | |
-| T5.3 | Upgrades | CB + CON + AB | todo | | | |
+| T5.3 | Upgrades | CB + CON + AB | code half done; gate table waits for T3.4 | fc4aedb | core+app green on tip; preview for 11 tracks x 3 levels from config; no percent text (test); sim identical; runend.sh all CHECK ok on emulator; maxed-track line not seen on device; per-track gate table NOT RUN | |
 | T5.4 | Resolver constants | CA + CB | todo | | | |
 | T5.5 | 10,000-seed review after the update | SIM + INT | todo | | | |
 | T6.1 | Layout matrix | AB | todo | | | |
