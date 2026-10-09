@@ -319,6 +319,23 @@ upgrade magnitudes, which were already tested at double size in v2 without effec
 from +4.2 (FAIR; +4.4 in the v2 1,000-run list) to -0.3 (INVEST): its common materials are exactly what a spending bot skips, so its value is a
 beginner's convenience, not a run-length lever.
 
+### Reputation-aware pricing: `BALANCED_REPUTED` (2026-10-09, after the reputation merge)
+BALANCED_FAIR priced at the shop's reputation ceiling, `suggestedPrice x (1 + min(reputation x 0.01, 0.25))`, so
+the reputation price bonus is visible to the sweep. Run after the reputation/loyalty economy merged
+(`--runs 10000 --seed 1 --policy BALANCED_REPUTED`, launch content v2, balance v2, 103 s):
+
+| Policy (10,000 seeds, post-merge economy) | Median (p10/p90) | Mean | Sell rate | Survived / lost sieges | Gold earned (median) |
+|---|---|---|---|---|---|
+| BALANCED_FAIR (same run, impact baseline) | 25 (15/35) | 23.8 | 14 % | 1.6 / 3.2 | - |
+| **BALANCED_REPUTED** | 25 (15/30) | 23.6 | 14 % | 1.5 / 3.2 | 1,045 |
+| Maxed upgrades, BALANCED_FAIR | 40 (25/50) | 37.4 | 9 % | 2.7 / 4.8 | 1,160 |
+
+Charging the ceiling neither helps nor hurts run length (within 0.3 days of FAIR): reputation is earned by sales,
+so the raise arrives late and shaves a few early sales. The reputation bonus is a late-run comfort, not a lever,
+which matches its intent (DECISIONS "Reputation and loyalty depth"). Known Name (shop_reputation L3) stays at +0.0.
+The reputation merge moved the pre-merge table above only within noise (maxed BALANCED_FAIR mean 38.5 -> 37.4);
+the other rows were not re-run.
+
 ## Event-log compaction (2026-10-08, session 3, ENGINEERING)
 GDD 13.3 asks to "compact ordinary events and retain rare milestones"; 15.1's "migration does not mutate histories"
 is honoured because the save schema is unchanged (still v1) and no stored record is rewritten, only dropped by a

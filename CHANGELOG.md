@@ -19,6 +19,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   `--reserve N`) and `BALANCED_REPUTED` policy (lists at the reputation-raised fair price), `--impactPolicy` also
   drives the maxed-legacy run, and `--json` reports the reserve; 10,000-seed review of every policy recorded in
   DECISIONS.md.
+- Title and run-end screens on the spacing tokens with one primary action at a time (Continue leads when a run is
+  saved; Claim, then Begin era); Town lists every faction under the leader with its pressure and weakness; the Forge
+  threat line names the leading faction only; recipe steps scroll so a tall step shows its header first; disabled
+  Forge/upgrade buttons and the reduced-motion row carry screen-reader descriptions.
 
 ## [0.2.0] - 2026-10-08
 Launch content by default, balance v2, all 24 signatures and 25 world events, bounded saves, decluttered UI.

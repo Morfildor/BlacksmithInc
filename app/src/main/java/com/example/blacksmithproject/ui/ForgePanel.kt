@@ -32,6 +32,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,6 +40,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -52,7 +55,6 @@ import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Space
-import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.crafting.Journal
@@ -101,7 +103,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
         Column(Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = Space.md, vertical = Space.sm)) {
             tip?.let { TipBanner(it, vm) }
 
-            Step("mode", "Mode", if (d.mode == ForgeMode.QUICK) "Quick · ${config.quickForgeEnergy} energy" else "Advanced · ${config.advancedForgeEnergy} energy", open, ::toggle) {
+            Step("mode", "Mode", if (d.mode == ForgeMode.QUICK) "Quick · ${config.quickForgeEnergy} energy" else "Advanced · ${config.advancedForgeEnergy} energy", open, scroll, ::toggle) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     ForgeMode.entries.forEachIndexed { i, mode ->
                         SegmentedButton(
@@ -119,7 +121,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
                 )
             }
 
-            Step("family", "Family", d.familyId?.let { content.family(it).name }, open, ::toggle) {
+            Step("family", "Family", d.familyId?.let { content.family(it).name }, open, scroll, ::toggle) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                     content.families.forEach { f ->
                         val previewCore = d.coreId ?: content.materials(MaterialCategory.CORE).first().id
@@ -133,17 +135,17 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
                     }
                 }
             }
-            Step("core", "Core metal", d.coreId?.let { content.material(it).name }, open, ::toggle) {
+            Step("core", "Core metal", d.coreId?.let { content.material(it).name }, open, scroll, ::toggle) {
                 MaterialChips(MaterialCategory.CORE, d.coreId, s, vm) { id -> pick { it.copy(coreId = id) } }
             }
-            Step("augment", "Augment", d.augmentId?.let { content.material(it).name }, open, ::toggle) {
+            Step("augment", "Augment", d.augmentId?.let { content.material(it).name }, open, scroll, ::toggle) {
                 MaterialChips(MaterialCategory.AUGMENT, d.augmentId, s, vm) { id -> pick { it.copy(augmentId = id) } }
             }
             if (d.mode == ForgeMode.ADVANCED) {
-                Step("catalyst", "Catalyst", d.catalystId?.let { content.material(it).name } ?: "None", open, ::toggle) {
+                Step("catalyst", "Catalyst", d.catalystId?.let { content.material(it).name } ?: "None", open, scroll, ::toggle) {
                     MaterialChips(MaterialCategory.CATALYST, d.catalystId, s, vm, noneLabel = "None") { id -> pick { it.copy(catalystId = id) } }
                 }
-                Step("technique", "Technique", d.technique?.let { Labels.technique(it) } ?: "Plain", open, ::toggle) {
+                Step("technique", "Technique", d.technique?.let { Labels.technique(it) } ?: "Plain", open, scroll, ::toggle) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                         FilterChip(selected = d.technique == null, onClick = { pick { it.copy(technique = null) } }, label = { Text("Plain") }, modifier = Modifier.heightIn(min = 48.dp))
                         Technique.entries.forEach { t ->
@@ -153,7 +155,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
                     d.technique?.let { Secondary(Labels.techniqueExplanation(it), Modifier.padding(top = Space.sm)) }
                 }
             }
-            Step("risk", "Risk", Labels.risk(d.risk).substringBefore(" —"), open, ::toggle) {
+            Step("risk", "Risk", Labels.risk(d.risk).substringBefore(" —"), open, scroll, ::toggle) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     Risk.entries.forEachIndexed { i, r ->
                         SegmentedButton(
@@ -194,7 +196,8 @@ private fun ThreatLine(s: UiState.Playing, vm: GameViewModel) {
         daysLeft == 1 -> "siege tomorrow"
         else -> "siege in $daysLeft days"
     }
-    val pressure = faction?.let { "${vm.engine.content.faction(it.id).name}, ${Battle.describePressure(it.pressure)}" } ?: "the roads are quiet"
+    // The leader can change day to day; "lead" says it is a standing, not a promise. Town carries the descriptor.
+    val pressure = faction?.let { "${vm.engine.content.faction(it.id).name} lead" } ?: "the roads are quiet"
     Row(
         Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
@@ -204,7 +207,7 @@ private fun ThreatLine(s: UiState.Playing, vm: GameViewModel) {
         Text(
             buildAnnotatedString {
                 withStyle(SpanStyle(fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)) { append("Forge ${st.town.integrity}") }
-                append("  ·  ${siege.replaceFirstChar { it.uppercase() }}: $pressure")
+                append(" · ${siege.replaceFirstChar { it.uppercase() }} · $pressure")
             },
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -263,11 +266,13 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
                     Secondary(recipe)
                 }
                 Spacer(Modifier.width(Space.sm))
+                val enabled = ready && canAfford && missing == null && !s.busy
                 Button(
-                    enabled = ready && canAfford && missing == null && !s.busy,
+                    enabled = enabled,
                     onClick = { vm.dispatch(Command.Forge(d.mode, d.familyId!!, d.coreId!!, d.augmentId!!, d.catalystId, d.risk, d.technique)) },
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = Space.sm),
-                    modifier = Modifier.width(116.dp).heightIn(min = 56.dp),
+                    // A disabled button says why, so a screen reader is not left with a dead "Forge weapon".
+                    modifier = Modifier.width(116.dp).heightIn(min = 56.dp).semantics { if (!enabled) contentDescription = "Forge weapon, unavailable: $note" },
                 ) { Text("Forge weapon", style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.Center, maxLines = 2) }
             }
             Text(note, style = MaterialTheme.typography.bodySmall, color = if (ready && canAfford && missing == null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
@@ -277,11 +282,16 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
 
 /** One step of the recipe: a header that always shows the chosen value, and the choices when open. */
 @Composable
-private fun Step(id: String, label: String, value: String?, open: String, onToggle: (String) -> Unit, choices: @Composable () -> Unit) {
+private fun Step(id: String, label: String, value: String?, open: String, scroll: ScrollState, onToggle: (String) -> Unit, choices: @Composable () -> Unit) {
     val isOpen = open == id
     val requester = remember { BringIntoViewRequester() }
-    LaunchedEffect(isOpen) { if (isOpen) requester.bringIntoView() }
-    Column(Modifier.fillMaxWidth().padding(top = Space.sm).bringIntoViewRequester(requester)) {
+    var height by remember { mutableIntStateOf(0) }
+    // Re-requested when the opened choices are laid out. The rect is capped to the viewport so a step taller than
+    // it (large fonts, small screens) aligns its header at the top instead of its last chip at the bottom.
+    LaunchedEffect(isOpen, height) {
+        if (isOpen && height > 0) requester.bringIntoView(Rect(0f, 0f, 0f, minOf(height, scroll.viewportSize - 1).toFloat()))
+    }
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).bringIntoViewRequester(requester).onSizeChanged { height = it.height }) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { onToggle(id) }
                 .semantics(mergeDescendants = true) { contentDescription = "$label: ${value ?: "not chosen"}, ${if (isOpen) "open" else "tap to change"}" },

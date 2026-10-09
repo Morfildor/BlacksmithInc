@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
@@ -27,6 +29,7 @@ import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.battle.Battle
+import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.model.Hero
@@ -39,10 +42,10 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
     val faction = st.factions.values.maxByOrNull { it.pressure }
     val daysLeft = st.town.nextSiegeDay - st.day
 
-    // Header: the threat in one card, numbers second.
+    // Header: the faction with the most pressure (the one the engine sends at the siege), numbers second.
     Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
-        Row(Modifier.padding(Space.md), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
-            faction?.let { f -> Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 56.dp, description = content.faction(f.id).name) } }
+        Row(Modifier.padding(Space.md).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+            faction?.let { f -> Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 56.dp, description = null) } }
             Column(Modifier.weight(1f)) {
                 Text(faction?.let { content.faction(it.id).name } ?: "No threat", style = MaterialTheme.typography.titleMedium)
                 Text(
@@ -50,8 +53,24 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
                         when { daysLeft <= 0 -> "siege today"; daysLeft == 1 -> "siege tomorrow"; else -> "siege on day ${st.town.nextSiegeDay}, in $daysLeft days" },
                     style = MaterialTheme.typography.bodyMedium,
                 )
+                faction?.let { weakness(content.faction(it.id).weakTo) }?.let { Secondary(it, Modifier.padding(top = Space.xs)) }
                 Secondary("Forge ${st.town.integrity} · militia ${st.town.militia} · sieges held ${st.town.siegesSurvived}", Modifier.padding(top = Space.xs))
                 Secondary("World: ${st.world.name}")
+            }
+        }
+    }
+    // Every faction presses on the town (GDD 8); the others are listed so the leader's rise can be read coming.
+    st.factions.values.filter { it.id != faction?.id }.sortedByDescending { it.pressure }.forEach { f ->
+        val def = content.faction(f.id)
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = Space.sm, vertical = Space.xs).semantics(mergeDescendants = true) {},
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 40.dp, description = null) }
+            Column(Modifier.weight(1f)) {
+                Text(def.name, style = MaterialTheme.typography.titleSmall)
+                Secondary(listOfNotNull(Battle.describePressure(f.pressure).replaceFirstChar { c -> c.uppercase() }, weakness(def.weakTo)).joinToString(" · "))
             }
         }
     }
@@ -66,13 +85,13 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier.fillMaxWidth().padding(top = Space.sm),
         ) {
-            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(Modifier.padding(12.dp).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (h == null) {
                     Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Secondary("No hero stands here yet.", Modifier.weight(1f))
                 } else {
                     val w = st.equippedWeapon(h.id)
-                    PixelImage(Sprites.portrait(h), 56.dp, description = "${h.fullName}, ${content.heroClass(h.classId).name}")
+                    PixelImage(Sprites.portrait(h), 56.dp, description = null)
                     Column(Modifier.weight(1f)) {
                         Text("${i + 1}. ${h.fullName}", style = MaterialTheme.typography.titleSmall)
                         Secondary("${content.heroClass(h.classId).name} level ${h.level} · ${Labels.health(h)}")
@@ -91,6 +110,9 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
     }
 }
 
+/** The faction's weakness in words; decorative, the engine applies the matchup itself. */
+private fun weakness(e: Element?): String? = e?.let { "Weak to ${it.name.lowercase()}" }
+
 @Composable
 private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
@@ -107,8 +129,8 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Box {
-            PixelImage(Sprites.portrait(h), 44.dp, description = content.heroClass(h.classId).name)
-            Sprites.marker(h.fate)?.let { PixelImage(it, 16.dp, description = fateLabel, modifier = Modifier.align(Alignment.BottomEnd)) }
+            PixelImage(Sprites.portrait(h), 44.dp, description = null)
+            Sprites.marker(h.fate)?.let { PixelImage(it, 16.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
         }
         Column(Modifier.weight(1f)) {
             Text(h.fullName + (h.descendantOf?.let { " · of $it's line" } ?: ""), style = MaterialTheme.typography.titleSmall)
@@ -203,12 +225,15 @@ fun LegacyPanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean) {
         }
     }
     SectionTitle("Settings")
-    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = reducedMotion, role = Role.Switch, onValueChange = { vm.setReducedMotion(it) }),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Column(Modifier.weight(1f)) {
             Text("Reduced motion", style = MaterialTheme.typography.titleSmall)
             Secondary("Stops the ember animation, the reveal fade and the stepped battle replay.")
         }
-        Switch(checked = reducedMotion, onCheckedChange = { vm.setReducedMotion(it) })
+        Switch(checked = reducedMotion, onCheckedChange = null)
     }
 }
 
