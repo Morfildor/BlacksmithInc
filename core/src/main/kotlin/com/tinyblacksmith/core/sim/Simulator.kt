@@ -18,6 +18,7 @@ import java.io.File
 import java.util.stream.Collectors
 import java.util.stream.IntStream
 import kotlin.math.roundToInt
+import kotlin.system.exitProcess
 
 /** Scripted shop policies for the headless harness (GDD 15.2). Policy randomness uses its own stream, never gameplay RNG. */
 enum class Policy(
@@ -125,6 +126,8 @@ data class RunStats(
     val firstPremiumSaleDay: Int? = null,
     val rareMaterialsBought: Int = 0,
     val legendsReturned: Int = 0,
+    /** Customer and identity counters (`--customers`, [CustomerCollector]); null unless the driver collects them. */
+    val customers: RunCustomers? = null,
 )
 
 /**
@@ -145,6 +148,8 @@ class SimulationDriver(
      * what every other policy restocks) is still bought below the reserve, so the bot forges whenever it can.
      */
     val reserve: Int = DEFAULT_RESERVE,
+    /** Observes every End Day for the customer metrics ([RunStats.customers]); read-only, so the run is the same with or without. */
+    val customerMetrics: Boolean = false,
     /** Called after each resolved day with the new state and the End Day wall-clock nanoseconds. */
     val onDayResolved: ((GameState, Long) -> Unit)? = null,
 ) {
@@ -184,6 +189,7 @@ class SimulationDriver(
         var firstPremiumSaleDay: Int? = null
         var rareMaterialsBought = 0
         var legendsReturned = 0
+        val collector = if (customerMetrics) CustomerCollector(engine) else null
         while (!state.isEnded && state.day <= maxDays) {
             if (state.pendingBlessingOffer.isNotEmpty()) state = engine.handle(state, Command.ChooseBlessing(state.pendingBlessingOffer.first())).state()
             for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
@@ -229,12 +235,14 @@ class SimulationDriver(
             materialSamples += state.materials.values.sum()
             goldSamples += state.gold
             if (state.day == firstSiegeDay) toolsByFirstSiege = state.tools.values.sum()
+            collector?.beforeEndDay(state)
             val started = System.nanoTime()
             val outcome = engine.handle(state, Command.EndDay(CommandId("${state.runId.value}:day${state.day}")))
             val nanos = System.nanoTime() - started
             var out = outcome.state()
             val res = out.lastResolution
             if (res != null) {
+                collector?.afterEndDay(state, out, res)
                 for (v in res.visits) visitReasons[v.reason] = (visitReasons[v.reason] ?: 0) + 1
                 val sales = res.events.filter { it.type == EventType.WEAPON_SOLD }
                 sold += sales.size
@@ -282,6 +290,7 @@ class SimulationDriver(
             weaponFates = weaponFates,
             firstSiegeDefense = firstSiegeDefense, firstSiegeHeld = firstSiegeHeld, forgedByFirstSiege = forgedByFirstSiege, soldByFirstSiege = soldByFirstSiege,
             toolsByFirstSiege = toolsByFirstSiege, firstPremiumSaleDay = firstPremiumSaleDay, rareMaterialsBought = rareMaterialsBought, legendsReturned = legendsReturned,
+            customers = collector?.finish(state),
         )
         return stats to state
     }
@@ -467,6 +476,8 @@ data class PolicySummary(
     val weaponFatesPerRun: Map<WeaponFate, Double> = emptyMap(),
     /** GDD 15.2 artifact recovery: of those blades whose fate settled, the share that came back to Emberfall (forge, guildmate or merchant resale). */
     val artifactRecoveryRate: Double = 0.0,
+    /** Customer and identity metrics (`--customers`); absent from the report otherwise. */
+    val customers: CustomerSummary? = null,
 )
 
 data class Report(val policy: Policy, val runs: List<RunStats>, val label: String = "new account") {
@@ -507,6 +518,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             heroLevelUpsPerRun = runs.map { it.heroLevelUps }.average(), mentoringsPerRun = runs.map { it.mentorings }.average(),
             guildsPerRun = runs.map { it.guilds }.average(), guildRunShare = runs.count { it.guilds > 0 }.toDouble() / runs.size,
             weaponFatesPerRun = fates.mapValues { it.value.toDouble() / runs.size }, artifactRecoveryRate = if (settled == 0) 0.0 else returned.toDouble() / settled,
+            customers = CustomerSummary.of(runs),
         )
     }
 
@@ -531,6 +543,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  hero-days/run: ${f1(s.heroDaysPerRun)}  activity shares: " + s.activityShare.entries.joinToString("  ") { "${it.key}=${"%.1f%%".format(100.0 * it.value)}" })
             appendLine("  level-ups/run: ${f1(s.heroLevelUpsPerRun)}  mentorings/run: ${f1(s.mentoringsPerRun)}  guilds/run: ${f1(s.guildsPerRun)}  runs with a guild: ${pct(s.guildRunShare)}")
             appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}")
+            s.customers?.let { append(it.render()) }
         }
     }
 
@@ -608,9 +621,9 @@ object Simulator {
     fun run(
         runs: Int, baseSeed: Long, policies: List<Policy>, legacy: LegacyProfile = LegacyProfile(), config: BalanceConfig = BalanceConfig.DEFAULT,
         maxDays: Int = config.maxSimulatedDays, label: String = "new account", content: ContentCatalog = LaunchContent.catalog,
-        reserve: Int = SimulationDriver.DEFAULT_RESERVE,
+        reserve: Int = SimulationDriver.DEFAULT_RESERVE, customerMetrics: Boolean = false,
     ): List<Report> {
-        val driver = SimulationDriver(GameEngine(content, config), maxDays = maxDays, reserve = reserve)
+        val driver = SimulationDriver(GameEngine(content, config), maxDays = maxDays, reserve = reserve, customerMetrics = customerMetrics)
         // Runs are independent and the engine is pure, so seeds run in parallel; results are collected in seed order.
         return policies.map { p ->
             Report(p, IntStream.range(0, runs).parallel().mapToObj { i -> driver.playRun(legacy, baseSeed + i, p).first }.collect(Collectors.toList()), label)
@@ -700,6 +713,44 @@ object Simulator {
 
 private val reportJson = Json { prettyPrint = true }
 
+/**
+ * `--set key=value[,key=value]`: a hand-written allowlist (no reflection) of the customer, population and threat
+ * numbers the balance sweeps vary. Throws [IllegalArgumentException] on an unknown key or a value that does not parse.
+ */
+internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
+    var c = base
+    for (pair in arg.split(',')) {
+        val key = pair.substringBefore('=')
+        require('=' in pair) { "expected key=value, got '$pair'" }
+        val v = pair.substringAfter('=')
+        fun int() = requireNotNull(v.toIntOrNull()) { "$key needs an integer, got '$v'" }
+        fun dbl() = requireNotNull(v.toDoubleOrNull()) { "$key needs a number, got '$v'" }
+        c = when (key) {
+            "maxCustomersPerDay" -> c.copy(maxCustomersPerDay = int())
+            "baseVisitChance" -> c.copy(baseVisitChance = dbl())
+            "festivalExtraCustomers" -> c.copy(festivalExtraCustomers = int())
+            "shelfSlots" -> c.copy(shelfSlots = int())
+            "startingHeroCount" -> c.copy(startingHeroCount = int())
+            "minHeroPopulation" -> c.copy(minHeroPopulation = int())
+            "maxHeroPopulation" -> c.copy(maxHeroPopulation = int())
+            "newAdventurerCount" -> c.copy(newAdventurerCount = int())
+            "raidBase" -> c.copy(raidBase = dbl())
+            "raidPerDay" -> c.copy(raidPerDay = dbl())
+            "raidPerPressure" -> c.copy(raidPerPressure = dbl())
+            "expeditionSuppression" -> c.copy(expeditionSuppression = int())
+            "patrolSuppression" -> c.copy(patrolSuppression = int())
+            "expeditionGoldMin" -> c.copy(expeditionGoldMin = int())
+            "expeditionGoldMax" -> c.copy(expeditionGoldMax = int())
+            "patrolGold" -> c.copy(patrolGold = int())
+            "veteranGold" -> c.copy(veteranGold = int())
+            "tradeInShare" -> c.copy(tradeInShare = dbl())
+            "fairGoldPerPower" -> c.copy(fairGoldPerPower = int())
+            else -> throw IllegalArgumentException("unknown key '$key'; allowed: maxCustomersPerDay, baseVisitChance, festivalExtraCustomers, shelfSlots, startingHeroCount, minHeroPopulation, maxHeroPopulation, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower")
+        }
+    }
+    return c
+}
+
 private fun parseArgs(args: Array<String>): Map<String, String> {
     val map = mutableMapOf<String, String>()
     var i = 0
@@ -726,6 +777,8 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
  *      --yardsticks: also prints the second yardsticks (first siege, premium sales, ...) for the policy rows.
  *      --legends: the maxed and impact runs carry a veteran's Legend Board, so famous blades can return.
  *      --knownNameGold N: coin each Known Name regular starts with (v5 sweep).
+ *      --customers: adds the customer and identity metrics ([CustomerSummary]) to the policy rows, the text and the --json report.
+ *      --set key=value[,key=value]: overrides allowlisted BalanceConfig numbers ([applySet]); an unknown key stops the run with exit code 2.
  * Default: launch content, the GDD 15.2 policy set, maxed legacy accounts (BALANCED_FAIR and the impact policy) and
  * the per-upgrade impact sweep for the impact policy (BALANCED_FAIR by default).
  */
@@ -777,6 +830,11 @@ fun main(args: Array<String>) {
         overrides["noFates"] = "true"
     }
     argMap["--knownNameGold"]?.let { config = config.copy(legacyTracks = config.legacyTracks.copy(knownNameRegularGold = it.toInt())); overrides["knownNameGold"] = it }
+    argMap["--set"]?.let { arg ->
+        try { config = applySet(config, arg) } catch (e: IllegalArgumentException) { System.err.println("--set: ${e.message}"); exitProcess(2) }
+        overrides["set"] = arg
+    }
+    val customers = argMap["--customers"] == "true"
     val maxDays = argMap["--days"]?.toInt() ?: config.maxSimulatedDays
     val reserve = argMap["--reserve"]?.toInt() ?: SimulationDriver.DEFAULT_RESERVE
     val impactPolicy = argMap["--impactPolicy"]?.let { Policy.valueOf(it) } ?: Policy.BALANCED_FAIR
@@ -808,7 +866,7 @@ fun main(args: Array<String>) {
         }
     }
     println(if (upgrades == null) "== New legacy account ==" else "== Legacy account with ${argMap["--upgrades"]} ==")
-    val reports = Simulator.run(runs, seed, policies, legacy = LegacyProfile(upgrades = upgrades ?: emptyMap()), config = config, maxDays = maxDays, label = if (upgrades == null) "new account" else "upgraded account", content = content, reserve = reserve)
+    val reports = Simulator.run(runs, seed, policies, legacy = LegacyProfile(upgrades = upgrades ?: emptyMap()), config = config, maxDays = maxDays, label = if (upgrades == null) "new account" else "upgraded account", content = content, reserve = reserve, customerMetrics = customers)
     reports.forEach { println(it.render()) }
     if (argMap["--yardsticks"] == "true") {
         println("== Second yardsticks per policy (means per run; columns as in the upgrade table) ==")
@@ -822,7 +880,7 @@ fun main(args: Array<String>) {
         val legends = if (argMap["--legends"] == "true") Simulator.veteranLegendBoard(engine, impactPolicy, seed) else emptyList()
         if (legends.isNotEmpty()) println("== Veteran Legend Board for the runs below: ${legends.size} blades, mean quality ${"%.0f".format(legends.map { it.quality }.average())}, mean power ${"%.0f".format(legends.map { it.power }.average())} ==")
         println("== Maxed legacy account (all upgrades) ==")
-        maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine).copy(legendBoard = legends), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve)
+        maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine).copy(legendBoard = legends), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve, customerMetrics = customers)
         maxed.forEach { println(it.render()) }
         val baseline = reports.firstOrNull { it.policy == impactPolicy }?.takeIf { upgrades == null && legends.isEmpty() }
             ?: Simulator.run(runs, seed, listOf(impactPolicy), legacy = LegacyProfile(legendBoard = legends), config = config, maxDays = maxDays, content = content, reserve = reserve).single()
