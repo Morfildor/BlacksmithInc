@@ -26,6 +26,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   game mid-way offers "Resume the day" or "Skip to tomorrow" on the next launch, and watching, skipping or restarting
   never changes what happened. A blessing can be chosen inside the day or left for the morning. The Gazette opens over
   the day and closing it never begins the next one.
+- The shop remembers its customers. A visit can now carry one line of recognition, chosen from what really happened: a
+  first blade from your forge, the day someone became a regular, a regular's return, a blade still carried and its
+  victories, a worn edge laid on the counter, a champion back from the wall, a kept vow, a mentor's old blade, a
+  descendant of an earlier era, or the hero who could not get in yesterday. Each hero hears a milestone once per era,
+  and other lines no more than every third day; the opening three days stay introductions, one line a day at most.
+  The line is stored with the day, so it reads the same after a relaunch.
 
 ### Changed
 - A bigger town. An era now opens with twelve heroes instead of eight, and every class is among them from the first

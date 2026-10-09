@@ -5,6 +5,7 @@ import com.tinyblacksmith.core.content.ToolEffect
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.engine.WorldEvents
+import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.market.Commissions
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
@@ -17,9 +18,8 @@ import java.util.TreeMap
  * touched, so a run with metrics is the same run. Metrics that need mechanics which do not exist yet are left out until
  * the task that adds the mechanic: wants and sidegrades by
  * reason (T4.1, T4.2), clue rungs, signature firsts and days to the first signature (T4.x signatures), commissions by
- * kind (T4.6), patronage share and stipend gold (T3.6), counter or resisted elements held at a siege (T4.2), and the
- * appearance model's face collisions (T1.x; until then a face is class plus `Math.floorMod(id.hashCode(), 5)`, as in
- * the planning harness).
+ * kind (T4.6), patronage share and stipend gold (T3.6), counter or resisted elements held at a siege (T4.2). A face is
+ * the hero's stored appearance key (`Appearance.keyOf`).
  */
 
 /** One siege as the player saw it that morning (`forecast*`) and as it resolved (`defense`, `raid`). */
@@ -55,6 +55,8 @@ data class RunCustomers(
     val sellOutDays: Int, val droughtDays: Int,
     val sieges: List<SiegeSnap>,
     val recovery: RunRecovery,
+    /** Browsing visits and those that carried a recognition line, by [CustomerCollector.LINE_BANDS]; lines by cue. */
+    val lineBandVisits: List<Int> = emptyList(), val lineBandLines: List<Int> = emptyList(), val lineCues: Map<String, Int> = emptyMap(),
 )
 
 /** Observes one run through [beforeEndDay] and [afterEndDay]; read-only on every state it is handed. */
@@ -63,6 +65,9 @@ class CustomerCollector(private val engine: GameEngine) {
         val BANDS = listOf("d1-5", "d6-10", "d11-20", "d21+")
         val CHECKPOINTS = listOf(1, 5, 10, 15)
         const val POSITIONS = 24
+        /** The pacing bands of the recognition lines (plan 4.5): the opening days, the gap, and the days the target is set for. */
+        val LINE_BANDS = listOf("d1-3", "d4-5", "d6+")
+        private fun lineBand(day: Int) = when { day <= 3 -> 0; day <= 5 -> 1; else -> 2 }
         private fun band(day: Int) = when { day <= 5 -> 0; day <= 10 -> 1; day <= 20 -> 2; else -> 3 }
     }
 
@@ -91,6 +96,7 @@ class CustomerCollector(private val engine: GameEngine) {
     private var sellOutDays = 0; private var droughtDays = 0
     private val sieges = ArrayList<SiegeSnap>()
     private val recovery = RecoveryProbe(engine)
+    private val lineBandVisits = IntArray(LINE_BANDS.size); private val lineBandLines = IntArray(LINE_BANDS.size); private val lineCues = sortedMapOf<String, Int>()
 
     /** Call with the state the policy sees at the start of the day, before it acts (recovery states, [RecoveryProbe]). */
     fun morning(s: GameState) = recovery.morning(s)
@@ -138,6 +144,8 @@ class CustomerCollector(private val engine: GameEngine) {
             if (t.first < 0) t.first = day else { returnVisits++; gapDaysSum += day - t.last; gapCount++ }
             t.last = day; t.visits++
             visits++; bandVisits[b]++
+            lineBandVisits[lineBand(day)]++
+            v.recognition?.let { lineBandLines[lineBand(day)]++; lineCues.merge(it.cue.name, 1, Int::plus) }
             if (bought) { buys++; bandBuys[b]++ }
             val p = minOf(rank.getValue(v.heroId!!.value), POSITIONS - 1)
             posVisits[p]++
@@ -150,7 +158,7 @@ class CustomerCollector(private val engine: GameEngine) {
         classesAliveSum += alive.map { it.classId.value }.toSet().size
         if (alive.groupBy { it.name }.any { it.value.size > 1 }) firstNameDays++
         if (alive.groupBy { it.surname }.any { it.value.size > 1 }) surnameDays++
-        val faces = alive.groupBy { it.classId.value + "/" + Math.floorMod(it.id.value.hashCode(), 5) }.values
+        val faces = alive.groupBy { Appearance.keyOf(it) }.values
         val worst = faces.maxOfOrNull { it.size } ?: 0
         if (worst > 1) faceDays++
         worstFace = maxOf(worstFace, worst)
@@ -192,6 +200,7 @@ class CustomerCollector(private val engine: GameEngine) {
             firstNameDays = firstNameDays, surnameDays = surnameDays, faceDays = faceDays, facePairs = facePairs, worstFace = worstFace,
             fullNameRepeat = last.heroes.values.groupBy { it.fullName }.any { it.value.size > 1 },
             expWon = expWon, expLost = expLost, expFatal = expFatal, sellOutDays = sellOutDays, droughtDays = droughtDays, sieges = sieges, recovery = recovery.finish(),
+            lineBandVisits = lineBandVisits.toList(), lineBandLines = lineBandLines.toList(), lineCues = lineCues,
         )
     }
 }
@@ -227,6 +236,8 @@ data class CustomerSummary(
     val sellOutDays: Double, val droughtDays: Double,
     val sieges: List<SiegeRow>,
     val recovery: RecoverySummary,
+    /** Share of browsing visits that carried a recognition line, by [CustomerCollector.LINE_BANDS]; lines a day; each cue's share of the lines. */
+    val lineShareByBand: Map<String, Double> = emptyMap(), val linesPerDay: Double = 0.0, val lineCueShare: Map<String, Double> = emptyMap(),
 ) {
     companion object {
         private fun ratio(a: Number, b: Number) = if (b.toDouble() == 0.0) 0.0 else a.toDouble() / b.toDouble()
@@ -281,6 +292,9 @@ data class CustomerSummary(
                 deathsPerHeroDay = ratio(runs.sumOf { it.heroDeaths }, heroDays),
                 sellOutDays = ratio(rs.sumOf { it.sellOutDays }, days), droughtDays = ratio(rs.sumOf { it.droughtDays }, days),
                 recovery = RecoverySummary.of(rs.map { it.recovery }),
+                lineShareByBand = CustomerCollector.LINE_BANDS.withIndex().associate { (i, name) -> name to ratio(rs.sumOf { it.lineBandLines.getOrElse(i) { 0 } }, rs.sumOf { it.lineBandVisits.getOrElse(i) { 0 } }) },
+                linesPerDay = ratio(rs.sumOf { it.lineBandLines.sum() }, days),
+                lineCueShare = rs.flatMap { it.lineCues.keys }.toSortedSet().associateWith { c -> ratio(rs.sumOf { it.lineCues[c] ?: 0 }, rs.sumOf { it.lineBandLines.sum() }) },
                 sieges = rs.flatMap { it.sieges }.groupBy { it.siege }.toSortedMap().map { (n, s) ->
                     SiegeRow(n, s.size, s.count { it.held }.toDouble() / s.size, s.map { it.pressure }.average(), s.map { it.militia }.average(), s.map { it.armory }.average(),
                         s.map { it.championPower }.average(), s.map { it.forecastDefense }.average(), s.map { it.forecastRaid }.average(), s.map { it.defense }.average(), s.map { it.raid }.average())
@@ -309,6 +323,7 @@ data class CustomerSummary(
             appendLine("    hero gold at the start of day: " + heroGold.entries.joinToString("  ") { "${it.key}=${"%.0f".format(it.value)}" } + "   cannot pay for the cheapest listed blade: " + cannotAffordCheapest.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" })
             appendLine("    names: first name shared=${pct(firstNameClashDays)} of days  surname shared=${pct(surnameClashDays)}  face shared=${pct(faceClashDays)} (pairs/day=${f2(sameFacePairsPerDay)}, worst=$worstSameFace)  full name repeats in ${pct(fullNameRepeatRuns)} of runs")
             appendLine("    expeditions/run: won=${f2(expeditionsWonPerRun)} lost=${f2(expeditionsLostPerRun)} fatal=${f2(expeditionsFatalPerRun)}  deaths per hero-day=${"%.4f".format(deathsPerHeroDay)}  sell-out days=${pct(sellOutDays)}  empty-shelf days=${pct(droughtDays)}")
+            appendLine("    recognition: visits with a line " + lineShareByBand.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" } + "  lines/day=${f2(linesPerDay)}  by cue (of lines): " + lineCueShare.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" })
             append(recovery.render())
             if (sieges.isNotEmpty()) appendLine("    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): " + sieges.joinToString("; ") {
                 "#${it.siege} n=${it.runs} ${pct(it.held)} p=${"%.0f".format(it.pressure)} m=${"%.0f".format(it.militia)} a=${"%.0f".format(it.armory)} c=${"%.0f".format(it.championPower)} f=${"%.0f".format(it.forecastDefense)}/${"%.0f".format(it.forecastRaid)} r=${"%.0f".format(it.defense)}/${"%.0f".format(it.raid)}"

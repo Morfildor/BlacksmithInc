@@ -137,6 +137,10 @@ data class Hero(
     val turnedAwayStreak: Int = 0,
     /** The portrait this hero wears: an asset ID from their class's `appearances`, stored at creation (`Appearance`). Null only in a save older than the field. */
     val appearance: String? = null,
+    /** What the counter has already said of this hero (`shopday.Recognition`): the day and cue of the last line, and the once-a-run lines used. Read by no gameplay rule. */
+    val lastLineDay: Int? = null,
+    val lastLineCue: RecognitionCue? = null,
+    val milestoneLines: Set<RecognitionCue> = emptySet(),
 ) {
     val fullName: String get() = "$name $surname"
     val isAlive: Boolean get() = fate == HeroFate.ALIVE
