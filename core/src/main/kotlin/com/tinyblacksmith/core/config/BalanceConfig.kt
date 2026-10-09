@@ -224,9 +224,9 @@ data class BalanceConfig(
     val honeEnergy: Int = 2,
     val honeQualityBonus: Int = 6,
     /** Share of a donated weapon's power that joins the town's defense, up to [armoryMax]; a siege wears [armorySiegeWear] of it away. */
-    val armoryPowerShare: Double = 0.5,
-    val armoryMax: Int = 80,
-    val armorySiegeWear: Double = 0.3,
+    val armoryPowerShare: Double = 0.2,
+    val armoryMax: Int = 30,
+    val armorySiegeWear: Double = 0.5,
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

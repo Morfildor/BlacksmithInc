@@ -336,6 +336,83 @@ which matches its intent (DECISIONS "Reputation and loyalty depth"). Known Name 
 The reputation merge moved the pre-merge table above only within noise (maxed BALANCED_FAIR mean 38.5 -> 37.4);
 the other rows were not re-run.
 
+## Balance v3: gameplay depth (2026-10-09, session 6)
+The owner's verdict on 0.3.0 was "not fun yet, not much in it". The harness agreed on the cause: a smith forges
+about 116 weapons a run and sells 16 (sell rate 14 %), gold piles up with nothing to buy (median 500 on hand), and
+nothing the player does between forging and End Day touches the siege. v3 adds things to decide and things to
+watch, all inside the LOCKED pillars (shop actions only; no hero control, no gold-for-repair). Every number below is
+PROPOSED and lives in `BalanceConfig` (version 3) or `LaunchContent`.
+
+### What was added
+- **Affix effects beyond flat multipliers** (GDD 4.4 "independently meaningful"): Undead Bane x1.2 against the
+  Hollowbound only, Giant Slayer x1.25 against elites and warlord sieges only (their flat bonus dropped from
+  1.08/1.10 to 1.03), Vampiric heals 12 after a won expedition, Lucky +25 points of loot chance, Swift and
+  Reinforced cut the wound of a lost expedition (x0.8 / x0.85), Heavy raises it (x1.2), Brittle shatters on a loss
+  (20 %), Cursed and Bloodbound cost their wielder 4 / 7 health per win (never lethal).
+- **Elite encounters** (GDD 8): chance 6 % + 0.2 % per pressure point; enemy power x1.35, wound x1.25; a win pays
+  x2.5 gold, +2 fame, a guaranteed catalyst or tier 3+ material, 4 extra suppression, a weapon title and the
+  `ELITE_SLAIN` milestone (+1 legacy point).
+- **Warlords** (GDD 8 boss variant): at pressure 70+ the faction's named warlord leads the siege (raid x1.15).
+  Beating one drops pressure by a further 15, pays the smith 120 gold in tribute and earns `WARLORD_DEFEATED`
+  (+3 legacy points). The siege warning names the warlord and the element the faction fears.
+- **Hero ambitions** (GDD 6): every hero has one of SLAYER (4 expedition wins), DEFENDER (stand as champion in a won
+  siege), COLLECTOR (wield quality 60+), FORTUNE (hold 300 gold). An unfulfilled ambition adds 0.6 to the matching
+  activity weight (FORTUNE 0.3 to expeditions and x1.3 price sensitivity; COLLECTOR +0.6 purchase utility for
+  quality 60+). Fulfilment: +3 fame, +2 loyalty, +2 shop reputation, a priority-6 Gazette line, `AMBITION_FULFILLED`
+  (+1 legacy point).
+- **Commissions with a desired element** (GDD 5 "desirable effect"): half the offers name the patron's taste, or
+  the element the leading faction fears; only that element closes them and they pay x1.5.
+- **Shop actions on finished weapons**: Salvage (1 energy, returns the core), Hone (2 energy + one unit of the core,
+  +6 quality, once per weapon), Arm the watch (the weapon leaves the shop; 20 % of its power joins town defense, cap
+  30, half of it wears away each siege; +1 reputation). Arming the watch is a weapon-supply mechanic, not the
+  gold-funded repair the GDD forbids.
+- **Workshop tools**, the in-run gold sink (reset with the run): Great Bellows (+1 energy, 300 / 700), Master
+  Whetstone (+3 quality, 200 / 500), Painted Signboard (+8 points visit chance, 150 / 400), Display Case (+2 shelf
+  slots, 200).
+- **Siege forecast** (`GameEngine.siegeForecast`): the same defense and raid numbers the siege will use, as things
+  stand, with a four-step descriptive label.
+- **Legacy base points 5 -> 6**: a passive first run (falls on day 10) now banks 8 and affords the cheapest upgrade.
+
+### Evidence (`--runs 1000 --seed 1`, launch content, new account)
+| Policy | v2 | v3 |
+|---|---|---|
+| BALANCED_FAIR (ignores every new action) | 25 (15/30), mean 23.7, survived 1.5, deaths 0.5 | 20 (15/30), mean 22.1, survived 1.3, deaths 1.0 |
+| **BALANCED_ACTIVE** (new: tools, hone, arm the watch, salvage) | - | 25 (15/35), mean 26.9, survived 2.3, deaths 1.1, sell rate 18 %, gold on hand 39 |
+| SYNERGY | 40 (20/50), mean 38.8 (10k) | 40 (20/50), mean 36.2 |
+| BALANCED_INVEST | 35 (15/45), mean 32.5 (10k) | 30 (15/45), mean 29.3 |
+| BALANCED_CHEAP / EXPENSIVE | 30 / 15 | 30 (mean 28.6) / 10 (mean 12.3) |
+| PASSIVE | 10 | 10 (banks 8 points) |
+| Maxed upgrades, BALANCED_FAIR | 40 (25/50), mean 37.9 | 35 (20/45), mean 33.3 |
+| Maxed upgrades, BALANCED_ACTIVE | - | 35 (20/50), mean 35.8 |
+
+Elites and warlords cost a smith who ignores the new actions about 1.6 days (hero deaths double to 1.0 a run); the
+new actions give back about 4.8. The first-era band of 15-25 days (GDD 8) holds for both.
+
+Armory sweep under BALANCED_ACTIVE (share of weapon power / cap / wear per siege):
+
+| Armory | Median (p10/p90) | Mean | Sieges survived |
+|---|---|---|---|
+| 0.5 / 80 / 0.3 (first draft) | 35 (25/40) | 33.4 | 3.6 |
+| 0.25 / 50 / 0.5 | 30 (20/40) | 29.3 | 2.7 |
+| 0.25 / 40 / 0.5 | 30 (20/35) | 28.1 | 2.5 |
+| **0.2 / 30 / 0.5 (adopted)** | 25 (15/35) | 26.9 | 2.3 |
+
+The first draft made surplus stock a free second wall. At 0.2 / 30 / 0.5 a full armory is worth about two thirds of
+one early champion and has to be refilled after every siege.
+
+Upgrade impact under BALANCED_ACTIVE (base 25 / 26.9): Stalwart Walls +10 / +5.9, Thrifty Hands +5 / +1.9,
+Well-Stocked Cellar +5 / +1.8, Forge Mastery +5 / +1.0, Tireless Smith +5 / +0.3, Lucky Hammer +0 / +0.5, Family
+Savings +0 / +0.0, Known Name +0 / -0.3.
+
+### Not changed, and not measured
+- `RULES_VERSION` stays 1 (bump with the first release, as before). Hero generation now draws an ambition and
+  expeditions draw an elite roll, so a given seed plays differently from 0.3.0.
+- Save schema stays v1: every new field has a default (`Hero.ambition` is null on heroes from older saves; they
+  simply have none). `SaveFixtureTest` still decodes the v1 fixture and plays a day on it.
+- The 10,000-seed table above is v2. Only the 1,000-seed rows here are v3.
+- Tool prices and the individual affix magnitudes were set by judgement and checked only through the aggregate
+  BALANCED_ACTIVE run; no per-tool or per-affix sweep was done.
+
 ## Event-log compaction (2026-10-08, session 3, ENGINEERING)
 GDD 13.3 asks to "compact ordinary events and retain rare milestones"; 15.1's "migration does not mutate histories"
 is honoured because the save schema is unchanged (still v1) and no stored record is rewritten, only dropped by a

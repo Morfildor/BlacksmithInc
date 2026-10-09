@@ -6,7 +6,27 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 `app/build.gradle.kts` (`versionName`, `versionCode` increments on every store-facing build).
 
 ## [Unreleased]
+### Added
+- Shop actions on finished weapons: Salvage (1 energy, returns the core material), Hone (2 energy and one unit of the
+  core for +6 quality, once per weapon) and Arm the watch (a fifth of the weapon's power joins the town's defense, up
+  to 30; half wears away each siege).
+- Workshop tools bought with gold, lasting for the run: Great Bellows (+1 daily energy), Master Whetstone (+3 forged
+  quality), Painted Signboard (more visitors), Display Case (+2 shelf slots).
+- Elite foes on expeditions (stronger, richer, a weapon title and catalysts for the victor) and named warlords who
+  lead a siege when a faction's pressure reaches 70; beating one pays the smith 120 gold in tribute.
+- Hero ambitions: every hero pursues a slayer's vow, a defender's oath, a prized weapon or a fortune; ambitions tilt
+  what heroes do and buy, and fulfilling one makes the Gazette and raises the shop's reputation.
+- Commissions can ask for an element (the patron's taste or what the looming faction fears) and pay half again more.
+- Siege outlook in Town: the town's defense against the expected raid as things stand, the warlord if one leads, and
+  the armory.
+- Simulator policy `BALANCED_ACTIVE`, which uses the new shop actions.
+
 ### Changed
+- Affixes do more than add power: Undead Bane bites only the Hollowbound, Giant Slayer only elites and warlords,
+  Vampiric mends its wielder, Lucky finds more loot, Swift and Reinforced soften a rout, Heavy worsens it, Brittle
+  weapons can shatter, Cursed and Bloodbound weapons hurt the hand that wins with them.
+- Siege warnings name the warlord and the element the attackers fear.
+- Legacy base points 5 -> 6, so even the shortest first run affords the cheapest upgrade (balance v3).
 - Run-end screen: the Begin era action stays pinned under the scrolling summary instead of sitting below the
   eight upgrade cards.
 

@@ -59,4 +59,15 @@ class SimulatorPolicyTest {
         val b = driver.playRun(LegacyProfile(), 4321, Policy.BALANCED_INVEST).first
         assertEquals(a, b)
     }
+
+    @Test
+    fun activeUsesEveryShopActionAndIsDeterministic() {
+        val driver = SimulationDriver(maxDays = 12)
+        val (stats, state) = driver.playRun(LegacyProfile(), 99, Policy.BALANCED_ACTIVE)
+        assertEquals(stats, driver.playRun(LegacyProfile(), 99, Policy.BALANCED_ACTIVE).first)
+        assertTrue(state.tools.isNotEmpty(), "bought no tool")
+        assertTrue(state.weapons.values.any { it.honed }, "honed nothing")
+        assertTrue(state.weapons.values.any { w -> w.history.any { it.kind == "DONATED" } }, "armed the watch with nothing")
+        assertTrue(state.weapons.values.any { w -> w.history.any { it.kind == "SALVAGED" } }, "salvaged nothing")
+    }
 }

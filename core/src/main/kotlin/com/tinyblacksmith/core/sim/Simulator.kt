@@ -23,6 +23,8 @@ enum class Policy(
     val risk: Risk?, val priceFactor: Double, val overwork: Boolean, val synergy: Boolean = false, val invest: Boolean = false,
     /** Lists at the reputation-raised fair price: `suggestedPrice x (1 + min(reputation x reputationPricePerPoint, reputationPriceCap))`. */
     val reputed: Boolean = false,
+    /** Uses the v3 shop actions: buys tools, hones the best unsold weapon, arms the town watch with surplus stock, salvages the rest. */
+    val active: Boolean = false,
 ) {
     /** Random legal actions: random recipe, risk, price and forging effort. */
     RANDOM(null, 1.0, false),
@@ -49,6 +51,12 @@ enum class Policy(
     BALANCED_INVEST(Risk.BALANCED, 1.0, false, invest = true),
     /** BALANCED_FAIR priced at the shop's reputation ceiling, so the reputation price bonus is visible to the sweep. */
     BALANCED_REPUTED(Risk.BALANCED, 1.0, false, reputed = true),
+    /**
+     * BALANCED_FAIR plus the v3 shop actions, in a fixed daily order: buy the cheapest affordable tool, hone the
+     * strongest unhoned weapon in the shop, forge, list the strongest stock, give the surplus to the town watch until
+     * the armory is full, then salvage what is left with any spare energy.
+     */
+    BALANCED_ACTIVE(Risk.BALANCED, 1.0, false, active = true),
     SAFE_CHEAP(Risk.SAFE, 0.7, false),
     RECKLESS_EXPENSIVE(Risk.RECKLESS, 1.8, false),
     /** Never forges: measures the floor. */
@@ -124,6 +132,7 @@ class SimulationDriver(
         while (!state.isEnded && state.day <= maxDays) {
             if (state.pendingBlessingOffer.isNotEmpty()) state = engine.handle(state, Command.ChooseBlessing(state.pendingBlessingOffer.first())).state()
             for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
+            if (policy.active) state = toolsAndHone(state)
             if (policy != Policy.PASSIVE) {
                 var couldForge = false
                 var forgesToday = 0
@@ -143,8 +152,8 @@ class SimulationDriver(
                 if (!couldForge && state.day > 1 && state.weapons.values.none { it.isListed }) hardLocks++
             }
             var listed = state.listedWeapons().size
-            for (w in state.storedWeapons()) {
-                if (listed >= engine.config.shelfSlots) break
+            for (w in if (policy.active) state.storedWeapons().sortedByDescending { it.power } else state.storedWeapons()) {
+                if (listed >= engine.shelfSlots(state)) break
                 val factor = when {
                     policy == Policy.RANDOM -> 0.5 + policyRng.nextDouble() * 1.5
                     policy.reputed -> 1.0 + (state.reputation * engine.config.reputationPricePerPoint).coerceIn(0.0, engine.config.reputationPriceCap)
@@ -154,6 +163,7 @@ class SimulationDriver(
                 state = engine.handle(state, Command.ToggleShelf(w.id, true, price)).state()
                 listed++
             }
+            if (policy.active) state = armWatchAndSalvage(state)
             materialSamples += state.materials.values.sum()
             goldSamples += state.gold
             val started = System.nanoTime()
@@ -184,6 +194,26 @@ class SimulationDriver(
             medianMaterialsOnHand = percentile(materialSamples, 0.5), medianGoldOnHand = percentile(goldSamples, 0.5),
         )
         return stats to state
+    }
+
+    /** Morning routine of [Policy.active]: one tool when affordable (cheapest first), then one hone when the core is on hand. */
+    private fun toolsAndHone(state: GameState): GameState {
+        var s = state
+        val tool = engine.content.tools.mapNotNull { t -> engine.toolCost(s, t.id)?.let { t.id to it } }.filter { it.second <= s.gold - reserve }.minByOrNull { it.second }
+        if (tool != null) s = engine.handle(s, Command.BuyTool(tool.first)).state()
+        val candidate = (s.listedWeapons() + s.storedWeapons()).filter { !it.honed && (s.materials[it.coreId] ?: 0) > 0 }.maxByOrNull { it.power }
+        if (candidate != null && s.energy >= engine.config.honeEnergy) s = engine.handle(s, Command.Hone(candidate.id)).state()
+        return s
+    }
+
+    /** Evening routine of [Policy.active]: unsold stock that did not fit on the shelf arms the watch, the rest is melted with spare energy. */
+    private fun armWatchAndSalvage(state: GameState): GameState {
+        var s = state
+        for (w in s.storedWeapons().sortedByDescending { it.power }) {
+            if (s.town.armory < engine.config.armoryMax) s = engine.handle(s, Command.DonateWeapon(w.id)).state()
+            else if (s.energy >= engine.config.salvageEnergy) s = engine.handle(s, Command.Salvage(w.id)).state()
+        }
+        return s
     }
 
     private fun CommandOutcome.state(): GameState = when (this) {
