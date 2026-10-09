@@ -195,9 +195,7 @@ object Market {
                 ctx.emit(EventType.COMMISSION_EXPIRED, 2, "The commission for a ${ctx.content.family(c.familyId).name} lapsed; its patron is gone.", listOf(c.id.value))
                 continue
             }
-            val candidate = ctx.weapons.values
-                .filter { (it.isInStorage || it.isListed) && it.familyId == c.familyId && it.quality >= c.minQuality && (c.element == null || it.element == c.element) }
-                .maxByOrNull { it.quality }
+            val candidate = Commissions.pick(ctx.weapons.values, c, ctx.config)
             if (candidate != null) {
                 ctx.earn(IncomeKind.COMMISSION, c.reward)
                 ctx.reputation += 2
@@ -228,7 +226,8 @@ object Market {
         val buyer = rng.pickWeighted(heroes.map { it to 1.0 + minOf(it.loyalty, ctx.config.commissionLoyaltyCap) * ctx.config.commissionLoyaltyWeight })
         val cls = ctx.content.heroClass(buyer.classId)
         val family = rng.pick(cls.preferredFamilies)
-        val minQuality = rng.nextInt(35, 60)
+        // Always a band floor, so the word on the request is what the rule checks (one draw, as the old 35..60 roll was).
+        val minQuality = (if (rng.chance(ctx.config.commissions.fineShare)) QualityBand.FINE else QualityBand.DECENT).floor(ctx.config)
         // GDD 5 "desirable effect": half the patrons want an element, their own taste or what the looming faction fears.
         val forgeable = ctx.content.materials.mapNotNull { it.element }.toSet()
         val wanted = (buyer.elementTaste ?: ctx.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure }?.let { ctx.content.faction(it.id).weakTo })?.takeIf { it in forgeable }
@@ -239,6 +238,6 @@ object Market {
         val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, ctx.day + ctx.config.commissionDeadlineDays, CommissionStatus.OFFERED, element = element)
         ctx.commissions[id] = c
         val who = if (isRegular(buyer, ctx.config)) "${buyer.fullName}, a regular of the shop," else buyer.fullName
-        ctx.emit(EventType.COMMISSION_OFFERED, 3, "$who asks for a fine ${element?.let { it.name.lowercase() + " " } ?: ""}${ctx.content.family(family).name} by day ${c.deadlineDay}, offering $reward gold.", listOf(buyer.id.value, id.value))
+        ctx.emit(EventType.COMMISSION_OFFERED, 3, "$who asks for a ${Commissions.describe(c, ctx.content, ctx.config)} by day ${c.deadlineDay}, offering $reward gold.", listOf(buyer.id.value, id.value))
     }
 }

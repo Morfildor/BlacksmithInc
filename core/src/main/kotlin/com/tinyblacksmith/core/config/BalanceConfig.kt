@@ -15,8 +15,9 @@ data class BalanceConfig(
      * v3 (2026-10-09): elite encounters, warlord sieges, hero ambitions, affix effects, shop actions, tools, trade-ins, raid growth 6. See docs/DECISIONS.md.
      * v4 (2026-10-09): weapon wear, weapon fame, whetstone 120/300, warlord pressure 50 with no raid bonus. See docs/DECISIONS.md.
      * v5 (2026-10-09): signboard adds a customer a day per level, stronger affix magnitudes (catalog numbers), guild hall and ambition days ([HeroLifeConfig]), fight replays and weapon fates ([WeaponFatesConfig]), three legacy tracks and Known Name regulars ([LegacyTracksConfig]). See docs/DECISIONS.md.
+     * v6 (2026-10-09): commissions ask for a quality band floor ([CommissionConfig]; a noble one for the superb floor, `nobleCommissionMinQuality` removed), COLLECTOR ambition at the fine floor 50 (was 60). See docs/DECISIONS.md.
      */
-    val version: Int = 5,
+    val version: Int = 6,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -158,7 +159,6 @@ data class BalanceConfig(
     val festivalVisitBonus: Double = 0.2,
     val abandonedMineMaterials: Int = 3,
     val nobleCommissionRewardMultiplier: Int = 3,
-    val nobleCommissionMinQuality: Int = 60,
     val newAdventurerCount: Int = 2,
     val maxHeroPopulation: Int = 12,
     val veteranLevel: Int = 5,
@@ -210,7 +210,8 @@ data class BalanceConfig(
     val warlordTribute: Int = 120,
     // --- Hero ambitions (GDD 6, PROPOSED). ---
     val ambitionSlayerWins: Int = 4,
-    val ambitionCollectorQuality: Int = 60,
+    /** v6: the "fine" floor ([rareMin]), so "wants a fine blade" is what the rule checks (was 60, mid-band). */
+    val ambitionCollectorQuality: Int = 50,
     val ambitionFortuneGold: Int = 300,
     /** Weight of the AMBITION activity while the ambition is unfulfilled (v3 added it to the expedition or patrol weight instead). */
     val ambitionActivityWeight: Double = 0.6,
@@ -273,6 +274,8 @@ data class BalanceConfig(
     // v5: legacy tracks
     /** One field (one argument slot) for every number of the v5 legacy tracks; see [LegacyTracksConfig] for why. */
     val legacyTracks: LegacyTracksConfig = LegacyTracksConfig(),
+    // v6: commission bands
+    val commissions: CommissionConfig = CommissionConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()
@@ -305,6 +308,15 @@ data class HeroLifeConfig(
     /** Prior history: a hero driven back from an expedition yesterday leans toward rest and toward the hall. */
     val setbackRestWeight: Double = 0.5,
     val setbackGuildWeight: Double = 0.4,
+)
+
+/**
+ * v6: commission bands (PROPOSED). A commission's quality is always a band floor (market.QualityBand): a standard one
+ * asks for "fine" ([BalanceConfig.rareMin]) with this chance and for "decent" ([BalanceConfig.uncommonMin]) otherwise,
+ * the split the old 35..60 roll had; a noble one asks for "superb" ([BalanceConfig.epicMin]).
+ */
+data class CommissionConfig(
+    val fineShare: Double = 0.4,
 )
 
 /** v5: replays and weapon fates. What is told of a fight, and what becomes of a fallen hero's blade (GDD 7, 11; all PROPOSED). */

@@ -25,6 +25,33 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ### Fixed
 - Two quick taps on the run-end screen (two upgrades, or an upgrade and Begin era) can no longer lose a purchase or
   write over the new era.
+### Changed
+- A collector pays at most one and a half times the going rate for a blade, whatever its shelf price.
+- Commissions say exactly what they need. A request is always for a quality the game names (decent 35+, fine 50+; a
+  noble patron asks for superb 70+, no longer "masterwork") and is written that way everywhere: "Fine frost Spear
+  (quality 50+)". A request left open in an older save is lowered to the quality its word promised.
+- An accepted commission is collected before the day's browsers arrive, so nobody buys the promised blade first. The
+  patron takes the least blade that fits (from storage before the shelf, then the lowest quality), not your best work.
+- A hero who dreams of a fine blade (the collector ambition) is satisfied by quality 50, the start of "fine"; it was 60.
+- Balance version 6.
+
+### Added
+- The Forge line of the Gazette says what was spent on materials.
+- A commission card lists each blade of the right kind in the shop with "fits" or the one thing it lacks (wrong
+  element, or its quality against the quality needed), and an accepted one names the blade that will be handed over at
+  End Day. The Home screen shows the same line.
+
+### Fixed
+- The three champions are chosen against the foe they will face: when a warlord leads the siege, a blade that bites
+  deepest into warlords (Giant Slayer) counts at its full worth in deciding who stands on the wall, the same worth the
+  siege forecast already gave it. The champions shown in town are now always the ones the forecast names.
+- The Gazette's tally counts only visitors who bought (no more "2 of 1 visitors bought"), shows a delivered commission
+  and the town's tribute on their own lines, and counts the sale bonus and a collector's payment in the shop's takings.
+- Saved records no longer contain numbers formatted for the device language.
+- The traveling ore merchant's extra stock (two more of the material named in the Gazette) is on sale at the supplier
+  the next morning. It used to be wiped by the morning restock before it could be bought.
+- When two factions press the town equally hard, which one besieges it is decided the same way everywhere (forecast,
+  warning, siege and the champions shown in town).
 - The day's report now tells the whole day, including the blades you forged, listed or honed and the tools you bought
   while planning; before, those lines appeared only in the Gazette archive.
 

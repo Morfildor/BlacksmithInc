@@ -200,12 +200,15 @@ object Battle {
     fun merchantChance(weapon: Weapon, config: BalanceConfig): Double =
         (config.weaponFates.merchantBaseChance + weapon.fame.coerceIn(0, config.weaponFameCap) * config.weaponFates.merchantChancePerFame).coerceAtMost(config.weaponFates.merchantMaxChance)
 
-    /** Three strongest available champions (GDD 6/8). Fewer than three is fine; none means the militia stands alone. */
-    fun selectChampions(ctx: ResolutionContext, faction: FactionDef): List<Pair<Hero, Weapon?>> =
+    /**
+     * Three strongest available champions (GDD 6/8). Fewer than three is fine; none means the militia stands alone.
+     * Ranked against the foe they will face: [elite] is the warlord flag of the siege, the same one their powers are valued with.
+     */
+    fun selectChampions(ctx: ResolutionContext, faction: FactionDef, elite: Boolean = false): List<Pair<Hero, Weapon?>> =
         ctx.aliveHeroes()
             .filter { it.health >= ctx.config.heroWoundedThreshold }
             .map { it to ctx.equippedWeapon(it.id) }
-            .sortedWith(compareByDescending<Pair<Hero, Weapon?>> { Power.defensePower(it.first, it.second, faction, ctx.content, ctx.config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER)) }.thenBy { it.first.id.value })
+            .sortedWith(compareByDescending<Pair<Hero, Weapon?>> { Power.defensePower(it.first, it.second, faction, ctx.content, ctx.config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite) }.thenBy { it.first.id.value })
             .take(ctx.config.championCount)
 
     /** What the next siege looks like as things stand; the same numbers [resolveSiegeIfDue] uses on the day. */
@@ -225,13 +228,16 @@ object Battle {
 
     enum class SiegeOdds { STRONG, EVEN, OUTMATCHED, DIRE }
 
+    /** The faction that will besiege the town: the highest pressure, ties by ID (never by the order the save lists them in). */
+    fun leadingFaction(ctx: ResolutionContext): FactionState? = ctx.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure }
+
     fun outlook(ctx: ResolutionContext, siegeDay: Int): SiegeOutlook? {
         val config = ctx.config
-        val factionState = ctx.factions.values.maxByOrNull { it.pressure } ?: return null
+        val factionState = leadingFaction(ctx) ?: return null
         val faction = ctx.content.faction(factionState.id)
         val warlord = faction.warlordName != null && factionState.pressure >= config.warlordPressure
         val blessing = ctx.blessingMagnitude(BlessingEffect.HERO_POWER)
-        val champions = selectChampions(ctx, faction)
+        val champions = selectChampions(ctx, faction, warlord)
         val championPowers = champions.map { (h, w) -> Power.defensePower(h, w, faction, ctx.content, config, blessing, warlord) }
         val townDefense = championPowers.sum() + ctx.town.militia + ctx.town.armory
         val raidPower = (config.raidBase + config.raidPerDay * siegeDay + config.raidPerPressure * factionState.pressure) * config.siegeModifier *
@@ -330,7 +336,7 @@ object Battle {
     fun warnOfSiege(ctx: ResolutionContext) {
         val daysLeft = ctx.town.nextSiegeDay - ctx.day
         if (daysLeft in 1..2) {
-            val f = ctx.factions.values.maxByOrNull { it.pressure } ?: return
+            val f = leadingFaction(ctx) ?: return
             val def = ctx.content.faction(f.id)
             val led = if (def.warlordName != null && f.pressure >= ctx.config.warlordPressure) " ${def.warlordName} leads them." else ""
             val weak = def.weakTo?.let { " ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }} weapons bite them hardest." } ?: ""

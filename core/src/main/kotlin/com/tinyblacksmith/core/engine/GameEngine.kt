@@ -32,9 +32,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
 
         /**
          * The rules version that salts every stream seed ([RngState.seeded]). Rules 2 is a number only (a run now has to be
-         * admitted before it is played, see [Compatibility]): no draw order or outcome changed, so new runs keep the rules-1
-         * streams and every seed plays as before. The first slice that changes an outcome raises this with its re-recorded
-         * seed-pinned tests and golden file.
+         * admitted before it is played, see [Compatibility]) and its outcome changes are rule fixes that draw from the same
+         * streams, so new runs keep the rules-1 seeds: each fix re-records only the seed-pinned tests and golden lines it
+         * moves. Raised only if a later rules version is meant to re-seed every run.
          */
         const val STREAM_SEED_VERSION = 1
     }
@@ -293,9 +293,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val ctx = ResolutionContext(state, content, config)
         val day = ctx.day
         // 1. Lock planning; RNG state is snapshotted implicitly (streams open lazily from the saved state).
-        // 2. Customers and commissions.
-        Market.resolveShelfVisits(ctx)
+        // 2. Commissions, then customers: a patron collects before the browsers arrive, so the blade a request was promised is not sold first.
         Market.resolveCommissions(ctx)
+        Market.resolveShelfVisits(ctx)
         Market.resolveMerchant(ctx)  // GDD 7 merchant resale, after the smith's own customers; draws no RNG
         // 3. Equipment/finances were applied inside purchases.
         // 4-5. Autonomous activities and encounters.
@@ -350,8 +350,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             ctx.emit(EventType.TOWN_RECOVERED, 1, "Heroes shored up the forge defenses (+$applied integrity).", data = mapOf("amount" to applied.toString()))
         }
         ctx.town = ctx.town.copy(militia = maxOf(0, ctx.town.militia - config.militiaDecayPerDay))
-        val faction = ctx.factions.values.maxByOrNull { it.pressure }?.let { content.faction(it.id) }
-        if (faction != null) ctx.town = ctx.town.copy(championIds = Battle.selectChampions(ctx, faction).map { it.first.id })
+        // The forecast's own champions: the same faction, warlord flag and ranking the siege will use.
+        Battle.outlook(ctx, ctx.town.nextSiegeDay)?.let { o -> ctx.town = ctx.town.copy(championIds = o.champions.map { it.first.id }) }
     }
 
     private fun newMorning(ctx: ResolutionContext) {
@@ -361,6 +361,11 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.overworkToday = 0
         val caravanDelayed = ctx.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == ctx.day
         for ((m, s) in restockedSupplier(ctx.legacy)) ctx.supplierStock[m] = if (caravanDelayed) 0 else s
+        // The ore merchant announced last night sells this morning, on top of the restock.
+        for ((flag, flagDay) in ctx.worldFlags) if (flagDay == ctx.day && flag.startsWith(WorldEvents.FLAG_ORE_MERCHANT)) {
+            val m = MaterialId(flag.removePrefix(WorldEvents.FLAG_ORE_MERCHANT))
+            ctx.supplierStock[m] = (ctx.supplierStock[m] ?: 0) + WorldEvents.ORE_MERCHANT_STOCK
+        }
         ctx.worldFlags.entries.removeIf { it.value < ctx.day }
         for (h in ctx.aliveHeroes()) if (h.lastActivity == HeroActivity.SHOP) ctx.updateHero(h.copy(lastActivity = HeroActivity.IDLE))
     }
