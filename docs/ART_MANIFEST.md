@@ -9,6 +9,16 @@ Source kinds, as the sources themselves establish them (no sprite is recorded as
   generator; the imported PNGs do not keep that metadata, the untouched sources under `Pixel art assets/` do.
 - **imported: script-drawn pack**: copied verbatim from a 1x sprite pack that its README describes as drawn
   programmatically by the pack's own script.
+- **imported: AI-generated hero portrait**: the hero set, `portrait_hero_01..20` (base face) and `portrait_hero_01..20_up`
+  (upgraded face). Supplied by the owner as the folder `Assets/Heroes/` (40 PNGs, `manifest.json`, `README.txt`), which is
+  not in Git. Its README describes heroes 01-10 as high-resolution generated portraits (1254 px; those files carry
+  Content Credentials) and heroes 11-20 as native 64 px portrait assets from the same conversation. `import_assets.py`
+  takes the 64 px files pixel for pixel and reduces the 1254 px renders to 64 px and 96 colours (Lanczos, no dithering);
+  nothing is redrawn or retouched. Heroes 11-15, whose faces are small on the tile, also have `_sm` tiles for small
+  list rows: a 48 px square of the same 64 px tile (`HERO_SMALL` in the importer), not resampled. Reproduce with `python tools/pixelart/import_assets.py --heroes <path>/Assets/Heroes`
+  (default `<repo root>/Assets/Heroes`; without the folder the step is skipped and these files are kept). Faces per
+  class: guardian 5, ranger 4, duelist 4, battlemage 4, warden 3. Every hero draws from this set; the 25 sheet-3 busts
+  and the 25 second-set tiles stay in the repository and are not used for heroes.
 - **programmatic placeholder**: drawn by `generate_assets.py` for an ID that has no imported art.
 
 Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file hashes: `tools/pixelart/overrides.json`.
@@ -167,6 +177,56 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | portrait_guardian_2 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[2, 1, 63, 59] |
 | portrait_guardian_3 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 54] |
 | portrait_guardian_4 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 62, 63] |
+| portrait_hero_01 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_01_guardian_base.png |  |
+| portrait_hero_01_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_01_guardian_upgraded.png |  |
+| portrait_hero_02 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_02_ranger_base.png |  |
+| portrait_hero_02_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_02_ranger_upgraded.png |  |
+| portrait_hero_03 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_03_duelist_base.png |  |
+| portrait_hero_03_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_03_duelist_upgraded.png |  |
+| portrait_hero_04 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_04_battlemage_base.png |  |
+| portrait_hero_04_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_04_battlemage_upgraded.png |  |
+| portrait_hero_05 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_05_warden_base.png |  |
+| portrait_hero_05_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_05_warden_upgraded.png |  |
+| portrait_hero_06 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_06_guardian_base.png |  |
+| portrait_hero_06_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_06_guardian_upgraded.png |  |
+| portrait_hero_07 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_07_ranger_base.png |  |
+| portrait_hero_07_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_07_ranger_upgraded.png |  |
+| portrait_hero_08 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_08_battlemage_base.png |  |
+| portrait_hero_08_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_08_battlemage_upgraded.png |  |
+| portrait_hero_09 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_09_guardian_base.png |  |
+| portrait_hero_09_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_09_guardian_upgraded.png |  |
+| portrait_hero_10 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_10_duelist_base.png |  |
+| portrait_hero_10_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_10_duelist_upgraded.png |  |
+| portrait_hero_11 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_11_guardian_base.png |  |
+| portrait_hero_11_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_11_guardian_base.png |  |
+| portrait_hero_11_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_11_guardian_upgraded.png |  |
+| portrait_hero_11_up_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_11_guardian_upgraded.png |  |
+| portrait_hero_12 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_12_ranger_base.png |  |
+| portrait_hero_12_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_12_ranger_base.png |  |
+| portrait_hero_12_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_12_ranger_upgraded.png |  |
+| portrait_hero_12_up_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_12_ranger_upgraded.png |  |
+| portrait_hero_13 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_13_duelist_base.png |  |
+| portrait_hero_13_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_13_duelist_base.png |  |
+| portrait_hero_13_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_13_duelist_upgraded.png |  |
+| portrait_hero_13_up_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_13_duelist_upgraded.png |  |
+| portrait_hero_14 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_14_battlemage_base.png |  |
+| portrait_hero_14_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_14_battlemage_base.png |  |
+| portrait_hero_14_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_14_battlemage_upgraded.png |  |
+| portrait_hero_14_up_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_14_battlemage_upgraded.png |  |
+| portrait_hero_15 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_15_warden_base.png |  |
+| portrait_hero_15_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_15_warden_base.png |  |
+| portrait_hero_15_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_15_warden_upgraded.png |  |
+| portrait_hero_15_up_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_15_warden_upgraded.png |  |
+| portrait_hero_16 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_16_guardian_base.png |  |
+| portrait_hero_16_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_16_guardian_upgraded.png |  |
+| portrait_hero_17 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_17_ranger_base.png |  |
+| portrait_hero_17_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_17_ranger_upgraded.png |  |
+| portrait_hero_18 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_18_duelist_base.png |  |
+| portrait_hero_18_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_18_duelist_upgraded.png |  |
+| portrait_hero_19 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_19_battlemage_base.png |  |
+| portrait_hero_19_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_19_battlemage_upgraded.png |  |
+| portrait_hero_20 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_20_warden_base.png |  |
+| portrait_hero_20_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Heroes/hero_20_warden_upgraded.png |  |
 | portrait_ranger_0 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 54] |
 | portrait_ranger_1 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 59] |
 | portrait_ranger_2 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 58] |

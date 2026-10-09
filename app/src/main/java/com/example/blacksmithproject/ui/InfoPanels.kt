@@ -146,7 +146,7 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Box {
-            PixelImage(Sprites.portrait(h), 44.dp, description = null)
+            PixelImage(Sprites.portrait(h, small = true), 44.dp, description = null)
             Sprites.marker(h.fate)?.let { PixelImage(it, 16.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
         }
         Column(Modifier.weight(1f)) {

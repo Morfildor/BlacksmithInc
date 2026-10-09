@@ -35,6 +35,13 @@ second face set, the atlas crops) are matched by file name, also inside a pack's
 optional: pass `--atlas PATH` when it is not in the folder; without it its earlier sprites are kept. The portrait
 lookup `ui/PortraitArt.kt` is regenerated on every run.
 
+The hero portrait set (20 heroes, a base and an upgraded face each) is read from a folder that is not in Git:
+`--heroes PATH`, else the environment variable TINY_BLACKSMITH_HEROES, else `<repo root>/Assets/Heroes` (`manifest.json`
+plus `hero_XX_<class>_<base|upgraded>.png`). Each file becomes the opaque tile `portrait_hero_XX` or
+`portrait_hero_XX_up`: a 64 px file is taken as it is, a larger render is reduced to HERO_BOX and HERO_COLOURS; the
+heroes in HERO_SMALL also get a tighter `_sm` tile for small list rows. When the folder is
+absent the step is skipped with a message and the committed hero drawables and their records are kept.
+
 An ID produced by two sources in one run is an error naming both. A source whose SHA-256 differs from the one its
 sprites were last cut from stops the import until `--accept-changed-sources` is passed. IDs imported earlier but no
 longer produced are pruned from the drawable folder.
@@ -44,6 +51,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -74,6 +82,7 @@ PACK_ALLOW = {
 KIND_AI = "ai_generated_sheet"
 KIND_PACK = "script_drawn_pack"
 KIND_LOOSE = "loose_file"  # a single <id>.png dropped into the folder: origin not recorded
+KIND_AI_PORTRAIT = "ai_generated_portrait"  # the owner-supplied hero set; its README calls the portraits generated
 
 ATLAS_NAME = "Tiny Blacksmith RPG Asset Atlas.png"
 PORTRAIT_BOX = 64
@@ -81,6 +90,20 @@ PORTRAIT_BOX = 64
 TILE_INSET = 3
 # The second face set stays out of the appearance pool until it has been verified on a device (PortraitArt.kt).
 SECOND_SET_ENABLED = False
+# The hero set lives outside Git (see the module text). Its tiles are HERO_BOX px: ten of the heroes are supplied at that size.
+HEROES_DIR = Path(os.environ.get("TINY_BLACKSMITH_HEROES") or ROOT / "Assets/Heroes")
+HEROES_SHEET = "Assets/Heroes"
+HERO_BOX = 64
+# The larger renders (1254 px, on pixel grids of about 117 to 290 cells, so no size reproduces them cell for cell) are
+# reduced to the same box and to the palette size of the native files (81 to 96 colours), without dithering. Compared
+# on the emulator against 128 and 256 px at 44, 56, 85 and 112 dp: the larger sizes are sharper on their own but read
+# as a second, finer art style beside the native 64 px heroes; at 64 px all twenty share one pixel size.
+HERO_COLOURS = 96
+# Heroes 11-15 are drawn from further away than the rest: on a 44 dp list row the face is about 35 px across and hard to
+# read (15 most of all). They also get a `_sm` tile for small list rows: this HERO_SMALL_BOX square of the 64 px tile,
+# cut at the given left and top so the head stays whole; no resampling. The other heroes need none.
+HERO_SMALL_BOX = 48
+HERO_SMALL = {"11": (0, 0), "12": (12, 0), "13": (3, 0), "14": (10, 0), "15": (0, 2)}
 
 # Logical scene unit: the forge scene is laid out in 96x48 "scene pixels"; imported scene pieces are exported at
 # SCENE_UNIT bitmap pixels per scene pixel so ForgeScene can keep positioning in scene coordinates.
@@ -507,6 +530,32 @@ def import_flat(path: Path, entries: dict, run: Run, sheet: str):
         print(f"  dropped {len(dropped)} keyed cut-outs: " + "; ".join(dropped))
 
 
+def import_heroes(folder: Path, run: Run) -> int:
+    """The hero set, in manifest order: one opaque tile per state, `portrait_hero_XX` (base) and `portrait_hero_XX_up`."""
+    heroes = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))["heroes"]
+    for hero in heroes:
+        number, cls = hero["id"].removeprefix("hero_"), hero["class"]
+        if cls not in CLASSES or not re.fullmatch(r"\d\d", number):
+            sys.exit(f"ERROR {HEROES_SHEET}/manifest.json: hero '{hero['id']}' of class '{cls}' is not a known class or ID")
+        for state, suffix in (("base", ""), ("upgraded", "_up")):
+            path = folder / hero["states"][state]
+            if not path.is_file():
+                sys.exit(f"ERROR {HEROES_SHEET}: '{path.name}' is listed in manifest.json and missing")
+            im = Image.open(path)
+            size = im.width
+            if im.width != im.height or size < HERO_BOX or "transparency" in im.info or im.mode not in ("RGB", "P"):
+                sys.exit(f"ERROR {HEROES_SHEET}/{path.name}: expected an opaque square of {HERO_BOX} px or more, found {im.size} {im.mode}")
+            if size != HERO_BOX:  # a native 64 px file keeps its pixels and its palette
+                im = im.resize((HERO_BOX, HERO_BOX), Image.LANCZOS).quantize(HERO_COLOURS, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
+            sid, sheet = f"portrait_hero_{number}{suffix}", f"{HEROES_SHEET}/{path.name}"
+            run.put(sid, im, path, KIND_AI_PORTRAIT, sheet=sheet, heroClass=cls, state=state, character=hero["character"], sourceSize=size)
+            if number in HERO_SMALL:
+                x, y = HERO_SMALL[number]
+                box = [x, y, x + HERO_SMALL_BOX, y + HERO_SMALL_BOX]
+                run.put(f"{sid}_sm", im.crop(box), path, KIND_AI_PORTRAIT, sheet=sheet, heroClass=cls, state=state, smallOf=sid, crop=box)
+    return len(heroes)
+
+
 def import_sheet(n: int, path: Path, run: Run):
     im = Image.open(path).convert("RGBA")
     cells = LAYOUTS[n]()
@@ -541,6 +590,8 @@ def write_portrait_art(overrides: dict):
     base = [f"portrait_{cls}_{v}" for cls in CLASSES for v in range(5)]
     tiles = [f"portrait_v2_{cls}_{n}" for cls in CLASSES for n in range(1, 6) if f"portrait_v2_{cls}_{n}" in overrides]
     cuts = [f"{sid}_cut" for sid in tiles if f"{sid}_cut" in overrides]
+    heroes = sorted(sid for sid, o in overrides.items() if sid.startswith("portrait_hero_") and o.get("state") == "base" and "smallOf" not in o)
+    of_class = {cls: [sid for sid in heroes if overrides[sid]["heroClass"] == cls] for cls in CLASSES}
     lines = [
         "// GENERATED by tools/pixelart/import_assets.py from the portrait sheets; do not edit by hand.",
         "package com.example.blacksmithproject.ui", "", "import com.example.blacksmithproject.R", "",
@@ -552,12 +603,24 @@ def write_portrait_art(overrides: dict):
         "    /** [resName] is the drawable's resource name; the box (left, top, right, bottom; right and bottom exclusive) holds the pixels that are not empty. */",
         "    class Entry(val drawable: Int, val resName: String, val left: Int, val top: Int, val right: Int, val bottom: Int)",
         "",
-        "    /** The 25 busts of concept sheet 3: transparent cut-outs, five per class. */",
+        "    /** The 25 busts of concept sheet 3: transparent cut-outs, five per class. Kept as assets; heroes no longer draw them (Sprites maps their keys onto the hero set). */",
     ] + table("base", base) + [
         "", "    /** Candidate second set as opaque 64 px tiles with their painted background. */",
     ] + table("secondSet", tiles) + [
         "", "    /** The same keys as keyed cut-outs: only the tiles that passed the importer's checks and the review. */",
     ] + table("secondSetCutouts", cuts, key=lambda sid: sid[:-len("_cut")]) + [
+        "", "    /** The hero set: opaque 64 px tiles, one per hero, keyed by the drawable name of the base face. Every hero draws from this set. */",
+    ] + table("heroes", heroes) + [
+        "", "    /** The same keys with each hero's upgraded face. */",
+    ] + table("heroesUpgraded", [f"{sid}_up" for sid in heroes], key=lambda sid: sid[:-len("_up")]) + [
+        "", "    /** Tighter tiles for small list rows, only for the heroes whose face is small on the full tile. */",
+    ] + table("heroesSmall", [f"{sid}_sm" for sid in heroes if f"{sid}_sm" in overrides], key=lambda sid: sid[:-len("_sm")]) + [
+        "", "    /** The same for the upgraded faces. */",
+    ] + table("heroesUpgradedSmall", [f"{sid}_up_sm" for sid in heroes if f"{sid}_up_sm" in overrides], key=lambda sid: sid[:-len("_up_sm")]) + [
+        "", "    /** Hero keys per class in hero order: the faces a class has (" + ", ".join(f"{cls} {len(of_class[cls])}" for cls in CLASSES) + "). */",
+        "    val heroFaces: Map<String, List<String>> = mapOf(",
+    ] + [f'        "{cls}" to listOf(' + ", ".join(f'"{sid}"' for sid in of_class[cls]) + ")," for cls in CLASSES] + [
+        "    )",
         "",
         "    fun find(key: String, secondSet: Boolean = SECOND_SET_ENABLED): Entry? = base[key] ?: if (secondSet) this.secondSet[key] else null",
         "",
@@ -588,6 +651,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sheet", type=int, default=None)
     ap.add_argument("--atlas", type=Path, default=SRC / ATLAS_NAME, help="path of the asset atlas when it is not in 'Pixel art assets/'")
+    ap.add_argument("--heroes", type=Path, default=HEROES_DIR, help="folder of the hero portrait set (default: TINY_BLACKSMITH_HEROES, else Assets/Heroes)")
     ap.add_argument("--accept-changed-sources", action="store_true", help="import although a source differs from the file its cells were measured on")
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -647,9 +711,17 @@ def main():
             n = import_pack(pack, run, PACK_ALLOW[pack.name])
             found += 1
             print(f"pack {pack.name}: {n} sprites copied verbatim")
+        if (args.heroes / "manifest.json").is_file():
+            n = import_heroes(args.heroes, run)
+            found += 1
+            print(f"hero set {args.heroes}: {n} heroes, {2 * n} portraits at {HERO_BOX} px")
+        else:
+            absent.add(HEROES_SHEET)
+            print(f"hero set: no manifest.json in {args.heroes}, skipped (the committed hero portraits are kept; pass --heroes PATH)")
     # Sprites of a source that was not read this run stay as they are (one sheet with --sheet; an absent optional source).
     for sid, entry in previous.items():
-        if sid not in overrides and (args.sheet or entry.get("sheet") in absent) and (OUT / f"{sid}.png").exists():
+        sheet = entry.get("sheet", "")
+        if sid not in overrides and (args.sheet or sheet in absent or sheet.rpartition("/")[0] in absent) and (OUT / f"{sid}.png").exists():
             overrides[sid] = entry
     pruned = 0
     for sid in previous:

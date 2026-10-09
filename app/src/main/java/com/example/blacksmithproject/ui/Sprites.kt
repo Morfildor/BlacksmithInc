@@ -71,19 +71,51 @@ object Sprites {
     private fun legacyPortraitKey(classId: HeroClassId, heroId: String): String =
         "portrait_${classId.value}_${Math.floorMod(heroId.hashCode(), 5)}"
 
+    private val heroIdKey = Regex("h\\d+")
+
     /**
-     * Portrait art for a saved appearance key (an asset ID such as "portrait_guardian_0"). An unknown key, or a key of
-     * the second set while that set is switched off, falls back to the first face of [classId], so a face of the right
-     * class always renders. [secondSet] is for the debug gallery only; everything else leaves it at the switch.
+     * Slot 0..4 of a key from before the hero set: the variant of a sheet-3 key ("portrait_guardian_3"), the tile of a
+     * second-set key ("portrait_v2_guardian_4", counted from 0), or for a hero ID ("h17") the slot its sheet-3 key has.
      */
-    internal fun portraitArt(appearanceKey: String, classId: HeroClassId, secondSet: Boolean = PortraitArt.SECOND_SET_ENABLED): PortraitArt.Entry =
-        PortraitArt.find(appearanceKey, secondSet) ?: PortraitArt.base["portrait_${classId.value}_0"] ?: PortraitArt.base.getValue("portrait_guardian_0")
+    private fun legacySlot(key: String): Int? = when {
+        key in PortraitArt.base -> key.substringAfterLast('_').toInt()
+        key in PortraitArt.secondSet -> key.substringAfterLast('_').toInt() - 1
+        heroIdKey.matches(key) -> Math.floorMod(key.hashCode(), 5)
+        else -> null
+    }
 
-    fun portrait(appearanceKey: String, classId: HeroClassId, secondSet: Boolean = PortraitArt.SECOND_SET_ENABLED): Int =
-        portraitArt(appearanceKey, classId, secondSet).drawable
+    /**
+     * The hero-set face ("portrait_hero_07") an appearance key shows for [classId]: a hero key of that class is itself,
+     * an older key takes the face at its slot (wrapping when the class has fewer than five faces), anything else takes
+     * the first face of the class. Pure, so one key is one face for good.
+     */
+    internal fun heroFaceKey(appearanceKey: String, classId: HeroClassId): String {
+        val faces = PortraitArt.heroFaces[classId.value] ?: PortraitArt.heroFaces.getValue("guardian")
+        return if (appearanceKey in faces) appearanceKey else faces[(legacySlot(appearanceKey) ?: 0) % faces.size]
+    }
 
-    /** One of five faces per class, chosen by a stable hash of the hero ID (decorative; no RNG). */
-    fun portrait(hero: Hero): Int = portrait(legacyPortraitKey(hero.classId, hero.id.value), hero.classId)
+    /**
+     * Portrait art for a saved appearance key: always a face of [classId] from the hero set (see [heroFaceKey]),
+     * [upgraded] picks the hero's advanced look. [secondSet] is for the debug gallery only: it shows a second-set key as
+     * its own rejected tile; everything else leaves it at the switch. [small] is for list rows of about 48 dp or less:
+     * the few heroes whose face is small on the full tile have a tighter one, the others keep the full tile.
+     */
+    internal fun portraitArt(
+        appearanceKey: String, classId: HeroClassId, upgraded: Boolean = false, secondSet: Boolean = PortraitArt.SECOND_SET_ENABLED, small: Boolean = false,
+    ): PortraitArt.Entry {
+        if (secondSet) PortraitArt.secondSet[appearanceKey]?.let { return it }
+        val key = heroFaceKey(appearanceKey, classId)
+        return (if (!small) null else if (upgraded) PortraitArt.heroesUpgradedSmall[key] else PortraitArt.heroesSmall[key])
+            ?: (if (upgraded) PortraitArt.heroesUpgraded else PortraitArt.heroes).getValue(key)
+    }
+
+    fun portrait(
+        appearanceKey: String, classId: HeroClassId, upgraded: Boolean = false, secondSet: Boolean = PortraitArt.SECOND_SET_ENABLED, small: Boolean = false,
+    ): Int = portraitArt(appearanceKey, classId, upgraded, secondSet, small).drawable
+
+    /** The face of a live hero: the same one its saved appearance key shows (decorative; no RNG), upgraded once [heroUpgraded]. */
+    fun portrait(hero: Hero, small: Boolean = false): Int =
+        portrait(legacyPortraitKey(hero.classId, hero.id.value), hero.classId, upgraded = heroUpgraded(null, hero.kills), small = small)
 
     /** Faction sprite for the threat line: the elite variant once pressure is high. Null for factions without art. */
     fun faction(id: FactionId, elite: Boolean = false): Int? = when (id.value) {
@@ -182,6 +214,15 @@ object Sprites {
     /** Ring drawn around a signature weapon until signature sprites exist (palette `gold`). */
     val signatureRing = Color(0xFFD8A030)
 }
+
+/** Victories after which a hero wears the upgraded portrait: the count at which a blade earns its title (decorative, not a balance number). */
+private const val UPGRADED_KILLS = 5
+
+/**
+ * Whether a hero shows the upgraded portrait: a title has been earned, or [kills] (which never goes down) has reached
+ * [UPGRADED_KILLS]. `Hero` has no title of its own; pass null for it unless the caller has one.
+ */
+fun heroUpgraded(title: String?, kills: Int): Boolean = !title.isNullOrBlank() || kills >= UPGRADED_KILLS
 
 /**
  * Pixel image: nearest-neighbour when the bitmap is enlarged (keeps pixels square), bilinear when a larger
