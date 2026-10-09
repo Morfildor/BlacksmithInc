@@ -2,6 +2,7 @@ package com.tinyblacksmith.core.gazette
 
 import com.tinyblacksmith.core.model.EventRecord
 import com.tinyblacksmith.core.model.EventType
+import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.MarketVisit
 import com.tinyblacksmith.core.model.Rarity
 
@@ -14,6 +15,17 @@ object Gazette {
             .sortedWith(compareByDescending<EventRecord> { it.priority }.thenBy { it.serial })
             .take(MAX_HEADLINES)
             .map { it.text }
+
+    /**
+     * The records one day's paper is set from: the stored report of the latest day, the archive for any other. A day
+     * resolved before the report carried the whole day (F03) stored only its End Day records, so its report holds
+     * fewer than the archive does and the archive is used instead.
+     */
+    fun dayRecords(state: GameState, day: Int): List<EventRecord> {
+        val archive = state.eventsForDay(day)
+        val reported = state.lastResolution?.takeIf { it.day == day }?.events ?: return archive
+        return if (reported.size >= archive.size) reported else archive
+    }
 
     fun masthead(day: Int): String = "EMBERFALL GAZETTE — DAY $day"
 

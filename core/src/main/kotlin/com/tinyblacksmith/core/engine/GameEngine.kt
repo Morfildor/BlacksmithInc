@@ -303,8 +303,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         recover(ctx)
         // 9. Histories and blessings expiry.
         ctx.blessings = ctx.blessings.filter { it.expiresDay > day }
-        // 10. Gazette and new morning.
-        val dayEvents = ctx.newEvents.toList()
+        // 10. Gazette and new morning. The edition is the whole day, preparation included (taken before compaction).
+        val dayEvents = ctx.events.filter { it.era == ctx.era && it.day == day }
         val resolution = DayResolution(
             commandId = commandId, day = day, events = dayEvents, headlines = Gazette.headlines(dayEvents),
             visits = ctx.visits.toList(), replays = Battle.dayReplays(ctx), defeated = ctx.phase == Phase.ENDED,
