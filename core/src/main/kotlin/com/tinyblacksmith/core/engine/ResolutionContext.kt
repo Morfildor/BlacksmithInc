@@ -115,6 +115,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
             seed = base.seed,
             rulesVersion = base.rulesVersion,
             contentVersion = base.contentVersion,
+            balanceVersion = base.balanceVersion,
             era = era,
             day = day,
             phase = phase,

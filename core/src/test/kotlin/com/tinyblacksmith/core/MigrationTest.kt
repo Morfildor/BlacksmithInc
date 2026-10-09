@@ -119,14 +119,46 @@ class MigrationTest {
         val env = SaveEnvelope(SaveCodec.SCHEMA_VERSION, payload)
         val migrated = SaveCodec.migrate(env, SaveCodec.legacyMigrations)
         assertEquals(env, migrated)
-        assertTrue(migrated.payload === payload, "v1 -> v1 must not rewrite the payload")
-        assertEquals(1, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")
+        assertTrue(migrated.payload === payload, "the current schema must not rewrite the payload")
+        assertEquals(2, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")
+    }
+
+    private fun v1Fixture(): String = javaClass.getResource("/saves/v1_forced_seed4242_day61.json")?.readText() ?: error("missing v1 fixture")
+
+    /**
+     * Schema 1 -> 2 on the real v1 fixture: the run step stamps the balance the 0.6.0 build ran (5) and touches nothing
+     * else; a payload that already names a balance version keeps it; the legacy document is carried over byte for byte.
+     */
+    @Test
+    fun theRunStepStampsTheBalanceVersionAndNothingElse() {
+        val env = json.decodeFromString(SaveEnvelope.serializer(), v1Fixture())
+        val migrated = SaveCodec.migrate(env, SaveCodec.runMigrations)
+        assertEquals(2, migrated.schemaVersion)
+        val before = json.parseToJsonElement(env.payload).jsonObject
+        val after = json.parseToJsonElement(migrated.payload).jsonObject
+        assertTrue("balanceVersion" !in before || before.getValue("balanceVersion") == JsonPrimitive(0), "the fixture predates the stamp")
+        assertEquals(JsonPrimitive(5), after.getValue("balanceVersion"))
+        assertEquals(before.filterKeys { it != "balanceVersion" }, after.filterKeys { it != "balanceVersion" }, "no other key changes")
+
+        val tracked = envelope(1, json.encodeToString(JsonObject.serializer(), JsonObject(before + ("balanceVersion" to JsonPrimitive(4)))))
+        assertEquals(4, SaveCodec.decodeRun(tracked).balanceVersion, "a recorded balance version is not overwritten")
+
+        val legacy = SaveEnvelope(1, json.encodeToString(LegacyProfile.serializer(), LegacyProfile(points = 9)))
+        assertEquals(SaveEnvelope(2, legacy.payload), SaveCodec.migrate(legacy, SaveCodec.legacyMigrations))
+    }
+
+    /** `MarketVisit.reason` is a String today and an enum from M2 whose first nine constants keep these spellings; every v1 day must still read. */
+    @Test
+    fun v1VisitReasonsDecode() {
+        val nine = setOf("EMPTY_SHELVES", "TOO_EXPENSIVE", "NOT_BETTER", "OVERPRICED", "NOT_SUITED", "UNDECIDED", "WORN_OUT", "GREAT_FIT", "GOOD_ENOUGH")
+        val visits = SaveCodec.decodeRun(v1Fixture()).lastResolution!!.visits
+        assertTrue(visits.size >= 3, "the fixture's last day has visits: ${visits.size}")
+        assertTrue(visits.all { it.reason in nine }, visits.map { it.reason }.toString())
     }
 
     /**
-     * The run and the legacy profile share one schema number but not one migration table. Both production tables are
-     * empty at schema 1, so the routing is shown with a step of the kind M1 registers (it stamps the run), run to
-     * schema 2 through each table.
+     * The run and the legacy profile share one schema number but not one migration table. The routing is shown with
+     * injected tables run to schema 2 through each (the production run step is checked above).
      */
     @Test
     fun aRunStepIsNotAppliedToTheLegacyDocument() {

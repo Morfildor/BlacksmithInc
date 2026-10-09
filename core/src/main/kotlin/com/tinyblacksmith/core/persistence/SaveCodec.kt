@@ -4,13 +4,17 @@ import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.LegacyProfile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonObject
 
 /** Versioned JSON envelope. Schema bumps go through [SaveCodec.migrate] so saved histories and RNG state are never mutated silently. */
 @Serializable
 data class SaveEnvelope(val schemaVersion: Int, val payload: String)
 
 object SaveCodec {
-    const val SCHEMA_VERSION = 1
+    const val SCHEMA_VERSION = 2
 
     val json: Json = Json {
         encodeDefaults = true
@@ -43,8 +47,17 @@ object SaveCodec {
      * a step written for one is never applied to the other. Raising [SCHEMA_VERSION] needs an entry in BOTH tables
      * for the version left behind; the entry is `{ it }` for a document that does not change.
      */
-    internal val runMigrations: Map<Int, (String) -> String> = emptyMap()
-    internal val legacyMigrations: Map<Int, (String) -> String> = emptyMap()
+    internal val runMigrations: Map<Int, (String) -> String> = mapOf(1 to ::stampBalanceVersion)
+    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it })
+
+    /** Every schema-1 run was written by a build that had balance 5 and did not yet record it (0 = untracked). */
+    private const val BALANCE_BEFORE_TRACKING = 5
+
+    private fun stampBalanceVersion(payload: String): String {
+        val run = json.parseToJsonElement(payload).jsonObject
+        if ((run["balanceVersion"] as? JsonPrimitive)?.intOrNull?.takeIf { it != 0 } != null) return payload
+        return JsonObject(run + ("balanceVersion" to JsonPrimitive(BALANCE_BEFORE_TRACKING))).toString()
+    }
 
     /** [target] is a parameter only so tests can run a table past today's schema. */
     internal fun migrate(env: SaveEnvelope, steps: Map<Int, (String) -> String>, target: Int = SCHEMA_VERSION): SaveEnvelope {
