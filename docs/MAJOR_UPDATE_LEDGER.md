@@ -115,8 +115,19 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T6.3c | Storage tools | AB | todo | | | |
 | T6.4 | Lifecycle tests | AB | todo | | | |
 | T6.5 | Main thread | AB | todo | | | |
+| T6.7 | Haptics with a toggle; audio controls with real audio | AB | todo | | | |
 | T6.6 | Physical device | INT | blocked: no device attached | | | |
 | T7.1 | Documents and version | INT | todo | | | |
 | T7.2 | Fresh-player sessions | owner + INT | blocked: needs five first-time players | | | |
 | T7.3 | GDD 19 walk-through | INT | todo | | | |
 | T7.4 | Release identity runbook | INT | todo (the rename itself is blocked: application ID) | | | |
+
+## Execution record (started 2026-10-09)
+
+Work happens on local branches `shop-day/m<N>` in the worktree `.claude/worktrees/shop-day`; this file there is the
+live copy and is copied back to the main checkout at each milestone boundary.
+
+- Ruling: local commits on `shop-day/*` branches only, never on `main`, never pushed; `docs/major_update_evidence/`, the review document and the atlas PNG are never staged. Why: the owner forbade commits to public history but asked for isolated worktrees, and review needs commit ranges. Cost if wrong: the branches are deleted and the work is re-applied as a patch.
+- Ruling: plan section 11 and the "Who edits what" tables stand in for a new pre-flight conflict scan. Why: the owner said not to restart broad planning. Cost if wrong: a file conflict surfaces at merge and is fixed there.
+- Ruling: tasks with disjoint file owners run in parallel worktrees; the app chain T1.1 to T1.3 runs serially. Why: plan 8.1. Cost if wrong: merge conflicts.
+- Scope added by the execution instruction: **T6.7 Haptics and audio controls** (haptic feedback on meaningful moments with a working toggle; audio controls only with real audio: no sound file exists in `app/src/main/res` at `0ad888a`, so audio stays an explicit GDD 19 gap unless assets appear). T0.3 also corrects "hand-made" in `CLAUDE.md` and `docs/ART_BRIEF.md`. T2.4: the import script only reads sources and writes new files; no source image is re-saved (that would strip its content credentials).
