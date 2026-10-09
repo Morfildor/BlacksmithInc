@@ -69,6 +69,7 @@ object Gazette {
         VisitReason.EMPTY_SHELVES -> "found the shelves bare"
         VisitReason.OVERPRICED -> "balked at the prices"
         VisitReason.NOT_SUITED -> "found nothing to suit"
+        VisitReason.RESISTED -> "passed over a blade the besieger shrugs off"
         else -> "left undecided"
     }
 

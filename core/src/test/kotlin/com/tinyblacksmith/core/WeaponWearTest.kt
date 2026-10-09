@@ -145,11 +145,11 @@ class WeaponWearTest {
         )
         val ctx = ResolutionContext(s, content, config)
         val keen = Market.evaluate(ctx, hero, owned, ctx.weapon(listedId), 0.5)
-        assertTrue(keen.improvement <= 0 && !keen.worn, "a keen blade of equal power is kept")
+        assertTrue(keen.gain <= 0 && !keen.worn, "a keen blade of equal power is kept")
 
         val worn = owned.copy(condition = config.wornConditionThreshold - 1)
         val eval = Market.evaluate(ctx, hero, worn, ctx.weapon(listedId), 0.5)
-        assertTrue(eval.worn && eval.improvement > 0, "improvement ${eval.improvement}")
+        assertTrue(eval.worn && eval.gain > 0, "improvement ${eval.gain}")
         assertTrue(eval.utility >= config.purchaseUtilityThreshold, "utility ${eval.utility}")
         assertTrue(Market.tradeInCredit(worn, config) < Market.tradeInCredit(owned, config), "a worn trade-in is worth less")
         assertTrue(engine.suggestedPrice(worn) < engine.suggestedPrice(owned), "a worn listing is priced for its wear")

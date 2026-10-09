@@ -181,4 +181,5 @@ fun reasonLabel(reason: VisitReason): String = when (reason) {
     VisitReason.UNDECIDED -> "undecided"
     VisitReason.COMMISSION_DELIVERED -> "collected their commission"
     VisitReason.COLLECTOR_PURCHASE -> "paid a collector's price"
+    VisitReason.TASTE_MATCH, VisitReason.PRIZED, VisitReason.STORIED, VisitReason.COUNTERS_THREAT, VisitReason.RESISTED -> com.tinyblacksmith.core.shopday.Lines.reason(reason)
 }

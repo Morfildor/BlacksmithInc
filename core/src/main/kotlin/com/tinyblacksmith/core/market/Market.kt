@@ -1,6 +1,8 @@
 package com.tinyblacksmith.core.market
 
+import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.battle.Power
+import com.tinyblacksmith.core.content.FactionDef
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.content.ToolEffect
@@ -14,11 +16,24 @@ import com.tinyblacksmith.core.rng.RngStream
 /** Autonomous shelf visits and purchases (GDD 5 PROPOSED purchase algorithm) plus commission delivery. */
 object Market {
 
-    /** The four flags say which of the terms of [evaluate] counted for this blade; they are recorded with the visit and decide nothing. */
+    /**
+     * [gain] is what the blade is worth in this hero's hands less what the one they carry is worth there ([valueInHand]),
+     * never rounded. The flags say which of the terms of [evaluate] counted for this blade; they are recorded with the
+     * visit and decide nothing.
+     */
     data class Evaluation(
-        val weapon: Weapon, val utility: Double, val affordable: Boolean, val improvement: Int, val fit: Double, val pricePenalty: Double, val worn: Boolean = false,
+        val weapon: Weapon, val utility: Double, val affordable: Boolean, val gain: Double, val fit: Double, val pricePenalty: Double, val worn: Boolean = false,
         val tasteMatch: Boolean = false, val novelty: Boolean = false, val collectorPrize: Boolean = false, val storied: Boolean = false,
-    )
+        /** TASTE_MATCH, PRIZED or STORIED when the blade is no gain but near enough and has what the hero's own lacks; null otherwise. */
+        val sideReason: VisitReason? = null,
+        /** In the siege warning: of the element the besieger is weak to; of the one it resists. */
+        val countersThreat: Boolean = false, val resisted: Boolean = false,
+        /** A resisted blade this hero would have bought on a day without a warning, and will not today. */
+        val refusedAsResisted: Boolean = false,
+    ) {
+        /** May be bought if its utility allows: affordable, and a gain or a sidegrade with a reason. */
+        val eligible: Boolean get() = affordable && (gain > 0 || sideReason != null)
+    }
 
     /**
      * Who browses the shelf today (plan 4.2). Every living hero decides for themselves whether to come, one draw each;
@@ -65,11 +80,17 @@ object Market {
             val current = ctx.equippedWeapon(hero.id)
             val customer = customer(ctx, hero, current)  // before the purchase moves the old blade and the purse
             val evaluations = ctx.weapons.values.filter { it.isListed }.map { evaluate(ctx, hero, current, it, rng.nextDouble()) }
-            val best = evaluations.filter { it.affordable && it.improvement > 0 }.maxByOrNull { it.utility }
+            val best = evaluations.filter { it.eligible }.maxByOrNull { it.utility }
             if (best != null && best.utility >= config.purchaseUtilityThreshold) {
                 val mark = ctx.newEvents.size
                 val sale = purchase(ctx, hero, best.weapon, best.weapon.listedPrice ?: 0)
-                val reason = if (best.worn) VisitReason.WORN_OUT else if (best.fit >= 1.0) VisitReason.GREAT_FIT else VisitReason.GOOD_ENOUGH
+                val reason = when {
+                    best.gain <= 0 -> best.sideReason!!
+                    best.countersThreat -> VisitReason.COUNTERS_THREAT
+                    best.worn -> VisitReason.WORN_OUT
+                    best.fit >= 1.0 -> VisitReason.GREAT_FIT
+                    else -> VisitReason.GOOD_ENOUGH
+                }
                 ctx.visits += MarketVisit(
                     hero.id, hero.fullName, best.weapon.id, reason, seq = ctx.visits.size, customer = customer,
                     considered = considered(ctx, hero, current, evaluations, best), sale = sale, eventIds = ctx.newEvents.drop(mark).map { it.id },
@@ -77,7 +98,8 @@ object Market {
             } else {
                 val reason = when {
                     evaluations.none { it.affordable } -> VisitReason.TOO_EXPENSIVE
-                    evaluations.none { it.affordable && it.improvement > 0 } -> VisitReason.NOT_BETTER
+                    evaluations.any { it.refusedAsResisted } -> VisitReason.RESISTED
+                    evaluations.none { it.eligible } -> VisitReason.NOT_BETTER
                     best != null && best.pricePenalty > 0.5 -> VisitReason.OVERPRICED
                     best != null && best.fit < 1.0 -> VisitReason.NOT_SUITED
                     else -> VisitReason.UNDECIDED
@@ -90,6 +112,7 @@ object Market {
                 shopVisits = served.shopVisits + 1, lastServedDay = ctx.day, turnedAwayStreak = 0,
                 shopPurchases = served.shopPurchases + (if (bought) 1 else 0), lastPurchaseDay = if (bought) ctx.day else served.lastPurchaseDay,
                 want = if (bought) null else wantOf(ctx, served, current, evaluations),
+                sideReasons = if (bought && best!!.gain <= 0) served.sideReasons + best.sideReason!! else served.sideReasons,
             ))
         }
     }
@@ -101,7 +124,8 @@ object Market {
         return (cfg.baseVisitChance + hero.traits.sumOf { ctx.content.trait(it).shopWeight } * cfg.visitTraitScale +
             minOf(hero.loyalty, cfg.visitLoyaltyCap) * cfg.visitPerLoyalty + minOf(ctx.reputation, cfg.visitReputationCap) * cfg.visitPerReputation +
             (if (festival) cfg.festivalVisitBonus else 0.0) +
-            (if (wantMet(ctx, hero)) cfg.needWantMet else 0.0)
+            (if (wantMet(ctx, hero)) cfg.needWantMet else 0.0) +
+            (if (hero.id in ctx.town.championIds && threat(ctx) != null) cfg.championSiegeWillingness else 0.0)   // a champion arms for the siege
             ).coerceIn(cfg.visitFloor, cfg.visitCeiling)
     }
 
@@ -113,7 +137,7 @@ object Market {
         val want = hero.want ?: return false
         if (!weapon.isListed || weapon.familyId != want.familyId) return false
         val e = evaluate(ctx, hero, ctx.equippedWeapon(hero.id), weapon, 0.5)
-        return e.affordable && e.improvement > 0 && e.utility >= ctx.config.purchaseUtilityThreshold
+        return e.eligible && e.utility >= ctx.config.purchaseUtilityThreshold
     }
 
     /** The need term of the visit chance and of the seat weight: the shelf holds what this hero asked for. Off when `needWantMet` is 0. */
@@ -130,7 +154,7 @@ object Market {
         val config = ctx.config
         val familyId = hero.want?.familyId ?: evaluations.filter { it.fit >= 1.0 }.maxByOrNull { it.utility }?.weapon?.familyId ?: ctx.content.heroClass(hero.classId).preferredFamilies.first()
         val fit = ctx.content.family(familyId).classFit[hero.classId] ?: config.offFamilyFit
-        val held = Power.weaponPower(current, config) * Power.conditionFactor(current, config) * Power.classFit(hero, current, ctx.content, config)
+        val held = valueInHand(ctx, hero, current, null)
         val worn = current != null && current.condition < config.wornConditionThreshold
         val given = (fit - 1.0) * config.utilityClassFitWeight + hero.loyalty * 0.01 * config.utilityLoyaltyWeight + (if (worn) config.wornReplacementUtility else 0.0)
         val gain = maxOf(0.0, (config.purchaseUtilityThreshold - given) / config.utilityImprovementWeight)
@@ -176,8 +200,9 @@ object Market {
                 listOfNotNull(
                     if (e.fit >= 1.0) VisitFactor.SUITS_CLASS else VisitFactor.OFF_CLASS,
                     VisitFactor.ELEMENT_TASTE.takeIf { e.tasteMatch }, VisitFactor.LIKES_NOVELTY.takeIf { e.novelty },
-                    when { current == null -> VisitFactor.UNARMED; e.improvement > 0 -> VisitFactor.STRONGER_THAN_OWN; else -> VisitFactor.NOT_STRONGER_THAN_OWN },
+                    when { current == null -> VisitFactor.UNARMED; e.gain > 0 -> VisitFactor.STRONGER_THAN_OWN; else -> VisitFactor.NOT_STRONGER_THAN_OWN },
                     VisitFactor.OWN_BLADE_WORN.takeIf { e.worn }, VisitFactor.STORIED_BLADE.takeIf { e.storied }, VisitFactor.COLLECTOR_PRIZE.takeIf { e.collectorPrize },
+                    VisitFactor.COUNTERS_THREAT.takeIf { e.countersThreat }, VisitFactor.THREAT_RESISTS.takeIf { e.resisted },
                     if (e.affordable) VisitFactor.CAN_AFFORD else VisitFactor.CANNOT_AFFORD,
                     VisitFactor.ABOVE_THEIR_CEILING.takeIf { e.pricePenalty > 0 }, VisitFactor.REGULAR.takeIf { regular },
                 ),
@@ -186,16 +211,38 @@ object Market {
         }
     }
 
+    /**
+     * What a blade is worth in [hero]'s hands: its power as worn, by class fit, by what its affixes and its fame add to a
+     * strike (both bounded, `battle.Power`), and by the matchup against [threat] when a siege warning is out. The same
+     * terms on the blade in hand and on the one on the shelf; bare hands count as `unarmedPower`.
+     */
+    fun valueInHand(ctx: ResolutionContext, hero: Hero, weapon: Weapon?, threat: FactionDef?): Double =
+        Power.weaponPower(weapon, ctx.config) * Power.conditionFactor(weapon, ctx.config) * Power.classFit(hero, weapon, ctx.content, ctx.config) *
+            Power.affixAttackMultiplier(weapon, ctx.content) * Power.fameFactor(weapon, ctx.config) * (if (threat != null) Power.matchup(weapon, threat, ctx.config) else 1.0)
+
+    /** The besieger heroes shop against today ([Battle.warnedFaction]); none with `threatUtility` at 0, which switches siege demand off whole. */
+    private fun threat(ctx: ResolutionContext): FactionDef? = if (ctx.config.customers.threatUtility > 0) Battle.warnedFaction(ctx) else null
+
+    /** One-way: the candidate has it, the blade in hand does not, and this hero has not bought for it before. */
+    private fun sideReason(hero: Hero, drive: Ambition?, current: Weapon, weapon: Weapon, config: BalanceConfig): VisitReason? = when {
+        VisitReason.TASTE_MATCH !in hero.sideReasons && weapon.element != null && weapon.element == hero.elementTaste && current.element != hero.elementTaste -> VisitReason.TASTE_MATCH
+        VisitReason.PRIZED !in hero.sideReasons && drive == Ambition.COLLECTOR && weapon.quality >= config.ambitionCollectorQuality && current.quality < config.ambitionCollectorQuality -> VisitReason.PRIZED
+        VisitReason.STORIED !in hero.sideReasons && weapon.fame >= config.legendFameThreshold && current.fame < config.legendFameThreshold -> VisitReason.STORIED
+        else -> null
+    }
+
     fun evaluate(ctx: ResolutionContext, hero: Hero, current: Weapon?, weapon: Weapon, noiseRoll: Double): Evaluation {
         val config = ctx.config
         val content = ctx.content
+        val cfg = config.customers
         val price = weapon.listedPrice ?: Int.MAX_VALUE
         val fit = Power.classFit(hero, weapon, content, config)
-        val currentFit = Power.classFit(hero, current, content, config)
-        // Worn power on both sides: a battered blade is worth less in the hand and on the shelf (a traded-in weapon relisted as is).
-        val currentEffective = (Power.weaponPower(current, config) * Power.conditionFactor(current, config) * currentFit).toInt()
-        val candidateEffective = (weapon.power * Power.conditionFactor(weapon, config) * fit).toInt()
-        val improvement = candidateEffective - currentEffective
+        // The same value on both sides, worn power included: a battered blade is worth less in the hand and on the shelf.
+        val threat = threat(ctx)
+        val held = valueInHand(ctx, hero, current, threat)
+        val gain = valueInHand(ctx, hero, weapon, threat) - held
+        val countersThreat = threat != null && weapon.element != null && weapon.element == threat.weakTo
+        val resisted = threat != null && weapon.element != null && weapon.element == threat.resists
         val worn = current != null && current.condition < config.wornConditionThreshold
         val elementTaste = (if (weapon.element != null && weapon.element == hero.elementTaste) 1.0 else 0.0) +
             (if (weapon.element != null) hero.traits.sumOf { content.trait(it).noveltyTaste } else 0.0)
@@ -208,19 +255,27 @@ object Market {
         val ceiling = maxOf(1, fairPrice(weapon, config)) * priceCeilingMultiplier(ctx.reputation, hero.loyalty, config)
         val pricePenalty = maxOf(0.0, price.toDouble() / ceiling - 1.0) * sensitivity
         val noise = (noiseRoll - 0.5) * 2 * config.utilityNoise
-        val utility = improvement * config.utilityImprovementWeight +
+        val side = if (current != null && cfg.sidegradeTolerance > 0 && gain <= 0 && gain >= -cfg.sidegradeTolerance * held) sideReason(hero, drive, current, weapon, config) else null
+        val utility = gain * config.utilityImprovementWeight +
             (fit - 1.0) * config.utilityClassFitWeight +
             elementTaste * config.utilityElementTasteWeight +
             hero.loyalty * 0.01 * config.utilityLoyaltyWeight +
             collector +
             fame +
             (if (worn) config.wornReplacementUtility else 0.0) +
+            (if (countersThreat) cfg.threatUtility else 0.0) +
             noise -
             pricePenalty * config.utilityPricePenaltyWeight
+        val affordable = price <= hero.gold + tradeInCredit(current, config) + stipend(ctx, hero)
+        // "Refused for it": the same roll buys this blade on a calm day and not under the warning.
+        val calm = if (resisted) valueInHand(ctx, hero, weapon, null) - valueInHand(ctx, hero, current, null) else gain
+        val refusedAsResisted = resisted && affordable && calm > 0 && utility + (calm - gain) * config.utilityImprovementWeight >= config.purchaseUtilityThreshold &&
+            !(gain > 0 && utility >= config.purchaseUtilityThreshold)
         return Evaluation(
-            weapon, utility, affordable = price <= hero.gold + tradeInCredit(current, config) + stipend(ctx, hero), improvement = improvement, fit = fit, pricePenalty = pricePenalty, worn = worn,
+            weapon, utility, affordable = affordable, gain = gain, fit = fit, pricePenalty = pricePenalty, worn = worn,
             tasteMatch = weapon.element != null && weapon.element == hero.elementTaste, novelty = weapon.element != null && hero.traits.sumOf { content.trait(it).noveltyTaste } > 0,
             collectorPrize = collector > 0, storied = fame > 0,
+            sideReason = side, countersThreat = countersThreat, resisted = resisted, refusedAsResisted = refusedAsResisted,
         )
     }
 
@@ -324,7 +379,7 @@ object Market {
             val offer = w.copy(location = WeaponLocation.Shelf(price))
             val buyer = ctx.aliveHeroes().filter { it.gold >= price }
                 .map { it to evaluate(ctx, it, ctx.equippedWeapon(it.id), offer, 0.5) }
-                .filter { (_, e) -> e.improvement > 0 && e.utility >= config.purchaseUtilityThreshold }
+                .filter { (_, e) -> e.gain > 0 && e.utility >= config.purchaseUtilityThreshold }
                 .maxByOrNull { (_, e) -> e.utility }?.first
             if (buyer != null) {
                 ctx.updateHero(buyer.copy(gold = buyer.gold - price, want = null))

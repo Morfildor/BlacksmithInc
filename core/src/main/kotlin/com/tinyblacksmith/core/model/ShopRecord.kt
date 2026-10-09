@@ -13,17 +13,21 @@ import kotlinx.serialization.Serializable
 
 enum class VisitKind { BROWSE, COMMISSION, COLLECTOR }
 
-/** The first nine keep the v1 spellings. M4 appends TASTE_MATCH, PRIZED, STORIED, COUNTERS_THREAT, RESISTED. */
+/** The first nine keep the v1 spellings. M4 appended the last five; constants are only ever appended. */
 enum class VisitReason {
     EMPTY_SHELVES, TOO_EXPENSIVE, NOT_BETTER, OVERPRICED, NOT_SUITED, UNDECIDED,     // left
     WORN_OUT, GREAT_FIT, GOOD_ENOUGH,                                                // bought
     COMMISSION_DELIVERED, COLLECTOR_PURCHASE,
+    TASTE_MATCH, PRIZED, STORIED,                    // bought a near-equal blade for something their own lacked (once each per hero)
+    COUNTERS_THREAT,                                 // bought, in the siege warning, a blade of the element the besieger fears
+    RESISTED,                                        // left: the blade they would have taken is of the element the besieger shrugs off
 }
 
 /** Facts the counter may state. No utility, weight or chance ever leaves Market (GDD: descriptive only). */
 enum class VisitFactor {
     SUITS_CLASS, OFF_CLASS, ELEMENT_TASTE, LIKES_NOVELTY, STRONGER_THAN_OWN, NOT_STRONGER_THAN_OWN, OWN_BLADE_WORN,
     UNARMED, STORIED_BLADE, COLLECTOR_PRIZE, CAN_AFFORD, CANNOT_AFFORD, ABOVE_THEIR_CEILING, REGULAR,
+    COUNTERS_THREAT, THREAT_RESISTS,
 }
 
 /** A blade as it was at the counter: a copy, so the evening's wear, fame or loss does not rewrite the morning. */

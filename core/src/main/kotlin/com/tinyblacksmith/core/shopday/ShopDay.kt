@@ -100,7 +100,7 @@ object ShopDay {
     }
 
     /** Each maps to a different action tomorrow; EMPTY_SHELVES and UNDECIDED are never featured. */
-    private val refusalOrder = listOf(VisitReason.OVERPRICED, VisitReason.TOO_EXPENSIVE, VisitReason.NOT_SUITED, VisitReason.NOT_BETTER)
+    private val refusalOrder = listOf(VisitReason.OVERPRICED, VisitReason.TOO_EXPENSIVE, VisitReason.RESISTED, VisitReason.NOT_SUITED, VisitReason.NOT_BETTER)
 
     /**
      * Up to [FEATURED_MAX] visits. A slot is kept for the best purchase and one for the first refusal when the day has

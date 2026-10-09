@@ -51,6 +51,14 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   the answer to a want. (The screens that list wants arrive with the next interface update; the rule is live now.)
 
 ### Changed
+- Customers weigh a blade the way it fights. What a blade is worth to a buyer now counts its properties and its fame as
+  well as power, wear and class fit, on the blade in hand and on the one on your shelf alike, and a small gain is a gain
+  (it used to be rounded away). A blade as good as their own, give or take a little, can be bought once for something
+  theirs lacks: their favoured element, a collector's prize, or a name.
+- The town arms for the siege. On the eve of a siege and on the siege day, a blade of the element the besieger fears is
+  wanted (it counts for more in the hand and sells with its own reason), the town's champions come to the shop more
+  readily, and a blade of the element the besieger shrugs off that would have sold on a calm day stays on the shelf,
+  and the visit says so. Stronger blades of a resisted element still sell.
 - The walls can cost a champion. When a siege is lost badly (the raid at one and a half times the town's defense or
   more) it is a rout: the champions take a heavier wound, and one who went up barely recovered can fall there. The
   blade they carried is recovered by comrades more often than on the road, or seized, or lost. A narrow loss still only
