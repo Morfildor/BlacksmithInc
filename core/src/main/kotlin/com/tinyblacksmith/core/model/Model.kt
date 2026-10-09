@@ -135,6 +135,8 @@ data class Hero(
     val lastPurchaseDay: Int? = null,
     /** Willing days in a row on which the shop was full before this hero got a seat; 0 again once served. */
     val turnedAwayStreak: Int = 0,
+    /** The portrait this hero wears: an asset ID from their class's `appearances`, stored at creation (`Appearance`). Null only in a save older than the field. */
+    val appearance: String? = null,
 ) {
     val fullName: String get() = "$name $surname"
     val isAlive: Boolean get() = fate == HeroFate.ALIVE
@@ -268,9 +270,9 @@ data class LegendEntry(
     val element: Element? = null,
 )
 
-/** [id] is the era and the hero's ID ("era2-h7"); a lineage written before schema 4 was given "era2" by the migration. Names never identify a lineage. */
+/** [id] is the era and the hero's ID ("era2-h7"); a lineage written before schema 4 was given "era2" by the migration. Names never identify a lineage. [appearance] is the face the hero wore; a descendant takes it when nobody living wears it. */
 @Serializable
-data class LineageAnchor(val era: Int, val heroName: String, val surname: String, val classId: HeroClassId, val fame: Int, val deed: String, val id: String = "")
+data class LineageAnchor(val era: Int, val heroName: String, val surname: String, val classId: HeroClassId, val fame: Int, val deed: String, val id: String = "", val appearance: String? = null)
 
 @Serializable
 data class EraSummary(val era: Int, val daysSurvived: Int, val pointsAwarded: Int, val cause: String)

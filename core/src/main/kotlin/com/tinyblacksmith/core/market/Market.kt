@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.content.ToolEffect
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.engine.WorldEvents
+import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.Rng
 import com.tinyblacksmith.core.rng.RngStream
@@ -123,8 +124,7 @@ object Market {
     /** The customer as they walked in. Copies of what the visit read; nothing here is an input to it. */
     private fun customer(ctx: ResolutionContext, hero: Hero, current: Weapon?) = CustomerSnapshot(
         heroId = hero.id, name = hero.fullName, classId = hero.classId, level = hero.level,
-        // The face the app draws today (`Sprites.portraitKey`); T3.3 replaces this with `Appearance.keyOf(hero)`.
-        appearance = "portrait_${hero.classId.value}_${Math.floorMod(hero.id.value.hashCode(), 5)}",
+        appearance = Appearance.keyOf(hero),
         traits = hero.traits, elementTaste = hero.elementTaste, ambition = hero.ambition, gold = hero.gold, loyalty = hero.loyalty,
         regular = isRegular(hero, ctx.config), guildId = hero.guildId, mentorName = hero.mentorName, equipped = current?.let { WeaponSnapshot.of(it) },
     )

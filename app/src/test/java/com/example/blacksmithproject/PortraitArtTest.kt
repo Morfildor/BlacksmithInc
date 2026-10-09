@@ -3,7 +3,11 @@ package com.example.blacksmithproject
 import com.example.blacksmithproject.ui.PortraitArt
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.heroUpgraded
+import com.tinyblacksmith.core.content.LaunchContent
+import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.model.HeroClassId
+import com.tinyblacksmith.core.model.LegacyProfile
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -16,6 +20,30 @@ class PortraitArtTest {
     private val classes = listOf("guardian", "ranger", "duelist", "battlemage", "warden")
     private val faceCount = mapOf("guardian" to 5, "ranger" to 4, "duelist" to 4, "battlemage" to 4, "warden" to 3)
     private fun drawable(name: String) = File("src/main/res/drawable-nodpi/$name.png")
+
+    /**
+     * The faces core hands out (`HeroClassDef.appearances`) are the faces the art has, key for key and in order: a stored
+     * key is its own face. A hero saved before faces were stored shows, through core's frozen table, the face it always did.
+     */
+    @Test
+    fun everyContentKeyResolves() {
+        assertEquals(classes, LaunchContent.catalog.classes.map { it.id.value })
+        for (cls in LaunchContent.catalog.classes) {
+            assertEquals("faces of ${cls.id.value}", PortraitArt.heroFaces.getValue(cls.id.value), cls.appearances)
+            for (key in cls.appearances) {
+                assertEquals(key, Sprites.heroFaceKey(key, cls.id))
+                assertEquals(PortraitArt.heroes.getValue(key).drawable, Sprites.portrait(key, cls.id))
+                assertEquals(PortraitArt.heroesUpgraded.getValue(key).drawable, Sprites.portrait(key, cls.id, upgraded = true))
+            }
+            for (n in 1..40) assertEquals(Appearance.legacyKey(cls.id, "h$n"), Sprites.heroFaceKey("h$n", cls.id))
+            for (slot in 0..4) assertEquals(Appearance.legacyFace(cls.id, slot), Sprites.heroFaceKey("portrait_${cls.id.value}_$slot", cls.id))
+        }
+        // A live hero draws the stored key; without one (a save older than the field) the face its ID always had.
+        for (hero in GameEngine().newRun(LegacyProfile(), 1).heroes.values) {
+            assertEquals(PortraitArt.heroes.getValue(hero.appearance!!).drawable, Sprites.portrait(hero))
+            assertEquals(PortraitArt.heroes.getValue(Appearance.legacyKey(hero)).drawable, Sprites.portrait(hero.copy(appearance = null)))
+        }
+    }
 
     @Test
     fun everyClassHasItsFaces() {
