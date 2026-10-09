@@ -120,7 +120,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T7.1 | Documents and version | INT | todo | | | |
 | T7.2 | Fresh-player sessions | owner + INT | blocked: needs five first-time players | | | |
 | T7.3 | GDD 19 walk-through | INT | todo | | | |
-| T7.4 | Release identity runbook | INT | todo (the rename itself is blocked: application ID) | | | |
+| T7.4 | Release identity runbook | INT | runbook done; rename blocked on app ID; icon not done | 63ec70f | release APK 12.4 MB to 4.2 MB with R8; debug activities absent from release dex; only the androidx self-signature permission; minified trial build on emulator: new game, forge, End Day, force-stop, relaunch resumes Day 2; runend.sh on trial NOT RUN; launcher icon NOT DONE; rename rehearsed on a throwaway copy only | |
 
 ## Execution record (started 2026-10-09)
 

@@ -16,3 +16,8 @@ local.properties
 .kotlin/
 .claude/worktrees/
 scratchpad/
+
+# Signing material never belongs in the repository
+*.jks
+*.keystore
+keystore.properties
