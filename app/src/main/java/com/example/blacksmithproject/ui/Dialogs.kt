@@ -36,8 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -68,6 +70,7 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
     val suggested = vm.engine.suggestedPrice(w)
     val reveal by animateFloatAsState(targetValue = 1f, animationSpec = tween(if (reducedMotion) 0 else 600), label = "reveal")
     AlertDialog(
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         onDismissRequest = vm::dismissReveal,
         title = {
             Column(Modifier.fillMaxWidth().graphicsLayer { alpha = reveal }, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -89,9 +92,9 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
             }
         },
         confirmButton = {
-            Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, suggested)); vm.dismissReveal() }, enabled = w.isInStorage, modifier = Modifier.heightIn(min = 48.dp)) { Text("List at $suggested") }
+            Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, suggested)); vm.dismissReveal() }, enabled = w.isInStorage, modifier = Modifier.heightIn(min = 48.dp).testTag("reveal_list")) { Text("List at $suggested") }
         },
-        dismissButton = { OutlinedButton(onClick = vm::dismissReveal, modifier = Modifier.heightIn(min = 48.dp)) { Text("Store") } },
+        dismissButton = { OutlinedButton(onClick = vm::dismissReveal, modifier = Modifier.heightIn(min = 48.dp).testTag("reveal_store")) { Text("Store") } },
     )
 }
 
@@ -113,7 +116,7 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
             color = Color.Transparent,
             contentColor = PaperInk,
             shape = MaterialTheme.shapes.large,
-            modifier = Modifier.fillMaxWidth().heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp).padding(horizontal = Space.md).paperBackground(),
+            modifier = Modifier.fillMaxWidth().heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp).padding(horizontal = Space.md).paperBackground().semantics { testTagsAsResourceId = true },
         ) {
             Column(Modifier.padding(horizontal = Space.lg, vertical = Space.md)) {
                 // "EMBERFALL GAZETTE — DAY 3": the paper's name large, the date as a dateline under it.
@@ -132,7 +135,7 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
                         PaperRuleLine(top = Space.md, bottom = Space.sm)
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("FROM THE FIELD", style = MaterialTheme.typography.labelMedium, color = PaperInkMuted, modifier = Modifier.semantics { heading() })
-                            if (shown < totalSteps) TextButton(onClick = { shown = totalSteps }, colors = ButtonDefaults.textButtonColors(contentColor = PaperInk)) { Text("Skip") }
+                            if (shown < totalSteps) TextButton(onClick = { shown = totalSteps }, modifier = Modifier.testTag("report_skip"), colors = ButtonDefaults.textButtonColors(contentColor = PaperInk)) { Text("Skip") }
                         }
                         var step = 0
                         r.replays.forEach { replay ->
@@ -156,7 +159,7 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
                         Text("THE FORGE HAS FALLEN", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
-                Button(onClick = vm::dismissReport, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 52.dp)) {
+                Button(onClick = vm::dismissReport, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 52.dp).testTag("report_close")) {
                     Text(if (r.defeated) "See the legacy" else "Begin day ${s.state.day}", style = MaterialTheme.typography.titleMedium)
                 }
             }
@@ -195,13 +198,14 @@ private fun PaperRuleLine(top: Dp, bottom: Dp) {
 fun BlessingDialog(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     AlertDialog(
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         onDismissRequest = {},
         title = { Text("The town offers a blessing") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
                 s.state.pendingBlessingOffer.forEach { id ->
                     val b = content.blessing(id)
-                    OutlinedButton(onClick = { vm.dispatch(Command.ChooseBlessing(id)) }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                    OutlinedButton(onClick = { vm.dispatch(Command.ChooseBlessing(id)) }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("blessing_${id.value}")) {
                         Sprites.blessing(id)?.let { PixelImage(it, 32.dp, description = null); Spacer(Modifier.width(12.dp)) }
                         Column(Modifier.weight(1f)) {
                             Text(b.name, style = MaterialTheme.typography.titleSmall)
@@ -211,13 +215,19 @@ fun BlessingDialog(s: UiState.Playing, vm: GameViewModel) {
                 }
             }
         },
-        confirmButton = { TextButton(onClick = vm::dismissBlessingOffer) { Text("Decide later") } },
+        confirmButton = { TextButton(onClick = vm::dismissBlessingOffer, modifier = Modifier.testTag("blessing_later")) { Text("Decide later") } },
     )
 }
 
 @Composable
 fun ErrorDialog(message: String, onDismiss: () -> Unit) {
-    AlertDialog(onDismissRequest = onDismiss, title = { Text("The forge says") }, text = { Text(message) }, confirmButton = { Button(onClick = onDismiss) { Text("Alright") } })
+    AlertDialog(
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
+        onDismissRequest = onDismiss,
+        title = { Text("The forge says") },
+        text = { Text(message) },
+        confirmButton = { Button(onClick = onDismiss, modifier = Modifier.testTag("error_ok")) { Text("Alright") } },
+    )
 }
 
 /** Poses for the siege diorama derive from the replay step being shown; the stage never changes outcomes. */
