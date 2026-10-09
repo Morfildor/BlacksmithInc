@@ -4,6 +4,7 @@ import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.ToolEffect
+import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.Rng
 import com.tinyblacksmith.core.rng.RngState
@@ -95,6 +96,9 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
 
     fun toolTotal(effect: ToolEffect): Int =
         content.tools.filter { it.effect == effect }.sumOf { it.magnitudePerLevel * (tools[it.id] ?: 0) }
+
+    fun upgradeTotal(effect: UpgradeEffect): Int =
+        content.upgrades.filter { it.effect == effect }.sumOf { it.magnitudePerLevel * legacy.upgradeLevel(it.id) }
 
     fun shelfSlots(): Int = config.shelfSlots + toolTotal(ToolEffect.SHELF_SLOTS)
 

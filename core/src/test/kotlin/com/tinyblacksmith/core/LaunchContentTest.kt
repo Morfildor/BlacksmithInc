@@ -28,7 +28,7 @@ class LaunchContentTest {
         assertEquals(12, catalog.affixes.count { it.kind == AffixKind.BENEFICIAL })
         assertEquals(6, catalog.affixes.count { it.kind == AffixKind.FLAW })
         assertEquals(8, catalog.blessings.size)
-        assertTrue(catalog.upgrades.size in 6..8, "upgrade tracks: ${catalog.upgrades.size}")
+        assertEquals(11, catalog.upgrades.size, "upgrade tracks: the eight of v2 plus catalog access, recipe odds and legacy artifacts (GDD 9)")
         assertTrue(catalog.traits.size >= 7)
         assertEquals((1..6).toList(), catalog.materials(MaterialCategory.CORE).map { it.tier })
     }

@@ -48,7 +48,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             runId = runId, seed = seed, rulesVersion = rulesVersion, contentVersion = content.version, era = era, day = 1,
             phase = Phase.PLANNING, gold = startingGold, energy = startingEnergy, overworkToday = 0, reputation = startingReputation,
             rng = RngState.seeded(seed, rulesVersion), world = WorldModifiers(), materials = materials,
-            supplierStock = restockedSupplier(), weapons = emptyMap(), heroes = emptyMap(),
+            supplierStock = restockedSupplier(legacy), weapons = emptyMap(), heroes = emptyMap(),
             town = Town(integrity = startingIntegrity, militia = 5, championIds = emptyList(), nextSiegeDay = config.siegeInterval),
             factions = emptyMap(), commissions = emptyMap(), events = emptyList(), blessings = emptyList(), pendingBlessingOffer = emptyList(),
             milestones = emptySet(), legacy = legacy, discoveriesThisRun = 0, processedEndDayIds = emptySet(), lastResolution = null,
@@ -69,10 +69,18 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             val h = Heroes.generate(ctx, hRng, if (i == 0) descendant else null)
             ctx.updateHero(h)
         }
+        // Known Name: the shop is known before its doors open. One starting hero per level is already a regular with coin saved for a blade.
+        val regulars = ctx.aliveHeroes().take(content.upgrades.filter { it.effect == UpgradeEffect.STARTING_REPUTATION }.sumOf { legacy.upgradeLevel(it.id) })
+        for (h in regulars) ctx.updateHero(h.copy(loyalty = config.regularLoyaltyThreshold, gold = h.gold + config.legacyTracks.knownNameRegularGold))
         ctx.emit(EventType.RUN_STARTED, 5, "Era $era begins in Emberfall under a ${ctx.world.name.lowercase()}. The first invasion is expected on day ${config.siegeInterval}.")
         descendant?.let { d ->
             val h = ctx.heroes.values.first { it.descendantOf == d.heroName }
             ctx.emit(EventType.HERO_ARRIVED, 4, "${h.fullName}, descendant of ${d.heroName} who ${d.deed}, has come to Emberfall.", listOf(h.id.value))
+        }
+        if (regulars.isNotEmpty()) {
+            val names = regulars.map { it.fullName }
+            val who = if (names.size == 1) "${names[0]} is already a regular" else "${names.dropLast(1).joinToString(", ")} and ${names.last()} are already regulars"
+            ctx.emit(EventType.RUN_STARTED, 4, "The forge's name went before it: $who of the shop.", regulars.map { it.id.value })
         }
         val state = ctx.toState()
         assertInvariants(state)
@@ -337,13 +345,16 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.energy = maxOf(0, base - ctx.overworkToday)
         ctx.overworkToday = 0
         val caravanDelayed = ctx.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == ctx.day
-        for ((m, s) in restockedSupplier()) ctx.supplierStock[m] = if (caravanDelayed) 0 else s
+        for ((m, s) in restockedSupplier(ctx.legacy)) ctx.supplierStock[m] = if (caravanDelayed) 0 else s
         ctx.worldFlags.entries.removeIf { it.value < ctx.day }
         for (h in ctx.aliveHeroes()) if (h.lastActivity == HeroActivity.SHOP) ctx.updateHero(h.copy(lastActivity = HeroActivity.IDLE))
     }
 
-    private fun restockedSupplier(): Map<MaterialId, Int> =
-        content.materials.mapNotNull { m -> m.dailySupplierStock?.let { m.id to it } }.toMap()
+    /** The day's stock of the limited materials; Caravan Ties (CATALOG_ACCESS) deepens every one of them. */
+    private fun restockedSupplier(legacy: LegacyProfile): Map<MaterialId, Int> {
+        val extra = upgradeTotal(legacy, UpgradeEffect.CATALOG_ACCESS) * config.legacyTracks.catalogStockPerLevel
+        return content.materials.mapNotNull { m -> m.dailySupplierStock?.let { m.id to it + extra } }.toMap()
+    }
 
     fun upgradeTotal(legacy: LegacyProfile, effect: UpgradeEffect): Int =
         content.upgrades.filter { it.effect == effect }.sumOf { it.magnitudePerLevel * legacy.upgradeLevel(it.id) }

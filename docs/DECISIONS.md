@@ -1028,3 +1028,221 @@ Known Name +0 / -0.5, all maxed +15 / +11.3.
   price is no longer reported as a premium "on the shop's good name".
 - Not applied from the review: the signboard effect, affix magnitudes, Known Name. Not measured: v4 at 10,000 seeds;
   wear and fame interacting with returned legends over several eras (unit tests only).
+
+## Balance v5 (pending merge): legacy tracks
+GDD 9, LOCKED: "strong permanent upgrades". PROPOSED: the category list ("starting energy, forge/tool mastery,
+material efficiency, better starting resources, extra starting gold, enhanced quality/recipe odds, catalog access,
+starting shop reputation, legacy artifact opportunities") and "Intentionally noticeable strength growth, with bounded
+effects". GDD 8: "Progression cannot guarantee immortality". Eight tracks existed; catalog access, recipe odds and
+legacy artifacts had none, and three of the eight (Known Name, Family Savings, Tireless Smith) measured about 0 days.
+This section adds the three tracks, changes Known Name, keeps the other two with evidence, and gives the impact table
+a second set of yardsticks. `BalanceConfig.version` is not bumped here (the merge does it); `RULES_VERSION` and the
+save schema are unchanged and no model field was added (upgrade levels already live in `LegacyProfile.upgrades`).
+
+### The three new tracks (names PROPOSED; three levels each at 8 / 20 / 45)
+| Track (ID) | Category | Lever | Level 0 / 1 / 2 / 3 | Bound |
+|---|---|---|---|---|
+| **Caravan Ties** (`catalog_access`) | catalog access | daily supplier stock of every limited material (4 rare cores, 3 rare augments, 4 catalysts) | 1 / 2 / 3 / 4 units a day (Binding Salt 2 / 3 / 4 / 5) | three levels; gold and energy still limit what is bought; a delayed caravan still empties the shelf |
+| **Anvil Lore** (`recipe_odds`) | recipe odds | signature transformation chance of an eligible forge | 0.15 / 0.20 / 0.25 / 0.30 before mastery | the existing `signatureMaxChance` 0.50 is applied after every bonus |
+| **Homing Steel** (`legacy_artifacts`) | legacy artifacts | weight of "A Famous Blade Returns", and the share of its old quality and power the blade keeps | weight 1 / 2 / 3 / 4 (of about 42 when every event is eligible); factor 0.70 / 0.75 / 0.80 / 0.85 | still once a run (`maxPerRun` 1); factor capped at 0.85, so never whole (GDD 7); ineligible with an empty Legend Board |
+
+- Why these levers. Every one of the 16 materials is already sold from day 1, so "access" can only mean depth: the
+  rare ones are limited to one unit a day (`MaterialDef.dailySupplierStock`), which is what stops a smith with gold
+  from forging the same rare recipe twice. The signature roll is one line in `Forge.apply`
+  (`base + mastery x 0.01`, capped); the track adds a term inside the same cap. A legend returns through one weighted
+  world event with a fixed dormancy factor; the track moves both, within bounds.
+- Stacking at the cap: 0.15 + 0.12 (Forge Mastery 3) + 0.15 (Anvil Lore 3) = 0.42; two whetstone levels make 0.48;
+  Forgefire on top would be 0.54 and is held at 0.50 (`aSignatureIsNeverCertainWithEveryBonusStacked`: 600 eligible
+  forges, about half transform).
+- Determinism: no RNG draw was added anywhere. The supplier map, the signature chance, the event weight and the
+  dormancy factor are the same Doubles and Ints as before at level 0, so a new account plays byte-identically (see
+  Evidence). Homing Steel changes which event a draw picks only while "A Famous Blade Returns" is eligible.
+- Code: `GameEngine.restockedSupplier(legacy)` (called by `newRun` and `newMorning`), `Forge.apply`,
+  `WorldEvents.weight` / `returnedLegendFactor`, `ResolutionContext.upgradeTotal`, three `UpgradeEffect` values and
+  three `UpgradeDef`s in `LaunchContent` (the slice catalog has none of them and ignores a profile that owns them).
+  The new tracks count levels (`magnitudePerLevel = 1`); their numbers are in `BalanceConfig`.
+- Player-facing text describes the effect in words (GDD round 9); the run-end screen and the Legacy panel list
+  `content.upgrades` in a scrolling column, so eleven rows need no UI change, and no screen draws an upgrade icon.
+
+### Numbers (`BalanceConfig.legacyTracks: LegacyTracksConfig`, all PROPOSED)
+| Field | Value | Meaning |
+|---|---|---|
+| `catalogStockPerLevel` | 1 | extra daily units of every limited material per Caravan Ties level |
+| `recipeOddsPerLevel` | 0.05 | added to the signature chance per Anvil Lore level |
+| `legendReturnWeightPerLevel` | 1.0 | added to the event weight per Homing Steel level |
+| `legendQualityFactorPerLevel` | 0.05 | added to `returnedLegendQualityFactor` (0.7) per Homing Steel level |
+| `returnedLegendQualityFactorMax` | 0.85 | ceiling of that factor |
+| `knownNameRegularGold` | 30 | coin each Known Name regular has saved (see below) |
+
+One nested object, not six flat fields: `BalanceConfig` is at the JVM limit of 255 argument slots per method (176
+parameters in 242 slots before v5, a Double taking two; the generated `copy$default` needed 250). Flat fields beyond
+the limit compile and then fail every test at class load ("Too many arguments in method signature"). The object costs
+one slot (243 / 251 now).
+
+### Known Name, Family Savings, Tireless Smith
+Run length is quantised to the 5-day siege rhythm and sales are bound by what heroes can pay, so the impact table now
+prints a second table per upgrade (see Simulator below). With it, each of the three was examined.
+
+**Known Name: changed.** +15 starting reputation measured -0.3 days at 10,000 seeds under BALANCED_ACTIVE (26.0 vs
+26.4), -0.2 under SYNERGY and +0.1 under BALANCED_INVEST (1,000 seeds). Why: reputation adds visit chance (+7.5 points a
+hero at level 3), but the shop serves at most `maxCustomersPerDay` = 4 and a new account already fills 3.9 of them
+(102.3 visits over 26.4 days). The upgrade adds 0.1 visits a day, the added visits end TOO_EXPENSIVE (31.3 -> 32.9 a
+run) and sales fall (26.7 -> 25.8). Its other effect, the price ceiling, only matters to a smith who prices above fair.
+What decides the first week is the heroes' purses (about 85 gold on day 1), so the track now also sets that:
+**one starting hero per level (the first by ID) begins as a regular** (loyalty `regularLoyaltyThreshold`, so the
+Gazette calls them one and they tolerate a small premium) **with 30 gold saved for a blade**; a run-start record names
+them. It stays a starting-reputation perk, draws no RNG and is bounded at three heroes and 90 gold.
+
+| Known Name, BALANCED_ACTIVE, 10,000 seeds | Median (p10/p90) | Mean | Sold by day 5 | Defense at the first siege | First siege held | Sold / run |
+|---|---|---|---|---|---|---|
+| none | 25 (20/35) | 26.4 | 8.2 | 213.5 | 83 % | 26.7 |
+| level 3, reputation only (v4) | 25 (20/35) | 26.0 | 8.3 | 213.3 | 83 % | 25.8 |
+| level 3, regulars without savings (`--knownNameGold 0`) | 25 (20/35) | 25.9 | 8.2 | 213.1 | 82 % | 25.6 |
+| level 3, 20 gold | 30 (20/35) | 27.2 | 8.8 | 221.8 | 89 % | 27.7 |
+| **level 3, 30 gold (adopted)** | 30 (20/35) | 27.8 | 9.0 | 226.2 | 91 % | 28.4 |
+| level 3, 40 gold | 30 (20/35) | 28.3 | 9.1 | 230.8 | 94 % | 29.1 |
+| level 3, 50 gold | 30 (20/35) | 28.7 | 9.2 | 234.5 | 95 % | 29.5 |
+| level 1 / level 2 at 30 gold | 25 (20/35) / 30 (20/35) | 26.9 / 27.3 | 8.5 / 8.8 | 218.5 / 222.1 | 86 % / 89 % | 27.3 / 27.9 |
+
+30 gold puts the track between Thrifty Hands (+1.2) and Forge Mastery (+2.1), with every level above the 0.3-day noise
+floor (+0.5 / +0.9 / +1.4). Loyalty alone does nothing the bots can see. Two temporary probes, not kept in the code:
+giving the savings to the last three heroes by ID instead of the first three gives 27.6 (so the effect is the purse,
+not the place in the queue); raising the daily customer cap by one per level instead gives 27.7 days and 34.7 sales a
+run, which is the lever the signboard needs (DECISIONS "Per-tool sweep") and was left for that decision.
+
+**Family Savings: kept as it is.** +300 gold moves a run by +0.2 days (BALANCED_ACTIVE), +0.9 (SYNERGY), -0.4
+(BALANCED_INVEST), all at 10,000 seeds, and 0.0 under the FAIR policies, which never spend it. What it buys shows on
+the second yardsticks: one more tool level by the first siege under BALANCED_ACTIVE (3.5 -> 4.5; defense 213.5 ->
+217.5, held 83 -> 86 %); under SYNERGY two more weapons forged by the first siege, 1.8 more rare units and the first
+premium sale 0.4 days earlier (defense 238.0 -> 242.3); under BALANCED_INVEST the first premium sale 0.6 days earlier
+but a first siege held less often (69 -> 66 %), because the invest rule turns the gold into blades no first-week hero
+can afford. Gold may not buy survival directly (GDD 8, LOCKED: no gold-funded repair), so the smith's gold is worth
+what the purchases are worth: 300 gold in the till is worth -0.4 to +0.9 days, 90 gold in three heroes' purses (Known
+Name) +1.4. A larger number was tried in v2 without effect; the yardstick, not the magnitude, was wrong.
+
+**Tireless Smith: kept as it is.** +3 energy is +30 % of the LOCKED 10-energy day and buys exactly that much work:
+weapons forged by the first siege 21.8 -> 25.4 and per run 104.0 -> 135.6 under BALANCED_ACTIVE (BALANCED_FAIR 25 ->
+30 by the first siege; RECKLESS_FAIR signature weapons 0.67 -> 0.83). Days: +0.5 (BALANCED_ACTIVE), -0.5 (SYNERGY),
++0.1 (BALANCED_INVEST) at 10,000 seeds, 0.0 (BALANCED_FAIR) and +0.2 (RECKLESS_FAIR) at 1,000. Sales by the first
+siege do not move (8.2 -> 8.1): output is not what limits a run, and no bot spends energy on anything but more Quick
+Forges (none uses Advanced Forge, a catalyst, a technique or a second Hone a day). Raising it would mean a larger
+share of the locked energy budget for no measured gain.
+
+A side finding from the same table: on the v4 rules a maxed account sold 3.2 weapons by day 5 (a new account: 8.2) and
+held the first siege in 72 % of runs (new: 84 %), because its better weapons cost more than first-week heroes hold.
+With the regulars a maxed account sells 4.5 and holds 88 %.
+
+### Simulator (`sim/Simulator.kt`)
+- `RunStats` gains `firstSiegeDefense`, `firstSiegeHeld`, `forgedByFirstSiege`, `soldByFirstSiege`,
+  `toolsByFirstSiege`, `firstPremiumSaleDay` (first sale or commission of a weapon with a tier-4+ core),
+  `rareMaterialsBought` (limited-stock supplier units) and `legendsReturned`, all read from commands the driver issues
+  and from event records. `Report.yardsticks()` averages them; `UpgradeImpact.yardsticks` carries them in the JSON.
+- After the impact lines the CLI prints "Second yardsticks": one row for no upgrade, one per upgrade, one for all
+  maxed. The policy reports are untouched, so `--noImpact` output is unchanged.
+- `--upgrades id=level[,id=level]` plays the policy rows with that legacy account; `--yardsticks` prints the same table
+  for the policy rows; `--knownNameGold N` sweeps the savings.
+- `--legends`: a new account and `maxedLegacy` have no Legend Board, so no blade can return in the default tables.
+  With the flag the maxed runs, the impact baseline and every impact row carry the same board: the blades remembered
+  from 10 new-account runs of the impact policy (`Simulator.veteranLegendBoard`; under BALANCED_ACTIVE 20 blades,
+  mean quality 74, mean power 41). Only the board is taken (no journal, lineages or points).
+
+### Evidence
+Launch content, seed 1, 1,000 seeds unless noted. Median (p10/p90) mean.
+
+| Row | Before (v4) | After |
+|---|---|---|
+| New account, all 14 policies (`--policy all`) | BALANCED_FAIR 20 (15/25) 20.5; BALANCED_ACTIVE 25 (20/35) 26.4; SYNERGY 35 (25/40) 34.0; BALANCED_INVEST 30 (20/40) 29.5 | byte-identical: `diff` of the new-account sections of the two outputs finds no differing line |
+| Maxed, BALANCED_FAIR | 35 (25/40) 33.5, max 50 | 35 (30/40) 35.8, max 50 |
+| Maxed, BALANCED_ACTIVE | 40 (30/45) 37.7, max 55 | 40 (30/45) 39.8, max 55 (10,000 seeds: 40 (30/45) 39.9, max 55) |
+| Maxed, BALANCED_ACTIVE, veteran Legend Board (`--legends`) | - | 40 (35/45) 40.0, max 55 |
+| Maxed, SYNERGY | 45 (30/50) 42.4, max 60 | 45 (35/50) 44.3, max 55 (10,000 seeds: 45 (35/50) 44.5, max 60) |
+| Maxed, BALANCED_INVEST | 40 (25/45) 37.5, max 55 | 40 (30/50) 40.6, max 55 |
+| Maxed, RECKLESS_FAIR | not run | 40 (30/40) 36.7, max 50 |
+| Hard-lock days | 0 | 0 in every run of this section |
+
+Guard rail: the maxed active smith stays at median 40 (p90 45, longest run 55 of 10,000); the longest-lived maxed
+policy is SYNERGY at 45 (p90 50). Every run ends. The whole movement of the maxed rows is Known Name: with the three
+new tracks removed from the maxed account (`--upgrades` with the eight old IDs) BALANCED_ACTIVE is the same 40 (30/45)
+39.8 and BALANCED_FAIR the same 35 (30/40) 35.8; SYNERGY is 45 (40/50) 44.8 and BALANCED_INVEST 40 (30/45) 39.7.
+
+Upgrade impact, single upgrade at level 3 vs none (median delta / mean delta in days):
+
+| Upgrade | BALANCED_ACTIVE before, 1,000 | BALANCED_ACTIVE after, 1,000 | BALANCED_ACTIVE after, 10,000 | SYNERGY after, 10,000 | BALANCED_INVEST after, 10,000 | BALANCED_FAIR after, 1,000 |
+|---|---|---|---|---|---|---|
+| Base | 25 / 26.4 | 25 / 26.4 | 25 / 26.4 | 35 / 34.0 | 30 / 29.3 | 20 / 20.5 |
+| Tireless Smith | +0 / +0.3 | +0 / +0.3 | +0 / +0.5 | +0 / -0.5 | +0 / +0.1 | +0 / +0.0 |
+| Family Savings | +0 / +0.1 | +0 / +0.1 | +0 / +0.2 | +0 / +0.9 | +0 / -0.4 | +0 / +0.0 |
+| Forge Mastery | +5 / +2.1 | +5 / +2.1 | +5 / +2.1 | +0 / +0.5 | +5 / +1.4 | +0 / +1.7 |
+| Stalwart Walls | +10 / +6.1 | +10 / +6.1 | +10 / +6.1 | +5 / +6.5 | +10 / +6.8 | +5 / +6.0 |
+| Thrifty Hands | +5 / +1.3 | +5 / +1.3 | +5 / +1.2 | +0 / +0.2 | +0 / +0.5 | +0 / +1.0 |
+| Well-Stocked Cellar | +5 / +3.4 | +5 / +3.4 | +5 / +3.0 | +0 / +0.3 | +0 / -1.1 | +5 / +4.3 |
+| Lucky Hammer | +5 / +0.6 | +5 / +0.6 | +0 / +0.6 | +0 / +0.5 | +0 / +0.4 | +0 / +0.5 |
+| Known Name | +0 / -0.5 | +5 / +1.3 | +5 / +1.4 | +0 / +1.6 | +5 / +2.4 | +0 / +1.4 |
+| Caravan Ties | - | +0 / +0.0 | +0 / +0.0 | +0 / +0.1 | +0 / +0.2 | +0 / +0.0 |
+| Anvil Lore | - | +0 / +0.0 | +0 / +0.0 | +0 / +0.0 | +0 / +0.0 | +0 / +0.0 |
+| Homing Steel (no Legend Board) | - | +0 / +0.0 | +0 / +0.0 | +0 / +0.0 | +0 / +0.0 | +0 / +0.0 |
+| All maxed | +15 / +11.3 | +15 / +13.4 | +15 / +13.5 | +10 / +10.5 | +10 / +11.3 | +15 / +15.3 |
+
+Second yardsticks, BALANCED_ACTIVE, 10,000 seeds (means per run; the first five columns are the day-5 siege and the
+work done by it):
+
+| Upgrade (level 3) | Defense | Held | Forged | Sold | Tool levels | First tier-4+ sale | Forged / run | Sold / run | Legacy points |
+|---|---|---|---|---|---|---|---|---|---|
+| none | 213.5 | 83 % | 21.8 | 8.2 | 3.5 | day 9.5 in 89 % | 104.0 | 26.7 | 28.0 |
+| Tireless Smith | 220.0 | 86 % | 25.4 | 8.1 | 3.4 | day 9.4 in 90 % | 135.6 | 27.5 | 28.3 |
+| Family Savings | 217.5 | 86 % | 22.9 | 8.2 | 4.5 | day 9.5 in 89 % | 109.5 | 26.7 | 28.3 |
+| Forge Mastery | 218.5 | 80 % | 21.2 | 6.2 | 3.2 | day 10.7 in 88 % | 116.1 | 26.8 | 29.6 |
+| Stalwart Walls | 213.5 | 83 % | 21.8 | 8.2 | 3.5 | day 9.9 in 92 % | 127.4 | 30.2 | 29.5 |
+| Thrifty Hands | 221.6 | 88 % | 22.2 | 8.4 | 3.7 | day 9.3 in 91 % | 115.2 | 28.3 | 28.7 |
+| Well-Stocked Cellar | 228.6 | 84 % | 21.4 | 5.1 | 3.2 | day 10.9 in 91 % | 124.5 | 27.3 | 29.7 |
+| Lucky Hammer | 214.9 | 83 % | 21.7 | 8.0 | 3.5 | day 9.7 in 89 % | 107.5 | 27.2 | 28.5 |
+| Known Name | 226.2 | 91 % | 22.2 | 9.0 | 3.9 | day 8.5 in 94 % | 111.4 | 28.4 | 29.1 |
+| All eleven maxed | 249.8 | 88 % | 28.2 | 4.4 | 4.3 | day 12.2 in 97 % | 234.6 | 35.0 | 32.9 |
+
+The three new tracks buy no days under any bot, by construction: no policy forges an exact signature recipe on
+purpose, hoards gold while buying rare stock, or starts with a Legend Board. Each is picked up on its own yardstick:
+
+| Track | Yardstick (1,000 seeds) | Level 0 / 1 / 2 / 3 | Days |
+|---|---|---|---|
+| Anvil Lore | signature weapons a run, RECKLESS_FAIR (the only bot whose risk meets some recipes) | 0.67 / 0.90 / 1.14 / 1.36; maxed account 5.25 with eight tracks, 8.10 with eleven | 21.0 at every level |
+| Caravan Ties | limited-stock units bought a run, SYNERGY | 14.7 / 16.4 / 16.6 / 16.7; maxed account 22.6 -> 26.5 | 34.0 at every level |
+| Caravan Ties | exact rare-recipe forges in five days with gold to spare (`caravanTiesLetsASmithWithGoldRepeatARareRecipe`) | 6 / 11 / 16 / 21 | - |
+| Homing Steel | legends returned a run, BALANCED_ACTIVE with `--legends` | 0.19 / - / - / 0.55 (maxed account 0.70) | 26.4 at level 0 and 3 |
+| Homing Steel | runs of 150 in which the one legend returned within 20 days, BALANCED_FAIR (unit test numbers) | 22 / 33 / 48 / 61 | - |
+
+Caravan Ties is a choice-widening upgrade, not a strength one: every purchasing bot is bound by gold, not stock.
+Depth lets the naive affinity bot overbuy 198-gold blades (SYNERGY with Family Savings, 2,000 seeds: 35.2 -> 34.0;
+maxed account, 1,000 seeds: 44.8 -> 44.3) and helps the invest rule a little (with Family Savings, 2,000 seeds:
+28.8 -> 29.7; maxed account, 1,000 seeds: 39.7 -> 40.6).
+A returned legend is one mid-run weapon at 70-85 % of its old power; it does not move a run (GDD 7: it must not erase
+progression difficulty).
+
+Tests: 153 JVM tests pass (140 + 13 in `LegacyTracksTest`); `:app:compileDebugKotlin` succeeds.
+
+### Commands
+```
+./gradlew :core:test
+./gradlew :app:compileDebugKotlin -q
+./gradlew :core:simulate --args="--runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE"      # before and after
+./gradlew :core:simulate --args="--runs 1000 --seed 1 --policy P --impactPolicy P"                      # P = BALANCED_FAIR, BALANCED_INVEST, SYNERGY, RECKLESS_FAIR (SYNERGY and BALANCED_INVEST also before)
+./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy P --impactPolicy P"                     # P = BALANCED_ACTIVE (before and after), SYNERGY, BALANCED_INVEST
+./gradlew :core:simulate --args="--runs 1000 --seed 1 --policy BALANCED_ACTIVE --impactPolicy BALANCED_ACTIVE --legends"
+./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy BALANCED_ACTIVE --noImpact --yardsticks --upgrades shop_reputation=L --knownNameGold G"   # L 1-3, G 0/20/30/40/50
+./gradlew :core:simulate --args="--runs 1000 --seed 1 --policy P --noImpact --yardsticks --upgrades recipe_odds=L"      # P = RECKLESS_FAIR; catalog_access=L under SYNERGY
+./gradlew :core:simulate --args="--runs 1000 --seed 1 --policy P --noImpact --yardsticks --upgrades <eight old IDs>=3[,<three new IDs>=3]"   # maxed with and without the new tracks
+./gradlew :core:simulate --args="--runs 2000 --seed 1 --policy P --noImpact --yardsticks --upgrades starting_gold=3[,catalog_access=3]"      # P = SYNERGY, BALANCED_INVEST
+```
+
+### Not changed, and not measured
+- Not changed: tier costs, the eight existing magnitudes, `maxCustomersPerDay`, the visiting order, `maxPerRun` of the
+  legend event. `SliceContent` keeps its four tracks. `Market.kt`, `Heroes.kt` and `Battle.kt` are untouched.
+- Not measured: a bot that hunts signatures or repeats a rare recipe (Advanced Forge, catalysts, several units a day),
+  so Anvil Lore and Caravan Ties have no run-length number; Homing Steel on a real multi-era account (a board that
+  grows, lineages, a known journal) rather than the 10-run veteran board; the per-level sweeps of the new tracks at
+  10,000 seeds; anything on a device (the two upgrade lists were checked in code and by compiling only); the
+  interaction with the hero-activity and replay / weapon-fate work built in parallel.
+- Open: Family Savings and Tireless Smith still buy about 0 days. Their value is visible on the second yardsticks and
+  to a player; if run length must move, the evidence above says the lever is hero purchasing power or a bot that
+  spends energy on Advanced Forge, not a larger number on either track.
+- Noticed, not touched: the Traveling Ore Merchant adds 2 to the supplier's stock at End Day, and the morning restock
+  that follows overwrites it, so only the free unit it brings is ever seen.

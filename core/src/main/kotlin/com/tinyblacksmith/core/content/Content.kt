@@ -130,8 +130,15 @@ data class BlessingDef(
  * MATERIAL_EFFICIENCY = percent chance per level that a forge does not consume its augment (Forge.apply);
  * STARTING_MATERIALS = extra units per level of every material in the starting kit (GameEngine.newRun);
  * EXCEPTIONAL_CHANCE = percentage points per level added to the exceptional roll (Forge.apply).
+ * The v5 tracks count levels (magnitudePerLevel = 1) and take their numbers from BalanceConfig:
+ * CATALOG_ACCESS = extra daily supplier stock of every limited material (GameEngine.restockedSupplier);
+ * RECIPE_ODDS = signature transformation chance (Forge.apply); LEGACY_ARTIFACTS = weight and wholeness of a returning
+ * Legend Board blade (WorldEvents).
  */
-enum class UpgradeEffect { STARTING_ENERGY, STARTING_GOLD, QUALITY_BONUS, STARTING_INTEGRITY, STARTING_REPUTATION, MATERIAL_EFFICIENCY, STARTING_MATERIALS, EXCEPTIONAL_CHANCE }
+enum class UpgradeEffect {
+    STARTING_ENERGY, STARTING_GOLD, QUALITY_BONUS, STARTING_INTEGRITY, STARTING_REPUTATION, MATERIAL_EFFICIENCY, STARTING_MATERIALS, EXCEPTIONAL_CHANCE,
+    CATALOG_ACCESS, RECIPE_ODDS, LEGACY_ARTIFACTS,
+}
 
 data class UpgradeDef(
     val id: UpgradeId,

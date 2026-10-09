@@ -257,8 +257,36 @@ data class BalanceConfig(
     val collectorFameMultiplier: Double = 2.0,
     /** Suggested-price premium per counted fame point (+5 % at the cap). Heroes do not raise their price ceiling for fame, so the premium must stay well under the utility bonus (3 x premium x the thriftiest sensitivity 1.6 x 1.3). */
     val weaponFamePricePerPoint: Double = 0.005,
+    // v5 (pending): legacy tracks
+    /** One field (one argument slot) for every number of the v5 legacy tracks; see [LegacyTracksConfig] for why. */
+    val legacyTracks: LegacyTracksConfig = LegacyTracksConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()
     }
 }
+
+/**
+ * v5 (pending): legacy tracks. Every number of the three GDD 9 tracks added in v5 (catalog access, recipe odds, legacy
+ * artifacts) and of the Known Name regulars; all PROPOSED, evidence in docs/DECISIONS.md "Balance v5".
+ *
+ * Grouped in one object because [BalanceConfig] sits at the JVM limit of 255 argument slots per method (a Double takes
+ * two; its generated `copy$default` needed 250 before v5). More flat fields still compile, but the class then fails to
+ * load ("Too many arguments in method signature") and every test with it.
+ */
+data class LegacyTracksConfig(
+    /** Caravan Ties: extra units per level of every limited-stock material the supplier carries each day. */
+    val catalogStockPerLevel: Int = 1,
+    /** Anvil Lore: added per level to the signature transformation chance, inside [BalanceConfig.signatureMaxChance]. */
+    val recipeOddsPerLevel: Double = 0.05,
+    /** Homing Steel: added per level to the weight of the "A Famous Blade Returns" event (1.0 without it; still at most once a run). */
+    val legendReturnWeightPerLevel: Double = 1.0,
+    /** Homing Steel: added per level to [BalanceConfig.returnedLegendQualityFactor], up to [returnedLegendQualityFactorMax]; a returned blade is never whole (GDD 7). */
+    val legendQualityFactorPerLevel: Double = 0.05,
+    val returnedLegendQualityFactorMax: Double = 0.85,
+    /**
+     * Known Name: one starting hero per level is already a regular (loyalty [BalanceConfig.regularLoyaltyThreshold])
+     * and has this much extra coin saved for a blade. Starting reputation alone measured -0.3 days (DECISIONS.md).
+     */
+    val knownNameRegularGold: Int = 30,
+)

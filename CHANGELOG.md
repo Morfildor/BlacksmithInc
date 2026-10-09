@@ -7,6 +7,26 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- Three new permanent upgrades on the run-end screen and in the Legacy panel, three levels each for 8 / 20 / 45 legacy
+  points, one for each upgrade category the design document names that had none:
+  - **Caravan Ties** (catalog access): the supplier keeps one more of every rare material in stock each day, per
+    level, so a smith with gold can forge the same rare recipe several times a day.
+  - **Anvil Lore** (recipe odds): a correct signature recipe transforms more often with each level, still under the
+    same ceiling, so a signature is never certain.
+  - **Homing Steel** (legacy artifacts): blades on the Legend Board return more often (still at most once a run) and
+    less dormant, never whole. With an empty Legend Board it does nothing.
+- Headless simulator: the upgrade impact table is followed by a second table of what each upgrade buys besides days
+  (town defense at the first siege and how often it held, weapons forged and sold and tools owned by then, the first
+  sale of a tier-4+ weapon, rare supplier units bought, signature weapons, legends returned). New flags:
+  `--upgrades id=level,...` (play the policy rows with that legacy account), `--yardsticks` (the same table for the
+  policy rows), `--legends` (give the maxed and impact runs a veteran's Legend Board) and `--knownNameGold N`.
+
+### Changed
+- Known Name: besides its starting reputation, one starting hero per level is now already a regular of the shop and
+  arrives with coin saved for a blade; the first day's news names them. On its own, starting reputation made runs
+  slightly shorter in the simulator; with the regulars the first siege is held more often.
+
 ## [0.5.0] - 2026-10-09
 Home dashboard, a readable Gazette, weapon wear and weapon fame (balance v4).
 

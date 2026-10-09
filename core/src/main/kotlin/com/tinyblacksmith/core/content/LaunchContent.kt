@@ -4,7 +4,7 @@ import com.tinyblacksmith.core.model.*
 
 /**
  * Launch content at the LOCKED counts (GDD 4.1, 4.2, 6, 8, 9, 10): 6 families, 16 materials, 5 classes, 3 factions,
- * 12 beneficial affixes, 6 flaws, 8 blessings, 8 upgrade tracks. Names are PROPOSED (GDD 4.2); IDs are stable.
+ * 12 beneficial affixes, 6 flaws, 8 blessings, 11 upgrade tracks. Names are PROPOSED (GDD 4.2); IDs are stable.
  * Every ID, value and affinity that also exists in [SliceContent] is kept identical so saves, legacy profiles and
  * the persistent Experiment Journal stay valid. Numbers without GDD guidance are marked PROPOSED inline.
  * The engine default since balance v2; [SliceContent] remains for slice-specific tests.
@@ -90,6 +90,9 @@ object LaunchContent {
     val UPG_STOCK = UpgradeId("starting_stock")
     val UPG_LUCK = UpgradeId("lucky_hammer")
     val UPG_REPUTATION = UpgradeId("shop_reputation")
+    val UPG_CATALOG = UpgradeId("catalog_access")
+    val UPG_RECIPES = UpgradeId("recipe_odds")
+    val UPG_ARTIFACTS = UpgradeId("legacy_artifacts")
 
     /** GDD 9 PROPOSED early upgrade tiers. */
     private val TIER_COSTS = listOf(8, 20, 45)
@@ -221,7 +224,12 @@ object LaunchContent {
             UpgradeDef(UPG_EFFICIENCY, "Thrifty Hands", UpgradeEffect.MATERIAL_EFFICIENCY, magnitudePerLevel = 10, maxLevel = 3, costPerLevel = TIER_COSTS, description = "10% chance per level that a forge spares its augment."),
             UpgradeDef(UPG_STOCK, "Well-Stocked Cellar", UpgradeEffect.STARTING_MATERIALS, magnitudePerLevel = 2, maxLevel = 3, costPerLevel = TIER_COSTS, description = "+2 of every common material at the start of a run, per level."),
             UpgradeDef(UPG_LUCK, "Lucky Hammer", UpgradeEffect.EXCEPTIONAL_CHANCE, magnitudePerLevel = 2, maxLevel = 3, costPerLevel = TIER_COSTS, description = "+2% exceptional forging chance per level."),
-            UpgradeDef(UPG_REPUTATION, "Known Name", UpgradeEffect.STARTING_REPUTATION, magnitudePerLevel = 5, maxLevel = 3, costPerLevel = TIER_COSTS, description = "+5 starting shop reputation per level."),
+            UpgradeDef(UPG_REPUTATION, "Known Name", UpgradeEffect.STARTING_REPUTATION, magnitudePerLevel = 5, maxLevel = 3, costPerLevel = TIER_COSTS, description = "+5 starting shop reputation per level, and one more hero starts as a regular with coin saved for your work."),
+            // v5 tracks for the remaining GDD 9 categories (catalog access, recipe odds, legacy artifacts). Names are PROPOSED;
+            // each counts levels and takes its numbers from BalanceConfig ("v5 (pending): legacy tracks").
+            UpgradeDef(UPG_CATALOG, "Caravan Ties", UpgradeEffect.CATALOG_ACCESS, magnitudePerLevel = 1, maxLevel = 3, costPerLevel = TIER_COSTS, description = "The supplier keeps more of every rare material in stock each day; a deeper shelf with each level."),
+            UpgradeDef(UPG_RECIPES, "Anvil Lore", UpgradeEffect.RECIPE_ODDS, magnitudePerLevel = 1, maxLevel = 3, costPerLevel = TIER_COSTS, description = "A true signature recipe answers the hammer more readily with each level, though never for certain."),
+            UpgradeDef(UPG_ARTIFACTS, "Homing Steel", UpgradeEffect.LEGACY_ARTIFACTS, magnitudePerLevel = 1, maxLevel = 3, costPerLevel = TIER_COSTS, description = "Blades on the Legend Board find their way home more often, and less dulled by the years, with each level."),
         ),
         // Hidden affinities (GDD 4.6), range -4..+8; >= 7 reads "excellent affinity" in the journal. Slice pairs unchanged.
         // Each augment has one excellent core: Ember/Obsidian, Frost/Moonsteel, Storm/Silver, Grave/Bronze, Verdant/Iron, Sun/Starsteel.
