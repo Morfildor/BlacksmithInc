@@ -183,6 +183,10 @@ Deliver into the `Pixel art assets/` folder, in either form:
   scales with the image width). This sheet replaces the per-core weapon icons and the element overlays: the level
   column shows the core tier (+1 iron … +6 moonsteel) plus +1 for epic and +2 for legendary rolls.
 
-`python tools/pixelart/import_assets.py` then writes the drawables and records the IDs as hand-made, and the
-placeholder generator leaves those IDs alone. Any sprite you do not deliver keeps its placeholder, so partial
+`python tools/pixelart/import_assets.py` then writes the drawables and records the IDs as imported (the tooling still labels them
+"hand-made" in its output and manifest until task T2.4 renames the label), and the placeholder generator leaves those IDs alone. Any sprite you do not deliver keeps its placeholder, so partial
 deliveries are useful. Questions about an ID or size: ask before drawing, the sizes are load-bearing.
+
+## 9. Art sources and provenance
+
+The imported art has three kinds of source. The concept sheets (the five numbered sheets, the `Weapons master` sheet and the reference boards beside the artist pack) are AI-generated: each source file carries an embedded Content Credentials (C2PA) manifest naming ChatGPT / OpenAI as the generator (asset review `docs/major_update_evidence/04_assets_content.md`, section 9). The artist's 1x production pack and the UI backgrounds pack are script-drawn from authored shapes, by their own READMEs; the importer takes 58 sprites from the first. `generate_assets.py` draws programmatic placeholders for IDs with no imported art. No evidence of manual pixel editing exists, and the project rule is never to hand-edit PNGs. The slicer resamples, so the shipped drawables carry no credentials; source files are never re-saved in place, so their embedded credentials are preserved. Art-origin metadata is not a secret and not a security finding. No licence or attribution text exists under `Pixel art assets/`; how the art is described on a paid store listing and the usage terms of the generating account are owner decisions (plan section 5.7, 10.4). "Imported art" is the neutral name for the category the tooling still prints as "hand-made".

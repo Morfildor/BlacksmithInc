@@ -1027,6 +1027,8 @@ Known Name +0 / -0.5, all maxed +15 / +11.3.
 - The fame price premium sits in `Market.askingPrice` (the going rate), so a renowned blade sold at its suggested
   price is no longer reported as a premium "on the shop's good name".
 - Not applied from the review: the signboard effect, affix magnitudes, Known Name. Not measured: v4 at 10,000 seeds;
+  (superseded: the signboard, the affix magnitudes and Known Name were applied in v5, and v4 and v5 were reviewed at 10,000 seeds, see
+  "Balance v5 review at 10,000 seeds" below)
   wear and fame interacting with returned legends over several eras (unit tests only).
 
 ## Weapon pruning and day-report recovery (session 8, no balance change)
@@ -1908,3 +1910,34 @@ Also on the merged tree: `WeaponPruningTest` (active smith, 400 forced days, see
 against 1,852 unpruned, save 1,235,889 against 1,835,036 bytes (-33 %; -42 % before v5, the active bot now keeps
 more stock). On the emulator `EndDayPerfTest` reads p50 8.3 / p95 21.3 / max 47.1 ms with 367 weapons at day 120
 (4.4 / 8.5 / 35.5 with 157 before v5); one run, emulator noise not characterised, budget 200 ms.
+
+## Art provenance wording (2026-10-09, documentation only, no code change)
+- **Finding (asset review, `docs/major_update_evidence/04_assets_content.md`, section 9):** the seven top-level source images and both concept
+  references carry embedded Content Credentials (C2PA) naming ChatGPT / OpenAI as the generator; the two packs are script-drawn, by their READMEs;
+  no licence or attribution text exists under `Pixel art assets/`. The documents had called all of it "hand-made", and the tooling still does
+  (`generate_assets.py` writes `"source": "handmade"`).
+- **Decision:** the documents say "imported art" for the category and name each source: AI-generated concept sheets and weapon master sheet
+  (94 slices and 336 weapons), script-drawn pack sprites (58), programmatic placeholders from `generate_assets.py`. Manual editing is claimed
+  nowhere, because no evidence shows any. The tooling label stays until task T2.4 renames it; until then, read "hand-made" in tool output and
+  in `docs/ART_MANIFEST.md` (generated) as "imported".
+- Art-origin metadata is not a secret and not a security finding. Source files under `Pixel art assets/` are never re-saved in place, so their
+  embedded credentials are preserved; the shipped drawables carry none, because the slicer resamples.
+- **Open (owner, blocks P8 not development):** how the art is described on the store listing, and the usage terms of the generating account
+  (plan 5.7, 10.4). One paragraph in `docs/ART_BRIEF.md` ("Art sources and provenance") is the working statement.
+
+## Planned departures from PROPOSED GDD values (2026-10-09; planned, lands with M2/M3, not yet in the code)
+Recorded by task T0.3 from plan 2.5 and 4.8. Nothing below is built: the code is release 0.6.0 and still plays 8 starting heroes, 4 seats and
+seven panels. Each entry becomes a normal dated section, with measured evidence, when its slice lands. No LOCKED decision changes.
+| GDD PROPOSED value | Planned value | Why | Lands |
+|---|---|---|---|
+| "roughly 2-4 customers a day" (GDD table; adopted above as 2–4) | 6 counter seats (7 / 8 with the Signboard; +3 on a festival) | the shop day shows the customers; four seats left the counter thin and, at today's 8 heroes, 3.5 served a day | M3 (T3.4, T3.1 first) |
+| starting population 8 (8 start, floor 5, cap 12 today); the GDD's own range is 10-14 | 12 residents | 8 is below the GDD range, so 12 moves toward it; about +1.2 mean days per extra resident at fixed rules, compensated in balance v6 | M3 (T3.4) |
+| GDD 12 panel list (Market, Town, Journal, Gazette, Legacy, Settings) | four destinations (Shop, Forge, Town, Records) with detail sheets, and a Settings gear | seven tabs auto-size labels down to 8-12 sp; sheets reach any hero or blade from anywhere | M2 (T2.8a) |
+Alternatives kept in the sweep: 5 seats / 10 residents (safer, less visible); 8 seats / 14 residents (rejected: the Signboard dies and the
+first-era band breaks). One GDD 12 / 19 line stays open after the update: audio and haptic toggles (deferred together, plan 10.3).
+
+## Documentation corrections (2026-10-09, task T0.3)
+Checklist wording of the external review's section 9 (C01-C09, C12) was applied to `docs/GDD_CHECKLIST.md`: a ticked line states only what its
+evidence shows and each narrowed claim has an open line beside it. Older sections of this file keep their historical "Not measured: 10,000 seeds"
+and "Known Name is not applied" lines as written at the time; they are superseded by "Balance v5 review at 10,000 seeds" (every policy and both maxed
+accounts reviewed) and by "Balance v5, part 5" (Known Name reworked, +1.6 mean days).
