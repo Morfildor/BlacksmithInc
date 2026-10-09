@@ -7,6 +7,8 @@ import com.example.blacksmithproject.data.SaveFailure
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.engine.GameError
+import com.tinyblacksmith.core.legacy.LegacyOutcome
 import com.tinyblacksmith.core.model.CommandId
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.LegacyProfile
@@ -68,6 +70,9 @@ class GameSessionFailureTest {
         val start = engine.newRun(LegacyProfile(), 42L)
         val failure = session(repo(SaveCodec.encodeRun(start), garbage)).loadFailure()
         assertTrue(failure is SaveFailure.Corrupt && failure.key == "legacy")
+        assertTrue("and says the run beside it loads", (failure as SaveFailure.Corrupt).runSound)
+        val alone = session(repo("not a run either", garbage)).loadFailure()
+        assertTrue(alone is SaveFailure.Corrupt && alone.key == "legacy" && !alone.runSound)
     }
 
     @Test
@@ -184,6 +189,53 @@ class GameSessionFailureTest {
         assertEquals(1, repo.commitCount)
     }
 
+    /** Review m2: when the confirmation read fails too, the session does not know whether the save landed, and says so. */
+    @Test
+    fun aSaveThatCouldNotBeConfirmedIsReportedAsUnconfirmed() = sessionTest {
+        val start = engine.newRun(LegacyProfile(), 42L)
+        val repo = liveRepo(start)
+        val session = session(repo)
+        session.load()
+        repo.failNextCommitAfterWriting = IOException("the error surfaced after the transaction committed")
+        repo.failNextLoad = IOException("and the store did not answer the read either")
+
+        val op = Op.Dispatch(endDay(start), start.runId)
+        val failed = session.run(op) as Result.Failed
+        assertTrue(failed.unconfirmed)
+        assertEquals(Status.Failed(op, failed.failure, unconfirmed = true), session.status.value)
+        assertEquals("what is shown is still the day before", 1, session.snapshot.value?.run?.day)
+
+        // Trying again writes the very same day: nothing is played twice.
+        val written = repo.run
+        assertTrue(session.retry() is Result.Done)
+        assertEquals(written, repo.run)
+        assertEquals(2, session.snapshot.value?.run?.day)
+
+        // A save that plainly failed is not "unconfirmed": the read said nothing was written.
+        val next = session.snapshot.value!!.run!!
+        session.run(Op.MoveCursor(DayCursor(next.lastResolution!!.commandId.value, DayCursor.Stage.DONE)))
+        repo.failNextCommit = IOException("disk full")
+        assertEquals(false, (session.run(Op.Dispatch(endDay(next), next.runId)) as Result.Failed).unconfirmed)
+    }
+
+    /** Review I5: a damaged database file is reported as such and left alone; only Start over moves it aside. */
+    @Test
+    fun aDamagedFileIsReportedLeftAloneAndSetAsideOnlyByStartOver() = sessionTest {
+        val repo = liveRepo()
+        repo.fileDamaged = true
+        val session = session(repo)
+        assertTrue(session.loadFailure() is SaveFailure.FileDamaged)
+        assertTrue("trying again changes nothing", (session.retry() as Result.Failed).failure is SaveFailure.FileDamaged)
+        assertEquals(0, repo.fileQuarantines)
+        assertNull(session.snapshot.value)
+
+        assertTrue(session.startOverKeepingBackup() is Result.Done)
+        assertEquals(1, repo.fileQuarantines)
+        assertTrue("no row is renamed inside a file that cannot be read", repo.quarantined.isEmpty())
+        assertEquals(GameSession.Snapshot(null, LegacyProfile(), null), session.snapshot.value)
+        assertTrue("and a new game can begin", session.run(Op.BeginEra(7L, null)) is Result.Done)
+    }
+
     @Test
     fun retryGivesTheSameResolutionAsAFirstSuccess() = sessionTest {
         val start = engine.newRun(LegacyProfile(), 42L)
@@ -256,14 +308,69 @@ class GameSessionFailureTest {
         assertTrue(session.startOverKeepingBackup() is Result.Done)
         assertEquals(before, repo.run)
 
-        // An unreadable legacy row is set aside too (it is the only way forward) and kept just the same.
-        val start = engine.newRun(LegacyProfile(), 42L)
-        val both = repo(SaveCodec.encodeRun(start), garbage)
+        // With no readable run beside it, an unreadable legacy row is set aside too (the only way forward), and kept just the same.
+        val both = repo("also not a save", garbage)
         val lost = session(both)
         assertTrue(lost.loadFailure().let { it is SaveFailure.Corrupt && it.key == "legacy" })
         assertTrue(lost.startOverKeepingBackup() is Result.Done)
         assertEquals(garbage, both.quarantined["legacy.bak"])
-        assertEquals(SaveCodec.encodeRun(start), both.quarantined["run.bak"])
+        assertEquals("also not a save", both.quarantined["run.bak"])
         assertEquals(GameSession.Snapshot(null, LegacyProfile(), null), lost.snapshot.value)
+    }
+
+    /** Review I1: the run row carries the profile, so a damaged legacy row costs neither the run nor the legacy. */
+    @Test
+    fun anUnreadableLegacyRowNeverCostsAReadableRun() = sessionTest {
+        val day2 = (engine.handle(engine.newRun(veteran, 42L), endDay(engine.newRun(veteran, 42L))) as CommandOutcome.Accepted).state
+        val watched = DayCursor(day2.lastResolution!!.commandId.value, DayCursor.Stage.DONE).encode()
+        val newer = SaveCodec.json.encodeToString(SaveEnvelope.serializer(), SaveEnvelope(SaveCodec.SCHEMA_VERSION + 1, "{}"))
+        for (badLegacy in listOf("not a save", newer)) {
+            val runRow = SaveCodec.encodeRun(day2)
+            val repo = repo(runRow, badLegacy)
+            repo.cursor = watched
+            val session = session(repo)
+            assertTrue(session.loadFailure().let { (it as? SaveFailure.Corrupt)?.key == "legacy" || (it as? SaveFailure.Newer)?.key == "legacy" })
+
+            assertTrue(session.startOverKeepingBackup() is Result.Done)
+            assertEquals("only the damaged row is set aside", mapOf("legacy.bak" to badLegacy), repo.quarantined)
+            assertEquals("the run row is exactly as it was", runRow, repo.run)
+            assertEquals("the legacy row is rebuilt from the copy the run carries", SaveCodec.encodeLegacy(day2.legacy), repo.legacy)
+            assertEquals("the day already read stays read", watched, repo.cursor)
+            val snap = session.snapshot.value!!
+            assertEquals(day2, snap.run)
+            assertEquals(12, snap.legacy.points)
+            assertTrue("and the run plays on", session.run(Op.Dispatch(endDay(day2), day2.runId)).let { it is Result.Done && it.accepted?.resolution != null })
+        }
+    }
+
+    /** The copy inside an ended run predates its claim, so after the restore the run can be claimed: once, for the same award. */
+    @Test
+    fun aClaimedRunRestoredFromItsOwnCopyIsClaimedExactlyOnceMore() = sessionTest {
+        var ended = engine.newRun(veteran, 42L)
+        while (!ended.isEnded) ended = (engine.handle(ended, endDay(ended)) as CommandOutcome.Accepted).state
+        val award = engine.closeRun(ended).totalPoints
+        val repo = repo(SaveCodec.encodeRun(ended), "not a save")
+        repo.cursor = DayCursor(ended.lastResolution!!.commandId.value, DayCursor.Stage.DONE).encode()
+        val session = session(repo)
+        assertTrue(session.loadFailure() is SaveFailure.Corrupt)
+        assertTrue(session.startOverKeepingBackup() is Result.Done)
+        assertEquals(ended, session.snapshot.value?.run)
+        assertEquals("the profile the run carried", ended.legacy, session.snapshot.value?.legacy)
+
+        assertTrue(session.run(Op.Claim(ended.runId)) is Result.Done)
+        assertEquals("exactly what the lost row held after its claim", veteran.points + award, session.snapshot.value?.legacy?.points)
+        assertEquals(Result.Rejected(GameError.AlreadyClaimed(ended.runId)), session.run(Op.Claim(ended.runId)))
+        assertEquals("the same profile an undamaged save holds after its claim", (engine.claimLegacy(ended.legacy, engine.closeRun(ended)) as LegacyOutcome.Updated).legacy, SaveCodec.decodeLegacy(repo.legacy!!))
+    }
+
+    /** Start over sets aside only what cannot be read: rows that are sound are left alone and simply loaded. */
+    @Test
+    fun startOverNeverSetsASoundRunAside() = sessionTest {
+        val start = engine.newRun(veteran, 42L)
+        val repo = repo(SaveCodec.encodeRun(start), SaveCodec.encodeLegacy(veteran))
+        val session = session(repo)
+        assertTrue(session.startOverKeepingBackup() is Result.Done)
+        assertTrue(repo.quarantined.isEmpty())
+        assertEquals(start, session.snapshot.value?.run)
     }
 }

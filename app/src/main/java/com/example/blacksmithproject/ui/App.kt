@@ -42,7 +42,7 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
             is UiState.RunEnded -> RunEndScreen(s, vm)
         }
         // A save that failed leaves the last saved state on screen under this dialog; nothing is lost by dismissing it.
-        (ui.op as? GameSession.Status.Failed)?.let { SaveFailureDialog(it.op, onRetry = vm::retry, onKeepWorking = vm::dismissSaveFailure) }
+        (ui.op as? GameSession.Status.Failed)?.let { SaveFailureDialog(it.op, it.unconfirmed, onRetry = vm::retry, onKeepWorking = vm::dismissSaveFailure) }
     }
 }
 
