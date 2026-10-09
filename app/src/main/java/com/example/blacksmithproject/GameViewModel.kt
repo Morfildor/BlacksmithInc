@@ -288,6 +288,12 @@ class GameViewModel(
         launch(Op.BeginEra(seed ?: (System.nanoTime() xor snap.legacy.eras.size.toLong()), snap.run?.runId)) { edit { Local(loading = false, speed = it.speed) } }
     }
 
+    /** Main menu, "Abandon run": the run is discarded unclaimed and the menu offers a new game. */
+    fun abandonRun() {
+        val run = session.snapshot.value?.run ?: return
+        launch(Op.Abandon(run.runId)) { edit { Local(loading = false, speed = it.speed) } }
+    }
+
     fun selectPanel(panel: Panel) = edit { it.copy(panel = panel) }
     /** A bar tap: the destination's first page, unless the screen is already inside it. */
     fun selectDest(dest: Dest) = edit { if (it.panel.dest == dest) it else it.copy(panel = when (dest) { Dest.SHOP -> Panel.HOME; Dest.FORGE -> Panel.FORGE; Dest.TOWN -> Panel.TOWN; Dest.RECORDS -> Panel.GAZETTE }) }

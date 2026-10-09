@@ -7,10 +7,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -27,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.style.TextAlign
@@ -34,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.blacksmithproject.GameSession
 import com.example.blacksmithproject.GameViewModel
+import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.shopday.ShopDayHost
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Space
@@ -61,10 +68,10 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
             when (val s = ui) {
                 UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 is UiState.LoadFailed -> LoadFailedScreen(s.failure, s.working, onRetry = vm::retry, onStartOver = vm::startOver)
-                is UiState.Title -> MainMenu("Era ${s.legacy.nextEra} awaits", s.legacy, if (s.legacy.eras.isEmpty()) "Light the forge" else "Begin a new era", "title_new_run", s.op !is GameSession.Status.Working, onPrimary = { leaveMenu(); vm.newRun() }, onSettings = { menuSettings = true })
-                is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue", "menu_continue", true, leaveMenu, { menuSettings = true }) else WorkshopScreen(s, vm, onMainMenu = { menuOpen = true })
-                is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue", "menu_continue", true, leaveMenu, { menuSettings = true }) else ShopDayHost(s, vm)
-                is UiState.RunEnded -> if (menuOpen) MainMenu("Era ${s.run.era} has ended", s.legacy, "Continue", "menu_continue", true, leaveMenu, { menuSettings = true }) else RunEndScreen(s, vm)
+                is UiState.Title -> MainMenu("Era ${s.legacy.nextEra} awaits", s.legacy, "New game", "title_new_run", s.op !is GameSession.Status.Working, onPrimary = { leaveMenu(); vm.newRun() }, onSettings = { menuSettings = true })
+                is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", !s.busy, leaveMenu, { menuSettings = true }, onAbandon = vm::abandonRun) else WorkshopScreen(s, vm, onMainMenu = { menuOpen = true })
+                is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }) else ShopDayHost(s, vm)
+                is UiState.RunEnded -> if (menuOpen) MainMenu("Era ${s.run.era} has ended", s.legacy, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }) else RunEndScreen(s, vm)
             }
             if (menuSettings) SettingsSheet(reducedMotion, vm::setReducedMotion, hapticsOn, vm::setHaptics, onDismiss = { menuSettings = false })
             // A save that failed leaves the last saved state on screen under this dialog; nothing is lost by dismissing it.
@@ -73,19 +80,33 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
     }
 }
 
-/** Main menu: the game's first screen. One primary action (start, or continue the saved run) and Settings. */
+/**
+ * Main menu: the game's first screen. One primary action (a new game, or the saved run), Settings in the corner, and
+ * "Abandon run" while a run is being planned ([onAbandon]); abandoning discards the run after a confirmation.
+ */
 @Composable
-fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag: String, enabled: Boolean, onPrimary: () -> Unit, onSettings: () -> Unit) {
-    Column(
-        Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(Space.lg).testTag("main_menu"),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        ForgeScene(heat = 1f, reducedMotion = true, modifier = Modifier.padding(bottom = Space.md))
-        Text("Tiny Blacksmith", style = MaterialTheme.typography.headlineLarge, textAlign = TextAlign.Center)
-        Text(status, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = Space.sm))
-        legacy?.let { Secondary("Legacy points: ${it.points} · eras survived: ${it.eras.size}", Modifier.padding(top = Space.xs)) }
-        Button(onClick = onPrimary, enabled = enabled, modifier = Modifier.padding(top = Space.lg).widthIn(min = 220.dp).heightIn(min = 52.dp).testTag(primaryTag)) { Text(primary, style = MaterialTheme.typography.titleMedium) }
-        OutlinedButton(onClick = onSettings, modifier = Modifier.padding(top = Space.sm).widthIn(min = 220.dp).heightIn(min = 48.dp).testTag("menu_settings")) { Text("Settings") }
+fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag: String, enabled: Boolean, onPrimary: () -> Unit, onSettings: () -> Unit, onAbandon: (() -> Unit)? = null) {
+    var confirmAbandon by remember { mutableStateOf(false) }
+    Box(Modifier.fillMaxSize().safeDrawingPadding().testTag("main_menu")) {
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(Space.lg),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            ForgeScene(heat = 1f, reducedMotion = true, modifier = Modifier.padding(bottom = Space.md))
+            Text("Tiny Blacksmith", style = MaterialTheme.typography.headlineLarge, textAlign = TextAlign.Center)
+            Text(status, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = Space.sm))
+            legacy?.let { Secondary("Legacy points: ${it.points} · eras survived: ${it.eras.size}", Modifier.padding(top = Space.xs)) }
+            Button(onClick = onPrimary, enabled = enabled, modifier = Modifier.padding(top = Space.lg).widthIn(min = 220.dp).heightIn(min = 52.dp).testTag(primaryTag)) { Text(primary, style = MaterialTheme.typography.titleMedium) }
+            if (onAbandon != null) OutlinedButton(onClick = { confirmAbandon = true }, enabled = enabled, modifier = Modifier.padding(top = Space.sm).widthIn(min = 220.dp).heightIn(min = 48.dp).testTag("menu_abandon")) { Text("Abandon run") }
+        }
+        IconButton(onClick = onSettings, modifier = Modifier.align(Alignment.TopEnd).padding(Space.sm).size(48.dp).testTag("menu_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings") }
     }
+    if (confirmAbandon && onAbandon != null) AlertDialog(
+        onDismissRequest = { confirmAbandon = false },
+        title = { Text("Abandon this run?") },
+        text = { Text("The run is discarded and cannot be recovered. It earns no legacy points, and its discoveries, legends and heroes are not recorded.") },
+        confirmButton = { TextButton(onClick = { confirmAbandon = false; onAbandon() }, modifier = Modifier.testTag("menu_abandon_confirm")) { Text("Abandon run") } },
+        dismissButton = { TextButton(onClick = { confirmAbandon = false }) { Text("Keep playing") } },
+    )
 }

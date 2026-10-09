@@ -177,6 +177,26 @@ class GameSessionTest {
     }
 
     @Test
+    fun abandoningDiscardsTheRunAndClaimsNothing() = sessionTest {
+        val live = engine.newRun(LegacyProfile(points = 12), 43L)       // not seed 42: that is the ended run's ID
+        val repo = liveRepo(live)
+        val session = session(repo)
+        session.load()
+        assertEquals(Result.Stale, session.run(Op.Abandon(ended.runId)))
+        assertTrue(session.run(Op.Abandon(live.runId)) is Result.Done)
+        assertNull("the run row is gone", repo.run)
+        assertNull(session.snapshot.value?.run)
+        assertEquals("nothing is claimed", live.legacy, storedLegacy(repo))
+        assertEquals("a second tap finds no run", Result.Stale, session.run(Op.Abandon(live.runId)))
+        assertTrue("a new game starts from the menu", session.run(Op.BeginEra(7L, null)) is Result.Done)
+
+        // A run that has ended is claimed on the run-end screen, never abandoned.
+        val over = session(unclaimedRepo())
+        over.load()
+        assertEquals(Result.Rejected(GameError.RunEnded), over.run(Op.Abandon(ended.runId)))
+    }
+
+    @Test
     fun doubleBeginEraCreatesOneRun() = sessionTest {
         // From the run-end screen.
         val repo = claimedRepo()
