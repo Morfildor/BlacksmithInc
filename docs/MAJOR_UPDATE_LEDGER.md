@@ -104,7 +104,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T4.4 | (withdrawn: catalyst identity ships through T4.3; four mechanical jobs deferred) | | withdrawn | | | |
 | T4.5 | Artifact fidelity and the ledger | CB + AA | todo | | | |
 | T4.6 | Commission situations | CA + AB | todo | | | |
-| T5.2 | Recovery and reachability | SIM | todo | | | |
+| T5.2 | Recovery and reachability | SIM | done at balance 6; re-measure after M3 | 8f87adb | core 265 pass; all 23 pooled events fire (famous_blade, descendant on veteran accounts only); NOVICE stuck streak 3+ in 0.00 % of 1,000 runs: valve trigger not crossed; EXPERT_ACTIVE 1.9-3.0 % reported; shock arms without a simulator option not run | |
 | T5.3 | Upgrades | CB + CON + AB | todo | | | |
 | T5.4 | Resolver constants | CA + CB | todo | | | |
 | T5.5 | 10,000-seed review after the update | SIM + INT | todo | | | |
@@ -147,3 +147,4 @@ live copy and is copied back to the main checkout at each milestone boundary.
 - M1 independent review (0 critical, 5 important, 9 minor): I1, I2, I5 fixed in the recovery commit (app unit 52, instrumented 11/11; emulator: damaged database file kept byte-identical and set aside as `.corrupt.<millis>` only on a confirmed Start over; damaged legacy row rebuilt from a sound run). I3, I4 fixed with T2.1. Minors m2, m5, m7 fixed; m1, m3, m4, m6, m8, m9 left with reasons in `M1-fix-report.md`.
 - Known gaps after the M1 fixes: a database file truncated to 0 bytes opens as a new game with no message (undetectable by SQLite); file damage that appears mid-session shows the generic "could not save" dialog until restart; Newer / Incompatible screens and the "could not confirm" dialog not seen on a device.
 - Ruling (I5): the damaged file is left in place and renamed only on Start over, rather than renamed at detection, so "Nothing has been deleted or changed" stays literally true across process death. Cost if wrong: the failure screen appears on every launch until the player chooses.
+- Ruling (T5.2): the recovery valve is not built. Its trigger (NOVICE runs with a stuck streak of three days or more above 1 %) measures 0.00 / 0.00 / 0.10 % at three seeds. EXPERT_ACTIVE sits at 1.9 to 3.0 %, which is an aggressive-spending bot getting stuck by its own choices; reported for the owner, re-measured after M3. Cost if wrong: an over-spending player can have three dead days in a row.

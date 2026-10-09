@@ -1941,3 +1941,61 @@ Checklist wording of the external review's section 9 (C01-C09, C12) was applied 
 evidence shows and each narrowed claim has an open line beside it. Older sections of this file keep their historical "Not measured: 10,000 seeds"
 and "Known Name is not applied" lines as written at the time; they are superseded by "Balance v5 review at 10,000 seeds" (every policy and both maxed
 accounts reviewed) and by "Balance v5, part 5" (Known Name reworked, +1.6 mean days).
+
+## Recovery and reachability, measured at balance 6 (2026-10-09, task T5.2; G10, C15)
+Measurement only: no rule or number changed. Command: `./gradlew :core:simulate --args="--runs 1000 --seed 1 --policy every --customers --noImpact"`
+(`--customers` now also prints a `recovery (morning state)` line per row; the default output is byte-identical to before). Metric code is
+`RecoveryProbe` in `core/sim/Metrics.kt`; the definitions below are what the numbers mean.
+
+**Definitions (read from the morning state, before the policy acts).** *Possible sale*: a blade in the shop (shelf or storage) that some living
+hero can afford at the going rate (`suggestedPrice`) and would be stronger with (`Market.evaluate`: affordable and improvement > 0), or a blade
+that closes an offered or accepted commission. *Legal forge*: a Quick forge the energy (with the day's overwork allowance) and the gold on hand
+allow, a core and an augment each on hand or buyable from stock. **Drought** = no possible sale, a legal forge exists. **Stuck** = no possible
+sale and no legal forge. A **streak** is consecutive stuck mornings; a drought day or a day with a possible sale ends it. Salvage, hone and
+donating are not counted as ways out. Day 1 morning is always a drought day (empty shop), about 5 % of a 20-day run's days. The old
+`hardLockDays` ("hard-lock days total" in the default output) is kept unchanged and is now documented as what it measures: days after day 1 with no
+successful forge and an empty shelf when the policy reaches its listing step, i.e. yesterday's leftover shelf; it stays 0 in every row below
+while `BALANCED_ACTIVE` is stuck on 0.47 % of days, which is the G10 finding made visible. The older `empty-shelf days` in the customers block
+(`RunCustomers.droughtDays`) counts End Days with nothing listed; it is a different number from the drought above.
+
+**Valve trigger (plan 4.7: stuck streaks of three days or more in more than 1 % of NOVICE runs).** NOVICE, 1,000 runs, seed 1: **0 of 1,000 runs
+(0.00 %)** had a stuck streak of three days or more. Seeds 10001 and 20001: 0.00 % and 0.10 %. The 1 % trigger is **not crossed** (the three
+sets are within 0.1 % of each other, ten times below the trigger). Longest NOVICE streak: 1 day (seed 1), 2 (seed 10001), 4 (seed 20001). The valve
+(Salvage also returns the augment of an unworn, never-sold blade) is therefore not implemented. Streak 3+ share by bot, 1,000 runs, seed 1:
+
+| policy | mean days | stuck days | drought days | runs with a stuck day | streak 2+ | **streak 3+** | streak 5+ | longest |
+|---|---|---|---|---|---|---|---|---|
+| NOVICE | 23.1 | 0.01 % | 9.79 % | 0.30 % | 0.00 % | **0.00 %** | 0.00 % | 1 |
+| SPENDTHRIFT | 29.3 | 0.44 % | 6.27 % | 9.20 % | 2.30 % | **0.50 %** | 0.00 % | 4 |
+| BROKE_START | 20.1 | 0.00 % | 5.68 % | 0.10 % | 0.00 % | **0.00 %** | 0.00 % | 1 |
+| FREE_LISTINGS | 24.0 | 0.00 % | 4.38 % | 0.10 % | 0.00 % | **0.00 %** | 0.00 % | 1 |
+| BALANCED_FAIR | 20.1 | 0.00 % | 5.66 % | 0.00 % | 0.00 % | **0.00 %** | 0.00 % | 0 |
+| BALANCED_ACTIVE | 27.0 | 0.47 % | 10.98 % | 7.50 % | 2.10 % | **0.90 %** | 0.20 % | 5 |
+| BALANCED_INVEST | 29.4 | 0.19 % | 4.64 % | 3.40 % | 1.30 % | **0.60 %** | 0.00 % | 4 |
+| SYNERGY | 33.4 | 0.02 % | 3.59 % | 0.70 % | 0.10 % | **0.00 %** | 0.00 % | 2 |
+| SIEGE_PREP | 39.1 | 0.10 % | 3.50 % | 2.10 % | 1.00 % | **0.40 %** | 0.00 % | 4 |
+| EXPERT | 42.0 | 0.07 % | 3.21 % | 2.30 % | 0.50 % | **0.00 %** | 0.00 % | 2 |
+| EXPERT_ACTIVE | 42.1 | 1.05 % | 9.12 % | 24.30 % | 8.40 % | **2.20 %** | 0.20 % | 5 |
+
+Every other policy (RANDOM, SAFE_*, RECKLESS_*, BALANCED_CHEAP / EXPENSIVE / REPUTED, OVERWORK, the technique and catalyst bots, REQUEST_DRIVEN,
+SIGNATURE_PURSUIT, SCARCE_RECIPE) has 0.00 % of runs with a streak of 3 or more and no stuck day beyond one run in a thousand; PASSIVE is
+all drought by construction. Noise floor, streak 3+ share over three seed sets (1 / 10001 / 20001): NOVICE 0.0 / 0.0 / 0.1 %, SPENDTHRIFT 0.5 / 0.8 / 1.1 %,
+BROKE_START 0.0 / 0.0 / 0.0 %, FREE_LISTINGS 0.0 / 0.0 / 0.1 %, BALANCED_ACTIVE 0.9 / 0.4 / 0.6 %, EXPERT_ACTIVE 2.2 / 3.0 / 1.9 %.
+
+**Reading.** The trigger as written (NOVICE) is not crossed. Two other bots do cross 1 %: EXPERT_ACTIVE (every seed, 1.9-3.0 %) and SPENDTHRIFT
+(once, 1.1 % at seed 20001, 0.5-0.8 % elsewhere). Both are bots that spend gold down to near zero on tools and premium materials, which is the way
+the stuck state is reached by arithmetic (gold under the price of a core plus an augment, no augment in stock, every hero better armed than the
+shelf). Whether the valve should also answer them is the owner's decision; this task records the numbers. BROKE_START barely shocks (the
+starting kit forges without gold) and FREE_LISTINGS does not run away: end reputation 34.4 and top loyalty 7.9 against 29.0 and 7.9 for BROKE_START
+(a BALANCED_FAIR stand-in), conversion 18.9 %, sales 0.82 a day; it lives 24.0 days against 20.1 because free blades make heroes stronger. A
+material-poor start, a `Lean Harvest` world, prices at 70 % / 180 % beyond BALANCED_CHEAP / EXPENSIVE, and a town that lost half its heroes have no
+simulator option yet and were not run.
+
+**C15: the 25 events.** `WorldEventReachabilityTest.everyPooledEventFiresInTwoThousandRunsAndBothRulesTrigger`: 1,000 new-account runs (seeds 1-1000)
+and 1,000 veteran-account runs (three claimed eras of BALANCED_ACTIVE: journal, Legend Board, lineages, eras), policies BALANCED_ACTIVE, SYNERGY,
+EXPERT_ACTIVE, BALANCED_FAIR in turn. All 23 pooled events fire, and both generational rules trigger. `famous_blade` and `descendant` need a
+history, so they are required on the veteran cohort only (223 and 189 of 1,000 runs there; 0 on a new account by construction). Rarest on a new
+account: `heroic_inheritance` 39 of 1,000 runs, `guild_banner` 187, `collector` 214, `wandering_master` 214; `champion_retirement` 653,
+`guild_founded` 980. No event is unreachable.
+
+These numbers are re-measured after the customer changes of M3 (T3.1 seats and fair selection, T3.4 residents), which move who can afford what.

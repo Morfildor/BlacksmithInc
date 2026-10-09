@@ -119,6 +119,7 @@ data class RunStats(
     val rarity: Map<Rarity, Int>,
     val heroDeaths: Int,
     val siegesSurvived: Int,
+    /** Days with no successful forge and an empty shelf when the policy reached its listing step; yesterday's leftover shelf, not a stuck state (`RecoveryProbe` measures that). */
     val hardLockDays: Int,
     val legacyPoints: Int,
     val discoveries: Int,
@@ -207,6 +208,7 @@ class SimulationDriver(
         var forged = 0
         var sold = 0
         var goldEarned = 0
+        // Not a stuck state (G10): days after day 1 on which the policy forged nothing and nothing was on the shelf at that point, i.e. before the day's own listing step, so yesterday's leftover shelf. Stuck, drought and streaks are `RecoveryProbe`.
         var hardLocks = 0
         val rarity = Rarity.entries.associateWith { 0 }.toMutableMap()
         val affixWeapons = sortedMapOf<String, Int>()
@@ -234,6 +236,7 @@ class SimulationDriver(
         var legendsReturned = 0
         val collector = if (customerMetrics) CustomerCollector(engine) else null
         while (!state.isEnded && state.day <= maxDays) {
+            collector?.morning(state)
             if (state.pendingBlessingOffer.isNotEmpty()) {
                 val pick = (blessing ?: policy.rules?.blessing)?.choose(state.pendingBlessingOffer, engine.content) ?: state.pendingBlessingOffer.first()
                 state = engine.handle(state, Command.ChooseBlessing(pick)).state()
