@@ -1,4 +1,4 @@
-# Progress — 2026-10-09 (session 7)
+# Progress — 2026-10-09 (session 8)
 
 ## Current phase
 P7 in progress. Launch content is the engine default and balance v2 is tuned against it; all 24 signature recipes,
@@ -22,6 +22,16 @@ concern), weapon wear (`Weapon.condition`, worn-power demand, Hone restores), we
 the v3 review at 10,000 seeds with per-tool / per-affix sweeps (two of its recommendations applied: whetstone
 120/300, warlord pressure 50 without a raid bonus). Evidence in DECISIONS.md ("Balance v4 ...").
 
+## Session 8 focus: major features from the checklist (app 0.6.0 and balance v5 in progress)
+`docs/GDD_CHECKLIST.md` now lists every GDD feature as built or open; the owner asked for the major open features,
+kept in `:core` with plain text surfaces because the UI will be redesigned. On `main` and pushed: weapons-map pruning
+(`WeaponPruning`, End Day tail), the day report reopening after process death (`SettingsStore.dismissedReport`), and
+an instrumented End Day budget test (`EndDayPerfTest`). In flight in three agent worktrees branched from f73e5a1, not
+merged: legacy upgrade tracks (catalog access, recipe odds, legacy artifacts), hero daily life (guild and ambition as
+scored activities), and fight replays for elites and deaths plus weapon fates (guild inheritance, merchant resale).
+In flight on `main`: the signboard effect and the affix magnitudes from the v3 review. `BalanceConfig.version` is
+bumped to 5 once, when the branches merge. Evidence in DECISIONS.md ("Weapon pruning and day-report recovery").
+
 ## What exists
 - `core/` pure Kotlin engine: RNG, slice + launch content catalogs (launch is the default), balance config v2, model,
   commands, End Day resolver, crafting with techniques and all 24 signature recipes, market, hero AI with retirement/
@@ -33,13 +43,13 @@ the v3 review at 10,000 seeds with per-tool / per-affix sweeps (two of its recom
   loyalty-weighted commission patrons, premium/regular Gazette records), weapon-history cap, a checked-in v1 save
   fixture. Balance v3 (session 6): affix effects (bane, elite, heal, loot, wound, shatter, self-harm), elite
   encounters, warlord sieges, hero ambitions, element commissions, `Salvage` / `Hone` / `DonateWeapon` / `BuyTool`
-  commands, workshop tools, `siegeForecast`, `BALANCED_ACTIVE` simulator policy, trade-ins and patrol pay. Balance v4 (session 7): weapon wear and condition, weapon fame effects (capped), whetstone 120/300, warlords from pressure 50; `Gazette.edition`; simulator catalog sweeps. 140 JVM tests.
+  commands, workshop tools, `siegeForecast`, `BALANCED_ACTIVE` simulator policy, trade-ins and patrol pay. Balance v4 (session 7): weapon wear and condition, weapon fame effects (capped), whetstone 120/300, warlords from pressure 50; `Gazette.edition`; simulator catalog sweeps. Session 8: `WeaponPruning` (blades gone for good leave the save after 30 days). 144 JVM tests.
 - `app/` Compose portrait workshop (session 4 layout: three-stat top bar, pinned forge summary over collapsible
   auto-advancing steps, row-based market, per-panel tip banners, single End Day action, full-width paper day report;
   principles in DECISIONS.md; session 5: title/run-end on the spacing tokens with one primary action, Town lists
   every faction with pressure and weakness, screen-reader descriptions on disabled actions), seven panels (Home dashboard first, session 7), technique chips,
   newspaper day report with stepped replay, blessing choice (dismissable for the day), run-end/legacy screen; Room
-  atomic save store; DataStore settings (reduced motion, seen tips). Hand-made pixel art on every screen.
+  atomic save store; DataStore settings (reduced motion, seen tips, the last dismissed day report). Hand-made pixel art on every screen.
 - `tools/pixelart/import_assets.py` (slices concept sheets, copies selected pack sprites, prunes stale imports),
   `generate_assets.py` (placeholders), `tools/emulator/smoke.sh` (device loop). `docs/ART_BRIEF.md` is the brief.
 - Animated siege diorama in the day report (artist pack frames), dead/retired markers, milestone burst on the result
@@ -75,6 +85,9 @@ the v3 review at 10,000 seeds with per-tool / per-affix sweeps (two of its recom
 | Gazette edition (session 7) | `./gradlew :core:test`; `:app:installDebug`; scripted days on the emulator (`scratchpad/drive_gazette.sh`, `drive_home*.sh`) | 127/127 at the time (5 new in `GazetteEditionTest`: hero folding, shop reasons, lede and implied milestones, forge line, a simulated run fully accounted for and order-independent); day 1-4 and day 10 (siege, run end) reports and the archive (latest open, older days as a lede, one opened) screenshotted and sent; the rounds toggle renders collapsed but was not tapped |
 | Home panel on device (session 7) | `:app:installDebug` over a saved day-5 run; `tools/emulator/smoke.sh`; `:app:connectedDebugAndroidTest` | resumes on Home (siege-today block first, commission to answer, shelf with yesterday's visitors, champions, yesterday's lede); End Day returns to Home; smoke.sh SMOKE_DONE with shelf/town/resume checks ok on the 0.5.0 build; instrumented 5/5 |
 | Balance v4 as merged (session 7) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE` before/after the whetstone and warlord changes; warlord sweep `--policy all --noImpact` x3 | 140/140 pass; BALANCED_FAIR 20 (15/25) mean 20.5, sold 19.6; BALANCED_ACTIVE 25 (20/35) mean 26.4, sold 26.9; 0 hard-locks; warlord sieges 0.5-0.6/run (was 0.0), p10 kept by dropping the 1.15 raid bonus; full table in DECISIONS.md |
+| Weapon pruning (session 8) | `./gradlew :core:test` (`WeaponPruningTest`); `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE` before/after | 144/144 pass (4 new: prunable rule, 400-day pair identical but for the weapons map, every Lost reason classified, save round-trip); 400-day active pair: weapons 1,727 -> 857, save 1,745,453 -> 1,012,913 bytes; simulator output identical to 0.5.0 except the `affix weapons/run` line, which counts the end-of-run map |
+| Day report recovery (session 8) | `:app:installDebug`; `scratchpad/drive_report_recovery.sh` on the emulator | End Day -> kill with the report open -> relaunch shows the report -> Begin day 2 -> Home -> kill -> relaunch stays on Home day 2; all checks ok, RECOVERY_DONE |
+| End Day budget on the Android runtime (session 8) | `./gradlew :app:connectedDebugAndroidTest` (`EndDayPerfTest`) | 1/1 pass on the Pixel_10_Pro AVD (API 37, x86_64): 120 forced-survival days as the active smith, p50 4.38 ms, p95 8.45 ms, max 35.5 ms against the 200 ms budget; real mid-range hardware not measured |
 | UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
 ## Obstacles hit and resolved
@@ -93,9 +106,11 @@ the v3 review at 10,000 seeds with per-tool / per-affix sweeps (two of its recom
 - Starting energy/gold upgrades still measure ~0 days even under the `BALANCED_INVEST` purchasing rule: sales are
   demand-bound (14-21 per run for every policy) and day-1 heroes hold ~85 gold, so the extra premium weapons do not
   sell before the first sieges. Evidence and proposals in DECISIONS.md ("Balance review at 10,000 seeds").
-- `Weapon.history` combat entries are capped (10 per weapon), but the per-weapon FORGED/INHERITED entries and the
-  `weapons` map itself still grow with every weapon forged (930 weapons, 1,721 entries after a forced 400-day run;
-  2,330 weapons after 1,000 days); lost/destroyed weapons are never pruned. The next list to watch.
+- The `weapons` map still grows with unsold stock: salvaged, shattered, donated and collected blades are pruned 30
+  days later (session 8), but blades in storage, blades lost with a hero or seized (an event can bring them home) and
+  kept-forever events are not. A plain smith who never salvages keeps about 3 weapons a day (3,140 after 1,000 days).
+- The simulator line `affix weapons/run` counts the end-of-run weapons map, so pruning lowers it on long runs; it
+  moves to forge-time counting when the agent branches (which all edit the simulator) are merged.
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
 - Of the v3 review recommendations (DECISIONS.md), whetstone 120/300 and warlord pressure 50 are applied in v4; the
@@ -111,15 +126,15 @@ the v3 review at 10,000 seeds with per-tool / per-affix sweeps (two of its recom
 - Package name is still `com.example.blacksmithproject`; no release signing.
 - `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order and session-4 commission
   patron weighting changes which hero asks on a given seed; bump with the first release.
-- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.5.0 (versionCode 5).
+- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.5.0 (versionCode 5); session 8 work sits under `[Unreleased]` in CHANGELOG.md until 0.6.0.
 
 ## Next executable actions (P7)
-0. More gameplay: the signboard effect (+1 customer a day per level is an engine change; or reprice it), the affix
-   magnitudes the review flagged (Giant Slayer 1.5, Cursed / Bloodbound 15-20, Reinforced / Swift 0.6-0.7, Heavy 1.5)
-   with a sweep, a 10,000-seed v4 review; Home: a first-run tip and the Yesterday / Shelf repeat.
+0. Session 8, in order: finish the signboard effect and the affix magnitudes with sweeps; merge the three agent
+   branches (replays and fates, hero daily life, legacy tracks), classify any new Lost reason in `WeaponPruning`,
+   bump the balance config to 5; a 10,000-seed v5 review; device run; release 0.6.0 and tick GDD_CHECKLIST.
+   Left for the UI redesign: Home first-run tip and the Yesterday / Shelf repeat.
 1. Measure starting gold/energy upgrades by first-siege champion power or first tier-4+ sale (DECISIONS proposal a)
    instead of run length; hero first-week purchasing power is the lever if run length must move.
 2. 720x1280 pass over every panel; nav labels are tight at font scale 1.5.
-3. Register the first migration step against `saves/v1_forced_seed4242_day61.json` when the envelope schema changes;
-   prune or cap the `weapons` map (lost/destroyed records) if 1,000-day saves matter.
+3. Register the first migration step against `saves/v1_forced_seed4242_day61.json` when the envelope schema changes.
 4. Package rename from `com.example.blacksmithproject`, release signing.

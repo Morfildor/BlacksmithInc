@@ -5,7 +5,8 @@ One line per GDD feature, by GDD section. `[x]` = built and verified (evidence i
 IMPLEMENTATION_PLAN.md is the phase-gate view; this is the feature view. DEFERRED scope (GDD 16.2: multiplayer,
 manual equip/combat, walking, idle production, online, accounts, achievements, ads, IAP) is not listed and is not built.
 
-Last reviewed: 2026-10-09, app 0.5.0, balance config v4, 140 JVM tests.
+Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v4, 144 JVM tests.
+In flight, not merged (session 8): legacy upgrade tracks, hero daily life, fight replays and weapon fates, signboard, affix magnitudes.
 
 ## 3 Player loop
 - [x] Run creation: seed, era, random faction pressures and world modifiers, 100 integrity, hero pool, legacy unlocks
@@ -13,7 +14,7 @@ Last reviewed: 2026-10-09, app 0.5.0, balance config v4, 140 JVM tests.
 - [x] End Day in the fixed GDD 3.2 order, idempotent per command ID, saved atomically before the report
 - [x] Run end at integrity 0: summary, claim-once legacy, next era
 - [x] Home dashboard (owner request, beyond the GDD)
-- [ ] Day report shown again after process death (the archive keeps the day; the dialog itself is lost)
+- [x] Day report shown again after process death until it is dismissed
 
 ## 4 Forging and discovery
 - [x] 6 families, 16 materials (6 core, 6 augment, 4 catalyst), data-driven with hidden affinities
@@ -90,10 +91,9 @@ Last reviewed: 2026-10-09, app 0.5.0, balance config v4, 140 JVM tests.
 - [x] Pure JVM `:core` (rng, content, config, model, engine, crafting, market, heroes, battle, legacy, gazette, persistence, sim); `:app` observes
 - [x] Typed, phase-checked commands and errors; invariants after every command
 - [x] Versioned JSON envelope, Room atomic save (run + legacy + events in one transaction), DataStore for settings
-- [x] Event-log compaction (30-day window, milestones kept) and weapon-history cap
+- [x] Event-log compaction (30-day window, milestones kept), weapon-history cap, pruning of blades gone for good (30 days)
 - [x] Migration scaffold with a checked-in v1 save fixture
 - [ ] First real migration step (schema still 1); RULES_VERSION bump (still 1 after rule changes)
-- [ ] Prune lost / destroyed weapons from the weapons map (grows about 2 a day)
 
 ## 14 Pixel art
 - [x] Import pipeline (concept sheets, weapon master sheet 336 sprites, artist pack), placeholders for the rest, 488 hand-made sprites on every screen
@@ -102,14 +102,14 @@ Last reviewed: 2026-10-09, app 0.5.0, balance config v4, 140 JVM tests.
 - [ ] Full custom art pass after the UI redesign
 
 ## 15 Testing and balance
-- [x] 140 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
+- [x] 144 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
 - [x] Headless simulator with the GDD policy set, upgrade impact, catalog sweeps, JSON report
 - [x] Balance v2 and v3 reviewed at 10,000 seeds; first-era median 20-25 days, longer paths with upgrades, 0 hard-locks
-- [x] Instrumented tests: Room save / restore, title, forge hint (5)
+- [x] Instrumented tests: Room save / restore, title, forge hint, End Day budget (6)
 - [ ] Balance v4 (wear + fame) reviewed at 10,000 seeds; affix magnitudes the v3 review flagged
 - [ ] Artifact recovery as a simulator metric
 - [ ] Compose screenshot / accessibility tests
-- [ ] Day-sim p95 < 200 ms measured on mid-range Android (0.99 ms on a desktop JVM so far)
+- [ ] Day-sim p95 < 200 ms on real mid-range hardware (8.5 ms on the emulator Android runtime, 0.99 ms on a desktop JVM)
 
 ## 16-19 Release
 - [x] Vertical-slice acceptance on device: forge -> sell -> hero fights -> Gazette -> siege -> defeat -> legacy -> upgraded next run
@@ -125,4 +125,4 @@ Last reviewed: 2026-10-09, app 0.5.0, balance config v4, 140 JVM tests.
 - [ ] Decide the wear margin (active smith leads the plain one by 5 days, was 10): condition floor 0.8 or less siege wear
 - [ ] Known Name upgrade measures 0 or less impact
 - [ ] Home: Yesterday block repeats the Shelf line on days without a lede
-- [ ] Weapons map pruning for 1,000-day saves
+- [x] Weapons map pruning for 1,000-day saves (unsold storage stock still grows)

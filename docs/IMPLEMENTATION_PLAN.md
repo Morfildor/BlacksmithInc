@@ -65,7 +65,7 @@ Legend: [x] done and verified · [~] partial · [ ] not started. Verification ev
 
 ## P7 — Balance, reliability, onboarding, accessibility
 - [~] ≥10,000-seed balance reviews per policy; target early median 15–25 days with viable longer paths (v2: BALANCED_FAIR and SAFE_FAIR at 10,000 seeds, median 25; remaining policies at 1,000; starting energy/gold upgrades still unmeasurable without a harness purchasing rule)
-- [~] Room migration tests, instrumented save/restore tests, Compose screenshot/a11y tests (save/restore instrumented x2, event-log and weapon-history compaction done; a real mid-run v1 save fixture is checked in with a decode/End Day/compaction anchor test (`SaveFixtureTest`), so the first schema bump has a migration input; Room itself needs no migration because the envelope version is inside the JSON row; screenshot/a11y tests open)
+- [~] Room migration tests, instrumented save/restore tests, Compose screenshot/a11y tests (save/restore instrumented x2, event-log and weapon-history compaction done; session 8: weapons-map pruning, the day report restored after process death, an instrumented End Day budget test; a real mid-run v1 save fixture is checked in with a decode/End Day/compaction anchor test (`SaveFixtureTest`), so the first schema bump has a migration input; Room itself needs no migration because the envelope version is inside the JSON row; screenshot/a11y tests open)
 - [ ] Onboarding, font scaling, small screens, low-memory interruption checks, soak test without overflow
 
 ## P8 — Google Play premium launch
