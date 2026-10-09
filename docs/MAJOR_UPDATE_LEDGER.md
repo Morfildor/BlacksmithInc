@@ -68,7 +68,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T0.5 | App seams | AB | merged | 4afba98 | app unit 2/2, lint 0 errors 38 warnings, emulator smoke SMOKE_DONE all ok with id taps; seed extra shown on device; release guard not built | |
 | T0.6 | Golden gameplay projection | INT | merged | dc81778 | core 187/187; fails when an RNG stream or an outcome hash is altered (both shown), passes twice unrecorded | |
 | T0.7 | Bots (Advanced, techniques, commissions, signatures, scarce recipes, multi-era, shock, EXPERT) | SIM | todo | | | |
-| T1.1 | `GameSession` | INT | todo | | | |
+| T1.1 | `GameSession` | INT | merged | 97a2f7f | app unit 21/21 (GameSessionTest 19), core green, lint 0 errors; with the Mutex removed 9 of 19 fail incl. both headline tests; ViewModel not yet on the session | |
 | T1.2 | Failure and recovery | INT + AB | todo | | | |
 | T1.3 | ViewModel on the session | AB | todo | | | |
 | T1.4 | Complete day edition | CB | merged | 6c88919 | core 191/191; golden unchanged; v1 fixture day 60 returns 20 of 20 records; app build ok; device not run | |
@@ -133,3 +133,4 @@ live copy and is copied back to the main checkout at each milestone boundary.
 - Scope added by the execution instruction: **T6.7 Haptics and audio controls** (haptic feedback on meaningful moments with a working toggle; audio controls only with real audio: no sound file exists in `app/src/main/res` at `0ad888a`, so audio stays an explicit GDD 19 gap unless assets appear). T0.3 also corrects "hand-made" in `CLAUDE.md` and `docs/ART_BRIEF.md`. T2.4: the import script only reads sources and writes new files; no source image is re-saved (that would strip its content credentials).
 - Ruling: the second portrait set stays disabled (`PortraitArt.SECOND_SET_ENABLED = false`). Why: on the device it fails as cut-outs (0 of 25) and as tiles it is a darker, painterly style with non-human faces that does not read as one family with the 25 busts. The appearance pool is the 25 verified faces plus the non-art variation of plan 5.4. Cost if wrong: one constant flips and the name/face collision target for 12 residents is easier to meet.
 - Ruling: customers at the counter are drawn as framed busts (mode 2 of plan 5.3), since cut-out standing figures are not available from this art. Cost if wrong: `CounterScene` layout is reworked when art exists.
+- Ruling: in `GameSession.Dispatch` the planning lock (rule 9) is checked before the engine call, so a double-tapped End Day returns `DayNotWatched` and writes nothing; `Done` for a replay only once the day is watched. Why: both orders write nothing, and lock-first never runs the engine for a blocked command. Cost if wrong: the two checks swap; the UI treats `DayNotWatched` as "show the day".
