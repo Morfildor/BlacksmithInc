@@ -314,7 +314,7 @@ object WorldEvents {
                     id = ctx.newWeaponId(), name = legend.weaponName, familyId = family.id, coreId = core.id, augmentId = augment.id,
                     mode = ForgeMode.ADVANCED, risk = Risk.BALANCED, quality = quality, rarity = Forge.rarityFor(quality, ctx.config), power = power,
                     element = legend.element ?: augment.element, affixes = emptyList(), flaws = emptyList(), location = WeaponLocation.Storage,
-                    forgedEra = legend.era, forgedDay = 1, kills = legend.kills, title = legend.title,
+                    forgedEra = legend.era, forgedDay = 1, kills = legend.kills, fame = legend.fame, title = legend.title,
                     history = listOf(HistoryEntry(ctx.era, ctx.day, "RETURNED", "Returned to Emberfall in Era ${ctx.era}, worn and dormant; once carried by ${legend.owners.joinToString(", ").ifEmpty { "forgotten hands" }}.")),
                 )
                 ctx.updateWeapon(w)

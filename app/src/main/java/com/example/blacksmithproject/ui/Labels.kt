@@ -51,10 +51,19 @@ object Labels {
         else -> "grave"
     }
 
+    /** Fame bands, descriptive only: the first starts at the Legend Board threshold (3), the last at the cap on the fame effect (BalanceConfig.weaponFameCap, 10). */
+    fun fame(f: Int): String? = when {
+        f >= 10 -> "renowned"
+        f >= 6 -> "famed"
+        f >= 3 -> "storied"
+        else -> null
+    }
+
     fun weaponSummary(w: Weapon, content: ContentCatalog): String = buildString {
         append(rarity(w.rarity)); append(" · "); append(quality(w.quality))
         if (w.affixes.isNotEmpty()) append(" · ").append(w.affixes.joinToString { content.affix(it).name })
         if (w.flaws.isNotEmpty()) append(" · flaw: ").append(w.flaws.joinToString { content.affix(it).name })
+        fame(w.fame)?.let { append(" · ").append(it) }
         w.title?.let { append(" · \"").append(it).append('"') }
     }
 }

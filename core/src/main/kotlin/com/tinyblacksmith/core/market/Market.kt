@@ -66,6 +66,8 @@ object Market {
         val sensitivity = hero.traits.fold(1.0) { acc, t -> acc * content.trait(t).priceSensitivity } *
             (if (drive == Ambition.FORTUNE) config.fortunePriceSensitivity else 1.0)
         val collector = if (drive == Ambition.COLLECTOR && weapon.quality >= config.ambitionCollectorQuality) config.collectorUtilityBonus else 0.0
+        // GDD 7: a storied blade is wanted for its name. Counted fame is capped like its power; a COLLECTOR wants it more.
+        val fame = weapon.fame.coerceIn(0, config.weaponFameCap) * config.weaponFameUtilityPerPoint * (if (drive == Ambition.COLLECTOR) config.collectorFameMultiplier else 1.0)
         val ceiling = maxOf(1, weapon.power * config.fairGoldPerPower) * priceCeilingMultiplier(ctx.reputation, hero.loyalty, config)
         val pricePenalty = maxOf(0.0, price.toDouble() / ceiling - 1.0) * sensitivity
         val noise = (noiseRoll - 0.5) * 2 * config.utilityNoise
@@ -74,6 +76,7 @@ object Market {
             elementTaste * config.utilityElementTasteWeight +
             hero.loyalty * 0.01 * config.utilityLoyaltyWeight +
             collector +
+            fame +
             noise -
             pricePenalty * config.utilityPricePenaltyWeight
         return Evaluation(weapon, utility, affordable = price <= hero.gold + tradeInCredit(current, config), improvement = improvement, fit = fit, pricePenalty = pricePenalty)

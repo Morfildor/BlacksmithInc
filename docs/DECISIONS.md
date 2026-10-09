@@ -441,6 +441,61 @@ The simulator now prints shop visits per run by outcome (`visitsPerRun` in the J
 - Tool prices and the individual affix magnitudes were set by judgement and checked only through the aggregate
   BALANCED_ACTIVE run; no per-tool or per-affix sweep was done.
 
+## Balance v4 (pending merge): weapon fame (2026-10-09, session 7)
+GDD 7 PROPOSED: "Weapon fame can grant a limited mechanical effect, with caps against runaway snowballing." Until now
+fame was only a record (titles, the Legend Board, the collector event). Every number lives in `BalanceConfig` under a
+`// v4 (pending)` marker; `version` is bumped once on merge, together with the weapon-wear work.
+
+### What was added
+- **Counted fame**: only the first `weaponFameCap` = 10 fame points of a weapon count for any effect. Fame itself keeps
+  growing as a record (+1 per won expedition, +2 for an elite, +2 per siege held) and the Legend Board still ranks raw
+  fame; the clamp sits inside each effect, never on the stored value.
+- **Power** (`Power.fameFactor`): +0.5 % attack and defense per counted point, +5 % at the cap, one plain multiplier next
+  to class fit, condition, matchup, traits, affixes and blessing. This is the loop the cap closes: a famous blade wins
+  more, winning adds fame, champions' blades collect +2 per siege held, and from ten fame on nothing more happens.
+- **Desire** (`Market.evaluate`): +0.05 utility per counted point (+0.5 at the cap, one purchase threshold); a hero with
+  an unfulfilled COLLECTOR ambition counts it twice (+1.0 at most). Fame never touches `improvement`, so it cannot make
+  a weaker blade read as an upgrade; it tips undecided buyers and ranks a storied blade above a plain one of equal power.
+- **Price** (`GameEngine.suggestedPrice`): +0.5 % per counted point, +5 % at the cap. Heroes do not raise their price
+  ceiling for fame, so the premium is paid out of the desire bonus: at the cap the thriftiest buyer (Greedy x1.6,
+  saving a FORTUNE x1.3) loses 3 x 0.05 x 2.08 = 0.31 utility to it against the 0.5 gained (`WeaponFameTest`).
+- **Returned legends** (`famous_blade`): the blade now comes back with its legend's fame (it used to come back with 0),
+  still at 70 % quality and power. Its effect is capped like any other; the raw fame makes it collector-eligible as
+  soon as it is listed and lets it re-enter the Legend Board at era end (both existing mechanisms; one return per run).
+- **Shelf line** (`Labels.fame`): "storied" from 3 (the Legend Board threshold), "famed" from 6, "renowned" from 10
+  (the cap). Descriptive only; "legendary" was avoided because it is already the rarity word on the same line.
+
+### Evidence (`--runs 1000 --seed 1 --policy all`, launch content)
+Cells: median (p10/p90), mean, sold/run, sieges survived/run, deaths/run.
+
+| Power per counted point | BALANCED_FAIR | BALANCED_ACTIVE | SYNERGY | BALANCED_INVEST | Maxed, BALANCED_FAIR |
+|---|---|---|---|---|---|
+| 0, no fame effects (= v3) | 20 (15/30), 21.7, 17.7, 1.2, 0.8 | 30 (20/35), 27.5, 23.4, 2.3, 0.9 | 40 (25/45), 36.7, 24.3 | 35 (20/40), 31.5, 25.6 | 35 (25/45), 35.5 |
+| 0, desire and price only | 20 (15/30), 21.7, 17.7, 1.2, 0.8 | 30 (20/35), 27.6, 23.5, 2.3, 1.0 | 40 (25/45), 36.6, 24.4 | 35 (20/40), 31.5, 25.7 | 35 (25/45), 35.5 |
+| **0.005 (+5 % cap, adopted)** | 20 (15/30), 22.5, 18.0, 1.3, 0.9 | 30 (20/35), 28.4, 24.0, 2.5, 1.0 | 40 (25/45), 38.0, 24.8 | 35 (20/45), 32.6, 26.2 | 40 (25/45), 36.5 |
+| 0.01 (+10 % cap, the brief's example) | 25 (15/30), 23.2, 18.2, 1.5, 0.9 | 30 (20/40), 29.3, 24.5, 2.6, 1.0 | 40 (25/50), 39.5, 25.3 | 35 (20/45), 34.1, 27.0 | 40 (25/45), 37.7 |
+
+0 hard-lock days in every row. The desire and price terms alone move nothing the harness can see: the bot's shelves are
+mostly fresh forges, and a famous trade-in resells either way. The whole shift comes from champions' blades, which reach
+the cap by the third or fourth siege. The brief's example (+1 % per point, +10 % at the cap) overshoots its own
+acceptance band of "20 (15/30) / 30 (20/35), within about 2 days": BALANCED_FAIR's median ticks from 20 to 25 (sieges
+fall every five days; mean +1.5), BALANCED_ACTIVE's p90 from 35 to 40 (mean +1.8), and SYNERGY and BALANCED_INVEST
+gain 2.6-2.8 days. Half of it (+0.5 % per point, +5 % at the cap) leaves every median and p10/p90 exactly as in v3 with
+means +0.8 (BALANCED_FAIR) and +0.9 (BALANCED_ACTIVE), +0.1-0.2 sieges survived, +0.3 sales a run and deaths up 0.1
+with the longer runs, so 0.005 is the default; `weaponFamePowerPerPoint` 0.01 is one number away if the owner wants
+the effect stronger at merge.
+
+### Not changed, and not measured
+- `BalanceConfig.version` stays 3 until merge; `RULES_VERSION` stays 1. A seed now plays differently from 0.4.0 once any
+  blade has fame.
+- Save schema unchanged: `Weapon.fame` already existed. Legends returned before this change keep fame 0.
+- `Market.purchase` still measures its Gazette "premium" against `power x fairGoldPerPower`, so a renowned blade sold at
+  its suggested price is reported as "above the going rate on the shop's good name" (it is the blade's name, not the
+  shop's). Left alone to keep the Market change to one term.
+- `Market.giveAndEquip` and the simulator bot still compare raw power; a hero handed a famous but slightly weaker blade
+  keeps the stronger one.
+- No multi-era harness run: the returned-legend path is covered by `WeaponFameTest` and `WorldEventsAndGenerationsTest`.
+
 ## Event-log compaction (2026-10-08, session 3, ENGINEERING)
 GDD 13.3 asks to "compact ordinary events and retain rare milestones"; 15.1's "migration does not mutate histories"
 is honoured because the save schema is unchanged (still v1) and no stored record is rewritten, only dropped by a
