@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Space
+import com.tinyblacksmith.core.legacy.Legacy
 
 /**
  * Defeat flow (GDD 3.2): summary -> claim-once legacy -> spend on permanent upgrades -> next era.
@@ -92,6 +93,7 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
                                 Secondary("level $level of ${u.maxLevel}")
                             }
                             Secondary(u.description)
+                            Secondary(Legacy.preview(u.id, level + 1, content, vm.engine.config)?.text ?: "Fully upgraded: nothing more to buy.")
                         }
                         OutlinedButton(
                             enabled = s.claimed && cost != null && s.legacy.points >= cost && !s.busy,

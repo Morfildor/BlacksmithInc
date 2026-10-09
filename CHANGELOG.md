@@ -22,6 +22,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   sound.
 
 ### Changed
+- Every permanent upgrade now says what its next level does in concrete numbers ("Next era: 11 starting energy instead of 10"), on
+  the run-end screen and in Records > Legacy; a maxed track says so. Thrifty Hands and Lucky Hammer no longer describe their
+  effect as a percent chance.
 - After you claim a fallen era's legacy, the run-end screen survives closing the game: it reopens claimed, with your
   points and upgrades still there to spend, until you begin the next era.
 - The Back button and a tap outside the day's report no longer close it; only its "Begin day" button does.
