@@ -1,6 +1,7 @@
 package com.tinyblacksmith.core.sim
 
 import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.content.MaterialCategory
@@ -166,6 +167,10 @@ data class RunStats(
     val legendsReturned: Int = 0,
     /** Customer and identity counters (`--customers`, [CustomerCollector]); null unless the driver collects them. */
     val customers: RunCustomers? = null,
+    /** Guild Patronage: times the blessing was taken, purchases a guild paid toward and the gold the guilds paid. */
+    val patronageTaken: Int = 0,
+    val stipendSales: Int = 0,
+    val stipendGold: Int = 0,
     /** What a T0.7 bot did (forge modes, techniques, requests, signature tries, rejected commands, ...); null for the classic policies. */
     val bot: BotRunStats? = null,
 )
@@ -235,11 +240,15 @@ class SimulationDriver(
         var firstPremiumSaleDay: Int? = null
         var rareMaterialsBought = 0
         var legendsReturned = 0
+        var patronageTaken = 0
+        var stipendSales = 0
+        var stipendGold = 0
         val collector = if (customerMetrics) CustomerCollector(engine) else null
         while (!state.isEnded && state.day <= maxDays) {
             collector?.morning(state)
             if (state.pendingBlessingOffer.isNotEmpty()) {
                 val pick = (blessing ?: policy.rules?.blessing)?.choose(state.pendingBlessingOffer, engine.content) ?: state.pendingBlessingOffer.first()
+                if (engine.content.blessing(pick).effect == BlessingEffect.GUILD_PATRONAGE) patronageTaken++
                 state = engine.handle(state, Command.ChooseBlessing(pick)).state()
             }
             if (policy.rules?.acceptsCommissions != false) for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
@@ -324,6 +333,8 @@ class SimulationDriver(
                     firstSiegeHeld = it.type == EventType.SIEGE_WON
                 }
                 legendsReturned += res.events.count { it.type == EventType.ARTIFACT_RETURNED }
+                stipendSales += res.visits.count { (it.sale?.stipend ?: 0) > 0 }
+                stipendGold += res.ledger?.income?.get(IncomeKind.STIPEND) ?: 0
             }
             if (eventRetentionDays > 0) {
                 val cutoff = out.day - eventRetentionDays
@@ -348,7 +359,7 @@ class SimulationDriver(
             weaponFates = weaponFates,
             firstSiegeDefense = firstSiegeDefense, firstSiegeHeld = firstSiegeHeld, forgedByFirstSiege = forgedByFirstSiege, soldByFirstSiege = soldByFirstSiege,
             toolsByFirstSiege = toolsByFirstSiege, firstPremiumSaleDay = firstPremiumSaleDay, rareMaterialsBought = rareMaterialsBought + (bots?.stockpiled ?: 0), legendsReturned = legendsReturned,
-            customers = collector?.finish(state), bot = bots?.finish(state),
+            customers = collector?.finish(state), patronageTaken = patronageTaken, stipendSales = stipendSales, stipendGold = stipendGold, bot = bots?.finish(state),
         )
         return stats to state
     }
@@ -536,6 +547,11 @@ data class PolicySummary(
     val artifactRecoveryRate: Double = 0.0,
     /** Customer and identity metrics (`--customers`); absent from the report otherwise. */
     val customers: CustomerSummary? = null,
+    /** Guild Patronage per run: times taken, purchases a guild paid toward, gold the guilds paid, and that gold as a share of all gold earned. */
+    val patronageTakenPerRun: Double = 0.0,
+    val stipendSalesPerRun: Double = 0.0,
+    val stipendGoldPerRun: Double = 0.0,
+    val stipendShareOfIncome: Double = 0.0,
     /** What the T0.7 bots did, per run (`BotRunStats`); absent for the classic policies. */
     val bot: BotSummary? = null,
 )
@@ -578,7 +594,10 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             heroLevelUpsPerRun = runs.map { it.heroLevelUps }.average(), mentoringsPerRun = runs.map { it.mentorings }.average(),
             guildsPerRun = runs.map { it.guilds }.average(), guildRunShare = runs.count { it.guilds > 0 }.toDouble() / runs.size,
             weaponFatesPerRun = fates.mapValues { it.value.toDouble() / runs.size }, artifactRecoveryRate = if (settled == 0) 0.0 else returned.toDouble() / settled,
-            customers = CustomerSummary.of(runs), bot = BotSummary.of(runs),
+            customers = CustomerSummary.of(runs),
+            patronageTakenPerRun = runs.map { it.patronageTaken }.average(), stipendSalesPerRun = runs.map { it.stipendSales }.average(), stipendGoldPerRun = runs.map { it.stipendGold }.average(),
+            stipendShareOfIncome = runs.sumOf { it.stipendGold }.toDouble() / runs.sumOf { it.goldEarned }.coerceAtLeast(1),
+            bot = BotSummary.of(runs),
         )
     }
 
@@ -602,6 +621,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  affix weapons/run: " + s.affixWeaponsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
             appendLine("  hero-days/run: ${f1(s.heroDaysPerRun)}  activity shares: " + s.activityShare.entries.joinToString("  ") { "${it.key}=${"%.1f%%".format(100.0 * it.value)}" })
             appendLine("  level-ups/run: ${f1(s.heroLevelUpsPerRun)}  mentorings/run: ${f1(s.mentoringsPerRun)}  guilds/run: ${f1(s.guildsPerRun)}  runs with a guild: ${pct(s.guildRunShare)}")
+            appendLine("  guild patronage/run: taken=${"%.2f".format(s.patronageTakenPerRun)}  purchases with a stipend=${"%.2f".format(s.stipendSalesPerRun)}  stipend gold=${f1(s.stipendGoldPerRun)} (${"%.1f%%".format(100.0 * s.stipendShareOfIncome)} of gold earned)")
             appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}")
             s.bot?.let { append(it.render()) }
             s.customers?.let { append(it.render()) }
@@ -802,6 +822,7 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
             "populationTarget" -> c.copy(customers = c.customers.copy(populationTarget = int()))
             "arrivalChancePerMissing" -> c.copy(customers = c.customers.copy(arrivalChancePerMissing = dbl()))
             "arrivalChanceMax" -> c.copy(customers = c.customers.copy(arrivalChanceMax = dbl()))
+            "patronageStipend" -> c.copy(customers = c.customers.copy(patronageStipend = int()))
             "newAdventurerCount" -> c.copy(newAdventurerCount = int())
             "raidBase" -> c.copy(raidBase = dbl())
             "raidPerDay" -> c.copy(raidPerDay = dbl())
@@ -814,7 +835,7 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
             "veteranGold" -> c.copy(veteranGold = int())
             "tradeInShare" -> c.copy(tradeInShare = dbl())
             "fairGoldPerPower" -> c.copy(fairGoldPerPower = int())
-            else -> throw IllegalArgumentException("unknown key '$key'; allowed: shopCapacity, baseVisitChance, festivalExtraSeats, maxTurnedAwayDays, classSeats, shelfSlots, startingHeroes, minHeroPopulation, maxHeroPopulation, populationTarget, arrivalChancePerMissing, arrivalChanceMax, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower")
+            else -> throw IllegalArgumentException("unknown key '$key'; allowed: shopCapacity, baseVisitChance, festivalExtraSeats, maxTurnedAwayDays, classSeats, shelfSlots, startingHeroes, minHeroPopulation, maxHeroPopulation, populationTarget, arrivalChancePerMissing, arrivalChanceMax, patronageStipend, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower")
         }
     }
     return c

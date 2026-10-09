@@ -212,7 +212,7 @@ object LaunchContent {
             BlessingDef(STALWART_TOWN, "Stalwart Town", BlessingEffect.INTEGRITY_RECOVERY, magnitude = 3, durationDays = 5, description = "The town repairs faster."),
             BlessingDef(HUNTERS_EDGE, "Hunter's Edge", BlessingEffect.HERO_POWER, magnitude = 10, durationDays = 5, description = "Heroes fight a tenth stronger."),
             BlessingDef(LUCKY_ALLOY, "Lucky Alloy", BlessingEffect.EXCEPTIONAL_CHANCE, magnitude = 8, durationDays = 5, description = "Exceptional forgings come more often."),
-            BlessingDef(GUILD_PATRONAGE, "Guild Patronage", BlessingEffect.HERO_VISIT_CHANCE, magnitude = 15, durationDays = 5, description = "The guilds send more heroes to the shop."),
+            BlessingDef(GUILD_PATRONAGE, "Guild Patronage", BlessingEffect.GUILD_PATRONAGE, magnitude = 0, durationDays = 5, description = "Guild members come by every day, and their guild pays part of one blade for each of them."),
         ),
         upgrades = listOf(
             // GDD 9 categories, three tiers each at 8/20/45. Slice tracks keep their IDs and per-level magnitudes (levels widened 2 -> 3).

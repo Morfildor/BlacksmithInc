@@ -92,7 +92,8 @@ object Lines {
         }
         val trade = sale?.takeIf { it.tradeInWeaponId != null && visit.kind == VisitKind.BROWSE }?.let { "${own ?: "Their old blade"} came back in part payment: ${it.tradeInCredit} gold off, ${it.cashPaid} gold in coin." }
         val bonus = sale?.takeIf { it.saleBonus > 0 }?.let { "The town's blessing added ${it.saleBonus} gold." }
-        return (clauses + trade + bonus).filterNotNull().joinToString(" ").ifEmpty { reason(visit.reason).replaceFirstChar { it.uppercase() } + "." }
+        val stipend = sale?.takeIf { it.stipend > 0 }?.let { "Their guild paid ${it.stipend} gold of the price; ${it.cashPaid} gold came from their own purse." }
+        return (clauses + trade + stipend + bonus).filterNotNull().joinToString(" ").ifEmpty { reason(visit.reason).replaceFirstChar { it.uppercase() } + "." }
     }
 
     private fun bought(blade: String?, sale: Sale?): String? = sale?.listedPrice?.let { "Bought ${blade ?: "a blade"} for $it gold." }

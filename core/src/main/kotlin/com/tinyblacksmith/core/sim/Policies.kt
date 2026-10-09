@@ -35,7 +35,7 @@ enum class BlessingPref(private val effects: List<BlessingEffect>) {
     ENERGY(listOf(BlessingEffect.EXTRA_ENERGY)),
     QUALITY(listOf(BlessingEffect.QUALITY_BONUS)),
     SALES(listOf(BlessingEffect.SALE_GOLD_BONUS)),
-    PATRONAGE(listOf(BlessingEffect.HERO_VISIT_CHANCE)),
+    PATRONAGE(listOf(BlessingEffect.GUILD_PATRONAGE)),
     /** Heroes fight a tenth stronger (it counts in the siege forecast), else the town repairs faster. */
     DEFENSE(listOf(BlessingEffect.HERO_POWER, BlessingEffect.INTEGRITY_RECOVERY));
 

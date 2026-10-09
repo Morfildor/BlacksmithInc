@@ -24,12 +24,12 @@ import kotlin.test.assertNotEquals
 class VersionFingerprintTest {
     private val catalogPins = mapOf(
         2 to "e5e5b96b392777abd63e6f7237fd96f5eee92411942f172035ba0c5c4adb6f9b",
-        3 to "aa0a71b8da352c5408dc651910878f2b237226871274b42157edd13be323bd1b",  // 120 first names, 96 surnames (T3.2); appearance keys per class (T3.3), one unreleased step
+        3 to "d9befd94929b3268c60ecdec67b8de06ec841ef8ec5e34ae6512b74894263db6",  // 120 first names, 96 surnames (T3.2); appearance keys per class (T3.3); Guild Patronage as its own effect (T3.6): one unreleased step, re-pinned from aa0a71b8...
     )
     private val balancePins = mapOf(
         5 to "a9d576db13b2983ebb4e45ed97ff6ddc9ece108aebb4738a14bfd90dc9ae37c1",
         6 to "adb451f9d456482d788d612daefebdbda892de44215fe4a3877152490d6c8e60",
-        7 to "33af5dfb6a3505b42e313b07929b8d7b82ad65526107159521d1ef08562cf076",  // re-pinned inside the unreleased M3 step: T3.1 pinned 66214786..., T3.4 changed the town and pressure numbers
+        7 to "33499217b67bcdf063ff33a2f74adb093144a686d3b4bd5c0828b3b092b0f714",  // re-pinned inside the unreleased M3 step: T3.1 pinned 66214786..., T3.4 (33af5dfb...) changed the town and pressure numbers, T3.6 added patronageStipend
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames")

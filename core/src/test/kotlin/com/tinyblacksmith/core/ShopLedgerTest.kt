@@ -246,7 +246,9 @@ class ShopLedgerTest {
                 assertTrue(ledger.income.values.all { it >= 0 }, at)
                 assertEquals(morning - s.gold, ledger.spentPreparing, "$at: preparation spending is on the record")
                 val sold = r.events.filter { it.type == EventType.WEAPON_SOLD }
-                assertEquals(sold.sumOf { it.data.getValue("price").toInt() - (it.data["tradeIn"]?.toInt() ?: 0) }, ledger.income[IncomeKind.SHELF_SALE] ?: 0, at)
+                // The buyer's own coin; what a guild paid toward the price (Guild Patronage) is a line of its own.
+                assertEquals(sold.sumOf { it.data.getValue("price").toInt() - (it.data["tradeIn"]?.toInt() ?: 0) - (it.data["stipend"]?.toInt() ?: 0) }, ledger.income[IncomeKind.SHELF_SALE] ?: 0, at)
+                assertEquals(sold.sumOf { it.data["stipend"]?.toInt() ?: 0 }, ledger.income[IncomeKind.STIPEND] ?: 0, at)
                 assertEquals(sold.sumOf { it.data["tradeIn"]?.toInt() ?: 0 }, ledger.tradeInCredit, at)
                 assertTrue(r.browsers.count { it.purchasedWeaponId != null } <= r.browsers.size, at)
                 assertEquals(sold.size, r.browsers.count { it.purchasedWeaponId != null }, "$at: every buyer is a browser and every browser who bought is a sale")

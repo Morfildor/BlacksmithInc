@@ -141,6 +141,8 @@ data class Hero(
     val lastLineDay: Int? = null,
     val lastLineCue: RecognitionCue? = null,
     val milestoneLines: Set<RecognitionCue> = emptySet(),
+    /** Guild Patronage: the `expiresDay` of the blessing whose stipend this hero has spent (one per member per blessing). */
+    val stipendSpentFor: Int? = null,
 ) {
     val fullName: String get() = "$name $surname"
     val isAlive: Boolean get() = fate == HeroFate.ALIVE

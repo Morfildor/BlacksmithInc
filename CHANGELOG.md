@@ -34,6 +34,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   The line is stored with the day, so it reads the same after a relaunch.
 
 ### Changed
+- Guild Patronage does what its name says. For its five days every member of a guild wants to come to the shop, and the
+  guild pays 30 gold toward one blade for each of them: the coin counts toward what the member can afford, shows on the
+  sale as the guild's share and in the day's takings as its own line. The town does not offer it while no guild stands.
+  (It used to be a small nudge to everyone's wish to visit, which a full shop swallowed.)
 - A bigger town. An era now opens with twelve heroes instead of eight, and every class is among them from the first
   morning. When the town thins, newcomers drift in one a day until it is back at twelve (always, once it drops below
   nine); events can still swell it to sixteen.

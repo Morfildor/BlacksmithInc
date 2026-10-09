@@ -2363,3 +2363,72 @@ state; eleven of twelve cues occur, the mentor's blade is built by hand in `theM
 
 **Not done here.** The counter does not show the line yet (the app half of T3.5, `VisitCard` and the regular pip, is the UI agents').
 The Gazette text is unchanged. The later cues of plan 4.5 (a want answered, the guild paid, once another owner's) belong to their tasks.
+
+## Guild Patronage: willing members and a guild stipend (2026-10-09, task T3.6; G03)
+
+**What it is now.** For its five days every guild member is willing to visit at the ceiling (`visitCeiling` 0.9), and the member's guild
+pays `CustomerConfig.patronageStipend` **30** gold toward one purchase per member per blessing. The stipend counts toward what the member
+can afford (`Market.evaluate`, and the "short by" of a refusal), is capped at what is owed after the trade-in, reaches the till as its own
+income (`IncomeKind.STIPEND`), and is recorded on the sale (`Sale.stipend`; `cashPaid` is the member's own coin), on the `WEAPON_SOLD`
+record (`data["stipend"]`) and in the receipt line of `Lines.decision`. The blessing is not among the town's three choices while no guild
+stands (`Battle.offerBlessing`). The old effect (`HERO_VISIT_CHANCE`, +15 points of visit chance for everyone) is gone from the enum, the
+market and the simulator; the effect is now `BlessingEffect.GUILD_PATRONAGE` (a flag; the number lives in `BalanceConfig`).
+"One per member per blessing" is `Hero.stipendSpentFor` (the blessing's last day), a defaulted field inside the unreleased schema-4 step.
+
+**Versions.** Balance stays 7 and content stays 3 (one unreleased M3 step); both fingerprint rows were re-pinned
+(content `aa0a71b8...` -> `d9befd94...`, balance `33af5dfb...` -> `33499217...`). Rules 3, schema 4.
+
+**Sweep step 5** (plan 4.3; 1,000 runs at base seeds 1 / 10001 / 20001; every policy takes Patronage whenever it is offered, against the
+same policy taking the first blessing offered; full table `T3.6-step5-table.md` in the session scratchpad). Deltas against the default arm:
+
+| arm | BALANCED_FAIR mean days | BALANCED_ACTIVE mean days | FAIR sales a day | ACTIVE sales a day | stipend share of gold earned (FAIR / ACTIVE / EXPERT) |
+|---|---|---|---|---|---|
+| stipend 0 (members willing only) | +0.0 / -0.2 / -0.1 | -0.4 / -0.2 / -0.3 | +0.00 | -0.01 | 0 |
+| stipend 20 | +0.0 / -0.1 / -0.1 | -0.2 / -0.1 / -0.1 | +0.00 | +0.01 | 0.6 / 1.4 / 1.9 % |
+| **stipend 30 (shipped)** | +0.0 / -0.1 / +0.0 | -0.1 / +0.0 / +0.0 | +0.00 | +0.02 | 0.9 / 2.2 / 3.0 % |
+| stipend 40 | +0.1 / -0.1 / +0.0 | -0.1 / +0.2 / +0.1 | +0.00 | +0.03 | 1.3 / 3.1 / 4.2 % |
+| guests: 2 members seated beyond capacity, no stipend | +0.0 / -0.2 / +0.0 | -0.2 / -0.2 / -0.2 | +0.00 | -0.01 | 0 |
+| stipend 30 and 2 guests | +0.0 / -0.1 / +0.0 | +0.0 / +0.0 / -0.1 | +0.00 | +0.03 | 1.0 / 2.3 / 3.1 % |
+| stipend 30, festival seats 2 instead of 3 | +0.0 / -0.1 / +0.0 | -0.1 / +0.0 / +0.0 | +0.00 | +0.02 | as stipend 30 |
+
+Step 5's rule: at least +0.6 mean days or +0.3 sales a day under FAIR or ACTIVE; at most +2.0 days under any policy; under 10 % of shop
+income. **Every arm passes the two ceilings and no arm reaches the floor.** The blessing is live on too few days to move a whole-run mean:
+a plain smith holds 1.4 sieges a run and takes Patronage 0.37 times (1.9 of 22 days); the active smith 0.8 times. The old +15-point
+version measured -0.2 / -0.3 days against the default blessing.
+
+**What one blessing is worth (its own yardstick).** Per Patronage taken: 2.3 purchases with a stipend for a plain smith (69 gold from the
+guilds), 4.8 for the active smith (143 gold) and for EXPERT (145 gold); with twelve residents nearly everyone is in a guild by the first
+won siege (a guild stands in 99-100 % of runs). For scale, Merchant's Favor (a fifth more gold on sales for five days) is about 185 gold for
+the active smith. "Too expensive" refusals fall 0.2-1.0 points over a whole run (EXPERT, which always takes it: 23.1 -> 20.7 %). Because
+the seats were already full, members at the ceiling mostly add to those turned away (ACTIVE 0.93 -> 1.03 a day under Patronage): the
+willingness half is what the Signboard is for.
+
+**Decision.** Stipend 30 ships (the plan's default); the "guests" arm is not kept in the code. G03 is closed on the mechanism, **not on
+the step-5 floor**, which no arm met. Nothing was retuned to meet it. Smallest levers, if the owner wants the blessing to register on a
+whole-run mean: stipend 40 (+0.03 sales a day, still 4.2 % of income for the heaviest user); stipend plus two guest seats; or judging a
+five-day blessing on its own five days rather than on run length. Festival seats stay 3 (2 against 3 moves nothing here).
+
+**Effect of the change itself** (every policy on its own habit; before = T3.5, after = this task; mean days at seeds 1 / 10001 / 20001):
+BALANCED_FAIR 22.3 / 22.5 / 22.2 -> 22.2 / 22.5 / 22.3 (exact 22.225 / 22.465 / 22.310; median 20, p10 15, p90 30 / 30 / 25);
+BALANCED_ACTIVE 29.4 / 29.4 / 29.9 -> 29.5 / 29.6 / 30.0; SYNERGY 35.2 -> 35.1 / 35.2 / 35.2; NOVICE 26.8 / 26.8 / 26.9 -> 26.8 / 26.8 / 27.0;
+SIEGE_PREP 43.3 / 43.4 / 43.2 -> 43.3 / 43.6 / 43.4; EXPERT (takes Patronage) 44.4 / 44.8 / 44.7 -> 44.7 / 44.9 / 45.0 (p90 50, longest 55);
+EXPERT_ACTIVE 46.4 / 46.4 / 46.5 -> 46.9 / 47.0 / 47.2 (longest 60); maxed BALANCED_FAIR 36.8 / 37.0 / 37.1 -> 36.9 / 37.1 / 37.1; maxed
+SYNERGY 45.2 / 45.4 / 45.5 -> 45.3 / 45.4 / 45.5; maxed EXPERT 53.6 / 54.1 / 53.9 -> 53.9 / 54.2 / 54.0 (p90 60, longest 60); maxed
+EXPERT_ACTIVE 56.0 / 56.2 / 56.0 -> 56.3 / 56.7 / 56.6 (p90 60, longest 65). Gold earned: within 1 % except EXPERT_ACTIVE +5 % (400 gold of
+stipends a run). Deaths per hero-day, served a day, conversion, legacy points and the fairness numbers are unchanged within seed noise.
+
+**M3 band.** Holds at all three seeds as after T3.4: FAIR mean inside 19.5-22.5 (top edge: 22.465 at seed 10001), ACTIVE mean at most
+30.03, EXPENSIVE median 15, PASSIVE 10, every run ends, maxed at least 10 mean days above new (SYNERGY +10.2 / +10.2 / +10.3), deaths per
+hero-day FAIR 0.0040-0.0043, legacy median 27. The old hard-lock counter still fails for SPENDTHRIFT only (1 / 4 / 2 days in 1,000 runs),
+as before. **Tripwire** not crossed: new-account EXPERT mean 44.7-45.0 against 50.4; maxed EXPERT p90 60 against 70; longest run 65 days.
+
+**Tests.** `PatronageTest` (4): `guildMembersAreWillingAtTheCeiling`, `oneStipendPerMemberPerBlessing`,
+`theStipendIsOnTheReceiptAndInTheLedger`, `notOfferedWithoutAGuild`; `CustomerSelectionTest.saturationUnderPatronageKeepsServedShareMaxOverMinAtMostTwoAndAHalf`
+(sixteen members at the ceiling, six seats: equal heroes within 1.15, regulars against strangers at most 2.5).
+**Golden file `state_rules3.txt` re-recorded:** 32 of 300 lines change, in 4 of 20 seeds (1, 2, 10, 12), each from day 5; the RNG column is
+identical on every line. Reason: those towns hold the day-5 siege with no guild standing, so the blessing offer is drawn from seven
+blessings instead of eight (the same three draws on the LEGACY stream, different picks), and the golden script never takes the offer.
+
+**Simulator.** A "guild patronage/run" line on every policy row (times taken, purchases with a stipend, stipend gold and its share of gold
+earned); `--set patronageStipend=N`. The dispatch asked for "impact rows for the Guild Patronage upgrade": it is a blessing, not a legacy
+track, so there is no upgrade row; the per-blessing yardstick above stands in for it.
