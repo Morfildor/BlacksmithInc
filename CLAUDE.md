@@ -35,7 +35,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 ## Commands
 ```
 ./gradlew :core:test                                   # JVM tests (determinism, bounds, idempotence, e2e)
-./gradlew :core:simulate --args="--runs 1000 --seed 1"  # headless balance harness (add --policy X|all|gdd, --impactPolicy X, --reserve N, --content launch|slice, --rarityTable N, --siegeModifier, --forgeDamageBase/Slope, --recoveryCap)
+./gradlew :core:simulate --args="--runs 1000 --seed 1"  # headless balance harness (add --policy X|all|gdd, --impactPolicy X, --reserve N, --content launch|slice, --rarityTable N, --siegeModifier, --forgeDamageBase/Slope, --recoveryCap, --customers for the customer/identity metrics, --set key=value[,key=value] for allowlisted BalanceConfig overrides)
 #   catalog sweeps: --noTool id[,id], --toolCost id=mult[,id=mult], --noAffixEffect id[,id]|all (keeps the affix, neutralises its v3 effect); --noFates turns the v5 weapon fates off (v4 odds, no guild heir, no merchant); --noImpact skips the maxed-legacy and per-upgrade runs
 #   legacy: --upgrades id=level[,id=level] plays the policy rows on that account, --yardsticks adds the first-siege and premium-sale table, --legends gives the maxed and impact runs a veteran Legend Board, --knownNameGold N
 ./gradlew :app:assembleDebug                           # APK (needs Android SDK at local.properties sdk.dir)
