@@ -1,6 +1,7 @@
 package com.example.blacksmithproject.data
 
 import android.content.Context
+import android.database.SQLException
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
@@ -37,6 +38,10 @@ abstract class SaveDao {
     @Query("DELETE FROM saves WHERE `key` = :key")
     abstract suspend fun delete(key: String)
 
+    /** Quarantine: the row keeps its payload under a backup key that no load reads. */
+    @Query("UPDATE saves SET `key` = :to WHERE `key` = :from")
+    abstract suspend fun rename(from: String, to: String)
+
     /** Run + legacy are written in one transaction so a process death can never split them. */
     @Transaction
     open suspend fun saveBoth(run: SaveEntity?, legacy: SaveEntity) {
@@ -51,15 +56,24 @@ abstract class SaveDatabase : RoomDatabase() {
 }
 
 class SaveStore(private val dao: SaveDao) : GameRepository {
-    override suspend fun load(): StoredRows {
+    override suspend fun load(): StoredRows = io {
         val rows = dao.getAll(listOf(KEY_RUN, KEY_LEGACY, KEY_CURSOR)).associate { it.key to it.payload }
-        return StoredRows(rows[KEY_RUN], rows[KEY_LEGACY], rows[KEY_CURSOR])
+        StoredRows(rows[KEY_RUN], rows[KEY_LEGACY], rows[KEY_CURSOR])
     }
 
-    override suspend fun commit(run: String?, legacy: String) {
+    override suspend fun commit(run: String?, legacy: String) = io {
         val now = System.currentTimeMillis()
         dao.saveBoth(run?.let { SaveEntity(KEY_RUN, SaveCodec.SCHEMA_VERSION, it, now) }, SaveEntity(KEY_LEGACY, SaveCodec.SCHEMA_VERSION, legacy, now))
     }
+
+    override suspend fun saveCursor(cursor: String?) = io {
+        if (cursor == null) dao.delete(KEY_CURSOR) else dao.upsert(SaveEntity(KEY_CURSOR, SaveCodec.SCHEMA_VERSION, cursor, System.currentTimeMillis()))
+    }
+
+    override suspend fun quarantine(key: String) = io { dao.rename(key, "$key.bak.${System.currentTimeMillis()}") }
+
+    /** Every storage error leaves the repository as a SaveFailure.Io (android.database.SQLException is the base of SQLiteException). */
+    private inline fun <T> io(block: () -> T): T = try { block() } catch (e: SQLException) { throw SaveFailure.Io(e) }
 
     suspend fun loadRun(): GameState? = dao.get(KEY_RUN)?.let { SaveCodec.decodeRun(it.payload) }
 
