@@ -38,7 +38,9 @@ balance config v5 (the branches join v5 when they merge). Evidence in DECISIONS.
 recovery", "Balance v5, part 1").
 Two documents arrived in `docs/` during the session and are not part of this work (untracked, left as found):
 `Tiny_Blacksmith_Thorough_Review_2026-10-09.md` (an external review pinned to b39ad76, findings F01-F11) and
-`MAJOR_UPDATE_PLAN.md` (a draft plan for a shop-day update, written by another session). None of the review findings
+`MAJOR_UPDATE_PLAN.md` (the plan for the shop-day update, written by another session: complete, reconciled with 0.6.0
+and independently reviewed; its task and evidence ledger is `MAJOR_UPDATE_LEDGER.md`, its evidence is in
+`major_update_evidence/`; nothing in it is implemented yet). None of the review findings
 is fixed by session 8 except the signboard (its section 6.2); the checklist corrections it lists are still to apply.
 
 ## What exists
@@ -128,9 +130,9 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
 - Of the v3 review recommendations (DECISIONS.md), whetstone 120/300 and warlord pressure 50 are applied in v4, the
-  signboard effect, the affix magnitudes and the Lucky loot in v5; Known Name is not. Guild Patronage still
-  raises the visit chance, which the customer cap mostly swallows (the old signboard problem). v4 and v5 are checked
-  at 1,000 seeds only.
+  signboard effect, the affix magnitudes, the Lucky loot and Known Name (starting regulars, +1.6 mean days) in v5.
+  Guild Patronage still raises the visit chance, which the customer cap mostly swallows (the old signboard
+  problem). v4 and v5 are reviewed at 10,000 seeds (DECISIONS.md, "Balance v5 review at 10,000 seeds").
 - No champion can die on the walls (champions need health 50, a lost siege costs 40), so the walls odds for a fallen
   blade are reached only in unit tests; merchant resale is rare (0.01-0.03 a run) because few blades are left over.
 - Cursed and Bloodbound self-harm (15 / 20 health a win) does not show in deaths or run length; the simulator has no
@@ -144,7 +146,9 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
   two). New numbers go into a nested group (`HeroLifeConfig`, `WeaponFatesConfig`, `LegacyTracksConfig`), or the class
   compiles and every test fails at class load.
 - A maxed account under the active smith is at median 45 days (35/50, longest 55): the signboard and the Known Name
-  regulars stack. Inside the band asked for (about 50) but at its top; to be confirmed at 10,000 seeds.
+  regulars stack. Inside the band asked for (about 50) but at its top; confirmed at 10,000 seeds (mean 42.3). Not to
+  be lowered automatically: it is reassessed after the major update's customer and economy changes, on distributions
+  and each upgrade's own yardstick (docs/MAJOR_UPDATE_PLAN.md, section 4.3).
 - Noticed, not fixed: the Traveling Ore Merchant adds +2 supplier stock at End Day and the next morning restock
   overwrites it, so only its free unit is ever seen.
 - Not exercised on device: Re-hone, the worn / storied labels, the WORN_OUT visit reason, and from 0.6.0 a hall
@@ -159,10 +163,12 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
 - Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.6.0 (versionCode 6), tag `v0.6.0`.
 
 ## Next executable actions (P7)
-0. Owner decisions pending: what to do with the external review and the major-update plan in `docs/` (both
-   untracked), whether the maxed active account at median 45 days should come down, the wear margin, the release
-   application ID.
-1. From the external review, not started (new scope): F01 serialise legacy purchases and Begin Era, F02 storage
+0. Owner decisions pending: whether to commit the external review, the major-update plan, its ledger and its
+   evidence folder in `docs/` (all untracked); the release application ID. The maxed active account at median 45 days
+   and the wear margin are not to be lowered automatically: both are reassessed after the major update's customer and
+   economy changes (plan section 4.3).
+1. The major update starts at task T0.1 of `docs/MAJOR_UPDATE_PLAN.md` (first slice: M0 and M1; step-by-step in its
+   handoff). Its scope covers everything below in this item. From the external review, not started: F01 serialise legacy purchases and Begin Era, F02 storage
    failure recovery, F03 day report from the whole day, F04 commission quality shown exactly, F05 fair visitor
    selection, F08 champion ranking in a warlord siege, F11 locale-independent event payloads; then its shop-day
    presentation. Its checklist corrections (section 9) are applied only where session 8 touched the entry.
