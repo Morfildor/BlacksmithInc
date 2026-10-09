@@ -112,6 +112,19 @@ data class RunStats(
     val guilds: Int = 0,
     /** What became of the blades fallen heroes carried (GDD 7), counted from the events that tell it. MERCHANT counts blades a merchant took; each ends RESOLD or LOST unless the run ends first. */
     val weaponFates: Map<WeaponFate, Int> = emptyMap(),
+    /**
+     * Second yardsticks for upgrades that buy something other than days (DECISIONS.md "Balance v5"): the first siege
+     * as town defense and outcome, the work done by that day, the day a weapon with a tier-4+ core first sold
+     * (null = never), limited-stock supplier units bought and Legend Board blades returned.
+     */
+    val firstSiegeDefense: Int = 0,
+    val firstSiegeHeld: Boolean = false,
+    val forgedByFirstSiege: Int = 0,
+    val soldByFirstSiege: Int = 0,
+    val toolsByFirstSiege: Int = 0,
+    val firstPremiumSaleDay: Int? = null,
+    val rareMaterialsBought: Int = 0,
+    val legendsReturned: Int = 0,
 )
 
 /**
@@ -162,6 +175,15 @@ class SimulationDriver(
         var heroLevelUps = 0
         var mentorings = 0
         val weaponFates = WeaponFate.entries.associateWith { 0 }.toMutableMap()
+        val firstSiegeDay = engine.config.siegeInterval
+        var firstSiegeDefense = 0
+        var firstSiegeHeld = false
+        var forgedByFirstSiege = 0
+        var soldByFirstSiege = 0
+        var toolsByFirstSiege = 0
+        var firstPremiumSaleDay: Int? = null
+        var rareMaterialsBought = 0
+        var legendsReturned = 0
         while (!state.isEnded && state.day <= maxDays) {
             if (state.pendingBlessingOffer.isNotEmpty()) state = engine.handle(state, Command.ChooseBlessing(state.pendingBlessingOffer.first())).state()
             for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
@@ -175,10 +197,13 @@ class SimulationDriver(
                 while (maxForgesPerDay == null || forgesToday < maxForgesPerDay) {
                     if (policy == Policy.RANDOM && forgesToday > 0 && policyRng.chance(0.3)) break // random effort
                     val cmd = chooseForge(state, policy, policyRng) ?: break
+                    val rareInStock = state.supplierStock.values.sum()
                     state = ensureMaterials(state, cmd)
+                    rareMaterialsBought += rareInStock - state.supplierStock.values.sum()
                     when (val out = engine.handle(state, cmd)) {
                         is CommandOutcome.Accepted -> {
                             state = out.state; forged++; forgesToday++; couldForge = true
+                            if (state.day <= firstSiegeDay) forgedByFirstSiege++
                             val w = state.weapon(out.forgedWeaponId!!)
                             rarity[w.rarity] = rarity.getValue(w.rarity) + 1
                             for (a in w.affixes + w.flaws) affixWeapons[a.value] = (affixWeapons[a.value] ?: 0) + 1
@@ -203,6 +228,7 @@ class SimulationDriver(
             if (policy.active) state = armWatchAndSalvage(state)
             materialSamples += state.materials.values.sum()
             goldSamples += state.gold
+            if (state.day == firstSiegeDay) toolsByFirstSiege = state.tools.values.sum()
             val started = System.nanoTime()
             val outcome = engine.handle(state, Command.EndDay(CommandId("${state.runId.value}:day${state.day}")))
             val nanos = System.nanoTime() - started
@@ -223,6 +249,15 @@ class SimulationDriver(
                 heroLevelUps += res.events.count { it.type == EventType.HERO_LEVELED }
                 mentorings += res.events.count { it.type == EventType.GUILD_MENTORED }
                 for (e in res.events) e.data[WeaponFate.KEY]?.let { f -> WeaponFate.valueOf(f).let { weaponFates[it] = weaponFates.getValue(it) + 1 } }
+                val handedOver = res.events.filter { it.type == EventType.WEAPON_SOLD || it.type == EventType.COMMISSION_COMPLETED }
+                if (res.day <= firstSiegeDay) soldByFirstSiege += handedOver.size
+                // Both records carry the weapon as their second subject.
+                if (firstPremiumSaleDay == null && handedOver.any { e -> e.subjectIds.getOrNull(1)?.let { out.weapons[WeaponId(it)] }?.let { engine.content.material(it.coreId).tier >= 4 } == true }) firstPremiumSaleDay = res.day
+                if (res.day == firstSiegeDay) res.events.firstOrNull { it.type == EventType.SIEGE_WON || it.type == EventType.SIEGE_LOST }?.let {
+                    firstSiegeDefense = it.data["townDefense"]?.toInt() ?: 0
+                    firstSiegeHeld = it.type == EventType.SIEGE_WON
+                }
+                legendsReturned += res.events.count { it.type == EventType.ARTIFACT_RETURNED }
             }
             if (eventRetentionDays > 0) {
                 val cutoff = out.day - eventRetentionDays
@@ -245,6 +280,8 @@ class SimulationDriver(
             affixWeapons = affixWeapons,
             activityDays = activityDays, heroLevelUps = heroLevelUps, mentorings = mentorings, guilds = state.town.guilds.size,
             weaponFates = weaponFates,
+            firstSiegeDefense = firstSiegeDefense, firstSiegeHeld = firstSiegeHeld, forgedByFirstSiege = forgedByFirstSiege, soldByFirstSiege = soldByFirstSiege,
+            toolsByFirstSiege = toolsByFirstSiege, firstPremiumSaleDay = firstPremiumSaleDay, rareMaterialsBought = rareMaterialsBought, legendsReturned = legendsReturned,
         )
         return stats to state
     }
@@ -496,11 +533,50 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}")
         }
     }
+
+    fun yardsticks(): Yardsticks {
+        val premiumDays = runs.mapNotNull { it.firstPremiumSaleDay }
+        fun mean(f: (RunStats) -> Int) = runs.sumOf { f(it) }.toDouble() / runs.size
+        return Yardsticks(
+            firstSiegeDefense = mean { it.firstSiegeDefense }, firstSiegeHeld = runs.count { it.firstSiegeHeld }.toDouble() / runs.size,
+            forgedByFirstSiege = mean { it.forgedByFirstSiege }, soldByFirstSiege = mean { it.soldByFirstSiege }, toolsByFirstSiege = mean { it.toolsByFirstSiege },
+            premiumSaleShare = premiumDays.size.toDouble() / runs.size, premiumSaleDay = if (premiumDays.isEmpty()) 0.0 else premiumDays.average(),
+            rareMaterialsBought = mean { it.rareMaterialsBought }, signatures = mean { it.signatureDiscoveries }, legendsReturned = mean { it.legendsReturned },
+            forged = mean { it.weaponsForged }, sold = mean { it.weaponsSold }, legacyPoints = mean { it.legacyPoints },
+        )
+    }
+}
+
+/**
+ * What an upgrade buys besides days, as means per run (DECISIONS.md "Balance v5"): town defense at the first siege and
+ * the share of runs that held it, weapons forged and sold and tool levels owned by that day, premium (tier-4+ core)
+ * sales, limited-stock supplier units bought, signature weapons, Legend Board blades returned, legacy points.
+ */
+@Serializable
+data class Yardsticks(
+    val firstSiegeDefense: Double, val firstSiegeHeld: Double, val forgedByFirstSiege: Double, val soldByFirstSiege: Double, val toolsByFirstSiege: Double,
+    /** Share of runs that sold a premium weapon and the mean day of the first such sale among them. */
+    val premiumSaleShare: Double, val premiumSaleDay: Double,
+    val rareMaterialsBought: Double, val signatures: Double, val legendsReturned: Double, val forged: Double, val sold: Double, val legacyPoints: Double,
+) {
+    fun render(name: String): String = "  %-20s %7.1f %4.0f%% %7.1f %7.1f %7.1f   day %4.1f in %3.0f%% %7.1f %7.2f %7.2f %7.1f %7.1f %7.1f".format(
+        name, firstSiegeDefense, 100 * firstSiegeHeld, forgedByFirstSiege, soldByFirstSiege, toolsByFirstSiege, premiumSaleDay, 100 * premiumSaleShare,
+        rareMaterialsBought, signatures, legendsReturned, forged, sold, legacyPoints,
+    )
+
+    companion object {
+        val HEADER: String = "  %-20s %7s %5s %7s %7s %7s   %16s %7s %7s %7s %7s %7s %7s".format(
+            "upgrade (maxed)", "defense", "held", "forged", "sold", "tools", "premium sale", "rare", "signat.", "legends", "forged", "sold", "points",
+        )
+    }
 }
 
 /** Median is quantised to the 5-day siege rhythm, so the mean is reported too for sub-siege effects. */
 @Serializable
-data class UpgradeImpact(val upgradeId: String, val name: String, val level: Int, val daysMedian: Int, val deltaVsNone: Int, val daysMean: Double, val deltaMeanVsNone: Double)
+data class UpgradeImpact(
+    val upgradeId: String, val name: String, val level: Int, val daysMedian: Int, val deltaVsNone: Int, val daysMean: Double, val deltaMeanVsNone: Double,
+    val yardsticks: Yardsticks? = null,
+)
 
 /** End Day wall-clock timing over a long forced-survival run (GDD 15.3 target: p95 < 200 ms on mid-range Android). */
 @Serializable
@@ -545,16 +621,32 @@ object Simulator {
     fun maxedLegacy(engine: GameEngine): LegacyProfile =
         LegacyProfile(points = 0, upgrades = engine.content.upgrades.associate { it.id to it.maxLevel })
 
-    /** Relative impact of each permanent upgrade: [policy] (BALANCED_FAIR by default) with that single upgrade maxed vs [baselineMedianDays]. */
+    /**
+     * The Legend Board a veteran account carries: the blades remembered from [runs] new-account runs of [policy],
+     * bounded like `Legacy.claim`. Only the board is taken (no journal, lineages or points), so `--legends` isolates
+     * what returning blades do.
+     */
+    fun veteranLegendBoard(engine: GameEngine, policy: Policy, baseSeed: Long, runs: Int = 10): List<LegendEntry> {
+        val driver = SimulationDriver(engine)
+        return (0 until runs).map { driver.playRun(LegacyProfile(), baseSeed + it, policy).second }.filter { it.isEnded }
+            .flatMap { engine.closeRun(it).legends }.takeLast(20)
+    }
+
+    /**
+     * Relative impact of each permanent upgrade: [policy] (BALANCED_FAIR by default) with that single upgrade maxed vs
+     * [baselineMedianDays]. Every row carries [legendBoard], so the baseline must be run with the same board.
+     */
     fun upgradeImpact(
         runs: Int, baseSeed: Long, config: BalanceConfig, baselineMedianDays: Int, baselineMeanDays: Double, maxDays: Int = config.maxSimulatedDays,
         content: ContentCatalog = LaunchContent.catalog, policy: Policy = Policy.BALANCED_FAIR, reserve: Int = SimulationDriver.DEFAULT_RESERVE,
+        legendBoard: List<LegendEntry> = emptyList(),
     ): List<UpgradeImpact> {
         val engine = GameEngine(content, config)
         return engine.content.upgrades.map { u ->
-            val legacy = LegacyProfile(upgrades = mapOf(u.id to u.maxLevel))
-            val s = run(runs, baseSeed, listOf(policy), legacy, config, maxDays, label = u.name, content = content, reserve = reserve).single().summary()
-            UpgradeImpact(u.id.value, u.name, u.maxLevel, s.daysMedian, s.daysMedian - baselineMedianDays, s.daysMean, s.daysMean - baselineMeanDays)
+            val legacy = LegacyProfile(upgrades = mapOf(u.id to u.maxLevel), legendBoard = legendBoard)
+            val report = run(runs, baseSeed, listOf(policy), legacy, config, maxDays, label = u.name, content = content, reserve = reserve).single()
+            val s = report.summary()
+            UpgradeImpact(u.id.value, u.name, u.maxLevel, s.daysMedian, s.daysMedian - baselineMedianDays, s.daysMean, s.daysMean - baselineMeanDays, report.yardsticks())
         }
     }
 
@@ -630,6 +722,10 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
  *      --noAffixEffect id[,id]|all: keeps the affix but neutralises its v3 effect (bane, elite, heal, loot, wound, shatter, self-harm).
  *      --noImpact: skips the maxed-legacy and per-upgrade runs (sweeps that only need the policy rows).
  *      --noFates: the v4 rules for a fallen hero's blade (road odds everywhere, no guild claim, no merchant); the same draws as v4.
+ *      --upgrades id=level[,id=level]: the policy rows play that legacy account instead of a new one.
+ *      --yardsticks: also prints the second yardsticks (first siege, premium sales, ...) for the policy rows.
+ *      --legends: the maxed and impact runs carry a veteran's Legend Board, so famous blades can return.
+ *      --knownNameGold N: coin each Known Name regular starts with (v5 sweep).
  * Default: launch content, the GDD 15.2 policy set, maxed legacy accounts (BALANCED_FAIR and the impact policy) and
  * the per-upgrade impact sweep for the impact policy (BALANCED_FAIR by default).
  */
@@ -680,6 +776,7 @@ fun main(args: Array<String>) {
         ))
         overrides["noFates"] = "true"
     }
+    argMap["--knownNameGold"]?.let { config = config.copy(legacyTracks = config.legacyTracks.copy(knownNameRegularGold = it.toInt())); overrides["knownNameGold"] = it }
     val maxDays = argMap["--days"]?.toInt() ?: config.maxSimulatedDays
     val reserve = argMap["--reserve"]?.toInt() ?: SimulationDriver.DEFAULT_RESERVE
     val impactPolicy = argMap["--impactPolicy"]?.let { Policy.valueOf(it) } ?: Policy.BALANCED_FAIR
@@ -702,22 +799,44 @@ fun main(args: Array<String>) {
         println("elapsed ${(System.nanoTime() - start) / 1_000_000} ms")
         return
     }
-    println("== New legacy account ==")
-    val reports = Simulator.run(runs, seed, policies, config = config, maxDays = maxDays, content = content, reserve = reserve)
+    // --upgrades: the policy rows play this legacy account instead of a new one (per-level and combination sweeps).
+    val upgrades = argMap["--upgrades"]?.let { arg ->
+        overrides["upgrades"] = arg
+        arg.split(',').associate { pair ->
+            val def = requireNotNull(content.upgradeById[UpgradeId(pair.substringBefore('='))]) { "Unknown upgrade ${pair.substringBefore('=')}" }
+            def.id to pair.substringAfter('=').toInt().coerceIn(0, def.maxLevel)
+        }
+    }
+    println(if (upgrades == null) "== New legacy account ==" else "== Legacy account with ${argMap["--upgrades"]} ==")
+    val reports = Simulator.run(runs, seed, policies, legacy = LegacyProfile(upgrades = upgrades ?: emptyMap()), config = config, maxDays = maxDays, label = if (upgrades == null) "new account" else "upgraded account", content = content, reserve = reserve)
     reports.forEach { println(it.render()) }
+    if (argMap["--yardsticks"] == "true") {
+        println("== Second yardsticks per policy (means per run; columns as in the upgrade table) ==")
+        println(Yardsticks.HEADER)
+        reports.forEach { println(it.yardsticks().render(it.policy.name)) }
+    }
     var maxed: List<Report> = emptyList()
     var impact: List<UpgradeImpact> = emptyList()
     if (argMap["--noImpact"] != "true") {
+        // A new account has no Legend Board, so no blade can return; --legends gives the maxed and impact runs (baseline included) a veteran's board.
+        val legends = if (argMap["--legends"] == "true") Simulator.veteranLegendBoard(engine, impactPolicy, seed) else emptyList()
+        if (legends.isNotEmpty()) println("== Veteran Legend Board for the runs below: ${legends.size} blades, mean quality ${"%.0f".format(legends.map { it.quality }.average())}, mean power ${"%.0f".format(legends.map { it.power }.average())} ==")
         println("== Maxed legacy account (all upgrades) ==")
-        maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve)
+        maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine).copy(legendBoard = legends), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve)
         maxed.forEach { println(it.render()) }
-        val baseline = reports.firstOrNull { it.policy == impactPolicy }
-            ?: Simulator.run(runs, seed, listOf(impactPolicy), config = config, maxDays = maxDays, content = content, reserve = reserve).single()
+        val baseline = reports.firstOrNull { it.policy == impactPolicy }?.takeIf { upgrades == null && legends.isEmpty() }
+            ?: Simulator.run(runs, seed, listOf(impactPolicy), legacy = LegacyProfile(legendBoard = legends), config = config, maxDays = maxDays, content = content, reserve = reserve).single()
         val baseSummary = baseline.summary()
         println("== Upgrade impact ($impactPolicy, single upgrade maxed vs none: median ${baseSummary.daysMedian} mean ${"%.1f".format(baseSummary.daysMean)} days) ==")
-        impact = Simulator.upgradeImpact(runs, seed, config, baseSummary.daysMedian, baseSummary.daysMean, maxDays, content, impactPolicy, reserve)
+        impact = Simulator.upgradeImpact(runs, seed, config, baseSummary.daysMedian, baseSummary.daysMean, maxDays, content, impactPolicy, reserve, legends)
         impact.forEach { println("  ${it.name} (${it.upgradeId} L${it.level}): median=${it.daysMedian} (${"%+d".format(it.deltaVsNone)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.deltaMeanVsNone)})") }
-        maxed.single { it.policy == impactPolicy }.summary().let { println("  all maxed: median=${it.daysMedian} (${"%+d".format(it.daysMedian - baseSummary.daysMedian)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.daysMean - baseSummary.daysMean)})") }
+        val allMaxed = maxed.single { it.policy == impactPolicy }
+        allMaxed.summary().let { println("  all maxed: median=${it.daysMedian} (${"%+d".format(it.daysMedian - baseSummary.daysMedian)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.daysMean - baseSummary.daysMean)})") }
+        println("== Second yardsticks ($impactPolicy, means per run: defense / held / forged / sold / tools at the day ${config.siegeInterval} siege, the first tier-4+ core sale, limited-stock units bought, signature weapons, legends returned, then run totals) ==")
+        println(Yardsticks.HEADER)
+        println(baseline.yardsticks().render("none"))
+        impact.forEach { println(it.yardsticks!!.render(it.name)) }
+        println(allMaxed.yardsticks().render("all maxed"))
     }
     var perf: PerfSummary? = null
     if (argMap["--perf"] == "true") {

@@ -1,6 +1,7 @@
 package com.tinyblacksmith.core.engine
 
 import com.tinyblacksmith.core.content.MaterialCategory
+import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.crafting.Journal
 import com.tinyblacksmith.core.crafting.SignatureCatalog
@@ -39,7 +40,18 @@ object WorldEvents {
         if (!rng.chance(ctx.config.worldEventChancePerDay)) return
         val eligible = all.filter { canFire(ctx, it) }
         if (eligible.isEmpty()) return
-        fire(ctx, rng.pickWeighted(eligible.map { it to it.weight }))
+        fire(ctx, rng.pickWeighted(eligible.map { it to weight(ctx, it) }))
+    }
+
+    /** Today's weight of [def]: Homing Steel (LEGACY_ARTIFACTS) makes a Legend Board blade likelier to return; no other event moves. */
+    fun weight(ctx: ResolutionContext, def: WorldEventDef): Double =
+        if (def.id == "famous_blade") def.weight + ctx.upgradeTotal(UpgradeEffect.LEGACY_ARTIFACTS) * ctx.config.legacyTracks.legendReturnWeightPerLevel else def.weight
+
+    /** Share of its old quality and power a returned legend keeps: dormant (GDD 7), less so with Homing Steel, never whole. */
+    fun returnedLegendFactor(ctx: ResolutionContext): Double {
+        val base = ctx.config.returnedLegendQualityFactor
+        val tracks = ctx.config.legacyTracks
+        return maxOf(base, minOf(tracks.returnedLegendQualityFactorMax, base + ctx.upgradeTotal(UpgradeEffect.LEGACY_ARTIFACTS) * tracks.legendQualityFactorPerLevel))
     }
 
     fun canFire(ctx: ResolutionContext, def: WorldEventDef): Boolean {
@@ -307,9 +319,10 @@ object WorldEvents {
                 val family = legend.familyId?.let { c.familyById[it] } ?: rng.pick(c.families)
                 val core = legend.coreId?.let { c.materialById[it] } ?: rng.pick(c.materials(MaterialCategory.CORE))
                 val augment = legend.augmentId?.let { c.materialById[it] } ?: rng.pick(c.materials(MaterialCategory.AUGMENT))
-                val quality = maxOf(1, ((if (legend.quality > 0) legend.quality else 60) * ctx.config.returnedLegendQualityFactor).toInt())
+                val factor = returnedLegendFactor(ctx)
+                val quality = maxOf(1, ((if (legend.quality > 0) legend.quality else 60) * factor).toInt())
                 val fullPower = if (legend.power > 0) legend.power else family.basePower + core.tier * ctx.config.powerPerCoreTier + quality / ctx.config.powerPerQualityDivisor
-                val power = maxOf(1, (fullPower * ctx.config.returnedLegendQualityFactor).toInt())
+                val power = maxOf(1, (fullPower * factor).toInt())
                 val w = Weapon(
                     id = ctx.newWeaponId(), name = legend.weaponName, familyId = family.id, coreId = core.id, augmentId = augment.id,
                     mode = ForgeMode.ADVANCED, risk = Risk.BALANCED, quality = quality, rarity = Forge.rarityFor(quality, ctx.config), power = power,

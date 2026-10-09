@@ -5,8 +5,7 @@ One line per GDD feature, by GDD section. `[x]` = built and verified (evidence i
 IMPLEMENTATION_PLAN.md is the phase-gate view; this is the feature view. DEFERRED scope (GDD 16.2: multiplayer,
 manual equip/combat, walking, idle production, online, accounts, achievements, ads, IAP) is not listed and is not built.
 
-Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 173 JVM tests.
-In flight, not merged (session 8): legacy upgrade tracks.
+Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 186 JVM tests.
 
 ## 3 Player loop
 - [x] Run creation: seed, era, random faction pressures and world modifiers, 100 integrity, hero pool, legacy unlocks
@@ -60,10 +59,10 @@ In flight, not merged (session 8): legacy upgrade tracks.
 ## 9 Variation and legacy
 - [x] 8 blessings, three offered after a survived siege, temporary and seed-dependent
 - [x] Legacy points = base + days / 5 + discoveries + milestones, claimed once per run
-- [x] 8 upgrade tracks at 8 / 20 / 45: energy, gold, mastery, walls, efficiency, stock, luck, reputation
+- [x] 11 upgrade tracks at 8 / 20 / 45: energy, gold, mastery, walls, efficiency, stock, luck, reputation, supplier depth, signature odds, legend returns
 - [x] Persistence matrix: journal, signatures, upgrades, Legend Board, lineages, unspent points persist; the rest resets
-- [ ] Upgrade tracks for catalog access, recipe odds and legacy-artifact opportunities
-- [ ] Starting gold / energy upgrades measure about 0 days in the simulator (better metric or a lever)
+- [x] Upgrade tracks for catalog access (Caravan Ties), recipe odds (Anvil Lore) and legacy-artifact opportunities (Homing Steel)
+- [x] Starting gold / energy upgrades measured on second yardsticks (weapons forged and tool levels by the first siege); run length stays within +0.3 mean days
 
 ## 10 Content
 - [x] 16 materials, 6 families, 5 classes, 3 factions, 25 events (23 pooled + 2 generational rules), 24 signatures, 12 affixes, 6 flaws, 8 blessings
@@ -102,7 +101,7 @@ In flight, not merged (session 8): legacy upgrade tracks.
 - [ ] Full custom art pass after the UI redesign
 
 ## 15 Testing and balance
-- [x] 173 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
+- [x] 186 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
 - [x] Headless simulator with the GDD policy set, upgrade impact, catalog sweeps, JSON report
 - [x] Balance v2 and v3 reviewed at 10,000 seeds; first-era median 20-25 days, longer paths with upgrades, 0 hard-locks
 - [x] Instrumented tests: Room save / restore, title, forge hint, End Day budget (6)
@@ -124,6 +123,6 @@ In flight, not merged (session 8): legacy upgrade tracks.
 - [x] Affix magnitude sweep (Giant Slayer, Cursed / Bloodbound, Reinforced / Swift, Heavy)
 - [x] Lucky affix: loot something scarce (a catalyst or tier 3+ material) instead of a common material
 - [ ] Decide the wear margin (active smith leads the plain one by 5 days, was 10): condition floor 0.8 or less siege wear
-- [ ] Known Name upgrade measures 0 or less impact
+- [x] Known Name: one starting regular with savings per level (+1.6 mean days; first siege held in 94 % of runs against 86 %)
 - [ ] Home: Yesterday block repeats the Shelf line on days without a lede
 - [x] Weapons map pruning for 1,000-day saves (unsold storage stock still grows)

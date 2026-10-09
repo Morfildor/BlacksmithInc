@@ -14,7 +14,7 @@ data class BalanceConfig(
      * v2 (2026-10-08): launch-content retune of the quality formula and siege damage.
      * v3 (2026-10-09): elite encounters, warlord sieges, hero ambitions, affix effects, shop actions, tools, trade-ins, raid growth 6. See docs/DECISIONS.md.
      * v4 (2026-10-09): weapon wear, weapon fame, whetstone 120/300, warlord pressure 50 with no raid bonus. See docs/DECISIONS.md.
-     * v5 (2026-10-09): signboard adds a customer a day per level, stronger affix magnitudes (catalog numbers), guild hall and ambition days ([HeroLifeConfig]), fight replays and weapon fates ([WeaponFatesConfig]). See docs/DECISIONS.md.
+     * v5 (2026-10-09): signboard adds a customer a day per level, stronger affix magnitudes (catalog numbers), guild hall and ambition days ([HeroLifeConfig]), fight replays and weapon fates ([WeaponFatesConfig]), three legacy tracks and Known Name regulars ([LegacyTracksConfig]). See docs/DECISIONS.md.
      */
     val version: Int = 5,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
@@ -270,6 +270,9 @@ data class BalanceConfig(
      * ("Too many arguments in method signature"). New groups of numbers must be nested like this one (one slot).
      */
     val weaponFates: WeaponFatesConfig = WeaponFatesConfig(),
+    // v5: legacy tracks
+    /** One field (one argument slot) for every number of the v5 legacy tracks; see [LegacyTracksConfig] for why. */
+    val legacyTracks: LegacyTracksConfig = LegacyTracksConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()
@@ -323,4 +326,29 @@ data class WeaponFatesConfig(
     /** The merchant reaches Emberfall this many days after the hero fell and offers the blade on that End Day and the following ones, [merchantStayDays] in all, then moves on. */
     val merchantDelayDays: Int = 2,
     val merchantStayDays: Int = 3,
+)
+
+/**
+ * v5: legacy tracks. Every number of the three GDD 9 tracks added in v5 (catalog access, recipe odds, legacy
+ * artifacts) and of the Known Name regulars; all PROPOSED, evidence in docs/DECISIONS.md "Balance v5".
+ *
+ * Grouped in one object because [BalanceConfig] sits at the JVM limit of 255 argument slots per method (a Double takes
+ * two; its generated `copy$default` needed 250 before v5). More flat fields still compile, but the class then fails to
+ * load ("Too many arguments in method signature") and every test with it.
+ */
+data class LegacyTracksConfig(
+    /** Caravan Ties: extra units per level of every limited-stock material the supplier carries each day. */
+    val catalogStockPerLevel: Int = 1,
+    /** Anvil Lore: added per level to the signature transformation chance, inside [BalanceConfig.signatureMaxChance]. */
+    val recipeOddsPerLevel: Double = 0.05,
+    /** Homing Steel: added per level to the weight of the "A Famous Blade Returns" event (1.0 without it; still at most once a run). */
+    val legendReturnWeightPerLevel: Double = 1.0,
+    /** Homing Steel: added per level to [BalanceConfig.returnedLegendQualityFactor], up to [returnedLegendQualityFactorMax]; a returned blade is never whole (GDD 7). */
+    val legendQualityFactorPerLevel: Double = 0.05,
+    val returnedLegendQualityFactorMax: Double = 0.85,
+    /**
+     * Known Name: one starting hero per level is already a regular (loyalty [BalanceConfig.regularLoyaltyThreshold])
+     * and has this much extra coin saved for a blade. Starting reputation alone measured -0.3 days (DECISIONS.md).
+     */
+    val knownNameRegularGold: Int = 30,
 )

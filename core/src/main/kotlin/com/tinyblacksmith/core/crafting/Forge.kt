@@ -111,7 +111,9 @@ object Forge {
         val miss = recipe?.missing(cmd, quality)
         var signature: SignatureDef? = null
         if (recipe != null && miss == null) {
-            val chance = (config.signatureBaseChance + masteryBonus(ctx) * config.signatureChancePerMastery).coerceIn(0.0, config.signatureMaxChance)
+            // Anvil Lore (RECIPE_ODDS) adds to the chance, never past the cap: a signature is not a certainty.
+            val chance = (config.signatureBaseChance + masteryBonus(ctx) * config.signatureChancePerMastery +
+                upgradeTotal(ctx, UpgradeEffect.RECIPE_ODDS) * config.legacyTracks.recipeOddsPerLevel).coerceIn(0.0, config.signatureMaxChance)
             if (rng.chance(chance)) signature = recipe
         }
         if (signature != null) for (a in signature.grantedAffixes) if (a !in affixes) affixes += a
