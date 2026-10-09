@@ -1,7 +1,10 @@
 package com.tinyblacksmith.core.crafting
 
 import com.tinyblacksmith.core.content.BlessingEffect
+import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
+import com.tinyblacksmith.core.content.LaunchContent
+import com.tinyblacksmith.core.market.QualityBand
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.KnowledgeState
@@ -45,33 +48,88 @@ object Journal {
     fun recordSignatureDiscovered(ctx: ResolutionContext, def: SignatureDef): Boolean {
         val journal = ctx.legacy.journal
         if (journal.state(def.journalKey) == KnowledgeState.SIGNATURE_DISCOVERED) return false
-        ctx.legacy = ctx.legacy.copy(journal = journal.copy(interactions = journal.interactions + (def.journalKey to KnowledgeState.SIGNATURE_DISCOVERED)))
+        // Found is the whole ladder: name, flavour and the full recipe.
+        ctx.legacy = ctx.legacy.copy(journal = journal.copy(
+            interactions = journal.interactions + (def.journalKey to KnowledgeState.SIGNATURE_DISCOVERED), signatureClues = journal.signatureClues + (def.journalKey to ClueRung.ALL),
+        ))
         ctx.discoveriesThisRun += 1
         return true
     }
 
-    /** Right base recipe, wrong condition (or a failed roll): one descriptive clue per signature, never a percentage. */
-    fun recordSignatureClue(ctx: ResolutionContext, def: SignatureDef, miss: SignatureDef.Miss?) {
-        val journal = ctx.legacy.journal
-        if (journal.state(def.journalKey) != KnowledgeState.UNKNOWN) return
-        ctx.legacy = ctx.legacy.copy(journal = journal.copy(interactions = journal.interactions + (def.journalKey to KnowledgeState.OBSERVED)))
-        val content = ctx.content
-        val core = content.material(def.coreId).name
-        val augment = content.material(def.augmentId).name
-        val tail = when (miss) {
-            SignatureDef.Miss.CATALYST -> "something is missing."
-            SignatureDef.Miss.RISK -> "it wanted ${riskWish(def.risk)}."
-            SignatureDef.Miss.QUALITY -> "it wanted finer work."
-            null -> "something greater flickered and faded. Try again."
+    /**
+     * The rungs of [def]'s ladder the journal holds. A found signature holds all four; an entry that was only "observed"
+     * by a profile older than the ladder holds the first.
+     */
+    fun rungs(journal: JournalModel, def: SignatureDef): Set<ClueRung> {
+        val state = journal.state(def.journalKey)
+        val bits = when (state) {
+            KnowledgeState.SIGNATURE_DISCOVERED -> ClueRung.ALL
+            KnowledgeState.UNKNOWN -> journal.signatureClues[def.journalKey] ?: 0
+            else -> (journal.signatureClues[def.journalKey] ?: 0) or ClueRung.RECIPE.bit
         }
-        ctx.emit(EventType.DISCOVERY, 3, "The $augment sang against the $core — $tail", data = mapOf("key" to def.journalKey))
+        return ClueRung.entries.filterTo(LinkedHashSet()) { bits and it.bit != 0 }
     }
 
-    private fun riskWish(risk: Risk?): String = when (risk) {
-        Risk.SAFE -> "more patience"
-        Risk.BALANCED -> "a steadier temper"
-        Risk.RECKLESS -> "more daring"
-        null -> "nothing more"
+    /**
+     * The rung a new clue adds: the base recipe first; then the lowest rung not yet held among the conditions the
+     * attempt [missed]; when it missed none of those (a rumour, or a recipe that was exact and did not take), the
+     * lowest rung not yet held. Null when the ladder is complete.
+     */
+    fun nextRung(journal: JournalModel, def: SignatureDef, missed: List<SignatureDef.Miss> = emptyList()): ClueRung? {
+        val have = rungs(journal, def)
+        if (ClueRung.RECIPE !in have) return ClueRung.RECIPE
+        return missed.map { it.rung }.firstOrNull { it !in have } ?: ClueRung.entries.firstOrNull { it !in have }
+    }
+
+    /** Writes [rung] into the legacy journal; the entry is at least "observed" from then on. Draws nothing. */
+    fun earn(ctx: ResolutionContext, def: SignatureDef, rung: ClueRung) {
+        val journal = ctx.legacy.journal
+        val state = journal.state(def.journalKey)
+        ctx.legacy = ctx.legacy.copy(journal = journal.copy(
+            interactions = if (state == KnowledgeState.UNKNOWN) journal.interactions + (def.journalKey to KnowledgeState.OBSERVED) else journal.interactions,
+            signatureClues = journal.signatureClues + (def.journalKey to ((journal.signatureClues[def.journalKey] ?: 0) or rungs(journal, def).sumOf { it.bit } or rung.bit)),
+        ))
+    }
+
+    /**
+     * Right base recipe, and the metal did not answer: every such forge earns one rung until the ladder is complete
+     * (it used to answer once and then fall silent). Descriptive, never a percentage.
+     */
+    fun recordSignatureClue(ctx: ResolutionContext, def: SignatureDef, missed: List<SignatureDef.Miss>) {
+        if (ctx.legacy.journal.state(def.journalKey) == KnowledgeState.SIGNATURE_DISCOVERED) return
+        val rung = nextRung(ctx.legacy.journal, def, missed) ?: return
+        earn(ctx, def, rung)
+        val core = ctx.content.material(def.coreId).name
+        val augment = ctx.content.material(def.augmentId).name
+        // The family is named: two signatures can share a core and an augment (an iron and ember sword, an iron and ember axe).
+        val family = ctx.content.family(def.familyId).name.lowercase()
+        ctx.emit(EventType.DISCOVERY, 3, "The $augment sang against the $core of the $family: ${clue(def, rung, ctx.config)}.", data = mapOf("key" to def.journalKey, "rung" to rung.name))
+    }
+
+    /** One authored phrase per catalyst (the catalysts' identity, G07), and one for a recipe that takes none. */
+    fun catalystPhrase(catalystId: MaterialId?): String = when (catalystId) {
+        null -> "wants nothing added"
+        LaunchContent.BINDING_SALT -> "wants something to bind it"
+        LaunchContent.RUNESTONE_SHARD -> "wants a word cut into it"
+        LaunchContent.DRAGON_OIL -> "wants a hotter fire"
+        LaunchContent.VOID_INK -> "wants a rule rewritten"
+        else -> "wants something added"
+    }
+
+    /** What any catalyst does at the forge today, said plainly for the forge panel. */
+    const val CATALYST_EFFECT = "Any catalyst steadies the forge: finer work, more brilliant pieces, fewer flaws. Some recipes ask for one by name."
+
+    /** What one rung says about [def]. */
+    fun clue(def: SignatureDef, rung: ClueRung, config: BalanceConfig): String = when (rung) {
+        ClueRung.RECIPE -> "it hides something more"
+        ClueRung.CATALYST -> "it ${catalystPhrase(def.catalystId)}"
+        ClueRung.TEMPER -> when (def.risk) {
+            Risk.SAFE -> "it wants more patience"
+            Risk.BALANCED -> "it wants a steady temper, neither patient nor daring"
+            Risk.RECKLESS -> "it wants more daring"
+            null -> "it takes any temper"
+        }
+        ClueRung.QUALITY -> "it wants finer work: at least ${QualityBand.of(def.minQuality, config).word}"
     }
 
     fun affinityFor(content: ContentCatalog, key: String): Int {
@@ -104,21 +162,21 @@ object Journal {
     /** Hint shown live in the forge panel: hides the real relationship until the journal knows it. */
     fun hint(journal: JournalModel, content: ContentCatalog, key: String): String {
         val state = journal.state(key)
-        return if (key.startsWith("sig:")) signatureHint(state, key) else affinityHint(state, content, key)
+        return if (key.startsWith("sig:")) signatureHint(journal, key) else affinityHint(state, content, key)
     }
 
-    /** Signature clue without numbers: the base recipe is known, the condition is described, never spelled out. */
-    private fun signatureHint(state: KnowledgeState, key: String): String {
+    /** The rungs earned and nothing else: "Hides something more; it wants a hotter fire". A found signature is named. No odds, no numbers. */
+    private fun signatureHint(journal: JournalModel, key: String, config: BalanceConfig = BalanceConfig.DEFAULT): String {
         val def = SignatureCatalog.byId[key.substring(4)] ?: return "Unknown"
-        if (state == KnowledgeState.UNKNOWN) return "Unknown"
-        if (state == KnowledgeState.SIGNATURE_DISCOVERED) return "Signature: ${def.name} — ${def.flavor}"
-        val wants = listOfNotNull(
-            def.catalystId?.let { "a steadying hand" },
-            def.risk?.let { riskWish(it) },
-            "fine work",
-        )
-        return "Hides something more; it wants ${wants.joinToString(" and ")}"
+        if (journal.state(key) == KnowledgeState.SIGNATURE_DISCOVERED) return "Signature: ${def.name} — ${def.flavor}"
+        val have = rungs(journal, def)
+        if (ClueRung.RECIPE !in have) return "Unknown"
+        return (listOf("Hides something more") + (have - ClueRung.RECIPE).map { clue(def, it, config) }).joinToString("; ")
     }
+
+    /** The core and augment of a "ca:" journal row, for "Use" on an understood row; null for any other key. */
+    fun coreAugmentOf(key: String): Pair<MaterialId, MaterialId>? =
+        if (key.startsWith("ca:")) key.substring(3).split("|").takeIf { it.size == 2 }?.let { MaterialId(it[0]) to MaterialId(it[1]) } else null
 
     private fun affinityHint(state: KnowledgeState, content: ContentCatalog, key: String): String = when (state) {
         KnowledgeState.UNKNOWN -> "Unknown"

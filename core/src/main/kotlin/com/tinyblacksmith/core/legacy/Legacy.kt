@@ -103,6 +103,7 @@ object Legacy {
     private fun mergeJournal(a: Journal, b: Journal): Journal = Journal(
         interactions = (a.interactions.keys + b.interactions.keys).associateWith { k -> maxOf(a.state(k), b.state(k)) },
         experiments = (a.experiments.keys + b.experiments.keys).associateWith { k -> maxOf(a.experiments[k] ?: 0, b.experiments[k] ?: 0) },
+        signatureClues = (a.signatureClues.keys + b.signatureClues.keys).associateWith { k -> (a.signatureClues[k] ?: 0) or (b.signatureClues[k] ?: 0) },   // a rung earned in any era stays
     )
 
     fun purchaseUpgrade(current: LegacyProfile, upgradeId: UpgradeId, content: ContentCatalog): LegacyOutcome {

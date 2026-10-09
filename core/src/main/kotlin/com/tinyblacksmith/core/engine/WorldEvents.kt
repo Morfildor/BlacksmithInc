@@ -2,6 +2,7 @@ package com.tinyblacksmith.core.engine
 
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.content.UpgradeEffect
+import com.tinyblacksmith.core.crafting.ClueRung
 import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.crafting.Journal
 import com.tinyblacksmith.core.crafting.SignatureCatalog
@@ -40,6 +41,33 @@ object WorldEvents {
     /** Prefix of a day-keyed flag per material: the ore merchant's [ORE_MERCHANT_STOCK] extra units are on sale that morning. */
     const val FLAG_ORE_MERCHANT = "ore_merchant:"
     const val ORE_MERCHANT_STOCK = 2
+    /** Key of the run's rumour count and last rumour day in `eventCounters` / `eventLastDay`. Not a pooled event. */
+    const val RUMOUR = "rumour"
+
+    /**
+     * A rumour (plan 4.6 E3): something that really happened today brings word of one signature not yet found, one rung
+     * of its clue ladder ([Journal.nextRung]). [teller] opens the record ("Mira Vance, back from the kill,") and
+     * [tellerId] is kept in its data (the record is the forge's news, filed with the journal, not a line of the hero's day). At most
+     * `customers.maxRumoursPerRun` a run and none within `customers.rumourCooldownDays` of the last; when one is told it
+     * is one pick on the EVENTS stream, as the weapon fragment's is. Returns whether a rumour was told.
+     */
+    fun rumour(ctx: ResolutionContext, teller: String, tellerId: HeroId? = null): Boolean {
+        val cfg = ctx.config.customers
+        if ((ctx.eventCounters[RUMOUR] ?: 0) >= cfg.maxRumoursPerRun) return false
+        if (ctx.eventLastDay[RUMOUR]?.let { ctx.day - it < cfg.rumourCooldownDays } == true) return false
+        val open = forgeableSignatures(ctx).filter { ctx.legacy.journal.state(it.journalKey) != KnowledgeState.SIGNATURE_DISCOVERED && Journal.nextRung(ctx.legacy.journal, it) != null }
+        if (open.isEmpty()) return false
+        val sig = ctx.rng(RngStream.EVENTS).pick(open)
+        val rung = Journal.nextRung(ctx.legacy.journal, sig) ?: return false
+        Journal.earn(ctx, sig, rung)
+        ctx.eventCounters[RUMOUR] = (ctx.eventCounters[RUMOUR] ?: 0) + 1
+        ctx.eventLastDay[RUMOUR] = ctx.day
+        ctx.emit(
+            EventType.DISCOVERY, 3, "$teller spoke of a ${Journal.subjectName(ctx.content, sig.journalKey)}: ${Journal.clue(sig, rung, ctx.config)}.",
+            data = mapOf("key" to sig.journalKey, "rung" to rung.name, "rumour" to "true") + (tellerId?.let { mapOf("hero" to it.value) } ?: emptyMap()),
+        )
+        return true
+    }
 
     fun resolve(ctx: ResolutionContext) {
         val rng = ctx.rng(RngStream.EVENTS)
@@ -99,11 +127,14 @@ object WorldEvents {
         ctx.legacy = ctx.legacy.copy(journal = j.copy(interactions = j.interactions + (key to state), experiments = j.experiments + (key to experiments)))
     }
 
-    /** Signatures the active catalog can forge whose journal entry is still blank (catalog order, so picks are deterministic). */
-    private fun unknownSignatures(ctx: ResolutionContext) = SignatureCatalog.all.filter { s ->
+    /** Signatures the active catalog can forge (catalog order, so picks are deterministic). */
+    private fun forgeableSignatures(ctx: ResolutionContext) = SignatureCatalog.all.filter { s ->
         s.familyId in ctx.content.familyById && s.coreId in ctx.content.materialById && s.augmentId in ctx.content.materialById &&
-            (s.catalystId == null || s.catalystId in ctx.content.materialById) && ctx.legacy.journal.state(s.journalKey) == KnowledgeState.UNKNOWN
+            (s.catalystId == null || s.catalystId in ctx.content.materialById)
     }
+
+    /** Those of them whose journal entry is still blank. */
+    private fun unknownSignatures(ctx: ResolutionContext) = forgeableSignatures(ctx).filter { ctx.legacy.journal.state(it.journalKey) == KnowledgeState.UNKNOWN }
 
     private fun hasFaction(id: String): (ResolutionContext) -> Boolean = { ctx -> ctx.factions.containsKey(FactionId(id)) }
 
@@ -308,8 +339,7 @@ object WorldEvents {
             id = "weapon_fragment", name = "Strange Weapon Fragment", weight = 1.5, eligibility = { unknownSignatures(it).isNotEmpty() }, maxPerRun = 2, cooldownDays = 5,
             apply = { ctx ->
                 val sig = ctx.rng(RngStream.EVENTS).pick(unknownSignatures(ctx))
-                val j = ctx.legacy.journal
-                ctx.legacy = ctx.legacy.copy(journal = j.copy(interactions = j.interactions + (sig.journalKey to KnowledgeState.OBSERVED)))
+                Journal.earn(ctx, sig, ClueRung.RECIPE)   // the first rung of its ladder: the base recipe hides something more
                 for (id in listOf(sig.coreId, sig.augmentId)) ctx.materials[id] = (ctx.materials[id] ?: 0) + 1
                 val subject = Journal.subjectName(ctx.content, sig.journalKey)
                 ctx.emit(EventType.DISCOVERY, 3, "Journal: $subject — ${Journal.hint(ctx.legacy.journal, ctx.content, sig.journalKey)}.", data = mapOf("key" to sig.journalKey))

@@ -99,13 +99,15 @@ class SignatureAndTechniqueTest {
                 assertFalse(w.name == def.name)
                 assertTrue(out.events.none { it.type == EventType.SIGNATURE_DISCOVERED })
             }
-            // Below the quality floor: never, and the first attempt leaves a clue asking for finer work.
+            // Below the quality floor: never. The first attempt earns the first rung of the ladder; the second, right in all but quality, the rung that asks for finer work.
             val poor = GameEngine(content = LaunchContent.catalog, config = launch.config.copy(qualityBase = -100))
             val out = poor.handle(freshLaunch(1, poor), exactCmd) as CommandOutcome.Accepted
             assertNull(out.state.weapon(out.forgedWeaponId!!).signatureId, def.id)
             assertEquals(KnowledgeState.OBSERVED, out.state.legacy.journal.state(def.journalKey))
             val clue = out.events.single { it.type == EventType.DISCOVERY && it.data["key"] == def.journalKey }
-            assertTrue(clue.text.contains("finer work"), clue.text)
+            assertTrue(clue.text.contains("hides something more"), clue.text)
+            val second = (poor.handle(out.state, exactCmd) as CommandOutcome.Accepted).events.single { it.type == EventType.DISCOVERY && it.data["key"] == def.journalKey }
+            assertTrue(second.text.contains("finer work"), second.text)
         }
     }
 
@@ -188,19 +190,22 @@ class SignatureAndTechniqueTest {
     }
 
     @Test
-    fun nearMissRecordsOneDescriptiveClue() {
+    fun nearMissRecordsADescriptiveClueEachTime() {
         val s0 = fresh(7)
         val out = s0.forgeAccepted(Command.Forge(ForgeMode.QUICK, SliceContent.BOW, SliceContent.SILVER, SliceContent.STORMGLASS, null, Risk.SAFE))
         assertEquals(KnowledgeState.OBSERVED, out.state.legacy.journal.state(stormsong.journalKey))
         val clue = out.events.single { it.type == EventType.DISCOVERY && it.data["key"] == stormsong.journalKey }
-        assertTrue(clue.text.contains("Stormglass sang against the Silver") && clue.text.contains("something is missing"), clue.text)
+        assertTrue(clue.text.contains("Stormglass sang against the Silver") && clue.text.contains("hides something more"), clue.text)
         assertEquals(s0.discoveriesThisRun, out.state.discoveriesThisRun, "a clue is not a discovery")
         val hint = JournalRules.hint(out.state.legacy.journal, engine.content, stormsong.journalKey)
         assertTrue(hint != "Unknown" && !hint.contains('%') && !hint.contains(stormsong.name), hint)
 
         val again = out.state.forgeAccepted(Command.Forge(ForgeMode.QUICK, SliceContent.BOW, SliceContent.SILVER, SliceContent.STORMGLASS, null, Risk.SAFE))
-        assertTrue(again.events.none { it.type == EventType.DISCOVERY && it.data["key"] == stormsong.journalKey }, "clue is given once")
+        // The journal keeps answering (G07): the second miss says what kind of catalyst, in that catalyst's own words. `ClueLadderTest` has the rest.
+        val second = again.events.single { it.type == EventType.DISCOVERY && it.data["key"] == stormsong.journalKey }
+        assertTrue(second.text.contains("wants something to bind it") && !second.text.contains('%'), second.text)
         assertEquals(KnowledgeState.OBSERVED, again.state.legacy.journal.state(stormsong.journalKey))
+        assertEquals(s0.discoveriesThisRun, again.state.discoveriesThisRun, "nor is the second")
     }
 
     @Test

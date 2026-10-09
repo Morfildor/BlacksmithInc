@@ -267,6 +267,8 @@ data class DayResolution(
 data class Journal(
     val interactions: Map<String, KnowledgeState> = emptyMap(),
     val experiments: Map<String, Int> = emptyMap(),
+    /** The clue ladder (`crafting.ClueRung`): per signature key, the rungs earned so far as a bit set. Merged across eras; absent on a profile older than the ladder. */
+    val signatureClues: Map<String, Int> = emptyMap(),
 ) {
     companion object {
         fun coreAugmentKey(core: MaterialId, augment: MaterialId) = "ca:${core.value}|${augment.value}"

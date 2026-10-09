@@ -181,7 +181,7 @@ class ReplaysAndWeaponFatesTest {
             Battle.resolveExpedition(c, c.hero(victim), c.equippedWeapon(victim), f.id, engine.content.faction(f.id))
             return c to combatDraws(s, c.toState())
         }
-        val (won, winDraws) = fight(base.copy(eliteBaseChance = 1.0, winProbabilityFloor = 1.0, winProbabilityCeiling = 1.0))
+        val (won, winDraws) = fight(base.copy(eliteBaseChance = 1.0, winProbabilityFloor = 1.0, winProbabilityCeiling = 1.0, customers = base.customers.copy(maxRumoursPerRun = 0)))   // no rumour after the kill: its pick is on EVENTS
         assertEquals(listOf(EventType.ELITE_SLAIN), won.newEvents.filter { it.type == EventType.ELITE_SLAIN || it.type == EventType.EXPEDITION_LOST }.map { it.type })
         assertEquals(1, won.replays.size)
         assertEquals(6, winDraws)

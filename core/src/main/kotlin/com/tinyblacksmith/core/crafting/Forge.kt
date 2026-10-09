@@ -157,7 +157,7 @@ object Forge {
                 subjects = listOf(id.value), data = mapOf("key" to signature.journalKey, "first" to first.toString()),
             )
         } else if (recipe != null) {
-            Journal.recordSignatureClue(ctx, recipe, miss)
+            Journal.recordSignatureClue(ctx, recipe, recipe.misses(cmd, quality))
         }
         Journal.recordExperiment(ctx, core.id, augment.id, family.id, affinity)
         return weapon
