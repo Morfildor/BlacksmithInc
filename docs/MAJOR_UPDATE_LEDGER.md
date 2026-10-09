@@ -81,7 +81,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T2.1 | Visit record | CA | todo | | | |
 | T2.2 | Script and lead | CB | todo | | | |
 | T2.3 | Cursor | INT | todo | | | |
-| T2.4 | Assets for the scene | ART | todo | | | |
+| T2.4 | Assets for the scene | ART | merged (second set off) | 2950931 | 25 of 25 portraits clean in the Compose renderer at 56 and 112 dp on emulator (density 2.625) and viewed by INT; import byte-identical twice; 287 sources unchanged by hash; second set 0 of 25 as cut-outs, tiles differ in style | |
 | T2.5 | Counter screen | AA | todo | | | |
 | T2.6 | Aftermath, Tomorrow, endings | AA | todo | | | |
 | T2.7 | Hero and item sheets | AA | todo | | | |
@@ -131,3 +131,5 @@ live copy and is copied back to the main checkout at each milestone boundary.
 - Ruling: plan section 11 and the "Who edits what" tables stand in for a new pre-flight conflict scan. Why: the owner said not to restart broad planning. Cost if wrong: a file conflict surfaces at merge and is fixed there.
 - Ruling: tasks with disjoint file owners run in parallel worktrees; the app chain T1.1 to T1.3 runs serially. Why: plan 8.1. Cost if wrong: merge conflicts.
 - Scope added by the execution instruction: **T6.7 Haptics and audio controls** (haptic feedback on meaningful moments with a working toggle; audio controls only with real audio: no sound file exists in `app/src/main/res` at `0ad888a`, so audio stays an explicit GDD 19 gap unless assets appear). T0.3 also corrects "hand-made" in `CLAUDE.md` and `docs/ART_BRIEF.md`. T2.4: the import script only reads sources and writes new files; no source image is re-saved (that would strip its content credentials).
+- Ruling: the second portrait set stays disabled (`PortraitArt.SECOND_SET_ENABLED = false`). Why: on the device it fails as cut-outs (0 of 25) and as tiles it is a darker, painterly style with non-human faces that does not read as one family with the 25 busts. The appearance pool is the 25 verified faces plus the non-art variation of plan 5.4. Cost if wrong: one constant flips and the name/face collision target for 12 residents is easier to meet.
+- Ruling: customers at the counter are drawn as framed busts (mode 2 of plan 5.3), since cut-out standing figures are not available from this art. Cost if wrong: `CounterScene` layout is reworked when art exists.
