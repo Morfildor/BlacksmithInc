@@ -78,7 +78,7 @@ object Battle {
             ctx.field += FieldResult(
                 hero.id, hero.fullName, FieldOutcome.WON, encounter, elite, factionId,
                 lostBareHanded = weapon != null && losesWith(null),
-                lostWithOldBlade = bought?.let { sale -> losesWith(sale.data["tradedWeapon"]?.let { ctx.weapons[WeaponId(it)] }) },
+                lostWithOldBlade = bought?.data?.get("tradedWeapon")?.let { losesWith(ctx.weapons[WeaponId(it)]) },
                 matchupHelped = weapon != null && ((weapon.element != null && weapon.element == faction.weakTo) || affixDefs.any { it.baneFaction == faction.id }),
                 gold = loot, materialId = found?.data?.get("material")?.let { MaterialId(it) }, eventIds = listOfNotNull(told.id, found?.id),
             )
