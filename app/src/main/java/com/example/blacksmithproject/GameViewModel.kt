@@ -1,31 +1,36 @@
 package com.example.blacksmithproject
 
 import android.app.Application
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.blacksmithproject.data.GameRepository
+import com.example.blacksmithproject.GameSession.Op
+import com.example.blacksmithproject.GameSession.Result
+import com.example.blacksmithproject.GameSession.Status
+import com.example.blacksmithproject.data.SaveFailure
 import com.example.blacksmithproject.data.SaveStore
+import com.example.blacksmithproject.data.Settings
 import com.example.blacksmithproject.data.SettingsStore
 import com.tinyblacksmith.core.engine.Command
-import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.engine.Technique
-import com.tinyblacksmith.core.legacy.LegacyOutcome
 import com.tinyblacksmith.core.legacy.RunEndResult
 import com.tinyblacksmith.core.model.*
-import com.tinyblacksmith.core.persistence.SaveCodec
-import kotlinx.coroutines.Dispatchers
+import com.tinyblacksmith.core.persistence.DayCursor
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 enum class Panel { HOME, FORGE, MARKET, TOWN, JOURNAL, GAZETTE, LEGACY }
 
@@ -39,149 +44,218 @@ data class ForgeDraft(
     val technique: Technique? = null,
 )
 
+/** What is on screen. Game state in it is always the session's snapshot (what is saved); [op] is the session's status. */
 sealed interface UiState {
+    val op: Status get() = Status.Idle
+
     data object Loading : UiState
-    data class Title(val legacy: LegacyProfile, val hasSavedRun: Boolean) : UiState
+    /** The save could not be loaded. [working] while Retry or Start over is reading the store again. */
+    data class LoadFailed(val failure: SaveFailure, val working: Boolean = false) : UiState
+    data class Title(val legacy: LegacyProfile, override val op: Status = Status.Idle) : UiState
     data class Playing(
         val state: GameState,
         val panel: Panel = Panel.HOME,
         val draft: ForgeDraft = ForgeDraft(),
         val revealWeaponId: WeaponId? = null,
+        /** The last day's report while the player has not closed it (the day cursor is not at DONE). */
         val showReport: DayResolution? = null,
         val lastError: String? = null,
-        val busy: Boolean = false,
+        override val op: Status = Status.Idle,
         /** Day on which the player chose "Decide later" for the blessing offer; UI-only, the offer itself stays in core state. */
         val blessingOfferDismissedDay: Int? = null,
-    ) : UiState
-    data class RunEnded(val runEnd: RunEndResult, val legacy: LegacyProfile, val claimed: Boolean, val lastError: String? = null) : UiState
+    ) : UiState {
+        val busy: Boolean get() = op is Status.Working
+    }
+    /** The ended run stays stored, so this screen is rebuilt from it and the legacy row after any restart. */
+    data class RunEnded(
+        val run: GameState,
+        val runEnd: RunEndResult,
+        val legacy: LegacyProfile,
+        val claimed: Boolean,
+        val lastError: String? = null,
+        override val op: Status = Status.Idle,
+    ) : UiState {
+        val busy: Boolean get() = op is Status.Working
+    }
 }
 
 /**
- * UI is an observer (GDD 13.2): it dispatches typed commands to the pure engine and persists accepted results
- * atomically before showing them. It never computes gameplay outcomes itself.
+ * UI is an observer (GDD 13.2): every operation goes through [GameSession], which saves an accepted result before
+ * publishing it. This class keeps only what the screen adds (destination, forge draft, open reveal, messages) and
+ * never computes gameplay outcomes. The destination, draft and reveal are also kept in [saved], so they come back
+ * after the system has killed the process.
  */
-class GameViewModel(private val repo: GameRepository, val settings: SettingsStore) : ViewModel() {
-    val engine = GameEngine()
+class GameViewModel(val engine: GameEngine, private val session: GameSession, val settings: Settings, private val saved: SavedStateHandle) : ViewModel() {
+    private data class Local(
+        val panel: Panel = Panel.HOME,
+        val draft: ForgeDraft = ForgeDraft(),
+        val revealWeaponId: WeaponId? = null,
+        val blessingOfferDismissedDay: Int? = null,
+        val lastError: String? = null,
+        val loadFailure: SaveFailure? = null,
+        /** True until the first load (and the hand-over of the old report key) has finished, and again during Retry. */
+        val loading: Boolean = true,
+    )
 
-    private val _ui = MutableStateFlow<UiState>(UiState.Loading)
-    val ui: StateFlow<UiState> = _ui.asStateFlow()
+    private val local = MutableStateFlow(restored())
+    /** closeRun of the ended run, computed once per run instead of on every emission. */
+    private var closed: Pair<GameState, RunEndResult>? = null
+
+    val ui: StateFlow<UiState> = combine(session.snapshot, session.status, local, ::render).stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Loading)
 
     init {
-        viewModelScope.launch {
-            val legacy = loadLegacy()
-            val run = loadRun()
-            // The engine saves the last day's report with the run; one the player never closed reopens (GDD 3.3).
-            val unread = run?.lastResolution?.let { r -> r.takeIf { it.commandId.value != settings.dismissedReport() } }
-            _ui.value = when {
-                run == null -> UiState.Title(legacy, hasSavedRun = false)
-                run.isEnded && unread == null -> UiState.RunEnded(engine.closeRun(run), legacy, claimed = run.runId.value in legacy.claimedRunIds)
-                else -> UiState.Playing(run, showReport = unread)
-            }
+        viewModelScope.launch { open { session.load() } }
+    }
+
+    private fun render(snap: GameSession.Snapshot?, op: Status, l: Local): UiState {
+        if (snap == null || l.loading) return l.loadFailure?.let { UiState.LoadFailed(it, working = l.loading) } ?: UiState.Loading
+        val run = snap.run ?: return UiState.Title(snap.legacy, op)
+        val watched = GameSession.pending(run, snap.legacy, snap.cursor) == DayCursor.Stage.DONE
+        if (run.isEnded && watched) {
+            val end = closed?.takeIf { it.first === run }?.second ?: engine.closeRun(run).also { closed = run to it }
+            return UiState.RunEnded(run, end, snap.legacy, claimed = run.runId.value in snap.legacy.claimedRunIds, lastError = l.lastError, op = op)
+        }
+        // Until the shop-day screen exists the report dialog is the presentation of the day: it shows until the cursor is DONE.
+        return UiState.Playing(run, l.panel, l.draft, l.revealWeaponId, run.lastResolution.takeIf { !watched }, l.lastError, op, l.blessingOfferDismissedDay)
+    }
+
+    /** The screen as it stands this instant ([ui] may be one dispatch behind). */
+    private fun now(): UiState = render(session.snapshot.value, session.status.value, local.value)
+
+    /** A load, a retried load or a start over: the screen leaves Loading / LoadFailed only when it has finished. */
+    private suspend fun open(read: suspend () -> Result) {
+        local.update { it.copy(loading = true) }
+        val result = read()
+        if (result is Result.Done) handOverDismissedReport()
+        local.update { it.copy(loading = false, loadFailure = (result as? Result.Failed)?.failure) }
+    }
+
+    /**
+     * 0.6.0 kept "the player closed this report" in settings. Read once: when it names the stored last day and no
+     * cursor row exists yet, the cursor is written at DONE, so a save from 0.6.0 opens exactly where it was left.
+     */
+    private suspend fun handOverDismissedReport() {
+        val snap = session.snapshot.value ?: return
+        val last = snap.run?.lastResolution ?: return
+        if (snap.cursor == null && settings.dismissedReport() == last.commandId.value) session.run(Op.MoveCursor(DayCursor(last.commandId.value, DayCursor.Stage.DONE)))
+    }
+
+    private fun edit(transform: (Local) -> Local) {
+        val l = local.updateAndGet(transform)
+        saved[KEY_PANEL] = l.panel.name
+        saved[KEY_REVEAL] = l.revealWeaponId?.value
+        saved[KEY_BLESSING_DAY] = l.blessingOfferDismissedDay
+        saved[KEY_DRAFT] = with(l.draft) { arrayListOf(mode.name, familyId?.value, coreId?.value, augmentId?.value, catalystId?.value, risk.name, technique?.name) }
+    }
+
+    private fun restored(): Local {
+        val d = saved.get<ArrayList<String?>>(KEY_DRAFT)?.takeIf { it.size == 7 }
+        return Local(
+            panel = saved.get<String>(KEY_PANEL)?.let { name -> Panel.entries.firstOrNull { it.name == name } } ?: Panel.HOME,
+            draft = if (d == null) ForgeDraft() else ForgeDraft(
+                mode = ForgeMode.entries.firstOrNull { it.name == d[0] } ?: ForgeMode.QUICK,
+                familyId = d[1]?.let(::WeaponFamilyId), coreId = d[2]?.let(::MaterialId), augmentId = d[3]?.let(::MaterialId), catalystId = d[4]?.let(::MaterialId),
+                risk = Risk.entries.firstOrNull { it.name == d[5] } ?: Risk.BALANCED,
+                technique = Technique.entries.firstOrNull { it.name == d[6] },
+            ),
+            revealWeaponId = saved.get<String>(KEY_REVEAL)?.let(::WeaponId),
+            blessingOfferDismissedDay = saved.get<Int>(KEY_BLESSING_DAY),
+        )
+    }
+
+    /** One op at a time from the screen: a tap while another op is working is dropped, as the disabled buttons already say. */
+    private fun launch(op: Op, onDone: () -> Unit = {}) {
+        if (session.status.value is Status.Working) return
+        viewModelScope.launch { val result = session.run(op); show(result); if (result is Result.Done) onDone() }
+    }
+
+    private fun show(result: Result) {
+        when (result) {
+            is Result.Done -> edit { it.copy(lastError = null, revealWeaponId = result.accepted?.forgedWeaponId ?: it.revealWeaponId) }
+            is Result.Rejected -> edit { it.copy(lastError = describe(result.error)) }
+            is Result.EngineFault -> edit { it.copy(lastError = "The forge cannot do that right now.") }
+            // Stale and DayNotWatched: the screen already shows why. Failed: the session holds it and SaveFailureDialog shows it.
+            Result.Stale, Result.DayNotWatched, is Result.Failed -> Unit
         }
     }
 
-    private suspend fun loadRun(): GameState? = withContext(Dispatchers.IO) { repo.load().run?.let { SaveCodec.decodeRun(it) } }
-
-    private suspend fun loadLegacy(): LegacyProfile = withContext(Dispatchers.IO) { repo.load().legacy?.let { SaveCodec.decodeLegacy(it) } ?: LegacyProfile() }
-
-    private suspend fun save(run: GameState?, legacy: LegacyProfile) =
-        withContext(Dispatchers.IO) { repo.commit(run?.let { SaveCodec.encodeRun(it) }, SaveCodec.encodeLegacy(legacy)) }
-
-    fun newRun() = startRun(null)
+    fun newRun() = beginEra(null)
 
     /** Debug launch extra only (MainActivity checks the debuggable flag): a fixed-seed run, and only when no run is saved. */
     fun startSeededRun(seed: Long) {
-        viewModelScope.launch { if (_ui.first { it !is UiState.Loading } is UiState.Title) startRun(seed) }
+        viewModelScope.launch { if (ui.first { it !is UiState.Loading } is UiState.Title) beginEra(seed) }
     }
 
-    private fun startRun(seed: Long?) = viewModelScope.launch {
-        val legacy = loadLegacy()
-        val state = engine.newRun(legacy, seed ?: (System.nanoTime() xor legacy.eras.size.toLong()))
-        save(state, state.legacy)
-        _ui.value = UiState.Playing(state)
+    /** From the title (no run) or from the run-end screen (the session refuses it until the legacy is claimed). */
+    private fun beginEra(seed: Long?) {
+        val snap = session.snapshot.value ?: return
+        launch(Op.BeginEra(seed ?: (System.nanoTime() xor snap.legacy.eras.size.toLong()), snap.run?.runId)) { edit { Local(loading = false) } }
     }
 
-    fun continueRun() = viewModelScope.launch {
-        val run = loadRun() ?: return@launch
-        _ui.value = if (run.isEnded) UiState.RunEnded(engine.closeRun(run), run.legacy, claimed = false) else UiState.Playing(run)
-    }
+    fun selectPanel(panel: Panel) = edit { it.copy(panel = panel) }
+    fun updateDraft(transform: (ForgeDraft) -> ForgeDraft) = edit { it.copy(draft = transform(it.draft)) }
+    fun dismissReveal() = edit { it.copy(revealWeaponId = null) }
+    fun dismissError() = edit { it.copy(lastError = null) }
+    fun dismissBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = session.snapshot.value?.run?.day, panel = Panel.HOME) }
+    fun reopenBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = null) }
 
-    fun selectPanel(panel: Panel) = _ui.update { if (it is UiState.Playing) it.copy(panel = panel) else it }
-    fun updateDraft(transform: (ForgeDraft) -> ForgeDraft) = _ui.update { if (it is UiState.Playing) it.copy(draft = transform(it.draft)) else it }
-    fun dismissReveal() = _ui.update { if (it is UiState.Playing) it.copy(revealWeaponId = null) else it }
-    fun dismissError() = _ui.update { if (it is UiState.Playing) it.copy(lastError = null) else it }
-    fun dismissBlessingOffer() = _ui.update { if (it is UiState.Playing) it.copy(blessingOfferDismissedDay = it.state.day, panel = Panel.HOME) else it }
-    fun reopenBlessingOffer() = _ui.update { if (it is UiState.Playing) it.copy(blessingOfferDismissedDay = null) else it }
-
+    /** The report's own button: the day has been read, so its cursor moves to DONE (which unlocks planning, or opens the run end). */
     fun dismissReport() {
-        val current = _ui.value as? UiState.Playing ?: return
-        current.showReport?.let { r -> viewModelScope.launch { settings.setDismissedReport(r.commandId.value) } }
-        if (current.state.isEnded) {
-            _ui.value = UiState.RunEnded(engine.closeRun(current.state), current.state.legacy, claimed = false)
-        } else {
-            _ui.value = current.copy(showReport = null, panel = Panel.HOME)
-        }
+        val last = session.snapshot.value?.run?.lastResolution ?: return
+        edit { it.copy(panel = Panel.HOME) }
+        viewModelScope.launch { session.run(Op.MoveCursor(DayCursor(last.commandId.value, DayCursor.Stage.DONE))) }
+    }
+
+    /**
+     * System back and a tap outside a dialog. Returns true when it was consumed. It never acknowledges a report:
+     * only the report's own button does. Away from Home it returns to Home; on Home it is not consumed (leaves the app).
+     */
+    fun back(): Boolean {
+        val s = now() as? UiState.Playing ?: return false
+        if (s.showReport != null) return true
+        if (s.panel == Panel.HOME) return false
+        selectPanel(Panel.HOME)
+        return true
     }
 
     fun dispatch(command: Command) {
-        val current = _ui.value as? UiState.Playing ?: return
-        if (current.busy) return
-        _ui.value = current.copy(busy = true)
-        viewModelScope.launch {
-            when (val out = engine.handle(current.state, command)) {
-                is CommandOutcome.Accepted -> {
-                    save(out.state, out.state.legacy)
-                    _ui.update { ui ->
-                        if (ui !is UiState.Playing) ui
-                        else ui.copy(state = out.state, busy = false, revealWeaponId = out.forgedWeaponId ?: ui.revealWeaponId, showReport = out.resolution ?: ui.showReport, lastError = null)
-                    }
-                }
-                is CommandOutcome.Rejected -> _ui.update { ui -> if (ui is UiState.Playing) ui.copy(busy = false, lastError = describe(out.error)) else ui }
-            }
-        }
+        val run = session.snapshot.value?.run ?: return
+        launch(Op.Dispatch(command, run.runId))
     }
 
     /** Deterministic per-day command ID: retrying after a crash cannot simulate the day twice. */
     fun endDay() {
-        val current = _ui.value as? UiState.Playing ?: return
-        dispatch(Command.EndDay(CommandId("${current.state.runId.value}:day${current.state.day}")))
+        val run = session.snapshot.value?.run ?: return
+        dispatch(Command.EndDay(CommandId("${run.runId.value}:day${run.day}")))
     }
 
     fun claimLegacy() {
-        val current = _ui.value as? UiState.RunEnded ?: return
-        viewModelScope.launch {
-            val legacy = loadLegacy()
-            when (val out = engine.claimLegacy(legacy, current.runEnd)) {
-                is LegacyOutcome.Updated -> {
-                    save(null, out.legacy)
-                    _ui.value = current.copy(legacy = out.legacy, claimed = true, lastError = null)
-                }
-                is LegacyOutcome.Rejected -> {
-                    save(null, out.legacy)
-                    _ui.value = current.copy(legacy = out.legacy, claimed = true, lastError = describe(out.error))
-                }
-            }
-        }
+        val run = session.snapshot.value?.run ?: return
+        launch(Op.Claim(run.runId))
     }
 
     fun buyUpgrade(id: UpgradeId) {
-        val current = _ui.value as? UiState.RunEnded ?: return
-        viewModelScope.launch {
-            when (val out = engine.purchaseUpgrade(current.legacy, id)) {
-                is LegacyOutcome.Updated -> {
-                    save(null, out.legacy)
-                    _ui.value = current.copy(legacy = out.legacy, lastError = null)
-                }
-                is LegacyOutcome.Rejected -> _ui.value = current.copy(lastError = describe(out.error))
-            }
-        }
+        val snap = session.snapshot.value ?: return
+        launch(Op.BuyUpgrade(id, snap.run?.runId))
     }
 
     fun beginNextEra() {
-        val current = _ui.value as? UiState.RunEnded ?: return
-        if (!current.claimed) return
-        newRun()
+        if (now() is UiState.RunEnded) beginEra(null)
     }
+
+    /** "Try again": reads the save again when it could not be loaded, otherwise repeats the op whose save failed. */
+    fun retry() {
+        if (session.snapshot.value != null) { viewModelScope.launch { show(session.retry()) }; return }
+        if (!local.value.loading) viewModelScope.launch { open { session.retry() } }
+    }
+
+    /** "Start over (keeps a backup)" on the load-failed screen. */
+    fun startOver() {
+        if (!local.value.loading) viewModelScope.launch { open { session.startOverKeepingBackup() } }
+    }
+
+    /** "Keep working": drop the op whose save failed; the screen already shows the last saved state. */
+    fun dismissSaveFailure() = session.dismissFailure()
 
     fun setReducedMotion(value: Boolean) = viewModelScope.launch { settings.setReducedMotion(value) }
     fun dismissTip(id: String) = viewModelScope.launch { settings.markTipSeen(id) }
@@ -197,7 +271,7 @@ class GameViewModel(private val repo: GameRepository, val settings: SettingsStor
         is GameError.TechniqueRequiresAdvanced -> "Techniques need the Advanced Forge."
         is GameError.WeaponNotFound -> "That weapon is gone."
         is GameError.WeaponNotAvailable -> "That weapon is not in the shop."
-        GameError.ShelfFull -> "All ${(_ui.value as? UiState.Playing)?.let { engine.shelfSlots(it.state) } ?: engine.config.shelfSlots} shelf slots are full."
+        GameError.ShelfFull -> "All ${session.snapshot.value?.run?.let { engine.shelfSlots(it) } ?: engine.config.shelfSlots} shelf slots are full."
         is GameError.InvalidPrice -> "Price must be zero or more."
         is GameError.InvalidQuantity -> "Quantity must be positive."
         is GameError.NotEnoughGold -> "Not enough gold (need ${e.needed}, have ${e.available})."
@@ -216,10 +290,16 @@ class GameViewModel(private val repo: GameRepository, val settings: SettingsStor
     }
 
     companion object {
+        private const val KEY_PANEL = "panel"
+        private const val KEY_DRAFT = "draft"
+        private const val KEY_REVEAL = "reveal"
+        private const val KEY_BLESSING_DAY = "blessing_day"
+
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as Application
-                GameViewModel(SaveStore.create(app), SettingsStore(app))
+                val engine = GameEngine()
+                GameViewModel(engine, GameSession(engine, SaveStore.create(app)), SettingsStore(app), createSavedStateHandle())
             }
         }
     }
