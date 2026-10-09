@@ -5,6 +5,7 @@ import com.example.blacksmithproject.data.SaveFailure
 import com.example.blacksmithproject.data.StoredRows
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
+import com.tinyblacksmith.core.engine.Compatibility
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.legacy.LegacyOutcome
@@ -14,6 +15,7 @@ import com.tinyblacksmith.core.model.RunId
 import com.tinyblacksmith.core.model.UpgradeId
 import com.tinyblacksmith.core.persistence.DayCursor
 import com.tinyblacksmith.core.persistence.SaveCodec
+import com.tinyblacksmith.core.persistence.SaveEnvelope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +23,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -68,17 +71,48 @@ class GameSession(
     val snapshot: StateFlow<Snapshot?> = _snapshot.asStateFlow()      // null until load() succeeds
     val status: StateFlow<Status> = _status.asStateFlow()
 
-    /** Reads the rows and publishes them. Under the lock, so it can never publish rows older than a commit. */
-    suspend fun load(): Result = mutex.withLock {
+    /** Reads the rows, admits the run and publishes them. Under the lock, so it can never publish rows older than a commit. */
+    suspend fun load(): Result = mutex.withLock { loadLocked() }
+
+    /** An op issued before the first successful load answers Stale. */
+    suspend fun run(op: Op): Result = mutex.withLock { runLocked(op) }
+
+    /** Reads the save again when nothing is loaded; otherwise re-runs the op held in Status.Failed from the same snapshot. */
+    suspend fun retry(): Result = mutex.withLock {
+        if (_snapshot.value == null) return loadLocked()
+        val failed = _status.value as? Status.Failed ?: return Result.Done()
+        runLocked(failed.op)
+    }
+
+    /** "Keep working": the failed op is dropped; the snapshot is still the last saved state. */
+    fun dismissFailure() { _status.update { if (it is Status.Failed) Status.Idle else it } }
+
+    /**
+     * The way out of a save that cannot be loaded: every row this build cannot read is moved to a backup key (never
+     * deleted), the run row always, the legacy row only when it is the unreadable one. Then the store is read again.
+     */
+    suspend fun startOverKeepingBackup(): Result = mutex.withLock {
+        if (_snapshot.value != null) return Result.Done()      // only ever the way out of a failed load
+        try {
+            val rows = repo.load()
+            if (rows.legacy != null && runCatching { withContext(compute) { decodeLegacy(rows.legacy) } }.isFailure) repo.quarantine("legacy")
+            if (rows.run != null) repo.quarantine("run")
+            repo.saveCursor(null)
+        } catch (e: SaveFailure) {
+            return Result.Failed(e)
+        }
+        loadLocked()
+    }
+
+    private suspend fun loadLocked(): Result {
         val rows = try { repo.load() } catch (e: SaveFailure) { return Result.Failed(e) }
         val decoded = try { withContext(compute) { decode(rows) } } catch (e: SaveFailure) { return Result.Failed(e) }
         runText = rows.run
         _snapshot.value = decoded
-        Result.Done()
+        return Result.Done()
     }
 
-    /** An op issued before the first successful load answers Stale. */
-    suspend fun run(op: Op): Result = mutex.withLock {
+    private suspend fun runLocked(op: Op): Result {
         val snap = _snapshot.value ?: return Result.Stale
         if (op is Op.MoveCursor) return moveCursor(snap, op.cursor)
         _status.value = Status.Working(op)
@@ -88,25 +122,34 @@ class GameSession(
         } finally {
             _status.value = (result as? Result.Failed)?.let { Status.Failed(op, it.failure) } ?: Status.Idle
         }
-        result
+        return result
     }
 
-    suspend fun retry(): Result = TODO("T1.2: re-run the op held in Status.Failed, or the load when nothing is loaded")
-
-    suspend fun startOverKeepingBackup(): Result = TODO("T1.2: quarantine(\"run\"), then publish Snapshot(null, legacy, null)")
-
     /**
-     * T1.2 seam: today any row that does not decode is Corrupt. The version check (SaveFailure.Newer) and
-     * Compatibility.admit (SaveFailure.Incompatible) belong here. A cursor that cannot be read is no cursor.
+     * The legacy row is read first, so a bad run never hides a bad legacy. The published run is the admitted one
+     * (versions stamped to this build); the stored bytes are left alone until the next accepted command.
+     * A cursor that cannot be read is no cursor.
      */
     private fun decode(rows: StoredRows): Snapshot {
-        val legacy = rows.legacy?.let { text -> readRow("legacy") { SaveCodec.decodeLegacy(text) } } ?: LegacyProfile()
-        val run = rows.run?.let { text -> readRow("run") { SaveCodec.decodeRun(text) } }
+        val legacy = rows.legacy?.let { decodeLegacy(it) } ?: LegacyProfile()
+        val run = rows.run?.let { text ->
+            when (val admitted = Compatibility.admit(readRow("run", text) { SaveCodec.decodeRun(text) }, engine.content, engine.config)) {
+                is Compatibility.Result.Admitted -> admitted.state
+                is Compatibility.Result.Unsupported -> throw SaveFailure.Incompatible(admitted.problems)
+            }
+        }
         val cursor = rows.cursor?.let { text -> runCatching { DayCursor.decode(text) }.getOrNull() }
         return Snapshot(run, legacy, cursor)
     }
 
-    private inline fun <T> readRow(key: String, block: () -> T): T = try { block() } catch (e: Exception) { throw SaveFailure.Corrupt(key, e) }
+    private fun decodeLegacy(text: String): LegacyProfile = readRow("legacy", text) { SaveCodec.decodeLegacy(text) }
+
+    /** Corrupt: the envelope or its payload does not decode. Newer: the envelope is sound and from a later schema. */
+    private inline fun <T> readRow(key: String, text: String, block: () -> T): T {
+        val found = try { SaveCodec.json.decodeFromString(SaveEnvelope.serializer(), text).schemaVersion } catch (e: Exception) { throw SaveFailure.Corrupt(key, e) }
+        if (found > SaveCodec.SCHEMA_VERSION) throw SaveFailure.Newer(key, found, SaveCodec.SCHEMA_VERSION)
+        return try { block() } catch (e: Exception) { throw SaveFailure.Corrupt(key, e) }
+    }
 
     private sealed interface Step {
         class Answer(val result: Result) : Step

@@ -50,7 +50,7 @@ abstract class SaveDao {
     }
 }
 
-@Database(entities = [SaveEntity::class], version = 1, exportSchema = false)
+@Database(entities = [SaveEntity::class], version = 1, exportSchema = true)
 abstract class SaveDatabase : RoomDatabase() {
     abstract fun saveDao(): SaveDao
 }
