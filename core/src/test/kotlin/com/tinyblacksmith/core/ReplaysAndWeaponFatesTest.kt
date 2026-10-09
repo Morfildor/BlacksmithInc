@@ -351,7 +351,7 @@ class ReplaysAndWeaponFatesTest {
 
     /** One lost siege per seed in which every champion falls on the walls; tallies their blades' fates. */
     private fun wallsFates(seeds: LongRange): Map<WeaponFate, Int> {
-        val overrun = base.copy(siegeModifier = 50.0, championSiegeDamageOnLoss = 500)
+        val overrun = base.copy(siegeModifier = 50.0, weaponFates = base.weaponFates.copy(wallsRoutDamage = 500))  // a rout no champion survives
         val tally = mutableMapOf<WeaponFate, Int>()
         for (seed in seeds) {
             val s0 = engine.newRun(LegacyProfile(), seed)

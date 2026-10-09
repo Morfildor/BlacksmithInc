@@ -302,12 +302,14 @@ object Battle {
             offerBlessing(ctx)
         } else {
             ctx.town = ctx.town.copy(siegesLost = ctx.town.siegesLost + 1)
-            val overrun = ctx.emit(EventType.SIEGE_LOST, 9, "${attacker.replaceFirstChar { it.uppercase() }} overran the defenders ($championNames).", champions.map { it.first.id.value },
-                mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()))
+            // A rout: the raid outweighs the defense so far that the champions are cut down where they stand, not driven off.
+            val rout = raidPower >= townDefense * config.weaponFates.wallsRoutRatio
+            val overrun = ctx.emit(EventType.SIEGE_LOST, 9, "${attacker.replaceFirstChar { it.uppercase() }} ${if (rout) "routed" else "overran"} the defenders ($championNames).", champions.map { it.first.id.value },
+                mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()) + (if (rout) mapOf("rout" to "true") else emptyMap()))
             val rng = ctx.rng(RngStream.COMBAT)
             for ((h, _) in champions) {
                 val hero = ctx.hero(h.id)
-                val health = hero.health - config.championSiegeDamageOnLoss
+                val health = hero.health - (if (rout) config.weaponFates.wallsRoutDamage else config.championSiegeDamageOnLoss)
                 if (health <= config.heroDeathHealthFloor) {
                     val recovered = rng.chance(config.weaponFates.wallsRecoveryChance)
                     val died = kill(ctx, hero, "died defending the walls", recovered, weaponSeized = !recovered && rng.chance(config.weaponFates.wallsSeizureChance))

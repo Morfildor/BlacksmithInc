@@ -39,6 +39,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   now live on that sheet. The two sheets open each other (a hero's blade, a blade's holder, a hero's mentor).
 
 ### Changed
+- The walls can cost a champion. When a siege is lost badly (the raid at one and a half times the town's defense or
+  more) it is a rout: the champions take a heavier wound, and one who went up barely recovered can fall there. The
+  blade they carried is recovered by comrades more often than on the road, or seized, or lost. A narrow loss still only
+  wounds, and a champion at full health survives any siege. The paper says "routed" when it happens.
 - Guild Patronage does what its name says. For its five days every member of a guild wants to come to the shop, and the
   guild pays 30 gold toward one blade for each of them: the coin counts toward what the member can afford, shows on the
   sale as the guild's share and in the day's takings as its own line. The town does not offer it while no guild stands.

@@ -2432,3 +2432,60 @@ blessings instead of eight (the same three draws on the LEGACY stream, different
 **Simulator.** A "guild patronage/run" line on every policy row (times taken, purchases with a stipend, stipend gold and its share of gold
 earned); `--set patronageStipend=N`. The dispatch asked for "impact rows for the Guild Patronage upgrade": it is a blessing, not a legacy
 track, so there is no upgrade row; the per-blessing yardstick above stands in for it.
+
+## Wall deaths made reachable: the rout rule (2026-10-09, task T3.8; X19)
+
+**The gap.** A champion could not die on the walls: only heroes at `heroWoundedThreshold` 50 health or more are chosen, a lost siege
+cost each 40 (`championSiegeDamageOnLoss`), and death is at 0. The "died defending the walls" branch and its two odds
+(`wallsRecoveryChance` 0.7, `wallsSeizureChance` 0.3) never ran.
+
+**The rule (adopted).** A siege lost with the raid at `weaponFates.wallsRoutRatio` **1.5** times the town's defense or more is a rout:
+each champion takes `weaponFates.wallsRoutDamage` **55** instead of 40. A champion who went up at 50-55 health falls; anyone fitter
+survives (at 56 with 1 health), and a narrower loss wounds as before. The fallen champion's blade takes the walls' fates that already
+existed. The `SIEGE_LOST` record says "routed the defenders" and carries `data["rout"]`. Balance stays 7 (unreleased M3 step; fingerprint
+re-pinned `33499217...` -> `daf9ca72...`); rules 3, schema 4.
+
+**Sweep** (1,000 runs at base seeds 1 / 10001 / 20001, every classic policy, every bot and five maxed rows; full table
+`T3.8-sweep-table.md` in the session scratchpad). Damage 40 leaves the rule inert and reproduces the tree before this task byte for byte.
+
+| rout damage (ratio 1.5) | FAIR deaths per hero-day | ACTIVE deaths per hero-day | FAIR champions fallen a run | ACTIVE | EXPERT | FAIR mean days |
+|---|---|---|---|---|---|---|
+| 40 (inert) | 0.0043 / 0.0040 / 0.0042 | 0.0031 / 0.0033 / 0.0030 | 0 | 0 | 0 | 22.2 / 22.5 / 22.3 |
+| 50 | 0.0045 / 0.0042 / 0.0045 | 0.0031 / 0.0033 / 0.0031 | 0.04 / 0.05 / 0.06 | 0.01-0.02 | 0.004-0.008 | 22.2 / 22.5 / 22.3 |
+| **55 (adopted)** | 0.0051 / 0.0046 / 0.0049 | 0.0034 / 0.0035 / 0.0033 | 0.22 / 0.20 / 0.20 | 0.08-0.10 | 0.04 | 22.2 / 22.5 / 22.3 |
+| 60 | 0.0059 / 0.0055 / 0.0058 | 0.0036 / 0.0038 / 0.0036 | 0.44 / 0.42 / 0.45 | 0.20-0.22 | 0.12-0.13 | 22.2 / 22.5 / 22.3 |
+| 55 at ratio 1.25 | 0.0051 / 0.0050 / 0.0052 | 0.0036 / 0.0038 / 0.0034 | 0.27 / 0.28 / 0.28 | 0.16-0.18 | 0.07-0.09 | 22.2 / 22.5 / 22.3 |
+
+**Adoption test** (the plan's: adopt only if deaths per hero-day and BALANCED_FAIR stay inside the M3 band). Band: deaths per hero-day
+at most 1.15 x the M0 value, 0.0045 for FAIR (limit 0.00518) and 0.0035 for ACTIVE (limit 0.00403). At 55: FAIR 0.00507 / 0.00464 /
+0.00493 and ACTIVE 0.00335 / 0.00349 / 0.00325: **inside, by 0.0001 at seed 1**. FAIR days: mean 22.215 / 22.465 / 22.315, median 20,
+p10 15, p90 30 / 30 / 25: inside (and unchanged: a fallen champion does not shorten the run measurably). 60 is outside (FAIR 0.0055-0.0059)
+and so is ratio 1.25 at seed 20001 (0.0052). 50 is inside but nearly inert, and it leaves a full-health champion at exactly 50, which is
+not "wounded", so they go straight back out (PASSIVE dies more at 50 than at 55 for that reason). So 55 at 1.5, the plan's start values.
+
+**What a player will see.** About four lost sieges in ten are routs for a plain smith (1.3 of 3.0 lost a run). A champion falls on the
+walls in about one plain first era in five (19 / 17 / 19 % of runs), one active era in ten to thirteen, one expert era in about twenty-five; on a maxed
+account 0.10-0.16 a run. Most routs kill nobody: the champions are usually well above 55. A shop that prices itself out of its town sees
+it most (BALANCED_EXPENSIVE 0.31-0.36 a run, deaths per hero-day 0.0065 -> 0.0081-0.0086).
+
+**Other rows** (before -> after, seeds 1 / 10001 / 20001; days are unchanged within 0.1 everywhere):
+deaths per hero-day SYNERGY 0.0027 / 0.0025 / 0.0027 -> 0.0029 / 0.0028 / 0.0029; NOVICE 0.0040 / 0.0044 / 0.0039 -> 0.0044 / 0.0046 /
+0.0042; EXPERT 0.0019 / 0.0018 / 0.0017 -> 0.0020 / 0.0019 / 0.0018; maxed BALANCED_FAIR 0.0025 -> 0.0028; maxed EXPERT 0.0018 / 0.0017 /
+0.0016 -> 0.0019 / 0.0018 / 0.0017. Maxed EXPERT 53.9 / 54.2 / 54.0 -> 53.8 / 54.2 / 54.1 days (p90 60, longest 60); maxed SYNERGY 45.3 /
+45.4 / 45.5 -> 45.2 / 45.4 / 45.4, which is +10.1 / +10.2 / +10.2 over a new account against the gate of +10. Tripwire not crossed (new
+EXPERT 44.7 / 44.9 / 45.0; longest run of any row 65 days). Every run ends.
+
+**Warlord sieges** (T3.4 concern: 0.8 -> 0.3 a run for a plain smith with twelve residents). Unchanged by this rule: BALANCED_FAIR 0.3 /
+0.3 / 0.4, BALANCED_ACTIVE 0.3 / 0.3 / 0.2, EXPERT 0.0-0.1, NOVICE 0.6-0.7, PASSIVE 0.8-0.9, BALANCED_EXPENSIVE 1.1-1.2. Wall deaths do
+not depend on the warlord: they come from ordinary routs. The warlord's rarity is still open and nothing here addresses it.
+
+**Tests.** `SiegeWallTest` (3): `aNarrowLossNeverKillsAHealthyChampion` (40 seeds x three ratios below 1.5 with every champion at the
+weakest health allowed; and a threefold rout against champions at 56), `aRoutCanKillAChampionAtTheThreshold` (at 50 and at 55, just
+past the ratio and far past it), `theFallenChampionsBladeTakesAWallsFate` (600 fallen champions: one fate each, recovered 70 % +/- 6).
+`ReplaysAndWeaponFatesTest.wallsFates` now forces deaths through the rout damage. **Golden file `state_rules3.txt` re-recorded:** 65 of
+300 lines change, in all 20 seeds, from the day-10 siege (9 seeds) or the day-15 one (11 seeds); the RNG column moves on 50 lines in 12
+seeds. Reason: the golden script loses those sieges as routs, so the champions end them 15 health lower (the projection prints health),
+and from then on some rest instead of acting (HEROES and COMBAT draws differ) and a few fall (COMBAT draws for the blade's fate).
+
+**Simulator.** A "wall" line on every policy row (routs a run, champions fallen a run, share of runs with one); `--set wallsRoutDamage=N`,
+`--set wallsRoutRatio=X`. `FieldOutcome.FELL_AT_THE_WALL` now occurs.
