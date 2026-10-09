@@ -75,6 +75,33 @@ class WorldEventsAndGenerationsTest {
         assertFalse(eligible(s2, "descendant"), "no unclaimed lineage remains")
     }
 
+    /** X18: the extra stock used to be added at night and overwritten by the morning restock, so it was never on sale. */
+    @Test
+    fun theOreMerchantsStockIsOnSaleTheNextMorning() {
+        var checked = 0
+        for (seed in 1L..8L) {
+            val s = engine.newRun(LegacyProfile(), seed)
+            val merchant = fire(s, "ore_merchant")
+            val material = MaterialId(merchant.events.last { it.data["event"] == "ore_merchant" }.data.getValue("materialId"))
+            assertEquals(mapOf(WorldEvents.FLAG_ORE_MERCHANT + material.value to s.day + 1), merchant.worldFlags)
+            val morning = merchant.endDay()
+            if (morning.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == morning.day) continue  // no restock to add to that morning
+            val daily = engine.content.material(material).dailySupplierStock!!
+            val stock = daily + WorldEvents.ORE_MERCHANT_STOCK
+            assertEquals(stock, morning.supplierStock[material], "seed $seed")
+            assertEquals(s.supplierStock - material, morning.supplierStock - material, "only the merchant's material has more")
+            val rich = morning.copy(gold = 100_000)
+            assertEquals(0, rich.run(Command.BuyMaterial(material, stock)).supplierStock[material], "every unit can be bought")
+            assertTrue(engine.handle(rich, Command.BuyMaterial(material, stock + 1)) is com.tinyblacksmith.core.engine.CommandOutcome.Rejected)
+            val after = morning.endDay()
+            if (after.worldFlags.keys.none { it.startsWith(WorldEvents.FLAG_ORE_MERCHANT) } && after.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] != after.day)
+                assertEquals(daily, after.supplierStock[material], "one morning only")
+            assertTrue(after.worldFlags.none { it.key.startsWith(WorldEvents.FLAG_ORE_MERCHANT) && it.value < after.day }, "the spent flag is dropped")
+            checked++
+        }
+        assertTrue(checked >= 5, "mornings checked: $checked")
+    }
+
     @Test
     fun supplyAndTownEventsApplyTheirEffects() {
         val s = engine.newRun(LegacyProfile(), 3)
@@ -88,7 +115,7 @@ class WorldEventsAndGenerationsTest {
 
         val merchant = fire(s, "ore_merchant")
         assertEquals(1, merchant.materials.values.sum() - s.materials.values.sum())
-        assertEquals(2, merchant.supplierStock.values.sum() - s.supplierStock.values.sum())
+        assertEquals(s.supplierStock, merchant.supplierStock, "the extra stock is tomorrow morning's")
 
         val mine = fire(s, "abandoned_mine")
         assertEquals(engine.config.abandonedMineMaterials, mine.materials.values.sum() - s.materials.values.sum())
@@ -124,7 +151,7 @@ class WorldEventsAndGenerationsTest {
         val noble = fire(s, "noble_commission")
         val c = noble.commissions.values.single()
         assertEquals(CommissionStatus.OFFERED, c.status)
-        assertTrue(c.minQuality >= engine.config.nobleCommissionMinQuality && c.reward > engine.config.commissionRewardBase * 2)
+        assertTrue(c.minQuality == engine.config.epicMin && c.reward > engine.config.commissionRewardBase * 2, "a noble asks for the superb floor")
         assertFalse(eligible(noble, "noble_commission"), "no second commission while one is open")
 
         val arrivals = fire(s, "new_adventurers")

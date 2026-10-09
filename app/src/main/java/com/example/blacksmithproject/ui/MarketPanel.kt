@@ -79,14 +79,16 @@ fun MarketPanel(s: UiState.Playing, vm: GameViewModel) {
         val buyer = st.heroes[c.buyerId]?.fullName ?: "Someone"
         Card(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
             Column(Modifier.padding(Space.md)) {
-                Text("${Labels.quality(c.minQuality).replaceFirstChar { it.uppercase() }} ${c.element?.let { it.name.lowercase() + " " }.orEmpty()}${content.family(c.familyId).name} for $buyer", style = MaterialTheme.typography.titleSmall)
+                Text("${Labels.request(c, content, vm.engine.config)} for $buyer", style = MaterialTheme.typography.titleSmall)
                 Secondary("${c.reward} gold · due day ${c.deadlineDay}", Modifier.padding(top = 2.dp))
+                // Each blade of the family in the shop, by the engine's own rule: "fits" or the one thing it lacks.
+                (st.storedWeapons() + listed).filter { it.familyId == c.familyId }.forEach { w -> Secondary("${w.name}: ${Labels.fit(w, c, content)}") }
                 if (c.status == CommissionStatus.OFFERED) {
                     Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
                         Button(onClick = { vm.dispatch(Command.AcceptCommission(c.id)) }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Accept") }
                         OutlinedButton(onClick = { vm.dispatch(Command.DeclineCommission(c.id)) }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Decline") }
                     }
-                } else Secondary("Accepted. A matching weapon in storage or on the shelf is delivered at End Day.", Modifier.padding(top = Space.sm))
+                } else Secondary("Accepted. ${Labels.readiness(c, st.weapons.values, content, vm.engine.config)}", Modifier.padding(top = Space.sm))
             }
         }
     }
