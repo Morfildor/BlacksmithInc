@@ -23,14 +23,14 @@ class SimulatorMetricsTest {
     fun metricsOnAFixedSeedEqualHandCountedValues() {
         val seed = 7L
         val engine = GameEngine()
-        val cap = engine.config.maxCustomersPerDay
+        val cap = engine.config.customers.shopCapacity
         // The days as the engine resolved them: every post-End-Day state of a run that has no metrics attached.
         val posts = ArrayList<GameState>()
         SimulationDriver(engine, maxDays = 15, onDayResolved = { s, _ -> posts += s }).playRun(LegacyProfile(), seed, Policy.BALANCED_FAIR)
         val withMetrics = SimulationDriver(engine, maxDays = 15, customerMetrics = true).playRun(LegacyProfile(), seed, Policy.BALANCED_FAIR).first
         val m = assertNotNull(withMetrics.customers)
 
-        var days = 0; var heroDays = 0; var visits = 0; var buys = 0; var atCap = 0; var twoOrFewer = 0
+        var days = 0; var heroDays = 0; var visits = 0; var buys = 0; var atCap = 0; var twoOrFewer = 0; var turnedAway = 0
         val perCount = HashMap<Int, Int>(); val reasons = HashMap<String, Int>(); val served = HashSet<String>()
         var firstPositionVisits = 0; var firstNameDays = 0; var surnameDays = 0; var lost = 0; var fatal = 0; var won = 0
         var before = engine.newRun(LegacyProfile(), seed)
@@ -41,8 +41,9 @@ class SimulatorMetricsTest {
             days++; heroDays += alive.size
             visits += res.browsers.size; buys += res.browsers.count { it.purchasedWeaponId != null }
             perCount.merge(res.browsers.size, 1, Int::plus)
-            if (res.browsers.size >= cap + (if (festival) engine.config.festivalExtraCustomers else 0)) atCap++
+            if (res.browsers.size >= cap + (if (festival) engine.config.customers.festivalExtraSeats else 0)) atCap++
             if (res.browsers.size <= 2) twoOrFewer++
+            turnedAway += res.turnedAway.size
             for (v in res.browsers) { reasons.merge(v.reason.name, 1, Int::plus); served += v.heroId!!.value }
             firstPositionVisits += res.browsers.count { it.heroId == alive.first().id }
             if (alive.map { it.name }.toSet().size < alive.size) firstNameDays++
@@ -60,6 +61,7 @@ class SimulatorMetricsTest {
         assertEquals(buys, m.buys)
         assertEquals(atCap, m.capDays)
         assertEquals(twoOrFewer, m.lowDays)
+        assertEquals(turnedAway, m.turnedAway)
         assertEquals(perCount, m.servedByCount.withIndex().filter { it.value > 0 }.associate { it.index to it.value })
         assertEquals(reasons.toSortedMap(), withMetrics.visitReasons)
         assertEquals(served.size, m.servedEver)
@@ -99,15 +101,16 @@ class SimulatorMetricsTest {
 
     @Test
     fun setOverridesAllowlistedKeysAndRejectsTheRest() {
-        val c = applySet(BalanceConfig.DEFAULT, "maxCustomersPerDay=6,startingHeroCount=12,baseVisitChance=0.4,raidPerDay=7.0,expeditionSuppression=2")
-        assertEquals(6, c.maxCustomersPerDay)
-        assertEquals(12, c.startingHeroCount)
-        assertEquals(0.4, c.baseVisitChance)
+        val c = applySet(BalanceConfig.DEFAULT, "shopCapacity=6,startingHeroes=12,baseVisitChance=0.4,raidPerDay=7.0,expeditionSuppression=2")
+        assertEquals(6, c.customers.shopCapacity)
+        assertEquals(12, c.customers.startingHeroes)
+        assertEquals(0.4, c.customers.baseVisitChance)
         assertEquals(7.0, c.raidPerDay)
         assertEquals(2, c.expeditionSuppression)
-        assertEquals(BalanceConfig.DEFAULT.copy(maxCustomersPerDay = 6, startingHeroCount = 12, baseVisitChance = 0.4, raidPerDay = 7.0, expeditionSuppression = 2), c)
+        assertEquals(BalanceConfig.DEFAULT.copy(customers = BalanceConfig.DEFAULT.customers.copy(shopCapacity = 6, startingHeroes = 12, baseVisitChance = 0.4), raidPerDay = 7.0, expeditionSuppression = 2), c)
+        assertEquals(c, applySet(BalanceConfig.DEFAULT, "maxCustomersPerDay=6,startingHeroCount=12,baseVisitChance=0.4,raidPerDay=7.0,expeditionSuppression=2"), "the names these numbers had before balance v7 still work")
         assertFailsWith<IllegalArgumentException> { applySet(BalanceConfig.DEFAULT, "baseDailyEnergy=12") }
-        assertFailsWith<IllegalArgumentException> { applySet(BalanceConfig.DEFAULT, "maxCustomersPerDay=lots") }
-        assertFailsWith<IllegalArgumentException> { applySet(BalanceConfig.DEFAULT, "maxCustomersPerDay") }
+        assertFailsWith<IllegalArgumentException> { applySet(BalanceConfig.DEFAULT, "shopCapacity=lots") }
+        assertFailsWith<IllegalArgumentException> { applySet(BalanceConfig.DEFAULT, "shopCapacity") }
     }
 }

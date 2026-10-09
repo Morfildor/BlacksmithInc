@@ -1999,3 +1999,75 @@ account: `heroic_inheritance` 39 of 1,000 runs, `guild_banner` 187, `collector` 
 `guild_founded` 980. No event is unreachable.
 
 These numbers are re-measured after the customer changes of M3 (T3.1 seats and fair selection, T3.4 residents), which move who can afford what.
+## Balance v7, rules 3: fair customer selection (2026-10-09, task T3.1; F05, X14, E02, m13)
+- **Finding (measured at M0, repeated on this base):** `Market.resolveShelfVisits` walked the living heroes in ID-string order and stopped at
+  the seat limit. BALANCED_FAIR, 1,000 seeds: positions 1-4 were served on 54-55 % of their days, position 8 on 21.8 % (0.39 of position 1);
+  under EXPERT position 8 got 9.4 %, 10.9 % of all heroes were never served, and 56 % of runs had a hero who lived ten days or more without
+  one visit (75.5 % on a maxed account).
+- **Decision (plan 4.2):** one willingness draw per living hero (PURCHASES stream), then one weighted draw per seat among the willing, served
+  in seating order. Willing heroes turned away `maxTurnedAwayDays` (2) days running are seated first, longest streak first. Seat weight =
+  1 + 0.5 x min(loyalty, 10) / 10 + 1.0 for a hero never served + 0.75 x streak + 0.5 if unarmed or the own blade is worn, halved for a hero
+  who browsed yesterday and bought nothing; the first seats go to classes not yet seated until three classes sit. A commission patron who
+  collected today is not also seated (their draw is still made). `aliveHeroes()`, commissions, `Commissions.pick`, the champion tie-break and
+  the merchant use `IdOrder.numeric` (h2 before h10).
+- **Numbers:** new group `BalanceConfig.customers: CustomerConfig`. Moved at their values: `startingHeroes` 8 (was `startingHeroCount`),
+  `minHeroPopulation` 5, `maxHeroPopulation` 12, `shopCapacity` 4 (was `maxCustomersPerDay`), `festivalExtraSeats` 2 (was
+  `festivalExtraCustomers`), `baseVisitChance` 0.35, `festivalVisitBonus` 0.2. Former inline constants: `visitTraitScale` 0.1, `visitPerLoyalty`
+  0.01, `visitPerReputation` 0.005, `visitFloor` 0.05, `visitCeiling` 0.9. New: `visitLoyaltyCap` 10 and `visitReputationCap` 50 (the two terms
+  grew until the 0.9 clamp), `maxTurnedAwayDays` 2, `classSeats` 3, `seatLoyaltyWeight` 0.5, `seatLoyaltyCap` 10, `seatNewcomerWeight` 1.0,
+  `seatWaitWeight` 0.75, `seatNeedWeight` 0.5, `seatBrowsedYesterday` 0.5. All PROPOSED. Seats, population, purses and prices are NOT changed
+  (that is T3.4); weapon wear is not touched.
+- **Readings chosen where the plan was silent:** a day whose shelf is empty when the browsers arrive changes no hero's counters (seated or
+  turned away); on a day the shelf sells out, those seated afterwards keep their streak and first-visit standing, those turned away gain a
+  day. A commission does not count as a shop visit and does not touch the streak.
+- **Versions:** balance 6 -> 7, rules 2 -> 3, save schema 3 -> 4 (no-op step in both tables: the six defaulted `Hero` counters), content 2.
+  `GameEngine.STREAM_SEED_VERSION` stays 1. A rules-2 run is admitted and continues; its heroes read as newcomers nobody kept waiting.
+  Golden file `golden/state_rules3.txt` is new: 290 of 300 lines differ from rules 2, from day 1 of every seed. Day 1 moves because the
+  PURCHASES stream is drawn in a new order (one draw per living hero and one per seat, where the scan drew until the seats were full); from
+  the day a hero with serial 10 or higher is alive, numeric order also reassigns the per-hero draws of the HEROES, COMBAT and EVENTS streams.
+  `state_rules2.txt` is kept.
+- **Evidence** (`--runs 1000 --seed 1 --policy all|bots --customers --noImpact`, before = `shop-day/m0` at `2dd13a1`; maxed = `--upgrades` all
+  eleven at 3). Days are p10 / median / mean / p90, longest.
+
+| Row | days before | days after | mean | served/day | conversion | sold/run | gold earned (median) |
+|---|---|---|---|---|---|---|---|
+| BALANCED_FAIR | 15/20/20.1/25, 35 | 15/20/20.5/25, 35 | +0.4 | 3.57 -> 3.55 | 23.4 -> 23.9 % | 19.5 -> 20.2 | 1830 -> 1910 |
+| BALANCED_ACTIVE | 20/25/27.0/35, 40 | 20/30/27.4/35, 45 | +0.4 | 4.78 -> 4.67 | 21.6 -> 22.6 % | 31.2 -> 32.4 | 3231 -> 3367 |
+| SYNERGY | 25/35/33.4/40, 45 | 25/35/33.7/40, 50 | +0.3 | 3.73 -> 3.70 | 19.9 -> 21.2 % | 28.9 -> 30.4 | 3324 -> 3457 |
+| BALANCED_EXPENSIVE | 10/10/12.4/15, 30 | 10/10/12.5/15, 25 | +0.1 | 3.22 -> 3.18 | 9.9 -> 10.3 % | 5.6 -> 5.8 | 761 -> 779 |
+| PASSIVE | 10/10/10.0/10, 10 | same | 0.0 | 3.09 -> 3.10 | 0 | 0 | 0 |
+| SIEGE_PREP | 30/40/39.1/45, 50 | 30/40/40.3/50, 55 | **+1.2** | 3.82 -> 3.79 | 21.3 -> 23.5 % | 37.7 -> 42.3 | 4848 -> 5472 |
+| EXPERT | 35/45/42.0/50, 55 | 35/45/42.9/50, 55 | **+0.9** | 3.88 -> 3.83 | 19.4 -> 22.3 % | 43.0 -> 48.5 | 5958 -> 6694 |
+| EXPERT_ACTIVE | 35/45/42.1/50, 60 | 35/45/43.1/50, 60 | **+1.0** | 4.90 -> 4.81 | 20.9 -> 22.8 % | 49.6 -> 54.4 | 6331 -> 6958 |
+| maxed BALANCED_FAIR | 30/35/35.4/40, 45 | 30/35/35.9/40, 45 | +0.5 | 3.88 -> 3.86 | 16.6 -> 18.5 % | 30.2 -> 33.1 | 3866 -> 4104 |
+| maxed BALANCED_ACTIVE | 35/45/42.1/45, 55 | 35/45/42.4/50, 55 | +0.3 | 5.45 -> 5.18 | 16.7 -> 18.4 % | 46.2 -> 48.2 | 6352 -> 6564 |
+| maxed SYNERGY | 35/45/43.9/50, 55 | 35/45/44.6/50, 60 | +0.7 | 3.90 -> 3.88 | 17.2 -> 19.3 % | 35.1 -> 39.2 | 4701 -> 5195 |
+| maxed EXPERT | 45/50/51.4/55, 60 | 50/55/53.4/60, 65 | **+2.0** | 3.96 -> 3.92 | 17.1 -> 21.2 % | 49.4 -> 59.5 | 7532 -> 8942 |
+| maxed EXPERT_ACTIVE | 50/55/54.2/60, 65 | 50/55/55.3/60, 65 | **+1.1** | 5.37 -> 5.16 | 16.7 -> 19.1 % | 62.0 -> 68.7 | 9415 -> 10394 |
+
+  The other nine classic policies move by +0.1 to +0.4 mean days and the other nine bots by 0.0 to +0.4; every run ends; hard-lock days 0.
+- **Fairness:** served share of hero-days by position among the living (numeric ID order), BALANCED_FAIR, before -> after: 1: 55.3 -> 43.9,
+  2: 53.6 -> 43.5, 3: 54.3 -> 44.1, 4: 54.7 -> 44.1, 5: 49.3 -> 44.2, 6: 40.6 -> 44.3, 7: 29.1 -> 44.1, 8: 21.8 -> 43.1 %. Worst / best of
+  positions 1-8: 0.39 -> 0.97 (classic policies 0.95-0.98, bots 0.92-0.98, maxed accounts 0.89-0.93, where positions 1-3 are the Known Name
+  regulars and are served more for their loyalty). Positions 9-12 read 40, 39, 33, 44 %: those positions exist only on crowded days, when four
+  seats are shared among more heroes; split by population the rate is flat (600 runs: 8 alive 43.1-44.5 % at every position, 10 alive
+  37.4-41.4 %). Per run, highest / lowest served share among heroes alive ten days or more: median 3.67 -> 2.25, p90 10.0 -> 3.67. Heroes
+  never served: 3.5 -> 1.5 % (EXPERT 10.9 -> 1.3 %); runs with a hero alive ten days or more and never served: 7.7 -> 0.2 % (EXPERT
+  56.4 -> 0.1 %). Newcomer wait: median 1 -> 0, p90 4 -> 3 days. Turned away: 0.83 willing heroes a day,
+  someone on 45 % of days; the longest streak any hero reached in 600 BALANCED_FAIR runs is 2.
+- **Sweep step 1 (plan 4.3) against its three conditions:** (1) "no mean moves more than 0.6 days" holds for all fourteen classic policies and
+  both maxed rows the step names (largest +0.5); it does NOT hold for SIEGE_PREP, EXPERT, EXPERT_ACTIVE, maxed SYNERGY and maxed EXPERT. Cause:
+  those bots forge the strongest stock, and it used to go to the same four heroes; now every hero is armed from it (sold/run +10 % to +20 %).
+  (2) "served-share max / min at most 2.5": 0.97 by position; the per-run statistic has median 2.25 and p90 3.67, so about a quarter of
+  20-day runs still exceed 2.5 between two individual heroes (traits and loyalty differ, and a hero has about nine visits in a run).
+  (3) "visits per day within 0.1": holds without the Signboard (-0.02); with it -0.11 (BALANCED_ACTIVE) and -0.27 (maxed BALANCED_ACTIVE),
+  because the loyalty and reputation terms of the visit chance are now capped and a commission patron no longer browses the same day.
+- **Tripwire (plan 4.3), reported, nothing tuned:** new-account EXPERT mean 42.9 against the line 34.8 + 8 = 42.8: **over by 0.1** (before:
+  42.0; the noise floor is about 0.3). Maxed EXPERT p90 60 (the line is "above 60"), longest 65. No run reaches 100 days. Population, seats,
+  prices, wear and maxed-account survival were not adjusted; the decision is the owner's, with T3.4 still to add residents and seats.
+- **Tests:** new `CustomerSelectionTest` (11 tests): draw counts, intent independent of seats, equal turns over 10,000 full days (chi-square,
+  11 degrees of freedom, p > 0.01) and under a permutation of serials, loyalty 10 against 0 served 1.38x (bound 1.2-1.6), the waiting bound
+  with 16 keen heroes and 4 seats (longest streak 4), reputation 50 and saturation (max / min 1.03-1.07), class seats, empty shelves, the
+  stored `turnedAway`, one ID order. `ShopRecordTest.aPatronAppearsOncePerDay`. The newcomer line of the plan ("served within two days in
+  four seeds of five") is met counted in days the newcomer chose to come (198 of 200); by the calendar it is 145 of 200, because a hero comes
+  on 35 % of days at the base chance.

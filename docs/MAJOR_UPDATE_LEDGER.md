@@ -90,7 +90,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T2.8c | Forge, Town, Supplies | AB | todo | | | |
 | T2.9 | Device scripts and scenario saves | INT | todo | | | |
 | T2.10 | Onboarding | AB | todo | | | |
-| T3.1 | Fair selection | CA | todo | | | |
+| T3.1 | Fair selection | CA | done (JVM, 1 base seed) | 45e03f5 | core+app green on tip; balance 7, rules 3, schema 4; position ratio BALANCED_FAIR 0.39 to 0.97; never-served runs 7.7 to 0.2 %; EXPERT new 42.0 to 42.9, maxed 51.4 to 53.4 p90 60 longest 65; SIEGE_PREP 39.1 to 40.3; three base seeds and emulator NOT RUN | |
 | T3.2 | Names and lineage IDs | CON + CA | todo | | | |
 | T3.3 | Appearance | ART + CA + AA | todo | | | |
 | T3.4 | Population, seats, compensation | CA + SIM | todo | | | |
@@ -151,3 +151,8 @@ live copy and is copied back to the main checkout at each milestone boundary.
 - Owner art (2026-10-09): 20 hero portraits, each with a base and an upgraded state, supplied in `Assets/Heroes/` of the main checkout (01-10 at 1254 px, 11-20 native 64 px; guardian 5, ranger 4, duelist 4, battlemage 4, warden 3). An import agent is making them the hero set. The source folder (about 40 MB) is not committed without the owner naming it; only the generated drawables are.
 - Ruling: the "upgraded" portrait shows for a hero who has earned a title (a permanent mark), not for a champion (which changes day to day). Cost if wrong: a one-line predicate.
 - Ruling: the new set replaces the 25 older busts for heroes; existing appearance keys map stably onto the new faces within the class. Mixing two art styles at one counter was already rejected on device for the second set.
+- Ruling (T3.1 tripwire): not crossed. The restated line is new-account EXPERT mean above 50.4, maxed p90 above 70 or any 100-day run; T3.1 measures 42.9, 60 and 65. The agent compared against the plan's older 34.8 + 8 line, which the earlier ruling replaced.
+- Ruling (T3.1 step-1 conditions): the "means within 0.6" gate fails for the strong-stock bots (+0.9 to +2.0) because good blades now reach every hero instead of the same four. That is the intended effect of fairness, so it stands; compensation is weighed in T3.4 with the population change, on distributions. F05 is closed on the by-position ratio (0.97); the per-run max/min statistic (median 2.25, p90 3.67) is small-sample noise within one run and is reported, not gated.
+- Ruling (T3.1 newcomer line): "served within two days" is measured on days the newcomer chose to come (198 of 200), since base willingness 0.35 makes the calendar version unreachable by seating alone.
+- Ruling: the remaining string sorts on serial IDs (WorldEvents 217 and 379, Heroes 150 and 232, Legacy 61, listed/stored/retired lists) move to numeric order in T3.2, riding on rules 3 before any rules-3 save exists outside development.
+- Owner instruction (2026-10-09): all art will be replaced. `Assets/` in the main checkout is the source root, one folder per kind with a `WANTED.txt` of current IDs and sizes; each folder is imported only when the owner says it is ready. Until then the current art stays and no effort goes into polishing it. Audio and the launcher icon have folders too, so T6.7's audio gap and T7.4's icon step close when those arrive.

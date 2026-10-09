@@ -7,6 +7,7 @@ import com.tinyblacksmith.core.content.ToolEffect
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.engine.WorldEvents
 import com.tinyblacksmith.core.model.*
+import com.tinyblacksmith.core.rng.Rng
 import com.tinyblacksmith.core.rng.RngStream
 
 /** Autonomous shelf visits and purchases (GDD 5 PROPOSED purchase algorithm) plus commission delivery. */
@@ -18,21 +19,45 @@ object Market {
         val tasteMatch: Boolean = false, val novelty: Boolean = false, val collectorPrize: Boolean = false, val storied: Boolean = false,
     )
 
+    /**
+     * Who browses the shelf today (plan 4.2). Every living hero decides for themselves whether to come, one draw each;
+     * the seats are then drawn among the willing by weight, one draw per seat, and the seated are served in that order.
+     * The ID order of the heroes only says which hero a draw belongs to: it never decides who gets in. A hero turned
+     * away [com.tinyblacksmith.core.config.CustomerConfig.maxTurnedAwayDays] days running is seated first. All draws are
+     * on the PURCHASES stream: one per living hero, one per seat filled, then one per listed blade per served visitor.
+     */
     fun resolveShelfVisits(ctx: ResolutionContext) {
         val config = ctx.config
+        val cfg = config.customers
         val rng = ctx.rng(RngStream.PURCHASES)
-        val listed = ctx.weapons.values.filter { it.isListed }
         val festival = ctx.worldFlags[WorldEvents.FLAG_FESTIVAL] == ctx.day
-        val maxCustomers = config.maxCustomersPerDay + ctx.toolTotal(ToolEffect.EXTRA_CUSTOMERS) + (if (festival) config.festivalExtraCustomers else 0)  // + signboard
-        val festivalBonus = (if (festival) config.festivalVisitBonus else 0.0) + ctx.blessingMagnitude(BlessingEffect.HERO_VISIT_CHANCE) / 100.0  // + Guild Patronage
-        var customers = 0
-        for (hero in ctx.aliveHeroes()) {
-            if (customers >= maxCustomers) break
-            val shopWeight = hero.traits.sumOf { ctx.content.trait(it).shopWeight }
-            val visitChance = (config.baseVisitChance + shopWeight * 0.1 + hero.loyalty * 0.01 + ctx.reputation * 0.005 + festivalBonus).coerceIn(0.05, 0.9)
-            if (!rng.chance(visitChance)) continue
-            customers++
-            if (listed.none { it.isListed && ctx.weapon(it.id).isListed }) {
+        val capacity = cfg.shopCapacity + ctx.toolTotal(ToolEffect.EXTRA_CUSTOMERS) + (if (festival) cfg.festivalExtraSeats else 0)  // + signboard
+        val stocked = ctx.weapons.values.any { it.isListed }
+        // 1. Intent. A patron who collected a commission today has had their turn at the counter: one appearance per hero per day.
+        val patrons = ctx.visits.filter { it.kind == VisitKind.COMMISSION }.mapNotNull { it.heroId }.toSet()
+        val willing = ctx.aliveHeroes().filter { rng.chance(willingness(ctx, it, festival)) }.filter { it.id !in patrons }
+        // 2a. The longest waiters first: whole groups from the highest streak down; a group that does not fit is drawn by weight.
+        val seated = mutableListOf<Hero>()
+        val waiting = willing.filter { it.turnedAwayStreak >= cfg.maxTurnedAwayDays }
+        for (streak in waiting.map { it.turnedAwayStreak }.distinct().sortedDescending()) {
+            val pool = waiting.filter { it.turnedAwayStreak == streak }.toMutableList()
+            while (seated.size < capacity && pool.isNotEmpty()) seated += seat(ctx, rng, pool, pool)
+        }
+        // 2b. Everyone else; the first seats are spread over classes while the willing allow.
+        val pool = willing.filter { it.turnedAwayStreak < cfg.maxTurnedAwayDays }.toMutableList()
+        while (seated.size < capacity && pool.isNotEmpty()) {
+            val classes = seated.map { it.classId }.toSet()
+            seated += seat(ctx, rng, pool, if (classes.size < cfg.classSeats) pool.filter { it.classId !in classes }.ifEmpty { pool } else pool)
+        }
+        // A day the shelf opened empty changes nobody's standing: bad luck with stock builds no queue.
+        for (hero in willing) if (hero !in seated) {
+            ctx.turnedAway += hero.id
+            if (stocked) ctx.updateHero(hero.copy(turnedAwayStreak = hero.turnedAwayStreak + 1))
+        }
+        // 3. Serve in seating order: the first seated has first pick of the stock.
+        for (hero in seated) {
+            if (ctx.weapons.values.none { it.isListed }) {
+                // Seated at an empty shelf: a visit on the record, but neither a first visit spent nor a wait ended.
                 ctx.visits += MarketVisit(hero.id, hero.fullName, null, VisitReason.EMPTY_SHELVES, seq = ctx.visits.size, customer = customer(ctx, hero, ctx.equippedWeapon(hero.id)))
                 continue
             }
@@ -58,8 +83,40 @@ object Market {
                 }
                 ctx.visits += MarketVisit(hero.id, hero.fullName, null, reason, seq = ctx.visits.size, customer = customer, considered = considered(ctx, hero, current, evaluations, null))
             }
+            val bought = best != null && best.utility >= config.purchaseUtilityThreshold
+            val served = ctx.hero(hero.id)
+            ctx.updateHero(served.copy(
+                shopVisits = served.shopVisits + 1, lastServedDay = ctx.day, turnedAwayStreak = 0,
+                shopPurchases = served.shopPurchases + (if (bought) 1 else 0), lastPurchaseDay = if (bought) ctx.day else served.lastPurchaseDay,
+            ))
         }
     }
+
+    /** The chance that a living hero wants to visit the shop today. */
+    fun willingness(ctx: ResolutionContext, hero: Hero, festival: Boolean): Double {
+        val cfg = ctx.config.customers
+        return (cfg.baseVisitChance + hero.traits.sumOf { ctx.content.trait(it).shopWeight } * cfg.visitTraitScale +
+            minOf(hero.loyalty, cfg.visitLoyaltyCap) * cfg.visitPerLoyalty + minOf(ctx.reputation, cfg.visitReputationCap) * cfg.visitPerReputation +
+            (if (festival) cfg.festivalVisitBonus else 0.0) +
+            ctx.blessingMagnitude(BlessingEffect.HERO_VISIT_CHANCE) / 100.0  // + Guild Patronage
+            ).coerceIn(cfg.visitFloor, cfg.visitCeiling)
+    }
+
+    /** A willing hero's weight in the draw for a seat: regulars, newcomers, those kept waiting and those in need of a blade count for more. */
+    fun seatWeight(ctx: ResolutionContext, hero: Hero): Double {
+        val cfg = ctx.config.customers
+        val own = ctx.equippedWeapon(hero.id)
+        val weight = 1.0 + cfg.seatLoyaltyWeight * hero.loyalty.coerceIn(0, cfg.seatLoyaltyCap) / cfg.seatLoyaltyCap +
+            (if (hero.shopVisits == 0) cfg.seatNewcomerWeight else 0.0) +
+            cfg.seatWaitWeight * hero.turnedAwayStreak +
+            (if (own == null || own.condition < ctx.config.wornConditionThreshold) cfg.seatNeedWeight else 0.0)
+        val browsedYesterday = hero.lastServedDay == ctx.day - 1 && hero.lastPurchaseDay != ctx.day - 1
+        return if (browsedYesterday) weight * cfg.seatBrowsedYesterday else weight
+    }
+
+    /** One draw for one seat among [candidates]; the hero leaves [pool]. */
+    private fun seat(ctx: ResolutionContext, rng: Rng, pool: MutableList<Hero>, candidates: List<Hero>): Hero =
+        rng.pickWeighted(candidates.map { it to seatWeight(ctx, it) }).also { pool -= it }
 
     const val MAX_CONSIDERED = 3
 
@@ -76,7 +133,7 @@ object Market {
     private fun considered(ctx: ResolutionContext, hero: Hero, current: Weapon?, evaluations: List<Evaluation>, chosen: Evaluation?): List<Considered> {
         val funds = hero.gold + tradeInCredit(current, ctx.config)
         val regular = isRegular(hero, ctx.config)
-        val ranked = listOfNotNull(chosen) + evaluations.filter { it !== chosen }.sortedWith(compareByDescending<Evaluation> { it.utility }.thenBy { it.weapon.id.value })
+        val ranked = listOfNotNull(chosen) + evaluations.filter { it !== chosen }.sortedWith(compareByDescending<Evaluation> { it.utility }.thenBy(IdOrder.numeric) { it.weapon.id.value })
         return ranked.take(MAX_CONSIDERED).map { e ->
             val price = e.weapon.listedPrice ?: 0
             Considered(
@@ -208,7 +265,7 @@ object Market {
      */
     fun resolveMerchant(ctx: ResolutionContext) {
         val config = ctx.config
-        for (w in ctx.weapons.values.filter { it.isWithMerchant }.sortedBy { it.id.value }) {
+        for (w in ctx.weapons.values.filter { it.isWithMerchant }.sortedWith(compareBy(IdOrder.numeric) { it.id.value })) {
             val arrives = (w.location as WeaponLocation.Lost).day + config.weaponFates.merchantDelayDays
             if (ctx.day < arrives) continue
             val fallenId = w.history.lastOrNull { it.kind == "SCAVENGED" }?.subjectIds?.firstOrNull()
@@ -234,7 +291,7 @@ object Market {
     }
 
     fun resolveCommissions(ctx: ResolutionContext) {
-        for (c in ctx.commissions.values.sortedBy { it.id.value }) {
+        for (c in ctx.commissions.values.sortedWith(compareBy(IdOrder.numeric) { it.id.value })) {
             if (c.status != CommissionStatus.ACCEPTED) continue
             val buyer = ctx.heroes[c.buyerId]
             if (buyer == null || !buyer.isAlive) {

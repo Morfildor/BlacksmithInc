@@ -57,7 +57,7 @@ class ShopDayScriptTest {
         }
     }
 
-    private val busy = GameEngine(config = config.copy(maxCustomersPerDay = 10, baseVisitChance = 0.9, startingHeroCount = 12))
+    private val busy = GameEngine(config = config.copy(customers = config.customers.copy(shopCapacity = 10, baseVisitChance = 0.9, startingHeroes = 12)))
 
     // ---- hand-built days ----
 

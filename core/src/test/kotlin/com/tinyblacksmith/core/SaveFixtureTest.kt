@@ -5,11 +5,13 @@ import com.tinyblacksmith.core.TestSupport.endDayId
 import com.tinyblacksmith.core.TestSupport.engine
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
+import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.Invariants
 import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.Phase
+import com.tinyblacksmith.core.model.VisitReason
 import com.tinyblacksmith.core.persistence.SaveCodec
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -102,11 +104,11 @@ class SaveFixtureTest {
     }
 
     /**
-     * The schema-2 anchor: a run written by this codec (forced survival, seed 4242, BALANCED_FAIR, 60 End Days, rules 2).
-     * It carries its own versions, so it needs no admission and plays at once.
+     * The schema-2 anchor: a run written by the schema-2 codec (forced survival, seed 4242, BALANCED_FAIR, 60 End Days,
+     * rules 2, balance 5). It is admitted to the installed rules and plays on.
      */
     @Test
-    fun theV2FixtureIsCurrentAndPlaysWithoutAdmission() {
+    fun theV2FixtureIsAdmittedAndPlays() {
         assertTrue(fixtureTextV2.startsWith("""{"schemaVersion":2,"payload":"""), fixtureTextV2.take(40))
         val s = decodedV2
         assertEquals(4242L, s.seed)
@@ -114,19 +116,21 @@ class SaveFixtureTest {
         assertEquals(engine.content.version, s.contentVersion)
         assertTrue(Invariants.check(s, engine.config, content = engine.content).isEmpty())
         assertEquals(s, SaveCodec.decodeRun(SaveCodec.encodeRun(s)))
-        val next = assertIs<CommandOutcome.Accepted>(engine.handle(s, Command.EndDay(endDayId(s)))).state
+        val next = assertIs<CommandOutcome.Accepted>(s.admitted().let { engine.handle(it, Command.EndDay(endDayId(it))) }).state
         assertTrue(next.isEnded || next.day == 62)
     }
 
     /**
      * The schema-3 anchor: the same recipe (forced survival, seed 4242, BALANCED_FAIR, 60 End Days) written with the
      * visit record. Its stored day carries the counter snapshots; its log carries one `SHOP_DAY` record per kept day.
+     * Written under rules 2 and balance 6, before fair selection: its heroes read as newcomers nobody has kept waiting,
+     * and after admission its next End Day seats them by the rules-3 draw.
      */
     @Test
-    fun theV3FixtureCarriesTheVisitRecordAndPlaysWithoutAdmission() {
+    fun theV3FixtureCarriesTheVisitRecordIsAdmittedAndPlays() {
         assertTrue(fixtureTextV3.startsWith("""{"schemaVersion":3,"payload":"""), fixtureTextV3.take(40))
         val s = decodedV3
-        assertEquals(listOf(2, engine.config.version, 61), listOf(s.rulesVersion, s.balanceVersion, s.day))
+        assertEquals(listOf(2, 6, 61), listOf(s.rulesVersion, s.balanceVersion, s.day))
         assertEquals(engine.content.version, s.contentVersion)
         assertTrue(Invariants.check(s, engine.config, content = engine.content).isEmpty())
         assertEquals(s, SaveCodec.decodeRun(SaveCodec.encodeRun(s)))
@@ -135,8 +139,18 @@ class SaveFixtureTest {
         assertTrue(last.visits.isNotEmpty() && last.visits.all { it.customer != null } && last.shopWeapons.isNotEmpty() && last.ledger != null)
         assertTrue(last.visits.flatMap { it.considered }.all { c -> last.shopWeapons.any { it.weaponId == c.weaponId } })
         assertEquals((31..60).toList(), s.events.filter { it.type == EventType.SHOP_DAY }.map { it.day }, "one small record per day of the kept log")
-        val next = assertIs<CommandOutcome.Accepted>(engine.handle(s, Command.EndDay(endDayId(s)))).state
+        assertTrue(s.heroes.values.all { it.shopVisits == 0 && it.turnedAwayStreak == 0 && it.lastServedDay == null })
+        assertIs<CommandOutcome.Rejected>(engine.handle(s, Command.EndDay(endDayId(s))), "a rules-2 run is not played before it is admitted")
+        val out = assertIs<CommandOutcome.Accepted>(s.admitted().let { engine.handle(it, Command.EndDay(endDayId(it))) })
+        val next = out.state
         assertTrue(next.isEnded || next.day == 62)
+        assertEquals(emptyList(), Invariants.check(next, engine.config, engine.shelfSlots(next), engine.content))
+        assertEquals(listOf(engine.config.version, GameEngine.RULES_VERSION), listOf(next.balanceVersion, next.rulesVersion))
+        // The day it resolves is a rules-3 day: every browser served at the stocked shelf is remembered, everyone turned away has a streak.
+        val r = out.resolution!!
+        for (v in r.browsers.filter { it.reason != VisitReason.EMPTY_SHELVES }) assertEquals(listOf(1, 61), next.hero(v.heroId!!).let { listOf(it.shopVisits, it.lastServedDay) })
+        for (id in r.turnedAway) assertEquals(1, next.hero(id).turnedAwayStreak)
+        assertTrue(r.browsers.isNotEmpty(), "the fixture day has customers")
     }
 
     /**

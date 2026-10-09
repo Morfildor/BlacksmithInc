@@ -3,6 +3,7 @@ package com.tinyblacksmith.core.market
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.model.Commission
+import com.tinyblacksmith.core.model.IdOrder
 import com.tinyblacksmith.core.model.Weapon
 
 /**
@@ -43,7 +44,7 @@ object Commissions {
      */
     fun pick(weapons: Collection<Weapon>, commission: Commission, config: BalanceConfig): Weapon? =
         weapons.filter { (it.isInStorage || it.isListed) && fit(it, commission) == Fit.OK }
-            .minWithOrNull(compareBy<Weapon> { it.isListed }.thenBy { it.quality }.thenBy { Market.askingPrice(it, config) }.thenBy { it.id.value })
+            .minWithOrNull(compareBy<Weapon> { it.isListed }.thenBy { it.quality }.thenBy { Market.askingPrice(it, config) }.thenBy(IdOrder.numeric) { it.id.value })
 
     /** What a request asks for, in the terms the rule checks: "fine frost Spear (quality 50+)". */
     fun describe(commission: Commission, content: ContentCatalog, config: BalanceConfig): String =

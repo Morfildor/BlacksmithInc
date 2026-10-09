@@ -28,6 +28,7 @@ class VersionFingerprintTest {
     private val balancePins = mapOf(
         5 to "a9d576db13b2983ebb4e45ed97ff6ddc9ece108aebb4738a14bfd90dc9ae37c1",
         6 to "adb451f9d456482d788d612daefebdbda892de44215fe4a3877152490d6c8e60",
+        7 to "66214786ec96489c50453f2dc76ade2bb0d749d18275b30fa14586bc8370129f",
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames")

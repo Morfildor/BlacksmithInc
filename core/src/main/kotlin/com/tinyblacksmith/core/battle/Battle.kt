@@ -208,7 +208,7 @@ object Battle {
         ctx.aliveHeroes()
             .filter { it.health >= ctx.config.heroWoundedThreshold }
             .map { it to ctx.equippedWeapon(it.id) }
-            .sortedWith(compareByDescending<Pair<Hero, Weapon?>> { Power.defensePower(it.first, it.second, faction, ctx.content, ctx.config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite) }.thenBy { it.first.id.value })
+            .sortedWith(compareByDescending<Pair<Hero, Weapon?>> { Power.defensePower(it.first, it.second, faction, ctx.content, ctx.config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite) }.thenBy(IdOrder.numeric) { it.first.id.value })
             .take(ctx.config.championCount)
 
     /** What the next siege looks like as things stand; the same numbers [resolveSiegeIfDue] uses on the day. */

@@ -30,6 +30,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Android's automatic cloud backup of the save is off until restoring one is tested.
 - Yesterday's customers on the Market panel and the Shelf block on Home now also name the patron who collected a
   commission and the collector who bought a storied blade.
+- Every living hero now gets an equal turn at the counter. Each hero decides for themselves whether to come, the seats
+  are drawn among those who came, and nobody who keeps coming is turned away three days running. Before, the heroes
+  who arrived in town first were always served first and the eighth was served less than half as often. Regulars,
+  newcomers, heroes without a blade and heroes whose blade is worn are a little more likely to get a seat; the first
+  seats go to different classes. A patron who collects a commission does not also browse that day. Seats, town size
+  and prices are unchanged. A run in progress continues under the new rule (balance 7, rules 3, save schema 4).
 
 ### Fixed
 - A past day in the Gazette is tallied as its report was: visitors, shop takings and expeditions lost (a hero who died

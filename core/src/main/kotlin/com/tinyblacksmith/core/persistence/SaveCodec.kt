@@ -16,7 +16,7 @@ import kotlinx.serialization.json.jsonObject
 data class SaveEnvelope(val schemaVersion: Int, val payload: String)
 
 object SaveCodec {
-    const val SCHEMA_VERSION = 3
+    const val SCHEMA_VERSION = 4
 
     val json: Json = Json {
         encodeDefaults = true
@@ -54,8 +54,11 @@ object SaveCodec {
         // Schema 3 adds the visit record, two event types (SHOP_DAY, MATERIAL_BOUGHT) and the visit enums. Nothing stored is
         // converted: the number rises so that an older build refuses a save it would otherwise read as corrupt.
         2 to { it },
+        // Schema 4 adds the counter's memory of each hero (visits, purchases, turned-away streak, arrival day), all defaulted:
+        // a hero written before them starts as a newcomer with no streak. Nothing stored is converted.
+        3 to { it },
     )
-    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it })
+    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 3 to { it })
 
     /** Every schema-1 run was written by a build that had balance 5 and did not yet record it (0 = untracked). */
     private const val BALANCE_BEFORE_TRACKING = 5

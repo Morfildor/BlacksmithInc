@@ -30,7 +30,7 @@ object Heroes {
             level = if (descendantOf != null) 2 else 1, xp = 0,
             gold = rng.nextInt(cls.startingGoldMin, cls.startingGoldMax), health = 100,
             traits = traits, elementTaste = taste, descendantOf = descendantOf?.heroName,
-            ambition = rng.pick(Ambition.entries),
+            ambition = rng.pick(Ambition.entries), arrivedOnDay = ctx.day,
         )
     }
 
@@ -195,7 +195,7 @@ object Heroes {
 
     /** Keeps the world alive: when the population thins, newcomers arrive (GDD event 6, simplified). */
     private fun arrivals(ctx: ResolutionContext, rng: Rng) {
-        if (ctx.aliveHeroes().size >= ctx.config.minHeroPopulation) return
+        if (ctx.aliveHeroes().size >= ctx.config.customers.minHeroPopulation) return
         val h = generate(ctx, rng)
         ctx.updateHero(h)
         ctx.emit(EventType.HERO_ARRIVED, 3, "A new adventurer, ${h.fullName} the ${ctx.content.heroClass(h.classId).name}, arrived in Emberfall.", listOf(h.id.value))

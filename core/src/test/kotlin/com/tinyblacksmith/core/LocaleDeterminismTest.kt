@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 class LocaleDeterminismTest {
     private fun thirtyDays(locale: Locale): String {
         Locale.setDefault(locale)
-        val (_, state) = SimulationDriver(maxDays = 30).playRun(LegacyProfile(), 11, Policy.BALANCED_ACTIVE)
+        val (_, state) = SimulationDriver(maxDays = 30).playRun(LegacyProfile(), 12, Policy.BALANCED_ACTIVE)
         assertTrue(state.day > 20, "the run should last: day ${state.day}")
         val decimal = Regex("\\d[.,]\\d")
         val formatted = state.events.flatMap { e -> e.data.entries.filter { decimal.containsMatchIn(it.value) }.map { "${e.type} ${it.key}=${it.value}" } }

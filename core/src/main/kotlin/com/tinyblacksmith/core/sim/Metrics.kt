@@ -15,7 +15,7 @@ import java.util.TreeMap
  * Customer and identity metrics for the simulator (`--customers`, plan 9.3). They are read from the state before each
  * End Day and from the day's resolution, never from inside the engine: no gameplay RNG is drawn and no state is
  * touched, so a run with metrics is the same run. Metrics that need mechanics which do not exist yet are left out until
- * the task that adds the mechanic: turned-away and willing counts (T3.1 fair selection / seats), wants and sidegrades by
+ * the task that adds the mechanic: wants and sidegrades by
  * reason (T4.1, T4.2), clue rungs, signature firsts and days to the first signature (T4.x signatures), commissions by
  * kind (T4.6), patronage share and stipend gold (T3.6), counter or resisted elements held at a siege (T4.2), and the
  * appearance model's face collisions (T1.x; until then a face is class plus `Math.floorMod(id.hashCode(), 5)`, as in
@@ -35,7 +35,9 @@ data class RunCustomers(
     val days: Int, val heroDays: Int,
     /** Index = visitors served that day. */
     val servedByCount: List<Int>, val capDays: Int, val lowDays: Int,
-    /** Hero-days, visits and purchases by position (0-based) in the engine's ID-sorted shelf scan. */
+    /** Willing heroes who found every seat taken, and the days on which there was one (`DayResolution.turnedAway`). */
+    val turnedAway: Int = 0, val turnedAwayDays: Int = 0,
+    /** Hero-days, visits and purchases by position (0-based) among the living in numeric ID order (arrival order; before fair selection this was the order they were served in). */
     val posHeroDays: List<Int>, val posVisits: List<Int>, val posBuys: List<Int>,
     val visits: Int, val buys: Int, val bandVisits: List<Int>, val bandBuys: List<Int>,
     val returnVisits: Int, val gapDaysSum: Int, val gapCount: Int,
@@ -75,6 +77,7 @@ class CustomerCollector(private val engine: GameEngine) {
 
     private var days = 0; private var heroDays = 0; private var capDays = 0; private var lowDays = 0
     private val servedByCount = ArrayList<Int>()
+    private var turnedAway = 0; private var turnedAwayDays = 0
     private val posHeroDays = IntArray(POSITIONS); private val posVisits = IntArray(POSITIONS); private val posBuys = IntArray(POSITIONS)
     private var visits = 0; private var buys = 0
     private val bandVisits = IntArray(BANDS.size); private val bandBuys = IntArray(BANDS.size)
@@ -96,7 +99,7 @@ class CustomerCollector(private val engine: GameEngine) {
     fun beforeEndDay(s: GameState) {
         alive = s.aliveHeroes()
         val festival = s.worldFlags[WorldEvents.FLAG_FESTIVAL] == s.day
-        cap = cfg.maxCustomersPerDay + engine.toolTotal(s, ToolEffect.EXTRA_CUSTOMERS) + (if (festival) cfg.festivalExtraCustomers else 0)
+        cap = cfg.customers.shopCapacity + engine.toolTotal(s, ToolEffect.EXTRA_CUSTOMERS) + (if (festival) cfg.customers.festivalExtraSeats else 0)
         val listed = s.listedWeapons()
         listedBefore = listed.size
         for ((i, h) in alive.withIndex()) {
@@ -123,6 +126,8 @@ class CustomerCollector(private val engine: GameEngine) {
         servedByCount[served.size]++
         if (served.size >= cap) capDays++
         if (served.size <= 2) lowDays++
+        turnedAway += res.turnedAway.size
+        if (res.turnedAway.isNotEmpty()) turnedAwayDays++
         if (listedBefore == 0) droughtDays++
         if (listedBefore > 0 && out.listedWeapons().isEmpty()) sellOutDays++
         val rank = alive.withIndex().associate { it.value.id.value to it.index }
@@ -173,6 +178,7 @@ class CustomerCollector(private val engine: GameEngine) {
         val later = all.filter { it.arrival > 1 }
         return RunCustomers(
             days = days, heroDays = heroDays, servedByCount = servedByCount, capDays = capDays, lowDays = lowDays,
+            turnedAway = turnedAway, turnedAwayDays = turnedAwayDays,
             posHeroDays = posHeroDays.toList(), posVisits = posVisits.toList(), posBuys = posBuys.toList(),
             visits = visits, buys = buys, bandVisits = bandVisits.toList(), bandBuys = bandBuys.toList(),
             returnVisits = returnVisits, gapDaysSum = gapDaysSum, gapCount = gapCount,
@@ -202,6 +208,7 @@ data class SiegeRow(
 data class CustomerSummary(
     val livingHeroesPerDay: Double,
     val servedPerDay: Double, val servedDistribution: Map<Int, Double>, val daysAtCap: Double, val daysTwoOrFewer: Double,
+    val turnedAwayPerDay: Double = 0.0, val daysWithTurnedAway: Double = 0.0,
     val purchasesPerDay: Double, val salesPerDay: Double, val conversion: Double, val conversionByBand: Map<String, Double>, val refusalMix: Map<String, Double>,
     /** Served visits per hero-day at each scan position (1-based key). */
     val visitRateByPosition: Map<Int, Double>,
@@ -246,6 +253,7 @@ data class CustomerSummary(
                 livingHeroesPerDay = ratio(heroDays, days),
                 servedPerDay = ratio(visits, days), servedDistribution = histogram.mapValuesTo(TreeMap()) { ratio(it.value, days) },
                 daysAtCap = ratio(rs.sumOf { it.capDays }, days), daysTwoOrFewer = ratio(rs.sumOf { it.lowDays }, days),
+                turnedAwayPerDay = ratio(rs.sumOf { it.turnedAway }, days), daysWithTurnedAway = ratio(rs.sumOf { it.turnedAwayDays }, days),
                 purchasesPerDay = ratio(buys, days), salesPerDay = ratio(runs.sumOf { it.weaponsSold }, days), conversion = ratio(buys, visits),
                 conversionByBand = CustomerCollector.BANDS.withIndex().associate { (i, name) -> name to ratio(rs.sumOf { it.bandBuys[i] }, rs.sumOf { it.bandVisits[i] }) },
                 refusalMix = reasonTotals.mapValues { ratio(it.value, visits) },
@@ -290,6 +298,7 @@ data class CustomerSummary(
         return buildString {
             appendLine("  customers: living heroes/day=${f2(livingHeroesPerDay)}  served/day=${f2(servedPerDay)}  at cap=${pct(daysAtCap)} of days  two or fewer=${pct(daysTwoOrFewer)}  purchases/day=${f2(purchasesPerDay)}  sales/day=${f2(salesPerDay)}  conversion=${pct(conversion)}")
             appendLine("    served per day: " + servedDistribution.entries.joinToString("  ") { "${it.key}:${pct(it.value)}" })
+            appendLine("    turned away (willing, shop full): ${f2(turnedAwayPerDay)} a day, someone on ${pct(daysWithTurnedAway)} of days")
             appendLine("    conversion by day band: " + conversionByBand.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" } + "   refusal mix (of visits): " + refusalMix.entries.joinToString("  ") { "${it.key}=${pct(it.value)}" })
             appendLine("    visit rate by scan position: " + visitRateByPosition.entries.joinToString("  ") { "${it.key}:${pct(it.value)}" })
             appendLine("    heroes ever/run=${f2(heroesEverPerRun)}  served/run=${f2(servedEverPerRun)}  never served=${pct(neverServedShare)}  served by day 5=${f2(servedByDay5)}  by day 10=${f2(servedByDay10)}  runs with 9 by day 5=${pct(runsWithNineServedByDay5)}  with 13 in a run=${pct(runsWithThirteenServed)}")
