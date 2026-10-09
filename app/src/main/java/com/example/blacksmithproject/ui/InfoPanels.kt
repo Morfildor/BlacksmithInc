@@ -228,6 +228,7 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
             Column {
                 Text(u.name, style = MaterialTheme.typography.titleSmall)
                 Secondary(u.description)
+                Secondary(com.tinyblacksmith.core.legacy.Legacy.preview(u.id, legacy.upgradeLevel(u.id) + 1, content, vm.engine.config)?.text ?: "Fully upgraded: nothing more to buy.")
             }
         }
     }

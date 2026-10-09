@@ -74,6 +74,32 @@ class LaunchContentTest {
         slice.augmentFamilyAffinity.forEach { (k, v) -> assertEquals(v, catalog.augmentFamilyAffinity[k], "affinity ${k.first.value} on ${k.second.value} changed") }
     }
 
+    /** Every string reachable from the catalog (names, descriptions, flavour, name pools), by reflection. */
+    private fun strings(value: Any?, out: MutableList<String>) {
+        when (value) {
+            null -> {}
+            is String -> out += value
+            is Map<*, *> -> value.forEach { (k, v) -> strings(k, out); strings(v, out) }
+            is Iterable<*> -> value.forEach { strings(it, out) }
+            is Pair<*, *> -> { strings(value.first, out); strings(value.second, out) }
+            else -> if (value.javaClass.name.startsWith("com.tinyblacksmith.core.") && !value.javaClass.isEnum) {
+                value.javaClass.declaredFields.filter { !java.lang.reflect.Modifier.isStatic(it.modifiers) && !it.isSynthetic }
+                    .forEach { it.isAccessible = true; strings(it.get(value), out) }
+            }
+        }
+    }
+
+    @Test
+    fun noPlayerFacingTextContainsAPercentChance() {
+        for (c in listOf(catalog, SliceContent.catalog)) {
+            val all = mutableListOf<String>()
+            strings(c, all)
+            assertTrue(all.size > 300, "the scan reached the catalog's text (${all.size} strings)")
+            val offenders = all.filter { '%' in it || it.contains("percent", ignoreCase = true) }
+            assertEquals(emptyList(), offenders, "player-facing text states a percent")
+        }
+    }
+
     @Test
     fun fiftySeededHeadlessRunsComplete() {
         val driver = SimulationDriver(GameEngine(content = catalog))

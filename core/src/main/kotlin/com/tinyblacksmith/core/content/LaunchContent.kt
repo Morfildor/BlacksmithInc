@@ -221,9 +221,9 @@ object LaunchContent {
             UpgradeDef(UPG_MASTERY, "Forge Mastery", UpgradeEffect.QUALITY_BONUS, magnitudePerLevel = 4, maxLevel = 3, costPerLevel = TIER_COSTS, description = "+4 crafted quality per level."),
             UpgradeDef(UPG_WALLS, "Stalwart Walls", UpgradeEffect.STARTING_INTEGRITY, magnitudePerLevel = 20, maxLevel = 3, costPerLevel = TIER_COSTS, description = "+20 starting forge integrity per level."),
             // PROPOSED magnitudes for the new effects (engine support pending).
-            UpgradeDef(UPG_EFFICIENCY, "Thrifty Hands", UpgradeEffect.MATERIAL_EFFICIENCY, magnitudePerLevel = 10, maxLevel = 3, costPerLevel = TIER_COSTS, description = "10% chance per level that a forge spares its augment."),
+            UpgradeDef(UPG_EFFICIENCY, "Thrifty Hands", UpgradeEffect.MATERIAL_EFFICIENCY, magnitudePerLevel = 10, maxLevel = 3, costPerLevel = TIER_COSTS, description = "Now and then a forge spares its augment, a little more often with each level."),
             UpgradeDef(UPG_STOCK, "Well-Stocked Cellar", UpgradeEffect.STARTING_MATERIALS, magnitudePerLevel = 2, maxLevel = 3, costPerLevel = TIER_COSTS, description = "+2 of every common material at the start of a run, per level."),
-            UpgradeDef(UPG_LUCK, "Lucky Hammer", UpgradeEffect.EXCEPTIONAL_CHANCE, magnitudePerLevel = 2, maxLevel = 3, costPerLevel = TIER_COSTS, description = "+2% exceptional forging chance per level."),
+            UpgradeDef(UPG_LUCK, "Lucky Hammer", UpgradeEffect.EXCEPTIONAL_CHANCE, magnitudePerLevel = 2, maxLevel = 3, costPerLevel = TIER_COSTS, description = "Exceptional forgings come a little more often with each level."),
             UpgradeDef(UPG_REPUTATION, "Known Name", UpgradeEffect.STARTING_REPUTATION, magnitudePerLevel = 5, maxLevel = 3, costPerLevel = TIER_COSTS, description = "+5 starting shop reputation per level, and one more hero starts as a regular with coin saved for your work."),
             // v5 tracks for the remaining GDD 9 categories (catalog access, recipe odds, legacy artifacts). Names are PROPOSED;
             // each counts levels and takes its numbers from BalanceConfig.legacyTracks.
