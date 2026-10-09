@@ -63,6 +63,8 @@ sealed interface GameError {
     data class AlreadyHoned(val weaponId: WeaponId) : GameError
     data class ToolMaxed(val toolId: String) : GameError
     data object ArmoryFull : GameError
+    /** The run was written under other rules or content than this engine's; [Compatibility.admit] brings it forward first. */
+    data class IncompatibleRun(val rulesVersion: Int, val contentVersion: Int) : GameError
 }
 
 sealed interface CommandOutcome {

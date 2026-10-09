@@ -1,5 +1,6 @@
 package com.tinyblacksmith.core
 
+import com.tinyblacksmith.core.TestSupport.admitted
 import com.tinyblacksmith.core.TestSupport.endDayId
 import com.tinyblacksmith.core.TestSupport.engine
 import com.tinyblacksmith.core.engine.Command
@@ -27,6 +28,12 @@ class SaveFixtureTest {
 
         val fixtureText: String by lazy { SaveFixtureTest::class.java.getResource(FIXTURE)?.readText() ?: error("missing $FIXTURE") }
         val decoded: GameState by lazy { SaveCodec.decodeRun(fixtureText) }
+        /** What the app hands the engine: the decoded save after `Compatibility.admit`. */
+        val admitted: GameState by lazy { decoded.admitted() }
+
+        const val FIXTURE_V2 = "/saves/v2_forced_seed4242_day61.json"
+        val fixtureTextV2: String by lazy { SaveFixtureTest::class.java.getResource(FIXTURE_V2)?.readText() ?: error("missing $FIXTURE_V2") }
+        val decodedV2: GameState by lazy { SaveCodec.decodeRun(fixtureTextV2) }
     }
 
     @Test
@@ -62,7 +69,7 @@ class SaveFixtureTest {
 
     @Test
     fun decodedStateAcceptsAnEndDay() {
-        val outcome = engine.handle(decoded, Command.EndDay(endDayId(decoded)))
+        val outcome = engine.handle(admitted, Command.EndDay(endDayId(admitted)))
         val accepted = assertIs<CommandOutcome.Accepted>(outcome)
         val next = accepted.state
         assertTrue(Invariants.check(next, engine.config).isEmpty())
@@ -77,12 +84,29 @@ class SaveFixtureTest {
         val cap = engine.config.weaponHistoryCap
         assertTrue(cap in 1..14, "the fixture's 15-entry weapon must exceed the cap; cap=$cap")
         val longest = decoded.weapons.values.maxBy { w -> w.history.count { it.kind in combatKinds } }
-        val outcome = engine.handle(decoded, Command.EndDay(endDayId(decoded)))
+        val outcome = engine.handle(admitted, Command.EndDay(endDayId(admitted)))
         val next = assertIs<CommandOutcome.Accepted>(outcome).state
         assertTrue(next.weapons.values.all { w -> w.history.count { it.kind in combatKinds } <= cap })
         val after = next.weapon(longest.id)
         assertEquals(cap, after.history.count { it.kind in combatKinds })
         assertEquals(longest.history.filter { it.kind !in combatKinds }, after.history.filter { it.kind !in combatKinds && it.day < 61 })
         assertTrue(after.kills >= longest.kills && after.siegesDefended >= longest.siegesDefended && after.fame >= longest.fame, "counters are never reduced")
+    }
+
+    /**
+     * The schema-2 anchor: a run written by this codec (forced survival, seed 4242, BALANCED_FAIR, 60 End Days, rules 2).
+     * It carries its own versions, so it needs no admission and plays at once.
+     */
+    @Test
+    fun theV2FixtureIsCurrentAndPlaysWithoutAdmission() {
+        assertTrue(fixtureTextV2.startsWith("""{"schemaVersion":2,"payload":"""), fixtureTextV2.take(40))
+        val s = decodedV2
+        assertEquals(4242L, s.seed)
+        assertEquals(listOf(2, 5, 61), listOf(s.rulesVersion, s.balanceVersion, s.day))
+        assertEquals(engine.content.version, s.contentVersion)
+        assertTrue(Invariants.check(s, engine.config, content = engine.content).isEmpty())
+        assertEquals(s, SaveCodec.decodeRun(SaveCodec.encodeRun(s)))
+        val next = assertIs<CommandOutcome.Accepted>(engine.handle(s, Command.EndDay(endDayId(s)))).state
+        assertTrue(next.isEnded || next.day == 62)
     }
 }

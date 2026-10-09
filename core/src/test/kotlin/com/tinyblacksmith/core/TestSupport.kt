@@ -3,6 +3,7 @@ package com.tinyblacksmith.core
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
+import com.tinyblacksmith.core.engine.Compatibility
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.stateOrThrow
 import com.tinyblacksmith.core.model.*
@@ -15,6 +16,9 @@ object TestSupport {
         Command.Forge(ForgeMode.QUICK, LaunchContent.SWORD, core, augment, null, risk)
 
     fun endDayId(state: GameState) = CommandId("${state.runId.value}:day${state.day}")
+
+    /** A decoded save brought forward to the installed rules, content and balance; what `GameSession.load` does before the engine sees it. */
+    fun GameState.admitted(): GameState = (Compatibility.admit(this, engine.content, engine.config) as Compatibility.Result.Admitted).state
 
     fun GameState.endDay(): GameState = engine.handle(this, Command.EndDay(endDayId(this))).stateOrThrow()
 

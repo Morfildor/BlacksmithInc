@@ -28,7 +28,15 @@ import com.tinyblacksmith.core.rng.RngStream
 class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.LaunchContent.catalog, val config: BalanceConfig = BalanceConfig.DEFAULT) {
 
     companion object {
-        const val RULES_VERSION = 1
+        const val RULES_VERSION = 2
+
+        /**
+         * The rules version that salts every stream seed ([RngState.seeded]). Rules 2 is a number only (a run now has to be
+         * admitted before it is played, see [Compatibility]): no draw order or outcome changed, so new runs keep the rules-1
+         * streams and every seed plays as before. The first slice that changes an outcome raises this with its re-recorded
+         * seed-pinned tests and golden file.
+         */
+        const val STREAM_SEED_VERSION = 1
     }
 
     init {
@@ -46,9 +54,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val extraStock = upgradeTotal(legacy, UpgradeEffect.STARTING_MATERIALS)  // Well-Stocked Cellar: more of every starting-kit material
         val materials = config.startingMaterials.mapNotNull { (k, v) -> content.materialById[MaterialId(k)]?.let { it.id to v + extraStock } }.toMap()
         val seedState = GameState(
-            runId = runId, seed = seed, rulesVersion = rulesVersion, contentVersion = content.version, era = era, day = 1,
+            runId = runId, seed = seed, rulesVersion = rulesVersion, contentVersion = content.version, balanceVersion = config.version, era = era, day = 1,
             phase = Phase.PLANNING, gold = startingGold, energy = startingEnergy, overworkToday = 0, reputation = startingReputation,
-            rng = RngState.seeded(seed, rulesVersion), world = WorldModifiers(), materials = materials,
+            rng = RngState.seeded(seed, STREAM_SEED_VERSION), world = WorldModifiers(), materials = materials,
             supplierStock = restockedSupplier(legacy), weapons = emptyMap(), heroes = emptyMap(),
             town = Town(integrity = startingIntegrity, militia = 5, championIds = emptyList(), nextSiegeDay = config.siegeInterval),
             factions = emptyMap(), commissions = emptyMap(), events = emptyList(), blessings = emptyList(), pendingBlessingOffer = emptyList(),
@@ -89,6 +97,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
     }
 
     fun handle(state: GameState, command: Command): CommandOutcome {
+        if (state.rulesVersion != RULES_VERSION || state.contentVersion != content.version) return CommandOutcome.Rejected(GameError.IncompatibleRun(state.rulesVersion, state.contentVersion))
         if (state.isEnded && command !is Command.EndDay) return CommandOutcome.Rejected(GameError.RunEnded)
         return when (command) {
             is Command.Forge -> forge(state, command)
