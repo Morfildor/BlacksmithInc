@@ -36,6 +36,9 @@ object WorldEvents {
     const val UNLIMITED = Int.MAX_VALUE
     const val FLAG_FESTIVAL = "festival"
     const val FLAG_CARAVAN_DELAYED = "caravan_delayed"
+    /** Prefix of a day-keyed flag per material: the ore merchant's [ORE_MERCHANT_STOCK] extra units are on sale that morning. */
+    const val FLAG_ORE_MERCHANT = "ore_merchant:"
+    const val ORE_MERCHANT_STOCK = 2
 
     fun resolve(ctx: ResolutionContext) {
         val rng = ctx.rng(RngStream.EVENTS)
@@ -128,7 +131,7 @@ object WorldEvents {
             apply = { ctx ->
                 val m = ctx.rng(RngStream.EVENTS).pick(rareMaterials(ctx))
                 ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + 1
-                ctx.supplierStock[m.id] = (ctx.supplierStock[m.id] ?: 0) + 2
+                ctx.worldFlags[FLAG_ORE_MERCHANT + m.id.value] = ctx.day + 1  // the morning's restock would overwrite stock added tonight
                 WorldEventOutcome(mapOf("material" to m.name, "materialId" to m.id.value))
             },
             story = "A traveling ore merchant arrived with {material}.",

@@ -30,6 +30,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - The Gazette's tally counts only visitors who bought (no more "2 of 1 visitors bought"), shows a delivered commission
   and the town's tribute on their own lines, and counts the sale bonus and a collector's payment in the shop's takings.
 - Saved records no longer contain numbers formatted for the device language.
+- The traveling ore merchant's extra stock (two more of the material named in the Gazette) is on sale at the supplier
+  the next morning. It used to be wiped by the morning restock before it could be bought.
+- When two factions press the town equally hard, which one besieges it is decided the same way everywhere (forecast,
+  warning, siege and the champions shown in town).
 - The day's report now tells the whole day, including the blades you forged, listed or honed and the tools you bought
   while planning; before, those lines appeared only in the Gazette archive.
 

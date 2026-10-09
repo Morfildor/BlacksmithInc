@@ -228,9 +228,12 @@ object Battle {
 
     enum class SiegeOdds { STRONG, EVEN, OUTMATCHED, DIRE }
 
+    /** The faction that will besiege the town: the highest pressure, ties by ID (never by the order the save lists them in). */
+    fun leadingFaction(ctx: ResolutionContext): FactionState? = ctx.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure }
+
     fun outlook(ctx: ResolutionContext, siegeDay: Int): SiegeOutlook? {
         val config = ctx.config
-        val factionState = ctx.factions.values.maxByOrNull { it.pressure } ?: return null
+        val factionState = leadingFaction(ctx) ?: return null
         val faction = ctx.content.faction(factionState.id)
         val warlord = faction.warlordName != null && factionState.pressure >= config.warlordPressure
         val blessing = ctx.blessingMagnitude(BlessingEffect.HERO_POWER)
@@ -333,7 +336,7 @@ object Battle {
     fun warnOfSiege(ctx: ResolutionContext) {
         val daysLeft = ctx.town.nextSiegeDay - ctx.day
         if (daysLeft in 1..2) {
-            val f = ctx.factions.values.maxByOrNull { it.pressure } ?: return
+            val f = leadingFaction(ctx) ?: return
             val def = ctx.content.faction(f.id)
             val led = if (def.warlordName != null && f.pressure >= ctx.config.warlordPressure) " ${def.warlordName} leads them." else ""
             val weak = def.weakTo?.let { " ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }} weapons bite them hardest." } ?: ""

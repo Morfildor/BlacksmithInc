@@ -361,6 +361,11 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.overworkToday = 0
         val caravanDelayed = ctx.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == ctx.day
         for ((m, s) in restockedSupplier(ctx.legacy)) ctx.supplierStock[m] = if (caravanDelayed) 0 else s
+        // The ore merchant announced last night sells this morning, on top of the restock.
+        for ((flag, flagDay) in ctx.worldFlags) if (flagDay == ctx.day && flag.startsWith(WorldEvents.FLAG_ORE_MERCHANT)) {
+            val m = MaterialId(flag.removePrefix(WorldEvents.FLAG_ORE_MERCHANT))
+            ctx.supplierStock[m] = (ctx.supplierStock[m] ?: 0) + WorldEvents.ORE_MERCHANT_STOCK
+        }
         ctx.worldFlags.entries.removeIf { it.value < ctx.day }
         for (h in ctx.aliveHeroes()) if (h.lastActivity == HeroActivity.SHOP) ctx.updateHero(h.copy(lastActivity = HeroActivity.IDLE))
     }
