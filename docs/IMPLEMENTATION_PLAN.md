@@ -58,15 +58,22 @@ Legend: [x] done and verified · [~] partial · [ ] not started. Verification ev
 - [x] Advanced Forge techniques (Temper/Quench/Etch) in engine and Forge panel
 - [x] Guild/retirement/mentoring, weapon seizure and inheritance, famous-blade return from the Legend Board
 - [x] Reputation/loyalty depth (willingness to pay, repeat customers): bounded price ceiling, loyalty-weighted commission patrons, Gazette premium/regular records (DECISIONS session 4)
-- [x] Pixel-art pipeline: hand-made sheets imported by `tools/pixelart/import_assets.py` (136 sprites: scene, 36 weapons, 6 overlays, 6 badges, 25 portraits, 12 faction sprites, 16 materials, 8 blessings, nav/status icons), placeholders generated for the rest; wired into every screen
+- [x] Pixel-art pipeline: imported art (AI-generated concept sheets and weapon master sheet, script-drawn pack sprites; see ART_BRIEF "Art sources and provenance") sliced by `tools/pixelart/import_assets.py` (488 sprites now: 94 sheet slices, 336 weapons, 58 pack sprites; first import 136: scene, 36 weapons, 6 overlays, 6 badges, 25 portraits, 12 faction sprites, 16 materials, 8 blessings, nav/status icons), placeholders generated for the rest; wired into every screen
 - [x] Battle replay: stepped Gazette text plus an animated siege diorama (hero/monster frames from the artist pack) consuming `CombatReplay` only; Skip and reduced-motion honoured
 - [x] Forge palette theme, onboarding tips, font-scale 1.5 pass, 8-slot shelf grid, ±10 price buttons, level dots, run-end claim flow
 - [ ] Rename package from `com.example.blacksmithproject` to the release application ID
 
 ## P7 — Balance, reliability, onboarding, accessibility
-- [~] ≥10,000-seed balance reviews per policy; target early median 15–25 days with viable longer paths (v5: all 14 policies and both maxed accounts at 10,000 seeds, session 8, DECISIONS "Balance v5 review at 10,000 seeds"; v2: BALANCED_FAIR and SAFE_FAIR at 10,000 seeds, median 25; remaining policies at 1,000; starting energy/gold upgrades still unmeasurable without a harness purchasing rule)
+- [~] ≥10,000-seed balance reviews per policy; target early median 15–25 days with viable longer paths (done for balance v5 in 0.6.0: all 14 policies and both maxed accounts at 10,000 seeds, session 8, DECISIONS "Balance v5 review at 10,000 seeds"; starting energy/gold upgrades are measured on second yardsticks, DECISIONS "Balance v5, part 5"; open: one more 10,000-seed review after the major update's last rule change, plan task T5.5)
 - [~] Room migration tests, instrumented save/restore tests, Compose screenshot/a11y tests (save/restore instrumented x2, event-log and weapon-history compaction done; session 8: weapons-map pruning, the day report restored after process death, an instrumented End Day budget test; a real mid-run v1 save fixture is checked in with a decode/End Day/compaction anchor test (`SaveFixtureTest`), so the first schema bump has a migration input; Room itself needs no migration because the envelope version is inside the JSON row; screenshot/a11y tests open)
 - [ ] Onboarding, font scaling, small screens, low-memory interruption checks, soak test without overflow
+
+## P7b — Major update: shop day (in progress, M0)
+Plan: `docs/MAJOR_UPDATE_PLAN.md` (gates M0-M7 in its section 7). Task and evidence ledger: `docs/MAJOR_UPDATE_LEDGER.md`, which is the
+record of what is done; this file only names the phase. Branch `shop-day/m0`; the code was release 0.6.0 when M0 began.
+- [~] M0 landing zone and baseline (T0.1-T0.7; per-task status in the ledger; T0.3, checklist and wording, is documents only)
+- [ ] M1 trustworthy state and reports · M2 the shop day · M3 more and varied customers · M4 demand, discovery and stories
+- [ ] M5 progression and proof · M6 accessibility, performance and long saves · M7 release preparation for this update
 
 ## P8 — Google Play premium launch
 - [ ] Release signing, AAB, store listing (€1.99, no ads/IAP), privacy/legal assets

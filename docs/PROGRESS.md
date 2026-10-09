@@ -2,6 +2,8 @@
 
 ## Current phase
 P7 in progress. App 0.6.0, balance config v5 (reviewed at 10,000 seeds), 186 JVM tests, 6 instrumented tests.
+P7b, the major update (shop day), is in progress at M0 on branch `shop-day/m0`: plan `docs/MAJOR_UPDATE_PLAN.md`, task and evidence
+ledger `docs/MAJOR_UPDATE_LEDGER.md`. The code was release 0.6.0 when M0 began; T0.3 (checklist and wording) changes documents only.
 Launch content is the engine default; the sections below are the history of how it got here, newest focus last.
 
 ## Session 6 focus: gameplay depth (balance v3, app 0.4.0)
@@ -36,15 +38,16 @@ nothing is in flight.
 Also on `main`: the signboard now adds a customer a day per level and six affix magnitudes are stronger; that is
 balance config v5 (the branches join v5 when they merge). Evidence in DECISIONS.md ("Weapon pruning and day-report
 recovery", "Balance v5, part 1").
-Two documents arrived in `docs/` during the session and are not part of this work (untracked, left as found):
-`Tiny_Blacksmith_Thorough_Review_2026-10-09.md` (an external review pinned to b39ad76, findings F01-F11) and
+Two documents arrived in `docs/` during the session and were not part of this work:
+`Tiny_Blacksmith_Thorough_Review_2026-10-09.md` (an external review pinned to b39ad76, findings F01-F11; still untracked) and
 `MAJOR_UPDATE_PLAN.md` (the plan for the shop-day update, written by another session: complete, reconciled with 0.6.0
 and independently reviewed; its task and evidence ledger is `MAJOR_UPDATE_LEDGER.md`, its evidence is in
-`major_update_evidence/`; nothing in it is implemented yet). None of the review findings
-is fixed by session 8 except the signboard (its section 6.2); the checklist corrections it lists are still to apply.
+`major_update_evidence/`, still untracked). The plan and the ledger are committed on `shop-day/m0`. None of the review findings
+is fixed by session 8 except the signboard (its section 6.2); the review's checklist corrections (its section 9) were applied to
+`docs/GDD_CHECKLIST.md` by task T0.3, as wording only.
 
 ## What exists
-- `core/` pure Kotlin engine: RNG, slice + launch content catalogs (launch is the default), balance config v2, model,
+- `core/` pure Kotlin engine: RNG, slice + launch content catalogs (launch is the default), balance config (v5 now; v2 made launch content the default), model,
   commands, End Day resolver, crafting with techniques and all 24 signature recipes, market, hero AI with retirement/
   guilds/mentoring, battles/sieges with weapon seizure, world-event pool (23 events + 2 deterministic rules = all 25 GDD
   events), legacy with famous-blade returns, Gazette, JSON save codec with a migration scaffold, End Day event-log
@@ -60,13 +63,16 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
   principles in DECISIONS.md; session 5: title/run-end on the spacing tokens with one primary action, Town lists
   every faction with pressure and weakness, screen-reader descriptions on disabled actions), seven panels (Home dashboard first, session 7), technique chips,
   newspaper day report with stepped replay, blessing choice (dismissable for the day), run-end/legacy screen; Room
-  atomic save store; DataStore settings (reduced motion, seen tips, the last dismissed day report). Hand-made pixel art on every screen.
+  atomic save store; DataStore settings (reduced motion, seen tips, the last dismissed day report). Imported pixel art on every screen
+  (AI-generated concept sheets, an AI-generated weapon master sheet and script-drawn pack sprites; see `docs/ART_BRIEF.md`, "Art sources and provenance").
 - `tools/pixelart/import_assets.py` (slices concept sheets, copies selected pack sprites, prunes stale imports),
   `generate_assets.py` (placeholders), `tools/emulator/smoke.sh` (device loop). `docs/ART_BRIEF.md` is the brief.
 - Animated siege diorama in the day report (artist pack frames), dead/retired markers, milestone burst on the result
   card for signature or epic+ weapons.
 - Weapon master sheet sliced into 336 `weapon_<family>_<row>_<level>` sprites with a generated `ui/WeaponArt.kt`
-  lookup; 488 hand-made sprites in total (94 sheet slices + 336 weapons + 58 pack sprites).
+  lookup; 488 imported sprites in total (94 slices of the five AI-generated concept sheets + 336 weapons from the AI-generated master sheet +
+  58 script-drawn pack sprites). The tooling still prints and records the label "hand-made" for these (`generate_assets.py`, manifest
+  `"source": "handmade"`) until task T2.4 renames it; read it as "imported".
 
 ## Checks run this session (balance v2, launch default)
 | Check | Command | Result |
@@ -121,6 +127,10 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
   obtainable materials; 0 hard-locks in all runs.
 
 ## Known limitations
+- Art provenance is undocumented for a store release: the seven top-level source images and both concept references carry embedded
+  Content Credentials naming ChatGPT / OpenAI as the generator, the two packs are script-drawn, and no licence or attribution text exists
+  under `Pixel art assets/`. How the art is described on a paid listing and the usage terms of the generating account are owner decisions
+  (plan 5.7, 10.4); they block P8, not development.
 - Starting energy and gold upgrades buy little run length (+0.1 to +0.3 mean days under the active smith); what they
   buy shows on the second yardsticks (about a sixth more weapons forged, one more tool level by the first siege).
   The three v5 tracks read 0 days for every bot: none hunts signatures, repeats a rare recipe or owns a Legend Board.
@@ -159,19 +169,20 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
 - Package name is still `com.example.blacksmithproject`; no release signing.
 - `GameEngine.RULES_VERSION` stays 1 although the rules and the RNG draw order have changed several times. It seeds
   the run RNG, so raising it reshuffles every run, and nothing enforces it against a loaded save; it should move
-  together with a save-compatibility policy (the external review's F09), not alone.
+  together with a save-compatibility policy (the external review's F09), not alone; the major update plans exactly that (plan 6.7, tasks T1.5a/b).
 - Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.6.0 (versionCode 6), tag `v0.6.0`.
 
 ## Next executable actions (P7)
-0. Owner decisions pending: whether to commit the external review, the major-update plan, its ledger and its
-   evidence folder in `docs/` (all untracked); the release application ID. The maxed active account at median 45 days
+0. Owner decisions pending: whether to commit the external review and the major-update evidence folder in `docs/` (both untracked;
+   the plan and the ledger are committed on `shop-day/m0`); the release application ID; the art description for the store
+   (plan 10.4). The maxed active account at median 45 days
    and the wear margin are not to be lowered automatically: both are reassessed after the major update's customer and
    economy changes (plan section 4.3).
-1. The major update starts at task T0.1 of `docs/MAJOR_UPDATE_PLAN.md` (first slice: M0 and M1; step-by-step in its
-   handoff). Its scope covers everything below in this item. From the external review, not started: F01 serialise legacy purchases and Begin Era, F02 storage
+1. The major update is in progress at M0 (branch `shop-day/m0`; per-task status is in `docs/MAJOR_UPDATE_LEDGER.md`; first slice M0
+   and M1, step-by-step in the plan's handoff). Its scope covers everything below in this item. From the external review, not started: F01 serialise legacy purchases and Begin Era, F02 storage
    failure recovery, F03 day report from the whole day, F04 commission quality shown exactly, F05 fair visitor
    selection, F08 champion ranking in a warlord siege, F11 locale-independent event payloads; then its shop-day
-   presentation. Its checklist corrections (section 9) are applied only where session 8 touched the entry.
+   presentation. Its checklist corrections (section 9) were applied by T0.3.
    Small engine items noticed in session 8: the Traveling Ore Merchant stock overwrite, the unreachable wall death,
    Guild Patronage still on the visit-chance lever. Simulator policies that forge Advanced, hunt signatures or
    spend scarce stock would make the v5 tracks and Lucky measurable.
