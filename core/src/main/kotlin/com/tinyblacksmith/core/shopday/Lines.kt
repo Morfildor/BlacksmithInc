@@ -269,6 +269,12 @@ object Lines {
         return if (mark == ThreatMark.COUNTERS) "Bites the $name" else "The $name resist it"
     }
 
+    /** Why a request is made, for its card: `Commissions.why` with the names from [state]. Null for an ordinary request or a patron who is gone. */
+    fun commissionWhy(commission: Commission, state: GameState): String? {
+        val buyer = state.heroes[commission.buyerId]?.fullName ?: return null
+        return Commissions.why(commission, buyer, commission.recipientId?.let { state.heroes[it]?.fullName })
+    }
+
     /** A hero's standing want in a line: "Wren Kestrel wants a bow; can spend about 90 gold." Null without one. The numbers are `Hero.want`'s own. */
     fun want(hero: Hero, content: ContentCatalog): String? = hero.want?.let { w ->
         "${hero.fullName} wants ${content.familyById[w.familyId]?.let { withArticle(it.name.lowercase()) } ?: "a blade"}; can spend about ${about(w.budget)} gold."

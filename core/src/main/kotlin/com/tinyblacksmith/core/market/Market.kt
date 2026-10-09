@@ -344,12 +344,12 @@ object Market {
         return Sale(listedPrice = price, tradeInCredit = credit, tradeInWeaponId = old?.id, cashPaid = paid, saleBonus = bonus, stipend = stipend)
     }
 
-    /** Transfers ownership and equips when the weapon is better for this hero than the current one. */
-    fun giveAndEquip(ctx: ResolutionContext, hero: Hero, weapon: Weapon) {
+    /** Transfers ownership and equips when the weapon is better for this hero than the current one; against [against] (a siege-prep order) by what each is worth in that fight. */
+    fun giveAndEquip(ctx: ResolutionContext, hero: Hero, weapon: Weapon, against: FactionDef? = null) {
         val current = ctx.equippedWeapon(hero.id)
-        val better = current == null ||
+        val better = current == null || (if (against != null) valueInHand(ctx, hero, weapon, against) > valueInHand(ctx, hero, current, against) else
             weapon.power * Power.conditionFactor(weapon, ctx.config) * Power.classFit(hero, weapon, ctx.content, ctx.config) >
-            current.power * Power.conditionFactor(current, ctx.config) * Power.classFit(hero, current, ctx.content, ctx.config)
+            current.power * Power.conditionFactor(current, ctx.config) * Power.classFit(hero, current, ctx.content, ctx.config))
         if (better) {
             if (current != null) ctx.updateWeapon(current.copy(location = WeaponLocation.Owned(hero.id, equipped = false)))
             ctx.updateWeapon(weapon.copy(location = WeaponLocation.Owned(hero.id, equipped = true)))
@@ -411,10 +411,15 @@ object Market {
                 ctx.reputation += 2
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.COMPLETED, deliveredWeaponId = candidate.id)
                 ctx.updateHero(buyer.copy(loyalty = buyer.loyalty + 2, want = null))
-                ctx.emit(EventType.COMMISSION_COMPLETED, 5, "${buyer.fullName} collected the commissioned ${candidate.name} and paid ${c.reward} gold.", listOf(buyer.id.value, candidate.id.value, c.id.value), mapOf("reward" to c.reward.toString()))
-                ctx.addWeaponHistory(candidate.id, "COMMISSION", "Delivered to ${buyer.fullName} on commission.", listOf(buyer.id.value))
+                // A first blade is carried by the hero it was ordered for; should they be gone by now, the patron keeps it.
+                val receiver = c.recipientId?.let { ctx.heroes[it] }?.takeIf { it.isAlive }?.also { ctx.updateHero(it.copy(want = null)) } ?: buyer
+                val forWhom = if (receiver.id != buyer.id) " for ${receiver.fullName}" else ""
+                ctx.emit(EventType.COMMISSION_COMPLETED, 5, "${buyer.fullName} collected the commissioned ${candidate.name}$forWhom and paid ${c.reward} gold.", listOf(buyer.id.value, candidate.id.value, c.id.value),
+                    mapOf("reward" to c.reward.toString(), "kind" to c.kind.name))
+                ctx.addWeaponHistory(candidate.id, "COMMISSION", if (receiver.id != buyer.id) "Ordered by ${buyer.fullName} and delivered to ${receiver.fullName}." else "Delivered to ${buyer.fullName} on commission.", listOf(receiver.id.value))
                 WorldEvents.rumour(ctx, "${buyer.fullName}, collecting the commission,", buyer.id)   // a satisfied patron talks (plan 4.6 E3)
-                giveAndEquip(ctx, ctx.hero(buyer.id), ctx.weapon(candidate.id))
+                // A blade ordered for the wall is judged against the besieger: the champion takes it up if it is worth more to them in that fight.
+                giveAndEquip(ctx, ctx.hero(receiver.id), ctx.weapon(candidate.id), if (c.kind == CommissionKind.SIEGE_PREP) Battle.leadingFaction(ctx)?.let { ctx.content.faction(it.id) } else null)
                 // The patron is a visit of its own kind: the reward is the coin; the shelf price, if the blade had one, is only what it was listed at.
                 ctx.visits += MarketVisit(
                     buyer.id, buyer.fullName, candidate.id, VisitReason.COMMISSION_DELIVERED, seq = ctx.visits.size, kind = VisitKind.COMMISSION, customer = customer,
@@ -433,28 +438,81 @@ object Market {
         }
     }
 
+    /** Requests that are offered or accepted, and the heroes named on them: nobody has two at once. */
+    fun openCommissions(ctx: ResolutionContext): List<Commission> = ctx.commissions.values.filter { it.status == CommissionStatus.OFFERED || it.status == CommissionStatus.ACCEPTED }
+
+    /**
+     * Who has a reason to ask today, by kind (plan 4.6 E4); read from the state, no draw. [free] are the living heroes
+     * with no open request. A kind with nobody behind it, or with weight 0, is absent; ORDINARY needs no reason.
+     */
+    fun commissionSituations(ctx: ResolutionContext, free: List<Hero>): Map<CommissionKind, List<Hero>> {
+        val config = ctx.config
+        val w = config.commissions
+        val daysToSiege = ctx.town.nextSiegeDay - ctx.day
+        val forgeable = ctx.content.materials.mapNotNull { it.element }.toSet()
+        val feared = Battle.leadingFaction(ctx)?.let { ctx.content.faction(it.id).weakTo }?.takeIf { it in forgeable }
+        fun carriedThisEra(h: Hero) = ctx.weapons.values.any { blade -> blade.history.any { it.era == ctx.era && it.kind in com.tinyblacksmith.core.legacy.Legacy.OWNERSHIP && it.subjectIds.firstOrNull() == h.id.value } }
+        val newcomers = free.filter { it.shopPurchases == 0 && ctx.equippedWeapon(it.id) == null }
+        return linkedMapOf(
+            CommissionKind.ORDINARY to (if (w.ordinaryWeight > 0) free else emptyList()),
+            CommissionKind.REPLACEMENT to (if (w.replacementWeight > 0) free.filter { h -> ctx.equippedWeapon(h.id).let { own -> if (own == null) carriedThisEra(h) else own.condition < config.wornConditionThreshold } } else emptyList()),
+            // A champion who already carries the element the besieger fears has no reason to ask.
+            CommissionKind.SIEGE_PREP to (if (w.siegePrepWeight > 0 && feared != null && daysToSiege in 1..w.siegePrepDays) free.filter { it.id in ctx.town.championIds && ctx.equippedWeapon(it.id)?.element != feared } else emptyList()),
+            CommissionKind.AMBITION to (if (w.ambitionWeight > 0) free.filter { it.ambition == Ambition.COLLECTOR && !it.ambitionDone } else emptyList()),
+            CommissionKind.FIRST_BLADE to (if (w.firstBladeWeight > 0) free.filter { h -> h.guildId != null && newcomers.any { it.id != h.id } } else emptyList()),
+        ).filterValues { it.isNotEmpty() }
+    }
+
+    private fun kindWeight(kind: CommissionKind, config: BalanceConfig): Double = when (kind) {
+        CommissionKind.ORDINARY, CommissionKind.NOBLE -> config.commissions.ordinaryWeight
+        CommissionKind.REPLACEMENT -> config.commissions.replacementWeight
+        CommissionKind.SIEGE_PREP -> config.commissions.siegePrepWeight
+        CommissionKind.AMBITION -> config.commissions.ambitionWeight
+        CommissionKind.FIRST_BLADE -> config.commissions.firstBladeWeight
+    }
+
+    /**
+     * The daily request (EVENTS stream): the chance, then a kind among today's situations, then the patron among the
+     * heroes with that reason, then the family, the band and the element as before. Up to
+     * `customers.maxOpenCommissions` are open at once and no hero is named on two.
+     */
     fun maybeOfferCommission(ctx: ResolutionContext) {
         val rng = ctx.rng(RngStream.EVENTS)
-        if (ctx.commissions.values.any { it.status == CommissionStatus.OFFERED || it.status == CommissionStatus.ACCEPTED }) return
-        if (!rng.chance(ctx.config.commissionChancePerDay)) return
-        val heroes = ctx.aliveHeroes()
-        if (heroes.isEmpty()) return
+        val config = ctx.config
+        val open = openCommissions(ctx)
+        if (open.size >= config.customers.maxOpenCommissions) return
+        if (!rng.chance(config.commissionChancePerDay)) return
+        val named = open.flatMap { listOfNotNull(it.buyerId, it.recipientId) }.toSet()
+        val free = ctx.aliveHeroes().filter { it.id !in named }
+        val situations = commissionSituations(ctx, free)
+        if (situations.isEmpty()) return
+        val kind = rng.pickWeighted(situations.keys.map { it to kindWeight(it, config) })
         // Regulars come back with requests (GDD 5: loyalty influences repeat customers and story continuity).
-        val buyer = rng.pickWeighted(heroes.map { it to 1.0 + minOf(it.loyalty, ctx.config.commissionLoyaltyCap) * ctx.config.commissionLoyaltyWeight })
-        val cls = ctx.content.heroClass(buyer.classId)
+        val buyer = rng.pickWeighted(situations.getValue(kind).map { it to 1.0 + minOf(it.loyalty, config.commissionLoyaltyCap) * config.commissionLoyaltyWeight })
+        // A first blade is for the newcomer of the patron's own guild when there is one, else the earliest arrival (no draw).
+        val recipient = if (kind != CommissionKind.FIRST_BLADE) null else free.filter { it.id != buyer.id && it.shopPurchases == 0 && ctx.equippedWeapon(it.id) == null }
+            .minWithOrNull(compareBy<Hero> { it.guildId != buyer.guildId }.thenBy(IdOrder.numeric) { it.id.value })
+        val cls = ctx.content.heroClass((recipient ?: buyer).classId)
         val family = rng.pick(cls.preferredFamilies)
-        // Always a band floor, so the word on the request is what the rule checks (one draw, as the old 35..60 roll was).
-        val minQuality = (if (rng.chance(ctx.config.commissions.fineShare)) QualityBand.FINE else QualityBand.DECENT).floor(ctx.config)
-        // GDD 5 "desirable effect": half the patrons want an element, their own taste or what the looming faction fears.
+        // Always a band floor, so the word on the request is what the rule checks (one draw, as the old 35..60 roll was). A collector asks for the floor the ambition needs.
+        val fine = rng.chance(config.commissions.fineShare)
+        val minQuality = (if (fine || kind == CommissionKind.AMBITION) QualityBand.FINE else QualityBand.DECENT).floor(config)
+        // GDD 5 "desirable effect": half the patrons want an element, their own taste or what the looming faction fears; a champion before a siege always wants the latter.
         val forgeable = ctx.content.materials.mapNotNull { it.element }.toSet()
-        val wanted = (buyer.elementTaste ?: ctx.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure }?.let { ctx.content.faction(it.id).weakTo })?.takeIf { it in forgeable }
-        val element = if (wanted != null && rng.chance(ctx.config.commissionElementChance)) wanted else null
-        val baseReward = ctx.config.commissionRewardBase + minQuality * ctx.config.commissionRewardPerQuality
-        val reward = if (element != null) (baseReward * ctx.config.commissionElementRewardMultiplier).toInt() else baseReward
+        val feared = Battle.leadingFaction(ctx)?.let { ctx.content.faction(it.id).weakTo }?.takeIf { it in forgeable }
+        val wanted = (buyer.elementTaste ?: feared)?.takeIf { it in forgeable }
+        val asksElement = wanted != null && rng.chance(config.commissionElementChance)
+        val element = if (kind == CommissionKind.SIEGE_PREP) feared else if (asksElement) wanted else null
+        val baseReward = config.commissionRewardBase + minQuality * config.commissionRewardPerQuality
+        val reward = if (element != null) (baseReward * config.commissionElementRewardMultiplier).toInt() else baseReward
+        // Due on the siege day at the latest when it is for the wall: commissions are collected before the raid that evening.
+        val deadline = if (kind == CommissionKind.SIEGE_PREP) ctx.town.nextSiegeDay else ctx.day + config.commissionDeadlineDays
         val id = ctx.newCommissionId()
-        val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, ctx.day + ctx.config.commissionDeadlineDays, CommissionStatus.OFFERED, element = element)
+        val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, deadline, CommissionStatus.OFFERED, element = element, kind = kind, recipientId = recipient?.id)
         ctx.commissions[id] = c
-        val who = if (isRegular(buyer, ctx.config)) "${buyer.fullName}, a regular of the shop," else buyer.fullName
-        ctx.emit(EventType.COMMISSION_OFFERED, 3, "$who asks for a ${Commissions.describe(c, ctx.content, ctx.config)} by day ${c.deadlineDay}, offering $reward gold.", listOf(buyer.id.value, id.value))
+        val who = if (isRegular(buyer, config)) "${buyer.fullName}, a regular of the shop," else buyer.fullName
+        val why = Commissions.why(c, buyer.fullName, recipient?.fullName)?.let { " $it" }.orEmpty()
+        ctx.emit(EventType.COMMISSION_OFFERED, 3, "$who asks for a ${Commissions.describe(c, ctx.content, config)} by day ${c.deadlineDay}, offering $reward gold.$why",
+            listOf(buyer.id.value, id.value), mapOf("kind" to kind.name) + (recipient?.let { mapOf("recipient" to it.id.value) } ?: emptyMap()))
     }
 }

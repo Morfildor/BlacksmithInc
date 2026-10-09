@@ -140,8 +140,10 @@ class ReputationAndLoyaltyTest {
             }
         }
         assertTrue(offers >= 40, "offers: $offers")
-        // Weight 1 + 10 * 0.5 = 6 against seven strangers at 1 each: expected 6/13 = 46 %; uniform would be 12.5 %.
-        assertTrue(toRegular * 100 / offers >= 30, "regular got $toRegular of $offers offers")
+        // Weight 1 + 10 * 0.5 = 6 against eleven strangers at 1 each: 6/17 = 35 % of the ordinary requests, and the same weight among
+        // whoever shares a reason with them (a worn blade, a place on the wall, a collection); a reason they lack goes to someone else.
+        // Uniform would be 8 %.
+        assertTrue(toRegular * 100 / offers >= 20, "regular got $toRegular of $offers offers")
     }
 
     @Test

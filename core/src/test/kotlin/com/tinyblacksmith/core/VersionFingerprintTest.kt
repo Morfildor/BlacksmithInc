@@ -30,7 +30,7 @@ class VersionFingerprintTest {
         5 to "a9d576db13b2983ebb4e45ed97ff6ddc9ece108aebb4738a14bfd90dc9ae37c1",
         6 to "adb451f9d456482d788d612daefebdbda892de44215fe4a3877152490d6c8e60",
         7 to "daf9ca7290dac60a17921dde7e37676a45dab7db64bdffe5a093af7f94d5f9d7",  // re-pinned inside the unreleased M3 step: T3.1 pinned 66214786..., T3.4 (33af5dfb...) changed the town and pressure numbers, T3.6 (33499217...) added patronageStipend, T3.8 the two rout numbers
-        8 to "d16456a5d45c0aa10e8f949795125f66766b29aaeb3b293621ff275cb6658b8a",  // M4, one unreleased step, re-pinned inside it: standing wants (T4.1, c2e3b145...), the sidegrade gate and siege demand (T4.2, 8c796571...), the two rumour numbers (T4.3)
+        8 to "c644ab7640db82d426c50f3d603611fdfed53175f49b0894bdc0c2ac5e6d863a",  // M4, one unreleased step, re-pinned inside it: standing wants (T4.1, c2e3b145...), the sidegrade gate and siege demand (T4.2, 8c796571...), the two rumour numbers (T4.3, d16456a5...), commission situations (T4.6)
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames")
