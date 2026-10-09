@@ -6,6 +6,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 `app/build.gradle.kts` (`versionName`, `versionCode` increments on every store-facing build).
 
 ## [Unreleased]
+- Simulator: catalog sweeps (`--noTool`, `--toolCost`, `--noAffixEffect`), `--noImpact`, and per-run counters for
+  elites slain, shattered weapons, warlord sieges, tool purchases and affix occurrence; the 10,000-seed v3 review and
+  the per-tool / per-affix sweeps are recorded in `docs/DECISIONS.md` (recommendations only, no balance change).
 
 ## [0.4.0] - 2026-10-09
 Gameplay depth (balance v3): shop actions, workshop tools, elite foes and warlords, hero ambitions, trade-ins.

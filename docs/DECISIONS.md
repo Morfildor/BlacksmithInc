@@ -437,9 +437,207 @@ The simulator now prints shop visits per run by outcome (`visitsPerRun` in the J
   expeditions draw an elite roll, so a given seed plays differently from 0.3.0.
 - Save schema stays v1: every new field has a default (`Hero.ambition` is null on heroes from older saves; they
   simply have none). `SaveFixtureTest` still decodes the v1 fixture and plays a day on it.
-- The 10,000-seed table above is v2. Only the 1,000-seed rows here are v3.
-- Tool prices and the individual affix magnitudes were set by judgement and checked only through the aggregate
-  BALANCED_ACTIVE run; no per-tool or per-affix sweep was done.
+- The 10,000-seed table above is v2; the v3 table at 10,000 seeds is in the next section.
+- Tool prices and the individual affix magnitudes were set by judgement; the per-tool and per-affix sweeps in the
+  next section measure them.
+
+## Balance v3 review at 10,000 seeds and per-tool / per-affix sweeps (2026-10-09)
+Evidence only: no gameplay code, content value or `BalanceConfig` default changed (balance stays v3). The 1,000-seed
+v3 rows above reproduce exactly at seed 1 (BALANCED_ACTIVE 30 (20/35), mean 27.5, sold 23.4, survived 2.3, gold on
+hand 91), so the Gazette-edition commit did not move gameplay.
+
+### Harness additions (Simulator.kt only)
+- Catalog sweeps: `--noTool id[,id]` drops a workshop tool, `--toolCost id=mult[,id=mult]` scales its per-level
+  costs (rounded), `--noAffixEffect id[,id]|all` keeps the affix (it still rolls, its flat attack/defense multipliers
+  stay) but neutralises the v3 effect (bane, elite, heal, loot, wound multiplier, shatter, self-harm). Each derives a
+  `ContentCatalog.copy(...)` that is validated before the engine sees it; the overrides land in the `--json` report.
+- `--noImpact` skips the maxed-legacy and per-upgrade runs (a sweep case is then one 1,000-seed run, about 12 s).
+- New per-run counters in `RunStats` / `PolicySummary`: elites slain, weapons broken, warlord-led sieges fought and
+  won, tool purchases (share of runs, level at run end, first-purchase day) and weapons carrying each affix.
+
+Commands (launch content v2, balance v3, rules v1, 400-day cap, 16 threads):
+- 10,000 seeds: `./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE --content launch --perf --json <out>"` (375 s, run alongside the sweep).
+- Sweeps: `--runs 1000 --seed 1 --policy BALANCED_ACTIVE --content launch --noImpact --json <out>` plus `--noTool X`,
+  `--toolCost X=0.5`, `--toolCost X=2`, `--noAffixEffect X`; the same command at seeds 10001 and 20001 gives the noise
+  floor; the SYNERGY cross-check uses `--policy SYNERGY`. Perf probe standalone: `--runs 1 --policy PASSIVE --noImpact --perf`.
+
+### Full table at 10,000 seeds (v3; the 1,000-seed mean from the v3 section in parentheses)
+| Policy (10,000 seeds) | Median (p10/p90) | Mean (1k) | Sold/run (rate) | Survived / lost sieges | Deaths | Gold on hand | Visits/run: bought / NOT_BETTER / TOO_EXPENSIVE | Elites slain | Rarity C/U/R/E/L % |
+|---|---|---|---|---|---|---|---|---|---|
+| BALANCED_FAIR | 20 (15/30) | 21.8 (21.7) | 17.6 (16 %) | 1.2 / 3.1 | 0.9 | 584 | 14.9 / 46.0 / 15.2 | 3.0 | 19/44/31/5/1 |
+| **BALANCED_ACTIVE** | 30 (20/35) | 27.7 (27.5) | 23.5 (23 %) | 2.3 / 3.2 | 0.9 | 92 | 20.7 / 58.8 / 26.9 | 4.1 | 10/41/40/8/1 |
+| SAFE_FAIR | 20 (15/30) | 21.3 (21.3) | 16.8 (16 %) | 1.2 / 3.1 | 0.9 | 548 | 14.5 / 44.3 / 15.5 | 2.8 | 19/49/29/3/0 |
+| RECKLESS_FAIR | 20 (15/30) | 22.6 (22.4) | 18.6 (17 %) | 1.3 / 3.2 | 0.9 | 625 | 15.6 / 48.9 / 14.8 | 3.2 | 19/37/35/7/1 |
+| OVERWORK | 20 (15/30) | 21.9 (21.8) | 17.7 (16 %) | 1.3 / 3.1 | 0.9 | 560 | 15.0 / 47.4 / 14.6 | 3.1 | 19/44/31/5/1 |
+| BALANCED_REPUTED | 20 (15/30) | 21.6 (-) | 17.1 (16 %) | 1.2 / 3.1 | 0.9 | 589 | 14.5 / 43.3 / 17.7 | 2.9 | 19/44/31/5/1 |
+| BALANCED_CHEAP | 25 (20/30) | 25.7 (25.8) | 17.9 (16 %) | 2.0 / 3.1 | 0.7 | 333 | 14.7 / 76.4 / 1.6 | 4.5 | 18/43/32/6/1 |
+| SAFE_CHEAP | 25 (20/30) | 24.8 (-) | 16.9 (16 %) | 1.9 / 3.1 | 0.8 | 294 | 14.1 / 72.8 / 1.7 | 4.1 | 18/48/30/4/1 |
+| BALANCED_EXPENSIVE | 10 (10/15) | 12.4 (12.5) | 4.5 (8 %) | 0.1 / 2.4 | 0.7 | 139 | 3.1 / 3.9 / 25.7 | 0.7 | 20/45/31/4/0 |
+| RECKLESS_EXPENSIVE | 10 (10/15) | 12.7 (-) | 4.7 (8 %) | 0.1 / 2.5 | 0.7 | 142 | 3.1 / 4.5 / 24.9 | 0.7 | 20/38/35/7/1 |
+| SYNERGY | 40 (25/45) | 36.7 (36.7) | 24.3 (30 %) | 4.0 / 3.3 | 0.9 | 3 | 20.0 / 87.6 / 26.1 | 6.5 | 3/26/45/17/8 |
+| BALANCED_INVEST | 35 (20/40) | 31.5 (31.5) | 25.6 (52 %) | 2.9 / 3.4 | 0.9 | 3 | 20.9 / 65.6 / 27.9 | 5.6 | 5/21/41/24/10 |
+| RANDOM | 25 (15/35) | 23.9 (24.4) | 16.8 (37 %) | 1.5 / 3.2 | 0.9 | 7 | 13.5 / 39.3 / 27.9 | 3.4 | 7/28/44/16/5 |
+| PASSIVE | 10 (10/10) | 10.0 (10.0) | 0.0 | 0.0 / 2.0 | 0.5 | 250 | 0 / 0 / 0 (30.9 EMPTY_SHELVES) | 0.2 | - |
+| Maxed upgrades, BALANCED_FAIR | 35 (25/45) | 35.5 (35.5) | 23.0 (11 %) | 2.4 / 4.7 | 1.0 | 1,288 | 15.9 / 79.4 / 39.1 | 6.1 | 1/23/54/16/5 |
+| Maxed upgrades, BALANCED_ACTIVE | 40 (25/50) | 39.0 (39.3) | 24.9 (12 %) | 3.1 / 4.7 | 1.1 | 126 | 18.2 / 63.8 / 71.9 | 6.2 | 0/13/56/22/9 |
+
+Every 1,000-seed v3 mean holds at 10,000 within 0.5 days. 0 hard-lock days in 160,000 runs; every run ends (longest:
+45 BALANCED_ACTIVE, 55 SYNERGY / INVEST / maxed FAIR, 60 maxed ACTIVE). Weapons shatter 0.1 times a run. Warlord-led
+sieges are fought 0.02-0.03 times a run (1,000-seed probes: 0.031 ACTIVE, 0.025 FAIR, 0.017 SYNERGY, about one
+siege in 200) and **no policy wins one in 160,000 runs** (the tribute, the extra pressure drop and the
+`WARLORD_DEFEATED` legacy point are unreachable; see recommendations). Under BALANCED_ACTIVE the bot buys
+the cheapest affordable tool first, so purchases follow price: signboard in 100 % of runs on day 1 (level 1.7 at run
+end), whetstone 100 % on day 2.3 (1.3), display case 100 % on day 3.7, bellows 92 % on day 7.4 (1.0).
+
+Upgrade impact under BALANCED_ACTIVE, single upgrade maxed vs none, 10,000 seeds (base 30 / 27.7; 1,000-seed mean
+delta in parentheses):
+
+| Upgrade (L3) | Median delta | Mean delta (1k) |
+|---|---|---|
+| Stalwart Walls | +5 | +6.3 (+6.3) |
+| Well-Stocked Cellar | +0 | +3.2 (+3.7) |
+| Forge Mastery | +0 | +2.3 (+2.8) |
+| Thrifty Hands | +0 | +1.5 (+2.0) |
+| Lucky Hammer | +0 | +0.6 (+0.9) |
+| Tireless Smith | +0 | +0.3 (+0.6) |
+| Family Savings | +0 | +0.1 (+0.4) |
+| Known Name | +0 | -0.4 (+0.0) |
+| All maxed | +10 | +11.3 (+11.8) |
+
+Known Name is the only track that measures negative at 10,000 seeds (the policy never prices on reputation, so a head
+start in reputation only reorders which heroes visit and who asks for commissions); small, but worth a look when the
+reputation economy is next touched.
+
+Perf probe, standalone and warm (`--runs 200 --seed 1 --policy BALANCED_FAIR --noImpact --perf`; forced survival,
+1,000 days): End Day p50 0.51 ms, p95 0.99 ms, max 2.60 ms with 3,114 weapons / 95 heroes / 2,040 events at the end
+(v2 probe: 0.30 / 0.65 / 2.55 ms, 2,330 weapons). Inside the GDD 15.3 target (p95 < 200 ms); the probe that ran
+alongside the sweep read 1.34 / 10.5 / 254 ms, which is CPU contention, not the engine. Trade-ins keep replaced
+weapons in the shop, so the `weapons` map grows faster than before (PROGRESS next action 3).
+
+### Noise floor (BALANCED_ACTIVE, 1,000 seeds)
+| Base seed | Median (p10/p90) | Mean | Sold/run | Survived | Deaths | Gold on hand | Elites slain |
+|---|---|---|---|---|---|---|---|
+| 1 (the sweep baseline) | 30 (20/35) | 27.5 | 23.4 | 2.3 | 0.94 | 91 | 4.0 |
+| 10001 | 30 (20/35) | 27.4 | 23.4 | 2.3 | 0.99 | 94 | 4.1 |
+| 20001 | 30 (20/35) | 27.7 | 23.6 | 2.3 | 0.96 | 94 | 3.9 |
+
+A sweep delta is real only above about 0.3 days of mean, 0.3 sales, 0.05 deaths or 0.2 elites; the median is quantised
+to the 5-day siege rhythm and never moved in the tool sweep.
+
+### Per-tool sweep (BALANCED_ACTIVE, 1,000 seeds, seed 1; deltas vs the baseline)
+| Case | Median (p10/p90) | Mean | Sold/run | Survived | Gold on hand | What changed in the purchases (share of runs / level at run end / first day) |
+|---|---|---|---|---|---|---|
+| **Baseline** (catalog costs: bellows 300/700, whetstone 200/500, signboard 150/400, display case 200) | 30 (20/35) | 27.5 | 23.4 | 2.3 | 91 | signboard 100 % / 1.7 / 1.0; whetstone 100 % / 1.3 / 2.3; display case 100 % / 1.0 / 3.7; bellows 92 % / 1.0 / 7.2 |
+| All four tools removed | 30 (20/35) | 27.8 (+0.3) | 24.1 (+0.7) | 2.3 | 778 | no gold sink: 133.8 forged (101.6), rarity 19/44/31/5/0 (10/41/39/8/1) |
+| Bellows removed | 30 (20/35) | 27.6 (+0.1) | 23.7 (+0.4) | 2.3 | 100 | whetstone reaches 1.5 |
+| Bellows x0.5 (150/350) | 30 (20/35) | 27.7 (+0.3) | 23.9 (+0.5) | 2.4 | 64 | bellows 100 % / 1.8 / 1.0; 110.8 forged |
+| Bellows x2 (600/1,400) | 30 (20/35) | 27.6 (+0.1) | 23.7 (+0.4) | 2.3 | 100 | bellows 14 % / 0.1 / 23.1 |
+| Whetstone removed | 30 (20/35) | 27.3 (-0.2) | 23.1 (-0.3) | 2.2 | 100 | rarity 18/43/33/6/1 (common share 10 -> 18 %) |
+| Whetstone x0.5 (100/250) | 30 (20/35) | **28.2 (+0.8)** | **24.1 (+0.7)** | 2.4 | 90 | whetstone 100 % / 2.0 / 1.0; rarity 5/40/44/9/2 |
+| Whetstone x2 (400/1,000) | 30 (20/35) | 27.6 (+0.1) | 23.7 (+0.4) | 2.3 | 100 | whetstone 80 % / 0.8 / 10.5 |
+| Signboard removed | 30 (20/35) | **28.2 (+0.7)** | **24.5 (+1.2)** | 2.4 | 119 | visits/run 105.8 (107.3); whetstone and display case bought earlier (day 1.0 / 2.7), bellows 96 % on day 5.5 |
+| Signboard x0.5 (75/200) | 30 (20/35) | 27.4 (-0.1) | 23.0 (-0.4) | 2.3 | 92 | signboard 100 % / 2.0 / 1.0 |
+| Signboard x2 (300/800) | 30 (20/35) | 27.9 (+0.5) | 23.8 (+0.4) | 2.3 | 89 | signboard 88 % / 0.9 / 9.9 |
+| Display case removed | 30 (20/35) | 27.6 (+0.1) | 22.8 (-0.5) | 2.3 | 100 | - |
+| Display case x0.5 (100) | 30 (20/35) | 27.5 (+0.0) | 23.7 (+0.3) | 2.3 | 102 | display case 100 % / 1.0 / 1.0 |
+| Display case x2 (400) | 30 (20/35) | 27.5 (+0.1) | 22.9 (-0.5) | 2.3 | 98 | display case 53 % / 0.5 / 16.3 |
+
+Removing one tool also re-orders the others (the bot buys the cheapest affordable tool first), so the single-tool rows
+mix the tool's own value with the gold it frees; the "all four removed" row isolates the layer.
+
+Findings:
+- **The tool layer buys no run length.** A smith who buys all four (about 1,100 gold a run) lives 27.5 days; one who
+  buys none lives 27.8 with 778 gold idle. BALANCED_ACTIVE's +5.9 days over BALANCED_FAIR come from Hone, Arm the
+  watch, Salvage and listing the strongest stock, not from tools. Tools do what v3 wanted as a gold sink (gold on hand
+  584 -> 92) and nothing for the siege.
+- **Signboard: its effect is capped out.** `maxCustomersPerDay = 4` and the baseline already draws 3.9 visits a day
+  (107 a run over 27.5 days), so +8 points of visit chance per level mostly changes which heroes come, not how many:
+  removing a level-1.7 signboard moves visits by about 4 % a day (3.90 -> 3.75) and, because its 150 + 400 gold then buy the whetstone and
+  display case on days 1-3 instead of 2-4, the run gains +0.7 days and +1.2 sales. Halving its price makes it
+  slightly worse (-0.1 / -0.4), doubling it slightly better (+0.5): at every price it is a trap for a buyer who takes
+  the cheapest tool first.
+- **Whetstone: pays only when it comes early.** At 200/500 it is within noise of not existing (-0.2 removed); at
+  100/250 the bot has level 2 on day 1 and gains +0.8 days / +0.7 sales (the strongest positive in the sweep; common
+  share 10 -> 5 %). At 400/1,000 it arrives on day 10 and is worth nothing.
+- **Bellows: neutral at any price.** +1 energy becomes more unsold iron (forged 101.6 -> 110.8 at half price, sold
+  +0.5); removing it is +0.1. For a human it is a convenience (more hones and salvages a day), not a lever.
+- **Display case: a sales tool, not a survival tool.** +2 slots sell +0.5 weapons a run and change run length by
+  0.0-0.1; at 400 only 53 % of runs buy it (day 16) and the sales gain disappears.
+
+### Per-affix sweep (effect neutralised; BALANCED_ACTIVE, 1,000 seeds, seed 1; deltas vs the baseline)
+| Effect neutralised | Weapons carrying it / run | Mean days | Sold/run | Survived | Deaths | Elites slain | Shattered/run |
+|---|---|---|---|---|---|---|---|
+| **Baseline** (all effects on) | - | 27.5 | 23.4 | 2.3 | 0.94 | 4.0 | 0.04 |
+| Reinforced (wound x0.85) | 4.4 | 27.4 (-0.1) | 23.4 | 2.3 | 1.01 (+0.07) | 4.0 | 0.04 |
+| Vampiric (heal 12 on a win) | 1.5 | 27.5 (0.0) | 23.5 | 2.3 | 0.94 (0.00) | 4.0 | 0.04 |
+| Swift (wound x0.8) | 4.3 | 27.5 (0.0) | 23.3 | 2.3 | 1.00 (+0.06) | 4.0 | 0.04 |
+| Giant Slayer (x1.25 vs elites and warlords) | 4.4 | 27.4 (-0.1) | 23.4 | 2.3 | 0.95 (+0.01) | 3.8 (-0.2) | 0.04 |
+| Undead Bane (x1.2 vs the Hollowbound) | 1.5 | 27.3 (-0.2) | 23.3 | 2.3 | 0.94 (0.00) | 4.0 | 0.04 |
+| Lucky (+25 points loot chance) | 4.3 | 27.4 (-0.1) | 23.3 | 2.3 | 0.93 (-0.01) | 4.0 (-0.1) | 0.05 |
+| Brittle (20 % shatter on a loss) | 1.4 | 27.6 (+0.1) | 23.4 | 2.3 | 0.92 (-0.02) | 4.1 | 0.00 (-0.04) |
+| Heavy (wound x1.2) | 1.4 | 27.5 (0.0) | 23.4 | 2.3 | 0.92 (-0.02) | 4.0 | 0.04 |
+| Cursed (self-harm 4 on a win) | 1.4 | 27.5 (0.0) | 23.4 | 2.3 | 0.93 (-0.01) | 4.0 | 0.04 |
+| Bloodbound (self-harm 7 on a win) | 1.3 | 27.5 (0.0) | 23.4 | 2.3 | 0.94 (0.00) | 4.0 | 0.04 |
+| All ten effects | - | 27.1 (-0.3) | 23.3 | 2.2 | 0.98 (+0.04) | 3.7 (-0.3) | 0.00 (-0.04) |
+
+SYNERGY cross-check (forges the element the leading faction fears, so the special affixes are 2-5x as common: Undead
+Bane 7.9 weapons a run, Giant Slayer / Reinforced / Swift / Lucky 6.8-6.9, Vampiric 2.8, Frostbound 30.5):
+
+| SYNERGY, effect neutralised | Median (p10/p90) | Mean days | Sold/run | Survived | Deaths | Elites slain | Shattered/run |
+|---|---|---|---|---|---|---|---|
+| **Baseline** (all effects on) | 40 (25/45) | 36.7 | 24.3 | 4.0 | 0.92 | 6.5 | 0.06 |
+| All ten effects | 35 (25/45) | 35.8 (-0.9) | 24.1 | 3.9 | 1.05 (+0.13) | 6.2 (-0.3) | 0.00 |
+| Undead Bane | 35 (25/45) | 36.0 (-0.7) | 24.1 | 3.9 | 0.92 | 6.4 | 0.06 |
+| Giant Slayer | 40 (25/45) | 36.7 (0.0) | 24.3 | 4.0 | 0.94 | 6.2 (-0.3) | 0.07 |
+| Reinforced | 40 (25/45) | 36.6 (-0.1) | 24.3 | 4.0 | 0.95 (+0.03) | 6.4 | 0.06 |
+| Swift | 40 (25/45) | 36.5 (-0.2) | 24.3 | 4.0 | 0.96 (+0.04) | 6.5 | 0.06 |
+| Lucky | 40 (25/45) | 36.5 (-0.2) | 24.2 | 4.0 | 0.94 | 6.5 | 0.07 |
+| Vampiric | 40 (25/45) | 36.7 (0.0) | 24.3 | 4.0 | 0.92 | 6.5 | 0.07 |
+
+Findings:
+- **No affix dominates.** Under BALANCED_ACTIVE every single effect is inside the noise floor on every measure, and
+  all ten together are worth -0.3 days / -0.3 elite kills / +0.04 deaths. The reason is occurrence, not magnitude:
+  the cheapest recipe (iron + ember resin) puts Flaming, which has no v3 effect, on 41 of the 102 weapons forged a
+  run; each non-elemental beneficial affix lands on 4.4 weapons (exceptional rolls), each flaw on 1.3-1.4, and only
+  the sold and wielded fraction of those ever fights.
+- **Undead Bane is the one effect that registers once the affix is common**: under SYNERGY it is worth +0.7 days and
+  the median drops from 40 to 35 without it; the whole layer there is worth about a day and 0.13 deaths a run.
+- **Effects that do something measurable**: Giant Slayer (-0.2 / -0.3 elite kills a run when off, about 5 %),
+  Reinforced and Swift (deaths +0.03 to +0.07 a run when off), Brittle (0.04-0.06 shattered weapons a run, so a
+  Brittle weapon breaks in about one run in 20).
+- **Effects that do nothing measurable in either policy**: Vampiric (heal 12), Cursed and Bloodbound (self-harm 4 / 7;
+  heroes rest the health back and deaths do not move), Heavy (wound x1.2), Lucky (+25 points loot chance: the loot is
+  a random non-catalyst material, which the shop already has in surplus).
+
+### Recommendations (evidence above; none applied)
+1. **Signboard**: the +8 points of visit chance adds only a few percent of visits a day while `maxCustomersPerDay = 4`
+   is nearly saturated (3.9 visits a day). Give it an effect that reaches sales, e.g. +1 customer a day per level (engine: the tool total
+   added to `maxCustomersPerDay`), and keep 150/400; if the effect stays, price it 300/600 so it is bought after the
+   whetstone and display case (x2: +0.5 days; removed: +0.7 days, +1.2 sales).
+2. **Whetstone 200/500 -> 120/300**: at 200/500 it is within noise of not existing (-0.2 removed); at 100/250 it is
+   +0.8 days / +0.7 sales because level 2 arrives before the first siege. The lever is the order, not the price alone:
+   the signboard-removed row (+0.7) is the same case, the whetstone bought first; 120 < 150 puts it ahead of the
+   signboard for a cheapest-first buyer. Confirm at 10,000 seeds after the change.
+3. **Bellows 300/700**: leave. Neutral at half and double price; it is a convenience, not a lever, and the
+   half-price run spent the gold on it at the whetstone's expense without gaining anything.
+4. **Display case 200**: leave. Its +0.5 sales a run vanish at 400 (bought in 53 % of runs, on day 16).
+5. **Warlords**: `warlordPressure = 70` is reached at a siege 0.02-0.03 times a run (one siege in about 200) and never
+   won in 160,000 runs,
+   so tribute (120 gold), the -15 pressure and the `WARLORD_DEFEATED` legacy point are dead content. Lower it to
+   45-50 (a won siege already drops pressure by 25) and re-measure with the new `warlord sieges/run` counter, aiming
+   at a warlord in roughly one siege in five with some of them won.
+6. **Affix magnitudes**: do not tune them by the aggregate; occurrence hides them. Keep Undead Bane 1.2 (the model:
+   it targets the faction that leads the siege). If Giant Slayer is meant to be a visible path to elite kills, 1.25 ->
+   1.5 (it is worth 5 % of elite kills today). Lucky's loot bonus should hand out something scarce (a catalyst or a
+   tier 3+ material, as elite loot does) or be dropped; a 25-point chance at a common material measures 0. Cursed /
+   Bloodbound self-harm 4 / 7 is invisible next to a 20-55 expedition wound; make it 15-20 if it is meant to be a
+   trade-off, or accept it as flavour. Reinforced / Swift (x0.85 / x0.8) and Heavy (x1.2) move deaths by at most
+   0.07 a run; x0.6-0.7 and x1.5 would make them felt.
+7. **Known Name** -0.4 days at 10,000 seeds under BALANCED_ACTIVE (the only negative track): measure it by the
+   reputation price ceiling it is for (BALANCED_REPUTED) before changing anything.
+8. **Perf**: p95 0.99 ms warm is inside the target, but the 1,000-day probe now ends with 3,114 weapons (2,330 in v2)
+   because trade-ins return replaced weapons to the shop; prune or cap lost, destroyed and salvaged records before
+   long saves matter (PROGRESS next action 3).
 
 ## Event-log compaction (2026-10-08, session 3, ENGINEERING)
 GDD 13.3 asks to "compact ordinary events and retain rare milestones"; 15.1's "migration does not mutate histories"
