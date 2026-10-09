@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      # JDK 21 launches Gradle; the daemon toolchain (JDK 25) is listed last so it is also on the runner for Gradle to find.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: |
+            25
+            21
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools platforms;android-37.0 build-tools;37.0.0
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Core tests, app unit tests, debug APK and lint
+        run: ./gradlew :core:test :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            core/build/reports/tests
+            app/build/reports
+          if-no-files-found: ignore

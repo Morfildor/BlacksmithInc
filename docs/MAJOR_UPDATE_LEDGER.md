@@ -62,7 +62,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | Task | Title | Owner | Status | Commit | Evidence | Review |
 |---|---|---|---|---|---|---|
 | T0.1 | Ledger and re-baseline | INT | merged (baseline rows above; CI not run) | 74b2137 | core suite green on the branch after each merge by the task agents | |
-| T0.2 | CI | INT | todo | | | |
+| T0.2 | CI | INT | written, not shown green | pending | ci.yml + ManifestTest (1/1 pass); lintDebug local: 0 errors, 35 warnings; GitHub run cannot exist until push | |
 | T0.3 | Checklist and wording accuracy | INT | merged | acd3318 | documents only; ten-row table in scratch report T0.3; CLAUDE.md and tooling label left to T2.4/INT | |
 | T0.4 | Simulator metrics and overrides | SIM | merged | a6a3c4b | core 190/190; output byte-identical without flags; seed-1 table reproduced (FAIR 20.50, ACTIVE 27.39, SYNERGY 34.66); served/day 3.55, at cap 69 %, position 8 22.2 % vs 53-54 % | |
 | T0.5 | App seams | AB | merged | 4afba98 | app unit 2/2, lint 0 errors 38 warnings, emulator smoke SMOKE_DONE all ok with id taps; seed extra shown on device; release guard not built | |
