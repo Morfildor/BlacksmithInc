@@ -1,0 +1,152 @@
+{
+ "portrait_guardian_0": [
+  0,
+  31,
+  259,
+  270
+ ],
+ "portrait_guardian_1": [
+  259,
+  31,
+  505,
+  270
+ ],
+ "portrait_guardian_2": [
+  505,
+  31,
+  741,
+  270
+ ],
+ "portrait_guardian_3": [
+  741,
+  31,
+  1000,
+  270
+ ],
+ "portrait_guardian_4": [
+  1000,
+  31,
+  1254,
+  270
+ ],
+ "portrait_ranger_0": [
+  0,
+  284,
+  266,
+  508
+ ],
+ "portrait_ranger_1": [
+  266,
+  284,
+  508,
+  508
+ ],
+ "portrait_ranger_2": [
+  508,
+  284,
+  752,
+  508
+ ],
+ "portrait_ranger_3": [
+  752,
+  284,
+  1002,
+  508
+ ],
+ "portrait_ranger_4": [
+  1002,
+  284,
+  1254,
+  508
+ ],
+ "portrait_duelist_0": [
+  0,
+  520,
+  262,
+  736
+ ],
+ "portrait_duelist_1": [
+  262,
+  520,
+  504,
+  736
+ ],
+ "portrait_duelist_2": [
+  504,
+  520,
+  751,
+  736
+ ],
+ "portrait_duelist_3": [
+  751,
+  520,
+  1005,
+  736
+ ],
+ "portrait_duelist_4": [
+  1005,
+  520,
+  1254,
+  736
+ ],
+ "portrait_battlemage_0": [
+  0,
+  742,
+  257,
+  972
+ ],
+ "portrait_battlemage_1": [
+  257,
+  742,
+  504,
+  972
+ ],
+ "portrait_battlemage_2": [
+  504,
+  742,
+  747,
+  972
+ ],
+ "portrait_battlemage_3": [
+  747,
+  742,
+  1006,
+  972
+ ],
+ "portrait_battlemage_4": [
+  1006,
+  742,
+  1254,
+  972
+ ],
+ "portrait_warden_0": [
+  0,
+  982,
+  257,
+  1215
+ ],
+ "portrait_warden_1": [
+  257,
+  982,
+  509,
+  1215
+ ],
+ "portrait_warden_2": [
+  509,
+  982,
+  760,
+  1215
+ ],
+ "portrait_warden_3": [
+  760,
+  982,
+  997,
+  1215
+ ],
+ "portrait_warden_4": [
+  997,
+  982,
+  1254,
+  1215
+ ]
+}

@@ -1,0 +1,208 @@
+{
+ "_note": "x0,y0,x1,y1 on Tiny Blacksmith RPG Asset Atlas.png (1536x1024). verified = checked by corner zoom to about 1 px; others about 2 px.",
+ "forge_day": {
+  "box": [
+   8,
+   103,
+   264,
+   260
+  ],
+  "verified": true
+ },
+ "forge_night": {
+  "box": [
+   270,
+   49,
+   502,
+   260
+  ],
+  "verified": true
+ },
+ "town_square": {
+  "box": [
+   516,
+   49,
+   682,
+   259
+  ],
+  "verified": false
+ },
+ "market_street": {
+  "box": [
+   696,
+   49,
+   877,
+   259
+  ],
+  "verified": true
+ },
+ "castle_guild": {
+  "box": [
+   890,
+   49,
+   1076,
+   259
+  ],
+  "verified": false
+ },
+ "wilderness_camp": {
+  "box": [
+   1096,
+   49,
+   1306,
+   259
+  ],
+  "verified": false
+ },
+ "dungeon_entrance": {
+  "box": [
+   1318,
+   49,
+   1528,
+   259
+  ],
+  "verified": false
+ },
+ "npc_figures_tight": [
+  [
+   1209,
+   455,
+   1242,
+   506
+  ],
+  [
+   1256,
+   456,
+   1289,
+   506
+  ],
+  [
+   1303,
+   457,
+   1339,
+   506
+  ],
+  [
+   1350,
+   457,
+   1387,
+   508
+  ],
+  [
+   1395,
+   457,
+   1429,
+   509
+  ],
+  [
+   1440,
+   457,
+   1472,
+   506
+  ],
+  [
+   1486,
+   455,
+   1520,
+   506
+  ]
+ ],
+ "prop_counter_table": [
+  950,
+  526,
+  1042,
+  582
+ ],
+ "prop_anvil": [
+  783,
+  457,
+  872,
+  519
+ ],
+ "prop_weapon_rack": [
+  1102,
+  458,
+  1156,
+  520
+ ],
+ "prop_shelf_bottles": [
+  936,
+  456,
+  1014,
+  528
+ ],
+ "dialogue_portrait_frame": [
+  1243,
+  772,
+  1303,
+  846
+ ],
+ "dialogue_portrait_inner": [
+  1247,
+  776,
+  1300,
+  840
+ ],
+ "dialogue_text_panel": [
+  1302,
+  772,
+  1518,
+  846
+ ],
+ "notification_toasts": [
+  [
+   1059,
+   775,
+   1212,
+   811
+  ],
+  [
+   1059,
+   817,
+   1212,
+   853
+  ],
+  [
+   1059,
+   861,
+   1212,
+   897
+  ],
+  [
+   1059,
+   905,
+   1212,
+   942
+  ],
+  [
+   1059,
+   950,
+   1212,
+   987
+  ]
+ ],
+ "menu_icon_home": [
+  1235,
+  897,
+  1272,
+  935
+ ],
+ "menu_icon_purse": [
+  1400,
+  897,
+  1437,
+  935
+ ],
+ "menu_icon_gear": [
+  1483,
+  942,
+  1520,
+  981
+ ],
+ "empty_slot_frame": [
+  661,
+  892,
+  695,
+  926
+ ]
+}
