@@ -162,7 +162,7 @@ object Forge {
     }
 
     fun masteryBonus(ctx: ResolutionContext): Int =
-        upgradeTotal(ctx, UpgradeEffect.QUALITY_BONUS) + ctx.blessingMagnitude(BlessingEffect.QUALITY_BONUS)
+        upgradeTotal(ctx, UpgradeEffect.QUALITY_BONUS) + ctx.blessingMagnitude(BlessingEffect.QUALITY_BONUS) + ctx.toolTotal(com.tinyblacksmith.core.content.ToolEffect.QUALITY_BONUS)
 
     private fun upgradeTotal(ctx: ResolutionContext, effect: UpgradeEffect): Int =
         ctx.content.upgrades.filter { it.effect == effect }.sumOf { it.magnitudePerLevel * ctx.legacy.upgradeLevel(it.id) }

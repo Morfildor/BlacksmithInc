@@ -10,8 +10,11 @@ import com.tinyblacksmith.core.model.Risk
 data class RiskProfile(val exceptionalChance: Double, val defectChance: Double)
 
 data class BalanceConfig(
-    /** v2 (2026-10-08): launch-content retune of the quality formula and siege damage; see docs/DECISIONS.md. */
-    val version: Int = 2,
+    /**
+     * v2 (2026-10-08): launch-content retune of the quality formula and siege damage.
+     * v3 (2026-10-09): elite encounters, warlord sieges, hero ambitions, affix effects, shop actions and tools. See docs/DECISIONS.md.
+     */
+    val version: Int = 3,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -122,7 +125,8 @@ data class BalanceConfig(
     val recoveryPerPatrol: Int = 1,
     val recoveryPerExpeditionWin: Int = 1,
     // Legacy (GDD 9 PROPOSED): 5 + floor(days/5) + discovery + milestones
-    val legacyBasePoints: Int = 5,
+    /** v3: 6 (GDD scaffold 5) so the shortest possible first run still affords the cheapest upgrade. */
+    val legacyBasePoints: Int = 6,
     val legacyDaysPerPoint: Int = 5,
     val legacyDiscoveryPointCap: Int = 5,
     val blessingOfferSize: Int = 3,
@@ -184,6 +188,45 @@ data class BalanceConfig(
     val regularLoyaltyThreshold: Int = 3,
     // --- Weapon-history compaction: newest combat entries (VICTORY per fight, SIEGE per siege) kept per weapon; ownership-grade entries are kept forever. 0 = never compact. ---
     val weaponHistoryCap: Int = 10,
+    // --- Elite encounters and warlord sieges (GDD 8 elite/boss variants, PROPOSED). ---
+    /** Chance that an expedition meets an elite: base + pressure x perPressure. */
+    val eliteBaseChance: Double = 0.06,
+    val eliteChancePerPressure: Double = 0.002,
+    val elitePowerMultiplier: Double = 1.35,
+    val eliteGoldMultiplier: Double = 2.5,
+    val eliteDamageMultiplier: Double = 1.25,
+    val eliteFame: Int = 2,
+    val eliteSuppression: Int = 4,
+    /** At or above this pressure the faction's warlord leads the siege. */
+    val warlordPressure: Int = 70,
+    val warlordRaidMultiplier: Double = 1.15,
+    val warlordPressureDrop: Int = 15,
+    /** Gold the town pays the smith when a warlord is beaten at the walls. */
+    val warlordTribute: Int = 120,
+    // --- Hero ambitions (GDD 6, PROPOSED). ---
+    val ambitionSlayerWins: Int = 4,
+    val ambitionCollectorQuality: Int = 60,
+    val ambitionFortuneGold: Int = 300,
+    /** Added to the activity weight an unfulfilled ambition favours. */
+    val ambitionActivityWeight: Double = 0.6,
+    /** Purchase utility a COLLECTOR adds to a weapon of [ambitionCollectorQuality] or better. */
+    val collectorUtilityBonus: Double = 0.6,
+    /** A hero saving for a FORTUNE feels prices this much more. */
+    val fortunePriceSensitivity: Double = 1.3,
+    val ambitionFame: Int = 3,
+    val ambitionLoyalty: Int = 2,
+    val ambitionReputation: Int = 2,
+    // --- Commissions with a desired element (GDD 5 "desirable effect", PROPOSED). ---
+    val commissionElementChance: Double = 0.5,
+    val commissionElementRewardMultiplier: Double = 1.5,
+    // --- Shop actions on finished weapons (PROPOSED). ---
+    val salvageEnergy: Int = 1,
+    val honeEnergy: Int = 2,
+    val honeQualityBonus: Int = 6,
+    /** Share of a donated weapon's power that joins the town's defense, up to [armoryMax]; a siege wears [armorySiegeWear] of it away. */
+    val armoryPowerShare: Double = 0.5,
+    val armoryMax: Int = 80,
+    val armorySiegeWear: Double = 0.3,
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

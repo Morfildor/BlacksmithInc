@@ -11,6 +11,8 @@ enum class Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY }
 enum class HeroActivity { REST, SHOP, EXPEDITION, PATROL, DEFEND, IDLE }
 enum class HeroFate { ALIVE, DEAD, RETIRED }
 enum class CommissionStatus { OFFERED, ACCEPTED, COMPLETED, EXPIRED, DECLINED }
+/** GDD 6 hero ambitions: a personal goal that shifts daily choices and makes news when fulfilled. */
+enum class Ambition { SLAYER, DEFENDER, COLLECTOR, FORTUNE }
 enum class KnowledgeState { UNKNOWN, OBSERVED, UNDERSTOOD, SIGNATURE_DISCOVERED }
 
 /** Exactly one authoritative location per weapon (GDD 7 ownership invariant). */
@@ -54,6 +56,8 @@ data class Weapon(
     val history: List<HistoryEntry> = emptyList(),
     /** Set when a hidden signature recipe transformed this weapon (GDD 4.5). */
     val signatureId: String? = null,
+    /** A weapon can be honed once (Command.Hone). */
+    val honed: Boolean = false,
 ) {
     val isListed: Boolean get() = location is WeaponLocation.Shelf
     val isInStorage: Boolean get() = location is WeaponLocation.Storage
@@ -86,6 +90,11 @@ data class Hero(
     val guildId: String? = null,
     val mentorName: String? = null,
     val retiredOnDay: Int? = null,
+    val ambition: Ambition? = null,
+    val ambitionDone: Boolean = false,
+    /** Expedition victories only (sieges excluded); drives the SLAYER ambition. */
+    val expeditionWins: Int = 0,
+    val elitesSlain: Int = 0,
 ) {
     val fullName: String get() = "$name $surname"
     val isAlive: Boolean get() = fate == HeroFate.ALIVE
@@ -104,6 +113,8 @@ data class Town(
     val siegesSurvived: Int = 0,
     val siegesLost: Int = 0,
     val guilds: List<Guild> = emptyList(),
+    /** Defensive power of the weapons the smith gave to the town watch (Command.DonateWeapon). */
+    val armory: Int = 0,
 )
 
 @Serializable
@@ -120,6 +131,8 @@ data class Commission(
     val deadlineDay: Int,
     val status: CommissionStatus,
     val deliveredWeaponId: WeaponId? = null,
+    /** GDD 5 "desirable effect": when set, only a weapon of this element closes the commission. */
+    val element: Element? = null,
 )
 
 @Serializable
@@ -132,6 +145,7 @@ enum class EventType {
     SIEGE_WON, SIEGE_LOST, FORGE_DAMAGED, FORGE_DESTROYED, TOWN_RECOVERED, BLESSING_OFFERED, BLESSING_CHOSEN,
     WORLD_EVENT, MILESTONE, LEGEND_RECORDED, HERO_ARRIVED,
     SIGNATURE_DISCOVERED, HERO_RETIRED, GUILD_FOUNDED, HERO_MENTORED, ARTIFACT_RETURNED, WEAPON_STOLEN, WEAPON_INHERITED,
+    ELITE_SLAIN, AMBITION_FULFILLED, WEAPON_SALVAGED, WEAPON_HONED, WEAPON_DONATED, TOOL_BOUGHT, WEAPON_BROKEN,
 }
 
 /** Source of truth for the Gazette and replays (GDD Appendix B). Subjects are real entity IDs. */
@@ -258,6 +272,8 @@ data class GameState(
     val eventLastDay: Map<String, Int> = emptyMap(),
     /** Transient day-keyed flags set by world events (e.g. festival/caravan day); dropped once past. */
     val worldFlags: Map<String, Int> = emptyMap(),
+    /** Level of each in-run workshop tool (ToolDef.id). */
+    val tools: Map<String, Int> = emptyMap(),
 ) {
     val isEnded: Boolean get() = phase == Phase.ENDED
     fun weapon(id: WeaponId): Weapon = weapons[id] ?: error("Unknown weapon ${id.value}")

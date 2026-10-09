@@ -30,7 +30,7 @@ class LegacyAndEndToEndTest {
         state = state.copy(town = state.town.copy(integrity = 1), milestones = setOf("FIRST_SALE"), discoveriesThisRun = 2)
         while (!state.isEnded) state = state.endDayAccepted().state
         val end = engine.closeRun(state)
-        assertEquals(5, end.basePoints)
+        assertEquals(engine.config.legacyBasePoints, end.basePoints)
         assertEquals(state.day / 5, end.survivalPoints)
         assertEquals(2, end.discoveryPoints)
         assertTrue(end.milestonePoints >= 1)
@@ -153,7 +153,7 @@ class LegacyAndEndToEndTest {
 
         // Baseline + milestone legacy reward, claimed once.
         val end = engine.closeRun(state)
-        assertEquals(5, end.basePoints)
+        assertEquals(engine.config.legacyBasePoints, end.basePoints)
         assertTrue("FIRST_SALE" in end.milestones)
         assertTrue(end.milestonePoints >= 1)
         val claimed = engine.claimLegacy(repo.loadLegacy(), end) as LegacyOutcome.Updated

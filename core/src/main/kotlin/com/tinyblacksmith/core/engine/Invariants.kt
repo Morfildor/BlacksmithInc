@@ -6,14 +6,15 @@ import com.tinyblacksmith.core.model.WeaponLocation
 
 /** GDD 15.1 invariants, asserted after every accepted command. */
 object Invariants {
-    fun check(state: GameState, config: BalanceConfig): List<String> {
+    fun check(state: GameState, config: BalanceConfig, shelfSlots: Int = config.shelfSlots): List<String> {
         val problems = mutableListOf<String>()
         if (state.gold < 0) problems += "Negative gold ${state.gold}"
         if (state.energy < 0) problems += "Negative energy ${state.energy}"
         if (state.overworkToday < 0 || state.overworkToday > config.maxOverworkPerDay) problems += "Overwork out of bounds ${state.overworkToday}"
         state.materials.forEach { (m, n) -> if (n < 0) problems += "Negative material ${m.value}" }
         if (state.town.integrity < 0) problems += "Negative integrity"
-        if (state.listedWeapons().size > config.shelfSlots) problems += "Shelf overfull"
+        if (state.town.armory !in 0..config.armoryMax) problems += "Armory out of bounds ${state.town.armory}"
+        if (state.listedWeapons().size > shelfSlots) problems += "Shelf overfull"
         state.weapons.values.forEach { w ->
             val loc = w.location
             if (loc is WeaponLocation.Owned) {

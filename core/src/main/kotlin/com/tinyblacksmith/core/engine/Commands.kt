@@ -27,6 +27,13 @@ sealed interface Command {
     data class AcceptCommission(val commissionId: CommissionId) : Command
     data class DeclineCommission(val commissionId: CommissionId) : Command
     data class ChooseBlessing(val blessingId: BlessingId) : Command
+    /** Melts a weapon in storage or on the shelf back into its core material. */
+    data class Salvage(val weaponId: WeaponId) : Command
+    /** Reworks a weapon once: energy plus one unit of its core material for a fixed quality gain. */
+    data class Hone(val weaponId: WeaponId) : Command
+    /** Gives a weapon to the town watch; part of its power joins the town's defense. */
+    data class DonateWeapon(val weaponId: WeaponId) : Command
+    data class BuyTool(val toolId: String) : Command
     data class EndDay(val commandId: CommandId) : Command
 }
 
@@ -53,6 +60,9 @@ sealed interface GameError {
     data class AlreadyClaimed(val runId: RunId) : GameError
     data class NotEnoughLegacyPoints(val needed: Int, val available: Int) : GameError
     data class UpgradeMaxed(val upgradeId: UpgradeId) : GameError
+    data class AlreadyHoned(val weaponId: WeaponId) : GameError
+    data class ToolMaxed(val toolId: String) : GameError
+    data object ArmoryFull : GameError
 }
 
 sealed interface CommandOutcome {

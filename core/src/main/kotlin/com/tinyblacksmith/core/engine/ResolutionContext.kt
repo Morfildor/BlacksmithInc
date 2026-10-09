@@ -3,6 +3,7 @@ package com.tinyblacksmith.core.engine
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.content.ContentCatalog
+import com.tinyblacksmith.core.content.ToolEffect
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.Rng
 import com.tinyblacksmith.core.rng.RngState
@@ -45,6 +46,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     val eventCounters: MutableMap<String, Int> = base.eventCounters.toMutableMap()
     val eventLastDay: MutableMap<String, Int> = base.eventLastDay.toMutableMap()
     val worldFlags: MutableMap<String, Int> = base.worldFlags.toMutableMap()
+    val tools: MutableMap<String, Int> = base.tools.toMutableMap()
 
     // Per-day scratch counters (not persisted).
     var patrolsToday = 0
@@ -91,6 +93,11 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     fun blessingMagnitude(effect: BlessingEffect): Int =
         blessings.filter { it.expiresDay >= day }.sumOf { b -> content.blessing(b.id).let { if (it.effect == effect) it.magnitude else 0 } }
 
+    fun toolTotal(effect: ToolEffect): Int =
+        content.tools.filter { it.effect == effect }.sumOf { it.magnitudePerLevel * (tools[it.id] ?: 0) }
+
+    fun shelfSlots(): Int = config.shelfSlots + toolTotal(ToolEffect.SHELF_SLOTS)
+
     fun addWeaponHistory(weaponId: WeaponId, kind: String, text: String, subjects: List<String> = emptyList()) {
         val w = weapon(weaponId)
         updateWeapon(w.copy(history = w.history + HistoryEntry(era, day, kind, text, subjects)))
@@ -136,6 +143,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
             eventCounters = eventCounters.toMap(),
             eventLastDay = eventLastDay.toMap(),
             worldFlags = worldFlags.toMap(),
+            tools = tools.toMap(),
         )
     }
 }

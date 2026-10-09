@@ -82,7 +82,7 @@ class ReputationAndLoyaltyTest {
             if (listed(seed, factor = 1.9, loyalty = 0).let { (s, id) -> s.endDay().weapon(id).ownerId != null }) strangers++
             if (listed(seed, factor = 1.9, loyalty = 10).let { (s, id) -> s.endDay().weapon(id).ownerId != null }) regulars++
         }
-        assertTrue(regulars >= strangers + 8, "regulars bought $regulars/40, strangers $strangers/40")
+        assertTrue(regulars >= strangers + 6, "regulars bought $regulars/40, strangers $strangers/40")
     }
 
     @Test

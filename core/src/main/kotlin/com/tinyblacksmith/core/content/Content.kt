@@ -39,6 +39,21 @@ data class AffixDef(
     val attackMultiplier: Double = 1.0,
     /** Multiplier on hero defensive power when defending the town. */
     val defenseMultiplier: Double = 1.0,
+    /** Extra multiplier (attack and defense) against one faction, e.g. Undead Bane against the Hollowbound. */
+    val baneFaction: FactionId? = null,
+    val baneMultiplier: Double = 1.0,
+    /** Extra multiplier against elite encounters and warlord-led sieges. */
+    val eliteMultiplier: Double = 1.0,
+    /** Health the wielder regains after a won expedition. */
+    val healOnWin: Int = 0,
+    /** Health the weapon takes from its wielder after a won expedition (never lethal). */
+    val selfDamageOnWin: Int = 0,
+    /** Added to the chance that a won expedition brings a material back. */
+    val lootChanceBonus: Double = 0.0,
+    /** Multiplier on the wound a lost expedition deals to the wielder. */
+    val damageTakenMultiplier: Double = 1.0,
+    /** Chance that the weapon shatters when its wielder loses an expedition. */
+    val breakChanceOnLoss: Double = 0.0,
 )
 
 data class HeroClassDef(
@@ -75,7 +90,25 @@ data class FactionDef(
     val dailyGrowth: Int,
     val encounterNames: List<String>,
     val siegeName: String,
+    /** Elite expedition encounters (GDD 8 elite variants); empty = this faction fields none. */
+    val eliteNames: List<String> = emptyList(),
+    /** Leads the siege when the faction's pressure is high (GDD 8 boss variant); null = never. */
+    val warlordName: String? = null,
 )
+
+/** In-run workshop improvements bought with gold; they reset with the run (GDD 9: shop state does not persist). */
+enum class ToolEffect { EXTRA_ENERGY, QUALITY_BONUS, HERO_VISIT_CHANCE, SHELF_SLOTS }
+
+data class ToolDef(
+    val id: String,
+    val name: String,
+    val effect: ToolEffect,
+    val magnitudePerLevel: Int,
+    val costPerLevel: List<Int>,
+    val description: String,
+) {
+    val maxLevel: Int get() = costPerLevel.size
+}
 
 /**
  * DISCOVERY_BONUS = extra journal experiment progress per forge (Journal.recordExperiment); EXCEPTIONAL_CHANCE =
@@ -126,6 +159,7 @@ data class ContentCatalog(
     val augmentFamilyAffinity: Map<Pair<MaterialId, WeaponFamilyId>, Int>,
     val firstNames: List<String>,
     val surnames: List<String>,
+    val tools: List<ToolDef> = emptyList(),
 ) {
     val familyById: Map<WeaponFamilyId, WeaponFamilyDef> = families.associateBy { it.id }
     val materialById: Map<MaterialId, MaterialDef> = materials.associateBy { it.id }
@@ -144,6 +178,7 @@ data class ContentCatalog(
     fun faction(id: FactionId) = factionById[id] ?: error("Unknown faction ${id.value}")
     fun blessing(id: BlessingId) = blessingById[id] ?: error("Unknown blessing ${id.value}")
     fun upgrade(id: UpgradeId) = upgradeById[id] ?: error("Unknown upgrade ${id.value}")
+    fun tool(id: String): ToolDef? = tools.firstOrNull { it.id == id }
 
     fun materials(category: MaterialCategory) = materials.filter { it.category == category }
 
@@ -158,6 +193,8 @@ data class ContentCatalog(
         dup("affix", affixes.map { it.id }); dup("class", classes.map { it.id })
         dup("trait", traits.map { it.id }); dup("faction", factions.map { it.id })
         dup("blessing", blessings.map { it.id }); dup("upgrade", upgrades.map { it.id })
+        dup("tool", tools.map { it.id })
+        affixes.forEach { a -> a.baneFaction?.let { if (it !in factionById) problems += "Affix ${a.id.value} is the bane of unknown faction ${it.value}" } }
         families.forEach { f -> f.classFit.keys.forEach { c -> if (c !in classById) problems += "Family ${f.id.value} fit references unknown class ${c.value}" } }
         classes.forEach { c -> c.preferredFamilies.forEach { f -> if (f !in familyById) problems += "Class ${c.id.value} prefers unknown family ${f.value}" } }
         coreAugmentAffinity.keys.forEach { (c, a) ->

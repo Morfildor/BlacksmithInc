@@ -29,6 +29,7 @@ object Heroes {
             level = if (descendantOf != null) 2 else 1, xp = 0,
             gold = rng.nextInt(cls.startingGoldMin, cls.startingGoldMax), health = 100,
             traits = traits, elementTaste = taste, descendantOf = descendantOf?.heroName,
+            ambition = rng.pick(Ambition.entries),
         )
     }
 
@@ -51,8 +52,12 @@ object Heroes {
             }
             val weapon = ctx.equippedWeapon(hero.id)
             val traitDefs = hero.traits.map { content.trait(it) }
-            val expedition = (1.0 + traitDefs.sumOf { it.expeditionWeight } + faction.pressure / 100.0 * 0.5 + (if (weapon != null) 0.5 else -0.3)).coerceAtLeast(0.05)
-            val patrol = (0.8 + traitDefs.sumOf { it.patrolWeight } + (if (ctx.town.integrity < 60) 0.4 else 0.0)).coerceAtLeast(0.05)
+            // An unfulfilled ambition tilts the day: slayers and fortune seekers take the road, sworn defenders walk the walls.
+            val drive = if (hero.ambitionDone) null else hero.ambition
+            val expeditionDrive = when (drive) { Ambition.SLAYER -> config.ambitionActivityWeight; Ambition.FORTUNE -> config.ambitionActivityWeight / 2; else -> 0.0 }
+            val patrolDrive = if (drive == Ambition.DEFENDER) config.ambitionActivityWeight else 0.0
+            val expedition = (1.0 + traitDefs.sumOf { it.expeditionWeight } + faction.pressure / 100.0 * 0.5 + (if (weapon != null) 0.5 else -0.3) + expeditionDrive).coerceAtLeast(0.05)
+            val patrol = (0.8 + traitDefs.sumOf { it.patrolWeight } + (if (ctx.town.integrity < 60) 0.4 else 0.0) + patrolDrive).coerceAtLeast(0.05)
             val rest = (0.2 + traitDefs.sumOf { it.restWeight } + (100 - hero.health) / 100.0).coerceAtLeast(0.02)
             when (rng.pickWeighted(listOf(HeroActivity.EXPEDITION to expedition, HeroActivity.PATROL to patrol, HeroActivity.REST to rest))) {
                 HeroActivity.EXPEDITION -> Battle.resolveExpedition(ctx, hero, weapon, faction.id, factionDef)
@@ -135,6 +140,54 @@ object Heroes {
             ctx.addWeaponHistory(w.id, "INHERITED", "Inherited by ${mentee.fullName} from ${hero.fullName}.", listOf(mentee.id.value, hero.id.value))
             Market.giveAndEquip(ctx, ctx.hero(mentee.id), ctx.weapon(w.id))
             ctx.emit(EventType.WEAPON_INHERITED, 5, "${w.name} passed from ${hero.fullName} to ${mentee.fullName}.", listOf(w.id.value, mentee.id.value, hero.id.value))
+        }
+    }
+
+    /** GDD 6 ambitions: checked once a day (step 8); DEFENDER is fulfilled directly by a won siege. */
+    fun resolveAmbitions(ctx: ResolutionContext) {
+        val config = ctx.config
+        for (h in ctx.aliveHeroes()) {
+            val met = when (h.ambition) {
+                Ambition.SLAYER -> h.expeditionWins >= config.ambitionSlayerWins
+                Ambition.COLLECTOR -> (ctx.equippedWeapon(h.id)?.quality ?: 0) >= config.ambitionCollectorQuality
+                Ambition.FORTUNE -> h.gold >= config.ambitionFortuneGold
+                Ambition.DEFENDER, null -> false
+            }
+            if (met) fulfilAmbition(ctx, h.id, h.ambition!!)
+        }
+    }
+
+    fun fulfilAmbition(ctx: ResolutionContext, heroId: HeroId, ambition: Ambition) {
+        val hero = ctx.hero(heroId)
+        if (!hero.isAlive || hero.ambition != ambition || hero.ambitionDone) return
+        val config = ctx.config
+        ctx.updateHero(hero.copy(ambitionDone = true, fame = hero.fame + config.ambitionFame, loyalty = hero.loyalty + config.ambitionLoyalty))
+        ctx.reputation += config.ambitionReputation
+        val weapon = ctx.equippedWeapon(heroId)
+        val text = when (ambition) {
+            Ambition.SLAYER -> "${hero.fullName} kept a vow: ${config.ambitionSlayerWins} foes routed in the field."
+            Ambition.DEFENDER -> "${hero.fullName} swore to hold the walls of Emberfall, and held them."
+            Ambition.COLLECTOR -> "${hero.fullName} at last carries a weapon worth boasting of: ${weapon?.name ?: "a fine blade"}."
+            Ambition.FORTUNE -> "${hero.fullName} has made a fortune on the roads."
+        }
+        ctx.emit(EventType.AMBITION_FULFILLED, 6, text, listOfNotNull(hero.id.value, weapon?.id?.value), mapOf("ambition" to ambition.name))
+        ctx.milestone("AMBITION_FULFILLED", "A hero of Emberfall fulfilled a life's ambition.")
+    }
+
+    /** Player-facing line for the Town panel; progress is shown as plain counts, never weights. */
+    fun describeAmbition(hero: Hero, weapon: Weapon?, config: com.tinyblacksmith.core.config.BalanceConfig): String? {
+        val a = hero.ambition ?: return null
+        if (hero.ambitionDone) return when (a) {
+            Ambition.SLAYER -> "Kept a slayer's vow"
+            Ambition.DEFENDER -> "Held the walls as sworn"
+            Ambition.COLLECTOR -> "Carries a prized weapon"
+            Ambition.FORTUNE -> "Made a fortune"
+        }
+        return when (a) {
+            Ambition.SLAYER -> "Vows to rout ${config.ambitionSlayerWins} foes (${minOf(hero.expeditionWins, config.ambitionSlayerWins)}/${config.ambitionSlayerWins})"
+            Ambition.DEFENDER -> "Sworn to defend the walls in a siege"
+            Ambition.COLLECTOR -> "Wants a weapon of quality ${config.ambitionCollectorQuality}+ (has ${weapon?.quality ?: 0})"
+            Ambition.FORTUNE -> "Saving a fortune (${minOf(hero.gold, config.ambitionFortuneGold)}/${config.ambitionFortuneGold} gold)"
         }
     }
 

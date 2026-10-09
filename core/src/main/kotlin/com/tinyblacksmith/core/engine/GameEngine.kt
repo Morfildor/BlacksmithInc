@@ -4,6 +4,8 @@ import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.content.ContentCatalog
+import com.tinyblacksmith.core.content.ToolEffect
+import kotlin.math.roundToInt
 import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.gazette.Gazette
@@ -87,6 +89,10 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             is Command.AcceptCommission -> commission(state, command.commissionId, CommissionStatus.ACCEPTED)
             is Command.DeclineCommission -> commission(state, command.commissionId, CommissionStatus.DECLINED)
             is Command.ChooseBlessing -> chooseBlessing(state, command)
+            is Command.Salvage -> salvage(state, command)
+            is Command.Hone -> hone(state, command)
+            is Command.DonateWeapon -> donate(state, command)
+            is Command.BuyTool -> buyTool(state, command)
             is Command.EndDay -> endDay(state, command.commandId)
         }
     }
@@ -106,7 +112,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val ctx = ResolutionContext(state, content, config)
         if (cmd.listed) {
             if (!weapon.isInStorage) return CommandOutcome.Rejected(GameError.WeaponNotAvailable(weapon.id, weapon.location))
-            if (state.listedWeapons().size >= config.shelfSlots) return CommandOutcome.Rejected(GameError.ShelfFull)
+            if (state.listedWeapons().size >= shelfSlots(state)) return CommandOutcome.Rejected(GameError.ShelfFull)
             val price = cmd.price ?: suggestedPrice(weapon)
             if (price < 0) return CommandOutcome.Rejected(GameError.InvalidPrice(price))
             ctx.updateWeapon(weapon.copy(location = WeaponLocation.Shelf(price)))
@@ -145,6 +151,91 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         (content.material(materialId).price * config.supplierPriceMultiplier * state.world.marketMultiplier).toInt()
 
     fun suggestedPrice(weapon: Weapon): Int = weapon.power * config.fairGoldPerPower
+
+    fun shelfSlots(state: GameState): Int = config.shelfSlots + toolTotal(state, ToolEffect.SHELF_SLOTS)
+
+    fun toolTotal(state: GameState, effect: ToolEffect): Int =
+        content.tools.filter { it.effect == effect }.sumOf { it.magnitudePerLevel * (state.tools[it.id] ?: 0) }
+
+    /** Next level's price, or null when the tool is unknown or maxed. */
+    fun toolCost(state: GameState, toolId: String): Int? = content.tool(toolId)?.let { it.costPerLevel.getOrNull(state.tools[toolId] ?: 0) }
+
+    /** Defensive power the town watch would gain from this weapon (before the armory cap). */
+    fun armoryValue(weapon: Weapon): Int = maxOf(1, (weapon.power * config.armoryPowerShare).roundToInt())
+
+    /** Read-only: how the next siege looks as things stand today. Null only without factions. */
+    fun siegeForecast(state: GameState): Battle.SiegeOutlook? = Battle.outlook(ResolutionContext(state, content, config), state.town.nextSiegeDay)
+
+    /** Spends energy, dipping into overwork like a forge does; null when accepted. */
+    private fun spendEnergy(ctx: ResolutionContext, cost: Int): GameError? {
+        val overworkAvailable = config.maxOverworkPerDay - ctx.overworkToday
+        val shortfall = maxOf(0, cost - ctx.energy)
+        if (shortfall > overworkAvailable) return GameError.NotEnoughEnergy(cost, ctx.energy, overworkAvailable)
+        ctx.energy -= cost - shortfall
+        ctx.overworkToday += shortfall
+        return null
+    }
+
+    /** A weapon the smith can still work on: in storage or on the shelf. */
+    private fun inShop(state: GameState, id: WeaponId): Pair<Weapon?, GameError?> {
+        val weapon = state.weapons[id] ?: return null to GameError.WeaponNotFound(id)
+        if (!weapon.isInStorage && !weapon.isListed) return null to GameError.WeaponNotAvailable(weapon.id, weapon.location)
+        return weapon to null
+    }
+
+    private fun salvage(state: GameState, cmd: Command.Salvage): CommandOutcome {
+        val (weapon, error) = inShop(state, cmd.weaponId)
+        if (weapon == null) return CommandOutcome.Rejected(error!!)
+        val ctx = ResolutionContext(state, content, config)
+        spendEnergy(ctx, config.salvageEnergy)?.let { return CommandOutcome.Rejected(it) }
+        ctx.materials[weapon.coreId] = (ctx.materials[weapon.coreId] ?: 0) + 1
+        ctx.updateWeapon(weapon.copy(location = WeaponLocation.Destroyed(state.day)))
+        ctx.addWeaponHistory(weapon.id, "SALVAGED", "Melted down for its ${content.material(weapon.coreId).name}.")
+        ctx.emit(EventType.WEAPON_SALVAGED, 0, "The smith melted ${weapon.name} down for its ${content.material(weapon.coreId).name}.", listOf(weapon.id.value))
+        return accept(ctx)
+    }
+
+    private fun hone(state: GameState, cmd: Command.Hone): CommandOutcome {
+        val (weapon, error) = inShop(state, cmd.weaponId)
+        if (weapon == null) return CommandOutcome.Rejected(error!!)
+        if (weapon.honed) return CommandOutcome.Rejected(GameError.AlreadyHoned(weapon.id))
+        if ((state.materials[weapon.coreId] ?: 0) < 1) return CommandOutcome.Rejected(GameError.MissingMaterial(weapon.coreId))
+        val ctx = ResolutionContext(state, content, config)
+        spendEnergy(ctx, config.honeEnergy)?.let { return CommandOutcome.Rejected(it) }
+        ctx.materials[weapon.coreId] = ctx.materials.getValue(weapon.coreId) - 1
+        val quality = minOf(100, weapon.quality + config.honeQualityBonus)
+        val power = weapon.power + quality / config.powerPerQualityDivisor - weapon.quality / config.powerPerQualityDivisor
+        ctx.updateWeapon(weapon.copy(quality = quality, power = power, rarity = Forge.rarityFor(quality, config), honed = true))
+        ctx.addWeaponHistory(weapon.id, "HONED", "Honed on the anvil (quality ${weapon.quality} to $quality).")
+        ctx.emit(EventType.WEAPON_HONED, 1, "The smith honed ${weapon.name} to quality $quality.", listOf(weapon.id.value), mapOf("quality" to quality.toString()))
+        return accept(ctx)
+    }
+
+    private fun donate(state: GameState, cmd: Command.DonateWeapon): CommandOutcome {
+        val (weapon, error) = inShop(state, cmd.weaponId)
+        if (weapon == null) return CommandOutcome.Rejected(error!!)
+        if (state.town.armory >= config.armoryMax) return CommandOutcome.Rejected(GameError.ArmoryFull)
+        val ctx = ResolutionContext(state, content, config)
+        val gain = minOf(armoryValue(weapon), config.armoryMax - state.town.armory)
+        ctx.town = ctx.town.copy(armory = ctx.town.armory + gain)
+        ctx.reputation += 1
+        ctx.updateWeapon(weapon.copy(location = WeaponLocation.Lost(state.day, "given to the town watch")))
+        ctx.addWeaponHistory(weapon.id, "DONATED", "Given to the town watch of Emberfall.")
+        ctx.emit(EventType.WEAPON_DONATED, 3, "The smith armed the town watch with ${weapon.name}.", listOf(weapon.id.value), mapOf("armory" to gain.toString()))
+        return accept(ctx)
+    }
+
+    private fun buyTool(state: GameState, cmd: Command.BuyTool): CommandOutcome {
+        val def = content.tool(cmd.toolId) ?: return CommandOutcome.Rejected(GameError.UnknownContent(cmd.toolId))
+        val cost = toolCost(state, def.id) ?: return CommandOutcome.Rejected(GameError.ToolMaxed(def.id))
+        if (state.gold < cost) return CommandOutcome.Rejected(GameError.NotEnoughGold(cost, state.gold))
+        val ctx = ResolutionContext(state, content, config)
+        ctx.gold -= cost
+        ctx.tools[def.id] = (ctx.tools[def.id] ?: 0) + 1
+        if (def.effect == ToolEffect.EXTRA_ENERGY) ctx.energy += def.magnitudePerLevel  // usable the day it is bought
+        ctx.emit(EventType.TOOL_BOUGHT, 2, "The forge gained a new tool: ${def.name}.", data = mapOf("tool" to def.id, "level" to ctx.tools.getValue(def.id).toString()))
+        return accept(ctx)
+    }
 
     private fun commission(state: GameState, id: CommissionId, newStatus: CommissionStatus): CommandOutcome {
         val c = state.commissions[id] ?: return CommandOutcome.Rejected(GameError.CommissionNotFound(id))
@@ -193,6 +284,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // 7. Scheduled siege and champions.
         Battle.resolveSiegeIfDue(ctx)
         // 8. Hero-driven recovery, retirements/guilds, then champion refresh.
+        if (ctx.phase != Phase.ENDED) Heroes.resolveAmbitions(ctx)
         Heroes.resolveRetirements(ctx)
         recover(ctx)
         // 9. Histories and blessings expiry.
@@ -237,7 +329,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
 
     private fun newMorning(ctx: ResolutionContext) {
         ctx.day += 1
-        val base = config.baseDailyEnergy + upgradeTotal(ctx.legacy, UpgradeEffect.STARTING_ENERGY) + ctx.blessingMagnitude(BlessingEffect.EXTRA_ENERGY)
+        val base = config.baseDailyEnergy + upgradeTotal(ctx.legacy, UpgradeEffect.STARTING_ENERGY) + ctx.blessingMagnitude(BlessingEffect.EXTRA_ENERGY) + ctx.toolTotal(ToolEffect.EXTRA_ENERGY)
         ctx.energy = maxOf(0, base - ctx.overworkToday)
         ctx.overworkToday = 0
         val caravanDelayed = ctx.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == ctx.day
@@ -265,7 +357,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
     }
 
     private fun assertInvariants(state: GameState) {
-        val problems = Invariants.check(state, config)
+        val problems = Invariants.check(state, config, shelfSlots(state))
         check(problems.isEmpty()) { "Invariant violation: $problems" }
     }
 }

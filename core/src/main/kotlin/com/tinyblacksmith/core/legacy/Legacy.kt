@@ -39,6 +39,9 @@ object Legacy {
         "LEGENDARY_FORGED" to 3,
         "HERO_LEVEL_5" to 1,
         "WEAPON_FIVE_KILLS" to 2,
+        "ELITE_SLAIN" to 1,
+        "WARLORD_DEFEATED" to 3,
+        "AMBITION_FULFILLED" to 1,
     )
 
     fun closeRun(state: GameState, content: ContentCatalog, config: BalanceConfig): RunEndResult {

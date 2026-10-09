@@ -3,6 +3,7 @@ package com.tinyblacksmith.core.market
 import com.tinyblacksmith.core.battle.Power
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.BlessingEffect
+import com.tinyblacksmith.core.content.ToolEffect
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.engine.WorldEvents
 import com.tinyblacksmith.core.model.*
@@ -19,7 +20,7 @@ object Market {
         val listed = ctx.weapons.values.filter { it.isListed }
         val festival = ctx.worldFlags[WorldEvents.FLAG_FESTIVAL] == ctx.day
         val maxCustomers = config.maxCustomersPerDay + (if (festival) config.festivalExtraCustomers else 0)
-        val festivalBonus = (if (festival) config.festivalVisitBonus else 0.0) + ctx.blessingMagnitude(BlessingEffect.HERO_VISIT_CHANCE) / 100.0  // + Guild Patronage
+        val festivalBonus = (if (festival) config.festivalVisitBonus else 0.0) + (ctx.blessingMagnitude(BlessingEffect.HERO_VISIT_CHANCE) + ctx.toolTotal(ToolEffect.HERO_VISIT_CHANCE)) / 100.0  // + Guild Patronage, signboard
         var customers = 0
         for (hero in ctx.aliveHeroes()) {
             if (customers >= maxCustomers) break
@@ -61,7 +62,10 @@ object Market {
         val improvement = candidateEffective - currentEffective
         val elementTaste = (if (weapon.element != null && weapon.element == hero.elementTaste) 1.0 else 0.0) +
             (if (weapon.element != null) hero.traits.sumOf { content.trait(it).noveltyTaste } else 0.0)
-        val sensitivity = hero.traits.fold(1.0) { acc, t -> acc * content.trait(t).priceSensitivity }
+        val drive = if (hero.ambitionDone) null else hero.ambition
+        val sensitivity = hero.traits.fold(1.0) { acc, t -> acc * content.trait(t).priceSensitivity } *
+            (if (drive == Ambition.FORTUNE) config.fortunePriceSensitivity else 1.0)
+        val collector = if (drive == Ambition.COLLECTOR && weapon.quality >= config.ambitionCollectorQuality) config.collectorUtilityBonus else 0.0
         val ceiling = maxOf(1, weapon.power * config.fairGoldPerPower) * priceCeilingMultiplier(ctx.reputation, hero.loyalty, config)
         val pricePenalty = maxOf(0.0, price.toDouble() / ceiling - 1.0) * sensitivity
         val noise = (noiseRoll - 0.5) * 2 * config.utilityNoise
@@ -69,6 +73,7 @@ object Market {
             (fit - 1.0) * config.utilityClassFitWeight +
             elementTaste * config.utilityElementTasteWeight +
             hero.loyalty * 0.01 * config.utilityLoyaltyWeight +
+            collector +
             noise -
             pricePenalty * config.utilityPricePenaltyWeight
         return Evaluation(weapon, utility, affordable = price <= hero.gold, improvement = improvement, fit = fit, pricePenalty = pricePenalty)
@@ -127,7 +132,7 @@ object Market {
                 continue
             }
             val candidate = ctx.weapons.values
-                .filter { (it.isInStorage || it.isListed) && it.familyId == c.familyId && it.quality >= c.minQuality }
+                .filter { (it.isInStorage || it.isListed) && it.familyId == c.familyId && it.quality >= c.minQuality && (c.element == null || it.element == c.element) }
                 .maxByOrNull { it.quality }
             if (candidate != null) {
                 ctx.gold += c.reward
@@ -160,11 +165,16 @@ object Market {
         val cls = ctx.content.heroClass(buyer.classId)
         val family = rng.pick(cls.preferredFamilies)
         val minQuality = rng.nextInt(35, 60)
-        val reward = ctx.config.commissionRewardBase + minQuality * ctx.config.commissionRewardPerQuality
+        // GDD 5 "desirable effect": half the patrons want an element, their own taste or what the looming faction fears.
+        val forgeable = ctx.content.materials.mapNotNull { it.element }.toSet()
+        val wanted = (buyer.elementTaste ?: ctx.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure }?.let { ctx.content.faction(it.id).weakTo })?.takeIf { it in forgeable }
+        val element = if (wanted != null && rng.chance(ctx.config.commissionElementChance)) wanted else null
+        val baseReward = ctx.config.commissionRewardBase + minQuality * ctx.config.commissionRewardPerQuality
+        val reward = if (element != null) (baseReward * ctx.config.commissionElementRewardMultiplier).toInt() else baseReward
         val id = ctx.newCommissionId()
-        val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, ctx.day + ctx.config.commissionDeadlineDays, CommissionStatus.OFFERED)
+        val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, ctx.day + ctx.config.commissionDeadlineDays, CommissionStatus.OFFERED, element = element)
         ctx.commissions[id] = c
         val who = if (isRegular(buyer, ctx.config)) "${buyer.fullName}, a regular of the shop," else buyer.fullName
-        ctx.emit(EventType.COMMISSION_OFFERED, 3, "$who asks for a fine ${ctx.content.family(family).name} by day ${c.deadlineDay}, offering $reward gold.", listOf(buyer.id.value, id.value))
+        ctx.emit(EventType.COMMISSION_OFFERED, 3, "$who asks for a fine ${element?.let { it.name.lowercase() + " " } ?: ""}${ctx.content.family(family).name} by day ${c.deadlineDay}, offering $reward gold.", listOf(buyer.id.value, id.value))
     }
 }
