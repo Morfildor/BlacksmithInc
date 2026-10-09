@@ -375,6 +375,13 @@ data class WeaponFatesConfig(
     // BalanceConfig.weaponRecoveryChance / weaponSeizureChance; comrades are close on the walls, and an elite keeps its trophy.
     val wallsRecoveryChance: Double = 0.7,
     val wallsSeizureChance: Double = 0.3,
+    /**
+     * A rout: a siege lost with the raid at [wallsRoutRatio] times the town's defense or more. Each champion then takes
+     * [wallsRoutDamage] instead of BalanceConfig.championSiegeDamageOnLoss, which can kill one who went up barely fit
+     * (champions stand at BalanceConfig.heroWoundedThreshold health or more). A narrower loss wounds and never kills.
+     */
+    val wallsRoutRatio: Double = 1.5,
+    val wallsRoutDamage: Int = 55,
     val eliteRecoveryChance: Double = 0.4,
     val eliteSeizureChance: Double = 0.7,
     /** Chance that a living guildmate inherits a fallen member's blade the enemy did not seize (it then never reaches the forge). */

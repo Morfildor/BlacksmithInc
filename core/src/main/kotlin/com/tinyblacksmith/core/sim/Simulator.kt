@@ -171,6 +171,9 @@ data class RunStats(
     val patronageTaken: Int = 0,
     val stipendSales: Int = 0,
     val stipendGold: Int = 0,
+    /** Sieges lost as a rout (`weaponFates.wallsRoutRatio`) and champions who died on the walls in them. */
+    val routs: Int = 0,
+    val wallDeaths: Int = 0,
     /** What a T0.7 bot did (forge modes, techniques, requests, signature tries, rejected commands, ...); null for the classic policies. */
     val bot: BotRunStats? = null,
 )
@@ -243,6 +246,8 @@ class SimulationDriver(
         var patronageTaken = 0
         var stipendSales = 0
         var stipendGold = 0
+        var routs = 0
+        var wallDeaths = 0
         val collector = if (customerMetrics) CustomerCollector(engine) else null
         while (!state.isEnded && state.day <= maxDays) {
             collector?.morning(state)
@@ -335,6 +340,8 @@ class SimulationDriver(
                 legendsReturned += res.events.count { it.type == EventType.ARTIFACT_RETURNED }
                 stipendSales += res.visits.count { (it.sale?.stipend ?: 0) > 0 }
                 stipendGold += res.ledger?.income?.get(IncomeKind.STIPEND) ?: 0
+                routs += res.events.count { it.type == EventType.SIEGE_LOST && it.data["rout"] == "true" }
+                wallDeaths += res.field.count { it.outcome == FieldOutcome.FELL_AT_THE_WALL }
             }
             if (eventRetentionDays > 0) {
                 val cutoff = out.day - eventRetentionDays
@@ -359,7 +366,7 @@ class SimulationDriver(
             weaponFates = weaponFates,
             firstSiegeDefense = firstSiegeDefense, firstSiegeHeld = firstSiegeHeld, forgedByFirstSiege = forgedByFirstSiege, soldByFirstSiege = soldByFirstSiege,
             toolsByFirstSiege = toolsByFirstSiege, firstPremiumSaleDay = firstPremiumSaleDay, rareMaterialsBought = rareMaterialsBought + (bots?.stockpiled ?: 0), legendsReturned = legendsReturned,
-            customers = collector?.finish(state), patronageTaken = patronageTaken, stipendSales = stipendSales, stipendGold = stipendGold, bot = bots?.finish(state),
+            customers = collector?.finish(state), patronageTaken = patronageTaken, stipendSales = stipendSales, stipendGold = stipendGold, routs = routs, wallDeaths = wallDeaths, bot = bots?.finish(state),
         )
         return stats to state
     }
@@ -552,6 +559,10 @@ data class PolicySummary(
     val stipendSalesPerRun: Double = 0.0,
     val stipendGoldPerRun: Double = 0.0,
     val stipendShareOfIncome: Double = 0.0,
+    /** Per run: sieges lost as a rout, and champions who died on the walls in them; the share of runs in which one did. */
+    val routsPerRun: Double = 0.0,
+    val wallDeathsPerRun: Double = 0.0,
+    val wallDeathRunShare: Double = 0.0,
     /** What the T0.7 bots did, per run (`BotRunStats`); absent for the classic policies. */
     val bot: BotSummary? = null,
 )
@@ -597,6 +608,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             customers = CustomerSummary.of(runs),
             patronageTakenPerRun = runs.map { it.patronageTaken }.average(), stipendSalesPerRun = runs.map { it.stipendSales }.average(), stipendGoldPerRun = runs.map { it.stipendGold }.average(),
             stipendShareOfIncome = runs.sumOf { it.stipendGold }.toDouble() / runs.sumOf { it.goldEarned }.coerceAtLeast(1),
+            routsPerRun = runs.map { it.routs }.average(), wallDeathsPerRun = runs.map { it.wallDeaths }.average(), wallDeathRunShare = runs.count { it.wallDeaths > 0 }.toDouble() / runs.size,
             bot = BotSummary.of(runs),
         )
     }
@@ -621,6 +633,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  affix weapons/run: " + s.affixWeaponsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
             appendLine("  hero-days/run: ${f1(s.heroDaysPerRun)}  activity shares: " + s.activityShare.entries.joinToString("  ") { "${it.key}=${"%.1f%%".format(100.0 * it.value)}" })
             appendLine("  level-ups/run: ${f1(s.heroLevelUpsPerRun)}  mentorings/run: ${f1(s.mentoringsPerRun)}  guilds/run: ${f1(s.guildsPerRun)}  runs with a guild: ${pct(s.guildRunShare)}")
+            appendLine("  wall: routs/run=${"%.2f".format(s.routsPerRun)}  champions fallen/run=${"%.3f".format(s.wallDeathsPerRun)}  runs with a champion fallen=${"%.1f%%".format(100.0 * s.wallDeathRunShare)}")
             appendLine("  guild patronage/run: taken=${"%.2f".format(s.patronageTakenPerRun)}  purchases with a stipend=${"%.2f".format(s.stipendSalesPerRun)}  stipend gold=${f1(s.stipendGoldPerRun)} (${"%.1f%%".format(100.0 * s.stipendShareOfIncome)} of gold earned)")
             appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}")
             s.bot?.let { append(it.render()) }
@@ -823,6 +836,8 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
             "arrivalChancePerMissing" -> c.copy(customers = c.customers.copy(arrivalChancePerMissing = dbl()))
             "arrivalChanceMax" -> c.copy(customers = c.customers.copy(arrivalChanceMax = dbl()))
             "patronageStipend" -> c.copy(customers = c.customers.copy(patronageStipend = int()))
+            "wallsRoutDamage" -> c.copy(weaponFates = c.weaponFates.copy(wallsRoutDamage = int()))
+            "wallsRoutRatio" -> c.copy(weaponFates = c.weaponFates.copy(wallsRoutRatio = dbl()))
             "newAdventurerCount" -> c.copy(newAdventurerCount = int())
             "raidBase" -> c.copy(raidBase = dbl())
             "raidPerDay" -> c.copy(raidPerDay = dbl())
@@ -835,7 +850,7 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
             "veteranGold" -> c.copy(veteranGold = int())
             "tradeInShare" -> c.copy(tradeInShare = dbl())
             "fairGoldPerPower" -> c.copy(fairGoldPerPower = int())
-            else -> throw IllegalArgumentException("unknown key '$key'; allowed: shopCapacity, baseVisitChance, festivalExtraSeats, maxTurnedAwayDays, classSeats, shelfSlots, startingHeroes, minHeroPopulation, maxHeroPopulation, populationTarget, arrivalChancePerMissing, arrivalChanceMax, patronageStipend, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower")
+            else -> throw IllegalArgumentException("unknown key '$key'; allowed: shopCapacity, baseVisitChance, festivalExtraSeats, maxTurnedAwayDays, classSeats, shelfSlots, startingHeroes, minHeroPopulation, maxHeroPopulation, populationTarget, arrivalChancePerMissing, arrivalChanceMax, patronageStipend, wallsRoutDamage, wallsRoutRatio, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower")
         }
     }
     return c

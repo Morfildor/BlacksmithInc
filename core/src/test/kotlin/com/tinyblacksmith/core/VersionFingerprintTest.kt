@@ -29,7 +29,7 @@ class VersionFingerprintTest {
     private val balancePins = mapOf(
         5 to "a9d576db13b2983ebb4e45ed97ff6ddc9ece108aebb4738a14bfd90dc9ae37c1",
         6 to "adb451f9d456482d788d612daefebdbda892de44215fe4a3877152490d6c8e60",
-        7 to "33499217b67bcdf063ff33a2f74adb093144a686d3b4bd5c0828b3b092b0f714",  // re-pinned inside the unreleased M3 step: T3.1 pinned 66214786..., T3.4 (33af5dfb...) changed the town and pressure numbers, T3.6 added patronageStipend
+        7 to "daf9ca7290dac60a17921dde7e37676a45dab7db64bdffe5a093af7f94d5f9d7",  // re-pinned inside the unreleased M3 step: T3.1 pinned 66214786..., T3.4 (33af5dfb...) changed the town and pressure numbers, T3.6 (33499217...) added patronageStipend, T3.8 the two rout numbers
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames")
