@@ -57,6 +57,7 @@ import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.model.CombatReplay
 import com.tinyblacksmith.core.model.DayResolution
+import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.ReplayKind
@@ -107,14 +108,14 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
  * records; stepping is purely presentational and skippable (GDD 11).
  */
 @Composable
-fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, reducedMotion: Boolean) {
+fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reducedMotion: Boolean) {
     val totalSteps = r.replays.sumOf { it.rounds.size + 1 }
     var shown by remember(r.commandId) { mutableIntStateOf(if (reducedMotion) totalSteps else 0) }
     LaunchedEffect(r.commandId, reducedMotion) {
         if (reducedMotion) { shown = totalSteps; return@LaunchedEffect }
         while (shown < totalSteps) { delay(700); shown += 1 }
     }
-    // Back and a tap outside never mean "Begin day": only the button below closes the report.
+    // The Gazette is read over the shop day: closing it (the button, back or a tap outside) never acknowledges the day.
     Dialog(onDismissRequest = { vm.back() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
             color = Color.Transparent,
@@ -132,8 +133,8 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
                 PaperRuleLine(top = Space.sm, bottom = 2.dp)
                 PaperRuleLine(top = 0.dp, bottom = Space.sm)
                 Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
-                    r.replays.firstOrNull()?.takeIf { it.kind == ReplayKind.SIEGE }?.let { replay -> ReplayStage(replay, shown, s, vm, reducedMotion) }  // the siege comes first; fights are text only
-                    val edition = remember(r.commandId) { Gazette.edition(Gazette.dayRecords(s.state, r.day), s.state.heroes.values.associate { it.id.value to it.fullName }, r.visits, r.ledger, r.field) }
+                    r.replays.firstOrNull()?.takeIf { it.kind == ReplayKind.SIEGE }?.let { replay -> ReplayStage(replay, shown, state, vm, reducedMotion) }  // the siege comes first; fights are text only
+                    val edition = remember(r.commandId) { Gazette.edition(Gazette.dayRecords(state, r.day), state.heroes.values.associate { it.id.value to it.fullName }, r.visits, r.ledger, r.field) }
                     EditionBody(edition)
                     if (r.replays.isNotEmpty()) {
                         PaperRuleLine(top = Space.md, bottom = Space.sm)
@@ -163,8 +164,8 @@ fun DayReportDialog(s: UiState.Playing, r: DayResolution, vm: GameViewModel, red
                         Text("THE FORGE HAS FALLEN", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
-                Button(onClick = vm::dismissReport, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 52.dp).testTag("report_close")) {
-                    Text(if (r.defeated) "See the legacy" else "Begin day ${s.state.day}", style = MaterialTheme.typography.titleMedium)
+                Button(onClick = vm::closeGazette, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 52.dp).testTag("report_close")) {
+                    Text("Close", style = MaterialTheme.typography.titleMedium)
                 }
             }
         }
@@ -238,11 +239,11 @@ fun ErrorDialog(message: String, onDismiss: () -> Unit) {
 
 /** Poses for the siege diorama derive from the replay step being shown; the stage never changes outcomes. */
 @Composable
-private fun ReplayStage(replay: CombatReplay, shown: Int, s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean) {
+private fun ReplayStage(replay: CombatReplay, shown: Int, state: GameState, vm: GameViewModel, reducedMotion: Boolean) {
     val current = (shown - 1).coerceIn(-1, replay.rounds.size)  // -1 = nothing yet, size = outcome shown
     val currentRound = replay.rounds.getOrNull(current)
     val faction = vm.engine.content.factions.firstOrNull { f -> replay.rounds.any { it.attacker == f.siegeName || it.defender == f.siegeName } }
-    val heroes = replay.rounds.mapNotNull { round -> round.attackerId?.let { s.state.heroes[HeroId(it)] } }.distinctBy { it.id }.take(3)
+    val heroes = replay.rounds.mapNotNull { round -> round.attackerId?.let { state.heroes[HeroId(it)] } }.distinctBy { it.id }.take(3)
     val raidersAttack = currentRound != null && faction != null && currentRound.attacker == faction.siegeName
     val lost = current >= replay.rounds.size && replay.outcome != "Town held"
     val defenders = heroes.map { h ->

@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import com.example.blacksmithproject.GameSession.Status
 import com.example.blacksmithproject.data.SaveFailure
 import com.example.blacksmithproject.data.Settings
+import com.example.blacksmithproject.data.ShopDaySpeed
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
@@ -34,10 +35,12 @@ class FakeSettings(var dismissed: String? = null) : Settings {
     override val reducedMotion = MutableStateFlow(false)
     override val haptics = MutableStateFlow(true)
     override val seenTips = MutableStateFlow(emptySet<String>())
+    override val shopDaySpeed = MutableStateFlow(ShopDaySpeed.TAP)
     var dismissedReads = 0
     override suspend fun setReducedMotion(value: Boolean) { reducedMotion.value = value }
     override suspend fun setHaptics(value: Boolean) { haptics.value = value }
     override suspend fun markTipSeen(id: String) { seenTips.value += id }
+    override suspend fun setShopDaySpeed(value: ShopDaySpeed) { shopDaySpeed.value = value }
     override suspend fun dismissedReport(): String? { dismissedReads++; return dismissed }
 }
 
@@ -49,7 +52,7 @@ class GameViewModelTest {
 
     private fun vmTest(body: suspend TestScope.() -> Unit) = runTest {
         Dispatchers.setMain(StandardTestDispatcher(testScheduler))
-        try { body() } finally { repos.forEach { it.releaseAll() }; Dispatchers.resetMain() }
+        try { body() } finally { repos.forEach { it.releaseAll() }; testScheduler.advanceUntilIdle(); Dispatchers.resetMain() }
     }
 
     private fun repo(run: GameState?, legacy: LegacyProfile = run?.legacy ?: LegacyProfile()) =
@@ -57,7 +60,7 @@ class GameViewModelTest {
 
     /** A new process over the same store: a fresh session and ViewModel. */
     private suspend fun TestScope.open(repo: FakeGameRepository, settings: Settings = FakeSettings(), saved: SavedStateHandle = SavedStateHandle()): GameViewModel =
-        GameViewModel(engine, GameSession(engine, repo, compute = StandardTestDispatcher(testScheduler)), settings, saved).also { advanceUntilIdle() }
+        GameViewModel(engine, GameSession(engine, repo, compute = StandardTestDispatcher(testScheduler)), settings, saved, compute = StandardTestDispatcher(testScheduler)).also { advanceUntilIdle() }
 
     private fun endDay(s: GameState) = Command.EndDay(CommandId("${s.runId.value}:day${s.day}"))
     private fun afterOneDay(): GameState = engine.newRun(LegacyProfile(), 42L).let { (engine.handle(it, endDay(it)) as CommandOutcome.Accepted).state }
@@ -68,36 +71,46 @@ class GameViewModelTest {
     }
 
     private fun GameViewModel.playing() = ui.value as UiState.Playing
+    private fun GameViewModel.day() = ui.value as UiState.ShopDay
     private fun FakeGameRepository.storedCursor() = cursor?.let { DayCursor.decode(it) }
 
     @Test
-    fun backNeverAcknowledgesAReport() = vmTest {
+    fun backNeverAcknowledgesADay() = vmTest {
         val repo = repo(engine.newRun(LegacyProfile(), 42L))
         val vm = open(repo)
-        assertNull("day 1 has no report", vm.playing().showReport)
+        assertTrue("day 1 has no day to show", vm.ui.value is UiState.Playing)
         vm.endDay(); advanceUntilIdle()
-        val report = vm.playing().showReport
-        assertNotNull(report)
+        val report = vm.day().state.lastResolution!!
+        assertEquals(0, vm.day().position.at)
 
-        // Back, or a tap outside the dialog, is swallowed: the report stays and the day stays unwatched.
-        repeat(3) { assertTrue(vm.back()); advanceUntilIdle() }
-        assertEquals(report, vm.playing().showReport)
-        assertNull("nothing was acknowledged", repo.storedCursor())
-        // While it is open planning is locked, and says nothing about it: the report is the explanation.
-        val gold = vm.playing().state.gold
+        // Back on the first card is not consumed (it leaves the app); from any later card it steps back one card. With the
+        // Gazette open it closes the Gazette. However often it is pressed, the day stays unwatched.
+        assertFalse(vm.back())
+        while (!vm.day().position.isLast) { vm.next(); advanceUntilIdle() }
+        val last = vm.day().position.at
+        vm.openGazette()
+        assertTrue(vm.back()); advanceUntilIdle()
+        assertEquals(false to last, vm.day().gazetteOpen to vm.day().position.at)
+        repeat(last + 3) { vm.back(); advanceUntilIdle() }
+        assertEquals(0, vm.day().position.at)
+        assertEquals("nothing was acknowledged", DayCursor.Stage.TOMORROW, repo.storedCursor()?.stage)
+        // While the day is open planning is locked, and says nothing about it: the day is the explanation.
+        val gold = vm.day().state.gold
         vm.dispatch(Command.BuyMaterial(LaunchContent.IRON)); advanceUntilIdle()
-        assertEquals(gold, vm.playing().state.gold)
-        assertNull(vm.playing().lastError)
-        // A new process shows the same report again.
-        assertEquals(report, open(repo).playing().showReport)
+        assertEquals(gold, vm.day().state.gold)
+        assertNull(vm.day().lastError)
+        // A new process shows the same day again.
+        assertEquals(report, open(repo).day().state.lastResolution)
 
-        // Only the report's own button closes it, and that unlocks planning.
-        vm.dismissReport(); advanceUntilIdle()
-        assertNull(vm.playing().showReport)
-        assertEquals(DayCursor(report!!.commandId.value, DayCursor.Stage.DONE), repo.storedCursor())
+        // Only the last card's own button closes the day, and that unlocks planning.
+        vm.acknowledge(); advanceUntilIdle()
+        assertEquals("not from the first card", 0, vm.day().position.at)
+        vm.skipDay(); advanceUntilIdle()
+        vm.acknowledge(); advanceUntilIdle()
+        assertEquals(DayCursor(report.commandId.value, DayCursor.Stage.DONE), repo.storedCursor())
         vm.dispatch(Command.BuyMaterial(LaunchContent.IRON)); advanceUntilIdle()
         assertTrue(vm.playing().state.gold < gold)
-        assertNull("closed stays closed in a new process", open(repo).playing().showReport)
+        assertTrue("closed stays closed in a new process", open(repo).ui.value is UiState.Playing)
 
         // With no report open, back goes to Shop from another destination and is not consumed on Shop (any page of it).
         vm.selectDest(Dest.RECORDS); advanceUntilIdle()
@@ -114,34 +127,6 @@ class GameViewModelTest {
     }
 
     @Test
-    fun aReportClosedBeforeTheUpdateStaysClosedAndAnUnreadOneReopens() = vmTest {
-        val day2 = afterOneDay()
-        val id = day2.lastResolution!!.commandId.value
-
-        // 0.6.0 left no cursor row; it kept the closed report's ID in settings.
-        val closed = repo(day2)
-        val settings = FakeSettings(dismissed = id)
-        assertNull(open(closed, settings).playing().showReport)
-        assertEquals("handed over to the cursor row", DayCursor(id, DayCursor.Stage.DONE), closed.storedCursor())
-        // Honoured once: with the cursor row in place the old key is never read again.
-        val reads = settings.dismissedReads
-        assertNull(open(closed, settings).playing().showReport)
-        assertEquals(reads, settings.dismissedReads)
-
-        // A report that was never closed (the key names an earlier day, or nothing) reopens, as it did in 0.6.0.
-        for (old in listOf(null, "some-earlier-day")) {
-            val unread = repo(day2)
-            assertEquals(day2.lastResolution, open(unread, FakeSettings(dismissed = old)).playing().showReport)
-            assertNull(unread.storedCursor())
-        }
-
-        // An ended run whose report was closed in 0.6.0 opens on the run-end screen, unclaimed.
-        val fallen = repo(ended)
-        val end = open(fallen, FakeSettings(dismissed = ended.lastResolution!!.commandId.value)).ui.value
-        assertTrue("got $end", end is UiState.RunEnded && !end.claimed)
-    }
-
-    @Test
     fun anUnreadableSaveOpensTheRecoveryScreenAndRetryLoadsItOnceRestored() = vmTest {
         val good = SaveCodec.encodeRun(afterOneDay())
         val repo = repo(null, LegacyProfile(points = 12))
@@ -155,7 +140,7 @@ class GameViewModelTest {
 
         repo.run = good
         vm.retry(); advanceUntilIdle()
-        assertEquals(2, vm.playing().state.day)
+        assertEquals(2, vm.day().state.day)
 
         // The other way out: start over. The row is kept as a backup and the legacy is still there.
         repo.run = "this is not a save"
@@ -170,8 +155,10 @@ class GameViewModelTest {
     fun runEndReopensAfterAClaimWithUpgradesAvailable() = vmTest {
         val repo = repo(ended)
         val vm = open(repo)
-        assertTrue("the last day's report comes first", vm.playing().showReport!!.defeated)
-        vm.dismissReport(); advanceUntilIdle()
+        assertTrue("the last day comes first", vm.day().state.lastResolution!!.defeated)
+        vm.skipDay(); advanceUntilIdle()
+        assertEquals(Beat.Fallen, vm.day().position.beat)
+        vm.acknowledge(); advanceUntilIdle()
         assertFalse((vm.ui.value as UiState.RunEnded).claimed)
         vm.claimLegacy(); advanceUntilIdle()
         val claimed = vm.ui.value as UiState.RunEnded
@@ -195,7 +182,6 @@ class GameViewModelTest {
         val next = reopened.playing()
         assertEquals(1, next.state.day)
         assertEquals(1, next.state.legacy.upgradeLevel(upgrade.id))
-        assertNull(next.showReport)
     }
 
     @Test
@@ -206,7 +192,6 @@ class GameViewModelTest {
         vm.endDay(); advanceUntilIdle()
         assertTrue(vm.playing().op is Status.Failed)
         assertEquals(1, vm.playing().state.day)
-        assertNull(vm.playing().showReport)
 
         vm.dismissSaveFailure(); advanceUntilIdle()
         assertEquals(Status.Idle, vm.playing().op)
@@ -215,9 +200,8 @@ class GameViewModelTest {
         repo.failNextCommit = IOException("disk full")
         vm.endDay(); advanceUntilIdle()
         vm.retry(); advanceUntilIdle()
-        assertEquals(Status.Idle, vm.playing().op)
-        assertEquals(2, vm.playing().state.day)
-        assertNotNull(vm.playing().showReport)
+        assertEquals(Status.Idle, vm.day().op)
+        assertEquals(2, vm.day().state.day)
         assertEquals(1, repo.commitCount)
     }
 
@@ -231,8 +215,8 @@ class GameViewModelTest {
         assertEquals("what is shown is still what is saved", 1, vm.playing().state.day)
         vm.endDay(); vm.dispatch(Command.BuyMaterial(LaunchContent.IRON)); advanceUntilIdle()
         repo.releaseAll(); advanceUntilIdle()
-        assertEquals(2, vm.playing().state.day)
+        assertEquals(2, vm.day().state.day)
         assertEquals(1, repo.commitCount)
-        assertFalse(vm.playing().busy)
+        assertFalse(vm.day().busy)
     }
 }

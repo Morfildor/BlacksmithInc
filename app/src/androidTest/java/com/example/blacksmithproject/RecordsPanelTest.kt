@@ -18,6 +18,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.blacksmithproject.data.GameRepository
 import com.example.blacksmithproject.data.Settings
+import com.example.blacksmithproject.data.ShopDaySpeed
 import com.example.blacksmithproject.data.StoredRows
 import com.example.blacksmithproject.ui.RecordsPanel
 import com.example.blacksmithproject.ui.theme.BlacksmithProjectTheme
@@ -46,6 +47,8 @@ private class QuietSettings : Settings {
     override suspend fun setHaptics(value: Boolean) { haptics.value = value }
     override suspend fun markTipSeen(id: String) { seenTips.value += id }
     override suspend fun dismissedReport(): String? = null
+    override val shopDaySpeed = MutableStateFlow(ShopDaySpeed.TAP)
+    override suspend fun setShopDaySpeed(value: ShopDaySpeed) { shopDaySpeed.value = value }
 }
 
 /** Records is three segments over one lazy list; each keeps its own content and only the chosen one is composed. */

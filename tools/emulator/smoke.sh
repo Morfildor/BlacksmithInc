@@ -55,9 +55,18 @@ tap_id reveal_list || exit 1
 tap_id nav_shop; tap_id page_market; $ADB shell sleep 1; shot 05_market
 has "Shelves (1/8)" && echo "CHECK shelf listed: ok" || echo "CHECK shelf listed: FAIL"
 tap_id end_day || exit 1
+# The shop day opens on its first card. The Gazette is read over it; closing the Gazette does not begin the next day.
+has_id shopday_next && echo "CHECK shop day opens: ok" || echo "CHECK shop day opens: FAIL"
+shot 06_shopday
+tap_id shopday_gazette || exit 1
 wait_text "EMBERFALL GAZETTE" && shot 06_gazette
 dump | grep -o 'text="[^"]*"' | grep -iE "gazette|bought|forged|patrolled|routed|invasion" | head -8
 tap_id report_close || exit 1
+has_id shopday_next && echo "CHECK gazette closes onto the day: ok" || echo "CHECK gazette closes onto the day: FAIL"
+tap_id shopday_next; shot 06b_shopday_card
+tap_id shopday_skip || exit 1
+shot 06c_tomorrow
+tap_id shopday_close || exit 1
 tap_id nav_town; $ADB shell sleep 1; shot 07_town
 has "Champions" && echo "CHECK town panel: ok"
 # Records: three segments; the gear opens the settings sheet; Back closes it, then returns from a destination to Shop.

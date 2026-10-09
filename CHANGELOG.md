@@ -20,6 +20,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   end the day, when a request is refused and when an era ends; the shop-day counter will use the same for a sale. A
   Haptics switch in settings (on by default) turns all of it off. The game asks for no vibration permission and has no
   sound.
+- After End Day the day is shown card by card (the shop opening, each customer, the others who came by, closing, what
+  happened beyond the door, then tomorrow) with Next, Back and Skip day, as plain text until the counter scene arrives.
+  The day is saved before the first card shows and the place you reached is saved as you go: closing or killing the
+  game mid-way offers "Resume the day" or "Skip to tomorrow" on the next launch, and watching, skipping or restarting
+  never changes what happened. A blessing can be chosen inside the day or left for the morning. The Gazette opens over
+  the day and closing it never begins the next one.
 
 ### Changed
 - A bigger town. An era now opens with twelve heroes instead of eight, and every class is among them from the first
@@ -41,7 +47,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   in an existing save keep the face they have, and a descendant takes their ancestor's face when it is free.
 - After you claim a fallen era's legacy, the run-end screen survives closing the game: it reopens claimed, with your
   points and upgrades still there to spend, until you begin the next era.
-- The Back button and a tap outside the day's report no longer close it; only its "Begin day" button does.
+- The Back button never begins the next day: in the day's cards it steps back one card, and only the last card's
+  "Begin day" button moves on.
 - The forge panel you were on, the recipe you were drafting and an open forge result come back if the system closes
   the game in the background.
 - Android's automatic cloud backup of the save is off until restoring one is tested.

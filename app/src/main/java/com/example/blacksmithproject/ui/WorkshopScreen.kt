@@ -104,7 +104,6 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
     val haptics by vm.settings.haptics.collectAsStateWithLifecycle(initialValue = false)
     if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, haptics, vm::setHaptics, onDismiss = { settingsOpen = false })
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
-    s.showReport?.let { DayReportDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)
     s.lastError?.let { ErrorDialog(it, vm::dismissError) }
 }
@@ -145,7 +144,7 @@ fun SegmentRow(pages: List<Panel>, selected: Panel, onSelect: (Panel) -> Unit, m
 }
 
 private fun UiState.Playing.pendingBlessingOffer() =
-    state.pendingBlessingOffer.isNotEmpty() && showReport == null && revealWeaponId == null && blessingOfferDismissedDay != state.day
+    state.pendingBlessingOffer.isNotEmpty() && revealWeaponId == null && blessingOfferDismissedDay != state.day
 
 /** First-run tips (GDD 3.3 onboarding): dismissed IDs live in settings, never in the save. */
 object Tips {

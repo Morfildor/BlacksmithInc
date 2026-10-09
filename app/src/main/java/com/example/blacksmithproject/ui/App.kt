@@ -41,9 +41,9 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
     val haptics = rememberHaptics(hapticsOn)
     // The toll sounds when a run ends while playing, not each time the game is reopened onto an ended run.
     var wasPlaying by remember { mutableStateOf(false) }
-    LaunchedEffect(ui is UiState.RunEnded, ui is UiState.Playing) {
+    LaunchedEffect(ui is UiState.RunEnded, ui is UiState.Playing, ui is UiState.ShopDay) {
         if (ui is UiState.RunEnded && wasPlaying) haptics.play(Moment.RUN_END)
-        wasPlaying = ui is UiState.Playing
+        wasPlaying = ui is UiState.Playing || ui is UiState.ShopDay
     }
     // Test tags double as Android resource IDs for uiautomator scripts (tools/emulator).
     CompositionLocalProvider(LocalHaptics provides haptics) {
@@ -53,6 +53,7 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
                 is UiState.LoadFailed -> LoadFailedScreen(s.failure, s.working, onRetry = vm::retry, onStartOver = vm::startOver)
                 is UiState.Title -> TitleScreen(s, onNewRun = vm::newRun)
                 is UiState.Playing -> WorkshopScreen(s, vm)
+                is UiState.ShopDay -> ShopDayPlaceholder(s, vm)
                 is UiState.RunEnded -> RunEndScreen(s, vm)
             }
             // A save that failed leaves the last saved state on screen under this dialog; nothing is lost by dismissing it.

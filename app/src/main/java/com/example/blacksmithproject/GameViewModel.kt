@@ -15,6 +15,7 @@ import com.example.blacksmithproject.data.SaveFailure
 import com.example.blacksmithproject.data.SaveStore
 import com.example.blacksmithproject.data.Settings
 import com.example.blacksmithproject.data.SettingsStore
+import com.example.blacksmithproject.data.ShopDaySpeed
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
@@ -22,15 +23,22 @@ import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.legacy.RunEndResult
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.persistence.DayCursor
+import com.tinyblacksmith.core.shopday.ShopDay
+import com.tinyblacksmith.core.shopday.ShopDayScript
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** The four places the player goes (plan 1.2); the bar shows these and nothing else. */
 enum class Dest { SHOP, FORGE, TOWN, RECORDS }
@@ -67,8 +75,6 @@ sealed interface UiState {
         val panel: Panel = Panel.HOME,
         val draft: ForgeDraft = ForgeDraft(),
         val revealWeaponId: WeaponId? = null,
-        /** The last day's report while the player has not closed it (the day cursor is not at DONE). */
-        val showReport: DayResolution? = null,
         val lastError: String? = null,
         override val op: Status = Status.Idle,
         /** Day on which the player chose "Decide later" for the blessing offer; UI-only, the offer itself stays in core state. */
@@ -76,6 +82,26 @@ sealed interface UiState {
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
         val dest: Dest get() = panel.dest
+    }
+    /**
+     * The last resolved day while the player has not watched it to its end (the day cursor is not at DONE). [state] is
+     * the saved game after that day; [script] is derived from it and its stored record, never from RNG. Nothing here
+     * changes the save except the blessing choice. [resumed]: the game was opened onto this day (the Resume prompt).
+     */
+    data class ShopDay(
+        val state: GameState,
+        val script: ShopDayScript,
+        val position: ShopDayPosition,
+        val speed: ShopDaySpeed = ShopDaySpeed.TAP,
+        val sheet: ShopDaySheet? = null,
+        val gazetteOpen: Boolean = false,
+        val resumed: Boolean = false,
+        override val op: Status = Status.Idle,
+        val lastError: String? = null,
+    ) : UiState {
+        val busy: Boolean get() = op is Status.Working
+        /** False where system back leaves the app: the Resume prompt and the day's first card. */
+        val backIsConsumed: Boolean get() = !resumed && (gazetteOpen || sheet != null || !position.isFirst)
     }
     /** The ended run stays stored, so this screen is rebuilt from it and the legacy row after any restart. */
     data class RunEnded(
@@ -96,7 +122,14 @@ sealed interface UiState {
  * never computes gameplay outcomes. The destination, draft and reveal are also kept in [saved], so they come back
  * after the system has killed the process.
  */
-class GameViewModel(val engine: GameEngine, private val session: GameSession, val settings: Settings, private val saved: SavedStateHandle) : ViewModel() {
+@OptIn(ExperimentalCoroutinesApi::class)
+class GameViewModel(
+    val engine: GameEngine,
+    private val session: GameSession,
+    val settings: Settings,
+    private val saved: SavedStateHandle,
+    private val compute: CoroutineDispatcher = Dispatchers.Default,   // builds the shop-day script off the main thread
+) : ViewModel() {
     private data class Local(
         val panel: Panel = Panel.HOME,
         val draft: ForgeDraft = ForgeDraft(),
@@ -106,39 +139,79 @@ class GameViewModel(val engine: GameEngine, private val session: GameSession, va
         val loadFailure: SaveFailure? = null,
         /** True until the first load (and the hand-over of the old report key) has finished, and again during Retry. */
         val loading: Boolean = true,
+        /** The shop day on screen: the card reached in [dayId] (the day's command ID); another day starts from its cursor. */
+        val dayId: String? = null,
+        val dayAt: Int = 0,
+        val sheet: ShopDaySheet? = null,
+        val gazetteOpen: Boolean = false,
+        val resumed: Boolean = false,
+        val speed: ShopDaySpeed = ShopDaySpeed.TAP,
     )
 
     private val local = MutableStateFlow(restored())
     /** closeRun of the ended run, computed once per run instead of on every emission. */
     private var closed: Pair<GameState, RunEndResult>? = null
 
-    val ui: StateFlow<UiState> = combine(session.snapshot, session.status, local, ::render).stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Loading)
+    /** The script of the unwatched day, built once per saved state: moving through the day never builds it again. */
+    private var script: Pair<GameState, ShopDayScript>? = null
+
+    /**
+     * While a script is being built nothing is emitted, so the screen stays on what it showed (planning with its
+     * controls locked, or the loading spinner) until the day can be shown whole.
+     */
+    val ui: StateFlow<UiState> = combine(session.snapshot, session.status, local, ::Triple)
+        .mapLatest { (snap, op, l) -> render(snap, op, l, scriptFor(snap)) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Loading)
 
     init {
         viewModelScope.launch { open { session.load() } }
+        viewModelScope.launch { settings.shopDaySpeed.collect { speed -> local.update { it.copy(speed = speed) } } }
     }
 
-    private fun render(snap: GameSession.Snapshot?, op: Status, l: Local): UiState {
+    /** The last resolved day while it has not been watched to its end. */
+    private fun unwatched(snap: GameSession.Snapshot?): DayResolution? =
+        snap?.run?.lastResolution?.takeIf { GameSession.pending(snap.run, snap.legacy, snap.cursor) != DayCursor.Stage.DONE }
+
+    private suspend fun scriptFor(snap: GameSession.Snapshot?): ShopDayScript? {
+        val last = unwatched(snap) ?: return null
+        val run = snap?.run ?: return null
+        script?.takeIf { it.first === run }?.let { return it.second }
+        return withContext(compute) { ShopDay.script(last, run, engine.content, engine.config) }.also { script = run to it }
+    }
+
+    private fun render(snap: GameSession.Snapshot?, op: Status, l: Local, script: ShopDayScript?): UiState {
         if (snap == null || l.loading) return l.loadFailure?.let { UiState.LoadFailed(it, working = l.loading) } ?: UiState.Loading
         val run = snap.run ?: return UiState.Title(snap.legacy, op)
-        val watched = GameSession.pending(run, snap.legacy, snap.cursor) == DayCursor.Stage.DONE
-        if (run.isEnded && watched) {
+        val last = unwatched(snap)
+        // An unwatched day always arrives with its script: scriptFor builds it before this is called, and now() checks.
+        if (last != null && script != null) {
+            val id = last.commandId.value
+            val beats = ShopDayPosition.beats(script)
+            val at = if (l.dayId == id) l.dayAt.coerceIn(beats.indices) else ShopDayPosition.index(beats, snap.cursor?.takeIf { it.commandId == id })
+            return UiState.ShopDay(run, script, ShopDayPosition(beats, at), l.speed, l.sheet, l.gazetteOpen, l.resumed, op, l.lastError)
+        }
+        if (run.isEnded && last == null) {
             val end = closed?.takeIf { it.first === run }?.second ?: engine.closeRun(run).also { closed = run to it }
             return UiState.RunEnded(run, end, snap.legacy, claimed = run.runId.value in snap.legacy.claimedRunIds, lastError = l.lastError, op = op)
         }
-        // Until the shop-day screen exists the report dialog is the presentation of the day: it shows until the cursor is DONE.
-        return UiState.Playing(run, l.panel, l.draft, l.revealWeaponId, run.lastResolution.takeIf { !watched }, l.lastError, op, l.blessingOfferDismissedDay)
+        return UiState.Playing(run, l.panel, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay)
     }
 
-    /** The screen as it stands this instant ([ui] may be one dispatch behind). */
-    private fun now(): UiState = render(session.snapshot.value, session.status.value, local.value)
+    /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
+    private fun now(): UiState {
+        val snap = session.snapshot.value
+        val built = script?.takeIf { it.first === snap?.run }?.second
+        if (unwatched(snap) != null && built == null) return ui.value
+        return render(snap, session.status.value, local.value, built)
+    }
 
     /** A load, a retried load or a start over: the screen leaves Loading / LoadFailed only when it has finished. */
     private suspend fun open(read: suspend () -> Result) {
         local.update { it.copy(loading = true) }
         val result = read()
         if (result is Result.Done) handOverDismissedReport()
-        local.update { it.copy(loading = false, loadFailure = (result as? Result.Failed)?.failure) }
+        // Opened onto a day that was resolved and saved but not watched to its end: the Resume prompt.
+        local.update { it.copy(loading = false, loadFailure = (result as? Result.Failed)?.failure, resumed = unwatched(session.snapshot.value) != null) }
     }
 
     /**
@@ -200,7 +273,7 @@ class GameViewModel(val engine: GameEngine, private val session: GameSession, va
     /** From the title (no run) or from the run-end screen (the session refuses it until the legacy is claimed). */
     private fun beginEra(seed: Long?) {
         val snap = session.snapshot.value ?: return
-        launch(Op.BeginEra(seed ?: (System.nanoTime() xor snap.legacy.eras.size.toLong()), snap.run?.runId)) { edit { Local(loading = false) } }
+        launch(Op.BeginEra(seed ?: (System.nanoTime() xor snap.legacy.eras.size.toLong()), snap.run?.runId)) { edit { Local(loading = false, speed = it.speed) } }
     }
 
     fun selectPanel(panel: Panel) = edit { it.copy(panel = panel) }
@@ -212,20 +285,99 @@ class GameViewModel(val engine: GameEngine, private val session: GameSession, va
     fun dismissBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = session.snapshot.value?.run?.day, panel = Panel.HOME) }
     fun reopenBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = null) }
 
-    /** The report's own button: the day has been read, so its cursor moves to DONE (which unlocks planning, or opens the run end). */
-    fun dismissReport() {
-        val last = session.snapshot.value?.run?.lastResolution ?: return
-        edit { it.copy(panel = Panel.HOME) }
-        viewModelScope.launch { session.run(Op.MoveCursor(DayCursor(last.commandId.value, DayCursor.Stage.DONE))) }
+    // The shop day (plan 6.5). These move the saved position and what is open over it; only chooseBlessing issues a command.
+
+    private fun shopDay(): UiState.ShopDay? = now() as? UiState.ShopDay
+
+    /**
+     * Shows card [target]. The cursor row only ever moves forward. A move into the ending (Forge fallen, Blessing,
+     * Tomorrow) is awaited before the card shows, because the session unlocks the blessing on it; any other move is
+     * written behind the screen, where a lost write only repeats a visit after a kill.
+     */
+    private fun moveTo(target: Int) {
+        val s = shopDay() ?: return
+        val id = s.state.lastResolution?.commandId?.value ?: return
+        val to = s.position.copy(at = target.coerceIn(s.position.beats.indices))
+        val cursor = to.cursor(id)
+        val stored = session.snapshot.value?.cursor?.takeIf { it.commandId == id }
+        val ahead = stored == null || compareValuesBy(cursor, stored, { it.stage }, { it.index }) > 0
+        val place = { local.update { it.copy(dayId = id, dayAt = to.at, resumed = false) } }
+        when {
+            !ahead -> place()
+            cursor.stage == DayCursor.Stage.TOMORROW -> viewModelScope.launch { session.run(Op.MoveCursor(cursor)); place() }
+            else -> { place(); viewModelScope.launch { session.run(Op.MoveCursor(cursor)) } }
+        }
+    }
+
+    /** The next card. Nothing follows the Blessing card but a choice, and nothing follows the last card but [acknowledge]. */
+    fun next() {
+        val s = shopDay() ?: return
+        if (!s.resumed && s.position.beat != Beat.Blessing && !s.position.isLast) moveTo(s.position.at + 1)
+    }
+
+    /** "Resume the day" on the Resume prompt: the day goes on from its saved card. */
+    fun resumeDay() = local.update { it.copy(resumed = false) }
+
+    /** Never asks: nothing is lost by skipping. Lands on Forge fallen, Blessing or Tomorrow. */
+    fun skipDay() {
+        val s = shopDay() ?: return
+        if (s.position.at < s.position.ending) moveTo(s.position.ending) else resumeDay()
+    }
+
+    fun setSpeed(speed: ShopDaySpeed) = viewModelScope.launch { settings.setShopDaySpeed(speed) }
+    fun openGazette() = local.update { it.copy(gazetteOpen = true) }
+    fun closeGazette() = local.update { it.copy(gazetteOpen = false) }
+    fun openSheet(sheet: ShopDaySheet) = local.update { it.copy(sheet = sheet) }
+    fun closeSheet() = local.update { it.copy(sheet = null) }
+
+    /** The one command the shop day issues: a next-day planning command that draws no RNG. Then the Tomorrow card. */
+    fun chooseBlessing(id: BlessingId) {
+        val s = shopDay() ?: return
+        if (s.position.beat != Beat.Blessing) return
+        val day = s.state.lastResolution?.commandId?.value ?: return
+        launch(Op.Dispatch(Command.ChooseBlessing(id), s.state.runId)) { local.update { it.copy(dayId = day, dayAt = Int.MAX_VALUE) } }
+    }
+
+    /** "Decide later": the offer stays in the saved game, where the Shop shows it. */
+    fun decideLater() {
+        val s = shopDay() ?: return
+        if (s.position.beat == Beat.Blessing) moveTo(s.position.at + 1)
     }
 
     /**
-     * System back and a tap outside a dialog. Returns true when it was consumed. It never acknowledges a report:
-     * only the report's own button does. Away from Shop it returns to Shop; on Shop it is not consumed (leaves the app).
+     * "Begin day N" on the Tomorrow card and "See the legacy" on Forge fallen: the day has been watched, so its cursor
+     * moves to DONE (awaited), which unlocks planning or opens the run end. Only those two cards acknowledge a day.
+     */
+    fun acknowledge() {
+        val s = shopDay() ?: return
+        val last = s.state.lastResolution ?: return
+        if (s.resumed || !s.position.isLast) return
+        // An offer still open was put off on the Blessing card: planning does not ask again today.
+        edit { it.copy(panel = Panel.HOME, blessingOfferDismissedDay = if (s.state.pendingBlessingOffer.isNotEmpty()) s.state.day else it.blessingOfferDismissedDay) }
+        viewModelScope.launch {
+            session.run(Op.MoveCursor(DayCursor(last.commandId.value, DayCursor.Stage.DONE)))
+            local.update { it.copy(dayId = null, sheet = null, gazetteOpen = false) }
+        }
+    }
+
+    /**
+     * System back and a tap outside a dialog. Returns true when it was consumed. It never acknowledges a day: in the
+     * shop day it closes what is open, else steps back one card (on the Blessing card it means "Decide later"), and on
+     * the first card or the Resume prompt it is not consumed. Away from Shop it returns to Shop; on Shop it leaves the app.
      */
     fun back(): Boolean {
+        val day = shopDay()
+        if (day != null) {
+            when {
+                !day.backIsConsumed -> return false
+                day.gazetteOpen -> closeGazette()
+                day.sheet != null -> closeSheet()
+                day.position.beat == Beat.Blessing -> decideLater()
+                else -> moveTo(day.position.at - 1)
+            }
+            return true
+        }
         val s = now() as? UiState.Playing ?: return false
-        if (s.showReport != null) return true
         if (s.dest == Dest.SHOP) return false
         selectDest(Dest.SHOP)
         return true

@@ -32,7 +32,7 @@ class SavedStateTest {
         try {
             val start = engine.newRun(LegacyProfile(), 42L)
             val repo = FakeGameRepository(SaveCodec.encodeRun(start), SaveCodec.encodeLegacy(start.legacy))
-            fun open(saved: SavedStateHandle) = GameViewModel(engine, GameSession(engine, repo, compute = StandardTestDispatcher(testScheduler)), FakeSettings(), saved)
+            fun open(saved: SavedStateHandle) = GameViewModel(engine, GameSession(engine, repo, compute = StandardTestDispatcher(testScheduler)), FakeSettings(), saved, compute = StandardTestDispatcher(testScheduler))
 
             val handle = SavedStateHandle()
             val vm = open(handle); advanceUntilIdle()

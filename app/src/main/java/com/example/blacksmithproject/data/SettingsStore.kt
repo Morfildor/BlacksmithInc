@@ -14,14 +14,19 @@ import kotlinx.coroutines.flow.map
 
 private val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
+/** How the shop day moves on. TAP (the default) never advances by itself; 1x and 2x are opt-in (plan 6.5). */
+enum class ShopDaySpeed { TAP, X1, X2 }
+
 /** What the ViewModel and the screens need from settings; the seam that lets the ViewModel run in a JVM test. */
 interface Settings {
     val reducedMotion: Flow<Boolean>
     val haptics: Flow<Boolean>
     val seenTips: Flow<Set<String>>
+    val shopDaySpeed: Flow<ShopDaySpeed>
     suspend fun setReducedMotion(value: Boolean)
     suspend fun setHaptics(value: Boolean)
     suspend fun markTipSeen(id: String)
+    suspend fun setShopDaySpeed(value: ShopDaySpeed)
     suspend fun dismissedReport(): String?
 }
 
@@ -50,6 +55,14 @@ class SettingsStore(private val context: Context) : Settings {
 
     override suspend fun markTipSeen(id: String) {
         context.settingsDataStore.edit { it[seenTipsKey] = (it[seenTipsKey] ?: emptySet()) + id }
+    }
+
+    private val shopDaySpeedKey = stringPreferencesKey("shop_day_speed")
+
+    override val shopDaySpeed: Flow<ShopDaySpeed> = context.settingsDataStore.data.map { prefs -> ShopDaySpeed.entries.firstOrNull { it.name == prefs[shopDaySpeedKey] } ?: ShopDaySpeed.TAP }
+
+    override suspend fun setShopDaySpeed(value: ShopDaySpeed) {
+        context.settingsDataStore.edit { it[shopDaySpeedKey] = value.name }
     }
 
     /**

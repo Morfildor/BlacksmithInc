@@ -17,6 +17,7 @@ class FakeGameRepository(var run: String? = null, var legacy: String? = null) : 
     /** The next commit is stored and then reported as failed (the transaction committed, the error surfaced afterwards). */
     var failNextCommitAfterWriting: Throwable? = null
     var failNextCursor: Throwable? = null
+    var failEveryCursor: Throwable? = null
     var failNextLoad: Throwable? = null
     var commitCount = 0
     var loadCount = 0
@@ -50,6 +51,7 @@ class FakeGameRepository(var run: String? = null, var legacy: String? = null) : 
 
     override suspend fun saveCursor(cursor: String?) {
         failNextCursor?.let { failNextCursor = null; throw SaveFailure.Io(it) }
+        failEveryCursor?.let { throw SaveFailure.Io(it) }
         this.cursor = cursor
     }
 

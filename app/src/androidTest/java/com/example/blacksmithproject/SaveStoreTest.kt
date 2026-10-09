@@ -14,6 +14,7 @@ import com.tinyblacksmith.core.engine.acceptedOrThrow
 import com.tinyblacksmith.core.model.CommandId
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.LegacyProfile
+import com.tinyblacksmith.core.persistence.DayCursor
 import com.tinyblacksmith.core.persistence.SaveCodec
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertArrayEquals
@@ -62,6 +63,27 @@ class SaveStoreTest {
         store.saveAtomically(null, legacy)
         assertNull(store.loadRun())
         assertEquals(legacy, store.loadLegacy())
+    }
+
+    /** The shop-day cursor is its own row: writing it never touches the save, and saving never touches it. */
+    @Test
+    fun theCursorRowLivesBesideTheSaveAndNeitherTouchesTheOther() = runBlocking {
+        val store = store()
+        val state = engine.newRun(LegacyProfile(), 42)
+        store.saveAtomically(state, state.legacy)
+        val saved = store.load()
+        assertNull(saved.cursor)
+
+        val cursor = DayCursor("${state.runId.value}:day1", DayCursor.Stage.COUNTER, 2).encode()
+        store.saveCursor(cursor)
+        assertEquals(saved.copy(cursor = cursor), store.load())
+        assertEquals(DayCursor("${state.runId.value}:day1", DayCursor.Stage.COUNTER, 2), DayCursor.decode(store.load().cursor!!))
+
+        val next = engine.handle(state, Command.EndDay(CommandId("${state.runId.value}:day1"))).acceptedOrThrow().state
+        store.saveAtomically(next, next.legacy)
+        assertEquals("a commit leaves the cursor row alone", cursor, store.load().cursor)
+        store.saveCursor(null)
+        assertEquals(StoredRows(SaveCodec.encodeRun(next), SaveCodec.encodeLegacy(next.legacy), null), store.load())
     }
 
     /** A row that does not decode is reported by the session and left exactly as stored; starting over renames it, never deletes it. */

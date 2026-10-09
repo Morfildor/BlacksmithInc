@@ -124,7 +124,8 @@ class GameSession(
 
     private suspend fun runLocked(op: Op): Result {
         val snap = _snapshot.value ?: return Result.Stale
-        if (op is Op.MoveCursor) return moveCursor(snap, op.cursor)
+        // A cursor only ever names the stored last day: one issued against an earlier day arrives too late to mean anything.
+        if (op is Op.MoveCursor) return if (snap.run?.lastResolution?.commandId?.value == op.cursor.commandId) moveCursor(snap, op.cursor) else Result.Stale
         _status.value = Status.Working(op)
         var result: Result? = null
         try {
