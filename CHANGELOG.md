@@ -6,6 +6,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 `app/build.gradle.kts` (`versionName`, `versionCode` increments on every store-facing build).
 
 ## [Unreleased]
+
+## [0.4.0] - 2026-10-09
+Gameplay depth (balance v3): shop actions, workshop tools, elite foes and warlords, hero ambitions, trade-ins.
+
 ### Added
 - Shop actions on finished weapons: Salvage (1 energy, returns the core material), Hone (2 energy and one unit of the
   core for +6 quality, once per weapon) and Arm the watch (a fifth of the weapon's power joins the town's defense, up
