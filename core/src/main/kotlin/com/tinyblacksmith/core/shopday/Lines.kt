@@ -97,6 +97,31 @@ object Lines {
 
     private fun bought(blade: String?, sale: Sale?): String? = sale?.listedPrice?.let { "Bought ${blade ?: "a blade"} for $it gold." }
 
+    /**
+     * What the counter knows this customer by: the visit's stored cue ([Recognitions]) in words, or null when the visit
+     * has none or a field its sentence needs is gone. Narration, never speech. [state] is read for the lineage only.
+     */
+    fun recognition(visit: MarketVisit, day: ShopDayScript, state: GameState): String? {
+        val r = visit.recognition ?: return null
+        val hero = visit.heroName
+        val carried = visit.customer?.equipped?.takeIf { it.weaponId == r.weaponId }
+        val blade = (day.blade(r.weaponId) ?: carried)?.name
+        return when (r.cue) {
+            RecognitionCue.FIRST_VISIT -> "$hero's first time at your counter."
+            RecognitionCue.FIRST_BLADE -> blade?.let { "$hero leaves with $it: a first blade from your forge." }
+            RecognitionCue.BECAME_REGULAR -> listOfNotNull(r.count?.takeIf { it >= 2 }?.let { "That makes $it from your forge." }, "$hero is a regular now.").joinToString(" ")
+            RecognitionCue.REGULAR_RETURNS -> r.day?.let { "$hero, a regular, last in on day $it." }
+            RecognitionCue.STILL_CARRIES -> blade?.let { b -> r.count?.let { "$hero still carries $b: ${if (it == 1) "1 victory" else "$it victories"} with it." } }
+            RecognitionCue.BLADE_WORN -> blade?.let { "$hero lays $it on the counter. The edge is worn." }
+            RecognitionCue.HELD_THE_WALL -> blade?.let { b -> r.day?.let { "$hero held the wall on day $it with $b." } }
+            RecognitionCue.SLEW_AN_ELITE -> blade?.let { b -> carried?.title?.let { "$hero brought down an elite foe with $b. They call it '$it' now." } }
+            RecognitionCue.KEPT_THE_VOW -> r.count?.let { "$hero kept the vow, $it foes routed, and came back for more steel." }
+            RecognitionCue.MENTORS_BLADE -> blade?.let { b -> visit.customer?.mentorName?.let { "$hero trained under $it and carries $it's old $b." } }
+            RecognitionCue.OF_THE_LINE -> visit.heroId?.let { state.heroes[it]?.lineageId }?.let { id -> state.legacy.lineages.firstOrNull { it.id == id } }?.let { "$hero, of the line of ${it.heroName}, who ${it.deed}." }
+            RecognitionCue.WAITED_YESTERDAY -> "$hero could not get in yesterday and is first through the door."
+        }
+    }
+
     /** One group of the tally: "3 could afford nothing on the shelf", "1 bought (Iron Axe, 60 gold)". */
     fun tally(group: TallyGroup, day: ShopDayScript): String {
         val n = group.visits.size

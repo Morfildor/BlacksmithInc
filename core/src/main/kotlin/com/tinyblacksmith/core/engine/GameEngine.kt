@@ -20,6 +20,7 @@ import com.tinyblacksmith.core.persistence.WeaponHistoryCompaction
 import com.tinyblacksmith.core.persistence.WeaponPruning
 import com.tinyblacksmith.core.rng.RngState
 import com.tinyblacksmith.core.rng.RngStream
+import com.tinyblacksmith.core.shopday.Recognitions
 
 /**
  * Pure, deterministic command handler (GDD 13.2). No Android, no coroutines, no platform randomness.
@@ -302,6 +303,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // 2. Commissions, then customers: a patron collects before the browsers arrive, so the blade a request was promised is not sold first.
         Market.resolveCommissions(ctx)
         Market.resolveShelfVisits(ctx)
+        Recognitions.apply(ctx)  // what the counter knows each browser by; narration, no draw
         Market.resolveMerchant(ctx)  // GDD 7 merchant resale, after the smith's own customers; draws no RNG
         // 3. Equipment/finances were applied inside purchases.
         // 4-5. Autonomous activities and encounters.

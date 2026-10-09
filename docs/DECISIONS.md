@@ -2304,3 +2304,62 @@ probe test that is not committed. Raw outputs `T3.4-*.txt` and the full tables `
 Wear, purses, prices, trade-ins, energy, siege interval, champions: unchanged. Guild Patronage and festival seats 2 against 3 are sweep
 step 5 (T3.6). 10,000 seeds are step 7 (T5.5). The Town list and the counter at 16 heroes on a device are T3.7. Faces repeat among twelve
 heroes on about 89 % of days until T3.3 gives each hero a saved face.
+
+## Recognition lines at the counter (2026-10-09, task T3.5; N05)
+
+One recognition line at most per browsing visit, chosen in core at End Day (`shopday/Recognition.kt`, object `Recognitions`) and stored on
+the visit (`MarketVisit.recognition`), so the counter, a relaunch and any later reader show the same line. Sentences are authored templates
+in `shopday/Lines.recognition`; a sentence whose field is gone is not shown. Narration only: no gameplay stream is drawn and no rule reads
+what it writes. Outcomes are unchanged: `golden/state_rules3.txt` passes unrecorded, and the nine 1,000-run simulations (base seeds 1 /
+10001 / 20001 x classic policies, bots, maxed accounts) are identical before and after except the new recognition line and the corrected
+face line. No balance or content number changed; neither fingerprint moved.
+
+**Rules.** Milestones are told once per hero per run, the rarer first when one visit earns several: a descendant's first visit, became a
+regular, first blade, first visit, back from the wall with a blade of yours, a kept slayer's vow. The last two wait for the next visit
+when another milestone wins; the others are spent. Recurring lines (a regular returns, still carries a blade bought here, a worn edge,
+an elite slain with a titled blade, the retired mentor's blade, could not get in yesterday) need two earlier visits, three days since the
+hero's last line of any kind, and never repeat the hero's previous cue; among several the pick is a hash of run seed, hero ID and day.
+Memory is three defaulted `Hero` fields (`lastLineDay`, `lastLineCue`, `milestoneLines`) inside the unreleased schema-4 step; an older save
+reads them as "nothing told yet". Commission and empty-shelf visits carry no line.
+
+**Pacing constants** (`Recognitions`, presentation like `ShopDay.FEATURED_MAX`, not `BalanceConfig`): `INTRO_DAYS` 3, `INTRO_DAY_MAX` 1,
+`RECURRING_MIN_VISITS` 2, `COOLDOWN_DAYS` 3.
+
+**Departures from plan 4.5, each forced by its own targets.**
+- "Milestones always show" against "days 1-3 at most 20 % of visits": uncapped, 52 % of day 1-3 visits carried a line (first blades; a
+  first visit on every visit of day 1 on top). So on days 1-3 a first visit is not a line and a day tells one line at most; a first blade
+  that loses that day is not told later. Measured after: 19.5-19.9 % (BALANCED_FAIR).
+- No per-day cap after day 3. "Never more than three in the featured visits" holds because three visits are featured.
+- "Brought down {foe}" reads "an elite foe": the foe's name is not a stored field of the hero or the record.
+- "The edge is {worn / battered}" reads "worn": a second word needs a second threshold, which nothing else uses.
+
+**Share of browsing visits with a line** (1,000 runs; base seeds 1 / 10001 / 20001):
+
+| policy | days 1-3 | days 4-5 | from day 6 (target 35-50 %) |
+|---|---|---|---|
+| BALANCED_FAIR | 19.8 / 19.9 / 19.5 | 42.4 / 42.6 / 42.5 | 42.6 / 42.6 / 42.3 |
+| BALANCED_ACTIVE | 18.9 / 19.0 / 18.6 | 41.2 / 40.8 / 42.0 | 36.8 / 36.7 / 36.9 |
+| SYNERGY | 18.7 / 18.8 / 18.5 | 43.9 / 43.7 / 42.5 | 48.9 / 48.4 / 48.6 |
+| NOVICE | 15.9 / 15.9 / 15.8 | 42.2 / 42.1 / 42.3 | 44.8 / 44.5 / 45.0 |
+| EXPERT | 18.3 / 18.3 / 18.4 | 38.0 / 38.1 / 37.8 | 50.4 / 50.4 / 50.4 |
+| BALANCED_EXPENSIVE | 5.4 / 5.2 / 5.4 | 28.0 / 27.5 / 27.7 | 25.2 / 24.7 / 25.0 |
+| maxed BALANCED_FAIR | 12.6 / 12.5 / 12.4 | 42.1 / 41.3 / 41.2 | 49.0 / 49.0 / 49.0 |
+| maxed EXPERT | 14.1 / 13.8 / 13.7 | 34.0 / 34.5 / 35.0 | 49.8 / 49.9 / 50.0 |
+
+Outside the target: EXPERT by 0.4 points (above), and the two policies that price at 180 % (about 25 %: almost nobody buys, so there are
+few blades to speak of). Every other of the 33 rows is inside 36-50 %. BALANCED_FAIR, seed 1: 2.25 lines a day; of the lines, still
+carries 26 %, a regular returns 20 %, first blade 17 %, worn edge 9 %, became a regular 8 %, held the wall 6 %, waited yesterday 6 %,
+elite 4 %, kept the vow 3 %, first visit 2 %, mentor's blade 0.4 %.
+
+**Simulator.** `--customers` prints the recognition line (share by day band, lines a day, cue mix). Its "face shared" number now reads
+the stored face (`Appearance.keyOf`) instead of the pre-T3.3 hash: 25-42 % of days across the classic policies (it printed 88-90 %),
+0.4 pairs a day, never more than three alike. It is above zero because a class has three to five faces (plan band: reported once a class
+has more living members than faces).
+
+**Tests.** `RecognitionTest` (6): `everyCueIsJustifiedByItsFields` (30 towns to day 30, each stored line checked against the morning
+state; eleven of twelve cues occur, the mentor's blade is built by hand in `theMentorsBladeIsToldOnlyWhileItIsCarried`),
+`milestonesShowOncePerHeroPerRun`, `recurringLinesRespectTheCooldown`, `atMostThreeAmongTheFeatured` (also the opening-day cap and a
+30-55 % share from day 6 under the golden script), `choiceLeavesEveryRngStreamUnchanged`.
+
+**Not done here.** The counter does not show the line yet (the app half of T3.5, `VisitCard` and the regular pip, is the UI agents').
+The Gazette text is unchanged. The later cues of plan 4.5 (a want answered, the guild paid, once another owner's) belong to their tasks.
