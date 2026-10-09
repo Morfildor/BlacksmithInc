@@ -30,6 +30,9 @@ $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && shot 01_title
 tap "Light the forge" || exit 1
+# A new run lands on the Home dashboard; the forge is one tab over.
+wait_text "Today" && shot 02_home
+tap "Forge" || exit 1
 wait_text "Forge weapon" && shot 02_workshop
 scroll_to "Sword" && tap "Sword"; scroll_to "Iron" && tap "Iron"; scroll_to "Ember Resin" && tap "Ember Resin"
 scroll_to "Forge weapon"; shot 03_forge_ready

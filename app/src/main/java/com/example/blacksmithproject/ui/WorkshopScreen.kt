@@ -44,7 +44,7 @@ import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.CommissionStatus
 
 /**
- * One portrait workshop with six panels (GDD 12). Chrome is deliberately thin: a three-stat top bar, the panel,
+ * One portrait workshop with seven panels (GDD 12). Chrome is deliberately thin: a three-stat top bar, the panel,
  * one End Day action and the nav bar. Forge integrity and the siege live on the Forge and Town panels.
  */
 @Composable
@@ -84,6 +84,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
                     Column(Modifier.fillMaxWidth().verticalScroll(scroll).padding(horizontal = Space.md, vertical = Space.sm)) {
                         tip?.let { TipBanner(it, vm) }
                         when (s.panel) {
+                            Panel.HOME -> HomePanel(s, vm)
                             Panel.MARKET -> MarketPanel(s, vm)
                             Panel.TOWN -> TownPanel(s, vm)
                             Panel.JOURNAL -> JournalPanel(s, vm)
@@ -181,11 +182,11 @@ private fun Stat(icon: Int, label: String, value: String) {
 }
 
 fun panelName(p: Panel) = when (p) {
-    Panel.FORGE -> "Forge"; Panel.MARKET -> "Market"; Panel.TOWN -> "Town"; Panel.JOURNAL -> "Journal"; Panel.GAZETTE -> "Gazette"; Panel.LEGACY -> "Legacy"
+    Panel.HOME -> "Home"; Panel.FORGE -> "Forge"; Panel.MARKET -> "Market"; Panel.TOWN -> "Town"; Panel.JOURNAL -> "Journal"; Panel.GAZETTE -> "Gazette"; Panel.LEGACY -> "Legacy"
 }
 
 private fun panelIcon(p: Panel) = when (p) {
-    Panel.FORGE -> R.drawable.icon_nav_forge; Panel.MARKET -> R.drawable.icon_nav_market; Panel.TOWN -> R.drawable.icon_nav_town
+    Panel.HOME -> R.drawable.icon_day; Panel.FORGE -> R.drawable.icon_nav_forge; Panel.MARKET -> R.drawable.icon_nav_market; Panel.TOWN -> R.drawable.icon_nav_town
     Panel.JOURNAL -> R.drawable.icon_nav_journal; Panel.GAZETTE -> R.drawable.icon_nav_gazette; Panel.LEGACY -> R.drawable.icon_nav_legacy
 }
 

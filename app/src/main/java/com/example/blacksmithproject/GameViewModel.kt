@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-enum class Panel { FORGE, MARKET, TOWN, JOURNAL, GAZETTE, LEGACY }
+enum class Panel { HOME, FORGE, MARKET, TOWN, JOURNAL, GAZETTE, LEGACY }
 
 data class ForgeDraft(
     val mode: ForgeMode = ForgeMode.QUICK,
@@ -38,7 +38,7 @@ sealed interface UiState {
     data class Title(val legacy: LegacyProfile, val hasSavedRun: Boolean) : UiState
     data class Playing(
         val state: GameState,
-        val panel: Panel = Panel.FORGE,
+        val panel: Panel = Panel.HOME,
         val draft: ForgeDraft = ForgeDraft(),
         val revealWeaponId: WeaponId? = null,
         val showReport: DayResolution? = null,
@@ -91,7 +91,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
     fun updateDraft(transform: (ForgeDraft) -> ForgeDraft) = _ui.update { if (it is UiState.Playing) it.copy(draft = transform(it.draft)) else it }
     fun dismissReveal() = _ui.update { if (it is UiState.Playing) it.copy(revealWeaponId = null) else it }
     fun dismissError() = _ui.update { if (it is UiState.Playing) it.copy(lastError = null) else it }
-    fun dismissBlessingOffer() = _ui.update { if (it is UiState.Playing) it.copy(blessingOfferDismissedDay = it.state.day, panel = Panel.FORGE) else it }
+    fun dismissBlessingOffer() = _ui.update { if (it is UiState.Playing) it.copy(blessingOfferDismissedDay = it.state.day, panel = Panel.HOME) else it }
     fun reopenBlessingOffer() = _ui.update { if (it is UiState.Playing) it.copy(blessingOfferDismissedDay = null) else it }
 
     fun dismissReport() {
@@ -99,7 +99,7 @@ class GameViewModel(app: Application) : AndroidViewModel(app) {
         if (current.state.isEnded) {
             _ui.value = UiState.RunEnded(engine.closeRun(current.state), current.state.legacy, claimed = false)
         } else {
-            _ui.value = current.copy(showReport = null, panel = Panel.FORGE)
+            _ui.value = current.copy(showReport = null, panel = Panel.HOME)
         }
     }
 

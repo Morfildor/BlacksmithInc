@@ -6,6 +6,14 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 `app/build.gradle.kts` (`versionName`, `versionCode` increments on every store-facing build).
 
 ## [Unreleased]
+### Added
+- Home panel: the first tab and the panel the workshop opens on (and returns to after the day report or a deferred
+  blessing). One block per concern, each tapping through to the panel where the action happens: today's day, era,
+  energy, gold, forge integrity and reputation; the next siege with the Town outlook and armory; the shelf with
+  yesterday's visitors and why they left; open commissions with reward and deadline; the champions, their weapons
+  and the wounded; yesterday's lede and tally; a pending blessing; and the materials that have run out. A siege within two
+  days or against the odds, then commissions waiting for an answer, come first.
+
 ### Changed
 - The end-of-day report and the Gazette archive are laid out as an edition: the biggest news as the lede, a one-line
   tally (gold taken, visitors who bought, expeditions won and lost), then Shop (sales, commissions, who left and why),
