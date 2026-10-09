@@ -149,6 +149,40 @@ object Market {
         }
     }
 
+    /**
+     * GDD 7 merchant resale. A fallen hero's blade a travelling merchant picked up ([WeaponLocation.Lost.WITH_MERCHANT],
+     * dated the day the hero fell) reaches Emberfall `weaponFates.merchantDelayDays` days later and is offered at the
+     * going rate for `weaponFates.merchantStayDays` End Days. The living hero who values it most by the shelf's own
+     * [evaluate], and can pay in full, buys it: the gold goes to the merchant and leaves the economy (no trade-in, nothing
+     * for the smith). Unsold, the merchant moves on and the blade is lost for good. Draws no RNG.
+     */
+    fun resolveMerchant(ctx: ResolutionContext) {
+        val config = ctx.config
+        for (w in ctx.weapons.values.filter { it.isWithMerchant }.sortedBy { it.id.value }) {
+            val arrives = (w.location as WeaponLocation.Lost).day + config.weaponFates.merchantDelayDays
+            if (ctx.day < arrives) continue
+            val fallenId = w.history.lastOrNull { it.kind == "SCAVENGED" }?.subjectIds?.firstOrNull()
+            val fallen = fallenId?.let { ctx.heroes[HeroId(it)]?.fullName } ?: "a fallen hero"
+            if (ctx.day == arrives) ctx.emit(EventType.WEAPON_SURFACED, 4, "A travelling merchant reached Emberfall offering ${w.name}, the blade $fallen fell with.", listOfNotNull(w.id.value, fallenId))
+            val price = askingPrice(w, config)
+            val offer = w.copy(location = WeaponLocation.Shelf(price))
+            val buyer = ctx.aliveHeroes().filter { it.gold >= price }
+                .map { it to evaluate(ctx, it, ctx.equippedWeapon(it.id), offer, 0.5) }
+                .filter { (_, e) -> e.improvement > 0 && e.utility >= config.purchaseUtilityThreshold }
+                .maxByOrNull { (_, e) -> e.utility }?.first
+            if (buyer != null) {
+                ctx.updateHero(buyer.copy(gold = buyer.gold - price))
+                ctx.addWeaponHistory(w.id, "RESOLD", "Sold to ${buyer.fullName} by a travelling merchant for $price gold.", listOf(buyer.id.value))
+                giveAndEquip(ctx, ctx.hero(buyer.id), ctx.weapon(w.id))
+                ctx.emit(EventType.WEAPON_RESOLD, 5, "${buyer.fullName} bought ${w.name}, the blade $fallen fell with, from a travelling merchant for $price gold.", listOf(buyer.id.value, w.id.value), mapOf("price" to price.toString(), WeaponFate.KEY to WeaponFate.RESOLD.name))
+            } else if (ctx.day >= arrives + config.weaponFates.merchantStayDays - 1) {
+                ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "carried off by a travelling merchant")))
+                ctx.addWeaponHistory(w.id, "LOST", "Carried off unsold by a travelling merchant.", listOfNotNull(fallenId))
+                ctx.emit(EventType.WEAPON_LOST, 4, "The travelling merchant left Emberfall with ${w.name} unsold.", listOfNotNull(w.id.value, fallenId), mapOf(WeaponFate.KEY to WeaponFate.LOST.name))
+            }
+        }
+    }
+
     fun resolveCommissions(ctx: ResolutionContext) {
         for (c in ctx.commissions.values.sortedBy { it.id.value }) {
             if (c.status != CommissionStatus.ACCEPTED) continue

@@ -21,8 +21,25 @@ sealed class WeaponLocation {
     @Serializable object Storage : WeaponLocation()
     @Serializable data class Shelf(val price: Int) : WeaponLocation()
     @Serializable data class Owned(val heroId: HeroId, val equipped: Boolean) : WeaponLocation()
-    @Serializable data class Lost(val day: Int, val reason: String) : WeaponLocation()
+    @Serializable data class Lost(val day: Int, val reason: String) : WeaponLocation() {
+        companion object {
+            /** [reason] while a travelling merchant holds a fallen hero's blade (GDD 7 merchant resale); [day] is the day the hero fell. */
+            const val WITH_MERCHANT = "held by a travelling merchant"
+        }
+    }
     @Serializable data class Destroyed(val day: Int) : WeaponLocation()
+}
+
+/**
+ * What became of the blade a fallen hero carried (GDD 7), recorded as `data["fate"]` on the event that tells it.
+ * MERCHANT is in transit: it ends RESOLD or LOST within a bounded number of days.
+ */
+enum class WeaponFate {
+    RECOVERED, INHERITED, MERCHANT, RESOLD, SEIZED, LOST;
+
+    companion object {
+        const val KEY = "fate"
+    }
 }
 
 @Serializable
@@ -65,6 +82,7 @@ data class Weapon(
     /** Hone is allowed on an unhoned weapon or one worn below full condition. */
     val canBeHoned: Boolean get() = !honed || condition < 100
     val isInStorage: Boolean get() = location is WeaponLocation.Storage
+    val isWithMerchant: Boolean get() = (location as? WeaponLocation.Lost)?.reason == WeaponLocation.Lost.WITH_MERCHANT
     val ownerId: HeroId? get() = (location as? WeaponLocation.Owned)?.heroId
     val isEquipped: Boolean get() = (location as? WeaponLocation.Owned)?.equipped == true
     val listedPrice: Int? get() = (location as? WeaponLocation.Shelf)?.price
@@ -150,6 +168,7 @@ enum class EventType {
     WORLD_EVENT, MILESTONE, LEGEND_RECORDED, HERO_ARRIVED,
     SIGNATURE_DISCOVERED, HERO_RETIRED, GUILD_FOUNDED, HERO_MENTORED, ARTIFACT_RETURNED, WEAPON_STOLEN, WEAPON_INHERITED,
     ELITE_SLAIN, AMBITION_FULFILLED, WEAPON_SALVAGED, WEAPON_HONED, WEAPON_DONATED, TOOL_BOUGHT, WEAPON_BROKEN,
+    WEAPON_SURFACED, WEAPON_RESOLD,
 }
 
 /** Source of truth for the Gazette and replays (GDD Appendix B). Subjects are real entity IDs. */
@@ -168,9 +187,17 @@ data class EventRecord(
 @Serializable
 data class CombatRound(val attacker: String, val defender: String, val damage: Int, val note: String)
 
+enum class ReplayKind { SIEGE, EXPEDITION }
+
 /** Read-only replay DTO; rendering it must never change outcomes (GDD 11). */
 @Serializable
-data class CombatReplay(val title: String, val day: Int, val rounds: List<CombatRound>, val outcome: String)
+data class CombatReplay(
+    val title: String, val day: Int, val rounds: List<CombatRound>, val outcome: String,
+    /** Older saves only held siege replays. The siege replay feeds the diorama; a fight is text only. */
+    val kind: ReplayKind = ReplayKind.SIEGE,
+    /** The event record a fight replay illustrates (ELITE_SLAIN, EXPEDITION_LOST or HERO_DIED of the same day). */
+    val eventId: String? = null,
+)
 
 @Serializable
 data class MarketVisit(val heroId: HeroId, val heroName: String, val purchasedWeaponId: WeaponId?, val reason: String)

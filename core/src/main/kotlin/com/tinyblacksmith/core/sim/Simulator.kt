@@ -104,6 +104,8 @@ data class RunStats(
     val toolFirstDay: Map<String, Int> = emptyMap(),
     /** Weapons in the run that carry each affix or flaw, counted at run end. */
     val affixWeapons: Map<String, Int> = emptyMap(),
+    /** What became of the blades fallen heroes carried (GDD 7), counted from the events that tell it. MERCHANT counts blades a merchant took; each ends RESOLD or LOST unless the run ends first. */
+    val weaponFates: Map<WeaponFate, Int> = emptyMap(),
 )
 
 /**
@@ -149,6 +151,7 @@ class SimulationDriver(
         var warlordsDefeated = 0
         val warlordNames = engine.content.factions.mapNotNull { it.warlordName }
         val toolFirstDay = sortedMapOf<String, Int>()
+        val weaponFates = WeaponFate.entries.associateWith { 0 }.toMutableMap()
         while (!state.isEnded && state.day <= maxDays) {
             if (state.pendingBlessingOffer.isNotEmpty()) state = engine.handle(state, Command.ChooseBlessing(state.pendingBlessingOffer.first())).state()
             for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
@@ -205,6 +208,7 @@ class SimulationDriver(
                 // The siege line names the warlord when one leads (a lost siege capitalises it); the WARLORD_DEFEATED milestone fires once per run, the tribute line on every warlord siege won.
                 warlordSieges += res.events.count { (it.type == EventType.SIEGE_WON || it.type == EventType.SIEGE_LOST) && warlordNames.any { n -> it.text.contains(n, ignoreCase = true) } }
                 warlordsDefeated += res.events.count { it.type == EventType.MILESTONE && "tribute" in it.data }
+                for (e in res.events) e.data[WeaponFate.KEY]?.let { f -> WeaponFate.valueOf(f).let { weaponFates[it] = weaponFates.getValue(it) + 1 } }
             }
             if (eventRetentionDays > 0) {
                 val cutoff = out.day - eventRetentionDays
@@ -225,6 +229,7 @@ class SimulationDriver(
             elitesSlain = elitesSlain, weaponsBroken = weaponsBroken, warlordSieges = warlordSieges, warlordsDefeated = warlordsDefeated,
             toolLevels = state.tools.toSortedMap(), toolFirstDay = toolFirstDay,
             affixWeapons = state.weapons.values.flatMap { it.affixes + it.flaws }.groupingBy { it.value }.eachCount().toSortedMap(),
+            weaponFates = weaponFates,
         )
         return stats to state
     }
@@ -380,6 +385,10 @@ data class PolicySummary(
     val toolFirstDayMean: Map<String, Double> = emptyMap(),
     /** Weapons per run carrying each affix or flaw. */
     val affixWeaponsPerRun: Map<String, Double> = emptyMap(),
+    /** Per run: what became of the blades fallen heroes carried. MERCHANT is in transit (it ends RESOLD or LOST, or the run ends first). */
+    val weaponFatesPerRun: Map<WeaponFate, Double> = emptyMap(),
+    /** GDD 15.2 artifact recovery: of those blades whose fate settled, the share that came back to Emberfall (forge, guildmate or merchant resale). */
+    val artifactRecoveryRate: Double = 0.0,
 )
 
 data class Report(val policy: Policy, val runs: List<RunStats>, val label: String = "new account") {
@@ -389,6 +398,9 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
         val forged = rarityTotals.values.sum().coerceAtLeast(1)
         val siegesFought = runs.sumOf { it.siegesSurvived + it.siegesLost }
         val toolIds = runs.flatMap { it.toolLevels.keys }.toSortedSet()
+        val fates = WeaponFate.entries.associateWith { f -> runs.sumOf { it.weaponFates[f] ?: 0 } }
+        val returned = fates.getValue(WeaponFate.RECOVERED) + fates.getValue(WeaponFate.INHERITED) + fates.getValue(WeaponFate.RESOLD)
+        val settled = returned + fates.getValue(WeaponFate.SEIZED) + fates.getValue(WeaponFate.LOST)
         return PolicySummary(
             policy = policy, label = label, runs = runs.size,
             daysP10 = percentile(days, 0.1), daysMedian = percentile(days, 0.5), daysMean = days.average(), daysP90 = percentile(days, 0.9), daysMax = days.maxOrNull() ?: 0,
@@ -411,6 +423,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             toolLevelPerRun = toolIds.associateWith { t -> runs.sumOf { it.toolLevels[t] ?: 0 }.toDouble() / runs.size },
             toolFirstDayMean = toolIds.associateWith { t -> runs.mapNotNull { it.toolFirstDay[t] }.average() },
             affixWeaponsPerRun = runs.flatMap { it.affixWeapons.keys }.toSortedSet().associateWith { a -> runs.sumOf { it.affixWeapons[a] ?: 0 }.toDouble() / runs.size },
+            weaponFatesPerRun = fates.mapValues { it.value.toDouble() / runs.size }, artifactRecoveryRate = if (settled == 0) 0.0 else returned.toDouble() / settled,
         )
     }
 
@@ -428,6 +441,8 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  hard-lock days total: ${s.hardLockDaysTotal}  runs with any hard-lock: ${s.runsWithHardLock}")
             appendLine("  shop visits/run: " + s.visitsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
             appendLine("  elites slain/run: ${f1(s.elitesSlainPerRun)}  weapons broken/run: ${f1(s.weaponsBrokenPerRun)}  warlord sieges/run: ${f1(s.warlordSiegesPerRun)}  warlords defeated/run: ${f1(s.warlordsDefeatedPerRun)}")
+            appendLine("  weapon fates on death/run: " + listOf(WeaponFate.RECOVERED, WeaponFate.INHERITED, WeaponFate.RESOLD, WeaponFate.SEIZED, WeaponFate.LOST).joinToString("  ") { "${it.name.lowercase()}=${"%.2f".format(s.weaponFatesPerRun[it] ?: 0.0)}" } +
+                "  (taken by a merchant=${"%.2f".format(s.weaponFatesPerRun[WeaponFate.MERCHANT] ?: 0.0)})  artifact recovery: ${pct(s.artifactRecoveryRate)}")
             if (s.toolLevelPerRun.isNotEmpty()) appendLine("  tools (share of runs / mean level / first day): " + s.toolLevelPerRun.keys.joinToString("  ") { t -> "$t=${pct(s.toolBoughtShare.getValue(t))}/${f1(s.toolLevelPerRun.getValue(t))}/${f1(s.toolFirstDayMean.getValue(t))}" })
             appendLine("  affix weapons/run: " + s.affixWeaponsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
             appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}")
@@ -566,6 +581,7 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
  *      --noTool id[,id] / --toolCost id=mult[,id=mult]: catalog sweeps that drop a workshop tool or scale its costs.
  *      --noAffixEffect id[,id]|all: keeps the affix but neutralises its v3 effect (bane, elite, heal, loot, wound, shatter, self-harm).
  *      --noImpact: skips the maxed-legacy and per-upgrade runs (sweeps that only need the policy rows).
+ *      --noFates: the v4 rules for a fallen hero's blade (road odds everywhere, no guild claim, no merchant); the same draws as v4.
  * Default: launch content, the GDD 15.2 policy set, maxed legacy accounts (BALANCED_FAIR and the impact policy) and
  * the per-upgrade impact sweep for the impact policy (BALANCED_FAIR by default).
  */
@@ -608,6 +624,14 @@ fun main(args: Array<String>) {
     argMap["--forgeDamageBase"]?.let { config = config.copy(forgeDamageBase = it.toDouble()); overrides["forgeDamageBase"] = it }
     argMap["--forgeDamageSlope"]?.let { config = config.copy(forgeDamageSlope = it.toDouble()); overrides["forgeDamageSlope"] = it }
     argMap["--maxForgeDamage"]?.let { config = config.copy(maxForgeDamagePerSiege = it.toInt()); overrides["maxForgeDamage"] = it }
+    if (argMap["--noFates"] == "true") {
+        config = config.copy(weaponFates = config.weaponFates.copy(
+            wallsRecoveryChance = config.weaponRecoveryChance, wallsSeizureChance = config.weaponSeizureChance,
+            eliteRecoveryChance = config.weaponRecoveryChance, eliteSeizureChance = config.weaponSeizureChance,
+            guildInheritanceChance = 0.0, merchantBaseChance = 0.0, merchantChancePerFame = 0.0,
+        ))
+        overrides["noFates"] = "true"
+    }
     val maxDays = argMap["--days"]?.toInt() ?: config.maxSimulatedDays
     val reserve = argMap["--reserve"]?.toInt() ?: SimulationDriver.DEFAULT_RESERVE
     val impactPolicy = argMap["--impactPolicy"]?.let { Policy.valueOf(it) } ?: Policy.BALANCED_FAIR

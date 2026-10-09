@@ -15,7 +15,7 @@ object EventCompaction {
         EventType.RUN_STARTED, EventType.HERO_ARRIVED, EventType.HERO_DIED, EventType.HERO_RETIRED, EventType.GUILD_FOUNDED, EventType.HERO_MENTORED,
         EventType.SIEGE_WON, EventType.SIEGE_LOST, EventType.FORGE_DESTROYED, EventType.SIGNATURE_DISCOVERED, EventType.MILESTONE,
         EventType.LEGEND_RECORDED, EventType.WORLD_EVENT, EventType.ARTIFACT_RETURNED, EventType.WEAPON_STOLEN, EventType.WEAPON_INHERITED,
-        EventType.WEAPON_RECOVERED, EventType.WEAPON_LOST,
+        EventType.WEAPON_RECOVERED, EventType.WEAPON_LOST, EventType.WEAPON_RESOLD,
     )
 
     fun keeps(event: EventRecord, today: Int, retentionDays: Int): Boolean =

@@ -23,6 +23,11 @@ object Invariants {
                 else if (!owner.isAlive) problems += "Weapon ${w.id.value} owned by ${owner.fate.name.lowercase()} hero ${owner.fullName}"
             }
             if (loc is WeaponLocation.Shelf && loc.price < 0) problems += "Weapon ${w.id.value} has negative price"
+            if (loc is WeaponLocation.Lost && w.isWithMerchant) {
+                // GDD 7 merchant resale is bounded: sold or carried off by the last End Day of the merchant's stay.
+                val leaves = loc.day + config.weaponFates.merchantDelayDays + maxOf(1, config.weaponFates.merchantStayDays)
+                if (state.day > leaves) problems += "Weapon ${w.id.value} still held by a merchant after day $leaves"
+            }
             if (w.condition !in 0..100) problems += "Weapon ${w.id.value} condition out of bounds ${w.condition}"
         }
         state.weapons.values.filter { it.isEquipped }.groupingBy { it.ownerId!! }.eachCount().forEach { (heroId, equipped) ->

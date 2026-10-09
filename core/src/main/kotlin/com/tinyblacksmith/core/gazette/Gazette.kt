@@ -38,7 +38,7 @@ object Gazette {
         EventType.ELITE_SLAIN, EventType.EXPEDITION_WON, EventType.EXPEDITION_LOST, EventType.HERO_WOUNDED, EventType.HERO_LEVELED,
         EventType.HERO_DIED, EventType.WEAPON_BROKEN, EventType.WEAPON_RECOVERED, EventType.WEAPON_STOLEN, EventType.WEAPON_LOST,
         EventType.AMBITION_FULFILLED, EventType.HERO_RETIRED, EventType.GUILD_FOUNDED, EventType.HERO_MENTORED, EventType.WEAPON_INHERITED,
-        EventType.HERO_ARRIVED,
+        EventType.HERO_ARRIVED, EventType.WEAPON_SURFACED, EventType.WEAPON_RESOLD,
     )
     private val quietTypes = setOf(EventType.HERO_PATROLLED, EventType.HERO_RESTED)
     private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)

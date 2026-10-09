@@ -7,6 +7,26 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- Notable fights are told round by round in the day report. An expedition against an elite foe, won or lost, and any
+  expedition a hero does not come back from get a short text replay under "From the field", titled with the hero and
+  the foe and folded behind an "N rounds" button like the siege's. At most three a day, the gravest first; the siege
+  still comes first and alone has the diorama. Skipping them changes nothing.
+- A fallen hero's blade has more ways to go. Comrades may still bring it back to the forge and the enemy may still
+  seize it; now it may also be gone from the field and turn up two days later with a travelling merchant, who offers
+  it for three days to the hero who wants it most and can pay in full (the gold goes to the merchant, not the shop)
+  and otherwise leaves Emberfall with it for good. A storied blade is likelier to surface, never certain to. The
+  Gazette tells each step: gone from the field, the merchant's arrival, the sale or the departure.
+- A living guildmate may inherit a fallen member's blade instead of the forge, wielding it only if it beats their
+  own. This waits on guilds: today a guild never has two living members at once.
+
+### Changed
+- Where and how a hero fell now sets the odds for the blade: an elite foe keeps its trophy more often (seized 42 %
+  of the time, was 25 %) and gives it up less often (recovered 40 %, was 50 %); a fall on the road is unchanged. A
+  fall on the walls would favour recovery (70 %), but no champion can die on the walls with the current siege numbers.
+- Simulator: per-run counters for the fate of fallen heroes' blades (recovered, inherited, resold, seized, lost) and
+  an artifact recovery rate, in the text and JSON reports; `--noFates` replays the earlier rules for comparison.
+
 ## [0.5.0] - 2026-10-09
 Home dashboard, a readable Gazette, weapon wear and weapon fame (balance v4).
 

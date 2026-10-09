@@ -277,6 +277,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // 2. Customers and commissions.
         Market.resolveShelfVisits(ctx)
         Market.resolveCommissions(ctx)
+        Market.resolveMerchant(ctx)  // GDD 7 merchant resale, after the smith's own customers; draws no RNG
         // 3. Equipment/finances were applied inside purchases.
         // 4-5. Autonomous activities and encounters.
         Heroes.resolveActivities(ctx)
@@ -297,7 +298,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val dayEvents = ctx.newEvents.toList()
         val resolution = DayResolution(
             commandId = commandId, day = day, events = dayEvents, headlines = Gazette.headlines(dayEvents),
-            visits = ctx.visits.toList(), replays = ctx.replays.toList(), defeated = ctx.phase == Phase.ENDED,
+            visits = ctx.visits.toList(), replays = Battle.dayReplays(ctx), defeated = ctx.phase == Phase.ENDED,
         )
         ctx.lastResolution = resolution
         ctx.processedEndDayIds += commandId.value

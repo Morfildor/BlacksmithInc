@@ -1,11 +1,14 @@
 package com.tinyblacksmith.core.battle
 
+import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.content.FactionDef
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.heroes.Heroes
+import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
+import com.tinyblacksmith.core.rng.Rng
 import com.tinyblacksmith.core.rng.RngStream
 import kotlin.math.roundToInt
 
@@ -50,8 +53,9 @@ object Battle {
                 }
             }
             if (elite) {
-                ctx.emit(EventType.ELITE_SLAIN, 7, "${hero.fullName} slew $encounter$weaponText and returned with $loot gold in spoils.", listOfNotNull(hero.id.value, weapon?.id?.value), mapOf("winProbability" to "%.2f".format(winProbability)))
+                val slain = ctx.emit(EventType.ELITE_SLAIN, 7, "${hero.fullName} slew $encounter$weaponText and returned with $loot gold in spoils.", listOfNotNull(hero.id.value, weapon?.id?.value), mapOf("winProbability" to "%.2f".format(winProbability)))
                 ctx.milestone("ELITE_SLAIN", "An elite foe fell to a hero of Emberfall: $encounter.")
+                ctx.replays += fightReplay(ctx, hero, weapon, encounter, heroPower, enemyPower, winProbability, slain, heroWon = true, loot, "struck the killing blow and took the spoils", "${hero.fullName} slew $encounter")
             } else {
                 ctx.emit(EventType.EXPEDITION_WON, if (weapon != null) 5 else 3, "${hero.fullName} routed $encounter$weaponText.", listOfNotNull(hero.id.value, weapon?.id?.value), mapOf("winProbability" to "%.2f".format(winProbability)))
             }
@@ -69,11 +73,13 @@ object Battle {
                 affixDefs.fold(1.0) { acc, d -> acc * d.damageTakenMultiplier } * (if (elite) config.eliteDamageMultiplier else 1.0)).toInt()
             val health = hero.health - damage
             if (health <= config.heroDeathHealthFloor) {
-                val recovered = rng.chance(config.weaponRecoveryChance)
-                kill(ctx, hero, "fell to $encounter", recovered, weaponSeized = !recovered && rng.chance(config.weaponSeizureChance))
+                val recovered = rng.chance(if (elite) config.weaponFates.eliteRecoveryChance else config.weaponRecoveryChance)
+                val died = kill(ctx, hero, "fell to $encounter", recovered, weaponSeized = !recovered && rng.chance(if (elite) config.weaponFates.eliteSeizureChance else config.weaponSeizureChance))
+                ctx.replays += fightReplay(ctx, hero, weapon, encounter, heroPower, enemyPower, winProbability, died, heroWon = false, damage, "struck ${hero.name} down", "${hero.fullName} fell")
             } else {
                 ctx.updateHero(hero.copy(health = health, lastActivity = HeroActivity.EXPEDITION))
-                ctx.emit(EventType.EXPEDITION_LOST, 3, "${hero.fullName} was driven back by $encounter$weaponText.", listOfNotNull(hero.id.value, weapon?.id?.value))
+                val lost = ctx.emit(EventType.EXPEDITION_LOST, 3, "${hero.fullName} was driven back by $encounter$weaponText.", listOfNotNull(hero.id.value, weapon?.id?.value))
+                if (elite) ctx.replays += fightReplay(ctx, hero, weapon, encounter, heroPower, enemyPower, winProbability, lost, heroWon = false, damage, "drove ${hero.name} from the field", "${hero.fullName} was driven back")
                 if (health < config.heroWoundedThreshold) ctx.emit(EventType.HERO_WOUNDED, 2, "${hero.fullName} returned wounded.", listOf(hero.id.value))
                 val breakChance = affixDefs.sumOf { it.breakChanceOnLoss }
                 if (weapon != null && breakChance > 0 && rng.chance(breakChance)) {
@@ -85,33 +91,97 @@ object Battle {
         }
     }
 
+    /**
+     * GDD 6/11: a short replay of a significant expedition (an elite fight, or one the hero did not survive), built only
+     * from numbers the resolver has already rolled: the two powers, the odds and the decisive [amount] (spoils in gold
+     * for a win, the wound for a loss). It draws no RNG and touches no state; the wording varies with the odds.
+     */
+    private fun fightReplay(
+        ctx: ResolutionContext, hero: Hero, weapon: Weapon?, encounter: String, heroPower: Double, enemyPower: Double, winProbability: Double,
+        event: EventRecord, heroWon: Boolean, amount: Int, finish: String, outcome: String,
+    ): CombatReplay {
+        val foe = encounter.replaceFirstChar { it.uppercase() }
+        val stand = when {
+            winProbability >= 0.65 -> "gave ground"
+            winProbability <= 0.35 -> "pressed hard"
+            else -> "stood firm"
+        }
+        val rounds = listOf(
+            CombatRound(hero.fullName, encounter, heroPower.roundToInt(), weapon?.let { "met $encounter with ${it.name}" } ?: "met $encounter bare-handed"),
+            CombatRound(foe, hero.fullName, enemyPower.roundToInt(), stand),
+            if (heroWon) CombatRound(hero.fullName, encounter, amount, finish) else CombatRound(foe, hero.fullName, amount, finish),
+        )
+        return CombatReplay("${hero.fullName} vs $encounter", ctx.day, rounds, outcome, ReplayKind.EXPEDITION, event.id)
+    }
+
+    /** The day's report: the siege first (it alone feeds the diorama), then the most significant fights, capped so the report and the save stay small. */
+    fun dayReplays(ctx: ResolutionContext): List<CombatReplay> {
+        val priority = ctx.newEvents.associate { it.id to it.priority }
+        val (fights, sieges) = ctx.replays.partition { it.kind == ReplayKind.EXPEDITION }
+        return sieges + fights.sortedByDescending { priority[it.eventId] ?: 0 }.take(ctx.config.weaponFates.maxExpeditionReplaysPerDay)
+    }
+
     /** A fight or a siege wears the blade; Hone restores it (GDD 6 condition factor). */
     private fun wear(ctx: ResolutionContext, weaponId: WeaponId, amount: Int) {
         val w = ctx.weapon(weaponId)
         ctx.updateWeapon(w.copy(condition = maxOf(0, w.condition - amount)))
     }
 
-    /** GDD 7 artifact cycle on death: recovered to the forge, seized by monsters (may return later) or lost with the hero. */
-    fun kill(ctx: ResolutionContext, hero: Hero, cause: String, weaponRecovered: Boolean, weaponSeized: Boolean = false) {
+    /**
+     * GDD 7 artifact cycle on death, for the blade the hero carried. The caller rolls whether comrades recovered it and,
+     * if not, whether the enemy seized it, at odds set by where and how the hero fell. A blade the enemy did not take may
+     * pass to a living guildmate instead of the forge, and one that would be lost may surface with a travelling merchant
+     * a few days later ([Market.resolveMerchant]). Spare blades are lost with the hero, as before.
+     * Draws on the COMBAT stream, after the caller's: the guild's claim (only with a living guildmate), then the merchant
+     * (only for a blade that would otherwise be lost).
+     */
+    fun kill(ctx: ResolutionContext, hero: Hero, cause: String, weaponRecovered: Boolean, weaponSeized: Boolean = false): EventRecord {
+        val config = ctx.config
+        val rng = ctx.rng(RngStream.COMBAT)
         ctx.updateHero(hero.copy(health = 0, fate = HeroFate.DEAD, diedOnDay = ctx.day, lastActivity = HeroActivity.IDLE))
-        ctx.emit(EventType.HERO_DIED, 8, "${hero.fullName} $cause and will not return.", listOf(hero.id.value))
+        val died = ctx.emit(EventType.HERO_DIED, 8, "${hero.fullName} $cause and will not return.", listOf(hero.id.value))
         for (w in ctx.weapons.values.filter { it.ownerId == hero.id }) {
-            if (w.isEquipped && weaponRecovered) {
+            val heir = if (w.isEquipped && (weaponRecovered || !weaponSeized)) guildHeir(ctx, hero, w) else null
+            if (heir != null && roll(rng, config.weaponFates.guildInheritanceChance)) {
+                // The rule Heroes.retire applies to a mentee: equipped only if it beats their own blade by worn power, else kept as a spare.
+                ctx.addWeaponHistory(w.id, "INHERITED", "Inherited by ${heir.fullName}, guildmate of the fallen ${hero.fullName}.", listOf(heir.id.value, hero.id.value))
+                Market.giveAndEquip(ctx, heir, ctx.weapon(w.id))
+                ctx.emit(EventType.WEAPON_INHERITED, 5, "${w.name} passed from the fallen ${hero.fullName} to guildmate ${heir.fullName}.", listOf(w.id.value, heir.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.INHERITED.name))
+            } else if (w.isEquipped && weaponRecovered) {
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Storage))
                 ctx.addWeaponHistory(w.id, "RECOVERED", "Recovered after ${hero.fullName}'s death and returned to the forge.", listOf(hero.id.value))
-                ctx.emit(EventType.WEAPON_RECOVERED, 5, "${w.name} was recovered from ${hero.fullName}'s body and returned to the forge.", listOf(w.id.value, hero.id.value))
+                ctx.emit(EventType.WEAPON_RECOVERED, 5, "${w.name} was recovered from ${hero.fullName}'s body and returned to the forge.", listOf(w.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.RECOVERED.name))
             } else if (w.isEquipped && weaponSeized) {
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "seized")))
                 ctx.addWeaponHistory(w.id, "SEIZED", "Seized by the enemy when ${hero.fullName} fell.", listOf(hero.id.value))
-                ctx.emit(EventType.WEAPON_STOLEN, 5, "${w.name} was seized by the enemy from ${hero.fullName}'s body.", listOf(w.id.value, hero.id.value))
+                ctx.emit(EventType.WEAPON_STOLEN, 5, "${w.name} was seized by the enemy from ${hero.fullName}'s body.", listOf(w.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.SEIZED.name))
+            } else if (w.isEquipped && roll(rng, merchantChance(w, config))) {
+                ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, WeaponLocation.Lost.WITH_MERCHANT)))
+                ctx.addWeaponHistory(w.id, "SCAVENGED", "Taken from the field where ${hero.fullName} fell.", listOf(hero.id.value))
+                ctx.emit(EventType.WEAPON_LOST, 5, "${w.name} was gone from the field where ${hero.fullName} fell.", listOf(w.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.MERCHANT.name))
             } else {
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "lost with ${hero.fullName}")))
                 ctx.addWeaponHistory(w.id, "LOST", "Lost when ${hero.fullName} died.", listOf(hero.id.value))
-                if (w.isEquipped) ctx.emit(EventType.WEAPON_LOST, 5, "${w.name} was lost with ${hero.fullName}.", listOf(w.id.value, hero.id.value))
+                if (w.isEquipped) ctx.emit(EventType.WEAPON_LOST, 5, "${w.name} was lost with ${hero.fullName}.", listOf(w.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.LOST.name))
             }
         }
         ctx.town = ctx.town.copy(championIds = ctx.town.championIds.filter { it != hero.id })
+        return died
     }
+
+    /** A fate that cannot occur draws nothing, so a config with these chances at 0 replays the v4 draw sequence exactly. */
+    private fun roll(rng: Rng, chance: Double): Boolean = chance > 0.0 && rng.chance(chance)
+
+    /** The living guildmate a fallen member's blade suits best (largest gain over the blade in hand; ties by ID), or null. Draws no RNG. */
+    private fun guildHeir(ctx: ResolutionContext, fallen: Hero, blade: Weapon): Hero? {
+        val guild = fallen.guildId ?: return null
+        return ctx.aliveHeroes().filter { it.guildId == guild && it.id != fallen.id }
+            .maxByOrNull { Market.evaluate(ctx, it, ctx.equippedWeapon(it.id), blade, 0.5).improvement }
+    }
+
+    /** GDD 7: "famous artifacts increase event eligibility but are not guaranteed to return". Counted fame is capped like every fame effect, and so is the chance. */
+    fun merchantChance(weapon: Weapon, config: BalanceConfig): Double =
+        (config.weaponFates.merchantBaseChance + weapon.fame.coerceIn(0, config.weaponFameCap) * config.weaponFates.merchantChancePerFame).coerceAtMost(config.weaponFates.merchantMaxChance)
 
     /** Three strongest available champions (GDD 6/8). Fewer than three is fine; none means the militia stands alone. */
     fun selectChampions(ctx: ResolutionContext, faction: FactionDef): List<Pair<Hero, Weapon?>> =
@@ -215,8 +285,8 @@ object Battle {
                 val hero = ctx.hero(h.id)
                 val health = hero.health - config.championSiegeDamageOnLoss
                 if (health <= config.heroDeathHealthFloor) {
-                    val recovered = rng.chance(config.weaponRecoveryChance)
-                    kill(ctx, hero, "died defending the walls", recovered, weaponSeized = !recovered && rng.chance(config.weaponSeizureChance))
+                    val recovered = rng.chance(config.weaponFates.wallsRecoveryChance)
+                    kill(ctx, hero, "died defending the walls", recovered, weaponSeized = !recovered && rng.chance(config.weaponFates.wallsSeizureChance))
                 }
                 else ctx.updateHero(hero.copy(health = health, lastActivity = HeroActivity.DEFEND))
             }
