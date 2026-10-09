@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.R
 import com.tinyblacksmith.core.content.Element
+import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.model.BlessingId
 import com.tinyblacksmith.core.model.FactionId
 import com.tinyblacksmith.core.model.Hero
@@ -67,10 +68,6 @@ object Sprites {
         WeaponArt.sprite(familyId.value, element?.name?.lowercase() ?: "base", weaponLevel(coreId, rarity, signature))
             ?: WeaponArt.sprite("sword", "base", 1)!!
 
-    /** The face every hero had before appearance keys were saved: the ID hash over the five sheet-3 faces of the class. */
-    private fun legacyPortraitKey(classId: HeroClassId, heroId: String): String =
-        "portrait_${classId.value}_${Math.floorMod(heroId.hashCode(), 5)}"
-
     private val heroIdKey = Regex("h\\d+")
 
     /**
@@ -80,18 +77,20 @@ object Sprites {
     private fun legacySlot(key: String): Int? = when {
         key in PortraitArt.base -> key.substringAfterLast('_').toInt()
         key in PortraitArt.secondSet -> key.substringAfterLast('_').toInt() - 1
-        heroIdKey.matches(key) -> Math.floorMod(key.hashCode(), 5)
+        heroIdKey.matches(key) -> Appearance.legacySlot(key)
         else -> null
     }
 
     /**
-     * The hero-set face ("portrait_hero_07") an appearance key shows for [classId]: a hero key of that class is itself,
-     * an older key takes the face at its slot (wrapping when the class has fewer than five faces), anything else takes
-     * the first face of the class. Pure, so one key is one face for good.
+     * The hero-set face ("portrait_hero_07") an appearance key shows for [classId]: a hero key of that class (what core
+     * stores, `HeroClassDef.appearances`) is itself, an older key takes the face its slot always had (core's frozen
+     * table, so a class that gains faces keeps its old ones), anything else, or a face whose art is gone, takes the
+     * first face of the class. Pure, so one key is one face for good.
      */
     internal fun heroFaceKey(appearanceKey: String, classId: HeroClassId): String {
         val faces = PortraitArt.heroFaces[classId.value] ?: PortraitArt.heroFaces.getValue("guardian")
-        return if (appearanceKey in faces) appearanceKey else faces[(legacySlot(appearanceKey) ?: 0) % faces.size]
+        if (appearanceKey in faces) return appearanceKey
+        return legacySlot(appearanceKey)?.let { Appearance.legacyFace(classId, it) }?.takeIf { it in faces } ?: faces.first()
     }
 
     /**
@@ -113,9 +112,9 @@ object Sprites {
         appearanceKey: String, classId: HeroClassId, upgraded: Boolean = false, secondSet: Boolean = PortraitArt.SECOND_SET_ENABLED, small: Boolean = false,
     ): Int = portraitArt(appearanceKey, classId, upgraded, secondSet, small).drawable
 
-    /** The face of a live hero: the same one its saved appearance key shows (decorative; no RNG), upgraded once [heroUpgraded]. */
+    /** The face of a live hero: the one core stored on them (decorative; no RNG), upgraded once [heroUpgraded]. */
     fun portrait(hero: Hero, small: Boolean = false): Int =
-        portrait(legacyPortraitKey(hero.classId, hero.id.value), hero.classId, upgraded = heroUpgraded(null, hero.kills), small = small)
+        portrait(Appearance.keyOf(hero), hero.classId, upgraded = heroUpgraded(null, hero.kills), small = small)
 
     /** Faction sprite for the threat line: the elite variant once pressure is high. Null for factions without art. */
     fun faction(id: FactionId, elite: Boolean = false): Int? = when (id.value) {

@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.TestSupport.forgeAccepted
 import com.tinyblacksmith.core.TestSupport.quickSword
 import com.tinyblacksmith.core.TestSupport.run
 import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.persistence.SaveCodec
 import com.tinyblacksmith.core.persistence.SaveEnvelope
@@ -162,13 +163,22 @@ class MigrationTest {
         assertTrue(last.shopWeapons.isEmpty() && last.visits.isNotEmpty() && last.visits.all { it.customer == null && it.considered.isEmpty() && it.kind == VisitKind.BROWSE })
     }
 
-    /** Schema 3 -> 4 converts nothing either: a hero written before the counter remembered them reads as a newcomer nobody has kept waiting. Shown on the real v3 fixture. */
+    /**
+     * Schema 3 -> 4 on the real v3 fixture (a first-era run, no lineage): the one thing written is each hero's face, the
+     * one their ID has always shown. A hero written before the counter remembered them reads as a newcomer nobody has
+     * kept waiting. The legacy document is carried over unchanged.
+     */
     @Test
-    fun theSchemaFourStepCarriesBothDocumentsOverUnchanged() {
+    fun theSchemaFourStepStoresOnlyEachHerosFace() {
         val v3 = javaClass.getResource("/saves/v3_forced_seed4242_day61.json")?.readText() ?: error("missing v3 fixture")
         val env = json.decodeFromString(SaveEnvelope.serializer(), v3)
         assertEquals(3, env.schemaVersion)
-        assertEquals(SaveEnvelope(4, env.payload), SaveCodec.migrate(env, SaveCodec.runMigrations, target = 4))
+        val before = json.parseToJsonElement(env.payload).jsonObject
+        val after = json.parseToJsonElement(SaveCodec.migrate(env, SaveCodec.runMigrations, target = 4).also { assertEquals(4, it.schemaVersion) }.payload).jsonObject
+        assertEquals(without(before, "heroes"), without(after, "heroes"))
+        val heroes = after.getValue("heroes").jsonObject
+        assertEquals(before.getValue("heroes").jsonObject, JsonObject(heroes.mapValues { without(it.value.jsonObject, "appearance") }))
+        for ((id, h) in heroes) assertEquals(Appearance.legacyKey(HeroClassId((h.jsonObject.getValue("classId") as JsonPrimitive).content), id), (h.jsonObject.getValue("appearance") as JsonPrimitive).content)
         val legacy = SaveEnvelope(3, json.encodeToString(LegacyProfile.serializer(), LegacyProfile(points = 9)))
         assertEquals(SaveEnvelope(4, legacy.payload), SaveCodec.migrate(legacy, SaveCodec.legacyMigrations, target = 4))
         val run = SaveCodec.decodeRun(v3)

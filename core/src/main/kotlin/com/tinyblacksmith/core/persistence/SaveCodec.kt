@@ -1,8 +1,10 @@
 package com.tinyblacksmith.core.persistence
 
 import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.market.QualityBand
 import com.tinyblacksmith.core.model.GameState
+import com.tinyblacksmith.core.model.HeroClassId
 import com.tinyblacksmith.core.model.LegacyProfile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -56,8 +58,9 @@ object SaveCodec {
         // converted: the number rises so that an older build refuses a save it would otherwise read as corrupt.
         2 to { it },
         // Schema 4 adds the counter's memory of each hero (visits, purchases, turned-away streak, arrival day), all defaulted:
-        // a hero written before them starts as a newcomer with no streak. Its one conversion gives lineages their IDs.
-        3 to { linkDescendants(it) },
+        // a hero written before them starts as a newcomer with no streak. Its conversions give lineages their IDs and every
+        // hero, as a stored key, the face they have always shown.
+        3 to { stampAppearances(linkDescendants(it)) },
     )
     internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 3 to { json.parseToJsonElement(it).jsonObject.let { l -> identifyLineages(l).takeIf { n -> n != l }?.toString() ?: it } })
 
@@ -92,6 +95,21 @@ object SaveCodec {
             if (id == null || text(o, "lineageId") != null) h else JsonObject(o + ("lineageId" to JsonPrimitive(id)))
         }
         return if (identified == legacy && linked == heroes) payload else JsonObject(run + ("legacy" to identified) + ("heroes" to JsonObject(linked))).toString()
+    }
+
+    /**
+     * From schema 4 a hero stores the face they wear. One written before takes the face their ID has always shown
+     * ([Appearance.legacyKey]), dead and retired heroes too, so nobody changes when a class gains faces.
+     */
+    private fun stampAppearances(payload: String): String {
+        val run = json.parseToJsonElement(payload).jsonObject
+        val heroes = run["heroes"] as? JsonObject ?: return payload
+        val stamped = heroes.mapValues { (id, h) ->
+            val o = h.jsonObject
+            val cls = text(o, "classId")
+            if (cls == null || text(o, "appearance") != null) h else JsonObject(o + ("appearance" to JsonPrimitive(Appearance.legacyKey(HeroClassId(cls), id))))
+        }
+        return if (stamped == heroes) payload else JsonObject(run + ("heroes" to JsonObject(stamped))).toString()
     }
 
     /** Every schema-1 run was written by a build that had balance 5 and did not yet record it (0 = untracked). */

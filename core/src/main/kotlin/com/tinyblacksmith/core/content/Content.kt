@@ -67,6 +67,8 @@ data class HeroClassDef(
     val preferredElement: Element?,
     val startingGoldMin: Int,
     val startingGoldMax: Int,
+    /** Portrait asset IDs a hero of this class can wear. Append to add a face; never rename or remove one a save may hold. */
+    val appearances: List<String>,
 )
 
 data class TraitDef(
@@ -221,6 +223,8 @@ data class ContentCatalog(
         if (materials(MaterialCategory.AUGMENT).isEmpty()) problems += "No augment materials"
         if (families.isEmpty()) problems += "No weapon families"
         if (classes.isEmpty()) problems += "No hero classes"
+        classes.forEach { c -> if (c.appearances.isEmpty()) problems += "Class ${c.id.value} has no appearance" }
+        dup("appearance", classes.flatMap { it.appearances })
         if (factions.isEmpty()) problems += "No factions"
         if (firstNames.isEmpty() || surnames.isEmpty()) problems += "Name pools empty" else problems += nameProblems()
         // Only elements an augment can actually imbue need an affix (the slice catalog uses three of the six).

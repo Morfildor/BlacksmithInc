@@ -31,7 +31,7 @@ object Heroes {
             gold = rng.nextInt(cls.startingGoldMin, cls.startingGoldMax), health = 100,
             traits = traits, elementTaste = taste, descendantOf = descendantOf?.heroName, lineageId = descendantOf?.id,
             ambition = rng.pick(Ambition.entries), arrivedOnDay = ctx.day,
-        )
+        ).let { Appearance.stamp(ctx, it, descendantOf) }
     }
 
     fun resolveActivities(ctx: ResolutionContext) {

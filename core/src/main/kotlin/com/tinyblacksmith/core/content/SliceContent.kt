@@ -81,8 +81,8 @@ object SliceContent {
             AffixDef(UNSTABLE, "Unstable", AffixKind.FLAW, power = -4, description = "Unreliable in a pinch.", attackMultiplier = 0.9),
         ),
         classes = listOf(
-            HeroClassDef(GUARDIAN, "Guardian", basePower = 16, powerPerLevel = 2, preferredFamilies = listOf(SWORD, AXE), preferredElement = Element.FROST, startingGoldMin = 60, startingGoldMax = 140),
-            HeroClassDef(RANGER, "Ranger", basePower = 14, powerPerLevel = 2, preferredFamilies = listOf(BOW), preferredElement = Element.STORM, startingGoldMin = 50, startingGoldMax = 120),
+            HeroClassDef(GUARDIAN, "Guardian", basePower = 16, powerPerLevel = 2, preferredFamilies = listOf(SWORD, AXE), preferredElement = Element.FROST, startingGoldMin = 60, startingGoldMax = 140, appearances = listOf("portrait_hero_01", "portrait_hero_06", "portrait_hero_09", "portrait_hero_11", "portrait_hero_16")),
+            HeroClassDef(RANGER, "Ranger", basePower = 14, powerPerLevel = 2, preferredFamilies = listOf(BOW), preferredElement = Element.STORM, startingGoldMin = 50, startingGoldMax = 120, appearances = listOf("portrait_hero_02", "portrait_hero_07", "portrait_hero_12", "portrait_hero_17")),
         ),
         traits = listOf(
             TraitDef(BRAVE, "Brave", expeditionWeight = 1.5, restWeight = -0.5, combatModifier = 1.05),

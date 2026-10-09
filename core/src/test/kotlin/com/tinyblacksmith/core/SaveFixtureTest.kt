@@ -7,6 +7,7 @@ import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.Invariants
+import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.GameState
@@ -180,6 +181,32 @@ class SaveFixtureTest {
             }
         }
         assertTrue(carried > 0, "the fixtures hold heroes whose names have left the pool")
+    }
+
+    /**
+     * Faces (T3.3): a save of schema 1, 2 or 3 gets, stored on every hero, the face that hero has always shown; a schema-4
+     * save written before the field existed shows the same face without it. Both are admitted, accept an End Day, keep
+     * every face through it, and a hero who arrives that day takes a face of their class that fewest of the living wear.
+     */
+    @Test
+    fun oldSavesKeepTheirHeroesFaces() {
+        for (name in listOf("v1_forced_seed4242_day61.json", "v1_release060_active_seed4242_day61.json", "v2_forced_seed4242_day61.json", "v2_balance6_expert_seed4242_day33.json", "v3_forced_seed4242_day61.json")) {
+            val migrated = SaveCodec.decodeRun(fixture(name))
+            assertTrue(migrated.heroes.values.any { !it.isAlive }, name)
+            for (h in migrated.heroes.values) assertEquals(Appearance.legacyKey(h), h.appearance, "$name ${h.id.value}")
+            // The same run as a development build of schema 4 wrote it: no stored face. The step does not run; the face is the same.
+            val unstamped = SaveCodec.decodeRun(SaveCodec.encodeRun(migrated.copy(heroes = migrated.heroes.mapValues { it.value.copy(appearance = null) })))
+            assertTrue(unstamped.heroes.values.all { it.appearance == null }, name)
+            for (s in listOf(migrated, unstamped)) {
+                val admitted = s.admitted()
+                assertEquals(s.heroes, admitted.heroes, name)
+                val next = assertIs<CommandOutcome.Accepted>(engine.handle(admitted, Command.EndDay(endDayId(admitted)))).state
+                assertEquals(emptyList(), Invariants.check(next, engine.config, engine.shelfSlots(next), engine.content), name)
+                for (h in s.heroes.values) assertEquals(Appearance.keyOf(h), Appearance.keyOf(next.hero(h.id)), "$name ${h.id.value}")
+                for (h in next.heroes.values.filter { it.id !in s.heroes }) assertTrue(h.appearance in engine.content.heroClass(h.classId).appearances, "$name ${h.id.value}")
+                for (v in next.lastResolution!!.visits) v.customer?.let { c -> assertEquals(Appearance.keyOf(next.hero(c.heroId)), c.appearance, "$name ${c.heroId.value}") }
+            }
+        }
     }
 
     /**

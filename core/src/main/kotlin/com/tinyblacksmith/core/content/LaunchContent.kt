@@ -160,11 +160,11 @@ object LaunchContent {
         ),
         classes = listOf(
             // Guardian and Ranger keep slice values. Base power, gold ranges and preferred elements of the new classes are PROPOSED.
-            HeroClassDef(GUARDIAN, "Guardian", basePower = 16, powerPerLevel = 2, preferredFamilies = listOf(SWORD, AXE, SPEAR), preferredElement = Element.FROST, startingGoldMin = 60, startingGoldMax = 140),
-            HeroClassDef(RANGER, "Ranger", basePower = 14, powerPerLevel = 2, preferredFamilies = listOf(BOW, DAGGER), preferredElement = Element.STORM, startingGoldMin = 50, startingGoldMax = 120),
-            HeroClassDef(DUELIST, "Duelist", basePower = 15, powerPerLevel = 2, preferredFamilies = listOf(SWORD, DAGGER), preferredElement = Element.GRAVE, startingGoldMin = 55, startingGoldMax = 130),
-            HeroClassDef(BATTLEMAGE, "Battlemage", basePower = 13, powerPerLevel = 3, preferredFamilies = listOf(STAFF, SWORD), preferredElement = Element.FIRE, startingGoldMin = 70, startingGoldMax = 150),
-            HeroClassDef(WARDEN, "Warden", basePower = 15, powerPerLevel = 2, preferredFamilies = listOf(SPEAR, AXE, STAFF), preferredElement = Element.VERDANT, startingGoldMin = 50, startingGoldMax = 120),
+            HeroClassDef(GUARDIAN, "Guardian", basePower = 16, powerPerLevel = 2, preferredFamilies = listOf(SWORD, AXE, SPEAR), preferredElement = Element.FROST, startingGoldMin = 60, startingGoldMax = 140, appearances = listOf("portrait_hero_01", "portrait_hero_06", "portrait_hero_09", "portrait_hero_11", "portrait_hero_16")),
+            HeroClassDef(RANGER, "Ranger", basePower = 14, powerPerLevel = 2, preferredFamilies = listOf(BOW, DAGGER), preferredElement = Element.STORM, startingGoldMin = 50, startingGoldMax = 120, appearances = listOf("portrait_hero_02", "portrait_hero_07", "portrait_hero_12", "portrait_hero_17")),
+            HeroClassDef(DUELIST, "Duelist", basePower = 15, powerPerLevel = 2, preferredFamilies = listOf(SWORD, DAGGER), preferredElement = Element.GRAVE, startingGoldMin = 55, startingGoldMax = 130, appearances = listOf("portrait_hero_03", "portrait_hero_10", "portrait_hero_13", "portrait_hero_18")),
+            HeroClassDef(BATTLEMAGE, "Battlemage", basePower = 13, powerPerLevel = 3, preferredFamilies = listOf(STAFF, SWORD), preferredElement = Element.FIRE, startingGoldMin = 70, startingGoldMax = 150, appearances = listOf("portrait_hero_04", "portrait_hero_08", "portrait_hero_14", "portrait_hero_19")),
+            HeroClassDef(WARDEN, "Warden", basePower = 15, powerPerLevel = 2, preferredFamilies = listOf(SPEAR, AXE, STAFF), preferredElement = Element.VERDANT, startingGoldMin = 50, startingGoldMax = 120, appearances = listOf("portrait_hero_05", "portrait_hero_15", "portrait_hero_20")),
         ),
         traits = listOf(
             TraitDef(BRAVE, "Brave", expeditionWeight = 1.5, restWeight = -0.5, combatModifier = 1.05),

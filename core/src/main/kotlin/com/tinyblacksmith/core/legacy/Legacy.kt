@@ -5,6 +5,7 @@ import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.engine.GameError
+import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.model.*
 
 /** Run end summary; carries the legacy profile as it stood when the forge fell (journal included). */
@@ -72,7 +73,7 @@ object Legacy {
                 HeroFate.ALIVE -> "survived the fall of the forge"
                 HeroFate.RETIRED -> "retired on day ${it.retiredOnDay}"
                 HeroFate.DEAD -> "died on day ${it.diedOnDay}"
-            }, id = "era${state.era}-${it.id.value}")
+            }, id = "era${state.era}-${it.id.value}", appearance = Appearance.keyOf(it))
         }
         val discovery = minOf(config.legacyDiscoveryPointCap, state.discoveriesThisRun)
         val milestoneBonus = state.milestones.sumOf { milestonePoints[it] ?: 0 }

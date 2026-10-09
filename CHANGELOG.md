@@ -28,6 +28,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - New hero portraits: twenty heroes as framed tiles (five guardians, four rangers, duelists and battlemages, three
   wardens), each with a second, more decorated look that a hero wears after five victories. Every hero, old saves
   included, keeps one face of their class from the new set.
+- A hero's face is now stored with the hero and spread evenly over the faces of their class: a newcomer takes a face
+  nobody living in their class wears while one is free (before, two heroes of a class looked alike on most days). Heroes
+  in an existing save keep the face they have, and a descendant takes their ancestor's face when it is free.
 - After you claim a fallen era's legacy, the run-end screen survives closing the game: it reopens claimed, with your
   points and upgrades still there to spend, until you begin the next era.
 - The Back button and a tap outside the day's report no longer close it; only its "Begin day" button does.
