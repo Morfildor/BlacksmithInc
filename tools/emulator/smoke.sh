@@ -82,7 +82,8 @@ $ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 2
 has_id page_market && echo "CHECK back returns to Shop: ok" || echo "CHECK back returns to Shop: FAIL"
 # Process-death resume: kill and relaunch, expect the same day.
 $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
-# A saved run resumes straight into the workshop (no title detour).
+# A saved run opens on the main menu; Continue returns to the workshop.
+wait_text "Continue run" && shot 07_menu && tap_id menu_continue
 wait_text "Day 2" && echo "CHECK resume after process death on day 2: ok" || echo "CHECK resume: FAIL"
 shot 08_resumed
 echo SMOKE_DONE

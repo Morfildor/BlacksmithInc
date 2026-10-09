@@ -26,7 +26,7 @@ texts() { dump | grep -o 'text="[^"]\+"' | head -12; }
 
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
-wait_text "Tiny Blacksmith" && tap "Light the forge" || exit 1
+wait_text "Tiny Blacksmith" && tap "New game" || exit 1
 wait_text "End Day" || exit 1
 fallen=0
 # Each day: End Day, Skip day (to the day's last card), then Begin day; the day the forge falls ends on "See the legacy".
@@ -48,6 +48,7 @@ wait_text "Legacy claimed" && echo "CHECK claimed: ok" || echo "CHECK claimed: F
 shot 02_runend_claimed
 # Process death after the claim: the ended run stays saved, so run end reopens, claimed, with upgrades still to buy.
 $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
+wait_text "Continue run" && tap "Continue run"
 wait_text "Legacy claimed" && echo "CHECK run end reopens after process death: ok" || { echo "CHECK run end reopens after process death: FAIL"; texts; shot stuck_reopen; exit 1; }
 upgrades=0
 for i in 1 2 3 4 5 6; do

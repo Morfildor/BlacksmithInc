@@ -46,6 +46,8 @@ class GameSession(
         data class Claim(val runId: RunId) : Op
         data class BuyUpgrade(val upgradeId: UpgradeId, val runId: RunId?) : Op
         data class BeginEra(val seed: Long, val afterRunId: RunId?) : Op
+        /** Discards a run that has not ended. Nothing is claimed: the legacy row stays as it was before the run. */
+        data class Abandon(val runId: RunId) : Op
         data class MoveCursor(val cursor: DayCursor) : Op
     }
     sealed interface Result {
@@ -239,6 +241,11 @@ class GameSession(
                     val next = engine.newRun(snap.legacy, op.seed)
                     return Step.Write(next, SaveCodec.encodeRun(next), snap.legacy, SaveCodec.encodeLegacy(snap.legacy))
                 }
+            }
+            is Op.Abandon -> when {
+                run == null || run.runId != op.runId -> Result.Stale
+                run.isEnded -> Result.Rejected(GameError.RunEnded)
+                else -> return Step.Write(null, null, snap.legacy, SaveCodec.encodeLegacy(snap.legacy))
             }
             is Op.MoveCursor -> error("MoveCursor never reaches the planner")
         }

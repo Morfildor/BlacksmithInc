@@ -70,7 +70,7 @@ import com.tinyblacksmith.core.model.HeroId
  * the Forge and Town destinations.
  */
 @Composable
-fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
+fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit = {}) {
     val state = s.state
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
     val seenTips by vm.settings.seenTips.collectAsStateWithLifecycle(initialValue = Tips.ALL)
@@ -112,7 +112,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
         }
     }
     val haptics by vm.settings.haptics.collectAsStateWithLifecycle(initialValue = false)
-    if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, haptics, vm::setHaptics, onDismiss = { settingsOpen = false })
+    if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, haptics, vm::setHaptics, onDismiss = { settingsOpen = false }, onMainMenu = { settingsOpen = false; onMainMenu() })
     s.sheet?.let { DetailSheet(s, it, vm) }
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)
