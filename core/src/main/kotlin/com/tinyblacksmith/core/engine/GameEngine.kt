@@ -150,7 +150,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
     fun materialPrice(state: GameState, materialId: MaterialId): Int =
         (content.material(materialId).price * config.supplierPriceMultiplier * state.world.marketMultiplier).toInt()
 
-    fun suggestedPrice(weapon: Weapon): Int = weapon.power * config.fairGoldPerPower
+    /** Fair price plus a small premium for a storied blade (GDD 7; only the first [BalanceConfig.weaponFameCap] fame points count). */
+    fun suggestedPrice(weapon: Weapon): Int =
+        (weapon.power * config.fairGoldPerPower * (1.0 + weapon.fame.coerceIn(0, config.weaponFameCap) * config.weaponFamePricePerPoint)).toInt()
 
     fun shelfSlots(state: GameState): Int = config.shelfSlots + toolTotal(state, ToolEffect.SHELF_SLOTS)
 

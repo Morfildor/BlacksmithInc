@@ -21,6 +21,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   journal discoveries). Milestones already told by the news fold away; siege rounds fold behind the outcome. The
   archive opens the latest day and shows older days as a lede until tapped.
 
+### Added
+- Weapon fame now matters, within limits: a storied blade fights a little better (up to +5 % at ten fame), heroes
+  want it more on the shelf (collectors most of all), its suggested price carries a small premium (up to +5 %), a
+  legend returning from an earlier era keeps its fame, and the shelf line says "storied", "famed" or "renowned".
+
 ## [0.4.0] - 2026-10-09
 Gameplay depth (balance v3): shop actions, workshop tools, elite foes and warlords, hero ambitions, trade-ins.
 

@@ -233,6 +233,17 @@ data class BalanceConfig(
     val tradeInShare: Double = 0.4,
     /** The town pays a hero this much for a day's patrol. */
     val patrolGold: Int = 12,
+    // v4 (pending): weapon fame (GDD 7 PROPOSED "a limited mechanical effect, with caps against runaway snowballing").
+    // Fame keeps growing as a record (+1 per won expedition, +2 per siege held, +2 for an elite); only the first
+    // [weaponFameCap] points count for any effect, so fame earned through the bonus can never feed itself past the cap.
+    val weaponFameCap: Int = 10,
+    /** Attack and defense power per counted fame point (+5 % at the cap; 0.01 overshoots the v3 survival band, docs/DECISIONS.md). */
+    val weaponFamePowerPerPoint: Double = 0.005,
+    /** Purchase utility per counted fame point (+0.5 at the cap, one purchase threshold); a COLLECTOR counts it [collectorFameMultiplier] times (+1.0 at most). */
+    val weaponFameUtilityPerPoint: Double = 0.05,
+    val collectorFameMultiplier: Double = 2.0,
+    /** Suggested-price premium per counted fame point (+5 % at the cap). Heroes do not raise their price ceiling for fame, so the premium must stay well under the utility bonus (3 x premium x the thriftiest sensitivity 1.6 x 1.3). */
+    val weaponFamePricePerPoint: Double = 0.005,
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

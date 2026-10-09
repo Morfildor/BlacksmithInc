@@ -8,7 +8,8 @@ import com.tinyblacksmith.core.model.WeaponId
  * Bounds [Weapon.history]. Runs inside End Day right after [EventCompaction], so it is deterministic and covered by
  * the per-command idempotence. Only the combat kinds in [compactable] are ever dropped (oldest first, keeping the
  * newest [com.tinyblacksmith.core.config.BalanceConfig.weaponHistoryCap]); their counts already live in
- * `Weapon.kills/victories/siegesDefended/fame`, and no rule reads them. Every other kind (FORGED, SIGNATURE, SOLD,
+ * `Weapon.kills/victories/siegesDefended/fame`, and no rule reads the entries themselves (the fame effect reads the
+ * counter, which compaction never touches). Every other kind (FORGED, SIGNATURE, SOLD,
  * EQUIPPED, COMMISSION, INHERITED, LOST, SEIZED, RECOVERED, RETURNED, COLLECTED and anything added later) is kept
  * verbatim: `Legacy.closeRun` reads SOLD/COMMISSION owners and `WorldEvents` reads the last LOST/SEIZED subject.
  * Keeping the newest N commutes with daily application, so a seed replays identically with or without it.

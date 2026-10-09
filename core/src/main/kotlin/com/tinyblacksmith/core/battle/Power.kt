@@ -40,6 +40,13 @@ object Power {
             }
         } ?: 1.0
 
+    /**
+     * GDD 7 PROPOSED: a storied blade fights a little better. Only the first [BalanceConfig.weaponFameCap] fame points
+     * count (+weaponFamePowerPerPoint each), so the fame a blade earns by winning with this bonus can never snowball past it.
+     */
+    fun fameFactor(weapon: Weapon?, config: BalanceConfig): Double =
+        1.0 + (weapon?.fame ?: 0).coerceIn(0, config.weaponFameCap) * config.weaponFamePowerPerPoint
+
     fun heroBase(hero: Hero, content: ContentCatalog): Int {
         val c = content.heroClass(hero.classId)
         return c.basePower + c.powerPerLevel * (hero.level - 1)
@@ -50,12 +57,14 @@ object Power {
     fun attackPower(hero: Hero, weapon: Weapon?, faction: FactionDef, content: ContentCatalog, config: BalanceConfig, blessingPercent: Int = 0, elite: Boolean = false): Double =
         (heroBase(hero, content) + weaponPower(weapon, config)) *
             classFit(hero, weapon, content, config) * condition(hero) * matchup(weapon, faction, config) *
-            traitModifier(hero, content) * affixAttackMultiplier(weapon, content) * affixMatchup(weapon, faction, content, elite) * (1.0 + blessingPercent / 100.0)
+            traitModifier(hero, content) * affixAttackMultiplier(weapon, content) * affixMatchup(weapon, faction, content, elite) * (1.0 + blessingPercent / 100.0) *
+            fameFactor(weapon, config)
 
     fun defensePower(hero: Hero, weapon: Weapon?, faction: FactionDef, content: ContentCatalog, config: BalanceConfig, blessingPercent: Int = 0, elite: Boolean = false): Double {
         val familyWeight = weapon?.let { content.family(it.familyId).defensiveWeight } ?: 0.9
         return (heroBase(hero, content) + weaponPower(weapon, config)) *
             classFit(hero, weapon, content, config) * condition(hero) * matchup(weapon, faction, config) *
-            traitModifier(hero, content) * affixDefenseMultiplier(weapon, content) * affixMatchup(weapon, faction, content, elite) * familyWeight * (1.0 + blessingPercent / 100.0)
+            traitModifier(hero, content) * affixDefenseMultiplier(weapon, content) * affixMatchup(weapon, faction, content, elite) * familyWeight * (1.0 + blessingPercent / 100.0) *
+            fameFactor(weapon, config)
     }
 }
