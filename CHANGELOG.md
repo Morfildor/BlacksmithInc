@@ -7,6 +7,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-09
+Reputation and loyalty economy, bounded weapon histories, simulator purchasing and pricing policies, UI wave 2.
+
 ### Added
 - Shop reputation and hero loyalty now raise the price heroes treat as fair (bounded at +25 % each), regulars return
   with commission requests, and the Gazette records premium sales and names the shop's regulars.

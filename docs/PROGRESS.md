@@ -72,7 +72,7 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 - Package name is still `com.example.blacksmithproject`; no release signing.
 - `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order and session-4 commission
   patron weighting changes which hero asks on a given seed; bump with the first release.
-- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.2.0 (versionCode 2).
+- Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.3.0 (versionCode 3).
 
 ## Next executable actions (P7)
 1. Measure starting gold/energy upgrades by first-siege champion power or first tier-4+ sale (DECISIONS proposal a)
