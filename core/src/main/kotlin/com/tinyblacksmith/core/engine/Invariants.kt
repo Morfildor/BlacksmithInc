@@ -76,7 +76,7 @@ object Invariants {
             val where = "weapon ${w.id.value}"
             need(w.familyId in content.familyById, "family", w.familyId.value, where)
             listOfNotNull(w.coreId, w.augmentId, w.catalystId).forEach { need(it in content.materialById, "material", it.value, where) }
-            (w.affixes + w.flaws).forEach { need(it in content.affixById, "affix", it.value, where) }
+            (w.affixes + w.flaws + w.dormantAffixes).forEach { need(it in content.affixById, "affix", it.value, where) }
         }
         state.heroes.values.forEach { h ->
             need(h.classId in content.classById, "class", h.classId.value, "hero ${h.id.value}")

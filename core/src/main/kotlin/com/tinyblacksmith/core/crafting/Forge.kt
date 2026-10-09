@@ -121,11 +121,7 @@ object Forge {
         val affixPower = (affixes + flaws).sumOf { content.affix(it).power }
         val power = maxOf(1, family.basePower + config.powerPerCoreTier * core.tier + quality / config.powerPerQualityDivisor + affixPower + (signature?.bonusPower ?: 0))
 
-        val prefix = affixes.joinToString(" ") { content.affix(it).name }
-        val name = signature?.name ?: buildString {
-            if (prefix.isNotEmpty()) append(prefix).append(' ')
-            append(core.name).append(' ').append(family.name)
-        }
+        val name = weaponName(content, family.id, core.id, affixes, signature?.id)
         val techniqueNote = cmd.technique?.let { ", ${it.name.lowercase()}ed" } ?: ""
         val id = ctx.newWeaponId()
         val weapon = Weapon(
@@ -161,6 +157,25 @@ object Forge {
         }
         Journal.recordExperiment(ctx, core.id, augment.id, family.id, affinity)
         return weapon
+    }
+
+    /**
+     * What a blade is called: a signature's own name, else its core and family behind at most one affix (the first: the
+     * element affix leads when there is one). The rest of its affixes are in the item sheet, not in the name.
+     */
+    fun weaponName(content: com.tinyblacksmith.core.content.ContentCatalog, familyId: WeaponFamilyId, coreId: MaterialId, affixes: List<AffixId>, signatureId: String? = null): String =
+        signatureId?.let { SignatureCatalog.byId[it]?.name }
+            ?: listOfNotNull(affixes.firstOrNull()?.let { content.affix(it).name }, content.material(coreId).name, content.family(familyId).name).joinToString(" ")
+
+    /**
+     * A blade earns its title: the first one stays for good, takes the place of the affix in its name (a signature keeps
+     * its name) and is written into its history, so the ledger has a line for it.
+     */
+    fun entitle(ctx: ResolutionContext, weaponId: WeaponId, title: String) {
+        val w = ctx.weapon(weaponId)
+        if (w.title != null) return
+        ctx.updateWeapon(w.copy(title = title, name = weaponName(ctx.content, w.familyId, w.coreId, emptyList(), w.signatureId)))
+        ctx.addWeaponHistory(weaponId, "TITLED", "Earned the name \"$title\".")
     }
 
     fun masteryBonus(ctx: ResolutionContext): Int =

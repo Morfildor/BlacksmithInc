@@ -53,18 +53,49 @@ object Legacy {
         "AMBITION_FULFILLED" to 1,
     )
 
+    /** History kinds that put a blade in a hero's hands; the first subject of each is that hero. */
+    val OWNERSHIP: Set<String> = setOf("SOLD", "COMMISSION", "INHERITED", "RESOLD")
+
+    /** About this many lines of a blade's story go onto the Legend Board. */
+    const val STORY_MAX = 12
+
+    /** What a blade is: these lines of its story are kept before any other when the board's copy is cut to [STORY_MAX]. */
+    private val MILESTONES: Set<String> = setOf("FORGED", "SIGNATURE", "TITLED", "RETURNED", "AWAKENED")
+
+    /** The story cut to [STORY_MAX] for the board: the oldest everyday lines (sales, trade-ins, hones) go first; the milestones stay, the oldest of them last of all. */
+    private fun remembered(story: List<HistoryEntry>): List<HistoryEntry> {
+        var drop = story.size - STORY_MAX
+        val kept = story.filter { e -> if (drop > 0 && e.kind !in MILESTONES) { drop--; false } else true }
+        return if (kept.size > STORY_MAX) kept.take(1) + kept.takeLast(STORY_MAX - 1) else kept
+    }
+
+    /**
+     * The maker's ledger of one blade (E5): every stored history entry that is not a routine fight, plus its first
+     * victory and its first siege, oldest first. Each line is an entry of `Weapon.history`; nothing is composed.
+     */
+    fun story(weapon: Weapon): List<HistoryEntry> {
+        val firstFights = setOf("VICTORY", "SIEGE").mapNotNull { kind -> weapon.history.firstOrNull { it.kind == kind } }
+        return weapon.history.filter { it.kind != "VICTORY" && it.kind != "SIEGE" && it.kind != "EQUIPPED" || firstFights.any { f -> f === it } }
+    }
+
     fun closeRun(state: GameState, content: ContentCatalog, config: BalanceConfig): RunEndResult {
         require(state.isEnded) { "Run has not ended" }
         val legends = state.weapons.values
             .filter { it.fame >= config.legendFameThreshold }
+            // A returned legend nobody carried this era does not go back on the board: it would re-enter ownerless and could multiply (X06).
+            .filter { w -> w.legendKey == null || w.history.any { it.era == state.era && it.kind in OWNERSHIP } }
             .sortedByDescending { it.fame }
             .take(3)
             .map { w ->
-                val owners = w.history.filter { it.kind == "SOLD" || it.kind == "COMMISSION" }.flatMap { it.subjectIds }.distinct()
-                    .mapNotNull { state.heroes[HeroId(it)]?.fullName }
+                // Everyone who held it, in order: buyers, commission patrons, heirs (named first in the entry) and a merchant's customer.
+                val held = w.history.filter { it.era == state.era && it.kind in OWNERSHIP }.mapNotNull { it.subjectIds.firstOrNull() }.mapNotNull { state.heroes[HeroId(it)]?.fullName }
+                val before = w.legendKey?.let { key -> state.legacy.legendBoard.lastOrNull { it.key == key } }
                 LegendEntry(
-                    state.era, w.name, w.title ?: "${w.name} of Era ${state.era}", w.kills, w.fame, owners,
+                    state.era, w.name, w.title ?: "${w.name} of Era ${state.era}", w.kills, w.fame, ((before?.owners ?: emptyList()) + held).distinct(),
                     familyId = w.familyId, coreId = w.coreId, augmentId = w.augmentId, quality = w.quality, power = w.power, element = w.element,
+                    affixes = w.affixes + w.dormantAffixes, flaws = w.flaws, catalystId = w.catalystId, signatureId = w.signatureId,
+                    ownerLine = remembered(story(w)).map { it.copy(subjectIds = emptyList()) },
+                    weaponKey = w.legendKey ?: "era${w.forgedEra}-${w.id.value}",
                 )
             }
         val anchorHero = state.heroes.values.filter { it.fame > 0 }.maxWithOrNull(compareBy<Hero> { it.fame }.thenBy(IdOrder.numeric) { it.id.value })
@@ -93,7 +124,8 @@ object Legacy {
             points = current.points + runEnd.totalPoints,
             totalPointsEarned = current.totalPointsEarned + runEnd.totalPoints,
             claimedRunIds = current.claimedRunIds + runEnd.runId.value,
-            legendBoard = (current.legendBoard + runEnd.legends).takeLast(20),
+            // One entry per blade: a legend that came back and was carried again replaces the entry it returned from.
+            legendBoard = (current.legendBoard.filter { old -> runEnd.legends.none { it.key == old.key } } + runEnd.legends).takeLast(20),
             lineages = (current.lineages + listOfNotNull(runEnd.lineage)).takeLast(10),
             eras = current.eras + EraSummary(runEnd.era, runEnd.daysSurvived, runEnd.totalPoints, runEnd.cause),
         )
