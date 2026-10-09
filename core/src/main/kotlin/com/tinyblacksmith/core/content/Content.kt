@@ -50,6 +50,8 @@ data class AffixDef(
     val selfDamageOnWin: Int = 0,
     /** Added to the chance that a won expedition brings a material back. */
     val lootChanceBonus: Double = 0.0,
+    /** A material the wielder brings back comes from the scarce pool elites carry (catalysts, tier 3 and up). */
+    val scarceLoot: Boolean = false,
     /** Multiplier on the wound a lost expedition deals to the wielder. */
     val damageTakenMultiplier: Double = 1.0,
     /** Chance that the weapon shatters when its wielder loses an expedition. */

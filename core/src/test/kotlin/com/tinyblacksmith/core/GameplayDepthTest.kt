@@ -95,6 +95,17 @@ class GameplayDepthTest {
         assertTrue(rests(vampiric) < rests(plain), "vampiric heroes rested ${rests(vampiric)} times, plain ${rests(plain)}")
     }
 
+    @Test
+    fun aLuckyBladeBringsBackWhatElitesCarry() {
+        fun scarce(m: com.tinyblacksmith.core.content.MaterialDef) = m.category == com.tinyblacksmith.core.content.MaterialCategory.CATALYST || m.tier >= 3
+        fun loot(worlds: List<GameState>) = worlds.flatMap { s -> s.events.filter { it.type == EventType.EXPEDITION_WON }.mapNotNull { e -> e.data["material"]?.let { content.material(MaterialId(it)) } } }
+        val plain = loot(armedWorlds(emptyList(), emptyList(), 1L..20L, 4))
+        val lucky = loot(armedWorlds(listOf(LaunchContent.LUCKY), emptyList(), 1L..20L, 4))
+        assertTrue(plain.any { !scarce(it) }, "a plain blade brings back common materials")
+        assertTrue(lucky.all(::scarce), "lucky loot: ${lucky.map { it.name }}")
+        assertTrue(lucky.size > plain.size, "lucky blades brought back ${lucky.size} materials, plain ${plain.size}")
+    }
+
     // --- Elites and warlords ---
 
     @Test

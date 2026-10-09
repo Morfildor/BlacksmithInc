@@ -102,7 +102,7 @@ data class RunStats(
     /** Tool levels at run end and the day each tool was first bought (`Policy.active` only). */
     val toolLevels: Map<String, Int> = emptyMap(),
     val toolFirstDay: Map<String, Int> = emptyMap(),
-    /** Weapons in the run that carry each affix or flaw, counted at run end. */
+    /** Weapons forged in the run that carry each affix or flaw, counted as they are forged (pruning does not touch it). */
     val affixWeapons: Map<String, Int> = emptyMap(),
     /** Hero-days (heroes alive at End Day, summed over the run) by what the hero did that day (`SimulationDriver.activityOf`). */
     val activityDays: Map<String, Int> = emptyMap(),
@@ -148,6 +148,7 @@ class SimulationDriver(
         var goldEarned = 0
         var hardLocks = 0
         val rarity = Rarity.entries.associateWith { 0 }.toMutableMap()
+        val affixWeapons = sortedMapOf<String, Int>()
         val materialSamples = ArrayList<Int>()
         val goldSamples = ArrayList<Int>()
         val visitReasons = sortedMapOf<String, Int>()
@@ -180,6 +181,7 @@ class SimulationDriver(
                             state = out.state; forged++; forgesToday++; couldForge = true
                             val w = state.weapon(out.forgedWeaponId!!)
                             rarity[w.rarity] = rarity.getValue(w.rarity) + 1
+                            for (a in w.affixes + w.flaws) affixWeapons[a.value] = (affixWeapons[a.value] ?: 0) + 1
                         }
                         is CommandOutcome.Rejected -> break
                     }
@@ -240,7 +242,7 @@ class SimulationDriver(
             visitReasons = visitReasons,
             elitesSlain = elitesSlain, weaponsBroken = weaponsBroken, warlordSieges = warlordSieges, warlordsDefeated = warlordsDefeated,
             toolLevels = state.tools.toSortedMap(), toolFirstDay = toolFirstDay,
-            affixWeapons = state.weapons.values.flatMap { it.affixes + it.flaws }.groupingBy { it.value }.eachCount().toSortedMap(),
+            affixWeapons = affixWeapons,
             activityDays = activityDays, heroLevelUps = heroLevelUps, mentorings = mentorings, guilds = state.town.guilds.size,
             weaponFates = weaponFates,
         )
@@ -414,7 +416,7 @@ data class PolicySummary(
     val toolBoughtShare: Map<String, Double> = emptyMap(),
     val toolLevelPerRun: Map<String, Double> = emptyMap(),
     val toolFirstDayMean: Map<String, Double> = emptyMap(),
-    /** Weapons per run carrying each affix or flaw. */
+    /** Weapons forged per run carrying each affix or flaw. */
     val affixWeaponsPerRun: Map<String, Double> = emptyMap(),
     /** Hero-days per run and the share of them spent on each activity (`RunStats.activityDays`). */
     val heroDaysPerRun: Double = 0.0,
@@ -660,7 +662,7 @@ fun main(args: Array<String>) {
         val ids = if (arg == "all") content.affixes.map { it.id.value } else arg.split(',')
         ids.forEach { id -> require(AffixId(id) in content.affixById) { "Unknown affix $id" } }
         content = content.copy(affixes = content.affixes.map { a ->
-            if (a.id.value in ids) a.copy(baneMultiplier = 1.0, eliteMultiplier = 1.0, healOnWin = 0, selfDamageOnWin = 0, lootChanceBonus = 0.0, damageTakenMultiplier = 1.0, breakChanceOnLoss = 0.0) else a
+            if (a.id.value in ids) a.copy(baneMultiplier = 1.0, eliteMultiplier = 1.0, healOnWin = 0, selfDamageOnWin = 0, lootChanceBonus = 0.0, scarceLoot = false, damageTakenMultiplier = 1.0, breakChanceOnLoss = 0.0) else a
         })
         overrides["noAffixEffect"] = arg
     }

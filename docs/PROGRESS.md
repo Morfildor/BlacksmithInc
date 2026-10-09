@@ -51,7 +51,7 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
   loyalty-weighted commission patrons, premium/regular Gazette records), weapon-history cap, a checked-in v1 save
   fixture. Balance v3 (session 6): affix effects (bane, elite, heal, loot, wound, shatter, self-harm), elite
   encounters, warlord sieges, hero ambitions, element commissions, `Salvage` / `Hone` / `DonateWeapon` / `BuyTool`
-  commands, workshop tools, `siegeForecast`, `BALANCED_ACTIVE` simulator policy, trade-ins and patrol pay. Balance v4 (session 7): weapon wear and condition, weapon fame effects (capped), whetstone 120/300, warlords from pressure 50; `Gazette.edition`; simulator catalog sweeps. Session 8: `WeaponPruning` (blades gone for good leave the save after 30 days); balance v5 part 1 (signboard +1 customer a day per level, stronger affix magnitudes) and part 2 (`HeroActivity.GUILD` / `AMBITION`, mentoring at the hall, guilds founded in life, simulator activity shares) and part 3 (`CombatReplay.kind`, expedition replays, `WeaponFate`, merchant resale, simulator fate counters and artifact recovery, `--noFates`). 172 JVM tests.
+  commands, workshop tools, `siegeForecast`, `BALANCED_ACTIVE` simulator policy, trade-ins and patrol pay. Balance v4 (session 7): weapon wear and condition, weapon fame effects (capped), whetstone 120/300, warlords from pressure 50; `Gazette.edition`; simulator catalog sweeps. Session 8: `WeaponPruning` (blades gone for good leave the save after 30 days); balance v5 part 1 (signboard +1 customer a day per level, stronger affix magnitudes) and part 2 (`HeroActivity.GUILD` / `AMBITION`, mentoring at the hall, guilds founded in life, simulator activity shares) and part 3 (`CombatReplay.kind`, expedition replays, `WeaponFate`, merchant resale, simulator fate counters and artifact recovery, `--noFates`) and part 4 (Lucky brings back scarce materials). 173 JVM tests.
 - `app/` Compose portrait workshop (session 4 layout: three-stat top bar, pinned forge summary over collapsible
   auto-advancing steps, row-based market, per-panel tip banners, single End Day action, full-width paper day report;
   principles in DECISIONS.md; session 5: title/run-end on the spacing tokens with one primary action, Town lists
@@ -99,6 +99,7 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
 | Balance v5 part 1: signboard and affixes (session 8) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE`; `--policy BALANCED_ACTIVE --noTool signboard --noImpact`; per-affix `--noAffixEffect <id>` under BALANCED_ACTIVE and SYNERGY before and after (32 runs, JSON); `:app:compileDebugKotlin -q` | 145/145 pass (1 new: the signboard lets 0-2 more customers in on the same seed); BALANCED_ACTIVE 25 (20/35) mean 27.2, sold 31.6 (was 26.4 / 26.9); signboard alone +0.4 days and +3.5 sales over no signboard (the old one was -0.1 / -0.9); Giant Slayer worth 0.42 elite kills a run (was 0.26), Reinforced -0.09 deaths (was -0.04), Heavy +0.07 (was +0.03), Swift, Cursed and Bloodbound unchanged in the aggregate; every other policy within 0.2 mean days; 0 hard-locks; app compiles; tables in DECISIONS.md |
 | Hero daily life, merged (session 8) | `./gradlew :core:test`; `:app:compileDebugKotlin -q`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE` on the merged tree | 158/158 pass (13 new: 11 in `HeroDailyLifeTest`, 2 in `GazetteEditionTest`); app compiles (no UI change); BALANCED_FAIR 20 (15/25) mean 20.5, BALANCED_ACTIVE 30 (20/35) mean 27.5 (was 25 (20/35) 27.2), SYNERGY 35 (25/40) 34.7, maxed ACTIVE 40 (35/45) 40.6; deaths -0.1 a run; 8.1 % of hero-days at the hall, 6.5 % on ambitions, a guild in 97 % of runs; 0 hard-locks; tables in DECISIONS.md ("Balance v5, part 2") |
 | Replays and weapon fates, merged (session 8) | `./gradlew :core:test`; `:app:compileDebugKotlin -q`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE` on the merged tree | 172/172 pass (14 new in `ReplaysAndWeaponFatesTest`; two more asserts in `WeaponPruningTest`; one seed range widened in `HeroDailyLifeTest`); app compiles (three lines in the day report); BALANCED_FAIR 20 (15/25) mean 20.5, BALANCED_ACTIVE 30 (20/35) mean 27.4, SYNERGY 35 (25/40) 34.7, no mean moved more than 0.1 day; artifact recovery 51-53 %, guild inheritance 0.04-0.12 a run (0 on the branch alone), merchant resale 0.01-0.03 a run; 0 hard-locks; the agent showed the replay feature alone leaves simulator output byte-identical; not run on a device yet; tables in DECISIONS.md ("Balance v5, part 3") |
+| Lucky loot and forge-time affix count (session 8) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE`; `--policy BALANCED_ACTIVE` and `SYNERGY` with `--noAffixEffect lucky` | 173/173 pass (1 new: Lucky loot is always scarce and more frequent); Lucky is inside the noise floor for both bots (+0.06 / +0.07 mean days), which do not spend scarce stock; BALANCED_ACTIVE 25 (20/35) mean 27.4, BALANCED_FAIR 20 (15/25) mean 20.5, 0 hard-locks; table in DECISIONS.md ("Balance v5, part 4") |
 | UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
 ## Obstacles hit and resolved
@@ -120,12 +121,10 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
 - The `weapons` map still grows with unsold stock: salvaged, shattered, donated and collected blades are pruned 30
   days later (session 8), but blades in storage, blades lost with a hero or seized (an event can bring them home) and
   kept-forever events are not. A plain smith who never salvages keeps about 3 weapons a day (3,140 after 1,000 days).
-- The simulator line `affix weapons/run` counts the end-of-run weapons map, so pruning lowers it on long runs; it
-  moves to forge-time counting when the agent branches (which all edit the simulator) are merged.
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
 - Of the v3 review recommendations (DECISIONS.md), whetstone 120/300 and warlord pressure 50 are applied in v4, the
-  signboard effect and the affix magnitudes in v5; the Lucky loot and Known Name are not. Guild Patronage still
+  signboard effect, the affix magnitudes and the Lucky loot in v5; Known Name is not. Guild Patronage still
   raises the visit chance, which the customer cap mostly swallows (the old signboard problem). v4 and v5 are checked
   at 1,000 seeds only.
 - No champion can die on the walls (champions need health 50, a lost siege costs 40), so the walls odds for a fallen
@@ -134,8 +133,9 @@ is fixed by session 8 except the signboard (its section 6.2); the checklist corr
   per-wielder or expedition-count metric to show the rest days it costs.
 - The simulator's other policies ignore the new shop actions, so their rows measure a smith who never uses them.
 - Weapon wear costs every policy 1-2 mean days and had cut the lead of the active smith over the plain one from 10
-  median days to 5. After v5 parts 1 and 2 it is 10 again (30 against 20; 7.0 mean days), without touching wear. The
-  wear levers (condition floor ~0.8, less siege wear) stay unused; the owner has not decided whether more is wanted.
+  median days to 5. In v5 the mean lead is 6.9 days (27.4 against 20.5, was 5.9); the active median sits on the siege
+  boundary between 25 and 30 and reads either on a 0.1-day change, so it is no evidence either way. The wear levers
+  (condition floor ~0.8, less siege wear) stay unused; the owner has not decided whether more is wanted.
 - `BalanceConfig` is at the JVM limit of 255 constructor parameter slots (3 free: a Double takes two). New numbers go
   into a nested group like `HeroLifeConfig`, or the class compiles and every test fails at class load.
 - Not exercised on device: the rounds toggle in the field report (renders collapsed; a plain state toggle), Re-hone,

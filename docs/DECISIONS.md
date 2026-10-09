@@ -1325,9 +1325,10 @@ The branch measured against v4 as merged; main had since taken the signboard and
 | BALANCED_ACTIVE, all upgrades | 40 (30/45), mean 39.5 | 40 (35/45), mean 40.6 |
 
 0 hard-locks. Deaths fall by about 0.1 a run in every policy (a hall day heals and risks nothing). The active
-median crosses a siege boundary (25 -> 30) on a +0.3 mean, so the active smith leads the plain one by 10 days at the
-median again (7.0 mean days). BALANCED_ACTIVE spends 8.1 % of hero-days at the hall and 6.5 % on ambitions; 4.1
+median crosses a siege boundary (25 -> 30) on a +0.3 mean; it sits on that boundary and flips back on smaller
+changes (see part 4), so the lead of the active smith is better read as 7.0 mean days. BALANCED_ACTIVE spends 8.1 % of hero-days at the hall and 6.5 % on ambitions; 4.1
 lessons and 1.5 guilds a run, a guild in 97 % of runs. 158 JVM tests pass on the merged tree.
+
 ## Balance v5, part 3: replays and weapon fates (session 8)
 Built on f73e5a1 (0.5.0, balance v4) in a worktree, measured at config version 4 and merged into v5.
 Two features: text replays for significant expeditions (GDD 6, 11) and the missing fates of a fallen hero's blade
@@ -1551,3 +1552,41 @@ to one in five (SYNERGY). Pruning: "held by a travelling merchant" is kept (the 
 the new combat draws moved the runs and no lesson at the hall fell inside the first 25. 172 JVM tests pass.
 Still true on the merged tree: no champion can die on the walls (health 50 or more, a lost siege costs 40), so the
 walls odds are reached only in unit tests.
+
+## Balance v5, part 4: Lucky loot and the simulator affix count (session 8)
+
+**Lucky** (item 6 of the v3 review): a material a Lucky wielder brings back now comes from the pool elites carry
+(catalysts and tier 3 and up; `AffixDef.scarceLoot`, read in `Battle.resolveExpedition`); the +25 points of loot chance
+stay. No RNG draw is added or moved. `GameplayDepthTest.aLuckyBladeBringsBackWhatElitesCarry`: over 20 seeds every
+material a Lucky blade brought back is scarce, a plain blade brings back common ones, and Lucky brings back more.
+
+| 1,000 seeds, seed 1 | Median (p10/p90) | Mean days | Sold/run | Elites slain | Lucky weapons forged/run |
+|---|---|---|---|---|---|
+| BALANCED_ACTIVE, Lucky neutralised (`--noAffixEffect lucky`) | 30 (20/35) | 27.33 | 31.23 | 4.15 | 4.9 |
+| BALANCED_ACTIVE, Lucky as merged | 25 (20/35) | 27.39 | 31.45 | 4.23 | 4.9 |
+| SYNERGY, Lucky neutralised | 35 (25/40) | 34.59 | 28.04 | 5.99 | 6.5 |
+| SYNERGY, Lucky as merged | 35 (25/40) | 34.66 | 28.14 | 6.02 | 6.7 |
+
+Inside the noise floor in both policies, and expected to be: no simulator policy changes its recipe because a
+catalyst or a tier 3 core turned up in stock, so the bots do not spend what Lucky brings. For a player it is a free
+catalyst or rare core on about three wins in five. Not measured: a policy that forges from scarce stock.
+
+**The active median sits on a siege boundary.** BALANCED_ACTIVE reads 25 in one of these rows and 30 in the other on
+a 0.06-day difference in the mean: about half of its runs end at day 25 or earlier. Parts 2 and 3 above report "30";
+read the lead of the active smith over the plain one as 6.9 mean days (27.4 against 20.5), not as a 10-day median.
+
+**Simulator**: `affix weapons/run` now counts weapons as they are forged, not the weapons map at run end, so weapon
+pruning and salvage no longer lower it (flaming 32.9 forged a run under BALANCED_ACTIVE; the old line counted what
+was left).
+
+### Baseline before the legacy-tracks branch (1,000 seeds, seed 1, `--policy all --impactPolicy BALANCED_ACTIVE`)
+| Policy | v5 parts 1-4 |
+|---|---|
+| BALANCED_FAIR | 20 (15/25), mean 20.5, sold 19.3 |
+| BALANCED_ACTIVE | 25 (20/35), mean 27.4, sold 31.5 |
+| SYNERGY | 35 (25/40), mean 34.7, sold 28.1 |
+| BALANCED_INVEST | 30 (20/40), mean 30.2, sold 28.5 |
+| BALANCED_FAIR, all upgrades | 35 (25/40), mean 34.6, sold 27.1 |
+| BALANCED_ACTIVE, all upgrades | 40 (30/45), mean 40.4, sold 40.9 |
+
+0 hard-locks.

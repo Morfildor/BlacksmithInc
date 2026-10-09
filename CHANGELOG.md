@@ -30,14 +30,15 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   and otherwise leaves Emberfall with it for good. A storied blade is likelier to surface, never certain to. The
   Gazette tells each step: gone from the field, the merchant's arrival, the sale or the departure.
 - A living guildmate may inherit a fallen member's blade instead of the forge, wielding it only if it beats their
-  own. This waits on guilds: today a guild never has two living members at once.
+  own.
 
 ### Changed
 - The Painted Signboard now lets one more customer into the shop each day per level (it used to nudge the chance
   of a visit, which the daily customer limit swallowed). An active smith sells about four more weapons a run.
 - Affixes and flaws bite harder: Giant Slayer hits elites and warlords for x1.5 (was x1.25); Reinforced and Swift
   cut the wound of a lost fight to x0.7 and x0.6 (were x0.85 and x0.8); Heavy raises it to x1.5 (was x1.2); Cursed
-  and Bloodbound cost their wielder 15 and 20 health per win (were 4 and 7, still never lethal).
+  and Bloodbound cost their wielder 15 and 20 health per win (were 4 and 7, still never lethal). A Lucky blade now
+  brings back what elites carry (a catalyst or a rare core) instead of a common material.
 - Long runs keep smaller saves: a blade that was salvaged, shattered, given to the watch or sold to a collector
   leaves the save 30 days later, unless it is a signature weapon or famous enough for the Legend Board. Play is
   unchanged (the same seed gives the same run); a 400-day save of an active smith shrinks by about two fifths.

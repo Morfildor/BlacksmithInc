@@ -5,7 +5,7 @@ One line per GDD feature, by GDD section. `[x]` = built and verified (evidence i
 IMPLEMENTATION_PLAN.md is the phase-gate view; this is the feature view. DEFERRED scope (GDD 16.2: multiplayer,
 manual equip/combat, walking, idle production, online, accounts, achievements, ads, IAP) is not listed and is not built.
 
-Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 172 JVM tests.
+Last reviewed: 2026-10-09, app 0.5.0 plus unreleased work, balance config v5, 173 JVM tests.
 In flight, not merged (session 8): legacy upgrade tracks.
 
 ## 3 Player loop
@@ -102,7 +102,7 @@ In flight, not merged (session 8): legacy upgrade tracks.
 - [ ] Full custom art pass after the UI redesign
 
 ## 15 Testing and balance
-- [x] 172 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
+- [x] 173 JVM tests: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, 5,000-day soak
 - [x] Headless simulator with the GDD policy set, upgrade impact, catalog sweeps, JSON report
 - [x] Balance v2 and v3 reviewed at 10,000 seeds; first-era median 20-25 days, longer paths with upgrades, 0 hard-locks
 - [x] Instrumented tests: Room save / restore, title, forge hint, End Day budget (6)
@@ -122,7 +122,7 @@ In flight, not merged (session 8): legacy upgrade tracks.
 ## Pipeline (owner requests and review findings, beyond the GDD)
 - [x] Signboard effect (+1 customer a day per level; +0.4 days, +3.5 sales a run for the active smith)
 - [x] Affix magnitude sweep (Giant Slayer, Cursed / Bloodbound, Reinforced / Swift, Heavy)
-- [ ] Lucky affix: loot something scarce (a catalyst or tier 3+ material) instead of a common material
+- [x] Lucky affix: loot something scarce (a catalyst or tier 3+ material) instead of a common material
 - [ ] Decide the wear margin (active smith leads the plain one by 5 days, was 10): condition floor 0.8 or less siege wear
 - [ ] Known Name upgrade measures 0 or less impact
 - [ ] Home: Yesterday block repeats the Shelf line on days without a lede

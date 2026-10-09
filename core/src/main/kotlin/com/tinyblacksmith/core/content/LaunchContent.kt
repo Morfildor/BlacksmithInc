@@ -145,7 +145,7 @@ object LaunchContent {
             AffixDef(GIANT_SLAYER, "Giant Slayer", AffixKind.BENEFICIAL, power = 5, description = "Bites deepest into elites and warlords.", attackMultiplier = 1.03, eliteMultiplier = 1.5),
             AffixDef(UNDEAD_BANE, "Undead Bane", AffixKind.BENEFICIAL, power = 4, element = Element.SUN, description = "Noon-light folded into steel; the Hollowbound cannot bear it.", attackMultiplier = 1.03, baneFaction = HOLLOWBOUND, baneMultiplier = 1.2),
             AffixDef(GUARDIANS, "Guardian's", AffixKind.BENEFICIAL, power = 2, description = "Steadies the wielder in defense.", defenseMultiplier = 1.15),
-            AffixDef(LUCKY, "Lucky", AffixKind.BENEFICIAL, power = 2, description = "Things go its wielder's way; spoils turn up more often.", attackMultiplier = 1.03, defenseMultiplier = 1.03, lootChanceBonus = 0.25),
+            AffixDef(LUCKY, "Lucky", AffixKind.BENEFICIAL, power = 2, description = "Things go its wielder's way; spoils turn up more often, and better ones.", attackMultiplier = 1.03, defenseMultiplier = 1.03, lootChanceBonus = 0.25, scarceLoot = true),
             AffixDef(RESONANT, "Resonant", AffixKind.BENEFICIAL, power = 4, element = Element.VERDANT, description = "Hums with living sap; magic flows through it.", attackMultiplier = 1.04, defenseMultiplier = 1.06),
             // Flaws (6). GDD 4.4: predictable trade-offs, no secret behaviour. Power values are PROPOSED.
             AffixDef(BRITTLE, "Brittle", AffixKind.FLAW, power = -3, description = "Chips under stress and may shatter in a rout.", defenseMultiplier = 0.9, breakChanceOnLoss = 0.2),
