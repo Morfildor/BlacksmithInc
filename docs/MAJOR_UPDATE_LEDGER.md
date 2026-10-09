@@ -79,7 +79,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T1.8 | Commissions | CA + CON + AB | merged (device screenshot pending) | 9c4a041 | core 247/247; balance v6; 8 of 28 policy rows lose 0.7-1.3 mean days from the least-sufficient pick (see ruling); request card not yet seen on device | |
 | T1.9 | Small engine corrections (faction ties, ore merchant) | CB | merged | 917207f | all rows within 0.1 day; golden 23 lines moved (tie-break, merchant flag) | |
 | T2.1 | Visit record | CA | done (JVM); device unchecked | 2e9b4a9 e96021c  | core 261, app unit 40 pass; 200-run sim all+bots identical to base bar elapsed line; golden file unchanged; schema 3 no-op step; day-60 save +4.4 % (constant); patron-once rule moved to T3.1 (changes outcomes); M1 review I3, I4 fixed here | |
-| T2.2 | Script and lead | CB | todo | | | |
+| T2.2 | Script and lead | CB | done (JVM) | 39315d9 | core 290+ pass on integration tip; script/lead/demand pure (source scan + stream states); golden untouched; signatures in T2.2-report.md; FieldResult.weapon never filled by Battle (aftermath joins via subjectIds); title-earned detected by snapshot diff only | |
 | T2.3 | Cursor | INT | todo | | | |
 | T2.4 | Assets for the scene | ART | merged (second set off) | 2950931 | 25 of 25 portraits clean in the Compose renderer at 56 and 112 dp on emulator (density 2.625) and viewed by INT; import byte-identical twice; 287 sources unchanged by hash; second set 0 of 25 as cut-outs, tiles differ in style | |
 | T2.5 | Counter screen | AA | todo | | | |
