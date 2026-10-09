@@ -76,8 +76,12 @@ object Market {
             collector +
             noise -
             pricePenalty * config.utilityPricePenaltyWeight
-        return Evaluation(weapon, utility, affordable = price <= hero.gold, improvement = improvement, fit = fit, pricePenalty = pricePenalty)
+        return Evaluation(weapon, utility, affordable = price <= hero.gold + tradeInCredit(current, config), improvement = improvement, fit = fit, pricePenalty = pricePenalty)
     }
+
+    /** Credit the shop gives for the weapon a hero currently wields when they buy a replacement. */
+    fun tradeInCredit(current: Weapon?, config: BalanceConfig): Int =
+        current?.let { (it.power * config.fairGoldPerPower * config.tradeInShare).toInt() } ?: 0
 
     /**
      * GDD 5 "Reputation ... affects willingness to pay; individual loyalty influences repeat customers": the price a hero
@@ -92,15 +96,24 @@ object Market {
 
     fun purchase(ctx: ResolutionContext, hero: Hero, weapon: Weapon, price: Int) {
         val bonus = price * ctx.blessingMagnitude(BlessingEffect.SALE_GOLD_BONUS) / 100
-        ctx.gold += price + bonus
+        // Trade-in: the weapon being replaced comes back to the shop as part payment (GDD 7: weapons change hands).
+        val old = ctx.equippedWeapon(hero.id)
+        val credit = minOf(price, tradeInCredit(old, ctx.config))
+        if (old != null) {
+            ctx.updateWeapon(old.copy(location = WeaponLocation.Storage))
+            ctx.addWeaponHistory(old.id, "TRADED_IN", "Traded in by ${hero.fullName} for ${weapon.name}.", listOf(hero.id.value))
+        }
+        ctx.gold += price - credit + bonus
         ctx.reputation += 1
         val loyaltyGain = hero.traits.fold(1.0) { acc, t -> acc * ctx.content.trait(t).loyaltyGain }.toInt().coerceAtLeast(1)
-        ctx.updateHero(hero.copy(gold = hero.gold - price, loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP))
+        ctx.updateHero(hero.copy(gold = hero.gold - (price - credit), loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP))
         // Gazette-visible consequences: a regular is named as one; gold paid above the base fair price is recorded as a premium.
         val premium = price - weapon.power * ctx.config.fairGoldPerPower
         val who = if (isRegular(hero, ctx.config)) "${hero.fullName}, a regular of the shop," else hero.fullName
-        val text = "$who bought ${weapon.name} for $price gold" + (if (premium > 0) ", $premium above the going rate on the shop's good name." else ".")
-        val data = mapOf("price" to price.toString()) + (if (premium > 0) mapOf("premium" to premium.toString()) else emptyMap())
+        val text = "$who bought ${weapon.name} for $price gold" + (if (premium > 0) ", $premium above the going rate on the shop's good name." else ".") +
+            (if (old != null) " ${old.name} came back to the shop in part payment ($credit gold)." else "")
+        val data = mapOf("price" to price.toString()) + (if (premium > 0) mapOf("premium" to premium.toString()) else emptyMap()) +
+            (if (old != null) mapOf("tradeIn" to credit.toString(), "tradedWeapon" to old.id.value) else emptyMap())
         ctx.emit(EventType.WEAPON_SOLD, 4, text, listOf(hero.id.value, weapon.id.value), data)
         ctx.addWeaponHistory(weapon.id, "SOLD", "Sold to ${hero.fullName} for $price gold.", listOf(hero.id.value))
         giveAndEquip(ctx, ctx.hero(hero.id), ctx.weapon(weapon.id))

@@ -80,7 +80,7 @@ object Heroes {
         ctx.town = ctx.town.copy(militia = minOf(config.militiaMax, ctx.town.militia + config.patrolMilitiaGain))
         val f = ctx.factions.getValue(factionId)
         ctx.factions[factionId] = f.copy(suppressionToday = f.suppressionToday + config.patrolSuppression)
-        grantXp(ctx, hero.copy(lastActivity = HeroActivity.PATROL), config.patrolXp)
+        grantXp(ctx, hero.copy(lastActivity = HeroActivity.PATROL, gold = hero.gold + config.patrolGold), config.patrolXp)
         ctx.emit(EventType.HERO_PATROLLED, 1, "${hero.fullName} patrolled the town walls.", listOf(hero.id.value))
     }
 

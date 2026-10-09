@@ -1,8 +1,14 @@
-# Progress — 2026-10-09 (session 5)
+# Progress — 2026-10-09 (session 6)
 
 ## Current phase
 P7 in progress. Launch content is the engine default and balance v2 is tuned against it; all 24 signature recipes,
 the Strange Weapon Fragment event and End Day event-log compaction landed the same day (parallel agents, merged).
+
+## Session 6 focus: gameplay depth (balance v3, app 0.4.0)
+The owner asked for function and features over UI ("not fun yet, not much in it"; the UI will be redesigned later).
+Added in `:core`, each with one plain UI surface: affix effects, elite foes and warlords, hero ambitions, element
+commissions, the Salvage / Hone / Arm the watch shop actions, workshop tools, a siege forecast. Design, numbers and
+simulator evidence are in DECISIONS.md ("Balance v3: gameplay depth").
 
 ## What exists
 - `core/` pure Kotlin engine: RNG, slice + launch content catalogs (launch is the default), balance config v2, model,
@@ -13,7 +19,9 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
   `--rarityTable`, `--impactPolicy`, `BALANCED_INVEST` purchasing rule with `--reserve`, `BALANCED_REPUTED`
   pricing, forge-damage overrides, JSON report, perf probe), reputation/loyalty depth (bounded price ceiling,
   loyalty-weighted commission patrons, premium/regular Gazette records), weapon-history cap, a checked-in v1 save
-  fixture. 103 JVM tests.
+  fixture. Balance v3 (session 6): affix effects (bane, elite, heal, loot, wound, shatter, self-harm), elite
+  encounters, warlord sieges, hero ambitions, element commissions, `Salvage` / `Hone` / `DonateWeapon` / `BuyTool`
+  commands, workshop tools, `siegeForecast`, `BALANCED_ACTIVE` simulator policy, trade-ins and patrol pay. 122 JVM tests.
 - `app/` Compose portrait workshop (session 4 layout: three-stat top bar, pinned forge summary over collapsible
   auto-advancing steps, row-based market, per-panel tip banners, single End Day action, full-width paper day report;
   principles in DECISIONS.md; session 5: title/run-end on the spacing tokens with one primary action, Town lists
@@ -47,6 +55,7 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
 | Reputation/loyalty depth (session 4) | `./gradlew :core:test`, `./gradlew :core:simulate --args="--runs 1000 --seed 1"` before/after | 89/89 pass (82 + 7 in `ReputationAndLoyaltyTest`: caps, evaluate() stranger vs regular, reputation ceiling, premium sales 40/40 vs 29/40 at 190 %, commission bias 22/58 offers to the regular, event text, determinism); BALANCED_FAIR 25 (15/30) mean 23.7 (was 25 (15/35) mean 24.0), sell rate 14 % unchanged; tables in DECISIONS.md |
 | Simulator wave 2 + UI wave 2 (session 5) | `./gradlew :core:test`; `:core:simulate --runs 10000 --seed 1 --policy BALANCED_REPUTED`; `:app:assembleDebug`, `:app:installDebug`, `tools/emulator/smoke.sh scratchpad/ui_v4`, `:app:connectedDebugAndroidTest` | 103/103 pass (SimulatorPolicyTest added); BALANCED_REPUTED 25 (15/30) mean 23.6, within 0.3 days of FAIR (DECISIONS); build ok, SMOKE_DONE with shelf/town/resume checks ok, instrumented 5/5; title/forge/town screenshots sent |
 | Run-end route + large fonts (session 5) | `tools/emulator/runend.sh scratchpad/runend`; Town at font scale 1.3 and 1.5 | passive run falls on day 10; final Gazette -> claim -> pinned Begin era -> era 2 day 1, all checks ok, RUNEND_DONE; Town wraps without clipping at both scales |
+| Gameplay depth (session 6) | `./gradlew :core:test`; `:core:simulate --runs 1000 --seed 1 --policy all`; `--policy BALANCED_ACTIVE --impactPolicy BALANCED_ACTIVE` | 122/122 pass (18 new in `GameplayDepthTest`, 1 in `SimulatorPolicyTest`); BALANCED_FAIR 20 (15/30) mean 21.7 (was 25 / 23.7), BALANCED_ACTIVE 30 (20/35) mean 27.5, sales 17.7 / 23.4 a run (was 16.2), 0 hard-locks; armory and raid sweeps and the full table in DECISIONS.md |
 | UI declutter (session 4) | `:app:assembleDebug`, `:app:installDebug`, scripted screenshots of every panel at font scale 1.0 and 1.3 (`scratchpad/ui_v2/`), `tools/emulator/smoke.sh`, `:app:connectedDebugAndroidTest` | build ok; SMOKE_DONE with shelf/town/resume checks ok; instrumented 5 tests, 0 failures (ForgeHint x2, SaveStore, TitleScreen, Example) |
 
 ## Obstacles hit and resolved
@@ -70,14 +79,19 @@ the Strange Weapon Fragment event and End Day event-log compaction landed the sa
   2,330 weapons after 1,000 days); lost/destroyed weapons are never pruned. The next list to watch.
 - `panel_gazette`/`panel_journal` frames and the pack's signature weapon variants are not used (the pack's 16 px
   signature sprites would clash with the 64 px concept weapons; signatures show their name and burst instead).
-- A passive first run banks 7 legacy points and the cheapest upgrade costs 8, so the worst-case first loss buys
-  nothing (median first runs bank ~24). PROPOSED numbers; left for the user to decide.
+- Balance v3 was checked at 1,000 seeds only; the 10,000-seed table in DECISIONS.md is still v2. Tool prices and
+  single affix magnitudes were set by judgement and checked only through the aggregate `BALANCED_ACTIVE` run.
+- The simulator's other policies ignore the new shop actions, so their rows measure a smith who never uses them.
+- Sell rate is still modest (16-23 % at fair prices): trade-ins and patrol pay raised sales by about a third, but
+  most visits now end NOT_BETTER (a hero only buys an upgrade). Salvage, Hone and the watch use the surplus.
 - Package name is still `com.example.blacksmithproject`; no release signing.
 - `GameEngine.RULES_VERSION` stays 1 although v2 changed hero targeting and RNG draw order and session-4 commission
   patron weighting changes which hero asks on a given seed; bump with the first release.
 - Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.3.0 (versionCode 3).
 
 ## Next executable actions (P7)
+0. More gameplay, in the order the harness suggests: more reasons to buy (most visits end NOT_BETTER; newcomers,
+   sidearms or wear would widen demand), a 10,000-seed v3 review, per-tool and per-affix sweeps.
 1. Measure starting gold/energy upgrades by first-siege champion power or first tier-4+ sale (DECISIONS proposal a)
    instead of run length; hero first-week purchasing power is the lever if run length must move.
 2. 720x1280 pass over every panel; nav labels are tight at font scale 1.5.

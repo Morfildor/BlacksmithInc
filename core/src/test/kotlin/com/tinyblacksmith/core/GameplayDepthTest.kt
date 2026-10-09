@@ -13,6 +13,9 @@ import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
+import com.tinyblacksmith.core.engine.Invariants
+import com.tinyblacksmith.core.engine.ResolutionContext
+import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.engine.stateOrThrow
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.model.*
@@ -290,6 +293,55 @@ class GameplayDepthTest {
         assertIs<GameError.ShelfFull>(s.rejected(Command.ToggleShelf(ids.last(), true, 10)))
         s = s.run(Command.BuyTool("display_case")).run(Command.ToggleShelf(ids.last(), true, 10))
         assertEquals(config.shelfSlots + 1, s.listedWeapons().size)
+    }
+
+    // --- Demand ---
+
+    @Test
+    fun aHeroTradesInTheOldWeaponAsPartPayment() {
+        val (s1, weakId) = forged()
+        val out = s1.copy(energy = 10).forgeAccepted(quickSword(Risk.SAFE))
+        val strongId = out.forgedWeaponId!!
+        val hero0 = out.state.aliveHeroes().first()
+        val weak = out.state.weapon(weakId).copy(location = WeaponLocation.Owned(hero0.id, equipped = true))
+        val strong0 = out.state.weapon(strongId).let { it.copy(power = weak.power + 20) }
+        val price = engine.suggestedPrice(strong0)
+        val credit = Market.tradeInCredit(weak, config)
+        assertTrue(credit in 1 until price)
+        val hero = hero0.copy(gold = price - credit)
+        val s = out.state.copy(
+            weapons = out.state.weapons + (weak.id to weak) + (strong0.id to strong0.copy(location = WeaponLocation.Shelf(price))),
+            heroes = out.state.heroes + (hero.id to hero),
+        )
+        val ctx = ResolutionContext(s, content, config)
+        assertTrue(Market.evaluate(ctx, hero, weak, ctx.weapon(strongId), 0.5).affordable)
+        assertTrue(!Market.evaluate(ctx, hero.copy(gold = hero.gold - 1), weak, ctx.weapon(strongId), 0.5).affordable)
+
+        Market.purchase(ctx, hero, ctx.weapon(strongId), price)
+        val after = ctx.toState()
+        assertEquals(s.gold + price - credit, after.gold)
+        assertEquals(0, after.hero(hero.id).gold)
+        assertTrue(after.weapon(weakId).isInStorage, "the old weapon comes back to the shop")
+        assertTrue(after.weapon(weakId).history.any { it.kind == "TRADED_IN" })
+        assertEquals(strongId, after.equippedWeapon(hero.id)?.id)
+        assertEquals(emptyList(), Invariants.check(after, config))
+        val sale = after.events.last { it.type == EventType.WEAPON_SOLD }
+        assertEquals(credit.toString(), sale.data["tradeIn"])
+    }
+
+    @Test
+    fun theTownPaysForPatrols() {
+        var paid = 0
+        for (seed in 1L..10L) {
+            val s = engine.newRun(LegacyProfile(), seed)
+            val after = s.endDay()
+            for (e in after.events.filter { it.type == EventType.HERO_PATROLLED }) {
+                val id = HeroId(e.subjectIds.single())
+                assertEquals(s.hero(id).gold + config.patrolGold, after.hero(id).gold)
+                paid++
+            }
+        }
+        assertTrue(paid > 0)
     }
 
     // --- Legacy floor ---

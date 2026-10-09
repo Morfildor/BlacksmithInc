@@ -373,22 +373,47 @@ PROPOSED and lives in `BalanceConfig` (version 3) or `LaunchContent`.
   stand, with a four-step descriptive label.
 - **Legacy base points 5 -> 6**: a passive first run (falls on day 10) now banks 8 and affords the cheapest upgrade.
 
-### Evidence (`--runs 1000 --seed 1`, launch content, new account)
-| Policy | v2 | v3 |
+### Demand: trade-ins and patrol pay
+With the additions above in place the sweep showed why so little sells: at fair prices 49 % of shop visits ended
+TOO_EXPENSIVE (the hero could afford nothing on the shelf) and 34 % NOT_BETTER; 14 % bought. Heroes earned gold only
+from won expeditions. Two changes:
+- **Trade-in**: a hero replacing a weapon hands the old one back for 40 % of its fair price as credit against the
+  new one. The old weapon returns to the shop's storage (history `TRADED_IN`), where it can be resold, honed,
+  salvaged or given to the watch. Before this, replaced weapons sat unused in the hero's pack for the rest of the run.
+- **Patrol pay**: the town pays 12 gold for a day's patrol.
+
+BALANCED_FAIR sales rose from 13.5 to 18.8 a run and TOO_EXPENSIVE visits fell from 38.7 to 16.1; BALANCED_ACTIVE
+sales rose from 15.0 to 25.6. Stronger heroes then stretched runs past the first-era band (BALANCED_ACTIVE 35
+(20/40), SYNERGY 45), so raid growth went from 5.0 to 6.0 power per day:
+
+| raidPerDay | BALANCED_FAIR | BALANCED_ACTIVE | SYNERGY | Maxed, BALANCED_FAIR |
+|---|---|---|---|---|
+| 5.0 (v2) | 25 (15/35), 25.0, survived 1.6 | 35 (20/40), 32.0 | 45 (35/50), 42.3 | 45 (30/50), 40.8 |
+| **6.0 (adopted)** | 20 (15/30), 21.7, survived 1.2 | 30 (20/35), 27.5, survived 2.3 | 40 (25/45), 36.7 | 35 (25/45), 35.5 |
+| 6.5 | 20 (15/25), 20.5, survived 1.0 | 25 (20/35), 25.8, survived 2.0 | 35 (25/40), 34.4 | 35 (25/40), 33.3 |
+| 8.0 | 15 (15/25), 17.7, survived 0.6 | 20 (15/30), 21.6, survived 1.2 | 30 (20/35), 28.7 | 30 (20/35), 28.5 |
+
+### Evidence for v3 as adopted (`--runs 1000 --seed 1 --policy all --impactPolicy BALANCED_ACTIVE`, launch content)
+| Policy | v2 (0.3.0) | v3 |
 |---|---|---|
-| BALANCED_FAIR (ignores every new action) | 25 (15/30), mean 23.7, survived 1.5, deaths 0.5 | 20 (15/30), mean 22.1, survived 1.3, deaths 1.0 |
-| **BALANCED_ACTIVE** (new: tools, hone, arm the watch, salvage) | - | 25 (15/35), mean 26.9, survived 2.3, deaths 1.1, sell rate 18 %, gold on hand 39 |
-| SYNERGY | 40 (20/50), mean 38.8 (10k) | 40 (20/50), mean 36.2 |
-| BALANCED_INVEST | 35 (15/45), mean 32.5 (10k) | 30 (15/45), mean 29.3 |
-| BALANCED_CHEAP / EXPENSIVE | 30 / 15 | 30 (mean 28.6) / 10 (mean 12.3) |
-| PASSIVE | 10 | 10 (banks 8 points) |
-| Maxed upgrades, BALANCED_FAIR | 40 (25/50), mean 37.9 | 35 (20/45), mean 33.3 |
-| Maxed upgrades, BALANCED_ACTIVE | - | 35 (20/50), mean 35.8 |
+| BALANCED_FAIR (ignores every new shop action) | 25 (15/30), mean 23.7, sold 16.2, survived 1.5, deaths 0.5 | 20 (15/30), mean 21.7, sold 17.7, survived 1.2, deaths 0.8 |
+| **BALANCED_ACTIVE** (new: tools, hone, arm the watch, salvage) | - | 30 (20/35), mean 27.5, sold 23.4 (23 %), survived 2.3, deaths 0.9, gold on hand 91 |
+| SAFE_FAIR / RECKLESS_FAIR / OVERWORK | 25 / 25 / 25 (10k) | 20 (21.3) / 20 (22.4) / 20 (21.8) |
+| SYNERGY | 40 (20/50), mean 38.8 (10k) | 40 (25/45), mean 36.7, sold 24.3 |
+| BALANCED_INVEST | 35 (15/45), mean 32.5 (10k) | 35 (20/40), mean 31.5, sold 25.6 (52 %) |
+| BALANCED_CHEAP / EXPENSIVE | 30 / 15 (10k) | 25 (mean 25.8) / 10 (mean 12.5) |
+| RANDOM | 25 (15/40), mean 26.2 (10k) | 25 (15/35), mean 24.4 |
+| PASSIVE | 10, banks 7 points | 10, banks 8 points |
+| Maxed upgrades, BALANCED_FAIR | 40 (25/50), mean 37.9 | 35 (25/45), mean 35.5 |
+| Maxed upgrades, BALANCED_ACTIVE | - | 40 (30/50), mean 39.3 |
 
-Elites and warlords cost a smith who ignores the new actions about 1.6 days (hero deaths double to 1.0 a run); the
-new actions give back about 4.8. The first-era band of 15-25 days (GDD 8) holds for both.
+0 hard-lock days in all 16,000 runs; the longest run is 55 days. Gold on hand under BALANCED_FAIR is still about
+590 (it never buys a tool); under BALANCED_ACTIVE it is 91. A smith who uses the new actions lives about 6 days
+longer than one who does not and wins about one more siege; the first-era band of 15-25 days (GDD 8) holds for the
+plain policies, and good play sits just above it at 30.
 
-Armory sweep under BALANCED_ACTIVE (share of weapon power / cap / wear per siege):
+Armory sweep under BALANCED_ACTIVE, measured before the demand change and the raid retune (share of weapon power /
+cap / wear per siege):
 
 | Armory | Median (p10/p90) | Mean | Sieges survived |
 |---|---|---|---|
@@ -400,9 +425,12 @@ Armory sweep under BALANCED_ACTIVE (share of weapon power / cap / wear per siege
 The first draft made surplus stock a free second wall. At 0.2 / 30 / 0.5 a full armory is worth about two thirds of
 one early champion and has to be refilled after every siege.
 
-Upgrade impact under BALANCED_ACTIVE (base 25 / 26.9): Stalwart Walls +10 / +5.9, Thrifty Hands +5 / +1.9,
-Well-Stocked Cellar +5 / +1.8, Forge Mastery +5 / +1.0, Tireless Smith +5 / +0.3, Lucky Hammer +0 / +0.5, Family
-Savings +0 / +0.0, Known Name +0 / -0.3.
+Upgrade impact under BALANCED_ACTIVE (base 30 / 27.5; median / mean delta): Stalwart Walls +5 / +6.3, Well-Stocked
+Cellar +0 / +3.7, Forge Mastery +0 / +2.8, Thrifty Hands +0 / +2.0, Lucky Hammer +0 / +0.9, Tireless Smith
++0 / +0.6, Family Savings +0 / +0.4, Known Name +0 / +0.0, all maxed +10 / +11.8. Starting gold registers for the
+first time (+0.4) now that gold buys tools, but it is still the weakest track with Known Name.
+
+The simulator now prints shop visits per run by outcome (`visitsPerRun` in the JSON report).
 
 ### Not changed, and not measured
 - `RULES_VERSION` stays 1 (bump with the first release, as before). Hero generation now draws an ambition and

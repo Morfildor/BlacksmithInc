@@ -12,7 +12,7 @@ data class RiskProfile(val exceptionalChance: Double, val defectChance: Double)
 data class BalanceConfig(
     /**
      * v2 (2026-10-08): launch-content retune of the quality formula and siege damage.
-     * v3 (2026-10-09): elite encounters, warlord sieges, hero ambitions, affix effects, shop actions and tools. See docs/DECISIONS.md.
+     * v3 (2026-10-09): elite encounters, warlord sieges, hero ambitions, affix effects, shop actions, tools, trade-ins, raid growth 6. See docs/DECISIONS.md.
      */
     val version: Int = 3,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
@@ -108,7 +108,8 @@ data class BalanceConfig(
     val startingPressureMin: Int = 20,
     val startingPressureMax: Int = 45,
     val raidBase: Double = 32.0,
-    val raidPerDay: Double = 5.0,
+    /** v3: 6.0 (was 5.0) after trade-ins and patrol pay armed heroes better (docs/DECISIONS.md). */
+    val raidPerDay: Double = 6.0,
     val raidPerPressure: Double = 0.65,
     /** v1 slice sweep adopted 2.75; v2 (launch content, three factions) lowered it to 2.0 so early sieges are winnable and moved run length to forge damage (docs/DECISIONS.md). */
     val siegeModifier: Double = 2.0,
@@ -227,6 +228,11 @@ data class BalanceConfig(
     val armoryPowerShare: Double = 0.2,
     val armoryMax: Int = 30,
     val armorySiegeWear: Double = 0.5,
+    // --- Demand (PROPOSED): half of all shop visits ended TOO_EXPENSIVE in the v3 sweep. ---
+    /** A hero replacing a weapon hands the old one back to the shop for this share of its fair price, as credit against the new one. */
+    val tradeInShare: Double = 0.4,
+    /** The town pays a hero this much for a day's patrol. */
+    val patrolGold: Int = 12,
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

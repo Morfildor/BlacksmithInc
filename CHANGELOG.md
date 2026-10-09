@@ -19,13 +19,18 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Commissions can ask for an element (the patron's taste or what the looming faction fears) and pay half again more.
 - Siege outlook in Town: the town's defense against the expected raid as things stand, the warlord if one leads, and
   the armory.
-- Simulator policy `BALANCED_ACTIVE`, which uses the new shop actions.
+- Trade-ins: a hero replacing a weapon hands the old one back to the shop as part payment (40 % of its fair price);
+  it returns to storage to be resold, honed, salvaged or given to the watch. The town also pays heroes for patrols.
+  Heroes can afford far more of what is forged (sales up about a third).
+- Simulator policy `BALANCED_ACTIVE`, which uses the new shop actions, and shop visits per run by outcome in the
+  report.
 
 ### Changed
 - Affixes do more than add power: Undead Bane bites only the Hollowbound, Giant Slayer only elites and warlords,
   Vampiric mends its wielder, Lucky finds more loot, Swift and Reinforced soften a rout, Heavy worsens it, Brittle
   weapons can shatter, Cursed and Bloodbound weapons hurt the hand that wins with them.
 - Siege warnings name the warlord and the element the attackers fear.
+- Raids grow by 6 power a day instead of 5, offsetting the better-armed heroes (balance v3).
 - Legacy base points 5 -> 6, so even the shortest first run affords the cheapest upgrade (balance v3).
 - Run-end screen: the Begin era action stays pinned under the scrolling summary instead of sitting below the
   eight upgrade cards.

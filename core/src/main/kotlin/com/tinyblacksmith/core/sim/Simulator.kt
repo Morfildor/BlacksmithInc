@@ -91,6 +91,8 @@ data class RunStats(
     val medianMaterialsOnHand: Int = 0,
     /** Median over the run of the gold on hand at End Day. */
     val medianGoldOnHand: Int = 0,
+    /** Shop visits over the run by outcome code (`MarketVisit.reason`). */
+    val visitReasons: Map<String, Int> = emptyMap(),
 )
 
 /**
@@ -129,6 +131,7 @@ class SimulationDriver(
         val rarity = Rarity.entries.associateWith { 0 }.toMutableMap()
         val materialSamples = ArrayList<Int>()
         val goldSamples = ArrayList<Int>()
+        val visitReasons = sortedMapOf<String, Int>()
         while (!state.isEnded && state.day <= maxDays) {
             if (state.pendingBlessingOffer.isNotEmpty()) state = engine.handle(state, Command.ChooseBlessing(state.pendingBlessingOffer.first())).state()
             for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
@@ -172,9 +175,10 @@ class SimulationDriver(
             var out = outcome.state()
             val res = out.lastResolution
             if (res != null) {
+                for (v in res.visits) visitReasons[v.reason] = (visitReasons[v.reason] ?: 0) + 1
                 val sales = res.events.filter { it.type == EventType.WEAPON_SOLD }
                 sold += sales.size
-                goldEarned += sales.sumOf { it.data["price"]?.toInt() ?: 0 }
+                goldEarned += sales.sumOf { (it.data["price"]?.toInt() ?: 0) - (it.data["tradeIn"]?.toInt() ?: 0) }
                 sold += res.events.count { it.type == EventType.COMMISSION_COMPLETED }
             }
             if (eventRetentionDays > 0) {
@@ -192,6 +196,7 @@ class SimulationDriver(
             siegesLost = state.town.siegesLost, heroRetirements = state.heroes.values.count { it.fate == HeroFate.RETIRED },
             signatureDiscoveries = state.weapons.values.count { it.signatureId != null },
             medianMaterialsOnHand = percentile(materialSamples, 0.5), medianGoldOnHand = percentile(goldSamples, 0.5),
+            visitReasons = visitReasons,
         )
         return stats to state
     }
@@ -334,6 +339,8 @@ data class PolicySummary(
     val legacyPointsMedian: Int,
     val discoveriesPerRun: Double,
     val signatureDiscoveriesPerRun: Double,
+    /** Shop visits per run by outcome code. */
+    val visitsPerRun: Map<String, Double> = emptyMap(),
 )
 
 data class Report(val policy: Policy, val runs: List<RunStats>, val label: String = "new account") {
@@ -357,6 +364,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             hardLockDaysTotal = runs.sumOf { it.hardLockDays }, runsWithHardLock = runs.count { it.hardLockDays > 0 },
             legacyPointsMedian = percentile(runs.map { it.legacyPoints }, 0.5), discoveriesPerRun = runs.map { it.discoveries }.average(),
             signatureDiscoveriesPerRun = runs.map { it.signatureDiscoveries }.average(),
+            visitsPerRun = runs.flatMap { it.visitReasons.keys }.toSortedSet().associateWith { k -> runs.sumOf { it.visitReasons[k] ?: 0 }.toDouble() / runs.size },
         )
     }
 
@@ -372,6 +380,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  rarity: " + Rarity.entries.joinToString(" ") { r -> "$r=${pct(s.rarity.getValue(r))}" })
             appendLine("  hero deaths/run: ${f1(s.heroDeathsPerRun)}  retirements/run: ${f1(s.heroRetirementsPerRun)}  sieges survived/run: ${f1(s.siegesSurvivedPerRun)}  lost/run: ${f1(s.siegesLostPerRun)}  faction win proportion: ${pct(s.factionWinProportion)}")
             appendLine("  hard-lock days total: ${s.hardLockDaysTotal}  runs with any hard-lock: ${s.runsWithHardLock}")
+            appendLine("  shop visits/run: " + s.visitsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
             appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}")
         }
     }
