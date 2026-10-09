@@ -12,7 +12,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   offers Try again or, for a damaged or incompatible run, Start over (the unreadable run is kept as a backup on the
   device and your legacy stays).
 - When a save fails while you play, a dialog says nothing has changed and offers Try again or Keep working.
-- Back returns to Home from any other panel.
+- The seven tabs are now four destinations: Shop (Home and Market as two pages), Forge, Town and Records (News, Journal
+  and Legacy as three segments). The four labels share one fixed size and do not shrink or clip at larger text sizes.
+  Back returns to Shop from any other destination.
+- A settings sheet behind a gear in the top bar: reduced motion (moved here from the Legacy page) and the version.
 
 ### Changed
 - After you claim a fallen era's legacy, the run-end screen survives closing the game: it reopens claimed, with your

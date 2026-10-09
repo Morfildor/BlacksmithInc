@@ -10,12 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
@@ -161,17 +161,19 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
     }
 }
 
-@Composable
-fun JournalPanel(s: UiState.Playing, vm: GameViewModel) {
+/** Lazy rows of the experiment journal, for the Records list: keyed per pairing, so a long journal composes only what shows. */
+fun LazyListScope.journalItems(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     val journal = s.state.legacy.journal
-    SectionTitle("Experiment Journal", Modifier.padding(top = Space.sm))
-    Secondary("Knowledge survives the forge's fall. Repeat a pairing to understand it.")
     val entries = journal.interactions.entries.sortedBy { it.key }
-    if (entries.isEmpty()) Text("No experiments recorded yet. Forge something.", modifier = Modifier.padding(top = Space.md))
-    Column(Modifier.padding(top = Space.sm)) {
-        entries.forEach { (key, _) -> AffinityHint(journal, content, key) }
+    item(key = "journal_head") {
+        Column {
+            SectionTitle("Experiment Journal", Modifier.padding(top = Space.sm))
+            Secondary("Knowledge survives the forge's fall. Repeat a pairing to understand it.")
+            if (entries.isEmpty()) Text("No experiments recorded yet. Forge something.", modifier = Modifier.padding(top = Space.md))
+        }
     }
+    items(entries, key = { "journal_${it.key}" }) { (key, _) -> AffinityHint(journal, content, key) }
 }
 
 /** The archive: one edition per day, newest first; the newest is open, older days show their lede until tapped. */
@@ -203,19 +205,22 @@ fun GazettePanel(s: UiState.Playing) {
     }
 }
 
-@Composable
-fun LegacyPanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean) {
+/** Lazy rows of the legacy page: the upgrade tracks, blessings, the Legend Board and lineages, each keyed. */
+fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     val legacy = s.state.legacy
-    SectionTitle("Era ${s.state.era}", Modifier.padding(top = Space.sm))
-    if (s.state.pendingBlessingOffer.isNotEmpty()) {
-        Button(onClick = vm::reopenBlessingOffer, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(bottom = Space.sm)) { Text("Choose a blessing") }
+    item(key = "legacy_head") {
+        Column {
+            SectionTitle("Era ${s.state.era}", Modifier.padding(top = Space.sm))
+            if (s.state.pendingBlessingOffer.isNotEmpty()) {
+                Button(onClick = vm::reopenBlessingOffer, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(bottom = Space.sm)) { Text("Choose a blessing") }
+            }
+            Text("${legacy.points} legacy points banked", style = MaterialTheme.typography.titleMedium)
+            Secondary("Rewards are claimed when the forge falls; they survive every era.")
+            SectionTitle("Permanent upgrades")
+        }
     }
-    Text("${legacy.points} legacy points banked", style = MaterialTheme.typography.titleMedium)
-    Secondary("Rewards are claimed when the forge falls; they survive every era.")
-
-    SectionTitle("Permanent upgrades")
-    content.upgrades.forEach { u ->
+    items(content.upgrades, key = { "upgrade_${it.id.value}" }) { u ->
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 6.dp)) {
             LevelDots(legacy.upgradeLevel(u.id), u.maxLevel)
             Spacer(Modifier.width(12.dp))
@@ -226,8 +231,8 @@ fun LegacyPanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean) {
         }
     }
     if (s.state.blessings.isNotEmpty()) {
-        SectionTitle("Active blessings")
-        s.state.blessings.forEach { b ->
+        item(key = "blessings_head") { SectionTitle("Active blessings") }
+        itemsIndexed(s.state.blessings, key = { i, b -> "blessing_${i}_${b.id.value}" }) { _, b ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 6.dp)) {
                 Sprites.blessing(b.id)?.let { PixelImage(it, 32.dp, description = null) }
                 Column {
@@ -237,32 +242,29 @@ fun LegacyPanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean) {
             }
         }
     }
-    SectionTitle("Legend Board")
-    if (legacy.legendBoard.isEmpty()) Secondary("No blade has earned a legend yet.")
-    legacy.legendBoard.forEach {
+    item(key = "legends_head") {
+        Column {
+            SectionTitle("Legend Board")
+            if (legacy.legendBoard.isEmpty()) Secondary("No blade has earned a legend yet.")
+        }
+    }
+    itemsIndexed(legacy.legendBoard, key = { i, _ -> "legend_$i" }) { _, it ->
         Column(Modifier.padding(vertical = 6.dp)) {
             Text(it.title, style = MaterialTheme.typography.titleSmall)
             Secondary("Era ${it.era} · ${it.kills} kills · carried by ${it.owners.joinToString().ifEmpty { "no one" }}")
         }
     }
-    SectionTitle("Lineages")
-    if (legacy.lineages.isEmpty()) Secondary("No lineage has been founded yet.")
-    legacy.lineages.forEach {
+    item(key = "lineages_head") {
+        Column {
+            SectionTitle("Lineages")
+            if (legacy.lineages.isEmpty()) Secondary("No lineage has been founded yet.")
+        }
+    }
+    itemsIndexed(legacy.lineages, key = { i, _ -> "lineage_$i" }) { _, it ->
         Column(Modifier.padding(vertical = 6.dp)) {
             Text(it.heroName, style = MaterialTheme.typography.titleSmall)
             Secondary("Era ${it.era} · ${it.deed}")
         }
-    }
-    SectionTitle("Settings")
-    Row(
-        Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = reducedMotion, role = Role.Switch, onValueChange = { vm.setReducedMotion(it) }),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text("Reduced motion", style = MaterialTheme.typography.titleSmall)
-            Secondary("Stops the ember animation, the reveal fade and the stepped battle replay.")
-        }
-        Switch(checked = reducedMotion, onCheckedChange = null)
     }
 }
 

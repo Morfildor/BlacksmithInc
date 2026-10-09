@@ -9,6 +9,11 @@
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.BlacksmithProject" />
+        <!-- Debug builds only: runs one SQL statement on the save database and finishes (see the class). -->
+        <activity
+            android:name=".DebugSqlActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay" />
     </application>
 
 </manifest>

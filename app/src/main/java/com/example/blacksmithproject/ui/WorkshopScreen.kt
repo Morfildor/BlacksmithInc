@@ -14,11 +14,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -28,16 +33,20 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.blacksmithproject.Dest
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.Panel
 import com.example.blacksmithproject.R
@@ -46,56 +55,45 @@ import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.CommissionStatus
 
 /**
- * One portrait workshop with seven panels (GDD 12). Chrome is deliberately thin: a three-stat top bar, the panel,
- * one End Day action and the nav bar. Forge integrity and the siege live on the Forge and Town panels.
+ * One portrait workshop with four destinations (plan 1.2) and a settings sheet behind a gear. Chrome is deliberately
+ * thin: a three-stat top bar, the destination, one End Day action and the bar. Forge integrity and the siege live on
+ * the Forge and Town destinations.
  */
 @Composable
 fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
     val state = s.state
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
     val seenTips by vm.settings.seenTips.collectAsStateWithLifecycle(initialValue = Tips.ALL)
-    // Back returns to Home from any other panel; on Home it is not handled here, so it leaves the app.
-    BackHandler(enabled = s.panel != Panel.HOME) { vm.back() }
+    var settingsOpen by rememberSaveable { mutableStateOf(false) }
+    // Back returns to Shop from any other destination; on Shop it is not handled here, so it leaves the app.
+    BackHandler(enabled = s.dest != Dest.SHOP) { vm.back() }
     Scaffold(
         bottomBar = {
             Column {
                 EndDayButton(s, vm)
-                // 64dp instead of the 80dp default: the workshop needs the vertical space more than the nav bar does.
-                NavigationBar(tonalElevation = 0.dp, windowInsets = WindowInsets(0, 0, 0, 0), modifier = Modifier.navigationBarsPadding().height(64.dp)) {
-                    Panel.entries.forEach { p ->
-                        NavigationBarItem(
-                            selected = s.panel == p,
-                            onClick = { vm.selectPanel(p) },
-                            modifier = Modifier.testTag("nav_${p.name.lowercase()}"),
-                            icon = { PixelImage(panelIcon(p), 24.dp, description = null) },
-                            // Shrinks rather than clips at large font scales (GDD 12: scalable text).
-                            label = { Text(panelName(p), style = MaterialTheme.typography.labelSmall, maxLines = 1, softWrap = false, autoSize = TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 12.sp, stepSize = 0.5.sp)) },
-                        )
-                    }
-                }
+                DestinationBar(s.dest, vm::selectDest)
             }
         },
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
-            TopBar(s)
+            TopBar(s, onSettings = { settingsOpen = true })
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            // Each tip belongs to one panel and shows one at a time; dismissal lives in settings.
+            // Each tip belongs to one page and shows one at a time; dismissal lives in settings.
             val tip = Tips.forPanel(s.panel).firstOrNull { it.id !in seenTips }
-            when (s.panel) {
-                Panel.FORGE -> ForgePanel(s, vm, reducedMotion, tip)
+            when (s.dest) {
+                Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip)
+                Dest.RECORDS -> RecordsPanel(s, vm)
                 else -> {
-                    // Each panel keeps its own scroll position; switching panels must not land mid-list.
+                    // Each page keeps its own scroll position; switching pages must not land mid-list.
                     val scroll = remember(s.panel) { ScrollState(0) }
                     Column(Modifier.fillMaxWidth().verticalScroll(scroll).padding(horizontal = Space.md, vertical = Space.sm)) {
                         tip?.let { TipBanner(it, vm) }
+                        if (s.dest == Dest.SHOP) SegmentRow(listOf(Panel.HOME, Panel.MARKET), s.panel, vm::selectPanel)
                         when (s.panel) {
                             Panel.HOME -> HomePanel(s, vm)
                             Panel.MARKET -> MarketPanel(s, vm)
                             Panel.TOWN -> TownPanel(s, vm)
-                            Panel.JOURNAL -> JournalPanel(s, vm)
-                            Panel.GAZETTE -> GazettePanel(s)
-                            Panel.LEGACY -> LegacyPanel(s, vm, reducedMotion)
-                            Panel.FORGE -> Unit
+                            else -> Unit
                         }
                         Spacer(Modifier.heightIn(min = Space.lg))
                     }
@@ -103,10 +101,46 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel) {
             }
         }
     }
+    if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, onDismiss = { settingsOpen = false })
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
     s.showReport?.let { DayReportDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)
     s.lastError?.let { ErrorDialog(it, vm::dismissError) }
+}
+
+/**
+ * The four destinations. Every label has the same fixed style and never shrinks to fit: a larger font scale makes the
+ * label taller, not smaller, and the four names are short enough to stay on one line.
+ */
+@Composable
+fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier = Modifier) {
+    // 64dp instead of the 80dp default: the workshop needs the vertical space more than the bar does.
+    NavigationBar(tonalElevation = 0.dp, windowInsets = WindowInsets(0, 0, 0, 0), modifier = modifier.navigationBarsPadding().height(64.dp)) {
+        Dest.entries.forEach { d ->
+            NavigationBarItem(
+                selected = selected == d,
+                onClick = { onSelect(d) },
+                modifier = Modifier.testTag("nav_${d.name.lowercase()}"),
+                icon = { PixelImage(destIcon(d), 24.dp, description = null) },
+                label = { Text(destName(d), style = MaterialTheme.typography.labelMedium, maxLines = 1, softWrap = false, modifier = Modifier.testTag("nav_label_${d.name.lowercase()}")) },
+            )
+        }
+    }
+}
+
+/** The pages of a destination as one row of exclusive buttons (Shop: Home and Market; Records: News, Journal, Legacy). */
+@Composable
+fun SegmentRow(pages: List<Panel>, selected: Panel, onSelect: (Panel) -> Unit, modifier: Modifier = Modifier) {
+    SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth().padding(bottom = Space.sm)) {
+        pages.forEachIndexed { i, p ->
+            SegmentedButton(
+                selected = selected == p,
+                onClick = { onSelect(p) },
+                shape = SegmentedButtonDefaults.itemShape(i, pages.size),
+                modifier = Modifier.heightIn(min = 48.dp).testTag("page_${p.name.lowercase()}"),
+            ) { Text(panelName(p), maxLines = 1) }
+        }
+    }
 }
 
 private fun UiState.Playing.pendingBlessingOffer() =
@@ -164,16 +198,18 @@ private fun EndDayButton(s: UiState.Playing, vm: GameViewModel) {
 }
 
 @Composable
-private fun TopBar(s: UiState.Playing) {
+private fun TopBar(s: UiState.Playing, onSettings: () -> Unit) {
     val st = s.state
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = 10.dp),
+        Modifier.fillMaxWidth().padding(start = Space.md, end = Space.xs),
         horizontalArrangement = Arrangement.spacedBy(Space.lg),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Stat(R.drawable.icon_day, "Day", "Day ${st.day}")
         Stat(R.drawable.icon_gold, "Gold", "${st.gold}")
         Stat(R.drawable.icon_energy, "Energy", "${st.energy}")
+        Spacer(Modifier.weight(1f))
+        IconButton(onClick = onSettings, modifier = Modifier.size(48.dp).testTag("nav_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings") }
     }
 }
 
@@ -186,13 +222,15 @@ private fun Stat(icon: Int, label: String, value: String) {
     }
 }
 
+/** The page names the segments and the blocks on Home use ("Tap to open News"). */
 fun panelName(p: Panel) = when (p) {
-    Panel.HOME -> "Home"; Panel.FORGE -> "Forge"; Panel.MARKET -> "Market"; Panel.TOWN -> "Town"; Panel.JOURNAL -> "Journal"; Panel.GAZETTE -> "Gazette"; Panel.LEGACY -> "Legacy"
+    Panel.HOME -> "Home"; Panel.FORGE -> "Forge"; Panel.MARKET -> "Market"; Panel.TOWN -> "Town"; Panel.JOURNAL -> "Journal"; Panel.GAZETTE -> "News"; Panel.LEGACY -> "Legacy"
 }
 
-private fun panelIcon(p: Panel) = when (p) {
-    Panel.HOME -> R.drawable.icon_day; Panel.FORGE -> R.drawable.icon_nav_forge; Panel.MARKET -> R.drawable.icon_nav_market; Panel.TOWN -> R.drawable.icon_nav_town
-    Panel.JOURNAL -> R.drawable.icon_nav_journal; Panel.GAZETTE -> R.drawable.icon_nav_gazette; Panel.LEGACY -> R.drawable.icon_nav_legacy
+fun destName(d: Dest) = when (d) { Dest.SHOP -> "Shop"; Dest.FORGE -> "Forge"; Dest.TOWN -> "Town"; Dest.RECORDS -> "Records" }
+
+private fun destIcon(d: Dest) = when (d) {
+    Dest.SHOP -> R.drawable.icon_nav_market; Dest.FORGE -> R.drawable.icon_nav_forge; Dest.TOWN -> R.drawable.icon_nav_town; Dest.RECORDS -> R.drawable.icon_nav_journal
 }
 
 /** Section heading: serif title with a generous top gap so sections read as separate blocks. */
