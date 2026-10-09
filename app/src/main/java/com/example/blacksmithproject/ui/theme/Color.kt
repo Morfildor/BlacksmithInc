@@ -34,3 +34,11 @@ val OutlineDark = Color(0xFF8C7B66)
 val PaperInk = Ink
 val PaperInkMuted = InkMuted
 val PaperRule = Color(0xFF7A6448)
+
+// Palette swatches (New folder/palette.gpl) for what Compose draws inside the counter scene; the painted art is not limited to them.
+val SceneWood2 = Color(0xFF8C6239)   // counter planks, lit
+val SceneWood1 = Color(0xFF6B4B32)   // counter planks, shade
+val SceneInk = Color(0xFF1A1210)     // slot and tile ground, edges
+val SceneDeep = Color(0xFF2B2320)    // name plate ground
+val SceneCream = Color(0xFFFFF0A0)   // price tags, plate text
+val SceneGold = Color(0xFFD8A030)    // the ring of a regular, a considered blade

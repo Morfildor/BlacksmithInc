@@ -9,6 +9,13 @@
             android:exported="true"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.BlacksmithProject" />
+        <!-- Debug builds only: the shop-day screen over days the real engine resolved (see the class).
+             adb shell am start -n com.example.blacksmithproject/.ShopDayPreviewActivity - -es case purchase -->
+        <activity
+            android:name=".ShopDayPreviewActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BlacksmithProject" />
         <!-- Debug builds only: runs one SQL statement on the save database and finishes (see the class). -->
         <activity
             android:name=".DebugSqlActivity"
