@@ -61,7 +61,9 @@
       "anchor": "bottom-center",
       "layer": "enemy",
       "faction": "ashclaw_raiders",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_ashclaw_brute",
@@ -72,7 +74,9 @@
       "layer": "enemy",
       "faction": "ashclaw_raiders",
       "variant": "elite",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_hollowbound_shade",
@@ -82,7 +86,9 @@
       "anchor": "bottom-center",
       "layer": "enemy",
       "faction": "hollowbound",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_hollowbound_wraith",
@@ -93,7 +99,9 @@
       "layer": "enemy",
       "faction": "hollowbound",
       "variant": "elite",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_embermaw_whelp",
@@ -103,7 +111,9 @@
       "anchor": "bottom-center",
       "layer": "enemy",
       "faction": "embermaw_brood",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_embermaw_drake",
@@ -114,7 +124,9 @@
       "layer": "enemy",
       "faction": "embermaw_brood",
       "variant": "elite",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "badge_common",
@@ -123,7 +135,9 @@
       "height": 24,
       "layer": "badge",
       "rarity": "COMMON",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "badge_uncommon",
@@ -132,7 +146,9 @@
       "height": 24,
       "layer": "badge",
       "rarity": "UNCOMMON",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "badge_rare",
@@ -141,7 +157,9 @@
       "height": 24,
       "layer": "badge",
       "rarity": "RARE",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "badge_epic",
@@ -150,7 +168,9 @@
       "height": 24,
       "layer": "badge",
       "rarity": "EPIC",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "badge_legendary",
@@ -159,7 +179,9 @@
       "height": 24,
       "layer": "badge",
       "rarity": "LEGENDARY",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "badge_flaw",
@@ -168,7 +190,9 @@
       "height": 24,
       "layer": "badge",
       "meaning": "flaw",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_iron",
@@ -178,7 +202,9 @@
       "layer": "material",
       "material": "iron",
       "category": "CORE",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_bronze",
@@ -188,7 +214,9 @@
       "layer": "material",
       "material": "bronze",
       "category": "CORE",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_silver",
@@ -198,7 +226,9 @@
       "layer": "material",
       "material": "silver",
       "category": "CORE",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_obsidian",
@@ -208,7 +238,9 @@
       "layer": "material",
       "material": "obsidian",
       "category": "CORE",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_starsteel",
@@ -218,7 +250,9 @@
       "layer": "material",
       "material": "starsteel",
       "category": "CORE",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_moonsteel",
@@ -228,7 +262,9 @@
       "layer": "material",
       "material": "moonsteel",
       "category": "CORE",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_ember_resin",
@@ -238,7 +274,9 @@
       "layer": "material",
       "material": "ember_resin",
       "category": "AUGMENT",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_frost_bloom",
@@ -248,7 +286,9 @@
       "layer": "material",
       "material": "frost_bloom",
       "category": "AUGMENT",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_stormglass",
@@ -258,7 +298,9 @@
       "layer": "material",
       "material": "stormglass",
       "category": "AUGMENT",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_grave_dust",
@@ -268,7 +310,9 @@
       "layer": "material",
       "material": "grave_dust",
       "category": "AUGMENT",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_verdant_sap",
@@ -278,7 +322,9 @@
       "layer": "material",
       "material": "verdant_sap",
       "category": "AUGMENT",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_sun_ash",
@@ -288,7 +334,9 @@
       "layer": "material",
       "material": "sun_ash",
       "category": "AUGMENT",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_binding_salt",
@@ -298,7 +346,9 @@
       "layer": "material",
       "material": "binding_salt",
       "category": "CATALYST",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_runestone_shard",
@@ -308,7 +358,9 @@
       "layer": "material",
       "material": "runestone_shard",
       "category": "CATALYST",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_dragon_oil",
@@ -318,7 +370,9 @@
       "layer": "material",
       "material": "dragon_oil",
       "category": "CATALYST",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "material_void_ink",
@@ -328,7 +382,9 @@
       "layer": "material",
       "material": "void_ink",
       "category": "CATALYST",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "blessing_forgefire",
@@ -337,7 +393,9 @@
       "height": 48,
       "layer": "blessing",
       "blessing": "forgefire",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "blessing_tireless_hands",
@@ -346,7 +404,9 @@
       "height": 48,
       "layer": "blessing",
       "blessing": "tireless_hands",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "blessing_merchants_favor",
@@ -355,7 +415,9 @@
       "height": 48,
       "layer": "blessing",
       "blessing": "merchants_favor",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "blessing_runic_insight",
@@ -364,7 +426,9 @@
       "height": 48,
       "layer": "blessing",
       "blessing": "runic_insight",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "blessing_stalwart_town",
@@ -373,7 +437,9 @@
       "height": 48,
       "layer": "blessing",
       "blessing": "stalwart_town",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "blessing_hunters_edge",
@@ -382,7 +448,9 @@
       "height": 48,
       "layer": "blessing",
       "blessing": "hunters_edge",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "blessing_lucky_alloy",
@@ -391,7 +459,9 @@
       "height": 48,
       "layer": "blessing",
       "blessing": "lucky_alloy",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "blessing_guild_patronage",
@@ -400,7 +470,9 @@
       "height": 48,
       "layer": "blessing",
       "blessing": "guild_patronage",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "ember_0",
@@ -409,7 +481,9 @@
       "height": 32,
       "layer": "fx",
       "frames": 1,
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "ember_1",
@@ -418,7 +492,9 @@
       "height": 32,
       "layer": "fx",
       "frames": 1,
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "ember_2",
@@ -427,7 +503,9 @@
       "height": 32,
       "layer": "fx",
       "frames": 1,
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "tile_wall",
@@ -436,7 +514,9 @@
       "height": 64,
       "layer": "background",
       "tile": true,
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "tile_floor",
@@ -445,7 +525,9 @@
       "height": 32,
       "layer": "background",
       "tile": true,
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "tile_paper",
@@ -454,7 +536,9 @@
       "height": 64,
       "layer": "ui",
       "tile": true,
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "panel_gazette",
@@ -463,7 +547,9 @@
       "height": 126,
       "layer": "ui",
       "tile": true,
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "panel_journal",
@@ -472,7 +558,9 @@
       "height": 163,
       "layer": "ui",
       "tile": true,
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "furnace_cold",
@@ -482,7 +570,9 @@
       "anchor": "bottom-left",
       "layer": "scene",
       "state": "cold",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "furnace_warm",
@@ -492,7 +582,9 @@
       "anchor": "bottom-left",
       "layer": "scene",
       "state": "warm",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "furnace_hot",
@@ -502,7 +594,9 @@
       "anchor": "bottom-left",
       "layer": "scene",
       "state": "hot",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "anvil",
@@ -511,7 +605,9 @@
       "height": 72,
       "anchor": "bottom-left",
       "layer": "scene",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "tool_rack",
@@ -520,7 +616,9 @@
       "height": 88,
       "anchor": "top-left",
       "layer": "scene",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "shelf",
@@ -529,7 +627,49 @@
       "height": 64,
       "anchor": "bottom-left",
       "layer": "scene",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "bg_counter_forge",
+      "file": "drawable-nodpi/bg_counter_forge.png",
+      "width": 540,
+      "height": 270,
+      "layer": "bg",
+      "source": "imported",
+      "sourceSheet": "approved_hybrid_direction.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "bg_forge_night",
+      "file": "drawable-nodpi/bg_forge_night.png",
+      "width": 232,
+      "height": 211,
+      "layer": "bg",
+      "source": "imported",
+      "sourceSheet": "Tiny Blacksmith RPG Asset Atlas.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "bg_run_end_fallen_forge",
+      "file": "drawable-nodpi/bg_run_end_fallen_forge.png",
+      "width": 270,
+      "height": 150,
+      "layer": "bg",
+      "source": "imported",
+      "sourceSheet": "pack:Tiny_Blacksmith_UI_Backgrounds_v3",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "bg_title_workshop_night",
+      "file": "drawable-nodpi/bg_title_workshop_night.png",
+      "width": 270,
+      "height": 150,
+      "layer": "bg",
+      "source": "imported",
+      "sourceSheet": "pack:Tiny_Blacksmith_UI_Backgrounds_v3",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "ember_3",
@@ -537,7 +677,9 @@
       "width": 32,
       "height": 32,
       "layer": "ember",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_ashclaw_alt_0",
@@ -545,7 +687,9 @@
       "width": 64,
       "height": 64,
       "layer": "faction",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_ashclaw_alt_1",
@@ -553,7 +697,9 @@
       "width": 64,
       "height": 64,
       "layer": "faction",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_embermaw_alt_0",
@@ -561,7 +707,9 @@
       "width": 64,
       "height": 64,
       "layer": "faction",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_embermaw_alt_1",
@@ -569,7 +717,9 @@
       "width": 64,
       "height": 64,
       "layer": "faction",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_hollowbound_alt_0",
@@ -577,7 +727,9 @@
       "width": 64,
       "height": 64,
       "layer": "faction",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "faction_hollowbound_alt_1",
@@ -585,7 +737,9 @@
       "width": 64,
       "height": 64,
       "layer": "faction",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "fx_milestone_0",
@@ -593,7 +747,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "top-left",
       "durationMs": 100,
       "notes": "Milestone burst"
@@ -604,7 +760,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "top-left",
       "durationMs": 100,
       "notes": "Milestone burst"
@@ -615,7 +773,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "top-left",
       "durationMs": 100,
       "notes": "Milestone burst"
@@ -626,7 +786,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "top-left",
       "durationMs": 100,
       "notes": "Milestone burst"
@@ -637,7 +799,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -648,7 +812,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -659,7 +825,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -670,7 +838,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -681,7 +851,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -692,7 +864,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -703,7 +877,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -714,7 +890,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -725,7 +903,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -736,7 +916,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -747,7 +929,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -758,7 +942,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -769,7 +955,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -780,7 +968,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -791,7 +981,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -802,7 +994,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -813,7 +1007,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -824,7 +1020,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -835,7 +1033,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -846,7 +1046,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Side view facing right; empty attack hand"
@@ -857,7 +1059,9 @@
       "width": 24,
       "height": 24,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_energy",
@@ -865,7 +1069,9 @@
       "width": 24,
       "height": 24,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_gold",
@@ -873,7 +1079,9 @@
       "width": 24,
       "height": 24,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_integrity",
@@ -881,7 +1089,9 @@
       "width": 24,
       "height": 24,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_militia",
@@ -889,7 +1099,9 @@
       "width": 24,
       "height": 24,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_nav_forge",
@@ -897,7 +1109,9 @@
       "width": 40,
       "height": 40,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_nav_gazette",
@@ -905,7 +1119,19 @@
       "width": 40,
       "height": 40,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "icon_nav_home",
+      "file": "drawable-nodpi/icon_nav_home.png",
+      "width": 40,
+      "height": 40,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "Tiny Blacksmith RPG Asset Atlas.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_nav_journal",
@@ -913,7 +1139,9 @@
       "width": 40,
       "height": 40,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_nav_legacy",
@@ -921,7 +1149,9 @@
       "width": 40,
       "height": 40,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_nav_market",
@@ -929,7 +1159,9 @@
       "width": 40,
       "height": 40,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_nav_town",
@@ -937,7 +1169,19 @@
       "width": 40,
       "height": 40,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "icon_purse",
+      "file": "drawable-nodpi/icon_purse.png",
+      "width": 40,
+      "height": 40,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "Tiny Blacksmith RPG Asset Atlas.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "icon_reputation",
@@ -945,7 +1189,19 @@
       "width": 24,
       "height": 24,
       "layer": "icon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "icon_settings",
+      "file": "drawable-nodpi/icon_settings.png",
+      "width": 40,
+      "height": 40,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "Tiny Blacksmith RPG Asset Atlas.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "marker_dead",
@@ -953,7 +1209,9 @@
       "width": 8,
       "height": 8,
       "layer": "marker",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "top-left",
       "notes": "Gravestone"
     },
@@ -963,7 +1221,9 @@
       "width": 8,
       "height": 8,
       "layer": "marker",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "top-left",
       "notes": "Laurel wreath"
     },
@@ -973,7 +1233,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -984,7 +1246,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -995,7 +1259,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat hit frame"
@@ -1006,7 +1272,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1017,7 +1285,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1028,7 +1298,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -1039,7 +1311,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -1050,7 +1324,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat hit frame"
@@ -1061,7 +1337,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1072,7 +1350,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1083,7 +1363,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -1094,7 +1376,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -1105,7 +1389,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat hit frame"
@@ -1116,7 +1402,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1127,7 +1415,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1138,7 +1428,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -1149,7 +1441,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -1160,7 +1454,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat hit frame"
@@ -1171,7 +1467,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1182,7 +1480,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1193,7 +1493,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -1204,7 +1506,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -1215,7 +1519,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat hit frame"
@@ -1226,7 +1532,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1237,7 +1545,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1248,7 +1558,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -1259,7 +1571,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat attack frame"
@@ -1270,7 +1584,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat hit frame"
@@ -1281,7 +1597,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1292,7 +1610,9 @@
       "width": 16,
       "height": 16,
       "layer": "animation",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "bottom-center",
       "durationMs": 120,
       "notes": "Combat idle frame"
@@ -1303,7 +1623,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        58
+      ]
     },
     {
       "id": "portrait_battlemage_1",
@@ -1311,7 +1639,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        58
+      ]
     },
     {
       "id": "portrait_battlemage_2",
@@ -1319,7 +1655,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        58
+      ]
     },
     {
       "id": "portrait_battlemage_3",
@@ -1327,7 +1671,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        57
+      ]
     },
     {
       "id": "portrait_battlemage_4",
@@ -1335,7 +1687,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        61
+      ]
     },
     {
       "id": "portrait_duelist_0",
@@ -1343,7 +1703,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        54
+      ]
     },
     {
       "id": "portrait_duelist_1",
@@ -1351,7 +1719,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        57
+      ]
     },
     {
       "id": "portrait_duelist_2",
@@ -1359,7 +1735,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        54
+      ]
     },
     {
       "id": "portrait_duelist_3",
@@ -1367,7 +1751,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        53
+      ]
     },
     {
       "id": "portrait_duelist_4",
@@ -1375,7 +1767,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        57
+      ]
     },
     {
       "id": "portrait_guardian_0",
@@ -1383,7 +1783,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        60
+      ]
     },
     {
       "id": "portrait_guardian_1",
@@ -1391,7 +1799,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        62
+      ]
     },
     {
       "id": "portrait_guardian_2",
@@ -1399,7 +1815,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        2,
+        1,
+        63,
+        59
+      ]
     },
     {
       "id": "portrait_guardian_3",
@@ -1407,7 +1831,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        54
+      ]
     },
     {
       "id": "portrait_guardian_4",
@@ -1415,7 +1847,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        62,
+        63
+      ]
     },
     {
       "id": "portrait_ranger_0",
@@ -1423,7 +1863,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        54
+      ]
     },
     {
       "id": "portrait_ranger_1",
@@ -1431,7 +1879,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        59
+      ]
     },
     {
       "id": "portrait_ranger_2",
@@ -1439,7 +1895,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        58
+      ]
     },
     {
       "id": "portrait_ranger_3",
@@ -1447,7 +1911,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        56
+      ]
     },
     {
       "id": "portrait_ranger_4",
@@ -1455,7 +1927,265 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        57
+      ]
+    },
+    {
+      "id": "portrait_v2_battlemage_1",
+      "file": "drawable-nodpi/portrait_v2_battlemage_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_battlemage_2",
+      "file": "drawable-nodpi/portrait_v2_battlemage_2.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_battlemage_3",
+      "file": "drawable-nodpi/portrait_v2_battlemage_3.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_battlemage_4",
+      "file": "drawable-nodpi/portrait_v2_battlemage_4.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_battlemage_5",
+      "file": "drawable-nodpi/portrait_v2_battlemage_5.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_duelist_1",
+      "file": "drawable-nodpi/portrait_v2_duelist_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_duelist_2",
+      "file": "drawable-nodpi/portrait_v2_duelist_2.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_duelist_3",
+      "file": "drawable-nodpi/portrait_v2_duelist_3.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_duelist_4",
+      "file": "drawable-nodpi/portrait_v2_duelist_4.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_duelist_5",
+      "file": "drawable-nodpi/portrait_v2_duelist_5.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_guardian_1",
+      "file": "drawable-nodpi/portrait_v2_guardian_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_guardian_2",
+      "file": "drawable-nodpi/portrait_v2_guardian_2.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_guardian_3",
+      "file": "drawable-nodpi/portrait_v2_guardian_3.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_guardian_4",
+      "file": "drawable-nodpi/portrait_v2_guardian_4.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_guardian_5",
+      "file": "drawable-nodpi/portrait_v2_guardian_5.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_ranger_1",
+      "file": "drawable-nodpi/portrait_v2_ranger_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_ranger_2",
+      "file": "drawable-nodpi/portrait_v2_ranger_2.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_ranger_3",
+      "file": "drawable-nodpi/portrait_v2_ranger_3.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_ranger_4",
+      "file": "drawable-nodpi/portrait_v2_ranger_4.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_ranger_5",
+      "file": "drawable-nodpi/portrait_v2_ranger_5.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_warden_1",
+      "file": "drawable-nodpi/portrait_v2_warden_1.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_warden_2",
+      "file": "drawable-nodpi/portrait_v2_warden_2.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_warden_3",
+      "file": "drawable-nodpi/portrait_v2_warden_3.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_warden_4",
+      "file": "drawable-nodpi/portrait_v2_warden_4.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "portrait_v2_warden_5",
+      "file": "drawable-nodpi/portrait_v2_warden_5.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "v2_concept_reference.png",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "portrait_warden_0",
@@ -1463,7 +2193,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        60
+      ]
     },
     {
       "id": "portrait_warden_1",
@@ -1471,7 +2209,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        58
+      ]
     },
     {
       "id": "portrait_warden_2",
@@ -1479,7 +2225,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        59
+      ]
     },
     {
       "id": "portrait_warden_3",
@@ -1487,7 +2241,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        62
+      ]
     },
     {
       "id": "portrait_warden_4",
@@ -1495,7 +2257,15 @@
       "width": 64,
       "height": 64,
       "layer": "portrait",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
+      "sourceKind": "ai_generated_sheet",
+      "contentBox": [
+        1,
+        1,
+        63,
+        60
+      ]
     },
     {
       "id": "siege_wall",
@@ -1503,7 +2273,9 @@
       "width": 96,
       "height": 32,
       "layer": "siege",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "tile",
       "notes": "Siege backdrop 96x32"
     },
@@ -1513,7 +2285,9 @@
       "width": 96,
       "height": 32,
       "layer": "siege",
-      "source": "handmade",
+      "source": "imported",
+      "sourceSheet": "pack:New folder",
+      "sourceKind": "script_drawn_pack",
       "anchor": "tile",
       "notes": "Siege backdrop 96x32"
     },
@@ -1523,7 +2297,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_base_2",
@@ -1531,7 +2307,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_base_3",
@@ -1539,7 +2317,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_base_4",
@@ -1547,7 +2327,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_base_5",
@@ -1555,7 +2337,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_base_6",
@@ -1563,7 +2347,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_base_7",
@@ -1571,7 +2357,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_base_8",
@@ -1579,7 +2367,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_fire_1",
@@ -1587,7 +2377,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_fire_2",
@@ -1595,7 +2387,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_fire_3",
@@ -1603,7 +2397,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_fire_4",
@@ -1611,7 +2407,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_fire_5",
@@ -1619,7 +2417,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_fire_6",
@@ -1627,7 +2427,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_fire_7",
@@ -1635,7 +2437,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_fire_8",
@@ -1643,7 +2447,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_frost_1",
@@ -1651,7 +2457,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_frost_2",
@@ -1659,7 +2467,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_frost_3",
@@ -1667,7 +2477,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_frost_4",
@@ -1675,7 +2487,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_frost_5",
@@ -1683,7 +2497,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_frost_6",
@@ -1691,7 +2507,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_frost_7",
@@ -1699,7 +2517,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_frost_8",
@@ -1707,7 +2527,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_grave_1",
@@ -1715,7 +2537,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_grave_2",
@@ -1723,7 +2547,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_grave_3",
@@ -1731,7 +2557,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_grave_4",
@@ -1739,7 +2567,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_grave_5",
@@ -1747,7 +2577,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_grave_6",
@@ -1755,7 +2587,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_grave_7",
@@ -1763,7 +2597,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_grave_8",
@@ -1771,7 +2607,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_storm_1",
@@ -1779,7 +2617,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_storm_2",
@@ -1787,7 +2627,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_storm_3",
@@ -1795,7 +2637,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_storm_4",
@@ -1803,7 +2647,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_storm_5",
@@ -1811,7 +2657,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_storm_6",
@@ -1819,7 +2667,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_storm_7",
@@ -1827,7 +2677,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_storm_8",
@@ -1835,7 +2687,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_sun_1",
@@ -1843,7 +2697,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_sun_2",
@@ -1851,7 +2707,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_sun_3",
@@ -1859,7 +2717,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_sun_4",
@@ -1867,7 +2727,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_sun_5",
@@ -1875,7 +2737,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_sun_6",
@@ -1883,7 +2747,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_sun_7",
@@ -1891,7 +2757,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_sun_8",
@@ -1899,7 +2767,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_verdant_1",
@@ -1907,7 +2777,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_verdant_2",
@@ -1915,7 +2787,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_verdant_3",
@@ -1923,7 +2797,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_verdant_4",
@@ -1931,7 +2807,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_verdant_5",
@@ -1939,7 +2817,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_verdant_6",
@@ -1947,7 +2827,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_verdant_7",
@@ -1955,7 +2837,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_axe_verdant_8",
@@ -1963,7 +2847,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_base_1",
@@ -1971,7 +2857,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_base_2",
@@ -1979,7 +2867,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_base_3",
@@ -1987,7 +2877,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_base_4",
@@ -1995,7 +2887,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_base_5",
@@ -2003,7 +2897,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_base_6",
@@ -2011,7 +2907,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_base_7",
@@ -2019,7 +2917,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_base_8",
@@ -2027,7 +2927,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_fire_1",
@@ -2035,7 +2937,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_fire_2",
@@ -2043,7 +2947,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_fire_3",
@@ -2051,7 +2957,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_fire_4",
@@ -2059,7 +2967,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_fire_5",
@@ -2067,7 +2977,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_fire_6",
@@ -2075,7 +2987,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_fire_7",
@@ -2083,7 +2997,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_fire_8",
@@ -2091,7 +3007,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_frost_1",
@@ -2099,7 +3017,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_frost_2",
@@ -2107,7 +3027,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_frost_3",
@@ -2115,7 +3037,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_frost_4",
@@ -2123,7 +3047,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_frost_5",
@@ -2131,7 +3057,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_frost_6",
@@ -2139,7 +3067,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_frost_7",
@@ -2147,7 +3077,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_frost_8",
@@ -2155,7 +3087,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_grave_1",
@@ -2163,7 +3097,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_grave_2",
@@ -2171,7 +3107,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_grave_3",
@@ -2179,7 +3117,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_grave_4",
@@ -2187,7 +3127,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_grave_5",
@@ -2195,7 +3137,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_grave_6",
@@ -2203,7 +3147,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_grave_7",
@@ -2211,7 +3157,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_grave_8",
@@ -2219,7 +3167,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_storm_1",
@@ -2227,7 +3177,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_storm_2",
@@ -2235,7 +3187,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_storm_3",
@@ -2243,7 +3197,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_storm_4",
@@ -2251,7 +3207,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_storm_5",
@@ -2259,7 +3217,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_storm_6",
@@ -2267,7 +3227,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_storm_7",
@@ -2275,7 +3237,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_storm_8",
@@ -2283,7 +3247,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_sun_1",
@@ -2291,7 +3257,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_sun_2",
@@ -2299,7 +3267,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_sun_3",
@@ -2307,7 +3277,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_sun_4",
@@ -2315,7 +3287,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_sun_5",
@@ -2323,7 +3297,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_sun_6",
@@ -2331,7 +3307,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_sun_7",
@@ -2339,7 +3317,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_sun_8",
@@ -2347,7 +3327,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_verdant_1",
@@ -2355,7 +3337,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_verdant_2",
@@ -2363,7 +3347,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_verdant_3",
@@ -2371,7 +3357,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_verdant_4",
@@ -2379,7 +3367,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_verdant_5",
@@ -2387,7 +3377,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_verdant_6",
@@ -2395,7 +3387,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_verdant_7",
@@ -2403,7 +3397,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_bow_verdant_8",
@@ -2411,7 +3407,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_base_1",
@@ -2419,7 +3417,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_base_2",
@@ -2427,7 +3427,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_base_3",
@@ -2435,7 +3437,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_base_4",
@@ -2443,7 +3447,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_base_5",
@@ -2451,7 +3457,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_base_6",
@@ -2459,7 +3467,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_base_7",
@@ -2467,7 +3477,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_base_8",
@@ -2475,7 +3487,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_fire_1",
@@ -2483,7 +3497,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_fire_2",
@@ -2491,7 +3507,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_fire_3",
@@ -2499,7 +3517,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_fire_4",
@@ -2507,7 +3527,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_fire_5",
@@ -2515,7 +3537,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_fire_6",
@@ -2523,7 +3547,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_fire_7",
@@ -2531,7 +3557,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_fire_8",
@@ -2539,7 +3567,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_frost_1",
@@ -2547,7 +3577,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_frost_2",
@@ -2555,7 +3587,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_frost_3",
@@ -2563,7 +3597,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_frost_4",
@@ -2571,7 +3607,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_frost_5",
@@ -2579,7 +3617,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_frost_6",
@@ -2587,7 +3627,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_frost_7",
@@ -2595,7 +3637,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_frost_8",
@@ -2603,7 +3647,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_grave_1",
@@ -2611,7 +3657,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_grave_2",
@@ -2619,7 +3667,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_grave_3",
@@ -2627,7 +3677,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_grave_4",
@@ -2635,7 +3687,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_grave_5",
@@ -2643,7 +3697,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_grave_6",
@@ -2651,7 +3707,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_grave_7",
@@ -2659,7 +3717,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_grave_8",
@@ -2667,7 +3727,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_storm_1",
@@ -2675,7 +3737,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_storm_2",
@@ -2683,7 +3747,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_storm_3",
@@ -2691,7 +3757,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_storm_4",
@@ -2699,7 +3767,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_storm_5",
@@ -2707,7 +3777,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_storm_6",
@@ -2715,7 +3787,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_storm_7",
@@ -2723,7 +3797,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_storm_8",
@@ -2731,7 +3807,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_sun_1",
@@ -2739,7 +3817,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_sun_2",
@@ -2747,7 +3827,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_sun_3",
@@ -2755,7 +3837,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_sun_4",
@@ -2763,7 +3847,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_sun_5",
@@ -2771,7 +3857,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_sun_6",
@@ -2779,7 +3867,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_sun_7",
@@ -2787,7 +3877,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_sun_8",
@@ -2795,7 +3887,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_verdant_1",
@@ -2803,7 +3897,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_verdant_2",
@@ -2811,7 +3907,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_verdant_3",
@@ -2819,7 +3917,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_verdant_4",
@@ -2827,7 +3927,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_verdant_5",
@@ -2835,7 +3937,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_verdant_6",
@@ -2843,7 +3947,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_verdant_7",
@@ -2851,7 +3957,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_dagger_verdant_8",
@@ -2859,7 +3967,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_base_1",
@@ -2867,7 +3977,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_base_2",
@@ -2875,7 +3987,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_base_3",
@@ -2883,7 +3997,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_base_4",
@@ -2891,7 +4007,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_base_5",
@@ -2899,7 +4017,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_base_6",
@@ -2907,7 +4027,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_base_7",
@@ -2915,7 +4037,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_base_8",
@@ -2923,7 +4047,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_fire_1",
@@ -2931,7 +4057,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_fire_2",
@@ -2939,7 +4067,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_fire_3",
@@ -2947,7 +4077,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_fire_4",
@@ -2955,7 +4087,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_fire_5",
@@ -2963,7 +4097,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_fire_6",
@@ -2971,7 +4107,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_fire_7",
@@ -2979,7 +4117,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_fire_8",
@@ -2987,7 +4127,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_frost_1",
@@ -2995,7 +4137,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_frost_2",
@@ -3003,7 +4147,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_frost_3",
@@ -3011,7 +4157,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_frost_4",
@@ -3019,7 +4167,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_frost_5",
@@ -3027,7 +4177,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_frost_6",
@@ -3035,7 +4187,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_frost_7",
@@ -3043,7 +4197,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_frost_8",
@@ -3051,7 +4207,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_grave_1",
@@ -3059,7 +4217,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_grave_2",
@@ -3067,7 +4227,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_grave_3",
@@ -3075,7 +4237,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_grave_4",
@@ -3083,7 +4247,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_grave_5",
@@ -3091,7 +4257,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_grave_6",
@@ -3099,7 +4267,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_grave_7",
@@ -3107,7 +4277,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_grave_8",
@@ -3115,7 +4287,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_storm_1",
@@ -3123,7 +4297,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_storm_2",
@@ -3131,7 +4307,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_storm_3",
@@ -3139,7 +4317,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_storm_4",
@@ -3147,7 +4327,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_storm_5",
@@ -3155,7 +4337,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_storm_6",
@@ -3163,7 +4347,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_storm_7",
@@ -3171,7 +4357,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_storm_8",
@@ -3179,7 +4367,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_sun_1",
@@ -3187,7 +4377,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_sun_2",
@@ -3195,7 +4387,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_sun_3",
@@ -3203,7 +4397,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_sun_4",
@@ -3211,7 +4407,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_sun_5",
@@ -3219,7 +4417,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_sun_6",
@@ -3227,7 +4427,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_sun_7",
@@ -3235,7 +4437,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_sun_8",
@@ -3243,7 +4447,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_verdant_1",
@@ -3251,7 +4457,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_verdant_2",
@@ -3259,7 +4467,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_verdant_3",
@@ -3267,7 +4477,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_verdant_4",
@@ -3275,7 +4487,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_verdant_5",
@@ -3283,7 +4497,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_verdant_6",
@@ -3291,7 +4507,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_verdant_7",
@@ -3299,7 +4517,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_spear_verdant_8",
@@ -3307,7 +4527,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_base_1",
@@ -3315,7 +4537,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_base_2",
@@ -3323,7 +4547,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_base_3",
@@ -3331,7 +4557,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_base_4",
@@ -3339,7 +4567,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_base_5",
@@ -3347,7 +4577,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_base_6",
@@ -3355,7 +4587,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_base_7",
@@ -3363,7 +4597,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_base_8",
@@ -3371,7 +4607,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_fire_1",
@@ -3379,7 +4617,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_fire_2",
@@ -3387,7 +4627,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_fire_3",
@@ -3395,7 +4637,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_fire_4",
@@ -3403,7 +4647,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_fire_5",
@@ -3411,7 +4657,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_fire_6",
@@ -3419,7 +4667,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_fire_7",
@@ -3427,7 +4677,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_fire_8",
@@ -3435,7 +4687,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_frost_1",
@@ -3443,7 +4697,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_frost_2",
@@ -3451,7 +4707,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_frost_3",
@@ -3459,7 +4717,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_frost_4",
@@ -3467,7 +4727,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_frost_5",
@@ -3475,7 +4737,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_frost_6",
@@ -3483,7 +4747,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_frost_7",
@@ -3491,7 +4757,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_frost_8",
@@ -3499,7 +4767,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_grave_1",
@@ -3507,7 +4777,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_grave_2",
@@ -3515,7 +4787,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_grave_3",
@@ -3523,7 +4797,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_grave_4",
@@ -3531,7 +4807,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_grave_5",
@@ -3539,7 +4817,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_grave_6",
@@ -3547,7 +4827,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_grave_7",
@@ -3555,7 +4837,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_grave_8",
@@ -3563,7 +4847,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_storm_1",
@@ -3571,7 +4857,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_storm_2",
@@ -3579,7 +4867,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_storm_3",
@@ -3587,7 +4877,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_storm_4",
@@ -3595,7 +4887,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_storm_5",
@@ -3603,7 +4897,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_storm_6",
@@ -3611,7 +4907,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_storm_7",
@@ -3619,7 +4917,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_storm_8",
@@ -3627,7 +4927,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_sun_1",
@@ -3635,7 +4937,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_sun_2",
@@ -3643,7 +4947,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_sun_3",
@@ -3651,7 +4957,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_sun_4",
@@ -3659,7 +4967,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_sun_5",
@@ -3667,7 +4977,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_sun_6",
@@ -3675,7 +4987,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_sun_7",
@@ -3683,7 +4997,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_sun_8",
@@ -3691,7 +5007,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_verdant_1",
@@ -3699,7 +5017,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_verdant_2",
@@ -3707,7 +5027,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_verdant_3",
@@ -3715,7 +5037,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_verdant_4",
@@ -3723,7 +5047,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_verdant_5",
@@ -3731,7 +5057,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_verdant_6",
@@ -3739,7 +5067,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_verdant_7",
@@ -3747,7 +5077,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_staff_verdant_8",
@@ -3755,7 +5087,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_base_1",
@@ -3763,7 +5097,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_base_2",
@@ -3771,7 +5107,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_base_3",
@@ -3779,7 +5117,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_base_4",
@@ -3787,7 +5127,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_base_5",
@@ -3795,7 +5137,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_base_6",
@@ -3803,7 +5147,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_base_7",
@@ -3811,7 +5157,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_base_8",
@@ -3819,7 +5167,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_fire_1",
@@ -3827,7 +5177,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_fire_2",
@@ -3835,7 +5187,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_fire_3",
@@ -3843,7 +5197,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_fire_4",
@@ -3851,7 +5207,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_fire_5",
@@ -3859,7 +5217,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_fire_6",
@@ -3867,7 +5227,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_fire_7",
@@ -3875,7 +5237,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_fire_8",
@@ -3883,7 +5247,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_frost_1",
@@ -3891,7 +5257,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_frost_2",
@@ -3899,7 +5267,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_frost_3",
@@ -3907,7 +5277,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_frost_4",
@@ -3915,7 +5287,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_frost_5",
@@ -3923,7 +5297,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_frost_6",
@@ -3931,7 +5307,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_frost_7",
@@ -3939,7 +5317,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_frost_8",
@@ -3947,7 +5327,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_grave_1",
@@ -3955,7 +5337,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_grave_2",
@@ -3963,7 +5347,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_grave_3",
@@ -3971,7 +5357,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_grave_4",
@@ -3979,7 +5367,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_grave_5",
@@ -3987,7 +5377,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_grave_6",
@@ -3995,7 +5387,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_grave_7",
@@ -4003,7 +5397,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_grave_8",
@@ -4011,7 +5407,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_storm_1",
@@ -4019,7 +5417,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_storm_2",
@@ -4027,7 +5427,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_storm_3",
@@ -4035,7 +5437,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_storm_4",
@@ -4043,7 +5447,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_storm_5",
@@ -4051,7 +5457,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_storm_6",
@@ -4059,7 +5467,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_storm_7",
@@ -4067,7 +5477,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_storm_8",
@@ -4075,7 +5487,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_sun_1",
@@ -4083,7 +5497,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_sun_2",
@@ -4091,7 +5507,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_sun_3",
@@ -4099,7 +5517,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_sun_4",
@@ -4107,7 +5527,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_sun_5",
@@ -4115,7 +5537,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_sun_6",
@@ -4123,7 +5547,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_sun_7",
@@ -4131,7 +5557,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_sun_8",
@@ -4139,7 +5567,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_verdant_1",
@@ -4147,7 +5577,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_verdant_2",
@@ -4155,7 +5587,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_verdant_3",
@@ -4163,7 +5597,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_verdant_4",
@@ -4171,7 +5607,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_verdant_5",
@@ -4179,7 +5617,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_verdant_6",
@@ -4187,7 +5627,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_verdant_7",
@@ -4195,7 +5637,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     },
     {
       "id": "weapon_sword_verdant_8",
@@ -4203,7 +5647,9 @@
       "width": 56,
       "height": 56,
       "layer": "weapon",
-      "source": "handmade"
+      "source": "imported",
+      "sourceSheet": "Weapons master",
+      "sourceKind": "ai_generated_sheet"
     }
   ],
   "animations": [

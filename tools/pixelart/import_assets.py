@@ -1,10 +1,16 @@
 """
-Import hand-made sprite sheets from `Pixel art assets/` into app/src/main/res/drawable-nodpi/.
+Import the sprite sheets in `Pixel art assets/` into app/src/main/res/drawable-nodpi/.
+
+Sources are only ever opened for reading: nothing under `Pixel art assets/` is modified, re-saved, moved or renamed
+(re-saving would strip the Content Credentials embedded in the sheets). Every crop comes from a constant below or from
+a checked-in file in `cells/`, so a run is reproducible: the same sources give byte-identical outputs (Pillow and
+numpy pinned in `requirements.txt`). What each source is (generated concept sheet, script-drawn pack) is recorded per
+sprite in `overrides.json` as `sourceKind`, with the SHA-256 of the file it was cut from.
 
 Each sheet is sliced with explicit cell rectangles (the sheets are not on a strict grid, so detection is not
 reliable), tight-cropped by alpha inside the cell, downscaled to the target size and written under the sprite ID
 that `ui/Sprites.kt` and `ForgeScene` load. Every imported ID is recorded in `overrides.json`; `generate_assets.py`
-then leaves those files alone (placeholders are only generated for IDs with no hand-made source).
+then leaves those files alone (placeholders are only generated for IDs with no imported source).
 
 Usage: python tools/pixelart/import_assets.py            # imports every sheet with a known layout
        python tools/pixelart/import_assets.py --sheet 2   # one sheet
@@ -18,14 +24,25 @@ The weapon master sheet (a file whose name starts with "Weapons master", any or 
 sliced into `weapon_<family>_<row>_<level>` (336 sprites, padded to 56 px, never enlarged). It also regenerates
 `ui/WeaponArt.kt`, the drawable lookup table the UI uses for every weapon.
 
-A production pack (a subfolder holding `drawable-nodpi/*.png` plus `manifest.json`, as delivered by the pixel artist)
-is copied verbatim for the IDs in PACK_PREFIXES: those are 1x sprites the concept sheets do not provide (battle
-animation frames, siege wall, milestone burst, hero markers). Pass `--pack-all` to take every pack sprite instead.
-IDs imported earlier but no longer produced are pruned from the drawable folder.
+A production pack (a subfolder holding `drawable-nodpi/*.png` plus `manifest.json`; both packs are drawn by their own
+scripts) is copied verbatim for the IDs in PACK_ALLOW only: 1x sprites the concept sheets do not provide (battle
+animation frames, siege wall, milestone burst, hero markers, two stand-alone 270x150 screens).
+
+Sheet 3 (25 portraits) is cut on the measured cells in `cells/sheet3_proposed_cells.json`. Each portrait must pass
+the self-checks or the import fails: one vertical and one horizontal run of content, no pixel in the outer 1 px ring.
+Its content box is recorded so a bust can stand on a line. Flat boards (`flat_sources`: the counter backdrop, the
+second face set, the atlas crops) are matched by file name, also inside a pack's `concept_references/`. The atlas is
+optional: pass `--atlas PATH` when it is not in the folder; without it its earlier sprites are kept. The portrait
+lookup `ui/PortraitArt.kt` is regenerated on every run.
+
+An ID produced by two sources in one run is an error naming both. A source whose SHA-256 differs from the one its
+sprites were last cut from stops the import until `--accept-changed-sources` is passed. IDs imported earlier but no
+longer produced are pruned from the drawable folder.
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -38,14 +55,34 @@ ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "Pixel art assets"
 OUT = ROOT / "app/src/main/res/drawable-nodpi"
 OVERRIDES = Path(__file__).with_name("overrides.json")
-CONTACT = ROOT / "docs/art_contact_handmade.png"
+CELLS = Path(__file__).with_name("cells")
+CONTACT = ROOT / "docs/art_contact.png"
+PORTRAIT_ART_KT = ROOT / "app/src/main/java/com/example/blacksmithproject/ui/PortraitArt.kt"
 
-# Sprites taken from a production pack by default (the sheets cover the rest at higher fidelity).
-PACK_PREFIXES = ("hero_", "monster_", "siege_wall", "fx_milestone_", "marker_")
-# Packs that are deliberately not imported (see docs/DECISIONS.md "Art sources"). Remove a name here to adopt it.
-PACK_SKIP = ("Tiny_Blacksmith_UI_Backgrounds_v3",)
+# Per-pack allowlist: ID prefixes taken from each production pack (an exact ID is its own prefix). A pack that is not
+# listed is skipped. There is no take-everything switch: most pack IDs collide with sheet-derived sprites.
+PACK_ALLOW = {
+    # 1x sprites the concept sheets do not provide (the sheets cover the rest at higher fidelity).
+    "New folder": ("hero_", "monster_", "siege_wall", "fx_milestone_", "marker_"),
+    # Stand-alone 270x150 screens only; the rest of this pack collides with live IDs (siege_wall, 12 icons, tile_paper).
+    "Tiny_Blacksmith_UI_Backgrounds_v3": ("bg_title_workshop_night", "bg_run_end_fallen_forge"),
+}
 
-# Logical scene unit: the forge scene is laid out in 96x48 "scene pixels"; hand-made scene pieces are exported at
+# Where each source comes from (docs/major_update_evidence/04_assets_content.md, section 9): the numbered concept
+# sheets, the weapon master sheet, the atlas and both concept references carry embedded Content Credentials naming an
+# image generator; the two packs are drawn by their own scripts. Nothing here is recorded as manually authored.
+KIND_AI = "ai_generated_sheet"
+KIND_PACK = "script_drawn_pack"
+KIND_LOOSE = "loose_file"  # a single <id>.png dropped into the folder: origin not recorded
+
+ATLAS_NAME = "Tiny Blacksmith RPG Asset Atlas.png"
+PORTRAIT_BOX = 64
+# The reference-board cells are measured to about 2 px and some include the gutter between tiles: tiles are cut this far inside.
+TILE_INSET = 3
+# The second face set stays out of the appearance pool until it has been verified on a device (PortraitArt.kt).
+SECOND_SET_ENABLED = False
+
+# Logical scene unit: the forge scene is laid out in 96x48 "scene pixels"; imported scene pieces are exported at
 # SCENE_UNIT bitmap pixels per scene pixel so ForgeScene can keep positioning in scene coordinates.
 SCENE_UNIT = 4
 
@@ -105,11 +142,10 @@ def layout_2():  # rarity badges, 1448x1086 (its weapon and overlay cells are su
 
 
 def layout_3():  # 25 portraits: one row per class, five variants, 1254x1254
-    cells = {}
-    for i, cell in enumerate(grid(0, 0, 1254, 1254, 5, 5)):
-        cls, variant = CLASSES[i // 5], i % 5
-        cells[f"portrait_{cls}_{variant}"] = dict(cell=cell, box=(64, 64), anchor="top")
-    return cells
+    # The rows are not on a uniform grid: cells are measured (alpha bands, minimum-occupancy column cuts).
+    measured = json.loads((CELLS / "sheet3_proposed_cells.json").read_text())
+    return {f"portrait_{cls}_{v}": dict(cell=tuple(measured[f"portrait_{cls}_{v}"]), box=(PORTRAIT_BOX, PORTRAIT_BOX), portrait=True)
+            for cls in CLASSES for v in range(5)}
 
 
 def layout_4():  # factions: column per faction; rows grunt, elite, two extras; 1448x1086
@@ -156,6 +192,34 @@ def layout_5():  # materials, blessings, panels, nav + status icons, 1448x1086
 
 
 LAYOUTS = {1: layout_1, 2: layout_2, 3: layout_3, 4: layout_4, 5: layout_5}
+
+# Keyed cut-outs of the second face set that passed the look-at-each-one review (see docs/ART_MANIFEST.md). A tile
+# that is not listed here, or that fails the self-checks, is dropped, never repaired.
+V2_CUT_REVIEWED: tuple = ()
+
+
+def flat_sources() -> dict:
+    """Flat boards matched by file name: sprite ID -> dict(cell, mode[, box]). Modes: see import_flat."""
+    v2 = json.loads((CELLS / "v2ref_portrait_cells.json").read_text())
+    atlas = json.loads((CELLS / "atlas_boxes.json").read_text())
+    second = {}
+    for cls in CLASSES:
+        for n in range(1, 6):  # column 0 of each class has the class label baked across the top
+            cell = tuple(v2[f"v2ref_{cls}_{n}"])
+            second[f"portrait_v2_{cls}_{n}"] = dict(cell=cell, mode="tile", box=(PORTRAIT_BOX, PORTRAIT_BOX))
+            second[f"portrait_v2_{cls}_{n}_cut"] = dict(cell=cell, mode="cut")
+    return {
+        "approved_hybrid_direction.png": {"bg_counter_forge": dict(cell=(262, 135, 802, 405), mode="opaque")},
+        "v2_concept_reference.png": second,
+        ATLAS_NAME: {
+            "icon_nav_home": dict(cell=tuple(atlas["menu_icon_home"]), mode="icon", box=(40, 40)),
+            "icon_purse": dict(cell=tuple(atlas["menu_icon_purse"]), mode="icon", box=(40, 40)),
+            "icon_settings": dict(cell=tuple(atlas["menu_icon_gear"]), mode="icon", box=(40, 40)),
+            "bg_forge_night": dict(cell=tuple(atlas["forge_night"]["box"]), mode="opaque"),
+            # town_square and wilderness_camp were looked at and left out: 166-210 px wide and soft, and their boxes
+            # (not corner-verified) leave a lighter 1 px line along the top edge.
+        },
+    }
 
 # ---------------------------------------------------------------------------------------------------------------
 
@@ -231,6 +295,90 @@ def main_component_only(cell: Image.Image, threshold=40) -> Image.Image:
     return Image.fromarray(a, "RGBA")
 
 
+def snap_alpha(im: Image.Image) -> Image.Image:
+    """Resampling leaves a faint fringe: alpha 250 and above becomes 255, below 16 becomes 0 (and its colour is cleared)."""
+    a = np.array(im)
+    a[a[:, :, 3] >= 250, 3] = 255
+    a[a[:, :, 3] < 16] = 0
+    return Image.fromarray(a, "RGBA")
+
+
+def runs(mask) -> int:
+    """Number of separate runs of True in a 1-D mask."""
+    m = np.concatenate([[False], np.asarray(mask, dtype=bool)])
+    return int(np.count_nonzero(m[1:] & ~m[:-1]))
+
+
+def portrait_bust(region: Image.Image) -> Image.Image:
+    """A cut-out bust in the 64 px box: neighbour spill dropped, fitted to 62 px so the outer 1 px ring stays empty."""
+    clean = main_component_only(region)
+    crop = tight_crop(clean, (0, 0, clean.width, clean.height))
+    canvas = Image.new("RGBA", (PORTRAIT_BOX, PORTRAIT_BOX), (0, 0, 0, 0))
+    canvas.paste(fit(crop, (PORTRAIT_BOX - 2, PORTRAIT_BOX - 2), "top"), (1, 1))
+    return snap_alpha(canvas)
+
+
+def portrait_defect(im: Image.Image) -> str | None:
+    """Self-check of a cut-out portrait; None when it is clean."""
+    solid = np.array(im)[:, :, 3] > 0
+    if solid[0].any() or solid[-1].any() or solid[:, 0].any() or solid[:, -1].any():
+        return "opaque pixel in the outer 1 px ring"
+    if runs(solid.any(1)) != 1:
+        return f"{runs(solid.any(1))} vertical runs of content (a strip of a neighbour, or a cut)"
+    if runs(solid.any(0)) != 1:
+        return f"{runs(solid.any(0))} horizontal runs of content (a side sliver of a neighbour)"
+    return None
+
+
+def content_box(im: Image.Image) -> list:
+    ys, xs = np.where(np.array(im)[:, :, 3] > 0)
+    return [int(xs.min()), int(ys.min()), int(xs.max()) + 1, int(ys.max()) + 1]
+
+
+def key_border(tile: Image.Image, dark=72) -> Image.Image:
+    """Opaque painted tile -> cut-out: dark background flood-filled from the top and side borders becomes transparent."""
+    a = np.array(tile.convert("RGB").convert("RGBA"))
+    is_dark = a[:, :, :3].max(2) < dark
+    h, w = is_dark.shape
+    seen = np.zeros((h, w), dtype=bool)
+    stack = [(0, x) for x in range(w)] + [(y, x) for y in range(h) for x in (0, w - 1)]
+    while stack:
+        y, x = stack.pop()
+        if not (0 <= y < h and 0 <= x < w) or seen[y, x] or not is_dark[y, x]:
+            continue
+        seen[y, x] = True
+        stack += [(y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)]
+    a[seen, 3] = 0
+    return Image.fromarray(a, "RGBA")
+
+
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+class Run:
+    """One import run: every sprite goes through `put`, which refuses a second producer for the same ID."""
+
+    def __init__(self, previous: dict, accept_changed: bool):
+        self.previous, self.accept_changed = previous, accept_changed
+        self.overrides: dict = {}
+        self.produced: list = []
+        self._hashes: dict = {}
+
+    def put(self, sid: str, img: Image.Image, source: Path, kind: str, /, sheet: str | None = None, **extra):
+        sheet = sheet or source.name
+        if sid in self.overrides:
+            sys.exit(f"ERROR duplicate sprite ID '{sid}': produced from '{self.overrides[sid]['sheet']}' and again from '{sheet}'")
+        digest = self._hashes.get(source) or self._hashes.setdefault(source, sha256(source))
+        before = self.previous.get(sid, {})
+        if before.get("sheet") == sheet and before.get("sha256", digest) != digest and not self.accept_changed:
+            sys.exit(f"ERROR source '{sheet}' changed since '{sid}' was last imported (its cells were measured on the old "
+                     "file). Re-check the cells, then rerun with --accept-changed-sources")
+        img.save(OUT / f"{sid}.png", optimize=True)
+        self.overrides[sid] = {"sheet": sheet, "width": img.width, "height": img.height, "sourceKind": kind, "sha256": digest, **extra}
+        self.produced.append((sid, img))
+
+
 def pad_square(im: Image.Image, size: int) -> Image.Image:
     """Centre on a transparent square; shrink only when the crop is larger than the box (never enlarge pixel art)."""
     if max(im.width, im.height) > size:
@@ -251,14 +399,12 @@ def master_cells(scale: float = 1.0) -> dict:
     return cells
 
 
-def import_master(path: Path, overrides: dict, produced: list):
+def import_master(path: Path, run: Run):
     im = key_background(Image.open(path))
     for sid, cell in master_cells(im.width / MASTER_WIDTH).items():
         region = main_component_only(im.crop(cell))
         result = pad_square(tight_crop(region, (0, 0, region.width, region.height)), WEAPON_BOX)
-        result.save(OUT / f"{sid}.png", optimize=True)
-        overrides[sid] = {"sheet": path.name, "width": result.width, "height": result.height}
-        produced.append((sid, result))
+        run.put(sid, result, path, KIND_AI)
     write_weapon_art()
 
 
@@ -281,7 +427,7 @@ def write_weapon_art():
               "    fun sprite(family: String, row: String, level: Int): Int? =",
               "        table[family]?.get(rows.indexOf(row).coerceAtLeast(0))?.get((level - 1).coerceIn(0, LEVELS - 1))",
               "}", ""]
-    WEAPON_ART_KT.write_text("\n".join(lines), encoding="utf-8")
+    WEAPON_ART_KT.write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
 def known_specs() -> dict:
@@ -292,7 +438,7 @@ def known_specs() -> dict:
     return specs
 
 
-def import_single(path: Path, spec: dict, overrides: dict, produced: list):
+def import_single(path: Path, spec: dict, run: Run):
     im = Image.open(path).convert("RGBA")
     crop = tight_crop(im, (0, 0, im.width, im.height))
     sid = path.stem
@@ -304,12 +450,10 @@ def import_single(path: Path, spec: dict, overrides: dict, produced: list):
     else:
         s = spec["size"] / max(crop.width, crop.height)
         result = crop.resize((max(1, round(crop.width * s)), max(1, round(crop.height * s))), Image.LANCZOS)
-    result.save(OUT / f"{sid}.png", optimize=True)
-    overrides[sid] = {"sheet": path.name, "width": result.width, "height": result.height}
-    produced.append((sid, result))
+    run.put(sid, result, path, KIND_LOOSE)
 
 
-def import_pack(folder: Path, overrides: dict, produced: list, take_all: bool) -> int:
+def import_pack(folder: Path, run: Run, allow: tuple) -> int:
     meta = {}
     manifest = folder / "manifest.json"
     if manifest.exists():
@@ -319,26 +463,61 @@ def import_pack(folder: Path, overrides: dict, produced: list, take_all: bool) -
     count = 0
     for png in sorted((folder / "drawable-nodpi").glob("*.png")):
         sid = png.stem
-        if not take_all and not sid.startswith(PACK_PREFIXES):
+        if not sid.startswith(allow):
             continue
         img = Image.open(png).convert("RGBA")
-        img.save(OUT / png.name, optimize=True)
-        entry = {"sheet": f"pack:{folder.name}", "width": img.width, "height": img.height}
+        entry = {}
         m = meta.get(sid)
         if m:
             for k in ("anchor", "kind", "durationMs", "notes"):
                 if m.get(k) not in (None, "", False):
                     entry[k] = m[k]
-        overrides[sid] = entry
-        produced.append((sid, img))
+        run.put(sid, img, png, KIND_PACK, sheet=f"pack:{folder.name}", **entry)
         count += 1
     return count
 
 
-def import_sheet(n: int, path: Path, overrides: dict, produced: list):
+def import_flat(path: Path, entries: dict, run: Run, sheet: str):
+    """
+    Crops from a flat board. Modes: `opaque` = the cell copied 1:1 with alpha forced to 255 (backdrops; no resample);
+    `icon` = the same, centred in its box (never enlarged); `tile` = centre square of the cell reduced to the box,
+    opaque; `cut` = the cell keyed to a cut-out bust (reviewed list and self-checks; a failing tile is dropped).
+    """
+    im = Image.open(path).convert("RGB").convert("RGBA")
+    dropped = []
+    for sid, spec in entries.items():
+        region, mode, extra = im.crop(spec["cell"]), spec["mode"], {}
+        if mode == "opaque":
+            result = region
+        elif mode == "icon":
+            result = pad_square(region, spec["box"][0])
+        elif mode == "tile":
+            side = min(region.size) - 2 * TILE_INSET
+            x, y = (region.width - side) // 2, (region.height - side) // 2
+            result = region.crop((x, y, x + side, y + side)).resize(spec["box"], Image.LANCZOS)
+        else:
+            result = portrait_bust(key_border(region))
+            defect = portrait_defect(result) or (None if sid in V2_CUT_REVIEWED else "not in the reviewed list")
+            if defect:
+                dropped.append(f"{sid} ({defect})")
+                continue
+            extra = {"contentBox": content_box(result)}
+        run.put(sid, result, path, KIND_AI, sheet=sheet, **extra)  # the table's name, whatever --atlas PATH is called
+    if dropped:
+        print(f"  dropped {len(dropped)} keyed cut-outs: " + "; ".join(dropped))
+
+
+def import_sheet(n: int, path: Path, run: Run):
     im = Image.open(path).convert("RGBA")
     cells = LAYOUTS[n]()
     for sid, spec in cells.items():
+        if spec.get("portrait"):
+            result = portrait_bust(im.crop(spec["cell"]))
+            defect = portrait_defect(result)
+            if defect:
+                sys.exit(f"ERROR {sid}: {defect} (cell {spec['cell']} in {CELLS.name}/sheet3_proposed_cells.json)")
+            run.put(sid, result, path, KIND_AI, contentBox=content_box(result))
+            continue
         crop = tight_crop(im, spec["cell"])
         if "box" in spec:
             result = stretch(crop, spec["box"]) if spec.get("tile") else fit(crop, spec["box"], spec.get("anchor", "center"))
@@ -348,9 +527,43 @@ def import_sheet(n: int, path: Path, overrides: dict, produced: list):
         else:
             s = spec["size"] / max(crop.width, crop.height)
             result = crop.resize((max(1, round(crop.width * s)), max(1, round(crop.height * s))), Image.LANCZOS)
-        result.save(OUT / f"{sid}.png", optimize=True)
-        overrides[sid] = {"sheet": path.name, "width": result.width, "height": result.height}
-        produced.append((sid, result))
+        run.put(sid, result, path, KIND_AI)
+
+
+def write_portrait_art(overrides: dict):
+    def table(name, ids, key=lambda sid: sid):
+        out = [f"    val {name}: Map<String, Entry> = mapOf("]
+        for sid in ids:
+            box = overrides[sid].get("contentBox") or [0, 0, overrides[sid]["width"], overrides[sid]["height"]]
+            out.append(f'        "{key(sid)}" to Entry(R.drawable.{sid}, "{sid}", {", ".join(map(str, box))}),')
+        return out + ["    )"]
+
+    base = [f"portrait_{cls}_{v}" for cls in CLASSES for v in range(5)]
+    tiles = [f"portrait_v2_{cls}_{n}" for cls in CLASSES for n in range(1, 6) if f"portrait_v2_{cls}_{n}" in overrides]
+    cuts = [f"{sid}_cut" for sid in tiles if f"{sid}_cut" in overrides]
+    lines = [
+        "// GENERATED by tools/pixelart/import_assets.py from the portrait sheets; do not edit by hand.",
+        "package com.example.blacksmithproject.ui", "", "import com.example.blacksmithproject.R", "",
+        "/** Drawable and content box per appearance key (the key is the asset ID a hero stores, never an index). */",
+        "internal object PortraitArt {",
+        "    /** The one switch for the second face set: it joins the lookup only after it has been verified on a device. */",
+        f"    const val SECOND_SET_ENABLED = {'true' if SECOND_SET_ENABLED else 'false'}",
+        "",
+        "    /** [resName] is the drawable's resource name; the box (left, top, right, bottom; right and bottom exclusive) holds the pixels that are not empty. */",
+        "    class Entry(val drawable: Int, val resName: String, val left: Int, val top: Int, val right: Int, val bottom: Int)",
+        "",
+        "    /** The 25 busts of concept sheet 3: transparent cut-outs, five per class. */",
+    ] + table("base", base) + [
+        "", "    /** Candidate second set as opaque 64 px tiles with their painted background. */",
+    ] + table("secondSet", tiles) + [
+        "", "    /** The same keys as keyed cut-outs: only the tiles that passed the importer's checks and the review. */",
+    ] + table("secondSetCutouts", cuts, key=lambda sid: sid[:-len("_cut")]) + [
+        "",
+        "    fun find(key: String, secondSet: Boolean = SECOND_SET_ENABLED): Entry? = base[key] ?: if (secondSet) this.secondSet[key] else null",
+        "",
+        "    operator fun get(key: String): Entry? = find(key)",
+        "}", ""]
+    PORTRAIT_ART_KT.write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
 def contact_sheet(produced):
@@ -374,30 +587,33 @@ def contact_sheet(produced):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sheet", type=int, default=None)
-    ap.add_argument("--pack-all", action="store_true", help="take every sprite from a production pack, not only PACK_PREFIXES")
+    ap.add_argument("--atlas", type=Path, default=SRC / ATLAS_NAME, help="path of the asset atlas when it is not in 'Pixel art assets/'")
+    ap.add_argument("--accept-changed-sources", action="store_true", help="import although a source differs from the file its cells were measured on")
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     previous = json.loads(OVERRIDES.read_text()) if OVERRIDES.exists() else {}
-    overrides: dict = {}
-    produced = []
+    run = Run(previous, args.accept_changed_sources)
+    overrides = run.overrides
     found = 0
+    absent = set()  # sheets that were not available this run: their earlier sprites are kept, not pruned
     specs = known_specs()
     masters = [p for p in sorted(SRC.iterdir()) if p.is_file() and p.name.lower().startswith("weapons master")]
     for path in masters:
         if args.sheet:
             continue
-        import_master(path, overrides, produced)
+        import_master(path, run)
         found += 1
         print(f"weapon master: {path.name}")
+    flats = flat_sources()
     for path in sorted(SRC.glob("*.png")):
-        if path in masters:
+        if path in masters or path.name in flats:
             continue
         m = re.search(r"-(\d+)\.png$", path.name)
         if not m:
             if path.stem in specs:
                 if args.sheet:
                     continue
-                import_single(path, specs[path.stem], overrides, produced)
+                import_single(path, specs[path.stem], run)
                 found += 1
                 print(f"single sprite: {path.name}")
             else:
@@ -409,27 +625,43 @@ def main():
         if n not in LAYOUTS:
             print(f"skip {path.name}: no layout for sheet {n} (add one to import_assets.py)")
             continue
-        import_sheet(n, path, overrides, produced)
+        import_sheet(n, path, run)
         found += 1
         print(f"sheet {n}: {path.name}")
     if not args.sheet:
-        for pack in [d for d in sorted(SRC.iterdir()) if d.is_dir() and (d / "drawable-nodpi").is_dir()]:
-            if pack.name in PACK_SKIP:
-                print(f"pack {pack.name}: skipped (PACK_SKIP)")
+        for name, entries in flats.items():
+            # The atlas may live elsewhere (--atlas); the other boards are looked up in the folder and in concept_references/.
+            hits = [args.atlas] if name == ATLAS_NAME else sorted(SRC.glob(name)) + sorted(SRC.glob(f"*/concept_references/{name}"))
+            hits = [p for p in hits if p.is_file()]
+            if not hits:
+                absent.add(name)
+                print(f"flat source {name}: not found, skipped (its earlier sprites are kept)")
                 continue
-            n = import_pack(pack, overrides, produced, args.pack_all)
+            import_flat(hits[0], entries, run, name)
+            found += 1
+            print(f"flat source: {name}")
+        for pack in [d for d in sorted(SRC.iterdir()) if d.is_dir() and (d / "drawable-nodpi").is_dir()]:
+            if pack.name not in PACK_ALLOW:
+                print(f"pack {pack.name}: skipped (not in PACK_ALLOW)")
+                continue
+            n = import_pack(pack, run, PACK_ALLOW[pack.name])
             found += 1
             print(f"pack {pack.name}: {n} sprites copied verbatim")
-        pruned = 0
-        for sid in previous:
-            if sid not in overrides and (OUT / f"{sid}.png").exists():
-                (OUT / f"{sid}.png").unlink()
-                pruned += 1
-        if pruned:
-            print(f"pruned {pruned} stale imported sprites (placeholders are regenerated by generate_assets.py)")
-    OVERRIDES.write_text(json.dumps(dict(sorted(overrides.items())), indent=1) + "\n")
-    contact_sheet(produced)
-    print(f"{found} sheets, {len(produced)} sprites written; {len(overrides)} overrides recorded; contact sheet {CONTACT}")
+    # Sprites of a source that was not read this run stay as they are (one sheet with --sheet; an absent optional source).
+    for sid, entry in previous.items():
+        if sid not in overrides and (args.sheet or entry.get("sheet") in absent) and (OUT / f"{sid}.png").exists():
+            overrides[sid] = entry
+    pruned = 0
+    for sid in previous:
+        if sid not in overrides and (OUT / f"{sid}.png").exists():
+            (OUT / f"{sid}.png").unlink()
+            pruned += 1
+    if pruned:
+        print(f"pruned {pruned} stale imported sprites (placeholders are regenerated by generate_assets.py)")
+    OVERRIDES.write_text(json.dumps(dict(sorted(overrides.items())), indent=1) + "\n", newline="\n")
+    write_portrait_art(overrides)
+    contact_sheet([(sid, Image.open(OUT / f"{sid}.png").convert("RGBA")) for sid in sorted(overrides)])
+    print(f"{found} sources, {len(run.produced)} sprites written; {len(overrides)} overrides recorded; contact sheet {CONTACT}")
     return 0 if found else 1
 
 
