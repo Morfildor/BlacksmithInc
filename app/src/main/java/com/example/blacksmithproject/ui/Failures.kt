@@ -73,6 +73,12 @@ private fun loadFailureText(f: SaveFailure): LoadFailureText {
 fun LoadFailedScreen(failure: SaveFailure, working: Boolean, onRetry: () -> Unit, onStartOver: () -> Unit) {
     val text = loadFailureText(failure)
     val legacyLost = (failure as? SaveFailure.Corrupt)?.key == "legacy" || (failure as? SaveFailure.Newer)?.key == "legacy"
+    // A damaged run is unreadable; a newer or incompatible one is sound, and the words say which is being set aside.
+    val theRun = when (failure) {
+        is SaveFailure.Newer -> "the run from the newer version"
+        is SaveFailure.Incompatible -> "the run this version cannot play"
+        else -> "the unreadable run"
+    }
     var confirming by rememberSaveable { mutableStateOf(false) }
     Column(
         Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(Space.lg).testTag("load_failed"),
@@ -93,7 +99,7 @@ fun LoadFailedScreen(failure: SaveFailure, working: Boolean, onRetry: () -> Unit
             }
             Secondary(
                 if (legacyLost) "Sets the unreadable legacy record and the current run aside as backups on this device, then begins again from era 1."
-                else "Sets the unreadable run aside as a backup on this device and returns to the title. Your legacy is kept.",
+                else "Sets $theRun aside as a backup on this device and returns to the title. Your legacy is kept.",
                 Modifier.padding(top = Space.xs),
             )
         }
@@ -109,8 +115,9 @@ fun LoadFailedScreen(failure: SaveFailure, working: Boolean, onRetry: () -> Unit
             title = { Text("Start over?") },
             text = {
                 Text(
-                    (if (legacyLost) "The legacy record and the current run are set aside, not deleted." else "The run that cannot be read is set aside, not deleted.") +
-                        " This version of the game cannot bring a backup back by itself, so you will not be able to continue from it here.",
+                    (if (legacyLost) "The legacy record and the current run are set aside, not deleted." else "${theRun.replaceFirstChar { it.uppercase() }} is set aside, not deleted.") +
+                        " The game cannot bring a backup back by itself, so you will not be able to continue that run" +
+                        (if (failure is SaveFailure.Newer) ", even after updating." else "."),
                 )
             },
             confirmButton = { Button(onClick = { confirming = false; onStartOver() }, modifier = Modifier.heightIn(min = 48.dp).testTag("load_start_over_confirm")) { Text("Start over") } },
