@@ -230,12 +230,16 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.materials[weapon.coreId] = ctx.materials.getValue(weapon.coreId) - 1
         // Hone always restores condition; the quality bonus is granted the first time only.
         val quality = if (weapon.honed) weapon.quality else minOf(100, weapon.quality + config.honeQualityBonus)
-        val power = weapon.power + quality / config.powerPerQualityDivisor - weapon.quality / config.powerPerQualityDivisor
-        ctx.updateWeapon(weapon.copy(quality = quality, power = power, rarity = Forge.rarityFor(quality, config), honed = true, condition = 100))
+        // A returned legend's affixes wake under the first hone (GDD 7 "dormant"), and the power they carry with them.
+        val woken = weapon.dormantAffixes
+        val power = weapon.power + quality / config.powerPerQualityDivisor - weapon.quality / config.powerPerQualityDivisor + woken.sumOf { content.affix(it).power }
+        ctx.updateWeapon(weapon.copy(quality = quality, power = power, rarity = Forge.rarityFor(quality, config), honed = true, condition = 100, affixes = weapon.affixes + woken, dormantAffixes = emptyList()))
         val note = if (weapon.honed) "condition ${weapon.condition} to 100" else "quality ${weapon.quality} to $quality"
         ctx.addWeaponHistory(weapon.id, "HONED", "Honed on the anvil ($note).")
-        val text = if (weapon.honed) "The smith honed ${weapon.name} back to a keen edge." else "The smith honed ${weapon.name} to quality $quality."
-        ctx.emit(EventType.WEAPON_HONED, 2, text, listOf(weapon.id.value), mapOf("quality" to quality.toString(), "condition" to "100"))
+        if (woken.isNotEmpty()) ctx.addWeaponHistory(weapon.id, "AWAKENED", "Woke under the hone: ${woken.joinToString(", ") { content.affix(it).name }}.")
+        val text = (if (weapon.honed) "The smith honed ${weapon.name} back to a keen edge." else "The smith honed ${weapon.name} to quality $quality.") +
+            (if (woken.isNotEmpty()) " What slept in it woke: ${woken.joinToString(", ") { content.affix(it).name }}." else "")
+        ctx.emit(EventType.WEAPON_HONED, 2, text, listOf(weapon.id.value), mapOf("quality" to quality.toString(), "condition" to "100") + (if (woken.isNotEmpty()) mapOf("woke" to woken.joinToString(",") { it.value }) else emptyMap()))
         return accept(ctx)
     }
 

@@ -83,6 +83,10 @@ data class Weapon(
     val honed: Boolean = false,
     /** Wear, 100 (keen) to 0: expeditions and sieges lower it, Hone restores it (GDD 6 condition factor, GDD 7 lives). */
     val condition: Int = 100,
+    /** A returned legend's beneficial affixes, asleep (GDD 7 "damaged or dormant"): they count for nothing until the smith first hones the blade, then move to [affixes]. */
+    val dormantAffixes: List<AffixId> = emptyList(),
+    /** Set on a blade that came back from the Legend Board: the [LegendEntry.key] it was remembered under, so one blade is one entry however many eras it lives. */
+    val legendKey: String? = null,
 ) {
     val isListed: Boolean get() = location is WeaponLocation.Shelf
     /** Hone is allowed on an unhoned weapon or one worn below full condition. */
@@ -287,7 +291,21 @@ data class LegendEntry(
     val quality: Int = 0,
     val power: Int = 0,
     val element: Element? = null,
-)
+    /** What the blade was (G09): beneficial affixes (awake or dormant), flaws, catalyst and signature. Empty on an entry written before they were recorded: "properties lost to time". */
+    val affixes: List<AffixId> = emptyList(),
+    val flaws: List<AffixId> = emptyList(),
+    val catalystId: MaterialId? = null,
+    val signatureId: String? = null,
+    /** The blade's story so far: every history entry that is not a routine fight, oldest first, across the eras it has lived; hero IDs are dropped (they mean nothing in another era). */
+    val ownerLine: List<HistoryEntry> = emptyList(),
+    /** One blade, one entry: the era and ID it was forged under ("era2-w17"). Empty on an older entry; see [key]. */
+    val weaponKey: String = "",
+) {
+    /** The identity the board keeps one entry for; an entry older than [weaponKey] is told apart by era, name and title. */
+    val key: String get() = weaponKey.ifEmpty { "era$era:$weaponName:$title" }
+    /** Written before the blade's make was recorded: nothing to bring back but its name, fame and kills. */
+    val lostToTime: Boolean get() = weaponKey.isEmpty() && affixes.isEmpty() && flaws.isEmpty() && signatureId == null && ownerLine.isEmpty()
+}
 
 /** [id] is the era and the hero's ID ("era2-h7"); a lineage written before schema 4 was given "era2" by the migration. Names never identify a lineage. [appearance] is the face the hero wore; a descendant takes it when nobody living wears it. */
 @Serializable

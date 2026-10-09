@@ -50,9 +50,9 @@ object Battle {
                 val w = ctx.weapon(weapon.id)
                 ctx.updateWeapon(w.copy(kills = w.kills + 1, victories = w.victories + 1, fame = w.fame + 1 + (if (elite) config.eliteFame else 0)))
                 ctx.addWeaponHistory(weapon.id, "VICTORY", "${hero.fullName} ${if (elite) "slew" else "routed"} $encounter.", listOf(hero.id.value))
-                if (elite) ctx.updateWeapon(ctx.weapon(weapon.id).let { if (it.title == null) it.copy(title = "Slayer of $encounter") else it })
+                if (elite) com.tinyblacksmith.core.crafting.Forge.entitle(ctx, weapon.id, "Slayer of $encounter")
                 if (w.kills + 1 >= 5) {
-                    ctx.updateWeapon(ctx.weapon(weapon.id).let { if (it.title == null) it.copy(title = "Bane of the ${faction.name}") else it })
+                    com.tinyblacksmith.core.crafting.Forge.entitle(ctx, weapon.id, "Bane of the ${faction.name}")
                     ctx.milestone("WEAPON_FIVE_KILLS", "${weapon.name} earned a title after five victories.")
                 }
             }

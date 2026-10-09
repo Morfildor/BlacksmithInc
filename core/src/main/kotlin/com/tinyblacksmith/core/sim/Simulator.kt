@@ -178,6 +178,11 @@ data class RunStats(
     val rumours: Int = 0,
     val clueRungs: Int = 0,
     val signatureFirsts: Int = 0,
+    /** Returned legends ([legendsReturned]): their power as they came back (summed), how many the smith woke with a hone, how many left the shop in a hero's hands, and their power when they did (summed). */
+    val legendReturnPower: Int = 0,
+    val legendsWoken: Int = 0,
+    val legendsHandedOver: Int = 0,
+    val legendHandedPower: Int = 0,
     /** What a T0.7 bot did (forge modes, techniques, requests, signature tries, rejected commands, ...); null for the classic policies. */
     val bot: BotRunStats? = null,
 )
@@ -255,6 +260,10 @@ class SimulationDriver(
         var rumours = 0
         var clueRungs = 0
         var signatureFirsts = 0
+        var legendReturnPower = 0
+        var legendsWoken = 0
+        var legendsHandedOver = 0
+        var legendHandedPower = 0
         val collector = if (customerMetrics) CustomerCollector(engine) else null
         while (!state.isEnded && state.day <= maxDays) {
             collector?.morning(state)
@@ -345,6 +354,9 @@ class SimulationDriver(
                     firstSiegeHeld = it.type == EventType.SIEGE_WON
                 }
                 legendsReturned += res.events.count { it.type == EventType.ARTIFACT_RETURNED }
+                legendReturnPower += res.events.filter { it.type == EventType.ARTIFACT_RETURNED }.sumOf { it.data["power"]?.toIntOrNull() ?: 0 }
+                for (w in handedOver.mapNotNull { e -> e.subjectIds.getOrNull(1)?.let { out.weapons[WeaponId(it)] } }) if (w.legendKey != null) { legendsHandedOver++; legendHandedPower += w.power }
+                legendsWoken += res.events.count { it.type == EventType.WEAPON_HONED && "woke" in it.data }   // counted by day: the log forgets ordinary records after a month
                 stipendSales += res.visits.count { (it.sale?.stipend ?: 0) > 0 }
                 stipendGold += res.ledger?.income?.get(IncomeKind.STIPEND) ?: 0
                 routs += res.events.count { it.type == EventType.SIEGE_LOST && it.data["rout"] == "true" }
@@ -377,7 +389,9 @@ class SimulationDriver(
             firstSiegeDefense = firstSiegeDefense, firstSiegeHeld = firstSiegeHeld, forgedByFirstSiege = forgedByFirstSiege, soldByFirstSiege = soldByFirstSiege,
             toolsByFirstSiege = toolsByFirstSiege, firstPremiumSaleDay = firstPremiumSaleDay, rareMaterialsBought = rareMaterialsBought + (bots?.stockpiled ?: 0), legendsReturned = legendsReturned,
             customers = collector?.finish(state), patronageTaken = patronageTaken, stipendSales = stipendSales, stipendGold = stipendGold, routs = routs, wallDeaths = wallDeaths,
-            rumours = rumours, clueRungs = clueRungs, signatureFirsts = signatureFirsts, bot = bots?.finish(state),
+            rumours = rumours, clueRungs = clueRungs, signatureFirsts = signatureFirsts,
+            legendReturnPower = legendReturnPower, legendsWoken = legendsWoken,
+            legendsHandedOver = legendsHandedOver, legendHandedPower = legendHandedPower, bot = bots?.finish(state),
         )
         return stats to state
     }
@@ -405,8 +419,13 @@ class SimulationDriver(
         var s = state
         val tool = engine.content.tools.mapNotNull { t -> engine.toolCost(s, t.id)?.let { t.id to it } }.filter { it.second <= s.gold - reserve }.minByOrNull { it.second }
         if (tool != null) s = engine.handle(s, Command.BuyTool(tool.first)).state()
+        // A returned legend sleeps until it is honed: it comes first, and its core is bought when there is none on hand.
+        (s.listedWeapons() + s.storedWeapons()).firstOrNull { it.dormantAffixes.isNotEmpty() && (s.materials[it.coreId] ?: 0) == 0 }?.let { w ->
+            if (s.energy >= engine.config.honeEnergy && engine.materialPrice(s, w.coreId) <= s.gold - reserve && (s.supplierStock[w.coreId] ?: 1) > 0) s = engine.handle(s, Command.BuyMaterial(w.coreId)).state()
+        }
         val candidate = (s.listedWeapons() + s.storedWeapons())
-            .filter { (!it.honed || it.condition < engine.config.wornConditionThreshold) && (s.materials[it.coreId] ?: 0) > 0 }.maxByOrNull { it.power }
+            .filter { (!it.honed || it.condition < engine.config.wornConditionThreshold) && (s.materials[it.coreId] ?: 0) > 0 }
+            .maxWithOrNull(compareBy<Weapon> { it.dormantAffixes.isNotEmpty() }.thenBy { it.power })
         if (candidate != null && s.energy >= engine.config.honeEnergy) s = engine.handle(s, Command.Hone(candidate.id)).state()
         return s
     }
@@ -579,6 +598,12 @@ data class PolicySummary(
     val clueRungsPerRun: Double = 0.0,
     val signatureFirstsPerRun: Double = 0.0,
     val signatureFirstRunShare: Double = 0.0,
+    /** Returned legends a run; of those returned: mean power as they came back, share woken by a hone, share handed to a hero, and their mean power then. */
+    val legendsReturnedPerRun: Double = 0.0,
+    val legendReturnPowerMean: Double = 0.0,
+    val legendsWokenShare: Double = 0.0,
+    val legendsHandedOverShare: Double = 0.0,
+    val legendHandedPowerMean: Double = 0.0,
     /** What the T0.7 bots did, per run (`BotRunStats`); absent for the classic policies. */
     val bot: BotSummary? = null,
 )
@@ -627,6 +652,11 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             routsPerRun = runs.map { it.routs }.average(), wallDeathsPerRun = runs.map { it.wallDeaths }.average(), wallDeathRunShare = runs.count { it.wallDeaths > 0 }.toDouble() / runs.size,
             rumoursPerRun = runs.map { it.rumours }.average(), clueRungsPerRun = runs.map { it.clueRungs }.average(),
             signatureFirstsPerRun = runs.map { it.signatureFirsts }.average(), signatureFirstRunShare = runs.count { it.signatureFirsts > 0 }.toDouble() / runs.size,
+            legendsReturnedPerRun = runs.map { it.legendsReturned }.average(),
+            legendReturnPowerMean = runs.sumOf { it.legendReturnPower }.toDouble() / runs.sumOf { it.legendsReturned }.coerceAtLeast(1),
+            legendsWokenShare = runs.sumOf { it.legendsWoken }.toDouble() / runs.sumOf { it.legendsReturned }.coerceAtLeast(1),
+            legendsHandedOverShare = runs.sumOf { it.legendsHandedOver }.toDouble() / runs.sumOf { it.legendsReturned }.coerceAtLeast(1),
+            legendHandedPowerMean = runs.sumOf { it.legendHandedPower }.toDouble() / runs.sumOf { it.legendsHandedOver }.coerceAtLeast(1),
             bot = BotSummary.of(runs),
         )
     }
@@ -643,6 +673,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  rarity: " + Rarity.entries.joinToString(" ") { r -> "$r=${pct(s.rarity.getValue(r))}" })
             appendLine("  hero deaths/run: ${f1(s.heroDeathsPerRun)}  retirements/run: ${f1(s.heroRetirementsPerRun)}  sieges survived/run: ${f1(s.siegesSurvivedPerRun)}  lost/run: ${f1(s.siegesLostPerRun)}  faction win proportion: ${pct(s.factionWinProportion)}")
             appendLine("  hard-lock days total: ${s.hardLockDaysTotal}  runs with any hard-lock: ${s.runsWithHardLock}")
+            if (s.legendsReturnedPerRun > 0) appendLine("  returned legends/run: ${"%.3f".format(s.legendsReturnedPerRun)}  power as returned=${f1(s.legendReturnPowerMean)}  woken by a hone=${pct(s.legendsWokenShare)}  handed to a hero=${pct(s.legendsHandedOverShare)} (power then ${f1(s.legendHandedPowerMean)})")
             appendLine("  shop visits/run: " + s.visitsPerRun.entries.joinToString("  ") { "${it.key}=${f1(it.value)}" })
             appendLine("  elites slain/run: ${f1(s.elitesSlainPerRun)}  weapons broken/run: ${f1(s.weaponsBrokenPerRun)}  warlord sieges/run: ${f1(s.warlordSiegesPerRun)}  warlords defeated/run: ${f1(s.warlordsDefeatedPerRun)}")
             appendLine("  weapon fates on death/run: " + listOf(WeaponFate.RECOVERED, WeaponFate.INHERITED, WeaponFate.RESOLD, WeaponFate.SEIZED, WeaponFate.LOST).joinToString("  ") { "${it.name.lowercase()}=${"%.2f".format(s.weaponFatesPerRun[it] ?: 0.0)}" } +
@@ -751,12 +782,14 @@ object Simulator {
     /**
      * The Legend Board a veteran account carries: the blades remembered from [runs] new-account runs of [policy],
      * bounded like `Legacy.claim`. Only the board is taken (no journal, lineages or points), so `--legends` isolates
-     * what returning blades do.
+     * what returning blades do. The source runs are ten separate first eras, so their blades would share keys
+     * ("era1-w5" in several of them, and again in the account's own first era); each key is marked with its run, as
+     * one account's keys are unique by era.
      */
     fun veteranLegendBoard(engine: GameEngine, policy: Policy, baseSeed: Long, runs: Int = 10): List<LegendEntry> {
         val driver = SimulationDriver(engine)
-        return (0 until runs).map { driver.playRun(LegacyProfile(), baseSeed + it, policy).second }.filter { it.isEnded }
-            .flatMap { engine.closeRun(it).legends }.takeLast(20)
+        return (0 until runs).map { baseSeed + it to driver.playRun(LegacyProfile(), baseSeed + it, policy).second }.filter { it.second.isEnded }
+            .flatMap { (seed, state) -> engine.closeRun(state).legends.map { it.copy(weaponKey = "${it.weaponKey}@$seed") } }.takeLast(20)
     }
 
     /**
@@ -1009,7 +1042,9 @@ fun main(args: Array<String>) {
         val eras = requireNotNull(arg.toIntOrNull()?.takeIf { it > 0 }) { "--eras needs a positive number, got '$arg'" }
         val rule = try { BuyRule.parse(argMap["--buy"] ?: "cheapest", content) } catch (e: IllegalArgumentException) { System.err.println("--buy: ${e.message}"); exitProcess(2) }
         overrides["eras"] = arg; overrides["buy"] = rule.label
-        val summaries = EraPlay.run(GameEngine(content, config), policies, runs, seed, eras, rule, LegacyProfile(upgrades = upgrades ?: emptyMap()), maxDays, reserve, blessing)
+        val board = if (argMap["--legends"] == "true") Simulator.veteranLegendBoard(GameEngine(content, config), policies.first(), seed) else emptyList()
+        if (board.isNotEmpty()) println("== Every account starts with a veteran Legend Board: ${board.size} blades, mean power ${"%.0f".format(board.map { it.power }.average())} ==")
+        val summaries = EraPlay.run(GameEngine(content, config), policies, runs, seed, eras, rule, LegacyProfile(upgrades = upgrades ?: emptyMap(), legendBoard = board), maxDays, reserve, blessing)
         summaries.forEach { println(it.render()) }
         val elapsedMs = (System.nanoTime() - start) / 1_000_000
         println("elapsed $elapsedMs ms")

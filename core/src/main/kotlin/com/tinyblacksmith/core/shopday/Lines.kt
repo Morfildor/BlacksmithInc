@@ -219,6 +219,38 @@ object Lines {
     }
 
     /**
+     * The "story" section of the item sheet (E5): one line per entry of `Legacy.story(weapon)`, oldest first. Every line
+     * is a stored history entry with its day in front; an entry from an earlier era says which.
+     */
+    fun story(weapon: Weapon, currentEra: Int): List<String> = com.tinyblacksmith.core.legacy.Legacy.story(weapon).map { storyLine(it, currentEra) }
+
+    fun storyLine(entry: HistoryEntry, currentEra: Int): String = (if (entry.era == currentEra) "Day ${entry.day}" else "Era ${entry.era}, day ${entry.day}") + ": " + entry.text
+
+    /** The dormant marker of a returned legend: what sleeps in it and what wakes it; null when nothing does. Works for a blade or its counter snapshot. */
+    fun dormant(dormantAffixes: List<AffixId>, content: ContentCatalog): String? {
+        val names = dormantAffixes.mapNotNull { content.affixById[it]?.name }
+        return if (names.isEmpty()) null else "Dormant: ${names.joinToString(", ")}. Hone it once to wake ${if (names.size == 1) "it" else "them"}."
+    }
+
+    /**
+     * A Legend Board entry in lines: the blade and its fame, what it was, who carried it, then its story. An entry
+     * written before its make was recorded says so instead of inventing it.
+     */
+    fun legend(entry: LegendEntry, content: ContentCatalog, currentEra: Int): List<String> {
+        val what = if (entry.lostToTime) "Its properties are lost to time." else listOfNotNull(
+            entry.signatureId?.let { com.tinyblacksmith.core.crafting.SignatureCatalog.byId[it] }?.let { "A signature blade: ${it.name}" },
+            entry.affixes.mapNotNull { content.affixById[it]?.name }.takeIf { it.isNotEmpty() }?.joinToString(", "),
+            entry.flaws.mapNotNull { content.affixById[it]?.name }.takeIf { it.isNotEmpty() }?.let { "flawed: ${it.joinToString(", ")}" },
+            entry.catalystId?.let { content.materialById[it] }?.let { "forged with ${it.name}" },
+        ).joinToString("; ").ifEmpty { "A plain blade, with nothing worked into it" }.replaceFirstChar { it.uppercase() }.let { if (it.endsWith(".")) it else "$it." }
+        return listOf(
+            "${entry.weaponName}, ${entry.title}. Era ${entry.era}; ${entry.kills} ${if (entry.kills == 1) "victory" else "victories"}; fame ${entry.fame}.",
+            what,
+            if (entry.owners.isEmpty()) "Nobody is remembered as having carried it." else "Carried by ${names(entry.owners)}.",
+        ) + entry.ownerLine.map { storyLine(it, currentEra) }
+    }
+
+    /**
      * The besieger and what tells against it, for the Forge and the shelf: "Frost bites the Ashclaw Raiders; fire glances
      * off them." A clause whose element the faction lacks is dropped; null when nothing is left to say.
      */

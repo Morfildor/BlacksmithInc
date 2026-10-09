@@ -136,6 +136,12 @@ object WorldEvents {
     /** Those of them whose journal entry is still blank. */
     private fun unknownSignatures(ctx: ResolutionContext) = forgeableSignatures(ctx).filter { ctx.legacy.journal.state(it.journalKey) == KnowledgeState.UNKNOWN }
 
+    /** Legend Board blades that can still come back this era: one that already has is in the run and is not picked again. */
+    private fun returnable(ctx: ResolutionContext): List<LegendEntry> {
+        val here = ctx.weapons.values.mapNotNull { it.legendKey }.toSet()
+        return ctx.legacy.legendBoard.filter { it.key !in here }
+    }
+
     private fun hasFaction(id: String): (ResolutionContext) -> Boolean = { ctx -> ctx.factions.containsKey(FactionId(id)) }
 
     private fun pressureEvent(id: String, name: String, factionId: String, weight: Double, story: String) = WorldEventDef(
@@ -349,27 +355,39 @@ object WorldEvents {
         ),
         // 21
         WorldEventDef(
-            id = "famous_blade", name = "A Famous Blade Returns", weight = 1.0, eligibility = { it.legacy.legendBoard.isNotEmpty() }, maxPerRun = 1, cooldownDays = 0,
+            id = "famous_blade", name = "A Famous Blade Returns", weight = 1.0, eligibility = { returnable(it).isNotEmpty() }, maxPerRun = 1, cooldownDays = 0,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)
                 val c = ctx.content
-                val legend = rng.pick(ctx.legacy.legendBoard)
+                val legend = rng.pick(returnable(ctx))
                 val family = legend.familyId?.let { c.familyById[it] } ?: rng.pick(c.families)
                 val core = legend.coreId?.let { c.materialById[it] } ?: rng.pick(c.materials(MaterialCategory.CORE))
                 val augment = legend.augmentId?.let { c.materialById[it] } ?: rng.pick(c.materials(MaterialCategory.AUGMENT))
+                // It comes back as what it was (G09): signature, flaws and catalyst kept; its beneficial affixes asleep until the smith hones it.
+                val signature = legend.signatureId?.takeIf { SignatureCatalog.byId[it]?.let { s -> s.familyId == family.id && s.coreId == core.id && s.augmentId == augment.id } == true }
+                val dormant = legend.affixes.filter { it in c.affixById && c.affix(it).kind == com.tinyblacksmith.core.content.AffixKind.BENEFICIAL }
+                val flaws = legend.flaws.filter { it in c.affixById }
                 val factor = returnedLegendFactor(ctx)
                 val quality = maxOf(1, ((if (legend.quality > 0) legend.quality else 60) * factor).toInt())
                 val fullPower = if (legend.power > 0) legend.power else family.basePower + core.tier * ctx.config.powerPerCoreTier + quality / ctx.config.powerPerQualityDivisor
-                val power = maxOf(1, (fullPower * factor).toInt())
+                // The power its sleeping affixes carried sleeps with them, and comes back whole when they wake (GameEngine.hone).
+                val power = maxOf(1, ((fullPower - dormant.sumOf { c.affix(it).power }) * factor).toInt())
+                // The name promises nothing the blade lacks: it keeps the name it had unless that is a signature's name without the
+                // signature, or carries an affix the blade does not have (awake, asleep or as a flaw); then it is called by what is known of it.
+                val words = " ${legend.weaponName} "
+                val promisesTooMuch = SignatureCatalog.all.any { it.name == legend.weaponName && it.id != signature } ||
+                    c.affixes.any { a -> a.id !in dormant && a.id !in flaws && " ${a.name} " in words }
+                val name = if (promisesTooMuch) Forge.weaponName(c, family.id, core.id, emptyList(), signature) else legend.weaponName
                 val w = Weapon(
-                    id = ctx.newWeaponId(), name = legend.weaponName, familyId = family.id, coreId = core.id, augmentId = augment.id,
+                    id = ctx.newWeaponId(), name = name, familyId = family.id, coreId = core.id, augmentId = augment.id, catalystId = legend.catalystId?.takeIf { it in c.materialById },
                     mode = ForgeMode.ADVANCED, risk = Risk.BALANCED, quality = quality, rarity = Forge.rarityFor(quality, ctx.config), power = power,
-                    element = legend.element ?: augment.element, affixes = emptyList(), flaws = emptyList(), location = WeaponLocation.Storage,
+                    element = legend.element ?: augment.element, affixes = emptyList(), flaws = flaws, location = WeaponLocation.Storage,
                     forgedEra = legend.era, forgedDay = 1, kills = legend.kills, fame = legend.fame, title = legend.title,
-                    history = listOf(HistoryEntry(ctx.era, ctx.day, "RETURNED", "Returned to Emberfall in Era ${ctx.era}, worn and dormant; once carried by ${legend.owners.joinToString(", ").ifEmpty { "forgotten hands" }}.")),
+                    history = legend.ownerLine + HistoryEntry(ctx.era, ctx.day, "RETURNED", "Returned to Emberfall in Era ${ctx.era}, worn and dormant; once carried by ${legend.owners.joinToString(", ").ifEmpty { "forgotten hands" }}."),
+                    signatureId = signature, dormantAffixes = dormant, legendKey = legend.key,
                 )
                 ctx.updateWeapon(w)
-                ctx.emit(EventType.ARTIFACT_RETURNED, 6, "${w.name}, ${legend.title}, has returned to the forge.", listOf(w.id.value), mapOf("era" to legend.era.toString()))
+                ctx.emit(EventType.ARTIFACT_RETURNED, 6, "${w.name}, ${legend.title}, has returned to the forge.", listOf(w.id.value), mapOf("era" to legend.era.toString(), "legend" to legend.key, "power" to power.toString()))
                 WorldEventOutcome(mapOf("weapon" to w.name, "title" to legend.title, "era" to legend.era.toString()), listOf(w.id.value))
             },
             story = "{weapon}, {title} of Era {era}, found its way back to the forge, dented and dormant.",

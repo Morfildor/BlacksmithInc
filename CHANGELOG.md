@@ -58,6 +58,16 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   of a recipe you have not found: one clue for it, a few times an era.
 
 ### Changed
+- A legend that returns is the blade it was. It keeps its signature, its flaws, its catalyst, its title and its story
+  (who bought it, who inherited it, the patron it was made for, the day it first held the wall). Its properties come
+  back dormant: they do nothing until you hone the blade once, and then they wake, with the strength they carry. A
+  returned blade's name never promises a property the record cannot back, and a legend from before this update, whose
+  make was never written down, says "properties lost to time". A returned legend that nobody carries is not put back
+  on the Legend Board, and one that is carried again takes the place of its old entry instead of adding a second.
+- Shorter weapon names. A new blade carries at most one property in its name ("Flaming Iron Sword", not "Flaming Keen
+  Reinforced Iron Sword"); the rest are on its sheet. When a blade earns a title the title takes that place ("Iron
+  Sword, Slayer of the Cinder Matriarch") and the day it earned it is written into its history. Blades you already
+  own keep their names.
 - Catalysts say what they do. All four steady the forge in the same way today; their descriptions now say so, and name
   what a recipe asks for when it asks for that one. (A description used to promise that Runestone Shard "guides an
   affix", which it never did.) The strange weapon fragment now gives the first clue of a recipe instead of a general hint.

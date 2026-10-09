@@ -505,6 +505,8 @@ data class EraRow(
     val returnsPerRun: Double, val genuineReturnsPerRun: Double, val runsWithGenuineReturn: Double, val unfinished: Int,
     /** Signatures in the account's journal when the era ends (mean), the share of accounts with at least one by then, and rumours a run. */
     val signaturesKnownMean: Double = 0.0, val accountsWithSignature: Double = 0.0, val rumoursPerRun: Double = 0.0,
+    /** Of the legends that returned in this era: mean power as returned, share woken by a hone, share handed to a hero and their mean power then; the board's size when the era ends. */
+    val returnPowerMean: Double = 0.0, val returnsWoken: Double = 0.0, val returnsHandedOver: Double = 0.0, val handedPowerMean: Double = 0.0,
 )
 
 /** [policy] played [eras] eras on one account per seed. A return is genuine when the artifact's era is earlier than the run's and the blade is on the Legend Board the run started with. */
@@ -520,7 +522,8 @@ data class EraPlaySummary(
             "  era ${r.era}: days p10=${r.daysP10} median=${r.daysMedian} mean=${"%.1f".format(r.daysMean)} p90=${r.daysP90} max=${r.daysMax}  runs=${r.runs} unfinished=${r.unfinished}  " +
                 "points/run=${"%.1f".format(r.pointsMean)}  upgrade levels at start=${"%.1f".format(r.levelsAtStartMean)}  legend board at start=${"%.1f".format(r.boardAtStartMean)}  " +
                 "artifact returns/run=${"%.3f".format(r.returnsPerRun)} (genuine ${"%.3f".format(r.genuineReturnsPerRun)}, runs with one ${pct(r.runsWithGenuineReturn)})  " +
-                "signatures known at the end=${"%.2f".format(r.signaturesKnownMean)} (accounts with one ${pct(r.accountsWithSignature)})  rumours/run=${"%.2f".format(r.rumoursPerRun)}",
+                "signatures known at the end=${"%.2f".format(r.signaturesKnownMean)} (accounts with one ${pct(r.accountsWithSignature)})  rumours/run=${"%.2f".format(r.rumoursPerRun)}  " +
+                "returned legends: power as returned=${"%.1f".format(r.returnPowerMean)} woken=${pct(r.returnsWoken)} handed to a hero=${pct(r.returnsHandedOver)} (power then ${"%.1f".format(r.handedPowerMean)})",
         )
         appendLine("  genuine cross-era artifact returns per account=${"%.3f".format(genuineReturnsPerAccount)}  accounts with at least one=${pct(accountsWithGenuineReturn)}")
     }
@@ -537,6 +540,10 @@ data class EraPlaySummary(
                     // An account whose earlier era did not end has no later era: it counts with what it knew then.
                     signaturesKnownMean = runs.map { it.signaturesKnown }.average(), accountsWithSignature = runs.count { it.signaturesKnown > 0 }.toDouble() / runs.size,
                     rumoursPerRun = runs.map { it.stats.rumours }.average(),
+                    returnPowerMean = runs.sumOf { it.stats.legendReturnPower }.toDouble() / runs.sumOf { it.stats.legendsReturned }.coerceAtLeast(1),
+                    returnsWoken = runs.sumOf { it.stats.legendsWoken }.toDouble() / runs.sumOf { it.stats.legendsReturned }.coerceAtLeast(1),
+                    returnsHandedOver = runs.sumOf { it.stats.legendsHandedOver }.toDouble() / runs.sumOf { it.stats.legendsReturned }.coerceAtLeast(1),
+                    handedPowerMean = runs.sumOf { it.stats.legendHandedPower }.toDouble() / runs.sumOf { it.stats.legendsHandedOver }.coerceAtLeast(1),
                 )
             }
             return EraPlaySummary(
@@ -561,7 +568,7 @@ object EraPlay {
             val returned = state.events.filter { it.type == EventType.ARTIFACT_RETURNED }
             val genuine = returned.count { ev ->
                 val from = ev.data["era"]?.toIntOrNull()
-                from != null && from < state.era && legacy.legendBoard.any { it.era == from && ev.text.startsWith("${it.weaponName}, ${it.title},") }
+                from != null && from < state.era && legacy.legendBoard.any { it.key == ev.data["legend"] }
             }
             val known = state.legacy.journal.interactions.count { it.key.startsWith("sig:") && it.value == KnowledgeState.SIGNATURE_DISCOVERED }
             result += EraRun(state.era, stats, legacy.legendBoard.size, legacy.upgrades.values.sum(), returned.size, genuine, state.isEnded, known)

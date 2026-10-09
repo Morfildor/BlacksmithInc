@@ -2698,3 +2698,70 @@ rumours a run: met (3.4 to 4.0).
 switches rumours off (it asserts that only COMBAT moves in a fight). **Golden `state_rules3.txt` re-recorded: all 300 lines** (the
 golden script forges an iron-and-ember sword, a base recipe, so day 1 of every seed records further clues), **the RNG column on 168
 lines in 15 seeds** (from the first rumour of each). Balance 8 re-pinned (the two rumour numbers).
+
+## Artifact fidelity, the maker's ledger and weapon names (2026-10-09, task T4.5; G09, X06, E5)
+
+**What a legend is now.** `LegendEntry` records what the blade was (`affixes`, awake or dormant; `flaws`; `catalystId`; `signatureId`),
+its story (`ownerLine`: every history entry that is not a routine fight, plus the first victory and the first siege, oldest first,
+hero IDs dropped because they mean nothing in another era; about twelve lines, the forging, signature, title, return and waking kept
+before sales and trade-ins) and its identity (`weaponKey`, "era2-w17"; `LegendEntry.key` falls back to era, name and title for an
+entry written before). `owners` now comes from every kind that puts a blade in a hand, in order: buyers (SOLD), commission patrons,
+heirs (INHERITED: the heir is named first in the entry) and a travelling merchant's customer (RESOLD). It used to read SOLD and
+COMMISSION only.
+
+**What returns (GDD 7 "damaged or dormant").** The blade keeps its name, signature (when the recorded recipe is that signature's),
+flaws, catalyst, title, fame, kills and story; its beneficial affixes come back in `Weapon.dormantAffixes` and count for nothing. The
+first time the smith hones it they move to `affixes` and the power they carry is added back; the history gains AWAKENED. Its power as
+returned is (the recorded power less what the sleeping affixes carried) x the returned-legend factor (0.7; up to 0.85 with Homing
+Steel), so a dormant legend is weaker than the bare husk that used to return, and an awake one is stronger: it has its affixes.
+The name promises nothing the blade lacks: it is kept unless it is a signature's name without the signature or carries the name of an
+affix the record does not hold (an entry from before this change can); then the blade is called by its core and family. No number
+was added to `BalanceConfig`; balance stays 8.
+
+**One blade, one entry (X06).** A returned blade carries `Weapon.legendKey`. At run end it goes back on the board only if a hero
+carried it this era (an ownership entry of this era); then `Legacy.claim` replaces the entry it came from, with the old owners first.
+Unowned, it leaves the board as it found it. A blade that is already back in a run is not picked again (`famous_blade` was already
+once a run; the filter makes it true for any future second source).
+
+**Names (review: "one affix prefix in a name").** `Forge.weaponName`: a signature's name, else core and family behind at most one
+affix (the first: the element affix when there is one). `Forge.entitle`: the first title a blade earns stays, takes the affix's place in
+the name, and writes a TITLED entry into its history, so the ledger has a line for it. Blades already in a save keep their names; no
+migration renames anything.
+
+**The ledger (E5).** `Legacy.story(weapon)` is the list of stored entries to show; `Lines.story`, `Lines.legend` and `Lines.dormant` are
+the words. Every line is a `HistoryEntry`; nothing is composed. `WeaponSnapshot` carries the dormant affixes for the counter.
+
+**Measured** (1,000 accounts of three eras at base seeds 1 / 10001 / 20001, upgrades bought cheapest first; before = the tree after T4.3).
+
+| policy | era | mean days before | after | longest | returns a run | power as returned | woken by a hone | handed to a hero (power then) |
+|---|---|---|---|---|---|---|---|---|
+| BALANCED_FAIR | 2 | 23.2 / 23.6 / 23.5 | 23.2 / 23.6 / 23.4 | 35 | 0.18 / 0.16 / 0.18 | 19.1 / 19.7 / 19.4 | 0 % (never hones) | 39 / 28 / 43 % (19-20) |
+| BALANCED_FAIR | 3 | 28.1 / 28.2 / 28.2 | 28.1 / 28.2 / 28.2 | 40 | 0.23 / 0.19 / 0.20 | 19.7 / 20.0 / 19.8 | 0 % | 36 / 40 / 39 % (19-20) |
+| BALANCED_ACTIVE | 2 | 32.0 / 32.5 / 32.3 | 32.1 / 32.6 / 32.3 | 45 | 0.23 / 0.21 / 0.24 | 23.0 / 23.0 / 23.4 | 92 / 91 / 92 % | 63 / 56 / 73 % (36-37) |
+| BALANCED_ACTIVE | 3 | 36.0 / 36.0 / 36.0 | 36.0 / 36.0 / 36.0 | 50 | 0.25 / 0.23 / 0.25 | 23.6 / 23.6 / 22.7 | 98 / 95 / 93 % | 56 / 60 / 50 % (36-37) |
+| EXPERT | 2 | 48.7 / 48.7 / 48.6 | 48.6 / 48.7 / 48.6 | 60 | 0.31 / 0.31 / 0.33 | 30.7 / 30.8 / 30.7 | 0 % | 23 / 18 / 26 % (30) |
+| EXPERT | 3 | 49.2 / 48.9 / 49.0 | 49.1 / 48.9 / 49.0 | 60 | 0.32 / 0.31 / 0.32 | 30.8 / 30.8 / 30.7 | 0 % | 22 / 28 / 18 % (30-31) |
+| EXPERT_ACTIVE | 2 | 49.4 / 49.6 / 49.5 | 49.4 / 49.6 / 49.5 | 60 | 0.33 / 0.33 / 0.33 | 29.7 / 29.8 / 30.2 | 92 / 90 / 91 % | 60 / 54 / 56 % (41-42) |
+| EXPERT_ACTIVE | 3 | 50.1 / 50.0 / 50.2 | 50.2 / 50.1 / 50.1 | 60 | 0.33 / 0.31 / 0.35 | 29.8 / 30.5 / 30.1 | 92 / 90 / 92 % | 41 / 62 / 54 % (41-43) |
+
+Era 1 is identical before and after (no board, no return). With a veteran's board of twenty blades from the start (`--eras 3
+--legends`): the same days within 0.1 in every era (BALANCED_ACTIVE 29.7-29.9 / 32.0-32.5 / 36.0-36.1; EXPERT_ACTIVE 45.9-46.3 /
+49.3-49.4 / 49.9-50.2, longest 65), returns 0.16-0.34 a run, power as returned 20-26, woken 78-97 % by the active smiths, power when
+handed over 32-38. A maxed account with that board (Homing Steel 3; base seed 1): EXPERT_ACTIVE 55.9 -> 56.0 (p90 60, longest 65),
+BALANCED_FAIR 37.1 -> 37.1; 0.69-0.82 returns a run at power 35.5, 46.2 once woken.
+
+**Reading.** A returned legend moves no survival number: there is about one in four runs, it arrives as one mid-strength blade, and
+the town's defense does not turn on one blade. Its strength is inside the tripwire (new EXPERT 45.6, maxed EXPERT p90 60, longest 65).
+What changes is what the blade is and what the player can do with it: hone it and it is half again as strong as it came back.
+
+**The nine standard files** (every classic policy, every bot, five maxed rows, three seeds) are **identical to T4.3's** line for line:
+a new account never has a board, and names decide nothing. **Golden `state_rules3.txt` passes unrecorded.**
+
+**Simulator.** A "returned legends" line and the same on each era row; `--legends` now also gives `--eras` accounts a veteran's
+board; the active policies hone a dormant legend first and buy its core when they have none. `veteranLegendBoard` marks each source
+run's keys ("era1-w5@1003"): ten separate first eras share keys that one account's eras never do, and the first measurement of this
+arm lost board entries to that (20 -> 18.9); real keys carry their era and are unique per account.
+
+**Tests.** `ArtifactFidelityTest` (8): `aReturnedLegendKeepsAffixesFlawsCatalystAndSignature`, `theOwnerLineIncludesHeirsAndCommissionPatrons`,
+`aReturnedNameNeverPromisesAnAffixTheBladeLacks`, `aLegendCannotReEnterTheBoardOwnerless`, `threeNaturalErasKeepOneBladesStoryTruthful`,
+`entriesFromOlderProfilesRenderAsLostToTime`, `aReturnedLegendsAffixesAreDormantUntilHoned`, `aNameCarriesAtMostOnePrefix`.
