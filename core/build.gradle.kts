@@ -23,6 +23,7 @@ dependencies {
 
 tasks.test {
     useJUnit()
+    systemProperty("golden.record", System.getProperty("golden.record") ?: "false")
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
