@@ -214,7 +214,7 @@ object WorldEvents {
             eligibility = { ctx -> ctx.aliveHeroes().isNotEmpty() && ctx.weapons.values.any(::lostWithHero) }, maxPerRun = 3, cooldownDays = 3,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)
-                val w = rng.pick(ctx.weapons.values.filter(::lostWithHero).sortedBy { it.id.value })
+                val w = rng.pick(ctx.weapons.values.filter(::lostWithHero).sortedWith(compareBy(IdOrder.numeric) { it.id.value }))
                 val heir = rng.pick(ctx.aliveHeroes())
                 val fallen = fallenOwnerName(ctx, w)
                 ctx.addWeaponHistory(w.id, "INHERITED", "Carried home after ${fallen}'s death and passed to ${heir.fullName}.", listOf(heir.id.value))
@@ -347,11 +347,11 @@ object WorldEvents {
         // 22
         WorldEventDef(
             id = "descendant", name = "Descendant of a Champion", weight = 1.0,
-            eligibility = { ctx -> ctx.aliveHeroes().size < ctx.config.customers.maxHeroPopulation && ctx.legacy.lineages.any { l -> ctx.heroes.values.none { it.descendantOf == l.heroName } } },
+            eligibility = { ctx -> ctx.aliveHeroes().size < ctx.config.customers.maxHeroPopulation && ctx.legacy.lineages.any { l -> ctx.heroes.values.none { it.lineageId == l.id } } },
             maxPerRun = 2, cooldownDays = 5,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)
-                val anchor = rng.pick(ctx.legacy.lineages.filter { l -> ctx.heroes.values.none { it.descendantOf == l.heroName } })
+                val anchor = rng.pick(ctx.legacy.lineages.filter { l -> ctx.heroes.values.none { it.lineageId == l.id } })
                 val h = Heroes.generate(ctx, rng, anchor)
                 ctx.updateHero(h)
                 ctx.emit(EventType.HERO_ARRIVED, 2, "${h.fullName} the ${ctx.content.heroClass(h.classId).name} arrived in Emberfall.", listOf(h.id.value))
@@ -376,7 +376,7 @@ object WorldEvents {
             eligibility = { ctx -> ctx.weapons.values.any { it.isListed && (it.fame > 0 || it.rarity >= Rarity.EPIC) } }, maxPerRun = 2, cooldownDays = 6,
             apply = { ctx ->
                 val w = ctx.weapons.values.filter { it.isListed && (it.fame > 0 || it.rarity >= Rarity.EPIC) }
-                    .maxWith(compareBy<Weapon> { it.fame }.thenBy { it.quality }.thenBy { it.id.value })
+                    .maxWith(compareBy<Weapon> { it.fame }.thenBy { it.quality }.thenBy(IdOrder.numeric) { it.id.value })
                 // The collector pays over the shelf price, but never above the going rate times the multiplier: an absurd price mints no gold.
                 val price = (minOf(w.listedPrice ?: 0, Market.askingPrice(w, ctx.config)) * ctx.config.collectorPriceMultiplier).toInt()
                 ctx.earn(IncomeKind.COLLECTOR, price)

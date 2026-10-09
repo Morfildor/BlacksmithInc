@@ -46,8 +46,8 @@ class WorldEventsAndGenerationsTest {
         era = 1, weaponName = "Old Ember", title = "Bane of the Ashclaw Raiders", kills = 6, fame = 9, owners = listOf("Mira Vance"),
         familyId = SliceContent.SWORD, coreId = SliceContent.IRON, augmentId = SliceContent.EMBER_RESIN, quality = 80, power = 30,
     )
-    private val lineageA = LineageAnchor(1, "Mira Vance", "Vance", engine.content.classes.first().id, 5, "died on day 9")
-    private val lineageB = LineageAnchor(1, "Bram Ferris", "Ferris", engine.content.classes.first().id, 4, "survived the fall of the forge")
+    private val lineageA = LineageAnchor(1, "Mira Vance", "Vance", engine.content.classes.first().id, 5, "died on day 9", id = "era1-h3")
+    private val lineageB = LineageAnchor(1, "Bram Ferris", "Ferris", engine.content.classes.first().id, 4, "survived the fall of the forge", id = "era2-h5")
     private val storiedLegacy = LegacyProfile(legendBoard = listOf(legend), lineages = listOf(lineageA, lineageB), eras = listOf(EraSummary(1, 12, 8, "The forge fell.")))
 
     @Test
@@ -71,7 +71,7 @@ class WorldEventsAndGenerationsTest {
 
         // newRun already seeded a descendant of the last lineage; the event brings the other one.
         val s2 = fire(s1, "descendant")
-        assertNotNull(s2.heroes.values.firstOrNull { it.descendantOf == lineageA.heroName })
+        assertNotNull(s2.heroes.values.firstOrNull { it.lineageId == lineageA.id })
         assertFalse(eligible(s2, "descendant"), "no unclaimed lineage remains")
     }
 

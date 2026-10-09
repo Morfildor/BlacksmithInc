@@ -57,6 +57,7 @@ import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.model.CombatReplay
 import com.tinyblacksmith.core.model.DayResolution
+import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.ReplayKind
 import com.tinyblacksmith.core.model.WeaponId
@@ -241,17 +242,17 @@ private fun ReplayStage(replay: CombatReplay, shown: Int, s: UiState.Playing, vm
     val current = (shown - 1).coerceIn(-1, replay.rounds.size)  // -1 = nothing yet, size = outcome shown
     val currentRound = replay.rounds.getOrNull(current)
     val faction = vm.engine.content.factions.firstOrNull { f -> replay.rounds.any { it.attacker == f.siegeName || it.defender == f.siegeName } }
-    val heroes = replay.rounds.mapNotNull { round -> s.state.heroes.values.firstOrNull { it.fullName == round.attacker } }.distinctBy { it.id }.take(3)
+    val heroes = replay.rounds.mapNotNull { round -> round.attackerId?.let { s.state.heroes[HeroId(it)] } }.distinctBy { it.id }.take(3)
     val raidersAttack = currentRound != null && faction != null && currentRound.attacker == faction.siegeName
     val lost = current >= replay.rounds.size && replay.outcome != "Town held"
     val defenders = heroes.map { h ->
-        StageActor({ pose, tick -> Sprites.heroFrame(h.classId, pose, tick) }, if (currentRound?.attacker == h.fullName) Sprites.Pose.ATTACK else Sprites.Pose.IDLE, flipped = false)
+        StageActor({ pose, tick -> Sprites.heroFrame(h.classId, pose, tick) }, if (currentRound?.attackerId == h.id.value) Sprites.Pose.ATTACK else Sprites.Pose.IDLE, flipped = false)
     }
     val raiders = faction?.let { f ->
         listOf(false, true).mapIndexed { i, elite ->
             val pose = when {
                 raidersAttack -> Sprites.Pose.ATTACK
-                currentRound != null && heroes.any { it.fullName == currentRound.attacker } && i == 0 -> Sprites.Pose.HIT
+                currentRound?.attackerId != null && i == 0 -> Sprites.Pose.HIT
                 else -> Sprites.Pose.IDLE
             }
             StageActor({ p, tick -> Sprites.monsterFrame(f.id, elite, p, tick) }, pose, flipped = false)

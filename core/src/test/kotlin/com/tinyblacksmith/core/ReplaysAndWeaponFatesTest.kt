@@ -580,7 +580,7 @@ class ReplaysAndWeaponFatesTest {
                     checked++
                 }
             }
-        }.playRun(LegacyProfile(), 3, Policy.BALANCED_FAIR)
+        }.playRun(LegacyProfile(), 4, Policy.BALANCED_FAIR)
         assertTrue(checked > 5, "only $checked fate records in 200 days")
     }
 

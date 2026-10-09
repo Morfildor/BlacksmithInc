@@ -91,7 +91,7 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T2.9 | Device scripts and scenario saves | INT | todo | | | |
 | T2.10 | Onboarding | AB | todo | | | |
 | T3.1 | Fair selection | CA | done (JVM, 1 base seed) | 45e03f5 | core+app green on tip; balance 7, rules 3, schema 4; position ratio BALANCED_FAIR 0.39 to 0.97; never-served runs 7.7 to 0.2 %; EXPERT new 42.0 to 42.9, maxed 51.4 to 53.4 p90 60 longest 65; SIEGE_PREP 39.1 to 40.3; three base seeds and emulator NOT RUN | |
-| T3.2 | Names and lineage IDs | CON + CA | todo | | | |
+| T3.2 | Names and lineage IDs | CON + CA | done (JVM, 1 base seed) | 40083f7 | core 320, app unit 57 green; names move no policy mean; shared first name on 64-70 % of days to 0 %; repeated full name in 5-17 % of runs to 0 %; numeric sorts move SYNERGY -1.1, SPENDTHRIFT -0.8, others within 0.6; content 3; schema-4 step now links lineages by ID; five fixtures keep their names; emulator NOT RUN | |
 | T3.3 | Appearance | ART + CA + AA | todo | | | |
 | T3.4 | Population, seats, compensation | CA + SIM | todo | | | |
 | T3.5 | Recognition | CB + CON + AA | todo | | | |
@@ -156,3 +156,5 @@ live copy and is copied back to the main checkout at each milestone boundary.
 - Ruling (T3.1 newcomer line): "served within two days" is measured on days the newcomer chose to come (198 of 200), since base willingness 0.35 makes the calendar version unreachable by seating alone.
 - Ruling: the remaining string sorts on serial IDs (WorldEvents 217 and 379, Heroes 150 and 232, Legacy 61, listed/stored/retired lists) move to numeric order in T3.2, riding on rules 3 before any rules-3 save exists outside development.
 - Owner instruction (2026-10-09): all art will be replaced. `Assets/` in the main checkout is the source root, one folder per kind with a `WANTED.txt` of current IDs and sizes; each folder is imported only when the owner says it is ready. Until then the current art stays and no effort goes into polishing it. Audio and the launcher icon have folders too, so T6.7's audio gap and T7.4's icon step close when those arrive.
+- Ruling (T3.2): name lengths follow the plan (3-8 first, 4-11 surname), not the looser dispatch text. A siege replay stored before this build shows only the raiders in the diorama until the next siege (no name fallback kept). The two advice sorts in `shopday/Advice.kt` were moved to numeric order at integration.
+- Open for the owner (not blocking): name taste; a few names (Isherwood, Wyndham, Jarvis, Merrick, Lysander, Idris, Rosalind) may read as known people or characters.

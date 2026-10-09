@@ -113,7 +113,7 @@ class SaveFixtureTest {
         val s = decodedV2
         assertEquals(4242L, s.seed)
         assertEquals(listOf(2, 5, 61), listOf(s.rulesVersion, s.balanceVersion, s.day))
-        assertEquals(engine.content.version, s.contentVersion)
+        assertEquals(2, s.contentVersion)
         assertTrue(Invariants.check(s, engine.config, content = engine.content).isEmpty())
         assertEquals(s, SaveCodec.decodeRun(SaveCodec.encodeRun(s)))
         val next = assertIs<CommandOutcome.Accepted>(s.admitted().let { engine.handle(it, Command.EndDay(endDayId(it))) }).state
@@ -131,7 +131,7 @@ class SaveFixtureTest {
         assertTrue(fixtureTextV3.startsWith("""{"schemaVersion":3,"payload":"""), fixtureTextV3.take(40))
         val s = decodedV3
         assertEquals(listOf(2, 6, 61), listOf(s.rulesVersion, s.balanceVersion, s.day))
-        assertEquals(engine.content.version, s.contentVersion)
+        assertEquals(2, s.contentVersion)
         assertTrue(Invariants.check(s, engine.config, content = engine.content).isEmpty())
         assertEquals(s, SaveCodec.decodeRun(SaveCodec.encodeRun(s)))
         val last = s.lastResolution!!
@@ -151,6 +151,35 @@ class SaveFixtureTest {
         for (v in r.browsers.filter { it.reason != VisitReason.EMPTY_SHELVES }) assertEquals(listOf(1, 61), next.hero(v.heroId!!).let { listOf(it.shopVisits, it.lastServedDay) })
         for (id in r.turnedAway) assertEquals(1, next.hero(id).turnedAwayStreak)
         assertTrue(r.browsers.isNotEmpty(), "the fixture day has customers")
+    }
+
+    /**
+     * Content 3 changed the name pools, not the heroes: every fixture of schema 1, 2 and 3 is admitted, accepts an End
+     * Day, and each of its heroes still carries the name it was saved with, the names that left the pool included.
+     */
+    @Test
+    fun oldSavesKeepTheirHeroesNames() {
+        val retired = setOf("Ashwood", "Brackenridge", "Holloway", "Mossgrave", "Rooksbane")
+        var carried = 0
+        for (name in listOf("v1_forced_seed4242_day61.json", "v1_release060_active_seed4242_day61.json", "v2_forced_seed4242_day61.json", "v2_balance6_expert_seed4242_day33.json", "v3_forced_seed4242_day61.json")) {
+            val s = SaveCodec.decodeRun(fixture(name))
+            assertEquals(2, s.contentVersion, name)
+            assertTrue(s.heroes.values.all { it.lineageId == null } && s.legacy.lineages.isEmpty(), "$name: a first-era run has no lineage to link")
+            val admitted = s.admitted()
+            assertEquals(engine.content.version, admitted.contentVersion)
+            assertEquals(s.heroes, admitted.heroes, name)
+            val next = assertIs<CommandOutcome.Accepted>(engine.handle(admitted, Command.EndDay(endDayId(admitted)))).state
+            assertEquals(emptyList(), Invariants.check(next, engine.config, engine.shelfSlots(next), engine.content), name)
+            for (h in s.heroes.values) assertEquals(h.fullName, next.hero(h.id).fullName, "$name ${h.id.value}")
+            assertTrue(s.aliveHeroes().isNotEmpty() && next.aliveHeroes().any { it.id in s.heroes }, name)
+            carried += s.heroes.values.count { it.surname in retired || it.name == "Nessa" }
+            // A hero who arrives now is named from the new pools and shares no name with the living.
+            for (h in next.heroes.values.filter { it.id !in s.heroes }) {
+                assertTrue(h.name in engine.content.firstNames && h.surname in engine.content.surnames, "$name: ${h.fullName}")
+                assertTrue(next.aliveHeroes().none { it.id != h.id && (it.name == h.name || it.surname == h.surname) }, "$name: ${h.fullName}")
+            }
+        }
+        assertTrue(carried > 0, "the fixtures hold heroes whose names have left the pool")
     }
 
     /**

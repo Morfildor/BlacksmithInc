@@ -24,6 +24,7 @@ import kotlin.test.assertNotEquals
 class VersionFingerprintTest {
     private val catalogPins = mapOf(
         2 to "e5e5b96b392777abd63e6f7237fd96f5eee92411942f172035ba0c5c4adb6f9b",
+        3 to "c1240f3b57553808960cba1b034228ea123298dfbbc0c7cb4035ad09dceea723",  // 120 first names, 96 surnames (T3.2)
     )
     private val balancePins = mapOf(
         5 to "a9d576db13b2983ebb4e45ed97ff6ddc9ece108aebb4738a14bfd90dc9ae37c1",

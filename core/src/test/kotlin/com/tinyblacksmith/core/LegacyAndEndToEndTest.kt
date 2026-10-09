@@ -70,6 +70,7 @@ class LegacyAndEndToEndTest {
         val descendant = next.heroes.values.first { it.descendantOf != null }
         assertEquals(end.lineage!!.surname, descendant.surname)
         assertEquals(end.lineage.heroName, descendant.descendantOf)
+        assertEquals(end.lineage.id, descendant.lineageId)
         assertEquals(10, next.energy)
     }
 

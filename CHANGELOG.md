@@ -39,6 +39,15 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   newcomers, heroes without a blade and heroes whose blade is worn are a little more likely to get a seat; the first
   seats go to different classes. A patron who collects a commission does not also browse that day. Seats, town size
   and prices are unchanged. A run in progress continues under the new rule (balance 7, rules 3, save schema 4).
+- Heroes are named from 120 first names and 96 surnames (before: 30 and 24). No two living heroes share a first name
+  or a surname, and no full name is given twice in a run; a descendant keeps the family surname and never takes the
+  ancestor's first name. Before, two heroes of one first name stood in town on two days of three. Heroes already in a
+  saved run keep the names they have (content 3).
+- A descendant is recognised by the lineage itself, not by the ancestor's name: two famous heroes of one name in
+  different eras are two lineages, and each can send a descendant. The siege scene finds its champions the same way.
+- Blades and heroes are ordered by their number in every rule of the game (the tenth after the ninth): which lost blade is
+  carried home, a retiring hero's hand-down, the guild-hall mentor, the collector's choice and the hero a lineage is
+  founded on.
 
 ### Fixed
 - A past day in the Gazette is tallied as its report was: visitors, shop takings and expeditions lost (a hero who died

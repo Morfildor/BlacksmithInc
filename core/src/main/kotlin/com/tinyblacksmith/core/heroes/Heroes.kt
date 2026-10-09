@@ -16,8 +16,8 @@ object Heroes {
     fun generate(ctx: ResolutionContext, rng: Rng, descendantOf: LineageAnchor? = null): Hero {
         val content = ctx.content
         val cls = descendantOf?.let { content.classById[it.classId] } ?: rng.pick(content.classes)
-        val name = rng.pick(content.firstNames)
-        val surname = descendantOf?.surname ?: rng.pick(content.surnames)
+        val name = Names.first(ctx, rng, descendantOf)
+        val surname = descendantOf?.surname ?: Names.surname(ctx, rng, name)
         val traitCount = rng.nextInt(2, 3)
         val traits = mutableListOf<TraitId>()
         val pool = content.traits.map { it.id }.toMutableList()
@@ -29,7 +29,7 @@ object Heroes {
             id = ctx.newHeroId(), name = name, surname = surname, classId = cls.id,
             level = if (descendantOf != null) 2 else 1, xp = 0,
             gold = rng.nextInt(cls.startingGoldMin, cls.startingGoldMax), health = 100,
-            traits = traits, elementTaste = taste, descendantOf = descendantOf?.heroName,
+            traits = traits, elementTaste = taste, descendantOf = descendantOf?.heroName, lineageId = descendantOf?.id,
             ambition = rng.pick(Ambition.entries), arrivedOnDay = ctx.day,
         )
     }
@@ -147,7 +147,7 @@ object Heroes {
     private fun mentor(ctx: ResolutionContext, atHall: List<HeroId>) {
         val present = atHall.map { ctx.hero(it) }
         for (pupil in present) {
-            val mentor = present.filter { it.guildId == pupil.guildId && it.level > pupil.level }.sortedBy { it.id.value }.maxByOrNull { it.level } ?: continue
+            val mentor = present.filter { it.guildId == pupil.guildId && it.level > pupil.level }.sortedWith(compareBy(IdOrder.numeric) { it.id.value }).maxByOrNull { it.level } ?: continue
             val e = ctx.emit(EventType.GUILD_MENTORED, 2, "${pupil.fullName} was taught by ${mentor.fullName} at the guild hall.", listOf(pupil.id.value, mentor.id.value))
             ctx.field += FieldResult(pupil.id, pupil.fullName, FieldOutcome.GUILD_LESSON, withHeroId = mentor.id, eventIds = listOf(e.id))
             ctx.field += FieldResult(mentor.id, mentor.fullName, FieldOutcome.GUILD_TAUGHT, withHeroId = pupil.id, eventIds = listOf(e.id))
@@ -229,7 +229,7 @@ object Heroes {
         ctx.updateHero(mentee)
         ctx.emit(EventType.HERO_MENTORED, 4, "${mentee.fullName}, trained by ${hero.fullName}, took up the mentor's calling.", listOf(mentee.id.value, hero.id.value))
         // Every weapon the retiree owned passes to the mentee (one owner per weapon; retired heroes own nothing).
-        for (w in ctx.weapons.values.filter { it.ownerId == hero.id }.sortedWith(compareByDescending<Weapon> { it.isEquipped }.thenBy { it.id.value })) {
+        for (w in ctx.weapons.values.filter { it.ownerId == hero.id }.sortedWith(compareByDescending<Weapon> { it.isEquipped }.thenBy(IdOrder.numeric) { it.id.value })) {
             ctx.addWeaponHistory(w.id, "INHERITED", "Inherited by ${mentee.fullName} from ${hero.fullName}.", listOf(mentee.id.value, hero.id.value))
             Market.giveAndEquip(ctx, ctx.hero(mentee.id), ctx.weapon(w.id))
             ctx.emit(EventType.WEAPON_INHERITED, 5, "${w.name} passed from ${hero.fullName} to ${mentee.fullName}.", listOf(w.id.value, mentee.id.value, hero.id.value))

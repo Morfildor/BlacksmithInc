@@ -110,7 +110,9 @@ data class Hero(
     val fame: Int = 0,
     val fate: HeroFate = HeroFate.ALIVE,
     val lastActivity: HeroActivity = HeroActivity.IDLE,
+    /** The ancestor's name, for display only; kinship is [lineageId] ([LineageAnchor.id]). */
     val descendantOf: String? = null,
+    val lineageId: String? = null,
     val kills: Int = 0,
     val victories: Int = 0,
     val diedOnDay: Int? = null,
@@ -203,8 +205,9 @@ data class EventRecord(
     val data: Map<String, String> = emptyMap(),
 )
 
+/** [attackerId] is the hero who strikes, when one does (null for foes, the militia, and rounds stored before it existed). */
 @Serializable
-data class CombatRound(val attacker: String, val defender: String, val damage: Int, val note: String)
+data class CombatRound(val attacker: String, val defender: String, val damage: Int, val note: String, val attackerId: String? = null)
 
 enum class ReplayKind { SIEGE, EXPEDITION }
 
@@ -265,8 +268,9 @@ data class LegendEntry(
     val element: Element? = null,
 )
 
+/** [id] is the era and the hero's ID ("era2-h7"); a lineage written before schema 4 was given "era2" by the migration. Names never identify a lineage. */
 @Serializable
-data class LineageAnchor(val era: Int, val heroName: String, val surname: String, val classId: HeroClassId, val fame: Int, val deed: String)
+data class LineageAnchor(val era: Int, val heroName: String, val surname: String, val classId: HeroClassId, val fame: Int, val deed: String, val id: String = "")
 
 @Serializable
 data class EraSummary(val era: Int, val daysSurvived: Int, val pointsAwarded: Int, val cause: String)
@@ -341,9 +345,9 @@ data class GameState(
     fun hero(id: HeroId): Hero = heroes[id] ?: error("Unknown hero ${id.value}")
     fun equippedWeapon(heroId: HeroId): Weapon? =
         weapons.values.firstOrNull { it.location is WeaponLocation.Owned && it.ownerId == heroId && it.isEquipped }
-    fun listedWeapons(): List<Weapon> = weapons.values.filter { it.isListed }.sortedBy { it.id.value }
-    fun storedWeapons(): List<Weapon> = weapons.values.filter { it.isInStorage }.sortedBy { it.id.value }
+    fun listedWeapons(): List<Weapon> = weapons.values.filter { it.isListed }.sortedWith(compareBy(IdOrder.numeric) { it.id.value })
+    fun storedWeapons(): List<Weapon> = weapons.values.filter { it.isInStorage }.sortedWith(compareBy(IdOrder.numeric) { it.id.value })
     fun aliveHeroes(): List<Hero> = heroes.values.filter { it.isAlive }.sortedWith(compareBy(IdOrder.numeric) { it.id.value })
-    fun retiredHeroes(): List<Hero> = heroes.values.filter { it.fate == HeroFate.RETIRED }.sortedBy { it.id.value }
+    fun retiredHeroes(): List<Hero> = heroes.values.filter { it.fate == HeroFate.RETIRED }.sortedWith(compareBy(IdOrder.numeric) { it.id.value })
     fun eventsForDay(day: Int): List<EventRecord> = events.filter { it.day == day }
 }

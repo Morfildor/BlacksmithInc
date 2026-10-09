@@ -103,7 +103,7 @@ object LaunchContent {
         ALL_CLASSES.associateWith { if (it in synergy) 1.2 else 0.85 }
 
     val catalog: ContentCatalog = ContentCatalog(
-        version = 2,
+        version = 3,
         families = listOf(
             // basePower / defensiveWeight are PROPOSED; Sword, Axe and Bow keep their slice values.
             WeaponFamilyDef(SWORD, "Sword", basePower = 10, classFit = fit(listOf(GUARDIAN, DUELIST, BATTLEMAGE)), defensiveWeight = 1.1),
@@ -249,13 +249,39 @@ object LaunchContent {
             (VERDANT_SAP to SWORD) to 1, (VERDANT_SAP to AXE) to 3, (VERDANT_SAP to SPEAR) to 5, (VERDANT_SAP to BOW) to 1, (VERDANT_SAP to DAGGER) to 0, (VERDANT_SAP to STAFF) to 4,
             (SUN_ASH to SWORD) to 3, (SUN_ASH to AXE) to 2, (SUN_ASH to SPEAR) to 2, (SUN_ASH to BOW) to 1, (SUN_ASH to DAGGER) to -1, (SUN_ASH to STAFF) to 6,
         ),
+        // Hero names (plan 4.4): 120 first names and 96 surnames in one shared pool for every folk of Emberfall. The rules they obey
+        // are checked by ContentCatalog.validate(). Ashwood, Brackenridge, Holloway, Mossgrave, Rooksbane and Nessa left the pool
+        // with content 3; heroes and lineages that carry them keep them, because a stored name needs no pool entry.
         firstNames = listOf(
-            "Mira", "Aldric", "Tessa", "Bram", "Ione", "Corvin", "Sable", "Edric", "Wren", "Halvard", "Nessa", "Orin", "Liora", "Garrick",
-            "Thane", "Ysolde", "Piet", "Maren", "Dagny", "Rook", "Elspeth", "Torvald", "Cassia", "Faolan", "Greta", "Lucan", "Odile", "Sten", "Verity", "Hesper",
+            "Mira", "Aldric", "Tessa", "Bram", "Ione", "Corvin", "Sable", "Edric", "Wren", "Halvard", "Orin", "Liora",
+            "Garrick", "Thane", "Ysolde", "Piet", "Maren", "Dagny", "Rook", "Elspeth", "Torvald", "Cassia", "Faolan", "Greta",
+            "Lucan", "Odile", "Sten", "Verity", "Hesper", "Anwen", "Alba", "Brisa", "Bertram", "Cael", "Ceridwen", "Dorrin",
+            "Davin", "Evander", "Elowen", "Fenna", "Fintan", "Gideon", "Hedda", "Idris", "Joss", "Keir", "Leof", "Maud",
+            "Niall", "Ottilie", "Petra", "Rowan", "Runa", "Saskia", "Tobin", "Ulla", "Varek", "Willa", "Yorick", "Azrek",
+            "Arvo", "Averil", "Bodil", "Blix", "Benno", "Brokk", "Crispin", "Cyra", "Durgan", "Dezra", "Eska", "Emrys",
+            "Frode", "Ferelith", "Gorrim", "Gundra", "Hakon", "Hilde", "Hobb", "Ilka", "Ivo", "Ixen", "Jorund", "Jessamy",
+            "Jovan", "Kazimir", "Katla", "Kolgrim", "Kivi", "Lenka", "Lysander", "Linnet", "Merle", "Mox", "Nerys", "Norrik",
+            "Nixie", "Othmar", "Onora", "Pascoe", "Prisca", "Quenna", "Radek", "Rosalind", "Sorrel", "Sigrun", "Selka", "Tamsin",
+            "Tansy", "Urien", "Urzog", "Vesna", "Vidar", "Wystan", "Wendel", "Xanthe", "Yarrow", "Zinnia", "Zorka", "Zephyr",
         ),
+        // Four kinds, 24 of each.
         surnames = listOf(
-            "Ashwood", "Thornefell", "Greymantle", "Vance", "Holloway", "Stonebrook", "Ferris", "Nightingale", "Marrow", "Kestrel",
-            "Brackenridge", "Coldwater", "Dunmore", "Ellery", "Fairweather", "Hartwell", "Lindqvist", "Mossgrave", "Oakhurst", "Pellam", "Quill", "Rooksbane", "Tallow", "Underhill",
+            // Nature compounds
+            "Stonebrook", "Nightingale", "Kestrel", "Fairweather", "Foxglove", "Gorse", "Juniper", "Larkspur",
+            "Orchard", "Birchall", "Yewdale", "Dovecote", "Bracken", "Heronshaw", "Thistledown", "Hazelrigg",
+            "Otterbourne", "Meadowsweet", "Hawkridge", "Nettlefold", "Burdock", "Woodruff", "Briarwood", "Hemlock",
+            // Places
+            "Thornefell", "Coldwater", "Dunmore", "Hartwell", "Oakhurst", "Underhill", "Aldermoor", "Applegarth",
+            "Barrowby", "Crowhurst", "Eastmere", "Fenwick", "Harrowgate", "Kettleby", "Norwood", "Ravensworth",
+            "Sedgewick", "Stroud", "Umberlow", "Redcliffe", "Longbarrow", "Holmfirth", "Deepdale", "Caldbeck",
+            // Trades
+            "Quill", "Tallow", "Dray", "Millrace", "Tanner", "Wainwright", "Fletcher", "Cooper",
+            "Chandler", "Mercer", "Wheeler", "Weaver", "Collier", "Draper", "Farrier", "Pargeter",
+            "Ostler", "Arkwright", "Lorimer", "Falconer", "Hayward", "Harper", "Carver", "Naylor",
+            // Old family names
+            "Greymantle", "Vance", "Ferris", "Marrow", "Ellery", "Lindqvist", "Pellam", "Cobbett",
+            "Ingram", "Penhallow", "Varley", "Whitlock", "Tremaine", "Selwyn", "Wyndham", "Devlin",
+            "Isherwood", "Jarvis", "Lovell", "Merrick", "Osgood", "Bellamy", "Everard", "Gresham",
         ),
         // In-run workshop tools (PROPOSED): the gold sink of a run. Costs are per level.
         tools = listOf(

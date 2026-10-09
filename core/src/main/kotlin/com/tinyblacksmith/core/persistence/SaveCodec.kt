@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.LegacyProfile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
@@ -55,10 +56,43 @@ object SaveCodec {
         // converted: the number rises so that an older build refuses a save it would otherwise read as corrupt.
         2 to { it },
         // Schema 4 adds the counter's memory of each hero (visits, purchases, turned-away streak, arrival day), all defaulted:
-        // a hero written before them starts as a newcomer with no streak. Nothing stored is converted.
-        3 to { it },
+        // a hero written before them starts as a newcomer with no streak. Its one conversion gives lineages their IDs.
+        3 to { linkDescendants(it) },
     )
-    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 3 to { it })
+    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 3 to { json.parseToJsonElement(it).jsonObject.let { l -> identifyLineages(l).takeIf { n -> n != l }?.toString() ?: it } })
+
+    private fun text(o: JsonObject, key: String): String? = (o[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
+
+    /**
+     * From schema 4 a descendant is matched to a lineage by ID. A lineage written before had none; at most one is founded
+     * per era, so each takes "era<N>". The legacy document and the copy a run carries get the same IDs.
+     */
+    private fun identifyLineages(legacy: JsonObject): JsonObject {
+        val lineages = legacy["lineages"] as? JsonArray ?: return legacy
+        if (lineages.all { !text(it.jsonObject, "id").isNullOrEmpty() }) return legacy
+        return JsonObject(legacy + ("lineages" to JsonArray(lineages.map { a ->
+            val o = a.jsonObject
+            if (!text(o, "id").isNullOrEmpty()) o else JsonObject(o + ("id" to JsonPrimitive("era${(o["era"] as? JsonPrimitive)?.intOrNull ?: 0}")))
+        })))
+    }
+
+    /**
+     * A hero already in town who was recorded as somebody's descendant is linked to the latest lineage of that
+     * ancestor's name: the last time a name decides kinship, done once so that the engine never has to.
+     */
+    private fun linkDescendants(payload: String): String {
+        val run = json.parseToJsonElement(payload).jsonObject
+        val legacy = run["legacy"] as? JsonObject ?: return payload
+        val heroes = run["heroes"] as? JsonObject ?: return payload
+        val identified = identifyLineages(legacy)
+        val lineages = (identified["lineages"] as? JsonArray).orEmpty().map { it.jsonObject }
+        val linked = heroes.mapValues { (_, h) ->
+            val o = h.jsonObject
+            val id = text(o, "descendantOf")?.let { name -> lineages.lastOrNull { text(it, "heroName") == name } }?.let { text(it, "id") }
+            if (id == null || text(o, "lineageId") != null) h else JsonObject(o + ("lineageId" to JsonPrimitive(id)))
+        }
+        return if (identified == legacy && linked == heroes) payload else JsonObject(run + ("legacy" to identified) + ("heroes" to JsonObject(linked))).toString()
+    }
 
     /** Every schema-1 run was written by a build that had balance 5 and did not yet record it (0 = untracked). */
     private const val BALANCE_BEFORE_TRACKING = 5

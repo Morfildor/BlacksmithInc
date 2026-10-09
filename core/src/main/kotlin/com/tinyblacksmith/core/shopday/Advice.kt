@@ -25,7 +25,7 @@ object Advice {
         val listed = state.listedWeapons()
         val stored = state.storedWeapons()
         fun alive(c: Commission) = state.heroes[c.buyerId]?.isAlive == true
-        val open = state.commissions.values.filter { alive(it) }.sortedWith(compareBy<Commission> { it.deadlineDay }.thenBy { it.id.value })
+        val open = state.commissions.values.filter { alive(it) }.sortedWith(compareBy<Commission> { it.deadlineDay }.thenBy(IdOrder.numeric) { it.id.value })
 
         if (state.day == 1 && state.weapons.isEmpty()) return Lead(LeadKind.FIRST_BLADE, count = state.aliveHeroes().size)
 
@@ -45,7 +45,7 @@ object Advice {
         val yesterday = state.lastResolution?.takeIf { it.day == state.day - 1 }
         val refusedOnPrice = yesterday?.browsers?.count { it.reason == VisitReason.TOO_EXPENSIVE || it.reason == VisitReason.OVERPRICED } ?: 0
         if (refusedOnPrice >= 2) {
-            val cheapest = listed.minWith(compareBy<Weapon> { it.listedPrice ?: 0 }.thenBy { it.id.value })
+            val cheapest = listed.minWith(compareBy<Weapon> { it.listedPrice ?: 0 }.thenBy(IdOrder.numeric) { it.id.value })
             return Lead(LeadKind.PRICES_TOO_HIGH, weaponId = cheapest.id, gold = cheapest.listedPrice, count = refusedOnPrice)
         }
 

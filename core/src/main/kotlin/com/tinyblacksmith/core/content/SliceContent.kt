@@ -123,7 +123,7 @@ object SliceContent {
             (FROST_BLOOM to SWORD) to 4, (FROST_BLOOM to AXE) to 1, (FROST_BLOOM to BOW) to 2,
             (STORMGLASS to BOW) to 5, (STORMGLASS to SWORD) to 2, (STORMGLASS to AXE) to -1,
         ),
-        firstNames = listOf("Mira", "Aldric", "Tessa", "Bram", "Ione", "Corvin", "Sable", "Edric", "Wren", "Halvard", "Nessa", "Orin", "Liora", "Garrick"),
-        surnames = listOf("Ashwood", "Thornefell", "Greymantle", "Vance", "Holloway", "Stonebrook", "Ferris", "Nightingale", "Marrow", "Kestrel"),
+        firstNames = listOf("Mira", "Aldric", "Tessa", "Bram", "Ione", "Corvin", "Sable", "Edric", "Wren", "Halvard", "Nerys", "Orin", "Liora", "Garrick", "Dagny"),
+        surnames = listOf("Oakhurst", "Thornefell", "Greymantle", "Vance", "Coldwater", "Stonebrook", "Ferris", "Nightingale", "Marrow", "Kestrel"),
     )
 }
