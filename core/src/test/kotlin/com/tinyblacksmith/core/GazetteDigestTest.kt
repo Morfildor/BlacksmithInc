@@ -80,7 +80,7 @@ class GazetteDigestTest {
         val story = d.stories.single()
         assertEquals(Kind.DEATH, story.kind)
         assertEquals("Thane Kestrel died", story.heading)
-        assertEquals("Thane Kestrel fell to an Ashclaw warchief. Iron Axe returned to the forge after Thane Kestrel died.", story.body)
+        assertEquals("They fell to an Ashclaw warchief. Iron Axe returned to the forge after Thane Kestrel died.", story.body)
     }
 
     @Test

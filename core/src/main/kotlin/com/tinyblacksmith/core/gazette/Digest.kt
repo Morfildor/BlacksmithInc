@@ -156,7 +156,9 @@ object GazetteDigest {
             val id = d.subjectIds.firstOrNull()
             val name = hero(id)
             val fate = ev.firstOrNull { it.type in fateTypes && id != null && id in it.subjectIds && it.id !in used }
-            val body = listOfNotNull(LegacyProse.display(d.text), fate?.let { LegacyProse.display(it.text) }).joinToString(" ")
+            // The record's own cause, as "They fell to ...", so the heading's name is not said twice.
+            val cause = if (name != null && d.text.startsWith("$name ")) "They ${d.text.removePrefix("$name ")}" else d.text
+            val body = listOfNotNull(LegacyProse.display(cause), fate?.let { LegacyProse.display(it.text) }).joinToString(" ")
             add(1, d, Story(Kind.DEATH, if (name != null) "$name died" else "A hero died", body, subjectIds = listOfNotNull(id), mandatory = true), fate)
         }
 
