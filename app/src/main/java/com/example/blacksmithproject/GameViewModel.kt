@@ -17,6 +17,8 @@ import com.example.blacksmithproject.data.Settings
 import com.example.blacksmithproject.data.SettingsStore
 import com.example.blacksmithproject.data.ShopDaySpeed
 import com.example.blacksmithproject.ui.ShopUi
+import com.example.blacksmithproject.ui.detail.StockAction
+import com.example.blacksmithproject.ui.detail.toCommand
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.shopday.ShopDayUiModel
 import com.example.blacksmithproject.ui.shopday.toUi
@@ -98,6 +100,8 @@ sealed interface UiState {
         val sheet: Sheet? = null,
         /** Where a blade just went (the shelf or storage), said once over the workshop; UI-only. */
         val notice: String? = null,
+        /** Raised by "Forge this" and "Use this recipe": the Forge then opens the step to choose next and scrolls to it. UI-only. */
+        val forgeReveal: Int = 0,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
     }
@@ -120,7 +124,7 @@ sealed interface UiState {
         val lastError: String? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
-        /** False where system back leaves the app: the Resume prompt and the day's first card. */
+        /** False where system back opens the main menu: the Resume prompt and the day's first card. */
         val backIsConsumed: Boolean get() = !resumed && (gazetteOpen || sheet != null || !position.isFirst)
     }
     /** The ended run stays stored, so this screen is rebuilt from it and the legacy row after any restart. */
@@ -160,6 +164,7 @@ class GameViewModel(
         val sheet: Sheet? = null,
         val lastError: String? = null,
         val notice: String? = null,
+        val forgeReveal: Int = 0,
         val loadFailure: SaveFailure? = null,
         /** True until the first load (and the hand-over of the old report key) has finished, and again during Retry. */
         val loading: Boolean = true,
@@ -252,7 +257,7 @@ class GameViewModel(
         }
         // Planning always arrives with the Shop's content: shopFor builds it before this is called, and now() checks.
         val planned = plan ?: planFor(run)
-        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice)
+        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -364,13 +369,13 @@ class GameViewModel(
         val asked = run.commissions[id] ?: return
         val augments = engine.content.materials(MaterialCategory.AUGMENT).filter { asked.element != null && it.element == asked.element }
         val augment = augments.firstOrNull { (run.materials[it.id] ?: 0) > 0 } ?: augments.firstOrNull()
-        edit { it.copy(dest = Dest.FORGE, draft = it.draft.copy(familyId = asked.familyId, augmentId = augment?.id ?: it.draft.augmentId, commissionId = id)) }
+        edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(familyId = asked.familyId, augmentId = augment?.id ?: it.draft.augmentId, commissionId = id)) }
     }
     /** "Forge this" on a standing want (the Shop's lead, "Who is buying", the Forge): the forge opens with the family the hero left without. */
-    fun forgeFamily(id: WeaponFamilyId) = edit { it.copy(dest = Dest.FORGE, draft = it.draft.copy(familyId = id, commissionId = null)) }
+    fun forgeFamily(id: WeaponFamilyId) = edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(familyId = id, commissionId = null)) }
     /** "Use this recipe" on a found signature in the journal: the forge opens on the whole recipe (`SignatureCatalog.recipe`). Nothing is forged. */
     fun useRecipe(recipe: Command.Forge) = edit {
-        it.copy(dest = Dest.FORGE, draft = ForgeDraft(recipe.mode, recipe.familyId, recipe.coreId, recipe.augmentId, recipe.catalystId, recipe.risk, recipe.technique))
+        it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = ForgeDraft(recipe.mode, recipe.familyId, recipe.coreId, recipe.augmentId, recipe.catalystId, recipe.risk, recipe.technique))
     }
     fun dismissReveal() = edit { it.copy(revealWeaponId = null) }
 
@@ -395,10 +400,37 @@ class GameViewModel(
 
     /** The notice has been shown; a newer one is left alone. */
     fun dismissNotice(shown: String) = local.update { if (it.notice == shown) it.copy(notice = null) else it }
-    fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet) }
-    fun closeSheet() = edit { it.copy(sheet = null) }
+    /** Opening or closing a sheet also puts away the last notice: it was about what was on screen before. */
+    fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet, notice = null) }
+    fun closeSheet() = edit { it.copy(sheet = null, notice = null) }
+
+    /**
+     * A stock change from a blade's sheet or a Storage row. Once it is saved the screen says what happened ([notice]).
+     * A blade that was listed, melted down or given away has left the place it was opened from, so its sheet closes
+     * (back to Storage when it was opened from there); after a new price, an unlisting or a hone the sheet stays on the blade.
+     */
+    fun stock(id: WeaponId, action: StockAction) {
+        val before = session.snapshot.value?.run ?: return
+        val was = before.weapons[id]
+        launch(Op.Dispatch(action.toCommand(id), before.runId)) {
+            val now = session.snapshot.value?.run ?: return@launch
+            val blade = now.weapons[id] ?: was ?: return@launch
+            val name = blade.name
+            val said = when (action) {
+                is StockAction.ListAt -> "$name is on the shelf at ${action.price} gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}."
+                is StockAction.SetPrice -> "$name now asks ${action.price} gold."
+                StockAction.Unlist -> "$name is back in storage, not for sale."
+                StockAction.Hone -> "$name was honed: quality ${was?.quality} to ${blade.quality}, condition ${was?.condition} to ${blade.condition}."
+                StockAction.Salvage -> "$name was melted down. 1 ${engine.content.material(blade.coreId).name} is back in your stock."
+                StockAction.Donate -> "$name went to the town watch. Armory ${before.town.armory} to ${now.town.armory}."
+            }
+            val leaves = action is StockAction.ListAt || action == StockAction.Salvage || action == StockAction.Donate
+            edit { it.copy(notice = said, sheet = if (leaves && it.sheet == Sheet.Item(id)) null else it.sheet) }
+        }
+    }
     fun dismissError() = edit { it.copy(lastError = null) }
-    fun dismissBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = session.snapshot.value?.run?.day, dest = Dest.SHOP) }
+    /** "Decide later" (and Back) on the blessing offer: the player stays where they were; the Shop's lead and End Day's note still say it waits. */
+    fun dismissBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = session.snapshot.value?.run?.day) }
     fun reopenBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = null) }
 
     // The shop day (plan 6.5). These move the saved position and what is open over it; only chooseBlessing issues a command.
@@ -467,7 +499,7 @@ class GameViewModel(
         val last = s.state.lastResolution ?: return
         if (s.resumed || !s.position.isLast) return
         // An offer still open was put off on the Blessing card: planning does not ask again today.
-        edit { it.copy(dest = Dest.SHOP, blessingOfferDismissedDay = if (s.state.pendingBlessingOffer.isNotEmpty()) s.state.day else it.blessingOfferDismissedDay) }
+        edit { it.copy(dest = Dest.SHOP, forgeReveal = 0, blessingOfferDismissedDay = if (s.state.pendingBlessingOffer.isNotEmpty()) s.state.day else it.blessingOfferDismissedDay) }
         viewModelScope.launch {
             session.run(Op.MoveCursor(DayCursor(last.commandId.value, DayCursor.Stage.DONE)))
             local.update { it.copy(dayId = null, sheet = null, gazetteOpen = false) }
@@ -477,7 +509,8 @@ class GameViewModel(
     /**
      * System back and a tap outside a dialog. Returns true when it was consumed. It never acknowledges a day: in the
      * shop day it closes what is open, else steps back one card (on the Blessing card it means "Decide later"), and on
-     * the first card or the Resume prompt it is not consumed. Away from Shop it returns to Shop; on Shop it leaves the app.
+     * the first card or the Resume prompt it is not consumed. Away from Shop it returns to Shop; on Shop it is not consumed.
+     * Where it is not consumed the screen opens the main menu, which changes nothing of the day or the run.
      */
     fun back(): Boolean {
         val day = shopDay()

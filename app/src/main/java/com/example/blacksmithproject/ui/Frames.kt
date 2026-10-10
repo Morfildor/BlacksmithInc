@@ -22,6 +22,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
@@ -37,10 +38,13 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -121,16 +125,40 @@ fun Modifier.forgeRow(): Modifier = background(ForgePanel, RowShape).border(1.dp
 
 private val RowShape = RoundedCornerShape(4.dp)
 
-/** Any action that is not the way forward: the same cut as the gold plate, as a bronze outline with gold lettering. At least 48 dp tall. */
+/**
+ * Any action that is not the way forward: the same cut as the gold plate, as a bronze outline with gold lettering. At least 48 dp tall.
+ * [detail] is a second, smaller line under the label, as on the gold plate.
+ */
 @Composable
-fun SecondaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun SecondaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, detail: String? = null) {
     OutlinedButton(
         onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small,
         border = BorderStroke(1.dp, if (enabled) Bronze else BronzeDeep),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = Gold),
         contentPadding = PaddingValues(horizontal = Space.md, vertical = Space.sm),
         modifier = modifier.heightIn(min = 48.dp),
-    ) { Text(text, textAlign = TextAlign.Center) }
+    ) {
+        if (detail == null) Text(text, textAlign = TextAlign.Center)
+        else Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
+            Text(detail, style = MaterialTheme.typography.labelSmall, color = if (enabled) Cream else LocalContentColor.current, textAlign = TextAlign.Center)
+        }
+    }
+}
+
+/** What a stock action just did, said inside the sheet it was done in (the workshop's own notice is under the sheet there). */
+@Composable
+fun NoticeLine(text: String, modifier: Modifier = Modifier) {
+    Text(
+        "✓ $text", style = MaterialTheme.typography.labelLarge, color = BuffGreen,
+        modifier = modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.xs).semantics { liveRegion = LiveRegionMode.Polite }.testTag("sheet_notice"),
+    )
+}
+
+/** The way back from a blade or a hero to the list it was opened from, pinned at the head of the sheet. */
+@Composable
+fun BackRow(text: String, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    TextButton(onClick = onBack, modifier = modifier.padding(horizontal = Space.xs).heightIn(min = 48.dp).testTag("sheet_back")) { Text("‹  $text", color = Gold) }
 }
 
 /**

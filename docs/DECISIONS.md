@@ -3661,3 +3661,25 @@ core rule and was not added.
   plate, which is already short of height on a small screen.
 - Closing the result with Back or a tap outside still stores the blade (the blade is in storage from the moment it is forged);
   it now says so.
+
+## Navigation and action hierarchy: the second UI/UX batch (2026-10-10; no balance, rules, schema or content change)
+
+Checked against the source first (reviews A: P1-4, P1-5; B: structure 2 and 3, B.5): destinations lost scroll and the open
+step on every switch; Back left the app from the Shop, the first day card and the Resume prompt; the Forge scrolled itself on
+entry; End Day was a gold plate 4 dp over the bar on all four destinations; Storage and a blade were two stacked sheets.
+
+- **Where state lives (ENGINEERING).** Scroll positions and the Forge's open step stay screen state, kept by a
+  `SaveableStateHolder` per destination inside one per run and day in `App.kt` (so the menu round trip keeps them and a new
+  day starts each destination at its top). The ViewModel gained only `forgeReveal`, a counter "Forge this" and "Use this
+  recipe" raise so the Forge shows the next step on purpose; it is reset with the day.
+- **Back (PROPOSED).** `GameViewModel.back()` keeps its contract (false where it is not consumed); the screens now open the
+  main menu on false instead of leaving the app. The menu changes nothing: an unwatched day keeps its card and its cursor.
+- **After a stock action (PROPOSED).** One rule: the sheet closes when the blade has left the place it was opened from (List,
+  Salvage, Arm the watch) and stays otherwise (Set price, Unlist, Hone). `GameViewModel.stock` closes it deliberately and sets
+  the notice; under a sheet the notice is a line in the sheet, elsewhere the workshop's snackbar. Opening or closing a sheet
+  puts an older notice away.
+- **End Day (PROPOSED).** Shop and Forge only; gold on the Shop, outline on the Forge; 16 dp over the bar. The lead card's
+  button is an outline with an arrow, so the Shop's gold is End Day and a request's Accept.
+- **Written to merge.** The branch `gameplay-depth` edits the same files; lines it changed (the `ShopPanel` call, End Day's
+  note, `StockEditor`, `ForgeSummary`) were left as they were. For that reason Supplies was not added to the pinned
+  missing-material note in `ForgeSummary`; it is beside the out-of-stock line in the steps instead.

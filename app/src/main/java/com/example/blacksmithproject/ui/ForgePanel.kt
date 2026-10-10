@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -85,7 +86,9 @@ private const val NO_STEP = "none"
 /**
  * Forge flow (GDD 12): the preview and the Forge button stay pinned above the choices, so the player always sees
  * what they are making. Choices are steps; the first unfinished step is open and picking advances to the next,
- * which keeps familiar recipes to three taps.
+ * which keeps familiar recipes to three taps. The open step and the scroll position are kept while the player is on
+ * another destination. A step scrolls into view only after something the player did (a step or a chip tapped here,
+ * "Forge this" elsewhere), never on arriving: the top of the list, with Supplies and Journal, stays where it was left.
  */
 @Composable
 fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, tip: Tips.Tip?, onOpenSupplies: () -> Unit = {}) {
@@ -113,10 +116,18 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
             else -> NO_STEP
         }
         val open = opened ?: firstUnfinished
-        fun toggle(id: String) { opened = if (open == id) NO_STEP else id }
-        fun pick(transform: (ForgeDraft) -> ForgeDraft) { vm.updateDraft(transform); opened = null }
+        // Not saved: coming back to the Forge starts with it off, so nothing moves until the player acts.
+        var follow by remember { mutableStateOf(false) }
+        fun toggle(id: String) { opened = if (open == id) NO_STEP else id; follow = true }
+        fun pick(transform: (ForgeDraft) -> ForgeDraft) { vm.updateDraft(transform); opened = null; follow = true }
+        // "Forge this" or "Use this recipe" was tapped since this panel last looked: show the step to choose next.
+        var revealed by rememberSaveable { mutableIntStateOf(0) }
+        LaunchedEffect(s.forgeReveal) {
+            if (s.forgeReveal > revealed) { opened = null; follow = true }
+            revealed = s.forgeReveal
+        }
 
-        val scroll = remember { ScrollState(0) }
+        val scroll = rememberScrollState()
         Column(Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = Space.md, vertical = Space.sm)) {
             tip?.let { TipBanner(it, vm) }
             Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.fillMaxWidth()) {
@@ -125,7 +136,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
             }
             Wanted(s, vm)
 
-            Step("mode", "Mode", if (d.mode == ForgeMode.QUICK) "Quick · ${config.quickForgeEnergy} energy" else "Advanced · ${config.advancedForgeEnergy} energy", open, scroll, ::toggle) {
+            Step("mode", "Mode", if (d.mode == ForgeMode.QUICK) "Quick · ${config.quickForgeEnergy} energy" else "Advanced · ${config.advancedForgeEnergy} energy", open, scroll, follow, ::toggle) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     ForgeMode.entries.forEachIndexed { i, mode ->
                         SegmentedButton(
@@ -143,7 +154,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
                 )
             }
 
-            Step("family", "Family", d.familyId?.let { content.family(it).name }, open, scroll, ::toggle) {
+            Step("family", "Family", d.familyId?.let { content.family(it).name }, open, scroll, follow, ::toggle) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                     content.families.forEach { f ->
                         val previewCore = d.coreId ?: content.materials(MaterialCategory.CORE).first().id
@@ -157,17 +168,17 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
                     }
                 }
             }
-            Step("core", "Core metal", d.coreId?.let { content.material(it).name }, open, scroll, ::toggle) {
-                MaterialChips(MaterialCategory.CORE, d.coreId, s, vm) { id -> pick { it.copy(coreId = id) } }
+            Step("core", "Core metal", d.coreId?.let { content.material(it).name }, open, scroll, follow, ::toggle) {
+                MaterialChips(MaterialCategory.CORE, d.coreId, s, vm, onOpenSupplies = onOpenSupplies) { id -> pick { it.copy(coreId = id) } }
             }
-            Step("augment", "Augment", d.augmentId?.let { content.material(it).name }, open, scroll, ::toggle) {
-                MaterialChips(MaterialCategory.AUGMENT, d.augmentId, s, vm) { id -> pick { it.copy(augmentId = id) } }
+            Step("augment", "Augment", d.augmentId?.let { content.material(it).name }, open, scroll, follow, ::toggle) {
+                MaterialChips(MaterialCategory.AUGMENT, d.augmentId, s, vm, onOpenSupplies = onOpenSupplies) { id -> pick { it.copy(augmentId = id) } }
             }
             if (d.mode == ForgeMode.ADVANCED) {
-                Step("catalyst", "Catalyst", d.catalystId?.let { content.material(it).name } ?: "None", open, scroll, ::toggle) {
-                    MaterialChips(MaterialCategory.CATALYST, d.catalystId, s, vm, noneLabel = "None") { id -> pick { it.copy(catalystId = id) } }
+                Step("catalyst", "Catalyst", d.catalystId?.let { content.material(it).name } ?: "None", open, scroll, follow, ::toggle) {
+                    MaterialChips(MaterialCategory.CATALYST, d.catalystId, s, vm, noneLabel = "None", onOpenSupplies = onOpenSupplies) { id -> pick { it.copy(catalystId = id) } }
                 }
-                Step("technique", "Technique", d.technique?.let { Labels.technique(it) } ?: "Plain", open, scroll, ::toggle) {
+                Step("technique", "Technique", d.technique?.let { Labels.technique(it) } ?: "Plain", open, scroll, follow, ::toggle) {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                         FilterChip(selected = d.technique == null, onClick = { pick { it.copy(technique = null) } }, label = { Text("Plain") }, modifier = Modifier.heightIn(min = 48.dp))
                         Technique.entries.forEach { t ->
@@ -177,7 +188,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
                     d.technique?.let { Secondary(Labels.techniqueExplanation(it), Modifier.padding(top = Space.sm)) }
                 }
             }
-            Step("risk", "Risk", Labels.risk(d.risk).substringBefore(" —"), open, scroll, ::toggle) {
+            Step("risk", "Risk", Labels.risk(d.risk).substringBefore(" —"), open, scroll, follow, ::toggle) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     Risk.entries.forEachIndexed { i, r ->
                         SegmentedButton(
@@ -332,14 +343,14 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
 
 /** One step of the recipe: a header that always shows the chosen value, and the choices when open. */
 @Composable
-private fun Step(id: String, label: String, value: String?, open: String, scroll: ScrollState, onToggle: (String) -> Unit, choices: @Composable () -> Unit) {
+private fun Step(id: String, label: String, value: String?, open: String, scroll: ScrollState, follow: Boolean, onToggle: (String) -> Unit, choices: @Composable () -> Unit) {
     val isOpen = open == id
     val requester = remember { BringIntoViewRequester() }
     var height by remember { mutableIntStateOf(0) }
     // Re-requested when the opened choices are laid out. The rect is capped to the viewport so a step taller than
     // it (large fonts, small screens) aligns its header at the top instead of its last chip at the bottom.
-    LaunchedEffect(isOpen, height) {
-        if (isOpen && height > 0) requester.bringIntoView(Rect(0f, 0f, 0f, minOf(height, scroll.viewportSize - 1).toFloat()))
+    LaunchedEffect(isOpen, height, follow) {
+        if (isOpen && follow && height > 0) requester.bringIntoView(Rect(0f, 0f, 0f, minOf(height, scroll.viewportSize - 1).toFloat()))
     }
     Column(Modifier.fillMaxWidth().padding(top = Space.sm).bringIntoViewRequester(requester).onSizeChanged { height = it.height }) {
         Row(
@@ -369,6 +380,7 @@ private fun MaterialChips(
     s: UiState.Playing,
     vm: GameViewModel,
     noneLabel: String? = null,
+    onOpenSupplies: () -> Unit = {},
     onPick: (MaterialId?) -> Unit,
 ) {
     val materials = vm.engine.content.materials(category)
@@ -401,6 +413,8 @@ private fun MaterialChips(
     }
     if (missing.isNotEmpty()) {
         Secondary("Out of stock: ${missing.joinToString { it.name }}. Buy more in Supplies.", Modifier.padding(top = Space.sm))
+        // Beside the reason, not only at the top of the list: the recipe and this place are still here after buying.
+        SecondaryActionButton("Open Supplies", onOpenSupplies, Modifier.padding(top = Space.xs).testTag("forge_supplies_${category.name.lowercase()}"))
     }
 }
 

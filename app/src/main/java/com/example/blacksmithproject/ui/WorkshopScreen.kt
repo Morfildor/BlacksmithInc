@@ -39,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,8 +61,11 @@ import com.example.blacksmithproject.RecordsPage
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.detail.HeroDetailContent
 import com.example.blacksmithproject.ui.detail.HeroDetailSheet
+import com.example.blacksmithproject.ui.detail.ItemDetailContent
 import com.example.blacksmithproject.ui.detail.ItemDetailSheet
+import com.example.blacksmithproject.ui.detail.StockAction
 import com.example.blacksmithproject.ui.detail.customerSnapshot
 import com.example.blacksmithproject.ui.detail.heroDetail
 import com.example.blacksmithproject.ui.detail.itemDetail
@@ -93,12 +97,17 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
     var storageOpen by rememberSaveable { mutableStateOf(false) }
     var suppliesOpen by rememberSaveable { mutableStateOf(false) }
-    // Back returns to Shop from any other destination; on Shop it is not handled here, so it leaves the app.
-    BackHandler(enabled = s.dest != Dest.SHOP) { vm.back() }
-    // Where a blade just went (listed from the forge result, or stored): said once, over whichever destination is open.
+    // Back returns to Shop from any other destination, and from Shop it opens the main menu. Sheets and dialogs are
+    // their own windows and take Back first.
+    BackHandler { if (!vm.back()) onMainMenu() }
+    // Each destination keeps its own scroll position and what is open in it while the player is somewhere else.
+    val positions = rememberSaveableStateHolder()
+    // What just happened to a blade (listed, stored, repriced, melted down): said once, over whichever destination is
+    // open. Under a sheet it could not be seen, so there the sheet says it and this waits.
+    val covered = storageOpen || s.sheet != null
     val notices = remember { SnackbarHostState() }
-    LaunchedEffect(s.notice) {
-        val notice = s.notice ?: return@LaunchedEffect
+    LaunchedEffect(s.notice, covered) {
+        val notice = s.notice?.takeIf { !covered } ?: return@LaunchedEffect
         try { notices.showSnackbar(notice, duration = SnackbarDuration.Long) } finally { vm.dismissNotice(notice) }
     }
     Scaffold(
@@ -107,11 +116,12 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
         },
         bottomBar = {
             Column {
-                EndDayButton(s, vm)
+                // End Day belongs to the two places the day is worked in; Town and Records get its height back.
+                if (s.dest == Dest.SHOP || s.dest == Dest.FORGE) EndDayButton(s, vm, primary = s.dest == Dest.SHOP)
                 DestinationBar(s.dest, vm::selectDest)
             }
         },
-    ) { padding ->
+    ) { padding -> positions.SaveableStateProvider(s.dest) {
         Column(Modifier.padding(padding).fillMaxSize()) {
             TopBar(s, onSettings = { settingsOpen = true })
             HorizontalDivider(color = Bronze)
@@ -144,21 +154,24 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                 Dest.TOWN -> TownPanel(s, vm)
             }
         }
-    }
+    } }
     val haptics by vm.settings.haptics.collectAsStateWithLifecycle(initialValue = false)
     if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, haptics, vm::setHaptics, onDismiss = { settingsOpen = false }, onMainMenu = { settingsOpen = false; onMainMenu() })
     if (storageOpen) {
         StorageSheet(
             s.shop.storage, shelfFree = s.shop.slots - s.shop.shelf.size, busy = s.busy,
             onOpenBlade = { vm.openSheet(Sheet.Item(it)) },
-            onList = { id, price -> vm.dispatch(Command.ToggleShelf(id, true, price)) },
-            onDismiss = { storageOpen = false },
+            onList = { id, price -> vm.stock(id, StockAction.ListAt(price)) },
+            onDismiss = { storageOpen = false; vm.closeSheet() },
             terms = with(vm.engine.config) { BulkTerms(salvageEnergy, state.energy, maxOverworkPerDay - state.overworkToday, armoryMax - state.town.armory) },
             onBulk = { action, ids -> vm.dispatchAll(ids.map { action.toCommand(it) }) },
+            notice = s.notice,
+            // A blade opened from the list is shown in this same sheet, not in a second one over it.
+            detail = s.sheet?.let { sheet -> { DetailSheet(s, sheet, vm, inStorage = true) } }, onBack = vm::closeSheet,
         )
     }
     if (suppliesOpen) SuppliesSheet(s, vm, onDismiss = { suppliesOpen = false })
-    s.sheet?.let { DetailSheet(s, it, vm) }
+    if (!storageOpen) s.sheet?.let { DetailSheet(s, it, vm) }
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)
     s.lastError?.let { ErrorDialog(it, vm::dismissError) }
@@ -167,24 +180,27 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
 /**
  * The open hero or blade sheet, rebuilt from the save on every change. One that has left the save opens from the last
  * day's record; with neither, the sheet closes. Stock can be changed here while no day report is on screen.
+ * [inStorage]: only the body, for the Storage sheet that is already open ("Back to storage" then returns to its list).
  */
 @Composable
-private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel) {
+private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inStorage: Boolean = false) {
     val st = s.state
     val openHero = { id: HeroId -> vm.openSheet(Sheet.Hero(id)) }
     when (sheet) {
         is Sheet.Hero -> {
             val detail = remember(st, sheet) { vm.engine.heroDetail(st, sheet.id, st.lastResolution?.takeIf { sheet.id !in st.heroes }?.customerSnapshot(sheet.id)) }
             if (detail == null) LaunchedEffect(sheet) { vm.closeSheet() }
+            else if (inStorage) HeroDetailContent(detail, openHero, onOpenItem = { vm.openSheet(Sheet.Item(it)) }, onDismiss = vm::closeSheet, closeLabel = "Back to storage")
             else HeroDetailSheet(detail, openHero, onOpenItem = { vm.openSheet(Sheet.Item(it)) }, onDismiss = vm::closeSheet)
         }
         is Sheet.Item -> {
             val detail = remember(st, sheet) { vm.engine.itemDetail(st, sheet.id, st.lastResolution?.takeIf { sheet.id !in st.weapons }?.weaponSnapshot(sheet.id)) }
             if (detail == null) LaunchedEffect(sheet) { vm.closeSheet() }
+            else if (inStorage) ItemDetailContent(detail, planning = true, openHero, onStock = { vm.stock(sheet.id, it) }, onDismiss = vm::closeSheet, enabled = !s.busy, closeLabel = "Back to storage")
             else ItemDetailSheet(
                 detail, planning = true, openHero,
-                onStock = { vm.dispatch(it.toCommand(sheet.id)) },
-                onDismiss = vm::closeSheet, enabled = !s.busy,
+                onStock = { vm.stock(sheet.id, it) },
+                onDismiss = vm::closeSheet, enabled = !s.busy, notice = s.notice,
             )
         }
     }
@@ -268,9 +284,12 @@ fun TipBanner(tip: Tips.Tip, vm: GameViewModel, modifier: Modifier = Modifier) {
     }
 }
 
-/** The single rest action with its contextual sublabel (GDD 12 "End Day with contextual warning"). */
+/**
+ * The single rest action with its contextual sublabel (GDD 12 "End Day with contextual warning"). [primary]: the gold
+ * plate, on the Shop; on the Forge, where "Forge weapon" is the way forward, the same action as an outline.
+ */
 @Composable
-private fun EndDayButton(s: UiState.Playing, vm: GameViewModel) {
+private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean) {
     val state = s.state
     val haptics = LocalHaptics.current
     val note = when {
@@ -280,11 +299,11 @@ private fun EndDayButton(s: UiState.Playing, vm: GameViewModel) {
         state.energy > 0 -> "${state.energy} energy unused"
         else -> "Rest until dawn"
     }
-    PrimaryActionButton(
-        "End Day", { haptics.play(Moment.END_DAY); vm.endDay() },
-        Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.xs).testTag("end_day"),
-        enabled = !s.busy, detail = note,
-    )
+    // Clear of the destination bar under it: this is the one tap of the day that cannot be taken back.
+    val place = Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.xs, bottom = Space.md).testTag("end_day")
+    val end = { haptics.play(Moment.END_DAY); vm.endDay() }
+    if (primary) PrimaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)
+    else SecondaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)
 }
 
 @Composable

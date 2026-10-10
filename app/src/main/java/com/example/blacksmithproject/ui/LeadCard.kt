@@ -26,7 +26,8 @@ fun leadActionLabel(kind: LeadKind): String? = when (kind) {
 
 /**
  * The one lead of the day and its reason, the same words as the Tomorrow card of the day before (`Advice.lead`), with
- * one button that goes where the lead is acted on.
+ * one button that goes where the lead is acted on. It leads somewhere, so it is an outline with an arrow; the gold plate
+ * is kept for the thing that is done (Accept, Forge weapon, End Day).
  */
 @Composable
 fun LeadCard(lead: LeadUi, onAct: () -> Unit, modifier: Modifier = Modifier) {
@@ -35,7 +36,7 @@ fun LeadCard(lead: LeadUi, onAct: () -> Unit, modifier: Modifier = Modifier) {
         Text(lead.action, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = Space.xs).semantics { heading() }.testTag("shop_lead"))
         lead.reason?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = Space.xs).testTag("shop_lead_reason")) }
         leadActionLabel(lead.kind)?.let { label ->
-            PrimaryActionButton(label, onAct, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("shop_lead_action"))
+            SecondaryActionButton("$label  ›", onAct, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("shop_lead_action"))
         }
     }
 }

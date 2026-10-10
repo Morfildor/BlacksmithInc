@@ -32,6 +32,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.Labels
+import com.example.blacksmithproject.ui.NoticeLine
 import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.Secondary
 import com.example.blacksmithproject.ui.Sprites
@@ -255,6 +256,8 @@ fun ItemDetailSheet(
     onDismiss: () -> Unit,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
+    /** What the last stock change did, said at the head of the sheet. */
+    notice: String? = null,
 ) {
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     ModalBottomSheet(
@@ -262,7 +265,12 @@ fun ItemDetailSheet(
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },   // the handle is a target too: 48 dp, not the default 32
         modifier = modifier.semantics { testTagsAsResourceId = true }.testTag("item_sheet"),
-    ) { ItemDetailContent(detail, planning, onOpenHero, onStock, onDismiss, enabled) }
+    ) {
+        Column {
+            notice?.let { NoticeLine(it) }
+            ItemDetailContent(detail, planning, onOpenHero, onStock, onDismiss, enabled)
+        }
+    }
 }
 
 /** The body of the blade sheet: one scrolling column, usable outside a sheet (the shop day's overlay, tests). */
@@ -275,6 +283,7 @@ fun ItemDetailContent(
     onDismiss: () -> Unit,
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
+    closeLabel: String = "Close",
 ) {
     Column(modifier.fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
         WeaponStatCard(detail)
@@ -303,7 +312,7 @@ fun ItemDetailContent(
 
         SheetSection("History")
         Column(Modifier.testTag("sheet_history")) { Lines(detail.history, "Its story has not been written yet.") }
-        OutlinedButton(onClick = onDismiss, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close")) { Text("Close") }
+        OutlinedButton(onClick = onDismiss, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close")) { Text(closeLabel) }
     }
 }
 

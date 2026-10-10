@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +64,20 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
     var menuSettings by remember { mutableStateOf(false) }
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
     val leaveMenu = { menuOpen = false }
+    // What the workshop and the shop day remember on screen (scroll positions, the open forge step, an open sheet)
+    // outlives a visit to the menu. It is kept per day: a new day opens each destination at its top.
+    val screens = rememberSaveableStateHolder()
+    var kept by rememberSaveable { mutableStateOf<String?>(null) }
+    val play = when (val s = ui) {
+        is UiState.Playing -> "plan:${s.state.runId.value}:${s.state.day}"
+        is UiState.ShopDay -> "day:${s.state.runId.value}:${s.state.day}"
+        else -> null
+    }
+    LaunchedEffect(play) {
+        if (play == null || play == kept) return@LaunchedEffect
+        kept?.let(screens::removeState)
+        kept = play
+    }
     // Test tags double as Android resource IDs for uiautomator scripts (tools/emulator).
     CompositionLocalProvider(LocalHaptics provides haptics) {
         Surface(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }, color = MaterialTheme.colorScheme.background) {
@@ -70,8 +85,8 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
                 UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 is UiState.LoadFailed -> LoadFailedScreen(s.failure, s.working, onRetry = vm::retry, onStartOver = vm::startOver)
                 is UiState.Title -> MainMenu("Era ${s.legacy.nextEra} awaits", s.legacy, "New game", "title_new_run", s.op !is GameSession.Status.Working, onPrimary = { leaveMenu(); vm.newRun() }, onSettings = { menuSettings = true })
-                is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", !s.busy, leaveMenu, { menuSettings = true }, onAbandon = vm::abandonRun) else WorkshopScreen(s, vm, onMainMenu = { menuOpen = true })
-                is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }) else ShopDayHost(s, vm)
+                is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", !s.busy, leaveMenu, { menuSettings = true }, onAbandon = vm::abandonRun) else screens.SaveableStateProvider(play!!) { WorkshopScreen(s, vm, onMainMenu = { menuOpen = true }) }
+                is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }) else screens.SaveableStateProvider(play!!) { ShopDayHost(s, vm, onMainMenu = { menuOpen = true }) }
                 is UiState.RunEnded -> if (menuOpen) MainMenu("Era ${s.run.era} has ended", s.legacy, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }) else RunEndScreen(s, vm)
             }
             if (menuSettings) SettingsSheet(reducedMotion, vm::setReducedMotion, hapticsOn, vm::setHaptics, onDismiss = { menuSettings = false })

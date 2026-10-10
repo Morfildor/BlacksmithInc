@@ -339,6 +339,27 @@ Screenshots: `docs/ui_review_2026-10-10/improvement_1/` (a selection; the file n
   running scenario script will have failed in between. Later `./gradlew --stop` was run once, which also stops idle Gradle
   daemons of other sessions.
 
+## UI/UX improvement 2: navigation and action hierarchy (2026-10-10, evening; committed on `main`)
+Built in the worktree `.claude/worktrees/ui-nav` (branch `ui-navigation`) while `gameplay-depth` was being worked on
+elsewhere. What changed is in `CHANGELOG.md` under `[Unreleased]`; the reasons are in `docs/DECISIONS.md` ("Navigation and
+action hierarchy"). No balance, rules, save or content version changed.
+
+**Checks.** Emulator: a separate read-only instance (AVD `carbscan`, API 36, port 5556, 1080x1920, density 420, font 1.0).
+| Check | Result |
+|---|---|
+| App JVM tests (`:app:testDebugUnitTest`) | 133 pass (128 + five in `NavigationTest`: the draft across destinations and "Forge this", Back's order, a blessing put off, Back on the first card and the Resume prompt, the six stock actions) |
+| Device tests, five classes only (`NavigationFlowTest`, `ShopPanelTest`, `DetailSheetTest`, `ShopDayPersistenceTest`, `LayoutMatrixTest`) | 19 of 19. New, `NavigationFlowTest`: Shop scroll kept across Forge, Back and the menu; the Forge's draft and open step kept and End Day absent on Town and Records; a blade inside the Storage sheet, Back to the same list, List and Salvage returning to it with the line; Back on a day's first card opening the menu with the day unacknowledged |
+
+**Not verified, and limits.**
+- The full device suite, `:core:test`, lint, the release build and `smoke.sh` were not run for this batch (core is untouched).
+- Nobody looked at the screens: no screenshots at 411x731, 360x640 or with enlarged text. End Day's spacing, the outline End
+  Day on the Forge, the lead button and the "‹ Storage" row are untested by eye; the owner's hand test should cover them.
+- "Open Supplies, buy, return" was not run as a journey; Supplies is a sheet over the Forge, which stays composed under it.
+- Bulk salvage and bulk "Arm the watch" in Storage still say nothing afterwards.
+- Supplies is not on the pinned missing-material note (see DECISIONS); it is in the steps and at the top of the list.
+- Merging `gameplay-depth` will conflict in `WorkshopScreen.kt`, `GameViewModel.kt`, `StorageSheet.kt`, `ItemDetailSheet.kt`
+  and `CHANGELOG.md`; its `Sheet.Visitor` needs a branch in `DetailSheet`, and its relic dialog a place in Back's order.
+
 ## Next actions
 0. UI/UX improvement 1 (above) is committed and pushed on `main`: the owner looks at it, and it is still to be reconciled
    with `post-0.7.0`; a request blade's result card still needs a look in a live game.

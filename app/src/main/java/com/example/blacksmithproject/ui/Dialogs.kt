@@ -274,7 +274,9 @@ fun BlessingDialog(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     AlertDialog(
         modifier = Modifier.semantics { testTagsAsResourceId = true },
-        onDismissRequest = {},
+        // Back means "Decide later"; a tap beside the offer does nothing.
+        onDismissRequest = vm::dismissBlessingOffer,
+        properties = DialogProperties(dismissOnClickOutside = false),
         title = { Text("The town offers a blessing") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {

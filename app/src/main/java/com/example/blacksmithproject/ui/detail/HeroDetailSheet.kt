@@ -177,7 +177,7 @@ fun HeroDetailSheet(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem
 
 /** The body of the hero sheet: one scrolling column, usable outside a sheet (the shop day's overlay, tests). */
 @Composable
-fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier, closeLabel: String = "Close") {
     Column(modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
         FramedPanel(modifier = Modifier.fillMaxWidth()) {
             Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
@@ -199,6 +199,6 @@ fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenIt
         Lines(detail.shop, "Nothing between you yet.")
         SheetSection("Recent events")
         Lines(detail.events, "The town's records say nothing of late.")
-        OutlinedButton(onClick = onDismiss, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close")) { Text("Close") }
+        OutlinedButton(onClick = onDismiss, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close")) { Text(closeLabel) }
     }
 }

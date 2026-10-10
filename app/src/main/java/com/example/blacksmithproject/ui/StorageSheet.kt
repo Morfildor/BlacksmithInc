@@ -1,5 +1,6 @@
 package com.example.blacksmithproject.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,7 +11,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
@@ -84,7 +87,11 @@ private val FilterSaver = listSaver<StorageFilter, String>(
     restore = { v -> StorageFilter(v[0].ifEmpty { null }, Rarity.entries.firstOrNull { it.name == v[1] }, v[2].toBoolean(), StorageSort.entries.firstOrNull { it.name == v[3] } ?: StorageSort.STORED) },
 )
 
-/** Storage as a bottom sheet over the Shop. A blade's own sheet opens over it, so Back returns here. */
+/**
+ * Storage as a bottom sheet over the Shop. A blade opened from the list is shown in this same sheet ([detail], under a
+ * "Storage" row that goes back, as system Back does); the list keeps its filters, its order and its place meanwhile.
+ * [notice] is what the last stock change did.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StorageSheet(
@@ -93,14 +100,25 @@ fun StorageSheet(
     // Remembered here, in the composition that opens the sheet, not inside the sheet's own window: there the order did
     // not come back when the sheet was restored (ShopDayPersistenceTest). Closing the sheet still forgets it.
     filterState: MutableState<StorageFilter> = rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(StorageFilter()) },
+    notice: String? = null, detail: (@Composable () -> Unit)? = null, onBack: () -> Unit = {},
 ) {
+    val listState = rememberLazyListState()
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
         modifier = modifier.semantics { testTagsAsResourceId = true }.testTag("storage_sheet"),
-    ) { StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk, filterState = filterState) }
+    ) {
+        Column {
+            if (detail != null) {
+                BackHandler(onBack = onBack)
+                BackRow("Storage", onBack)
+            }
+            notice?.let { NoticeLine(it) }
+            if (detail != null) detail() else StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk, filterState = filterState, listState = listState)
+        }
+    }
 }
 
 /**
@@ -114,6 +132,7 @@ fun StorageList(
     storage: List<StockUi>, shelfFree: Int, busy: Boolean, onOpenBlade: (WeaponId) -> Unit, onList: (WeaponId, Int) -> Unit, modifier: Modifier = Modifier,
     terms: BulkTerms? = null, onBulk: (StockAction, List<WeaponId>) -> Unit = { _, _ -> },
     filterState: MutableState<StorageFilter> = rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(StorageFilter()) },
+    listState: LazyListState = rememberLazyListState(),
 ) {
     var filter by filterState
     var selecting by rememberSaveable { mutableStateOf(false) }
@@ -125,7 +144,7 @@ fun StorageList(
     val select = selecting && terms != null
 
     Column(modifier.fillMaxWidth().navigationBarsPadding()) {
-        LazyColumn(Modifier.weight(1f, fill = false).fillMaxWidth().testTag("storage_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, bottom = Space.lg)) {
+        LazyColumn(Modifier.weight(1f, fill = false).fillMaxWidth().testTag("storage_list"), state = listState, contentPadding = PaddingValues(start = Space.md, end = Space.md, bottom = Space.lg)) {
             item(key = "head") {
                 Column(Modifier.padding(bottom = Space.sm)) {
                     Text(if (shown.size == storage.size) "Storage · ${storage.size}" else "Storage · ${shown.size} of ${storage.size}", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })

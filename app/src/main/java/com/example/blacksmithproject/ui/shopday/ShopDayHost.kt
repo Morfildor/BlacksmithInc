@@ -35,7 +35,7 @@ import com.example.blacksmithproject.Beat as Card
  * the Gazette and a fight replay open over it. It shows a resolved day; it decides nothing and draws nothing.
  */
 @Composable
-fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel) {
+fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel, onMainMenu: () -> Unit = {}) {
     val engine = vm.engine
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
     val model = s.model
@@ -51,7 +51,9 @@ fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel) {
     LaunchedEffect(coaching, atFirstVisit) { if (coaching && atFirstVisit) coached = true else if (coaching && coached) vm.dismissTip(Tips.COUNTER.id) }
     val replay = watching?.let { id -> day?.replays?.firstOrNull { if (id.isEmpty()) it.kind == ReplayKind.SIEGE else it.eventId == id } }
 
-    BackHandler(enabled = s.backIsConsumed || replay != null) { if (replay != null) watching = null else vm.back() }
+    // Back closes what is open, else steps back one card. On the first card and on the Resume prompt it opens the main
+    // menu: the day stays unwatched at the card it was left on, and "Continue run" comes back to it.
+    BackHandler { if (replay != null) watching = null else if (!vm.back()) onMainMenu() }
 
     if (s.resumed) {
         Box(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.Center) {

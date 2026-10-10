@@ -85,7 +85,7 @@ class ShopPanelTest {
         show(fresh)
         compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertTextEquals("Forge your first blade")
         compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals("${fresh.aliveHeroes().size} heroes in Emberfall and nothing on the shelf.")
-        compose.onNodeWithTag("shop_lead_action").assertTextEquals("Go to the forge")
+        compose.onNodeWithTag("shop_lead_action").assertTextEquals("Go to the forge  ›")
         assertTrue("the lead is the first thing under the counter", top("shop_counter") < top("shop_lead") && top("shop_lead") < top("shop_demand"))
         compose.onNodeWithTag("shop_requests", useUnmergedTree = true).assertDoesNotExist()
         compose.onNodeWithTag("shop_yesterday", useUnmergedTree = true).assertDoesNotExist()

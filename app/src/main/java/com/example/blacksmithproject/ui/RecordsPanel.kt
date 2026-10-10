@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.example.blacksmithproject.GameViewModel
@@ -18,7 +18,7 @@ import com.example.blacksmithproject.ui.theme.Space
 /**
  * Records: the Gazette ("News"), the experiment journal and the legacy page as three segments of one lazy list. Only
  * the selected segment is composed and its rows are keyed, so a long journal costs what is on screen. The list owns
- * its own scroll (it must not sit inside the workshop's scrolling column) and restarts at the top for each segment.
+ * its own scroll (it must not sit inside the workshop's scrolling column), and each segment keeps its own place.
  */
 @Composable
 fun RecordsPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier) {
@@ -27,7 +27,7 @@ fun RecordsPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
         SegmentRow(page, vm::selectRecords)
         LazyColumn(
             Modifier.fillMaxSize().testTag("records_list"),
-            state = remember(page) { LazyListState() },
+            state = rememberSaveable(page, saver = LazyListState.Saver) { LazyListState() },
             contentPadding = PaddingValues(bottom = Space.lg),
         ) {
             when (page) {
