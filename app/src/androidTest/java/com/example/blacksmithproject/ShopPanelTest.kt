@@ -12,6 +12,11 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasText
@@ -20,13 +25,16 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.blacksmithproject.ui.BulkTerms
 import com.example.blacksmithproject.ui.ShopPanel
+import com.example.blacksmithproject.ui.detail.toCommand
 import com.example.blacksmithproject.ui.ShopUi
 import com.example.blacksmithproject.ui.StorageList
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.shopday.Beat
 import com.example.blacksmithproject.ui.shopday.toUi
 import com.example.blacksmithproject.ui.theme.BlacksmithProjectTheme
+import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.GameState
@@ -164,5 +172,50 @@ class StorageSheetTest {
         compose.onNodeWithTag("storage_list").performScrollToIndex(250)
         compose.onNodeWithTag("stock_t250", useUnmergedTree = true).assertIsDisplayed()
         assertTrue(compose.onAllNodes(stockRow, useUnmergedTree = true).fetchSemanticsNodes().size <= 20)
+    }
+
+    /** Select three blades, Salvage: one question, and only its answer hands over the three, as one Salvage command each. */
+    @Test
+    fun bulkSalvageAsksOnceAndIssuesOneCommandPerBlade() {
+        val forged = ShopDayFixtures.run(42, 3).last().state
+        val blade = forged.weapons.values.first()
+        val stored = forged.copy(weapons = (1..5).associate { i -> WeaponId("t$i").let { it to blade.copy(id = it, name = "Blade $i", location = WeaponLocation.Storage) } })
+        val storage = engine.shopUi(stored).storage
+        val issued = mutableListOf<List<Command>>()
+        val opened = mutableListOf<WeaponId>()
+        compose.setContent {
+            BlacksmithProjectTheme {
+                Box(Modifier.size(360.dp, 640.dp)) {
+                    StorageList(
+                        storage, shelfFree = 8, busy = false, onOpenBlade = { opened += it }, onList = { _, _ -> },
+                        terms = BulkTerms(salvageEnergy = 1, energy = 10, overworkLeft = 4, armoryRoom = 30),
+                        onBulk = { action, ids -> issued += ids.map { action.toCommand(it) } },
+                    )
+                }
+            }
+        }
+        compose.onNodeWithTag("storage_bulk_salvage").assertDoesNotExist()
+        compose.onNodeWithTag("storage_select").performClick()
+        compose.onNodeWithTag("storage_bulk_salvage").assertIsNotEnabled()
+        for (id in listOf("t1", "t2", "t3")) compose.onNodeWithTag("stock_$id").performClick()
+        assertTrue("choosing a blade does not open it", opened.isEmpty())
+        compose.onNodeWithTag("stock_t2").assertIsOn()
+        compose.onNodeWithTag("stock_t4").assertIsOff()
+        compose.onNodeWithTag("storage_bulk_salvage").assertTextEquals("Salvage 3").performClick()
+        assertTrue("nothing is issued before the answer", issued.isEmpty())
+        compose.onNodeWithText("Salvage 3 blades?").assertIsDisplayed()
+        compose.onNodeWithTag("storage_bulk_confirm").performClick()
+        assertEquals(listOf(listOf("t1", "t2", "t3").map { Command.Salvage(WeaponId(it)) }), issued)
+        compose.onNodeWithText("Salvage 3 blades?").assertDoesNotExist()
+        // Asked once: nothing is left chosen, so the bar cannot fire again by itself.
+        compose.onNodeWithTag("storage_bulk_salvage").assertIsNotEnabled()
+
+        // "Select all shown" then the watch: the same single question.
+        compose.onNodeWithTag("storage_select_all").performClick()
+        compose.onNodeWithTag("storage_bulk_donate").assertTextEquals("Arm the watch 5").performClick()
+        compose.onNodeWithText("Give 5 blades to the town watch?").assertIsDisplayed()
+        compose.onNodeWithTag("storage_bulk_confirm").performClick()
+        assertEquals((1..5).map { Command.DonateWeapon(WeaponId("t$it")) }, issued.last())
+        assertEquals(2, issued.size)
     }
 }

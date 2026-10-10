@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -196,18 +198,22 @@ private fun DemandLine(row: DemandRow) {
  * One blade on the shelf or in storage: sprite, name in its rarity's colour, the item card's numbers in one line with
  * its buffs and flaws, who favours it, and its price. Tapping the row opens
  * the blade's sheet, where it is priced, listed, unlisted, salvaged, honed or given to the watch. A stored blade also
- * has the quick "List at" its suggested price ([onList]).
+ * has the quick "List at" its suggested price ([onList]). With [selected] set the row is a checkbox (Storage's
+ * "Select blades") and [onOpen] is the tap that flips it.
  */
 @Composable
-internal fun StockRow(stock: StockUi, busy: Boolean, onOpen: () -> Unit, onList: ((Int) -> Unit)?, modifier: Modifier = Modifier) {
+internal fun StockRow(stock: StockUi, busy: Boolean, onOpen: () -> Unit, onList: ((Int) -> Unit)?, modifier: Modifier = Modifier, selected: Boolean? = null) {
     val w = stock.weapon
     // With large text the quick "List at" goes under the blade: beside it, it would leave the name a few dp.
     val listBelow = LocalDensity.current.fontScale > 1.3f
     Column(
-        modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().clickable(onClickLabel = "Open ${w.name}", onClick = onOpen).testTag("stock_${w.id.value}").padding(horizontal = 12.dp, vertical = 10.dp)
-            .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${stock.summary}, ${stock.price?.let { "$it gold" } ?: "in storage"}.${stock.threat?.let { " ${it.label}." } ?: ""}${stock.dormant?.let { " $it" } ?: ""} Tap for details and price." },
+        modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow()
+            .then(if (selected == null) Modifier.clickable(onClickLabel = "Open ${w.name}", onClick = onOpen) else Modifier.toggleable(selected, role = Role.Checkbox, onValueChange = { onOpen() }))
+            .testTag("stock_${w.id.value}").padding(horizontal = 12.dp, vertical = 10.dp)
+            .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${stock.summary}, ${stock.price?.let { "$it gold" } ?: "in storage"}.${stock.threat?.let { " ${it.label}." } ?: ""}${stock.dormant?.let { " $it" } ?: ""}${if (selected == null) " Tap for details and price." else ""}" },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (selected != null) Checkbox(checked = selected, onCheckedChange = null)
             Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(2.dp)) { WeaponSprite(w, size = 44.dp) }
             Column(Modifier.weight(1f)) {
                 Text(w.name + (w.title?.let { " · \"$it\"" } ?: ""), style = MaterialTheme.typography.titleSmall, color = rarityColor(w.rarity))

@@ -8,6 +8,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
+- Storage can be narrowed and ordered: chips for the families and rarities that are in it, "Never sold" (blades no hero has carried), and As stored / Strongest / Weakest / Dearest. "Select blades" turns the rows into checkboxes, with "Select all shown"; the chosen blades can be salvaged or given to the town watch in one go. Each asks once and says what it costs; salvaging still costs energy per blade and stops when the day's energy and overwork are spent, and the watch stops taking blades when its armory is full.
 - The first time a customer comes to the counter, one line under the card says how the day is watched ("Tap anywhere to continue · Skip day jumps to the evening"). It goes once you move on and does not come back.
 - The Legend Board (Records, Legacy) tells each blade in full: its era, victories and fame, what was worked into it, who carried it and its story; an entry from before a blade's make was recorded says its properties are lost to time.
 - A signature's row in the Journal shows its clue ladder (recipe, catalyst, temper, finish): each clue earned in the journal's words, each one still missing as "not yet known". A found signature has "Use this recipe", which fills the forge with its family, metals, catalyst and temper.
