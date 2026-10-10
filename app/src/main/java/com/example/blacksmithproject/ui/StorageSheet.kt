@@ -23,6 +23,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -89,6 +90,9 @@ private val FilterSaver = listSaver<StorageFilter, String>(
 fun StorageSheet(
     storage: List<StockUi>, shelfFree: Int, busy: Boolean, onOpenBlade: (WeaponId) -> Unit, onList: (WeaponId, Int) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier,
     terms: BulkTerms? = null, onBulk: (StockAction, List<WeaponId>) -> Unit = { _, _ -> },
+    // Remembered here, in the composition that opens the sheet, not inside the sheet's own window: there the order did
+    // not come back when the sheet was restored (ShopDayPersistenceTest). Closing the sheet still forgets it.
+    filterState: MutableState<StorageFilter> = rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(StorageFilter()) },
 ) {
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     ModalBottomSheet(
@@ -96,7 +100,7 @@ fun StorageSheet(
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
         modifier = modifier.semantics { testTagsAsResourceId = true }.testTag("storage_sheet"),
-    ) { StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk) }
+    ) { StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk, filterState = filterState) }
 }
 
 /**
@@ -109,8 +113,9 @@ fun StorageSheet(
 fun StorageList(
     storage: List<StockUi>, shelfFree: Int, busy: Boolean, onOpenBlade: (WeaponId) -> Unit, onList: (WeaponId, Int) -> Unit, modifier: Modifier = Modifier,
     terms: BulkTerms? = null, onBulk: (StockAction, List<WeaponId>) -> Unit = { _, _ -> },
+    filterState: MutableState<StorageFilter> = rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(StorageFilter()) },
 ) {
-    var filter by rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(StorageFilter()) }
+    var filter by filterState
     var selecting by rememberSaveable { mutableStateOf(false) }
     // Not saved: thousands of IDs do not belong in a saved-state Bundle. A restored process starts with nothing chosen.
     var picked by remember { mutableStateOf(emptySet<WeaponId>()) }

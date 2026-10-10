@@ -108,8 +108,9 @@ class DetailSheetTest {
 
     /** The first node that says [text] (a name is also said by the records further down) can be scrolled to and is on screen. */
     private fun seen(text: String) = compose.onAllNodesWithText(text, substring = true).onFirst().performScrollTo().assertIsDisplayed()
+    private fun top(text: String) = compose.onNodeWithText(text, substring = true).getUnclippedBoundsInRoot().top
     /** Where a line of History stands; the Story above it tells some of the same records. */
-    private fun top(text: String) = compose.onNode(hasText(text, substring = true) and hasAnyAncestor(hasTestTag("sheet_history")), useUnmergedTree = true).getUnclippedBoundsInRoot().top
+    private fun historyTop(text: String) = compose.onNode(hasText(text, substring = true) and hasAnyAncestor(hasTestTag("sheet_history")), useUnmergedTree = true).getUnclippedBoundsInRoot().top
 
     @Test
     fun heroSheetShowsTasteGuildMentorAndPurse() {
@@ -141,7 +142,7 @@ class DetailSheetTest {
         seen(blade.rarity.name.lowercase().replaceFirstChar { it.uppercase() })
         seen("Ember Resin")
         seen("History")
-        assertTrue("history is newest first", top("Routed a raider") < top("Sold to ${hero.fullName}") && top("Sold to ${hero.fullName}") < top("Forged from Iron"))
+        assertTrue("history is newest first", historyTop("Routed a raider") < historyTop("Sold to ${hero.fullName}") && historyTop("Sold to ${hero.fullName}") < historyTop("Forged from Iron"))
         compose.onNode(hasText(hero.fullName, substring = true) and hasClickAction()).performScrollTo().performClick()
         compose.runOnIdle { assertEquals(hero.id, openedHero) }
     }

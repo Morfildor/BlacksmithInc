@@ -1,9 +1,7 @@
 package com.example.blacksmithproject
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -63,17 +61,17 @@ class M4ScreensTest {
 
     private val engine get() = ShopDayFixtures.engine
 
-    /** The morning after three played days on seed 42: blades on the shelf, heroes in town. */
-    private val morning: GameState by lazy { ShopDayFixtures.run(42, 3).last().state }
+    /** The first morning on seed 42 with blades still on the shelf (a three-day run can sell out) and heroes in town. */
+    private val morning: GameState by lazy { ShopDayFixtures.run(42, 30).map { it.state }.first { !it.isEnded && it.listedWeapons().isNotEmpty() } }
 
     private var forgedFamily: WeaponFamilyId? = null
 
-    /** The whole Shop in a box taller than any screen, so every row is composed. */
+    /** The Shop at a phone's size: what is asserted as displayed is on screen as a player has it, after scrolling the list to it. */
     private fun showShop(state: GameState) {
         val shop = engine.shopUi(state)
         compose.setContent {
             BlacksmithProjectTheme {
-                Box(Modifier.width(360.dp).requiredHeight(6000.dp)) {
+                Box(Modifier.size(360.dp, 640.dp)) {
                     ShopPanel(shop, busy = false, reducedMotion = true, onLead = {}, onOpenBlade = {}, onOpenHero = {}, onAnswer = { _, _ -> }, onOpenStorage = {}, onOpenNews = {}, onForgeWant = { forgedFamily = it })
                 }
             }
@@ -90,6 +88,7 @@ class M4ScreensTest {
         val state = morning.copy(heroes = morning.heroes + (hero.id to wanting))
         val line = Lines.want(wanting, engine.content)!!
         showShop(state)
+        compose.onNodeWithTag("shop_list").performScrollToNode(hasTestTag("forge_want_${hero.id.value}"))
         compose.onNodeWithText(line).assertIsDisplayed()
         compose.onNodeWithTag("want_answered_${hero.id.value}").assertDoesNotExist()
         compose.onNodeWithTag("forge_want_${hero.id.value}").performClick()
@@ -102,7 +101,10 @@ class M4ScreensTest {
         val asked = Commission(CommissionId("why1"), buyer.id, engine.content.families.first().id, 40, 80, morning.day, morning.day + 3, CommissionStatus.OFFERED, kind = CommissionKind.SIEGE_PREP)
         val state = morning.copy(commissions = mapOf(asked.id to asked))
         showShop(state)
+        // The plate is the top of the Shop: on screen without scrolling.
         compose.onNodeWithText(engine.threatUi(state)!!.plate, substring = true).assertIsDisplayed()
+        compose.onNodeWithTag("shop_list").performScrollToNode(hasTestTag("request_why_why1"))
+        compose.onNodeWithTag("request_why_why1", useUnmergedTree = true).assertIsDisplayed()
         compose.onNodeWithTag("request_why_why1", useUnmergedTree = true).assertTextEquals(Lines.commissionWhy(asked, state)!!)
     }
 
