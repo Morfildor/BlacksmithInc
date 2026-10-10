@@ -22,7 +22,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -151,7 +150,7 @@ fun StorageList(
                 Column(Modifier.padding(bottom = Space.sm)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(if (shown.size == storage.size) "Storage · ${storage.size}" else "Storage · ${shown.size} of ${storage.size}", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.weight(1f).semantics { heading() })
-                        if (onClose != null) TextButton(onClick = onClose, modifier = Modifier.heightIn(min = 48.dp).testTag("storage_close")) { Text("Close", color = Gold) }
+                        if (onClose != null) InlineActionButton("Close", onClose, Modifier.testTag("storage_close"))
                     }
                     Secondary(
                         when {
@@ -192,8 +191,8 @@ fun StorageList(
             onDismissRequest = { asking = null },
             title = { Text(if (salvage) "Salvage ${blades(chosen.size)}?" else "Give ${blades(chosen.size)} to the town watch?") },
             text = { Text(if (salvage) salvageTerms(chosen.size, terms) else donateTerms(terms)) },
-            confirmButton = { TextButton(onClick = { asking = null; onBulk(action, chosen); picked = emptySet() }, modifier = Modifier.testTag("storage_bulk_confirm")) { Text(if (salvage) "Salvage" else "Arm the watch") } },
-            dismissButton = { TextButton(onClick = { asking = null }) { Text("Keep them") } },
+            confirmButton = { InlineActionButton(if (salvage) "Salvage" else "Arm the watch", { asking = null; onBulk(action, chosen); picked = emptySet() }, Modifier.testTag("storage_bulk_confirm")) },
+            dismissButton = { InlineActionButton("Keep them", { asking = null }) },
         )
     }
 }

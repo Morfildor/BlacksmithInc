@@ -23,6 +23,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.blacksmithproject.ui.Tips
 import com.example.blacksmithproject.ui.shopday.Beat
 import com.example.blacksmithproject.ui.shopday.ReplayOverlay
 import com.example.blacksmithproject.ui.shopday.ShopDayScreen
@@ -106,11 +107,24 @@ class ShopDayScreenTest {
 
     private fun text(value: String) = compose.onNodeWithText(value, useUnmergedTree = true)
 
+    /** The strip holds the playback chip and the skip: a tap that misses them is not the screen's "tap anywhere". */
+    @Test
+    fun aTapOnTheStripBesideItsControlsDoesNotAdvance() {
+        val m = day("purchase").ui()
+        show(m, m.first { it is Beat.Visit })
+        compose.onNodeWithTag("shopday_progress", useUnmergedTree = true).performClick()
+        assertEquals("the strip is not Next", 0, nexts)
+        compose.onNodeWithTag("shopday_speed").assertTextEquals("Manual")
+        compose.onNodeWithTag("shopday_skip").assertTextEquals("Skip to evening")
+        compose.onNodeWithTag("shopday_card").performClick()
+        assertEquals("the card still is", 1, nexts)
+    }
+
     /** The first-run line sits above the controls while the host passes it, and a tap on it is a tap anywhere: Next. */
     @Test
     fun theCoachLineShowsWhilePassedAndATapOnItIsNext() {
         val m = day("purchase").ui()
-        coach = "Tap anywhere to continue · Skip day jumps to the evening"
+        coach = Tips.COUNTER.body
         show(m, m.first { it is Beat.Visit })
         compose.onNodeWithTag("shopday_coach").assertIsDisplayed().assertTextEquals(coach!!)
         assertTrue("above the controls", compose.onNodeWithTag("shopday_coach").getUnclippedBoundsInRoot().bottom <= compose.onNodeWithTag("shopday_next").getUnclippedBoundsInRoot().top)

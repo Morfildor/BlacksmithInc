@@ -21,12 +21,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -166,7 +164,7 @@ fun ForgeResultCard(
         if (stock == null) {
             // Reopened after the blade was listed or left the shop: there is nothing left to choose here.
             Secondary(detail.stock?.listedPrice?.let { "Already on the shelf, asking $it gold." } ?: "This blade is no longer in storage.")
-            OutlinedButton(onClick = onStore, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("reveal_store")) { Text("Close") }
+            SecondaryActionButton("Close", onStore, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("reveal_store"))
             return@price
         }
         var priceText by rememberSaveable(detail.weaponId.value) { mutableStateOf(stock.suggestedPrice.toString()) }
@@ -175,7 +173,7 @@ fun ForgeResultCard(
             val full = stock.shelfFree <= 0
             if (full) Text("${shelfFullLine(stock.slots)} Store this blade; to list it, unlist another in the Shop first.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("reveal_shelf_full"))
             Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedButton(onClick = onStore, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 52.dp).testTag("reveal_store")) { Text("Store") }
+                SecondaryActionButton("Store", onStore, Modifier.heightIn(min = 52.dp).testTag("reveal_store"))
                 PrimaryActionButton(
                     chosen?.let { "List at $it" } ?: "List", { chosen?.let(onList) },
                     Modifier.weight(1f).testTag("reveal_list").semantics { if (full) contentDescription = "List, unavailable: ${shelfFullLine(stock.slots)}" },
@@ -237,7 +235,7 @@ fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reduc
                         PaperRuleLine(top = Space.md, bottom = Space.sm)
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("FROM THE FIELD", style = MaterialTheme.typography.labelMedium, color = PaperInkMuted, modifier = Modifier.semantics { heading() })
-                            if (shown < totalSteps) TextButton(onClick = { shown = totalSteps }, modifier = Modifier.testTag("report_skip"), colors = ButtonDefaults.textButtonColors(contentColor = PaperInk)) { Text("Skip") }
+                            if (shown < totalSteps) TextButton(onClick = { shown = totalSteps }, modifier = Modifier.testTag("report_skip"), colors = ButtonDefaults.textButtonColors(contentColor = PaperInk)) { Text("Show all rounds") }
                         }
                         var step = 0
                         r.replays.forEach { replay ->
@@ -261,13 +259,7 @@ fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reduc
                         Text("THE FORGE HAS FALLEN", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
-                // Ink on the paper, cut like every other plate: the theme's ember pill belongs to the dark screens.
-                Button(
-                    onClick = vm::closeGazette, shape = MaterialTheme.shapes.small, colors = ButtonDefaults.buttonColors(containerColor = PaperInk, contentColor = Cream),
-                    modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 52.dp).testTag("report_close"),
-                ) {
-                    Text("Close", style = MaterialTheme.typography.titleMedium)
-                }
+                PrimaryActionButton("Close", vm::closeGazette, Modifier.fillMaxWidth().padding(top = Space.md).testTag("report_close"))
             }
         }
     }
@@ -324,17 +316,13 @@ fun BlessingDialog(s: UiState.Playing, vm: GameViewModel) {
             Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
                 s.state.pendingBlessingOffer.forEach { id ->
                     val b = content.blessing(id)
-                    OutlinedButton(onClick = { vm.dispatch(Command.ChooseBlessing(id)) }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("blessing_${id.value}")) {
+                    BlessingOption(b.name, b.description, { vm.dispatch(Command.ChooseBlessing(id)) }, Modifier.testTag("blessing_${id.value}")) {
                         Sprites.blessing(id)?.let { PixelImage(it, 32.dp, description = null); Spacer(Modifier.width(12.dp)) }
-                        Column(Modifier.weight(1f)) {
-                            Text(b.name, style = MaterialTheme.typography.titleSmall)
-                            Text(b.description, style = MaterialTheme.typography.bodySmall)
-                        }
                     }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = vm::dismissBlessingOffer, modifier = Modifier.testTag("blessing_later")) { Text("Decide later") } },
+        confirmButton = { InlineActionButton("Decide later", vm::dismissBlessingOffer, Modifier.testTag("blessing_later")) },
     )
 }
 
@@ -347,7 +335,7 @@ fun ErrorDialog(message: String, onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = { Text("The forge says") },
         text = { Text(message) },
-        confirmButton = { Button(onClick = onDismiss, modifier = Modifier.testTag("error_ok")) { Text("Alright") } },
+        confirmButton = { PrimaryActionButton("Alright", onDismiss, Modifier.testTag("error_ok")) },
     )
 }
 

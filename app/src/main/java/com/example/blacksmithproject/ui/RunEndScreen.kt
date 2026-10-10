@@ -14,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -89,12 +88,15 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
                             Secondary(u.description)
                             Secondary(Legacy.preview(u.id, level + 1, content, vm.engine.config)?.text ?: "Fully upgraded: nothing more to buy.")
                         }
-                        OutlinedButton(
-                            enabled = s.claimed && cost != null && s.legacy.points >= cost && !s.busy,
-                            onClick = { vm.buyUpgrade(u.id) },
-                            shape = MaterialTheme.shapes.small,
-                            modifier = Modifier.padding(start = Space.sm).heightIn(min = 48.dp).semantics { contentDescription = cost?.let { "Buy ${u.name} level ${level + 1} for $it points" } ?: "${u.name} at maximum level" },
-                        ) { Text(cost?.let { "$it pts" } ?: "Max") }
+                        // A greyed button says why: nothing is bought before the claim, or the points are short.
+                        val blocked = when { cost == null -> null; !s.claimed -> "claim the legacy first"; s.legacy.points < cost -> "it costs $cost points and you have ${s.legacy.points}"; else -> null }
+                        SecondaryActionButton(
+                            cost?.let { "$it pts" } ?: "Max", { vm.buyUpgrade(u.id) },
+                            Modifier.padding(start = Space.sm).semantics {
+                                contentDescription = when { cost == null -> "${u.name} at maximum level"; blocked != null -> "Buy ${u.name} level ${level + 1}, unavailable: $blocked"; else -> "Buy ${u.name} level ${level + 1} for $cost points" }
+                            },
+                            enabled = cost != null && blocked == null && !s.busy,
+                        )
                     }
                 }
             }
@@ -103,7 +105,7 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
             if (s.claimed) {
                 PrimaryActionButton("Begin era $nextEra", vm::beginNextEra, Modifier.fillMaxWidth().testTag("run_begin_era"), enabled = !s.busy)
             } else {
-                PrimaryActionButton("Begin era $nextEra", vm::beginNextEra, Modifier.fillMaxWidth(), enabled = false)
+                PrimaryActionButton("Begin era $nextEra", vm::beginNextEra, Modifier.fillMaxWidth().semantics { contentDescription = "Begin era $nextEra, unavailable: claim the legacy above first" }, enabled = false)
                 Secondary("Claim the legacy above to begin the next era.", Modifier.padding(top = Space.xs))
             }
         }

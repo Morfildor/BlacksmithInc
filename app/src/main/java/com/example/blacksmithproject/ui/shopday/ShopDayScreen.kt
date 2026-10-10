@@ -115,6 +115,9 @@ fun ShopDayScreen(
         val short = maxHeight < 700.dp || LocalDensity.current.fontScale > 1.15f
         // The evening has one card and the whole screen for it: the dawn grows with the room a tall screen leaves.
         val dawn = if (short) 112.dp else (maxHeight * 0.26f).coerceIn(112.dp, 232.dp)
+        // Text above 1.3: the strip and the plate are already twice their height, so the painted room gives up most of its own.
+        val large = LocalDensity.current.fontScale > 1.3f
+        val low = maxHeight < 700.dp
         Column(Modifier.fillMaxSize().statusBarsPadding().pointerInput(Unit) { detectTapGestures { if (!ending) next() } }) {
             ShopDayTopBar(model.day, beat.progress, speed, reducedMotion, canSkip = at < model.endingIndex, onSpeedChange = onSpeedChange, onSkipDay = onSkipDay)
             when (beat) {
@@ -124,7 +127,7 @@ fun ShopDayScreen(
                     val left = model.shelf.count { it.blade.weaponId !in beat.gone }
                     CounterScene(
                         plate = visit?.face?.name ?: when (left) { 0 -> if (model.shelf.isEmpty()) "Nobody at the counter" else "Every blade is sold"; 1 -> "1 blade on the shelf"; else -> "$left blades on the shelf" }, detail = visit?.detail, customer = visit?.face, customerKey = visit?.seq,
-                        reducedMotion = reducedMotion, onOpenHero = openHero, backdropHeight = if (short) 104.dp else 140.dp,
+                        reducedMotion = reducedMotion, onOpenHero = openHero, backdropHeight = if (large) 56.dp else if (short) 104.dp else 140.dp,
                     )
                     ShelfBand(
                         model.shelf, gone = beat.gone, looking = visit?.lookedIds ?: emptySet(), sold = visit?.purchased?.weaponId?.takeIf { visit.sold },
@@ -171,8 +174,9 @@ fun ShopDayScreen(
                     if (scroll.canScrollForward) Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(Space.lg).background(Brush.verticalGradient(listOf(Color.Transparent, MaterialTheme.colorScheme.background))))
                 }
             }
+            // Not on a low screen with large text: there the lines of the hint would leave the card no room at all.
             // The first-run line is an aside, not a control: a muted italic under a small label, and a tap on it is a tap anywhere.
-            coach?.let {
+            coach?.takeIf { !(large && low) }?.let {
                 Row(Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                     Text("TIP", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp))
                     Text(it, style = MaterialTheme.typography.bodySmall, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f).testTag("shopday_coach"))

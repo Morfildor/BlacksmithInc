@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -27,6 +28,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.FramedPanel
 import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.PixelImage
@@ -198,6 +200,6 @@ fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenIt
         Lines(detail.shop, "Nothing between you yet.")
         SheetSection("Recent events")
         Lines(detail.events, "The town's records say nothing of late.")
-        SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).testTag("sheet_close"))
+        SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close"))
     }
 }

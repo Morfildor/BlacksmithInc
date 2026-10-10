@@ -59,7 +59,7 @@ fun SettingsSheet(
             SwitchRow("Reduced motion", "Stops the ember animation, the reveal fade and the stepped battle replay.", reducedMotion, onReducedMotion, "settings_reduced_motion")
             SwitchRow("Haptics", "A short vibration when a blade is revealed, a day ends, a request is refused or an era ends.", haptics, onHaptics, "settings_haptics")
             if (onShopDaySpeed != null) SpeedRow(if (reducedMotion) ShopDaySpeed.TAP else shopDaySpeed, enabled = !reducedMotion, onShopDaySpeed)
-            onMainMenu?.let { SecondaryActionButton("Main menu", it, Modifier.fillMaxWidth().padding(top = Space.md).testTag("settings_main_menu")) }
+            onMainMenu?.let { SecondaryActionButton("Main menu", it, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("settings_main_menu")) }
             Secondary("Version $version", Modifier.padding(top = Space.md).testTag("settings_version"))
         }
     }
@@ -80,13 +80,13 @@ private fun SwitchRow(title: String, detail: String, checked: Boolean, onChange:
     }
 }
 
-/** Tap is the default: the shop day waits for the player. 1x and 2x move it on by themselves; reduced motion keeps it at Tap. */
+/** Manual is the default: the shop day waits for the player. Auto 1x and 2x move it on by themselves; reduced motion keeps it manual. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SpeedRow(speed: ShopDaySpeed, enabled: Boolean, onChange: (ShopDaySpeed) -> Unit) {
     Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("settings_shopday_speed")) {
-        Text("Shop-day speed", style = MaterialTheme.typography.titleSmall)
-        Secondary(if (enabled) "Tap waits for you at every customer. 1x and 2x move the day on by themselves." else "Stays at Tap while reduced motion is on.")
+        Text("Shop-day playback", style = MaterialTheme.typography.titleSmall)
+        Secondary(if (enabled) "Manual waits for you at every card. Auto 1x and Auto 2x move the day on by themselves." else "Stays manual while reduced motion is on.")
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(top = Space.xs)) {
             ShopDaySpeed.entries.forEachIndexed { i, option ->
                 SegmentedButton(

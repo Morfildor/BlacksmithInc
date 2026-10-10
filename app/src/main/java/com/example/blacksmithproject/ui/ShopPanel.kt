@@ -21,7 +21,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -154,7 +153,7 @@ fun ShopPanel(
                     }
                     if (open) Column(Modifier.padding(horizontal = Space.md)) {
                         y.lines.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = Space.xs)) }
-                        TextButton(onClick = onOpenNews, modifier = Modifier.heightIn(min = 48.dp).testTag("shop_news")) { Text("Read the Gazette") }
+                        InlineActionButton("Read the Gazette", onOpenNews, Modifier.heightIn(min = 48.dp).testTag("shop_news"))
                     }
                 }
             }

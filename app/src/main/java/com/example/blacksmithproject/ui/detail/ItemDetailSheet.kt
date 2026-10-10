@@ -15,9 +15,7 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -31,6 +29,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.ui.InlineActionButton
+import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.NoticeLine
 import com.example.blacksmithproject.ui.PrimaryActionButton
@@ -178,7 +178,7 @@ fun GameEngine.itemDetail(state: GameState, weaponId: WeaponId, snapshot: Weapon
 private fun GameEngine.property(id: AffixId) = content.affixById[id]?.let { Property(it.name, it.description) } ?: Property(id.value, "")
 
 private fun qualityWord(w: WeaponSnapshot) = Labels.quality(w.quality).replaceFirstChar { it.uppercase() }
-private fun conditionWord(w: WeaponSnapshot) = when { w.condition < 40 -> "Battered"; w.condition < 70 -> "Worn"; else -> "Sound" }
+private fun conditionWord(w: WeaponSnapshot) = Labels.condition(w.condition)?.replaceFirstChar { it.uppercase() } ?: "Sound"
 private fun renownWord(w: WeaponSnapshot) = Labels.fame(w.fame)?.replaceFirstChar { it.uppercase() } ?: "Unsung"
 
 private fun facts(w: WeaponSnapshot): List<Fact> = listOfNotNull(
@@ -313,7 +313,7 @@ fun ItemDetailContent(
 
         SheetSection("History")
         Column(Modifier.testTag("sheet_history")) { Lines(detail.history, "Its story has not been written yet.") }
-        SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).testTag("sheet_close"))
+        SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close"))
     }
 }
 
@@ -331,7 +331,7 @@ private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onSt
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
             if (stock.listedPrice != null) {
                 PrimaryActionButton("Set price", { price?.let { onStock(StockAction.SetPrice(it)) } }, Modifier.testTag("item_set_price"), enabled && price != null)
-                OutlinedButton(onClick = { onStock(StockAction.Unlist) }, enabled = enabled, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 52.dp).testTag("item_unlist")) { Text("Unlist") }
+                SecondaryActionButton("Unlist", { onStock(StockAction.Unlist) }, Modifier.heightIn(min = 52.dp).testTag("item_unlist"), enabled = enabled)
             } else {
                 PrimaryActionButton(
                     price?.let { "List at $it" } ?: "List", { price?.let { onStock(StockAction.ListAt(it)) } },
@@ -341,7 +341,7 @@ private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onSt
             }
         }
     }
-    TextButton(onClick = { onStock(StockAction.Salvage) }, enabled = enabled, modifier = Modifier.heightIn(min = 48.dp).testTag("item_salvage")) { Text(stock.salvage) }
-    TextButton(onClick = { onStock(StockAction.Hone) }, enabled = enabled && stock.canHone, modifier = Modifier.heightIn(min = 48.dp).testTag("item_hone")) { Text(stock.hone) }
-    TextButton(onClick = { onStock(StockAction.Donate) }, enabled = enabled && stock.canDonate, modifier = Modifier.heightIn(min = 48.dp).testTag("item_donate")) { Text(stock.donate) }
+    InlineActionButton(stock.salvage, { onStock(StockAction.Salvage) }, Modifier.heightIn(min = 48.dp).testTag("item_salvage"), enabled = enabled)
+    InlineActionButton(stock.hone, { onStock(StockAction.Hone) }, Modifier.heightIn(min = 48.dp).testTag("item_hone"), enabled = enabled && stock.canHone)
+    InlineActionButton(stock.donate, { onStock(StockAction.Donate) }, Modifier.heightIn(min = 48.dp).testTag("item_donate"), enabled = enabled && stock.canDonate)
 }

@@ -25,7 +25,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ### Changed
 - Title screen: the workshop at night as a full-width picture with the game's name on it, the era and legacy on a plate, and the actions at the foot of the screen.
-- Shop day: the speed control is labelled "Pace" (Tap, Auto 1x, Auto 2x); the first-run hint reads as a tip; long cards fade out at the controls; "No sale" is a red badge; the evening card shows purse, shelf and storage as tiles with a larger dawn on tall screens.
+- Shop day: the first-run hint reads as a tip; long cards fade out at the controls; "No sale" is a red badge; the evening card shows purse, shelf and storage as tiles with a larger dawn on tall screens.
 - Shop: the siege line and the forge's health are one strip at the top, the same as on the Forge; the shelf is drawn with its free places; the day's lead is marked "Worth doing first"; the rows to the board, storage and supplies carry icons; the tip about listing leaves once a blade is listed. Lists fade where they run under a pinned button.
 - Forge: a chosen ingredient lands in its place (not with reduced motion); tiles and recipe places in one row share one height; the chosen mode is gold.
 - Wording: the worst siege outlook is "Dire odds" (it was "Grave danger", beside the Grave element); the Records tab and the Forge's menu say "Notebook".
@@ -68,6 +68,19 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - "List at" on the forge result closes the card once the listing is saved; if the game refuses it, the card stays open under the reason.
 - The blade sheet says where the blade is above its price ("On the shelf, asking 90 gold." or "In storage, not for sale."), and that line changes when it is listed or repriced.
 - "Who is buying" counts an unspent guild stipend (Guild Patronage) toward what a hero can afford, as the counter itself does, so it always agrees with the new line under a price.
+- Buttons look one way for each kind of action: the gold plate for the way forward, a bronze outline with gold lettering for every other button, and gold lettering alone for an action inside a line ("Read the Gazette", "Forge this", "Got it"). The Gazette's Close, "Alright" on a refusal, "Try again" and "Start over" on the save screens, Store, Back, Unlist, the sheets' Close, "Main menu", "Abandon run", the blessing choices and the upgrade buttons after a run all follow it; none is a rounded orange pill any more.
+- The three pages of Records are tabs without a check mark: the chosen one is a lit bronze plate with gold lettering. The first is called "Gazette" (it was "News"), as every "Read the Gazette" link already said.
+- One name for each thing. The sheet of materials and tools is "Supplies" on the Shop, on the Forge and in its own title (it was also "Supplier" and "Supplies and tools"). A request is a request everywhere the day is told: End Day's note ("A request is waiting for an answer"), the Gazette's summary line ("1 request delivered"). Town's list is "Heroes · 12 in town" (it was "Adventurers (12 alive)").
+- During a shop day the playback control says what it does: "Manual" (each card waits for you), "Auto 1x", "Auto 2x" (it was "Tap", "1x", "2x"). The skip is "Skip to evening" on the strip, on the prompt after a restart and in the first-day hint, and all three say where it goes: the day's last card, where "Begin day N" still waits. In the Gazette, the button that shows a fight's remaining rounds is "Show all rounds" (it was "Skip").
+- The Champions section says its rule: named at each End Day, the three strongest living heroes who are not wounded (health 50 or more). An empty place says why: none are named before the first End Day, and after it no other living hero was fit.
+- Greyed buttons say why to a screen reader in more places: Buy in Supplies (none left today, or the gold it costs against the gold you have), an upgrade after a run (claim first, or the points it costs), and "Begin era" before the claim.
+
+### Fixed
+- A blade is called "Worn" below condition 50, the line the game itself uses when a hero looks to replace a blade and when a replacement is requested; the blade's sheet and Town used 70. "Battered" is the lower half of that band (below 25).
+- A tap on the strip above the shop day (beside the playback control or the skip) no longer counts as "tap anywhere" and moves the day on.
+- The first-day hint is not shown while a screen reader is exploring by touch, where a tap anywhere is not Next.
+- During a shop day with text larger than 1.3 the painted scene is lower, so the card under it has room; on a low screen with such text the first-day hint is left out, where its three lines would leave the card none.
+- On the strip above the shop day, the playback control and the skip move to their own line when they do not fit beside the day's label, instead of cutting the label short.
 
 ## [0.7.0] - 2026-10-10
 

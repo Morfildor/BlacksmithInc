@@ -35,9 +35,6 @@ object BeatLength {
     const val AFTERMATH = 2000
 }
 
-/** The value on the strip's pace control: the cards wait for a tap, or move on by themselves. With [reducedMotion] nothing runs on a timer. */
-fun ShopDaySpeed.pace(reducedMotion: Boolean): String = if (this == ShopDaySpeed.TAP || reducedMotion) "Tap" else "Auto $label"
-
 /** A face and the records behind it: the counter snapshot when the hero came in today, the hero as saved otherwise. */
 @Immutable
 data class FaceUi(val heroId: HeroId?, val name: String, val snapshot: CustomerSnapshot? = null, val hero: Hero? = null) {
