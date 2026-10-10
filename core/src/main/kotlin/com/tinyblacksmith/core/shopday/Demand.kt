@@ -34,7 +34,7 @@ object Threats {
         val leader = state.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure } ?: return null   // Battle.leadingFaction's rule
         val def = content.factionById[leader.id] ?: return null
         val days = state.town.nextSiegeDay - state.day
-        return Threat(def.id, def.weakTo, def.resists, days, warned = config.customers.threatUtility > 0 && days in 0 until com.tinyblacksmith.core.battle.Battle.WARNING_DAYS)
+        return Threat(def.id, def.weakTo, def.resists, days, warned = config.customers.threatUtility > 0 && days in 0 until config.combat.siegeWarningDays)
     }
 
     /** How a blade or a material of [element] stands against [threat]; null for no element, no threat or an element the besieger does not care about. */

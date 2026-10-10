@@ -2861,3 +2861,46 @@ half the noise floor.
 unchanged. `ReputationAndLoyaltyTest`: a regular's share of offers is asserted at 20 % (it was 30 %: a reason the regular lacks goes
 to someone else). **Golden `state_rules3.txt` re-recorded: 243 of 300 lines, all 20 seeds, the RNG column on 242** (the kind draw and
 the second open request move the EVENTS stream from the first offer on).
+
+## Resolver constants moved into the config groups (2026-10-10, task T5.4; E02)
+
+A move, not a change: every number below kept its value, the balance version stays 8, and no outcome moved.
+
+**What moved.** The numbers that stood inline in the six resolver files are now fields, read where the literals were, in the
+same expressions and the same order (so every floating-point result is bit for bit what it was):
+
+| From | To | Fields (value) |
+|---|---|---|
+| `battle/Battle.kt`, `battle/Power.kt` | new `CombatConfig` (`BalanceConfig.combat`) | `winProbabilityBase` 0.5, `expeditionFame` 1, `siegeFame` 2, `weaponTitleKills` 5, `siegeWarningDays` 2 (was `Battle.WARNING_DAYS`), `healthPowerFloor` 0.6, `healthPowerRange` 0.4, `traitModifierMin` 0.8, `traitModifierMax` 1.2, `unarmedDefensiveWeight` 0.9, `scarceLootTier` 3 |
+| `heroes/Heroes.kt` | `HeroLifeConfig` (`heroLife`) | `traitsMin` 2, `traitsMax` 3, `classTasteChance` 0.6, `otherTasteChance` 0.5, `descendantLevel` 2, `menteeLevelBonus` 1, `expeditionBaseWeight` 1.0, `expeditionPressureWeight` 0.5, `armedExpeditionWeight` 0.5, `unarmedExpeditionWeight` -0.3, `patrolBaseWeight` 0.8, `patrolLowIntegrity` 60, `patrolLowIntegrityWeight` 0.4, `restBaseWeight` 0.2, `fieldWeightFloor` 0.05, `quietWeightFloor` 0.02, `milestoneLevel` 5 |
+| `market/Market.kt` | `CustomerConfig` (`customers`) | `utilityLoyaltyScale` 0.01, `overpricedPenalty` 0.5, `saleReputation` 1, `commissionReputation` 2, `commissionExpiredReputation` 1, `commissionLoyalty` 2 |
+| `engine/WorldEvents.kt` | new `WorldEventConfig` (`worldEvents`) | `oreMerchantGift` 1, `oreMerchantStock` 2 (was `WorldEvents.ORE_MERCHANT_STOCK`), `nobleExtraDays` 2, `veteranFame` 2, `alloyMaterials` 1, `fragmentMaterials` 1, `shrineCatalysts` 2, `legendDefaultQuality` 60, `bannerReputation` 2, `bannerMilitia` 3, `collectorReputation` 1 |
+| `legacy/Legacy.kt` | `LegacyTracksConfig` (`legacyTracks`) | `milestonePoints` (the ten-row table, was `Legacy.milestonePoints`), `legendsPerRun` 3, `legendBoardSize` 20, `lineagesKept` 10 |
+
+Two new nested groups cost two constructor slots; `BalanceConfigTest.constructs` still links the constructor and `copy`.
+
+**What stays in the resolvers, on purpose** (the allowlist of `ConstantsTest`, each with its reason): the values 0, 1, 0.0, 1.0,
+100 and 100.0 (nothing, one, a neutral multiplier, and the top of the health, condition, pressure and percent scales); event
+record priorities; the middle of a noise roll (0.5) and the arithmetic that spreads a roll over -1..1; record sizes
+(`Market.MAX_CONSIDERED` 3, `Legacy.STORY_MAX` 12); wording bands that pick a phrase and decide nothing (`Battle.describePressure`,
+`SiegeOdds`, the replay's "gave ground / pressed hard"); a key prefix length; the "forges in 10 or in 100" wording of
+`Legacy.preview`. The world-event table's weights, limits a run and cooldowns are catalogue rows, as content numbers are.
+
+**Not covered.** The scan reads the six files the plan names. `GameEngine` (starting militia 5, the three season multipliers,
++1 reputation for arming the watch, +1 core from a salvage), `Forge` (affix slots per rarity) and `Journal` (affinity wording
+bands) still hold literals; `CLAUDE.md` now says so.
+
+**Evidence that nothing moved.**
+- `GoldenStateTest` green without re-recording; `state_rules3.txt` is unchanged in the commit.
+- `./gradlew :core:simulate --args="--runs 1000 --seed 1"` (eight new-account policies, the maxed account, the per-upgrade
+  impact rows and the yardsticks): 187 lines, identical before and after except the last line (`elapsed ... ms`).
+- `VersionFingerprintTest`: the balance fingerprint hashes field names, so new fields change it with every value equal. Row 8
+  (an unreleased step, re-pinned inside it before) is re-pinned from `c644ab76...` to `3c90f806...`; the version is not raised.
+- Core 381 tests (379 + 2), app unit 93, debug APK built.
+
+**Tests.** `ConstantsTest.resolversHoldNoUnlistedLiterals` (it found one literal the hand pass had missed, the scarce-loot
+tier, which then moved) and `theScanSeesAStrayLiteralAndIgnoresTextAndComments`.
+
+**Signatures.** `Power.condition(hero, config)` and `Power.traitModifier(hero, content, config)` take the config;
+`Legacy.claim(current, runEnd, config = BalanceConfig.DEFAULT)`; `Battle.WARNING_DAYS`, `WorldEvents.ORE_MERCHANT_STOCK` and
+`Legacy.milestonePoints` are gone (no caller in `app/`).

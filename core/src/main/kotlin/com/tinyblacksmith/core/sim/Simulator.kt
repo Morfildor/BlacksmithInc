@@ -789,7 +789,7 @@ object Simulator {
     fun veteranLegendBoard(engine: GameEngine, policy: Policy, baseSeed: Long, runs: Int = 10): List<LegendEntry> {
         val driver = SimulationDriver(engine)
         return (0 until runs).map { baseSeed + it to driver.playRun(LegacyProfile(), baseSeed + it, policy).second }.filter { it.second.isEnded }
-            .flatMap { (seed, state) -> engine.closeRun(state).legends.map { it.copy(weaponKey = "${it.weaponKey}@$seed") } }.takeLast(20)
+            .flatMap { (seed, state) -> engine.closeRun(state).legends.map { it.copy(weaponKey = "${it.weaponKey}@$seed") } }.takeLast(engine.config.legacyTracks.legendBoardSize)
     }
 
     /**

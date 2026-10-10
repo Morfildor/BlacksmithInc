@@ -39,20 +39,6 @@ data class UpgradePreview(val upgradeId: UpgradeId, val level: Int, val before: 
 
 /** Baseline + milestone legacy rewards, claim-once, permanent upgrades (GDD 9). */
 object Legacy {
-    /** PROPOSED milestone bonus table (round 9: baseline rewards plus achievements). */
-    val milestonePoints: Map<String, Int> = mapOf(
-        "FIRST_SALE" to 1,
-        "SIEGE_SURVIVED" to 2,
-        "CHAMPION_ARMED" to 2,
-        "EPIC_FORGED" to 1,
-        "LEGENDARY_FORGED" to 3,
-        "HERO_LEVEL_5" to 1,
-        "WEAPON_FIVE_KILLS" to 2,
-        "ELITE_SLAIN" to 1,
-        "WARLORD_DEFEATED" to 3,
-        "AMBITION_FULFILLED" to 1,
-    )
-
     /** History kinds that put a blade in a hero's hands; the first subject of each is that hero. */
     val OWNERSHIP: Set<String> = setOf("SOLD", "COMMISSION", "INHERITED", "RESOLD")
 
@@ -85,7 +71,7 @@ object Legacy {
             // A returned legend nobody carried this era does not go back on the board: it would re-enter ownerless and could multiply (X06).
             .filter { w -> w.legendKey == null || w.history.any { it.era == state.era && it.kind in OWNERSHIP } }
             .sortedByDescending { it.fame }
-            .take(3)
+            .take(config.legacyTracks.legendsPerRun)
             .map { w ->
                 // Everyone who held it, in order: buyers, commission patrons, heirs (named first in the entry) and a merchant's customer.
                 val held = w.history.filter { it.era == state.era && it.kind in OWNERSHIP }.mapNotNull { it.subjectIds.firstOrNull() }.mapNotNull { state.heroes[HeroId(it)]?.fullName }
@@ -107,7 +93,7 @@ object Legacy {
             }, id = "era${state.era}-${it.id.value}", appearance = Appearance.keyOf(it))
         }
         val discovery = minOf(config.legacyDiscoveryPointCap, state.discoveriesThisRun)
-        val milestoneBonus = state.milestones.sumOf { milestonePoints[it] ?: 0 }
+        val milestoneBonus = state.milestones.sumOf { config.legacyTracks.milestonePoints[it] ?: 0 }
         return RunEndResult(
             runId = state.runId, era = state.era, daysSurvived = state.day, cause = state.endCause ?: "The forge fell.",
             basePoints = config.legacyBasePoints, survivalPoints = state.day / config.legacyDaysPerPoint,
@@ -117,7 +103,7 @@ object Legacy {
     }
 
     /** Idempotent: a second claim for the same run is rejected and the profile is unchanged. */
-    fun claim(current: LegacyProfile, runEnd: RunEndResult): LegacyOutcome {
+    fun claim(current: LegacyProfile, runEnd: RunEndResult, config: BalanceConfig = BalanceConfig.DEFAULT): LegacyOutcome {
         if (runEnd.runId.value in current.claimedRunIds) return LegacyOutcome.Rejected(GameError.AlreadyClaimed(runEnd.runId), current)
         val merged = current.copy(
             journal = mergeJournal(current.journal, runEnd.legacyAtEnd.journal),
@@ -125,8 +111,8 @@ object Legacy {
             totalPointsEarned = current.totalPointsEarned + runEnd.totalPoints,
             claimedRunIds = current.claimedRunIds + runEnd.runId.value,
             // One entry per blade: a legend that came back and was carried again replaces the entry it returned from.
-            legendBoard = (current.legendBoard.filter { old -> runEnd.legends.none { it.key == old.key } } + runEnd.legends).takeLast(20),
-            lineages = (current.lineages + listOfNotNull(runEnd.lineage)).takeLast(10),
+            legendBoard = (current.legendBoard.filter { old -> runEnd.legends.none { it.key == old.key } } + runEnd.legends).takeLast(config.legacyTracks.legendBoardSize),
+            lineages = (current.lineages + listOfNotNull(runEnd.lineage)).takeLast(config.legacyTracks.lineagesKept),
             eras = current.eras + EraSummary(runEnd.era, runEnd.daysSurvived, runEnd.totalPoints, runEnd.cause),
         )
         return LegacyOutcome.Updated(merged)

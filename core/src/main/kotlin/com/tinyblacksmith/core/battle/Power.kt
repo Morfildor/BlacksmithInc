@@ -11,10 +11,10 @@ object Power {
     fun classFit(hero: Hero, weapon: Weapon?, content: ContentCatalog, config: BalanceConfig): Double =
         weapon?.let { content.family(it.familyId).classFit[hero.classId] ?: config.offFamilyFit } ?: 1.0
 
-    fun condition(hero: Hero): Double = 0.6 + 0.4 * (hero.health.coerceIn(0, 100) / 100.0)
+    fun condition(hero: Hero, config: BalanceConfig): Double = config.combat.healthPowerFloor + config.combat.healthPowerRange * (hero.health.coerceIn(0, 100) / 100.0)
 
-    fun traitModifier(hero: Hero, content: ContentCatalog): Double =
-        hero.traits.fold(1.0) { acc, t -> acc * content.trait(t).combatModifier }.coerceIn(0.8, 1.2)
+    fun traitModifier(hero: Hero, content: ContentCatalog, config: BalanceConfig): Double =
+        hero.traits.fold(1.0) { acc, t -> acc * content.trait(t).combatModifier }.coerceIn(config.combat.traitModifierMin, config.combat.traitModifierMax)
 
     fun matchup(weapon: Weapon?, faction: FactionDef, config: BalanceConfig): Double {
         val el = weapon?.element ?: return 1.0
@@ -60,15 +60,15 @@ object Power {
 
     fun attackPower(hero: Hero, weapon: Weapon?, faction: FactionDef, content: ContentCatalog, config: BalanceConfig, blessingPercent: Int = 0, elite: Boolean = false): Double =
         (heroBase(hero, content) + weaponPower(weapon, config) * conditionFactor(weapon, config)) *
-            classFit(hero, weapon, content, config) * condition(hero) * matchup(weapon, faction, config) *
-            traitModifier(hero, content) * affixAttackMultiplier(weapon, content) * affixMatchup(weapon, faction, content, elite) * (1.0 + blessingPercent / 100.0) *
+            classFit(hero, weapon, content, config) * condition(hero, config) * matchup(weapon, faction, config) *
+            traitModifier(hero, content, config) * affixAttackMultiplier(weapon, content) * affixMatchup(weapon, faction, content, elite) * (1.0 + blessingPercent / 100.0) *
             fameFactor(weapon, config)
 
     fun defensePower(hero: Hero, weapon: Weapon?, faction: FactionDef, content: ContentCatalog, config: BalanceConfig, blessingPercent: Int = 0, elite: Boolean = false): Double {
-        val familyWeight = weapon?.let { content.family(it.familyId).defensiveWeight } ?: 0.9
+        val familyWeight = weapon?.let { content.family(it.familyId).defensiveWeight } ?: config.combat.unarmedDefensiveWeight
         return (heroBase(hero, content) + weaponPower(weapon, config) * conditionFactor(weapon, config)) *
-            classFit(hero, weapon, content, config) * condition(hero) * matchup(weapon, faction, config) *
-            traitModifier(hero, content) * affixDefenseMultiplier(weapon, content) * affixMatchup(weapon, faction, content, elite) * familyWeight * (1.0 + blessingPercent / 100.0) *
+            classFit(hero, weapon, content, config) * condition(hero, config) * matchup(weapon, faction, config) *
+            traitModifier(hero, content, config) * affixDefenseMultiplier(weapon, content) * affixMatchup(weapon, faction, content, elite) * familyWeight * (1.0 + blessingPercent / 100.0) *
             fameFactor(weapon, config)
     }
 }

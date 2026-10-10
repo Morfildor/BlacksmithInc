@@ -87,7 +87,7 @@ class WorldEventsAndGenerationsTest {
             val morning = merchant.endDay()
             if (morning.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == morning.day) continue  // no restock to add to that morning
             val daily = engine.content.material(material).dailySupplierStock!!
-            val stock = daily + WorldEvents.ORE_MERCHANT_STOCK
+            val stock = daily + engine.config.worldEvents.oreMerchantStock
             assertEquals(stock, morning.supplierStock[material], "seed $seed")
             assertEquals(s.supplierStock - material, morning.supplierStock - material, "only the merchant's material has more")
             val rich = morning.copy(gold = 100_000)
