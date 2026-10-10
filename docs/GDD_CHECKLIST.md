@@ -47,7 +47,7 @@ Evidence: `docs/MAJOR_UPDATE_LEDGER.md` (one row per task) and `docs/PROGRESS.md
 ## 5 Economy, shelves, commissions
 - [x] 250 gold, 8 shelves (+2 with the Display Case), supplier with always-stocked basics; 0 hard-locks for the recorded simulator policies (no softlock for those bots, not shown for every player path)
 - [ ] Adversarial recovery: resting, drought and stuck days measured separately, and shock scenarios (no gold and no stock, empty shelves, a lost siege) shown to recover (review G10; plan T5.2). Measured at balance 6 only (stuck streaks of three days or more in 0.00-0.10 % of novice runs; an over-spending bot at 1.9-3.0 %); at balance 8 and 10,000 runs the stuck-day measure holds (worst bot 0.07-0.09 % of days, the plain smith 0) and no novice run has a stuck streak of three days; the shock arms without a simulator option (prices at 70 % and 180 %, a material-poor start, half the town) were not run
-- [x] List / unlist, manual price per weapon, suggested price, +/-10 buttons
+- [x] List / unlist, manual price per weapon, suggested price, +/-10 buttons; since 2026-10-10 the price is also chosen on the forge result, with a count of the heroes who can afford it there and on the blade sheet (seen on a second emulator at 411x731 and 360x640 dp, font 1.0 and 1.3; uncommitted)
 - [x] GDD utility purchase (improvement, class fit, element taste, traits, loyalty, price), one purchase a visitor, reasons shown in words
 - [x] Commissions: patron, family, min quality, element, reward, deadline; accept / decline; small expiry penalty
 - [x] A commission asks for a named quality band, one rule decides delivery, the patron collects before the browsers and takes the least blade that fits (review F04, F06; T1.8, JVM tests). The request card was seen once on the emulator; the handed-over line was not
@@ -168,7 +168,7 @@ it, and the lines dated T2.x below say what exists now.
 ## 16-19 Release
 - [x] Vertical-slice acceptance on device: forge -> sell -> hero fights -> Gazette -> siege -> defeat -> legacy -> upgraded next run
 - [x] Every locked v1 system is reachable from some screen (a row, a line of text or a control)
-- [x] Every locked v1 system is inspectable: hero and blade sheets show taste, purse, regular status, guild and mentor, a weapon's history and each affix's description (review U04-U06, G08; T2.7: seen on the emulator at font scale 1.0 and 2.0). Since restyled as an item card (polish pass 1, lower half seen on the emulator) and extended with a Story section and the hero's want line (device tests pass in the final gate; not looked at by a person). Not exercised on a device: List / Set price / Salvage from the sheet, the holder and mentor links
+- [x] Every locked v1 system is inspectable: hero and blade sheets show taste, purse, regular status, guild and mentor, a weapon's history and each affix's description (review U04-U06, G08; T2.7: seen on the emulator at font scale 1.0 and 2.0). Since restyled as an item card (polish pass 1, lower half seen on the emulator) and extended with a Story section and the hero's want line (device tests pass in the final gate; not looked at by a person). List from the sheet was run on an emulator on 2026-10-10. Not exercised on a device: Set price / Salvage from the sheet, the holder and mentor links
 - [ ] Package rename from `com.example.blacksmithproject` (awaiting the application ID)
 - [ ] Release signing, AAB
 - [ ] Store listing (1.99 EUR, no ads / IAP), privacy and legal assets

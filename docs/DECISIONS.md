@@ -3622,3 +3622,42 @@ clue-following bot. A simulator result is evidence about balance and reachabilit
 against 22.5: restate it at 22.7, or take `raidPerDay` 6.6, which at 1,000 seeds cost the maxed FAIR, ACTIVE and SYNERGY rows 0.2 to
 0.5 mean days and is therefore the owner's call, not this task's); REQUEST_DRIVEN's +9.7 over a plain smith against its 30 % of
 wants answered; the 8-point NOT_BETTER target; the 1 % floor for the three sidegrade reasons; the siege-prep pick.
+
+## Forge, price, list: the first UI/UX improvement (2026-10-10; no balance, rules, schema or content change)
+
+The reviews in `docs/ui_review_2026-10-10/` (A: P0-2, P3-12; B: F.5, F.9, F.11, task 1a) were checked against the source on
+`main` before anything was built. All of these still held: the forge result offered only "List at <suggested>"; neither it nor
+the blade sheet said who could pay a price; a full shelf was found by an error dialog; nothing said where a blade went; a blade
+forged for a request was offered for listing with no word of the request; the sheet had no keyboard padding. The reviews'
+other proposals (an inline result, the two-beat reveal, a same-day PRICES_TOO_HIGH lead, End Day's weight) were left alone.
+
+**One rule for "can pay" (ENGINEERING).** `Market.funds(ctx, hero, current)` is the hero's purse, the trade-in credit for the
+blade they carry and a guild stipend not yet spent. `Market.evaluate` reads it for `affordable` (the same sum as before, so no
+outcome changes: `GoldenStateTest` and the whole suite pass unchanged). `Demand.funds` lists it for the living heroes and
+`Demand.canAfford(funds, price)` counts them; the Shop's "Who is buying", the forge result and the blade sheet all read these.
+Before, "Who is buying" left the stipend out, so under Guild Patronage it could count fewer heroes than the counter would
+serve. That is the only number a player can see change, and only while that blessing is active.
+
+**What the line claims, and what it does not.** "N of M heroes in town can afford this price" is a count of saved purses, like
+the rows of "Who is buying"; M is every living hero, not the six who are seated that day. It is not a forecast: a sale also
+needs a seat and a blade that is a gain for that hero (`Market.Evaluation.eligible`). The line under it says so in a few words
+("Able to pay is not a sale: the blade must also suit them."). PROPOSED wording.
+
+**A request's blade is not reserved, and the card does not say it is.** `Commissions.pick` hands over the least sufficient blade
+that fits, from storage before the shelf, and `resolveCommissions` runs before the shelf visits. So the result card says two
+things, each from the engine: whether this blade fits (`Commissions.fit`), and what End Day will do as the shop stands
+(`Labels.readiness`, which can name another blade), plus one sentence of the rule ("... from storage first, then from the
+shelf. None is set aside."). A request that is only offered says it must be accepted first. Reserving a blade would be a new
+core rule and was not added.
+
+**Presentation choices (PROPOSED, the owner can change any of them).**
+- The step of the − and + buttons is 10, as it already was on the blade sheet; it is a screen constant, not a `BalanceConfig`
+  number.
+- The price and the two buttons are pinned under the blade's scrolling card, so the repeat path stays Forge tab, "Forge
+  weapon", "List at" (three taps, measured on the emulator). With text larger than 1.3 the pinned part left the blade no room
+  (found by the device test at 2.0), so the card is one scrolling column there, as it was before. While the keyboard is up
+  the card shows only the price block: at 360 x 640 dp with text at 1.3 the buttons were otherwise cut off under the lines.
+- Where the blade went is said in a snackbar over the workshop for about ten seconds. It needs no room in the Forge's pinned
+  plate, which is already short of height on a small screen.
+- Closing the result with Back or a tap outside still stores the blade (the blade is in storage from the moment it is forged);
+  it now says so.

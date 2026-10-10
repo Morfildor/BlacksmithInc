@@ -15,7 +15,7 @@ data class DemandSummary(
     val worn: List<HeroId>,                       // carry a blade below `wornConditionThreshold`
     val unservedClasses: List<HeroClassId>,       // classes of living heroes that no listed blade suits
     val cheapestPrice: Int?, val medianPrice: Int?,   // of the listed blades; null on an empty shelf
-    val canAffordCheapest: Int, val canAffordMedian: Int,   // purse plus trade-in credit, as the counter counts it
+    val canAffordCheapest: Int, val canAffordMedian: Int,   // of the living, by `Demand.canAfford`
     val wants: List<HeroId> = emptyList(),        // living heroes with a standing want (`Hero.want`; words: `Lines.want`)
     val wantsAnswered: List<HeroId> = emptyList(),   // those of them a listed blade answers today (`Market.answersWant`)
 )
@@ -47,6 +47,21 @@ object Threats {
 }
 
 object Demand {
+    /**
+     * What each living hero can pay at the counter today, by the counter's own rule (`Market.funds`: purse, trade-in credit,
+     * an unspent guild stipend), in hero ID order. Reads the state; draws nothing.
+     */
+    fun funds(state: GameState, content: ContentCatalog, config: BalanceConfig): List<Int> {
+        val ctx = ResolutionContext(state, content, config)
+        return state.aliveHeroes().map { Market.funds(ctx, it, state.equippedWeapon(it.id)) }
+    }
+
+    /**
+     * How many of [funds] reach [price]: the heroes the counter would call able to pay it today. Paying is not buying: a
+     * hero must also be seated that day and find the blade a gain (`Market.Evaluation.eligible`).
+     */
+    fun canAfford(funds: List<Int>, price: Int): Int = funds.count { it >= price }
+
     fun summary(state: GameState, content: ContentCatalog, config: BalanceConfig): DemandSummary {
         val heroes = state.aliveHeroes()
         val listed = state.listedWeapons()
@@ -54,7 +69,8 @@ object Demand {
         val prices = listed.mapNotNull { it.listedPrice }.sorted()
         val cheapest = prices.firstOrNull()
         val median = prices.getOrNull((prices.size - 1) / 2)
-        fun canAfford(price: Int?) = if (price == null) 0 else heroes.count { it.gold + Market.tradeInCredit(carried[it.id], config) >= price }
+        val funds = funds(state, content, config)
+        fun canAfford(price: Int?) = if (price == null) 0 else canAfford(funds, price)
         val wanting = heroes.filter { it.want != null }
         val ctx = if (wanting.isEmpty() || listed.isEmpty()) null else ResolutionContext(state, content, config)   // read only: the counter's own rule, no draw
         return DemandSummary(

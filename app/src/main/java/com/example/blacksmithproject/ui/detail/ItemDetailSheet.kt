@@ -4,22 +4,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -29,13 +25,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.PrimaryActionButton
@@ -53,6 +47,7 @@ import com.tinyblacksmith.core.model.Weapon
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponLocation
 import com.tinyblacksmith.core.model.WeaponSnapshot
+import com.tinyblacksmith.core.shopday.Demand
 import com.tinyblacksmith.core.shopday.Lines as ShopLines
 
 /** An affix or a flaw with the sentence that says what it does. */
@@ -71,6 +66,11 @@ data class Stat(val label: String, val value: Int, val word: String? = null, val
 data class Stock(
     val listedPrice: Int?,
     val suggestedPrice: Int,
+    /** What each living hero can pay at the counter today (`Demand.funds`), for the count under the price. */
+    val funds: List<Int>,
+    /** Free slots on the shelf, of [slots] (`GameEngine.shelfSlots`): the engine refuses a listing when there is none. */
+    val shelfFree: Int,
+    val slots: Int,
     val salvage: String,
     val hone: String,
     val canHone: Boolean,
@@ -230,6 +230,9 @@ private fun GameEngine.stock(state: GameState, w: Weapon): Stock {
     return Stock(
         listedPrice = w.listedPrice,
         suggestedPrice = suggestedPrice(w),
+        funds = Demand.funds(state, content, config),
+        shelfFree = shelfSlots(state) - state.listedWeapons().size,
+        slots = shelfSlots(state),
         salvage = "Salvage (${config.salvageEnergy} energy, returns 1 $core)",
         hone = if (!w.canBeHoned) "Honed" else "${if (w.honed) "Re-hone" else "Hone"} (${config.honeEnergy} energy, 1 $core)",
         canHone = w.canBeHoned,
@@ -273,7 +276,7 @@ fun ItemDetailContent(
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
+    Column(modifier.fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
         WeaponStatCard(detail)
         FactBlock(AT_THE_COUNTER.takeIf { detail.counter.isNotEmpty() }, detail.counter, "sheet_counter", onOpenHero, onOpenItem = {})
         // The card already says the whole blade; "then and now" in words stays only for a blade that has changed since.
@@ -309,39 +312,26 @@ fun ItemDetailContent(
 @Composable
 private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onStock: (StockAction) -> Unit) {
     var priceText by rememberSaveable(weaponId.value, stock.listedPrice) { mutableStateOf((stock.listedPrice ?: stock.suggestedPrice).toString()) }
-    val price = priceText.toIntOrNull() ?: 0
-    Secondary(stock.listedPrice?.let { "Asking $it gold. Suggested price ${stock.suggestedPrice} gold." } ?: "In storage. Suggested price ${stock.suggestedPrice} gold.")
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
-        StepButton("−10", "Lower price by 10") { priceText = (price - 10).coerceAtLeast(0).toString() }
-        OutlinedTextField(
-            value = priceText,
-            onValueChange = { priceText = it.filter { c -> c.isDigit() }.take(6) },
-            label = { Text("Price") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.weight(1f).testTag("item_price"),
-        )
-        StepButton("+10", "Raise price by 10") { priceText = (price + 10).coerceAtMost(999999).toString() }
-    }
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
-        if (stock.listedPrice != null) {
-            PrimaryActionButton("Set price", { onStock(StockAction.SetPrice(price)) }, Modifier.testTag("item_set_price"), enabled)
-            OutlinedButton(onClick = { onStock(StockAction.Unlist) }, enabled = enabled, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 52.dp).testTag("item_unlist")) { Text("Unlist") }
-        } else {
-            PrimaryActionButton("List at $price", { onStock(StockAction.ListAt(price)) }, Modifier.testTag("item_list"), enabled)
+    // Where the blade is now, in plain text: after "List at" or "Set price" this line is what changes.
+    Text(stock.listedPrice?.let { "On the shelf, asking $it gold." } ?: "In storage, not for sale.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("item_where"))
+    PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "item", Modifier.padding(top = Space.sm)) { price ->
+        // The engine refuses a listing on a full shelf; the button says so before the tap.
+        val full = stock.listedPrice == null && stock.shelfFree <= 0
+        if (full) Text("${shelfFullLine(stock.slots)} Unlist another blade to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("item_shelf_full"))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
+            if (stock.listedPrice != null) {
+                PrimaryActionButton("Set price", { price?.let { onStock(StockAction.SetPrice(it)) } }, Modifier.testTag("item_set_price"), enabled && price != null)
+                OutlinedButton(onClick = { onStock(StockAction.Unlist) }, enabled = enabled, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 52.dp).testTag("item_unlist")) { Text("Unlist") }
+            } else {
+                PrimaryActionButton(
+                    price?.let { "List at $it" } ?: "List", { price?.let { onStock(StockAction.ListAt(it)) } },
+                    Modifier.testTag("item_list").semantics { if (full) contentDescription = "List, unavailable: ${shelfFullLine(stock.slots)}" },
+                    enabled && price != null && !full,
+                )
+            }
         }
     }
     TextButton(onClick = { onStock(StockAction.Salvage) }, enabled = enabled, modifier = Modifier.heightIn(min = 48.dp).testTag("item_salvage")) { Text(stock.salvage) }
     TextButton(onClick = { onStock(StockAction.Hone) }, enabled = enabled && stock.canHone, modifier = Modifier.heightIn(min = 48.dp).testTag("item_hone")) { Text(stock.hone) }
     TextButton(onClick = { onStock(StockAction.Donate) }, enabled = enabled && stock.canDonate, modifier = Modifier.heightIn(min = 48.dp).testTag("item_donate")) { Text(stock.donate) }
-}
-
-@Composable
-private fun StepButton(label: String, description: String, onClick: () -> Unit) {
-    OutlinedButton(
-        onClick = onClick,
-        contentPadding = PaddingValues(4.dp),
-        shape = MaterialTheme.shapes.small,
-        modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp).semantics { contentDescription = description },
-    ) { Text(label) }
 }

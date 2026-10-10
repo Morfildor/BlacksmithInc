@@ -95,7 +95,7 @@ private class Cell(val label: String, val value: String, val color: Color? = nul
  * A blade as an item card: the sprite in its slot, the name in the rarity's colour over the rarity and kind in words,
  * the numbers core holds (bars where core bounds them), then what helps ("+", green) and what hurts ("−", red).
  * Every number is a field of [detail]; a "was → now" appears only where [Stat.was] carries the visit snapshot's value.
- * Nothing in it can be tapped. [overSprite] draws over the slot (the forge's burst), [footer] under the last row.
+ * Nothing in it can be tapped. [overSprite] draws over the slot (the forge's burst).
  */
 @Composable
 fun WeaponStatCard(
@@ -103,52 +103,54 @@ fun WeaponStatCard(
     modifier: Modifier = Modifier,
     title: String? = null,
     overSprite: @Composable BoxScope.() -> Unit = {},
-    footer: @Composable ColumnScope.() -> Unit = {},
 ) {
-    FramedPanel(title, modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
-            Box(
-                Modifier.size(88.dp).background(ForgeSlot).border(1.dp, Bronze).drawBehind {
-                    if (detail.signature) drawCircle(Sprites.signatureRing, radius = size.minDimension / 2 - 4.dp.toPx(), style = Stroke(2.dp.toPx()))
-                },
-                contentAlignment = Alignment.Center,
-            ) {
-                PixelImage(detail.sprite, 72.dp, description = null)
-                PixelImage(detail.badge, 24.dp, description = null, modifier = Modifier.align(Alignment.TopStart).padding(2.dp))
-                overSprite()
-            }
-            Column(Modifier.weight(1f)) {
-                Text(detail.name, style = MaterialTheme.typography.titleLarge, color = rarityColor(detail.rarity), modifier = Modifier.semantics { heading() })
-                Text("${Labels.rarity(detail.rarity)} · ${detail.kind}", style = MaterialTheme.typography.bodyMedium, color = CreamMuted)
-                detail.title?.let { Text("\"$it\"", style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic) }
-                if (detail.signature) Text("Signature work", style = MaterialTheme.typography.labelMedium, color = Gold)
-            }
-        }
-        HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
+    FramedPanel(title, modifier.fillMaxWidth()) { WeaponStatBody(detail, overSprite) }
+}
 
-        // The numbers without a ceiling, two to a line while the text is small enough; then one bar for each that has one.
-        val cells = detail.stats.filter { it.max == null }.map { s ->
-            Cell(s.label, s.word?.let { "$it (${s.value})" } ?: s.value.toString(), delta = s.was?.let { StatDelta(it.toString(), if (s.value > it) EffectKind.BUFF else EffectKind.FLAW) })
-        } + Cell("Element", detail.element?.let { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } } ?: "None", detail.element?.let { elementColor(it) }) +
-            listOfNotNull(detail.stock?.let { Cell("Value", "${it.suggestedPrice} gold", Gold) })
-        if (LocalDensity.current.fontScale > 1f) cells.forEach { StatRow(it.label, it.value, valueColor = it.color, delta = it.delta) }
-        else cells.chunked(2).forEach { pair ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
-                pair.forEach { StatRow(it.label, it.value, Modifier.weight(1f), it.color, it.delta) }
-                if (pair.size == 1) Box(Modifier.weight(1f))
-            }
+/** What [WeaponStatCard] says of a blade, without the plate around it: for a caller that frames or scrolls it itself. */
+@Composable
+fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxScope.() -> Unit = {}) {
+    Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+        Box(
+            Modifier.size(88.dp).background(ForgeSlot).border(1.dp, Bronze).drawBehind {
+                if (detail.signature) drawCircle(Sprites.signatureRing, radius = size.minDimension / 2 - 4.dp.toPx(), style = Stroke(2.dp.toPx()))
+            },
+            contentAlignment = Alignment.Center,
+        ) {
+            PixelImage(detail.sprite, 72.dp, description = null)
+            PixelImage(detail.badge, 24.dp, description = null, modifier = Modifier.align(Alignment.TopStart).padding(2.dp))
+            overSprite()
         }
-        detail.stats.filter { it.max != null }.forEach { s -> StatBar(s.label, s.value, s.max!!, Modifier.padding(top = Space.xs), word = s.word, was = s.was) }
+        Column(Modifier.weight(1f)) {
+            Text(detail.name, style = MaterialTheme.typography.titleLarge, color = rarityColor(detail.rarity), modifier = Modifier.semantics { heading() })
+            Text("${Labels.rarity(detail.rarity)} · ${detail.kind}", style = MaterialTheme.typography.bodyMedium, color = CreamMuted)
+            detail.title?.let { Text("\"$it\"", style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic) }
+            if (detail.signature) Text("Signature work", style = MaterialTheme.typography.labelMedium, color = Gold)
+        }
+    }
+    HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
 
-        SectionHeader("Buffs")
-        if (detail.affixes.isEmpty()) Secondary("No buffs.")
-        detail.affixes.forEach { EffectRow(EffectKind.BUFF, it.name, it.description) }
-        // Asleep, so not a buff: its own gold "◆" row, in core's words, after whatever is awake.
-        detail.dormant?.let { EffectRow(EffectKind.NEUTRAL, it, "", Modifier.testTag("card_dormant")) }
-        if (detail.flaws.isNotEmpty()) {
-            SectionHeader("Flaws")
-            detail.flaws.forEach { EffectRow(EffectKind.FLAW, it.name, it.description) }
+    // The numbers without a ceiling, two to a line while the text is small enough; then one bar for each that has one.
+    val cells = detail.stats.filter { it.max == null }.map { s ->
+        Cell(s.label, s.word?.let { "$it (${s.value})" } ?: s.value.toString(), delta = s.was?.let { StatDelta(it.toString(), if (s.value > it) EffectKind.BUFF else EffectKind.FLAW) })
+    } + Cell("Element", detail.element?.let { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } } ?: "None", detail.element?.let { elementColor(it) }) +
+        listOfNotNull(detail.stock?.let { Cell("Value", "${it.suggestedPrice} gold", Gold) })
+    if (LocalDensity.current.fontScale > 1f) cells.forEach { StatRow(it.label, it.value, valueColor = it.color, delta = it.delta) }
+    else cells.chunked(2).forEach { pair ->
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+            pair.forEach { StatRow(it.label, it.value, Modifier.weight(1f), it.color, it.delta) }
+            if (pair.size == 1) Box(Modifier.weight(1f))
         }
-        footer()
+    }
+    detail.stats.filter { it.max != null }.forEach { s -> StatBar(s.label, s.value, s.max!!, Modifier.padding(top = Space.xs), word = s.word, was = s.was) }
+
+    SectionHeader("Buffs")
+    if (detail.affixes.isEmpty()) Secondary("No buffs.")
+    detail.affixes.forEach { EffectRow(EffectKind.BUFF, it.name, it.description) }
+    // Asleep, so not a buff: its own gold "◆" row, in core's words, after whatever is awake.
+    detail.dormant?.let { EffectRow(EffectKind.NEUTRAL, it, "", Modifier.testTag("card_dormant")) }
+    if (detail.flaws.isNotEmpty()) {
+        SectionHeader("Flaws")
+        detail.flaws.forEach { EffectRow(EffectKind.FLAW, it.name, it.description) }
     }
 }

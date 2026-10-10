@@ -266,7 +266,7 @@ object Market {
             (if (countersThreat) cfg.threatUtility else 0.0) +
             noise -
             pricePenalty * config.utilityPricePenaltyWeight
-        val affordable = price <= hero.gold + tradeInCredit(current, config) + stipend(ctx, hero)
+        val affordable = price <= funds(ctx, hero, current)
         // "Refused for it": the same roll buys this blade on a calm day and not under the warning.
         val calm = if (resisted) valueInHand(ctx, hero, weapon, null) - valueInHand(ctx, hero, current, null) else gain
         val refusedAsResisted = resisted && affordable && calm > 0 && utility + (calm - gain) * config.utilityImprovementWeight >= config.purchaseUtilityThreshold &&
@@ -300,6 +300,12 @@ object Market {
             (loyalty * config.loyaltyPricePerPoint).coerceIn(0.0, config.loyaltyPriceCap)
 
     fun isRegular(hero: Hero, config: BalanceConfig): Boolean = hero.loyalty >= config.regularLoyaltyThreshold
+
+    /**
+     * What [hero] can put on the counter today: their purse, the credit for the blade they carry ([current]) and a guild
+     * stipend not yet spent. The one rule for "can pay": [evaluate] and `Demand.funds` both read it.
+     */
+    fun funds(ctx: ResolutionContext, hero: Hero, current: Weapon?): Int = hero.gold + tradeInCredit(current, ctx.config) + stipend(ctx, hero)
 
     /** Guild Patronage: the gold [hero]'s guild would put toward a blade today; once per member per blessing, 0 without the blessing or a guild. */
     fun stipend(ctx: ResolutionContext, hero: Hero): Int {

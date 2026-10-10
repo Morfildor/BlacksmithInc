@@ -4,12 +4,17 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -30,13 +35,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -49,8 +57,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
-import com.example.blacksmithproject.ui.detail.WeaponStatCard
+import com.example.blacksmithproject.ui.detail.ItemDetail
+import com.example.blacksmithproject.ui.detail.PriceEditor
+import com.example.blacksmithproject.ui.detail.WeaponStatBody
 import com.example.blacksmithproject.ui.detail.itemDetail
+import com.example.blacksmithproject.ui.detail.shelfFullLine
+import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.PaperInk
 import com.example.blacksmithproject.ui.theme.PaperInkMuted
 import com.example.blacksmithproject.ui.theme.PaperRule
@@ -66,29 +78,96 @@ import com.tinyblacksmith.core.model.ReplayKind
 import com.tinyblacksmith.core.model.WeaponId
 import kotlinx.coroutines.delay
 
-/** Item card after an atomic forge. The reveal is decorative; the weapon already exists in the saved state. */
+/**
+ * Item card after an atomic forge, with the price chosen on it. The reveal is decorative; the weapon already exists in
+ * the saved state, in storage. Closing the card any way but "List at" leaves it there, and the workshop says so.
+ */
 @Composable
 fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel, reducedMotion: Boolean) {
     val w = s.state.weapons[weaponId] ?: run { vm.dismissReveal(); return }
     val content = vm.engine.content
-    val suggested = vm.engine.suggestedPrice(w)
     val reveal by animateFloatAsState(targetValue = 1f, animationSpec = tween(if (reducedMotion) 0 else 600), label = "reveal")
     val haptics = LocalHaptics.current
     LaunchedEffect(weaponId) { haptics.play(if (w.signatureId != null || w.rarity >= Rarity.EPIC) Moment.FORGE_SIGNATURE else Moment.FORGE_STRIKE) }
     val detail = remember(s.state, weaponId) { vm.engine.itemDetail(s.state, weaponId) } ?: return
-    // The blade is revealed as its item card; the card scrolls when large text makes it taller than the screen.
-    Dialog(onDismissRequest = vm::dismissReveal, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        WeaponStatCard(
-            detail, Modifier.padding(horizontal = Space.md).semantics { testTagsAsResourceId = true }.graphicsLayer { alpha = reveal }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp).verticalScroll(rememberScrollState()),
-            title = "Fresh from the forge",
+    val request = remember(s.state, weaponId, s.draft.commissionId) { vm.engine.forgedFor(s.state, weaponId, s.draft.commissionId) }
+    // The card draws under the system bars and the keyboard and pads itself clear of both, so the price and the
+    // buttons stay above the keyboard.
+    Dialog(onDismissRequest = vm::storeForged, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+        ForgeResultCard(
+            detail, "${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}.", request,
+            enabled = !s.busy, onStore = vm::storeForged, onList = { vm.listForged(w.id, it) },
+            modifier = Modifier.safeDrawingPadding().padding(horizontal = Space.md, vertical = Space.sm).semantics { testTagsAsResourceId = true }.graphicsLayer { alpha = reveal }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp),
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
-        ) {
-            Secondary("${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}.", Modifier.padding(top = Space.md))
-            Secondary("Suggested price $suggested gold. Set your own in the Shop.")
-            Row(Modifier.fillMaxWidth().padding(top = Space.md), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedButton(onClick = vm::dismissReveal, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 52.dp).testTag("reveal_store")) { Text("Store") }
-                PrimaryActionButton("List at $suggested", { vm.dispatch(Command.ToggleShelf(w.id, true, suggested)); vm.dismissReveal() }, Modifier.weight(1f).testTag("reveal_list"), enabled = w.isInStorage)
+        )
+    }
+}
+
+/**
+ * The forge result without its window. The blade's card scrolls; the price and the two ways on are pinned under it, so
+ * "List at" is on screen without a scroll and stays above the keyboard. With text larger than 1.3 the pinned part would
+ * leave the blade no room, so the whole card is one scrolling column again. A blade forged for a request says so first.
+ * [detail] carries the price facts (its `Stock`); [onList] is given the chosen price. [enabled] greys "List at" while a
+ * command is being saved; Store issues no command and is never greyed.
+ */
+@Composable
+fun ForgeResultCard(
+    detail: ItemDetail,
+    recipe: String,
+    request: ForgedForUi?,
+    enabled: Boolean,
+    onStore: () -> Unit,
+    onList: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+    overSprite: @Composable BoxScope.() -> Unit = {},
+) {
+    val blade: @Composable ColumnScope.() -> Unit = {
+        request?.let { r ->
+            Column(Modifier.padding(bottom = Space.sm).testTag("reveal_request")) {
+                Text(r.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                Secondary(r.terms)
+                EffectRow(if (r.fits) EffectKind.BUFF else EffectKind.FLAW, r.fit, r.handover)
+                // The engine sets no blade aside (`Commissions.pick`): say what End Day does instead of promising this one.
+                if (r.accepted) Secondary("At End Day the patron takes a blade that fits, from storage first, then from the shelf. None is set aside.")
             }
+        }
+        WeaponStatBody(detail, overSprite)
+        Secondary(recipe, Modifier.padding(top = Space.md))
+        HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
+    }
+    val price: @Composable ColumnScope.() -> Unit = price@{
+        val stock = detail.stock?.takeIf { it.listedPrice == null }
+        if (stock == null) {
+            // Reopened after the blade was listed or left the shop: there is nothing left to choose here.
+            Secondary(detail.stock?.listedPrice?.let { "Already on the shelf, asking $it gold." } ?: "This blade is no longer in storage.")
+            OutlinedButton(onClick = onStore, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("reveal_store")) { Text("Close") }
+            return@price
+        }
+        var priceText by rememberSaveable(detail.weaponId.value) { mutableStateOf(stock.suggestedPrice.toString()) }
+        PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "reveal") { chosen ->
+            // The engine refuses a listing on a full shelf; say so here and leave Store as the way on.
+            val full = stock.shelfFree <= 0
+            if (full) Text("${shelfFullLine(stock.slots)} Store this blade; to list it, unlist another in the Shop first.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("reveal_shelf_full"))
+            Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+                OutlinedButton(onClick = onStore, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 52.dp).testTag("reveal_store")) { Text("Store") }
+                PrimaryActionButton(
+                    chosen?.let { "List at $it" } ?: "List", { chosen?.let(onList) },
+                    Modifier.weight(1f).testTag("reveal_list").semantics { if (full) contentDescription = "List, unavailable: ${shelfFullLine(stock.slots)}" },
+                    enabled = enabled && chosen != null && !full,
+                )
+            }
+        }
+    }
+    val large = LocalDensity.current.fontScale > 1.3f
+    // While the keyboard is up the pinned card is only its price: on a short screen the title and the blade would
+    // otherwise leave the buttons under the keyboard.
+    val typing = !large && WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    FramedPanel("Fresh from the forge".takeIf { !typing }, modifier.fillMaxWidth()) {
+        if (large) Column(Modifier.verticalScroll(rememberScrollState())) { blade(); price() }
+        else {
+            if (!typing) Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) { blade() }
+            // Measured before the card above it, so it has the room it needs; it scrolls only when the keyboard leaves less.
+            Column(Modifier.verticalScroll(rememberScrollState())) { price() }
         }
     }
 }

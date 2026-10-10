@@ -265,8 +265,84 @@ Balance numbers are never lowered automatically; the distributions are reported 
     taste, and whether to commit the external review and the evidence folder (both still untracked).
 Settled since the morning: a maxed account's lead over a new one for the SYNERGY bot holds at 10,000 seeds (+10.15).
 
+## UI/UX review (2026-10-10, afternoon)
+A design review of the 0.7.0 build with a phased redesign plan is in `docs/UI_UX_REVIEW_2026-10-10.md`
+(evidence, the two independent reviews and the reliable emulator captures in `docs/ui_review_2026-10-10/`). Nothing
+was implemented. It recommends an answer for open owner decisions 6, 7, 8 and 14 and raises six new ones (section 7
+there). The capture found the emulator being driven by another process (the app was uninstalled at 12:17 and a
+different build installed), so the shop-day cards, the sheets and the large-text and small-screen views are judged
+from source; the planning screens were seen.
+
+## UI/UX improvement 1: forge, choose a price, list (2026-10-10, afternoon; committed on `main`)
+The first item of the UI/UX review was built at the owner's request: the journey from the forge result to a listed blade.
+Design notes and the reasons are in `docs/DECISIONS.md` ("Forge, price, list: the first UI/UX improvement"); the player-facing
+lines are in `CHANGELOG.md` under `[Unreleased]`. No balance, rules, save or content version changed.
+
+**Which build.** The work is one commit on `main`, on top of `ea01669`. The branch `post-0.7.0` (the worktree
+`.claude/worktrees/shop-day`) is four commits ahead of `main` and touches `ItemDetailSheet.kt`, `WorkshopScreen.kt` and
+`Labels.kt` too; nothing here was merged with it. The reviews were written against that branch's build; every pricing problem
+they describe was confirmed in `main`'s source before editing.
+
+**What changed.**
+- The forge result has the price on it: −10, a number that can be typed, +10, "List at <price>" and Store. The suggested price
+  is named apart from the player's ("Suggested price 124 gold. Your price is 30 below it.").
+- Under the price, on the forge result and on the blade sheet: "N of M heroes in town can afford this price", counted again on
+  every change from the saved purses by the counter's own rule (`Market.funds`: purse, trade-in credit, an unspent guild
+  stipend), red when nobody can, with "Able to pay is not a sale: the blade must also suit them."
+- A full shelf greys "List at" with the reason beside it, on both surfaces; Store stays.
+- After listing or storing, a notice over the workshop says where the blade went. Closing the card with Back or a tap outside
+  stores the blade and says so. "List at" closes the card only once the listing is saved.
+- A blade forged from "Forge this" keeps its request on the card: who, what, terms, whether this blade fits, and the engine's
+  own readiness line for End Day, with the rule that no blade is set aside.
+- The price and both buttons are pinned under the blade's scrolling card and stay above the keyboard; the blade sheet's price
+  block does too.
+
+**Checks.** The emulator used was a second instance started for this work (AVD `carbscan`, API 36, read-only, port 5556),
+because another session was driving `emulator-5554` at the time. It is not the Pixel_10_Pro of the earlier gates.
+| Check | Result |
+|---|---|
+| Core JVM tests (`./gradlew :core:test`) | 394 pass (393 + `DemandTest.fundsAreTheCountersOwnCanPay`) |
+| App JVM tests (`./gradlew :app:testDebugUnitTest`) | 128 pass (122 + six in `ForgeResultTest`) |
+| `:app:compileDebugAndroidTestKotlin :app:assembleRelease :app:lintDebug` | pass |
+| Device tests (`:app:connectedDebugAndroidTest`, 1080x1920, density 420, font 1.0) | 60 of 61. New and passing: four in `ForgeResultCardTest` (price and count, full shelf, request context, and the card at 411x731, 360x640 and 320x569 dp with text at 1.0, 1.3 and 2.0) and one in `DetailSheetTest`. **One fails: `StorageSheetTest.bulkSalvageAsksOnceAndIssuesOneCommandPerBlade`. It fails the same way on untouched `main` on this emulator**, so it is not from this work; it passed in the earlier gate on Pixel_10_Pro and was not looked into |
+| `tools/emulator/smoke.sh` | passed, all ten checks, SMOKE_DONE |
+| The journey, seen on the emulator, at 1080x1920 density 420 (411x731 dp), font 1.0 | 23 of 23 scripted checks, and the screenshots were looked at: a new game, forge, the result with both buttons on screen without a scroll, −10 twice, a typed 9,999 ("0 of 12 heroes in town can afford this price", in red) with the keyboard up and the price, the count and both buttons above it, a typed price listed, the notice, the Shop showing the shelf, the repeat recipe in three taps (Forge tab, Forge weapon, List at), Store and Back with their notices, then the blade sheet from Storage with the same count, its List button above the keyboard, and "On the shelf, asking 33 gold." after listing |
+| The same journey at 720x1280 density 320 (360x640 dp), font 1.0 | 23 of 23, screenshots looked at |
+| The same journey at 360x640 dp, font 1.3 | 23 of 23, screenshots looked at |
+| The same journey at 411x731 dp, font 1.3 | 23 of 23; the result and the sheet's keyboard screenshots were looked at |
+| A full shelf in a live game (411x731 dp, font 1.0) | seen: seven blades listed on day 1 and one on day 2, all at 9,999; the ninth blade's card says "The shelf is full (8 of 8). ...", "List at" is greyed, a tap on it does nothing and raises no error, Store works, and the blade's sheet says the same |
+
+Found and fixed on the way, each by a device run: the first layout put the buttons below the fold at normal size (pinned
+footer); the pinned footer left the blade no room at font 2.0 (one scrolling column above 1.3); on the sheet at 360x640 the
+List button was part-covered by the keyboard when the lines wrapped (the block is brought into view again after layout); at
+360x640 with font 1.3 the result's buttons were cut off under the keyboard (the card shows only its price while typing).
+
+Screenshots: `docs/ui_review_2026-10-10/improvement_1/` (a selection; the file names say the size and the step).
+
+**Not verified, and limits.**
+- Nothing ran on a physical phone or on Pixel_10_Pro. TalkBack was not run; the count is a polite live region and the greyed
+  buttons carry their reason, but nobody listened to them.
+- A blade forged for a request was **not seen in a live game** (no request was offered in the days played). Its card is
+  covered by JVM tests and one device test only.
+- Font 2.0 was run only inside the device test (the controls are reachable by scrolling); nobody looked at it.
+- At 360 dp wide the blade card's "Renown" label wraps to "Renow / n" beside "Unsung (0)". That is the existing item card,
+  seen here for the first time, and was left alone.
+- At 360x640 with font 1.3 the blade above the pinned price has about 170 dp and shows its name and two numbers before it
+  scrolls.
+- The notice is a snackbar of about ten seconds; it lies over the bottom of the destination while it shows.
+- The card still says "Value" for the suggested price in its number grid, above the line that calls it "Suggested price".
+- The count says who can pay, not who will come: six of the twelve are seated a day. The line says it is not a sale; it does
+  not say how many visit.
+- Process hygiene, for the record: a build from `main` was installed on the shared `emulator-5554` and its app data cleared
+  before the other session's script was noticed; that session's `post-0.7.0` APK was installed back within minutes, but its
+  running scenario script will have failed in between. Later `./gradlew --stop` was run once, which also stops idle Gradle
+  daemons of other sessions.
+
 ## Next actions
-1. Owner hand test of the 0.7.0 debug build (list below), then the owner's decisions above.
+0. UI/UX improvement 1 (above) is committed and pushed on `main`: the owner looks at it, and it is still to be reconciled
+   with `post-0.7.0`; a request blade's result card still needs a look in a live game.
+1. Owner hand test of the 0.7.0 debug build (list below), then the owner's decisions above, and the UI/UX review's
+   decisions (`docs/UI_UX_REVIEW_2026-10-10.md`, section 7) before its phase 0 starts.
 2. From the hand test: fix what the large-text and small-screen items show; take the screenshots nobody has.
 3. Decide the balance lines; if a number changes, re-run the simulator and record it in DECISIONS.md.
 4. The open review findings: say what a cut-short bulk action left undone (finding 4); use the engine's worn rule on

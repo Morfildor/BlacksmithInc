@@ -96,6 +96,8 @@ sealed interface UiState {
         /** Day on which the player chose "Decide later" for the blessing offer; UI-only, the offer itself stays in core state. */
         val blessingOfferDismissedDay: Int? = null,
         val sheet: Sheet? = null,
+        /** Where a blade just went (the shelf or storage), said once over the workshop; UI-only. */
+        val notice: String? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
     }
@@ -157,6 +159,7 @@ class GameViewModel(
         val blessingOfferDismissedDay: Int? = null,
         val sheet: Sheet? = null,
         val lastError: String? = null,
+        val notice: String? = null,
         val loadFailure: SaveFailure? = null,
         /** True until the first load (and the hand-over of the old report key) has finished, and again during Retry. */
         val loading: Boolean = true,
@@ -249,7 +252,7 @@ class GameViewModel(
         }
         // Planning always arrives with the Shop's content: shopFor builds it before this is called, and now() checks.
         val planned = plan ?: planFor(run)
-        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet)
+        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -370,6 +373,28 @@ class GameViewModel(
         it.copy(dest = Dest.FORGE, draft = ForgeDraft(recipe.mode, recipe.familyId, recipe.coreId, recipe.augmentId, recipe.catalystId, recipe.risk, recipe.technique))
     }
     fun dismissReveal() = edit { it.copy(revealWeaponId = null) }
+
+    /**
+     * "List at N" on the forge result. The card closes only once the listing is saved, and the workshop then says where
+     * the blade is; a refusal leaves the card open under the engine's reason.
+     */
+    fun listForged(id: WeaponId, price: Int) {
+        val run = session.snapshot.value?.run ?: return
+        launch(Op.Dispatch(Command.ToggleShelf(id, true, price), run.runId)) {
+            val now = session.snapshot.value?.run ?: return@launch
+            val name = now.weapons[id]?.name ?: return@launch
+            edit { it.copy(revealWeaponId = null, notice = "$name is on the shelf at $price gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}.") }
+        }
+    }
+
+    /** "Store" on the forge result, and closing it any other way: the blade stays in storage, and the workshop says so. */
+    fun storeForged() {
+        val name = local.value.revealWeaponId?.let { session.snapshot.value?.run?.weapons?.get(it) }?.takeIf { it.isInStorage }?.name
+        edit { it.copy(revealWeaponId = null, notice = name?.let { n -> "$n is in storage, not for sale. List it from Storage in the Shop." } ?: it.notice) }
+    }
+
+    /** The notice has been shown; a newer one is left alone. */
+    fun dismissNotice(shown: String) = local.update { if (it.notice == shown) it.copy(notice = null) else it }
     fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet) }
     fun closeSheet() = edit { it.copy(sheet = null) }
     fun dismissError() = edit { it.copy(lastError = null) }

@@ -11,6 +11,7 @@ import com.tinyblacksmith.core.content.ToolEffect
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.WorldEvents
 import com.tinyblacksmith.core.legacy.Legacy
+import com.tinyblacksmith.core.market.Commissions
 import com.tinyblacksmith.core.model.Commission
 import com.tinyblacksmith.core.model.CommissionId
 import com.tinyblacksmith.core.model.CommissionStatus
@@ -106,7 +107,32 @@ data class ShopUi(
     val threat: ThreatUi? = null,
     /** How many requests may be open at once (`customers.maxOpenCommissions`). */
     val requestSlots: Int = 1,
+    /** What each living hero can pay at the counter today (`Demand.funds`): the count under a price being chosen. */
+    val funds: List<Int> = emptyList(),
 )
+
+/**
+ * The request a fresh blade was forged for, as the forge result shows it. [fit] is about that blade alone
+ * (`Commissions.fit`); [handover] is what End Day will do for the request as the shop stands (`Labels.readiness`), which
+ * may name another blade: the engine hands over the least sufficient blade that fits and sets none aside.
+ */
+@Immutable data class ForgedForUi(val title: String, val terms: String, val fits: Boolean, val fit: String, val accepted: Boolean, val handover: String)
+
+/** Null without a request, for one that is no longer open, or for a blade that has left the save. Pure: reads the save. */
+fun GameEngine.forgedFor(state: GameState, weaponId: WeaponId, commissionId: CommissionId?): ForgedForUi? {
+    val c = state.commissions[commissionId ?: return null]?.takeIf { it.status == CommissionStatus.OFFERED || it.status == CommissionStatus.ACCEPTED } ?: return null
+    val w = state.weapons[weaponId] ?: return null
+    val fits = Commissions.fit(w, c) == Commissions.Fit.OK
+    val accepted = c.status == CommissionStatus.ACCEPTED
+    return ForgedForUi(
+        title = "For ${state.heroes[c.buyerId]?.fullName ?: "Someone"}: ${Labels.request(c, content, config)}",
+        terms = "${c.reward} gold · ${dueWords(c.deadlineDay - state.day, c.deadlineDay)}",
+        fits = fits,
+        fit = if (fits) "This blade fits the request" else "This blade does not fit: ${Labels.fit(w, c, content)}",
+        accepted = accepted,
+        handover = if (accepted) Labels.readiness(c, state.weapons.values, content, config) else "Not accepted yet. Accept the request in the Shop, or nothing is handed over.",
+    )
+}
 
 /** Names are listed while they fit on a line or two; a longer list is only its count. */
 private const val NAMES_SHOWN = 4
@@ -206,6 +232,7 @@ fun GameEngine.shopUi(state: GameState): ShopUi {
         storage = state.storedWeapons().map { stock(it, threat, state.era) },
         threat = threat,
         requestSlots = config.customers.maxOpenCommissions,
+        funds = Demand.funds(state, content, config),
         wants = d.wants.mapNotNull { id -> state.heroes[id]?.let { h -> Lines.want(h, content)?.let { WantUi(id, it, id in d.wantsAnswered, h.want!!.familyId) } } },
     )
 }

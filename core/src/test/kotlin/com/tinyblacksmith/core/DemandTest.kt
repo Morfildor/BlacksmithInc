@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.TestSupport.forgeAccepted
 import com.tinyblacksmith.core.TestSupport.quickSword
 import com.tinyblacksmith.core.TestSupport.withMaterials
 import com.tinyblacksmith.core.content.LaunchContent
+import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.shopday.Demand
@@ -71,6 +72,43 @@ class DemandTest {
         // A dead hero is nobody's customer.
         val fewer = s.copy(heroes = s.heroes + (a.id to s.hero(a.id).copy(fate = HeroFate.DEAD)))
         assertEquals(listOf(heroes.size - 1, emptyList<HeroId>()), Demand.summary(fewer, content, config).let { listOf(it.living, it.worn) })
+    }
+
+    /** The price line of the forge result and the blade sheet: who could pay a price is who the counter itself calls able to. */
+    @Test
+    fun fundsAreTheCountersOwnCanPay() {
+        val heroes = fresh.aliveHeroes()
+        val (a, b, c) = heroes
+        val stipend = config.customers.patronageStipend
+        val until = fresh.day + 4
+        // a has no coin but a blade to trade, b is a guild member under Guild Patronage, c pays from the purse alone.
+        val carried = blade("own-a", location = WeaponLocation.Owned(a.id, equipped = true))
+        val purse = mapOf(a.id to 0, b.id to 99, c.id to 100)
+        val s = fresh.copy(
+            weapons = mapOf(carried.id to carried),
+            heroes = fresh.heroes.mapValues { (id, h) -> h.copy(gold = purse[id] ?: 40, guildId = "g1".takeIf { id == b.id }) },
+            blessings = listOf(ActiveBlessing(LaunchContent.GUILD_PATRONAGE, until)),
+        )
+        val funds = Demand.funds(s, content, config)
+        assertTrue(stipend > 0, "the scenario: patronage pays a stipend")
+        assertEquals(listOf(Market.tradeInCredit(carried, config), 99 + stipend, 100) + List(heroes.size - 3) { 40 }, funds, "in hero ID order")
+
+        for (price in listOf(0, 1, 40, 41, 100, 101, 99 + stipend, 100 + stipend, 10_000)) {
+            val offer = template.copy(id = WeaponId("offer"), location = WeaponLocation.Shelf(price))
+            val listed = s.copy(weapons = s.weapons + (offer.id to offer))
+            val ctx = ResolutionContext(listed, content, config)
+            val atTheCounter = listed.aliveHeroes().count { Market.evaluate(ctx, it, ctx.equippedWeapon(it.id), offer, 0.5).affordable }
+            assertEquals(atTheCounter, Demand.canAfford(funds, price), "at $price gold")
+            assertEquals(atTheCounter, Demand.summary(listed, content, config).canAffordCheapest, "\"Who is buying\" counts the same at $price gold")
+        }
+        assertEquals(heroes.size, Demand.canAfford(funds, 0))
+        assertEquals(0, Demand.canAfford(funds, 10_000), "a price nobody can pay")
+
+        // A stipend already spent under this blessing is not counted twice; a dead hero is nobody's customer.
+        val spent = s.copy(heroes = s.heroes + (b.id to s.hero(b.id).copy(stipendSpentFor = until)))
+        assertEquals(99, Demand.funds(spent, content, config)[1])
+        val fewer = s.copy(heroes = s.heroes + (c.id to s.hero(c.id).copy(fate = HeroFate.DEAD)))
+        assertEquals(funds - 100, Demand.funds(fewer, content, config))
     }
 
     @Test

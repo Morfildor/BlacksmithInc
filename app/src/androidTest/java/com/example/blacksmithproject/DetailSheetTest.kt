@@ -8,6 +8,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
@@ -209,6 +212,31 @@ class DetailSheetTest {
         compose.onNodeWithTag("item_unlist").performScrollTo().performClick()
         compose.onNodeWithTag("item_set_price").performScrollTo().performClick()
         compose.runOnIdle { assertEquals(listOf(StockAction.Unlist, StockAction.SetPrice(55)), actions.drop(2)) }
+    }
+
+    /** The price editor of the sheet: the count follows the typed price, and a full shelf is said before the tap. */
+    @Test
+    fun thePriceEditorCountsWhoCanPayAndGuardsAFullShelf() {
+        val stored = made.copy(location = WeaponLocation.Storage)
+        val room = state.copy(weapons = mapOf(stored.id to stored), heroes = state.heroes.mapValues { (_, h) -> h.copy(gold = 50) })
+        var detail by mutableStateOf(engine.itemDetail(room, stored.id)!!)
+        compose.setContent { BlacksmithProjectTheme { ItemDetailSheet(detail, planning = true, onOpenHero = {}, onStock = { actions += it }, onDismiss = {}) } }
+        val living = room.aliveHeroes().size
+        seen("Suggested price ${engine.suggestedPrice(stored)} gold.")
+        compose.onNodeWithTag("item_price").performScrollTo().performTextReplacement("50")
+        compose.onNodeWithTag("item_afford").performScrollTo().assertTextEquals("$living of $living heroes in town can afford this price.")
+        compose.onNodeWithTag("item_price").performTextReplacement("51")
+        compose.onNodeWithTag("item_afford").assertTextEquals("0 of $living heroes in town can afford this price.")
+        compose.onNodeWithTag("item_list").performScrollTo().assertIsEnabled()
+
+        val slots = engine.shelfSlots(room)
+        val full = room.copy(weapons = room.weapons + (1..slots).associate { WeaponId("full$it") to stored.copy(id = WeaponId("full$it"), location = WeaponLocation.Shelf(60)) })
+        detail = engine.itemDetail(full, stored.id)!!
+        compose.waitForIdle()
+        compose.onNodeWithTag("item_shelf_full").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("item_list").performScrollTo().assertIsNotEnabled()
+        compose.onNodeWithTag("item_salvage").performScrollTo().assertIsEnabled()   // the other ways on stay
+        compose.runOnIdle { assertTrue(actions.isEmpty()) }
     }
 
     /** Accessibility floor: at twice the text size both sheets still scroll to their last line, and every target is 48 dp. */

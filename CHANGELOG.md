@@ -7,6 +7,18 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- The price is chosen on the forge result. "−10" and "+10" step it and the number can be typed; "List at" carries the chosen price and Store is still there. Under the price the suggested price is named apart from your own ("Suggested price 124 gold. Your price is 30 below it."), and a line counted again on every change says how many heroes can pay it ("4 of 12 heroes in town can afford this price."), in red when nobody can, with a note that being able to pay is not a sale. The blade sheet's price has the same lines.
+- After "List at" or Store the workshop says where the blade went ("Iron Sword is on the shelf at 90 gold. Shelf 3 of 8." or "Iron Sword is in storage, not for sale. List it from Storage in the Shop."). Closing the result card with Back or a tap outside stores the blade and says so too.
+- A blade forged with "Forge this" from a request keeps the request on its result card: who asked for what and on what terms, whether this blade fits, and what End Day will hand over as the shop stands. It says that no blade is set aside.
+
+### Changed
+- When the shelf is full, "List at" on the forge result and on the blade sheet is greyed and the reason stands beside it ("The shelf is full (8 of 8). ..."), instead of an error after the tap. Store still works.
+- The forge result keeps its price and both buttons on screen while the blade's card scrolls above them, and above the keyboard while a price is typed (with text larger than 1.3 the card is one scrolling column). The blade sheet's price and its buttons also stay above the keyboard.
+- "List at" on the forge result closes the card once the listing is saved; if the game refuses it, the card stays open under the reason.
+- The blade sheet says where the blade is above its price ("On the shelf, asking 90 gold." or "In storage, not for sale."), and that line changes when it is listed or repriced.
+- "Who is buying" counts an unspent guild stipend (Guild Patronage) toward what a hero can afford, as the counter itself does, so it always agrees with the new line under a price.
+
 ## [0.7.0] - 2026-10-10
 
 ### Added
