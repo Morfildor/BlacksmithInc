@@ -22,19 +22,27 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   `GameEngine` (starting militia, the three season multipliers) and `Forge` (affix slots per rarity) still hold a few. Immutable `GameState`
   (`model/`), typed commands and errors (`engine/Commands.kt`), the only mutator `engine/GameEngine.kt`
   (End Day = fixed GDD 3.2 order, idempotent per command ID), invariants asserted after each command.
-- `:app` — Compose UI is an observer: `GameViewModel` dispatches commands, saves accepted results atomically
-  (Room, `data/SaveStore.kt`), then renders. DataStore holds only settings. Never compute outcomes in UI.
-- Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt`; migrations go there.
+- `:app` — Compose UI is an observer: `GameViewModel` sends every operation (commands, legacy purchases, claim, Begin
+  era, abandon, the shop-day position) through `GameSession`, the one serialized boundary, which saves accepted results
+  atomically (Room, `data/SaveStore.kt` behind `data/GameRepository.kt`) before the screen renders them; load failures
+  open a recovery screen (`ui/Failures.kt`). DataStore holds only settings. Never compute outcomes in UI.
+  Screens: main menu (`ui/App.kt`), then four destinations (Shop, Forge, Town, Records) in `ui/WorkshopScreen.kt` with
+  Storage, Supplies, Settings and hero / blade sheets (`ui/detail/`); after End Day the saved day is shown card by card
+  (`ui/shopday/`). There is no Home or Market panel any more.
+- Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt` (schema 4; rules 3 and content 3 are
+  enforced on load by `engine/Compatibility.kt`); migrations go there.
 - Content names are PROPOSED; counts are LOCKED. Vertical slice content lives in `content/SliceContent.kt`.
-- Pixel art has three sources, never hand-edited PNGs, all imported by `tools/pixelart/import_assets.py` into
+- Pixel art has several sources, never hand-edited PNGs, all imported by `tools/pixelart/import_assets.py` into
   `tools/pixelart/overrides.json`: concept sheets in `Pixel art assets/` (sliced by cell layout, rich 64 px icons
   and the forge scene), the weapon master sheet (`Weapons master`, 6 families × 7 element rows × 8 levels, sliced into
-  336 sprites and the generated `ui/WeaponArt.kt` lookup), loose `<id>.png` files, and the artist's 1x production pack (a subfolder with
+  336 sprites and the generated `ui/WeaponArt.kt` lookup), loose `<id>.png` files, the owner's hero portrait set
+  (`Assets/Heroes`, 20 heroes with a base and an upgraded face, `--heroes PATH`; the folder is not committed and the step is
+  skipped without it), and the artist's 1x production pack (a subfolder with
   `drawable-nodpi/` + `manifest.json`), from which only battle frames, siege wall, milestone burst and hero markers
   are taken by default (`--pack-all` takes everything). `generate_assets.py` draws placeholders only for IDs without
-  hand-made art. The brief for new art
+  imported art. The brief for new art
   is `docs/ART_BRIEF.md`. `ui/Sprites.kt` maps content IDs to sprites (nearest-neighbour when enlarging, bilinear
-  when shrinking hand-made art); sprites stay decorative (no essential text, no gameplay reads).
+  when shrinking imported art); sprites stay decorative (no essential text, no gameplay reads).
 
 ## Commands
 ```
@@ -43,11 +51,12 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 #   catalog sweeps: --noTool id[,id], --toolCost id=mult[,id=mult], --noAffixEffect id[,id]|all (keeps the affix, neutralises its v3 effect); --noFates turns the v5 weapon fates off (v4 odds, no guild heir, no merchant); --noImpact skips the maxed-legacy and per-upgrade runs
 #   legacy: --upgrades id=level[,id=level] plays the policy rows on that account, --yardsticks adds the first-siege and premium-sale table, --legends gives the maxed and impact runs a veteran Legend Board, --knownNameGold N
 ./gradlew :core:soak                                   # long-save soak, outside the default suite (about 70 s): 2,000 forced-survival days for two smiths; tables and the day-1,000 / 2,000 saves in core/build/soak/
+./gradlew :app:testDebugUnitTest                       # app JVM tests (session, ViewModel, screen models; no device)
 ./gradlew :app:assembleDebug                           # APK (needs Android SDK at local.properties sdk.dir)
 ./gradlew :app:installDebug                            # install on connected device/emulator
 ./gradlew :app:connectedDebugAndroidTest               # instrumented tests (emulator required)
-python tools/pixelart/import_assets.py                 # slice hand-made sheets from 'Pixel art assets/' into drawables (Pillow, numpy)
-python tools/pixelart/generate_assets.py               # placeholders for IDs without hand-made art + manifest
+python tools/pixelart/import_assets.py                 # slice the source sheets from 'Pixel art assets/' into drawables (Pillow, numpy)
+python tools/pixelart/generate_assets.py               # placeholders for IDs without imported art + manifest
 ADB=<sdk>/platform-tools/adb bash tools/emulator/smoke.sh <dir>  # scripted device loop + screenshots (after installDebug)
 ADB=<sdk>/platform-tools/adb bash tools/emulator/runend.sh <dir> # passive run to defeat, then claim + next era (about 2 min)
 ```
@@ -57,7 +66,8 @@ Compose BOM 2026.02.01, Room 2.8.5, DataStore 1.2.1, JDK 21 launcher / JDK 25 da
 ## Working rules
 - Surgical edits; keep docs in `docs/` current: IMPLEMENTATION_PLAN (phase gates), DECISIONS (locked vs proposed,
   tuning evidence), PROGRESS (state, checks run, next actions), GDD_CHECKLIST (feature view: tick an item when it
-  ships and is verified). Update PROGRESS before ending a session.
+  ships and is verified). Update PROGRESS before ending a session. While the major update is open, per-task status
+  and evidence live in `docs/MAJOR_UPDATE_LEDGER.md` (plan: `docs/MAJOR_UPDATE_PLAN.md`).
 - Balance changes: run the simulator, record numbers in DECISIONS.md, bump `BalanceConfig.version` on semantic change.
 - New gameplay numbers go in `BalanceConfig`, never inline. New content goes through `ContentCatalog.validate()`.
 - Tests must pass before claiming a phase done; do not commit/push without being asked.

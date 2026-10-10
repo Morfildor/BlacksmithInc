@@ -3098,3 +3098,138 @@ Records older than 30 days at day 2000, by type: WEAPON_INHERITED 1929, SIEGE_WO
 (4.7 MB, 4,757), and the two day-2,000 saves (6.8 and 8.6 MB; 6,386 and 8,609). They are schema-4 run envelopes at rules 3,
 balance 8, content 3, with an empty legacy profile. They were played with sieges switched off; under the shipped numbers the
 next siege (within five days) is real and the town has never had to hold one.
+
+## Major update: rulings and open decisions (2026-10-10)
+
+One place for what was decided while the major update was being built, and for what is still the owner's to decide. A
+"ruling" here is a decision the integrating session made on its own so that work could continue; each one says what it
+costs to reverse. Sources: the lines starting "Ruling:" in `docs/MAJOR_UPDATE_LEDGER.md` (which keep the full reasoning),
+the "Deviations" and "Concerns" sections of the task reports, and the dated sections above. State described: integration
+branch `shop-day/m0` at `d946c4f` (pushed as `major-update`), rules 3, save schema 4, balance 8, content 3. Nothing here
+changes a LOCKED decision of the GDD. No number was lowered to meet a target: where a target is missed the measured
+distribution is reported and the decision is left open, as the owner asked.
+
+Terms used below. "FAIR", "ACTIVE", "SYNERGY", "EXPERT", "REQUEST_DRIVEN" and "SIEGE_PREP" are simulator bots: scripted
+players. FAIR forges all day and sells at the suggested price; ACTIVE also salvages, hones and buys tools; SYNERGY forges
+the best pairings; EXPERT uses everything; REQUEST_DRIVEN forges what customers asked for; SIEGE_PREP forges against the
+besieger. "Maxed" means an account with every permanent upgrade bought. "Band" means the range of run lengths the plan set
+as acceptable (plan section 4.3). "Tripwire" means the plan's alarm line for runs that get too long.
+
+### Rulings made during execution
+
+Process and history
+- Work was committed on local `shop-day/*` branches only, one descriptive commit per task, never on `main`. On
+  2026-10-10 the integration branch was pushed to GitHub as `major-update`; `main` is still release 0.6.0.
+  `docs/major_update_evidence/`, the external review document, the atlas PNG and the `Assets/` source folder are not
+  committed unless the owner names them.
+- The plan's section 11 stood in for a new conflict scan; tasks with separate files ran in parallel worktrees.
+- Owner instruction of 2026-10-10: "finalize a build before adding features". Onboarding (T2.10) and storage tools (T6.3c)
+  were parked. An agent had already begun both; they exist on its branch and are not merged.
+
+Saves, versions and recovery
+- A double-tapped End Day returns "the day is not watched yet" and writes nothing, because the planning lock is checked
+  before the engine is called. Reverse: swap two checks.
+- Random streams keep their original seed salt through every later rules version, so before-and-after simulations stay
+  comparable. Reverse: raise one constant and re-record the reference run.
+- Balance version 6 was taken by the commission task (T1.8), so the town changes landed as balance 7 and the M4 features
+  as balance 8. Balance 7 and 8 were each re-pinned in place while unreleased, since no build with those numbers left
+  the development machine.
+- The save schema stays 4 for fields added after schema 4 was introduced (the recognition memory on a hero,
+  `Weapon.ownerIds`, the M4 fields and enum constants), because each has a default and no schema-4 build was released.
+  Known cost: a development save written by a newer build can fail to open in an older development build. The plan
+  (6.7) would have called this schema 5. **Open decision below.**
+- A damaged save file is left exactly where it is and renamed only when the player confirms "Start over", so the
+  sentence "Nothing has been deleted or changed" stays true. Cost: the recovery screen appears at every launch until the
+  player chooses.
+- The recovery valve for stuck players (T5.2) was not built: its trigger measured 0.00 to 0.10 % against a line of 1 %.
+  An over-spending bot sits at 1.9 to 3.0 %; reported, not acted on.
+- End Day remembers the newest 30 command IDs (T6.3a). **Open decision below.**
+
+Customers, town and balance
+- The commission pick stands: the patron takes a blade from storage before the shelf, and the least blade that fits.
+  It costs 0.3 to 1.3 mean days on some bots and makes a request predictable. Reverse: one function (`Commissions.pick`).
+- "A patron who collects does not also browse that day" moved from the visit-record task to the seating task, because
+  it changes outcomes.
+- Fair seating (T3.1): the strong-stock bots gained 0.9 to 2.0 mean days because good blades now reach every hero. That
+  is the purpose of the change, so it stands. "A newcomer is served within two days" is measured on days the newcomer
+  chose to come.
+- Serial IDs sort in numeric order everywhere (the tenth after the ninth), done in the same rules step as the names.
+- The town is 12 residents with room for 16 (the commit title that said 16 was corrected). The old "hard-lock" counter
+  of the simulator is left failing for one bot, because T5.2 showed the days it counts are not stuck states.
+- The tripwire was restated on the EXPERT bot's measured baseline: a new account above 50.4 mean days, a maxed account
+  with a 90th percentile above 70, or any run of 100 days. Measured on the final tree: 45.6 to 45.8, 60, longest 65. Not
+  crossed. The SIEGE_PREP bound was restated as "at most +3 mean days over its starting value of 39.6".
+- Guild Patronage ships at the plan's stipend of 30 without a retune. **Open decision below.**
+- The rout rule (a champion can fall on the walls) ships at the plan's values: raid at 1.5 times the defense, wound 55.
+- The M4 features ship uncompensated (section "M4 gate" above): the plan's own trigger for another tuning round was
+  not met, and no measured raid setting restores the plain smith's band without lowering a maxed row.
+- Recognition lines: on days 1 to 3 at most one line a day, so the plan's "milestones always show" gives way to its "at
+  most 20 % of visits in the opening days". Their pacing constants live beside the rule, not in `BalanceConfig`,
+  because they pace narration and decide no outcome.
+- Resolver constants (T5.4): world-event weights, limits and cooldowns stay in the event table as content; wording
+  bands stay as listed literals. `GameEngine`, `Forge` and `Journal` still hold a few numbers outside the scan.
+
+Art and presentation
+- Customers at the counter are framed portraits, not standing figures: the art for figures does not exist.
+- The second portrait set stays switched off; the owner's 20 hero portraits replaced the 25 older busts. A hero shows
+  the "upgraded" face after five victories or when their blade has a title, and never reverts.
+- The shop day shows one card per featured visit, not four, and the replay overlay is text only (T2.5).
+- The shop-day cards were shortened (OPEN 1200 ms, ARRIVE 1000, BROWSE 900, DECIDE 1500, TALLY 2000) to keep an
+  unattended day at a median of 24.6 seconds against a budget of 25, after the larger town pushed it to 27.2. These are
+  playtest values; restoring the old ones is one edit.
+- A day the counter cannot lay out counts as watched and the Shop opens on the next morning, instead of the game
+  failing at every launch (T2.8b). The Gazette still has the day.
+- The Forge backdrop is 72 dp instead of 120 on a short screen or with large text; Supplies is a sheet opened from the
+  Shop or the Forge; the Shop's seat plate reads "Seats n · shelf a of b" (T2.8c, T2.8b).
+- "Forge this" on a want sets the weapon family only; the Forge does not keep the want in view the way it keeps a
+  request (T4 app).
+- One dark theme in both system modes; there is no light theme and no setting for it (polish pass 1).
+
+### Open owner decisions
+
+Balance (numbers are 1,000 runs at base seeds 1 / 10001 / 20001 unless said; the 10,000-seed review T5.5 is running and
+may move them slightly)
+1. **Guild Patronage.** It ships at a stipend of 30. Its own target (+0.6 mean days or +0.3 sales a day) is met by no
+   setting that was tried; the blessing is live about 2 days in 22. Accept it as a blessing of ordinary size, raise the
+   stipend, or restate the target.
+2. **The plain smith's first era.** FAIR mean 22.4 to 22.7 days against a band top of 22.5 (over by 0.15 and 0.015 at
+   two of three seeds). Accept, restate the top at 22.7, or take raid growth 6.5 to 6.6 a day, which costs 0.2 to 0.5
+   mean days on the maxed FAIR, ACTIVE and SYNERGY rows.
+3. **Maxed over new, SYNERGY.** A maxed account should outlast a new one by at least 10 mean days; SYNERGY measures
+   +9.96 to +10.3 depending on the seed and the task that measured it. No lever in the plan raises it without making
+   the game easier.
+4. **Forging what customers ask for.** REQUEST_DRIVEN lives +8.4 (after the wants task) to +9.6 (final tree) mean days
+   longer than FAIR against a bound of +5, while answering only about 30 to 34 % of wants against a target of 60 %. The
+   two lines pull apart: a bot that answers more wants lives longer still. Restate either line, or accept the reward as
+   the point of the feature.
+5. Smaller M4 lines that miss, for the record: "not better than mine" refusals fell 5 to 6 points, not 8; three new
+   purchase reasons (taste match, prized, storied) stay under 1 % of visits; 98 % of clue-following accounts find a
+   signature in their first era, which may be too fast; a champion's siege request is handed the weakest blade that fits.
+6. Numbers chosen by an agent rather than the plan: the seat weight of a want 0.5, at most 4 rumours a run, 3 days
+   between rumours, and the weights of the five request kinds.
+
+Rules and saves
+7. **Abandon run.** From the main menu it discards the run after one confirmation and claims nothing: no legacy points,
+   no legends, no lineage. Confirm, or let an abandoned run claim what it earned.
+8. **Numbers on the blade card.** The card and every shelf and storage row now show power, condition and fame as
+   numbers; before, condition and fame were words and power was hidden. The GDD forbids showing probabilities and
+   formulas, not stats, but this is a change of how much the player is told.
+9. **Inheritance records.** Every blade handed from a retiring hero to a mentee writes a record that is kept for the
+   whole run; these are half or more of the kept records in a long save. Moving them to the 30-day window is a one-word
+   change and gives up the Gazette's long memory of who inherited what.
+10. **Save envelope format.** The save stores its payload as text inside a wrapper, which costs 13 % of the file. Storing
+    it as an object saves that and is a format change with a migration.
+11. **End Day idempotence.** The engine remembers the newest 30 End Day command IDs; an older one sent again would
+    resolve a new day. The app never holds an old ID. Raise the number, or set it to keep all, if a stricter guarantee
+    is wanted (about 23 bytes an ID).
+12. **The save does not level off.** It grows 3.3 to 4.2 KB a day (3.7 to 4.7 MB at day 1,000 under forced survival;
+    real runs end by day 65). Unsold stock is 60 to 65 % of it and is kept by decision. Storage tools exist on an
+    unmerged branch, but clearing hundreds of blades in a few taps needs a new core rule (salvage costs energy and the
+    armory fills); that rule is the owner's to ask for.
+13. **Schema number.** Whether fields added since schema 4 should have made a schema 5 before any build is given to
+    testers (see the ruling above).
+
+Outside the repository
+14. The release application ID (still `com.example.blacksmithproject`), the launcher icon, audio assets, further
+    portraits and art, how the AI-generated art is described on the store, and name taste (a few names such as
+    Isherwood, Wyndham, Jarvis, Merrick, Lysander, Idris and Rosalind may read as known people or characters).

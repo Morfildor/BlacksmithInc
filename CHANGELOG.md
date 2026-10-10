@@ -85,6 +85,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   due on the siege day; a collector asks for fine work; a guild member orders a first blade for a newcomer who carries
   nothing, and the newcomer is the one who walks out with it. Ordinary and noble requests remain. The request says why.
 - Two requests can be open at once (it was one), never two from the same hero.
+- The Forge line of the Gazette says what was spent on materials.
+- A commission card lists each blade of the right kind in the shop with "fits" or the one thing it lacks (wrong
+  element, or its quality against the quality needed), and an accepted one names the blade that will be handed over at
+  End Day. The Home screen shows the same line.
 
 ### Changed
 - Long runs keep a smaller save. A blade's story keeps what it is, how it was lost, its first owner and its newest
@@ -165,6 +169,14 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Blades and heroes are ordered by their number in every rule of the game (the tenth after the ninth): which lost blade is
   carried home, a retiring hero's hand-down, the guild-hall mentor, the collector's choice and the hero a lineage is
   founded on.
+- A collector pays at most one and a half times the going rate for a blade, whatever its shelf price.
+- Commissions say exactly what they need. A request is always for a quality the game names (decent 35+, fine 50+; a
+  noble patron asks for superb 70+, no longer "masterwork") and is written that way everywhere: "Fine frost Spear
+  (quality 50+)". A request left open in an older save is lowered to the quality its word promised.
+- An accepted commission is collected before the day's browsers arrive, so nobody buys the promised blade first. The
+  patron takes the least blade that fits (from storage before the shelf, then the lowest quality), not your best work.
+- A hero who dreams of a fine blade (the collector ambition) is satisfied by quality 50, the start of "fine"; it was 60.
+- Balance version 6.
 
 ### Fixed
 - A day the counter cannot lay out no longer stops the game from opening: that day counts as watched, the Shop opens on

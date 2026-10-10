@@ -1,10 +1,273 @@
-# Progress — 2026-10-09 (session 8)
+# Progress — 2026-10-10 (major update)
 
 ## Current phase
-P7 in progress. App 0.6.0, balance config v5 (reviewed at 10,000 seeds), 186 JVM tests, 6 instrumented tests.
-P7b, the major update (shop day), is in progress at M0 on branch `shop-day/m0`: plan `docs/MAJOR_UPDATE_PLAN.md`, task and evidence
-ledger `docs/MAJOR_UPDATE_LEDGER.md`. The code was release 0.6.0 when M0 began; T0.3 (checklist and wording) changes documents only.
-Launch content is the engine default; the sections below are the history of how it got here, newest focus last.
+P7b, the major update (the "shop day"), is built and merged on the integration branch `shop-day/m0` (tip `d946c4f`),
+which is pushed to GitHub as the branch `major-update`. `main` is still release 0.6.0 and nothing of the update is
+released. The app version is still 0.6.0 (versionCode 6); the changes are under `[Unreleased]` in `CHANGELOG.md`.
+Versions on the branch: rules 3, save schema 4, balance config 8, content 3.
+The plan is `docs/MAJOR_UPDATE_PLAN.md`; the row-per-task tracker with evidence is `docs/MAJOR_UPDATE_LEDGER.md`;
+rulings and open decisions are in `docs/DECISIONS.md` ("Major update: rulings and open decisions (2026-10-10)").
+The sections from "Session 6 focus" down to "Known limitations" are the history of 0.6.0 and earlier, kept as written.
+
+**Short version.** Almost everything in the plan's milestones M0 to M4 is merged and passes its JVM tests (391 core,
+111 app). The earlier parts (saves and recovery, the shop day itself, the four destinations, the hero and blade
+sheets) were also seen running on the Android emulator. Everything merged in the last
+stretch (main menu, the new Shop / Forge / Town pages, both visual polish passes, the wants / threat / request / legend /
+journal screens, save-growth rules) has **not** been run on a device by the integrating session; a device gate is
+running on the tip now and its result is not yet known. Nothing at all was checked on a physical phone.
+
+### How to read the verification words
+- **Seen on the emulator**: somebody ran it on the Android virtual device (Pixel_10_Pro) and looked or a script
+  checked it. Where it says "agent tree", an agent saw it on its own copy before the merge, not on the merged build.
+- **JVM tests only**: automated tests on the development machine pass; it was never run on an emulator or phone.
+- **Built, never run**: the code or the device test exists and compiles; nobody has executed it.
+- **Not built** and **blocked** (waits for something outside the repository) mean what they say.
+- "Simulator" means the headless balance harness that plays thousands of runs with scripted players ("bots").
+
+## What is in the build, by area (branch `shop-day/m0`)
+
+### Saves and recovery
+- Every operation that changes the game (a command, a legacy purchase, Claim, Begin era, Abandon) goes through one
+  serialized session, so two quick taps cannot lose a purchase or overwrite a new era. *JVM tests (19 session tests;
+  9 of them fail if the lock is removed) and seen on the emulator: a force-stop after Claim reopens claimed with the
+  upgrades, and a kill around End Day never left half a day.*
+- A save that cannot be opened shows a recovery screen (Try again, or Start over with the unreadable run kept as a
+  backup) instead of crashing. A damaged file is left untouched until the player confirms. A damaged legacy record
+  can be rebuilt from the copy the run carries. *Seen on the emulator for a damaged row, a damaged database file and
+  a damaged legacy row. Never seen on a device: the "save is from a newer version" and "incompatible" screens and
+  the "could not confirm the save" dialog (JVM tests only).*
+- The game checks a save's rules, content and schema versions on load and migrates older saves (fixtures for schemas
+  1, 2 and 3 are in the tests). *JVM tests; an old-format day-1 save opened and accepted End Day on the emulator.
+  An upgrade from the real 0.6.0 APK over an existing install was not run.*
+- Known gaps: a database file cut to 0 bytes opens as a new game with no message; file damage that appears while
+  playing shows the general "could not save" dialog until the next start.
+- Android's automatic cloud backup of the save is switched off until restoring one is tested.
+
+### The shop day (what happens after End Day)
+- End Day saves the day first, then shows it card by card: the shop opens, each featured customer at the counter as a
+  framed portrait with what they looked at and why they bought or left, a receipt for a sale, the other visitors as a
+  tally, the till, up to three cards of what happened beyond the door, then one lead for tomorrow (or the blessing
+  choice, or the fall of the forge). Next, Back, Skip day, and 1x / 2x auto-advance. *Seen on the emulator on the
+  integrated build at the time (smoke script 9 of 9, a passive run to defeat, claim and next era 5 of 5).*
+- The place reached in the day is saved. Killing the game mid-day offers "Resume the day" or "Skip to tomorrow";
+  watching, skipping or killing never changes what happened. *Seen on the emulator: same card after a force-stop, the
+  saved run byte-identical through watch / kill / skip, ten kills within 400 ms of End Day.*
+- Card timings were shortened (open 1200 ms, arrive 1000, browse 900, decide 1500, tally 2000) so an unattended day
+  at 1x has a median of 24.6 seconds against a budget of 25 with the larger town. *JVM test that sums the timings; not
+  timed on a device.*
+- A day the counter cannot lay out no longer blocks the game: it counts as watched and the Shop opens. *JVM test only.*
+- Never seen in the real app on a device: a blessing day and a defeat day card by card, a siege aftermath card, a "fell
+  at the wall" card, the replay overlay, a sheet opened from the counter, the cards at font scale 1.5 or 2.0, TalkBack.
+- Departures from the plan: one card per featured visit (not four), the replay overlay is text only.
+
+### Customers and town
+- Fair seating: every living hero gets an equal turn at the counter (before, the eighth hero was served less than half
+  as often as the first four). *JVM tests and simulator: served ratio by list position 0.39 to 0.97.*
+- A town of 12 heroes with room for 16, all five classes from the first morning, six counter seats (seven or eight with
+  the Signboard), raid pressure retuned to keep run length. *JVM tests and simulator at three base seeds.*
+- 120 first names and 96 surnames, no shared names among the living; lineages matched by ID. A stored face per hero,
+  spread evenly within a class. *JVM tests and simulator.* The owner's 20 hero portraits (base and upgraded face) are
+  imported. *All 40 tiles viewed in the renderer on the emulator; the upgraded face was not seen in a live game.*
+- Recognition lines at the counter ("first blade from your forge", "a regular returns", "held the wall"). *JVM tests;
+  one line seen on the emulator on day 1; the regular's mark not verified there.*
+- Guild Patronage is now a willing guild plus a 30-gold stipend per member. *JVM tests and simulator. Its own target
+  is not met: open owner decision.*
+- A champion can fall on the walls when a siege is lost badly (the rout rule). *JVM tests and simulator.*
+- Earlier engine corrections: champions ranked against the foe they will face; the ore merchant's stock is on sale the
+  next morning; faction ties break the same way everywhere; the Gazette's tally and the archived day are complete; the
+  collector's price is capped. *JVM tests and simulator only.*
+
+### Demand: wants, the besieger, requests, legends, the journal (milestone M4)
+The rules are in `:core` and were measured in the simulator at three base seeds; the screens were added afterwards.
+- Standing wants: a hero who leaves with nothing leaves a want (kind of weapon, strength, purse) for three days.
+- Buyers weigh a blade's properties and fame; a sidegrade can be bought once for a reason; before a siege the town
+  wants the element the besieger fears and passes over the one it resists.
+- The journal's clue ladder (four clues per hidden recipe), rumours, and "Use this recipe".
+- A returned legend is the blade it was, with its properties dormant until honed once; shorter weapon names.
+- Requests have reasons (replacement, a blade for the wall, collector, a newcomer's first blade); two can be open.
+- *Rules: JVM tests and simulator. Screens (wants in "Who is buying" with "Forge this", the besieger line on the Shop
+  and Forge plates, the "why" on a request, Story and Dormant on the blade sheet, the Legend Board in full, the ladder
+  in Records): app JVM tests pass (9 added); the six device tests in `M4ScreensTest` are built, never run; **nothing
+  of these screens has been seen on a device**.*
+
+### The planning screens
+- Four destinations (Shop, Forge, Town, Records) and a settings sheet replace the seven tabs. *Seen on the emulator at
+  font scale 1.0, 1.3 and 2.0; at 2.0 the bottom bar clips "Records".*
+- The Shop is one page: counter and shelf, the one thing worth doing first, requests, "Who is buying", yesterday, the
+  shelf, a Storage sheet. Home and Market are gone. *Seen on the emulator on an agent's tree (6 device tests, smoke
+  10 of 10, screenshots at 1080x1920 and at 720x1280 with font 1.3 and 2.0). Not on the merged build. The shelf rows
+  of the final build are in no screenshot; the Storage sheet closed when the screen size changed (possible bug).*
+- The Forge has the forge room header, "Forge this" from a request, Supplies and Journal buttons; Supplies is a sheet;
+  Town is one fast list with shorter rows and a "Fallen and retired" header. *Seen in part on an agent's tree before
+  its last edits (Forge and Town at 1080x1920). Never seen: the Supplies sheet, the pinned "For ..." request line, the
+  compact Town rows, the "Fallen and retired" header, anything of these at a small size or large font.*
+- Hero and blade sheets (taste, purse, guild, mentor, history, each property's effect; pricing, listing, salvage, hone
+  on the blade sheet). *Seen on the emulator at font 1.0 and 2.0 (6 device tests at the time). Not exercised on a
+  device: List / Set price / Salvage from the sheet, the links between sheets.*
+- Haptic feedback with a switch in settings. *Switch seen on the emulator and persists; the feel needs a phone.*
+- Each permanent upgrade says what its next level does in numbers. *Seen on the emulator by the run-end script; the
+  "maxed" line was not seen.*
+
+### Main menu
+- The game opens on a menu: New game or Continue run, Abandon run (with a confirmation; discards the run and claims
+  nothing), and a Settings icon. Settings in the workshop has a "Main menu" entry. *Seen on the emulator by one agent:
+  the menu and its buttons on a fresh install and with a saved run. **The tap on "Abandon run", its confirmation and
+  whether the run is gone after a relaunch were never checked on a device**; the operation itself has a JVM test. The
+  rewritten device test for the menu is built, never run.*
+
+### Visual polish
+- Pass 1: one dark forge theme in both system modes, bronze-framed panels, a gold primary button, a blade shown as an
+  item card with power, quality and condition, buffs ("+") and flaws ("−"). *Seen in part on an agent's tree at
+  1080x1920: Settings over the menu, Shop, Forge, the forge result card, the lower half of a blade sheet. Not seen: hero
+  sheet, Town, Records, the shop-day cards, run end, the card with large text. Its device test is built, never run.*
+- Pass 2: the planning screens in the same look (lead, requests, shelf and storage rows with numbers, the Forge's
+  plate with a full-width Forge button, Supplies, Town, Records, the top and bottom bars); no light flash at start.
+  ***Built, never run on any device**: every layout statement about it comes from reading the code.*
+
+### Save growth
+- Four more bounds keep a long save smaller: closed requests leave after 30 days, the newest 30 End Day IDs are kept,
+  arrivals and world events are kept 30 days, a blade keeps its newest 24 everyday history lines. *JVM tests: the
+  same seed with the rules off reaches the same outcome.*
+- A 2,000-day soak for two smiths (`./gradlew :core:soak`). End Day stays fast: 95th percentile 1.7 to 6.7 ms on the
+  development machine against a budget of 200. **The save does not level off**: 3.7 to 4.7 MB at day 1,000, growing
+  3.3 to 4.2 KB a day; unsold stock is 60 to 65 % of that and is kept by decision. *JVM only. Not run: loading such a
+  save on a device, frame times in Storage with thousands of blades.* A real run ends by day 65 in every simulation.
+
+### Tooling
+- CI on GitHub (core tests, app unit tests, debug and minified release builds, lint) was green on the branch at the
+  main-menu commit; it does not compile or run the device tests. A manifest guard keeps permissions and network
+  libraries out. 13 simulator bots, customer metrics, a golden reference run. A release runbook and a minified trial
+  build (4.2 MB) that played a day on the emulator.
+
+## Checks run for this update
+| Check | Result |
+|---|---|
+| Core JVM tests on the tip `d946c4f` | 391 pass (reported by the controller, 2026-10-10) |
+| App JVM (unit) tests on the tip | 111 pass |
+| Debug APK on the tip | builds; the device-test sources compile |
+| Lint | 0 errors, 43 warnings on the last agent tree before the tip; not re-run on the tip by the controller |
+| CI on GitHub | green at the main-menu commit (run 37999273824, 9 m 45 s); no run recorded for the tip |
+| Last full device-test run by the controller | 36 of 37, **before** the main-menu, M4-screen and polish merges. The one failure was the End Day speed test at 232 ms (95th percentile) with the emulator under load; alone it passes at 29 to 89 ms |
+| Device gate on the tip (full device-test suite, `smoke.sh`, `runend.sh`) | **device gate in progress, result to be recorded.** The emulator hung at 08:21 and was restarted at 09:50 |
+| Agent device runs since the last full run | Shop page: 6 of 6 device tests and smoke 10 of 10 on the agent's tree; Forge / Town / Supplies: 12 of 12 and smoke 10 of 10 before its last 9-line edit; polish pass 1: screenshots only, no device test. Polish pass 2, the Town at the new scale and the M4 screens: nothing |
+| Simulator, balance 8, 1,000 runs at base seeds 1 / 10001 / 20001 | plain smith (FAIR) mean 22.4 / 22.7 / 22.5 days, median 20 / 25 / 20; active smith 30.0; SYNERGY 35.3 to 35.5; EXPERT 45.6 to 45.8; maxed EXPERT 54.4 to 54.8, longest run 65; every run ends. Table in DECISIONS.md, "M4 gate" |
+| Simulator at 10,000 seeds for balance 8 | not done; running on an agent branch |
+| Soak, 2,000 days, JVM | see "Save growth" above; DECISIONS.md, "Production soak" |
+| Physical phone | nothing run |
+
+## Not done, not verified, blocked
+
+Not verified on any device (built and merged; JVM tests pass)
+- Polish pass 2 on every planning screen; the Town's compact rows and "Fallen and retired" header; the Supplies sheet.
+- All M4 screens: wants and "Forge this", the besieger line and the "+" / "−" marks on forge chips, the "why" on a
+  request, Story and Dormant on a blade, the Legend Board, the clue ladder and "Use this recipe".
+- Main menu: the Abandon run confirmation and its result after a relaunch.
+- The recovery screens for a newer or incompatible save; the "could not confirm" dialog.
+- In the shop day: a blessing day, a defeat day, a siege aftermath, a "fell at the wall" card, the replay overlay.
+- From 0.6.0 and still never seen on a device: a guild-hall day, a lesson, a merchant resale, an inherited blade.
+- Device tests that exist and were never executed: `M4ScreensTest` (6), `WeaponStatCardTest`, the rewritten
+  `TitleScreenTest`, the edited `DetailSheetTest`. `LayoutMatrixTest` (widths at 360 and 320 dp, font up to 2.0)
+  passed once, before polish and M4 changed the layouts it checks; it does not check heights.
+- Layout at small sizes and large fonts after the polish and M4 changes; dark-on-dark contrast in screens not shot;
+  TalkBack (never run); lint and CI on the tip.
+
+Built on an agent branch, not merged, not in the build
+- Two fixes where save pruning met newer rules: a hero whose only blade shattered more than 30 days ago could no
+  longer get a replacement request, and "held the wall" was forgotten after ten later fights. Both reproduce on the
+  tip and are reported fixed (branch `worktree-agent-a21d7457a3a6e63af`, commits `c73dde7`, `285638a`). They only
+  matter in long saves.
+- Onboarding coach line (T2.10), Storage filters and bulk actions (T6.3c), main-thread work (T6.5), lifecycle tests
+  (T6.4): four commits on branch `worktree-agent-a23a96c7b45829e3f`; JVM tests pass there, their device tests have
+  never been run. T2.10 and T6.3c were parked by the owner ("finalize a build before adding features").
+- The 10,000-seed review of balance 8 (T5.5): running, no result.
+
+Not built
+- Device scripts for killing the game mid-day and for layout screenshots; scenario saves that would show a lesson, an
+  inherited blade, a merchant resale or a wall death on a device (T2.9, partial).
+- TalkBack and semantics work (T6.2); the layout matrix beyond three screens, and fixes from it (T6.1, partial).
+- The device half of the soak: cold load, a save commit, frame times and memory with a 1,000-day save (T6.3b).
+- The per-upgrade gate table after the town change (T5.3); the recovery re-measure at balance 8 (T5.2).
+- A rule that lets a player clear hundreds of stored blades quickly (needs an owner decision).
+- Version bump and release notes (T7.1), the GDD section 19 walk-through (T7.3), the launcher icon (T7.4).
+- Audio of any kind. A light theme. A tutorial beyond tips.
+
+Blocked on things outside the repository
+- Checks on a physical phone, including haptic feel and End Day speed on mid-range hardware (T6.6).
+- Sessions with five first-time players (T7.2).
+- The release application ID (still `com.example.blacksmithproject`), release signing.
+- Audio assets, the launcher icon, further portraits and art (the owner supplies them).
+
+## Open owner decisions
+Full wording, numbers and options are in `docs/DECISIONS.md`, "Major update: rulings and open decisions (2026-10-10)".
+Balance numbers are never lowered automatically; the distributions are reported and the owner decides.
+1. Guild Patronage ships at a stipend of 30 with its own target unmet.
+2. The plain smith's first era: mean 22.4 to 22.7 days against a band top of 22.5.
+3. A maxed account's lead over a new one for the SYNERGY bot: +9.96 to +10.3 mean days against a floor of +10.
+4. The bot that forges what customers ask for lives +8.4 to +9.6 days longer than the plain smith (bound +5) while
+   answering only about 30 to 34 % of wants (target 60 %).
+5. Abandon run discards the run and claims nothing.
+6. The blade card and the shelf rows now show power, condition and fame as numbers.
+7. Whether inheritance records are kept for the whole run (they are half of the kept records in a long save).
+8. The save envelope format (13 % of the file is escaping).
+9. End Day remembers only the newest 30 command IDs.
+10. The save does not level off; unsold stock is 60 to 65 % of its growth.
+11. Outside the code: the application ID, the icon, audio, art, how AI-generated art is described on the store, and
+    whether to commit the external review and the evidence folder (both still untracked).
+
+## Next actions
+1. Record the result of the device gate that is running on the tip (full device-test suite, `smoke.sh`, `runend.sh`)
+   in the ledger and in the table above; fix what it finds before the owner's hand test.
+2. Decide which unmerged agent branches go into the test build: the two pruning fixes (small, core, tested) and the
+   four app commits (parked features among them), then re-run the JVM suites and the device gate on that tip.
+3. Take the screenshots nobody has: every planning screen after polish pass 2, the M4 screens, the Supplies sheet, the
+   Town list, at 1080x1920 and at 720x1280 with font 1.3 and 2.0. Run `LayoutMatrixTest` and `M4ScreensTest`.
+4. Check "Abandon run" by hand or by script: confirm, see the menu offer a new game, relaunch, the run is gone and the
+   legacy is unchanged.
+5. Merge the 10,000-seed review when it finishes and record it in DECISIONS.md; run the per-upgrade table with it.
+6. Owner hand test (list below), then the owner's decisions above.
+7. After that: T2.9 scenario saves and scripts, T6.1 / T6.2 layout and TalkBack, the device half of the soak, T7.1
+   version and changelog, T7.3 walk-through. Phone checks and playtests wait for a device and players.
+
+## What to try when testing by hand
+A debug build of the tip. Items marked **layout risk** are the ones most likely to show clipping, overlap or a button
+pushed off screen; each is a concern written in a report and none has been seen on a device. To test them, set the
+phone's font size to its largest and, if possible, use a small or short screen.
+1. First launch: the main menu shows New game and the Settings icon. Start a game; the Shop opens on the lead "Forge
+   your first blade" with a button that goes to the Forge. Watch for a light flash at start (there should be none).
+2. Forge a blade. The result appears as an item card with power, quality and condition, buffs and flaws. **Layout
+   risk** with large text: the card's two columns should fall into one, and "Renown" should not wrap badly.
+3. List the blade from its card or from Storage, set a price on the blade sheet, then End Day and watch the day card
+   by card. Try Next, Back, Skip day, 1x and 2x, and tap anywhere. Back must never begin the next day.
+4. During a shop day, close the game from the recent-apps list and reopen it: it should offer "Resume the day" or
+   "Skip to tomorrow", and the day must be the same either way.
+5. Open the main menu from Settings, choose Abandon run and confirm. The menu should offer a new game; close and
+   reopen the game and check the run is still gone and your legacy points are unchanged. **This was never run.**
+6. The Shop page, top to bottom: counter plate with "Seats 6" and the siege line, the lead, requests, "Who is buying",
+   yesterday, the shelf, Storage, Supplies. **Layout risk**: with large text the plate now has one or two extra lines
+   about the besieger, and the lead's reason may be hidden behind End Day on a short screen.
+7. A request card (accept one when it appears): Accept, Decline and "Forge this". **Layout risk**: three buttons in a
+   row that should wrap at a narrow width with the largest font. The card should say why the request was made.
+8. Tap "Forge this" on a request: the Forge opens with the family chosen and a line "For <name>: ..." pinned above
+   the steps. **Layout risk**: the pinned plate is taller than before (the Forge button now runs its full width), so
+   on a short screen with large text little room is left for the steps.
+9. On the Forge, look at the augment chips a day or two before a siege: an element the besieger fears should carry
+   a "+", one it resists a "−", with a line under the chips. Open Supplies from the Forge and from the Shop and buy
+   something (this sheet has never been seen on a device).
+10. After a customer leaves without buying, look at "Who is buying" the next morning for a line such as "wants a bow;
+    can spend about 90 gold" with "Forge this"; forge and shelve that kind and check the line gets a tick.
+11. Town: scroll the list of twelve heroes, tap one for the hero sheet, tap their blade for the blade sheet and its
+    Story and History. After some deaths, open "Fallen and retired". Does the Town name the same besieger as the
+    Shop and the Forge? (They can differ when two factions are tied.)
+12. Storage with many blades: open it, scroll, use "List at". Rotate or resize the screen if the device allows and see
+    whether the sheet stays open (it closed once in a script). **Layout risk** with large text: "List at" moves under
+    the blade.
+13. Records: News (yesterday's Gazette and older days), Journal (after a failed attempt at a hidden recipe, a ladder
+    of four clues; a found signature has "Use this recipe"), Legacy (upgrades saying what the next level does; the
+    Legend Board after a first era).
+14. Play to a lost siege: the fall of the forge, the run-end screen, Claim, buy an upgrade, Begin era. Tap two
+    upgrades quickly; nothing should be lost. Close the game on the claimed screen and reopen it.
+15. Settings: reduced motion, the Haptics switch (feel a forge, a sale, End Day and a run end with it on, nothing with
+    it off), and the bottom bar at the largest font (**known**: "Records" is clipped at font scale 2.0).
 
 ## Session 6 focus: gameplay depth (balance v3, app 0.4.0)
 The owner asked for function and features over UI ("not fun yet, not much in it"; the UI will be redesigned later).
@@ -74,7 +337,7 @@ is fixed by session 8 except the signboard (its section 6.2); the review's check
   58 script-drawn pack sprites). The tooling still prints and records the label "hand-made" for these (`generate_assets.py`, manifest
   `"source": "handmade"`) until task T2.4 renames it; read it as "imported".
 
-## Checks run this session (balance v2, launch default)
+## Checks run in sessions 4 to 8 (history, up to release 0.6.0)
 | Check | Command | Result |
 |---|---|---|
 | Core tests | `./gradlew :core:test` | 85/85 pass (14 classes incl. RarityShape, EventCompaction, SignatureAndTechnique, SimulatorPolicy on the launch catalog); the soak runs on launch content |
@@ -127,6 +390,11 @@ is fixed by session 8 except the signboard (its section 6.2); the review's check
   obtainable materials; 0 hard-locks in all runs.
 
 ## Known limitations
+Written for release 0.6.0. On the branch `shop-day/m0` the following entries below no longer hold: the ore merchant's
+stock is on sale the next morning (T1.9); a champion can fall on the walls (T3.8); Guild Patronage no longer works through
+the visit chance (T3.6); rules, schema and content versions are raised and enforced (rules 3, schema 4, content 3); Home
+is gone, so its two Home notes do not apply. The other entries stand, and the save-growth entry is restated with
+measurements under "Save growth" above.
 - Art provenance is undocumented for a store release: the seven top-level source images and both concept references carry embedded
   Content Credentials naming ChatGPT / OpenAI as the generator, the two packs are script-drawn, and no licence or attribution text exists
   under `Pixel art assets/`. How the art is described on a paid listing and the usage terms of the generating account are owner decisions
@@ -173,19 +441,6 @@ is fixed by session 8 except the signboard (its section 6.2); the review's check
 - Git: `main` tracks https://github.com/Morfildor/BlacksmithInc; commit and push per verified milestone. App version 0.6.0 (versionCode 6), tag `v0.6.0`.
 
 ## Next executable actions (P7)
-0. Owner decisions pending: whether to commit the external review and the major-update evidence folder in `docs/` (both untracked;
-   the plan and the ledger are committed on `shop-day/m0`); the release application ID; the art description for the store
-   (plan 10.4). The maxed active account at median 45 days
-   and the wear margin are not to be lowered automatically: both are reassessed after the major update's customer and
-   economy changes (plan section 4.3).
-1. The major update is in progress at M0 (branch `shop-day/m0`; per-task status is in `docs/MAJOR_UPDATE_LEDGER.md`; first slice M0
-   and M1, step-by-step in the plan's handoff). Its scope covers everything below in this item. From the external review, not started: F01 serialise legacy purchases and Begin Era, F02 storage
-   failure recovery, F03 day report from the whole day, F04 commission quality shown exactly, F05 fair visitor
-   selection, F08 champion ranking in a warlord siege, F11 locale-independent event payloads; then its shop-day
-   presentation. Its checklist corrections (section 9) were applied by T0.3.
-   Small engine items noticed in session 8: the Traveling Ore Merchant stock overwrite, the unreachable wall death,
-   Guild Patronage still on the visit-chance lever. Simulator policies that forge Advanced, hunt signatures or
-   spend scarce stock would make the v5 tracks and Lucky measurable.
-2. 720x1280 pass over every panel; nav labels are tight at font scale 1.5.
-3. Register the first migration step against `saves/v1_forced_seed4242_day61.json` when the envelope schema changes.
-4. Package rename from `com.example.blacksmithproject`, release signing.
+Superseded on 2026-10-10 by "Next actions" near the top of this file. The older list (the 720x1280 pass, the first
+migration step, the package rename and release signing) is covered there or in the "Not done" list: the migration steps
+exist (schema 4), the small-screen pass is T6.1 (partial), the rename and signing are blocked on the application ID.
