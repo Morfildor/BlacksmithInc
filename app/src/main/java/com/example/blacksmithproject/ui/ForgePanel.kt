@@ -238,11 +238,20 @@ private fun ThreatLine(s: UiState.Playing, vm: GameViewModel, modifier: Modifier
 }
 
 /**
- * What is asked for, beside the draft: every open request with "Forge this", which sets the family (and an augment of
- * the element asked for). The request the draft was started from says so and shows what the shop still lacks for it.
+ * What is asked for, beside the draft: each standing want no listed blade answers, with "Forge this" (sets the family),
+ * then every open request with "Forge this", which sets the family (and an augment of the element asked for). The request the draft was started from says so and shows what the shop still lacks for it.
  */
 @Composable
 private fun Wanted(s: UiState.Playing, vm: GameViewModel) {
+    // What a hero left without and nothing listed answers yet: the same lines as the Shop's "Who is buying".
+    val wants = s.shop.wants.filter { !it.answered }
+    if (wants.isNotEmpty()) SectionHeader("Asked for at the counter")
+    wants.forEach { w ->
+        Row(Modifier.fillMaxWidth().padding(top = Space.xs).testTag("forge_want_row_${w.heroId.value}"), verticalAlignment = Alignment.CenterVertically) {
+            Text(w.line, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+            TextButton(onClick = { vm.forgeFamily(w.familyId) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_want_${w.heroId.value}")) { Text("Forge this") }
+        }
+    }
     val requests = s.shop.requests
     if (requests.isEmpty()) return
     SectionHeader("Requests")

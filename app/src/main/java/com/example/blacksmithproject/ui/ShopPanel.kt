@@ -37,11 +37,13 @@ import com.example.blacksmithproject.ui.shopday.CounterScene
 import com.example.blacksmithproject.ui.shopday.PersonChip
 import com.example.blacksmithproject.ui.shopday.ShelfBand
 import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.BuffGreen
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.CommissionId
 import com.tinyblacksmith.core.model.HeroId
+import com.tinyblacksmith.core.model.WeaponFamilyId
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponSnapshot
 
@@ -64,6 +66,7 @@ fun ShopPanel(
     onOpenNews: () -> Unit,
     modifier: Modifier = Modifier,
     onForgeThis: (CommissionId) -> Unit = {},
+    onForgeWant: (WeaponFamilyId) -> Unit = {},
     onOpenSupplies: (() -> Unit)? = null,
     tip: (@Composable () -> Unit)? = null,
     more: LazyListScope.() -> Unit = {},
@@ -98,6 +101,8 @@ fun ShopPanel(
                 shop.demand.forEach { DemandLine(it) }
             }
         }
+        // Who left without the blade they came for, each in the counter's own words; one the shelf answers today says so.
+        items(shop.wants, key = { "want_${it.heroId.value}" }) { WantRow(it, onOpenHero, onForgeWant, side) }
 
         shop.yesterday?.let { y ->
             item(key = "yesterday") {
@@ -153,6 +158,22 @@ internal fun RequestCard(r: RequestUi, busy: Boolean, onOpenHero: (HeroId) -> Un
             }
             SecondaryActionButton("Forge this", { onForgeThis(r.id) }, Modifier.heightIn(min = 52.dp).testTag("forge_this_${r.id.value}"))
         }
+    }
+}
+
+/**
+ * A standing want: the line opens the hero's sheet; under it, "Forge this" (the forge opens on the family asked for) or,
+ * once a listed blade answers it, a mark that says so. Stacked, so the sentence keeps the row's width at any text size.
+ */
+@Composable
+internal fun WantRow(want: WantUi, onOpenHero: (HeroId) -> Unit, onForge: (WeaponFamilyId) -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().testTag("want_${want.heroId.value}")) {
+        Text(
+            want.line, style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.fillMaxWidth().clickable(onClickLabel = "Open details", role = Role.Button) { onOpenHero(want.heroId) }.heightIn(min = 48.dp).padding(horizontal = Space.md, vertical = Space.sm),
+        )
+        if (want.answered) Text("✓ A blade on the shelf answers this", style = MaterialTheme.typography.labelLarge, color = BuffGreen, modifier = Modifier.padding(start = Space.md, end = Space.md, bottom = Space.sm).testTag("want_answered_${want.heroId.value}"))
+        else SecondaryActionButton("Forge this", { onForge(want.familyId) }, Modifier.padding(start = Space.md, end = Space.md, bottom = Space.sm).testTag("forge_want_${want.heroId.value}"))
     }
 }
 

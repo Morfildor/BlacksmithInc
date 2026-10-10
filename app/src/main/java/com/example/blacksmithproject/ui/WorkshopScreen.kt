@@ -112,6 +112,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                             LeadKind.CHOOSE_BLESSING -> vm.reopenBlessingOffer()
                             LeadKind.LIST_STOCK -> storageOpen = true
                             LeadKind.PRICES_TOO_HIGH -> lead.weaponId?.let { vm.openSheet(Sheet.Item(it)) }
+                            LeadKind.ANSWER_WANT -> lead.familyId?.let(vm::forgeFamily) ?: vm.selectDest(Dest.FORGE)
                             else -> vm.selectDest(Dest.FORGE)
                         }
                     },
@@ -122,6 +123,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     onOpenNews = { vm.selectRecords(RecordsPage.GAZETTE) },
                     tip = tip?.let { { TipBanner(it, vm) } },
                     onForgeThis = vm::forgeFor,
+                    onForgeWant = vm::forgeFamily,
                     onOpenSupplies = { suppliesOpen = true },
                 )
                 Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesOpen = true })

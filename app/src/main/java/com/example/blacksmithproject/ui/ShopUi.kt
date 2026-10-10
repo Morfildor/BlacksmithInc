@@ -30,8 +30,11 @@ import com.tinyblacksmith.core.shopday.ShopDay
 import com.tinyblacksmith.core.shopday.TallyGroup
 import com.tinyblacksmith.core.shopday.TallyOutcome
 
-/** The one thing worth doing first, in the words of `Lines.lead`; [weaponId] is the blade it points at, if any. */
-@Immutable data class LeadUi(val kind: LeadKind, val action: String, val reason: String?, val weaponId: WeaponId? = null)
+/** The one thing worth doing first, in the words of `Lines.lead`; [weaponId] is the blade it points at and [familyId] the family a want asks for, if any. */
+@Immutable data class LeadUi(val kind: LeadKind, val action: String, val reason: String?, val weaponId: WeaponId? = null, val familyId: WeaponFamilyId? = null)
+
+/** A hero's standing want in the words of `Lines.want`. [answered]: a blade on the shelf today is what they left without (`DemandSummary.wantsAnswered`). */
+@Immutable data class WantUi(val heroId: HeroId, val line: String, val answered: Boolean, val familyId: WeaponFamilyId)
 
 /** An open request: who asks, for what, on what terms, and (once accepted) which blade End Day will hand over or what is missing. */
 @Immutable
@@ -66,6 +69,7 @@ data class ShopUi(
     val yesterday: YesterdayUi?,
     val shelf: List<StockUi>,
     val storage: List<StockUi>,
+    val wants: List<WantUi> = emptyList(),
 )
 
 /** Names are listed while they fit on a line or two; a longer list is only its count. */
@@ -141,12 +145,13 @@ fun GameEngine.shopUi(state: GameState): ShopUi {
     return ShopUi(
         seats = config.customers.shopCapacity + toolTotal(state, ToolEffect.EXTRA_CUSTOMERS) + if (festival) config.customers.festivalExtraSeats else 0,
         slots = shelfSlots(state),
-        lead = LeadUi(lead.kind, line.action, line.reason, lead.weaponId),
+        lead = LeadUi(lead.kind, line.action, line.reason, lead.weaponId, lead.familyId),
         requests = requests,
         demand = demand,
         // A day that cannot be laid out is left out here; the Gazette still has it.
         yesterday = state.lastResolution?.takeIf { it.day == state.day - 1 }?.let { runCatching { yesterday(state, it) }.getOrNull() },
         shelf = state.listedWeapons().map { stock(it) },
         storage = state.storedWeapons().map { stock(it) },
+        wants = d.wants.mapNotNull { id -> state.heroes[id]?.let { h -> Lines.want(h, content)?.let { WantUi(id, it, id in d.wantsAnswered, h.want!!.familyId) } } },
     )
 }
