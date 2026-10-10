@@ -30,8 +30,10 @@ import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.engine.Encounters
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
+import com.tinyblacksmith.core.engine.Relics
 import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.legacy.RunEndResult
 import com.tinyblacksmith.core.model.*
@@ -64,6 +66,8 @@ enum class RecordsPage { GAZETTE, JOURNAL, LEGACY }
 sealed interface Sheet {
     data class Hero(val id: HeroId) : Sheet
     data class Item(val id: WeaponId) : Sheet
+    /** This morning's visitor (`GameState.encounter`); the sheet shows whatever the save holds of it. */
+    data object Visitor : Sheet
 }
 
 data class ForgeDraft(
@@ -76,7 +80,13 @@ data class ForgeDraft(
     val technique: Technique? = null,
     /** The request this draft was started from ("Forge this"); the forge shows it while that request is open. */
     val commissionId: CommissionId? = null,
-)
+    /** Ashen Bellows asked for on the next forge; cleared by that forge. */
+    val bellows: Boolean = false,
+) {
+    /** The forge command this draft stands for; null until a family, a core and an augment are chosen. */
+    fun command(): Command.Forge? =
+        if (familyId == null || coreId == null || augmentId == null) null else Command.Forge(mode, familyId, coreId, augmentId, catalystId, risk, technique, bellows)
+}
 
 /** What is on screen. Game state in it is always the session's snapshot (what is saved); [op] is the session's status. */
 sealed interface UiState {
@@ -107,6 +117,12 @@ sealed interface UiState {
         val forgeReveal: Int = 0,
         /** What the forge whose result is open added to the journal; null on a result reopened after a restart. UI-only. */
         val learning: ForgeLearningUi? = null,
+        /** This morning's visitor as the engine words it today, built with [shop]; null when nobody came. */
+        val encounter: Encounters.View? = null,
+        /** The workshop's relics and where each stands today, built with [shop]. */
+        val relics: List<Relics.View> = emptyList(),
+        /** Day on which the player chose "Decide later" for the relic offer; UI-only, like [blessingOfferDismissedDay]. */
+        val relicOfferDismissedDay: Int? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
     }
@@ -166,6 +182,7 @@ class GameViewModel(
         val draft: ForgeDraft = ForgeDraft(),
         val revealWeaponId: WeaponId? = null,
         val blessingOfferDismissedDay: Int? = null,
+        val relicOfferDismissedDay: Int? = null,
         val sheet: Sheet? = null,
         val lastError: String? = null,
         val notice: String? = null,
@@ -187,7 +204,7 @@ class GameViewModel(
     private var closed: Pair<GameState, RunEndResult>? = null
 
     private class Day(val script: ShopDayScript, val model: ShopDayUiModel)
-    private class Plan(val shop: ShopUi, val forecast: Battle.SiegeOutlook?)
+    private class Plan(val shop: ShopUi, val forecast: Battle.SiegeOutlook?, val encounter: Encounters.View?, val relics: List<Relics.View>)
 
     /** The script of the unwatched day and its screen model, built once per saved state: moving through the day never builds them again. */
     private var script: Pair<GameState, Day>? = null
@@ -244,7 +261,7 @@ class GameViewModel(
         return withContext(compute) { planFor(run) }.also { shop = run to it }
     }
 
-    private fun planFor(run: GameState) = engine.siegeForecast(run).let { Plan(engine.shopUi(run, it), it) }
+    private fun planFor(run: GameState) = engine.siegeForecast(run).let { Plan(engine.shopUi(run, it), it, engine.encounterView(run), engine.relicViews(run)) }
 
     private fun render(snap: GameSession.Snapshot?, op: Status, l: Local, day: Day?, plan: Plan?): UiState {
         if (snap == null || l.loading) return l.loadFailure?.let { UiState.LoadFailed(it, working = l.loading) } ?: UiState.Loading
@@ -263,7 +280,7 @@ class GameViewModel(
         }
         // Planning always arrives with the Shop's content: shopFor builds it before this is called, and now() checks.
         val planned = plan ?: planFor(run)
-        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning)
+        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, l.relicOfferDismissedDay)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -301,8 +318,9 @@ class GameViewModel(
         saved[KEY_RECORDS] = l.records.name
         saved[KEY_REVEAL] = l.revealWeaponId?.value
         saved[KEY_BLESSING_DAY] = l.blessingOfferDismissedDay
-        saved[KEY_SHEET] = when (val sheet = l.sheet) { is Sheet.Hero -> "hero:${sheet.id.value}"; is Sheet.Item -> "item:${sheet.id.value}"; null -> null }
-        saved[KEY_DRAFT] = with(l.draft) { arrayListOf(mode.name, familyId?.value, coreId?.value, augmentId?.value, catalystId?.value, risk.name, technique?.name, commissionId?.value) }
+        saved[KEY_RELIC_DAY] = l.relicOfferDismissedDay
+        saved[KEY_SHEET] = when (val sheet = l.sheet) { is Sheet.Hero -> "hero:${sheet.id.value}"; is Sheet.Item -> "item:${sheet.id.value}"; Sheet.Visitor -> "visitor:"; null -> null }
+        saved[KEY_DRAFT] = with(l.draft) { arrayListOf(mode.name, familyId?.value, coreId?.value, augmentId?.value, catalystId?.value, risk.name, technique?.name, commissionId?.value, bellows.toString()) }
     }
 
     private fun restored(): Local {
@@ -316,12 +334,14 @@ class GameViewModel(
                 risk = Risk.entries.firstOrNull { it.name == d[5] } ?: Risk.BALANCED,
                 technique = Technique.entries.firstOrNull { it.name == d[6] },
                 commissionId = d.getOrNull(7)?.let(::CommissionId),
+                bellows = d.getOrNull(8) == "true",
             ),
             revealWeaponId = saved.get<String>(KEY_REVEAL)?.let(::WeaponId),
             blessingOfferDismissedDay = saved.get<Int>(KEY_BLESSING_DAY),
+            relicOfferDismissedDay = saved.get<Int>(KEY_RELIC_DAY),
             sheet = saved.get<String>(KEY_SHEET)?.let { s ->
                 val id = s.substringAfter(':')
-                when (s.substringBefore(':')) { "hero" -> Sheet.Hero(HeroId(id)); "item" -> Sheet.Item(WeaponId(id)); else -> null }
+                when (s.substringBefore(':')) { "hero" -> Sheet.Hero(HeroId(id)); "item" -> Sheet.Item(WeaponId(id)); "visitor" -> Sheet.Visitor; else -> null }
             },
         )
     }
@@ -334,7 +354,8 @@ class GameViewModel(
 
     private fun show(result: Result) {
         when (result) {
-            is Result.Done -> edit { it.copy(lastError = null, revealWeaponId = result.accepted?.forgedWeaponId ?: it.revealWeaponId) }
+            // A forge spends the bellows it was asked to use: the next draft starts without them.
+            is Result.Done -> edit { it.copy(lastError = null, revealWeaponId = result.accepted?.forgedWeaponId ?: it.revealWeaponId, draft = if (result.accepted?.forgedWeaponId != null) it.draft.copy(bellows = false) else it.draft) }
             is Result.Rejected -> edit { it.copy(lastError = describe(result.error)) }
             is Result.EngineFault -> edit { it.copy(lastError = "The forge cannot do that right now.") }
             // Stale and DayNotWatched: the screen already shows why. Failed: the session holds it and SaveFailureDialog shows it.
@@ -359,6 +380,12 @@ class GameViewModel(
     fun abandonRun() {
         val run = session.snapshot.value?.run ?: return
         launch(Op.Abandon(run.runId)) { edit { Local(loading = false, speed = it.speed) } }
+    }
+
+    /** Debug builds only (the Scenarios menu): a bundled save takes the place of the current run ([Op.LoadScenario]). */
+    fun loadScenario(run: String, ownLegacy: Boolean, onLoaded: () -> Unit) {
+        val snap = session.snapshot.value ?: return
+        launch(Op.LoadScenario(run, ownLegacy, snap.run?.runId)) { edit { Local(loading = false, speed = it.speed) }; onLoaded() }
     }
 
     /** A bar tap. Records opens on the segment it was left on. */
@@ -465,6 +492,24 @@ class GameViewModel(
     /** "Decide later" (and Back) on the blessing offer: the player stays where they were; the Shop's lead and End Day's note still say it waits. */
     fun dismissBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = session.snapshot.value?.run?.day) }
     fun reopenBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = null) }
+    fun dismissRelicOffer() = edit { it.copy(relicOfferDismissedDay = session.snapshot.value?.run?.day, dest = Dest.SHOP) }
+    fun reopenRelicOffer() = edit { it.copy(relicOfferDismissedDay = null) }
+
+    /**
+     * An answer to this morning's visitor. The command ID is made of the run, the visitor and the answer, so a second
+     * tap, or the same tap after the process died, is the same command: the engine accepts it once and changes nothing
+     * the second time. Planning only: while a shop day is on screen the session refuses it.
+     */
+    fun answerVisitor(optionId: String) {
+        val run = session.snapshot.value?.run ?: return
+        val visitor = run.encounter ?: return
+        dispatch(Command.ResolveEncounter(visitor.id, optionId, CommandId("${run.runId.value}:${visitor.id}:$optionId")))
+    }
+
+    /** A relic from the offer; [replaceId] is the held relic it takes the place of when every slot is full. */
+    fun chooseRelic(relicId: String, replaceId: String? = null) = dispatch(Command.ChooseRelic(relicId, replaceId))
+    /** "Take none": the offer is given up for good. */
+    fun declineRelics() = dispatch(Command.DeclineRelicOffer)
 
     // The shop day (plan 6.5). These move the saved position and what is open over it; only chooseBlessing issues a command.
 
@@ -588,6 +633,8 @@ class GameViewModel(
             for (command in commands) {
                 val result = session.run(Op.Dispatch(command, run.runId))
                 show(result)
+                // A batch cut short says how far it got; a save failure has its own dialog, which this line waits behind.
+                if (result is Result.Rejected && commands.size > 1) edit { it.copy(lastError = "Stopped after $done of ${commands.size}. ${describe(result.error)}") }
                 if (result !is Result.Done) break
                 done++
             }
@@ -664,11 +711,24 @@ class GameViewModel(
         is GameError.AlreadyHoned -> "That weapon has already been honed."
         is GameError.ToolMaxed -> "That tool is already at its highest level."
         GameError.ArmoryFull -> "The town watch armory is full."
+        GameError.NoEncounter, is GameError.EncounterNotOpen -> "The visitor has already had an answer."
+        is GameError.EncounterOptionBlocked -> e.reason
+        GameError.NoRelicOffer, is GameError.RelicNotOffered -> "No such relic is offered."
+        is GameError.RelicNotOwned -> "The workshop does not hold ${relicName(e.relicId)}."
+        GameError.RelicSlotsFull -> "Every relic slot is taken. Choose which relic it replaces."
+        is GameError.RelicSpent -> "${relicName(e.relicId)} has already been used today."
+        is GameError.WeaponPromised -> "That blade is kept for ${session.snapshot.value?.run?.let { promisedBuyer(it, e.commissionId) } ?: "a patron"}'s order."
         // Core grows concurrently; unmapped errors still get a readable line instead of a build break.
         else -> "The forge cannot do that right now."
     }
 
+    private fun relicName(id: String) = engine.content.relic(id)?.name ?: "That relic"
+
     companion object {
+        /** Who an order's blade is kept for, by name; null when the order or its buyer has left the save. */
+        fun promisedBuyer(state: GameState, id: CommissionId): String? = state.commissions[id]?.let { state.heroes[it.buyerId]?.fullName }
+
+        private const val KEY_RELIC_DAY = "relic_day"
         private const val KEY_DEST = "dest"
         private const val KEY_RECORDS = "records"
         private const val KEY_DRAFT = "draft"

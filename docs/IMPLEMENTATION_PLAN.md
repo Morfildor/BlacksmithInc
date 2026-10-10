@@ -75,5 +75,14 @@ record of what is done; this file only names the phase. Branch `shop-day/m0`; th
 - [ ] M1 trustworthy state and reports · M2 the shop day · M3 more and varied customers · M4 demand, discovery and stories
 - [ ] M5 progression and proof · M6 accessibility, performance and long saves · M7 release preparation for this update
 
+## P7c — Gameplay depth: visitors, relics, siege traits (built 2026-10-10, not committed)
+Plan and task ledger: `docs/GAMEPLAY_DEPTH_PLAN.md`. Rulings and the 10,000-seed gate: `docs/DECISIONS.md` ("Gameplay depth"). Branch
+`gameplay-depth`, cut from `post-0.7.0`. Rules 4, save schema 5, content 4, balance 10.
+- [x] 8 morning visitors, 4 run relics, 2 siege traits, one two-stage chain; schema 5 migration; 19 debug scenarios; simulator tastes and probes
+- [x] Core 451 and app 137 JVM tests; debug APK; gate of 19 runs at 10,000 seeds; exploit probes
+- [ ] Owner: the first-era band and the maxed ceiling (both exceeded); options no bot prefers; the wager's win rate
+- [ ] smoke.sh, runend.sh and the instrumented tests updated for the day-1 relic offer and run; lint and release build rerun on the last tree
+- [ ] Deferred by the brief: the rest of the visitor catalogue, ventures and recovery, a rival smith, richer seasons, challenge tiers, distinct catalysts
+
 ## P8 — Google Play premium launch
 - [ ] Release signing, AAB, store listing (€1.99, no ads/IAP), privacy/legal assets

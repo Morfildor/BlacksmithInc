@@ -213,11 +213,11 @@ class DetailBuilderTest {
     fun aBladeThatChangedOrLeftTheSaveOpensFromItsSnapshot() {
         val f = fixture()
         val morning = WeaponSnapshot.of(f.blade.copy(condition = 100, fame = 0))
-        val worn = f.blade.copy(condition = 30, fame = 4)
+        val worn = f.blade.copy(condition = 20, fame = 4)
         val d = engine.itemDetail(f.state.copy(weapons = mapOf(worn.id to worn)), worn.id, morning)!!
         assertEquals("Sound", d.counter.first { it.label == "Condition" }.value)
         assertEquals(listOf("Carried by", "Condition", "Renown"), d.now.map { it.label })
-        assertEquals("Worn", d.now.first { it.label == "Condition" }.value)
+        assertEquals("Battered", d.now.first { it.label == "Condition" }.value)
 
         assertTrue("an unchanged blade is told once", engine.itemDetail(f.state, f.blade.id, WeaponSnapshot.of(f.blade))!!.counter.isEmpty())
 

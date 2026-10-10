@@ -23,7 +23,10 @@ dependencies {
 
 tasks.test {
     useJUnit()
-    filter { excludeTestsMatching("*ProductionSoakTest") }  // minutes long; it has its own task below
+    filter {
+        excludeTestsMatching("*ProductionSoakTest")  // minutes long; it has its own task below
+        excludeTestsMatching("*ScenarioSavesWriter")  // writes files; it has its own task below
+    }
     systemProperty("golden.record", System.getProperty("golden.record") ?: "false")
     testLogging {
         events("failed")
@@ -48,6 +51,25 @@ tasks.register<Test>("soak") {
     useJUnit()
     filter { includeTestsMatching("*ProductionSoakTest") }
     maxHeapSize = "4g"
+    outputs.upToDateWhen { false }
+    testLogging {
+        showStandardStreams = true
+        events("failed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
+// Scenario saves for the debug build's Scenarios menu (plan T2.9): ./gradlew :core:scenarios
+// rewrites app/src/debug/assets/scenarios/ from ScenarioSaves.kt (test sources); -Dscenarios.search=true prints candidate seeds instead.
+tasks.register<Test>("scenarios") {
+    group = "tinyblacksmith"
+    description = "Writes the constructed scenario saves into the app's debug assets."
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnit()
+    filter { includeTestsMatching("*ScenarioSavesWriter") }
+    systemProperty("scenarios.out", rootProject.file("app/src/debug/assets/scenarios").path)
+    systemProperty("scenarios.search", System.getProperty("scenarios.search") ?: "false")
     outputs.upToDateWhen { false }
     testLogging {
         showStandardStreams = true

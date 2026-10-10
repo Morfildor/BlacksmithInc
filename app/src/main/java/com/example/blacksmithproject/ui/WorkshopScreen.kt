@@ -79,8 +79,12 @@ import com.example.blacksmithproject.ui.theme.ForgePanel
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.engine.Encounters
+import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.CommissionStatus
+import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
+import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.shopday.LeadKind
 
@@ -152,6 +156,9 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     // On the day itself the siege has its own row under the counter, so the strip does not say it twice.
                     strip = if (s.shop.threat?.today == true) null else ({ ThreatStrip(s, "shop_threat", s.shop.threat?.note) { vm.selectDest(Dest.TOWN) } }),
                     onOpenSupplies = { suppliesOpen = true },
+                    visitor = s.encounter, onOpenVisitor = { vm.openSheet(Sheet.Visitor) },
+                    relics = s.relics, relicSlots = if (vm.engine.content.relics.isEmpty()) 0 else vm.engine.config.depth.relicSlots,
+                    relicOffer = state.pendingRelicOffer.isNotEmpty(), onOpenRelicOffer = vm::reopenRelicOffer,
                 )
                 Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesFocus = it?.value; suppliesOpen = true }, onOpenBoard = { boardOpen = true }, onEndDay = { workshopHaptics.play(Moment.END_DAY); vm.endDay() })
                 Dest.RECORDS -> RecordsPanel(s, vm)
@@ -169,6 +176,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
             onDismiss = { storageOpen = false; vm.closeSheet() },
             terms = with(vm.engine.config) { BulkTerms(salvageEnergy, state.energy, maxOverworkPerDay - state.overworkToday, armoryMax - state.town.armory) },
             onBulk = { action, ids -> vm.dispatchAll(ids.map { action.toCommand(it) }) },
+            scrapBack = { ids -> scrapBackText(vm.engine, state, ids) },
+            onScrap = { ids -> vm.dispatch(Command.Scrap(ids)) },
             notice = s.notice,
             // A blade opened from the list is shown in this same sheet, not in a second one over it.
             detail = s.sheet?.let { sheet -> { DetailSheet(s, sheet, vm, inStorage = true) } }, onBack = vm::closeSheet,
@@ -186,6 +195,11 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     if (!storageOpen) s.sheet?.let { DetailSheet(s, it, vm) }
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)
+    // One offer at a time: the blessing first, then the relic.
+    else if (s.pendingRelicOffer()) RelicDialog(
+        state.pendingRelicOffer.mapNotNull { vm.engine.content.relic(it) }, s.relics, vm.engine.config.depth.relicSlots, s.busy,
+        onChoose = vm::chooseRelic, onDecline = vm::declineRelics, onLater = vm::dismissRelicOffer,
+    )
     s.lastError?.let { ErrorDialog(it, vm::dismissError) }
 }
 
@@ -214,6 +228,12 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inS
                 onStock = { vm.stock(sheet.id, it) },
                 onDismiss = vm::closeSheet, enabled = !s.busy, notice = s.notice,
             )
+        }
+        Sheet.Visitor -> {
+            // Open only while the visitor waits: an answer that sends them away closes it, the inspection does not.
+            val view = s.encounter?.takeIf { it.instance.isOpen }
+            if (view == null) LaunchedEffect(sheet) { vm.closeSheet() }
+            else EncounterSheet(view, st, s.busy, onCommit = vm::answerVisitor, onDismiss = vm::closeSheet)
         }
     }
 }
@@ -271,6 +291,9 @@ fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier:
 private fun UiState.Playing.pendingBlessingOffer() =
     state.pendingBlessingOffer.isNotEmpty() && revealWeaponId == null && blessingOfferDismissedDay != state.day
 
+/** The relic offer; it is shown only when the blessing dialog is not (the blessing comes first, and once that is put off the relic may be chosen). */
+internal fun UiState.Playing.pendingRelicOffer() =
+    state.pendingRelicOffer.isNotEmpty() && revealWeaponId == null && sheet == null && relicOfferDismissedDay != state.day
 /** The one name of the day's skip, on the strip, on the restart prompt and in the hint: it lands on the evening card, not on tomorrow. */
 const val SKIP_TO_EVENING = "Skip to evening"
 
@@ -326,11 +349,24 @@ internal fun endDayNote(s: UiState.Playing): String {
         state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
         // The run can end tonight: said before anything else that waits.
         s.shop.threat?.today == true -> "A siege follows today's trading"
+        // A visitor who waits, then a relic on offer: the words of the rule below.
+        s.encounter?.instance?.isOpen == true || state.pendingRelicOffer.isNotEmpty() -> endDayNote(state, s.encounter)
         offers > 0 -> if (offers == 1) "1 unaccepted commission" else "$offers unaccepted commissions"
         state.overworkToday > 0 -> "Overwork: ${state.overworkToday} less energy tomorrow"
         state.energy > 0 -> "${state.energy} energy unused"
         else -> "Rest until dawn"
     }
+}
+
+/** What End Day will leave behind, most pressing first. An unanswered visitor is told the free answer; an offer waits for another day. */
+internal fun endDayNote(state: GameState, visitor: Encounters.View?): String = when {
+    state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
+    visitor?.instance?.isOpen == true -> "The visitor leaves tonight: ${visitor.defaultLabel}"
+    state.pendingRelicOffer.isNotEmpty() -> "A relic awaits your choice"
+    state.commissions.values.any { it.status == CommissionStatus.OFFERED } -> "A commission is waiting"
+    state.overworkToday > 0 -> "Tomorrow starts ${state.overworkToday} energy short"
+    state.energy > 0 -> "${state.energy} energy unused"
+    else -> "Rest until dawn"
 }
 
 @Composable
@@ -382,4 +418,12 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
 @Composable
 fun Secondary(text: String, modifier: Modifier = Modifier) {
     Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = modifier)
+}
+
+/** What the engine says scrapping these blades gives back, in a sentence for the confirmation. */
+internal fun scrapBackText(engine: GameEngine, state: GameState, ids: List<WeaponId>): String {
+    val back = engine.scrapYield(ids.mapNotNull { state.weapons[it] })
+    val per = engine.config.saveGrowth.scrapBladesPerMaterial
+    return if (back.isEmpty()) "Nothing comes back: it takes $per blades of one metal to recover a unit of it."
+    else "You get back " + back.entries.joinToString(", ") { "${it.value} ${engine.content.material(it.key).name}" } + " (one unit for every $per blades of a metal)."
 }

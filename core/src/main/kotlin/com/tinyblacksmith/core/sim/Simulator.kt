@@ -185,6 +185,8 @@ data class RunStats(
     val legendHandedPower: Int = 0,
     /** What a T0.7 bot did (forge modes, techniques, requests, signature tries, rejected commands, ...); null for the classic policies. */
     val bot: BotRunStats? = null,
+    /** Morning visitors, relics and siege traits as the run saw them ([DepthRunStats]); null for a catalog without them. */
+    val depth: DepthRunStats? = null,
 )
 
 /**
@@ -209,9 +211,13 @@ class SimulationDriver(
     val customerMetrics: Boolean = false,
     /** The blessing taken when the town offers a choice (`--blessing`); null = the policy's own habit (the first offered, except EXPERT). */
     val blessing: BlessingPref? = null,
+    /** How morning visitors are answered (`--encounters`) and which relic is taken (`--relic`); null = the policy's own habit ([defaultEncounters], [defaultRelic]). */
+    val encounters: EncounterPref? = null,
+    val relic: RelicPref? = null,
     /** Called after each resolved day with the new state and the End Day wall-clock nanoseconds. */
     val onDayResolved: ((GameState, Long) -> Unit)? = null,
 ) {
+
     companion object {
         /** Reserve sweep (DECISIONS.md, 10,000-seed review): 0 gold lives longest; the flag exists for sensitivity runs. */
         const val DEFAULT_RESERVE = 0
@@ -223,6 +229,9 @@ class SimulationDriver(
         val policyRng = Rng(seed xor 0x5EEDL)
         val bots = policy.rules?.let { BotPlay(this, policy, it, policyRng) }
         if (bots != null) state = bots.start(state)
+        val catalog = engine.content
+        val depth = if (catalog.encounters.isEmpty() && catalog.relics.isEmpty() && catalog.siegeTraits.isEmpty()) null
+            else DepthPlay(this, policy, encounters ?: policy.defaultEncounters(), relic ?: policy.defaultRelic())
         var forged = 0
         var sold = 0
         var goldEarned = 0
@@ -272,6 +281,8 @@ class SimulationDriver(
                 if (engine.content.blessing(pick).effect == BlessingEffect.GUILD_PATRONAGE) patronageTaken++
                 state = engine.handle(state, Command.ChooseBlessing(pick)).state()
             }
+            // The relic offer and the visitor first: an order a visitor places needs the free line in the book.
+            if (depth != null) state = depth.morning(state)
             if (policy.rules?.acceptsCommissions != false) for (c in state.commissions.values.filter { it.status == CommissionStatus.OFFERED }) state = engine.handle(state, Command.AcceptCommission(c.id)).state()
             if (policy.active) {
                 state = toolsAndHone(state)
@@ -286,7 +297,11 @@ class SimulationDriver(
                 var forgesToday = 0
                 while (maxForgesPerDay == null || forgesToday < maxForgesPerDay) {
                     if (policy == Policy.RANDOM && forgesToday > 0 && policyRng.chance(0.3)) break // random effort
-                    val cmd = (if (bots != null) bots.forge(state) else chooseForge(state, policy, policyRng)) ?: break
+                    // What a visitor's answer promised comes before the policy's own forge; the held relics then shape whichever it is.
+                    val duty = depth?.obligationForge(state)
+                    if (duty != null) bots?.noteDuty()
+                    val base = duty ?: (if (bots != null) bots.forge(state) else chooseForge(state, policy, policyRng)) ?: break
+                    val cmd = depth?.decorate(state, base, familyFree = duty == null && bots?.familyFree != false, forgesToday = forgesToday) ?: base
                     val rareInStock = state.supplierStock.values.sum()
                     state = ensureMaterials(state, cmd)
                     rareMaterialsBought += rareInStock - state.supplierStock.values.sum()
@@ -306,7 +321,9 @@ class SimulationDriver(
             }
             if (bots != null) state = bots.reserve(state)
             var listed = state.listedWeapons().size
-            for (w in bots?.stockToList(state) ?: if (policy.active) state.storedWeapons().sortedByDescending { it.power } else state.storedWeapons()) {
+            if (depth != null) state = depth.evening(state)
+            // A blade kept for an order (`promisedTo`) is not the bot's to list, melt or give away.
+            for (w in bots?.stockToList(state) ?: freeStock(state).let { if (policy.active) it.sortedByDescending { w -> w.power } else it }) {
                 if (listed >= engine.shelfSlots(state)) break
                 val factor = when {
                     policy == Policy.RANDOM -> 0.5 + policyRng.nextDouble() * 1.5
@@ -331,6 +348,7 @@ class SimulationDriver(
             if (res != null) {
                 collector?.afterEndDay(state, out, res)
                 bots?.observe(state, res)
+                depth?.observe(state, out, res)
                 for (v in res.browsers) visitReasons[v.reason.name] = (visitReasons[v.reason.name] ?: 0) + 1
                 val sales = res.events.filter { it.type == EventType.WEAPON_SOLD }
                 sold += sales.size
@@ -391,7 +409,7 @@ class SimulationDriver(
             customers = collector?.finish(state), patronageTaken = patronageTaken, stipendSales = stipendSales, stipendGold = stipendGold, routs = routs, wallDeaths = wallDeaths,
             rumours = rumours, clueRungs = clueRungs, signatureFirsts = signatureFirsts,
             legendReturnPower = legendReturnPower, legendsWoken = legendsWoken,
-            legendsHandedOver = legendsHandedOver, legendHandedPower = legendHandedPower, bot = bots?.finish(state),
+            legendsHandedOver = legendsHandedOver, legendHandedPower = legendHandedPower, bot = bots?.finish(state), depth = depth?.finish(state),
         )
         return stats to state
     }
@@ -433,12 +451,15 @@ class SimulationDriver(
     /** Evening routine of [Policy.active]: unsold stock that did not fit on the shelf arms the watch, the rest is melted with spare energy. */
     private fun armWatchAndSalvage(state: GameState): GameState {
         var s = state
-        for (w in s.storedWeapons().sortedByDescending { it.power }) {
+        for (w in freeStock(s).sortedByDescending { it.power }) {
             if (s.town.armory < engine.config.armoryMax) s = engine.handle(s, Command.DonateWeapon(w.id)).state()
             else if (s.energy >= engine.config.salvageEnergy) s = engine.handle(s, Command.Salvage(w.id)).state()
         }
         return s
     }
+
+    /** Stored blades that are not kept for an order. */
+    internal fun freeStock(state: GameState): List<Weapon> = state.storedWeapons().filter { it.promisedTo == null }
 
     private fun CommandOutcome.state(): GameState = when (this) {
         is CommandOutcome.Accepted -> state
@@ -606,6 +627,8 @@ data class PolicySummary(
     val legendHandedPowerMean: Double = 0.0,
     /** What the T0.7 bots did, per run (`BotRunStats`); absent for the classic policies. */
     val bot: BotSummary? = null,
+    /** Morning visitors, relics and siege traits ([DepthSummary]); absent for a catalog without them. */
+    val depth: DepthSummary? = null,
 )
 
 data class Report(val policy: Policy, val runs: List<RunStats>, val label: String = "new account") {
@@ -657,11 +680,12 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             legendsWokenShare = runs.sumOf { it.legendsWoken }.toDouble() / runs.sumOf { it.legendsReturned }.coerceAtLeast(1),
             legendsHandedOverShare = runs.sumOf { it.legendsHandedOver }.toDouble() / runs.sumOf { it.legendsReturned }.coerceAtLeast(1),
             legendHandedPowerMean = runs.sumOf { it.legendHandedPower }.toDouble() / runs.sumOf { it.legendsHandedOver }.coerceAtLeast(1),
-            bot = BotSummary.of(runs),
+            bot = BotSummary.of(runs), depth = DepthSummary.of(runs),
         )
     }
 
-    fun render(): String {
+    /** [depth] adds the `--depth` section. */
+    fun render(depth: Boolean = false): String {
         val s = summary()
         fun pct(v: Double) = "%.0f%%".format(100.0 * v)
         fun f1(v: Double) = "%.1f".format(v)
@@ -687,6 +711,7 @@ data class Report(val policy: Policy, val runs: List<RunStats>, val label: Strin
             appendLine("  legacy points/run: median=${s.legacyPointsMedian}  discoveries/run: ${f1(s.discoveriesPerRun)}  signature discoveries/run: ${f1(s.signatureDiscoveriesPerRun)}  rumours/run: ${"%.2f".format(s.rumoursPerRun)}  clue rungs/run: ${"%.2f".format(s.clueRungsPerRun)}  signatures first found/run: ${"%.3f".format(s.signatureFirstsPerRun)} (runs with one ${"%.1f".format(100 * s.signatureFirstRunShare)}%)")
             s.bot?.let { append(it.render()) }
             s.customers?.let { append(it.render()) }
+            if (depth) s.depth?.let { append(it.render()) }
         }
     }
 
@@ -767,8 +792,9 @@ object Simulator {
         runs: Int, baseSeed: Long, policies: List<Policy>, legacy: LegacyProfile = LegacyProfile(), config: BalanceConfig = BalanceConfig.DEFAULT,
         maxDays: Int = config.maxSimulatedDays, label: String = "new account", content: ContentCatalog = LaunchContent.catalog,
         reserve: Int = SimulationDriver.DEFAULT_RESERVE, customerMetrics: Boolean = false, blessing: BlessingPref? = null,
+        encounters: EncounterPref? = null, relic: RelicPref? = null,
     ): List<Report> {
-        val driver = SimulationDriver(GameEngine(content, config), maxDays = maxDays, reserve = reserve, customerMetrics = customerMetrics, blessing = blessing)
+        val driver = SimulationDriver(GameEngine(content, config), maxDays = maxDays, reserve = reserve, customerMetrics = customerMetrics, blessing = blessing, encounters = encounters, relic = relic)
         // Runs are independent and the engine is pure, so seeds run in parallel; results are collected in seed order.
         return policies.map { p ->
             Report(p, IntStream.range(0, runs).parallel().mapToObj { i -> driver.playRun(legacy, baseSeed + i, p).first }.collect(Collectors.toList()), label)
@@ -799,12 +825,12 @@ object Simulator {
     fun upgradeImpact(
         runs: Int, baseSeed: Long, config: BalanceConfig, baselineMedianDays: Int, baselineMeanDays: Double, maxDays: Int = config.maxSimulatedDays,
         content: ContentCatalog = LaunchContent.catalog, policy: Policy = Policy.BALANCED_FAIR, reserve: Int = SimulationDriver.DEFAULT_RESERVE,
-        legendBoard: List<LegendEntry> = emptyList(), blessing: BlessingPref? = null,
+        legendBoard: List<LegendEntry> = emptyList(), blessing: BlessingPref? = null, encounters: EncounterPref? = null, relic: RelicPref? = null,
     ): List<UpgradeImpact> {
         val engine = GameEngine(content, config)
         return engine.content.upgrades.map { u ->
             val legacy = LegacyProfile(upgrades = mapOf(u.id to u.maxLevel), legendBoard = legendBoard)
-            val report = run(runs, baseSeed, listOf(policy), legacy, config, maxDays, label = u.name, content = content, reserve = reserve, blessing = blessing).single()
+            val report = run(runs, baseSeed, listOf(policy), legacy, config, maxDays, label = u.name, content = content, reserve = reserve, blessing = blessing, encounters = encounters, relic = relic).single()
             val s = report.summary()
             UpgradeImpact(u.id.value, u.name, u.maxLevel, s.daysMedian, s.daysMedian - baselineMedianDays, s.daysMean, s.daysMean - baselineMeanDays, report.yardsticks())
         }
@@ -915,7 +941,19 @@ internal fun applySet(base: BalanceConfig, arg: String): BalanceConfig {
             "veteranGold" -> c.copy(veteranGold = int())
             "tradeInShare" -> c.copy(tradeInShare = dbl())
             "fairGoldPerPower" -> c.copy(fairGoldPerPower = int())
-            else -> throw IllegalArgumentException("unknown key '$key'; allowed: shopCapacity, baseVisitChance, festivalExtraSeats, maxTurnedAwayDays, classSeats, shelfSlots, startingHeroes, minHeroPopulation, maxHeroPopulation, populationTarget, arrivalChancePerMissing, arrivalChanceMax, patronageStipend, wallsRoutDamage, wallsRoutRatio, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower")
+            // The depth numbers (visitors, relics, siege traits).
+            "encounterChance" -> c.copy(depth = c.depth.copy(encounterChance = dbl()))
+            "traitChance" -> c.copy(depth = c.depth.copy(traitChance = dbl()))
+            "bellowsDebt" -> c.copy(depth = c.depth.copy(bellowsDebt = int()))
+            "ledgerQualityPerStep" -> c.copy(depth = c.depth.copy(ledgerQualityPerStep = int()))
+            "ledgerMaxBonus" -> c.copy(depth = c.depth.copy(ledgerMaxBonus = int()))
+            "sealMinCash" -> c.copy(depth = c.depth.copy(sealMinCash = int()))
+            "sealsPerReward" -> c.copy(depth = c.depth.copy(sealsPerReward = int()))
+            "wagerStake" -> c.copy(depth = c.depth.copy(wagerStake = int()))
+            "pledgeRewardFactor" -> c.copy(depth = c.depth.copy(pledgeRewardFactor = dbl()))
+            "watchBounty" -> c.copy(depth = c.depth.copy(watchBounty = int()))
+            "commitBesieger" -> c.copy(depth = c.depth.copy(commitBesieger = requireNotNull(v.toBooleanStrictOrNull()) { "$key needs true or false, got '$v'" }))
+            else -> throw IllegalArgumentException("unknown key '$key'; allowed: shopCapacity, baseVisitChance, festivalExtraSeats, maxTurnedAwayDays, classSeats, shelfSlots, startingHeroes, minHeroPopulation, maxHeroPopulation, populationTarget, arrivalChancePerMissing, arrivalChanceMax, patronageStipend, wallsRoutDamage, wallsRoutRatio, newAdventurerCount, raidBase, raidPerDay, raidPerPressure, expeditionSuppression, patrolSuppression, expeditionGoldMin, expeditionGoldMax, patrolGold, veteranGold, tradeInShare, fairGoldPerPower, encounterChance, traitChance, bellowsDebt, ledgerQualityPerStep, ledgerMaxBonus, sealMinCash, sealsPerReward, wagerStake, pledgeRewardFactor, watchBounty, commitBesieger")
         }
     }
     return c
@@ -952,6 +990,14 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
  *      --policy NAME[,NAME]|all|gdd|bots|every: `all` is the 14 classic policies (unchanged), `bots` the T0.7 bots, `every` both.
  *      --blessing first|energy|quality|sales|patronage|defense: the blessing every policy takes when offered (default: the first offered).
  *      --eras N [--buy cheapest|walls|track=ID]: plays N eras per seed on one account (claim, buy upgrades by the rule, carry journal, Legend Board, lineages).
+ *      --encounters decline|first|cash|defense|adaptive: how every policy answers a morning visitor ([EncounterPref]). Default per policy ([defaultEncounters]):
+ *          PASSIVE declines, EXPERT and EXPERT_ACTIVE are adaptive, SPENDTHRIFT / BROKE_START / FREE_LISTINGS take the cash, the other siege-prep bots the defense, the rest the first open answer.
+ *      --relic first|adaptive|none|<relicId>: the relic every policy takes from an offer ([RelicPref]); a relic ID takes that one only and declines the rest.
+ *          Default ([defaultRelic]): the first offered; PASSIVE none; EXPERT and EXPERT_ACTIVE adaptive. An unknown value of either flag stops the run with exit code 2.
+ *      --depth: adds the visitor, relic and siege-trait section ([DepthSummary]) to the policy rows; the --json report always carries it.
+ *      --noDepth: the matched baseline without the depth systems ([withoutDepth]): no visitors, relics or siege traits, the collector, wandering master
+ *          and festival automatic again, and the besieger following pressure to the last day.
+ *      --probe [N]: instead of runs, the depth exploit probes ([DepthProbes]) over N seeds (default 50); exit code 1 when one fails.
  * Default: launch content, the GDD 15.2 policy set, maxed legacy accounts (BALANCED_FAIR and the impact policy) and
  * the per-upgrade impact sweep for the impact policy (BALANCED_FAIR by default).
  */
@@ -968,6 +1014,10 @@ fun main(args: Array<String>) {
     // Tuning overrides (balance sweeps only; defaults live in BalanceConfig).
     var config = BalanceConfig.DEFAULT
     val overrides = mutableMapOf<String, String>()
+    if (argMap["--noDepth"] == "true") {
+        withoutDepth(content, config).let { (c, b) -> content = c; config = b }
+        overrides["noDepth"] = "true"
+    }
     // Catalog overrides (per-tool and per-affix sweeps; defaults live in LaunchContent).
     argMap["--noTool"]?.let { arg ->
         val ids = arg.split(',')
@@ -1014,6 +1064,15 @@ fun main(args: Array<String>) {
         overrides["blessing"] = arg
         pref
     }
+    val encounters = argMap["--encounters"]?.let { arg ->
+        overrides["encounters"] = arg
+        try { EncounterPref.parse(arg) } catch (e: IllegalArgumentException) { System.err.println("--encounters: ${e.message}"); exitProcess(2) }
+    }
+    val relic = argMap["--relic"]?.let { arg ->
+        overrides["relic"] = arg
+        try { RelicPref.parse(arg, LaunchContent.catalog) } catch (e: IllegalArgumentException) { System.err.println("--relic: ${e.message}"); exitProcess(2) }
+    }
+    val depth = argMap["--depth"] == "true"
     val maxDays = argMap["--days"]?.toInt() ?: config.maxSimulatedDays
     val reserve = argMap["--reserve"]?.toInt() ?: SimulationDriver.DEFAULT_RESERVE
     val impactPolicy = argMap["--impactPolicy"]?.let { Policy.valueOf(it) } ?: Policy.BALANCED_FAIR
@@ -1036,6 +1095,15 @@ fun main(args: Array<String>) {
         println("elapsed ${(System.nanoTime() - start) / 1_000_000} ms")
         return
     }
+    argMap["--probe"]?.let { arg ->
+        val seeds = arg.toIntOrNull() ?: 50
+        println("== Depth exploit probes ($seeds seeds from $seed) ==")
+        val results = DepthProbes.run(engine, seeds, seed)
+        results.forEach { println(it.render()) }
+        println("elapsed ${(System.nanoTime() - start) / 1_000_000} ms")
+        if (results.any { !it.ok }) exitProcess(1)
+        return
+    }
     // --upgrades: the policy rows play this legacy account instead of a new one (per-level and combination sweeps).
     val upgrades = argMap["--upgrades"]?.let { arg ->
         overrides["upgrades"] = arg
@@ -1050,7 +1118,7 @@ fun main(args: Array<String>) {
         overrides["eras"] = arg; overrides["buy"] = rule.label
         val board = if (argMap["--legends"] == "true") Simulator.veteranLegendBoard(GameEngine(content, config), policies.first(), seed) else emptyList()
         if (board.isNotEmpty()) println("== Every account starts with a veteran Legend Board: ${board.size} blades, mean power ${"%.0f".format(board.map { it.power }.average())} ==")
-        val summaries = EraPlay.run(GameEngine(content, config), policies, runs, seed, eras, rule, LegacyProfile(upgrades = upgrades ?: emptyMap(), legendBoard = board), maxDays, reserve, blessing)
+        val summaries = EraPlay.run(GameEngine(content, config), policies, runs, seed, eras, rule, LegacyProfile(upgrades = upgrades ?: emptyMap(), legendBoard = board), maxDays, reserve, blessing, encounters, relic)
         summaries.forEach { println(it.render()) }
         val elapsedMs = (System.nanoTime() - start) / 1_000_000
         println("elapsed $elapsedMs ms")
@@ -1066,8 +1134,8 @@ fun main(args: Array<String>) {
         return
     }
     println(if (upgrades == null) "== New legacy account ==" else "== Legacy account with ${argMap["--upgrades"]} ==")
-    val reports = Simulator.run(runs, seed, policies, legacy = LegacyProfile(upgrades = upgrades ?: emptyMap()), config = config, maxDays = maxDays, label = if (upgrades == null) "new account" else "upgraded account", content = content, reserve = reserve, customerMetrics = customers, blessing = blessing)
-    reports.forEach { println(it.render()) }
+    val reports = Simulator.run(runs, seed, policies, legacy = LegacyProfile(upgrades = upgrades ?: emptyMap()), config = config, maxDays = maxDays, label = if (upgrades == null) "new account" else "upgraded account", content = content, reserve = reserve, customerMetrics = customers, blessing = blessing, encounters = encounters, relic = relic)
+    reports.forEach { println(it.render(depth)) }
     if (argMap["--yardsticks"] == "true") {
         println("== Second yardsticks per policy (means per run; columns as in the upgrade table) ==")
         println(Yardsticks.HEADER)
@@ -1080,13 +1148,13 @@ fun main(args: Array<String>) {
         val legends = if (argMap["--legends"] == "true") Simulator.veteranLegendBoard(engine, impactPolicy, seed) else emptyList()
         if (legends.isNotEmpty()) println("== Veteran Legend Board for the runs below: ${legends.size} blades, mean quality ${"%.0f".format(legends.map { it.quality }.average())}, mean power ${"%.0f".format(legends.map { it.power }.average())} ==")
         println("== Maxed legacy account (all upgrades) ==")
-        maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine).copy(legendBoard = legends), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve, customerMetrics = customers, blessing = blessing)
-        maxed.forEach { println(it.render()) }
+        maxed = Simulator.run(runs, seed, listOf(Policy.BALANCED_FAIR, impactPolicy).distinct(), legacy = Simulator.maxedLegacy(engine).copy(legendBoard = legends), config = config, maxDays = maxDays, label = "all upgrades maxed", content = content, reserve = reserve, customerMetrics = customers, blessing = blessing, encounters = encounters, relic = relic)
+        maxed.forEach { println(it.render(depth)) }
         val baseline = reports.firstOrNull { it.policy == impactPolicy }?.takeIf { upgrades == null && legends.isEmpty() }
-            ?: Simulator.run(runs, seed, listOf(impactPolicy), legacy = LegacyProfile(legendBoard = legends), config = config, maxDays = maxDays, content = content, reserve = reserve, blessing = blessing).single()
+            ?: Simulator.run(runs, seed, listOf(impactPolicy), legacy = LegacyProfile(legendBoard = legends), config = config, maxDays = maxDays, content = content, reserve = reserve, blessing = blessing, encounters = encounters, relic = relic).single()
         val baseSummary = baseline.summary()
         println("== Upgrade impact ($impactPolicy, single upgrade maxed vs none: median ${baseSummary.daysMedian} mean ${"%.1f".format(baseSummary.daysMean)} days) ==")
-        impact = Simulator.upgradeImpact(runs, seed, config, baseSummary.daysMedian, baseSummary.daysMean, maxDays, content, impactPolicy, reserve, legends, blessing)
+        impact = Simulator.upgradeImpact(runs, seed, config, baseSummary.daysMedian, baseSummary.daysMean, maxDays, content, impactPolicy, reserve, legends, blessing, encounters, relic)
         impact.forEach { println("  ${it.name} (${it.upgradeId} L${it.level}): median=${it.daysMedian} (${"%+d".format(it.deltaVsNone)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.deltaMeanVsNone)})") }
         val allMaxed = maxed.single { it.policy == impactPolicy }
         allMaxed.summary().let { println("  all maxed: median=${it.daysMedian} (${"%+d".format(it.daysMedian - baseSummary.daysMedian)}) mean=${"%.1f".format(it.daysMean)} (${"%+.1f".format(it.daysMean - baseSummary.daysMean)})") }

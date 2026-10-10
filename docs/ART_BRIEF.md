@@ -220,3 +220,11 @@ deliveries are useful. Questions about an ID or size: ask before drawing, the si
 ## 9. Art sources and provenance
 
 The imported art has three kinds of source. The concept sheets (the five numbered sheets, the `Weapons master` sheet and the reference boards beside the artist pack) are AI-generated: each source file carries an embedded Content Credentials (C2PA) manifest naming ChatGPT / OpenAI as the generator (asset review `docs/major_update_evidence/04_assets_content.md`, section 9). The artist's 1x production pack and the UI backgrounds pack are script-drawn from authored shapes, by their own READMEs; the importer takes 58 sprites from the first. `generate_assets.py` draws programmatic placeholders for IDs with no imported art. No evidence of manual pixel editing exists, and the project rule is never to hand-edit PNGs. The slicer resamples, so the shipped drawables carry no credentials; source files are never re-saved in place, so their embedded credentials are preserved. Art-origin metadata is not a secret and not a security finding. No licence or attribution text exists under `Pixel art assets/`; how the art is described on a paid store listing and the usage terms of the generating account are owner decisions (plan section 5.7, 10.4). "Imported art" is the neutral name for the category the tooling still prints as "hand-made".
+
+## 10. Gameplay depth (2026-10-10): art not yet made
+The visitor sheet, the relic rows and the siege trait line ship without art of their own (visitors show the heroes and
+blades they name). The wanted lists, with sizes and file names, are in `Assets/Heroes/WANTED.txt` (6 visitor portraits,
+64x64: carter, wandering master, collector, crooked merchant, rival smith, council envoy), `Assets/Icons/WANTED.txt`
+(`icon_visitor`, `icon_relic`, `icon_trait_long_assault`, `icon_trait_many_breaches`, `icon_promised`) and
+`Assets/Relics/WANTED.txt` (the 4 relics and an empty slot, 48x48). Portraits are the owner's to supply; nothing is
+generated for them.

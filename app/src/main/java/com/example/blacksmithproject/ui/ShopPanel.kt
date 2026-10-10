@@ -1,5 +1,8 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
+import com.example.blacksmithproject.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,7 +40,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.detail.WeaponStatLine
 import com.example.blacksmithproject.ui.detail.rarityColor
 import com.example.blacksmithproject.ui.shopday.BladeUi
@@ -51,6 +53,8 @@ import com.example.blacksmithproject.ui.theme.Ember
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
+import com.tinyblacksmith.core.engine.Encounters
+import com.tinyblacksmith.core.engine.Relics
 import com.tinyblacksmith.core.model.CommissionId
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.WeaponFamilyId
@@ -77,6 +81,14 @@ fun ShopPanel(
     modifier: Modifier = Modifier,
     onOpenSupplies: (() -> Unit)? = null,
     tip: (@Composable () -> Unit)? = null,
+    /** This morning's visitor: a card while they wait for an answer, one line once they have had it. */
+    visitor: Encounters.View? = null,
+    onOpenVisitor: () -> Unit = {},
+    /** The workshop's relics; [relicSlots] 0 leaves the block out (a catalog without relics). */
+    relics: List<Relics.View> = emptyList(),
+    relicSlots: Int = 0,
+    relicOffer: Boolean = false,
+    onOpenRelicOffer: () -> Unit = {},
     strip: (@Composable () -> Unit)? = null,
     more: LazyListScope.() -> Unit = {},
 ) {
@@ -86,6 +98,7 @@ fun ShopPanel(
     val list = rememberLazyListState()
     LazyColumn(modifier.fillMaxSize().bottomFade(list.canScrollForward).testTag("shop_list"), state = list, contentPadding = PaddingValues(bottom = Space.lg)) {
         strip?.let { item(key = "strip") { it() } }
+        if (visitor?.instance?.isOpen == true) item(key = "visitor") { VisitorCard(visitor, onOpenVisitor, side.padding(top = Space.sm, bottom = Space.sm)) }
         item(key = "counter") {
             Column(Modifier.testTag("shop_counter")) {
                 CounterScene(
@@ -108,6 +121,7 @@ fun ShopPanel(
                 }
             }
         }
+        visitorNote(visitor)?.let { note -> item(key = "visitor_note") { Secondary(note, side.padding(top = Space.sm).testTag("visitor_note")) } }
         item(key = "lead") { LeadCard(shop.lead, onAct = { onLead(shop.lead) }, modifier = side.padding(top = Space.md)) }
 
         item(key = "shelf") {
@@ -158,6 +172,7 @@ fun ShopPanel(
                 }
             }
         }
+        if (relicSlots > 0) item(key = "relics") { RelicRows(relics, relicSlots, relicOffer, onOpenRelicOffer, side) }
         more()
     }
 }
@@ -182,7 +197,10 @@ private fun DoorRow(icon: Int, title: String, action: String, tag: String, onOpe
 @Composable
 internal fun RequestCard(r: RequestUi, busy: Boolean, onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, onForgeThis: (CommissionId) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().padding(horizontal = Space.md, vertical = Space.sm)) {
-        Text(r.asks, style = MaterialTheme.typography.titleMedium)
+        Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+            PixelImage(R.drawable.icon_action_commission, wholePixelDp(48, 36.dp), description = null)
+            Text(r.asks, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+        }
         r.why?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = CreamMuted, modifier = Modifier.testTag("request_why_${r.id.value}")) }
         PersonChip(r.buyer, onOpenHero = { face -> face.heroId?.let(onOpenHero) }, note = r.terms)
         r.readiness?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs)) }
@@ -237,14 +255,16 @@ internal fun StockRow(stock: StockUi, busy: Boolean, onOpen: () -> Unit, onList:
     val w = stock.weapon
     // With large text the quick "List at" goes under the blade: beside it, it would leave the name a few dp.
     val listBelow = LocalDensity.current.fontScale > 1.3f
+    // A blade kept for an order cannot go on the shelf: it has no quick "List at".
+    @Suppress("NAME_SHADOWING") val onList = onList.takeIf { stock.promised == null }
     Column(
         modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow()
-            .then(if (selected == null) Modifier.clickable(onClickLabel = "Open ${w.name}", onClick = onOpen) else Modifier.toggleable(selected, role = Role.Checkbox, onValueChange = { onOpen() }))
+            .then(if (selected == null) Modifier.clickable(onClickLabel = "Open ${w.name}", onClick = onOpen) else Modifier.toggleable(selected, enabled = stock.promised == null, role = Role.Checkbox, onValueChange = { onOpen() }))
             .testTag("stock_${w.id.value}").padding(horizontal = 12.dp, vertical = 10.dp)
             .semantics(mergeDescendants = true) { contentDescription = stock.spoken(tap = selected == null) },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (selected != null) Checkbox(checked = selected, onCheckedChange = null)
+            if (selected != null) Checkbox(checked = selected, onCheckedChange = null, enabled = stock.promised == null)
             Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(2.dp)) { WeaponSprite(w, size = 44.dp) }
             Column(Modifier.weight(1f)) {
                 Text(w.name + (w.title?.let { " · \"$it\"" } ?: ""), style = MaterialTheme.typography.titleSmall, color = rarityColor(w.rarity))
@@ -252,6 +272,12 @@ internal fun StockRow(stock: StockUi, busy: Boolean, onOpen: () -> Unit, onList:
                 stock.dormant?.let { Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold) }
                 stock.threat?.let { Text("${it.kind.sign} ${it.label}", style = MaterialTheme.typography.bodySmall, color = it.kind.color) }
                 stock.favoured?.let { Secondary(it) }
+                stock.promised?.let {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        PixelImage(R.drawable.icon_promised, wholePixelDp(48, 20.dp), description = null)
+                        Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold, modifier = Modifier.testTag("stock_promised_${w.id.value}"))
+                    }
+                }
             }
             if (stock.price != null) Text("${stock.price} g", style = MaterialTheme.typography.titleMedium, color = Gold)
             else if (onList != null && !listBelow) SecondaryActionButton("List at ${stock.suggested}", { onList(stock.suggested) }, enabled = !busy)

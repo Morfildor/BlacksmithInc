@@ -48,6 +48,15 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     val eventLastDay: MutableMap<String, Int> = base.eventLastDay.toMutableMap()
     val worldFlags: MutableMap<String, Int> = base.worldFlags.toMutableMap()
     val tools: MutableMap<String, Int> = base.tools.toMutableMap()
+    var encounter = base.encounter
+    val encounterLog: MutableList<EncounterRecord> = base.encounterLog.toMutableList()
+    var nextEncounterSerial = base.nextEncounterSerial
+    var relics: List<ActiveRelic> = base.relics
+    var pendingRelicOffer: List<String> = base.pendingRelicOffer
+    val relicOffersMade: MutableSet<String> = base.relicOffersMade.toMutableSet()
+    val relicUses: MutableMap<String, Int> = base.relicUses.toMutableMap()
+    val consequences: MutableList<ScheduledConsequence> = base.consequences.toMutableList()
+    var siege = base.siege
 
     // Per-day scratch counters (not persisted).
     var patrolsToday = 0
@@ -114,6 +123,15 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     fun upgradeTotal(effect: UpgradeEffect): Int =
         content.upgrades.filter { it.effect == effect }.sumOf { it.magnitudePerLevel * legacy.upgradeLevel(it.id) }
 
+    fun canSpendEnergy(cost: Int): Boolean = maxOf(0, cost - energy) <= config.maxOverworkPerDay - overworkToday
+
+    /** Spends energy, dipping into overwork like a forge does. The caller has checked [canSpendEnergy]. */
+    fun spendEnergy(cost: Int) {
+        val shortfall = maxOf(0, cost - energy)
+        energy -= cost - shortfall
+        overworkToday += shortfall
+    }
+
     fun shelfSlots(): Int = config.shelfSlots + toolTotal(ToolEffect.SHELF_SLOTS)
 
     fun addWeaponHistory(weaponId: WeaponId, kind: String, text: String, subjects: List<String> = emptyList()) {
@@ -163,6 +181,15 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
             eventLastDay = eventLastDay.toMap(),
             worldFlags = worldFlags.toMap(),
             tools = tools.toMap(),
+            encounter = encounter,
+            encounterLog = encounterLog.toList(),
+            nextEncounterSerial = nextEncounterSerial,
+            relics = relics,
+            pendingRelicOffer = pendingRelicOffer,
+            relicOffersMade = relicOffersMade.toSet(),
+            relicUses = relicUses.toMap(),
+            consequences = consequences.toList(),
+            siege = siege,
         )
     }
 }

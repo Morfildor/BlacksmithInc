@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameError
+import com.tinyblacksmith.core.engine.Relics
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.model.*
@@ -40,6 +41,7 @@ object Forge {
         val overworkAvailable = config.maxOverworkPerDay - ctx.overworkToday
         val shortfall = maxOf(0, cost - ctx.energy)
         if (shortfall > overworkAvailable) return Validation.Error(GameError.NotEnoughEnergy(cost, ctx.energy, overworkAvailable))
+        if (cmd.bellows) Relics.bellowsError(ctx, cost, shortfall)?.let { return Validation.Error(it) }
         return Validation.Ok(cost, shortfall)
     }
 
@@ -61,6 +63,11 @@ object Forge {
         val efficiency = upgradeTotal(ctx, UpgradeEffect.MATERIAL_EFFICIENCY)
         val augmentSaved = efficiency > 0 && rng.chance(efficiency / 100.0)
         if (augmentSaved) ctx.materials[cmd.augmentId] = (ctx.materials[cmd.augmentId] ?: 0) + 1
+
+        // Ashen Bellows: the debt joins today's overwork, after the forge's own; the Tempering Ledger rewards a family the streak has not seen.
+        val bellowsSlots = if (cmd.bellows) Relics.blow(ctx) else 0
+        val ledger = Relics.ledgerBonus(ctx, family.id)
+        Relics.noteForge(ctx, family.id)
 
         val profile = config.risk.getValue(cmd.risk)
         var exceptionalChance = profile.exceptionalChance
@@ -87,7 +94,7 @@ object Forge {
         val mastery = masteryBonus(ctx) + (if (catalyst != null) config.catalystQualityBonus else 0)
 
         val quality = (config.qualityBase + config.qualityPerCoreTier * core.tier + config.qualityPerAugmentTier * augment.tier +
-            affinity + mastery + roll + (if (exceptional) config.qualityExceptionalBonus else 0) -
+            affinity + mastery + ledger + roll + (if (exceptional) config.qualityExceptionalBonus else 0) -
             (if (defect) config.qualityDefectPenalty else 0) -
             (if (cmd.technique == Technique.QUENCH) config.quenchQualityPenalty else 0)).coerceIn(1, 100)
         val rarity = rarityFor(quality, config)
@@ -98,6 +105,7 @@ object Forge {
         val neutralAffixes = content.affixes.filter { it.kind == AffixKind.BENEFICIAL && it.element == null }
         var affixSlots = when (rarity) { Rarity.COMMON -> 0; Rarity.UNCOMMON -> 0; Rarity.RARE -> 1; Rarity.EPIC -> 2; Rarity.LEGENDARY -> 3 } + (if (exceptional) 1 else 0)
         if (cmd.technique == Technique.ETCH) affixSlots += config.etchExtraAffixSlots
+        affixSlots += bellowsSlots
         // QUENCH forces the element affix even on a weapon that rolled no slot (the baseline already leads with it when a slot exists).
         if (cmd.technique == Technique.QUENCH && affixSlots == 0 && elementAffix != null) affixSlots = 1
         if (affixSlots > 0 && elementAffix != null) affixes += elementAffix.id
@@ -118,8 +126,7 @@ object Forge {
         }
         if (signature != null) for (a in signature.grantedAffixes) if (a !in affixes) affixes += a
 
-        val affixPower = (affixes + flaws).sumOf { content.affix(it).power }
-        val power = maxOf(1, family.basePower + config.powerPerCoreTier * core.tier + quality / config.powerPerQualityDivisor + affixPower + (signature?.bonusPower ?: 0))
+        val power = powerOf(content, config, family.id, core.id, quality, affixes + flaws, signature?.bonusPower ?: 0)
 
         val name = weaponName(content, family.id, core.id, affixes, signature?.id)
         val techniqueNote = cmd.technique?.let { ", ${it.name.lowercase()}ed" } ?: ""
@@ -140,7 +147,7 @@ object Forge {
             "The smith forged $name (${rarity.name.lowercase()}, quality $quality)${if (flaws.isNotEmpty()) " with a flaw: ${flaws.joinToString { content.affix(it).name }}" else ""}.",
             subjects = listOf(id.value),
             data = mapOf("quality" to quality.toString(), "rarity" to rarity.name, "exceptional" to exceptional.toString(), "defect" to defect.toString(), "augmentSaved" to augmentSaved.toString(),
-                "technique" to (cmd.technique?.name ?: "")),
+                "technique" to (cmd.technique?.name ?: "")) + (if (cmd.bellows) mapOf("bellows" to "true") else emptyMap()) + (if (ledger > 0) mapOf("ledger" to ledger.toString()) else emptyMap()),
         )
         if (rarity == Rarity.LEGENDARY) ctx.milestone("LEGENDARY_FORGED", "A legendary weapon, $name, left the anvil.")
         else if (rarity == Rarity.EPIC) ctx.milestone("EPIC_FORGED", "An epic weapon, $name, left the anvil.")
@@ -177,6 +184,10 @@ object Forge {
         ctx.updateWeapon(w.copy(title = title, name = weaponName(ctx.content, w.familyId, w.coreId, emptyList(), w.signatureId)))
         ctx.addWeaponHistory(weaponId, "TITLED", "Earned the name \"$title\".")
     }
+
+    /** A blade's power from what it is made of; the one formula for a forged blade and one that reaches the shop ready-made. */
+    fun powerOf(content: com.tinyblacksmith.core.content.ContentCatalog, config: com.tinyblacksmith.core.config.BalanceConfig, familyId: WeaponFamilyId, coreId: MaterialId, quality: Int, affixes: List<AffixId>, bonus: Int = 0): Int =
+        maxOf(1, content.family(familyId).basePower + config.powerPerCoreTier * content.material(coreId).tier + quality / config.powerPerQualityDivisor + affixes.sumOf { content.affix(it).power } + bonus)
 
     fun masteryBonus(ctx: ResolutionContext): Int =
         upgradeTotal(ctx, UpgradeEffect.QUALITY_BONUS) + ctx.blessingMagnitude(BlessingEffect.QUALITY_BONUS) + ctx.toolTotal(com.tinyblacksmith.core.content.ToolEffect.QUALITY_BONUS)

@@ -37,7 +37,8 @@ class SimulatorMetricsTest {
         for (after in posts) {
             val res = assertNotNull(after.lastResolution)
             val alive = before.aliveHeroes()
-            val festival = before.worldFlags[WorldEvents.FLAG_FESTIVAL] == before.day
+            // The festival crowd is there when the flag was set for today: last night by the old event, or this morning by the stall a visitor sold.
+            val festival = before.worldFlags[WorldEvents.FLAG_FESTIVAL] == before.day || res.events.any { it.type == EventType.ENCOUNTER_RESOLVED && it.data["option"] == "stall" }
             days++; heroDays += alive.size
             visits += res.browsers.size; buys += res.browsers.count { it.purchasedWeaponId != null }
             perCount.merge(res.browsers.size, 1, Int::plus)

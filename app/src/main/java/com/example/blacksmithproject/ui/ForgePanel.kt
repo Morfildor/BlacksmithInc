@@ -1,5 +1,9 @@
 package com.example.blacksmithproject.ui
 
+import com.tinyblacksmith.core.content.Depth
+import com.tinyblacksmith.core.config.BalanceConfig
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.Switch
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Spring
@@ -144,9 +148,15 @@ fun ForgePanel(
             }
             if (bench.notes.isNotEmpty()) FieldNotes(bench.notes) { vm.selectRecords(RecordsPage.JOURNAL) }
             ForgingOptions(d) { change -> vm.updateDraft(change) }
+            // The workshop's relics that bear on this forge: the bellows as a switch, the ledger's word on the family chosen.
+            BellowsRow(s, vm)
+            LedgerLine(s, vm)
             tip?.let { TipBanner(it, vm, Modifier.padding(top = Space.md)) }
         }
-        ForgeAction(bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay) { bench.command?.let(vm::dispatch) }
+        ForgeAction(bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay) {
+            // Asked for and still possible: a draft that has lost its bellows since forges without them.
+            bench.command?.copy(bellows = d.bellows && bellowsBlocked(s, vm.engine.config) == null)?.let(vm::dispatch)
+        }
     }
 }
 
@@ -501,4 +511,54 @@ private fun riskExplanation(r: Risk): String = when (r) {
     Risk.SAFE -> "Steady work with few surprises. Flaws are rare, but so are brilliant results."
     Risk.BALANCED -> "The usual gamble: some flaws, some brilliance, mostly honest work."
     Risk.RECKLESS -> "Push the metal hard. Brilliance comes more often, and so do flaws. Every forge still yields a usable weapon."
+}
+
+/**
+ * Why the Ashen Bellows cannot be asked for on this draft now, or null: the engine's own two reasons (`Relics.bellowsError`),
+ * said before the tap instead of after it. Only meaningful while the bellows are held.
+ */
+internal fun bellowsBlocked(s: UiState.Playing, config: BalanceConfig): String? {
+    val st = s.state
+    val cost = if (s.draft.mode == ForgeMode.QUICK) config.quickForgeEnergy else config.advancedForgeEnergy
+    val debt = config.depth.bellowsDebt
+    return when {
+        s.relics.firstOrNull { it.id == Depth.ASHEN_BELLOWS }?.ready == false -> "Used today."
+        (cost - st.energy).coerceAtLeast(0) + debt > config.maxOverworkPerDay - st.overworkToday -> "Not enough overwork left today: the bellows take $debt."
+        else -> null
+    }
+}
+
+/** The Ashen Bellows as a switch on the draft; shown only while the workshop holds them. Off and explained when they cannot be used. */
+@Composable
+private fun BellowsRow(s: UiState.Playing, vm: GameViewModel) {
+    if (s.relics.none { it.id == Depth.ASHEN_BELLOWS }) return
+    val config = vm.engine.config
+    val blocked = bellowsBlocked(s, config)
+    val on = s.draft.bellows && blocked == null
+    Row(
+        Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow()
+            .toggleable(value = on, enabled = blocked == null, role = Role.Switch) { v -> vm.updateDraft { it.copy(bellows = v) } }
+            .heightIn(min = 56.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag("forge_bellows"),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text("Ashen Bellows: one more property, ${config.depth.bellowsDebt} energy from tomorrow", style = MaterialTheme.typography.titleSmall)
+            blocked?.let { Secondary(it, Modifier.testTag("forge_bellows_blocked")) }
+        }
+        Switch(checked = on, onCheckedChange = null, enabled = blocked == null)
+    }
+}
+
+/** The Tempering Ledger's word on the family on the anvil: what it adds now, or that this forge starts its streak again. */
+@Composable
+private fun LedgerLine(s: UiState.Playing, vm: GameViewModel) {
+    val st = s.state
+    val family = s.draft.familyId ?: return
+    val bonus = remember(st, family) { vm.engine.ledgerBonus(st, family) }
+    val line = when {
+        bonus > 0 -> "Tempering Ledger: +$bonus quality"
+        st.relics.any { it.id == Depth.TEMPERING_LEDGER && family in it.families } -> "Tempering Ledger: this family is already in the streak, so forging it starts the streak again."
+        else -> return
+    }
+    Text(line, style = MaterialTheme.typography.bodySmall, color = Gold, modifier = Modifier.padding(top = Space.xs).testTag("forge_ledger"))
 }

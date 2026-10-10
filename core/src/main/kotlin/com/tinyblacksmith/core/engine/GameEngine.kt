@@ -31,7 +31,7 @@ import com.tinyblacksmith.core.shopday.Recognitions
 class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.LaunchContent.catalog, val config: BalanceConfig = BalanceConfig.DEFAULT) {
 
     companion object {
-        const val RULES_VERSION = 3
+        const val RULES_VERSION = 4
 
         /**
          * The rules version that salts every stream seed ([RngState.seeded]). Rules 2 is a number only (a run now has to be
@@ -98,6 +98,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             val who = if (names.size == 1) "${names[0]} is already a regular" else "${names.dropLast(1).joinToString(", ")} and ${names.last()} are already regulars"
             ctx.emit(EventType.RUN_STARTED, 4, "The forge's name went before it: $who of the shop.", regulars.map { it.id.value })
         }
+        // The first siege is on the calendar from the start (it is a plain one); the opening relic draft draws on ENCOUNTERS only.
+        ctx.siege = SiegeScenario(config.siegeInterval)
+        if (content.relics.isNotEmpty()) Relics.offerIfDue(ctx)
         val state = ctx.toState()
         assertInvariants(state)
         return state
@@ -115,9 +118,14 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             is Command.DeclineCommission -> commission(state, command.commissionId, CommissionStatus.DECLINED)
             is Command.ChooseBlessing -> chooseBlessing(state, command)
             is Command.Salvage -> salvage(state, command)
+            is Command.Scrap -> scrap(state, command)
             is Command.Hone -> hone(state, command)
             is Command.DonateWeapon -> donate(state, command)
             is Command.BuyTool -> buyTool(state, command)
+            is Command.ResolveEncounter -> resolveEncounter(state, command)
+            is Command.ChooseRelic -> ResolutionContext(state, content, config).let { ctx -> Relics.choose(ctx, command)?.let { CommandOutcome.Rejected(it) } ?: accept(ctx) }
+            is Command.DeclineRelicOffer -> if (state.pendingRelicOffer.isEmpty()) CommandOutcome.Rejected(GameError.NoRelicOffer)
+                else ResolutionContext(state, content, config).let { ctx -> ctx.pendingRelicOffer = emptyList(); accept(ctx) }
             is Command.EndDay -> endDay(state, command.commandId)
         }
     }
@@ -132,11 +140,29 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         return accept(ctx, forgedWeaponId = weapon.id)
     }
 
+    /** Exactly once per command ID: the retry of the command that answered is accepted and changes nothing. */
+    private fun resolveEncounter(state: GameState, cmd: Command.ResolveEncounter): CommandOutcome {
+        if (state.encounter?.let { it.id == cmd.instanceId && it.commandId == cmd.commandId.value } == true) return CommandOutcome.Accepted(state, emptyList())
+        val ctx = ResolutionContext(state, content, config)
+        Encounters.resolve(ctx, cmd)?.let { return CommandOutcome.Rejected(it) }
+        return accept(ctx)
+    }
+
+    /** The workshop's relics with where each stands today. Read-only. */
+    fun relicViews(state: GameState): List<Relics.View> = Relics.views(ResolutionContext(state, content, config))
+
+    /** Quality the Tempering Ledger would add to a forge of [familyId] now (0 without the relic or for a family in the streak). */
+    fun ledgerBonus(state: GameState, familyId: WeaponFamilyId): Int = Relics.ledgerBonus(ResolutionContext(state, content, config), familyId)
+
+    /** This morning's visitor as the planning screen shows it: text, answers, exact costs and why an answer is closed. Read-only. */
+    fun encounterView(state: GameState): Encounters.View? = Encounters.view(state, content, config)
+
     private fun toggleShelf(state: GameState, cmd: Command.ToggleShelf): CommandOutcome {
         val weapon = state.weapons[cmd.weaponId] ?: return CommandOutcome.Rejected(GameError.WeaponNotFound(cmd.weaponId))
         val ctx = ResolutionContext(state, content, config)
         if (cmd.listed) {
             if (!weapon.isInStorage) return CommandOutcome.Rejected(GameError.WeaponNotAvailable(weapon.id, weapon.location))
+            weapon.promisedTo?.let { return CommandOutcome.Rejected(GameError.WeaponPromised(weapon.id, it)) }
             if (state.listedWeapons().size >= shelfSlots(state)) return CommandOutcome.Rejected(GameError.ShelfFull)
             val price = cmd.price ?: suggestedPrice(weapon)
             if (price < 0) return CommandOutcome.Rejected(GameError.InvalidPrice(price))
@@ -195,20 +221,21 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
 
     /** Spends energy, dipping into overwork like a forge does; null when accepted. */
     private fun spendEnergy(ctx: ResolutionContext, cost: Int): GameError? {
-        val overworkAvailable = config.maxOverworkPerDay - ctx.overworkToday
-        val shortfall = maxOf(0, cost - ctx.energy)
-        if (shortfall > overworkAvailable) return GameError.NotEnoughEnergy(cost, ctx.energy, overworkAvailable)
-        ctx.energy -= cost - shortfall
-        ctx.overworkToday += shortfall
+        if (!ctx.canSpendEnergy(cost)) return GameError.NotEnoughEnergy(cost, ctx.energy, config.maxOverworkPerDay - ctx.overworkToday)
+        ctx.spendEnergy(cost)
         return null
     }
 
-    /** A weapon the smith can still work on: in storage or on the shelf. */
-    private fun inShop(state: GameState, id: WeaponId): Pair<Weapon?, GameError?> {
+    /** A weapon the smith can still work on: in storage or on the shelf. With [parting] it must also be free to leave the shop (not kept for an order). */
+    private fun inShop(state: GameState, id: WeaponId, parting: Boolean = true): Pair<Weapon?, GameError?> {
         val weapon = state.weapons[id] ?: return null to GameError.WeaponNotFound(id)
         if (!weapon.isInStorage && !weapon.isListed) return null to GameError.WeaponNotAvailable(weapon.id, weapon.location)
+        if (parting && weapon.promisedTo != null) return null to GameError.WeaponPromised(weapon.id, weapon.promisedTo)
         return weapon to null
     }
+
+    /** Whether melting [weapon] down today would also return its augment (Salvager's Crucible, once a day, fine quality or better). */
+    fun salvageKeepsAugment(state: GameState, weapon: Weapon): Boolean = Relics.crucibleKeeps(ResolutionContext(state, content, config), weapon)
 
     private fun salvage(state: GameState, cmd: Command.Salvage): CommandOutcome {
         val (weapon, error) = inShop(state, cmd.weaponId)
@@ -216,14 +243,37 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val ctx = ResolutionContext(state, content, config)
         spendEnergy(ctx, config.salvageEnergy)?.let { return CommandOutcome.Rejected(it) }
         ctx.materials[weapon.coreId] = (ctx.materials[weapon.coreId] ?: 0) + 1
+        val kept = if (Relics.onSalvage(ctx, weapon)) " and, in the crucible, its ${content.material(weapon.augmentId).name}" else ""
         ctx.updateWeapon(weapon.copy(location = WeaponLocation.Destroyed(state.day)))
-        ctx.addWeaponHistory(weapon.id, "SALVAGED", "Melted down for its ${content.material(weapon.coreId).name}.")
-        ctx.emit(EventType.WEAPON_SALVAGED, 0, "The smith melted ${weapon.name} down for its ${content.material(weapon.coreId).name}.", listOf(weapon.id.value))
+        ctx.addWeaponHistory(weapon.id, "SALVAGED", "Melted down for its ${content.material(weapon.coreId).name}$kept.")
+        ctx.emit(EventType.WEAPON_SALVAGED, 0, "The smith melted ${weapon.name} down for its ${content.material(weapon.coreId).name}$kept.", listOf(weapon.id.value), if (kept.isEmpty()) emptyMap() else mapOf("augment" to weapon.augmentId.value))
+        return accept(ctx)
+    }
+
+    /** What [Command.Scrap] would give back for these weapons: whole units per core material, nothing for the remainder. */
+    fun scrapYield(weapons: Collection<Weapon>): Map<MaterialId, Int> =
+        weapons.groupingBy { it.coreId }.eachCount().mapValues { it.value / config.saveGrowth.scrapBladesPerMaterial }.filterValues { it > 0 }
+
+    private fun scrap(state: GameState, cmd: Command.Scrap): CommandOutcome {
+        val ids = cmd.weaponIds.distinct()
+        if (ids.isEmpty()) return CommandOutcome.Rejected(GameError.InvalidQuantity(0))
+        val weapons = ids.map { id -> inShop(state, id).let { (weapon, error) -> weapon ?: return CommandOutcome.Rejected(error!!) } }
+        val ctx = ResolutionContext(state, content, config)
+        val back = scrapYield(weapons)
+        back.forEach { (id, n) -> ctx.materials[id] = (ctx.materials[id] ?: 0) + n }
+        weapons.forEach {
+            ctx.updateWeapon(it.copy(location = WeaponLocation.Destroyed(state.day)))
+            ctx.addWeaponHistory(it.id, "SALVAGED", "Carted to the scrap heap.")
+        }
+        val got = back.entries.joinToString(", ") { "${it.value} ${content.material(it.key).name}" }
+        // One record for the lot, with its count: two hundred blades are not two hundred lines in the save.
+        ctx.emit(EventType.WEAPON_SALVAGED, 0, "The smith carted ${weapons.size} ${if (weapons.size == 1) "blade" else "blades"} to the scrap heap" + (if (got.isEmpty()) "." else " and got $got back."),
+            data = mapOf("count" to weapons.size.toString()))
         return accept(ctx)
     }
 
     private fun hone(state: GameState, cmd: Command.Hone): CommandOutcome {
-        val (weapon, error) = inShop(state, cmd.weaponId)
+        val (weapon, error) = inShop(state, cmd.weaponId, parting = false)
         if (weapon == null) return CommandOutcome.Rejected(error!!)
         if (!weapon.canBeHoned) return CommandOutcome.Rejected(GameError.AlreadyHoned(weapon.id))
         if ((state.materials[weapon.coreId] ?: 0) < 1) return CommandOutcome.Rejected(GameError.MissingMaterial(weapon.coreId))
@@ -255,7 +305,10 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.reputation += 1
         ctx.updateWeapon(weapon.copy(location = WeaponLocation.Lost(state.day, "given to the town watch")))
         ctx.addWeaponHistory(weapon.id, "DONATED", "Given to the town watch of Emberfall.")
-        ctx.emit(EventType.WEAPON_DONATED, 3, "The smith armed the town watch with ${weapon.name}.", listOf(weapon.id.value), mapOf("armory" to gain.toString()))
+        val bounty = Consequences.bounty(ctx)
+        ctx.gold += bounty
+        ctx.emit(EventType.WEAPON_DONATED, 3, "The smith armed the town watch with ${weapon.name}." + (if (bounty > 0) " The council paid $bounty gold for it." else ""), listOf(weapon.id.value),
+            mapOf("armory" to gain.toString()) + (if (bounty > 0) mapOf("bounty" to bounty.toString()) else emptyMap()))
         return accept(ctx)
     }
 
@@ -306,8 +359,10 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // 1. Lock planning; RNG state is snapshotted implicitly (streams open lazily from the saved state).
         // The shelf as the day opens, before a patron or a browser takes anything from it: what every visit of the day refers to.
         val shelf = state.listedWeapons()
+        Encounters.expire(ctx)  // a visitor nobody answered leaves with the free answer; no draw
         // 2. Commissions, then customers: a patron collects before the browsers arrive, so the blade a request was promised is not sold first.
         Market.resolveCommissions(ctx)
+        Consequences.settle(ctx)  // wagers judged, pledges learn what became of their order
         Market.resolveShelfVisits(ctx)
         Recognitions.apply(ctx)  // what the counter knows each browser by; narration, no draw
         Market.resolveMerchant(ctx)  // GDD 7 merchant resale, after the smith's own customers; draws no RNG
@@ -396,6 +451,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         for (h in ctx.aliveHeroes()) if (h.lastActivity == HeroActivity.SHOP) ctx.updateHero(h.copy(lastActivity = HeroActivity.IDLE))
         // A want stands for the mornings after it was voiced, `wantLapseDays` of them; the planning screen never shows one End Day would ignore.
         for (h in ctx.aliveHeroes()) if (h.want != null && ctx.day - h.want.sinceDay > config.customers.wantLapseDays) ctx.updateHero(h.copy(want = null))
+        // The morning's own business last, so it reads the town as the player will: a relic offer that has fallen due, then the visitor.
+        if (content.relics.isNotEmpty()) Relics.offerIfDue(ctx)
+        Encounters.offerMorning(ctx)
     }
 
     /** The day's stock of the limited materials; Caravan Ties (CATALOG_ACCESS) deepens every one of them. */

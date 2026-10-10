@@ -7,6 +7,7 @@ import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.content.ToolEffect
 import com.tinyblacksmith.core.engine.ResolutionContext
+import com.tinyblacksmith.core.engine.Relics
 import com.tinyblacksmith.core.engine.WorldEvents
 import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.model.*
@@ -84,6 +85,7 @@ object Market {
             if (best != null && best.utility >= config.purchaseUtilityThreshold) {
                 val mark = ctx.newEvents.size
                 val sale = purchase(ctx, hero, best.weapon, best.weapon.listedPrice ?: 0)
+                Relics.onShelfSale(ctx, ctx.weapon(best.weapon.id), sale.listedPrice ?: 0, sale.cashPaid)
                 val reason = when {
                     best.gain <= 0 -> best.sideReason!!
                     best.countersThreat -> VisitReason.COUNTERS_THREAT
@@ -405,6 +407,7 @@ object Market {
             if (c.status != CommissionStatus.ACCEPTED) continue
             val buyer = ctx.heroes[c.buyerId]
             if (buyer == null || !buyer.isAlive) {
+                release(ctx, c)
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.EXPIRED)
                 ctx.emit(EventType.COMMISSION_EXPIRED, 2, "The commission for a ${ctx.content.family(c.familyId).name} lapsed; its patron is gone.", listOf(c.id.value))
                 continue
@@ -416,6 +419,7 @@ object Market {
                 ctx.earn(IncomeKind.COMMISSION, c.reward)
                 ctx.reputation += ctx.config.customers.commissionReputation
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.COMPLETED, deliveredWeaponId = candidate.id)
+                release(ctx, c)
                 ctx.updateHero(buyer.copy(loyalty = buyer.loyalty + ctx.config.customers.commissionLoyalty, want = null))
                 // A first blade is carried by the hero it was ordered for; should they be gone by now, the patron keeps it.
                 val receiver = c.recipientId?.let { ctx.heroes[it] }?.takeIf { it.isAlive }?.also { ctx.updateHero(it.copy(want = null)) } ?: buyer
@@ -425,7 +429,7 @@ object Market {
                 ctx.addWeaponHistory(candidate.id, "COMMISSION", if (receiver.id != buyer.id) "Ordered by ${buyer.fullName} and delivered to ${receiver.fullName}." else "Delivered to ${buyer.fullName} on commission.", listOf(receiver.id.value))
                 WorldEvents.rumour(ctx, "${buyer.fullName}, collecting the commission,", buyer.id)   // a satisfied patron talks (plan 4.6 E3)
                 // A blade ordered for the wall is judged against the besieger: the champion takes it up if it is worth more to them in that fight.
-                giveAndEquip(ctx, ctx.hero(receiver.id), ctx.weapon(candidate.id), if (c.kind == CommissionKind.SIEGE_PREP) Battle.leadingFaction(ctx)?.let { ctx.content.faction(it.id) } else null)
+                giveAndEquip(ctx, ctx.hero(receiver.id), ctx.weapon(candidate.id), if (c.kind == CommissionKind.SIEGE_PREP) Battle.besieger(ctx)?.let { ctx.content.faction(it.id) } else null)
                 // The patron is a visit of its own kind: the reward is the coin; the shelf price, if the blade had one, is only what it was listed at.
                 ctx.visits += MarketVisit(
                     buyer.id, buyer.fullName, candidate.id, VisitReason.COMMISSION_DELIVERED, seq = ctx.visits.size, kind = VisitKind.COMMISSION, customer = customer,
@@ -433,6 +437,7 @@ object Market {
                     eventIds = ctx.newEvents.drop(mark).map { it.id },
                 )
             } else if (ctx.day >= c.deadlineDay) {
+                release(ctx, c)
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.EXPIRED)
                 ctx.reputation = maxOf(0, ctx.reputation - ctx.config.customers.commissionExpiredReputation)
                 ctx.emit(EventType.COMMISSION_EXPIRED, 2, "${buyer.fullName}'s commission for a ${ctx.content.family(c.familyId).name} expired unfulfilled.", listOf(buyer.id.value, c.id.value))
@@ -442,6 +447,11 @@ object Market {
         for (c in ctx.commissions.values.filter { it.status == CommissionStatus.OFFERED && ctx.day >= it.deadlineDay }) {
             ctx.commissions[c.id] = c.copy(status = CommissionStatus.EXPIRED)
         }
+    }
+
+    /** A blade kept for an order is the shop's again when the order closes, however it closes. */
+    private fun release(ctx: ResolutionContext, c: Commission) {
+        ctx.weapons.values.filter { it.promisedTo == c.id }.forEach { ctx.updateWeapon(it.copy(promisedTo = null)) }
     }
 
     /** Requests that are offered or accepted, and the heroes named on them: nobody has two at once. */
@@ -456,7 +466,7 @@ object Market {
         val w = config.commissions
         val daysToSiege = ctx.town.nextSiegeDay - ctx.day
         val forgeable = ctx.content.materials.mapNotNull { it.element }.toSet()
-        val feared = Battle.leadingFaction(ctx)?.let { ctx.content.faction(it.id).weakTo }?.takeIf { it in forgeable }
+        val feared = Battle.besieger(ctx)?.let { ctx.content.faction(it.id).weakTo }?.takeIf { it in forgeable }
         fun carriedThisEra(h: Hero) = ctx.weapons.values.any { blade -> h.id in com.tinyblacksmith.core.legacy.Legacy.holders(blade, ctx.era) }
         val newcomers = free.filter { it.shopPurchases == 0 && ctx.equippedWeapon(it.id) == null }
         return linkedMapOf(
@@ -470,7 +480,8 @@ object Market {
     }
 
     private fun kindWeight(kind: CommissionKind, config: BalanceConfig): Double = when (kind) {
-        CommissionKind.ORDINARY, CommissionKind.NOBLE -> config.commissions.ordinaryWeight
+        // WALL_PLEDGE and HEIRLOOM are only ever made by a visitor's answer; the daily offer never draws them.
+        CommissionKind.ORDINARY, CommissionKind.NOBLE, CommissionKind.WALL_PLEDGE, CommissionKind.HEIRLOOM -> config.commissions.ordinaryWeight
         CommissionKind.REPLACEMENT -> config.commissions.replacementWeight
         CommissionKind.SIEGE_PREP -> config.commissions.siegePrepWeight
         CommissionKind.AMBITION -> config.commissions.ambitionWeight
@@ -505,7 +516,7 @@ object Market {
         val minQuality = (if (fine || kind == CommissionKind.AMBITION) QualityBand.FINE else QualityBand.DECENT).floor(config)
         // GDD 5 "desirable effect": half the patrons want an element, their own taste or what the looming faction fears; a champion before a siege always wants the latter.
         val forgeable = ctx.content.materials.mapNotNull { it.element }.toSet()
-        val feared = Battle.leadingFaction(ctx)?.let { ctx.content.faction(it.id).weakTo }?.takeIf { it in forgeable }
+        val feared = Battle.besieger(ctx)?.let { ctx.content.faction(it.id).weakTo }?.takeIf { it in forgeable }
         val wanted = (buyer.elementTaste ?: feared)?.takeIf { it in forgeable }
         val asksElement = wanted != null && rng.chance(config.commissionElementChance)
         val element = if (kind == CommissionKind.SIEGE_PREP) feared else if (asksElement) wanted else null

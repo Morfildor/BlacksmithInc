@@ -23,6 +23,13 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - A day when heroes went out to fight and nothing else beyond the door earned a card now has one short card, "Out in the field", with the counts ("5 heroes went out unarmed and all were driven back."). The Gazette still has every name.
 - A sale at the counter wears a gold band with the coin it brought ("SOLD +96 gold"; a request reads "REQUEST PAID"), and under its receipt "Earned today" shows what the day stood at before and after ("96 → 228 gold"). The tally shows the same line when someone in it bought.
 
+- A visitor at the forge. From the second day, most mornings bring someone with a proposal: a carter's last crate before a siege, a poor defender asking for a blade on trust, a collector after a famous blade, a wandering master, a crooked merchant, a rival smith's wager, the festival council, someone asking after a fallen friend's blade. The Shop shows a card; the sheet states each answer's exact cost and effect, says why an answer is closed, and nothing happens until you press Commit. A visitor you do not answer leaves at End Day, and the End Day button says what they will be told.
+- A blade made on trust is remembered. The defender you armed comes back after the siege if they lived and still have the blade, and the game says truthfully whether they stood on the wall; if they died or parted with it, Records says so instead.
+- Workshop relics. A run starts with a choice of one relic from three, and more are offered after the second and fourth siege and for a won wager; the workshop holds three. Salvager's Crucible returns a fine blade's augment once a day, the Tempering Ledger rewards forging a different family each time, the Collector's Seal turns costly shelf sales into rare material, and the Ashen Bellows give one forge a day an extra property for two of tomorrow's energy.
+- Sieges with a trait. From the second siege on, scouts may report a Long Assault (worn blades count for less) or Many Breaches (the watch and militia count for more, the raid is stronger) five days ahead, with what can be done about it. Town shows it with the outlook.
+- Debug build: nineteen more scenario saves (every visitor, each relic, both siege traits, both ends of the trust chain).
+- Storage: "Scrap" clears every chosen blade in one go and costs no energy. The blades are gone for good; for every four made of the same metal you get one unit of that metal back, and the confirmation says exactly what comes back before you agree. Salvaging one blade at a time (one energy, one unit back) is still the better trade.
+
 ### Changed
 - Title screen: the workshop at night as a full-width picture with the game's name on it, the era and legacy on a plate, and the actions at the foot of the screen.
 - Shop day: the first-run hint reads as a tip; long cards fade out at the controls; "No sale" is a red badge; the evening card shows purse, shelf and storage as tiles with a larger dawn on tall screens.
@@ -81,6 +88,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - The first-day hint is not shown while a screen reader is exploring by touch, where a tap anywhere is not Next.
 - During a shop day with text larger than 1.3 the painted scene is lower, so the card under it has room; on a low screen with such text the first-day hint is left out, where its three lines would leave the card none.
 - On the strip above the shop day, the playback control and the skip move to their own line when they do not fit beside the day's label, instead of cutting the label short.
+- The besieger is fixed from the first siege warning: the faction named two days before the siege is the one that comes, whatever pressure does afterwards.
+- The collector, the wandering master smith and the merchant festival no longer happen by themselves at End Day; they come as morning visitors, and you decide.
+- Saves from 0.7.0 continue: visitors start the next morning, the relic choice is offered then, and the siege after next is the first that can carry a trait.
+- A blade now reads "worn" below condition 50, the line the game itself uses when heroes look to replace a blade, and "battered" below 25. Before, the blade sheet and Town said "worn" below 70 and "battered" below 40.
+- Town shows the three champions from the first morning: the heroes who would stand at the wall today. Before, the three places stayed empty until the first End Day.
+- When a bulk salvage or gift to the watch stops early, the message says how many were done ("Stopped after 4 of 9.") before the reason.
 
 ## [0.7.0] - 2026-10-10
 

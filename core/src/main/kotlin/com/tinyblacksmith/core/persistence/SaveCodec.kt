@@ -12,6 +12,10 @@ import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.longOrNull
+import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.rng.RngState
+import com.tinyblacksmith.core.rng.RngStream
 import kotlinx.serialization.json.jsonObject
 
 /** Versioned JSON envelope. Schema bumps go through [SaveCodec.migrate] so saved histories and RNG state are never mutated silently. */
@@ -19,7 +23,7 @@ import kotlinx.serialization.json.jsonObject
 data class SaveEnvelope(val schemaVersion: Int, val payload: String)
 
 object SaveCodec {
-    const val SCHEMA_VERSION = 4
+    const val SCHEMA_VERSION = 5
 
     val json: Json = Json {
         encodeDefaults = true
@@ -70,8 +74,12 @@ object SaveCodec {
         // `Weapon.ownerIds` (bounded histories, T6.3a; empty until old lines of a history are dropped, and `Legacy.holders`
         // reads it together with the history, so a save without it answers as before).
         3 to { stampAppearances(linkDescendants(it)) },
+        // Schema 5 adds the ENCOUNTERS stream (morning visitors, relic offers, siege traits). A run written before it is
+        // given the state that stream would have been seeded with from the run's own seed; no other stream is touched.
+        // The visitor, relics, consequences and siege scenario are defaulted fields.
+        4 to { seedEncounterStream(it) },
     )
-    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 3 to { json.parseToJsonElement(it).jsonObject.let { l -> identifyLineages(l).takeIf { n -> n != l }?.toString() ?: it } })
+    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 4 to { it }, 3 to { json.parseToJsonElement(it).jsonObject.let { l -> identifyLineages(l).takeIf { n -> n != l }?.toString() ?: it } })
 
     private fun text(o: JsonObject, key: String): String? = (o[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
 
@@ -119,6 +127,16 @@ object SaveCodec {
             if (cls == null || text(o, "appearance") != null) h else JsonObject(o + ("appearance" to JsonPrimitive(Appearance.legacyKey(HeroClassId(cls), id))))
         }
         return if (stamped == heroes) payload else JsonObject(run + ("heroes" to JsonObject(stamped))).toString()
+    }
+
+    private fun seedEncounterStream(payload: String): String {
+        val run = json.parseToJsonElement(payload).jsonObject
+        val rng = run["rng"] as? JsonObject ?: return payload
+        val streams = rng["streams"] as? JsonObject ?: return payload
+        val seed = (run["seed"] as? JsonPrimitive)?.longOrNull ?: return payload
+        if (RngStream.ENCOUNTERS.name in streams) return payload
+        val state = RngState.seeded(seed, GameEngine.STREAM_SEED_VERSION).stateOf(RngStream.ENCOUNTERS)
+        return JsonObject(run + ("rng" to JsonObject(rng + ("streams" to JsonObject(streams + (RngStream.ENCOUNTERS.name to JsonPrimitive(state))))))).toString()
     }
 
     /** Every schema-1 run was written by a build that had balance 5 and did not yet record it (0 = untracked). */

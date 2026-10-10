@@ -1,5 +1,12 @@
 package com.example.blacksmithproject.ui.detail
 
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
+import com.example.blacksmithproject.ui.wholePixelDp
+import com.example.blacksmithproject.ui.PixelImage
+import com.example.blacksmithproject.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -35,6 +42,7 @@ import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.NoticeLine
 import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.Secondary
+import com.example.blacksmithproject.ui.promisedLine
 import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.theme.Space
@@ -78,6 +86,8 @@ data class Stock(
     val canHone: Boolean,
     val donate: String,
     val canDonate: Boolean,
+    /** "Kept for X's order" for a blade bound to an open order: it cannot be listed, salvaged or given away. Null otherwise. */
+    val promised: String? = null,
 )
 
 /** A stock change the player asked for. The sheet only reports it; the caller turns it into a command. */
@@ -235,11 +245,13 @@ private fun GameEngine.stock(state: GameState, w: Weapon): Stock {
         funds = Demand.funds(state, content, config),
         shelfFree = shelfSlots(state) - state.listedWeapons().size,
         slots = shelfSlots(state),
-        salvage = "Salvage (${config.salvageEnergy} energy, returns 1 $core)",
+        // With the Salvager's Crucible ready and a blade fine enough, the engine also gives the augment back.
+        salvage = "Salvage (${config.salvageEnergy} energy, returns 1 $core" + (if (salvageKeepsAugment(state, w)) ", also returns ${content.materialById[w.augmentId]?.name ?: w.augmentId.value}" else "") + ")",
         hone = if (!w.canBeHoned) "Honed" else "${if (w.honed) "Re-hone" else "Hone"} (${config.honeEnergy} energy, 1 $core)",
         canHone = w.canBeHoned,
         donate = if (room > 0) "Arm the watch (+${minOf(armoryValue(w), room)} defense)" else "Arm the watch (armory full)",
         canDonate = room > 0,
+        promised = promisedLine(state, w),
     )
 }
 
@@ -322,6 +334,14 @@ fun ItemDetailContent(
 @Composable
 private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onStock: (StockAction) -> Unit) {
     var priceText by rememberSaveable(weaponId.value, stock.listedPrice) { mutableStateOf((stock.listedPrice ?: stock.suggestedPrice).toString()) }
+    // A blade kept for an order stays where it is: the engine refuses to list it, melt it or give it away.
+    val free = stock.promised == null
+    stock.promised?.let {
+        Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+            PixelImage(R.drawable.icon_promised, wholePixelDp(48, 24.dp), description = null)
+            Text("$it. It stays in storage until the order is collected.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("item_promised"))
+        }
+    }
     // Where the blade is now, in plain text: after "List at" or "Set price" this line is what changes.
     Text(stock.listedPrice?.let { "On the shelf, asking $it gold." } ?: "In storage, not for sale.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("item_where"))
     PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "item", Modifier.padding(top = Space.sm)) { price ->
@@ -336,12 +356,12 @@ private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onSt
                 PrimaryActionButton(
                     price?.let { "List at $it" } ?: "List", { price?.let { onStock(StockAction.ListAt(it)) } },
                     Modifier.testTag("item_list").semantics { if (full) contentDescription = "List, unavailable: ${shelfFullLine(stock.slots)}" },
-                    enabled && price != null && !full,
+                    enabled && price != null && !full && free,
                 )
             }
         }
     }
-    InlineActionButton(stock.salvage, { onStock(StockAction.Salvage) }, Modifier.heightIn(min = 48.dp).testTag("item_salvage"), enabled = enabled)
+    InlineActionButton(stock.salvage, { onStock(StockAction.Salvage) }, Modifier.heightIn(min = 48.dp).testTag("item_salvage"), enabled = enabled && free)
     InlineActionButton(stock.hone, { onStock(StockAction.Hone) }, Modifier.heightIn(min = 48.dp).testTag("item_hone"), enabled = enabled && stock.canHone)
-    InlineActionButton(stock.donate, { onStock(StockAction.Donate) }, Modifier.heightIn(min = 48.dp).testTag("item_donate"), enabled = enabled && stock.canDonate)
+    InlineActionButton(stock.donate, { onStock(StockAction.Donate) }, Modifier.heightIn(min = 48.dp).testTag("item_donate"), enabled = enabled && free && stock.canDonate)
 }

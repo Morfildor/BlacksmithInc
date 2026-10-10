@@ -87,6 +87,8 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
     var menuSettings by remember { mutableStateOf(false) }
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
     val leaveMenu = { menuOpen = false }
+    // Debug builds only: the release source set's ScenarioMenu is empty.
+    val scenarios: @Composable () -> Unit = { ScenarioMenu(vm, hasRun = ui !is UiState.Title, enabled = ui.op !is GameSession.Status.Working, onLoaded = leaveMenu) }
     // What the workshop and the shop day remember on screen (scroll positions, the open forge step, an open sheet)
     // outlives a visit to the menu. It is kept per day: a new day opens each destination at its top.
     val screens = rememberSaveableStateHolder()
@@ -107,10 +109,10 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
             when (val s = ui) {
                 UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 is UiState.LoadFailed -> LoadFailedScreen(s.failure, s.working, onRetry = vm::retry, onStartOver = vm::startOver)
-                is UiState.Title -> MainMenu("Era ${s.legacy.nextEra} awaits", s.legacy, "New game", "title_new_run", s.op !is GameSession.Status.Working, onPrimary = { leaveMenu(); vm.newRun() }, onSettings = { menuSettings = true })
-                is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", !s.busy, leaveMenu, { menuSettings = true }, onAbandon = vm::abandonRun) else screens.SaveableStateProvider(play!!) { WorkshopScreen(s, vm, onMainMenu = { menuOpen = true }) }
-                is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }) else screens.SaveableStateProvider(play!!) { ShopDayHost(s, vm, onMainMenu = { menuOpen = true }) }
-                is UiState.RunEnded -> if (menuOpen) MainMenu("Era ${s.run.era} has ended", s.legacy, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }) else RunEndScreen(s, vm)
+                is UiState.Title -> MainMenu("Era ${s.legacy.nextEra} awaits", s.legacy, "New game", "title_new_run", s.op !is GameSession.Status.Working, onPrimary = { leaveMenu(); vm.newRun() }, onSettings = { menuSettings = true }, extra = scenarios)
+                is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", !s.busy, leaveMenu, { menuSettings = true }, onAbandon = vm::abandonRun, extra = scenarios) else screens.SaveableStateProvider(play!!) { WorkshopScreen(s, vm, onMainMenu = { menuOpen = true }) }
+                is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }, extra = scenarios) else screens.SaveableStateProvider(play!!) { ShopDayHost(s, vm, onMainMenu = { menuOpen = true }) }
+                is UiState.RunEnded -> if (menuOpen) MainMenu("Era ${s.run.era} has ended", s.legacy, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }, extra = scenarios) else RunEndScreen(s, vm)
             }
             if (menuSettings) SettingsSheet(reducedMotion, vm::setReducedMotion, hapticsOn, vm::setHaptics, onDismiss = { menuSettings = false })
             // A save that failed leaves the last saved state on screen under this dialog; nothing is lost by dismissing it.
@@ -148,9 +150,10 @@ private fun LegacyCount(value: Int, label: String, modifier: Modifier = Modifier
  * runs) on a plate, and the actions at the foot within reach of a thumb: one primary action (a new game, or the saved
  * run) and "Abandon run" while a run is being planned ([onAbandon]); abandoning discards the run after a confirmation.
  * Settings is in the corner. The gaps are weights, so a taller screen spreads the three parts and large text scrolls.
+ * [extra] sits under the buttons: the debug build's Scenarios entry.
  */
 @Composable
-fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag: String, enabled: Boolean, onPrimary: () -> Unit, onSettings: () -> Unit, onAbandon: (() -> Unit)? = null) {
+fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag: String, enabled: Boolean, onPrimary: () -> Unit, onSettings: () -> Unit, onAbandon: (() -> Unit)? = null, extra: @Composable () -> Unit = {}) {
     var confirmAbandon by remember { mutableStateOf(false) }
     BoxWithConstraints(Modifier.fillMaxSize().testTag("main_menu")) {
         // One whole step past the scale that covers the width, more on a tall screen: the picture carries over a third of the height and loses little at the sides.
@@ -186,6 +189,7 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
             Column(Modifier.padding(horizontal = Space.lg).padding(bottom = Space.lg).widthIn(max = 420.dp).fillMaxWidth()) {
                 PrimaryActionButton(primary, onPrimary, Modifier.fillMaxWidth().testTag(primaryTag), enabled)
                 if (onAbandon != null) SecondaryActionButton("Abandon run", { confirmAbandon = true }, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("menu_abandon"), enabled = enabled)
+                extra()
             }
         }
         IconButton(onClick = onSettings, modifier = Modifier.align(Alignment.TopEnd).safeDrawingPadding().padding(Space.sm).size(48.dp).testTag("menu_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings") }

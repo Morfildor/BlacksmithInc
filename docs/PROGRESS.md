@@ -1,4 +1,76 @@
-# Progress — 2026-10-10 (major update, final state at about 13:00)
+# Progress — 2026-10-10 (gameplay depth built in the evening; major update final at about 13:00)
+
+## Gameplay depth on `main` (2026-10-10, late night)
+At the owner's request the gameplay-depth work below was committed as it stood (`7bac2de`, pushed as `origin/gameplay-depth`)
+and then brought onto `main` as one commit, over the Forge-first redesign, UI/UX batch 4 and the UI polish pass. The engine
+(`:core`) merged without a conflict. The screens it hooks into had been rebuilt since, so these were fitted by hand:
+- Shop: the visitor's card and note and the relic rows sit in the rebuilt list; the old shelf and request blocks are gone.
+- Forge: the workbench is `main`'s. The Ashen Bellows switch and the Tempering Ledger's line stand under the forging
+  options, and the forge command carries the bellows. The old plate's "the bellows take N more from tomorrow" note is not
+  carried over; the switch's own title says the cost.
+- Town: the siege card is `main`'s. Under it: how the defense number is made up, whether the besieger is fixed, and the
+  siege trait. Champions are the engine's pick as things stand today, with the rule in words.
+- Storage and the blade sheet: Scrap beside the bulk actions; a blade promised to an order cannot be listed, melted or
+  given away. The hone and gift icons the depth branch had put on the blade sheet's buttons are not carried over.
+- End Day's note: `main`'s order, with the waiting visitor and the relic offer after the siege line.
+- One fix found by `main`'s Town test: the Shop's and Forge's siege line now names the besieger fixed at the first
+  warning (it named the leader by pressure, which can differ once the besieger is fixed). Display only.
+
+Checks on the merged tree: `:core:test` 453 pass, `:app:testDebugUnitTest` 183 pass, the device tests compile, the debug
+build and lint pass. **Nothing was run on a device, and the simulator gate was not rerun** (the engine merged untouched, so
+the branch's own tables below should stand, but that was not checked). Known to be broken until updated: `smoke.sh`,
+`runend.sh` and any device test that starts a new run, because a run now opens with the relic offer. The two unmet balance
+bands and the open points below are unchanged and still the owner's to decide. The section below is the branch's own
+record, as written before the merge.
+
+## Gameplay depth (2026-10-10, evening): built, not committed
+Branch `gameplay-depth` in the worktree `.claude/worktrees/gameplay-depth`, cut from `post-0.7.0` @ f1e5b3c. **Nothing is
+committed or pushed; version name and code are unchanged.** Versions: rules 4, save schema 5, content 4, balance 10.
+Plan and task ledger: `docs/GAMEPLAY_DEPTH_PLAN.md`. Rulings, tuning and the gate: `docs/DECISIONS.md`, last section.
+Raw gate tables: `docs/gameplay_depth_evidence/`.
+
+**Playable.** 8 morning visitors (plus the chain's return visit), 4 run relics in 3 slots, 2 forecasted siege traits, one
+two-stage chain (a blade on trust, then the hero's return after the siege or a record of why not), 19 new debug
+scenario saves (27 in all). 0.7.0 saves load and continue.
+
+**Checks run on the final tree.**
+- `./gradlew :core:test`: 451 tests, 0 failures. `./gradlew :app:testDebugUnitTest`: 137 tests, 0 failures.
+- `:app:assembleDebug`, `:app:assembleRelease`, `:app:compileDebugAndroidTestKotlin`: built. `:app:lintDebug`: 0 errors,
+  43 warnings. Lint and the release build ran before the last three small changes (a simulator probe, one scenario
+  save, the shape of the relic buttons); the debug APK was rebuilt after them and the app tests rerun.
+- Simulator: 19 runs of 10,000 seeds (with / without on the same seeds for the classic policies, the bots and the maxed
+  account; five visitor tastes; seven relic tastes) and the probes at 1,000 seeds. No hard-lock, no rejected command,
+  all probes pass. **Two bands are not met** (plain first era: median 25, mean 25.2 against 20 and 22.5; maxed active
+  expert: median 60 against 55). Not retuned: owner decision.
+- Emulator (second AVD, API 29, 640x1280 at density 280, about 366 dp wide; `tools/emulator/scenarios.sh`): every
+  scenario save loads except `visitor_unanswered`, whose load step failed once on a slow menu and was not repeated (its
+  End Day note was seen on the pledge save); each visitor shows its card and sheet; the merchant's inspection keeps the sheet open; the End
+  Day note names the default answer; relic offer, relic row, forge switch and both siege traits show. Four screens were
+  captured at font scale 1.3.
+
+**Not verified.**
+- `smoke.sh`, `runend.sh` and the instrumented tests (`connectedDebugAndroidTest`): a new run now opens with the relic
+  offer, which they do not expect. Not updated, not run.
+- Answering a visitor or choosing a relic by touch on the emulator was scripted only for the merchant's inspection; the
+  other answers are covered by JVM tests through the session, not by a device run.
+- No physical phone, no TalkBack, no 1080-wide device run of the new screens. Font 1.3 was looked at on four screens only.
+- The emulator session was ended by the harness time limit; its size and font overrides were not reset by hand (the
+  AVD was started without saving a snapshot).
+- The scenario script was run in parts (the one-hour limit of the harness), not once from start to end.
+- Twice the visitor card was not found on the first try after a load (once after the 209-blade save, once after the
+  font change); both times it was there on the next load. Not explained.
+- At font 1.3 the relic dialog's rounded option buttons clipped a corner of their text. The buttons were squared off
+  and the APK rebuilt, but the emulator had stopped by then: the fix is not seen on a device.
+- Lint and the release build were not rerun after the last three small changes.
+
+**Open for the owner.** The two bands; options no bot prefers (the master's paid lesson, the crate's plain metal); the
+wager, won 94 to 98% of the times it is taken; restoring a cracked family blade pays about half of what the collector
+does; a relic is taken with one tap, without a confirmation, when a slot is free; trait sieges are won far less often than plain ones by weak smiths (23 to 30% against 56%).
+
+**APK.** `app/build/outputs/apk/debug/app-debug.apk` in this worktree (`./gradlew :app:assembleDebug`).
+
+**Next actions.** Phone playtest through Scenarios (debug) on the main menu; decide the bands; update the three device
+scripts for the relic offer; then commit when asked.
 
 ## UI polish pass (2026-10-10, night): on `main`
 All of it is on `main`, merged at the owner's request in two steps. Batch 4 landed on `main` in between, so the second step was a real merge (11 files in conflict). Kept from batch 4: the playback chip ("Manual / Auto 1x / Auto 2x", "Skip to evening"), the one-look buttons (gold Close on the day's Gazette, inline "Read the Gazette", outline "Abandon run"), the hint hidden on a low screen with large text. Kept from the pass: the title picture, the evening tiles, the Town card, the tip as an aside. The pass's own "Pace" control was dropped for the chip. After the merge: app JVM tests pass; device suite 72 run, 71 pass (the same Storage test); smoke clean. No balance, rules, schema, content or `:core` change.

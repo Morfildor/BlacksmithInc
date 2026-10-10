@@ -1,0 +1,805 @@
+Tiny Blacksmith headless simulator - content v4, balance v10, rules v4
+runs=10000 baseSeed=1 days=400 content=launch siegeModifier=2.0 recoveryCap=2 forgeDamage=24.0+50.0x(ratio-1) max 60 reserve=0 impactPolicy=BALANCED_FAIR threads=16
+
+== New legacy account ==
+Policy ADVANCED_SMITH (new account) over 10000 runs
+  survival days: p10=20 median=30 mean=27.5 p90=35 max=45 ended=10000
+  forged/run: 81.9  sold/run: 45.6  sell rate: 56%
+  gold earned/run: median=4388  final gold median=2201  gold on hand median=1751  materials on hand median=0
+  rarity: COMMON=5% UNCOMMON=33% RARE=43% EPIC=14% LEGENDARY=5%
+  hero deaths/run: 1.3  retirements/run: 2.3  sieges survived/run: 2.4  lost/run: 3.1  faction win proportion: 57%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=5.8  EMPTY_SHELVES=0.2  GOOD_ENOUGH=6.9  GREAT_FIT=20.8  NOT_BETTER=84.1  NOT_SUITED=1.2  PRIZED=0.0  RESISTED=2.3  STORIED=0.7  TASTE_MATCH=0.6  TOO_EXPENSIVE=40.2  UNDECIDED=0.9  WORN_OUT=4.0
+  elites slain/run: 6.0  weapons broken/run: 0.1  warlord sieges/run: 0.2  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.40  inherited=0.18  resold=0.03  seized=0.35  lost=0.13  (taken by a merchant=0.07)  artifact recovery: 55%
+  affix weapons/run: bloodbound=0.7  brittle=0.7  cursed=0.6  flaming=27.3  frostbound=8.8  giant_slayer=5.8  guardians=5.8  heavy=0.7  keen=6.1  lucky=5.8  reinforced=5.8  resonant=1.9  sentient=0.6  stormcharged=3.6  swift=5.8  undead_bane=5.6  unstable=0.7  vampiric=3.4
+  hero-days/run: 340.6  activity shares: AMBITION_COLLECTOR=0.7%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=2.2%  AMBITION_SLAYER=1.6%  EXPEDITION=38.1%  GUILD=8.6%  PATROL=25.9%  REST=8.1%  REST_WOUNDED=12.8%
+  level-ups/run: 38.2  mentorings/run: 9.4  guilds/run: 1.7  runs with a guild: 100%
+  wall: routs/run=1.12  champions fallen/run=0.119  runs with a champion fallen=11.1%
+  guild patronage/run: taken=0.23  purchases with a stipend=0.78  stipend gold=23.5 (0.5% of gold earned)
+  legacy points/run: median=31  discoveries/run: 18.1  signature discoveries/run: 0.4  rumours/run: 3.88  clue rungs/run: 17.87  signatures first found/run: 0.402 (runs with one 36.0%)
+  bot per run: advanced_forges=52.81  quick_forges=29.12  catalyst_forges=52.81  commissions_completed=6.85  commissions_expired=2.65  signature_tries=2.91  signature_hits=0.45  scarce_loot=23.27  lucky_loot=5.30  lucky_scarce_loot=5.24  final_reputation=68.81  max_loyalty=11.56
+  customers: living heroes/day=12.39  served/day=6.10  at cap=84.6% of days  two or fewer=0.7%  purchases/day=1.41  sales/day=1.66  conversion=23.1%
+    served per day: 0:0.0%  1:0.1%  2:0.5%  3:1.7%  4:3.8%  5:6.9%  6:75.2%  7:0.7%  8:1.3%  9:9.7%
+    turned away (willing, shop full): 2.05 a day, someone on 72.2% of days
+    conversion by day band: d1-5=38.0%  d6-10=30.2%  d11-20=19.3%  d21+=15.1%   refusal mix (of visits): COUNTERS_THREAT=3.5%  EMPTY_SHELVES=0.1%  GOOD_ENOUGH=4.1%  GREAT_FIT=12.4%  NOT_BETTER=50.1%  NOT_SUITED=0.7%  PRIZED=0.0%  RESISTED=1.4%  STORIED=0.4%  TASTE_MATCH=0.4%  TOO_EXPENSIVE=24.0%  UNDECIDED=0.6%  WORN_OUT=2.4%
+    visit rate by scan position: 1:50.2%  2:50.0%  3:50.0%  4:49.9%  5:49.9%  6:49.3%  7:49.3%  8:49.2%  9:49.2%  10:48.9%  11:48.8%  12:48.4%  13:45.7%  14:44.3%  15:41.2%  16:39.3%
+    heroes ever/run=16.07  served/run=15.86  never served=1.3%  served by day 5=11.51  by day 10=12.48  runs with 9 by day 5=99.7%  with 13 in a run=93.8%
+    wait to first visit (days): median=1 p90=3 max=16  newcomers only: median=0 p90=2
+    classes: served/day=3.92 of alive/day=4.93  served by day 5=4.94, by day 10=5.00  bought by day 10=4.95  runs with 4+ classes bought by day 10=99.9%
+    return-visit share=90.5%  days between visits=1.93  visits per hero-day: starting cast=0.49 later arrivals=0.47
+    served share among heroes alive 10+ days: max mean=0.67 min mean=0.32 max/min median=2.00 p90=2.80  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=81  10=84  15=117   cannot pay for the cheapest listed blade: 1=66.0%  5=31.6%  10=26.0%  15=19.3%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=36.0% (pairs/day=0.49, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=74.49 lost=59.47 fatal=1.25  deaths per hero-day=0.0037  sell-out days=0.6%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=16.9%  d4-5=47.4%  d6+=45.5%  lines/day=2.62  by cue (of lines): BECAME_REGULAR=7.5%  BLADE_WORN=8.2%  FIRST_BLADE=15.1%  FIRST_VISIT=3.3%  HELD_THE_WALL=5.8%  KEPT_THE_VOW=2.5%  MENTORS_BLADE=1.0%  REGULAR_RETURNS=21.8%  SLEW_AN_ELITE=4.0%  STILL_CARRIES=22.7%  WAITED_YESTERDAY=5.8%  WANT_ANSWERED=2.3%
+    wants: voiced/run=67.68  ended by a blade of the family asked for=13.6%  by another purchase=16.2%  lapsed=53.3%
+    siege warning days: 40.9% of visits  conversion there=22.5%  RESISTED=4.3% of the refusals there
+    commissions/run: offered=8.38  accepted=9.64  completed=6.85 (71.0% of accepted)
+    offers by kind: AMBITION=14.5%  FIRST_BLADE=5.4%  NOBLE=5.4%  ORDINARY=29.8%  REPLACEMENT=21.6%  SIEGE_PREP=23.3%
+    siege-prep blades wielded at their siege=45.2% (0.94 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.000/run)  drought days=6.21% (1.708/run)  runs with a stuck day=0.00%  stuck streak 2+ days=0.00%  3+ days=0.00%  5+ days=0.00%  longest=0
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 91.8% p=32 m=29 a=0 c=187 f=216/173 r=231/176; #2 n=10000 81.1% p=25 m=29 a=0 c=236 f=272/234 r=281/236; #3 n=9996 50.5% p=18 m=29 a=0 c=250 f=287/292 r=293/294; #4 n=9808 14.8% p=15 m=29 a=0 c=251 f=288/356 r=293/359; #5 n=8510 1.4% p=13 m=29 a=0 c=248 f=285/418 r=289/421; #6 n=5255 0.0% p=11 m=29 a=0 c=251 f=288/475 r=292/478; #7 n=1350 0.0% p=11 m=29 a=0 c=263 f=300/530 r=304/533; #8 n=69 0.0% p=13 m=29 a=0 c=296 f=334/596 r=340/599; #9 n=1 0.0% p=10 m=29 a=0 c=372 f=422/660 r=449/663
+  depth (visitors=first relic=first): mornings with a visitor/run=19.13 (70% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 1.56  pledge=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.94  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.17  collector=92% restore=8%  blocked: any=92% restore=92%
+    crooked_merchant      offers/run= 2.54  buy=100% inspect=0% pass=0%  blocked: any=0% buy=0%
+    debt_repaid           offers/run= 0.86  collect=100%  blocked: any=0%
+    festival_contract     offers/run= 3.35  stall=100%  blocked: any=0%
+    last_crate            offers/run= 4.31  crate=100% metal=0% pass=0%  blocked: any=0% crate=0% metal=0%
+    masters_afternoon     offers/run= 1.95  study=100%  blocked: any=0% lesson=0%
+    smiths_wager          offers/run= 2.45  order=0% wager=100%  blocked: any=13% order=13% wager=0%
+    dead content: never offered=none  never chosen=[blade_for_the_wall/patron, masters_afternoon/lesson, festival_contract/watch, debt_repaid/forgive, debt_repaid/speak]  never open=none
+    relics: offers/run=5.15 declined/run=0.00 replaced/run=2.16  chosen/run: ashen_bellows=1.60 collectors_seal=0.99 salvagers_crucible=1.59 tempering_ledger=0.97
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=4.22 (materials 1.12)  ledger forges=42.83 (+184.57 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=14 17.5/20; ashen_bellows+collectors_seal+salvagers_crucible n=195 19.4/20; ashen_bellows+collectors_seal+tempering_ledger n=4460 27.8/30; ashen_bellows+salvagers_crucible n=19 18.2/20; ashen_bellows+salvagers_crucible+tempering_ledger n=764 27.3/30; ashen_bellows+tempering_ledger n=17 18.5/20; collectors_seal+salvagers_crucible n=22 18.2/20; collectors_seal+salvagers_crucible+tempering_ledger n=4481 27.8/30; collectors_seal+tempering_ledger n=13 17.7/20; salvagers_crucible n=1 10.0/10; salvagers_crucible+tempering_ledger n=14 19.3/20
+    sieges by trait (fought, won): long_assault n=15685 29%  many_breaches n=15789 36%  plain n=23515 58%
+    wall pledge/run: pledged=1.56 delivered=1.56 lapsed=0.00 dead=0.01 retired=0.00 parted=0.08 returned=0.86 collect=0.86 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=2.45 won=2.39 lost=0.06
+    gold through visitors/run: in=416.59 out=817.56  watch bounties=0.00 (max in a run 0)  rewards of visitors' orders=86.47
+
+Policy TECHNIQUE_TEMPER (new account) over 10000 runs
+  survival days: p10=20 median=25 mean=26.3 p90=30 max=45 ended=10000
+  forged/run: 77.6  sold/run: 43.5  sell rate: 56%
+  gold earned/run: median=3977  final gold median=2559  gold on hand median=1951  materials on hand median=3
+  rarity: COMMON=9% UNCOMMON=39% RARE=39% EPIC=10% LEGENDARY=3%
+  hero deaths/run: 1.3  retirements/run: 1.9  sieges survived/run: 2.2  lost/run: 3.1  faction win proportion: 59%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=5.6  EMPTY_SHELVES=0.4  GOOD_ENOUGH=6.8  GREAT_FIT=20.5  NOT_BETTER=80.9  NOT_SUITED=1.1  PRIZED=0.0  RESISTED=2.2  STORIED=0.6  TASTE_MATCH=0.6  TOO_EXPENSIVE=37.4  UNDECIDED=1.0  WORN_OUT=3.4
+  elites slain/run: 5.5  weapons broken/run: 0.1  warlord sieges/run: 0.2  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.42  inherited=0.19  resold=0.03  seized=0.37  lost=0.14  (taken by a merchant=0.07)  artifact recovery: 56%
+  affix weapons/run: bloodbound=0.5  brittle=0.5  cursed=0.5  flaming=21.1  frostbound=7.2  giant_slayer=3.5  guardians=3.5  heavy=0.5  keen=3.5  lucky=3.5  reinforced=3.5  resonant=1.7  sentient=0.5  stormcharged=3.1  swift=3.5  undead_bane=4.6  unstable=0.5  vampiric=2.6
+  hero-days/run: 325.3  activity shares: AMBITION_COLLECTOR=0.8%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=2.2%  AMBITION_SLAYER=1.6%  EXPEDITION=37.9%  GUILD=8.4%  PATROL=25.7%  REST=8.1%  REST_WOUNDED=13.4%
+  level-ups/run: 35.1  mentorings/run: 8.6  guilds/run: 1.6  runs with a guild: 100%
+  wall: routs/run=1.18  champions fallen/run=0.142  runs with a champion fallen=13.2%
+  guild patronage/run: taken=0.20  purchases with a stipend=0.63  stipend gold=19.0 (0.5% of gold earned)
+  legacy points/run: median=30  discoveries/run: 16.9  signature discoveries/run: 0.0  rumours/run: 3.85  clue rungs/run: 18.09  signatures first found/run: 0.001 (runs with one 0.1%)
+  bot per run: advanced_forges=51.25  quick_forges=26.34  temper_forges=51.25  commissions_completed=6.13  commissions_expired=2.79  signature_tries=0.01  signature_hits=0.00  scarce_loot=20.49  lucky_loot=3.44  lucky_scarce_loot=3.40  final_reputation=64.90  max_loyalty=11.08
+  customers: living heroes/day=12.35  served/day=6.09  at cap=83.9% of days  two or fewer=0.7%  purchases/day=1.42  sales/day=1.65  conversion=23.3%
+    served per day: 0:0.0%  1:0.1%  2:0.6%  3:1.8%  4:3.9%  5:7.3%  6:74.6%  7:0.7%  8:1.4%  9:9.7%
+    turned away (willing, shop full): 1.99 a day, someone on 71.1% of days
+    conversion by day band: d1-5=39.7%  d6-10=30.4%  d11-20=18.4%  d21+=14.6%   refusal mix (of visits): COUNTERS_THREAT=3.5%  EMPTY_SHELVES=0.2%  GOOD_ENOUGH=4.2%  GREAT_FIT=12.8%  NOT_BETTER=50.4%  NOT_SUITED=0.7%  PRIZED=0.0%  RESISTED=1.4%  STORIED=0.4%  TASTE_MATCH=0.4%  TOO_EXPENSIVE=23.3%  UNDECIDED=0.6%  WORN_OUT=2.1%
+    visit rate by scan position: 1:50.2%  2:50.1%  3:50.1%  4:50.1%  5:49.9%  6:49.4%  7:49.4%  8:49.4%  9:49.2%  10:49.0%  11:48.7%  12:48.4%  13:45.8%  14:44.1%  15:42.1%  16:40.1%
+    heroes ever/run=15.64  served/run=15.44  never served=1.3%  served by day 5=11.51  by day 10=12.48  runs with 9 by day 5=99.8%  with 13 in a run=92.3%
+    wait to first visit (days): median=1 p90=3 max=16  newcomers only: median=0 p90=2
+    classes: served/day=3.93 of alive/day=4.94  served by day 5=4.94, by day 10=5.00  bought by day 10=4.96  runs with 4+ classes bought by day 10=100.0%
+    return-visit share=90.4%  days between visits=1.92  visits per hero-day: starting cast=0.50 later arrivals=0.48
+    served share among heroes alive 10+ days: max mean=0.67 min mean=0.32 max/min median=2.02 p90=2.80  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=80  10=86  15=120   cannot pay for the cheapest listed blade: 1=61.8%  5=29.2%  10=24.8%  15=19.2%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=35.1% (pairs/day=0.47, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=68.60 lost=58.48 fatal=1.32  deaths per hero-day=0.0041  sell-out days=1.0%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=17.2%  d4-5=47.7%  d6+=45.0%  lines/day=2.59  by cue (of lines): BECAME_REGULAR=8.1%  BLADE_WORN=8.1%  FIRST_BLADE=15.2%  FIRST_VISIT=2.9%  HELD_THE_WALL=5.7%  KEPT_THE_VOW=2.6%  MENTORS_BLADE=0.8%  REGULAR_RETURNS=21.8%  SLEW_AN_ELITE=3.9%  STILL_CARRIES=22.8%  WAITED_YESTERDAY=5.7%  WANT_ANSWERED=2.4%
+    wants: voiced/run=64.27  ended by a blade of the family asked for=13.4%  by another purchase=15.9%  lapsed=53.4%
+    siege warning days: 41.0% of visits  conversion there=22.4%  RESISTED=4.4% of the refusals there
+    commissions/run: offered=8.01  accepted=9.09  completed=6.13 (67.4% of accepted)
+    offers by kind: AMBITION=16.0%  FIRST_BLADE=5.1%  NOBLE=5.5%  ORDINARY=29.3%  REPLACEMENT=21.1%  SIEGE_PREP=22.9%
+    siege-prep blades wielded at their siege=45.5% (0.81 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.000/run)  drought days=6.47% (1.704/run)  runs with a stuck day=0.00%  stuck streak 2+ days=0.00%  3+ days=0.00%  5+ days=0.00%  longest=0
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 91.0% p=32 m=29 a=0 c=184 f=212/173 r=226/176; #2 n=10000 76.0% p=25 m=29 a=0 c=227 f=263/234 r=271/236; #3 n=9997 41.0% p=19 m=29 a=0 c=238 f=275/293 r=281/296; #4 n=9715 9.8% p=17 m=29 a=0 c=238 f=275/358 r=279/361; #5 n=7936 0.7% p=15 m=29 a=0 c=237 f=274/419 r=278/422; #6 n=4192 0.0% p=13 m=29 a=0 c=243 f=280/475 r=284/478; #7 n=795 0.0% p=13 m=29 a=0 c=257 f=293/532 r=296/534; #8 n=20 0.0% p=15 m=29 a=0 c=292 f=330/595 r=332/597; #9 n=2 0.0% p=22 m=29 a=0 c=248 f=277/643 r=303/646
+  depth (visitors=first relic=first): mornings with a visitor/run=18.38 (70% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 1.38  pledge=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.92  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.17  collector=92% restore=8%  blocked: any=92% restore=92%
+    crooked_merchant      offers/run= 2.47  buy=100% inspect=0% pass=0%  blocked: any=0% buy=0%
+    debt_repaid           offers/run= 0.73  collect=100%  blocked: any=0%
+    festival_contract     offers/run= 3.25  stall=100%  blocked: any=0%
+    last_crate            offers/run= 4.14  crate=100% metal=0%  blocked: any=0% crate=0%
+    masters_afternoon     offers/run= 1.94  study=100%  blocked: any=0%
+    smiths_wager          offers/run= 2.38  order=0% wager=100%  blocked: any=14% order=14% wager=0%
+    dead content: never offered=none  never chosen=[blade_for_the_wall/patron, masters_afternoon/lesson, festival_contract/watch, debt_repaid/forgive, debt_repaid/speak]  never open=none
+    relics: offers/run=5.03 declined/run=0.00 replaced/run=2.04  chosen/run: ashen_bellows=1.53 collectors_seal=0.99 salvagers_crucible=1.53 tempering_ledger=0.97
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=3.37 (materials 0.85)  ledger forges=39.93 (+172.03 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=24 17.7/20; ashen_bellows+collectors_seal+salvagers_crucible n=235 19.3/20; ashen_bellows+collectors_seal+tempering_ledger n=4295 26.7/25; ashen_bellows+salvagers_crucible n=22 18.2/20; ashen_bellows+salvagers_crucible+tempering_ledger n=986 26.3/25; ashen_bellows+tempering_ledger n=21 16.9/15; collectors_seal+salvagers_crucible n=19 17.6/20; collectors_seal+salvagers_crucible+tempering_ledger n=4360 26.6/25; collectors_seal+tempering_ledger n=18 18.6/20; salvagers_crucible n=1 10.0/10; salvagers_crucible+tempering_ledger n=19 18.2/20
+    sieges by trait (fought, won): long_assault n=14921 26%  many_breaches n=14940 34%  plain n=22796 57%
+    wall pledge/run: pledged=1.38 delivered=1.38 lapsed=0.00 dead=0.01 retired=0.00 parted=0.08 returned=0.73 collect=0.73 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=2.38 won=2.32 lost=0.05
+    gold through visitors/run: in=380.33 out=789.41  watch bounties=0.00 (max in a run 0)  rewards of visitors' orders=76.55
+
+Policy TECHNIQUE_QUENCH (new account) over 10000 runs
+  survival days: p10=20 median=25 mean=27.0 p90=30 max=40 ended=10000
+  forged/run: 79.6  sold/run: 46.4  sell rate: 58%
+  gold earned/run: median=4291  final gold median=2843  gold on hand median=2070  materials on hand median=4
+  rarity: COMMON=14% UNCOMMON=39% RARE=35% EPIC=9% LEGENDARY=3%
+  hero deaths/run: 1.3  retirements/run: 2.1  sieges survived/run: 2.3  lost/run: 3.1  faction win proportion: 57%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=6.2  EMPTY_SHELVES=0.3  GOOD_ENOUGH=6.4  GREAT_FIT=22.0  NOT_BETTER=79.6  NOT_SUITED=1.0  PRIZED=0.1  RESISTED=2.6  STORIED=0.8  TASTE_MATCH=0.7  TOO_EXPENSIVE=40.0  UNDECIDED=1.1  WORN_OUT=4.0
+  elites slain/run: 5.9  weapons broken/run: 0.1  warlord sieges/run: 0.1  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.40  inherited=0.19  resold=0.03  seized=0.36  lost=0.14  (taken by a merchant=0.07)  artifact recovery: 55%
+  affix weapons/run: bloodbound=1.1  brittle=1.1  cursed=1.0  flaming=37.1  frostbound=11.9  giant_slayer=3.9  guardians=3.9  heavy=1.1  keen=3.9  lucky=3.9  reinforced=3.9  resonant=2.3  sentient=1.0  stormcharged=4.3  swift=4.0  undead_bane=6.6  unstable=1.1  vampiric=3.8
+  hero-days/run: 334.0  activity shares: AMBITION_COLLECTOR=0.9%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=2.2%  AMBITION_SLAYER=1.5%  EXPEDITION=38.2%  GUILD=8.5%  PATROL=26.0%  REST=8.1%  REST_WOUNDED=12.7%
+  level-ups/run: 37.8  mentorings/run: 9.1  guilds/run: 1.6  runs with a guild: 100%
+  wall: routs/run=1.16  champions fallen/run=0.137  runs with a champion fallen=12.7%
+  guild patronage/run: taken=0.21  purchases with a stipend=0.72  stipend gold=21.5 (0.5% of gold earned)
+  legacy points/run: median=30  discoveries/run: 17.4  signature discoveries/run: 0.0  rumours/run: 3.88  clue rungs/run: 18.33  signatures first found/run: 0.001 (runs with one 0.1%)
+  bot per run: advanced_forges=52.61  quick_forges=26.96  quench_forges=52.61  commissions_completed=6.30  commissions_expired=2.90  signature_tries=0.01  signature_hits=0.00  scarce_loot=22.31  lucky_loot=3.79  lucky_scarce_loot=3.75  final_reputation=68.63  max_loyalty=11.80
+  customers: living heroes/day=12.38  served/day=6.10  at cap=84.2% of days  two or fewer=0.7%  purchases/day=1.49  sales/day=1.72  conversion=24.4%
+    served per day: 0:0.0%  1:0.1%  2:0.6%  3:1.7%  4:3.9%  5:7.1%  6:74.8%  7:0.7%  8:1.4%  9:9.8%
+    turned away (willing, shop full): 2.03 a day, someone on 71.7% of days
+    conversion by day band: d1-5=38.5%  d6-10=30.8%  d11-20=20.3%  d21+=17.2%   refusal mix (of visits): COUNTERS_THREAT=3.8%  EMPTY_SHELVES=0.2%  GOOD_ENOUGH=3.9%  GREAT_FIT=13.4%  NOT_BETTER=48.3%  NOT_SUITED=0.6%  PRIZED=0.0%  RESISTED=1.6%  STORIED=0.5%  TASTE_MATCH=0.4%  TOO_EXPENSIVE=24.3%  UNDECIDED=0.6%  WORN_OUT=2.5%
+    visit rate by scan position: 1:50.1%  2:50.2%  3:50.0%  4:50.0%  5:49.7%  6:49.4%  7:49.4%  8:49.3%  9:49.0%  10:49.0%  11:48.7%  12:48.4%  13:45.7%  14:44.0%  15:42.2%  16:39.7%
+    heroes ever/run=15.91  served/run=15.69  never served=1.4%  served by day 5=11.51  by day 10=12.48  runs with 9 by day 5=99.8%  with 13 in a run=93.0%
+    wait to first visit (days): median=1 p90=3 max=15  newcomers only: median=0 p90=2
+    classes: served/day=3.92 of alive/day=4.94  served by day 5=4.94, by day 10=5.00  bought by day 10=4.94  runs with 4+ classes bought by day 10=99.9%
+    return-visit share=90.5%  days between visits=1.93  visits per hero-day: starting cast=0.50 later arrivals=0.47
+    served share among heroes alive 10+ days: max mean=0.67 min mean=0.32 max/min median=2.02 p90=2.80  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=81  10=88  15=123   cannot pay for the cheapest listed blade: 1=65.9%  5=33.6%  10=26.7%  15=19.7%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=35.9% (pairs/day=0.49, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=74.47 lost=56.95 fatal=1.30  deaths per hero-day=0.0039  sell-out days=0.8%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=17.0%  d4-5=46.8%  d6+=45.6%  lines/day=2.62  by cue (of lines): BECAME_REGULAR=7.9%  BLADE_WORN=7.7%  FIRST_BLADE=15.2%  FIRST_VISIT=3.0%  HELD_THE_WALL=5.8%  KEPT_THE_VOW=2.7%  MENTORS_BLADE=0.8%  REGULAR_RETURNS=21.6%  SLEW_AN_ELITE=4.1%  STILL_CARRIES=22.8%  WAITED_YESTERDAY=5.7%  WANT_ANSWERED=2.5%
+    wants: voiced/run=65.83  ended by a blade of the family asked for=14.5%  by another purchase=16.3%  lapsed=52.4%
+    siege warning days: 41.0% of visits  conversion there=23.6%  RESISTED=5.1% of the refusals there
+    commissions/run: offered=8.20  accepted=9.36  completed=6.30 (67.3% of accepted)
+    offers by kind: AMBITION=17.0%  FIRST_BLADE=5.6%  NOBLE=5.3%  ORDINARY=28.7%  REPLACEMENT=20.8%  SIEGE_PREP=22.5%
+    siege-prep blades wielded at their siege=49.0% (0.80 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.000/run)  drought days=5.91% (1.595/run)  runs with a stuck day=0.00%  stuck streak 2+ days=0.00%  3+ days=0.00%  5+ days=0.00%  longest=0
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 93.6% p=31 m=29 a=0 c=188 f=217/172 r=230/175; #2 n=10000 80.4% p=23 m=29 a=0 c=230 f=266/232 r=274/234; #3 n=9998 45.6% p=16 m=29 a=0 c=242 f=279/290 r=284/293; #4 n=9820 10.1% p=14 m=29 a=0 c=242 f=279/355 r=283/358; #5 n=8427 0.7% p=13 m=29 a=0 c=240 f=276/417 r=280/420; #6 n=4772 0.0% p=11 m=29 a=0 c=244 f=280/474 r=284/477; #7 n=933 0.0% p=12 m=29 a=0 c=262 f=299/531 r=301/534; #8 n=26 0.0% p=13 m=29 a=0 c=286 f=324/590 r=327/593
+  depth (visitors=first relic=first): mornings with a visitor/run=18.81 (70% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 1.46  pledge=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.93  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.16  collector=93% restore=7%  blocked: any=93% restore=93%
+    crooked_merchant      offers/run= 2.52  buy=100% inspect=0% pass=0%  blocked: any=0% buy=0%
+    debt_repaid           offers/run= 0.77  collect=100%  blocked: any=0%
+    festival_contract     offers/run= 3.33  stall=100%  blocked: any=0%
+    last_crate            offers/run= 4.25  crate=100%  blocked: any=0%
+    masters_afternoon     offers/run= 1.95  study=100%  blocked: any=0%
+    smiths_wager          offers/run= 2.43  wager=100%  blocked: any=14% order=14%
+    dead content: never offered=none  never chosen=[last_crate/metal, blade_for_the_wall/patron, masters_afternoon/lesson, smiths_wager/order, festival_contract/watch, debt_repaid/forgive, debt_repaid/speak]  never open=none
+    relics: offers/run=5.14 declined/run=0.00 replaced/run=2.15  chosen/run: ashen_bellows=1.59 collectors_seal=1.00 salvagers_crucible=1.58 tempering_ledger=0.98
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=3.71 (materials 0.96)  ledger forges=41.43 (+178.62 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=13 17.7/20; ashen_bellows+collectors_seal+salvagers_crucible n=196 19.4/20; ashen_bellows+collectors_seal+tempering_ledger n=4376 27.3/25; ashen_bellows+salvagers_crucible n=19 19.2/20; ashen_bellows+salvagers_crucible+tempering_ledger n=943 26.9/30; ashen_bellows+tempering_ledger n=21 17.9/20; collectors_seal+salvagers_crucible n=22 17.7/20; collectors_seal+salvagers_crucible+tempering_ledger n=4386 27.2/25; collectors_seal+tempering_ledger n=14 18.6/20; salvagers_crucible+tempering_ledger n=10 18.5/20
+    sieges by trait (fought, won): long_assault n=15340 28%  many_breaches n=15392 34%  plain n=23244 58%
+    wall pledge/run: pledged=1.46 delivered=1.46 lapsed=0.00 dead=0.01 retired=0.00 parted=0.09 returned=0.77 collect=0.77 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=2.43 won=2.38 lost=0.05
+    gold through visitors/run: in=389.43 out=809.25  watch bounties=0.00 (max in a run 0)  rewards of visitors' orders=80.90
+
+Policy TECHNIQUE_ETCH (new account) over 10000 runs
+  survival days: p10=20 median=30 mean=28.7 p90=35 max=45 ended=10000
+  forged/run: 84.6  sold/run: 47.8  sell rate: 56%
+  gold earned/run: median=4599  final gold median=3066  gold on hand median=2233  materials on hand median=5
+  rarity: COMMON=11% UNCOMMON=37% RARE=38% EPIC=11% LEGENDARY=4%
+  hero deaths/run: 1.3  retirements/run: 2.7  sieges survived/run: 2.6  lost/run: 3.1  faction win proportion: 55%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=6.3  EMPTY_SHELVES=0.1  GOOD_ENOUGH=6.9  GREAT_FIT=21.8  NOT_BETTER=87.5  NOT_SUITED=1.1  PRIZED=0.0  RESISTED=2.5  STORIED=0.7  TASTE_MATCH=0.7  TOO_EXPENSIVE=42.0  UNDECIDED=0.9  WORN_OUT=4.4
+  elites slain/run: 6.7  weapons broken/run: 0.2  warlord sieges/run: 0.1  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.39  inherited=0.17  resold=0.03  seized=0.34  lost=0.13  (taken by a merchant=0.07)  artifact recovery: 56%
+  affix weapons/run: bloodbound=1.7  brittle=1.7  cursed=1.7  flaming=39.2  frostbound=12.2  giant_slayer=9.7  guardians=9.7  heavy=1.7  keen=9.7  lucky=9.7  reinforced=9.7  resonant=2.3  sentient=1.7  stormcharged=4.7  swift=9.7  undead_bane=7.3  unstable=1.7  vampiric=4.5
+  hero-days/run: 355.8  activity shares: AMBITION_COLLECTOR=0.8%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=2.2%  AMBITION_SLAYER=1.5%  EXPEDITION=38.3%  GUILD=8.8%  PATROL=26.2%  REST=8.2%  REST_WOUNDED=12.0%
+  level-ups/run: 41.7  mentorings/run: 10.2  guilds/run: 1.8  runs with a guild: 100%
+  wall: routs/run=1.10  champions fallen/run=0.115  runs with a champion fallen=10.9%
+  guild patronage/run: taken=0.25  purchases with a stipend=0.88  stipend gold=26.4 (0.6% of gold earned)
+  legacy points/run: median=31  discoveries/run: 18.5  signature discoveries/run: 0.0  rumours/run: 3.92  clue rungs/run: 18.68  signatures first found/run: 0.001 (runs with one 0.1%)
+  bot per run: advanced_forges=56.04  quick_forges=28.56  etch_forges=56.04  commissions_completed=7.02  commissions_expired=2.92  signature_tries=0.01  signature_hits=0.00  scarce_loot=27.26  lucky_loot=8.61  lucky_scarce_loot=8.51  final_reputation=71.79  max_loyalty=11.96
+  customers: living heroes/day=12.41  served/day=6.10  at cap=84.9% of days  two or fewer=0.7%  purchases/day=1.42  sales/day=1.67  conversion=23.3%
+    served per day: 0:0.0%  1:0.1%  2:0.5%  3:1.6%  4:3.7%  5:6.7%  6:75.6%  7:0.7%  8:1.3%  9:9.6%
+    turned away (willing, shop full): 2.10 a day, someone on 72.9% of days
+    conversion by day band: d1-5=37.2%  d6-10=30.8%  d11-20=20.1%  d21+=16.0%   refusal mix (of visits): COUNTERS_THREAT=3.6%  EMPTY_SHELVES=0.1%  GOOD_ENOUGH=4.0%  GREAT_FIT=12.4%  NOT_BETTER=50.0%  NOT_SUITED=0.6%  PRIZED=0.0%  RESISTED=1.4%  STORIED=0.4%  TASTE_MATCH=0.4%  TOO_EXPENSIVE=24.0%  UNDECIDED=0.5%  WORN_OUT=2.5%
+    visit rate by scan position: 1:50.0%  2:50.0%  3:50.1%  4:50.0%  5:49.6%  6:49.1%  7:49.3%  8:49.2%  9:49.1%  10:48.7%  11:48.7%  12:48.4%  13:45.8%  14:43.7%  15:41.5%  16:40.1%
+    heroes ever/run=16.59  served/run=16.34  never served=1.5%  served by day 5=11.51  by day 10=12.49  runs with 9 by day 5=99.7%  with 13 in a run=95.1%
+    wait to first visit (days): median=1 p90=3 max=16  newcomers only: median=0 p90=2
+    classes: served/day=3.92 of alive/day=4.93  served by day 5=4.94, by day 10=5.00  bought by day 10=4.94  runs with 4+ classes bought by day 10=99.9%
+    return-visit share=90.7%  days between visits=1.93  visits per hero-day: starting cast=0.49 later arrivals=0.47
+    served share among heroes alive 10+ days: max mean=0.67 min mean=0.32 max/min median=2.02 p90=2.79  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=81  10=85  15=119   cannot pay for the cheapest listed blade: 1=67.9%  5=33.6%  10=27.1%  15=19.6%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=37.2% (pairs/day=0.51, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=81.42 lost=59.28 fatal=1.25  deaths per hero-day=0.0035  sell-out days=0.4%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=16.8%  d4-5=46.9%  d6+=46.1%  lines/day=2.66  by cue (of lines): BECAME_REGULAR=7.6%  BLADE_WORN=8.1%  FIRST_BLADE=14.8%  FIRST_VISIT=3.6%  HELD_THE_WALL=5.8%  KEPT_THE_VOW=2.7%  MENTORS_BLADE=1.1%  REGULAR_RETURNS=21.5%  SLEW_AN_ELITE=4.2%  STILL_CARRIES=22.7%  WAITED_YESTERDAY=5.7%  WANT_ANSWERED=2.3%
+    wants: voiced/run=70.60  ended by a blade of the family asked for=13.8%  by another purchase=16.2%  lapsed=53.5%
+    siege warning days: 40.9% of visits  conversion there=22.8%  RESISTED=4.6% of the refusals there
+    commissions/run: offered=8.73  accepted=10.08  completed=7.02 (69.6% of accepted)
+    offers by kind: AMBITION=15.8%  FIRST_BLADE=5.4%  NOBLE=5.5%  ORDINARY=28.6%  REPLACEMENT=21.6%  SIEGE_PREP=23.1%
+    siege-prep blades wielded at their siege=46.2% (0.93 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.000/run)  drought days=5.86% (1.680/run)  runs with a stuck day=0.00%  stuck streak 2+ days=0.00%  3+ days=0.00%  5+ days=0.00%  longest=0
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 93.5% p=32 m=29 a=0 c=192 f=221/173 r=237/176; #2 n=10000 85.3% p=24 m=29 a=0 c=243 f=279/233 r=289/235; #3 n=9999 58.9% p=16 m=29 a=0 c=260 f=297/289 r=303/292; #4 n=9908 20.0% p=13 m=29 a=0 c=262 f=299/352 r=304/356; #5 n=8979 2.6% p=11 m=29 a=0 c=257 f=294/416 r=299/419; #6 n=6301 0.2% p=10 m=29 a=0 c=258 f=295/475 r=300/478; #7 n=1984 0.0% p=10 m=29 a=0 c=269 f=306/531 r=310/534; #8 n=146 0.0% p=12 m=29 a=0 c=297 f=333/590 r=339/593; #9 n=1 0.0% p=12 m=29 a=0 c=283 f=312/631 r=313/636
+  depth (visitors=first relic=first): mornings with a visitor/run=19.79 (69% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 1.66  pledge=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.95  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.17  collector=93% restore=7%  blocked: any=93% restore=93%
+    crooked_merchant      offers/run= 2.61  buy=100% inspect=0% pass=0%  blocked: any=0% buy=0%
+    debt_repaid           offers/run= 0.93  collect=100%  blocked: any=0%
+    festival_contract     offers/run= 3.47  stall=100% watch=0%  blocked: any=0% stall=0%
+    last_crate            offers/run= 4.50  crate=100% metal=0%  blocked: any=0% crate=0%
+    masters_afternoon     offers/run= 1.96  study=100%  blocked: any=0% lesson=0%
+    smiths_wager          offers/run= 2.54  wager=100%  blocked: any=13% order=13%
+    dead content: never offered=none  never chosen=[blade_for_the_wall/patron, masters_afternoon/lesson, smiths_wager/order, debt_repaid/forgive, debt_repaid/speak]  never open=none
+    relics: offers/run=5.30 declined/run=0.00 replaced/run=2.31  chosen/run: ashen_bellows=1.66 collectors_seal=1.00 salvagers_crucible=1.66 tempering_ledger=0.98
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=4.63 (materials 1.25)  ledger forges=45.40 (+195.99 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=6 19.2/20; ashen_bellows+collectors_seal+salvagers_crucible n=123 20.1/20; ashen_bellows+collectors_seal+tempering_ledger n=4483 28.9/30; ashen_bellows+salvagers_crucible n=12 17.9/20; ashen_bellows+salvagers_crucible+tempering_ledger n=721 28.1/30; ashen_bellows+tempering_ledger n=6 18.3/20; collectors_seal+salvagers_crucible n=15 19.0/20; collectors_seal+salvagers_crucible+tempering_ledger n=4616 28.9/30; collectors_seal+tempering_ledger n=8 18.8/20; salvagers_crucible+tempering_ledger n=10 18.0/20
+    sieges by trait (fought, won): long_assault n=16552 32%  many_breaches n=16442 38%  plain n=24324 60%
+    wall pledge/run: pledged=1.66 delivered=1.66 lapsed=0.00 dead=0.02 retired=0.00 parted=0.10 returned=0.93 collect=0.93 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=2.54 won=2.48 lost=0.06
+    gold through visitors/run: in=421.46 out=849.25  watch bounties=0.01 (max in a run 60)  rewards of visitors' orders=91.88
+
+Policy REQUEST_DRIVEN (new account) over 10000 runs
+  survival days: p10=30 median=35 mean=34.6 p90=40 max=50 ended=10000
+  forged/run: 170.7  sold/run: 72.1  sell rate: 42%
+  gold earned/run: median=7574  final gold median=3227  gold on hand median=1955  materials on hand median=5
+  rarity: COMMON=10% UNCOMMON=38% RARE=38% EPIC=11% LEGENDARY=4%
+  hero deaths/run: 1.1  retirements/run: 5.5  sieges survived/run: 3.6  lost/run: 3.3  faction win proportion: 47%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=7.1  EMPTY_SHELVES=0.0  GOOD_ENOUGH=6.1  GREAT_FIT=37.7  NOT_BETTER=109.9  NOT_SUITED=1.0  PRIZED=0.0  RESISTED=2.8  STORIED=0.7  TASTE_MATCH=0.8  TOO_EXPENSIVE=38.9  UNDECIDED=1.1  WORN_OUT=7.3
+  elites slain/run: 9.1  weapons broken/run: 0.1  warlord sieges/run: 0.1  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.36  inherited=0.16  resold=0.02  seized=0.34  lost=0.13  (taken by a merchant=0.06)  artifact recovery: 54%
+  affix weapons/run: bloodbound=2.3  brittle=2.3  cursed=2.3  flaming=55.4  frostbound=11.1  giant_slayer=9.4  guardians=9.3  heavy=2.3  keen=9.4  lucky=9.3  reinforced=9.4  resonant=3.9  sentient=2.3  stormcharged=5.4  swift=9.4  undead_bane=8.0  unstable=2.3  vampiric=6.7
+  hero-days/run: 434.1  activity shares: AMBITION_COLLECTOR=0.5%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=2.2%  AMBITION_SLAYER=1.4%  EXPEDITION=39.5%  GUILD=9.6%  PATROL=27.0%  REST=8.2%  REST_WOUNDED=9.5%
+  level-ups/run: 59.3  mentorings/run: 13.9  guilds/run: 2.3  runs with a guild: 100%
+  wall: routs/run=0.80  champions fallen/run=0.055  runs with a champion fallen=5.3%
+  guild patronage/run: taken=0.39  purchases with a stipend=1.84  stipend gold=55.1 (0.7% of gold earned)
+  legacy points/run: median=32  discoveries/run: 26.0  signature discoveries/run: 0.0  rumours/run: 3.99  clue rungs/run: 21.48  signatures first found/run: 0.005 (runs with one 0.5%)
+  bot per run: quick_forges=170.75  request_forges=4.38  want_forges=12.45  commissions_completed=12.48  commissions_expired=0.25  signature_tries=0.03  signature_hits=0.01  scarce_loot=37.91  lucky_loot=10.90  lucky_scarce_loot=10.73  final_reputation=109.00  max_loyalty=15.16
+  customers: living heroes/day=12.55  served/day=6.17  at cap=90.6% of days  two or fewer=0.4%  purchases/day=1.72  sales/day=2.09  conversion=27.9%
+    served per day: 0:0.0%  1:0.1%  2:0.3%  3:0.9%  4:2.2%  5:4.3%  6:81.5%  7:0.4%  8:0.9%  9:9.4%
+    turned away (willing, shop full): 2.63 a day, someone on 81.8% of days
+    conversion by day band: d1-5=48.0%  d6-10=31.4%  d11-20=26.0%  d21+=22.0%   refusal mix (of visits): COUNTERS_THREAT=3.3%  EMPTY_SHELVES=0.0%  GOOD_ENOUGH=2.9%  GREAT_FIT=17.6%  NOT_BETTER=51.5%  NOT_SUITED=0.5%  PRIZED=0.0%  RESISTED=1.3%  STORIED=0.3%  TASTE_MATCH=0.4%  TOO_EXPENSIVE=18.2%  UNDECIDED=0.5%  WORN_OUT=3.4%
+    visit rate by scan position: 1:50.3%  2:50.3%  3:50.3%  4:50.2%  5:50.0%  6:49.5%  7:49.4%  8:49.1%  9:48.9%  10:48.6%  11:48.4%  12:48.5%  13:45.0%  14:43.1%  15:40.3%  16:38.8%
+    heroes ever/run=19.58  served/run=19.25  never served=1.7%  served by day 5=11.56  by day 10=12.47  runs with 9 by day 5=99.8%  with 13 in a run=98.9%
+    wait to first visit (days): median=1 p90=3 max=20  newcomers only: median=0 p90=2
+    classes: served/day=3.94 of alive/day=4.90  served by day 5=4.95, by day 10=5.00  bought by day 10=4.98  runs with 4+ classes bought by day 10=100.0%
+    return-visit share=91.0%  days between visits=1.94  visits per hero-day: starting cast=0.50 later arrivals=0.46
+    served share among heroes alive 10+ days: max mean=0.67 min mean=0.32 max/min median=2.02 p90=2.82  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=72  10=91  15=119   cannot pay for the cheapest listed blade: 1=37.4%  5=27.1%  10=21.1%  15=17.2%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=41.8% (pairs/day=0.61, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=117.16 lost=59.20 fatal=1.11  deaths per hero-day=0.0025  sell-out days=0.1%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=18.2%  d4-5=44.8%  d6+=48.6%  lines/day=2.85  by cue (of lines): BECAME_REGULAR=8.3%  BLADE_WORN=5.5%  FIRST_BLADE=11.2%  FIRST_VISIT=4.7%  HELD_THE_WALL=5.5%  KEPT_THE_VOW=2.8%  MENTORS_BLADE=1.1%  REGULAR_RETURNS=24.5%  SLEW_AN_ELITE=3.6%  STILL_CARRIES=21.1%  WAITED_YESTERDAY=6.6%  WANT_ANSWERED=5.2%
+    wants: voiced/run=88.17  ended by a blade of the family asked for=30.1%  by another purchase=10.9%  lapsed=44.4%
+    siege warning days: 40.6% of visits  conversion there=25.9%  RESISTED=4.4% of the refusals there
+    commissions/run: offered=10.92  accepted=12.74  completed=12.48 (98.0% of accepted)
+    offers by kind: AMBITION=11.5%  FIRST_BLADE=3.2%  NOBLE=5.3%  ORDINARY=31.1%  REPLACEMENT=23.5%  SIEGE_PREP=25.4%
+    siege-prep blades wielded at their siege=52.8% (2.69 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.000/run)  drought days=3.59% (1.242/run)  runs with a stuck day=0.00%  stuck streak 2+ days=0.00%  3+ days=0.00%  5+ days=0.00%  longest=0
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 96.7% p=30 m=29 a=0 c=203 f=232/170 r=250/173; #2 n=10000 93.9% p=20 m=29 a=0 c=262 f=299/228 r=313/230; #3 n=10000 85.5% p=11 m=29 a=0 c=297 f=333/283 r=345/286; #4 n=9978 61.7% p=7 m=29 a=0 c=317 f=354/344 r=364/348; #5 n=9789 23.8% p=5 m=29 a=0 c=324 f=360/409 r=370/413; #6 n=9182 3.3% p=5 m=29 a=0 c=322 f=358/474 r=366/477; #7 n=7195 0.3% p=5 m=29 a=0 c=320 f=357/535 r=364/538; #8 n=2808 0.0% p=6 m=29 a=0 c=328 f=365/588 r=370/591; #9 n=234 0.0% p=7 m=29 a=0 c=344 f=380/642 r=384/645; #10 n=1 0.0% p=7 m=29 a=0 c=300 f=329/723 r=325/741
+  depth (visitors=first relic=first): mornings with a visitor/run=22.51 (65% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 2.10  pledge=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.99  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.30  collector=92% restore=8%  blocked: any=92% restore=92%
+    crooked_merchant      offers/run= 2.86  buy=100% inspect=0% pass=0%  blocked: any=0% buy=0%
+    debt_repaid           offers/run= 1.31  collect=100%  blocked: any=0%
+    festival_contract     offers/run= 3.81  stall=100% watch=0%  blocked: any=0% stall=0%
+    last_crate            offers/run= 5.33  crate=100% metal=0%  blocked: any=0% crate=0%
+    masters_afternoon     offers/run= 1.99  study=100%  blocked: any=0% lesson=0%
+    smiths_wager          offers/run= 2.82  wager=100%  blocked: any=1% order=1%
+    dead content: never offered=none  never chosen=[blade_for_the_wall/patron, masters_afternoon/lesson, smiths_wager/order, debt_repaid/forgive, debt_repaid/speak]  never open=none
+    relics: offers/run=5.71 declined/run=0.00 replaced/run=2.71  chosen/run: ashen_bellows=1.86 collectors_seal=1.00 salvagers_crucible=1.85 tempering_ledger=1.00
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=9.46 (materials 2.82)  ledger forges=97.35 (+415.50 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=1 20.0/20; ashen_bellows+collectors_seal+salvagers_crucible n=29 21.4/20; ashen_bellows+collectors_seal+tempering_ledger n=4933 34.7/35; ashen_bellows+salvagers_crucible n=4 17.5/15; ashen_bellows+salvagers_crucible+tempering_ledger n=73 28.9/30; ashen_bellows+tempering_ledger n=2 17.5/15; collectors_seal+salvagers_crucible n=3 18.3/20; collectors_seal+salvagers_crucible+tempering_ledger n=4953 34.6/35; collectors_seal+tempering_ledger n=1 20.0/20; salvagers_crucible+tempering_ledger n=1 20.0/20
+    sieges by trait (fought, won): long_assault n=20797 42%  many_breaches n=20789 47%  plain n=27601 64%
+    wall pledge/run: pledged=2.10 delivered=2.10 lapsed=0.00 dead=0.02 retired=0.01 parted=0.11 returned=1.31 collect=1.31 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=2.82 won=2.77 lost=0.05
+    gold through visitors/run: in=455.15 out=969.64  watch bounties=0.01 (max in a run 60)  rewards of visitors' orders=117.04
+
+Policy SIEGE_PREP (new account) over 10000 runs
+  survival days: p10=40 median=45 mean=45.1 p90=50 max=55 ended=10000
+  forged/run: 197.4  sold/run: 78.0  sell rate: 39%
+  gold earned/run: median=9620  final gold median=176  gold on hand median=146  materials on hand median=7
+  rarity: COMMON=7% UNCOMMON=29% RARE=39% EPIC=16% LEGENDARY=9%
+  hero deaths/run: 1.3  retirements/run: 9.0  sieges survived/run: 5.7  lost/run: 3.4  faction win proportion: 37%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=16.7  EMPTY_SHELVES=0.0  GOOD_ENOUGH=8.2  GREAT_FIT=27.2  NOT_BETTER=133.0  NOT_SUITED=1.5  PRIZED=0.0  RESISTED=0.8  STORIED=1.1  TASTE_MATCH=0.5  TOO_EXPENSIVE=62.8  UNDECIDED=0.8  WORN_OUT=11.3
+  elites slain/run: 12.2  weapons broken/run: 0.1  warlord sieges/run: 0.0  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.35  inherited=0.19  resold=0.03  seized=0.35  lost=0.12  (taken by a merchant=0.07)  artifact recovery: 54%
+  affix weapons/run: bloodbound=2.6  brittle=2.6  cursed=2.6  flaming=35.5  frostbound=60.3  giant_slayer=15.8  guardians=15.9  heavy=2.6  keen=15.9  lucky=15.9  reinforced=15.9  resonant=2.1  sentient=2.6  stormcharged=4.2  swift=15.9  undead_bane=16.9  unstable=2.6  vampiric=7.8
+  hero-days/run: 573.7  activity shares: AMBITION_COLLECTOR=0.5%  AMBITION_DEFENDER=2.1%  AMBITION_FORTUNE=2.3%  AMBITION_SLAYER=1.4%  EXPEDITION=38.9%  GUILD=10.1%  PATROL=27.1%  REST=8.5%  REST_WOUNDED=9.1%
+  level-ups/run: 81.0  mentorings/run: 19.5  guilds/run: 2.6  runs with a guild: 100%
+  wall: routs/run=0.62  champions fallen/run=0.047  runs with a champion fallen=4.5%
+  guild patronage/run: taken=0.64  purchases with a stipend=3.65  stipend gold=109.5 (1.1% of gold earned)
+  legacy points/run: median=34  discoveries/run: 26.7  signature discoveries/run: 0.0  rumours/run: 4.00  clue rungs/run: 25.66  signatures first found/run: 0.001 (runs with one 0.1%)
+  bot per run: quick_forges=197.42  siege_forges=77.88  commissions_completed=13.01  commissions_expired=4.18  signature_tries=0.01  signature_hits=0.00  siege_donations=12.35  scarce_loot=53.86  lucky_loot=21.10  lucky_scarce_loot=20.77  final_reputation=135.02  max_loyalty=14.74
+  customers: living heroes/day=12.73  served/day=5.86  at cap=91.4% of days  two or fewer=0.4%  purchases/day=1.44  sales/day=1.73  conversion=24.6%
+    served per day: 0:0.0%  1:0.1%  2:0.3%  3:1.1%  4:2.4%  5:4.7%  6:91.4%
+    turned away (willing, shop full): 2.81 a day, someone on 83.4% of days
+    conversion by day band: d1-5=39.1%  d6-10=28.1%  d11-20=27.2%  d21+=20.4%   refusal mix (of visits): COUNTERS_THREAT=6.3%  EMPTY_SHELVES=0.0%  GOOD_ENOUGH=3.1%  GREAT_FIT=10.3%  NOT_BETTER=50.4%  NOT_SUITED=0.6%  PRIZED=0.0%  RESISTED=0.3%  STORIED=0.4%  TASTE_MATCH=0.2%  TOO_EXPENSIVE=23.8%  UNDECIDED=0.3%  WORN_OUT=4.3%
+    visit rate by scan position: 1:47.1%  2:47.0%  3:47.2%  4:47.0%  5:46.9%  6:46.5%  7:46.2%  8:46.1%  9:45.8%  10:45.5%  11:45.2%  12:45.3%  13:42.4%  14:40.8%  15:38.6%  16:36.7%
+    heroes ever/run=23.49  served/run=23.16  never served=1.4%  served by day 5=11.41  by day 10=12.45  runs with 9 by day 5=99.7%  with 13 in a run=99.9%
+    wait to first visit (days): median=1 p90=3 max=17  newcomers only: median=0 p90=2
+    classes: served/day=3.85 of alive/day=4.86  served by day 5=4.94, by day 10=4.99  bought by day 10=4.87  runs with 4+ classes bought by day 10=99.3%
+    return-visit share=91.2%  days between visits=2.09  visits per hero-day: starting cast=0.47 later arrivals=0.44
+    served share among heroes alive 10+ days: max mean=0.65 min mean=0.29 max/min median=2.22 p90=3.16  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=80  10=86  15=96   cannot pay for the cheapest listed blade: 1=37.4%  5=63.2%  10=54.0%  15=39.9%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=49.0% (pairs/day=0.78, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=152.55 lost=77.58 fatal=1.26  deaths per hero-day=0.0022  sell-out days=0.0%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=18.9%  d4-5=38.9%  d6+=51.1%  lines/day=2.86  by cue (of lines): BECAME_REGULAR=6.5%  BLADE_WORN=9.6%  FIRST_BLADE=11.2%  FIRST_VISIT=6.5%  HELD_THE_WALL=5.9%  KEPT_THE_VOW=2.8%  MENTORS_BLADE=2.0%  REGULAR_RETURNS=21.3%  SLEW_AN_ELITE=3.7%  STILL_CARRIES=21.4%  WAITED_YESTERDAY=6.7%  WANT_ANSWERED=2.4%
+    wants: voiced/run=109.62  ended by a blade of the family asked for=17.0%  by another purchase=13.6%  lapsed=55.5%
+    siege warning days: 40.5% of visits  conversion there=24.2%  RESISTED=1.0% of the refusals there
+    commissions/run: offered=13.89  accepted=17.33  completed=13.01 (75.0% of accepted)
+    offers by kind: AMBITION=11.0%  FIRST_BLADE=7.0%  NOBLE=5.4%  ORDINARY=32.1%  REPLACEMENT=28.6%  SIEGE_PREP=16.0%
+    siege-prep blades wielded at their siege=16.8% (0.96 collected by their siege day a run)
+    recovery (morning state): stuck days=0.01% of days (0.003/run)  drought days=2.67% (1.205/run)  runs with a stuck day=0.20%  stuck streak 2+ days=0.06%  3+ days=0.01%  5+ days=0.01%  longest=5
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 98.9% p=31 m=29 a=14 c=207 f=250/172 r=279/175; #2 n=10000 99.3% p=23 m=29 a=15 c=308 f=363/231 r=384/233; #3 n=10000 99.3% p=12 m=29 a=14 c=366 f=421/285 r=437/287; #4 n=9997 98.5% p=6 m=29 a=17 c=396 f=453/343 r=465/347; #5 n=9986 91.9% p=3 m=29 a=24 c=406 f=472/407 r=483/411; #6 n=9967 60.1% p=3 m=29 a=29 c=406 f=480/473 r=489/477; #7 n=9910 16.7% p=3 m=29 a=30 c=399 f=474/541 r=482/544; #8 n=9695 0.8% p=4 m=29 a=30 c=388 f=462/609 r=470/612; #9 n=7649 0.0% p=5 m=29 a=30 c=382 f=457/667 r=464/670; #10 n=2813 0.0% p=7 m=29 a=30 c=382 f=457/710 r=463/713; #11 n=105 0.0% p=8 m=29 a=30 c=391 f=461/762 r=465/765
+  depth (visitors=defense relic=first): mornings with a visitor/run=26.49 (59% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 3.50  pledge=100%  blocked: any=0%
+    collectors_offer      offers/run= 2.00  pass=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.27  pass=6% restore=94%  blocked: any=90% restore=90%
+    crooked_merchant      offers/run= 2.99  pass=100%  blocked: any=7% buy=7% inspect=3%
+    debt_repaid           offers/run= 2.83  forgive=100%  blocked: any=0%
+    festival_contract     offers/run= 3.99  watch=100%  blocked: any=4% stall=4%
+    last_crate            offers/run= 5.93  crate=95% pass=5%  blocked: any=5% crate=5% metal=2%
+    masters_afternoon     offers/run= 2.00  pass=100%  blocked: any=4% lesson=4%
+    smiths_wager          offers/run= 2.99  pass=100%  blocked: any=15% order=12% wager=4%
+    dead content: never offered=none  never chosen=[last_crate/metal, blade_for_the_wall/patron, masters_afternoon/study, masters_afternoon/lesson, collectors_offer/sell, cracked_family_blade/collector, crooked_merchant/buy, crooked_merchant/inspect, smiths_wager/wager, smiths_wager/order, festival_contract/stall, debt_repaid/collect, debt_repaid/speak]  never open=none
+    relics: offers/run=3.00 declined/run=0.00 replaced/run=0.00  chosen/run: ashen_bellows=0.75 collectors_seal=0.75 salvagers_crucible=0.76 tempering_ledger=0.74
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=17.25 (materials 5.50)  ledger forges=62.01 (+252.97 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=3 18.3/20; ashen_bellows+collectors_seal+salvagers_crucible n=2601 44.9/45; ashen_bellows+collectors_seal+tempering_ledger n=2428 45.1/45; ashen_bellows+salvagers_crucible n=2 17.5/15; ashen_bellows+salvagers_crucible+tempering_ledger n=2462 45.2/45; ashen_bellows+tempering_ledger n=2 20.0/20; collectors_seal+salvagers_crucible n=2 20.0/20; collectors_seal+salvagers_crucible+tempering_ledger n=2495 45.2/45; collectors_seal+tempering_ledger n=2 17.5/15; salvagers_crucible+tempering_ledger n=3 20.0/20
+    sieges by trait (fought, won): long_assault n=28177 55%  many_breaches n=28061 61%  plain n=33884 70%
+    wall pledge/run: pledged=3.50 delivered=3.50 lapsed=0.00 dead=0.04 retired=0.06 parted=0.09 returned=2.83 collect=0.00 forgive=2.83 speak=0.00 pass=0.00   wagers/run: taken=0.00 won=0.00 lost=0.00
+    gold through visitors/run: in=0.00 out=524.36  watch bounties=221.97 (max in a run 240)  rewards of visitors' orders=206.66
+
+Policy SIGNATURE_PURSUIT (new account) over 10000 runs
+  survival days: p10=25 median=30 mean=30.1 p90=35 max=45 ended=10000
+  forged/run: 100.1  sold/run: 50.8  sell rate: 51%
+  gold earned/run: median=5029  final gold median=243  gold on hand median=407  materials on hand median=9
+  rarity: COMMON=3% UNCOMMON=25% RARE=47% EPIC=17% LEGENDARY=8%
+  hero deaths/run: 1.1  retirements/run: 3.6  sieges survived/run: 2.8  lost/run: 3.2  faction win proportion: 53%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=9.1  EMPTY_SHELVES=0.0  GOOD_ENOUGH=7.6  GREAT_FIT=20.1  NOT_BETTER=88.9  NOT_SUITED=1.9  PRIZED=0.0  RESISTED=0.8  STORIED=1.6  TASTE_MATCH=0.5  TOO_EXPENSIVE=46.6  UNDECIDED=1.0  WORN_OUT=5.3
+  elites slain/run: 7.5  weapons broken/run: 0.1  warlord sieges/run: 0.1  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.33  inherited=0.16  resold=0.02  seized=0.29  lost=0.11  (taken by a merchant=0.06)  artifact recovery: 56%
+  affix weapons/run: bloodbound=0.9  brittle=0.9  cursed=0.9  flaming=11.0  frostbound=27.3  giant_slayer=8.3  guardians=10.0  heavy=0.9  keen=9.4  lucky=8.5  reinforced=9.2  resonant=6.5  sentient=0.9  stormcharged=15.0  swift=8.6  undead_bane=7.0  unstable=0.9  vampiric=5.3
+  hero-days/run: 374.4  activity shares: AMBITION_COLLECTOR=0.7%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=2.2%  AMBITION_SLAYER=1.5%  EXPEDITION=38.9%  GUILD=9.2%  PATROL=26.8%  REST=8.2%  REST_WOUNDED=10.6%
+  level-ups/run: 47.8  mentorings/run: 11.4  guilds/run: 2.0  runs with a guild: 100%
+  wall: routs/run=1.04  champions fallen/run=0.087  runs with a champion fallen=8.2%
+  guild patronage/run: taken=0.28  purchases with a stipend=1.11  stipend gold=33.2 (0.7% of gold earned)
+  legacy points/run: median=31  discoveries/run: 19.3  signature discoveries/run: 5.7  rumours/run: 3.94  clue rungs/run: 26.14  signatures first found/run: 4.160 (runs with one 98.9%)
+  bot per run: advanced_forges=41.31  quick_forges=58.74  catalyst_forges=41.31  signature_forges=80.30  commissions_completed=6.64  commissions_expired=3.75  signature_tries=36.76  signature_hits=5.72  scarce_loot=29.00  lucky_loot=5.87  lucky_scarce_loot=5.82  final_reputation=75.80  max_loyalty=12.53
+  customers: living heroes/day=12.46  served/day=6.10  at cap=86.0% of days  two or fewer=0.6%  purchases/day=1.47  sales/day=1.69  conversion=24.1%
+    served per day: 0:0.0%  1:0.1%  2:0.5%  3:1.5%  4:3.5%  5:6.3%  6:77.0%  7:0.6%  8:1.2%  9:9.3%
+    turned away (willing, shop full): 2.20 a day, someone on 74.5% of days
+    conversion by day band: d1-5=37.3%  d6-10=30.8%  d11-20=22.1%  d21+=17.1%   refusal mix (of visits): COUNTERS_THREAT=5.0%  EMPTY_SHELVES=0.0%  GOOD_ENOUGH=4.2%  GREAT_FIT=11.0%  NOT_BETTER=48.5%  NOT_SUITED=1.0%  PRIZED=0.0%  RESISTED=0.4%  STORIED=0.9%  TASTE_MATCH=0.3%  TOO_EXPENSIVE=25.4%  UNDECIDED=0.5%  WORN_OUT=2.9%
+    visit rate by scan position: 1:49.6%  2:49.7%  3:49.8%  4:49.9%  5:49.6%  6:49.1%  7:49.2%  8:49.1%  9:48.8%  10:48.7%  11:48.6%  12:48.3%  13:45.3%  14:44.0%  15:41.0%  16:39.3%
+    heroes ever/run=17.46  served/run=17.19  never served=1.5%  served by day 5=11.51  by day 10=12.46  runs with 9 by day 5=99.8%  with 13 in a run=96.8%
+    wait to first visit (days): median=1 p90=3 max=15  newcomers only: median=0 p90=2
+    classes: served/day=3.92 of alive/day=4.92  served by day 5=4.94, by day 10=5.00  bought by day 10=4.90  runs with 4+ classes bought by day 10=99.7%
+    return-visit share=90.6%  days between visits=1.94  visits per hero-day: starting cast=0.49 later arrivals=0.47
+    served share among heroes alive 10+ days: max mean=0.67 min mean=0.32 max/min median=2.07 p90=2.85  runs with a hero never served=0.1%
+    hero gold at the start of day: 1=94  5=82  10=90  15=122   cannot pay for the cheapest listed blade: 1=54.9%  5=43.9%  10=30.6%  15=21.1%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=38.5% (pairs/day=0.55, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=94.96 lost=54.98 fatal=1.13  deaths per hero-day=0.0030  sell-out days=0.0%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=17.2%  d4-5=43.7%  d6+=47.4%  lines/day=2.72  by cue (of lines): BECAME_REGULAR=7.1%  BLADE_WORN=8.1%  FIRST_BLADE=13.9%  FIRST_VISIT=4.3%  HELD_THE_WALL=5.5%  KEPT_THE_VOW=2.9%  MENTORS_BLADE=1.3%  REGULAR_RETURNS=21.3%  SLEW_AN_ELITE=4.4%  STILL_CARRIES=22.7%  WAITED_YESTERDAY=5.6%  WANT_ANSWERED=2.7%
+    wants: voiced/run=73.43  ended by a blade of the family asked for=16.9%  by another purchase=12.3%  lapsed=54.3%
+    siege warning days: 40.9% of visits  conversion there=23.6%  RESISTED=1.4% of the refusals there
+    commissions/run: offered=9.06  accepted=10.60  completed=6.64 (62.7% of accepted)
+    offers by kind: AMBITION=14.1%  FIRST_BLADE=7.5%  NOBLE=5.4%  ORDINARY=30.7%  REPLACEMENT=23.2%  SIEGE_PREP=19.0%
+    siege-prep blades wielded at their siege=44.8% (0.61 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.000/run)  drought days=4.06% (1.219/run)  runs with a stuck day=0.00%  stuck streak 2+ days=0.00%  3+ days=0.00%  5+ days=0.00%  longest=0
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 94.5% p=31 m=29 a=0 c=201 f=230/172 r=245/175; #2 n=10000 88.9% p=21 m=29 a=0 c=251 f=287/229 r=296/232; #3 n=9999 68.6% p=13 m=29 a=0 c=269 f=305/285 r=312/288; #4 n=9893 28.0% p=9 m=29 a=0 c=273 f=310/348 r=316/351; #5 n=9288 4.3% p=8 m=29 a=0 c=271 f=308/412 r=314/415; #6 n=7484 0.3% p=7 m=29 a=0 c=269 f=306/474 r=311/477; #7 n=3129 0.0% p=8 m=29 a=0 c=277 f=314/529 r=319/532; #8 n=298 0.0% p=9 m=29 a=0 c=307 f=344/588 r=348/591; #9 n=16 0.0% p=12 m=29 a=0 c=354 f=394/655 r=389/657
+  depth (visitors=first relic=first): mornings with a visitor/run=20.51 (68% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 1.75  pledge=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.97  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.15  collector=81% restore=19%  blocked: any=81% restore=81%
+    crooked_merchant      offers/run= 2.70  buy=94% inspect=4% pass=6%  blocked: any=6% buy=6% inspect=2%
+    debt_repaid           offers/run= 1.02  collect=100%  blocked: any=0%
+    festival_contract     offers/run= 3.57  stall=97% watch=3%  blocked: any=3% stall=3%
+    last_crate            offers/run= 4.75  crate=92% metal=5% pass=3%  blocked: any=8% crate=8% metal=3%
+    masters_afternoon     offers/run= 1.97  lesson=1% study=99%  blocked: any=3% lesson=2% study=1%
+    smiths_wager          offers/run= 2.63  order=3% pass=0% wager=97%  blocked: any=18% order=15% wager=3%
+    dead content: never offered=none  never chosen=[blade_for_the_wall/patron, debt_repaid/forgive, debt_repaid/speak]  never open=none
+    relics: offers/run=5.31 declined/run=0.00 replaced/run=2.32  chosen/run: ashen_bellows=1.66 collectors_seal=1.01 salvagers_crucible=1.65 tempering_ledger=0.99
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=5.13 (materials 1.41)  ledger forges=28.88 (+83.54 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=16 19.1/20; ashen_bellows+collectors_seal+salvagers_crucible n=109 20.2/20; ashen_bellows+collectors_seal+tempering_ledger n=4539 30.3/30; ashen_bellows+salvagers_crucible n=13 18.8/20; ashen_bellows+salvagers_crucible+tempering_ledger n=688 29.8/30; ashen_bellows+tempering_ledger n=7 17.1/20; collectors_seal+salvagers_crucible n=9 19.4/20; collectors_seal+salvagers_crucible+tempering_ledger n=4603 30.3/30; collectors_seal+tempering_ledger n=9 17.8/20; salvagers_crucible+tempering_ledger n=7 18.6/20
+    sieges by trait (fought, won): long_assault n=17515 34%  many_breaches n=17412 41%  plain n=25180 61%
+    wall pledge/run: pledged=1.75 delivered=1.75 lapsed=0.00 dead=0.02 retired=0.01 parted=0.09 returned=1.02 collect=1.02 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=2.55 won=2.45 lost=0.08
+    gold through visitors/run: in=434.37 out=824.35  watch bounties=6.13 (max in a run 180)  rewards of visitors' orders=106.26
+
+Policy SCARCE_RECIPE (new account) over 10000 runs
+  survival days: p10=25 median=30 mean=28.2 p90=35 max=45 ended=10000
+  forged/run: 125.8  sold/run: 47.1  sell rate: 37%
+  gold earned/run: median=4570  final gold median=143  gold on hand median=174  materials on hand median=4
+  rarity: COMMON=9% UNCOMMON=34% RARE=35% EPIC=14% LEGENDARY=7%
+  hero deaths/run: 1.2  retirements/run: 2.7  sieges survived/run: 2.5  lost/run: 3.1  faction win proportion: 55%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=5.4  EMPTY_SHELVES=0.0  GOOD_ENOUGH=7.2  GREAT_FIT=21.8  NOT_BETTER=93.3  NOT_SUITED=1.3  PRIZED=0.0  RESISTED=2.1  STORIED=0.6  TASTE_MATCH=0.6  TOO_EXPENSIVE=34.6  UNDECIDED=0.9  WORN_OUT=4.1
+  elites slain/run: 6.5  weapons broken/run: 0.1  warlord sieges/run: 0.1  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.40  inherited=0.18  resold=0.03  seized=0.34  lost=0.14  (taken by a merchant=0.07)  artifact recovery: 56%
+  affix weapons/run: bloodbound=1.7  brittle=1.7  cursed=1.7  flaming=33.9  frostbound=6.6  giant_slayer=9.1  guardians=9.1  heavy=1.7  keen=9.1  lucky=9.1  reinforced=9.1  resonant=1.4  sentient=1.7  stormcharged=6.7  swift=9.1  undead_bane=14.1  unstable=1.7  vampiric=8.9
+  hero-days/run: 349.4  activity shares: AMBITION_COLLECTOR=0.7%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=2.2%  AMBITION_SLAYER=1.5%  EXPEDITION=38.6%  GUILD=8.9%  PATROL=26.1%  REST=8.1%  REST_WOUNDED=12.0%
+  level-ups/run: 41.2  mentorings/run: 10.0  guilds/run: 1.8  runs with a guild: 100%
+  wall: routs/run=1.16  champions fallen/run=0.116  runs with a champion fallen=11.1%
+  guild patronage/run: taken=0.25  purchases with a stipend=0.85  stipend gold=25.6 (0.6% of gold earned)
+  legacy points/run: median=31  discoveries/run: 22.1  signature discoveries/run: 0.0  rumours/run: 3.93  clue rungs/run: 24.47  signatures first found/run: 0.001 (runs with one 0.1%)
+  bot per run: quick_forges=125.80  scarce_forges=22.14  commissions_completed=7.42  commissions_expired=2.62  signature_tries=0.01  signature_hits=0.00  scarce_units_bought=36.32  scarce_loot=25.61  lucky_loot=6.21  lucky_scarce_loot=6.16  final_reputation=72.29  max_loyalty=11.77
+  customers: living heroes/day=12.41  served/day=6.11  at cap=85.9% of days  two or fewer=0.6%  purchases/day=1.41  sales/day=1.67  conversion=23.1%
+    served per day: 0:0.0%  1:0.1%  2:0.5%  3:1.5%  4:3.5%  5:6.4%  6:76.8%  7:0.6%  8:1.2%  9:9.4%
+    turned away (willing, shop full): 2.14 a day, someone on 74.1% of days
+    conversion by day band: d1-5=44.4%  d6-10=28.8%  d11-20=18.5%  d21+=13.9%   refusal mix (of visits): COUNTERS_THREAT=3.1%  EMPTY_SHELVES=0.0%  GOOD_ENOUGH=4.2%  GREAT_FIT=12.7%  NOT_BETTER=54.3%  NOT_SUITED=0.8%  PRIZED=0.0%  RESISTED=1.2%  STORIED=0.4%  TASTE_MATCH=0.3%  TOO_EXPENSIVE=20.1%  UNDECIDED=0.5%  WORN_OUT=2.4%
+    visit rate by scan position: 1:49.9%  2:50.0%  3:50.1%  4:50.0%  5:50.0%  6:49.4%  7:49.4%  8:49.1%  9:49.2%  10:48.8%  11:48.7%  12:48.3%  13:45.6%  14:44.3%  15:41.9%  16:40.4%
+    heroes ever/run=16.55  served/run=16.31  never served=1.4%  served by day 5=11.53  by day 10=12.47  runs with 9 by day 5=99.8%  with 13 in a run=95.6%
+    wait to first visit (days): median=1 p90=3 max=15  newcomers only: median=0 p90=2
+    classes: served/day=3.93 of alive/day=4.93  served by day 5=4.94, by day 10=5.00  bought by day 10=4.97  runs with 4+ classes bought by day 10=100.0%
+    return-visit share=90.5%  days between visits=1.93  visits per hero-day: starting cast=0.50 later arrivals=0.47
+    served share among heroes alive 10+ days: max mean=0.67 min mean=0.32 max/min median=2.01 p90=2.78  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=75  10=86  15=121   cannot pay for the cheapest listed blade: 1=36.2%  5=31.3%  10=22.0%  15=16.6%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=36.7% (pairs/day=0.51, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=81.11 lost=57.81 fatal=1.21  deaths per hero-day=0.0035  sell-out days=0.0%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=18.4%  d4-5=43.8%  d6+=46.3%  lines/day=2.66  by cue (of lines): BECAME_REGULAR=7.7%  BLADE_WORN=8.8%  FIRST_BLADE=12.6%  FIRST_VISIT=3.6%  HELD_THE_WALL=5.9%  KEPT_THE_VOW=2.6%  MENTORS_BLADE=1.2%  REGULAR_RETURNS=22.2%  SLEW_AN_ELITE=4.2%  STILL_CARRIES=23.3%  WAITED_YESTERDAY=5.8%  WANT_ANSWERED=2.3%
+    wants: voiced/run=68.86  ended by a blade of the family asked for=13.3%  by another purchase=14.9%  lapsed=54.6%
+    siege warning days: 40.9% of visits  conversion there=21.2%  RESISTED=3.7% of the refusals there
+    commissions/run: offered=8.71  accepted=10.15  completed=7.42 (73.1% of accepted)
+    offers by kind: AMBITION=14.8%  FIRST_BLADE=4.6%  NOBLE=5.5%  ORDINARY=29.5%  REPLACEMENT=21.7%  SIEGE_PREP=23.9%
+    siege-prep blades wielded at their siege=37.4% (0.97 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.000/run)  drought days=4.26% (1.200/run)  runs with a stuck day=0.00%  stuck streak 2+ days=0.00%  3+ days=0.00%  5+ days=0.00%  longest=0
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 94.4% p=30 m=29 a=0 c=192 f=221/171 r=237/174; #2 n=10000 85.8% p=22 m=29 a=0 c=242 f=279/231 r=288/233; #3 n=9999 55.8% p=15 m=29 a=0 c=257 f=294/288 r=299/290; #4 n=9886 16.9% p=12 m=29 a=0 c=256 f=293/352 r=297/355; #5 n=9030 2.1% p=11 m=29 a=1 c=248 f=286/416 r=290/419; #6 n=5981 0.0% p=10 m=29 a=1 c=247 f=284/475 r=288/477; #7 n=1384 0.0% p=11 m=29 a=1 c=252 f=290/530 r=293/533; #8 n=32 0.0% p=15 m=29 a=0 c=266 f=305/595 r=308/597; #9 n=1 0.0% p=14 m=29 a=0 c=283 f=312/667 r=336/672
+  depth (visitors=first relic=first): mornings with a visitor/run=19.62 (70% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 1.64  pledge=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.96  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.18  collector=92% restore=8%  blocked: any=92% restore=92%
+    crooked_merchant      offers/run= 2.59  buy=89% inspect=8% pass=11%  blocked: any=11% buy=11% inspect=3%
+    debt_repaid           offers/run= 0.93  collect=100%  blocked: any=0%
+    festival_contract     offers/run= 3.43  stall=95% watch=5%  blocked: any=5% stall=5%
+    last_crate            offers/run= 4.41  crate=88% metal=8% pass=4%  blocked: any=12% crate=12% metal=4%
+    masters_afternoon     offers/run= 1.96  study=100%  blocked: any=2% lesson=2%
+    smiths_wager          offers/run= 2.51  order=4% pass=1% wager=95%  blocked: any=15% order=11% wager=5%
+    dead content: never offered=none  never chosen=[blade_for_the_wall/patron, masters_afternoon/lesson, debt_repaid/forgive, debt_repaid/speak]  never open=none
+    relics: offers/run=5.01 declined/run=0.00 replaced/run=2.02  chosen/run: ashen_bellows=1.53 collectors_seal=0.99 salvagers_crucible=1.52 tempering_ledger=0.98
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=4.59 (materials 1.23)  ledger forges=63.32 (+268.07 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=19 18.7/20; ashen_bellows+collectors_seal+salvagers_crucible n=189 21.1/20; ashen_bellows+collectors_seal+tempering_ledger n=4570 28.4/30; ashen_bellows+salvagers_crucible n=13 18.1/20; ashen_bellows+salvagers_crucible+tempering_ledger n=532 26.9/30; ashen_bellows+tempering_ledger n=21 17.9/20; collectors_seal n=1 10.0/10; collectors_seal+salvagers_crucible n=16 19.1/20; collectors_seal+salvagers_crucible+tempering_ledger n=4610 28.5/30; collectors_seal+tempering_ledger n=12 19.6/20; salvagers_crucible+tempering_ledger n=17 18.5/20
+    sieges by trait (fought, won): long_assault n=16202 31%  many_breaches n=16111 38%  plain n=24000 60%
+    wall pledge/run: pledged=1.64 delivered=1.64 lapsed=0.00 dead=0.02 retired=0.00 parted=0.09 returned=0.93 collect=0.93 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=2.39 won=2.17 lost=0.18
+    gold through visitors/run: in=416.62 out=720.72  watch bounties=9.86 (max in a run 120)  rewards of visitors' orders=102.34
+
+Policy EXPERT (new account) over 10000 runs
+  survival days: p10=45 median=50 mean=47.6 p90=50 max=60 ended=10000
+  forged/run: 194.7  sold/run: 106.3  sell rate: 55%
+  gold earned/run: median=12686  final gold median=373  gold on hand median=98  materials on hand median=21
+  rarity: COMMON=2% UNCOMMON=19% RARE=41% EPIC=23% LEGENDARY=16%
+  hero deaths/run: 0.8  retirements/run: 12.0  sieges survived/run: 6.1  lost/run: 3.4  faction win proportion: 36%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=22.2  GOOD_ENOUGH=6.8  GREAT_FIT=41.8  NOT_BETTER=132.2  NOT_SUITED=1.5  PRIZED=0.0  RESISTED=0.5  STORIED=1.9  TASTE_MATCH=0.6  TOO_EXPENSIVE=61.0  UNDECIDED=1.3  WORN_OUT=13.3
+  elites slain/run: 15.3  weapons broken/run: 0.1  warlord sieges/run: 0.0  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.23  inherited=0.11  resold=0.01  seized=0.24  lost=0.09  (taken by a merchant=0.04)  artifact recovery: 52%
+  affix weapons/run: bloodbound=2.6  brittle=2.6  cursed=2.6  flaming=5.6  frostbound=91.0  giant_slayer=22.7  guardians=22.7  heavy=2.6  keen=22.7  lucky=22.8  reinforced=22.8  resonant=23.3  sentient=2.6  stormcharged=3.6  swift=22.7  undead_bane=26.8  unstable=2.6  vampiric=4.9
+  hero-days/run: 611.8  activity shares: AMBITION_COLLECTOR=0.4%  AMBITION_DEFENDER=2.1%  AMBITION_FORTUNE=2.3%  AMBITION_SLAYER=1.3%  EXPEDITION=40.6%  GUILD=10.6%  PATROL=28.3%  REST=8.5%  REST_WOUNDED=5.9%
+  level-ups/run: 98.5  mentorings/run: 21.9  guilds/run: 3.0  runs with a guild: 100%
+  wall: routs/run=0.42  champions fallen/run=0.023  runs with a champion fallen=2.2%
+  guild patronage/run: taken=2.08  purchases with a stipend=12.90  stipend gold=386.9 (3.1% of gold earned)
+  legacy points/run: median=35  discoveries/run: 18.9  signature discoveries/run: 0.0  rumours/run: 4.00  clue rungs/run: 25.24  signatures first found/run: 0.007 (runs with one 0.7%)
+  bot per run: quick_forges=194.66  request_forges=8.86  want_forges=12.07  siege_forges=76.13  commissions_completed=19.69  commissions_expired=0.47  signature_tries=0.04  signature_hits=0.01  siege_donations=11.54  scarce_loot=70.47  lucky_loot=29.59  lucky_scarce_loot=29.01  final_reputation=177.63  max_loyalty=18.03
+  customers: living heroes/day=12.86  served/day=5.95  at cap=93.8% of days  two or fewer=0.3%  purchases/day=1.82  sales/day=2.23  conversion=30.6%
+    served per day: 0:0.0%  1:0.1%  2:0.2%  3:0.7%  4:1.7%  5:3.3%  6:92.1%  7:0.0%  8:0.1%  9:1.7%
+    turned away (willing, shop full): 3.27 a day, someone on 87.7% of days
+    conversion by day band: d1-5=42.8%  d6-10=35.5%  d11-20=32.0%  d21+=27.3%   refusal mix (of visits): COUNTERS_THREAT=7.8%  GOOD_ENOUGH=2.4%  GREAT_FIT=14.8%  NOT_BETTER=46.7%  NOT_SUITED=0.5%  PRIZED=0.0%  RESISTED=0.2%  STORIED=0.7%  TASTE_MATCH=0.2%  TOO_EXPENSIVE=21.5%  UNDECIDED=0.5%  WORN_OUT=4.7%
+    visit rate by scan position: 1:46.1%  2:47.7%  3:47.6%  4:47.5%  5:47.3%  6:46.8%  7:46.6%  8:46.4%  9:46.1%  10:46.0%  11:45.7%  12:45.9%  13:42.8%  14:41.0%  15:38.6%  16:36.5%
+    heroes ever/run=26.46  served/run=26.02  never served=1.6%  served by day 5=11.40  by day 10=12.44  runs with 9 by day 5=99.8%  with 13 in a run=100.0%
+    wait to first visit (days): median=1 p90=3 max=16  newcomers only: median=0 p90=2
+    classes: served/day=3.87 of alive/day=4.86  served by day 5=4.93, by day 10=4.99  bought by day 10=4.96  runs with 4+ classes bought by day 10=100.0%
+    return-visit share=90.8%  days between visits=2.07  visits per hero-day: starting cast=0.47 later arrivals=0.44
+    served share among heroes alive 10+ days: max mean=0.65 min mean=0.28 max/min median=2.27 p90=3.18  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=79  10=87  15=108   cannot pay for the cheapest listed blade: 1=51.0%  5=41.2%  10=32.0%  15=25.1%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=51.9% (pairs/day=0.85, worst=4)  full name repeats in 0.0% of runs
+    expeditions/run: won=195.54 lost=59.71 fatal=0.83  deaths per hero-day=0.0014  sell-out days=0.0%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=18.4%  d4-5=47.2%  d6+=53.3%  lines/day=3.05  by cue (of lines): BECAME_REGULAR=7.5%  BLADE_WORN=5.9%  FIRST_BLADE=11.9%  FIRST_VISIT=6.7%  HELD_THE_WALL=5.9%  KEPT_THE_VOW=3.2%  MENTORS_BLADE=1.4%  REGULAR_RETURNS=22.6%  SLEW_AN_ELITE=4.0%  STILL_CARRIES=19.7%  WAITED_YESTERDAY=6.9%  WANT_ANSWERED=4.5%
+    wants: voiced/run=118.45  ended by a blade of the family asked for=31.7%  by another purchase=11.0%  lapsed=44.0%
+    siege warning days: 40.4% of visits  conversion there=31.1%  RESISTED=0.7% of the refusals there
+    commissions/run: offered=15.02  accepted=20.16  completed=19.69 (97.7% of accepted)
+    offers by kind: AMBITION=9.4%  FIRST_BLADE=4.5%  NOBLE=5.4%  ORDINARY=35.6%  REPLACEMENT=29.2%  SIEGE_PREP=15.8%
+    siege-prep blades wielded at their siege=49.0% (2.27 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.001/run)  drought days=2.87% (1.366/run)  runs with a stuck day=0.08%  stuck streak 2+ days=0.00%  3+ days=0.00%  5+ days=0.00%  longest=1
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 99.8% p=30 m=29 a=10 c=241 f=280/171 r=307/173; #2 n=10000 100.0% p=18 m=29 a=11 c=336 f=386/225 r=406/227; #3 n=10000 100.0% p=7 m=29 a=11 c=387 f=437/277 r=451/280; #4 n=10000 99.8% p=2 m=29 a=13 c=416 f=469/338 r=480/342; #5 n=10000 97.8% p=1 m=29 a=20 c=428 f=490/404 r=500/408; #6 n=10000 76.6% p=1 m=29 a=28 c=430 f=502/471 r=511/475; #7 n=9995 31.4% p=1 m=29 a=30 c=428 f=502/538 r=510/542; #8 n=9966 2.8% p=1 m=29 a=30 c=422 f=496/606 r=504/610; #9 n=9310 0.0% p=2 m=29 a=30 c=417 f=491/671 r=498/674; #10 n=5266 0.0% p=3 m=29 a=30 c=414 f=488/712 r=495/715; #11 n=582 0.0% p=4 m=29 a=30 c=414 f=489/762 r=495/765; #12 n=1 0.0% p=6 m=29 a=30 c=449 f=508/809 r=512/807
+  depth (visitors=adaptive relic=adaptive): mornings with a visitor/run=25.72 (54% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 3.25  patron=7% pledge=93%  blocked: any=0%
+    collectors_offer      offers/run= 2.00  pass=81% sell=19%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.20  collector=5% pass=1% restore=94%  blocked: any=68% restore=68%
+    crooked_merchant      offers/run= 3.00  buy=22% inspect=89% pass=78%  blocked: any=4% buy=4% inspect=1%
+    debt_repaid           offers/run= 2.29  collect=3% forgive=96% speak=2%  blocked: any=0%
+    festival_contract     offers/run= 4.00  stall=22% watch=78%  blocked: any=2% stall=2%
+    last_crate            offers/run= 5.98  crate=89% pass=11%  blocked: any=6% crate=6% metal=1%
+    masters_afternoon     offers/run= 2.00  lesson=0% pass=83% study=16%  blocked: any=3% lesson=3%
+    smiths_wager          offers/run= 3.00  order=67% pass=1% wager=32%  blocked: any=3% order=1% wager=2%
+    dead content: never offered=none  never chosen=[last_crate/metal]  never open=none
+    relics: offers/run=3.94 declined/run=0.94 replaced/run=0.00  chosen/run: ashen_bellows=0.00 collectors_seal=1.00 salvagers_crucible=1.00 tempering_ledger=1.00
+    relic triggers/run: bellows forges=0.01  crucible returns=35.56  seals=22.84 (materials 7.28)  ledger forges=60.91 (+170.80 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+salvagers_crucible+tempering_ledger n=2 47.5/40; collectors_seal+salvagers_crucible+tempering_ledger n=9998 47.6/50
+    sieges by trait (fought, won): long_assault n=29958 57%  many_breaches n=29609 63%  plain n=35553 71%
+    wall pledge/run: pledged=3.03 delivered=3.03 lapsed=0.00 dead=0.01 retired=0.10 parted=0.08 returned=2.29 collect=0.06 forgive=2.19 speak=0.04 pass=0.00   wagers/run: taken=0.97 won=0.94 lost=0.03
+    gold through visitors/run: in=87.89 out=624.66  watch bounties=185.58 (max in a run 240)  rewards of visitors' orders=438.41
+
+Policy EXPERT_ACTIVE (new account) over 10000 runs
+  survival days: p10=45 median=50 mean=48.5 p90=55 max=60 ended=10000
+  forged/run: 186.6  sold/run: 115.2  sell rate: 62%
+  gold earned/run: median=13851  final gold median=487  gold on hand median=61  materials on hand median=17
+  rarity: COMMON=1% UNCOMMON=12% RARE=41% EPIC=25% LEGENDARY=21%
+  hero deaths/run: 1.0  retirements/run: 11.9  sieges survived/run: 6.2  lost/run: 3.5  faction win proportion: 36%
+  hard-lock days total: 49  runs with any hard-lock: 19
+  shop visits/run: COUNTERS_THREAT=24.7  EMPTY_SHELVES=0.3  GOOD_ENOUGH=7.3  GREAT_FIT=54.7  NOT_BETTER=161.4  NOT_SUITED=1.7  PRIZED=0.0  RESISTED=1.0  STORIED=1.7  TASTE_MATCH=0.8  TOO_EXPENSIVE=103.6  UNDECIDED=2.0  WORN_OUT=8.9
+  elites slain/run: 14.9  weapons broken/run: 0.1  warlord sieges/run: 0.0  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.27  inherited=0.14  resold=0.01  seized=0.27  lost=0.11  (taken by a merchant=0.04)  artifact recovery: 52%
+  tools (share of runs / mean level / first day): bellows=100%/1.9/6.1  display_case=100%/1.0/3.7  signboard=100%/2.0/2.3  whetstone=100%/2.0/1.0
+  affix weapons/run: bloodbound=2.5  brittle=2.5  cursed=2.4  flaming=8.4  frostbound=91.1  giant_slayer=25.9  guardians=25.8  heavy=2.5  keen=25.9  lucky=25.9  reinforced=25.9  resonant=26.6  sentient=2.5  stormcharged=5.0  swift=25.8  undead_bane=26.6  unstable=2.5  vampiric=5.8
+  hero-days/run: 623.0  activity shares: AMBITION_COLLECTOR=0.4%  AMBITION_DEFENDER=2.1%  AMBITION_FORTUNE=2.5%  AMBITION_SLAYER=1.3%  EXPEDITION=40.2%  GUILD=10.5%  PATROL=28.1%  REST=8.5%  REST_WOUNDED=6.5%
+  level-ups/run: 98.4  mentorings/run: 22.2  guilds/run: 2.9  runs with a guild: 100%
+  wall: routs/run=0.30  champions fallen/run=0.020  runs with a champion fallen=1.9%
+  guild patronage/run: taken=2.12  purchases with a stipend=15.31  stipend gold=459.2 (3.3% of gold earned)
+  legacy points/run: median=35  discoveries/run: 22.8  signature discoveries/run: 0.0  rumours/run: 4.00  clue rungs/run: 26.82  signatures first found/run: 0.025 (runs with one 2.5%)
+  bot per run: quick_forges=186.58  request_forges=15.31  want_forges=17.52  siege_forges=66.22  commissions_completed=17.06  commissions_expired=2.29  signature_tries=0.12  signature_hits=0.03  siege_donations=0.29  scarce_loot=68.99  lucky_loot=27.90  lucky_scarce_loot=27.22  final_reputation=186.19  max_loyalty=18.20
+  customers: living heroes/day=12.84  served/day=7.59  at cap=82.4% of days  two or fewer=0.3%  purchases/day=2.02  sales/day=2.37  conversion=26.7%
+    served per day: 0:0.0%  1:0.0%  2:0.2%  3:0.7%  4:1.7%  5:3.2%  6:6.2%  7:19.6%  8:63.2%  9:0.6%  10:1.6%  11:2.9%
+    turned away (willing, shop full): 1.70 a day, someone on 67.4% of days
+    conversion by day band: d1-5=40.3%  d6-10=33.1%  d11-20=28.0%  d21+=23.5%   refusal mix (of visits): COUNTERS_THREAT=6.7%  EMPTY_SHELVES=0.1%  GOOD_ENOUGH=2.0%  GREAT_FIT=14.9%  NOT_BETTER=43.8%  NOT_SUITED=0.5%  PRIZED=0.0%  RESISTED=0.3%  STORIED=0.5%  TASTE_MATCH=0.2%  TOO_EXPENSIVE=28.1%  UNDECIDED=0.5%  WORN_OUT=2.4%
+    visit rate by scan position: 1:58.5%  2:60.4%  3:60.4%  4:60.2%  5:60.1%  6:59.7%  7:59.5%  8:59.2%  9:59.0%  10:58.6%  11:58.4%  12:58.6%  13:56.2%  14:55.0%  15:52.7%  16:52.2%
+    heroes ever/run=26.48  served/run=26.21  never served=1.0%  served by day 5=11.47  by day 10=12.47  runs with 9 by day 5=99.7%  with 13 in a run=100.0%
+    wait to first visit (days): median=0 p90=3 max=16  newcomers only: median=0 p90=2
+    classes: served/day=4.20 of alive/day=4.86  served by day 5=4.94, by day 10=5.00  bought by day 10=4.96  runs with 4+ classes bought by day 10=100.0%
+    return-visit share=92.9%  days between visits=1.63  visits per hero-day: starting cast=0.59 later arrivals=0.59
+    served share among heroes alive 10+ days: max mean=0.78 min mean=0.39 max/min median=1.99 p90=2.66  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=77  10=79  15=88   cannot pay for the cheapest listed blade: 1=52.3%  5=40.0%  10=28.2%  15=23.9%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=52.1% (pairs/day=0.86, worst=4)  full name repeats in 0.0% of runs
+    expeditions/run: won=193.75 lost=63.83 fatal=0.95  deaths per hero-day=0.0015  sell-out days=0.3%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=17.5%  d4-5=44.6%  d6+=43.8%  lines/day=3.24  by cue (of lines): BECAME_REGULAR=7.3%  BLADE_WORN=3.5%  FIRST_BLADE=11.7%  FIRST_VISIT=6.0%  HELD_THE_WALL=5.6%  KEPT_THE_VOW=3.0%  MENTORS_BLADE=1.2%  REGULAR_RETURNS=25.2%  SLEW_AN_ELITE=4.0%  STILL_CARRIES=23.5%  WAITED_YESTERDAY=3.5%  WANT_ANSWERED=5.4%
+    wants: voiced/run=138.53  ended by a blade of the family asked for=32.4%  by another purchase=12.9%  lapsed=41.9%
+    siege warning days: 40.9% of visits  conversion there=26.1%  RESISTED=0.9% of the refusals there
+    commissions/run: offered=15.02  accepted=19.36  completed=17.06 (88.1% of accepted)
+    offers by kind: AMBITION=9.7%  FIRST_BLADE=4.3%  NOBLE=5.4%  ORDINARY=38.2%  REPLACEMENT=24.8%  SIEGE_PREP=17.6%
+    siege-prep blades wielded at their siege=39.6% (1.77 collected by their siege day a run)
+    recovery (morning state): stuck days=0.02% of days (0.011/run)  drought days=5.40% (2.617/run)  runs with a stuck day=0.67%  stuck streak 2+ days=0.13%  3+ days=0.10%  5+ days=0.03%  longest=7
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 99.5% p=30 m=29 a=22 c=221 f=272/171 r=291/174; #2 n=10000 99.6% p=20 m=29 a=30 c=303 f=376/227 r=396/229; #3 n=10000 99.7% p=8 m=29 a=30 c=365 f=440/279 r=455/282; #4 n=9997 99.2% p=3 m=29 a=30 c=404 f=478/340 r=491/343; #5 n=9994 96.9% p=2 m=29 a=30 c=424 f=499/405 r=509/408; #6 n=9986 80.2% p=1 m=29 a=30 c=435 f=509/471 r=519/475; #7 n=9960 39.6% p=1 m=29 a=30 c=440 f=515/539 r=524/543; #8 n=9901 6.4% p=1 m=29 a=30 c=439 f=514/606 r=522/610; #9 n=9381 0.1% p=2 m=29 a=30 c=436 f=511/671 r=518/675; #10 n=6259 0.0% p=3 m=29 a=30 c=435 f=509/717 r=516/721; #11 n=1510 0.0% p=4 m=29 a=30 c=440 f=515/764 r=520/767; #12 n=17 0.0% p=3 m=29 a=30 c=445 f=515/815 r=525/819
+  depth (visitors=adaptive relic=adaptive): mornings with a visitor/run=24.48 (50% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 2.60  patron=8% pledge=92%  blocked: any=0%
+    collectors_offer      offers/run= 2.00  pass=80% sell=20%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.18  collector=3% pass=1% restore=96%  blocked: any=58% restore=58%
+    crooked_merchant      offers/run= 3.00  buy=20% inspect=84% pass=80%  blocked: any=6% buy=6% inspect=2%
+    debt_repaid           offers/run= 1.74  collect=3% forgive=96% speak=1%  blocked: any=0%
+    festival_contract     offers/run= 4.00  pass=0% stall=67% watch=33%  blocked: any=2% stall=2%
+    last_crate            offers/run= 5.98  crate=87% pass=13%  blocked: any=8% crate=8% metal=2%
+    masters_afternoon     offers/run= 2.00  lesson=0% pass=85% study=15%  blocked: any=9% lesson=4% study=6%
+    smiths_wager          offers/run= 3.00  order=63% pass=3% wager=33%  blocked: any=11% order=9% wager=3%
+    dead content: never offered=none  never chosen=[last_crate/metal]  never open=none
+    relics: offers/run=3.95 declined/run=0.92 replaced/run=0.03  chosen/run: ashen_bellows=0.03 collectors_seal=1.00 salvagers_crucible=1.00 tempering_ledger=1.00
+    relic triggers/run: bellows forges=0.87  crucible returns=43.76  seals=21.01 (materials 6.68)  ledger forges=59.92 (+172.08 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+salvagers_crucible+tempering_ledger n=297 48.8/50; collectors_seal+salvagers_crucible+tempering_ledger n=9700 48.5/50; salvagers_crucible+tempering_ledger n=3 18.3/20
+    sieges by trait (fought, won): long_assault n=30622 58%  many_breaches n=30370 63%  plain n=36013 71%
+    wall pledge/run: pledged=2.40 delivered=2.34 lapsed=0.06 dead=0.01 retired=0.08 parted=0.08 returned=1.74 collect=0.04 forgive=1.67 speak=0.02 pass=0.00   wagers/run: taken=1.00 won=0.95 lost=0.05
+    gold through visitors/run: in=86.49 out=640.95  watch bounties=74.03 (max in a run 240)  rewards of visitors' orders=375.93
+
+Policy SPENDTHRIFT (new account) over 10000 runs
+  survival days: p10=30 median=35 mean=34.8 p90=40 max=50 ended=10000
+  forged/run: 77.6  sold/run: 67.4  sell rate: 87%
+  gold earned/run: median=7914  final gold median=168  gold on hand median=4  materials on hand median=6
+  rarity: COMMON=2% UNCOMMON=12% RARE=33% EPIC=29% LEGENDARY=24%
+  hero deaths/run: 1.2  retirements/run: 5.3  sieges survived/run: 3.7  lost/run: 3.2  faction win proportion: 47%
+  hard-lock days total: 79  runs with any hard-lock: 56
+  shop visits/run: COUNTERS_THREAT=8.8  EMPTY_SHELVES=0.3  GOOD_ENOUGH=8.1  GREAT_FIT=27.5  NOT_BETTER=137.8  NOT_SUITED=1.5  PRIZED=0.0  RESISTED=2.2  STORIED=1.0  TASTE_MATCH=1.0  TOO_EXPENSIVE=60.7  UNDECIDED=1.0  WORN_OUT=8.3
+  elites slain/run: 9.1  weapons broken/run: 0.1  warlord sieges/run: 0.1  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.34  inherited=0.15  resold=0.02  seized=0.33  lost=0.13  (taken by a merchant=0.06)  artifact recovery: 53%
+  tools (share of runs / mean level / first day): bellows=100%/1.4/4.1  display_case=100%/1.0/1.0  signboard=100%/2.0/2.8  whetstone=100%/2.0/3.7
+  affix weapons/run: bloodbound=1.0  brittle=1.0  cursed=1.0  flaming=9.0  frostbound=14.7  giant_slayer=11.9  guardians=12.0  heavy=1.0  keen=12.0  lucky=11.9  reinforced=12.0  resonant=3.5  sentient=1.0  stormcharged=9.0  swift=12.0  undead_bane=17.0  unstable=1.0  vampiric=13.9
+  hero-days/run: 436.2  activity shares: AMBITION_COLLECTOR=0.6%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=2.3%  AMBITION_SLAYER=1.5%  EXPEDITION=39.0%  GUILD=9.5%  PATROL=26.9%  REST=8.3%  REST_WOUNDED=10.0%
+  level-ups/run: 58.3  mentorings/run: 13.9  guilds/run: 2.3  runs with a guild: 100%
+  wall: routs/run=0.87  champions fallen/run=0.050  runs with a champion fallen=4.8%
+  guild patronage/run: taken=0.39  purchases with a stipend=2.02  stipend gold=60.6 (0.8% of gold earned)
+  legacy points/run: median=32  discoveries/run: 25.3  signature discoveries/run: 0.0  rumours/run: 3.98  clue rungs/run: 15.62  signatures first found/run: 0.024 (runs with one 2.4%)
+  bot per run: quick_forges=77.56  commissions_completed=12.59  commissions_expired=3.01  signature_tries=0.11  signature_hits=0.02  scarce_loot=37.63  lucky_loot=11.55  lucky_scarce_loot=11.34  final_reputation=100.86  max_loyalty=14.97
+  customers: living heroes/day=12.55  served/day=7.43  at cap=66.7% of days  two or fewer=0.5%  purchases/day=1.58  sales/day=1.94  conversion=21.2%
+    served per day: 0:0.0%  1:0.1%  2:0.4%  3:1.4%  4:3.1%  5:5.7%  6:10.3%  7:15.8%  8:54.9%  9:1.6%  10:2.3%  11:4.3%
+    turned away (willing, shop full): 1.02 a day, someone on 48.1% of days
+    conversion by day band: d1-5=36.0%  d6-10=27.0%  d11-20=20.8%  d21+=16.1%   refusal mix (of visits): COUNTERS_THREAT=3.4%  EMPTY_SHELVES=0.1%  GOOD_ENOUGH=3.2%  GREAT_FIT=10.6%  NOT_BETTER=53.3%  NOT_SUITED=0.6%  PRIZED=0.0%  RESISTED=0.8%  STORIED=0.4%  TASTE_MATCH=0.4%  TOO_EXPENSIVE=23.5%  UNDECIDED=0.4%  WORN_OUT=3.2%
+    visit rate by scan position: 1:57.3%  2:60.2%  3:60.3%  4:60.3%  5:60.0%  6:59.7%  7:59.7%  8:59.6%  9:59.4%  10:59.0%  11:58.8%  12:58.3%  13:57.3%  14:56.1%  15:54.1%  16:52.4%
+    heroes ever/run=19.42  served/run=19.21  never served=1.1%  served by day 5=11.58  by day 10=12.49  runs with 9 by day 5=99.9%  with 13 in a run=98.6%
+    wait to first visit (days): median=1 p90=3 max=15  newcomers only: median=0 p90=2
+    classes: served/day=4.18 of alive/day=4.91  served by day 5=4.94, by day 10=5.00  bought by day 10=4.92  runs with 4+ classes bought by day 10=99.8%
+    return-visit share=92.6%  days between visits=1.61  visits per hero-day: starting cast=0.59 later arrivals=0.59
+    served share among heroes alive 10+ days: max mean=0.78 min mean=0.40 max/min median=1.90 p90=2.53  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=81  10=82  15=94   cannot pay for the cheapest listed blade: 1=45.7%  5=48.7%  10=31.1%  15=21.7%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=42.1% (pairs/day=0.61, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=113.75 lost=61.53 fatal=1.15  deaths per hero-day=0.0026  sell-out days=0.4%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=17.3%  d4-5=38.6%  d6+=41.6%  lines/day=2.97  by cue (of lines): BECAME_REGULAR=6.9%  BLADE_WORN=9.4%  FIRST_BLADE=11.8%  FIRST_VISIT=4.7%  HELD_THE_WALL=5.4%  KEPT_THE_VOW=2.6%  MENTORS_BLADE=1.5%  REGULAR_RETURNS=23.5%  SLEW_AN_ELITE=4.0%  STILL_CARRIES=25.7%  WAITED_YESTERDAY=2.2%  WANT_ANSWERED=2.4%
+    wants: voiced/run=95.31  ended by a blade of the family asked for=16.1%  by another purchase=18.8%  lapsed=50.2%
+    siege warning days: 41.2% of visits  conversion there=19.9%  RESISTED=2.6% of the refusals there
+    commissions/run: offered=10.70  accepted=15.70  completed=12.59 (80.2% of accepted)
+    offers by kind: AMBITION=12.3%  FIRST_BLADE=5.6%  NOBLE=5.4%  ORDINARY=29.1%  REPLACEMENT=23.9%  SIEGE_PREP=23.7%
+    siege-prep blades wielded at their siege=44.5% (1.42 collected by their siege day a run)
+    recovery (morning state): stuck days=0.09% of days (0.030/run)  drought days=4.65% (1.616/run)  runs with a stuck day=2.37%  stuck streak 2+ days=0.46%  3+ days=0.07%  5+ days=0.01%  longest=6
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 92.7% p=31 m=29 a=0 c=188 f=217/172 r=236/175; #2 n=10000 92.0% p=24 m=29 a=0 c=267 f=303/233 r=321/234; #3 n=10000 87.8% p=14 m=29 a=0 c=315 f=351/287 r=363/290; #4 n=9952 66.4% p=8 m=29 a=0 c=334 f=370/347 r=378/350; #5 n=9726 26.7% p=6 m=29 a=0 c=334 f=371/410 r=377/413; #6 n=9176 6.6% p=5 m=29 a=0 c=325 f=362/475 r=369/478; #7 n=7411 0.5% p=5 m=29 a=0 c=321 f=357/535 r=363/539; #8 n=3038 0.0% p=6 m=29 a=0 c=322 f=359/589 r=364/592; #9 n=232 0.0% p=7 m=29 a=0 c=337 f=374/643 r=378/647; #10 n=2 0.0% p=8 m=29 a=0 c=327 f=367/705 r=367/703
+  depth (visitors=cash relic=first): mornings with a visitor/run=21.87 (63% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 2.79  patron=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.99  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.16  collector=100%  blocked: any=77% restore=77%
+    crooked_merchant      offers/run= 2.89  pass=100%  blocked: any=17% buy=17% inspect=8%
+    festival_contract     offers/run= 3.84  pass=8% stall=92%  blocked: any=8% stall=8%
+    last_crate            offers/run= 5.37  pass=100%  blocked: any=20% crate=20% metal=8%
+    masters_afternoon     offers/run= 1.99  pass=100%  blocked: any=9% lesson=9%
+    smiths_wager          offers/run= 2.84  order=89% pass=11%  blocked: any=20% order=11% wager=10%
+    dead content: never offered=[debt_repaid]  never chosen=[last_crate/crate, last_crate/metal, blade_for_the_wall/pledge, masters_afternoon/study, masters_afternoon/lesson, cracked_family_blade/restore, crooked_merchant/buy, crooked_merchant/inspect, smiths_wager/wager, festival_contract/watch]  never open=none
+    relics: offers/run=2.97 declined/run=0.00 replaced/run=0.00  chosen/run: ashen_bellows=0.74 collectors_seal=0.74 salvagers_crucible=0.75 tempering_ledger=0.74
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=9.61 (materials 2.96)  ledger forges=31.87 (+140.27 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=47 18.7/20; ashen_bellows+collectors_seal+salvagers_crucible n=2481 34.7/35; ashen_bellows+collectors_seal+tempering_ledger n=2370 35.3/35; ashen_bellows+salvagers_crucible n=63 19.0/20; ashen_bellows+salvagers_crucible+tempering_ledger n=2429 35.5/35; ashen_bellows+tempering_ledger n=30 19.7/20; collectors_seal+salvagers_crucible n=50 19.6/20; collectors_seal+salvagers_crucible+tempering_ledger n=2446 35.3/35; collectors_seal+tempering_ledger n=43 19.1/20; salvagers_crucible+tempering_ledger n=41 18.9/20
+    sieges by trait (fought, won): long_assault n=20861 44%  many_breaches n=20895 48%  plain n=27781 64%
+    wall pledge/run: pledged=0.00 delivered=0.00 lapsed=0.00 dead=0.00 retired=0.00 parted=0.00 returned=0.00 collect=0.00 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=0.00 won=0.00 lost=0.00
+    gold through visitors/run: in=431.59 out=87.92  watch bounties=0.00 (max in a run 0)  rewards of visitors' orders=765.26
+
+Policy NOVICE (new account) over 10000 runs
+  survival days: p10=20 median=30 mean=28.8 p90=35 max=45 ended=10000
+  forged/run: 60.3  sold/run: 42.4  sell rate: 70%
+  gold earned/run: median=4371  final gold median=344  gold on hand median=387  materials on hand median=13
+  rarity: COMMON=3% UNCOMMON=18% RARE=43% EPIC=24% LEGENDARY=11%
+  hero deaths/run: 1.4  retirements/run: 2.6  sieges survived/run: 2.5  lost/run: 3.3  faction win proportion: 57%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=5.6  EMPTY_SHELVES=0.4  GOOD_ENOUGH=7.8  GREAT_FIT=20.2  NOT_BETTER=70.9  NOT_SUITED=1.0  PRIZED=0.0  RESISTED=1.2  STORIED=0.5  TASTE_MATCH=0.7  TOO_EXPENSIVE=59.6  UNDECIDED=0.6  WORN_OUT=5.8
+  elites slain/run: 6.2  weapons broken/run: 0.2  warlord sieges/run: 0.3  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.39  inherited=0.17  resold=0.02  seized=0.36  lost=0.14  (taken by a merchant=0.07)  artifact recovery: 54%
+  affix weapons/run: bloodbound=1.0  brittle=1.0  cursed=1.0  flaming=7.3  frostbound=9.0  giant_slayer=6.5  guardians=6.5  heavy=1.0  keen=6.4  lucky=6.5  reinforced=6.5  resonant=7.7  sentient=1.0  stormcharged=7.5  swift=6.5  undead_bane=8.3  unstable=1.0  vampiric=7.6
+  hero-days/run: 357.4  activity shares: AMBITION_COLLECTOR=0.8%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=2.3%  AMBITION_SLAYER=1.6%  EXPEDITION=37.2%  GUILD=8.4%  PATROL=26.3%  REST=8.3%  REST_WOUNDED=13.0%
+  level-ups/run: 39.5  mentorings/run: 9.7  guilds/run: 1.7  runs with a guild: 99%
+  wall: routs/run=0.90  champions fallen/run=0.091  runs with a champion fallen=8.6%
+  guild patronage/run: taken=0.24  purchases with a stipend=1.06  stipend gold=31.9 (0.7% of gold earned)
+  legacy points/run: median=31  discoveries/run: 20.4  signature discoveries/run: 0.1  rumours/run: 3.55  clue rungs/run: 12.39  signatures first found/run: 0.052 (runs with one 5.1%)
+  bot per run: quick_forges=60.31  commissions_completed=1.79  commissions_expired=0.00  signature_tries=0.37  signature_hits=0.05  scarce_loot=24.10  lucky_loot=5.87  lucky_scarce_loot=5.79  final_reputation=62.44  max_loyalty=10.00
+  customers: living heroes/day=12.40  served/day=6.04  at cap=82.7% of days  two or fewer=0.8%  purchases/day=1.41  sales/day=1.47  conversion=23.3%
+    served per day: 0:0.0%  1:0.2%  2:0.7%  3:1.9%  4:4.4%  5:7.7%  6:74.1%  7:0.8%  8:1.3%  9:8.9%
+    turned away (willing, shop full): 2.01 a day, someone on 69.9% of days
+    conversion by day band: d1-5=26.5%  d6-10=30.4%  d11-20=23.1%  d21+=18.3%   refusal mix (of visits): COUNTERS_THREAT=3.2%  EMPTY_SHELVES=0.2%  GOOD_ENOUGH=4.5%  GREAT_FIT=11.6%  NOT_BETTER=40.7%  NOT_SUITED=0.6%  PRIZED=0.0%  RESISTED=0.7%  STORIED=0.3%  TASTE_MATCH=0.4%  TOO_EXPENSIVE=34.2%  UNDECIDED=0.3%  WORN_OUT=3.3%
+    visit rate by scan position: 1:49.6%  2:49.4%  3:49.5%  4:49.6%  5:49.4%  6:48.9%  7:48.9%  8:48.7%  9:48.6%  10:48.6%  11:48.0%  12:47.8%  13:45.8%  14:44.0%  15:41.2%  16:39.0%
+    heroes ever/run=16.59  served/run=16.34  never served=1.5%  served by day 5=11.48  by day 10=12.50  runs with 9 by day 5=99.8%  with 13 in a run=93.6%
+    wait to first visit (days): median=1 p90=3 max=18  newcomers only: median=0 p90=2
+    classes: served/day=3.90 of alive/day=4.93  served by day 5=4.94, by day 10=5.00  bought by day 10=4.85  runs with 4+ classes bought by day 10=99.3%
+    return-visit share=90.6%  days between visits=1.95  visits per hero-day: starting cast=0.49 later arrivals=0.47
+    served share among heroes alive 10+ days: max mean=0.67 min mean=0.32 max/min median=2.08 p90=2.89  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=93  10=79  15=89   cannot pay for the cheapest listed blade: 1=67.4%  5=46.0%  10=39.1%  15=28.7%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=37.1% (pairs/day=0.51, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=75.87 lost=61.74 fatal=1.40  deaths per hero-day=0.0039  sell-out days=0.8%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=14.8%  d4-5=41.0%  d6+=45.5%  lines/day=2.57  by cue (of lines): BECAME_REGULAR=7.6%  BLADE_WORN=8.8%  FIRST_BLADE=17.9%  FIRST_VISIT=4.3%  HELD_THE_WALL=5.6%  KEPT_THE_VOW=2.4%  MENTORS_BLADE=0.8%  REGULAR_RETURNS=19.0%  SLEW_AN_ELITE=3.6%  STILL_CARRIES=22.2%  WAITED_YESTERDAY=5.6%  WANT_ANSWERED=2.2%
+    wants: voiced/run=70.17  ended by a blade of the family asked for=12.3%  by another purchase=15.0%  lapsed=56.1%
+    siege warning days: 41.0% of visits  conversion there=23.3%  RESISTED=2.2% of the refusals there
+    commissions/run: offered=7.85  accepted=1.79  completed=1.79 (100.0% of accepted)
+    offers by kind: AMBITION=16.2%  FIRST_BLADE=8.0%  NOBLE=5.6%  ORDINARY=27.6%  REPLACEMENT=19.7%  SIEGE_PREP=22.9%
+    siege-prep blades wielded at their siege=0.0% (0.00 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.001/run)  drought days=8.69% (2.506/run)  runs with a stuck day=0.02%  stuck streak 2+ days=0.01%  3+ days=0.01%  5+ days=0.00%  longest=4
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 76.7% p=34 m=29 a=0 c=160 f=189/177 r=210/179; #2 n=10000 76.0% p=30 m=29 a=0 c=235 f=272/241 r=286/243; #3 n=9996 61.8% p=23 m=29 a=0 c=271 f=307/299 r=316/302; #4 n=9616 31.7% p=18 m=29 a=0 c=284 f=321/359 r=327/362; #5 n=8365 6.0% p=13 m=29 a=0 c=284 f=321/418 r=326/421; #6 n=6317 0.4% p=9 m=29 a=0 c=278 f=315/475 r=320/478; #7 n=2979 0.0% p=8 m=29 a=0 c=283 f=319/529 r=324/532; #8 n=385 0.0% p=9 m=29 a=0 c=297 f=333/583 r=335/586; #9 n=3 0.0% p=3 m=29 a=0 c=329 f=373/641 r=375/645
+  depth (visitors=first relic=first): mornings with a visitor/run=19.82 (69% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 1.71  pledge=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.94  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.13  collector=64% restore=36%  blocked: any=64% restore=64%
+    crooked_merchant      offers/run= 2.60  buy=95% inspect=3% pass=5%  blocked: any=5% buy=5% inspect=1%
+    debt_repaid           offers/run= 1.02  collect=100%  blocked: any=0%
+    festival_contract     offers/run= 3.43  stall=98% watch=2%  blocked: any=2% stall=2%
+    last_crate            offers/run= 4.53  crate=93% metal=6% pass=2%  blocked: any=7% crate=7% metal=2%
+    masters_afternoon     offers/run= 1.95  study=100%  blocked: any=4% lesson=4%
+    smiths_wager          offers/run= 2.52  order=1% pass=1% wager=98%  blocked: any=32% order=31% wager=2%
+    dead content: never offered=none  never chosen=[blade_for_the_wall/patron, masters_afternoon/lesson, debt_repaid/forgive, debt_repaid/speak]  never open=none
+    relics: offers/run=5.11 declined/run=0.00 replaced/run=2.13  chosen/run: ashen_bellows=1.59 collectors_seal=0.97 salvagers_crucible=1.58 tempering_ledger=0.97
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=8.77 (materials 2.60)  ledger forges=31.77 (+138.53 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=30 17.8/20; ashen_bellows+collectors_seal+salvagers_crucible n=206 19.2/20; ashen_bellows+collectors_seal+tempering_ledger n=4667 29.6/30; ashen_bellows+salvagers_crucible n=42 17.7/20; ashen_bellows+salvagers_crucible+tempering_ledger n=244 20.6/20; ashen_bellows+tempering_ledger n=19 16.8/15; collectors_seal+salvagers_crucible n=37 18.2/20; collectors_seal+salvagers_crucible+tempering_ledger n=4687 29.4/30; collectors_seal+tempering_ledger n=32 17.7/20; salvagers_crucible n=1 10.0/10; salvagers_crucible+tempering_ledger n=34 17.9/20; tempering_ledger n=1 10.0/10
+    sieges by trait (fought, won): long_assault n=16619 33%  many_breaches n=16654 39%  plain n=24388 53%
+    wall pledge/run: pledged=1.71 delivered=1.71 lapsed=0.00 dead=0.02 retired=0.00 parted=0.09 returned=1.02 collect=1.02 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=2.47 won=2.34 lost=0.12
+    gold through visitors/run: in=490.09 out=785.66  watch bounties=5.07 (max in a run 120)  rewards of visitors' orders=100.41
+
+Policy BROKE_START (new account) over 10000 runs
+  survival days: p10=20 median=25 mean=23.2 p90=30 max=40 ended=10000
+  forged/run: 116.7  sold/run: 37.8  sell rate: 32%
+  gold earned/run: median=3450  final gold median=2019  gold on hand median=1525  materials on hand median=3
+  rarity: COMMON=15% UNCOMMON=43% RARE=35% EPIC=6% LEGENDARY=1%
+  hero deaths/run: 1.3  retirements/run: 1.1  sieges survived/run: 1.7  lost/run: 3.0  faction win proportion: 64%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=2.3  EMPTY_SHELVES=0.0  GOOD_ENOUGH=5.7  GREAT_FIT=20.2  NOT_BETTER=76.0  NOT_SUITED=1.1  PRIZED=0.0  RESISTED=1.6  STORIED=0.5  TASTE_MATCH=0.3  TOO_EXPENSIVE=29.8  UNDECIDED=1.2  WORN_OUT=2.5
+  elites slain/run: 4.5  weapons broken/run: 0.1  warlord sieges/run: 0.2  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.47  inherited=0.19  resold=0.03  seized=0.38  lost=0.15  (taken by a merchant=0.08)  artifact recovery: 57%
+  affix weapons/run: bloodbound=1.6  brittle=1.6  cursed=1.6  flaming=41.9  frostbound=2.6  giant_slayer=4.4  guardians=4.4  heavy=1.5  keen=4.5  lucky=4.4  reinforced=4.4  resonant=0.9  sentient=1.5  stormcharged=2.1  swift=4.4  undead_bane=1.4  unstable=1.6  vampiric=1.7
+  hero-days/run: 284.6  activity shares: AMBITION_COLLECTOR=0.9%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=2.1%  AMBITION_SLAYER=1.6%  EXPEDITION=37.6%  GUILD=8.0%  PATROL=25.1%  REST=8.0%  REST_WOUNDED=14.6%
+  level-ups/run: 27.8  mentorings/run: 6.9  guilds/run: 1.4  runs with a guild: 99%
+  wall: routs/run=1.36  champions fallen/run=0.185  runs with a champion fallen=16.9%
+  guild patronage/run: taken=0.14  purchases with a stipend=0.37  stipend gold=11.1 (0.3% of gold earned)
+  legacy points/run: median=29  discoveries/run: 10.6  signature discoveries/run: 0.0  rumours/run: 3.81  clue rungs/run: 15.81  signatures first found/run: 0.001 (runs with one 0.1%)
+  bot per run: quick_forges=116.74  commissions_completed=6.29  commissions_expired=3.10  signature_tries=0.01  signature_hits=0.00  scarce_loot=16.29  lucky_loot=2.41  lucky_scarce_loot=2.39  final_reputation=56.87  max_loyalty=10.38
+  customers: living heroes/day=12.27  served/day=6.09  at cap=82.7% of days  two or fewer=0.8%  purchases/day=1.36  sales/day=1.63  conversion=22.3%
+    served per day: 0:0.0%  1:0.1%  2:0.6%  3:1.9%  4:4.3%  5:7.8%  6:73.0%  7:0.8%  8:1.5%  9:10.0%
+    turned away (willing, shop full): 1.82 a day, someone on 68.9% of days
+    conversion by day band: d1-5=45.9%  d6-10=24.2%  d11-20=14.7%  d21+=11.6%   refusal mix (of visits): COUNTERS_THREAT=1.6%  EMPTY_SHELVES=0.0%  GOOD_ENOUGH=4.0%  GREAT_FIT=14.3%  NOT_BETTER=53.8%  NOT_SUITED=0.8%  PRIZED=0.0%  RESISTED=1.1%  STORIED=0.4%  TASTE_MATCH=0.2%  TOO_EXPENSIVE=21.1%  UNDECIDED=0.9%  WORN_OUT=1.8%
+    visit rate by scan position: 1:48.1%  2:50.4%  3:50.3%  4:50.7%  5:50.2%  6:49.7%  7:49.9%  8:49.8%  9:49.7%  10:49.5%  11:49.4%  12:49.1%  13:46.5%  14:45.2%  15:42.5%  16:41.5%
+    heroes ever/run=14.67  served/run=14.50  never served=1.2%  served by day 5=11.54  by day 10=12.49  runs with 9 by day 5=99.8%  with 13 in a run=86.9%
+    wait to first visit (days): median=1 p90=3 max=19  newcomers only: median=0 p90=2
+    classes: served/day=3.92 of alive/day=4.95  served by day 5=4.95, by day 10=5.00  bought by day 10=4.97  runs with 4+ classes bought by day 10=100.0%
+    return-visit share=89.7%  days between visits=1.90  visits per hero-day: starting cast=0.50 later arrivals=0.49
+    served share among heroes alive 10+ days: max mean=0.68 min mean=0.32 max/min median=2.05 p90=2.86  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=72  10=94  15=131   cannot pay for the cheapest listed blade: 1=37.4%  5=30.7%  10=22.3%  15=17.4%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=32.9% (pairs/day=0.44, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=55.23 lost=55.37 fatal=1.33  deaths per hero-day=0.0047  sell-out days=0.0%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=18.4%  d4-5=42.5%  d6+=43.1%  lines/day=2.46  by cue (of lines): BECAME_REGULAR=8.2%  BLADE_WORN=8.5%  FIRST_BLADE=14.3%  FIRST_VISIT=2.2%  HELD_THE_WALL=5.8%  KEPT_THE_VOW=2.5%  MENTORS_BLADE=0.5%  REGULAR_RETURNS=21.8%  SLEW_AN_ELITE=3.7%  STILL_CARRIES=24.2%  WAITED_YESTERDAY=5.8%  WANT_ANSWERED=2.4%
+    wants: voiced/run=56.05  ended by a blade of the family asked for=12.6%  by another purchase=13.8%  lapsed=54.5%
+    siege warning days: 41.0% of visits  conversion there=19.0%  RESISTED=3.4% of the refusals there
+    commissions/run: offered=7.01  accepted=9.62  completed=6.29 (65.4% of accepted)
+    offers by kind: AMBITION=18.0%  FIRST_BLADE=4.7%  NOBLE=5.5%  ORDINARY=29.0%  REPLACEMENT=19.2%  SIEGE_PREP=23.6%
+    siege-prep blades wielded at their siege=60.2% (0.26 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.000/run)  drought days=5.02% (1.165/run)  runs with a stuck day=0.00%  stuck streak 2+ days=0.00%  3+ days=0.00%  5+ days=0.00%  longest=0
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 90.0% p=31 m=29 a=0 c=179 f=208/172 r=218/175; #2 n=10000 59.4% p=25 m=29 a=0 c=204 f=240/234 r=245/236; #3 n=10000 15.1% p=22 m=29 a=0 c=204 f=241/298 r=244/300; #4 n=9348 1.2% p=23 m=29 a=0 c=199 f=235/365 r=238/368; #5 n=5713 0.1% p=19 m=29 a=0 c=202 f=239/421 r=242/424; #6 n=1265 0.0% p=16 m=29 a=0 c=215 f=252/473 r=254/476; #7 n=63 0.0% p=16 m=29 a=0 c=242 f=280/531 r=286/535; #8 n=1 0.0% p=14 m=29 a=0 c=363 f=413/601 r=396/605
+  depth (visitors=cash relic=first): mornings with a visitor/run=16.10 (69% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 1.08  patron=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.89  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.18  collector=100%  blocked: any=94% restore=94%
+    crooked_merchant      offers/run= 2.27  pass=100%  blocked: any=0%
+    festival_contract     offers/run= 2.97  pass=0% stall=100%  blocked: any=0% stall=0%
+    last_crate            offers/run= 3.62  pass=100%  blocked: any=1% crate=1% metal=0%
+    masters_afternoon     offers/run= 1.91  pass=100%  blocked: any=0% lesson=0%
+    smiths_wager          offers/run= 2.16  order=85% pass=15%  blocked: any=15% order=15% wager=0%
+    dead content: never offered=[debt_repaid]  never chosen=[last_crate/crate, last_crate/metal, blade_for_the_wall/pledge, masters_afternoon/study, masters_afternoon/lesson, cracked_family_blade/restore, crooked_merchant/buy, crooked_merchant/inspect, smiths_wager/wager, festival_contract/watch]  never open=none
+    relics: offers/run=2.57 declined/run=0.00 replaced/run=0.00  chosen/run: ashen_bellows=0.65 collectors_seal=0.64 salvagers_crucible=0.65 tempering_ledger=0.63
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=1.49 (materials 0.36)  ledger forges=38.82 (+166.45 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=786 19.2/20; ashen_bellows+collectors_seal+salvagers_crucible n=1331 26.0/25; ashen_bellows+collectors_seal+tempering_ledger n=1473 26.2/25; ashen_bellows+salvagers_crucible n=768 19.1/20; ashen_bellows+salvagers_crucible+tempering_ledger n=1453 26.2/25; ashen_bellows+tempering_ledger n=662 19.3/20; collectors_seal+salvagers_crucible n=777 19.2/20; collectors_seal+salvagers_crucible+tempering_ledger n=1456 26.2/25; collectors_seal+tempering_ledger n=609 19.3/20; salvagers_crucible+tempering_ledger n=685 19.3/20
+    sieges by trait (fought, won): long_assault n=12830 18%  many_breaches n=12721 24%  plain n=20839 54%
+    wall pledge/run: pledged=0.00 delivered=0.00 lapsed=0.00 dead=0.00 retired=0.00 parted=0.00 returned=0.00 collect=0.00 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=0.00 won=0.00 lost=0.00
+    gold through visitors/run: in=323.40 out=74.13  watch bounties=0.00 (max in a run 0)  rewards of visitors' orders=391.79
+
+Policy FREE_LISTINGS (new account) over 10000 runs
+  survival days: p10=20 median=25 mean=25.8 p90=30 max=40 ended=10000
+  forged/run: 96.3  sold/run: 38.6  sell rate: 40%
+  gold earned/run: median=815  final gold median=47  gold on hand median=52  materials on hand median=4
+  rarity: COMMON=13% UNCOMMON=40% RARE=36% EPIC=8% LEGENDARY=2%
+  hero deaths/run: 1.0  retirements/run: 2.2  sieges survived/run: 2.2  lost/run: 3.0  faction win proportion: 58%
+  hard-lock days total: 0  runs with any hard-lock: 0
+  shop visits/run: COUNTERS_THREAT=1.8  EMPTY_SHELVES=0.7  GOOD_ENOUGH=5.4  GREAT_FIT=21.5  NOT_BETTER=118.8  NOT_SUITED=1.0  PRIZED=0.0  RESISTED=1.9  STORIED=0.6  TASTE_MATCH=0.4  UNDECIDED=1.6  WORN_OUT=2.9
+  elites slain/run: 6.5  weapons broken/run: 0.1  warlord sieges/run: 0.0  warlords defeated/run: 0.0
+  weapon fates on death/run: recovered=0.33  inherited=0.19  resold=0.04  seized=0.29  lost=0.09  (taken by a merchant=0.06)  artifact recovery: 59%
+  affix weapons/run: bloodbound=1.3  brittle=1.3  cursed=1.3  flaming=33.8  frostbound=3.0  giant_slayer=4.2  guardians=4.2  heavy=1.3  keen=4.2  lucky=4.2  reinforced=4.3  resonant=1.4  sentient=1.3  stormcharged=2.8  swift=4.3  undead_bane=2.2  unstable=1.3  vampiric=2.2
+  hero-days/run: 319.6  activity shares: AMBITION_COLLECTOR=0.6%  AMBITION_DEFENDER=2.0%  AMBITION_FORTUNE=1.4%  AMBITION_SLAYER=1.4%  EXPEDITION=39.9%  GUILD=9.4%  PATROL=26.4%  REST=8.0%  REST_WOUNDED=11.0%
+  level-ups/run: 39.8  mentorings/run: 9.4  guilds/run: 1.7  runs with a guild: 100%
+  wall: routs/run=1.35  champions fallen/run=0.149  runs with a champion fallen=13.9%
+  guild patronage/run: taken=0.22  purchases with a stipend=0.00  stipend gold=0.0 (0.0% of gold earned)
+  legacy points/run: median=30  discoveries/run: 11.8  signature discoveries/run: 0.0  rumours/run: 3.92  clue rungs/run: 16.52  signatures first found/run: 0.001 (runs with one 0.1%)
+  bot per run: quick_forges=96.32  commissions_completed=5.99  commissions_expired=3.55  signature_tries=0.01  signature_hits=0.00  scarce_loot=24.31  lucky_loot=4.27  lucky_scarce_loot=4.25  final_reputation=63.83  max_loyalty=11.30
+  customers: living heroes/day=12.41  served/day=6.08  at cap=86.8% of days  two or fewer=0.6%  purchases/day=1.27  sales/day=1.50  conversion=20.8%
+    served per day: 0:0.0%  1:0.1%  2:0.4%  3:1.4%  4:3.3%  5:6.1%  6:78.6%  7:0.5%  8:1.0%  9:8.4%
+    turned away (willing, shop full): 2.18 a day, someone on 75.4% of days
+    conversion by day band: d1-5=57.4%  d6-10=16.7%  d11-20=11.3%  d21+=12.2%   refusal mix (of visits): COUNTERS_THREAT=1.1%  EMPTY_SHELVES=0.5%  GOOD_ENOUGH=3.4%  GREAT_FIT=13.7%  NOT_BETTER=75.8%  NOT_SUITED=0.7%  PRIZED=0.0%  RESISTED=1.2%  STORIED=0.4%  TASTE_MATCH=0.2%  UNDECIDED=1.0%  WORN_OUT=1.8%
+    visit rate by scan position: 1:47.5%  2:49.8%  3:50.0%  4:50.0%  5:49.8%  6:49.3%  7:49.2%  8:49.1%  9:49.0%  10:49.1%  11:48.8%  12:48.5%  13:45.6%  14:44.1%  15:41.7%  16:39.7%
+    heroes ever/run=15.73  served/run=15.50  never served=1.4%  served by day 5=11.64  by day 10=12.44  runs with 9 by day 5=99.9%  with 13 in a run=93.1%
+    wait to first visit (days): median=1 p90=3 max=15  newcomers only: median=0 p90=2
+    classes: served/day=3.93 of alive/day=4.95  served by day 5=4.95, by day 10=5.00  bought by day 10=4.98  runs with 4+ classes bought by day 10=100.0%
+    return-visit share=90.1%  days between visits=1.94  visits per hero-day: starting cast=0.49 later arrivals=0.47
+    served share among heroes alive 10+ days: max mean=0.67 min mean=0.32 max/min median=2.03 p90=2.80  runs with a hero never served=0.0%
+    hero gold at the start of day: 1=94  5=170  10=264  15=339   cannot pay for the cheapest listed blade: 1=0.0%  5=0.0%  10=0.0%  15=0.0%
+    names: first name shared=0.0% of days  surname shared=0.0%  face shared=35.5% (pairs/day=0.48, worst=3)  full name repeats in 0.0% of runs
+    expeditions/run: won=81.08 lost=50.07 fatal=0.99  deaths per hero-day=0.0031  sell-out days=3.5%  empty-shelf days=0.0%
+    recognition: visits with a line d1-3=18.5%  d4-5=46.4%  d6+=48.3%  lines/day=2.74  by cue (of lines): BECAME_REGULAR=5.8%  BLADE_WORN=10.2%  FIRST_BLADE=9.0%  FIRST_VISIT=2.7%  HELD_THE_WALL=5.5%  KEPT_THE_VOW=3.3%  MENTORS_BLADE=1.0%  REGULAR_RETURNS=23.5%  SLEW_AN_ELITE=5.9%  STILL_CARRIES=26.6%  WAITED_YESTERDAY=5.2%  WANT_ANSWERED=1.4%
+    wants: voiced/run=59.55  ended by a blade of the family asked for=8.2%  by another purchase=7.9%  lapsed=64.8%
+    siege warning days: 40.8% of visits  conversion there=16.6%  RESISTED=3.6% of the refusals there
+    commissions/run: offered=7.76  accepted=9.76  completed=5.99 (61.4% of accepted)
+    offers by kind: AMBITION=13.7%  FIRST_BLADE=3.1%  NOBLE=5.3%  ORDINARY=30.2%  REPLACEMENT=24.0%  SIEGE_PREP=23.7%
+    siege-prep blades wielded at their siege=57.8% (0.29 collected by their siege day a run)
+    recovery (morning state): stuck days=0.00% of days (0.001/run)  drought days=6.86% (1.767/run)  runs with a stuck day=0.07%  stuck streak 2+ days=0.01%  3+ days=0.00%  5+ days=0.00%  longest=2
+    sieges (n, held, pressure, militia, armory, champions, forecast def/raid, def/raid): #1 n=10000 98.8% p=26 m=29 a=0 c=209 f=238/165 r=242/168; #2 n=10000 81.8% p=15 m=29 a=0 c=220 f=256/221 r=260/223; #3 n=10000 31.3% p=9 m=29 a=0 c=220 f=257/281 r=260/284; #4 n=9894 3.2% p=10 m=29 a=0 c=214 f=251/349 r=254/352; #5 n=8217 0.2% p=11 m=29 a=0 c=212 f=249/414 r=252/417; #6 n=3149 0.0% p=11 m=29 a=0 c=221 f=258/471 r=261/474; #7 n=241 0.0% p=14 m=29 a=0 c=244 f=279/528 r=283/531; #8 n=4 0.0% p=15 m=29 a=0 c=271 f=305/580 r=301/584
+  depth (visitors=cash relic=first): mornings with a visitor/run=17.05 (66% of days)  rejected commands=0
+    blade_for_the_wall    offers/run= 0.13  patron=100%  blocked: any=0%
+    collectors_offer      offers/run= 1.94  sell=100%  blocked: any=0%
+    cracked_family_blade  offers/run= 0.15  collector=100%  blocked: any=91% restore=91%
+    crooked_merchant      offers/run= 2.62  pass=100%  blocked: any=42% buy=42% inspect=23%
+    festival_contract     offers/run= 3.44  pass=23% stall=77%  blocked: any=23% stall=23%
+    last_crate            offers/run= 4.25  pass=100%  blocked: any=39% crate=39% metal=24%
+    masters_afternoon     offers/run= 1.97  pass=100%  blocked: any=27% lesson=27%
+    smiths_wager          offers/run= 2.53  order=86% pass=14%  blocked: any=47% order=14% wager=40%
+    dead content: never offered=[debt_repaid]  never chosen=[last_crate/crate, last_crate/metal, blade_for_the_wall/pledge, masters_afternoon/study, masters_afternoon/lesson, cracked_family_blade/restore, crooked_merchant/buy, crooked_merchant/inspect, smiths_wager/wager, festival_contract/watch]  never open=none
+    relics: offers/run=2.82 declined/run=0.00 replaced/run=0.00  chosen/run: ashen_bellows=0.71 collectors_seal=0.71 salvagers_crucible=0.70 tempering_ledger=0.70
+    relic triggers/run: bellows forges=0.00  crucible returns=0.00  seals=0.00 (materials 0.00)  ledger forges=32.86 (+141.36 quality)
+    relics held at run end (runs, days mean / median): ashen_bellows+collectors_seal n=371 19.7/20; ashen_bellows+collectors_seal+salvagers_crucible n=1972 26.8/25; ashen_bellows+collectors_seal+tempering_ledger n=2103 27.1/25; ashen_bellows+salvagers_crucible n=339 19.7/20; ashen_bellows+salvagers_crucible+tempering_ledger n=2043 27.2/25; ashen_bellows+tempering_ledger n=245 19.7/20; collectors_seal+salvagers_crucible n=350 19.6/20; collectors_seal+salvagers_crucible+tempering_ledger n=2099 27.2/25; collectors_seal+tempering_ledger n=245 19.7/20; salvagers_crucible+tempering_ledger n=233 19.8/20
+    sieges by trait (fought, won): long_assault n=14487 25%  many_breaches n=14631 32%  plain n=22387 60%
+    wall pledge/run: pledged=0.00 delivered=0.00 lapsed=0.00 dead=0.00 retired=0.00 parted=0.00 returned=0.00 collect=0.00 forgive=0.00 speak=0.00 pass=0.00   wagers/run: taken=0.00 won=0.00 lost=0.00
+    gold through visitors/run: in=307.53 out=66.26  watch bounties=0.00 (max in a run 0)  rewards of visitors' orders=262.38
+
+== Second yardsticks per policy (means per run; columns as in the upgrade table) ==
+  upgrade (maxed)      defense  held  forged    sold   tools       premium sale    rare signat. legends  forged    sold  points
+  ADVANCED_SMITH         231.4   92%    14.7    11.0     0.0   day  6.7 in  97%    50.4    0.45    0.00    81.9    45.6    30.0
+  TECHNIQUE_TEMPER       225.9   91%    14.5    11.4     0.0   day  6.3 in  97%     3.4    0.00    0.00    77.6    43.5    29.4
+  TECHNIQUE_QUENCH       230.2   94%    14.5    11.1     0.0   day  6.2 in  98%     3.4    0.00    0.00    79.6    46.4    29.7
+  TECHNIQUE_ETCH         236.7   94%    14.5    10.7     0.0   day  6.8 in  98%     3.5    0.00    0.00    84.6    47.8    30.3
+  REQUEST_DRIVEN         250.3   97%    23.9    14.8     0.0   day  4.8 in 100%    15.4    0.01    0.00   170.7    72.1    31.8
+  SIEGE_PREP             279.3   99%    23.3    10.8     0.0   day  4.7 in 100%    61.7    0.00    0.00   197.4    78.0    34.1
+  SIGNATURE_PURSUIT      245.4   95%    20.0    10.7     0.0   day 10.0 in  92%    69.7    5.72    0.00   100.1    50.8    30.8
+  SCARCE_RECIPE          237.1   94%    23.9    12.9     0.0   day  5.6 in  99%    38.0    0.00    0.00   125.8    47.1    30.4
+  EXPERT                 307.5  100%    23.6    12.7     0.0   day  4.1 in 100%    80.6    0.01    0.00   194.7   106.3    34.6
+  EXPERT_ACTIVE          290.8  100%    19.9    11.9     3.5   day  5.9 in 100%    73.7    0.03    0.00   186.6   115.2    34.7
+  SPENDTHRIFT            235.6   93%    14.1    11.2     4.3   day  5.0 in 100%    58.3    0.02    0.00    77.6    67.4    31.8
+  NOVICE                 210.3   77%    10.6     7.2     0.0   day  4.4 in 100%    38.1    0.05    0.00    60.3    42.4    30.0
+  BROKE_START            217.8   90%    24.9    13.5     0.0   day  7.1 in  75%     0.1    0.00    0.00   116.7    37.8    27.7
+  FREE_LISTINGS          242.4   99%    24.7    16.9     0.0   day  4.5 in  89%     0.0    0.00    0.00    96.3    38.6    29.3
+elapsed 654306 ms
+report written to C:/Users/tuncb/AppData/Local/Temp/claude/c--Users-tuncb-Desktop-Blacksmith-Project/e508daae-25e8-4e67-98e9-44d9fc8749c5/scratchpad/gate/bots_depth.json

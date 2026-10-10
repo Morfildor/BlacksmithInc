@@ -18,8 +18,9 @@ data class BalanceConfig(
      * v6 (2026-10-09): commissions ask for a quality band floor ([CommissionConfig]; a noble one for the superb floor, `nobleCommissionMinQuality` removed), COLLECTOR ambition at the fine floor 50 (was 60). See docs/DECISIONS.md.
      * v7 (2026-10-09): fair customer selection ([CustomerConfig]: one intent draw per living hero, weighted seats, a waiting bound; the loyalty and reputation terms of the visit chance are capped); a larger town (12 residents with all five classes, refill toward 12, floor 9, event cap 16; 6 seats, festival +3) with expedition suppression 2 and raid growth 6.5. Prices, purses and wear are unchanged. Guild Patronage is no longer +15 points of visit chance: guild members come at the ceiling and their guild pays [CustomerConfig.patronageStipend] toward one purchase each. See docs/DECISIONS.md.
      * v8 (2026-10-09): standing wants ([CustomerConfig.needWantMet], [CustomerConfig.seatWantWeight], [CustomerConfig.wantLapseDays]): a hero who left with nothing comes back more readily while the shelf holds what they asked for. The sidegrade gate ([CustomerConfig.sidegradeTolerance]: the gain is no longer rounded, affixes and fame count on both sides, a near-equal blade may be bought once for taste, a prize or a name) and siege demand ([CustomerConfig.threatUtility], [CustomerConfig.championSiegeWillingness]: in the warning window the besieger's weakness is wanted and its resistance refused). Rumours ([CustomerConfig.maxRumoursPerRun]): real events earn rungs of a signature's clue ladder, and every miss at a base recipe now earns one. Commission situations ([CommissionConfig] weights, [CustomerConfig.maxOpenCommissions] 2): a request has a reason read from the town, and two may be open at once. See docs/DECISIONS.md.
+     * v10 (2026-10-10): morning visitors, workshop relics, siege traits and the committed besieger ([DepthConfig]); three automatic world events (the collector, the wandering master, the merchant festival) come as visitors instead. See docs/DECISIONS.md.
      */
-    val version: Int = 8,
+    val version: Int = 10,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -279,6 +280,8 @@ data class BalanceConfig(
     val worldEvents: WorldEventConfig = WorldEventConfig(),
     // T6.3a: what a long save stops carrying
     val saveGrowth: SaveGrowthConfig = SaveGrowthConfig(),
+    // v10: visitors, relics, siege traits
+    val depth: DepthConfig = DepthConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()
@@ -558,9 +561,76 @@ data class WorldEventConfig(
 )
 
 /**
+ * v10, all PROVISIONAL: morning visitors (`engine.Encounters`), workshop relics (`engine.Relics`) and siege traits
+ * (`Battle.scheduleNext`). Per-encounter weights, limits and cooldowns and the traits' multipliers are catalog numbers
+ * (`content.Depth`). One nested group: [BalanceConfig] has no constructor slots left for flat fields.
+ */
+data class DepthConfig(
+    /** A visitor comes on a morning with this chance, from day [encounterFirstDay], when one is eligible and no other choice is waiting. */
+    val encounterChance: Double = 0.75,
+    val encounterFirstDay: Int = 2,
+    val encounterLogKept: Int = 30,
+    // Relics
+    val relicSlots: Int = 3,
+    val relicOfferSize: Int = 3,
+    /** A relic is offered after the siege of each of these numbers, won or lost, while the forge stands. */
+    val relicOfferSieges: List<Int> = listOf(2, 4),
+    /** Tempering Ledger: quality per family already in the streak, up to the cap. */
+    val ledgerQualityPerStep: Int = 2,
+    val ledgerMaxBonus: Int = 6,
+    /** Collector's Seal: coin a hero must pay for the day's first shelf sale to earn a seal; seals for one material of at least this tier. */
+    val sealMinCash: Int = 100,
+    val sealsPerReward: Int = 3,
+    val sealMaterialTier: Int = 3,
+    /** Ashen Bellows: overwork added (energy taken from tomorrow) and affix slots gained. */
+    val bellowsDebt: Int = 2,
+    val bellowsExtraSlots: Int = 1,
+    // Sieges
+    /** Chance that a siege from number [firstTraitSiege] on carries a trait. */
+    val traitChance: Double = 0.7,
+    val firstTraitSiege: Int = 2,
+    /** The besieger is fixed at the first warning and no longer follows pressure (rules 4). False plays as rules 3 did. */
+    val commitBesieger: Boolean = true,
+    // The Last Crate
+    val crateWindowDays: Int = 3,
+    val crateUnits: Int = 3,
+    val crateCounterPriceFactor: Double = 0.8,
+    val crateMetalPriceFactor: Double = 0.7,
+    // A Blade for the Wall and the debt that follows
+    val pledgeThinPurse: Int = 60,
+    val pledgeRewardFactor: Double = 0.5,
+    val richOrderRewardFactor: Double = 1.25,
+    val pledgeMilitia: Int = 2,
+    val pledgeReputation: Int = 2,
+    // The Master's Afternoon
+    val masterEnergy: Int = 4,
+    val masterGold: Int = 60,
+    // A Cracked Family Blade
+    val restoreEnergy: Int = 2,
+    val heirloomPriceFactor: Double = 0.5,
+    val heirloomDeadlineDays: Int = 3,
+    // The Crooked Merchant
+    val merchantPriceFactor: Double = 0.55,
+    val inspectionGold: Int = 15,
+    val merchantQualityMin: Int = 55,
+    val merchantQualityMax: Int = 75,
+    val merchantCoreTierMin: Int = 2,
+    val merchantCoreTierMax: Int = 4,
+    // The Smith's Wager
+    val wagerStake: Int = 40,
+    val wagerDays: Int = 3,
+    val wagerPayoutFactor: Int = 2,
+    // The Festival Contract
+    val stallFee: Int = 25,
+    val watchBounty: Int = 30,
+    val watchBountyBlades: Int = 2,
+    val watchBountyDays: Int = 2,
+)
+
+/**
  * T6.3a: what a long save stops carrying (GDD 13.3, 15.3), beside the three older rules ([BalanceConfig.eventRetentionDays],
  * [BalanceConfig.weaponHistoryCap], [BalanceConfig.weaponRetentionDays]). One number per rule, 0 switches the rule off.
- * None of them is a balance number: each trims only what a screen may show and no rule reads (docs/DECISIONS.md, "hot
+ * [scrapBladesPerMaterial] apart (the rule that lets a player clear stock), none of them is a balance number: each trims only what a screen may show and no rule reads (docs/DECISIONS.md, "hot
  * state and archive"), and each has a test that plays the same seed with and without it to the same outcome.
  */
 data class SaveGrowthConfig(
@@ -575,4 +645,9 @@ data class SaveGrowthConfig(
      * names a living hero and the blade's first owner always stay). Never fewer than the Legend Board's story length.
      */
     val weaponEverydayHistoryCap: Int = 24,
+    /**
+     * Scrapping stock in bulk (`Command.Scrap`, no energy) gives one unit of a core material back for every this many
+     * blades made of it; the remainder gives nothing. Salvage (one blade, one energy, one unit) stays the better trade.
+     */
+    val scrapBladesPerMaterial: Int = 4,
 )

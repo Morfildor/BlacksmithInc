@@ -43,7 +43,7 @@ object Commissions {
      * the least sufficient (lowest quality, then lowest going rate, then ID), so the patron never takes the smith's best work.
      */
     fun pick(weapons: Collection<Weapon>, commission: Commission, config: BalanceConfig): Weapon? =
-        weapons.filter { (it.isInStorage || it.isListed) && fit(it, commission) == Fit.OK }
+        weapons.filter { (it.isInStorage || it.isListed) && fit(it, commission) == Fit.OK && (it.promisedTo == null || it.promisedTo == commission.id) && (commission.weaponId == null || it.id == commission.weaponId) }
             .minWithOrNull(compareBy<Weapon> { it.isListed }.thenBy { it.quality }.thenBy { Market.askingPrice(it, config) }.thenBy(IdOrder.numeric) { it.id.value })
 
     /**
@@ -57,6 +57,8 @@ object Commissions {
         com.tinyblacksmith.core.model.CommissionKind.SIEGE_PREP -> "$buyer stands on the wall when the siege comes on day ${commission.deadlineDay}."
         com.tinyblacksmith.core.model.CommissionKind.AMBITION -> "$buyer collects fine blades and has none yet."
         com.tinyblacksmith.core.model.CommissionKind.FIRST_BLADE -> "A first blade for ${recipient ?: "a newcomer"}, who carries nothing; $buyer pays."
+        com.tinyblacksmith.core.model.CommissionKind.WALL_PLEDGE -> "Made on trust for $buyer, who pays half now and owes the rest."
+        com.tinyblacksmith.core.model.CommissionKind.HEIRLOOM -> "$buyer collects the blade you restored; it is kept for them."
     }
 
     /** What a request asks for, in the terms the rule checks: "fine frost Spear (quality 50+)". */

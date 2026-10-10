@@ -1,5 +1,8 @@
 package com.example.blacksmithproject.ui
 
+import kotlin.math.roundToInt
+import com.tinyblacksmith.core.content.Depth
+import com.example.blacksmithproject.R
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -115,6 +118,7 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     // The engine's own choice of besieger (it breaks a pressure tie by ID), so Town agrees with the Shop and the siege.
     val siege = remember(st, s.forecast) { vm.engine.townSiege(st, s.forecast) }
     val threat = s.shop.threat
+    val forecast = s.forecast
 
     FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
         // Who and when: the besieger's face beside the day count, its name and how hard it presses.
@@ -151,6 +155,27 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
             }
         }
     }
+    // What the forecast adds for this siege: how the defense number is made up (a trait may raise the watch and the
+    // militia), whether the besieger can still change, and the trait the scouts report, if any.
+    s.forecast?.let { o ->
+        Column(Modifier.fillMaxWidth().padding(horizontal = Space.sm).padding(top = Space.sm)) {
+            Secondary("Defense is champions ${o.championPowers.sum().roundToInt()} · militia ${o.militia.roundToInt()} · watch ${o.armory.roundToInt()}", Modifier.testTag("town_defense_parts"))
+            Secondary(
+                if (st.siege?.takeIf { it.siegeDay == st.town.nextSiegeDay }?.factionId != null) "The besieger is fixed: this is who comes."
+                else "As things stand: the besieger can still change before the first warning.",
+                Modifier.testTag("town_besieger"),
+            )
+            o.trait?.let { t ->
+                Row(Modifier.padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+                    when (t.id) { Depth.LONG_ASSAULT -> R.drawable.icon_trait_long_assault; Depth.MANY_BREACHES -> R.drawable.icon_trait_many_breaches; else -> null }
+                        ?.let { PixelImage(it, wholePixelDp(80, 40.dp), description = null) }
+                    Text(t.name, style = MaterialTheme.typography.titleSmall, color = Gold, modifier = Modifier.testTag("town_trait"))
+                }
+                Text(t.description, style = MaterialTheme.typography.bodyMedium)
+                Secondary(t.counsel)
+            }
+        }
+    }
     // Every faction presses on the town (GDD 8); the others are listed so the leader's rise can be read coming.
     if (siege.others.isNotEmpty()) SectionHeader("Also pressing on the town")
     siege.others.forEachIndexed { i, f ->
@@ -170,12 +195,12 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     }
 
     SectionTitle("Champions")
-    // The engine's rule (`Battle.selectChampions`, run at every End Day): alive, not wounded, the three strongest against the besieger.
+    // The engine's rule (`Battle.selectChampions`): alive, not wounded, the three strongest against the besieger. Shown is
+    // the engine's own pick as things stand today; the stored list is only filled by the first End Day.
     val fit = vm.engine.config.heroWoundedThreshold
-    Secondary("Named at each End Day: the three strongest living heroes who are not wounded (health $fit or more). They stand at the walls when the siege comes.")
-    val champions = st.town.championIds.mapNotNull { st.heroes[it] }
-    val empty = if (champions.isEmpty() && st.day == 1) "Not named yet: champions are chosen at the first End Day."
-    else "Empty: at the last End Day no other living hero had health $fit or more."
+    Secondary("The three strongest living heroes who are not wounded (health $fit or more), as things stand today. They stand at the walls when the siege comes.")
+    val champions = forecast?.champions?.map { it.first } ?: st.town.championIds.mapNotNull { st.heroes[it] }
+    val empty = "Empty: no other living hero has health $fit or more."
     (0 until 3).forEach { i ->
         val h = champions.getOrNull(i)
         Row(

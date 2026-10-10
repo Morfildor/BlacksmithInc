@@ -31,7 +31,9 @@ enum class ThreatMark { COUNTERS, RESISTED }
 object Threats {
     /** Null only in a world without factions. Reads the state; draws nothing. */
     fun of(state: GameState, content: ContentCatalog, config: BalanceConfig): Threat? {
-        val leader = state.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure } ?: return null   // Battle.leadingFaction's rule
+        // Battle.besieger's rule: the faction committed at the first warning of this siege, and until then the leader as it stands.
+        val leader = state.siege?.takeIf { it.siegeDay == state.town.nextSiegeDay }?.factionId?.let { state.factions[it] }
+            ?: state.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure } ?: return null
         val def = content.factionById[leader.id] ?: return null
         val days = state.town.nextSiegeDay - state.day
         return Threat(def.id, def.weakTo, def.resists, days, warned = config.customers.threatUtility > 0 && days in 0 until config.combat.siegeWarningDays)

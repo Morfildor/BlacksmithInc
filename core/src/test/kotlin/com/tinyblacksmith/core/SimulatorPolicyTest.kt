@@ -9,6 +9,7 @@ import com.tinyblacksmith.core.model.LegacyProfile
 import com.tinyblacksmith.core.sim.BlessingPref
 import com.tinyblacksmith.core.sim.BotCounter
 import com.tinyblacksmith.core.sim.BuyRule
+import com.tinyblacksmith.core.sim.EncounterPref
 import com.tinyblacksmith.core.sim.EraPlay
 import com.tinyblacksmith.core.sim.Policy
 import com.tinyblacksmith.core.sim.SimulationDriver
@@ -134,7 +135,8 @@ class SimulatorPolicyTest {
 
     @Test
     fun noviceIgnoresCommissionsAndForgesAtMostTwiceADay() {
-        val (stats, state) = SimulationDriver(maxDays = 25).playRun(LegacyProfile(), 3, Policy.NOVICE)
+        // Visitors sent away: an order a visitor places is not a commission the novice accepted, and it would be forged for.
+        val (stats, state) = SimulationDriver(maxDays = 25, encounters = EncounterPref.DECLINE).playRun(LegacyProfile(), 3, Policy.NOVICE)
         assertTrue(state.commissions.values.none { it.status == CommissionStatus.ACCEPTED || it.status == CommissionStatus.COMPLETED })
         assertTrue(stats.bot!![BotCounter.QUICK_FORGES] in 1..(2 * 25))
     }

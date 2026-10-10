@@ -1,0 +1,245 @@
+
+### classic_depth BALANCED_FAIR enc=first relic=first visitors 17.7/run (70% of days) rejected=0
+  blade_for_the_wall     1.28/run  pledge=100% | blocked any 0%
+  collectors_offer       1.91/run  sell=100% | blocked any 0%
+  cracked_family_blade   0.18/run  collector=94% restore=6% | blocked any 94%
+  crooked_merchant       2.39/run  buy=100% inspect=0% pass=0% | blocked any 0%
+  debt_repaid            0.66/run  collect=100% | blocked any 0%
+  festival_contract      3.13/run  stall=100% watch=0% | blocked any 0%
+  last_crate             3.93/run  crate=100% metal=0% pass=0% | blocked any 0%
+  masters_afternoon      1.93/run  study=100% | blocked any 0%
+  smiths_wager           2.28/run  order=0% wager=100% | blocked any 12%
+  never offered [] never chosen ['blade_for_the_wall/patron', 'masters_afternoon/lesson', 'debt_repaid/forgive', 'debt_repaid/speak'] never open []
+  pledge {"pledged": 1.2809, "delivered": 1.2808, "lapsed": 0.0001, "dead": 0.0107, "retired": 0.0008, "parted": 0.084, "returned": 0.657, "collect": 0.657, "forgive": 0.0, "speak": 0.0, "pass": 0.0} wagers 2.28 won 2.23 lost 0.05
+  gold in 359 out 753 bounty 0.05 (max 60) order gold 71
+  relics: offers 4.87 chosen {"ashen_bellows": 1.46, "collectors_seal": 1.01, "salvagers_crucible": 1.44, "tempering_ledger": 0.96} replaced 1.88 declined 0.00
+  triggers: bellows 0.00 crucible 0.00 seals 2.42 (mat 0.57) ledger forges 62.0 (+267 q)
+  sieges [{"trait": "long_assault", "fought": 14153, "won": 3280, "winRate": 0.23175298523281282}, {"trait": "many_breaches", "fought": 14199, "won": 4223, "winRate": 0.29741531093738993}, {"trait": "plain", "fought": 22111, "won": 12461, "winRate": 0.5635656460585229}]
+  combos [{"relics": "ashen_bellows+collectors_seal", "runs": 24, "daysMean": 18.333333333333332, "daysMedian": 20}, {"relics": "ashen_bellows+collectors_seal+salvagers_crucible", "runs": 318, "daysMean": 19.150943396226417, "daysMedian": 20}, {"relics": "ashen_bellows+collectors_seal+tempering_ledger", "runs": 4224, "daysMean": 25.526751893939394, "daysMedian": 25}, {"relics": "ashen_bellows+salvagers_crucible", "runs": 30, "daysMean": 18.5, "daysMedian": 20}, {"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 1322, "daysMean": 25.559757942511347, "daysMedian": 25}, {"relics": "ashen_bellows+tempering_ledger", "runs": 17, "daysMean": 19.11764705882353, "daysMedian": 20}, {"relic
+
+### classic_depth BALANCED_ACTIVE enc=first relic=first visitors 23.1/run (63% of days) rejected=0
+  blade_for_the_wall     2.35/run  pledge=100% | blocked any 0%
+  collectors_offer       1.99/run  sell=100% | blocked any 0%
+  cracked_family_blade   0.21/run  collector=51% restore=49% | blocked any 51%
+  crooked_merchant       2.89/run  buy=98% inspect=1% pass=2% | blocked any 2%
+  debt_repaid            1.55/run  collect=100% | blocked any 0%
+  festival_contract      3.85/run  stall=99% watch=1% | blocked any 1%
+  last_crate             5.44/run  crate=98% metal=2% pass=0% | blocked any 2%
+  masters_afternoon      1.99/run  study=100% | blocked any 1%
+  smiths_wager           2.86/run  order=0% pass=0% wager=100% | blocked any 13%
+  never offered [] never chosen ['blade_for_the_wall/patron', 'masters_afternoon/lesson', 'debt_repaid/forgive', 'debt_repaid/speak'] never open []
+  pledge {"pledged": 2.3479, "delivered": 2.3465, "lapsed": 0.0013, "dead": 0.02, "retired": 0.0379, "parted": 0.0887, "returned": 1.5478, "collect": 1.5478, "forgive": 0.0, "speak": 0.0, "pass": 0.0} wagers 2.84 won 2.76 lost 0.09
+  gold in 476 out 955 bounty 0.93 (max 60) order gold 135
+  relics: offers 5.70 chosen {"ashen_bellows": 0.79, "collectors_seal": 1.02, "salvagers_crucible": 1.0, "tempering_ledger": 1.0} replaced 0.81 declined 1.90
+  triggers: bellows 0.00 crucible 26.60 seals 14.12 (mat 4.38) ledger forges 85.6 (+372 q)
+  sieges [{"trait": "long_assault", "fought": 22124, "won": 9625, "winRate": 0.4350479117700235}, {"trait": "many_breaches", "fought": 21913, "won": 11755, "winRate": 0.5364395564276914}, {"trait": "plain", "fought": 28813, "won": 18284, "winRate": 0.6345746711553812}]
+  combos [{"relics": "ashen_bellows+collectors_seal", "runs": 5, "daysMean": 20.0, "daysMedian": 20}, {"relics": "ashen_bellows+collectors_seal+salvagers_crucible", "runs": 25, "daysMean": 21.8, "daysMedian": 20}, {"relics": "ashen_bellows+collectors_seal+tempering_ledger", "runs": 32, "daysMean": 21.09375, "daysMedian": 20}, {"relics": "ashen_bellows+salvagers_crucible", "runs": 9, "daysMean": 18.333333333333332, "daysMedian": 20}, {"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 123, "daysMean": 27.926829268292682, "daysMedian": 30}, {"relics": "ashen_bellows+tempering_ledger", "runs": 7, "daysMean": 18.571428571428573, "daysMedian": 20}, {"relics": "collectors_seal+salvagers
+
+### classic_depth SYNERGY enc=first relic=first visitors 23.1/run (65% of days) rejected=0
+  blade_for_the_wall     2.33/run  pledge=100% | blocked any 0%
+  collectors_offer       1.99/run  sell=100% | blocked any 0%
+  cracked_family_blade   0.17/run  collector=86% restore=14% | blocked any 86%
+  crooked_merchant       2.91/run  buy=75% inspect=13% pass=25% | blocked any 25%
+  debt_repaid            1.54/run  collect=100% | blocked any 0%
+  festival_contract      3.87/run  stall=86% watch=14% | blocked any 14%
+  last_crate             5.46/run  crate=72% metal=15% pass=14% | blocked any 28%
+  masters_afternoon      1.99/run  lesson=0% pass=0% study=100% | blocked any 9%
+  smiths_wager           2.88/run  order=11% pass=2% wager=87% | blocked any 26%
+  never offered [] never chosen ['blade_for_the_wall/patron', 'debt_repaid/forgive', 'debt_repaid/speak'] never open []
+  pledge {"pledged": 2.3305, "delivered": 2.3274, "lapsed": 0.0023, "dead": 0.0212, "retired": 0.0108, "parted": 0.1079, "returned": 1.5435, "collect": 1.5435, "forgive": 0.0, "speak": 0.0, "pass": 0.0} wagers 2.49 won 2.25 lost 0.23
+  gold in 497 out 693 bounty 31.54 (max 180) order gold 164
+  relics: offers 5.22 chosen {"ashen_bellows": 1.62, "collectors_seal": 1.0, "salvagers_crucible": 1.62, "tempering_ledger": 0.99} replaced 2.23 declined 0.00
+  triggers: bellows 0.00 crucible 0.00 seals 6.84 (mat 1.96) ledger forges 29.9 (+89 q)
+  sieges [{"trait": "long_assault", "fought": 21129, "won": 9468, "winRate": 0.44810450092290216}, {"trait": "many_breaches", "fought": 21298, "won": 10737, "winRate": 0.5041318433655743}, {"trait": "plain", "fought": 28398, "won": 18978, "winRate": 0.6682864990492288}]
+  combos [{"relics": "ashen_bellows+collectors_seal+salvagers_crucible", "runs": 62, "daysMean": 32.41935483870968, "daysMedian": 35}, {"relics": "ashen_bellows+collectors_seal+tempering_ledger", "runs": 4738, "daysMean": 35.42634022794428, "daysMedian": 35}, {"relics": "ashen_bellows+salvagers_crucible", "runs": 2, "daysMean": 20.0, "daysMedian": 20}, {"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 300, "daysMean": 34.833333333333336, "daysMedian": 35}, {"relics": "collectors_seal+salvagers_crucible", "runs": 3, "daysMean": 20.0, "daysMedian": 20}, {"relics": "collectors_seal+salvagers_crucible+tempering_ledger", "runs": 4887, "daysMean": 35.51667689789237, "daysMedian": 35},
+
+### bots_depth EXPERT enc=adaptive relic=adaptive visitors 25.7/run (54% of days) rejected=0
+  blade_for_the_wall     3.25/run  patron=7% pledge=93% | blocked any 0%
+  collectors_offer       2.00/run  pass=81% sell=19% | blocked any 0%
+  cracked_family_blade   0.20/run  collector=5% pass=1% restore=94% | blocked any 68%
+  crooked_merchant       3.00/run  buy=22% inspect=89% pass=78% | blocked any 4%
+  debt_repaid            2.29/run  collect=3% forgive=96% speak=2% | blocked any 0%
+  festival_contract      4.00/run  stall=22% watch=78% | blocked any 2%
+  last_crate             5.98/run  crate=89% pass=11% | blocked any 6%
+  masters_afternoon      2.00/run  lesson=0% pass=83% study=16% | blocked any 3%
+  smiths_wager           3.00/run  order=67% pass=1% wager=32% | blocked any 3%
+  never offered [] never chosen ['last_crate/metal'] never open []
+  pledge {"pledged": 3.0287, "delivered": 3.0272, "lapsed": 0.0012, "dead": 0.0149, "retired": 0.103, "parted": 0.084, "returned": 2.2901, "collect": 0.0605, "forgive": 2.1922, "speak": 0.0374, "pass": 0.0} wagers 0.97 won 0.94 lost 0.03
+  gold in 88 out 625 bounty 185.58 (max 240) order gold 438
+  relics: offers 3.94 chosen {"ashen_bellows": 0.0, "collectors_seal": 1.0, "salvagers_crucible": 1.0, "tempering_ledger": 1.0} replaced 0.00 declined 0.94
+  triggers: bellows 0.01 crucible 35.56 seals 22.84 (mat 7.28) ledger forges 60.9 (+171 q)
+  sieges [{"trait": "long_assault", "fought": 29958, "won": 16977, "winRate": 0.5666933707190066}, {"trait": "many_breaches", "fought": 29609, "won": 18666, "winRate": 0.6304164274376034}, {"trait": "plain", "fought": 35553, "won": 25171, "winRate": 0.7079852614406661}]
+  combos [{"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 2, "daysMean": 47.5, "daysMedian": 40}, {"relics": "collectors_seal+salvagers_crucible+tempering_ledger", "runs": 9998, "daysMean": 47.56001200240048, "daysMedian": 50}]
+
+### bots_depth SIEGE_PREP enc=defense relic=first visitors 26.5/run (59% of days) rejected=0
+  blade_for_the_wall     3.50/run  pledge=100% | blocked any 0%
+  collectors_offer       2.00/run  pass=100% | blocked any 0%
+  cracked_family_blade   0.27/run  pass=6% restore=94% | blocked any 90%
+  crooked_merchant       2.99/run  pass=100% | blocked any 7%
+  debt_repaid            2.83/run  forgive=100% | blocked any 0%
+  festival_contract      3.99/run  watch=100% | blocked any 4%
+  last_crate             5.93/run  crate=95% pass=5% | blocked any 5%
+  masters_afternoon      2.00/run  pass=100% | blocked any 4%
+  smiths_wager           2.99/run  pass=100% | blocked any 15%
+  never offered [] never chosen ['last_crate/metal', 'blade_for_the_wall/patron', 'masters_afternoon/study', 'masters_afternoon/lesson', 'collectors_offer/sell', 'cracked_family_blade/collector', 'crooked_merchant/buy', 'crooked_merchant/inspect', 'smiths_wager/wager', 'smiths_wager/order', 'festival_contract/stall', 'debt_repaid/collect', 'debt_repaid/speak'] never open []
+  pledge {"pledged": 3.4966, "delivered": 3.4955, "lapsed": 0.0011, "dead": 0.038, "retired": 0.0566, "parted": 0.089, "returned": 2.8349, "collect": 0.0, "forgive": 2.8349, "speak": 0.0, "pass": 0.0} wagers 0.00 won 0.00 lost 0.00
+  gold in 0 out 524 bounty 221.97 (max 240) order gold 207
+  relics: offers 3.00 chosen {"ashen_bellows": 0.75, "collectors_seal": 0.75, "salvagers_crucible": 0.76, "tempering_ledger": 0.74} replaced 0.00 declined 0.00
+  triggers: bellows 0.00 crucible 0.00 seals 17.25 (mat 5.50) ledger forges 62.0 (+253 q)
+  sieges [{"trait": "long_assault", "fought": 28177, "won": 15534, "winRate": 0.5513007062497782}, {"trait": "many_breaches", "fought": 28061, "won": 17194, "winRate": 0.6127365382559424}, {"trait": "plain", "fought": 33884, "won": 23774, "winRate": 0.7016290874749144}]
+  combos [{"relics": "ashen_bellows+collectors_seal", "runs": 3, "daysMean": 18.333333333333332, "daysMedian": 20}, {"relics": "ashen_bellows+collectors_seal+salvagers_crucible", "runs": 2601, "daysMean": 44.930795847750865, "daysMedian": 45}, {"relics": "ashen_bellows+collectors_seal+tempering_ledger", "runs": 2428, "daysMean": 45.06795716639209, "daysMedian": 45}, {"relics": "ashen_bellows+salvagers_crucible", "runs": 2, "daysMean": 17.5, "daysMedian": 15}, {"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 2462, "daysMean": 45.21730300568643, "daysMedian": 45}, {"relics": "ashen_bellows+tempering_ledger", "runs": 2, "daysMean": 20.0, "daysMedian": 20}, {"relics": "collectors_s
+
+### bots_depth NOVICE enc=first relic=first visitors 19.8/run (69% of days) rejected=0
+  blade_for_the_wall     1.71/run  pledge=100% | blocked any 0%
+  collectors_offer       1.94/run  sell=100% | blocked any 0%
+  cracked_family_blade   0.13/run  collector=64% restore=36% | blocked any 64%
+  crooked_merchant       2.60/run  buy=95% inspect=3% pass=5% | blocked any 5%
+  debt_repaid            1.02/run  collect=100% | blocked any 0%
+  festival_contract      3.43/run  stall=98% watch=2% | blocked any 2%
+  last_crate             4.53/run  crate=93% metal=6% pass=2% | blocked any 7%
+  masters_afternoon      1.95/run  study=100% | blocked any 4%
+  smiths_wager           2.52/run  order=1% pass=1% wager=98% | blocked any 32%
+  never offered [] never chosen ['blade_for_the_wall/patron', 'masters_afternoon/lesson', 'debt_repaid/forgive', 'debt_repaid/speak'] never open []
+  pledge {"pledged": 1.7127, "delivered": 1.7125, "lapsed": 0.0002, "dead": 0.0155, "retired": 0.0049, "parted": 0.089, "returned": 1.0178, "collect": 1.0178, "forgive": 0.0, "speak": 0.0, "pass": 0.0} wagers 2.47 won 2.34 lost 0.12
+  gold in 490 out 786 bounty 5.07 (max 120) order gold 100
+  relics: offers 5.11 chosen {"ashen_bellows": 1.59, "collectors_seal": 0.97, "salvagers_crucible": 1.58, "tempering_ledger": 0.97} replaced 2.13 declined 0.00
+  triggers: bellows 0.00 crucible 0.00 seals 8.77 (mat 2.60) ledger forges 31.8 (+139 q)
+  sieges [{"trait": "long_assault", "fought": 16619, "won": 5545, "winRate": 0.33365425115831276}, {"trait": "many_breaches", "fought": 16654, "won": 6562, "winRate": 0.3940194547856371}, {"trait": "plain", "fought": 24388, "won": 12913, "winRate": 0.5294817123175332}]
+  combos [{"relics": "ashen_bellows+collectors_seal", "runs": 30, "daysMean": 17.833333333333332, "daysMedian": 20}, {"relics": "ashen_bellows+collectors_seal+salvagers_crucible", "runs": 206, "daysMean": 19.174757281553397, "daysMedian": 20}, {"relics": "ashen_bellows+collectors_seal+tempering_ledger", "runs": 4667, "daysMean": 29.60038568673666, "daysMedian": 30}, {"relics": "ashen_bellows+salvagers_crucible", "runs": 42, "daysMean": 17.738095238095237, "daysMedian": 20}, {"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 244, "daysMean": 20.614754098360656, "daysMedian": 20}, {"relics": "ashen_bellows+tempering_ledger", "runs": 19, "daysMean": 16.842105263157894, "daysMedian":
+
+### expert_enc_adaptive EXPERT enc=adaptive relic=adaptive visitors 25.7/run (54% of days) rejected=0
+  blade_for_the_wall     3.25/run  patron=7% pledge=93% | blocked any 0%
+  collectors_offer       2.00/run  pass=81% sell=19% | blocked any 0%
+  cracked_family_blade   0.20/run  collector=5% pass=1% restore=94% | blocked any 68%
+  crooked_merchant       3.00/run  buy=22% inspect=89% pass=78% | blocked any 4%
+  debt_repaid            2.29/run  collect=3% forgive=96% speak=2% | blocked any 0%
+  festival_contract      4.00/run  stall=22% watch=78% | blocked any 2%
+  last_crate             5.98/run  crate=89% pass=11% | blocked any 6%
+  masters_afternoon      2.00/run  lesson=0% pass=83% study=16% | blocked any 3%
+  smiths_wager           3.00/run  order=67% pass=1% wager=32% | blocked any 3%
+  never offered [] never chosen ['last_crate/metal'] never open []
+  pledge {"pledged": 3.0287, "delivered": 3.0272, "lapsed": 0.0012, "dead": 0.0149, "retired": 0.103, "parted": 0.084, "returned": 2.2901, "collect": 0.0605, "forgive": 2.1922, "speak": 0.0374, "pass": 0.0} wagers 0.97 won 0.94 lost 0.03
+  gold in 88 out 625 bounty 185.58 (max 240) order gold 438
+  relics: offers 3.94 chosen {"ashen_bellows": 0.0, "collectors_seal": 1.0, "salvagers_crucible": 1.0, "tempering_ledger": 1.0} replaced 0.00 declined 0.94
+  triggers: bellows 0.01 crucible 35.56 seals 22.84 (mat 7.28) ledger forges 60.9 (+171 q)
+  sieges [{"trait": "long_assault", "fought": 29958, "won": 16977, "winRate": 0.5666933707190066}, {"trait": "many_breaches", "fought": 29609, "won": 18666, "winRate": 0.6304164274376034}, {"trait": "plain", "fought": 35553, "won": 25171, "winRate": 0.7079852614406661}]
+  combos [{"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 2, "daysMean": 47.5, "daysMedian": 40}, {"relics": "collectors_seal+salvagers_crucible+tempering_ledger", "runs": 9998, "daysMean": 47.56001200240048, "daysMedian": 50}]
+
+### expert_enc_defense EXPERT enc=defense relic=adaptive visitors 25.9/run (55% of days) rejected=0
+  blade_for_the_wall     3.27/run  pledge=100% | blocked any 0%
+  collectors_offer       2.00/run  pass=100% | blocked any 0%
+  cracked_family_blade   0.22/run  pass=4% restore=96% | blocked any 75%
+  crooked_merchant       3.00/run  pass=100% | blocked any 6%
+  debt_repaid            2.49/run  forgive=100% | blocked any 0%
+  festival_contract      4.00/run  watch=100% | blocked any 3%
+  last_crate             5.98/run  crate=91% pass=9% | blocked any 9%
+  masters_afternoon      2.00/run  pass=100% | blocked any 3%
+  smiths_wager           3.00/run  pass=100% | blocked any 3%
+  never offered [] never chosen ['last_crate/metal', 'blade_for_the_wall/patron', 'masters_afternoon/study', 'masters_afternoon/lesson', 'collectors_offer/sell', 'cracked_family_blade/collector', 'crooked_merchant/buy', 'crooked_merchant/inspect', 'smiths_wager/wager', 'smiths_wager/order', 'festival_contract/stall', 'debt_repaid/collect', 'debt_repaid/speak'] never open []
+  pledge {"pledged": 3.2709, "delivered": 3.2687, "lapsed": 0.0018, "dead": 0.0174, "retired": 0.0985, "parted": 0.1051, "returned": 2.4881, "collect": 0.0, "forgive": 2.4881, "speak": 0.0, "pass": 0.0} wagers 0.00 won 0.00 lost 0.00
+  gold in 0 out 486 bounty 227.96 (max 240) order gold 193
+  relics: offers 3.00 chosen {"collectors_seal": 1.0, "salvagers_crucible": 1.0, "tempering_ledger": 1.0} replaced 0.00 declined 0.00
+  triggers: bellows 0.00 crucible 27.41 seals 21.45 (mat 6.81) ledger forges 60.3 (+170 q)
+  sieges [{"trait": "long_assault", "fought": 29740, "won": 17023, "winRate": 0.5723940820443847}, {"trait": "many_breaches", "fought": 29666, "won": 18497, "winRate": 0.6235083934470438}, {"trait": "plain", "fought": 35407, "won": 24927, "winRate": 0.7040133306973198}]
+  combos [{"relics": "collectors_seal+salvagers_crucible+tempering_ledger", "runs": 10000, "daysMean": 47.4065, "daysMedian": 50}]
+
+### expert_enc_cash EXPERT enc=cash relic=adaptive visitors 23.5/run (50% of days) rejected=0
+  blade_for_the_wall     3.27/run  patron=100% | blocked any 0%
+  collectors_offer       2.00/run  sell=100% | blocked any 0%
+  cracked_family_blade   0.22/run  collector=100% | blocked any 72%
+  crooked_merchant       3.00/run  pass=100% | blocked any 4%
+  festival_contract      4.00/run  pass=2% stall=98% | blocked any 2%
+  last_crate             5.98/run  pass=100% | blocked any 7%
+  masters_afternoon      2.00/run  pass=100% | blocked any 3%
+  smiths_wager           3.00/run  order=99% pass=1% | blocked any 3%
+  never offered ['debt_repaid'] never chosen ['last_crate/crate', 'last_crate/metal', 'blade_for_the_wall/pledge', 'masters_afternoon/study', 'masters_afternoon/lesson', 'cracked_family_blade/restore', 'crooked_merchant/buy', 'crooked_merchant/inspect', 'smiths_wager/wager', 'festival_contract/watch'] never open []
+  pledge {"pledged": 0.0, "delivered": 0.0, "lapsed": 0.0, "dead": 0.0, "retired": 0.0, "parted": 0.0, "returned": 0.0, "collect": 0.0, "forgive": 0.0, "speak": 0.0, "pass": 0.0} wagers 0.00 won 0.00 lost 0.00
+  gold in 490 out 98 bounty 0.00 (max 0) order gold 898
+  relics: offers 3.00 chosen {"collectors_seal": 1.0, "salvagers_crucible": 1.0, "tempering_ledger": 1.0} replaced 0.00 declined 0.00
+  triggers: bellows 0.00 crucible 27.28 seals 20.87 (mat 6.62) ledger forges 60.4 (+170 q)
+  sieges [{"trait": "long_assault", "fought": 29913, "won": 16967, "winRate": 0.5672115802493899}, {"trait": "many_breaches", "fought": 29525, "won": 18446, "winRate": 0.6247586790855207}, {"trait": "plain", "fought": 35130, "won": 24859, "winRate": 0.7076288072872189}]
+  combos [{"relics": "collectors_seal+salvagers_crucible+tempering_ledger", "runs": 10000, "daysMean": 47.284, "daysMedian": 45}]
+
+### expert_relic_adaptive EXPERT enc=adaptive relic=adaptive visitors 25.7/run (54% of days) rejected=0
+  relics: offers 3.94 chosen {"ashen_bellows": 0.0, "collectors_seal": 1.0, "salvagers_crucible": 1.0, "tempering_ledger": 1.0} replaced 0.00 declined 0.94
+  triggers: bellows 0.01 crucible 35.56 seals 22.84 (mat 7.28) ledger forges 60.9 (+171 q)
+  sieges [{"trait": "long_assault", "fought": 29958, "won": 16977, "winRate": 0.5666933707190066}, {"trait": "many_breaches", "fought": 29609, "won": 18666, "winRate": 0.6304164274376034}, {"trait": "plain", "fought": 35553, "won": 25171, "winRate": 0.7079852614406661}]
+  combos [{"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 2, "daysMean": 47.5, "daysMedian": 40}, {"relics": "collectors_seal+salvagers_crucible+tempering_ledger", "runs": 9998, "daysMean": 47.56001200240048, "daysMedian": 50}]
+
+### expert_relic_adaptive BALANCED_ACTIVE enc=first relic=adaptive visitors 23.3/run (63% of days) rejected=0
+  relics: offers 5.73 chosen {"ashen_bellows": 0.09, "collectors_seal": 1.0, "salvagers_crucible": 1.0, "tempering_ledger": 1.0} replaced 0.09 declined 2.64
+  triggers: bellows 1.55 crucible 32.44 seals 12.50 (mat 3.86) ledger forges 95.9 (+417 q)
+  sieges [{"trait": "long_assault", "fought": 22650, "won": 10143, "winRate": 0.44781456953642385}, {"trait": "many_breaches", "fought": 22320, "won": 12194, "winRate": 0.546326164874552}, {"trait": "plain", "fought": 29273, "won": 18737, "winRate": 0.6400778874730981}]
+  combos [{"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 922, "daysMean": 36.84381778741866, "daysMedian": 40}, {"relics": "collectors_seal+salvagers_crucible+tempering_ledger", "runs": 9058, "daysMean": 37.19032899094723, "daysMedian": 40}, {"relics": "salvagers_crucible+tempering_ledger", "runs": 20, "daysMean": 18.75, "daysMedian": 20}]
+
+### expert_relic_ashen_bellows EXPERT enc=adaptive relic=ashen_bellows visitors 25.9/run (53% of days) rejected=0
+  relics: offers 5.52 chosen {"ashen_bellows": 1.0} replaced 0.00 declined 4.52
+  triggers: bellows 46.17 crucible 0.00 seals 0.00 (mat 0.00) ledger forges 0.0 (+0 q)
+  sieges [{"trait": "long_assault", "fought": 30742, "won": 17718, "winRate": 0.5763450653828638}, {"trait": "many_breaches", "fought": 30656, "won": 19563, "winRate": 0.6381458768267223}, {"trait": "plain", "fought": 36399, "won": 25947, "winRate": 0.7128492541003874}]
+  combos [{"relics": "ashen_bellows", "runs": 9988, "daysMean": 48.9031838205847, "daysMedian": 50}, {"relics": "none", "runs": 12, "daysMean": 45.0, "daysMedian": 45}]
+
+### expert_relic_ashen_bellows BALANCED_ACTIVE enc=first relic=ashen_bellows visitors 23.4/run (65% of days) rejected=0
+  relics: offers 5.67 chosen {"ashen_bellows": 1.0} replaced 0.00 declined 4.67
+  triggers: bellows 33.95 crucible 0.00 seals 0.00 (mat 0.00) ledger forges 0.0 (+0 q)
+  sieges [{"trait": "long_assault", "fought": 21931, "won": 9619, "winRate": 0.43860289088504856}, {"trait": "many_breaches", "fought": 21834, "won": 11671, "winRate": 0.5345332966932307}, {"trait": "plain", "fought": 28791, "won": 18226, "winRate": 0.6330450487999723}]
+  combos [{"relics": "ashen_bellows", "runs": 9992, "daysMean": 36.28502802241793, "daysMedian": 35}, {"relics": "none", "runs": 8, "daysMean": 27.5, "daysMedian": 30}]
+
+### expert_relic_collectors_seal EXPERT enc=adaptive relic=collectors_seal visitors 25.6/run (55% of days) rejected=0
+  relics: offers 5.43 chosen {"collectors_seal": 1.0} replaced 0.00 declined 4.43
+  triggers: bellows 0.00 crucible 0.00 seals 24.13 (mat 7.71) ledger forges 0.0 (+0 q)
+  sieges [{"trait": "long_assault", "fought": 29489, "won": 16512, "winRate": 0.5599376038522839}, {"trait": "many_breaches", "fought": 29069, "won": 18114, "winRate": 0.6231380508445423}, {"trait": "plain", "fought": 35199, "won": 24892, "winRate": 0.7071791812267394}]
+  combos [{"relics": "collectors_seal", "runs": 9981, "daysMean": 46.88307784791103, "daysMedian": 45}, {"relics": "none", "runs": 19, "daysMean": 44.473684210526315, "daysMedian": 45}]
+
+### expert_relic_collectors_seal BALANCED_ACTIVE enc=first relic=collectors_seal visitors 22.7/run (66% of days) rejected=0
+  relics: offers 5.62 chosen {"collectors_seal": 1.0} replaced 0.00 declined 4.62
+  triggers: bellows 0.00 crucible 0.00 seals 15.93 (mat 4.98) ledger forges 0.0 (+0 q)
+  sieges [{"trait": "long_assault", "fought": 20723, "won": 8462, "winRate": 0.40833856101915744}, {"trait": "many_breaches", "fought": 20296, "won": 10488, "winRate": 0.5167520693732756}, {"trait": "plain", "fought": 27779, "won": 17320, "winRate": 0.6234925663270816}]
+  combos [{"relics": "collectors_seal", "runs": 9983, "daysMean": 34.41350295502354, "daysMedian": 35}, {"relics": "none", "runs": 17, "daysMean": 25.88235294117647, "daysMedian": 25}]
+
+### expert_relic_first EXPERT enc=adaptive relic=first visitors 25.9/run (53% of days) rejected=0
+  relics: offers 3.96 chosen {"ashen_bellows": 0.76, "collectors_seal": 0.75, "salvagers_crucible": 0.75, "tempering_ledger": 0.76} replaced 0.02 declined 0.94
+  triggers: bellows 29.13 crucible 31.11 seals 17.25 (mat 5.50) ledger forges 39.2 (+110 q)
+  sieges [{"trait": "long_assault", "fought": 30364, "won": 17605, "winRate": 0.5797984455275985}, {"trait": "many_breaches", "fought": 30706, "won": 19490, "winRate": 0.6347293688529929}, {"trait": "plain", "fought": 36661, "won": 26128, "winRate": 0.7126919614849567}]
+  combos [{"relics": "ashen_bellows+collectors_seal+salvagers_crucible", "runs": 2539, "daysMean": 49.29696730996455, "daysMedian": 50}, {"relics": "ashen_bellows+collectors_seal+tempering_ledger", "runs": 2457, "daysMean": 49.118844118844116, "daysMedian": 50}, {"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 2565, "daysMean": 49.51656920077973, "daysMedian": 50}, {"relics": "collectors_seal+salvagers_crucible+tempering_ledger", "runs": 2439, "daysMean": 47.47642476424764, "daysMedian": 50}]
+
+### expert_relic_first BALANCED_ACTIVE enc=first relic=first visitors 23.1/run (63% of days) rejected=0
+  relics: offers 5.70 chosen {"ashen_bellows": 0.79, "collectors_seal": 1.02, "salvagers_crucible": 1.0, "tempering_ledger": 1.0} replaced 0.81 declined 1.90
+  triggers: bellows 0.00 crucible 26.60 seals 14.12 (mat 4.38) ledger forges 85.6 (+372 q)
+  sieges [{"trait": "long_assault", "fought": 22124, "won": 9625, "winRate": 0.4350479117700235}, {"trait": "many_breaches", "fought": 21913, "won": 11755, "winRate": 0.5364395564276914}, {"trait": "plain", "fought": 28813, "won": 18284, "winRate": 0.6345746711553812}]
+  combos [{"relics": "ashen_bellows+collectors_seal", "runs": 5, "daysMean": 20.0, "daysMedian": 20}, {"relics": "ashen_bellows+collectors_seal+salvagers_crucible", "runs": 25, "daysMean": 21.8, "daysMedian": 20}, {"relics": "ashen_bellows+collectors_seal+tempering_ledger", "runs": 32, "daysMean": 21.09375, "daysMedian": 20}, {"relics": "ashen_bellows+salvagers_crucible", "runs": 9, "daysMean": 18.333333333333332, "daysMedian": 20}, {"relics": "ashen_bellows+salvagers_crucible+tempering_ledger", "runs": 123, "daysMean": 27.926829268292682, "daysMedian": 30}, {"relics": "ashen_bellows+tempering_ledger", "runs": 7, "daysMean": 18.571428571428573, "daysMedian": 20}, {"relics": "collectors_seal+salvagers
+
+### expert_relic_none EXPERT enc=adaptive relic=none visitors 25.6/run (55% of days) rejected=0
+  relics: offers 5.37 chosen {} replaced 0.00 declined 5.37
+  triggers: bellows 0.00 crucible 0.00 seals 0.00 (mat 0.00) ledger forges 0.0 (+0 q)
+  sieges [{"trait": "long_assault", "fought": 29117, "won": 16297, "winRate": 0.5597073874368925}, {"trait": "many_breaches", "fought": 29177, "won": 18073, "winRate": 0.6194262604105973}, {"trait": "plain", "fought": 35212, "won": 24829, "winRate": 0.7051289333181869}]
+  combos [{"relics": "none", "runs": 10000, "daysMean": 46.753, "daysMedian": 45}]
+
+### expert_relic_none BALANCED_ACTIVE enc=first relic=none visitors 22.6/run (66% of days) rejected=0
+  relics: offers 5.60 chosen {} replaced 0.00 declined 5.60
+  triggers: bellows 0.00 crucible 0.00 seals 0.00 (mat 0.00) ledger forges 0.0 (+0 q)
+  sieges [{"trait": "long_assault", "fought": 20578, "won": 8306, "winRate": 0.40363494994654486}, {"trait": "many_breaches", "fought": 20109, "won": 10303, "winRate": 0.512357650803123}, {"trait": "plain", "fought": 27653, "won": 17194, "winRate": 0.6217770223845515}]
+  combos [{"relics": "none", "runs": 10000, "daysMean": 34.17, "daysMedian": 35}]
+
+### expert_relic_salvagers_crucible EXPERT enc=adaptive relic=salvagers_crucible visitors 25.7/run (54% of days) rejected=0
+  relics: offers 5.61 chosen {"salvagers_crucible": 1.0} replaced 0.00 declined 4.61
+  triggers: bellows 0.00 crucible 42.64 seals 0.00 (mat 0.00) ledger forges 0.0 (+0 q)
+  sieges [{"trait": "long_assault", "fought": 29722, "won": 16871, "winRate": 0.5676266738442904}, {"trait": "many_breaches", "fought": 29333, "won": 18257, "winRate": 0.6224048000545461}, {"trait": "plain", "fought": 35507, "won": 25144, "winRate": 0.7081420564959022}]
+  combos [{"relics": "none", "runs": 7, "daysMean": 47.142857142857146, "daysMedian": 45}, {"relics": "salvagers_crucible", "runs": 9993, "daysMean": 47.28109676773742, "daysMedian": 45}]
+
+### expert_relic_salvagers_crucible BALANCED_ACTIVE enc=first relic=salvagers_crucible visitors 22.8/run (64% of days) rejected=0
+  relics: offers 5.68 chosen {"salvagers_crucible": 1.0} replaced 0.00 declined 4.68
+  triggers: bellows 0.00 crucible 30.80 seals 0.00 (mat 0.00) ledger forges 0.0 (+0 q)
+  sieges [{"trait": "long_assault", "fought": 21724, "won": 9424, "winRate": 0.43380592892653286}, {"trait": "many_breaches", "fought": 21590, "won": 11296, "winRate": 0.5232051875868458}, {"trait": "plain", "fought": 28543, "won": 18031, "winRate": 0.6317135549872123}]
+  combos [{"relics": "none", "runs": 10, "daysMean": 27.5, "daysMedian": 25}, {"relics": "salvagers_crucible", "runs": 9990, "daysMean": 35.93693693693694, "daysMedian": 35}]
+
+### expert_relic_tempering_ledger EXPERT enc=adaptive relic=tempering_ledger visitors 25.6/run (55% of days) rejected=0
+  relics: offers 5.40 chosen {"tempering_ledger": 1.0} replaced 0.00 declined 4.41
+  triggers: bellows 0.00 crucible 0.00 seals 0.00 (mat 0.00) ledger forges 62.4 (+185 q)
+  sieges [{"trait": "long_assault", "fought": 29517, "won": 16550, "winRate": 0.5606938374496053}, {"trait": "many_breaches", "fought": 29225, "won": 18156, "winRate": 0.6212489307100085}, {"trait": "plain", "fought": 35144, "won": 24919, "winRate": 0.7090541770999317}]
+  combos [{"relics": "none", "runs": 9, "daysMean": 45.55555555555556, "daysMedian": 45}, {"relics": "tempering_ledger", "runs": 9991, "daysMean": 46.94424982484236, "daysMedian": 45}]
+
+### expert_relic_tempering_ledger BALANCED_ACTIVE enc=first relic=tempering_ledger visitors 23.1/run (65% of days) rejected=0
+  relics: offers 5.68 chosen {"tempering_ledger": 1.0} replaced 0.00 declined 4.68
+  triggers: bellows 0.00 crucible 0.00 seals 0.00 (mat 0.00) ledger forges 128.5 (+554 q)
+  sieges [{"trait": "long_assault", "fought": 21429, "won": 9076, "winRate": 0.4235381959027486}, {"trait": "many_breaches", "fought": 21021, "won": 11104, "winRate": 0.528233671090814}, {"trait": "plain", "fought": 28419, "won": 18019, "winRate": 0.6340476441817094}]
+  combos [{"relics": "none", "runs": 10, "daysMean": 24.5, "daysMedian": 25}, {"relics": "tempering_ledger", "runs": 9990, "daysMean": 35.44544544544544, "daysMedian": 35}]

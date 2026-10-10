@@ -183,3 +183,16 @@ it, and the lines dated T2.x below say what exists now.
 - [ ] (no longer applies) Home: Yesterday block repeats the Shelf line on days without a lede. Home was replaced by the Shop page (T2.8b)
 - [x] Weapons map pruning of terminal blades (salvaged, shattered, donated, collected) 30 days after they leave play
 - [ ] Bounded save growth (review F10): closed commissions, processed command IDs, routine kept-forever records and everyday history lines are bounded (T6.3a). **Still growing, by decision:** unsold stock (nothing the player owns is deleted; storage tools are T6.3c), blades seized or lost with a hero (an event can bring any of them home), dead and retired heroes, and history-grade records (deaths, retirements, sieges, milestones). Measured (T6.3b, JVM, 2,000 days): the save grows 3.3 to 4.2 KB a day; stock is 2.0 to 2.7 KB of it, returnable blades 0.3 to 0.4, records kept for the run 0.3 (half of them `WEAPON_INHERITED`), hero records 0.13 to 0.15; without stock 0.86 to 0.91 KB a day, not flat. The four rules take about 5 % off a day-1,000 save. Storage filters and bulk actions (T6.3c) are merged; clearing hundreds of blades in a few taps needs a core rule that does not exist (owner decision). The device half of the soak (loading and playing a 1,000-day save on a device) was not run
+
+## Gameplay depth (review of 2026-10-10, first coherent release; plan `GAMEPLAY_DEPTH_PLAN.md`)
+- [x] Morning visitors: 8 definitions plus the chain's second stage, stored in the save, one explicit answer, a stated default at End Day; three old automatic events converted without a second payout
+- [x] Run relics: 4 (Salvager's Crucible, Tempering Ledger, Collector's Seal, Ashen Bellows), 3 slots, offers on day 1, after sieges 2 and 4 and for a won wager
+- [x] Siege traits: 2 (Long Assault, Many Breaches), named in the first warning; the besieger is fixed from then on; forecast and fight share one outlook
+- [x] Follow-up chain: a blade on trust before the siege, the hero's return (or the record of why not) the morning after
+- [x] Save schema 5 with migration from 4; 19 constructed debug scenarios; simulator tastes (`--encounters`, `--relic`, `--noDepth`, `--probe`)
+- [x] 10,000-seed gate against the matched baseline; exploit probes pass
+- [ ] Owner decision: the first-era band (plain smith now median 25, mean 25.2) and the maxed ceiling (active expert median 60)
+- [ ] Owner decision: options no bot prefers (the master's paid lesson, the crate's plain metal) and the wager won 94 to 98% of the time
+- [ ] smoke.sh, runend.sh and the instrumented tests updated for the day-1 relic offer, then run
+- [ ] Visitor portraits and relic / trait icons (wanted lists in `Assets/`)
+- [ ] Seen on a physical phone; TalkBack

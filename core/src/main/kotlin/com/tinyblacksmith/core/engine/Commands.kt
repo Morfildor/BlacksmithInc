@@ -19,6 +19,8 @@ sealed interface Command {
         val catalystId: MaterialId? = null,
         val risk: Risk,
         val technique: Technique? = null,
+        /** Ashen Bellows: one forge a day may take `depth.bellowsDebt` from tomorrow's energy for an extra affix slot. */
+        val bellows: Boolean = false,
     ) : Command
 
     data class ToggleShelf(val weaponId: WeaponId, val listed: Boolean, val price: Int? = null) : Command
@@ -29,11 +31,21 @@ sealed interface Command {
     data class ChooseBlessing(val blessingId: BlessingId) : Command
     /** Melts a weapon in storage or on the shelf back into its core material. */
     data class Salvage(val weaponId: WeaponId) : Command
+    /**
+     * Carts weapons from storage or the shelf to the scrap heap in one go: no energy, and one unit of a core material
+     * back for every [com.tinyblacksmith.core.config.SaveGrowthConfig.scrapBladesPerMaterial] blades made of it. All or nothing.
+     */
+    data class Scrap(val weaponIds: List<WeaponId>) : Command
     /** Reworks a weapon once: energy plus one unit of its core material for a fixed quality gain. */
     data class Hone(val weaponId: WeaponId) : Command
     /** Gives a weapon to the town watch; part of its power joins the town's defense. */
     data class DonateWeapon(val weaponId: WeaponId) : Command
     data class BuyTool(val toolId: String) : Command
+    /** Answers this morning's visitor with one of its options. Applied once per [commandId]; the same ID again changes nothing. */
+    data class ResolveEncounter(val instanceId: String, val optionId: String, val commandId: CommandId) : Command
+    /** Takes an offered relic; [replaceId] names the held relic it replaces, required once every slot is filled. */
+    data class ChooseRelic(val relicId: String, val replaceId: String? = null) : Command
+    data object DeclineRelicOffer : Command
     data class EndDay(val commandId: CommandId) : Command
 }
 
@@ -63,6 +75,17 @@ sealed interface GameError {
     data class AlreadyHoned(val weaponId: WeaponId) : GameError
     data class ToolMaxed(val toolId: String) : GameError
     data object ArmoryFull : GameError
+    data object NoEncounter : GameError
+    data class EncounterNotOpen(val instanceId: String) : GameError
+    data class EncounterOptionBlocked(val optionId: String, val reason: String) : GameError
+    data object NoRelicOffer : GameError
+    data class RelicNotOffered(val relicId: String) : GameError
+    data class RelicNotOwned(val relicId: String) : GameError
+    data object RelicSlotsFull : GameError
+    /** A once-a-day relic has already been used today. */
+    data class RelicSpent(val relicId: String) : GameError
+    /** The blade is kept for an open order. */
+    data class WeaponPromised(val weaponId: WeaponId, val commissionId: CommissionId) : GameError
     /** The run was written under other rules or content than this engine's; [Compatibility.admit] brings it forward first. */
     data class IncompatibleRun(val rulesVersion: Int, val contentVersion: Int) : GameError
 }

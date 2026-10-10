@@ -25,6 +25,7 @@ class VersionFingerprintTest {
     private val catalogPins = mapOf(
         2 to "e5e5b96b392777abd63e6f7237fd96f5eee92411942f172035ba0c5c4adb6f9b",
         3 to "d9befd94929b3268c60ecdec67b8de06ec841ef8ec5e34ae6512b74894263db6",  // 120 first names, 96 surnames (T3.2); appearance keys per class (T3.3); Guild Patronage as its own effect (T3.6): one unreleased step, re-pinned from aa0a71b8...
+        4 to "283e8d4d3737b81228c15adbbc3ce72468462623c8f303a67c5f640d55dc39fe",  // morning visitors, workshop relics and siege traits join the catalog (gameplay depth, rules 4)
     )
     private val balancePins = mapOf(
         5 to "a9d576db13b2983ebb4e45ed97ff6ddc9ece108aebb4738a14bfd90dc9ae37c1",
@@ -34,9 +35,13 @@ class VersionFingerprintTest {
         // T5.4 re-pinned it for structure only: the resolvers' inline numbers became fields (`combat`, `worldEvents`, more of `heroLife`, `customers`, `legacyTracks`) with the values they had; no outcome moved, so the version did not.
         // T6.3a re-pinned it again (from 3c90f806...) for the four `saveGrowth` numbers: they bound what a save keeps and move no outcome (SaveGrowthTest plays each on and off).
         8 to "364bff16c8f448ea797def569dd3ae5f2aa16ffc828fd62163a48456d2d7d583",
+        // 9: `saveGrowth.scrapBladesPerMaterial`, the return of the new bulk Scrap command. No outcome of balance 8 moves and no bot uses it; a player gains an option.
+        9 to "77049208be3fb8e8c19ecd2ad2437c9a1f7c42495040dcb192ce0af6205a9ea8",
+        // 10: the `depth` group (visitors, relics, siege traits, the committed besieger). All provisional.
+        10 to "1368584cbd01a48d96bfd382087d9692ff9efa19540cb57131c85215f9d0cf0d",
     )
 
-    private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames")
+    private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel")
 
     private fun canonical(value: Any?, field: String? = null): String = when (value) {
         null -> "null"
