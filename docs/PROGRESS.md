@@ -309,7 +309,7 @@ and independently reviewed; its task and evidence ledger is `MAJOR_UPDATE_LEDGER
 is fixed by session 8 except the signboard (its section 6.2); the review's checklist corrections (its section 9) were applied to
 `docs/GDD_CHECKLIST.md` by task T0.3, as wording only.
 
-## What exists
+## What existed at 0.6.0 (history)
 - `core/` pure Kotlin engine: RNG, slice + launch content catalogs (launch is the default), balance config (v5 now; v2 made launch content the default), model,
   commands, End Day resolver, crafting with techniques and all 24 signature recipes, market, hero AI with retirement/
   guilds/mentoring, battles/sieges with weapon seizure, world-event pool (23 events + 2 deterministic rules = all 25 GDD
