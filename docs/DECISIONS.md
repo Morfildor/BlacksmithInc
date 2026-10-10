@@ -3622,3 +3622,41 @@ clue-following bot. A simulator result is evidence about balance and reachabilit
 against 22.5: restate it at 22.7, or take `raidPerDay` 6.6, which at 1,000 seeds cost the maxed FAIR, ACTIVE and SYNERGY rows 0.2 to
 0.5 mean days and is therefore the owner's call, not this task's); REQUEST_DRIVEN's +9.7 over a plain smith against its 30 % of
 wants answered; the 8-point NOT_BETTER target; the 1 % floor for the three sidegrade reasons; the siege-prep pick.
+
+## After 0.7.0: bulk scrap, balance 9 (2026-10-10)
+
+Owner instruction, 2026-10-10: "Add the most function and feature to the game with the next tasks. Prioritize these
+kind of left over tasks." Read as: of the tasks left open by the major update, do the ones that add something to the
+game first, the checks after. This also answers open decision 12 above ("Storage tools") in part.
+
+**Ruling: a bulk Scrap command (T6.3c, "a 200-blade storage can be cleared in under ten taps").**
+- `Command.Scrap(weaponIds)`: any number of blades from storage or the shelf, in one command and one save, for no
+  energy. All or nothing: one unknown or absent blade rejects the lot.
+- Return: one unit of a core material for every `saveGrowth.scrapBladesPerMaterial` (4) blades made of it, counted per
+  material, the remainder giving nothing. Three iron blades give nothing; nine give two iron.
+- Why material and not gold: gold earned while preparing has no place in the day's ledger (`ShopLedger` balances
+  opening gold plus End Day income against closing gold), so a gold return would need a new ledger line, tally text
+  and a new income kind. A material return needs none of that and cannot start a loop (a forge spends one core and one
+  augment and energy; scrap returns a quarter of the core).
+- Why 4: Salvage (one blade, one energy, one unit) must stay the better trade per blade, or nobody salvages. PROPOSED;
+  not measured, because no bot uses the command.
+- One record for the whole lot (`WEAPON_SALVAGED` with a `count`), so clearing 200 blades adds one line to the save
+  and the Gazette's "melted down N" still counts blades.
+- Balance version 8 -> 9 (a player gains an option; no outcome of balance 8 moves, the simulator's bots do not scrap,
+  so the 10,000-seed tables of balance 8 stand unchanged). Fingerprint pinned as a new row.
+- Cost if wrong: a long save gets materials for old stock without spending energy (200 blades are about 50 units).
+- Verified: core test `scrapClearsManyBladesForNoEnergyAndAShareOfTheirCore`; app test `scrapClearsAStoreroomInOneSave`
+  (200 blades, one save); the storage screen test on the emulator (choose, ask once, one command).
+- Still not built: the "never listed" filter. The save keeps no trace of a listing; adding one is a new stored field,
+  which by the ruling on schema numbers should come with schema 5 and a migration. Owner decision 13 still stands.
+
+**Review findings closed here.**
+- Finding 4: a bulk salvage or gift that stops early now says how many were done before the reason. A save failure in
+  the middle of a batch still shows only the save dialog; "Try again" repeats the one blade.
+- Finding 7: "worn" is read from `BalanceConfig.wornConditionThreshold` (50) everywhere; "battered" is half of it.
+- Hardening note (unguarded screen building): not built, on evidence. A save that names unknown content is refused at
+  load and opens the recovery screen (a test with an unknown weapon family showed `SaveFailure.Incompatible`), so no
+  state was found that reaches the unguarded code, and a guard for it could not be tested.
+- Town's champions on day 1: the stored champion list is filled by the first End Day, so Town showed three empty
+  places on the first morning. Town now shows the engine's forecast for today (the same pick End Day stores).
+

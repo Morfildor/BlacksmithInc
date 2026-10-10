@@ -7,6 +7,14 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- Storage: "Scrap" clears every chosen blade in one go and costs no energy. The blades are gone for good; for every four made of the same metal you get one unit of that metal back, and the confirmation says exactly what comes back before you agree. Salvaging one blade at a time (one energy, one unit back) is still the better trade.
+
+### Changed
+- A blade now reads "worn" below condition 50, the line the game itself uses when heroes look to replace a blade, and "battered" below 25. Before, the blade sheet and Town said "worn" below 70 and "battered" below 40.
+- Town shows the three champions from the first morning: the heroes who would stand at the wall today. Before, the three places stayed empty until the first End Day.
+- When a bulk salvage or gift to the watch stops early, the message says how many were done ("Stopped after 4 of 9.") before the reason.
+
 ## [0.7.0] - 2026-10-10
 
 ### Added

@@ -90,6 +90,7 @@ private val FilterSaver = listSaver<StorageFilter, String>(
 fun StorageSheet(
     storage: List<StockUi>, shelfFree: Int, busy: Boolean, onOpenBlade: (WeaponId) -> Unit, onList: (WeaponId, Int) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier,
     terms: BulkTerms? = null, onBulk: (StockAction, List<WeaponId>) -> Unit = { _, _ -> },
+    scrapBack: (List<WeaponId>) -> String = { "" }, onScrap: (List<WeaponId>) -> Unit = {},
     // Remembered here, in the composition that opens the sheet, not inside the sheet's own window: there the order did
     // not come back when the sheet was restored (ShopDayPersistenceTest). Closing the sheet still forgets it.
     filterState: MutableState<StorageFilter> = rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(StorageFilter()) },
@@ -100,22 +101,25 @@ fun StorageSheet(
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
         modifier = modifier.semantics { testTagsAsResourceId = true }.testTag("storage_sheet"),
-    ) { StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk, filterState = filterState) }
+    ) { StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk, scrapBack = scrapBack, onScrap = onScrap, filterState = filterState) }
 }
 
 /**
  * The stored blades as one lazy, keyed list: a storeroom of thousands composes only the rows in view. Its head narrows
  * the list (family, rarity, never sold) and orders it. With [terms], "Select blades" turns the rows into checkboxes and
  * a bar under the list salvages the chosen blades or gives them to the watch: each asks once, then [onBulk] gets the
- * action and the blades in the order shown. Only blades that are both chosen and shown are acted on.
+ * action and the blades in the order shown. Only blades that are both chosen and shown are acted on. "Scrap" clears
+ * the chosen blades in one command ([onScrap]); [scrapBack] is the engine's word on what comes back for them.
  */
 @Composable
 fun StorageList(
     storage: List<StockUi>, shelfFree: Int, busy: Boolean, onOpenBlade: (WeaponId) -> Unit, onList: (WeaponId, Int) -> Unit, modifier: Modifier = Modifier,
     terms: BulkTerms? = null, onBulk: (StockAction, List<WeaponId>) -> Unit = { _, _ -> },
+    scrapBack: (List<WeaponId>) -> String = { "" }, onScrap: (List<WeaponId>) -> Unit = {},
     filterState: MutableState<StorageFilter> = rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(StorageFilter()) },
 ) {
     var filter by filterState
+    var scrapping by remember { mutableStateOf(false) }
     var selecting by rememberSaveable { mutableStateOf(false) }
     // Not saved: thousands of IDs do not belong in a saved-state Bundle. A restored process starts with nothing chosen.
     var picked by remember { mutableStateOf(emptySet<WeaponId>()) }
@@ -154,11 +158,20 @@ fun StorageList(
                 else StockRow(s, busy || shelfFree <= 0, onOpen = { onOpenBlade(id) }, onList = { price -> onList(id, price) })
             }
         }
+        if (select) SecondaryActionButton("Scrap ${chosen.size} (no energy)", { scrapping = true }, Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = Space.sm).testTag("storage_bulk_scrap"), enabled = !busy && chosen.isNotEmpty())
         if (select) Row(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
             SecondaryActionButton("Salvage ${chosen.size}", { asking = StockAction.Salvage }, Modifier.weight(1f).testTag("storage_bulk_salvage"), enabled = !busy && chosen.isNotEmpty())
             SecondaryActionButton("Arm the watch ${chosen.size}", { asking = StockAction.Donate }, Modifier.weight(1f).testTag("storage_bulk_donate"), enabled = !busy && chosen.isNotEmpty() && terms!!.armoryRoom > 0)
         }
     }
+    if (scrapping) AlertDialog(
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
+        onDismissRequest = { scrapping = false },
+        title = { Text("Scrap ${blades(chosen.size)}?") },
+        text = { Text("They are carted to the scrap heap and are gone for good. It costs no energy. " + scrapBack(chosen)) },
+        confirmButton = { TextButton(onClick = { scrapping = false; onScrap(chosen); picked = emptySet() }, modifier = Modifier.testTag("storage_scrap_confirm")) { Text("Scrap") } },
+        dismissButton = { TextButton(onClick = { scrapping = false }) { Text("Keep them") } },
+    )
     val action = asking
     if (action != null && terms != null) {
         val salvage = action == StockAction.Salvage

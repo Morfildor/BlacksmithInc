@@ -19,7 +19,7 @@ data class BalanceConfig(
      * v7 (2026-10-09): fair customer selection ([CustomerConfig]: one intent draw per living hero, weighted seats, a waiting bound; the loyalty and reputation terms of the visit chance are capped); a larger town (12 residents with all five classes, refill toward 12, floor 9, event cap 16; 6 seats, festival +3) with expedition suppression 2 and raid growth 6.5. Prices, purses and wear are unchanged. Guild Patronage is no longer +15 points of visit chance: guild members come at the ceiling and their guild pays [CustomerConfig.patronageStipend] toward one purchase each. See docs/DECISIONS.md.
      * v8 (2026-10-09): standing wants ([CustomerConfig.needWantMet], [CustomerConfig.seatWantWeight], [CustomerConfig.wantLapseDays]): a hero who left with nothing comes back more readily while the shelf holds what they asked for. The sidegrade gate ([CustomerConfig.sidegradeTolerance]: the gain is no longer rounded, affixes and fame count on both sides, a near-equal blade may be bought once for taste, a prize or a name) and siege demand ([CustomerConfig.threatUtility], [CustomerConfig.championSiegeWillingness]: in the warning window the besieger's weakness is wanted and its resistance refused). Rumours ([CustomerConfig.maxRumoursPerRun]): real events earn rungs of a signature's clue ladder, and every miss at a base recipe now earns one. Commission situations ([CommissionConfig] weights, [CustomerConfig.maxOpenCommissions] 2): a request has a reason read from the town, and two may be open at once. See docs/DECISIONS.md.
      */
-    val version: Int = 8,
+    val version: Int = 9,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -560,7 +560,7 @@ data class WorldEventConfig(
 /**
  * T6.3a: what a long save stops carrying (GDD 13.3, 15.3), beside the three older rules ([BalanceConfig.eventRetentionDays],
  * [BalanceConfig.weaponHistoryCap], [BalanceConfig.weaponRetentionDays]). One number per rule, 0 switches the rule off.
- * None of them is a balance number: each trims only what a screen may show and no rule reads (docs/DECISIONS.md, "hot
+ * [scrapBladesPerMaterial] apart (the rule that lets a player clear stock), none of them is a balance number: each trims only what a screen may show and no rule reads (docs/DECISIONS.md, "hot
  * state and archive"), and each has a test that plays the same seed with and without it to the same outcome.
  */
 data class SaveGrowthConfig(
@@ -575,4 +575,9 @@ data class SaveGrowthConfig(
      * names a living hero and the blade's first owner always stay). Never fewer than the Legend Board's story length.
      */
     val weaponEverydayHistoryCap: Int = 24,
+    /**
+     * Scrapping stock in bulk (`Command.Scrap`, no energy) gives one unit of a core material back for every this many
+     * blades made of it; the remainder gives nothing. Salvage (one blade, one energy, one unit) stays the better trade.
+     */
+    val scrapBladesPerMaterial: Int = 4,
 )

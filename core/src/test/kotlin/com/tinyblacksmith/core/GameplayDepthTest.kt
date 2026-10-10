@@ -243,6 +243,27 @@ class GameplayDepthTest {
     }
 
     @Test
+    fun scrapClearsManyBladesForNoEnergyAndAShareOfTheirCore() {
+        val (one, id) = forged()
+        val ids = (1..9).map { WeaponId("scrap$it") }
+        val s = one.copy(weapons = one.weapons + ids.associateWith { one.weapon(id).copy(id = it) })
+        val per = config.saveGrowth.scrapBladesPerMaterial
+        val after = s.run(Command.Scrap(ids + ids.first()))
+        assertEquals(s.materials.getValue(LaunchContent.IRON) + 9 / per, after.materials.getValue(LaunchContent.IRON))
+        assertEquals(s.energy, after.energy)
+        ids.forEach { assertIs<WeaponLocation.Destroyed>(after.weapon(it).location) }
+        assertTrue(after.weapon(id).isInStorage, "a blade that was not named stays")
+        val record = after.events.single { it.type == EventType.WEAPON_SALVAGED }
+        assertEquals("9", record.data["count"])
+        assertEquals(mapOf(LaunchContent.IRON to 9 / per), engine.scrapYield(ids.map { s.weapon(it) }))
+        // Fewer blades than one unit takes: they go, and nothing comes back.
+        assertEquals(s.materials, s.run(Command.Scrap(ids.take(per - 1))).materials)
+        assertIs<GameError.InvalidQuantity>(s.rejected(Command.Scrap(emptyList())))
+        assertIs<GameError.WeaponNotAvailable>(after.rejected(Command.Scrap(listOf(id, ids.first()))))
+        assertIs<GameError.WeaponNotFound>(s.rejected(Command.Scrap(ids + WeaponId("nope"))))
+    }
+
+    @Test
     fun honeRaisesQualityOnceForEnergyAndCore() {
         val (s, id) = forged()
         val before = s.weapon(id)

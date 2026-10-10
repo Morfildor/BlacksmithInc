@@ -486,10 +486,12 @@ class GameViewModel(
         val run = session.snapshot.value?.run ?: return
         if (session.status.value is Status.Working) return
         viewModelScope.launch {
-            for (command in commands) {
+            commands.forEachIndexed { done, command ->
                 val result = session.run(Op.Dispatch(command, run.runId))
                 show(result)
-                if (result !is Result.Done) break
+                // A batch cut short says how far it got; a save failure has its own dialog, which this line waits behind.
+                if (result is Result.Rejected && commands.size > 1) edit { it.copy(lastError = "Stopped after $done of ${commands.size}. ${describe(result.error)}") }
+                if (result !is Result.Done) return@launch
             }
         }
     }

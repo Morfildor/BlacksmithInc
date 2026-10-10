@@ -6,6 +6,7 @@ import com.example.blacksmithproject.ui.StorageSort
 import com.example.blacksmithproject.ui.detail.StockAction
 import com.example.blacksmithproject.ui.detail.toCommand
 import com.example.blacksmithproject.ui.salvageTerms
+import com.example.blacksmithproject.ui.scrapBackText
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.shown
 import com.tinyblacksmith.core.content.LaunchContent
@@ -97,10 +98,34 @@ class StorageToolsTest : ShopDayTestBase() {
         assertEquals("the blades are taken in the order given", ids.drop(room), after.shop.storage.map { it.weapon.id })
         assertEquals(iron + room, after.state.materials[LaunchContent.IRON])
         assertNotNull("the refusal is said", after.lastError)
-        assertTrue(after.lastError!!, after.lastError!!.startsWith("Not enough energy"))
+        assertTrue(after.lastError!!, after.lastError!!.startsWith("Stopped after $room of 5. Not enough energy"))
         assertFalse(after.busy)
         // What is on screen is what is stored.
         assertEquals(after.state, com.tinyblacksmith.core.persistence.SaveCodec.decodeRun(store.run!!))
+    }
+
+    /** Two hundred stored blades go in one command and one save, for no energy; the confirmation's sentence is the engine's own count. */
+    @Test
+    fun scrapClearsAStoreroomInOneSave() = vmTest {
+        val state = storeroom(200)
+        val store = planning(state)
+        val vm = open(store)
+        val before = vm.playing()
+        val ids = before.shop.storage.map { it.weapon.id }
+        val back = engine.scrapYield(state.storedWeapons())
+        val said = scrapBackText(engine, state, ids)
+        back.forEach { (id, n) -> assertTrue(said, said.contains("$n ${engine.content.material(id).name}")) }
+        assertTrue(scrapBackText(engine, state, ids.take(1)), scrapBackText(engine, state, ids.take(1)).startsWith("Nothing comes back"))
+        val commits = store.commitCount
+
+        vm.dispatch(Command.Scrap(ids)); advanceUntilIdle()
+
+        val after = vm.playing()
+        assertEquals(1, store.commitCount - commits)
+        assertTrue(after.shop.storage.isEmpty())
+        assertEquals(before.state.energy, after.state.energy)
+        back.forEach { (id, n) -> assertEquals((state.materials[id] ?: 0) + n, after.state.materials[id]) }
+        assertEquals(null, after.lastError)
     }
 
     @Test
@@ -112,7 +137,7 @@ class StorageToolsTest : ShopDayTestBase() {
         vm.dispatchAll(ids.map { StockAction.Donate.toCommand(it) }); advanceUntilIdle()
         val after = vm.playing()
         assertEquals(engine.config.armoryMax, after.state.town.armory)
-        assertEquals("The town watch armory is full.", after.lastError)
+        assertTrue(after.lastError, after.lastError!!.startsWith("Stopped after ") && after.lastError!!.endsWith("of 40. The town watch armory is full."))
         assertTrue("some were given and the rest are still stored", after.shop.storage.size in 1 until 40)
         assertEquals(ids.takeLast(after.shop.storage.size), after.shop.storage.map { it.weapon.id })
     }

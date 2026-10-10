@@ -176,7 +176,7 @@ fun GameEngine.itemDetail(state: GameState, weaponId: WeaponId, snapshot: Weapon
 private fun GameEngine.property(id: AffixId) = content.affixById[id]?.let { Property(it.name, it.description) } ?: Property(id.value, "")
 
 private fun qualityWord(w: WeaponSnapshot) = Labels.quality(w.quality).replaceFirstChar { it.uppercase() }
-private fun conditionWord(w: WeaponSnapshot) = when { w.condition < 40 -> "Battered"; w.condition < 70 -> "Worn"; else -> "Sound" }
+private fun conditionWord(w: WeaponSnapshot) = Labels.condition(w.condition)?.replaceFirstChar { it.uppercase() } ?: "Sound"
 private fun renownWord(w: WeaponSnapshot) = Labels.fame(w.fame)?.replaceFirstChar { it.uppercase() } ?: "Unsung"
 
 private fun facts(w: WeaponSnapshot): List<Fact> = listOfNotNull(

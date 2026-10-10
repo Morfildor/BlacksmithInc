@@ -230,7 +230,7 @@ object Gazette {
             events.count { it.type == EventType.WEAPON_LISTED }.takeIf { it > 0 }?.let { add("listed $it") }
             events.count { it.type == EventType.WEAPON_HONED }.takeIf { it > 0 }?.let { add("honed $it") }
             events.count { it.type == EventType.WEAPON_DONATED }.takeIf { it > 0 }?.let { add("armed the watch with $it") }
-            events.count { it.type == EventType.WEAPON_SALVAGED }.takeIf { it > 0 }?.let { add("melted down $it") }
+            events.filter { it.type == EventType.WEAPON_SALVAGED }.sumOf { it.data["count"]?.toIntOrNull() ?: 1 }.takeIf { it > 0 }?.let { add("melted down $it") }
             events.filter { it.type == EventType.TOOL_BOUGHT }.forEach { add("bought ${it.data["name"] ?: it.text.substringAfter(": ").trimEnd('.')}") }
             events.filter { it.type == EventType.MATERIAL_BOUGHT }.sumOf { it.data["cost"]?.toIntOrNull() ?: 0 }.takeIf { it > 0 }?.let { add("spent $it gold on materials") }
         }

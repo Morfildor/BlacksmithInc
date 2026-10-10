@@ -147,7 +147,8 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
 
     SectionTitle("Champions")
     Secondary("The three strongest heroes fit to stand at the walls.")
-    val champions = st.town.championIds.mapNotNull { st.heroes[it] }
+    // The engine's own pick as things stand today; the stored list is only filled by the first End Day.
+    val champions = forecast?.champions?.map { it.first } ?: st.town.championIds.mapNotNull { st.heroes[it] }
     (0 until 3).forEach { i ->
         val h = champions.getOrNull(i)
         Row(

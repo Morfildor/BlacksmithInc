@@ -34,6 +34,8 @@ class VersionFingerprintTest {
         // T5.4 re-pinned it for structure only: the resolvers' inline numbers became fields (`combat`, `worldEvents`, more of `heroLife`, `customers`, `legacyTracks`) with the values they had; no outcome moved, so the version did not.
         // T6.3a re-pinned it again (from 3c90f806...) for the four `saveGrowth` numbers: they bound what a save keeps and move no outcome (SaveGrowthTest plays each on and off).
         8 to "364bff16c8f448ea797def569dd3ae5f2aa16ffc828fd62163a48456d2d7d583",
+        // 9: `saveGrowth.scrapBladesPerMaterial`, the return of the new bulk Scrap command. No outcome of balance 8 moves and no bot uses it; a player gains an option.
+        9 to "77049208be3fb8e8c19ecd2ad2437c9a1f7c42495040dcb192ce0af6205a9ea8",
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames")

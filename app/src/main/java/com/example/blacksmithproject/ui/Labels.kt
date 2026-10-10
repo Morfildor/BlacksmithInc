@@ -75,12 +75,14 @@ object Labels {
         else -> "grave"
     }
 
-    /** Wear in words; null while the blade is still sound. */
-    fun condition(w: Weapon): String? = when {
-        w.condition < 40 -> "battered"
-        w.condition < 70 -> "worn"
+    /** Wear in words; null while the blade is still sound. "Worn" is the engine's own line (`BalanceConfig.wornConditionThreshold`), "battered" half of it. */
+    fun condition(condition: Int): String? = when {
+        condition < WORN_BELOW / 2 -> "battered"
+        condition < WORN_BELOW -> "worn"
         else -> null
     }
+    fun condition(w: Weapon): String? = condition(w.condition)
+    private val WORN_BELOW = BalanceConfig().wornConditionThreshold
 
     /** Fame bands, descriptive only: the first starts at the Legend Board threshold (3), the last at the cap on the fame effect (BalanceConfig.weaponFameCap, 10). */
     fun fame(f: Int): String? = when {

@@ -29,6 +29,11 @@ sealed interface Command {
     data class ChooseBlessing(val blessingId: BlessingId) : Command
     /** Melts a weapon in storage or on the shelf back into its core material. */
     data class Salvage(val weaponId: WeaponId) : Command
+    /**
+     * Carts weapons from storage or the shelf to the scrap heap in one go: no energy, and one unit of a core material
+     * back for every [com.tinyblacksmith.core.config.SaveGrowthConfig.scrapBladesPerMaterial] blades made of it. All or nothing.
+     */
+    data class Scrap(val weaponIds: List<WeaponId>) : Command
     /** Reworks a weapon once: energy plus one unit of its core material for a fixed quality gain. */
     data class Hone(val weaponId: WeaponId) : Command
     /** Gives a weapon to the town watch; part of its power joins the town's defense. */

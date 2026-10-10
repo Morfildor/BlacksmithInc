@@ -72,8 +72,11 @@ import com.example.blacksmithproject.ui.theme.ForgePanel
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.CommissionStatus
+import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
+import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.shopday.LeadKind
 
 /**
@@ -142,6 +145,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
             onDismiss = { storageOpen = false },
             terms = with(vm.engine.config) { BulkTerms(salvageEnergy, state.energy, maxOverworkPerDay - state.overworkToday, armoryMax - state.town.armory) },
             onBulk = { action, ids -> vm.dispatchAll(ids.map { action.toCommand(it) }) },
+            scrapBack = { ids -> scrapBackText(vm.engine, state, ids) },
+            onScrap = { ids -> vm.dispatch(Command.Scrap(ids)) },
         )
     }
     if (suppliesOpen) SuppliesSheet(s, vm, onDismiss = { suppliesOpen = false })
@@ -320,4 +325,12 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
 @Composable
 fun Secondary(text: String, modifier: Modifier = Modifier) {
     Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = modifier)
+}
+
+/** What the engine says scrapping these blades gives back, in a sentence for the confirmation. */
+internal fun scrapBackText(engine: GameEngine, state: GameState, ids: List<WeaponId>): String {
+    val back = engine.scrapYield(ids.mapNotNull { state.weapons[it] })
+    val per = engine.config.saveGrowth.scrapBladesPerMaterial
+    return if (back.isEmpty()) "Nothing comes back: it takes $per blades of one metal to recover a unit of it."
+    else "You get back " + back.entries.joinToString(", ") { "${it.value} ${engine.content.material(it.key).name}" } + " (one unit for every $per blades of a metal)."
 }

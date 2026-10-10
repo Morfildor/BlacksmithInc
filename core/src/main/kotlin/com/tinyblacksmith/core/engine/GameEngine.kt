@@ -115,6 +115,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             is Command.DeclineCommission -> commission(state, command.commissionId, CommissionStatus.DECLINED)
             is Command.ChooseBlessing -> chooseBlessing(state, command)
             is Command.Salvage -> salvage(state, command)
+            is Command.Scrap -> scrap(state, command)
             is Command.Hone -> hone(state, command)
             is Command.DonateWeapon -> donate(state, command)
             is Command.BuyTool -> buyTool(state, command)
@@ -219,6 +220,28 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.updateWeapon(weapon.copy(location = WeaponLocation.Destroyed(state.day)))
         ctx.addWeaponHistory(weapon.id, "SALVAGED", "Melted down for its ${content.material(weapon.coreId).name}.")
         ctx.emit(EventType.WEAPON_SALVAGED, 0, "The smith melted ${weapon.name} down for its ${content.material(weapon.coreId).name}.", listOf(weapon.id.value))
+        return accept(ctx)
+    }
+
+    /** What [Command.Scrap] would give back for these weapons: whole units per core material, nothing for the remainder. */
+    fun scrapYield(weapons: Collection<Weapon>): Map<MaterialId, Int> =
+        weapons.groupingBy { it.coreId }.eachCount().mapValues { it.value / config.saveGrowth.scrapBladesPerMaterial }.filterValues { it > 0 }
+
+    private fun scrap(state: GameState, cmd: Command.Scrap): CommandOutcome {
+        val ids = cmd.weaponIds.distinct()
+        if (ids.isEmpty()) return CommandOutcome.Rejected(GameError.InvalidQuantity(0))
+        val weapons = ids.map { id -> inShop(state, id).let { (weapon, error) -> weapon ?: return CommandOutcome.Rejected(error!!) } }
+        val ctx = ResolutionContext(state, content, config)
+        val back = scrapYield(weapons)
+        back.forEach { (id, n) -> ctx.materials[id] = (ctx.materials[id] ?: 0) + n }
+        weapons.forEach {
+            ctx.updateWeapon(it.copy(location = WeaponLocation.Destroyed(state.day)))
+            ctx.addWeaponHistory(it.id, "SALVAGED", "Carted to the scrap heap.")
+        }
+        val got = back.entries.joinToString(", ") { "${it.value} ${content.material(it.key).name}" }
+        // One record for the lot, with its count: two hundred blades are not two hundred lines in the save.
+        ctx.emit(EventType.WEAPON_SALVAGED, 0, "The smith carted ${weapons.size} ${if (weapons.size == 1) "blade" else "blades"} to the scrap heap" + (if (got.isEmpty()) "." else " and got $got back."),
+            data = mapOf("count" to weapons.size.toString()))
         return accept(ctx)
     }
 

@@ -182,6 +182,7 @@ class StorageSheetTest {
         val stored = forged.copy(weapons = (1..5).associate { i -> WeaponId("t$i").let { it to blade.copy(id = it, name = "Blade $i", location = WeaponLocation.Storage) } })
         val storage = engine.shopUi(stored).storage
         val issued = mutableListOf<List<Command>>()
+        val scrapped = mutableListOf<List<WeaponId>>()
         val opened = mutableListOf<WeaponId>()
         compose.setContent {
             BlacksmithProjectTheme {
@@ -190,6 +191,7 @@ class StorageSheetTest {
                         storage, shelfFree = 8, busy = false, onOpenBlade = { opened += it }, onList = { _, _ -> },
                         terms = BulkTerms(salvageEnergy = 1, energy = 10, overworkLeft = 4, armoryRoom = 30),
                         onBulk = { action, ids -> issued += ids.map { action.toCommand(it) } },
+                        scrapBack = { "You get back 1 Iron." }, onScrap = { scrapped += it },
                     )
                 }
             }
@@ -209,6 +211,14 @@ class StorageSheetTest {
         compose.onNodeWithText("Salvage 3 blades?").assertDoesNotExist()
         // Asked once: nothing is left chosen, so the bar cannot fire again by itself.
         compose.onNodeWithTag("storage_bulk_salvage").assertIsNotEnabled()
+        // Scrap is one command for the lot, asked once.
+        compose.onNodeWithTag("storage_bulk_scrap").assertIsNotEnabled()
+        for (id in listOf("t1", "t4")) compose.onNodeWithTag("stock_$id").performClick()
+        compose.onNodeWithTag("storage_bulk_scrap").performClick()
+        compose.onNodeWithText("Scrap 2 blades?").assertIsDisplayed()
+        assertTrue(scrapped.isEmpty())
+        compose.onNodeWithTag("storage_scrap_confirm").performClick()
+        assertEquals(listOf(listOf(WeaponId("t1"), WeaponId("t4"))), scrapped)
 
         // "Select all shown" then the watch: the same single question.
         compose.onNodeWithTag("storage_select_all").performClick()
