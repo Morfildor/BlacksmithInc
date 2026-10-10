@@ -205,13 +205,14 @@ internal fun StockRow(stock: StockUi, busy: Boolean, onOpen: () -> Unit, onList:
     val listBelow = LocalDensity.current.fontScale > 1.3f
     Column(
         modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().clickable(onClickLabel = "Open ${w.name}", onClick = onOpen).testTag("stock_${w.id.value}").padding(horizontal = 12.dp, vertical = 10.dp)
-            .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${stock.summary}, ${stock.price?.let { "$it gold" } ?: "in storage"}.${stock.threat?.let { " ${it.label}." } ?: ""} Tap for details and price." },
+            .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${stock.summary}, ${stock.price?.let { "$it gold" } ?: "in storage"}.${stock.threat?.let { " ${it.label}." } ?: ""}${stock.dormant?.let { " $it" } ?: ""} Tap for details and price." },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(2.dp)) { WeaponSprite(w, size = 44.dp) }
             Column(Modifier.weight(1f)) {
                 Text(w.name + (w.title?.let { " · \"$it\"" } ?: ""), style = MaterialTheme.typography.titleSmall, color = rarityColor(w.rarity))
                 WeaponStatLine(w.rarity, stock.stats, stock.buffs, stock.flaws)
+                stock.dormant?.let { Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold) }
                 stock.threat?.let { Text("${it.kind.sign} ${it.label}", style = MaterialTheme.typography.bodySmall, color = it.kind.color) }
                 stock.favoured?.let { Secondary(it) }
             }

@@ -53,6 +53,7 @@ import com.tinyblacksmith.core.model.Weapon
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponLocation
 import com.tinyblacksmith.core.model.WeaponSnapshot
+import com.tinyblacksmith.core.shopday.Lines as ShopLines
 
 /** An affix or a flaw with the sentence that says what it does. */
 @Immutable
@@ -121,7 +122,11 @@ data class ItemDetail(
     val now: List<Fact>,
     val affixes: List<Property>,
     val flaws: List<Property>,
+    /** A returned legend's sleeping affixes and what wakes them (`Lines.dormant`); they are not among [affixes]. Null when nothing sleeps. */
+    val dormant: String?,
     val recipe: List<Fact>,
+    /** The maker's ledger (`Lines.story`): what is worth telling of the blade, oldest first. Empty once the blade has left the save. */
+    val story: List<String>,
     /** Newest first. */
     val history: List<String>,
     val stock: Stock?,
@@ -159,7 +164,9 @@ fun GameEngine.itemDetail(state: GameState, weaponId: WeaponId, snapshot: Weapon
         },
         affixes = shown.affixes.map { property(it) },
         flaws = shown.flaws.map { property(it) },
+        dormant = ShopLines.dormant(shown.dormantAffixes, content),
         recipe = recipe(shown, weapon),
+        story = weapon?.let { ShopLines.story(it, state.era) }.orEmpty(),
         history = weapon?.history?.asReversed()?.map { dated(state, it.era, it.day, it.text) }
             ?: recordsOf(state, weaponId.value).asReversed().map { dated(state, it.era, it.day, it.text) },
         stock = if (inShop) stock(state, weapon!!) else null,
@@ -285,8 +292,14 @@ fun ItemDetailContent(
 
         FactBlock("Recipe", detail.recipe, "sheet_recipe", onOpenHero, onOpenItem = {})
 
+        // The story is what is worth telling, oldest first; the history under it is every record, newest first.
+        if (detail.story.isNotEmpty()) {
+            SheetSection("Story")
+            Column(Modifier.testTag("sheet_story")) { Lines(detail.story, "") }
+        }
+
         SheetSection("History")
-        Lines(detail.history, "Its story has not been written yet.")
+        Column(Modifier.testTag("sheet_history")) { Lines(detail.history, "Its story has not been written yet.") }
         OutlinedButton(onClick = onDismiss, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close")) { Text("Close") }
     }
 }

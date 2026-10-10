@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
@@ -142,6 +143,8 @@ fun WeaponStatCard(
         SectionHeader("Buffs")
         if (detail.affixes.isEmpty()) Secondary("No buffs.")
         detail.affixes.forEach { EffectRow(EffectKind.BUFF, it.name, it.description) }
+        // Asleep, so not a buff: its own gold "◆" row, in core's words, after whatever is awake.
+        detail.dormant?.let { EffectRow(EffectKind.NEUTRAL, it, "", Modifier.testTag("card_dormant")) }
         if (detail.flaws.isNotEmpty()) {
             SectionHeader("Flaws")
             detail.flaws.forEach { EffectRow(EffectKind.FLAW, it.name, it.description) }
