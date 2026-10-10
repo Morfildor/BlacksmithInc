@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.TestSupport.quickSword
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
+import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
@@ -108,6 +109,31 @@ class RecognitionTest {
         assertTrue(Recognitions.eligible(ctx, visit(s.listedWeapons().first().id), seatedFirst = false).none { it.cue == RecognitionCue.MENTORS_BLADE }, "traded in: no longer carried")
         val guildmate = ResolutionContext(town.copy(heroes = town.heroes + (pupil.id to town.hero(pupil.id).copy(mentorName = "Somebody Else"))), content, config)
         assertTrue(Recognitions.eligible(guildmate, visit(null), seatedFirst = false).none { it.cue == RecognitionCue.MENTORS_BLADE }, "inherited from a guildmate, not the mentor")
+    }
+
+    /** A blade keeps its newest ten fights (`WeaponHistoryCompaction`); ten victories after a siege must not take the wall from its carrier. */
+    @Test
+    fun theWallIsRememberedAfterTenLaterVictories() {
+        val s = engine.newRun(LegacyProfile(), 3)
+        val hero = s.aliveHeroes().first()
+        val template = s.morning().listedWeapons().first()
+        val fights = (0..config.weaponHistoryCap).map { HistoryEntry(s.era, 5 + it, "VICTORY", "Won.", listOf(hero.id.value)) }
+        val blade = template.copy(
+            id = WeaponId("w900"), location = WeaponLocation.Owned(hero.id, true),
+            history = listOf(HistoryEntry(s.era, 2, "SOLD", "Sold.", listOf(hero.id.value)), HistoryEntry(s.era, 5, "SIEGE", "Defended Emberfall.", listOf(hero.id.value))) + fights,
+        )
+        val town = s.copy(day = 17, weapons = mapOf(blade.id to blade), town = s.town.copy(nextSiegeDay = 20))
+        val visit = MarketVisit(hero.id, hero.fullName, null, VisitReason.NOT_BETTER)
+        fun told(state: GameState) = Recognitions.eligible(ResolutionContext(state, content, config), visit, seatedFirst = false).singleOrNull { it.cue == RecognitionCue.HELD_THE_WALL }
+        val wall = Recognition(RecognitionCue.HELD_THE_WALL, blade.id, day = 5)
+        assertEquals(wall, told(town), "as the day opens the blade's story still has the siege")
+        // The blade's history is compacted that evening: with the rule and without it the next morning tells the same.
+        fun dayAfter(cap: Int): GameState = (GameEngine(content, config.copy(weaponHistoryCap = cap)).handle(town, Command.EndDay(TestSupport.endDayId(town))) as CommandOutcome.Accepted).state
+        val bounded = dayAfter(config.weaponHistoryCap)
+        assertTrue(bounded.hero(hero.id).isAlive && bounded.equippedWeapon(hero.id)?.id == blade.id, "still carrying it")
+        assertEquals(wall, told(dayAfter(0)), "never compacted")
+        assertEquals(wall, told(bounded), "compacted: the siege line of a living hero outlasts the cap")
+        assertEquals(config.weaponHistoryCap, bounded.weapon(blade.id).history.count { it.kind == "VICTORY" }, "the fights are still bounded")
     }
 
     @Test

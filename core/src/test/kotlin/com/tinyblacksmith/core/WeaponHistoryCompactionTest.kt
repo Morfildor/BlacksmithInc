@@ -57,6 +57,13 @@ class WeaponHistoryCompactionTest {
         assertEquals(listOf(7, 8, 10), three.filter { it.kind in combat }.map { it.day }, "the oldest combat entries go first")
         val one = WeaponHistoryCompaction.compact(history, 1)
         assertEquals(listOf(1, 2, 6, 10, 11), one.map { it.day })
+        // A living hero's newest siege line stays beyond the cap (the counter reads it); a fallen hero's does not.
+        assertEquals(listOf(1, 2, 5, 6, 10, 11), WeaponHistoryCompaction.compact(history, 1, setOf("h1", "h2")).map { it.day })
+        assertEquals(one, WeaponHistoryCompaction.compact(history, 1, setOf("h2", "h9")))
+        val twice = history + e("SIEGE", 12, "h1")
+        assertEquals(listOf(1, 2, 6, 11, 12), WeaponHistoryCompaction.compact(twice, 1, setOf("h1")).map { it.day }, "only the newest of them")
+        val wallThenFight = listOf(e("FORGED", 1), e("SIEGE", 5, "h1"), e("VICTORY", 7, "h1"))
+        assertSame(wallThenFight, WeaponHistoryCompaction.compact(wallThenFight, 1, setOf("h1")), "nothing to drop: the same list")
     }
 
     @Test

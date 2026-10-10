@@ -13,24 +13,31 @@ import com.tinyblacksmith.core.model.WeaponId
  * counter, which compaction never touches). Every other kind (FORGED, SIGNATURE, SOLD,
  * EQUIPPED, COMMISSION, INHERITED, LOST, SEIZED, RECOVERED, RETURNED, COLLECTED and anything added later) is kept
  * verbatim: `Legacy.closeRun` reads SOLD/COMMISSION owners and `WorldEvents` reads the last LOST/SEIZED subject.
+ * One combat line is read: `Recognitions` tells a carrier that they held the wall with this blade from their last SIEGE
+ * line on it, so the newest SIEGE line of each living hero stays beyond the cap.
  * Keeping the newest N commutes with daily application, so a seed replays identically with or without it.
  */
 object WeaponHistoryCompaction {
     /** Written once per fight (VICTORY) or per siege (SIEGE); the only unbounded kinds per weapon. */
     val compactable: Set<String> = setOf("VICTORY", "SIEGE")
 
-    /** Returns [history] itself when nothing is dropped; otherwise the same list minus the oldest combat entries beyond [cap]. */
-    fun compact(history: List<HistoryEntry>, cap: Int): List<HistoryEntry> {
+    /**
+     * Returns [history] itself when nothing is dropped; otherwise the same list minus the oldest combat entries beyond
+     * [cap], except the newest SIEGE line of each hero in [living].
+     */
+    fun compact(history: List<HistoryEntry>, cap: Int, living: Set<String> = emptySet()): List<HistoryEntry> {
         if (cap <= 0) return history
         var toDrop = history.count { it.kind in compactable } - cap
         if (toDrop <= 0) return history
-        return history.filter { e -> if (toDrop > 0 && e.kind in compactable) { toDrop--; false } else true }
+        val walls = living.mapNotNull { id -> history.lastOrNull { it.kind == "SIEGE" && id in it.subjectIds } }
+        val kept = history.filter { e -> if (toDrop > 0 && e.kind in compactable) { toDrop--; walls.any { it === e } } else true }
+        return if (kept.size == history.size) history else kept
     }
 
-    /** Compacts every weapon in place, order-preserving; weapons under the cap are left as the same instance. */
-    fun compact(weapons: MutableMap<WeaponId, Weapon>, cap: Int) {
+    /** Compacts every weapon in place, order-preserving; weapons with nothing to drop are left as the same instance. */
+    fun compact(weapons: MutableMap<WeaponId, Weapon>, cap: Int, living: Set<String> = emptySet()) {
         if (cap <= 0) return
-        weapons.replaceAll { _, w -> val h = compact(w.history, cap); if (h === w.history) w else w.copy(history = h) }
+        weapons.replaceAll { _, w -> val h = compact(w.history, cap, living); if (h === w.history) w else w.copy(history = h) }
     }
 
     /**
