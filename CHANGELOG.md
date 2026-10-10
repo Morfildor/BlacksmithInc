@@ -8,8 +8,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
-- Storage can be narrowed and ordered: chips for the families and rarities that are in it, "Never sold" (blades no hero has carried), and As stored / Strongest / Weakest / Dearest. "Select blades" turns the rows into checkboxes, with "Select all shown"; the chosen blades can be salvaged or given to the town watch in one go. Each asks once and says what it costs; salvaging still costs energy per blade and stops when the day's energy and overwork are spent, and the watch stops taking blades when its armory is full.
 - The first time a customer comes to the counter, one line under the card says how the day is watched ("Tap anywhere to continue · Skip day jumps to the evening"). It goes once you move on and does not come back.
+- Storage can be narrowed and ordered: chips for the families and rarities that are in it, "Never sold" (blades no hero has carried), and As stored / Strongest / Weakest / Dearest. "Select blades" turns the rows into checkboxes, with "Select all shown"; the chosen blades can be salvaged or given to the town watch in one go. Each asks once and says what it costs; salvaging still costs energy per blade and stops when the day's energy and overwork are spent, and the watch stops taking blades when its armory is full.
 - The Legend Board (Records, Legacy) tells each blade in full: its era, victories and fame, what was worked into it, who carried it and its story; an entry from before a blade's make was recorded says its properties are lost to time.
 - A signature's row in the Journal shows its clue ladder (recipe, catalyst, temper, finish): each clue earned in the journal's words, each one still missing as "not yet known". A found signature has "Use this recipe", which fills the forge with its family, metals, catalyst and temper.
 - A blade's sheet has a "Story": what is worth telling of it, oldest first (its forging, its first victory and first siege, sales, names earned, its return in a later era), above the full History. A legend that came back with its properties asleep shows them under a gold "◆ Dormant" line, apart from its buffs, on its card and on its shelf or storage row, with what wakes them.
@@ -179,6 +179,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Balance version 6.
 
 ### Fixed
+- An adventurer whose only blade shattered more than thirty days ago can still ask for a replacement: the broken blade
+  stays on record until they carry another.
+- The counter still recalls that a customer held the wall with the blade they carry after ten later fights with it: a
+  blade's story keeps its carrier's last siege line beside its newest ten fights.
 - A day the counter cannot lay out no longer stops the game from opening: that day counts as watched, the Shop opens on
   the next morning and the Gazette still has the day.
 - A past day in the Gazette is tallied as its report was: visitors, shop takings and expeditions lost (a hero who died
@@ -192,27 +196,6 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   and Start over keeps it on the device under a backup name before beginning a new save.
 - Storage errors of any kind now reach the recovery screen or the "Could not save" dialog instead of closing the game,
   and that dialog no longer claims nothing changed when the game could not check.
-- An adventurer whose only blade shattered more than thirty days ago can still ask for a replacement: the broken blade
-  stays on record until they carry another.
-- The counter still recalls that a customer held the wall with the blade they carry after ten later fights with it: a
-  blade's story keeps its carrier's last siege line beside its newest ten fights.
-### Changed
-- A collector pays at most one and a half times the going rate for a blade, whatever its shelf price.
-- Commissions say exactly what they need. A request is always for a quality the game names (decent 35+, fine 50+; a
-  noble patron asks for superb 70+, no longer "masterwork") and is written that way everywhere: "Fine frost Spear
-  (quality 50+)". A request left open in an older save is lowered to the quality its word promised.
-- An accepted commission is collected before the day's browsers arrive, so nobody buys the promised blade first. The
-  patron takes the least blade that fits (from storage before the shelf, then the lowest quality), not your best work.
-- A hero who dreams of a fine blade (the collector ambition) is satisfied by quality 50, the start of "fine"; it was 60.
-- Balance version 6.
-
-### Added
-- The Forge line of the Gazette says what was spent on materials.
-- A commission card lists each blade of the right kind in the shop with "fits" or the one thing it lacks (wrong
-  element, or its quality against the quality needed), and an accepted one names the blade that will be handed over at
-  End Day. The Home screen shows the same line.
-
-### Fixed
 - The three champions are chosen against the foe they will face: when a warlord leads the siege, a blade that bites
   deepest into warlords (Giant Slayer) counts at its full worth in deciding who stands on the wall, the same worth the
   siege forecast already gave it. The champions shown in town are now always the ones the forecast names.
