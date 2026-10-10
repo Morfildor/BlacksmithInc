@@ -13,13 +13,13 @@ DELIVERED AND IN THE GAME (do not resend)
   icon_purse, icon_settings (40x40)
   badge_common, badge_uncommon, badge_rare, badge_epic, badge_legendary, badge_flaw (24x24)
   marker_dead, marker_retired (8x8)
-  (the newest 16 arrived at 2x the in-game size and are used as delivered)
-
-DELIVERED, NOT IN THE GAME YET (do not resend; they wait for a screen that can show them)
-  icon_action_commission, icon_action_donate, icon_action_hone, icon_action_legacy,
-  icon_action_price, icon_action_scrap, icon_action_storage, icon_action_supplies (48x48)
   icon_visitor (40x40), icon_relic (24x24), icon_trait_long_assault (40x40), icon_trait_many_breaches (40x40),
   icon_promised (24x24)
+  icon_action_storage, icon_action_supplies, icon_action_commission, icon_action_hone, icon_action_donate (48x48)
+  (the visitor, relic, trait, promised and action icons are used in the gameplay-depth branch; the rest are in the main line)
+
+DELIVERED, NOT SHOWN YET (do not resend; no button or heading uses them)
+  icon_action_legacy, icon_action_price, icon_action_scrap (48x48)
 
 STILL WANTED
   Nothing.

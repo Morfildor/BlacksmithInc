@@ -20,12 +20,26 @@
   "sourceKind": "script_drawn_pack",
   "sha256": "435e05c763f38df457312447406a62298e48deae2d0b48f159ad0ede14272a52"
  },
+ "art_day_sale_receipt": {
+  "sheet": "pack:day_art",
+  "width": 128,
+  "height": 64,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3d260bc0c09301dfaaf4e7062e78668a810eba7edf5d1e357e35471ef5f0f007"
+ },
  "art_day_siege_victory": {
   "sheet": "pack:day_art",
   "width": 128,
   "height": 64,
   "sourceKind": "script_drawn_pack",
   "sha256": "15ed79b4f5f5626e15e9e707df787e8b7394166f21ad8f509762569c446cf6cf"
+ },
+ "art_day_till": {
+  "sheet": "pack:day_art",
+  "width": 128,
+  "height": 64,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "aa44b495716bfdce6494e2e985d75e0f7c54de7d575f68fe52adf649ccce05b7"
  },
  "badge_common": {
   "sheet": "pack:icons",
@@ -550,6 +564,62 @@
   "durationMs": 120,
   "notes": "Side view facing right; empty attack hand"
  },
+ "icon_action_commission": {
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "a60c56a7b738f956e70ad38235fffd902ed7de1d355930790aa7cdf0a6237d74"
+ },
+ "icon_action_donate": {
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "a6a631f1d5601360e90345dc05dcb881f818aaabdcfae2aaaecc445068404edb"
+ },
+ "icon_action_hone": {
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "016bfbdd2bdc6846bf0bcee03d330e95edc1cc9863f36d4c269e1baf4207cccf"
+ },
+ "icon_action_legacy": {
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "e674e2a9e0348f82d92210ce1792b5293b8f1b8b78f8f7e0c09b6352f639274f"
+ },
+ "icon_action_price": {
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3c56a1f3fbd01d29c8ff5f1f8f743890a3b1796f554d008b88d50ad5e3db57be"
+ },
+ "icon_action_scrap": {
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "9b47c8c3f7a2850dc79d2c19ced3239241760eeda3ce2a5caf6cd08d172b8d6e"
+ },
+ "icon_action_storage": {
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "4c2f7e391343fa636ef95251dd9afad1d7d7726c5d8b68565c7d1a24dd1aac63"
+ },
+ "icon_action_supplies": {
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "5fd75f85c4eb1592ab07a37141febd83a7a7ddbfcfa32913c272a79155e15328"
+ },
  "icon_day": {
   "sheet": "pack:icons",
   "width": 24,
@@ -634,12 +704,26 @@
   "sourceKind": "script_drawn_pack",
   "sha256": "6ed5c35bd165b153ae70bb2e73de64a8fadc737f577566fef2efc3cedd0bef6c"
  },
+ "icon_promised": {
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "87f2543917ba44a4913b56b4c792cc94ac2a5826c320c3f9b2399f653ef4fc6a"
+ },
  "icon_purse": {
   "sheet": "pack:icons",
   "width": 80,
   "height": 80,
   "sourceKind": "script_drawn_pack",
   "sha256": "b472d32c3ae93b19c609040d9aaec82491488de6d788315bd04e3cc77d98f590"
+ },
+ "icon_relic": {
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "ab7aad65365b5b5fd5f186dc58f3b3f2f297c2db9b8e973951831d2ff9684106"
  },
  "icon_reputation": {
   "sheet": "pack:icons",
@@ -654,6 +738,27 @@
   "height": 80,
   "sourceKind": "script_drawn_pack",
   "sha256": "bd767edffacaae0c5d558144b01144d52c229bc9e45c5bfb44eb6d864f6a8b0b"
+ },
+ "icon_trait_long_assault": {
+  "sheet": "pack:icons",
+  "width": 80,
+  "height": 80,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "21947a6c51d6dbc4040170a154d089c598d2d7d303bb629ab265cb06ec33112b"
+ },
+ "icon_trait_many_breaches": {
+  "sheet": "pack:icons",
+  "width": 80,
+  "height": 80,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "bad5da2da46212ec0ee95ee6a83fc4ba13cfc91fabc91b1c6665910634db27c6"
+ },
+ "icon_visitor": {
+  "sheet": "pack:icons",
+  "width": 80,
+  "height": 80,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "24b659e7f025be8d717d252da40ea9d352766966ecf931a9cf8d392f49f60c7b"
  },
  "marker_dead": {
   "sheet": "pack:icons",
@@ -2224,6 +2329,41 @@
    63,
    60
   ]
+ },
+ "relic_ashen_bellows": {
+  "sheet": "pack:relics",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "8865668558509db5c0bd2f96b471c0454474113a5b5cea41862e392b92460c21"
+ },
+ "relic_collectors_seal": {
+  "sheet": "pack:relics",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "52fdc7e0e3330f2ccfa8c75b77b675e427ef5deca91e95dbf88e086a3f4c7d56"
+ },
+ "relic_salvagers_crucible": {
+  "sheet": "pack:relics",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "87a93411fd8cf2239ec470f575a05f7c8492f0314918d7a49c324d5364c589a3"
+ },
+ "relic_slot_empty": {
+  "sheet": "pack:relics",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "64cbacdba1d16c0e2503dfc8743a30533cf9e106655beff173d55482a67b27e4"
+ },
+ "relic_tempering_ledger": {
+  "sheet": "pack:relics",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "86e2ba3c31360167e6b1448ede3ee97944e0c3a67bdc59a6f3facc0d1fa412b6"
  },
  "shelf": {
   "sheet": "pack:scene",

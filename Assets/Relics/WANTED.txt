@@ -7,9 +7,9 @@ Any resolution is fine if it is a clean multiple of the listed in-game size; nat
 
 Status as of 2026-10-10. Pieces already delivered are not listed as wanted: do not resend them.
 
-DELIVERED, NOT IN THE GAME YET (do not resend; the relics feature itself is not in the game yet, so there is nothing to show them in)
-  relic_salvagers_crucible   relic_tempering_ledger   relic_collectors_seal   relic_ashen_bellows   relic_slot_empty   (48x48)
-  They are the five files in this folder.
+DELIVERED AND IN THE GAME (do not resend)
+  relic_salvagers_crucible, relic_tempering_ledger, relic_collectors_seal, relic_ashen_bellows, relic_slot_empty (48x48).
+  (In the gameplay-depth branch, where the relics live; they reach the main line with that branch.)
 
 STILL WANTED
   Nothing.

@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.blacksmithproject.ui.FramedPanel
 import com.example.blacksmithproject.ui.PrimaryActionButton
+import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.BlessingId
@@ -60,6 +61,7 @@ fun ShopOpenCard(open: Beat.Open, day: Int, modifier: Modifier = Modifier) {
 @Composable
 fun TallyCard(tally: Beat.Tally, onOpenHero: (FaceUi) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        PixelSprite(R.drawable.art_day_till, wholeScale(128, 110.dp), Modifier.align(Alignment.CenterHorizontally).clearAndSetSemantics {})
         CardTitle(if (tally.featured == 0) "${tally.count} came by" else "${tally.count} more came by", Modifier.testTag("shopday_tally_title"))
         tally.groups.forEach { group ->
             Body(group.line, Modifier.padding(top = Space.xs))
@@ -72,6 +74,7 @@ fun TallyCard(tally: Beat.Tally, onOpenHero: (FaceUi) -> Unit, modifier: Modifie
 @Composable
 fun ShopCloseCard(close: Beat.Close, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        PixelSprite(R.drawable.art_day_sale_receipt, wholeScale(128, 110.dp), Modifier.align(Alignment.CenterHorizontally).clearAndSetSemantics {})
         Overline("The till")
         ReceiptRows(close.rows)
         Body(close.counts, Modifier.padding(top = Space.xs))

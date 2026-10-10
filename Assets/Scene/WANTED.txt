@@ -10,10 +10,10 @@ Status as of 2026-10-10. Pieces already delivered and in the game are not listed
 DELIVERED AND IN THE GAME (do not resend)
   furnace_cold (77x96), furnace_warm (79x96), furnace_hot (80x96), anvil (109x72), tool_rack (54x88), shelf (122x64),
   siege_wall (96x32), siege_wall_damaged (96x32).
-  art_day_fallen_forge, art_day_new_dawn, art_day_siege_victory (128x64, transparent): the shop-day banners.
+  art_day_fallen_forge, art_day_new_dawn, art_day_siege_victory, art_day_till, art_day_sale_receipt (128x64, transparent): the shop-day banners and cards.
 
-DELIVERED, NOT IN THE GAME YET (do not resend; they wait for a place on a card)
-  art_day_till, art_day_sale_receipt, art_day_rumour (128x64).
+DELIVERED, NOT SHOWN YET (do not resend)
+  art_day_rumour (128x64): no card shows a rumour yet.
 
 STILL WANTED
   Nothing.

@@ -652,8 +652,28 @@
       "sourceKind": "script_drawn_pack"
     },
     {
+      "id": "art_day_sale_receipt",
+      "file": "drawable-nodpi/art_day_sale_receipt.png",
+      "width": 128,
+      "height": 64,
+      "layer": "art",
+      "source": "imported",
+      "sourceSheet": "pack:day_art",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
       "id": "art_day_siege_victory",
       "file": "drawable-nodpi/art_day_siege_victory.png",
+      "width": 128,
+      "height": 64,
+      "layer": "art",
+      "source": "imported",
+      "sourceSheet": "pack:day_art",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "art_day_till",
+      "file": "drawable-nodpi/art_day_till.png",
       "width": 128,
       "height": 64,
       "layer": "art",
@@ -1084,6 +1104,86 @@
       "notes": "Side view facing right; empty attack hand"
     },
     {
+      "id": "icon_action_commission",
+      "file": "drawable-nodpi/icon_action_commission.png",
+      "width": 48,
+      "height": 48,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_action_donate",
+      "file": "drawable-nodpi/icon_action_donate.png",
+      "width": 48,
+      "height": 48,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_action_hone",
+      "file": "drawable-nodpi/icon_action_hone.png",
+      "width": 48,
+      "height": 48,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_action_legacy",
+      "file": "drawable-nodpi/icon_action_legacy.png",
+      "width": 48,
+      "height": 48,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_action_price",
+      "file": "drawable-nodpi/icon_action_price.png",
+      "width": 48,
+      "height": 48,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_action_scrap",
+      "file": "drawable-nodpi/icon_action_scrap.png",
+      "width": 48,
+      "height": 48,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_action_storage",
+      "file": "drawable-nodpi/icon_action_storage.png",
+      "width": 48,
+      "height": 48,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_action_supplies",
+      "file": "drawable-nodpi/icon_action_supplies.png",
+      "width": 48,
+      "height": 48,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
       "id": "icon_day",
       "file": "drawable-nodpi/icon_day.png",
       "width": 24,
@@ -1204,10 +1304,30 @@
       "sourceKind": "script_drawn_pack"
     },
     {
+      "id": "icon_promised",
+      "file": "drawable-nodpi/icon_promised.png",
+      "width": 48,
+      "height": 48,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
       "id": "icon_purse",
       "file": "drawable-nodpi/icon_purse.png",
       "width": 80,
       "height": 80,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_relic",
+      "file": "drawable-nodpi/icon_relic.png",
+      "width": 48,
+      "height": 48,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1226,6 +1346,36 @@
     {
       "id": "icon_settings",
       "file": "drawable-nodpi/icon_settings.png",
+      "width": 80,
+      "height": 80,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_trait_long_assault",
+      "file": "drawable-nodpi/icon_trait_long_assault.png",
+      "width": 80,
+      "height": 80,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_trait_many_breaches",
+      "file": "drawable-nodpi/icon_trait_many_breaches.png",
+      "width": 80,
+      "height": 80,
+      "layer": "icon",
+      "source": "imported",
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "icon_visitor",
+      "file": "drawable-nodpi/icon_visitor.png",
       "width": 80,
       "height": 80,
       "layer": "icon",
@@ -2792,6 +2942,56 @@
         63,
         60
       ]
+    },
+    {
+      "id": "relic_ashen_bellows",
+      "file": "drawable-nodpi/relic_ashen_bellows.png",
+      "width": 48,
+      "height": 48,
+      "layer": "relic",
+      "source": "imported",
+      "sourceSheet": "pack:relics",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "relic_collectors_seal",
+      "file": "drawable-nodpi/relic_collectors_seal.png",
+      "width": 48,
+      "height": 48,
+      "layer": "relic",
+      "source": "imported",
+      "sourceSheet": "pack:relics",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "relic_salvagers_crucible",
+      "file": "drawable-nodpi/relic_salvagers_crucible.png",
+      "width": 48,
+      "height": 48,
+      "layer": "relic",
+      "source": "imported",
+      "sourceSheet": "pack:relics",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "relic_slot_empty",
+      "file": "drawable-nodpi/relic_slot_empty.png",
+      "width": 48,
+      "height": 48,
+      "layer": "relic",
+      "source": "imported",
+      "sourceSheet": "pack:relics",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "relic_tempering_ledger",
+      "file": "drawable-nodpi/relic_tempering_ledger.png",
+      "width": 48,
+      "height": 48,
+      "layer": "relic",
+      "source": "imported",
+      "sourceSheet": "pack:relics",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "siege_wall",

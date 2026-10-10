@@ -82,7 +82,9 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | shelf | 122×64 | scene | imported: script-drawn pack | pack:scene | anchor=bottom-left |
 | art_day_fallen_forge | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
 | art_day_new_dawn | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
+| art_day_sale_receipt | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
 | art_day_siege_victory | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
+| art_day_till | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
 | bg_counter_forge | 540×270 | bg | imported: script-drawn pack | pack:backgrounds |  |
 | bg_forge_night | 232×211 | bg | imported: script-drawn pack | pack:backgrounds |  |
 | bg_run_end_fallen_forge | 270×150 | bg | imported: script-drawn pack | pack:backgrounds |  |
@@ -118,6 +120,14 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | hero_warden_attack_1 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
 | hero_warden_idle_0 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
 | hero_warden_idle_1 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
+| icon_action_commission | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_donate | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_hone | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_legacy | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_price | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_scrap | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_storage | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_supplies | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_day | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_energy | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_gold | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
@@ -130,9 +140,14 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | icon_nav_legacy | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_nav_market | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_nav_town | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_promised | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_purse | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_relic | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_reputation | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_settings | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_trait_long_assault | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_trait_many_breaches | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_visitor | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
 | marker_dead | 16×16 | marker | imported: script-drawn pack | pack:icons |  |
 | marker_retired | 16×16 | marker | imported: script-drawn pack | pack:icons |  |
 | monster_ashclaw_brute_attack_0 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Combat attack frame |
@@ -265,6 +280,11 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | portrait_warden_2 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 59] |
 | portrait_warden_3 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 62] |
 | portrait_warden_4 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 60] |
+| relic_ashen_bellows | 48×48 | relic | imported: script-drawn pack | pack:relics |  |
+| relic_collectors_seal | 48×48 | relic | imported: script-drawn pack | pack:relics |  |
+| relic_salvagers_crucible | 48×48 | relic | imported: script-drawn pack | pack:relics |  |
+| relic_slot_empty | 48×48 | relic | imported: script-drawn pack | pack:relics |  |
+| relic_tempering_ledger | 48×48 | relic | imported: script-drawn pack | pack:relics |  |
 | siege_wall | 96×32 | siege | imported: script-drawn pack | pack:scene |  |
 | siege_wall_damaged | 96×32 | siege | imported: script-drawn pack | pack:scene |  |
 | weapon_axe_base_1 | 56×56 | weapon | imported: AI-generated sheet | Weapons master |  |
