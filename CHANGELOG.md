@@ -22,6 +22,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ### Changed
 - The bottom bar icons are larger (about 31 to 40 dp, drawn at a whole-number multiple of their pixels so they stay crisp) and the bar is 72 dp; the Day, Gold and Energy icons in the top bar are larger too.
+- Material icons on the Forge chips and in Supplies, and the forge-integrity shield under the banner, are larger and drawn at whole-number pixel multiples.
 - Each destination keeps its place: the scroll position of Shop, Forge, Town and each Records segment, and the Forge's open step, are as they were left when you come back, also after a visit to the main menu. A new day opens each at its top. "Forge this" still takes you to the Forge and shows the step to choose next.
 - Back closes what is open, then returns to the Shop, and from the Shop opens the main menu (it used to leave the game). During a shop day it steps back a card; on the first card and on the Resume prompt it opens the menu, and "Continue run" returns to the same card with the day still unwatched. Back on the blessing offer means "Decide later", and deciding later no longer sends you to the Shop.
 - The Forge no longer scrolls by itself when you arrive, so the tip, Supplies and Journal at its top stay in view; a step scrolls into view when you open it or pick from it.

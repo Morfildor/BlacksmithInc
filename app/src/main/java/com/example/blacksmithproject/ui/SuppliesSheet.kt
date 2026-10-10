@@ -86,7 +86,7 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                 val stock = st.supplierStock[m.id]
                 val have = st.materials[m.id] ?: 0
                 Row(Modifier.fillMaxWidth().padding(vertical = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                    Sprites.material(m.id)?.let { PixelImage(it, 28.dp, description = null) }
+                    Sprites.material(m.id)?.let { PixelImage(it, wholePixelDp(48, 40.dp), description = null) }
                     Column(Modifier.weight(1f)) {
                         Text("${m.name} · $price gold", style = MaterialTheme.typography.bodyMedium)
                         Secondary("You have $have" + (stock?.let { " · $it left today" } ?: ""))

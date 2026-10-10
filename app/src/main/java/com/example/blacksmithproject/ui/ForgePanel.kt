@@ -233,7 +233,7 @@ private fun ThreatLine(s: UiState.Playing, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        PixelImage(R.drawable.icon_integrity, 18.dp, description = null)
+        PixelImage(R.drawable.icon_integrity, wholePixelDp(24, 26.dp), description = null)
         Text(
             buildAnnotatedString {
                 withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append("Forge ${st.town.integrity}") }
@@ -401,7 +401,7 @@ private fun MaterialChips(
                 selected = selected == m.id,
                 enabled = n > 0,
                 onClick = { onPick(m.id) },
-                leadingIcon = Sprites.material(m.id)?.let { res -> { PixelImage(res, 20.dp, description = null) } },
+                leadingIcon = Sprites.material(m.id)?.let { res -> { PixelImage(res, wholePixelDp(48, 32.dp), description = null) } },
                 trailingIcon = mark?.let { { Text(it.kind.sign, style = MaterialTheme.typography.titleSmall, color = it.kind.color) } },
                 label = { Text(if (n > 0) "${m.name} ×$n" else m.name) },
                 modifier = Modifier.heightIn(min = 48.dp).semantics {
