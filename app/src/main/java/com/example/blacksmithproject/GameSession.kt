@@ -49,6 +49,12 @@ class GameSession(
         /** Discards a run that has not ended. Nothing is claimed: the legacy row stays as it was before the run. */
         data class Abandon(val runId: RunId) : Op
         data class MoveCursor(val cursor: DayCursor) : Op
+        /**
+         * Debug builds only (the Scenarios menu): [run], a stored run row, takes the place of the current run with its
+         * last day counted as watched, so it opens on planning. It is given the player's legacy, so the legacy row
+         * stays as it is; with [ownLegacy] the legacy the save carries replaces the player's instead.
+         */
+        data class LoadScenario(val run: String, val ownLegacy: Boolean, val replacesRunId: RunId?) : Op
     }
     sealed interface Result {
         data class Done(val accepted: CommandOutcome.Accepted? = null) : Result
@@ -180,7 +186,8 @@ class GameSession(
 
     private sealed interface Step {
         class Answer(val result: Result) : Step
-        class Write(val run: GameState?, val runText: String?, val legacy: LegacyProfile, val legacyText: String, val accepted: CommandOutcome.Accepted? = null) : Step
+        /** [watched]: the run arrives with its last day already watched (a scenario), so the cursor is written at DONE for it. */
+        class Write(val run: GameState?, val runText: String?, val legacy: LegacyProfile, val legacyText: String, val accepted: CommandOutcome.Accepted? = null, val watched: Boolean = false) : Step
     }
 
     private suspend fun execute(snap: Snapshot, op: Op): Result {
@@ -203,8 +210,13 @@ class GameSession(
                 }
                 runText = step.runText
                 // A discarded run takes its day position with it, so a later run with the same ID starts unwatched.
-                if (step.run == null) try { repo.saveCursor(null) } catch (_: SaveFailure) { }
-                _snapshot.value = Snapshot(step.run, step.legacy, if (step.run == null) null else snap.cursor)
+                val cursor = when {
+                    step.run == null -> null
+                    step.watched -> step.run.lastResolution?.let { DayCursor(it.commandId.value, DayCursor.Stage.DONE) }
+                    else -> snap.cursor
+                }
+                if (step.run == null || step.watched) try { repo.saveCursor(cursor?.encode()) } catch (_: SaveFailure) { }
+                _snapshot.value = Snapshot(step.run, step.legacy, cursor)
                 Result.Done(step.accepted)
             }
         }
@@ -249,6 +261,14 @@ class GameSession(
                 run == null || run.runId != op.runId -> Result.Stale
                 run.isEnded -> Result.Rejected(GameError.RunEnded)
                 else -> return Step.Write(null, null, snap.legacy, SaveCodec.encodeLegacy(snap.legacy))
+            }
+            is Op.LoadScenario -> when {
+                run?.runId != op.replacesRunId -> Result.Stale
+                else -> {
+                    // A save that does not decode or is not admitted throws: nothing is written and the op answers EngineFault.
+                    val next = admitRun(op.run).let { if (op.ownLegacy) it else it.copy(legacy = snap.legacy) }
+                    return Step.Write(next, SaveCodec.encodeRun(next), next.legacy, SaveCodec.encodeLegacy(next.legacy), watched = true)
+                }
             }
             is Op.MoveCursor -> error("MoveCursor never reaches the planner")
         }

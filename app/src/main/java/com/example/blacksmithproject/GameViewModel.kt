@@ -347,6 +347,12 @@ class GameViewModel(
         launch(Op.Abandon(run.runId)) { edit { Local(loading = false, speed = it.speed) } }
     }
 
+    /** Debug builds only (the Scenarios menu): a bundled save takes the place of the current run ([Op.LoadScenario]). */
+    fun loadScenario(run: String, ownLegacy: Boolean, onLoaded: () -> Unit) {
+        val snap = session.snapshot.value ?: return
+        launch(Op.LoadScenario(run, ownLegacy, snap.run?.runId)) { edit { Local(loading = false, speed = it.speed) }; onLoaded() }
+    }
+
     /** A bar tap. Records opens on the segment it was left on. */
     fun selectDest(dest: Dest) = edit { it.copy(dest = dest) }
     /** A segment of Records, from its own row or from a link elsewhere (yesterday's news on the Shop). */
