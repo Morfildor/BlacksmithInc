@@ -106,8 +106,10 @@ fun ShopDayScreen(
             when (beat) {
                 is Beat.Open, is Beat.Visit, is Beat.Tally, is Beat.Close, is Beat.Quiet -> {
                     val visit = (beat as? Beat.Visit)?.visit
+                    // With nobody at the counter the plate says what is left on the shelf; the part of the day is on the strip above.
+                    val left = model.shelf.count { it.blade.weaponId !in beat.gone }
                     CounterScene(
-                        plate = visit?.face?.name ?: beat.progress, detail = visit?.detail, customer = visit?.face, customerKey = visit?.seq,
+                        plate = visit?.face?.name ?: when (left) { 0 -> if (model.shelf.isEmpty()) "Nobody at the counter" else "Every blade is sold"; 1 -> "1 blade on the shelf"; else -> "$left blades on the shelf" }, detail = visit?.detail, customer = visit?.face, customerKey = visit?.seq,
                         reducedMotion = reducedMotion, onOpenHero = openHero, backdropHeight = if (short) 104.dp else 140.dp,
                     )
                     ShelfBand(
@@ -119,8 +121,9 @@ fun ShopDayScreen(
                 is Beat.Aftermath ->
                     if (beat.card.kind == AftermathKind.SIEGE_HELD) StageBanner("Beyond the door", R.drawable.art_day_siege_victory, vignette = true)
                     else StageBanner("Beyond the door", R.drawable.bg_title_workshop_night)
-                is Beat.Blessing -> StageBanner(beat.progress, R.drawable.bg_title_workshop_night)
-                is Beat.Tomorrow -> StageBanner("Day ${beat.day}", R.drawable.art_day_new_dawn, vignette = true)
+                is Beat.Blessing -> StageBanner("The town's thanks", R.drawable.bg_title_workshop_night)
+                // Still the evening of the day just watched (the strip says so); the next day is named once here and once on its button.
+                is Beat.Tomorrow -> StageBanner("Tomorrow: day ${beat.day}", R.drawable.art_day_new_dawn, vignette = true)
             }
             key(at) {
                 Column(
@@ -129,7 +132,7 @@ fun ShopDayScreen(
                 ) {
                     FramedPanel(modifier = Modifier.fillMaxWidth()) {
                         when (beat) {
-                            is Beat.Open -> ShopOpenCard(beat, model.day)
+                            is Beat.Open -> ShopOpenCard(beat)
                             is Beat.Visit -> VisitCard(beat.visit, openBlade)
                             is Beat.Tally -> TallyCard(beat, openHero)
                             is Beat.Close -> ShopCloseCard(beat)

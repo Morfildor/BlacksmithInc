@@ -19,6 +19,15 @@ enum class Ending { FALLEN, BLESSING, TOMORROW }
 enum class AftermathKind {
     SIEGE_HELD, SIEGE_LOST, DEATH, ELITE_SLAIN, AMBITION_FULFILLED, TITLE_EARNED, INHERITED, RESOLD,
     WIN_NEW_BLADE, WIN, GUILD_LESSON, SCARCE_LOOT, BLADE_GONE, LOSS,
+    FIELD_SUMMARY,                                    // never beside another card: the day's fights in one line when no card tells any of them
+}
+
+/**
+ * The day's expeditions as counts, from the field results: [won] and [drivenBack] include the unarmed ones. A hero is
+ * unarmed when the fight's own record names no blade.
+ */
+data class FieldTally(val won: Int, val wonUnarmed: Int, val drivenBack: Int, val drivenBackUnarmed: Int, val died: Int) {
+    val fought: Int get() = won + drivenBack + died
 }
 
 /** What the stored roll says the blade was worth; never more than that. */
@@ -44,6 +53,7 @@ data class AftermathCard(
     val championIds: List<HeroId> = emptyList(),
     val forgeDamage: Int? = null,
     val replay: CombatReplay? = null,                 // "Watch the fight"
+    val tally: FieldTally? = null,                    // FIELD_SUMMARY only
     val eventIds: List<String> = emptyList(),
 )
 
@@ -158,7 +168,8 @@ object ShopDay {
     /**
      * Every card the day could show, best first: the siege, then what happened to a blade or to a hero seen at the
      * counter today. A plain win with an older blade is the Gazette's to tell, unless the stored roll says the blade
-     * was needed.
+     * was needed. A day whose fights earn no card gets one [AftermathKind.FIELD_SUMMARY] instead, so heroes who went
+     * out and came back beaten are not left to the Gazette alone.
      */
     private fun aftermath(r: DayResolution, after: GameState, content: ContentCatalog): List<AftermathCard> {
         val events = r.events.associateBy { it.id }
@@ -265,6 +276,13 @@ object ShopDay {
                 kind, e.text, hero?.id, hero?.fullName, otherHeroId = heroes.getOrNull(1)?.let { HeroId(it) }, weapon = blade,
                 fate = e.data[WeaponFate.KEY]?.let { name -> WeaponFate.entries.firstOrNull { it.name == name } }, eventIds = listOf(e.id),
             )
+        }
+        if (cards.isEmpty()) {
+            val fights = r.field.filter { it.outcome == FieldOutcome.WON || it.outcome == FieldOutcome.DRIVEN_BACK || it.outcome == FieldOutcome.DIED }
+            fun unarmed(f: FieldResult) = f.weapon == null && f.eventIds.mapNotNull { events[it] }.none { e -> e.subjectIds.any { it != f.heroId.value } }
+            fun count(outcome: FieldOutcome, bare: Boolean = false) = fights.count { it.outcome == outcome && (!bare || unarmed(it)) }
+            val tally = FieldTally(count(FieldOutcome.WON), count(FieldOutcome.WON, true), count(FieldOutcome.DRIVEN_BACK), count(FieldOutcome.DRIVEN_BACK, true), count(FieldOutcome.DIED))
+            if (tally.fought > 0) cards += AftermathCard(AftermathKind.FIELD_SUMMARY, Lines.field(tally), tally = tally, eventIds = fights.flatMap { it.eventIds })
         }
         return cards.withIndex().sortedWith(compareBy<IndexedValue<AftermathCard>> { it.value.kind }.thenBy { it.index }).map { it.value }
     }

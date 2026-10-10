@@ -130,6 +130,26 @@ class ProcessDeathTest : ShopDayTestBase() {
         assertEquals(run, repo.run)
     }
 
+    /** The summary of the day's fights is a card like any other: a kill on it reopens on it, with the same words and the same save. */
+    @Test
+    fun killOnTheFieldSummaryReopensOnIt() = vmTest {
+        val repo = repo(fresh)
+        val first = open(repo)
+        first.endDay(); advanceUntilIdle()
+        first.next(); advanceUntilIdle()
+        assertEquals(Beat.Aftermath(0), first.day().position.beat)
+        assertEquals(com.tinyblacksmith.core.shopday.AftermathKind.FIELD_SUMMARY, first.day().script.aftermath.single().kind)
+        val run = repo.run
+
+        val again = open(repo)
+        assertTrue(again.day().resumed)
+        assertEquals(Beat.Aftermath(0), again.day().position.beat)
+        assertEquals(DayCursor.Stage.AFTERMATH, repo.storedCursor()?.stage)
+        assertEquals(first.day().script, again.day().script)
+        assertEquals(first.day().model, again.day().model)
+        assertEquals(run, repo.run)
+    }
+
     @Test
     fun acknowledgedDayOpensPlanningOnTheNextDay() = vmTest {
         val repo = repo(stocked)

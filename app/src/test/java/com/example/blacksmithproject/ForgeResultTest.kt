@@ -6,6 +6,7 @@ import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.detail.priceAgainstSuggested
 import com.example.blacksmithproject.ui.forgedFor
 import com.example.blacksmithproject.ui.shopUi
+import com.example.blacksmithproject.ui.withoutEmptyStats
 import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.market.Commissions
 import com.tinyblacksmith.core.model.Commission
@@ -39,6 +40,16 @@ class ForgeResultTest : ShopDayTestBase() {
 
     private fun request(status: CommissionStatus, minQuality: Int = 1) =
         Commission(CommissionId("c1"), forged.aliveHeroes().first().id, blade.familyId, minQuality, 80, forged.day, forged.day + 3, status)
+
+    /** "Renown Unsung (0)" says nothing of a blade made a moment ago; renown that was earned, or lost, is still shown. */
+    @Test
+    fun aFreshBladesCardLeavesOutRenownItHasNotEarned() {
+        val detail = engine.itemDetail(forged, blade.id)!!
+        assertEquals("the blade's sheet keeps all four", listOf("Power", "Quality", "Condition", "Renown"), detail.stats.map { it.label })
+        assertEquals(listOf("Power", "Quality", "Condition"), detail.withoutEmptyStats().stats.map { it.label })
+        val famed = engine.itemDetail(forged.copy(weapons = forged.weapons + (blade.id to blade.copy(fame = 3))), blade.id)!!
+        assertEquals(3, famed.withoutEmptyStats().stats.single { it.label == "Renown" }.value)
+    }
 
     @Test
     fun listingAtAChosenPriceSavesItAndSaysWhereTheBladeWent() = vmTest {

@@ -81,14 +81,37 @@ class ForgeResultCardTest {
 
     private fun afford(price: Int) = "${funds.count { it >= price }} of ${funds.size} heroes in town can afford this price."
 
-    private fun show(detail: ItemDetail, request: ForgedForUi? = null) = compose.setContent {
+    private fun show(detail: ItemDetail, request: ForgedForUi? = null, reveal: Boolean = false) = compose.setContent {
         BlacksmithProjectTheme {
             DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(size) then DeviceConfigurationOverride.FontScale(font)) {
                 Box(Modifier.fillMaxSize()) {
-                    ForgeResultCard(detail, "Sword of Iron and Ember Resin.", request, enabled = true, onStore = { stored++ }, onList = { listed += it }, modifier = Modifier.heightIn(max = size.height * 0.92f))
+                    ForgeResultCard(detail, "Sword of Iron and Ember Resin.", request, enabled = true, onStore = { stored++ }, onList = { listed += it }, modifier = Modifier.heightIn(max = size.height * 0.92f), reveal = reveal)
                 }
             }
         }
+    }
+
+    /**
+     * The reveal never holds the actions back: on its very first frame, with the clock stopped before the details have
+     * faded in, the price is there and "List at" lists. A new blade's card has no "Renown" row.
+     */
+    @Test
+    fun theRevealLeavesThePriceAndBothButtonsLiveFromTheFirstFrame() {
+        compose.mainClock.autoAdvance = false
+        show(engine.itemDetail(forged, blade.id)!!, reveal = true)
+        compose.mainClock.advanceTimeByFrame()
+        compose.onNodeWithText(blade.name).assertIsDisplayed()
+        compose.onNodeWithTag("reveal_price").assertIsDisplayed().assertTextContains("$suggested")
+        compose.onNodeWithTag("reveal_store").assertIsDisplayed().assertIsEnabled()
+        compose.onNodeWithTag("reveal_list").assertIsDisplayed().assertIsEnabled().performClick()
+        compose.mainClock.advanceTimeByFrame()
+        assertEquals(listOf(suggested), listed)
+        compose.onNodeWithText("Renown").assertDoesNotExist()
+        compose.onNodeWithText("Power").assertExists()
+        // The layout is the same before and after the fade: nothing a thumb is reaching for moves.
+        val before = compose.onNodeWithTag("reveal_list").getUnclippedBoundsInRoot()
+        compose.mainClock.advanceTimeBy(2_000)
+        assertEquals(before, compose.onNodeWithTag("reveal_list").getUnclippedBoundsInRoot())
     }
 
     @Test

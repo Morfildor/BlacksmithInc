@@ -45,7 +45,7 @@ data class FaceUi(val heroId: HeroId?, val name: String, val snapshot: CustomerS
 /** One line of a receipt or of the till: a label and a value, never joined into a sentence. */
 @Immutable data class ReceiptRow(val label: String, val value: String, val total: Boolean = false)
 
-/** A blade the visitor weighed: its name and price, then the recorded factors. */
+/** A blade the visitor weighed: its name and price, then the recorded factors as sentences. */
 @Immutable data class LookedUi(val blade: WeaponSnapshot?, val title: String, val factors: String)
 
 @Immutable
@@ -55,8 +55,12 @@ data class VisitUi(
     val face: FaceUi,
     val detail: String,                 // class, regular, what they carry: the rest of Lines.customer after the name
     val sold: Boolean,
+    val banner: String,                 // the outcome in a word or two: Sold, Request paid, Sold to a collector, No sale
+    val coin: Int,                      // what the Sale record added to the till; 0 without a sale
+    val earnedBefore: Int,              // the coin of the sales shown before this card
+    val earnedAfter: Int,
     val recognition: String?,           // the stored cue as a sentence: why this face is known
-    val outcome: String,                // the typed reason as a heading
+    val outcome: String,                // the typed reason as a heading, led by its recorded number where it has one
     val decision: String?,              // the reason with its numbers; null when it would only repeat the heading
     val receipt: List<ReceiptRow>,
     val looked: List<LookedUi>,
@@ -94,14 +98,15 @@ sealed interface Beat {
     val progress: String
     val gone: Set<WeaponId>
 
-    @Immutable data class Open(val visitors: Int, val blades: Int, override val progress: String = "The shop opens") : Beat {
+    /** [visitors] is everyone who came; [shown] are those with a card of their own, the rest are in the tally. */
+    @Immutable data class Open(val visitors: Int, val shown: Int, override val progress: String = "The shop opens") : Beat {
         override val millis get() = BeatLength.OPEN
         override val gone: Set<WeaponId> get() = emptySet()
     }
     @Immutable data class Visit(val visit: VisitUi, override val progress: String, override val gone: Set<WeaponId>) : Beat {
         override val millis get() = BeatLength.ARRIVE + BeatLength.BROWSE + BeatLength.DECIDE + if (visit.sold) BeatLength.TRANSACT else 0
     }
-    @Immutable data class Tally(val count: Int, val featured: Int, val groups: List<TallyGroupUi>, override val gone: Set<WeaponId>, override val progress: String = "The rest of the day") : Beat {
+    @Immutable data class Tally(val count: Int, val featured: Int, val groups: List<TallyGroupUi>, val earnedBefore: Int, val earnedAfter: Int, override val gone: Set<WeaponId>, override val progress: String = "The rest of the day") : Beat {
         override val millis get() = BeatLength.TALLY
     }
     @Immutable data class Close(val rows: List<ReceiptRow>, val counts: String, val purse: Int, override val gone: Set<WeaponId>, override val progress: String = "The shop closes") : Beat {
@@ -115,11 +120,11 @@ sealed interface Beat {
         override val millis get() = BeatLength.AFTERMATH
         override val gone: Set<WeaponId> get() = emptySet()
     }
-    @Immutable data class Blessing(val choices: List<BlessingUi>, override val progress: String = "The town's thanks") : Beat {
+    @Immutable data class Blessing(val choices: List<BlessingUi>, override val progress: String = "Evening") : Beat {
         override val millis get() = 0
         override val gone: Set<WeaponId> get() = emptySet()
     }
-    @Immutable data class Tomorrow(val day: Int, val gold: Int, val shelf: Int, val storage: Int, val action: String, val reason: String?, val siege: String, override val progress: String = "The day is done") : Beat {
+    @Immutable data class Tomorrow(val day: Int, val gold: Int, val shelf: Int, val storage: Int, val action: String, val reason: String?, val siege: String, override val progress: String = "Evening") : Beat {
         override val millis get() = 0
         override val gone: Set<WeaponId> get() = emptySet()
     }
@@ -144,10 +149,10 @@ data class ShopDayUiModel(val day: Int, val shelf: List<BladeUi>, val beats: Lis
 private fun incomeLabel(kind: IncomeKind): String = when (kind) {
     IncomeKind.SHELF_SALE -> "Shelf sales"
     IncomeKind.SALE_BONUS -> "Town's blessing"
-    IncomeKind.STIPEND -> "Stipend"
-    IncomeKind.COMMISSION -> "Commissions"
+    IncomeKind.STIPEND -> "Guild stipends"
+    IncomeKind.COMMISSION -> "Requests"
     IncomeKind.COLLECTOR -> "Collector"
-    IncomeKind.TRIBUTE -> "Tribute"
+    IncomeKind.TRIBUTE -> "Tribute from the town"
 }
 
 private fun aftermathLabel(kind: AftermathKind): String = when (kind) {
@@ -164,6 +169,7 @@ private fun aftermathLabel(kind: AftermathKind): String = when (kind) {
     AftermathKind.SCARCE_LOOT -> "Brought back"
     AftermathKind.BLADE_GONE -> "A blade lost"
     AftermathKind.LOSS -> "Driven back"
+    AftermathKind.FIELD_SUMMARY -> "Out in the field"
 }
 
 private fun plural(n: Int, one: String, many: String) = "$n ${if (n == 1) one else many}"
@@ -187,30 +193,43 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
     fun receipt(v: MarketVisit): List<ReceiptRow> {
         val sale = v.sale ?: return emptyList()
         return buildList {
-            sale.listedPrice?.let { add(ReceiptRow("Listed price", "$it gold")) }
+            // A request pays its agreed reward and a collector more than the tag: each gets its own row, so the rows add up to the total.
+            if (v.kind == VisitKind.COMMISSION) add(ReceiptRow("Request payment", "${sale.cashPaid} gold"))
+            else sale.listedPrice?.let { listed ->
+                add(ReceiptRow("Listed price", "$listed gold"))
+                if (v.kind == VisitKind.COLLECTOR && sale.cashPaid > listed) add(ReceiptRow("Collector's premium", "+${sale.cashPaid - listed} gold"))
+                if (v.kind == VisitKind.COLLECTOR && sale.cashPaid < listed) add(ReceiptRow("Collector's offer, under the tag", "−${listed - sale.cashPaid} gold"))
+            }
             if (sale.tradeInWeaponId != null || sale.tradeInCredit != 0) {
                 val old = v.customer?.equipped?.takeIf { it.weaponId == sale.tradeInWeaponId }?.name
                 add(ReceiptRow("Trade-in" + (old?.let { ": $it" } ?: ""), "−${sale.tradeInCredit} gold"))
             }
             if (sale.saleBonus != 0) add(ReceiptRow("Town's blessing", "+${sale.saleBonus} gold"))
-            if (sale.stipend != 0) add(ReceiptRow("Stipend", "+${sale.stipend} gold"))
+            // Part of the price, not on top of it: the guild's share reaches the till with the customer's.
+            if (sale.stipend != 0) add(ReceiptRow("Of that, paid by their guild", "${sale.stipend} gold"))
             // What the shop's gold rose by, as the Sale record defines it.
             add(ReceiptRow("Coin to the till", "${sale.cashPaid + sale.saleBonus + sale.stipend} gold", total = true))
         }
     }
 
-    fun visitUi(v: MarketVisit): VisitUi {
-        val outcome = Lines.reason(v.reason).replaceFirstChar { it.uppercase() }
+    // What a visit added to the till, as its Sale record defines it. The cards only add these up; no gold moves here.
+    fun coin(v: MarketVisit) = v.sale?.let { it.cashPaid + it.saleBonus + it.stipend } ?: 0
+
+    fun visitUi(v: MarketVisit, earnedBefore: Int): VisitUi {
+        val outcome = Lines.headline(v, script).replaceFirstChar { it.uppercase() }
+        val sold = v.purchasedWeaponId != null
         val name = v.customer?.name ?: v.heroName
         return VisitUi(
             seq = v.seq, kind = v.kind, face = face(v),
             detail = Lines.customer(v, content).removePrefix(name).removePrefix(", ").removePrefix(". "),
-            sold = v.purchasedWeaponId != null, recognition = Lines.recognition(v, script, state), outcome = outcome,
+            sold = sold,
+            banner = when { !sold -> "No sale"; v.kind == VisitKind.COMMISSION -> "Request paid"; v.kind == VisitKind.COLLECTOR -> "Sold to a collector"; else -> "Sold" },
+            coin = coin(v), earnedBefore = earnedBefore, earnedAfter = earnedBefore + coin(v),
+            recognition = Lines.recognition(v, script, state), outcome = outcome,
             decision = Lines.decision(v, script, content).takeIf { it != "$outcome." },
             receipt = receipt(v),
             looked = v.considered.takeIf { v.kind == VisitKind.BROWSE }.orEmpty().map { k ->
-                val line = Lines.considered(k, script)
-                LookedUi(script.blade(k.weaponId), line.substringBefore(": "), line.substringAfter(": ", ""))
+                LookedUi(script.blade(k.weaponId), listOfNotNull(script.blade(k.weaponId)?.name, "${k.price} gold").joinToString(", "), Lines.weighed(k))
             },
             lookedIds = v.considered.map { it.weaponId }.toSet(), purchased = script.blade(v.purchasedWeaponId),
         )
@@ -219,14 +238,23 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
     val beats = mutableListOf<Beat>()
     val quiet = script.quiet
     if (quiet != null) {
-        beats += Beat.Quiet(quiet.kind, Lines.quiet(quiet), quiet.visitors.distinctBy { it.heroId ?: it.heroName }.map { face(it) }, quiet.visitors.map { it.seq })
+        beats += Beat.Quiet(quiet.kind, Lines.quietCount(quiet),quiet.visitors.distinctBy { it.heroId ?: it.heroName }.map { face(it) }, quiet.visitors.map { it.seq })
     } else {
-        beats += Beat.Open(all.size, prices.size)
+        beats += Beat.Open(all.size, featured.size)
+        // "Earned today" grows in the order the cards are shown: each featured sale, then everyone in the tally at once.
+        var earned = 0
         featured.forEachIndexed { i, v ->
-            beats += Beat.Visit(visitUi(v), "Customer ${i + 1} of ${featured.size}", all.filter { it.seq < v.seq }.mapNotNull { it.purchasedWeaponId }.toSet())
+            val visit = visitUi(v, earned)
+            earned = visit.earnedAfter
+            beats += Beat.Visit(visit, "Counter · ${i + 1} of ${featured.size}", all.filter { it.seq < v.seq }.mapNotNull { it.purchasedWeaponId }.toSet())
         }
         if (tally.isNotEmpty()) {
-            beats += Beat.Tally(tally.sumOf { it.visits.size }, featured.size, tally.map { g -> TallyGroupUi(Lines.tally(g, script).replaceFirstChar { it.uppercase() }, g.visits.map { face(it) }, g.visits.map { it.seq }) }, goneAll)
+            val rest = tally.sumOf { g -> g.visits.sumOf { coin(it) } }
+            beats += Beat.Tally(
+                tally.sumOf { it.visits.size }, featured.size,
+                tally.map { g -> TallyGroupUi(Lines.tally(g, script).replaceFirstChar { it.uppercase() }, g.visits.map { face(it) }, g.visits.map { it.seq }) },
+                earnedBefore = earned, earnedAfter = earned + rest, gone = goneAll,
+            )
         }
         ledger?.let { l ->
             val sales = all.count { it.kind == VisitKind.BROWSE && it.purchasedWeaponId != null }
@@ -235,9 +263,9 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
             val left = all.count { it.purchasedWeaponId == null }
             beats += Beat.Close(
                 rows = IncomeKind.entries.mapNotNull { k -> l.income[k]?.takeIf { it != 0 }?.let { ReceiptRow(incomeLabel(k), "$it gold") } } +
-                    ReceiptRow("Taken today", "${l.goldAtClose - l.goldAtOpen} gold", total = true),
+                    ReceiptRow("Earned today","${l.goldAtClose - l.goldAtOpen} gold", total = true),
                 counts = listOfNotNull(
-                    plural(sales, "sale", "sales"), plural(commissions, "commission", "commissions").takeIf { commissions > 0 },
+                    plural(sales, "sale", "sales"), plural(commissions, "request paid", "requests paid").takeIf { commissions > 0 },
                     plural(collectors, "collector", "collectors").takeIf { collectors > 0 }, "$left left without buying",
                     // Willing heroes with no seat left (`DayResolution.turnedAway`): the reason to buy the Signboard.
                     state.lastResolution?.takeIf { it.day == day }?.turnedAway?.size?.takeIf { it > 0 }?.let { "$it found the shop full" },
@@ -256,7 +284,8 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
                 materialId = card.materialId.takeIf { card.kind == AftermathKind.SCARCE_LOOT || card.kind == AftermathKind.ELITE_SLAIN }, replay = card.replay,
             ),
             index = i + 1, of = aftermath.size, moreInGazette = if (i == aftermath.lastIndex) moreInGazette else 0,
-            progress = "Beyond the door · ${i + 1} of ${aftermath.size}",
+            // The banner under the strip says "Beyond the door"; the strip says when, and counts only when there is more than one.
+            progress = "After closing" + if (aftermath.size > 1) " · ${i + 1} of ${aftermath.size}" else "",
         )
     }
     val endingIndex = beats.size

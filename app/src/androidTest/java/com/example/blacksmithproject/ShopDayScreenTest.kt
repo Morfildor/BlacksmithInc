@@ -11,6 +11,9 @@ import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -140,6 +143,51 @@ class ShopDayScreenTest {
         val sale = day.script.featured.first { it.seq == visit.seq }.sale!!
         text("${sale.listedPrice} gold").assertExists()
         text("−${sale.tradeInCredit} gold").assertExists()
+        // The sale's band carries the coin it brought, and "Earned today" shows the day's sum before and after it.
+        compose.onNodeWithTag("shopday_coin", useUnmergedTree = true).assertTextEquals("+${sale.cashPaid + sale.saleBonus + sale.stipend} gold").performScrollTo().assertIsDisplayed()
+        assertEquals(visit.earnedBefore + visit.coin, visit.earnedAfter)
+        compose.onNodeWithTag("shopday_earned").performScrollTo().assertIsDisplayed()
+        compose.onNode(hasText("${visit.earnedAfter} gold") and hasAnyAncestor(hasTestTag("shopday_earned")), useUnmergedTree = true).assertExists()
+        compose.onNode(hasText("${visit.earnedBefore} → ") and hasAnyAncestor(hasTestTag("shopday_earned")), useUnmergedTree = true).assertExists()
+    }
+
+    /** A day when heroes fought and no card tells it: one summary beyond the door, with the way to the Gazette. */
+    @Test
+    fun fightsWithNoCardAreSummedUpBeyondTheDoor() {
+        val day = ShopDayFixtures.run(42, 1, forge = false).single()
+        val m = day.ui()
+        val at = m.first { it is Beat.Aftermath }
+        val card = (m.beats[at] as Beat.Aftermath).card
+        assertEquals(AftermathKind.FIELD_SUMMARY, card.kind)
+        show(m, at)
+        compose.onNodeWithTag("shopday_aftermath_kind", useUnmergedTree = true).assertTextEquals("Out in the field").assertIsDisplayed()
+        compose.onNodeWithTag("shopday_aftermath_text", useUnmergedTree = true).assertTextEquals(card.text).assertIsDisplayed()
+        assertTrue(card.text, Regex("^\\d+ hero(es)? went out").containsMatchIn(card.text))
+        compose.onNodeWithTag("shopday_gazette").assertIsDisplayed()
+        compose.onNodeWithTag("shopday_watch").assertDoesNotExist()
+        // The evening card names the day just watched on the strip and tomorrow once on the banner and once on its button.
+        compose.onNodeWithTag("shopday_next").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag("shopday_progress").assertTextEquals("Evening")
+        compose.onNodeWithTag("shopday_plate", useUnmergedTree = true).assertTextEquals("Tomorrow: day ${day.state.day}")
+        text("Begin day ${day.state.day}").assertIsDisplayed()
+    }
+
+    /** The opening card says how many came and how many are shown; the strip counts the shown; nothing repeats the strip. */
+    @Test
+    fun theOpeningCardCountsVisitorsAndThoseShown() {
+        val day = day("busy")
+        val m = day.ui()
+        val open = m.beats.first() as Beat.Open
+        show(m)
+        compose.onNodeWithTag("shopday_progress").assertTextEquals("The shop opens")
+        compose.onAllNodesWithText("The shop opens", useUnmergedTree = true).assertCountEquals(1)
+        compose.onNodeWithTag("shopday_open_title", useUnmergedTree = true).assertTextEquals("${day.resolution.visits.size} visitors today")
+        compose.onNodeWithTag("shopday_open_shown", useUnmergedTree = true).assertTextEquals("3 are shown at the counter; the other ${open.visitors - 3} are summed up after.")
+        compose.onNodeWithTag("shopday_plate", useUnmergedTree = true).assertTextEquals("${m.shelf.size} blades on the shelf")
+        compose.onNodeWithTag("shopday_next").performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag("shopday_progress").assertTextEquals("Counter · 1 of 3")
     }
 
     @Test
@@ -154,6 +202,8 @@ class ShopDayScreenTest {
         assertTrue("the reason carries its recorded numbers: ${visit.decision}", Regex("\\d+ gold").containsMatchIn(visit.decision!!))
         compose.onNodeWithTag("shopday_decision", useUnmergedTree = true).assertTextEquals(visit.decision!!).assertIsDisplayed()
         compose.onNodeWithTag("shopday_receipt").assertDoesNotExist()   // no coin changed hands, so no receipt
+        compose.onNodeWithTag("shopday_coin", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag("shopday_earned").assertDoesNotExist()
     }
 
     @Test

@@ -46,14 +46,23 @@ private fun Quiet(text: String, modifier: Modifier = Modifier) =
 
 private fun count(n: Int, one: String, many: String) = "$n ${if (n == 1) one else many}"
 
-/** The shop as it stood when the door opened: how many came today and what was on the shelf. */
+/**
+ * How many came today, and how many of them get a card of their own. The day and "the shop opens" are on the strip
+ * above and the shelf on the plate, so neither is said again here.
+ */
 @Composable
-fun ShopOpenCard(open: Beat.Open, day: Int, modifier: Modifier = Modifier) {
+fun ShopOpenCard(open: Beat.Open, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-        Overline("Day $day")
-        CardTitle("The shop is open")
-        Body("${count(open.blades, "blade", "blades")} on the shelf. ${count(open.visitors, "customer", "customers")} came to the counter today.")
-        Quiet("Tap anywhere to go on. Skip day jumps to tomorrow.", Modifier.padding(top = Space.sm))
+        CardTitle("${count(open.visitors, "visitor", "visitors")} today", Modifier.testTag("shopday_open_title"))
+        val rest = open.visitors - open.shown
+        Body(
+            when {
+                open.shown == 0 -> "What came of ${if (open.visitors == 1) "the visit" else "their visits"} is summed up on the next card."
+                rest == 0 -> if (open.shown == 1) "They are shown at the counter." else "Each is shown at the counter."
+                else -> "${open.shown} ${if (open.shown == 1) "is" else "are"} shown at the counter; the other $rest ${if (rest == 1) "is" else "are"} summed up after."
+            },
+            Modifier.testTag("shopday_open_shown"),
+        )
     }
 }
 
@@ -67,10 +76,11 @@ fun TallyCard(tally: Beat.Tally, onOpenHero: (FaceUi) -> Unit, modifier: Modifie
             Body(group.line, Modifier.padding(top = Space.xs))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) { group.faces.forEach { PersonChip(it, onOpenHero) } }
         }
+        if (tally.earnedAfter != tally.earnedBefore) EarnedToday(tally.earnedBefore, tally.earnedAfter, Modifier.padding(top = Space.xs))
     }
 }
 
-/** The till by kind, then the purse it left. */
+/** The till by kind and its total, "Earned today", then the purse it left. */
 @Composable
 fun ShopCloseCard(close: Beat.Close, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
@@ -125,9 +135,10 @@ fun AftermathCard(
         card.replay?.let { replay ->
             OutlinedButton(onClick = { onWatchFight(replay) }, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_watch")) { Text("Watch the fight") }
         }
-        if (beat.moreInGazette > 0) {
+        // The summary has no names: the Gazette is where each hero's day is told.
+        if (beat.moreInGazette > 0 || card.kind == AftermathKind.FIELD_SUMMARY) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Quiet("${beat.moreInGazette} more in the Gazette", Modifier.weight(1f))
+                Quiet(if (beat.moreInGazette > 0) "${beat.moreInGazette} more in the Gazette" else "Who fought whom is in the Gazette", Modifier.weight(1f))
                 TextButton(onClick = onOpenGazette, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_gazette")) { Text("Read the Gazette") }
             }
         }
@@ -205,8 +216,9 @@ fun BlessingChoices(choices: List<BlessingUi>, onChoose: (BlessingId) -> Unit, m
 fun ResumePrompt(day: Int, took: Int?, onResume: () -> Unit, onSkip: () -> Unit, modifier: Modifier = Modifier) {
     FramedPanel(modifier = modifier.fillMaxWidth().padding(Space.md)) {
         CardTitle("Day $day is done and saved.")
-        took?.let { Body("The shop took $it gold.", Modifier.padding(top = Space.sm)) }
+        took?.let { Body("The shop earned $it gold.", Modifier.padding(top = Space.sm)) }
         PrimaryActionButton("Resume the day", onResume, Modifier.fillMaxWidth().padding(top = Space.md).testTag("shopday_resume"))
-        OutlinedButton(onClick = onSkip, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("shopday_resume_skip")) { Text("Skip to tomorrow") }
+        // The same landing as Skip day: the evening card, where "Begin day N" still waits.
+        OutlinedButton(onClick = onSkip, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("shopday_resume_skip")) { Text("Skip to the evening") }
     }
 }

@@ -1,10 +1,14 @@
 package com.example.blacksmithproject
 
 import com.example.blacksmithproject.ui.shopday.Beat
+import com.example.blacksmithproject.ui.shopday.ReceiptRow
 import com.example.blacksmithproject.ui.shopday.ShopDayUiModel
 import com.example.blacksmithproject.ui.shopday.isEnding
 import com.example.blacksmithproject.ui.shopday.toUi
+import com.tinyblacksmith.core.model.FieldOutcome
+import com.tinyblacksmith.core.model.IncomeKind
 import com.tinyblacksmith.core.model.VisitKind
+import com.tinyblacksmith.core.shopday.AftermathKind
 import com.tinyblacksmith.core.shopday.Ending
 import com.tinyblacksmith.core.shopday.Lines
 import org.junit.Assert.assertEquals
@@ -133,7 +137,8 @@ class ShopDayUiTest {
                 sales++
                 assertEquals("${sale.cashPaid + sale.saleBonus + sale.stipend} gold", ui.receipt.last().value)
                 assertTrue(ui.receipt.last().total)
-                assertEquals(sale.listedPrice?.let { "$it gold" }, ui.receipt.firstOrNull { it.label == "Listed price" }?.value)
+                // A request is paid its reward, whatever tag the blade wore: its receipt has no listed price to add up from.
+                assertEquals(sale.listedPrice?.takeIf { v.kind != VisitKind.COMMISSION }?.let { "$it gold" }, ui.receipt.firstOrNull { it.label == "Listed price" }?.value)
                 assertEquals(sale.tradeInWeaponId != null, ui.receipt.any { it.label.startsWith("Trade-in") })
                 if (sale.tradeInWeaponId != null) assertEquals("−${sale.tradeInCredit} gold", ui.receipt.first { it.label.startsWith("Trade-in") }.value)
                 assertEquals("label and value rows only: no row is a sentence", 0, ui.receipt.count { "." in it.label || "." in it.value })
@@ -150,11 +155,155 @@ class ShopDayUiTest {
                 val ui = model.beats.filterIsInstance<Beat.Visit>().single { it.visit.seq == v.seq }.visit
                 val customer = Lines.customer(v, day.engine.content)
                 assertTrue("'${ui.face.name}' + '${ui.detail}' is '$customer'", customer.startsWith(ui.face.name) && customer.endsWith(ui.detail))
-                assertEquals(Lines.reason(v.reason).replaceFirstChar { it.uppercase() }, ui.outcome)
+                assertEquals(Lines.headline(v, day.script).replaceFirstChar { it.uppercase() }, ui.outcome)
                 ui.decision?.let { assertEquals(Lines.decision(v, day.script, day.engine.content), it) }
-                if (v.kind == VisitKind.BROWSE) assertEquals(v.considered.map { Lines.considered(it, day.script) }, ui.looked.map { it.title + if (it.factors.isEmpty()) "" else ": ${it.factors}" })
+                if (v.kind == VisitKind.BROWSE) assertEquals(v.considered.map { Lines.weighed(it) }, ui.looked.map { it.factors })
             }
         }
+    }
+
+    private fun gold(text: String) = text.removeSuffix(" gold").replace("−", "-").toInt()
+
+    /**
+     * "Earned today" is arithmetic over the day's Sale records and nothing else: it rises on each sale card by that
+     * receipt's total, takes in the tally's sales at once, and with what the day earned away from the counter it is the
+     * till's total, which is the ledger's. A request payment and a collector count like any sale.
+     */
+    @Test
+    fun earnedTodayIsTheSaleRecordsAndMeetsTheTill() {
+        var sales = 0; var tallied = 0; var requests = 0; var tills = 0
+        for (day in days() + listOfNotNull(ShopDayFixtures.find("commission"), ShopDayFixtures.find("siege"))) {
+            val model = day.ui()
+            val ledger = day.resolution.ledger ?: continue
+            if (day.script.quiet != null) continue
+            var earned = 0
+            for (beat in model.beats) when (beat) {
+                is Beat.Visit -> {
+                    val v = day.script.featured.single { it.seq == beat.visit.seq }
+                    val coin = v.sale?.let { it.cashPaid + it.saleBonus + it.stipend } ?: 0
+                    assertEquals("the card counts from where the last one stopped", earned, beat.visit.earnedBefore)
+                    assertEquals(coin, beat.visit.coin)
+                    assertEquals(earned + coin, beat.visit.earnedAfter)
+                    if (v.sale == null) assertEquals("only a sale moves the number", beat.visit.earnedBefore, beat.visit.earnedAfter)
+                    if (v.sale != null) { sales++; assertEquals("the receipt's total is the rise", coin, gold(beat.visit.receipt.last().value)) }
+                    if (v.kind == VisitKind.COMMISSION) {
+                        requests++
+                        assertEquals("Request paid", beat.visit.banner)
+                        assertEquals(listOf("Request payment" to "${v.sale!!.cashPaid} gold", "Coin to the till" to "$coin gold"), beat.visit.receipt.map { it.label to it.value })
+                    }
+                    earned = beat.visit.earnedAfter
+                }
+                is Beat.Tally -> {
+                    val rest = day.script.tally.sumOf { g -> g.visits.sumOf { v -> v.sale?.let { it.cashPaid + it.saleBonus + it.stipend } ?: 0 } }
+                    assertEquals(earned to earned + rest, beat.earnedBefore to beat.earnedAfter)
+                    if (rest > 0) tallied++
+                    earned = beat.earnedAfter
+                }
+                is Beat.Close -> {
+                    tills++
+                    val total = ledger.goldAtClose - ledger.goldAtOpen
+                    // Everything the counter took is on the cards before the till; what is left came from beyond it (a tribute).
+                    val atCounter = ledger.income.filterKeys { it != IncomeKind.TRIBUTE }.values.sum()
+                    assertEquals("seed ${day.seed} day ${day.resolution.day}: the cards add up to the counter's income", atCounter, earned)
+                    assertEquals(total, earned + (ledger.income[IncomeKind.TRIBUTE] ?: 0))
+                    assertEquals(ReceiptRow("Earned today", "$total gold", total = true), beat.rows.last())
+                    assertEquals("the rows by kind add up to the total", total, beat.rows.dropLast(1).sumOf { gold(it.value) })
+                    assertEquals(ledger.income.filterValues { it != 0 }.size, beat.rows.size - 1)
+                    assertEquals(ledger.income[IncomeKind.COMMISSION]?.takeIf { it != 0 }?.let { "$it gold" }, beat.rows.firstOrNull { it.label == "Requests" }?.value)
+                    assertEquals(ledger.goldAtClose, beat.purse)
+                }
+                else -> {}
+            }
+            // The purse the next morning starts from is the saved one: nothing the cards showed was added to it.
+            assertEquals(day.state.gold, (model.beats.last() as? Beat.Tomorrow)?.gold ?: day.state.gold)
+        }
+        assertTrue("sales=$sales tallied=$tallied requests=$requests tills=$tills", sales > 40 && tallied > 5 && requests > 0 && tills > 60)
+    }
+
+    /** A receipt reads top to bottom as a sum: the price, less a trade-in, plus a blessing, is the coin to the till. A guild's share is part of the price. */
+    @Test
+    fun aSaleReceiptAddsUpToItsTotal() {
+        var sales = 0; var tradeIns = 0
+        for (day in days() + listOfNotNull(ShopDayFixtures.find("tradein"))) for (beat in day.ui().beats.filterIsInstance<Beat.Visit>()) {
+            val rows = beat.visit.receipt
+            if (rows.isEmpty()) continue
+            sales++
+            if (rows.any { it.label.startsWith("Trade-in") }) tradeIns++
+            val parts = rows.dropLast(1).filterNot { it.label.startsWith("Of that") }.sumOf { gold(it.value.removePrefix("+")) }
+            assertEquals("${rows.map { it.label to it.value }}", gold(rows.last().value), parts)
+            rows.firstOrNull { it.label.startsWith("Of that") }?.let { assertTrue(gold(it.value) <= gold(rows.first().value)) }
+        }
+        assertTrue("sales=$sales tradeIns=$tradeIns", sales > 40 && tradeIns > 0)
+    }
+
+    /** A sale and a refusal are told apart by more than a word, and a refusal leads with what the record holds. */
+    @Test
+    fun aRefusalLeadsWithItsRecordedNumbersAndASaleWithItsCoin() {
+        var short = 0; var refusals = 0
+        for (day in days()) for (beat in day.ui().beats.filterIsInstance<Beat.Visit>()) {
+            val ui = beat.visit
+            val v = day.script.featured.single { it.seq == ui.seq }
+            assertEquals(ui.sold, ui.banner != "No sale")
+            assertEquals(ui.sold, ui.receipt.isNotEmpty())
+            if (ui.sold) continue
+            refusals++
+            assertEquals(0, ui.coin)
+            if (v.reason == com.tinyblacksmith.core.model.VisitReason.TOO_EXPENSIVE) {
+                // The gap is to the cheapest blade still on the shelf when they came, by what the visit says they could pay.
+                val funds = v.considered.first { it.shortBy != null }.let { it.price - it.shortBy!! }
+                val gone = day.script.visits.filter { it.seq < v.seq }.mapNotNull { it.purchasedWeaponId }
+                val cheapest = day.script.prices.filterKeys { it !in gone }.values.min()
+                assertEquals("${cheapest - funds} gold short of the cheapest blade", ui.outcome)
+                assertEquals("Could pay up to $funds gold; the cheapest blade is $cheapest gold.", ui.decision)
+                short++
+            }
+            for (looked in ui.looked) {
+                assertTrue(looked.factors, looked.factors.isEmpty() || looked.factors.startsWith("For it: ") || looked.factors.startsWith("Against it: "))
+                assertTrue(looked.title, looked.title.endsWith(" gold"))
+            }
+            // What was missing, never what a different price would have done.
+            val said = listOfNotNull(ui.outcome, ui.decision) + ui.looked.map { it.factors }
+            assertTrue("$said", said.none { Regex("would|lower|cheaper|if you|%|chance", RegexOption.IGNORE_CASE).containsMatchIn(it) })
+        }
+        assertTrue("short=$short refusals=$refusals", short > 5 && refusals > 30)
+    }
+
+    /** The opening card counts everyone and says how many have a card of their own; each of those is numbered among the shown only. */
+    @Test
+    fun theOpeningCardTellsVisitorsFromThoseShownAtTheCounter() {
+        var some = 0
+        for (day in days()) {
+            val model = day.ui()
+            val open = model.beats.first() as? Beat.Open ?: continue
+            assertEquals(day.resolution.visits.size to day.script.featured.size, open.visitors to open.shown)
+            val shown = model.beats.filterIsInstance<Beat.Visit>()
+            assertEquals(shown.indices.map { "Counter · ${it + 1} of ${open.shown}" }, shown.map { it.progress })
+            model.beats.filterIsInstance<Beat.Tally>().singleOrNull()?.let { assertEquals(open.visitors - open.shown, it.count) }
+            if (open.shown in 1 until open.visitors) some++
+        }
+        assertTrue("days with a tally after the featured: $some", some > 10)
+    }
+
+    /** A day when heroes fought and nothing else beyond the door earned a card: one summary card, in the place the saved position expects. */
+    @Test
+    fun aQuietDayWithFightsShowsOneSummaryBeyondTheDoor() {
+        val day = ShopDayFixtures.run(42, 1, forge = false).single()
+        val fights = day.resolution.field.count { it.outcome == FieldOutcome.DRIVEN_BACK || it.outcome == FieldOutcome.WON || it.outcome == FieldOutcome.DIED }
+        assertTrue("seed 42, day 1, nothing forged: heroes still went out ($fights)", fights > 0)
+        val model = day.ui()
+        assertEquals(listOf("Quiet", "Aftermath", "Tomorrow"), model.beats.map { it::class.simpleName })
+        val card = (model.beats[1] as Beat.Aftermath).card
+        assertEquals(AftermathKind.FIELD_SUMMARY, card.kind)
+        assertEquals("Out in the field", card.title)
+        assertEquals(Lines.field(day.script.aftermath.single().tally!!), card.text)
+        assertTrue(card.text, card.text.startsWith("$fights hero"))
+        assertTrue("no face, blade or fight to open: the Gazette has the names", card.hero == null && card.blade == null && card.replay == null && card.champions.isEmpty())
+        assertEquals(
+            listOf(com.example.blacksmithproject.Beat.Quiet, com.example.blacksmithproject.Beat.Aftermath(0), com.example.blacksmithproject.Beat.Tomorrow),
+            ShopDayPosition.beats(day.script),
+        )
+        // A day with a card of its own beyond the door has no summary.
+        for (d in days()) if (d.script.aftermath.size > 1) assertTrue(d.script.aftermath.none { it.kind == AftermathKind.FIELD_SUMMARY })
     }
 }
 

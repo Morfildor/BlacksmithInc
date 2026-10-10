@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
@@ -107,9 +108,12 @@ fun WeaponStatCard(
     FramedPanel(title, modifier.fillMaxWidth()) { WeaponStatBody(detail, overSprite) }
 }
 
-/** What [WeaponStatCard] says of a blade, without the plate around it: for a caller that frames or scrolls it itself. */
+/**
+ * What [WeaponStatCard] says of a blade, without the plate around it: for a caller that frames or scrolls it itself.
+ * [detailAlpha] fades everything under the sprite, name and rarity (the forge's reveal); the layout never changes with it.
+ */
 @Composable
-fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxScope.() -> Unit = {}) {
+fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxScope.() -> Unit = {}, detailAlpha: () -> Float = { 1f }) {
     Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
         Box(
             Modifier.size(88.dp).background(ForgeSlot).border(1.dp, Bronze).drawBehind {
@@ -128,10 +132,15 @@ fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxSc
             if (detail.signature) Text("Signature work", style = MaterialTheme.typography.labelMedium, color = Gold)
         }
     }
+    Column(Modifier.graphicsLayer { alpha = detailAlpha() }) { WeaponStatDetails(detail) }
+}
+
+@Composable
+private fun ColumnScope.WeaponStatDetails(detail: ItemDetail) {
     HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
 
     // The numbers without a ceiling, two to a line while the text is small enough; then one bar for each that has one.
-    val cells = detail.stats.filter { it.max == null }.map { s ->
+    val cells =detail.stats.filter { it.max == null }.map { s ->
         Cell(s.label, s.word?.let { "$it (${s.value})" } ?: s.value.toString(), delta = s.was?.let { StatDelta(it.toString(), if (s.value > it) EffectKind.BUFF else EffectKind.FLAW) })
     } + Cell("Element", detail.element?.let { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } } ?: "None", detail.element?.let { elementColor(it) }) +
         listOfNotNull(detail.stock?.let { Cell("Value", "${it.suggestedPrice} gold", Gold) })

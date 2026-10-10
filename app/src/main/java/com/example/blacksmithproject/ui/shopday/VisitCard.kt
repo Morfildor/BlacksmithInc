@@ -26,13 +26,15 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.ui.EffectKind
 import com.example.blacksmithproject.ui.Sprites
+import com.example.blacksmithproject.ui.StatDelta
 import com.example.blacksmithproject.ui.StatRow
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.SceneDeep
+import com.example.blacksmithproject.ui.theme.SceneInk
 import com.example.blacksmithproject.ui.theme.SceneWood1
 import com.example.blacksmithproject.ui.theme.Space
-import com.tinyblacksmith.core.model.VisitKind
 import com.tinyblacksmith.core.model.WeaponSnapshot
 
 /** The small capital line that says which part of the day a card belongs to. */
@@ -61,6 +63,15 @@ fun ReceiptRows(rows: List<ReceiptRow>, modifier: Modifier = Modifier) {
             StatRow(row.label, row.value, valueColor = if (row.total) Gold else null)
         }
     }
+}
+
+/**
+ * What the day has earned up to this card, with what it stood at before: "96 → 228 gold ▲". Shown whole at once; the
+ * numbers are sums of the day's Sale records.
+ */
+@Composable
+internal fun EarnedToday(before: Int, after: Int, modifier: Modifier = Modifier) {
+    StatRow("Earned today", "$after gold", modifier.testTag("shopday_earned"), delta = StatDelta("$before", EffectKind.BUFF))
 }
 
 /** A blade as a small ink tile; decorative here, the text beside it names it. */
@@ -106,27 +117,35 @@ internal fun BladeChip(blade: WeaponSnapshot, onOpenBlade: (WeaponSnapshot) -> U
 }
 
 /**
- * One customer's visit, whole on its first frame: what came of it, why (the typed reason with its recorded numbers),
- * the receipt as separate rows when coin changed hands, then the blades they weighed. Who they are is on the name
- * plate of the scene above.
+ * One customer's visit, whole on its first frame. A sale wears a gold band with the coin it brought, then why, the
+ * receipt as separate rows and what the day has earned so far. A refusal is a plain card that leads with the recorded
+ * reason and its numbers. Both end with the blades they weighed. Who they are is on the name plate of the scene above.
+ * Every number is the visit's own record: the day is already saved, and nothing here adds to the purse.
  */
 @Composable
 fun VisitCard(visit: VisitUi, onOpenBlade: (WeaponSnapshot) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-            val sale = visit.sold
+        if (visit.sold) {
+            Row(
+                Modifier.fillMaxWidth().background(Gold, MaterialTheme.shapes.extraSmall).padding(horizontal = Space.sm, vertical = Space.xs).semantics(mergeDescendants = true) {},
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            ) {
+                Text(visit.banner.uppercase(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SceneInk, modifier = Modifier.weight(1f).testTag("shopday_outcome_chip"))
+                Text("+${visit.coin} gold", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SceneInk, modifier = Modifier.testTag("shopday_coin"))
+            }
+            // Straight under the band, so the rise is on screen without a scroll.
+            if (visit.coin > 0) EarnedToday(visit.earnedBefore, visit.earnedAfter)
+            visit.purchased?.let { Text(it.name, style = MaterialTheme.typography.titleMedium) }
+        } else {
             Text(
-                when { !sale -> "No sale"; visit.kind == VisitKind.COMMISSION -> "Commission"; visit.kind == VisitKind.COLLECTOR -> "Collector"; else -> "Sold" }.uppercase(),
-                style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold,
-                color = if (sale) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.background(if (sale) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.extraSmall)
-                    .then(if (sale) Modifier else Modifier.border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.extraSmall))
+                visit.banner.uppercase(), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.extraSmall).border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.extraSmall)
                     .padding(horizontal = 6.dp, vertical = 2.dp).testTag("shopday_outcome_chip"),
             )
-            visit.purchased?.let { Text(it.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f)) }
         }
         visit.recognition?.let { Text(it, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic, modifier = Modifier.testTag("shopday_recognition")) }
-        CardTitle(visit.outcome, Modifier.testTag("shopday_outcome"))
+        if (visit.sold) CardTitle(visit.outcome, Modifier.testTag("shopday_outcome"))
+        else Text(visit.outcome, style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("shopday_outcome").semantics { heading() })
         visit.decision?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("shopday_decision")) }
         if (visit.receipt.isNotEmpty()) ReceiptRows(visit.receipt, Modifier.padding(top = Space.xs))
         if (visit.looked.isNotEmpty()) {

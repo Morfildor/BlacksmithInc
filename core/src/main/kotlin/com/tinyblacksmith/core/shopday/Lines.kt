@@ -68,6 +68,41 @@ object Lines {
             (if (item.factors.isEmpty()) "" else ": " + item.factors.joinToString(", ") { factor(it) }) +
             (item.shortBy?.let { "; short by $it gold" } ?: "")
 
+    private val against = setOf(VisitFactor.OFF_CLASS, VisitFactor.NOT_STRONGER_THAN_OWN, VisitFactor.CANNOT_AFFORD, VisitFactor.ABOVE_THEIR_CEILING, VisitFactor.THREAT_RESISTS)
+
+    /**
+     * The recorded factors of one weighed blade as sentences, what spoke for it apart from what spoke against:
+     * "For it: suits their class. Against it: 12 gold beyond their purse." Empty when the visit recorded none.
+     */
+    fun weighed(item: Considered): String {
+        fun words(f: VisitFactor) = if (f == VisitFactor.CANNOT_AFFORD && item.shortBy != null) "${item.shortBy} gold beyond their purse" else factor(f)
+        val (cons, pros) = item.factors.partition { it in against }
+        return listOfNotNull(
+            pros.takeIf { it.isNotEmpty() }?.let { "For it: ${it.joinToString("; ") { f -> words(f) }}." },
+            cons.takeIf { it.isNotEmpty() }?.let { "Against it: ${it.joinToString("; ") { f -> words(f) }}." },
+        ).joinToString(" ")
+    }
+
+    /** What a visitor without the price could put down, and the cheapest blade as they found the shelf; either is null when the record lacks it. */
+    private fun purse(visit: MarketVisit, day: ShopDayScript): Pair<Int?, Int?> {
+        val funds = visit.considered.firstNotNullOfOrNull { k -> k.shortBy?.let { k.price - it } }
+        // The shelf as this visitor found it: the opening prices less what earlier visitors took.
+        val gone = day.visits.filter { it.seq < visit.seq }.mapNotNull { it.purchasedWeaponId }
+        return funds to day.prices.filterKeys { it !in gone }.values.minOrNull()
+    }
+
+    /**
+     * A visit's outcome as a heading: the reason, led by its recorded number where one says more than the label
+     * ("38 gold short of the cheapest blade"). States what was missing, never what a lower price would have done.
+     */
+    fun headline(visit: MarketVisit, day: ShopDayScript): String {
+        if (visit.reason == VisitReason.TOO_EXPENSIVE) {
+            val (funds, cheapest) = purse(visit, day)
+            if (funds != null && cheapest != null && cheapest > funds) return "${cheapest - funds} gold short of the cheapest blade"
+        }
+        return reason(visit.reason)
+    }
+
     /** Why they bought or left, with the numbers the visit recorded. */
     fun decision(visit: MarketVisit, day: ShopDayScript, content: ContentCatalog): String {
         val c = visit.customer
@@ -78,10 +113,7 @@ object Lines {
         fun with(f: VisitFactor) = visit.considered.firstOrNull { f in it.factors }
         val clauses: List<String?> = when (visit.reason) {
             VisitReason.TOO_EXPENSIVE -> {
-                val funds = visit.considered.firstNotNullOfOrNull { k -> k.shortBy?.let { k.price - it } }
-                // The shelf as this visitor found it: the opening prices less what earlier visitors took.
-                val gone = day.visits.filter { it.seq < visit.seq }.mapNotNull { it.purchasedWeaponId }
-                val cheapest = day.prices.filterKeys { it !in gone }.values.minOrNull()
+                val (funds, cheapest) = purse(visit, day)
                 listOf(funds?.let { "Could pay up to $it gold" + (cheapest?.let { p -> "; the cheapest blade is $p gold" } ?: "") + "." })
             }
             VisitReason.OVERPRICED -> listOf(with(VisitFactor.ABOVE_THEIR_CEILING)?.let { k -> day.blade(k.weaponId)?.let { "${it.name} at ${k.price} gold is more than they hold fair." } })
@@ -152,6 +184,33 @@ object Lines {
     fun quiet(quiet: QuietDay): String = when (quiet.kind) {
         QuietKind.NO_VISITORS -> "Nobody came to the shop today."
         QuietKind.EMPTY_SHELF -> "${names(quiet.visitors.map { it.heroName }.distinct())} looked in and found the shelves bare."
+    }
+
+    /** The bare-shelf day for a card that shows the faces beside it: the count, not the names again. */
+    fun quietCount(quiet: QuietDay): String = when (quiet.kind) {
+        QuietKind.NO_VISITORS -> quiet(quiet)
+        QuietKind.EMPTY_SHELF -> "${count(quiet.visitors.map { it.heroId?.value ?: it.heroName }.distinct().size, "visitor")} looked in and found the shelves bare."
+    }
+
+    /**
+     * The day's fights in one or two sentences of counts: "5 heroes went out unarmed and all were driven back." Says who
+     * carried no blade because the fight's record names none; says nothing of what a blade would have changed.
+     */
+    fun field(t: FieldTally): String {
+        val unarmed = t.wonUnarmed + t.drivenBackUnarmed
+        fun was(n: Int) = if (n == 1) "was" else "were"
+        if (t.died == 0 && t.won == 0 && unarmed == t.fought)
+            return if (t.fought == 1) "1 hero went out unarmed and was driven back." else "${t.fought} heroes went out unarmed and all were driven back."
+        val outcomes = listOfNotNull(
+            "${t.won} won".takeIf { t.won > 0 }, "${t.drivenBack} ${was(t.drivenBack)} driven back".takeIf { t.drivenBack > 0 }, "${t.died} did not come back".takeIf { t.died > 0 },
+        ).joinToString(", ")
+        val bare = when {
+            unarmed == 0 -> null
+            t.drivenBackUnarmed == 0 -> "$unarmed of them carried no blade."
+            t.drivenBackUnarmed == unarmed -> "$unarmed of them carried no blade and ${was(unarmed)} driven back."
+            else -> "$unarmed of them carried no blade; ${t.drivenBackUnarmed} of those ${was(t.drivenBackUnarmed)} driven back."
+        }
+        return listOfNotNull("${count(t.fought, "hero")} went out to fight: $outcomes.", bare).joinToString(" ")
     }
 
     /**

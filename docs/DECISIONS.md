@@ -3683,3 +3683,43 @@ entry; End Day was a gold plate 4 dp over the bar on all four destinations; Stor
 - **Written to merge.** The branch `gameplay-depth` edits the same files; lines it changed (the `ShopPanel` call, End Day's
   note, `StockEditor`, `ForgeSummary`) were left as they were. For that reason the Supplies button for a material that ran out is
   not inside `ForgeSummary` but directly under it, in `ForgePanel`; it is also beside the out-of-stock line in the steps.
+## Rewards and consequences: the third UI/UX improvement (2026-10-10; no balance, rules, schema or content change)
+
+The reviews in `docs/ui_review_2026-10-10/` (A: P0-1, P1-6, P2-7, microcopy 7, 33 to 39, 44, 45; B: sections C and D, F.6, F.7)
+were checked against `main` (`79010eb`) before anything was built. All still held: the forge result was the whole stat card
+behind a 600 ms fade with "Renown Unsung (0)"; a sale and a refusal shared one gold heading and differed by a small chip; a
+refusal printed a comma list of factors; no card said that heroes had fought when none of the fights earned a card; the
+opening card said the day and "the shop is open" again, "Customer 1 of 1" counted only the featured, the last card showed
+two day numbers, and Skip was explained as "to tomorrow" in one place and "to the evening" in another.
+
+**What is derived from what (ENGINEERING).** Nothing here changes what End Day computes or saves.
+- "Earned today" is arithmetic over the day's `Sale` records in `ShopDayScript.toUi`: each visit's coin is
+  `cashPaid + saleBonus + stipend` (the record's own definition of what reached the till). It rises on each featured sale,
+  takes in the tally's sales at once, and the till's total is the ledger's `goldAtClose - goldAtOpen`. The test
+  `earnedTodayIsTheSaleRecordsAndMeetsTheTill` holds the cards' sum equal to the ledger's income of every kind but `TRIBUTE`
+  (the one income earned away from the counter, at the walls), on every fixture day. The purse is never touched by a card.
+- The field summary is a card of core's aftermath list (`AftermathKind.FIELD_SUMMARY`, last in the ranking), added only when
+  the day's fights (won, driven back, died on an expedition) earned no other card. It is counts from `DayResolution.field`.
+  "Unarmed" means the fight's own event names the hero and no blade (`FieldResult.weapon` is not filled for expeditions).
+  Because it is an aftermath card, the saved position, Skip, Back and a restart treat it like any other card.
+- A refusal's heading is `Lines.headline`: for `TOO_EXPENSIVE` the gap between what the visit says they could pay and the
+  cheapest blade still on the shelf when they came; every other reason keeps its label. `Lines.weighed` turns the recorded
+  factors into "For it: ... Against it: ..." sentences. Both state what was missing, never what another price would have done.
+
+**Presentation choices (PROPOSED, the owner can change any of them).**
+- The reveal does not hold the price or the buttons back. The sprite, name and rarity stand alone for 700 ms, then the
+  numbers, buffs and recipe fade in over 250 ms in the room that was kept for them; nothing moves, and "List at" is live from
+  the first frame. This keeps the repeat path at three taps and adds no wait. The reviews proposed hiding the card until a
+  tap or a timer; that would have cost the repeat path a tap or a wait. A tap on the card ends the fade at once.
+- Zero renown is left out on the forge result only. The blade's sheet still lists "Renown" in every case.
+- "Earned today" is a row on the sale card ("96 → 228 gold ▲"), whole on its first frame, not a counter in the top strip:
+  the strip has no room for it at 360 dp with large text, and a card must be complete without motion.
+- The field summary appears for any day with fights and no other card, also when every fight was won ("2 heroes went out to
+  fight: 2 won."). Before, a plain win was left to the Gazette alone. It has no faces: the Gazette link is on the card. A day
+  when heroes only rested or patrolled gets no card. A day with one card about one hero still does not count the others'
+  fights (the card says "N more in the Gazette" when there are more).
+- One word for where Skip lands: "the evening" (the day's last card, where "Begin day N" waits).
+- "Requests" is the word on the till and the receipt ("Request payment", "REQUEST PAID"); core's sentences and the Gazette
+  still say "commission". A full vocabulary pass is a later batch.
+- A guild's stipend reads "Of that, paid by their guild" with no plus sign: it is part of the price, so the receipt's rows
+  now add up to the total (the earlier "+N" row did not).

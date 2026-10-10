@@ -2,6 +2,7 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -86,7 +88,6 @@ import kotlinx.coroutines.delay
 fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel, reducedMotion: Boolean) {
     val w = s.state.weapons[weaponId] ?: run { vm.dismissReveal(); return }
     val content = vm.engine.content
-    val reveal by animateFloatAsState(targetValue = 1f, animationSpec = tween(if (reducedMotion) 0 else 600), label = "reveal")
     val haptics = LocalHaptics.current
     LaunchedEffect(weaponId) { haptics.play(if (w.signatureId != null || w.rarity >= Rarity.EPIC) Moment.FORGE_SIGNATURE else Moment.FORGE_STRIKE) }
     val detail = remember(s.state, weaponId) { vm.engine.itemDetail(s.state, weaponId) } ?: return
@@ -97,11 +98,19 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
         ForgeResultCard(
             detail, "${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}.", request,
             enabled = !s.busy, onStore = vm::storeForged, onList = { vm.listForged(w.id, it) },
-            modifier = Modifier.safeDrawingPadding().padding(horizontal = Space.md, vertical = Space.sm).semantics { testTagsAsResourceId = true }.graphicsLayer { alpha = reveal }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp),
+            modifier = Modifier.safeDrawingPadding().padding(horizontal = Space.md, vertical = Space.sm).semantics { testTagsAsResourceId = true }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp),
+            reveal = !reducedMotion,
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
         )
     }
 }
+
+/** The card of a blade just made: a number without a ceiling that is still zero and never was anything else (renown) says nothing yet. */
+internal fun ItemDetail.withoutEmptyStats(): ItemDetail = copy(stats = stats.filter { it.max != null || it.value != 0 || it.was != null })
+
+// The reveal's two lengths at normal motion: how long the sprite and name stand alone, and the fade that follows.
+private const val REVEAL_HOLD_MS = 700L
+private const val REVEAL_FADE_MS = 250
 
 /**
  * The forge result without its window. The blade's card scrolls; the price and the two ways on are pinned under it, so
@@ -109,6 +118,11 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
  * leave the blade no room, so the whole card is one scrolling column again. A blade forged for a request says so first.
  * [detail] carries the price facts (its `Stock`); [onList] is given the chosen price. [enabled] greys "List at" while a
  * command is being saved; Store issues no command and is never greyed.
+ *
+ * With [reveal] the blade's sprite, name and rarity stand alone for a moment before its numbers, buffs and recipe fade
+ * in under them; a tap anywhere on the card brings them at once. Nothing moves and the price and both buttons are there
+ * and live from the first frame, so the reveal never costs a tap or a wait. Without it (reduced motion) the card is
+ * whole at once. A brand-new blade has no renown to show, so the zero is left out here; the blade's sheet keeps it.
  */
 @Composable
 fun ForgeResultCard(
@@ -119,8 +133,13 @@ fun ForgeResultCard(
     onStore: () -> Unit,
     onList: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    reveal: Boolean = false,
     overSprite: @Composable BoxScope.() -> Unit = {},
 ) {
+    var revealed by rememberSaveable(detail.weaponId.value) { mutableStateOf(!reveal) }
+    LaunchedEffect(detail.weaponId) { if (!revealed) { delay(REVEAL_HOLD_MS); revealed = true } }
+    val shown by animateFloatAsState(if (revealed) 1f else 0f, tween(if (reveal) REVEAL_FADE_MS else 0), label = "reveal")
+    val fresh = remember(detail) { detail.withoutEmptyStats() }
     val blade: @Composable ColumnScope.() -> Unit = {
         request?.let { r ->
             Column(Modifier.padding(bottom = Space.sm).testTag("reveal_request")) {
@@ -131,8 +150,8 @@ fun ForgeResultCard(
                 if (r.accepted) Secondary("At End Day the patron takes a blade that fits, from storage first, then from the shelf. None is set aside.")
             }
         }
-        WeaponStatBody(detail, overSprite)
-        Secondary(recipe, Modifier.padding(top = Space.md))
+        WeaponStatBody(fresh, overSprite, detailAlpha = { shown })
+        Secondary(recipe, Modifier.padding(top = Space.md).graphicsLayer { alpha = shown })
         HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
     }
     val price: @Composable ColumnScope.() -> Unit = price@{
@@ -162,7 +181,8 @@ fun ForgeResultCard(
     // While the keyboard is up the pinned card is only its price: on a short screen the title and the blade would
     // otherwise leave the buttons under the keyboard.
     val typing = !large && WindowInsets.ime.getBottom(LocalDensity.current) > 0
-    FramedPanel("Fresh from the forge".takeIf { !typing }, modifier.fillMaxWidth()) {
+    // No semantics on the tap: it only ends a moment's fade, and the buttons under it keep their own taps.
+    FramedPanel("Fresh from the forge".takeIf { !typing }, modifier.fillMaxWidth().pointerInput(Unit) { detectTapGestures { revealed = true } }) {
         if (large) Column(Modifier.verticalScroll(rememberScrollState())) { blade(); price() }
         else {
             if (!typing) Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) { blade() }

@@ -385,7 +385,9 @@ class ShopDayScriptTest {
         val older = card(won("h1", "e1", bare = true), boughtToday = false)!!
         assertEquals(listOf(AftermathKind.WIN, Counterfactual.BARE_HANDED), listOf(older.kind, older.counterfactual))
         assertEquals("${told.text} $bareLine", Lines.aftermath(older, content))
-        assertNull(card(won("h1", "e1"), boughtToday = false), "a plain win is the Gazette's to tell")
+        // A plain win has no card of its own: it is counted in the day's summary and the Gazette tells it.
+        val plain = card(won("h1", "e1"), boughtToday = false)!!
+        assertEquals(listOf(AftermathKind.FIELD_SUMMARY, null, null, "1 hero went out to fight: 1 won."), listOf(plain.kind, plain.heroId, plain.weapon, Lines.aftermath(plain, content)))
 
         // Real days: the line is on a card exactly when the field result holds the flag, and no card says a blade decided anything.
         var cards = 0; var claims = 0
@@ -405,6 +407,52 @@ class ShopDayScriptTest {
             }
         }
         assertTrue(cards > 50 && claims > 0, "cards=$cards claims=$claims")
+    }
+
+    // ---- the day's fights when no card tells them ----
+
+    @Test
+    fun fightsWithNoCardOfTheirOwnAreSummedUpOnceFromTheFieldResults() {
+        val fought = setOf(FieldOutcome.WON, FieldOutcome.DRIVEN_BACK, FieldOutcome.DIED)
+        var summaries = 0; var allUnarmed = 0
+        for ((r, after) in realDays(1L..12L, 15) + realDays(1L..8L, 6, prepare = { this })) {
+            val s = script(r, after)
+            val fights = r.field.filter { it.outcome in fought }
+            val summary = s.aftermath.firstOrNull { it.kind == AftermathKind.FIELD_SUMMARY }
+            if (summary == null) {
+                assertTrue(s.aftermath.isNotEmpty() || fights.isEmpty(), "day ${r.day}: heroes fought and no card says so")
+                continue
+            }
+            summaries++
+            assertEquals(listOf(summary), s.aftermath, "the summary stands in for the cards, never beside one")
+            assertEquals(0, s.moreInGazette)
+            val t = assertNotNull(summary.tally)
+            assertEquals(fights.count { it.outcome == FieldOutcome.WON }, t.won)
+            assertEquals(fights.count { it.outcome == FieldOutcome.DRIVEN_BACK }, t.drivenBack)
+            assertEquals(fights.count { it.outcome == FieldOutcome.DIED }, t.died)
+            assertEquals(fights.flatMap { it.eventIds }, summary.eventIds)
+            // "Unarmed" is the fight's own record: it names the hero and no blade.
+            val events = r.events.associateBy { it.id }
+            fun bare(outcome: FieldOutcome) = fights.count { f -> f.outcome == outcome && f.eventIds.all { id -> events.getValue(id).subjectIds.all { it == f.heroId.value } } }
+            assertEquals(bare(FieldOutcome.WON) to bare(FieldOutcome.DRIVEN_BACK), t.wonUnarmed to t.drivenBackUnarmed)
+            val text = Lines.aftermath(summary, content)
+            assertEquals(Lines.field(t), text)
+            val counts = setOf(t.fought, t.won, t.drivenBack, t.died, t.wonUnarmed + t.drivenBackUnarmed, t.drivenBackUnarmed)
+            assertTrue(Regex("\\d+").findAll(text).all { it.value.toInt() in counts }, text)
+            assertFalse(Regex("would|because|thanks to|decid|%", RegexOption.IGNORE_CASE).containsMatchIn(text), text)
+            if (t.drivenBackUnarmed == t.fought) allUnarmed++
+        }
+        assertTrue(summaries > 10 && allUnarmed > 0, "summaries=$summaries allUnarmed=$allUnarmed")
+
+        assertEquals("5 heroes went out unarmed and all were driven back.", Lines.field(FieldTally(0, 0, 5, 5, 0)))
+        assertEquals("1 hero went out unarmed and was driven back.", Lines.field(FieldTally(0, 0, 1, 1, 0)))
+        assertEquals("3 heroes went out to fight: 3 won.", Lines.field(FieldTally(3, 0, 0, 0, 0)))
+        assertEquals("3 heroes went out to fight: 2 won, 1 was driven back. 1 of them carried no blade and was driven back.", Lines.field(FieldTally(2, 0, 1, 1, 0)))
+        assertEquals(
+            "4 heroes went out to fight: 1 won, 2 were driven back, 1 did not come back. 2 of them carried no blade; 1 of those was driven back.",
+            Lines.field(FieldTally(1, 1, 2, 1, 1)),
+        )
+        assertEquals("2 heroes went out to fight: 2 won. 1 of them carried no blade.", Lines.field(FieldTally(2, 1, 0, 0, 0)))
     }
 
     // ---- lines ----
@@ -444,6 +492,7 @@ class ShopDayScriptTest {
             for (g in s.tally) assertTrue(Lines.tally(g, s).startsWith("${g.visits.size} "))
             for (card in s.aftermath) {
                 assertTrue(card.eventIds.isNotEmpty() && card.eventIds.all { id -> r.events.any { it.id == id } }, "a card points at records of the day")
+                if (card.kind == AftermathKind.FIELD_SUMMARY) continue  // counts over several records, not one record's sentence: see the summary's own test
                 assertTrue(Lines.aftermath(card, content).startsWith(r.events.first { it.id == card.eventIds.first() }.text), "and opens with the record's own sentence")
                 card.weapon?.let { w -> assertTrue(card.eventIds.any { id -> r.events.first { it.id == id }.subjectIds.contains(w.weaponId.value) }, "its blade is one the record names") }
             }
@@ -466,6 +515,19 @@ class ShopDayScriptTest {
         assertEquals("Hero h2, Guardian. Carries Iron Bow.", Lines.customer(sale, content))
         assertEquals("Hero h3, Guardian, a regular. Carries no weapon.", Lines.customer(bought(2, "h3", "a", regular = true), content))
         assertEquals("Iron Sword, 60 gold: beyond their purse; short by 12 gold", Lines.considered(dear.considered.single(), day))
+        // A refusal's heading leads with the recorded gap; without a price on record it is the plain label, never a guess.
+        assertEquals("12 gold short of the cheapest blade", Lines.headline(dear, day))
+        assertEquals("could afford nothing on the shelf", Lines.headline(dear, day.copy(prices = emptyMap())))
+        assertEquals("could afford nothing on the shelf", Lines.headline(dear.copy(considered = listOf(Considered(WeaponId("a"), 60))), day))
+        assertEquals("found nothing to suit", Lines.headline(left(3, "h4", VisitReason.NOT_SUITED), day))
+        // The factors as sentences, what spoke for the blade apart from what spoke against it.
+        assertEquals("Against it: 12 gold beyond their purse.", Lines.weighed(dear.considered.single()))
+        assertEquals(
+            "For it: suits their class; they carry nothing. Against it: priced above what they hold fair.",
+            Lines.weighed(Considered(WeaponId("a"), 60, listOf(VisitFactor.SUITS_CLASS, VisitFactor.ABOVE_THEIR_CEILING, VisitFactor.UNARMED))),
+        )
+        assertEquals("Against it: beyond their purse.", Lines.weighed(Considered(WeaponId("a"), 60, listOf(VisitFactor.CANNOT_AFFORD))))
+        assertEquals("", Lines.weighed(Considered(WeaponId("a"), 60)))
         assertEquals("Nothing on the shelf beats their Iron Bow.", line(left(3, "h4", VisitReason.NOT_BETTER).let { it.copy(customer = it.customer!!.copy(equipped = bow)) }))
         assertEquals("Found nothing better than the blade in hand.", line(left(3, "h4", VisitReason.NOT_BETTER)))
         assertEquals("Bronze Axe is not a weapon for a Guardian.", line(left(4, "h5", VisitReason.NOT_SUITED, listOf(Considered(WeaponId("b"), 30, listOf(VisitFactor.OFF_CLASS))))))

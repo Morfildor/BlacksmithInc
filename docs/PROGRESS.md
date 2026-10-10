@@ -363,10 +363,92 @@ action hierarchy"). No balance, rules, save or content version changed.
   the hone line names only what changed. Still unseen: Records, the Forge with a material out, the day cards, text at 2.0.
 - Merging `gameplay-depth` will conflict in `WorkshopScreen.kt`, `GameViewModel.kt`, `StorageSheet.kt`, `ItemDetailSheet.kt`
   and `CHANGELOG.md`; its `Sheet.Visitor` needs a branch in `DetailSheet`, and its relic dialog a place in Back's order.
+## UI/UX improvement 3: rewards and consequences (2026-10-10, evening; on the branch `ui-batch-2`, not on `main`)
+The third batch from the UI/UX reviews: the forge result as a short reveal, a sale that looks unlike a refusal, a refusal
+that leads with its numbers, one card for the day's fights when nothing else tells them, and the repeated wording of the
+day sequence. Design notes and the reasons are in `docs/DECISIONS.md` ("Rewards and consequences: the third UI/UX
+improvement"); the player-facing lines are in `CHANGELOG.md` under `[Unreleased]`. No balance, rules, save, schema or
+content version changed. The day controls (Back, Next, Skip day, the speed chip) are as they were.
+
+**Which build.** The work was done in its own worktree (`.claude/worktrees/ui-batch2`, branch `ui-batch-2`, cut from `main`
+at `79010eb` and rebased onto `796ce32`) because other sessions were working in the repository at the same time. It is committed there and **not
+merged into `main`**; that is the owner's call. The reviews' findings for this batch were confirmed in `main`'s source first
+(all held; the list is in DECISIONS).
+
+**What changed.**
+- Forge result: the blade's sprite, name and rarity stand alone for about 0.7 s, then its numbers, buffs and recipe fade in
+  under them (0.25 s). Nothing moves; the price and both buttons are on screen and live from the first frame; a tap on the
+  card ends the fade; with reduced motion the card is whole at once. A new blade's card has no "Renown Unsung (0)" row (the
+  blade's sheet keeps it; earned renown shows on the card).
+- A sale: a gold band "SOLD +96 gold" (a request: "REQUEST PAID", a collector: "SOLD TO A COLLECTOR"), then "Earned today
+  96 → 228 gold" straight under it, the blade, why, and the receipt. The tally shows the same line when someone in it bought.
+  The till's total is "Earned today"; its rows are "Shelf sales", "Requests", "Guild stipends", "Town's blessing",
+  "Collector", "Tribute from the town". A request's receipt has a "Request payment" row. All of it is sums of the saved
+  `Sale` records; nothing is added to the purse by a card.
+- A refusal: a plain card with a small "NO SALE" mark that leads with the recorded reason and number ("38 gold short of the
+  cheapest blade", "Could pay up to 90 gold; the cheapest blade is 128 gold."). Each blade looked at says "For it: ...
+  Against it: ..." in sentences.
+- Beyond the shop: a day with fights and no other card gets one card, "Out in the field" ("5 heroes went out unarmed and all
+  were driven back."), with the Gazette link. It is an ordinary card of the sequence for Back, Skip and a restart.
+- Repetition: the opening card says "N visitors today" and how many are shown at the counter; the strip counts the shown
+  ("Counter · 1 of 3"); the plate under the scene says what is left on the shelf; a bare-shelf day gives the count and the
+  faces once; the last card reads "Day 1 / Evening" over "Tomorrow: day 2" and "Begin day 2"; Skip is "to the evening"
+  everywhere (the restart prompt's button was "Skip to tomorrow").
+
+**Checks.** The emulator was a second instance started for this work (AVD `carbscan`, API 36, read-only, port 5556); another
+session's emulator (`emulator-5560`) was running and was not touched. It is not the Pixel_10_Pro of the earlier gates.
+| Check | Result |
+|---|---|
+| Core JVM tests (`./gradlew :core:test`) | 395 pass (394 + `fightsWithNoCardOfTheirOwnAreSummedUpOnceFromTheFieldResults`; two existing tests were changed to expect the summary card, and exact-string checks were added for the new lines) |
+| App JVM tests (`./gradlew :app:testDebugUnitTest`) | 135 pass (128 + seven: earned today against the ledger, receipts add up, refusal numbers, visitors against shown, the field summary's place in the sequence, a kill on the summary card, zero renown) |
+| The 1x day length test | unchanged: median 24.6 s, p90 24.6 s (budget 25 and 30) |
+| Device tests (`:app:connectedDebugAndroidTest`, 1080x1920, density 420, font 1.0) | 63 of 64. New and passing: the reveal leaves the price and both buttons live on its first frame and moves nothing; the summary card and the evening card; the opening card. **One fails: `StorageSheetTest.bulkSalvageAsksOnceAndIssuesOneCommandPerBlade`, the same failure as on untouched `main` on this emulator** (see improvement 1) |
+| `tools/emulator/smoke.sh` | passed, all ten checks, SMOKE_DONE |
+| A live game, 411x731 dp, font 1.0 (scripted taps, every card's text logged, screenshots looked at) | Day 1 with nothing forged: quiet card ("6 visitors looked in..."), then "Out in the field: 5 heroes went out unarmed and all were driven back.", then the evening card. Day 2: three blades (two at the suggested price, one at 9,999): a refusal ("5 gold short of the cheapest blade"), two sales ("+88", "Earned today 0 → 88"; "+108", "88 → 196"), tally, till "Shelf sales 196 / Earned today 196", purse 250 before and 446 after (250 + 196). Day 3: killed on the second card and reopened: the prompt ("Day 3 is done and saved. The shop earned 0 gold."), Resume lands on the same card with the same words; killed again, "Skip to the evening" lands on the evening card; purse still 446 |
+| The repeat recipe | Forge tab, "Forge weapon", then "List at" tapped 0.4 s later at its remembered place: the blade was listed ("Iron Sword is on the shelf at 88 gold. Shelf 2 of 8."). Three taps, no wait |
+| The reveal, filmed at ten frames a second | about 0.7 s with the title, sprite, name, rarity, price and both buttons and nothing where the numbers go; then the numbers fade in. With "Reduced motion" on, the numbers are in the first frame the card appears in |
+| A request payment | **Not in a live game** (none was offered in the days played). Seen in the debug preview over a day the engine resolved (seed search, day 9): "REQUEST PAID +110 gold", "Request payment 110 gold", "Earned today 0 → 110"; the JVM test holds that day's cards against its ledger |
+| 360x640 dp, font 1.3 (screenshots looked at) | Sale, refusal, request, field summary, opening and evening cards in the preview; the forge result in a live game (price, count and both buttons on screen, "List at" worked). The sale's band and "Earned today" and the refusal's heading and numbers are on screen without a scroll |
+| 411x731 dp, font 1.3 | sale and refusal cards looked at in the preview |
+| `:app:assembleRelease :app:lintDebug` | pass |
+
+Found and fixed on the way, each by a device look: "Earned today" was under the receipt and off screen at normal size (moved
+straight under the band); the first strip label ("At the counter: 1 of 3") lost its count at 360 dp with text 1.3 (shortened);
+the plate and the shelf band both said "The shelf is bare" on a quiet day (the plate says "Nobody at the counter"); the strip
+and the banner both said "Beyond the door" (the strip says "After closing").
+
+**After the rebase onto `main` at `796ce32`** (the navigation batch and the new art; only CHANGELOG, DECISIONS and PROGRESS
+conflicted, both sides kept): app JVM tests 141 pass (main's 134 + the seven), device tests 67 of 68 (the same one failure),
+`smoke.sh` all ten checks, and the sale, refusal, tally, till and field-summary cards were looked at once more in the preview
+(the till and tally now carry main's vignettes above the rows). Core is untouched by the rebase (395, not run again). The live
+game, the film, the small-screen and large-text looks and the JVM counts in the table are from before the rebase.
+
+Screenshots: `docs/ui_review_2026-10-10/improvement_3/` (the file names say the size and the card). They were taken before
+the rebase, so they show the older backdrop and rarity pips.
+
+**Not verified, and limits.**
+- Nothing ran on a physical phone or on Pixel_10_Pro. TalkBack was not run. Font 2.0 was not looked at for these cards (the
+  forge result's layout test still runs at 2.0).
+- A request payment, a collector's sale, a guild stipend and a tribute were not seen in a live game; the first is seen in the
+  preview and all four are covered by the ledger test only where the fixture days produce them (the test requires a request
+  and a held siege among them; a stipend row, a collector's receipt and a tribute row are not asserted to occur).
+- The reveal's fade cannot be told from a device test (a faded node is still "displayed"); the film above is the evidence.
+- The evening card's lead still says "yesterday" for the day just watched ("3 customers left over the price yesterday"): the
+  line is written for the next morning's Shop, where it is right. Left alone.
+- The summary card counts fights only. Rests, patrols and guild days are not mentioned, and on a day with one card about one
+  hero the others' fights are still only in the Gazette.
+- "Requests" is now the till's and the receipt's word, but core's sentences on the same card still say "Collected a
+  commission". A vocabulary pass is a later batch.
+- On a sale card at 360x640 with text 1.3 the reason and the receipt are below the fold (the band, the coin and "Earned today"
+  are above it).
+- The emulator hung once in "not responding" dialogs after a cold boot while the machine was busy; it was restarted (this
+  session's instance only) and the runs above are from the second boot.
 
 ## Next actions
-0. UI/UX improvement 1 (above) is committed and pushed on `main`: the owner looks at it, and it is still to be reconciled
-   with `post-0.7.0`; a request blade's result card still needs a look in a live game.
+0. UI/UX improvement 3 (above) is on the branch `ui-batch-2`: the owner looks at it and decides the merge into `main`.
+   UI/UX improvement 2 (navigation) is on `main`.
+   UI/UX improvement 1 is on `main` and still to be reconciled with `post-0.7.0`; a request blade's result card still
+   needs a look in a live game.
 1. Owner hand test of the 0.7.0 debug build (list below), then the owner's decisions above, and the UI/UX review's
    decisions (`docs/UI_UX_REVIEW_2026-10-10.md`, section 7) before its phase 0 starts.
 2. From the hand test: fix what the large-text and small-screen items show; take the screenshots nobody has.
