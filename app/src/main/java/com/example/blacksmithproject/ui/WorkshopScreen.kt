@@ -142,13 +142,10 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                         }
                     },
                     onOpenBlade = { vm.openSheet(Sheet.Item(it)) },
-                    onOpenHero = { vm.openSheet(Sheet.Hero(it)) },
-                    onAnswer = { id, accept -> vm.dispatch(if (accept) Command.AcceptCommission(id) else Command.DeclineCommission(id)) },
+                    onOpenBoard = { boardOpen = true },
                     onOpenStorage = { storageOpen = true },
                     onOpenNews = { vm.selectRecords(RecordsPage.GAZETTE) },
                     tip = tip?.let { { TipBanner(it, vm) } },
-                    onForgeThis = vm::forgeFor,
-                    onForgeWant = vm::forgeFamily,
                     onOpenSupplies = { suppliesOpen = true },
                 )
                 Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesOpen = true }, onOpenBoard = { boardOpen = true }, onEndDay = { workshopHaptics.play(Moment.END_DAY); vm.endDay() })
@@ -173,6 +170,14 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
         )
     }
     if (suppliesOpen) SuppliesSheet(s, vm, onDismiss = { suppliesOpen = false })
+    // Under a hero's sheet opened from it the board waits, as Storage does; "Forge this" closes it onto the Forge.
+    if (boardOpen && s.sheet == null) CommissionBoardSheet(
+        remember(s.shop.requests, s.shop.wants) { s.shop.board() }, s.shop.requestSlots, s.busy, s.draft.commissionId,
+        onOpenHero = { vm.openSheet(Sheet.Hero(it)) },
+        onAnswer = { id, accept -> vm.dispatch(if (accept) Command.AcceptCommission(id) else Command.DeclineCommission(id)) },
+        onForgeThis = { boardOpen = false; vm.forgeFor(it) }, onForgeWant = { boardOpen = false; vm.forgeFamily(it) },
+        onDismiss = { boardOpen = false },
+    )
     if (!storageOpen) s.sheet?.let { DetailSheet(s, it, vm) }
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)

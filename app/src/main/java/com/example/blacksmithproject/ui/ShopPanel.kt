@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -63,13 +64,10 @@ fun ShopPanel(
     reducedMotion: Boolean,
     onLead: (LeadUi) -> Unit,
     onOpenBlade: (WeaponId) -> Unit,
-    onOpenHero: (HeroId) -> Unit,
-    onAnswer: (CommissionId, Boolean) -> Unit,
+    onOpenBoard: () -> Unit,
     onOpenStorage: () -> Unit,
     onOpenNews: () -> Unit,
     modifier: Modifier = Modifier,
-    onForgeThis: (CommissionId) -> Unit = {},
-    onForgeWant: (WeaponFamilyId) -> Unit = {},
     onOpenSupplies: (() -> Unit)? = null,
     tip: (@Composable () -> Unit)? = null,
     more: LazyListScope.() -> Unit = {},
@@ -95,9 +93,10 @@ fun ShopPanel(
         }
         item(key = "lead") { LeadCard(shop.lead, onAct = { onLead(shop.lead) }, modifier = side.padding(top = Space.md)) }
 
-        if (shop.requests.isNotEmpty()) {
-            item(key = "requests") { SectionTitle("Requests · ${shop.requests.size} of ${shop.requestSlots} open", side.testTag("shop_requests")) }
-            items(shop.requests, key = { "request_${it.id.value}" }) { RequestCard(it, busy, onOpenHero, onAnswer, onForgeThis, side) }
+        // Commissions and customer wants live on one board; the Shop says how many there are and whether an offer waits.
+        item(key = "board") {
+            val board = remember(shop.requests, shop.wants) { shop.board() }
+            DoorRow("Commissions & customers", "Open the board", "shop_board", onOpenBoard, side.padding(top = Space.md), detail = listOfNotNull(board.summary, board.pending).joinToString(" · "))
         }
 
         item(key = "demand") {
@@ -106,8 +105,6 @@ fun ShopPanel(
                 shop.demand.forEach { DemandLine(it) }
             }
         }
-        // Who left without the blade they came for, each in the counter's own words; one the shelf answers today says so.
-        items(shop.wants, key = { "want_${it.heroId.value}" }) { WantRow(it, onOpenHero, onForgeWant, side) }
 
         shop.yesterday?.let { y ->
             item(key = "yesterday") {
@@ -137,12 +134,15 @@ fun ShopPanel(
 
 /** One wide row that opens a sheet. */
 @Composable
-private fun DoorRow(title: String, action: String, tag: String, onOpen: () -> Unit, modifier: Modifier = Modifier) {
+private fun DoorRow(title: String, action: String, tag: String, onOpen: () -> Unit, modifier: Modifier = Modifier, detail: String? = null) {
     Row(
         modifier.fillMaxWidth().forgeRow().clickable(onClickLabel = action, role = Role.Button, onClick = onOpen).heightIn(min = 56.dp).padding(horizontal = Space.md).testTag(tag),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+        Column(Modifier.weight(1f).padding(vertical = Space.sm)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
+            detail?.let { Secondary(it, Modifier.testTag("${tag}_detail")) }
+        }
         Text("Open  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
     }
 }

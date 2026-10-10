@@ -39,7 +39,12 @@ import com.tinyblacksmith.core.shopday.Threats
 @Immutable data class LeadUi(val kind: LeadKind, val action: String, val reason: String?, val weaponId: WeaponId? = null, val familyId: WeaponFamilyId? = null)
 
 /** A hero's standing want in the words of `Lines.want`. [answered]: a blade on the shelf today is what they left without (`DemandSummary.wantsAnswered`). */
-@Immutable data class WantUi(val heroId: HeroId, val line: String, val answered: Boolean, val familyId: WeaponFamilyId)
+@Immutable
+data class WantUi(
+    val heroId: HeroId, val line: String, val answered: Boolean, val familyId: WeaponFamilyId,
+    /** The weapon type's name and the want's own numbers (`Hero.want`), for the board's groups. */
+    val family: String = "", val minPower: Int = 0, val budget: Int = 0,
+)
 
 /**
  * An open request: who asks, for what, on what terms, and (once accepted) which blade End Day will hand over or what is
@@ -54,6 +59,8 @@ data class RequestUi(
     val ready: Boolean = false,
 ) {
     /** "Due in 3 days"; the day itself stays in [terms]. */
+    /** Where it stands, in one of four words. "Ready" is as the shop stands now: a sale or a stock change can undo it. */
+    val status: String get() = when { offered -> "Offer"; ready -> "Ready for End Day"; daysLeft <= 0 -> "Due today"; else -> "Accepted" }
     val due: String get() = when { daysLeft <= 0 -> "Due today"; daysLeft == 1 -> "Due tomorrow"; else -> "Due in $daysLeft days" }
 }
 
@@ -249,6 +256,6 @@ fun GameEngine.shopUi(state: GameState): ShopUi {
         threat = threat,
         requestSlots = config.customers.maxOpenCommissions,
         funds = Demand.funds(state, content, config),
-        wants = d.wants.mapNotNull { id -> state.heroes[id]?.let { h -> Lines.want(h, content)?.let { WantUi(id, it, id in d.wantsAnswered, h.want!!.familyId) } } },
+        wants = d.wants.mapNotNull { id -> state.heroes[id]?.let { h -> Lines.want(h, content)?.let { WantUi(id, it, id in d.wantsAnswered, h.want!!.familyId, content.family(h.want!!.familyId).name, h.want!!.minPower, h.want!!.budget) } } },
     )
 }
