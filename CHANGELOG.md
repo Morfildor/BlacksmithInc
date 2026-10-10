@@ -182,6 +182,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   and that dialog no longer claims nothing changed when the game could not check.
 - An adventurer whose only blade shattered more than thirty days ago can still ask for a replacement: the broken blade
   stays on record until they carry another.
+- The counter still recalls that a customer held the wall with the blade they carry after ten later fights with it: a
+  blade's story keeps its carrier's last siege line beside its newest ten fights.
 ### Changed
 - A collector pays at most one and a half times the going rate for a blade, whatever its shelf price.
 - Commissions say exactly what they need. A request is always for a quality the game names (decent 35+, fine 50+; a

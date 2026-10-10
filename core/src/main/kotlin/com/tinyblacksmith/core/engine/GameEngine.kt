@@ -347,8 +347,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ProcessedCommands.trim(ctx.processedEndDayIds, config.saveGrowth.processedEndDayIdsKept)  // the newest few; a retry is of the latest
         EventCompaction.compact(ctx.events, day, config.eventRetentionDays, config.saveGrowth.routineEventRetentionDays)  // after the Gazette; keeps saves bounded (GDD 13.3)
         CommissionPruning.prune(ctx.commissions, day, config.saveGrowth.commissionRetentionDays)  // closed and past the event window
-        WeaponHistoryCompaction.compact(ctx.weapons, config.weaponHistoryCap)  // newest combat entries per weapon
-        WeaponHistoryCompaction.compactEveryday(ctx.weapons, config.saveGrowth.weaponEverydayHistoryCap, ctx.era, ctx.aliveHeroes().mapTo(HashSet()) { it.id.value })  // newest everyday lines; holders remembered
+        val living = ctx.aliveHeroes().mapTo(HashSet()) { it.id.value }
+        WeaponHistoryCompaction.compact(ctx.weapons, config.weaponHistoryCap, living)  // newest combat entries per weapon; a living hero's last siege line stays
+        WeaponHistoryCompaction.compactEveryday(ctx.weapons, config.saveGrowth.weaponEverydayHistoryCap, ctx.era, living)  // newest everyday lines; holders remembered
         val armed = ctx.weapons.values.mapNotNullTo(HashSet()) { w -> w.ownerId.takeIf { w.isEquipped } }
         WeaponPruning.prune(ctx.weapons, day, config.weaponRetentionDays, config.legendFameThreshold, ctx.era, ctx.aliveHeroes().mapNotNullTo(HashSet()) { h -> h.id.takeIf { it !in armed } })  // blades gone for good leave the save
         if (ctx.phase != Phase.ENDED) newMorning(ctx)
