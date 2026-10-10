@@ -86,6 +86,28 @@ class CommissionSituationsTest {
         assertTrue(told.text.endsWith("needs a blade to replace their own.") && told.data["kind"] == "REPLACEMENT" && c!!.id.value in told.subjectIds, told.text)
     }
 
+    /** The blade that broke leaves the save a retention window later (`WeaponPruning`); its carrier's reason to ask does not go with it. */
+    @Test
+    fun aBladeBrokenLongAgoStillProducesAReplacementRequest() {
+        val bereft = heroes[1]
+        val broken = blade.copy(id = WeaponId("w92"), location = WeaponLocation.Destroyed(1), history = blade.history + HistoryEntry(town.era, 1, "SOLD", "Sold to ${bereft.fullName}.", listOf(bereft.id.value)))
+        val late = town.copy(day = base.weaponRetentionDays + 5, weapons = mapOf(broken.id to broken), town = town.town.copy(nextSiegeDay = base.weaponRetentionDays + 12))
+        fun dayAfter(config: BalanceConfig): GameState = (GameEngine(content, config).handle(late, Command.EndDay(TestSupport.endDayId(late))) as CommandOutcome.Accepted).state
+        val pruned = dayAfter(base)
+        val kept = dayAfter(base.copy(weaponRetentionDays = 0))
+        assertTrue(pruned.hero(bereft.id).isAlive && pruned.equippedWeapon(bereft.id) == null, "still about and still carrying nothing")
+        assertEquals(kept.copy(weapons = emptyMap()), pruned.copy(weapons = emptyMap()), "the same day either way")
+        for ((name, s) in listOf("never pruned" to kept.copy(commissions = emptyMap()), "pruned" to pruned.copy(commissions = emptyMap()))) {
+            val asking = Market.commissionSituations(ResolutionContext(s, content, base), s.aliveHeroes())[CommissionKind.REPLACEMENT]?.map { it.id }
+            assertEquals(listOf(bereft.id), asking, "$name: the hero whose blade broke on day 1")
+            assertEquals(bereft.id, offered(s, only(CommissionKind.REPLACEMENT)).second?.buyerId, name)
+        }
+        // The broken blade is kept for that question only: it goes the evening its carrier holds another.
+        assertTrue(broken.id in pruned.weapons)
+        val rearmed = pruned.armed(bereft, blade, "w93")
+        assertTrue(broken.id !in (engine.handle(rearmed, Command.EndDay(TestSupport.endDayId(rearmed))) as CommandOutcome.Accepted).state.weapons)
+    }
+
     @Test
     fun aChampionAsksBeforeASiege() {
         val champion = heroes.first()
