@@ -3233,3 +3233,330 @@ Outside the repository
 14. The release application ID (still `com.example.blacksmithproject`), the launcher icon, audio assets, further
     portraits and art, how the AI-generated art is described on the store, and name taste (a few names such as
     Isherwood, Wyndham, Jarvis, Merrick, Lysander, Idris and Rosalind may read as known people or characters).
+## Balance v8 at 10,000 seeds (2026-10-10, task T5.5; B01)
+
+The review the plan asks for once the rules are frozen: 10,000 runs at each of base seeds 1, 10001 and 20001, on core `285638a`
+(content 3, balance 8, rules 3; the tree after M4, T5.4, T6.3a and the two pruning fixes below it, none of which moves a simulator
+number). 14 classic policies, 14 bots and 5 maxed rows at each seed: 99 rows, 990,000 runs; plus the per-upgrade runs, a
+one-commission control and three-era accounts at base seed 1. **No number was changed.** Neither wear nor a maxed row is proposed
+for lowering here; the failing lines are stated and left for the owner.
+
+**What fails at 10,000 seeds** (each at all three base seeds unless noted):
+
+| line | threshold | measured | at 1,000 seeds it read |
+|---|---|---|---|
+| BALANCED_FAIR mean days | 19.5-22.5 | **22.518 / 22.601 / 22.568** (over by 0.018 / 0.101 / 0.068) | 22.385 / 22.650 / 22.515: held at seed 1, failed at the other two |
+| hard-lock days, the old counter | 0 | SPENDTHRIFT 48 / 62 / 61 days and EXPERT_ACTIVE 7 / 14 / 0 days in 10,000 runs | SPENDTHRIFT 1 / 3 / 3 in 1,000 runs (M3) |
+| NOT_BETTER share, BALANCED_FAIR | at least 8 points below M3 | 5.0 to 5.1 points below | 4.9 to 5.5 below |
+| TASTE_MATCH, PRIZED, STORIED | each at least 1 % of visits under one bot | 0.41 %, 0.05 %, 0.87 to 0.89 % at most | 0.4, 0.0, 0.6 |
+| REQUEST_DRIVEN over BALANCED_FAIR | at most +5 mean days | +9.7 to +9.8 | +9.5 to +9.7 |
+| SIEGE_PREP over BALANCED_FAIR (plan) / over its M0 value 39.6 (ruling) | at most +6 / +3 | +20.9 / +3.8 to +3.9 | +21 / +3.8 to +3.9; failed before M4 as well |
+| E1: REQUEST_DRIVEN answers wants | at least 60 % | 29.5 to 29.6 % | 29.5 to 29.7 % |
+| G01: sidegrade purchases a run | 1-4 | BALANCED_FAIR 0.87 (EXPERT 2.32 holds) | 0.9 and 2.2 |
+| E4: siege-prep blade still wielded after its siege | at least 60 % | BALANCED_FAIR 58.4 to 59.7 %, EXPERT 46.1 to 46.9 % (REQUEST_DRIVEN 70 % holds) | FAIR 55.7 / 62.2 / 55.7, EXPERT 44 to 47 |
+
+**What 10,000 seeds settle that 1,000 could not.**
+- The plain smith is over the top of the first-era band at every base seed, by 0.02 to 0.10 mean days. At 1,000 seeds this was one
+  seed in, two out, and the M4 gate called the overshoot "half the noise floor". The three 10,000-seed means lie within 0.083 of
+  each other, so the overshoot is real and small. p10 15, p90 30 and the median (20 / 25 / 20) are inside the band.
+- A maxed SYNERGY account is **+10.15 mean days above a new one at all three seeds** (gate +10). The +9.955 at base seed 1 was
+  1,000-seed noise; the margin is still thin.
+- The siege-prep line for the plain smith fails at all three seeds (58 to 60 %); at 1,000 seeds seed 10001 read 62.2 %.
+- Nothing else changed side. Of 53 policy-seed rows that have a 1,000-run value, the largest gap in mean days is 0.31
+  (TECHNIQUE_QUENCH) and the next 0.24; medians agree in every row; p10 or p90 moved one siege step in seven rows; the longest run is
+  one step longer in fifteen (ten times the runs reach further into the tail).
+- Seed-to-seed spread of a mean at 10,000 runs: median 0.10 days over the 33 rows, largest 0.17 (REQUEST_DRIVEN). At 1,000 runs the
+  same rows spread 0.10 to 0.34. A difference in mean days below about 0.2 between two 10,000-seed runs is not a finding.
+
+**Tripwire: not crossed** on the lines as restated by ruling at T3.4 (table below). On the plan's original wording (new-account EXPERT
+above 34.8 + 8 = 42.8; maxed EXPERT p90 above 60) the first is crossed, 45.5 to 45.7, as it has been since M3, and the second is
+at the line, 60. No run reaches 100 days: the longest of 990,000 is 65 (maxed EXPERT and EXPERT_ACTIVE). Every run ends.
+
+Cells below are base seed 1 / 10001 / 20001. The 1,000-run means are this session's baseline on `34cdc70` for seed 1 (every row)
+and the M4 gate files for the other two seeds (ten rows).
+
+### Classic policies, new account (10,000 runs a seed)
+
+| row | mean | median | p10 | p90 | longest | runs not ended | sold a run | 1,000-run mean | 10,000 minus 1,000 |
+|---|---|---|---|---|---|---|---|---|---|
+| PASSIVE | 10.000 / 10.000 / 10.000 | 10 / 10 / 10 | 10 / 10 / 10 | 10 / 10 / 10 | 10 / 10 / 10 | 0 / 0 / 0 | 0.0 / 0.0 / 0.0 | 10.000 / - / - | +0.000 / - / - |
+| BALANCED_EXPENSIVE | 13.973 / 14.089 / 14.079 | 15 / 15 / 15 | 10 / 10 / 10 | 20 / 20 / 20 | 30 / 30 / 30 | 0 / 0 / 0 | 9.6 / 9.8 / 9.7 | 14.040 / - / - | -0.066 / - / - |
+| RECKLESS_EXPENSIVE | 14.091 / 14.169 / 14.207 | 15 / 15 / 15 | 10 / 10 / 10 | 20 / 20 / 20 | 35 / 30 / 30 | 0 / 0 / 0 | 9.6 / 9.7 / 9.8 | 14.215 / - / - | -0.124 / - / - |
+| SAFE_FAIR | 21.958 / 22.035 / 21.985 | 20 / 20 / 20 | 15 / 15 / 15 | 25 / 25 / 25 | 40 / 35 / 35 | 0 / 0 / 0 | 33.9 / 34.1 / 34.0 | 21.980 / - / - | -0.022 / - / - |
+| BALANCED_REPUTED | 22.151 / 22.236 / 22.227 | 20 / 20 / 20 | 15 / 15 / 15 | 25 / 25 / 25 | 35 / 40 / 35 | 0 / 0 / 0 | 32.7 / 32.9 / 32.9 | 22.035 / - / - | +0.116 / - / - |
+| OVERWORK | 22.517 / 22.643 / 22.590 | 20 / 25 / 25 | 15 / 15 / 15 | 30 / 30 / 30 | 40 / 35 / 40 | 0 / 0 / 0 | 34.9 / 35.1 / 35.1 | 22.455 / - / - | +0.062 / - / - |
+| BALANCED_FAIR | 22.518 / 22.601 / 22.568 | 20 / 25 / 20 | 15 / 15 / 15 | 30 / 30 / 30 | 35 / 40 / 40 | 0 / 0 / 0 | 34.9 / 34.9 / 35.0 | 22.385 / 22.650 / 22.515 | +0.133 / -0.049 / +0.053 |
+| RECKLESS_FAIR | 23.310 / 23.401 / 23.395 | 25 / 25 / 25 | 20 / 20 / 20 | 30 / 30 / 30 | 40 / 40 / 35 | 0 / 0 / 0 | 36.3 / 36.4 / 36.4 | 23.285 / - / - | +0.025 / - / - |
+| SAFE_CHEAP | 23.725 / 23.831 / 23.799 | 25 / 25 / 25 | 20 / 20 / 20 | 30 / 30 / 30 | 35 / 35 / 40 | 0 / 0 / 0 | 36.6 / 36.6 / 36.6 | 23.670 / - / - | +0.055 / - / - |
+| BALANCED_CHEAP | 24.441 / 24.521 / 24.541 | 25 / 25 / 25 | 20 / 20 / 20 | 30 / 30 / 30 | 35 / 40 / 40 | 0 / 0 / 0 | 36.9 / 37.0 / 36.9 | 24.425 / - / - | +0.016 / - / - |
+| RANDOM | 25.453 / 25.544 / 25.544 | 25 / 25 / 25 | 15 / 15 / 15 | 35 / 35 / 35 | 45 / 45 / 40 | 0 / 0 / 0 | 32.0 / 32.3 / 32.2 | 25.490 / - / - | -0.037 / - / - |
+| BALANCED_ACTIVE | 30.027 / 30.142 / 30.122 | 30 / 30 / 30 | 25 / 25 / 25 | 35 / 35 / 35 | 45 / 45 / 50 | 0 / 0 / 0 | 57.6 / 57.9 / 58.0 | 30.040 / 30.040 / 29.940 | -0.013 / +0.102 / +0.182 |
+| BALANCED_INVEST | 32.539 / 32.561 / 32.627 | 35 / 35 / 35 | 25 / 25 / 25 | 40 / 40 / 40 | 50 / 50 / 50 | 0 / 0 / 0 | 53.3 / 53.5 / 53.6 | 32.475 / - / - | +0.064 / - / - |
+| SYNERGY | 35.264 / 35.363 / 35.407 | 35 / 35 / 35 | 30 / 30 / 30 | 40 / 40 / 40 | 50 / 45 / 50 | 0 / 0 / 0 | 51.3 / 51.4 / 51.5 | 35.385 / 35.295 / 35.495 | -0.121 / +0.068 / -0.088 |
+
+### Bots, new account (10,000 runs a seed)
+
+| row | mean | median | p10 | p90 | longest | runs not ended | sold a run | 1,000-run mean | 10,000 minus 1,000 |
+|---|---|---|---|---|---|---|---|---|---|
+| BROKE_START | 22.529 / 22.611 / 22.578 | 20 / 25 / 25 | 15 / 15 / 15 | 30 / 30 / 30 | 35 / 40 / 40 | 0 / 0 / 0 | 35.0 / 34.9 / 35.0 | 22.390 / - / - | +0.139 / - / - |
+| TECHNIQUE_TEMPER | 22.657 / 22.695 / 22.739 | 25 / 25 / 25 | 15 / 15 / 15 | 30 / 30 / 30 | 35 / 35 / 35 | 0 / 0 / 0 | 35.1 / 35.1 / 35.1 | 22.665 / - / - | -0.008 / - / - |
+| TECHNIQUE_QUENCH | 23.299 / 23.463 / 23.444 | 25 / 25 / 25 | 20 / 20 / 20 | 30 / 30 / 30 | 40 / 40 / 40 | 0 / 0 / 0 | 37.6 / 37.9 / 37.9 | 22.985 / - / - | +0.314 / - / - |
+| ADVANCED_SMITH | 24.132 / 24.238 / 24.259 | 25 / 25 / 25 | 20 / 20 / 20 | 30 / 30 / 30 | 40 / 40 / 40 | 0 / 0 / 0 | 37.3 / 37.4 / 37.5 | 24.180 / - / - | -0.048 / - / - |
+| FREE_LISTINGS | 25.064 / 25.093 / 25.070 | 25 / 25 / 25 | 20 / 20 / 20 | 30 / 30 / 30 | 40 / 40 / 40 | 0 / 0 / 0 | 36.9 / 36.9 / 36.7 | 24.970 / - / - | +0.094 / - / - |
+| TECHNIQUE_ETCH | 25.276 / 25.380 / 25.419 | 25 / 25 / 25 | 20 / 20 / 20 | 30 / 30 / 30 | 40 / 40 / 45 | 0 / 0 / 0 | 39.2 / 39.4 / 39.4 | 25.205 / - / - | +0.071 / - / - |
+| SCARCE_RECIPE | 26.306 / 26.443 / 26.387 | 25 / 25 / 25 | 20 / 20 / 20 | 30 / 30 / 30 | 40 / 40 / 40 | 0 / 0 / 0 | 41.6 / 41.7 / 41.7 | 26.215 / - / - | +0.091 / - / - |
+| NOVICE | 26.991 / 27.076 / 27.068 | 30 / 30 / 30 | 20 / 20 / 20 | 35 / 35 / 35 | 45 / 45 / 40 | 0 / 0 / 0 | 38.3 / 38.4 / 38.4 | 26.780 / - / - | +0.210 / - / - |
+| SIGNATURE_PURSUIT | 28.096 / 28.212 / 28.106 | 30 / 30 / 30 | 20 / 20 / 20 | 35 / 35 / 35 | 45 / 45 / 45 | 0 / 0 / 0 | 45.3 / 45.5 / 45.4 | 28.015 / - / - | +0.081 / - / - |
+| REQUEST_DRIVEN | 32.199 / 32.343 / 32.373 | 35 / 35 / 35 | 25 / 25 / 25 | 40 / 40 / 40 | 45 / 45 / 50 | 0 / 0 / 0 | 64.1 / 64.4 / 64.5 | 31.965 / 32.195 / 32.255 | +0.234 / +0.148 / +0.117 |
+| SPENDTHRIFT | 32.539 / 32.621 / 32.641 | 35 / 35 / 35 | 25 / 25 / 25 | 40 / 40 / 40 | 50 / 45 / 45 | 0 / 0 / 0 | 59.4 / 59.5 / 59.6 | 32.390 / - / - | +0.149 / - / - |
+| SIEGE_PREP | 43.450 / 43.489 / 43.486 | 45 / 45 / 45 | 40 / 40 / 40 | 50 / 50 / 50 | 55 / 55 / 55 | 0 / 0 / 0 | 70.1 / 70.2 / 70.2 | 43.435 / 43.495 / 43.370 | +0.014 / -0.006 / +0.116 |
+| EXPERT | 45.538 / 45.660 / 45.603 | 45 / 45 / 45 | 40 / 40 / 40 | 50 / 50 / 50 | 55 / 55 / 55 | 0 / 0 / 0 | 95.0 / 95.3 / 95.3 | 45.570 / 45.845 / 45.615 | -0.032 / -0.185 / -0.012 |
+| EXPERT_ACTIVE | 45.908 / 46.044 / 46.022 | 45 / 45 / 45 | 40 / 40 / 40 | 50 / 50 / 50 | 55 / 60 / 60 | 0 / 0 / 0 | 104.9 / 105.4 / 105.2 | 45.785 / - / - | +0.123 / - / - |
+
+### All upgrades at level 3 (10,000 runs a seed)
+
+| row | mean | median | p10 | p90 | longest | runs not ended | sold a run | 1,000-run mean | 10,000 minus 1,000 |
+|---|---|---|---|---|---|---|---|---|---|
+| BALANCED_FAIR | 37.378 / 37.409 / 37.467 | 40 / 40 / 40 | 30 / 30 / 30 | 40 / 40 / 40 | 50 / 50 / 50 | 0 / 0 / 0 | 58.5 / 58.6 / 58.8 | 37.460 / 37.540 / 37.300 | -0.082 / -0.131 / +0.167 |
+| BALANCED_ACTIVE | 44.028 / 44.011 / 44.071 | 45 / 45 / 45 | 40 / 40 / 40 | 50 / 50 / 50 | 60 / 55 / 55 | 0 / 0 / 0 | 79.1 / 79.3 / 79.4 | 44.010 / 44.045 / 43.830 | +0.018 / -0.034 / +0.241 |
+| SYNERGY | 45.414 / 45.515 / 45.558 | 45 / 45 / 45 | 40 / 40 / 40 | 50 / 50 / 50 | 55 / 55 / 55 | 0 / 0 / 0 | 61.0 / 61.2 / 61.2 | 45.340 / 45.410 / 45.555 | +0.074 / +0.105 / +0.003 |
+| EXPERT | 54.629 / 54.694 / 54.754 | 55 / 55 / 55 | 50 / 50 / 50 | 60 / 60 / 60 | 65 / 65 / 65 | 0 / 0 / 0 | 111.6 / 111.9 / 112.0 | 54.445 / 54.780 / 54.600 | +0.184 / -0.086 / +0.154 |
+| EXPERT_ACTIVE | 56.130 / 56.212 / 56.166 | 55 / 55 / 55 | 50 / 50 / 50 | 60 / 60 / 60 | 65 / 65 / 65 | 0 / 0 / 0 | 124.3 / 124.8 / 124.6 | 56.120 / - / - | +0.010 / - / - |
+
+The maxed rows are reported as distributions and are not capped: the maxed plain smith lives 40 (30/40) days and at most 50, the
+maxed active smith 45 (40/50) and at most 60, the maxed EXPERT rows 55 (50/60) and at most 65.
+
+### Every band line of plan 4.3 (M3 and M4) and the M4 acceptance lines
+
+| line | threshold | measured (1 / 10001 / 20001) | 1 | 10001 | 20001 |
+|---|---|---|---|---|---|
+| BALANCED_FAIR mean days | 19.5-22.5 | 22.518 / 22.601 / 22.568 | **FAILS** | **FAILS** | **FAILS** |
+| BALANCED_FAIR p10 / p90 (median reported, plan asks 20) | p10 >= 15, p90 <= 30 | p10 15 / 15 / 15; p90 30 / 30 / 30; median 20 / 25 / 20 | HOLDS | HOLDS | HOLDS |
+| BALANCED_ACTIVE days | median 25-30, mean <= 30.5 | median 30 / 30 / 30; mean 30.027 / 30.142 / 30.122 | HOLDS | HOLDS | HOLDS |
+| BALANCED_EXPENSIVE, PASSIVE median | 10-15 and 10 | 15 / 15 / 15; 10 / 10 / 10 | HOLDS | HOLDS | HOLDS |
+| every run ends | all | runs not ended 0 / 0 / 0 over 33 / 33 / 33 rows | HOLDS | HOLDS | HOLDS |
+| maxed above new, mean days: BALANCED_FAIR | >= +10 | +14.860 / +14.808 / +14.899 | HOLDS | HOLDS | HOLDS |
+| maxed above new, mean days: BALANCED_ACTIVE | >= +10 | +14.001 / +13.869 / +13.949 | HOLDS | HOLDS | HOLDS |
+| maxed above new, mean days: SYNERGY | >= +10 | +10.151 / +10.152 / +10.151 | HOLDS | HOLDS | HOLDS |
+| maxed above new, mean days: EXPERT | reported (gate names FAIR, ACTIVE, SYNERGY) | +9.091 / +9.035 / +9.151 | - | - | - |
+| maxed above new, mean days: EXPERT_ACTIVE | reported (gate names FAIR, ACTIVE, SYNERGY) | +10.221 / +10.168 / +10.144 | - | - | - |
+| served a day, BALANCED_FAIR | 5.0-6.0 | 5.74 / 5.74 / 5.74 | HOLDS | HOLDS | HOLDS |
+| days with two or fewer visitors, BALANCED_FAIR | <= 5 % | 0.88 % / 0.84 % / 0.85 % | HOLDS | HOLDS | HOLDS |
+| served a day, BALANCED_ACTIVE | 6.0-7.5 | 7.27 / 7.27 / 7.28 | HOLDS | HOLDS | HOLDS |
+| distinct heroes served, BALANCED_FAIR: by day 5 / in a run (means) | >= 9 / >= 13 | 11.4 / 11.4 / 11.4; 14.3 / 14.2 / 14.2 | HOLDS | HOLDS | HOLDS |
+| fairness by position (best / worst visit rate, positions 1-12), BALANCED_FAIR | <= 2.5 | 1.04 / 1.03 / 1.04 | HOLDS | HOLDS | HOLDS |
+| newcomer wait, days: median / p90, BALANCED_FAIR | <= 2 / <= 4 | 0 / 0 / 0; 2 / 2 / 2 | HOLDS | HOLDS | HOLDS |
+| sales a day, BALANCED_FAIR | 1.2-2.0 | 1.552 / 1.544 / 1.552 | HOLDS | HOLDS | HOLDS |
+| sales a day, BALANCED_ACTIVE | 1.5-2.4 | 1.918 / 1.922 / 1.925 | HOLDS | HOLDS | HOLDS |
+| conversion against M0 (1,000-run values 23.4 / 23.1 / 23.4 and 22.6 / 22.4 / 22.5): FAIR; ACTIVE | not more than 3 points below | 24.55 / 24.44 / 24.52; 24.35 / 24.34 / 24.36 | HOLDS | HOLDS | HOLDS |
+| 4 of 5 classes have bought by day 10: FAIR; ACTIVE | >= 90 % of runs | 99.99 / 100.00 / 99.99; 99.93 / 99.90 / 99.89 | HOLDS | HOLDS | HOLDS |
+| deaths per hero-day, BALANCED_FAIR | <= 0.00518 (1.15 x M0 0.0045) | 0.00479 / 0.00466 / 0.00474 | HOLDS | HOLDS | HOLDS |
+| deaths per hero-day, BALANCED_ACTIVE | <= 0.00403 (1.15 x M0 0.0035) | 0.00318 / 0.00314 / 0.00318 | HOLDS | HOLDS | HOLDS |
+| legacy points, median, BALANCED_FAIR | within 2 of 26 | 27 / 28 / 27 | HOLDS | HOLDS | HOLDS |
+| hard-lock days (old counter) | 0 | EXPERT_ACTIVE 7, SPENDTHRIFT 48; EXPERT_ACTIVE 14, SPENDTHRIFT 62; SPENDTHRIFT 61 | **FAILS** | **FAILS** | **FAILS** |
+| stuck days, worst row | <= 0.5 % of days | 0.091 % (SPENDTHRIFT); 0.071 % (SPENDTHRIFT); 0.089 % (SPENDTHRIFT); FAIR 0.000 / 0.000 / 0.000 | HOLDS | HOLDS | HOLDS |
+| shared first name / surname among the living | 0 % of days (surnames: lineage members excepted) | FAIR 0.000 / 0.000 / 0.000; 0.000 / 0.000 / 0.000; worst row 0.000 / 0.000 / 0.000 | HOLDS | HOLDS | HOLDS |
+| shared face among the living, BALANCED_FAIR | reported | 32.2 % / 32.9 % / 32.7 % | - | - | - |
+| conversion, BALANCED_FAIR, against M3 21.62 / 21.23 / 21.49 | >= M3 + 2 | 24.55 / 24.44 / 24.52 (+2.93 / +3.21 / +3.03) | HOLDS | HOLDS | HOLDS |
+| conversion, REQUEST_DRIVEN, against M3 19.2 / 19.0 / 19.2 | >= M3 + 2 | 28.79 / 28.76 / 28.75 (+9.59 / +9.76 / +9.55) | HOLDS | HOLDS | HOLDS |
+| NOT_BETTER share of visits, BALANCED_FAIR, against M3 57.25 / 57.53 / 57.49 | >= 8 points below M3 | 52.20 / 52.46 / 52.46 (-5.05 / -5.07 / -5.03) | **FAILS** | **FAILS** | **FAILS** |
+| TOO_EXPENSIVE share, BALANCED_FAIR, against M3 19.78 / 19.94 / 19.70 | <= M3 + 2 | 20.69 / 20.53 / 20.41 (+0.91 / +0.59 / +0.71) | HOLDS | HOLDS | HOLDS |
+| COUNTERS_THREAT share of visits, highest row | >= 1 % under one bot, <= 15 % under any | 7.84 % (EXPERT); 7.83 % (EXPERT); 7.85 % (EXPERT) | HOLDS | HOLDS | HOLDS |
+| RESISTED share of visits, highest row | >= 1 % under one bot, <= 15 % under any | 1.25 % (TECHNIQUE_QUENCH); 1.28 % (TECHNIQUE_QUENCH); 1.26 % (TECHNIQUE_QUENCH) | HOLDS | HOLDS | HOLDS |
+| TASTE_MATCH share of visits, highest row | >= 1 % under one bot, <= 15 % under any | 0.41 % (maxed BALANCED_ACTIVE); 0.41 % (maxed BALANCED_ACTIVE); 0.41 % (maxed BALANCED_ACTIVE) | **FAILS** | **FAILS** | **FAILS** |
+| PRIZED share of visits, highest row | >= 1 % under one bot, <= 15 % under any | 0.05 % (TECHNIQUE_QUENCH); 0.05 % (TECHNIQUE_QUENCH); 0.05 % (TECHNIQUE_QUENCH) | **FAILS** | **FAILS** | **FAILS** |
+| STORIED share of visits, highest row | >= 1 % under one bot, <= 15 % under any | 0.87 % (SIGNATURE_PURSUIT); 0.89 % (SIGNATURE_PURSUIT); 0.88 % (SIGNATURE_PURSUIT) | **FAILS** | **FAILS** | **FAILS** |
+| REQUEST_DRIVEN over BALANCED_FAIR, mean days | <= +5 | +9.681 / +9.743 / +9.805 | **FAILS** | **FAILS** | **FAILS** |
+| SIEGE_PREP over BALANCED_FAIR, mean days (plan) | <= +6 | +20.931 / +20.888 / +20.918 | **FAILS** | **FAILS** | **FAILS** |
+| SIEGE_PREP over its M0 value 39.6, mean days (ruling) | <= +3 | +3.849 / +3.889 / +3.886 (mean 43.450 / 43.489 / 43.486) | **FAILS** | **FAILS** | **FAILS** |
+| two open commissions over one, same bot, mean days (base seed 1 only) | <= +2 | BALANCED_FAIR +0.084; BALANCED_ACTIVE +0.125; REQUEST_DRIVEN +0.035; SIEGE_PREP +0.134; EXPERT +0.042 | HOLDS | - | - |
+| E1: REQUEST_DRIVEN answers wants | >= 60 % | 29.6 % / 29.5 % / 29.6 % | **FAILS** | **FAILS** | **FAILS** |
+| E1: BALANCED_FAIR answers wants | <= 25 % | 12.0 % / 12.0 % / 12.1 % | HOLDS | HOLDS | HOLDS |
+| G01: sidegrade purchases a run (TASTE_MATCH + PRIZED + STORIED visits): BALANCED_FAIR; EXPERT | 1-4 | 0.87 / 0.87 / 0.87; 2.32 / 2.32 / 2.32 | **FAILS** | **FAILS** | **FAILS** |
+| E2: RESISTED share of refusals in the warning window, BALANCED_FAIR | 3-10 % | 3.13 % / 3.08 % / 3.13 % | HOLDS | HOLDS | HOLDS |
+| E2: RESISTED share of refusals in the warning window, BALANCED_ACTIVE | 3-10 % | 3.73 % / 3.72 % / 3.72 % | HOLDS | HOLDS | HOLDS |
+| E2: RESISTED share of refusals in the warning window, REQUEST_DRIVEN | 3-10 % | 3.96 % / 3.96 % / 3.92 % | HOLDS | HOLDS | HOLDS |
+| E3: rumours a run, BALANCED_FAIR | 2-4 | 3.45 / 3.46 / 3.46 | HOLDS | HOLDS | HOLDS |
+| E3: rumours a run, BALANCED_ACTIVE | 2-4 | 3.83 / 3.84 / 3.83 | HOLDS | HOLDS | HOLDS |
+| E3: rumours a run, REQUEST_DRIVEN | 2-4 | 3.97 / 3.97 / 3.98 | HOLDS | HOLDS | HOLDS |
+| E3: rumours a run, EXPERT | 2-4 | 4.00 / 4.00 / 4.00 | HOLDS | HOLDS | HOLDS |
+| E3: rumours a run, lowest new-account row that forges | reported (short runs) | 1.76 (BALANCED_EXPENSIVE); 1.79 (BALANCED_EXPENSIVE); 1.79 (BALANCED_EXPENSIVE) | - | - | - |
+| E4: REQUEST_DRIVEN completes accepted commissions | >= 70 % | 97.9 % / 97.8 % / 97.8 % | HOLDS | HOLDS | HOLDS |
+| E4: largest share any commission kind has of the offers, any row | <= 40 % | 39.5 % (maxed EXPERT_ACTIVE ORDINARY); 39.5 % (maxed EXPERT_ACTIVE ORDINARY); 39.7 % (maxed EXPERT_ACTIVE ORDINARY) | HOLDS | HOLDS | HOLDS |
+| E4: siege-prep blade still wielded after its siege, REQUEST_DRIVEN | >= 60 % | 70.1 % / 70.2 % / 70.0 % | HOLDS | HOLDS | HOLDS |
+| E4: siege-prep blade still wielded after its siege, BALANCED_FAIR | >= 60 % | 58.5 % / 59.7 % / 58.4 % | **FAILS** | **FAILS** | **FAILS** |
+| E4: siege-prep blade still wielded after its siege, EXPERT | >= 60 % | 46.1 % / 46.9 % / 46.8 % | **FAILS** | **FAILS** | **FAILS** |
+
+Notes on the lines.
+- Relative lines use the 1,000-run values the gates were set with: M0 and M3 conversion and refusal shares per base seed. The
+  REQUEST_DRIVEN M3 conversion is taken back from the M4 gate record (28.9 / 28.7 / 28.8 at +9.7 / +9.7 / +9.6).
+- "Hard-lock days" is the old counter (a day with nothing forged and nothing left on the shelf from the day before). T5.2 showed it
+  is not a stuck state; the stuck-state probe that replaced it holds in every row (worst 0.09 % of days, SPENDTHRIFT, whose longest
+  stuck streak is 7 days and who has a streak of three or more in 0.06 to 0.10 % of runs). NOVICE has none of three days, so the
+  valve's trigger (more than 1 % of NOVICE runs) stays unmet.
+- The two-commission line was run at base seed 1 only (`--set maxOpenCommissions=1`).
+- Face clashes are reported, not gated.
+- Not re-measured at 10,000 seeds, so their 1,000-seed results stand: E3 first discovery by era 2 (needs the clue-following bot
+  over two eras), G01 champion power at the first two sieges within 2 % (needs the gate-off arm), the Patronage band of sweep step 5,
+  and the lines that are tests (`ArtifactFidelityTest`, `ClueLadderTest`).
+
+### Tripwire
+
+| line | measured (1 / 10001 / 20001) | 1 | 10001 | 20001 |
+|---|---|---|---|---|
+| new-account EXPERT mean above 50.4 (ruling; plan text: 34.8 + 8 = 42.8) | 45.538 / 45.660 / 45.603 | not crossed | not crossed | not crossed |
+| maxed EXPERT p90 above 70 (ruling; plan text: 60) | 60 / 60 / 60 | not crossed | not crossed | not crossed |
+| any run of 100 days or the 400-day cap | longest 65 (maxed EXPERT); 65 (maxed EXPERT); 65 (maxed EXPERT) | not crossed | not crossed | not crossed |
+
+### 10,000 runs against 1,000
+
+Rows compared: 53 (policy x seed). Largest mean-day gaps, 10,000 minus 1,000:
+- TECHNIQUE_QUENCH, seed 1: +0.314
+- maxed BALANCED_ACTIVE, seed 20001: +0.241
+- REQUEST_DRIVEN, seed 1: +0.234
+- NOVICE, seed 1: +0.210
+- EXPERT, seed 10001: -0.185
+- maxed EXPERT, seed 1: +0.184
+- BALANCED_ACTIVE, seed 20001: +0.182
+- maxed BALANCED_FAIR, seed 20001: +0.167
+
+Rows whose median, p10, p90 or longest run differ:
+- BALANCED_ACTIVE, seed 1: p10 25 (20)
+- BALANCED_ACTIVE, seed 20001: longest 50 (45)
+- BALANCED_EXPENSIVE, seed 1: longest 30 (25)
+- BALANCED_FAIR, seed 1: p90 30 (25)
+- BALANCED_FAIR, seed 10001: p10 15 (20)
+- BALANCED_FAIR, seed 20001: p10 15 (20); longest 40 (35)
+- BALANCED_INVEST, seed 1: longest 50 (45)
+- BROKE_START, seed 1: p90 30 (25)
+- OVERWORK, seed 1: longest 40 (35)
+- RANDOM, seed 1: longest 45 (40)
+- RECKLESS_EXPENSIVE, seed 1: longest 35 (30)
+- RECKLESS_FAIR, seed 1: longest 40 (35)
+- REQUEST_DRIVEN, seed 20001: longest 50 (45)
+- SAFE_FAIR, seed 1: longest 40 (35)
+- SPENDTHRIFT, seed 1: longest 50 (45)
+- SYNERGY, seed 1: longest 50 (45)
+- SYNERGY, seed 20001: longest 50 (45)
+- TECHNIQUE_QUENCH, seed 1: p10 20 (15); longest 40 (35)
+- maxed BALANCED_ACTIVE, seed 1: longest 60 (55)
+- maxed BALANCED_FAIR, seed 1: p10 30 (35)
+
+### Beside the balance v5 table of 0.6.0 (both 10,000 runs, base seed 1)
+
+| row | v5: median (p10/p90) mean, sold, longest | v8: median (p10/p90) mean, sold, longest | mean days, v8 minus v5 |
+|---|---|---|---|
+| PASSIVE | 10 (10/10) 10.0, 0.0, 10 | 10 (10/10) 10.0, 0.0, 10 | +0.0 |
+| BALANCED_EXPENSIVE | 10 (10/15) 12.8, 5.5, 30 | 15 (10/20) 14.0, 9.6, 30 | +1.2 |
+| RECKLESS_EXPENSIVE | 10 (10/20) 13.2, 5.7, 35 | 15 (10/20) 14.1, 9.6, 35 | +0.9 |
+| SAFE_FAIR | 20 (15/25) 20.1, 18.6, 40 | 20 (15/25) 22.0, 33.9, 40 | +1.9 |
+| BALANCED_REPUTED | 20 (15/25) 20.5, 18.7, 40 | 20 (15/25) 22.2, 32.7, 35 | +1.7 |
+| BALANCED_FAIR | 20 (15/25) 20.7, 19.3, 35 | 20 (15/30) 22.5, 34.9, 35 | +1.8 |
+| OVERWORK | 20 (15/25) 20.8, 19.4, 35 | 20 (15/30) 22.5, 34.9, 40 | +1.7 |
+| RECKLESS_FAIR | 20 (15/30) 21.5, 20.3, 40 | 25 (20/30) 23.3, 36.3, 40 | +1.8 |
+| SAFE_CHEAP | 25 (20/30) 22.8, 19.5, 40 | 25 (20/30) 23.7, 36.6, 35 | +0.9 |
+| RANDOM | 25 (15/35) 23.3, 18.7, 45 | 25 (15/35) 25.5, 32.0, 45 | +2.2 |
+| BALANCED_CHEAP | 25 (20/30) 23.7, 20.2, 40 | 25 (20/30) 24.4, 36.9, 35 | +0.7 |
+| BALANCED_ACTIVE | 30 (20/35) 27.4, 31.3, 45 | 30 (25/35) 30.0, 57.6, 45 | +2.6 |
+| BALANCED_INVEST | 30 (20/40) 30.3, 28.6, 55 | 35 (25/40) 32.5, 53.3, 50 | +2.2 |
+| SYNERGY | 35 (25/40) 34.8, 28.3, 50 | 35 (30/40) 35.3, 51.3, 50 | +0.5 |
+| BALANCED_FAIR, all upgrades | 35 (30/40) 36.5, 28.8, 55 | 40 (30/40) 37.4, 58.5, 50 | +0.9 |
+| BALANCED_ACTIVE, all upgrades | 45 (35/50) 42.3, 45.3, 55 | 45 (40/50) 44.0, 79.1, 60 | +1.7 |
+
+Since v5 the first era is 0.5 to 2.6 mean days longer for every forging policy and sells nearly twice as many blades a run (twelve
+residents, six seats, wants): BALANCED_FAIR 19.3 -> 34.9 sold, BALANCED_ACTIVE 31.3 -> 57.6. The maxed plain smith's median moved a
+siege step up (35 -> 40) with its longest run shorter (55 -> 50); the maxed active smith keeps median 45, its p10 is 40 (35) and
+its longest run 60 (55).
+
+### Per-upgrade impact, BALANCED_ACTIVE, level 3 against none (base seed 1, 10,000 runs; base median 30 mean 30.027)
+
+| track | median (delta) | mean (delta) | gate: >= +1.5 mean days |
+|---|---|---|---|
+| Stalwart Walls | 35 (+5) | 36.370 (+6.343) | holds on days |
+| Well-Stocked Cellar | 35 (+5) | 33.370 (+3.343) | holds on days |
+| Forge Mastery | 35 (+5) | 33.083 (+3.056) | holds on days |
+| Thrifty Hands | 30 (+0) | 31.169 (+1.142) | not on days; see its purpose yardstick |
+| Known Name | 30 (+0) | 31.017 (+0.989) | not on days; see its purpose yardstick |
+| Lucky Hammer | 30 (+0) | 30.803 (+0.776) | not on days; see its purpose yardstick |
+| Tireless Smith | 30 (+0) | 30.685 (+0.658) | not on days; see its purpose yardstick |
+| Family Savings | 30 (+0) | 30.151 (+0.124) | not on days; see its purpose yardstick |
+| Anvil Lore | 30 (+0) | 30.027 (+0.000) | not on days; see its purpose yardstick |
+| Caravan Ties | 30 (+0) | 30.027 (+0.000) | not on days; see its purpose yardstick |
+| Homing Steel | 30 (+0) | 30.027 (+0.000) | not on days; see its purpose yardstick |
+| all maxed, BALANCED_FAIR | 40 | 37.378, p10 30, p90 40, longest 50 | |
+| all maxed, BALANCED_ACTIVE | 45 | 44.028, p10 40, p90 50, longest 60 | |
+
+Second yardsticks for the same runs (means per run: defense / first siege held / forged / sold / tools at the day 5 siege, the first
+tier-4+ core sale, limited-stock units bought, signature weapons, legends returned, then forged, sold and legacy points a run):
+
+```
+  upgrade (maxed)      defense  held  forged    sold   tools       premium sale    rare signat. legends  forged    sold  points
+  none                   231.0   93%    23.0    13.2     4.6   day  7.7 in  98%     0.0    0.00    0.00   152.5    57.6    30.1
+  Tireless Smith         245.5   97%    28.5    13.1     4.5   day  7.9 in  99%     0.0    0.00    0.00   183.6    59.0    30.5
+  Family Savings         233.8   95%    23.7    13.2     5.0   day  7.7 in  98%     0.0    0.00    0.00   158.3    57.9    30.2
+  Forge Mastery          248.6   95%    22.5    10.3     4.2   day  9.1 in  98%     0.0    0.00    0.00   169.0    60.5    31.5
+  Stalwart Walls         231.0   93%    23.0    13.2     4.6   day  7.8 in  99%     0.0    0.00    0.00   188.6    65.5    31.5
+  Thrifty Hands          238.4   96%    23.3    13.3     4.7   day  7.5 in  99%     0.0    0.00    0.00   162.4    61.8    30.6
+  Well-Stocked Cellar    263.0   98%    21.7     9.2     3.9   day  8.6 in  99%     0.0    0.00    0.00   173.1    63.6    31.5
+  Lucky Hammer           233.6   93%    23.0    12.9     4.6   day  8.0 in  98%     0.0    0.00    0.00   157.1    58.9    30.5
+  Known Name             237.1   96%    23.6    14.6     4.9   day  7.0 in  99%     0.0    0.00    0.00   161.3    61.9    30.5
+  Caravan Ties           231.0   93%    23.0    13.2     4.6   day  7.7 in  98%     0.0    0.00    0.00   152.5    57.6    30.1
+  Anvil Lore             231.0   93%    23.0    13.2     4.6   day  7.7 in  98%     0.0    0.00    0.00   152.5    57.6    30.1
+  Homing Steel           231.0   93%    23.0    13.2     4.6   day  7.7 in  98%     0.0    0.00    0.00   152.5    57.6    30.1
+  all maxed              289.9   98%    28.5     7.2     4.7   day  9.7 in 100%     0.0    0.01    0.00   267.1    79.1    34.0
+```
+
+Against the per-track gate of plan 4.7 (at least +1.5 mean days under one competent policy, or +15 % on the track's own measure),
+as far as these runs can say:
+
+| track | mean days, BALANCED_ACTIVE | own measure in these columns | reading |
+|---|---|---|---|
+| Stalwart Walls, Well-Stocked Cellar, Forge Mastery | +6.3, +3.3, +3.1 | | hold on days |
+| Tireless Smith | +0.7 | forged by day 5: 28.5 against 23.0 (+24 %); forged a run 183.6 against 152.5 (+20 %) | holds on its own measure |
+| Thrifty Hands | +1.1 | rare-augment forges: not in these columns (this bot buys no limited stock) | below the days gate; own measure not measured |
+| Known Name | +1.0 | sold by day 5: 14.6 against 13.2 (+11 %); first siege held 96 % against 93 % | below both on these columns |
+| Lucky Hammer | +0.8 | exceptional share: not in these columns | below the days gate; own measure not measured |
+| Family Savings | +0.1 | tools by day 5: 5.0 against 4.6 (+9 %) | below both on these columns |
+| Caravan Ties, Anvil Lore, Homing Steel | 0.0 | this bot buys no limited stock, hunts no signature and owns no Legend Board | not measurable under this policy |
+
+The per-track gate table of T5.3 (each track under the bot that uses it, with the two discovery measures) has never been run, at
+1,000 or 10,000 seeds; the table above is what the plan's own 10,000-seed command yields and is not that table. Known Name reads
++1.0 mean days here against +1.6 at v5; the base town it is measured against now seats six.
+
+### Three eras in sequence (base seed 1, 10,000 accounts, upgrades bought cheapest first)
+
+| policy | era 1: median (p10/p90) mean, longest | era 2 | era 3 | upgrade levels at the start of era 2 / 3 | runs with a returned legend, era 2 / 3 | accounts with a cross-era return |
+|---|---|---|---|---|---|---|
+| BALANCED_FAIR | 20 (15/30) 22.5, 35 | 25 (20/30) 23.4, 40 | 30 (25/35) 28.3, 40 | 2.9 / 6.3 | 16.9 % / 19.7 % | 33.3 % |
+| BALANCED_ACTIVE | 30 (25/35) 30.0, 45 | 35 (25/40) 32.4, 50 | 35 (30/40) 36.3, 50 | 3.3 / 7.2 | 22.5 % / 24.0 % | 41.0 % |
+| EXPERT | 45 (40/50) 45.5, 55 | 50 (45/55) 48.7, 60 | 50 (45/55) 49.1, 60 | 4.0 / 8.0 | 32.9 % / 31.5 % | 54.0 % |
+| EXPERT_ACTIVE | 45 (40/50) 45.9, 55 | 50 (45/55) 49.3, 60 | 50 (45/55) 50.1, 65 | 4.0 / 8.0 | 33.0 % / 32.5 % | 55.1 % |
+
+Every one of the 120,000 era runs ends. An account that buys the cheapest upgrades gains 0.9 to 3.4 mean days in its second era
+and 0.4 to 4.9 in its third; by era 3 no row has a run over 65 days. The 1,000-account run of T4.5 read BALANCED_ACTIVE at
+29.8 / 32.1 / 36.0, within 0.3 mean days of this. Rumours stay at 3.5 to 4.0 a run in every era.
+
+### Commands, evidence and what was not run
+
+```
+./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy all --customers --yardsticks --impactPolicy BALANCED_ACTIVE --perf --json <f>"
+./gradlew :core:simulate --args="--runs 10000 --seed <10001|20001> --policy all --customers --yardsticks --noImpact --json <f>"
+./gradlew :core:simulate --args="--runs 10000 --seed <s> --policy bots --customers --yardsticks --noImpact --json <f>"
+./gradlew :core:simulate --args="--runs 10000 --seed <s> --policy EXPERT,EXPERT_ACTIVE,BALANCED_FAIR,BALANCED_ACTIVE,SYNERGY --customers --yardsticks --noImpact --upgrades <all eleven>=3 --json <f>"
+./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy BALANCED_FAIR,BALANCED_ACTIVE,REQUEST_DRIVEN,SIEGE_PREP,EXPERT --customers --noImpact --set maxOpenCommissions=1 --json <f>"
+./gradlew :core:simulate --args="--runs 10000 --seed 1 --policy BALANCED_ACTIVE,EXPERT_ACTIVE,BALANCED_FAIR,EXPERT --eras 3 --json <f>"
+```
+
+Raw output and the scripts that built these tables: `scratchpad/exec/t55/` (`{all,bots,maxed}-s<seed>.{txt,json}`, `one-s1`,
+`eras3-s1`, `tab.py`, `tables.md`). End Day timing from the same run (forced survival, 1,000 days, desktop JVM): p50 1.48 ms,
+p95 3.34 ms, max 10.80 ms, ending with 3,862 weapons, 201 heroes and 2,015 events (v5: p95 1.71 ms with 2,933 weapons).
+
+Not run at 10,000 seeds: the per-track gate arms of T5.3 (above); `--legends` (a veteran Legend Board); the adverse arms of plan 9.3
+(prices at 70 % and 180 %, a material-poor start, a `Lean Harvest` world, a town that lost half its heroes); the Patronage arms;
+the per-upgrade runs and the one-commission control at base seeds 10001 and 20001; multi-era play at those seeds or for the
+clue-following bot. A simulator result is evidence about balance and reachability, never that the game is fun.
+
+**Open for the owner, unchanged in kind since the M4 gate and now with 10,000-seed numbers:** the first-era band top (22.52 to 22.60
+against 22.5: restate it at 22.7, or take `raidPerDay` 6.6, which at 1,000 seeds cost the maxed FAIR, ACTIVE and SYNERGY rows 0.2 to
+0.5 mean days and is therefore the owner's call, not this task's); REQUEST_DRIVEN's +9.7 over a plain smith against its 30 % of
+wants answered; the 8-point NOT_BETTER target; the 1 % floor for the three sidegrade reasons; the siege-prep pick.
