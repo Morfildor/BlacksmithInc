@@ -97,6 +97,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
     var storageOpen by rememberSaveable { mutableStateOf(false) }
     var suppliesOpen by rememberSaveable { mutableStateOf(false) }
+    var boardOpen by rememberSaveable { mutableStateOf(false) }
+    val workshopHaptics = LocalHaptics.current
     // Back returns to Shop from any other destination, and from Shop it opens the main menu. Sheets and dialogs are
     // their own windows and take Back first.
     BackHandler { if (!vm.back()) onMainMenu() }
@@ -116,8 +118,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
         },
         bottomBar = {
             Column {
-                // End Day belongs to the two places the day is worked in; Town and Records get its height back.
-                if (s.dest == Dest.SHOP || s.dest == Dest.FORGE) EndDayButton(s, vm, primary = s.dest == Dest.SHOP)
+                // End Day is the Shop's way forward. The Forge keeps it under "More", and beside its action when no forge is left today.
+                if (s.dest == Dest.SHOP) EndDayButton(s, vm, primary = true)
                 DestinationBar(s.dest, vm::selectDest)
             }
         },
@@ -149,7 +151,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     onForgeWant = vm::forgeFamily,
                     onOpenSupplies = { suppliesOpen = true },
                 )
-                Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesOpen = true })
+                Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesOpen = true }, onOpenBoard = { boardOpen = true }, onEndDay = { workshopHaptics.play(Moment.END_DAY); vm.endDay() })
                 Dest.RECORDS -> RecordsPanel(s, vm)
                 Dest.TOWN -> TownPanel(s, vm)
             }
@@ -265,7 +267,7 @@ object Tips {
     val COUNTER = Tip("counter", "Tap anywhere to continue · Skip day jumps to the evening")
     val ORDER = listOf(FORGE, END_DAY, MARKET, COUNTER)
     val ALL = ORDER.map { it.id }.toSet()
-    fun forDest(d: Dest): List<Tip> = when (d) { Dest.FORGE -> listOf(FORGE, END_DAY); Dest.SHOP -> listOf(MARKET); else -> emptyList() }
+    fun forDest(d: Dest): List<Tip> = when (d) { Dest.FORGE -> listOf(END_DAY); Dest.SHOP -> listOf(MARKET); else -> emptyList() }
 }
 
 /** One slim line of guidance with a dismiss action; never a card that stays on every panel. */

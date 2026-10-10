@@ -46,7 +46,16 @@ import com.tinyblacksmith.core.shopday.Threats
  * missing. [why] is the reason it was made (`Lines.commissionWhy`); null for an ordinary one.
  */
 @Immutable
-data class RequestUi(val id: CommissionId, val buyer: FaceUi, val asks: String, val terms: String, val offered: Boolean, val readiness: String?, val fits: List<String>, val why: String? = null)
+data class RequestUi(
+    val id: CommissionId, val buyer: FaceUi, val asks: String, val terms: String, val offered: Boolean, val readiness: String?, val fits: List<String>, val why: String? = null,
+    /** The same terms as facts, for a compact row and the Forge's brief: never read back out of [asks] or [terms]. */
+    val reward: Int = 0, val daysLeft: Int = 0, val family: String = "", val element: Element? = null, val minQuality: Int = 0,
+    /** Accepted, and a blade in the shop is the one End Day would hand over today (`Commissions.pick`). Nothing is set aside. */
+    val ready: Boolean = false,
+) {
+    /** "Due in 3 days"; the day itself stays in [terms]. */
+    val due: String get() = when { daysLeft <= 0 -> "Due today"; daysLeft == 1 -> "Due tomorrow"; else -> "Due in $daysLeft days" }
+}
 
 /** How an element stands against the besieger, in the words of `Lines.threatMark`. [counters]: it bites (`ThreatMark.COUNTERS`); otherwise the besieger resists it. */
 @Immutable data class MarkUi(val label: String, val counters: Boolean)
@@ -56,7 +65,11 @@ data class RequestUi(val id: CommissionId, val buyer: FaceUi, val asks: String, 
  * no element), whether today's customers weigh it, and the mark of each element it is weak to or resists.
  */
 @Immutable
-data class ThreatUi(val siege: String, val line: String?, val warned: Boolean, val marks: Map<Element, MarkUi>) {
+data class ThreatUi(
+    val siege: String, val line: String?, val warned: Boolean, val marks: Map<Element, MarkUi>,
+    /** The besieger and its matchup as plain facts: "Ashclaw Raiders · Weak to Frost · Resists Fire". */
+    val matchup: String? = null,
+) {
     /** Siege and matchup on one line, for a plate. */
     val plate: String get() = listOfNotNull(siege, line).joinToString(" · ")
     /** Said on the Shop on the days `Threat.warned` holds and the besieger cares about an element. */
@@ -163,6 +176,7 @@ fun GameEngine.threatUi(state: GameState): ThreatUi? = Threats.of(state, content
         line = Lines.threat(t, content),
         warned = t.warned,
         marks = Element.entries.mapNotNull { e -> Threats.mark(e, t)?.let { e to MarkUi(Lines.threatMark(it, t, content), it == ThreatMark.COUNTERS) } }.toMap(),
+        matchup = content.factionById[t.factionId]?.name?.let { name -> listOfNotNull(name, t.weakTo?.let { "Weak to ${it.word()}" }, t.resists?.let { "Resists ${it.word()}" }).joinToString(" · ") },
     )
 }
 
@@ -205,6 +219,8 @@ fun GameEngine.shopUi(state: GameState): ShopUi {
                 // Each blade of the family in the shop, by the engine's own rule: "fits" or the one thing it lacks.
                 fits = inShop.filter { it.familyId == c.familyId }.map { w -> "${w.name}: ${Labels.fit(w, c, content)}" },
                 why = Lines.commissionWhy(c, state),
+                reward = c.reward, daysLeft = c.deadlineDay - state.day, family = content.family(c.familyId).name, element = c.element, minQuality = c.minQuality,
+                ready = c.status == CommissionStatus.ACCEPTED && Commissions.pick(state.weapons.values, c, config) != null,
             )
         }
 
