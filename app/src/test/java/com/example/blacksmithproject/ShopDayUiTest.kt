@@ -49,6 +49,25 @@ class ShopDayUiTest {
         assertTrue(checked > 100)
     }
 
+    /**
+     * At 1x with no taps the screen waits exactly `beat.millis` on each card before the day's last one (the auto-advance
+     * in `ShopDayScreen` is `delay(millis / divisor)`), so a day's length is that sum. Budget (plan 6.5): median at
+     * most 25 s and p90 at most 30 s, over the first ten recorded days with 6 to 10 visitors at the town's real size.
+     */
+    @Test
+    fun dayLengthAtOneSpeedOverTheFixtureDays() {
+        val days = (1L..12L).asSequence().flatMap { ShopDayFixtures.run(it, 25) }.filter { it.script.visits.size in 6..10 }.take(10).toList()
+        assertEquals("ten recorded days of 6 to 10 visitors", 10, days.size)
+        val seconds = days.map { d -> d.ui().let { m -> m.beats.take(m.endingIndex).sumOf { it.millis } } / 1000.0 }.sorted()
+        val median = (seconds[4] + seconds[5]) / 2
+        val p90 = seconds[8]
+        println("day length at 1x: ${seconds.joinToString { "%.1f".format(it) }} s; median %.1f, p90 %.1f".format(median, p90))
+        assertTrue("median $median s", median <= 25.0)
+        assertTrue("p90 $p90 s", p90 <= 30.0)
+        // One tap still skips any day: the ending is a card of its own, after every timed card.
+        days.forEach { d -> d.ui().let { m -> assertTrue(m.endingIndex <= m.beats.lastIndex && m.beats[m.endingIndex].millis == 0) } }
+    }
+
     @Test
     fun beatsCoverEveryVisitExactlyOnce() {
         var visits = 0; var featured = 0; var quiet = 0
