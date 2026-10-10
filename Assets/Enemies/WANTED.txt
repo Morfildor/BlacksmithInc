@@ -1,0 +1,50 @@
+Assets/Enemies
+Faction enemies: portraits for reports and small battle frames (idle, attack, hit) for the fight replay.
+
+File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
+Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
+Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
+
+IDs in the game today (42), with the current in-game size:
+  faction_ashclaw_raider                  80x80
+  faction_ashclaw_brute                   112x112
+  faction_hollowbound_shade               80x80
+  faction_hollowbound_wraith              112x112
+  faction_embermaw_whelp                  80x80
+  faction_embermaw_drake                  112x112
+  faction_ashclaw_alt_0                   64x64
+  faction_ashclaw_alt_1                   64x64
+  faction_embermaw_alt_0                  64x64
+  faction_embermaw_alt_1                  64x64
+  faction_hollowbound_alt_0               64x64
+  faction_hollowbound_alt_1               64x64
+  monster_ashclaw_brute_attack_0          16x16
+  monster_ashclaw_brute_attack_1          16x16
+  monster_ashclaw_brute_hit               16x16
+  monster_ashclaw_brute_idle_0            16x16
+  monster_ashclaw_brute_idle_1            16x16
+  monster_ashclaw_raider_attack_0         16x16
+  monster_ashclaw_raider_attack_1         16x16
+  monster_ashclaw_raider_hit              16x16
+  monster_ashclaw_raider_idle_0           16x16
+  monster_ashclaw_raider_idle_1           16x16
+  monster_embermaw_drake_attack_0         16x16
+  monster_embermaw_drake_attack_1         16x16
+  monster_embermaw_drake_hit              16x16
+  monster_embermaw_drake_idle_0           16x16
+  monster_embermaw_drake_idle_1           16x16
+  monster_embermaw_whelp_attack_0         16x16
+  monster_embermaw_whelp_attack_1         16x16
+  monster_embermaw_whelp_hit              16x16
+  monster_embermaw_whelp_idle_0           16x16
+  monster_embermaw_whelp_idle_1           16x16
+  monster_hollowbound_shade_attack_0      16x16
+  monster_hollowbound_shade_attack_1      16x16
+  monster_hollowbound_shade_hit           16x16
+  monster_hollowbound_shade_idle_0        16x16
+  monster_hollowbound_shade_idle_1        16x16
+  monster_hollowbound_wraith_attack_0     16x16
+  monster_hollowbound_wraith_attack_1     16x16
+  monster_hollowbound_wraith_hit          16x16
+  monster_hollowbound_wraith_idle_0       16x16
+  monster_hollowbound_wraith_idle_1       16x16

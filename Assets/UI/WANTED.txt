@@ -1,0 +1,11 @@
+Assets/UI
+Panels and paper textures for cards, the Gazette and the Journal.
+
+File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
+Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
+Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
+
+IDs in the game today (3), with the current in-game size:
+  tile_paper                              64x64
+  panel_gazette                           256x126
+  panel_journal                           256x163

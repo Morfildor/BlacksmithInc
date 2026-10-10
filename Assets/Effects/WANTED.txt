@@ -1,0 +1,16 @@
+Assets/Effects
+Small effect frames: embers, milestone burst.
+
+File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
+Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
+Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
+
+IDs in the game today (8), with the current in-game size:
+  ember_0                                 32x32
+  ember_1                                 32x32
+  ember_2                                 32x32
+  ember_3                                 32x32
+  fx_milestone_0                          16x16
+  fx_milestone_1                          16x16
+  fx_milestone_2                          16x16
+  fx_milestone_3                          16x16

@@ -1,0 +1,369 @@
+{
+  "title": "BlacksmithInc - Combined Hero Portrait Collection",
+  "hero_count": 20,
+  "states_per_hero": 2,
+  "total_files": 40,
+  "notes": "Combined archive of all hero portraits created in this conversation. Heroes 1-10 are original high-resolution portrait renders. Heroes 11-20 are native 64x64 pixel portrait assets.",
+  "heroes": [
+    {
+      "id": "hero_01",
+      "class": "guardian",
+      "character": "Auburn Braided Guardian",
+      "race_concept": "Dwarf",
+      "states": {
+        "base": "hero_01_guardian_base.png",
+        "upgraded": "hero_01_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        1254,
+        1254
+      ],
+      "upgraded_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "hero_02",
+      "class": "ranger",
+      "character": "Hooded Lizardfolk Ranger",
+      "race_concept": "Lizardfolk",
+      "states": {
+        "base": "hero_02_ranger_base.png",
+        "upgraded": "hero_02_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        1254,
+        1254
+      ],
+      "upgraded_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "hero_03",
+      "class": "duelist",
+      "character": "Crimson Tiefling Duelist",
+      "race_concept": "Tiefling",
+      "states": {
+        "base": "hero_03_duelist_base.png",
+        "upgraded": "hero_03_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        1254,
+        1254
+      ],
+      "upgraded_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "hero_04",
+      "class": "battlemage",
+      "character": "Undead Arcane Hatmaster",
+      "race_concept": "Undead",
+      "states": {
+        "base": "hero_04_battlemage_base.png",
+        "upgraded": "hero_04_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        1254,
+        1254
+      ],
+      "upgraded_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "hero_05",
+      "class": "warden",
+      "character": "Emerald Eyed Dryad Warden",
+      "race_concept": "Dryad",
+      "states": {
+        "base": "hero_05_warden_base.png",
+        "upgraded": "hero_05_warden_upgraded.png"
+      },
+      "base_resolution": [
+        1254,
+        1254
+      ],
+      "upgraded_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "hero_06",
+      "class": "guardian",
+      "character": "Sunlit Elf Spear Guardian",
+      "race_concept": "Elf",
+      "states": {
+        "base": "hero_06_guardian_base.png",
+        "upgraded": "hero_06_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        1254,
+        1254
+      ],
+      "upgraded_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "hero_07",
+      "class": "ranger",
+      "character": "Goblin Demolitions Scout",
+      "race_concept": "Goblin",
+      "states": {
+        "base": "hero_07_ranger_base.png",
+        "upgraded": "hero_07_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        1254,
+        1254
+      ],
+      "upgraded_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "hero_08",
+      "class": "battlemage",
+      "character": "Moonlit Oracle Priestess",
+      "race_concept": "Human",
+      "states": {
+        "base": "hero_08_battlemage_base.png",
+        "upgraded": "hero_08_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        1254,
+        1254
+      ],
+      "upgraded_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "hero_09",
+      "class": "guardian",
+      "character": "Frostborn Orc Warlord",
+      "race_concept": "Orc",
+      "states": {
+        "base": "hero_09_guardian_base.png",
+        "upgraded": "hero_09_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        1254,
+        1254
+      ],
+      "upgraded_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "hero_10",
+      "class": "duelist",
+      "character": "Shadowcourt Fae Assassin",
+      "race_concept": "Fae Elf",
+      "states": {
+        "base": "hero_10_duelist_base.png",
+        "upgraded": "hero_10_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        1254,
+        1254
+      ],
+      "upgraded_resolution": [
+        1254,
+        1254
+      ]
+    },
+    {
+      "id": "hero_11",
+      "class": "guardian",
+      "character": "Ironbraid Sentinel",
+      "race_concept": "Dwarf",
+      "states": {
+        "base": "hero_11_guardian_base.png",
+        "upgraded": "hero_11_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_12",
+      "class": "ranger",
+      "character": "Briarshot Pathfinder",
+      "race_concept": "Wood Elf",
+      "states": {
+        "base": "hero_12_ranger_base.png",
+        "upgraded": "hero_12_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_13",
+      "class": "duelist",
+      "character": "Crimson Ribbon Fencer",
+      "race_concept": "Human",
+      "states": {
+        "base": "hero_13_duelist_base.png",
+        "upgraded": "hero_13_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_14",
+      "class": "battlemage",
+      "character": "Sapphire Star Arcanist",
+      "race_concept": "Drow",
+      "states": {
+        "base": "hero_14_battlemage_base.png",
+        "upgraded": "hero_14_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_15",
+      "class": "warden",
+      "character": "Mossbound Thornkeeper",
+      "race_concept": "Horned Forest Elf",
+      "states": {
+        "base": "hero_15_warden_base.png",
+        "upgraded": "hero_15_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_16",
+      "class": "guardian",
+      "character": "Bastion Knight",
+      "race_concept": "Human",
+      "states": {
+        "base": "hero_16_guardian_base.png",
+        "upgraded": "hero_16_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_17",
+      "class": "ranger",
+      "character": "Goldleaf Marksman",
+      "race_concept": "Elf",
+      "states": {
+        "base": "hero_17_ranger_base.png",
+        "upgraded": "hero_17_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_18",
+      "class": "duelist",
+      "character": "Mosscloak Blade",
+      "race_concept": "Halfling",
+      "states": {
+        "base": "hero_18_duelist_base.png",
+        "upgraded": "hero_18_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_19",
+      "class": "battlemage",
+      "character": "Cobalt Pyromancer",
+      "race_concept": "Human",
+      "states": {
+        "base": "hero_19_battlemage_base.png",
+        "upgraded": "hero_19_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_20",
+      "class": "warden",
+      "character": "Antlerbound Keeper",
+      "race_concept": "Sylvan Fae",
+      "states": {
+        "base": "hero_20_warden_base.png",
+        "upgraded": "hero_20_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    }
+  ]
+}

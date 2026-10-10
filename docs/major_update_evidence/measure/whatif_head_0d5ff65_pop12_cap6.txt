@@ -1,0 +1,25 @@
+config: pop=12 min=9 max=16 cap=6 visit=0.35 raidPerDay=6.0 expSupp=3
+survival p10=20 median=25 mean=25.97 p90=30 max=35
+runs=300 signboard=false days=7790 median survival=25 mean alive heroes/day=12.12
+visits/day distribution: 0:0.0%  1:0.2%  2:1.0%  3:3.0%  4:5.9%  5:10.9%  6:77.2%  7:0.2%  8:1.4%  mean=5.66
+days at the customer cap: 78.8%; buys/day=1.46; buy share of visits=25.8%; return-visit share=89.9%
+visit rate by position in the ID-sorted scan (visits / days a hero stood at that position), buy rate in brackets:
+  pos 1: 61.8% [buy 13.7%] over 7790 hero-days
+  pos 2: 61.7% [buy 13.7%] over 7790 hero-days
+  pos 3: 60.5% [buy 13.7%] over 7790 hero-days
+  pos 4: 61.0% [buy 14.2%] over 7790 hero-days
+  pos 5: 59.2% [buy 14.6%] over 7790 hero-days
+  pos 6: 61.6% [buy 13.7%] over 7790 hero-days
+  pos 7: 56.7% [buy 13.7%] over 7790 hero-days
+  pos 8: 47.5% [buy 12.2%] over 7790 hero-days
+  pos 9: 36.7% [buy 12.0%] over 7790 hero-days
+  pos 10: 27.4% [buy 10.3%] over 7687 hero-days
+  pos 11: 19.7% [buy 8.5%] over 7400 hero-days
+  pos 12: 15.0% [buy 7.0%] over 6042 hero-days
+  pos 13: 6.1% [buy 3.3%] over 1796 hero-days
+  pos 14: 3.5% [buy 1.8%] over 1045 hero-days
+unique visitors/run=14.81 of heroes ever in town/run=15.14; heroes who never visited: 2.2%
+wait from arrival to first visit (days): median=1 p90=4 max=23
+classes served/day=3.56 of classes alive/day=4.65
+names: days with two living heroes sharing a first name=91.8%; sharing a surname=95.3%; runs with a repeated full name=18.3%
+portraits (class + id-hash mod 5): days with two living heroes on one face=89.7%; same-face pairs/day=1.93; worst=4 heroes on one face

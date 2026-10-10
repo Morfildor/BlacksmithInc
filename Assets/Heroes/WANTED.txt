@@ -1,0 +1,29 @@
+Assets/Heroes
+Hero and townsfolk portraits. Already delivered: hero_XX_<class>_base.png and hero_XX_<class>_upgraded.png with manifest.json.
+
+File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
+Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
+Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
+
+Still wanted here: small battle frames for the fight replay (current IDs below), and more wardens if you have them (3 faces now).
+IDs in the game today (20), with the current in-game size:
+  hero_battlemage_attack_0                16x16
+  hero_battlemage_attack_1                16x16
+  hero_battlemage_idle_0                  16x16
+  hero_battlemage_idle_1                  16x16
+  hero_duelist_attack_0                   16x16
+  hero_duelist_attack_1                   16x16
+  hero_duelist_idle_0                     16x16
+  hero_duelist_idle_1                     16x16
+  hero_guardian_attack_0                  16x16
+  hero_guardian_attack_1                  16x16
+  hero_guardian_idle_0                    16x16
+  hero_guardian_idle_1                    16x16
+  hero_ranger_attack_0                    16x16
+  hero_ranger_attack_1                    16x16
+  hero_ranger_idle_0                      16x16
+  hero_ranger_idle_1                      16x16
+  hero_warden_attack_0                    16x16
+  hero_warden_attack_1                    16x16
+  hero_warden_idle_0                      16x16
+  hero_warden_idle_1                      16x16

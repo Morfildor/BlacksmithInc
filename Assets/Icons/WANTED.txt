@@ -1,0 +1,31 @@
+Assets/Icons
+Interface icons: resources, navigation, settings, rarity and flaw badges, hero markers.
+
+File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
+Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
+Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
+
+IDs in the game today (23), with the current in-game size:
+  icon_day                                24x24
+  icon_energy                             24x24
+  icon_gold                               24x24
+  icon_integrity                          24x24
+  icon_militia                            24x24
+  icon_nav_forge                          40x40
+  icon_nav_gazette                        40x40
+  icon_nav_home                           40x40
+  icon_nav_journal                        40x40
+  icon_nav_legacy                         40x40
+  icon_nav_market                         40x40
+  icon_nav_town                           40x40
+  icon_purse                              40x40
+  icon_reputation                         24x24
+  icon_settings                           40x40
+  badge_common                            24x24
+  badge_uncommon                          24x24
+  badge_rare                              24x24
+  badge_epic                              24x24
+  badge_legendary                         24x24
+  badge_flaw                              24x24
+  marker_dead                             8x8
+  marker_retired                          8x8

@@ -1,0 +1,10 @@
+Assets/Weapons
+Weapon sprites: 6 families (sword, axe, spear, dagger, bow, staff) x 7 element rows (base + 6 elements) x 8 levels = 336. Either one file per sprite named by the IDs below, or one master sheet per family (rows = elements, columns = levels 1-8).
+
+File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
+Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
+Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
+
+IDs in the game today (336), with the current in-game size:
+  weapon_<family>_<element>_<level>  56x56   families: axe bow dagger spear staff sword; levels 1-8
+  elements: base fire frost grave storm sun verdant

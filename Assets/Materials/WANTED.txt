@@ -1,0 +1,24 @@
+Assets/Materials
+Forge materials, one icon each.
+
+File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
+Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
+Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
+
+IDs in the game today (16), with the current in-game size:
+  material_iron                           48x48
+  material_bronze                         48x48
+  material_silver                         48x48
+  material_obsidian                       48x48
+  material_starsteel                      48x48
+  material_moonsteel                      48x48
+  material_ember_resin                    48x48
+  material_frost_bloom                    48x48
+  material_stormglass                     48x48
+  material_grave_dust                     48x48
+  material_verdant_sap                    48x48
+  material_sun_ash                        48x48
+  material_binding_salt                   48x48
+  material_runestone_shard                48x48
+  material_dragon_oil                     48x48
+  material_void_ink                       48x48
