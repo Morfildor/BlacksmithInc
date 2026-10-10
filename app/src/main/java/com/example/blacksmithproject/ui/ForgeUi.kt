@@ -147,6 +147,9 @@ fun GameEngine.forgeOptions(state: GameState, draft: ForgeDraft, slot: RecipeSlo
     }
 }
 
+/** The out-of-stock tile the player tapped, as the tray stands now: null once it has been restocked, so "No X left" never outlives the purchase. */
+fun staleFree(inspectedId: String?, options: List<OptionUi>): OptionUi? = options.firstOrNull { it.id != null && it.id == inspectedId && !it.usable }
+
 /** The draft with [option] placed in [slot]; an id this slot does not know leaves the draft as it was. */
 fun GameEngine.place(draft: ForgeDraft, slot: RecipeSlot, option: OptionUi): ForgeDraft = when (slot) {
     RecipeSlot.WEAPON -> content.families.firstOrNull { it.id.value == option.id }?.let { draft.copy(familyId = it.id) } ?: draft
@@ -176,7 +179,7 @@ fun GameEngine.forgeLearning(before: JournalModel, after: JournalModel, forged: 
     val recipes = after.interactions.keys.filter { it.startsWith("sig:") }.sorted().mapNotNull { key ->
         when {
             after.state(key) == KnowledgeState.SIGNATURE_DISCOVERED && before.state(key) != KnowledgeState.SIGNATURE_DISCOVERED -> LearnedUi("Signature discovered", Journal.hint(after, content, key))
-            after.state(key) != KnowledgeState.SIGNATURE_DISCOVERED && (after.state(key) != before.state(key) || after.signatureClues[key] != before.signatureClues[key]) -> LearnedUi("Recipe clue earned", Journal.hint(after, content, key))
+            after.state(key) != KnowledgeState.SIGNATURE_DISCOVERED && (after.state(key) != before.state(key) || after.signatureClues[key] != before.signatureClues[key]) -> LearnedUi("Recipe clue earned", "${Journal.subjectName(content, key)} · ${Journal.hint(after, content, key)}")
             else -> null
         }
     }

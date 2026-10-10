@@ -301,10 +301,20 @@ fun TipBanner(tip: Tips.Tip, vm: GameViewModel, modifier: Modifier = Modifier) {
  */
 @Composable
 private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean) {
-    val state = s.state
     val haptics = LocalHaptics.current
+    val note = endDayNote(s)
+    // Clear of the destination bar under it: this is the one tap of the day that cannot be taken back.
+    val place = Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.xs, bottom = Space.md).testTag("end_day")
+    val end = { haptics.play(Moment.END_DAY); vm.endDay() }
+    if (primary) PrimaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)
+    else SecondaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)
+}
+
+/** What End Day would leave behind or bring on, the most pressing first: said wherever the day can be ended (the Shop's button, the Forge's menu and its foot). */
+internal fun endDayNote(s: UiState.Playing): String {
+    val state = s.state
     val offers = state.commissions.values.count { it.status == CommissionStatus.OFFERED }
-    val note = when {
+    return when {
         state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
         // The run can end tonight: said before anything else that waits.
         s.shop.threat?.today == true -> "A siege follows today's trading"
@@ -313,11 +323,6 @@ private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean
         state.energy > 0 -> "${state.energy} energy unused"
         else -> "Rest until dawn"
     }
-    // Clear of the destination bar under it: this is the one tap of the day that cannot be taken back.
-    val place = Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.xs, bottom = Space.md).testTag("end_day")
-    val end = { haptics.play(Moment.END_DAY); vm.endDay() }
-    if (primary) PrimaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)
-    else SecondaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)
 }
 
 @Composable

@@ -18,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -134,8 +133,7 @@ fun LearningCard(learning: ForgeLearningUi, modifier: Modifier = Modifier) {
         modifier.fillMaxWidth().clip(card).background(BuffGreen.copy(alpha = 0.10f)).border(1.dp, BuffGreen.copy(alpha = 0.45f), card).padding(horizontal = 12.dp, vertical = Space.sm).testTag("reveal_learning"),
         verticalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        val seen = remember(learning) { learning.changes }
-        seen.forEach { c ->
+        learning.changes.forEach { c ->
             Column(Modifier.semantics(mergeDescendants = true) {}) {
                 Text(c.title, style = MaterialTheme.typography.titleSmall, color = BuffGreen)
                 Text(c.line, style = MaterialTheme.typography.bodySmall, color = Cream)

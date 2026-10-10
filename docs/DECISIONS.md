@@ -3751,9 +3751,6 @@ as the plan says; core's `AftermathCard.forgeDamage` existed and the app's `Afte
   no plural forms ("Staff").
 - The siege card is titled "Siege · day N", not "Siege of Emberfall": the town's name is not a catalog value the app reads.
 - Wall casualties are not listed on the siege card: core's siege card does not carry them (a death has its own card after it).
-- The colour of a field note (green for a pairing that helps, red for one that hurts) is derived from the affinity
-  only once the journal has at least observed it, where `Journal.hint` already says the same in words; an untried
-  pairing is always gold and says nothing.
 - The first-run tip on the Forge ("Pick a family, a core and an augment") is no longer shown: the Forge button says the
   next missing choice and the open tray says what it is for. Its ID stays in `Tips` so settings written by older builds read the same.
 - One existing test's rule changed on purpose: `ShopDayUiTest` asserted that no card before the evening waits for the
@@ -3796,6 +3793,19 @@ an owner decision.
   no learning line at all (the plan asks for the knowledge as it stands; the field notes on the Forge show that).
   The tray does not show the two journal hints for an augment being browsed, only for the one chosen (the field notes
   under the tray). The Forge's commission line says accepted or not, not "Ready for End Day" (the board does).
+- An independent read of the whole branch found no rule or disclosure violation and six defects, fixed in one pass:
+  the siege recap was missing from the card of a day the forge falls (so "Skip day" lost it; `SiegeOutcomeTest` had a
+  branch that could not fail and now reads the card); the besieger's "+" or "−" on an augment tile stood without words
+  and could be read as a verdict on the pairing (the words now stand under the tiles as "Against the siege: ..."); a
+  restocked material was still said to be out (`staleFree`, tested); End day on the Forge had lost its warning line
+  (`endDayNote` is now said on the menu entry and the button); "Open book" was under 48 dp; the workbench title, slot
+  texts and tile names clipped instead of wrapping. `ForgeBrowsingTest` covers what the review found untested: the
+  notebook's two shortcuts change only the draft, and a forge's lesson is on its result and leaves with it.
+- Left from that review, not changed: `busy` on `ShopPanel` and `reducedMotion` on `ForgePanel` are now unused
+  parameters; `ThreatUi.plate` and `line` have no reader in the app; `WantUi.minPower` and `budget` are carried and not
+  shown; `leadActionLabel` can no longer return null; `AffinityHint` (recipe rows) and the field notes word the stages
+  differently; an understood pairing is green even when it is a poor match; the siege card has no "more in the Gazette"
+  row; the board closes under a hero's sheet and reopens at its top; slots do not stack at font scale 2.0.
 - Two agents did the Shop pass and the Supplies and Gazette pass in their own worktrees; their diffs were applied here.
 
 **Checks.** `:app:testDebugUnitTest` and `:core:test` pass (new app classes: `ForgeWorkbenchModelTest`,

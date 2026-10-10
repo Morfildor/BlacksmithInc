@@ -45,7 +45,8 @@ class SiegeOutcomeTest {
             val recap = when (val ending = ui.beats[ui.endingIndex]) {
                 is Beat.Blessing -> ending.siege
                 is Beat.Tomorrow -> ending.recap
-                else -> siege.recap   // the forge fell: the last card is about that
+                is Beat.Fallen -> ending.recap   // the forge fell: its card still says what the siege did
+                else -> null
             }
             assertEquals(siege.recap, recap)
             assertTrue(siege.recap.startsWith(siege.outcome))

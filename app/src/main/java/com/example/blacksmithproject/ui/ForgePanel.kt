@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
@@ -54,8 +55,6 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.Dest
 import com.example.blacksmithproject.ForgeDraft
@@ -105,6 +104,8 @@ fun ForgePanel(
     s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, tip: Tips.Tip?,
     onOpenSupplies: (MaterialId?) -> Unit = {}, onOpenBoard: () -> Unit = {}, onEndDay: () -> Unit = {},
 ) {
+    // What End Day would leave behind or bring on, said beside both of the Forge's ways to it.
+    val endDayNote = endDayNote(s)
     val engine = vm.engine
     val d = s.draft
     val bench = remember(s.state, d, s.shop.requests) { engine.forgeWorkbench(s.state, d, s.shop.requests) }
@@ -128,7 +129,7 @@ fun ForgePanel(
         // The last choice closes the tray: the finished blade over the anvil comes back into view.
         LaunchedEffect(open) { if (open == null && follow) scroll.animateScrollTo(0) }
         Column(Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = Space.md).padding(bottom = Space.md)) {
-            ForgeHeading(s.shop.requests.size, onOpenBoard, { onOpenSupplies(null) }, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
+            ForgeHeading(s.shop.requests.size, endDayNote, onOpenBoard, { onOpenSupplies(null) }, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
             Workbench(bench.title, d, vm.engine.content, compact = open != null)
             bench.brief?.let { Brief(it, onOpenBoard) { vm.updateDraft { draft -> draft.copy(commissionId = null) } } }
             SlotRow(bench.slots.take(3), d, engine.content, open) { opened = if (open == it) NO_SLOT else it.name; follow = true }
@@ -141,7 +142,7 @@ fun ForgePanel(
             ForgingOptions(d) { change -> vm.updateDraft(change) }
             tip?.let { TipBanner(it, vm, Modifier.padding(top = Space.md)) }
         }
-        ForgeAction(bench, s.busy, { onOpenSupplies(bench.action.restock) }, onEndDay) { bench.command?.let(vm::dispatch) }
+        ForgeAction(bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay) { bench.command?.let(vm::dispatch) }
     }
 }
 
@@ -161,7 +162,7 @@ private fun EventStrip(s: UiState.Playing, onOpenTown: () -> Unit) {
 
 /** The destination's name, the way to the commission board, and the rarer actions behind "More". */
 @Composable
-private fun ForgeHeading(commissions: Int, onOpenBoard: () -> Unit, onOpenSupplies: () -> Unit, onOpenJournal: () -> Unit, onEndDay: () -> Unit, busy: Boolean) {
+private fun ForgeHeading(commissions: Int, endDayNote: String, onOpenBoard: () -> Unit, onOpenSupplies: () -> Unit, onOpenJournal: () -> Unit, onEndDay: () -> Unit, busy: Boolean) {
     Row(Modifier.fillMaxWidth().padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically) {
         Text("Forge", style = MaterialTheme.typography.headlineMedium, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
         TextButton(onClick = onOpenBoard, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_commissions")) {
@@ -173,7 +174,7 @@ private fun ForgeHeading(commissions: Int, onOpenBoard: () -> Unit, onOpenSuppli
             DropdownMenu(expanded = more, onDismissRequest = { more = false }, containerColor = ForgePanel) {
                 DropdownMenuItem(text = { Text("Supplies") }, onClick = { more = false; onOpenSupplies() }, modifier = Modifier.testTag("forge_supplies"))
                 DropdownMenuItem(text = { Text("Journal") }, onClick = { more = false; onOpenJournal() }, modifier = Modifier.testTag("forge_journal"))
-                DropdownMenuItem(text = { Text("End day") }, enabled = !busy, onClick = { more = false; onEndDay() }, modifier = Modifier.testTag("forge_end_day"))
+                DropdownMenuItem(text = { Column { Text("End day"); Text(endDayNote, style = MaterialTheme.typography.bodySmall, color = CreamMuted) } }, enabled = !busy, onClick = { more = false; onEndDay() }, modifier = Modifier.testTag("forge_end_day"))
             }
         }
     }
@@ -203,7 +204,7 @@ private fun Workbench(title: String, d: ForgeDraft, content: ContentCatalog, com
         }
         // While a tray is open the name gives its line to the choices; it is still said for a screen reader, above.
         if (!compact) Text(
-            title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Normal, color = Cream, textAlign = TextAlign.Center, maxLines = 2,
+            title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Normal, color = Cream, textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = 6.dp).testTag("forge_title"),
         )
     }
@@ -244,7 +245,7 @@ private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog,
                     .semantics(mergeDescendants = true) { contentDescription = "${slot.slot.label}: ${slot.value ?: "not chosen"}${slot.stock?.let { n -> ", $n in stock" }.orEmpty()}, ${if (active) "choosing" else "tap to change"}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(slot.slot.label, style = MaterialTheme.typography.labelSmall, color = CreamMuted, maxLines = 1)
+                Text(slot.slot.label, style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
                 Box(Modifier.fillMaxWidth().padding(vertical = 2.dp), contentAlignment = Alignment.Center) {
                     val art = slotArt(slot.slot, d, content)
                     if (art != null) PixelImage(art, 40.dp, description = null)
@@ -253,7 +254,7 @@ private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog,
                 }
                 Text(
                     slot.value ?: slot.slot.empty, style = MaterialTheme.typography.labelMedium, fontWeight = if (slot.value != null) FontWeight.SemiBold else null,
-                    color = if (slot.value != null) Cream else CreamMuted, textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    color = if (slot.value != null) Cream else CreamMuted, textAlign = TextAlign.Center,
                 )
             }
         }
@@ -277,7 +278,7 @@ private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCata
     val requester = remember { BringIntoViewRequester() }
     LaunchedEffect(slot, follow) { if (follow) requester.bringIntoView() }
     val columns = if (LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340) 2 else 3
-    var inspected by remember(slot) { mutableStateOf<OptionUi?>(null) }
+    var inspected by remember(slot) { mutableStateOf<String?>(null) }
     Column(Modifier.fillMaxWidth().padding(top = Space.sm).bringIntoViewRequester(requester).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeDeep, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(slot.choose, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Normal, color = CreamMuted, modifier = Modifier.weight(1f).semantics { heading() })
@@ -286,7 +287,7 @@ private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCata
         @Composable
         fun grid(tiles: List<OptionUi>) = tiles.chunked(columns).forEach { row ->
             Row(Modifier.fillMaxWidth().padding(bottom = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                row.forEach { o -> OptionTile(o, optionArt(slot, o, content), Modifier.weight(1f)) { if (o.usable) onPick(o) else inspected = o } }
+                row.forEach { o -> OptionTile(o, optionArt(slot, o, content), Modifier.weight(1f)) { if (o.usable) onPick(o) else inspected = o.id } }
                 repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
             }
         }
@@ -296,12 +297,15 @@ private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCata
             Text("Out of stock", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.padding(bottom = Space.xs))
             grid(out)
         }
-        val shown = inspected ?: options.firstOrNull { it.selected && it.id != null }
+        val shown = staleFree(inspected, options) ?: options.firstOrNull { it.selected && it.id != null }
+        // What the besieger is weak to or resists, in words under the tiles: a tile's sign alone could be read as a verdict on the pairing.
+        options.mapNotNull { it.mark }.distinct().forEach { mark ->
+            Text("${mark.kind.sign} Against the siege: ${mark.label}", style = MaterialTheme.typography.bodySmall, color = mark.kind.color, modifier = Modifier.padding(bottom = Space.xs).testTag("forge_siege_mark"))
+        }
         if (shown == null) Text(slot.hint, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
         else Row(Modifier.fillMaxWidth().testTag("forge_tray_detail"), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text(if (shown.usable) listOfNotNull(shown.name, shown.detail).joinToString(" · ") else "No ${shown.name} left", style = MaterialTheme.typography.bodyMedium, color = Cream)
-                shown.mark?.let { Text("${it.kind.sign} ${it.label}", style = MaterialTheme.typography.bodySmall, color = it.kind.color, modifier = Modifier.testTag("forge_mark")) }
             }
             if (!shown.usable) TextButton(onClick = { onRestock(shown.id?.let(::MaterialId)) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_restock_tray")) { Text("Restock", color = Gold) }
         }
@@ -320,7 +324,7 @@ private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, onClick: () -
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.xs, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             if (art != null) PixelImage(art, 36.dp, description = null)
-            Text(o.name, style = MaterialTheme.typography.labelMedium, color = Cream, textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 2.dp))
+            Text(o.name, style = MaterialTheme.typography.labelMedium, color = Cream, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 2.dp))
         }
         o.stock?.let { Text("×$it", style = MaterialTheme.typography.labelSmall, color = CreamMuted, modifier = Modifier.align(Alignment.TopEnd).padding(horizontal = Space.xs, vertical = 2.dp)) }
         o.mark?.let { Text(it.kind.sign, style = MaterialTheme.typography.titleSmall, color = it.kind.color, modifier = Modifier.align(Alignment.TopStart).padding(horizontal = 6.dp)) }
@@ -341,7 +345,7 @@ fun FieldNotes(notes: List<NoteUi>, modifier: Modifier = Modifier, onOpenJournal
     Column(modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(SceneDeep).border(1.dp, BronzeDeep, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_notes")) {
         Row(Modifier.heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("Field notes", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Normal, color = CreamMuted, modifier = Modifier.weight(1f).semantics { heading() })
-            if (onOpenJournal != null) Text("Open book ›", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Normal, color = CreamMuted, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).padding(vertical = Space.sm).testTag("forge_notes_journal"))
+            if (onOpenJournal != null) Text("Open book ›", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Normal, color = CreamMuted, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).wrapContentHeight().padding(start = Space.sm).testTag("forge_notes_journal"))
         }
         if (stacked) notes.forEachIndexed { i, n -> FieldNote(i, n, Modifier.fillMaxWidth().padding(top = if (i > 0) Space.sm else 0.dp)) }
         else Row(Modifier.height(IntrinsicSize.Min)) {
@@ -418,7 +422,7 @@ private fun <T> Choice(label: String, value: String, tag: String, modifier: Modi
  * one gold action with its energy cost in its own label. When no forge is possible today, End day stands beside it.
  */
 @Composable
-private fun ForgeAction(bench: ForgeWorkbenchUi, busy: Boolean, onRestock: () -> Unit, onEndDay: () -> Unit, onForge: () -> Unit) {
+private fun ForgeAction(bench: ForgeWorkbenchUi, busy: Boolean, endDayNote: String, onRestock: () -> Unit, onEndDay: () -> Unit, onForge: () -> Unit) {
     val a = bench.action
     Column(
         Modifier.fillMaxWidth().background(ForgePanel).drawBehind { drawLine(BronzeDeep, Offset.Zero, Offset(size.width, 0f), strokeWidth = 1.dp.toPx()) }
@@ -436,7 +440,7 @@ private fun ForgeAction(bench: ForgeWorkbenchUi, busy: Boolean, onRestock: () ->
                 Modifier.weight(1f).testTag("forge_weapon").semantics { if (!enabled && a.note != null) contentDescription = "${a.label}, unavailable: ${a.note}" },
                 enabled = enabled,
             )
-            if (a.endDay) SecondaryActionButton("End day", onEndDay, Modifier.weight(1f).testTag("end_day"), enabled = !busy)
+            if (a.endDay) SecondaryActionButton("End day", onEndDay, Modifier.weight(1f).testTag("end_day"), enabled = !busy, detail = endDayNote)
         }
     }
 }

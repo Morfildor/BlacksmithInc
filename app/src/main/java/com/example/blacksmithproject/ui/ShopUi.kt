@@ -59,9 +59,9 @@ data class RequestUi(
     /** Accepted, and a blade in the shop is the one End Day would hand over today (`Commissions.pick`). Nothing is set aside. */
     val ready: Boolean = false,
 ) {
-    /** "Due in 3 days"; the day itself stays in [terms]. */
     /** Where it stands, in one of four words. "Ready" is as the shop stands now: a sale or a stock change can undo it. */
     val status: String get() = when { offered -> "Offer"; ready -> "Ready for End Day"; daysLeft <= 0 -> "Due today"; else -> "Accepted" }
+    /** "Due in 3 days"; the day itself stays in [terms]. */
     val due: String get() = when { daysLeft <= 0 -> "Due today"; daysLeft == 1 -> "Due tomorrow"; else -> "Due in $daysLeft days" }
 }
 

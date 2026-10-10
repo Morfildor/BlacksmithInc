@@ -207,6 +207,7 @@ fun ReplayOverlay(replay: CombatReplay, onClose: () -> Unit, modifier: Modifier 
 @Composable
 fun FallenCard(fallen: Beat.Fallen, onOpenGazette: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        fallen.recap?.let { SiegeRecap(it) }
         Overline("The run ended on day ${fallen.days}", strong = true)
         fallen.cause?.let { CardTitle(it, Modifier.testTag("shopday_fallen_cause")) }
         TextButton(onClick = onOpenGazette, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_gazette")) { Text("Read the Gazette") }

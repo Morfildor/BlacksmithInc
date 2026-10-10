@@ -143,7 +143,7 @@ sealed interface Beat {
         override val millis get() = 0
         override val gone: Set<WeaponId> get() = emptySet()
     }
-    @Immutable data class Fallen(val cause: String?, val days: Int, override val progress: String = "The last day") : Beat {
+    @Immutable data class Fallen(val cause: String?, val days: Int, val recap: String? = null, override val progress: String = "The last day") : Beat {
         override val millis get() = 0
         override val gone: Set<WeaponId> get() = emptySet()
     }
@@ -308,7 +308,7 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
     }
     val endingIndex = beats.size
     if (ending == Ending.FALLEN) {
-        beats += Beat.Fallen(state.endCause, day)
+        beats += Beat.Fallen(state.endCause, day, siege?.recap)
     } else {
         if (ending == Ending.BLESSING) beats += Beat.Blessing(state.pendingBlessingOffer.map { id -> content.blessing(id).let { BlessingUi(id, it.name, it.description) } }, siege?.recap)
         val line = lead?.let { Lines.lead(it, state, content, config, evening = true) }
