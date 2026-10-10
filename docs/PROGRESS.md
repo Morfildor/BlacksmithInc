@@ -177,7 +177,7 @@ built with `./gradlew :app:assembleDebug`.
 | Independent whole-branch review (by reading; nothing run) | 8 findings and a hardening note; three fixed in `677876b` plus one side effect (abandon clears the saved day position); findings 4, 5, 7, 8 and the hardening note left open; areas not reached are listed in DECISIONS |
 | Simulator, balance 8, 10,000 runs at base seeds 1 / 10001 / 20001 (990,000 runs) | every run ends; plain smith (FAIR) mean 22.52 / 22.60 / 22.57 days, median 20 / 25 / 20; active smith 30.0 to 30.1; SYNERGY 35.3 to 35.4; EXPERT 45.5 to 45.7; maxed EXPERT 54.6 to 54.8, longest run 65; no tripwire crossed; maxed SYNERGY leads new by +10.15 (holds). **Ten band lines fail at all three seeds; the plan's M5 exit condition is not met.** DECISIONS, "Balance v8 at 10,000 seeds" |
 | Soak, 2,000 days, JVM | see "Save growth" above; DECISIONS, "Production soak" |
-| Lint and CI on the tip | not recorded (last agent lint: 0 errors, 43 warnings before the last merges) |
+| Lint and the CI command on the 0.7.0 commit (`cee83f7`) | pass locally: `:core:test :app:testDebugUnitTest :app:assembleDebug :app:compileDebugAndroidTestKotlin :app:assembleRelease :app:lintDebug` exited 0. The GitHub workflow result for that commit is not recorded here |
 | Per-upgrade gate table (T5.3) | not run |
 | Screenshots of the final build | none taken; the owner chose to test by hand |
 | Physical phone | nothing run |
