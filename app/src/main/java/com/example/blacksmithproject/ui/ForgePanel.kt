@@ -106,8 +106,9 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
             ThreatLine(s, Modifier.align(Alignment.BottomStart).background(SceneDeep.copy(alpha = 0.88f)))
         }
         ForgeSummary(s, vm)
-        // The plate has just said a chosen material has run out: the way to buy more is right under it.
-        if (listOfNotNull(d.coreId, d.augmentId, d.catalystId).any { (st.materials[it] ?: 0) == 0 })
+        // The plate has just said a chosen material has run out: the way to buy more is right under it. Not on a low
+        // screen or with large text, where the steps have too little height already; the step itself has the button.
+        if (!short && listOfNotNull(d.coreId, d.augmentId, d.catalystId).any { (st.materials[it] ?: 0) == 0 })
             SecondaryActionButton("Open Supplies", onOpenSupplies, Modifier.fillMaxWidth().padding(horizontal = Space.md).testTag("forge_supplies_missing"))
 
         // null = open the first unfinished step; NO_STEP = everything collapsed; otherwise the step the player opened.

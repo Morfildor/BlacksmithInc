@@ -131,7 +131,7 @@ class NavigationTest : ShopDayTestBase() {
         val honed = vm.playing().state.weapons.getValue(id)
         assertNull(vm.playing().lastError)
         assertTrue(honed.honed)
-        assertEquals(Sheet.Item(id) to "$name was honed: quality ${before.quality} to ${honed.quality}, condition ${before.condition} to ${honed.condition}.", vm.playing().sheet to vm.playing().notice)
+        assertEquals(Sheet.Item(id) to "$name was honed: quality ${before.quality} to ${honed.quality}.", vm.playing().sheet to vm.playing().notice)
 
         // A refusal says why and claims nothing: the blade is honed already.
         vm.stock(id, StockAction.Hone); advanceUntilIdle()

@@ -357,6 +357,10 @@ action hierarchy"). No balance, rules, save or content version changed.
 - "Open Supplies, buy, return" was not run as a journey; Supplies is a sheet over the Forge, which stays composed under it.
 - Added afterwards (a second commit, JVM tests only, 134 pass): a bulk salvage or "Arm the watch" says how many blades it took, and
   "Open Supplies" stands under the anvil plate while a chosen material is out. Neither was seen on a device.
+- Looked at afterwards on the emulator (`carbscan`, port 5556): Shop, Forge and Town at 360x640 dp with text 1.3, Shop and Forge
+  at 411x731 dp, and a blade opened, honed and left with Back inside the Storage sheet. Changed from what was seen: the
+  under-plate "Open Supplies" is left out on a low screen or with large text (the steps have too little height there), and
+  the hone line names only what changed. Still unseen: Records, the Forge with a material out, the day cards, text at 2.0.
 - Merging `gameplay-depth` will conflict in `WorkshopScreen.kt`, `GameViewModel.kt`, `StorageSheet.kt`, `ItemDetailSheet.kt`
   and `CHANGELOG.md`; its `Sheet.Visitor` needs a branch in `DetailSheet`, and its relic dialog a place in Back's order.
 

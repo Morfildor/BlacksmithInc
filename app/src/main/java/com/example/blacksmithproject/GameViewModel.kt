@@ -420,7 +420,11 @@ class GameViewModel(
                 is StockAction.ListAt -> "$name is on the shelf at ${action.price} gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}."
                 is StockAction.SetPrice -> "$name now asks ${action.price} gold."
                 StockAction.Unlist -> "$name is back in storage, not for sale."
-                StockAction.Hone -> "$name was honed: quality ${was?.quality} to ${blade.quality}, condition ${was?.condition} to ${blade.condition}."
+                // Only what the hone changed: a first hone raises quality, any hone restores condition.
+                StockAction.Hone -> "$name was honed" + listOfNotNull(
+                    "quality ${was?.quality} to ${blade.quality}".takeIf { was?.quality != blade.quality },
+                    "condition ${was?.condition} to ${blade.condition}".takeIf { was?.condition != blade.condition },
+                ).joinToString(", ").let { if (it.isEmpty()) "." else ": $it." }
                 StockAction.Salvage -> "$name was melted down. 1 ${engine.content.material(blade.coreId).name} is back in your stock."
                 StockAction.Donate -> "$name went to the town watch. Armory ${before.town.armory} to ${now.town.armory}."
             }
