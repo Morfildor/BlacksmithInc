@@ -1,7 +1,21 @@
 # Progress — 2026-10-10 (major update, final state at about 13:00)
 
-## UI polish pass (2026-10-10, late evening): first part on `main`
-Branch `ui-polish`. On `main`: the Shop (shared siege strip, shelf with free places, marked lead, door icons), the Forge (landing animation, even rows, gold mode), "Dire odds", "Notebook", list fades. Checks: app JVM tests pass; device tests ShopPanelTest, M4ScreensTest, NavigationFlowTest, LayoutMatrixTest pass on the carbscan AVD (`theLeadIsTheSameAsTheTomorrowCard` fixed: the test was stale); the full device suite was not rerun. Still in work, not merged: title screen and shop-day cards; Town, Records and sheets. This deepens the rebase the uncommitted `ui-batch4` work needs.
+## UI polish pass (2026-10-10, late evening): branch `ui-polish`
+The first part (Shop, Forge, wording, list fades) is on `main` at `7b495c3`, merged at the owner's request. The rest is committed on `ui-polish` and not merged: Town, Records and the sheets (`1acfe71`), the title screen and the shop day (`1b91cbf`). No balance, rules, schema, content or `:core` change.
+
+**Built.**
+- Shop: one siege strip with the forge's health at the top, the same as on the Forge (`ThreatStrip`); the shelf drawn with its free places; the lead marked "Worth doing first"; icons on the three door rows; the listing tip leaves with the first listed blade.
+- Forge: a chosen ingredient lands in its place; one height per row of tiles and of recipe places; the chosen mode in gold.
+- Town: the siege as a card (besieger, weak-to / resists marks, defense against raid as two numbers over a split bar, forge health as a bar); new pure model `ui/TownUi.kt`.
+- Records: the Gazette as a printed page with archive rows; notebook and legacy pages. Sheets: Supplies, Settings, close buttons on the board, Storage and the detail sheets.
+- Title: the workshop at night as a full-width picture. Shop day: the speed control named "Pace", one gold way forward, cards fade at the controls, "No sale" as a red badge, the evening card as tiles.
+- Wording: "Dire odds" (was "Grave danger", beside the Grave element); the Records segment and the Forge's menu say "Notebook".
+
+**Checks (carbscan AVD, API 36, 360x640 dp).** App JVM tests pass (168). Device suite: 69 run, 68 pass; the one failure is `StorageSheetTest.bulkSalvageAsksOnceAndIssuesOneCommandPerBlade`, which also fails there on untouched `main`. `ShopPanelTest.theLeadIsTheSameAsTheTomorrowCard` passes now: the test was stale (the Shop says "yesterday" where the evening card says "today", `Lines.lead`). `smoke.sh` reaches SMOKE_DONE with every CHECK ok. Seen at font scale 1.3: Shop, Forge, Town, Gazette, notebook, legacy, title, a visit card, the evening card.
+
+**Not seen or not done.** The sheets at font 1.3; Supplies opened on one material; the held-siege, Fallen, Blessing, collector and commission day cards after this pass; "Auto 2x" on device; TalkBack. At 360x640 the Forge's tray tiles start under the pinned button until scrolled. Agents' leftovers: the board's request card has buttons of two heights; a Storage row is tall at 360 dp; `PixelSprite` sizes 128x64 art as a square (worked around in `DayCards.kt`). The forge-health ceiling is derived again in `TownUi.kt` from the expression End Day uses; core could expose it.
+
+**Open for the owner.** The uncommitted `ui-batch4` work edits these same screens and now has more to rebase over; which wording wins there is still open.
 
 ## Forge-first redesign (2026-10-10, evening): on `main`
 Merged to `main` by fast-forward at the owner's request (branch `ui-beauty-pass`, cut from `main` at `6c49f8e`); one commit per slice; no balance, rules, schema or content change (one

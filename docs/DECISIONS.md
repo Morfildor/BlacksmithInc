@@ -3810,3 +3810,10 @@ an owner decision.
 
 **Checks.** `:app:testDebugUnitTest` and `:core:test` pass (new app classes: `ForgeWorkbenchModelTest`,
 `BoardModelTest`, `SiegeOutcomeTest`, `ForgeLearningTest`). Device evidence is in PROGRESS.
+
+## UI polish pass (2026-10-10, late evening)
+- The worst siege outlook reads "Dire odds". "Grave danger" sat beside "Resists Grave" and read as one fact; a JVM test keeps element names out of every outlook.
+- The Records segment and the Forge's menu say "Notebook", the name the page already had. "Forge health" and "Commissions" are unchanged; the batch-4 wording question stays open.
+- The Shop's plate says the shelf and the day's customers only; the besieger is on the strip above it, as on the Forge. On a siege day the Shop keeps its own "Siege today" row and shows no strip.
+- The first-run tip about listing is shown only while the shelf is empty.
+- The lead's reason differs by one word between the evening card ("today") and the next morning's Shop ("yesterday"); the device test compares them with that in mind.
