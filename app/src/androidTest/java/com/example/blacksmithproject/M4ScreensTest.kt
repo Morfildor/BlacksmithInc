@@ -10,6 +10,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -21,9 +24,12 @@ import com.example.blacksmithproject.ui.ForgePanel
 import com.example.blacksmithproject.ui.ShopPanel
 import com.example.blacksmithproject.ui.threatUi
 import com.example.blacksmithproject.ui.detail.HeroDetailContent
+import com.example.blacksmithproject.ui.detail.ItemDetailContent
 import com.example.blacksmithproject.ui.detail.heroDetail
+import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.theme.BlacksmithProjectTheme
+import com.tinyblacksmith.core.content.AffixKind
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.model.Commission
 import com.tinyblacksmith.core.model.CommissionId
@@ -117,6 +123,22 @@ class M4ScreensTest {
         for ((element, mark) in threat.marks) {
             compose.onNodeWithTag("forge_mark_${element.name.lowercase()}", useUnmergedTree = true).assertTextContains(mark.label, substring = true)
         }
+    }
+
+    @Test
+    fun theBladeSheetHasItsStoryAndADormantMarker() {
+        val blade = morning.listedWeapons().first()
+        val buffs = engine.content.affixes.filter { it.kind == AffixKind.BENEFICIAL }
+        val legend = blade.copy(affixes = listOf(buffs[0].id), dormantAffixes = listOf(buffs[1].id))
+        val state = morning.copy(weapons = morning.weapons + (legend.id to legend))
+        val detail = engine.itemDetail(state, legend.id)!!
+        compose.setContent { BlacksmithProjectTheme { ItemDetailContent(detail, planning = true, onOpenHero = {}, onStock = {}, onDismiss = {}) } }
+        compose.onNodeWithText("Story").assertExists()
+        // The same record is also a line of History, so the story's own copy is found under its tag.
+        compose.onNode(hasText(Lines.story(legend, state.era).first()) and hasAnyAncestor(hasTestTag("sheet_story")), useUnmergedTree = true).assertExists()
+        compose.onNode(hasTestTag("card_dormant") and hasText(Lines.dormant(legend.dormantAffixes, engine.content)!!)).assertExists()
+        compose.onNode(hasText("+") and hasText(buffs[0].name)).assertExists()
+        compose.onNode(hasText("+") and hasText(buffs[1].name)).assertDoesNotExist()   // asleep: not a buff
     }
 
     @Test

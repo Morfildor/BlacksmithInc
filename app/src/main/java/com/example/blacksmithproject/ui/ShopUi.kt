@@ -74,6 +74,8 @@ data class StockUi(
     val stats: List<Stat> = emptyList(), val buffs: List<String> = emptyList(), val flaws: List<String> = emptyList(),
     /** How the blade's element stands against the besieger; null for a plain blade or an element the besieger does not care about. */
     val threat: MarkUi? = null,
+    /** A returned legend's sleeping affixes (`Lines.dormant`); never among [buffs]. */
+    val dormant: String? = null,
 )
 
 /** One line of "Who is buying": a count from `Demand.summary` under a fixed label, with the names when they are few. */
@@ -118,6 +120,7 @@ private fun GameEngine.stock(w: Weapon, threat: ThreatUi?) = StockUi(
     stats = weaponStats(WeaponSnapshot.of(w)).filter { it.max != null || it.value > 0 },
     buffs = w.affixes.map { content.affix(it).name }, flaws = w.flaws.map { content.affix(it).name },
     threat = w.element?.let { threat?.marks?.get(it) },
+    dormant = Lines.dormant(w.dormantAffixes, content),
 )
 
 /** The besieger for the Shop's plate, the Forge's plate, the augment chips and the stock rows: `Threats` and `Lines`, plus the day count in words. */

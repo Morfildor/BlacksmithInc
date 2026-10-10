@@ -108,7 +108,8 @@ class DetailSheetTest {
 
     /** The first node that says [text] (a name is also said by the records further down) can be scrolled to and is on screen. */
     private fun seen(text: String) = compose.onAllNodesWithText(text, substring = true).onFirst().performScrollTo().assertIsDisplayed()
-    private fun top(text: String) = compose.onNodeWithText(text, substring = true).getUnclippedBoundsInRoot().top
+    /** Where a line of History stands; the Story above it tells some of the same records. */
+    private fun top(text: String) = compose.onNode(hasText(text, substring = true) and hasAnyAncestor(hasTestTag("sheet_history")), useUnmergedTree = true).getUnclippedBoundsInRoot().top
 
     @Test
     fun heroSheetShowsTasteGuildMentorAndPurse() {
