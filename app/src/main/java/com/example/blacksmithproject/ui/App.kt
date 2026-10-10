@@ -110,7 +110,7 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
         modifier = Modifier.semantics { testTagsAsResourceId = true },
         onDismissRequest = { confirmAbandon = false },
         title = { Text("Abandon this run?") },
-        text = { Text("The run is discarded and cannot be recovered. It earns no legacy points, and its discoveries, legends and heroes are not recorded.") },
+        text = { Text("The run is discarded and cannot be recovered. It earns no legacy points, and its legends and heroes are not recorded. Recipes already written in the journal stay.") },
         confirmButton = { TextButton(onClick = { confirmAbandon = false; onAbandon() }, modifier = Modifier.testTag("menu_abandon_confirm")) { Text("Abandon run") } },
         dismissButton = { TextButton(onClick = { confirmAbandon = false }) { Text("Keep playing") } },
     )

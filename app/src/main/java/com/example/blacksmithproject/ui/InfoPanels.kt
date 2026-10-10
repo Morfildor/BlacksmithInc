@@ -96,9 +96,10 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifi
 private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     val st = s.state
-    val faction = st.factions.values.maxByOrNull { it.pressure }
-    val daysLeft = st.town.nextSiegeDay - st.day
     val forecast = s.forecast
+    // The engine's own choice of besieger (it breaks a pressure tie by ID), so Town agrees with the Shop and the siege.
+    val faction = forecast?.factionState ?: st.factions.values.maxByOrNull { it.pressure }
+    val daysLeft = st.town.nextSiegeDay - st.day
 
     // Header: the faction with the most pressure (the one the engine sends at the siege), numbers second.
     FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {

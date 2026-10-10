@@ -16,7 +16,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - The Shop's counter plate and the Forge's plate say when the siege comes and what tells against the besieger ("Frost bites the Ashclaw Raiders; fire glances off them."), and the Shop says when the siege warning is out and buyers weigh it. An augment chip of an element the besieger is weak to or resists carries a "+" or "−" with the words under the chips, and a blade of such an element says so on its shelf or storage row.
 - A request's card says why it was made (a noble's order, a replacement, a blade for the wall before the siege, a collector, a first blade for a newcomer), on the Shop and on the Forge; the Requests heading counts how many are open of the two that can be.
 - "Who is buying" lists every hero who left without the blade they came for ("Wren Kestrel wants a bow; can spend about 90 gold."), with "Forge this" (the forge opens on that family) or a mark once a blade on the shelf answers it. The same line is on the hero's sheet and on the Forge, and when it is the day's lead the lead has the "Forge this" button.
-- Main menu: the game opens on a menu with New game or Continue run, Abandon run (discards the run after a confirmation, earning nothing) and a Settings icon in the corner; Settings in the workshop has a "Main menu" entry to return to it.
+- Main menu: the game opens on a menu with New game or Continue run, Abandon run (discards the run after a confirmation; no legacy points, legends or heroes are recorded, journal discoveries stay) and a Settings icon in the corner; Settings in the workshop has a "Main menu" entry to return to it.
 - A save that cannot be opened no longer crashes the game. A recovery screen says what happened and what is safe, and
   offers Try again or, for a damaged or incompatible run, Start over (the unreadable run is kept as a backup on the
   device and your legacy stays).
@@ -179,6 +179,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Balance version 6.
 
 ### Fixed
+- Town names the same besieger as the Shop, the Forge and the siege itself when two factions press equally hard.
+- A save whose legacy record went missing beside a sound run reads the legacy the run carries, instead of starting from an empty one.
 - An adventurer whose only blade shattered more than thirty days ago can still ask for a replacement: the broken blade
   stays on record until they carry another.
 - The counter still recalls that a customer held the wall with the blade they carry after ten later fights with it: a
