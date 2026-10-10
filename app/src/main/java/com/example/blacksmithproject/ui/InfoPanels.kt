@@ -98,7 +98,7 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     val st = s.state
     val faction = st.factions.values.maxByOrNull { it.pressure }
     val daysLeft = st.town.nextSiegeDay - st.day
-    val forecast = remember(st) { vm.engine.siegeForecast(st) }
+    val forecast = s.forecast
 
     // Header: the faction with the most pressure (the one the engine sends at the siege), numbers second.
     FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {

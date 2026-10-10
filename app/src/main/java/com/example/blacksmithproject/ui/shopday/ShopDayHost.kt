@@ -38,7 +38,7 @@ import com.example.blacksmithproject.Beat as Card
 fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel) {
     val engine = vm.engine
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
-    val model = remember(s.script, s.state) { s.script.toUi(s.state, engine.content, engine.config) }
+    val model = s.model
     // A fight being watched is the screen's own state, like the motion inside a card: null, or the replay's event ID ("" = the siege).
     var watching by rememberSaveable(s.script.day) { mutableStateOf<String?>(null) }
     val day = s.state.lastResolution
