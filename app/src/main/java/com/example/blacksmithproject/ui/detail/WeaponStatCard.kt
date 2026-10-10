@@ -106,9 +106,9 @@ fun WeaponStatCard(
             Cell(s.label, s.word?.let { "$it (${s.value})" } ?: s.value.toString(), delta = s.was?.let { StatDelta(it.toString(), if (s.value > it) EffectKind.BUFF else EffectKind.FLAW) })
         } + Cell("Element", detail.element?.let { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } } ?: "None", detail.element?.let { elementColor(it) }) +
             listOfNotNull(detail.stock?.let { Cell("Value", "${it.suggestedPrice} gold", Gold) })
-        if (LocalDensity.current.fontScale > 1.3f) cells.forEach { StatRow(it.label, it.value, valueColor = it.color, delta = it.delta) }
+        if (LocalDensity.current.fontScale > 1f) cells.forEach { StatRow(it.label, it.value, valueColor = it.color, delta = it.delta) }
         else cells.chunked(2).forEach { pair ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.lg)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
                 pair.forEach { StatRow(it.label, it.value, Modifier.weight(1f), it.color, it.delta) }
                 if (pair.size == 1) Box(Modifier.weight(1f))
             }

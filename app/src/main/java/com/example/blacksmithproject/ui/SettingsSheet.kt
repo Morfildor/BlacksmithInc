@@ -59,7 +59,7 @@ private fun SwitchRow(title: String, detail: String, checked: Boolean, onChange:
         Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag(tag).toggleable(value = checked, role = Role.Switch, onValueChange = onChange),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(Modifier.weight(1f)) {
+        Column(Modifier.weight(1f).padding(vertical = Space.sm).padding(end = Space.sm)) {
             Text(title, style = MaterialTheme.typography.titleSmall)
             Secondary(detail)
         }

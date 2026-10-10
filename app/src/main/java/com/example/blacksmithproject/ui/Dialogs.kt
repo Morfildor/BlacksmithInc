@@ -77,9 +77,9 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
     LaunchedEffect(weaponId) { haptics.play(if (w.signatureId != null || w.rarity >= Rarity.EPIC) Moment.FORGE_SIGNATURE else Moment.FORGE_STRIKE) }
     val detail = remember(s.state, weaponId) { vm.engine.itemDetail(s.state, weaponId) } ?: return
     // The blade is revealed as its item card; the card scrolls when large text makes it taller than the screen.
-    Dialog(onDismissRequest = vm::dismissReveal) {
+    Dialog(onDismissRequest = vm::dismissReveal, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         WeaponStatCard(
-            detail, Modifier.semantics { testTagsAsResourceId = true }.graphicsLayer { alpha = reveal }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp).verticalScroll(rememberScrollState()),
+            detail, Modifier.padding(horizontal = Space.md).semantics { testTagsAsResourceId = true }.graphicsLayer { alpha = reveal }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp).verticalScroll(rememberScrollState()),
             title = "Fresh from the forge",
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
         ) {
