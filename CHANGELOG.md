@@ -7,6 +7,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-10
+
 ### Added
 - The first time a customer comes to the counter, one line under the card says how the day is watched ("Tap anywhere to continue · Skip day jumps to the evening"). It goes once you move on and does not come back.
 - Storage can be narrowed and ordered: chips for the families and rarities that are in it, "Never sold" (blades no hero has carried), and As stored / Strongest / Weakest / Dearest. "Select blades" turns the rows into checkboxes, with "Select all shown"; the chosen blades can be salvaged or given to the town watch in one go. Each asks once and says what it costs; salvaging still costs energy per blade and stops when the day's energy and overwork are spent, and the watch stops taking blades when its armory is full.
@@ -46,7 +48,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   Haptics switch in settings (on by default) turns all of it off. The game asks for no vibration permission and has no
   sound.
 - After End Day the day is shown card by card (the shop opening, each customer, the others who came by, closing, what
-  happened beyond the door, then tomorrow) with Next, Back and Skip day, as plain text until the counter scene arrives.
+  happened beyond the door, then tomorrow) with Next, Back and Skip day.
   The day is saved before the first card shows and the place you reached is saved as you go: closing or killing the
   game mid-way offers "Resume the day" or "Skip to tomorrow" on the next launch, and watching, skipping or restarting
   never changes what happened. A blessing can be chosen inside the day or left for the morning. The Gazette opens over
@@ -59,10 +61,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   The line is stored with the day, so it reads the same after a relaunch.
 - Hero and blade sheets. Tap a hero in Town to see their face, class, health, element taste, traits, purse, whether
   they are a regular, ambition, guild, mentor, the blade they carry, their dealings with your shop and their recent
-  days. Tap a blade on the Market page to see its rarity and quality in words, every property and flaw with what it
+  days. Tap a blade on the shelf or in storage to see its rarity and quality in words, every property and flaw with what it
   does, its recipe, who holds it and its history, newest first; pricing, listing, salvage, hone and arming the watch
   now live on that sheet. The two sheets open each other (a hero's blade, a blade's holder, a hero's mentor).
-- The shop-day screen (not yet opened by End Day; a debug preview shows it): each featured customer comes to the
+- The shop-day screen: each featured customer comes to the
   counter as a framed portrait with a name plate, the shelf shows what they looked at and what left it, and a card says
   what they did and why with the recorded numbers. A sale lists its price, trade-in, bonus and coin to the till as
   separate rows. The other visitors are tallied with faces and names, the till closes by kind, up to three cards tell
@@ -72,7 +74,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   have taken, how strong it has to be for them, and what they can spend. While a blade on your shelf answers it they
   come back more readily and are likelier to get a seat; the want lapses after three days, or when they buy anything.
   The day's lead can now be "Forge a bow for Wren Kestrel" with the numbers behind it, and a visit can be recognised as
-  the answer to a want. (The screens that list wants arrive with the next interface update; the rule is live now.)
+  the answer to a want.
 - The journal keeps answering. A hidden recipe now has four clues to earn: that the base recipe hides something more,
   what kind of catalyst it wants, the temper, and how fine the work must be. Every forge at the base recipe that does
   not take earns the next one (the journal used to speak once and fall silent), and the hint shows exactly the clues
@@ -88,7 +90,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - The Forge line of the Gazette says what was spent on materials.
 - A commission card lists each blade of the right kind in the shop with "fits" or the one thing it lacks (wrong
   element, or its quality against the quality needed), and an accepted one names the blade that will be handed over at
-  End Day. The Home screen shows the same line.
+  End Day. The Shop shows the same line.
 
 ### Changed
 - Long runs keep a smaller save. A blade's story keeps what it is, how it was lost, its first owner and its newest
@@ -152,7 +154,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - The forge panel you were on, the recipe you were drafting and an open forge result come back if the system closes
   the game in the background.
 - Android's automatic cloud backup of the save is off until restoring one is tested.
-- Yesterday's customers on the Market panel and the Shelf block on Home now also name the patron who collected a
+- Yesterday's customers and the shelf on the Shop now also name the patron who collected a
   commission and the collector who bought a storied blade.
 - Every living hero now gets an equal turn at the counter. Each hero decides for themselves whether to come, the seats
   are drawn among those who came, and nobody who keeps coming is turned away three days running. Before, the heroes
