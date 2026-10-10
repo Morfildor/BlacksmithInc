@@ -2974,3 +2974,127 @@ take 76 KB (3.5 %) off; the save is stock.** The production soak (T6.3b) says ho
 **Not bounded by these rules.** Stock; returnable blades; hero records; history-grade events (deaths, retirements, sieges,
 milestones, guilds, inheritances); the lines of a blade that are never dropped. A blade whose everyday lines all name living
 heroes keeps them until those heroes die or retire.
+
+## Production soak: what a long save weighs and costs (2026-10-10, task T6.3b, JVM half; F10, C08, C12)
+
+`./gradlew :core:soak` (`ProductionSoakTest`, outside the default suite, about 70 s): 2,000 days of forced survival, seed 4242,
+under the engine's own rules only (`SimulationDriver(eventRetentionDays = 0, maxForgesPerDay = null)`), for two smiths. Every
+100 days the state is counted, encoded, decoded (and compared with what was encoded) and End Day is timed. **These are numbers
+from the JVM of the development machine. The device half (cold load, a commit, frame times, heap, memory pressure) is not in
+them.** The full 20-row tables are written to `core/build/soak/soak_<smith>.md` with the day-1,000 and day-2,000 saves beside
+them; rows below are a selection.
+
+**A smith who forges all day and never salvages (BALANCED_FAIR).**
+
+| Day | Storage | Shelf | In hands | Returnable | Gone, kept | Alive | Dead | Retired | Open req. | Closed req. | IDs | Events | of them older than 30 days | Longest history | Mean history |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 100 | 451 | 8 | 28 | 3 | 1 | 12 | 5 | 11 | 1 | 8 | 30 | 1185 | 65 | 39 | 1.9 |
+| 200 | 823 | 7 | 42 | 16 | 1 | 13 | 13 | 22 | 1 | 10 | 30 | 1256 | 168 | 42 | 1.8 |
+| 500 | 1829 | 8 | 51 | 74 | 2 | 12 | 33 | 56 | 0 | 9 | 30 | 1532 | 549 | 45 | 1.8 |
+| 1000 | 3425 | 6 | 69 | 151 | 1 | 12 | 65 | 113 | 0 | 8 | 30 | 2157 | 1238 | 52 | 1.8 |
+| 1500 | 4819 | 7 | 60 | 253 | 1 | 12 | 95 | 174 | 1 | 12 | 30 | 3032 | 2039 | 61 | 1.8 |
+| 2000 | 6378 | 8 | 60 | 360 | 1 | 11 | 134 | 227 | 1 | 12 | 30 | 3855 | 2806 | 61 | 1.8 |
+
+| Day | Save KB | Envelope overhead KB | Save without stock KB | Last day's report KB | Encode ms | Decode ms | End Day p50 ms | p95 ms | max ms (last 100 days) |
+|---|---|---|---|---|---|---|---|---|---|
+| 100 | 716 | 97 | 326 | 17 | 9.3 | 6.4 | 0.4 | 0.6 | 0.7 |
+| 200 | 1,081 | 145 | 410 | 23 | 13.9 | 9.3 | 0.5 | 0.8 | 1.1 |
+| 500 | 2,060 | 273 | 632 | 21 | 25.5 | 17.4 | 0.9 | 1.4 | 2.2 |
+| 1000 | 3,661 | 481 | 1,019 | 20 | 23.4 | 28.2 | 1.5 | 2.4 | 3.4 |
+| 1500 | 5,176 | 679 | 1,468 | 21 | 33.5 | 39.2 | 1.9 | 2.7 | 3.4 |
+| 2000 | 6,815 | 892 | 1,917 | 18 | 43.2 | 52.5 | 2.8 | 3.8 | 4.4 |
+
+End Day p95, compute only: days 1-1000 1.7 ms (hard budget 200 ms), days 1001-2000 3.2 ms.
+Growth after day 200: 3,262 bytes a day in all, 857 bytes a day without storage and shelf stock.
+Same seed with the four T6.3a rules off, day 1000: outcome identical; save 3,661 KB with the rules, 3,843 KB without (commissions 8 / 272, events 2157 / 2522, processed IDs 30 / 1000, history lines 6464 / 6475).
+
+| Part of the save (payload, KB) | Day 200 | Day 1000 | Day 2000 | Bytes a day, day 200 to 2000 |
+|---|---|---|---|---|
+| stock (storage and shelf) | 526 | 2,161 | 4,006 | 1,980 |
+| blades that can come home (seized, lost with a hero, with a merchant) | 26 | 280 | 684 | 374 |
+| blades in heroes' hands | 76 | 142 | 148 | 41 |
+| blades gone for good, not yet pruned or kept as legends | 4 | 4 | 4 | 0 |
+| dead and retired heroes | 28 | 142 | 289 | 149 |
+| living heroes | 10 | 9 | 9 | -1 |
+| records older than 30 days (history kept for the run) | 33 | 244 | 555 | 297 |
+| records of the last 30 days | 202 | 170 | 201 | -1 |
+| commissions | 2 | 2 | 3 | 0 |
+| the last day's report | 23 | 20 | 18 | -3 |
+| everything else (journal, counters, flags, materials, IDs) | 7 | 7 | 8 | 1 |
+
+Records older than 30 days at day 2000, by type: WEAPON_INHERITED 1401, SIEGE_WON 394, MILESTONE 332, HERO_RETIRED 223, HERO_MENTORED 223, HERO_DIED 132, WEAPON_STOLEN 47, WEAPON_RECOVERED 28, WEAPON_LOST 17, WEAPON_RESOLD 6, GUILD_FOUNDED 2, RUN_STARTED 1.
+
+
+**An active smith (BALANCED_ACTIVE: tools, hones, arms the watch, salvages with spare energy).**
+
+| Day | Storage | Shelf | In hands | Returnable | Gone, kept | Alive | Dead | Retired | Open req. | Closed req. | IDs | Events | of them older than 30 days | Longest history | Mean history |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 100 | 455 | 10 | 27 | 0 | 18 | 15 | 1 | 19 | 0 | 10 | 30 | 1383 | 79 | 34 | 2.3 |
+| 200 | 983 | 10 | 37 | 5 | 26 | 14 | 4 | 39 | 1 | 12 | 30 | 1499 | 175 | 46 | 1.9 |
+| 500 | 2607 | 10 | 64 | 31 | 30 | 12 | 12 | 80 | 0 | 9 | 30 | 1748 | 576 | 54 | 1.6 |
+| 1000 | 4748 | 9 | 97 | 75 | 58 | 12 | 22 | 146 | 0 | 5 | 30 | 2517 | 1320 | 53 | 1.6 |
+| 1500 | 6680 | 10 | 132 | 134 | 65 | 12 | 33 | 215 | 0 | 14 | 30 | 3552 | 2343 | 53 | 1.6 |
+| 2000 | 8600 | 9 | 75 | 291 | 63 | 12 | 53 | 278 | 0 | 10 | 30 | 4505 | 3269 | 57 | 1.6 |
+
+| Day | Save KB | Envelope overhead KB | Save without stock KB | Last day's report KB | Encode ms | Decode ms | End Day p50 ms | p95 ms | max ms (last 100 days) |
+|---|---|---|---|---|---|---|---|---|---|
+| 100 | 822 | 111 | 403 | 28 | 17.8 | 42.9 | 2.9 | 6.1 | 53.6 |
+| 200 | 1,316 | 176 | 494 | 32 | 19.7 | 15.7 | 1.8 | 3.1 | 5.7 |
+| 500 | 2,724 | 361 | 710 | 28 | 18.0 | 24.5 | 1.8 | 2.6 | 5.2 |
+| 1000 | 4,716 | 621 | 1,108 | 23 | 31.0 | 36.6 | 2.9 | 4.3 | 5.9 |
+| 1500 | 6,688 | 877 | 1,595 | 26 | 41.7 | 51.6 | 3.7 | 5.3 | 7.1 |
+| 2000 | 8,622 | 1,129 | 2,089 | 27 | 115.5 | 73.7 | 5.5 | 7.4 | 8.5 |
+
+End Day p95, compute only: days 1-1000 3.9 ms (hard budget 200 ms), days 1001-2000 6.7 ms.
+Growth after day 200: 4,156 bytes a day in all, 907 bytes a day without storage and shelf stock.
+Same seed with the four T6.3a rules off, day 1000: outcome identical; save 4,716 KB with the rules, 4,971 KB without (commissions 5 / 271, events 2517 / 2845, processed IDs 30 / 1000, history lines 7811 / 8518).
+
+| Part of the save (payload, KB) | Day 200 | Day 1000 | Day 2000 | Bytes a day, day 200 to 2000 |
+|---|---|---|---|---|
+| stock (storage and shelf) | 646 | 2,987 | 5,404 | 2,707 |
+| blades that can come home (seized, lost with a hero, with a merchant) | 12 | 129 | 566 | 315 |
+| blades in heroes' hands | 72 | 206 | 160 | 50 |
+| blades gone for good, not yet pruned or kept as legends | 36 | 107 | 166 | 74 |
+| dead and retired heroes | 35 | 137 | 270 | 134 |
+| living heroes | 11 | 9 | 10 | -1 |
+| records older than 30 days (history kept for the run) | 34 | 259 | 638 | 344 |
+| records of the last 30 days | 252 | 229 | 242 | -6 |
+| commissions | 3 | 1 | 2 | -0 |
+| the last day's report | 32 | 23 | 27 | -3 |
+| everything else (journal, counters, flags, materials, IDs) | 7 | 8 | 8 | 0 |
+
+Records older than 30 days at day 2000, by type: WEAPON_INHERITED 1929, SIEGE_WON 394, MILESTONE 304, HERO_RETIRED 274, HERO_MENTORED 274, HERO_DIED 52, WEAPON_STOLEN 23, WEAPON_RECOVERED 7, WEAPON_LOST 7, GUILD_FOUNDED 3, RUN_STARTED 1, WEAPON_RESOLD 1.
+
+
+**Budgets (plan 9.4).**
+
+| Budget | Kind | Result on the JVM |
+|---|---|---|
+| End Day p95 under 200 ms, compute only | hard | **met**: 1.7 ms and 3.9 ms over days 1-1,000; 3.2 ms and 6.7 ms over days 1,001-2,000 (asserted for the first 1,000 days; `SoakTest.endDayP95OverThousandDays` now asserts the same budget and reads 1.8 ms) |
+| bytes a day after day 200, without storage stock, flat | report-only | **not flat**: 857 and 907 bytes a day. With stock 3,262 and 4,156 bytes a day |
+| cold load, a `SetPrice` commit, frames, heap, no ANR | device | not measured here |
+
+**What the numbers say.**
+- A save grows by 3.3 to 4.2 KB a day and does not level off: 3.7 and 4.7 MB at day 1,000, 6.8 and 8.6 MB at day 2,000.
+- **Stock is 60 to 65 % of the growth** (2.0 and 2.7 KB a day): 3.1 to 4.2 unsold blades a day at about 640 bytes each. The
+  decision stands that nothing the player owns is deleted; T6.3c gives the tools to clear it.
+- Without stock the rest still grows by about 0.9 KB a day, from four sources that are kept by decision: blades that can
+  still come home (315 to 374 bytes a day), records kept for the run (297 to 344), dead and retired heroes (134 to 149; the
+  plan's estimate was 33) and, for the active smith, salvaged or donated legend candidates and signature blades (74).
+- **Of the records kept for the run, `WEAPON_INHERITED` is half or more** (1,401 of 2,806 and 1,929 of 3,269 at day 2,000):
+  every retirement hands each of the retiree's blades to the mentee and each hand-over is a record. It is as routine as an
+  arrival. Demoting it to the 30-day window is a one-word change in `EventCompaction.routine` and was **not made**: the plan
+  names two types, and the Gazette's long memory of who inherited what is the owner's to give up.
+- The four T6.3a rules take 182 KB (4.7 %) and 255 KB (5.1 %) off the day-1,000 save, and the same seed with them off reaches
+  the same outcome at day 1,000 for both smiths.
+- The envelope costs 13 % of the file: the payload is stored as a JSON string inside the envelope, so every quote in it is
+  escaped. Storing it as an object would save that; it is a format change and was not made.
+- Encode about 25 to 30 ms and decode about 30 to 40 ms at day 1,000 on the JVM, both linear in the size. The last day's report stays at
+  17 to 32 KB.
+- Forced survival is not play: every siege is won, so `SIEGE_WON` and the warlord's tribute `MILESTONE` appear every five days
+  and no hero falls at the walls. A real run ends long before day 1,000 (longest measured 65 days).
+
+**For the device half.** `core/build/soak/save_hoarder_day1000.json` (3.7 MB, 3,431 blades in stock), `save_active_day1000.json`
+(4.7 MB, 4,757), and the two day-2,000 saves (6.8 and 8.6 MB; 6,386 and 8,609). They are schema-4 run envelopes at rules 3,
+balance 8, content 3, with an empty legacy profile. They were played with sieges switched off; under the shipped numbers the
+next siege (within five days) is real and the town has never had to hold one.
