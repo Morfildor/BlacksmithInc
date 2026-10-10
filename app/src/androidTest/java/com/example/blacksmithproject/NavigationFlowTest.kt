@@ -89,9 +89,10 @@ class NavigationFlowTest {
         compose.onNodeWithTag("shop_counter").assertDoesNotExist()   // scrolled away: the list is longer than the screen
 
         compose.onNodeWithTag("nav_forge").performClick()
-        // Arriving at the Forge moves nothing: the way to Supplies at the top of its list is in view.
-        compose.onNodeWithTag("forge_supplies").assertIsDisplayed()
-        compose.onNodeWithTag("end_day").assertIsDisplayed()
+        // Arriving at the Forge moves nothing: the workbench at its top and its one action are in view, and End Day is the Shop's.
+        compose.onNodeWithTag("forge_workbench").assertIsDisplayed()
+        compose.onNodeWithTag("forge_weapon").assertIsDisplayed()
+        compose.onNodeWithTag("end_day").assertDoesNotExist()
         back()
         compose.onNodeWithTag("shop_storage").assertIsDisplayed()
         compose.onNodeWithTag("shop_counter").assertDoesNotExist()
@@ -108,9 +109,10 @@ class NavigationFlowTest {
     fun theForgeKeepsItsDraftAndItsOpenStepAndEndDayStaysOffTownAndRecords() {
         val vm = play(stocked())
         compose.onNodeWithTag("nav_forge").performClick()
-        compose.onNodeWithText("Sword").performScrollTo().performClick()
-        compose.onNode(hasContentDescription("Risk:", substring = true)).performScrollTo().performClick()
-        compose.onNode(hasContentDescription("Risk:", substring = true) and hasContentDescription(", open", substring = true)).assertIsDisplayed()
+        compose.onNodeWithTag("forge_option_sword").performClick()
+        // The tray has moved on to the metal: the player opens the weapon's place again.
+        compose.onNodeWithTag("forge_slot_weapon").performClick()
+        compose.onNodeWithTag("forge_tray_weapon").assertIsDisplayed()
         val draft = (vm.ui.value as UiState.Playing).draft
 
         compose.onNodeWithTag("nav_town").performClick()
@@ -122,9 +124,9 @@ class NavigationFlowTest {
 
         compose.onNodeWithTag("nav_forge").performClick()
         assertEquals(draft, (vm.ui.value as UiState.Playing).draft)
-        compose.onNode(hasContentDescription("Family: Sword", substring = true)).assertExists()
-        // The step the player opened is still open, and still where it was on screen.
-        compose.onNode(hasContentDescription("Risk:", substring = true) and hasContentDescription(", open", substring = true)).assertIsDisplayed()
+        compose.onNode(hasContentDescription("Weapon: Sword", substring = true)).assertExists()
+        // The place the player opened is still open, and still where it was on screen.
+        compose.onNodeWithTag("forge_tray_weapon").assertIsDisplayed()
         compose.onNodeWithTag("nav_records").performClick()
         compose.onNodeWithTag("page_legacy").assertIsSelected()
     }

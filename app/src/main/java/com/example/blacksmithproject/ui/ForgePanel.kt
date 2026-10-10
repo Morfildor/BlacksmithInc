@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.Dest
 import com.example.blacksmithproject.ForgeDraft
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.R
@@ -117,7 +118,7 @@ fun ForgePanel(
     }
 
     Column(Modifier.fillMaxSize()) {
-        EventStrip(s)
+        EventStrip(s) { vm.selectDest(Dest.TOWN) }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Space.md).padding(bottom = Space.md)) {
             ForgeHeading(s.shop.requests.size, onOpenBoard, onOpenSupplies, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
             Workbench(bench.title, d, vm.engine.content, compact = open != null)
@@ -138,9 +139,9 @@ fun ForgePanel(
 
 /** When the siege comes, who brings it and what it is weak to, and how the forge stands: above the work, in two short lines. */
 @Composable
-private fun EventStrip(s: UiState.Playing) {
+private fun EventStrip(s: UiState.Playing, onOpenTown: () -> Unit) {
     val threat = s.shop.threat
-    Column(Modifier.fillMaxWidth().background(SceneDeep).heightIn(min = 44.dp).padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag("forge_threat")) {
+    Column(Modifier.fillMaxWidth().background(SceneDeep).heightIn(min = 48.dp).clickable(onClickLabel = "Open Town", role = Role.Button, onClick = onOpenTown).padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag("forge_threat")) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(threat?.let { if (it.warned && !it.today) "Siege approaching · ${it.siege.removePrefix("Siege ")}" else it.siege } ?: "No siege in sight", style = MaterialTheme.typography.titleSmall, color = if (threat?.warned == true) Ember else Cream, modifier = Modifier.weight(1f))
             PixelImage(R.drawable.icon_integrity, wholePixelDp(24, 22.dp), description = null)
@@ -348,7 +349,7 @@ private fun FieldNote(i: Int, n: NoteUi, modifier: Modifier) {
         Text(n.label, style = MaterialTheme.typography.labelMedium, color = CreamMuted)
         Text(
             if (untried) "? ${n.stage}" else n.hint, style = MaterialTheme.typography.titleSmall,
-            color = when { untried -> Gold; n.tone == EffectKind.NEUTRAL -> Cream; else -> n.tone.color }, modifier = Modifier.padding(vertical = 2.dp),
+            color = n.state.color(), modifier = Modifier.padding(vertical = 2.dp),
         )
         Text(if (untried) n.hint else "${n.state.glyph()} ${n.stage}", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
     }

@@ -101,6 +101,7 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
             modifier = Modifier.safeDrawingPadding().padding(horizontal = Space.md, vertical = Space.sm).semantics { testTagsAsResourceId = true }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp),
             reveal = !reducedMotion,
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
+            learning = s.learning,
         )
     }
 }
@@ -135,6 +136,7 @@ fun ForgeResultCard(
     modifier: Modifier = Modifier,
     reveal: Boolean = false,
     overSprite: @Composable BoxScope.() -> Unit = {},
+    learning: ForgeLearningUi? = null,
 ) {
     var revealed by rememberSaveable(detail.weaponId.value) { mutableStateOf(!reveal) }
     LaunchedEffect(detail.weaponId) { if (!revealed) { delay(REVEAL_HOLD_MS); revealed = true } }
@@ -151,6 +153,8 @@ fun ForgeResultCard(
             }
         }
         WeaponStatBody(fresh, overSprite, detailAlpha = { shown })
+        // What this forge added to the notebook; absent on a result reopened later, where "new" could no longer be told.
+        learning?.let { LearningCard(it, Modifier.padding(top = Space.sm)) }
         Secondary(recipe, Modifier.padding(top = Space.md).graphicsLayer { alpha = shown })
         HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
     }

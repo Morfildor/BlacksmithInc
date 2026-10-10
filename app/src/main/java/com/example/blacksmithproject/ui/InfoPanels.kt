@@ -112,8 +112,8 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
                 Text(threat?.let { if (it.warned && !it.today) "Siege approaching" else it.siege } ?: "No threat", style = MaterialTheme.typography.titleLarge, color = if (threat?.warned == true) Ember else Gold, modifier = Modifier.testTag("town_siege"))
                 threat?.takeIf { it.warned && !it.today }?.let { Text(it.siege.removePrefix("Siege ").replaceFirstChar { c -> c.uppercase() } + " · day ${st.town.nextSiegeDay}", style = MaterialTheme.typography.titleSmall) }
                 threat?.takeIf { it.today }?.let { Text("After today's trading", style = MaterialTheme.typography.titleSmall) }
+                threat?.matchup?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs).testTag("town_matchup")) }
                 StatRow("Outlook", threat?.outlook ?: "Unknown", Modifier.padding(top = Space.xs))
-                threat?.matchup?.let { StatRow("Besieger", it) }
                 StatRow("Forge health", "${st.town.integrity}")
                 forecast?.let { o ->
                     Secondary("Town defense ${o.townDefense.roundToInt()} against a raid of ${o.raidPower.roundToInt()}", Modifier.padding(top = Space.xs))
@@ -203,26 +203,6 @@ internal fun townTies(h: Hero, st: GameState, config: BalanceConfig): String? = 
     h.mentorName?.let { "mentor $it" },
     "a regular of your shop".takeIf { h.isAlive && Market.isRegular(h, config) },
 ).joinToString(" · ").ifEmpty { null }
-
-/** Lazy rows of the experiment journal, for the Records list: keyed per pairing, so a long journal composes only what shows. */
-fun LazyListScope.journalItems(s: UiState.Playing, vm: GameViewModel) {
-    val content = vm.engine.content
-    val journal = s.state.legacy.journal
-    val entries = journal.interactions.entries.sortedBy { it.key }
-    item(key = "journal_head") {
-        Column {
-            SectionTitle("Experiment Journal", Modifier.padding(top = Space.sm))
-            Secondary("Knowledge survives the forge's fall. Repeat a pairing to understand it.")
-            if (entries.isEmpty()) Text("No experiments recorded yet. Forge something.", modifier = Modifier.padding(top = Space.md))
-        }
-    }
-    items(entries, key = { "journal_${it.key}" }) { (key, _) ->
-        Column {
-            AffinityHint(journal, content, key)
-            signatureUi(journal, key, content, vm.engine.config)?.let { SignatureLadder(it, onUse = vm::useRecipe) }
-        }
-    }
-}
 
 /**
  * Under a signature's journal row: the four rungs of its clue ladder, each earned one in the journal's words and each

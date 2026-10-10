@@ -182,7 +182,7 @@ object Journal {
         KnowledgeState.UNKNOWN -> "Unknown"
         KnowledgeState.OBSERVED -> {
             val a = affinityFor(content, key)
-            if (a > 0) "Seems promising" else if (a < 0) "Seems uneasy" else "Seems ordinary"
+            if (a > 0) "Seems promising" else if (a < 0) "Seems uneasy" else "Seems neutral"
         }
         KnowledgeState.UNDERSTOOD, KnowledgeState.SIGNATURE_DISCOVERED -> describeAffinity(affinityFor(content, key)).replaceFirstChar { it.uppercase() }
     }

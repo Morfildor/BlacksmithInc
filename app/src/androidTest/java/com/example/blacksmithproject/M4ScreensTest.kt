@@ -1,5 +1,10 @@
 package com.example.blacksmithproject
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.assertContentDescriptionContains
+import com.example.blacksmithproject.ui.CommissionBoard
+import com.example.blacksmithproject.ui.board
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.collectAsState
@@ -66,15 +71,17 @@ class M4ScreensTest {
 
     private var forgedFamily: WeaponFamilyId? = null
 
+    /** What is on screen: the Shop first, then the board in its place (content can be set only once). */
+    private val shown = mutableStateOf<@Composable () -> Unit>({})
+
     /** The Shop at a phone's size: what is asserted as displayed is on screen as a player has it, after scrolling the list to it. */
     private fun showShop(state: GameState) {
         val shop = engine.shopUi(state)
-        compose.setContent {
-            BlacksmithProjectTheme {
+        compose.setContent { BlacksmithProjectTheme { shown.value() } }
+        shown.value = {
                 Box(Modifier.size(360.dp, 640.dp)) {
-                    ShopPanel(shop, busy = false, reducedMotion = true, onLead = {}, onOpenBlade = {}, onOpenHero = {}, onAnswer = { _, _ -> }, onOpenStorage = {}, onOpenNews = {}, onForgeWant = { forgedFamily = it })
+                    ShopPanel(shop, busy = false, reducedMotion = true, onLead = {}, onOpenBlade = {}, onOpenBoard = {}, onOpenStorage = {}, onOpenNews = {})
                 }
-            }
         }
         compose.waitForIdle()
     }
@@ -87,8 +94,14 @@ class M4ScreensTest {
         val wanting = hero.copy(want = Want(family, minPower = 10, budget = 95, sinceDay = morning.day))
         val state = morning.copy(heroes = morning.heroes + (hero.id to wanting))
         val line = Lines.want(wanting, engine.content)!!
+        // The Shop says only how many; the board has the want under its weapon type, one tap away.
         showShop(state)
-        compose.onNodeWithTag("shop_list").performScrollToNode(hasTestTag("forge_want_${hero.id.value}"))
+        compose.onNodeWithTag("shop_list").performScrollToNode(hasTestTag("shop_board"))
+        compose.onNodeWithTag("shop_board_detail", useUnmergedTree = true).assertTextContains("customer want", substring = true)
+        compose.onNodeWithText(line).assertDoesNotExist()
+        showBoard(state)
+        compose.onNodeWithText(line).assertDoesNotExist()
+        compose.onNodeWithTag("board_group_${family.value}").performClick()
         compose.onNodeWithText(line).assertIsDisplayed()
         compose.onNodeWithTag("want_answered_${hero.id.value}").assertDoesNotExist()
         compose.onNodeWithTag("forge_want_${hero.id.value}").performClick()
@@ -102,10 +115,22 @@ class M4ScreensTest {
         val state = morning.copy(commissions = mapOf(asked.id to asked))
         showShop(state)
         // The plate is the top of the Shop: on screen without scrolling.
-        compose.onNodeWithText(engine.threatUi(state)!!.plate, substring = true).assertIsDisplayed()
-        compose.onNodeWithTag("shop_list").performScrollToNode(hasTestTag("request_why_why1"))
+        compose.onNodeWithText(engine.threatUi(state)!!.summary, substring = true).assertIsDisplayed()
+        showBoard(state)
+        compose.onNodeWithTag("board_commission_why1").performClick()
         compose.onNodeWithTag("request_why_why1", useUnmergedTree = true).assertIsDisplayed()
         compose.onNodeWithTag("request_why_why1", useUnmergedTree = true).assertTextEquals(Lines.commissionWhy(asked, state)!!)
+    }
+
+    /** The commission board for [state] at a phone's size; "Forge this" on a want is recorded. */
+    private fun showBoard(state: GameState) {
+        val shop = engine.shopUi(state)
+        shown.value = {
+            Box(Modifier.size(360.dp, 640.dp)) {
+                CommissionBoard(shop.board(), shop.requestSlots, busy = false, chosen = null, onOpenHero = {}, onAnswer = { _, _ -> }, onForgeThis = {}, onForgeWant = { forgedFamily = it })
+            }
+        }
+        compose.waitForIdle()
     }
 
     /** The Forge over a ViewModel on [state], opened on planning. */
@@ -127,12 +152,13 @@ class M4ScreensTest {
     fun theForgeMarksTheElementsTheBesiegerCaresAbout() {
         val threat = engine.threatUi(morning)!!
         val vm = showForge(morning)
-        compose.onNodeWithTag("forge_threat", useUnmergedTree = true).assertTextContains(threat.plate, substring = true)
-        // With a family and a core chosen the augment step is the open one: its chips carry the marks.
+        compose.onNodeWithText(threat.matchup!!, substring = true).assertIsDisplayed()
+        // With a weapon and a metal chosen the augment tray is the open one: its tiles carry the marks.
         compose.runOnUiThread { vm.updateDraft { it.copy(familyId = engine.content.families.first().id, coreId = engine.content.materials(MaterialCategory.CORE).first().id) } }
         compose.waitForIdle()
         for ((element, mark) in threat.marks) {
-            compose.onNodeWithTag("forge_mark_${element.name.lowercase()}", useUnmergedTree = true).assertTextContains(mark.label, substring = true)
+            val augment = engine.content.materials(MaterialCategory.AUGMENT).first { it.element == element }
+            compose.onNodeWithTag("forge_option_${augment.id.value}").assertContentDescriptionContains(mark.label, substring = true)
         }
     }
 

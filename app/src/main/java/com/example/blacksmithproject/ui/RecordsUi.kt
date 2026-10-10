@@ -9,7 +9,10 @@ import com.tinyblacksmith.core.crafting.SignatureCatalog
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.model.Journal as JournalModel
 import com.tinyblacksmith.core.model.KnowledgeState
+import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.LegendEntry
+import com.tinyblacksmith.core.model.MaterialId
+import com.tinyblacksmith.core.model.WeaponFamilyId
 import com.tinyblacksmith.core.shopday.Lines
 
 /**
@@ -55,5 +58,36 @@ fun signatureUi(journal: JournalModel, key: String, content: ContentCatalog, con
             })
         },
         SignatureCatalog.recipe(def).takeIf { found },
+    )
+}
+
+/** A pairing the smith has tried, as a row of the notebook: [metalId] and [augmentId] for a metal pairing, [augmentId] and [familyId] for a weapon pairing. */
+@Immutable
+data class PairingUi(
+    val key: String, val subject: String, val state: KnowledgeState, val stage: String, val hint: String,
+    val metalId: MaterialId? = null, val augmentId: MaterialId? = null, val familyId: WeaponFamilyId? = null,
+)
+
+/**
+ * The research notebook: only what the journal holds, in three kinds. A pairing never tried is not listed, and a
+ * recipe is here only once the journal has a row for it. [counts] are the smith's own records, not a share of anything.
+ */
+@Immutable
+data class NotebookUi(val metal: List<PairingUi>, val weapon: List<PairingUi>, val clues: List<String>) {
+    val counts: String get() = (metal + weapon).let { all -> "${all.count { it.state == KnowledgeState.OBSERVED }} observed · ${all.count { it.state == KnowledgeState.UNDERSTOOD }} understood" }
+}
+
+fun GameEngine.notebook(journal: JournalModel): NotebookUi {
+    fun pairing(key: String): PairingUi {
+        val n = note(journal, "", key)
+        val ids = key.substring(3).split("|")
+        return if (key.startsWith("ca:")) PairingUi(key, n.subject, n.state, n.stage, n.hint, metalId = MaterialId(ids[0]), augmentId = MaterialId(ids[1]))
+        else PairingUi(key, n.subject, n.state, n.stage, n.hint, augmentId = MaterialId(ids[0]), familyId = WeaponFamilyId(ids[1]))
+    }
+    val keys = journal.interactions.keys.sorted()
+    return NotebookUi(
+        metal = keys.filter { it.startsWith("ca:") }.map(::pairing),
+        weapon = keys.filter { it.startsWith("af:") }.map(::pairing),
+        clues = keys.filter { it.startsWith("sig:") },
     )
 }

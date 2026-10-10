@@ -71,7 +71,7 @@ class LayoutMatrixTest {
                 val s = ui as? UiState.Playing ?: return@BlacksmithProjectTheme
                 DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(size) then DeviceConfigurationOverride.FontScale(font)) {
                     when (screen) {
-                        "shop" -> ShopPanel(s.shop, busy = false, reducedMotion = true, onLead = {}, onOpenBlade = {}, onOpenHero = {}, onAnswer = { _, _ -> }, onOpenStorage = {}, onOpenNews = {}, onOpenSupplies = {})
+                        "shop" -> ShopPanel(s.shop, busy = false, reducedMotion = true, onLead = {}, onOpenBlade = {}, onOpenBoard = {}, onOpenStorage = {}, onOpenNews = {}, onOpenSupplies = {})
                         "forge" -> ForgePanel(s, vm, reducedMotion = true, tip = null)
                         else -> ItemDetailContent(detail, planning = true, onOpenHero = {}, onStock = {}, onDismiss = {})
                     }

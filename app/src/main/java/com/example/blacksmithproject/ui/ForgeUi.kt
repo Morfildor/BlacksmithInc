@@ -35,11 +35,7 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
 }
 
 /** One relationship of the recipe as the journal knows it today. An untried one says nothing of how it will go. */
-@Immutable data class NoteUi(
-    val label: String, val subject: String, val state: KnowledgeState, val stage: String, val hint: String,
-    /** Which way the pairing leans, for the colour of [hint]: only ever what [hint] already says in words, and nothing for an untried one. */
-    val tone: EffectKind = EffectKind.NEUTRAL,
-)
+@Immutable data class NoteUi(val label: String, val subject: String, val state: KnowledgeState, val stage: String, val hint: String)
 
 /** One requirement of a commission; [matches] is null where the draft cannot answer it (quality is known only after forging). */
 @Immutable data class AskUi(val text: String, val matches: Boolean?)
@@ -73,11 +69,7 @@ fun KnowledgeState.stage(): String = when (this) {
 fun GameEngine.note(journal: JournalModel, label: String, key: String): NoteUi {
     val state = journal.state(key)
     if (state == KnowledgeState.UNKNOWN) return NoteUi(label, Journal.subjectName(content, key), state, state.stage(), "Forge to learn")
-    val affinity = Journal.affinityFor(content, key)
-    return NoteUi(
-        label, Journal.subjectName(content, key), state, state.stage(), Journal.hint(journal, content, key),
-        tone = when { affinity > 0 -> EffectKind.BUFF; affinity < 0 -> EffectKind.FLAW; else -> EffectKind.NEUTRAL },
-    )
+    return NoteUi(label, Journal.subjectName(content, key), state, state.stage(), Journal.hint(journal, content, key))
 }
 
 fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: List<RequestUi>): ForgeWorkbenchUi {
@@ -165,3 +157,50 @@ fun GameEngine.place(draft: ForgeDraft, slot: RecipeSlot, option: OptionUi): For
 }
 
 internal fun com.tinyblacksmith.core.content.Element.word() = name.lowercase().replaceFirstChar { it.uppercase() }
+
+/** One thing a forge added to the journal: what kind of gain, and the pairing or recipe in the journal's own words for the stage reached. */
+@Immutable data class LearnedUi(val title: String, val line: String)
+
+/** What the forge just done taught. [note] stands in when nothing moved: a repeat still short of understanding, or a recipe already known. */
+@Immutable data class ForgeLearningUi(val changes: List<LearnedUi>, val note: String?)
+
+/**
+ * The journal [before] and [after] one accepted forge, as the result card says it. Every sentence is `Journal.hint` on
+ * the journal as it now stands, so an observed pairing stays tentative; nothing is read from the day's event text.
+ */
+fun GameEngine.forgeLearning(before: JournalModel, after: JournalModel, forged: Command.Forge): ForgeLearningUi {
+    val pairings = listOf(JournalModel.coreAugmentKey(forged.coreId, forged.augmentId), JournalModel.augmentFamilyKey(forged.augmentId, forged.familyId))
+    val learned = pairings.filter { after.state(it).ordinal > before.state(it).ordinal }.map { key ->
+        LearnedUi(if (after.state(key) == KnowledgeState.OBSERVED) "New observation" else "Pairing understood", "${Journal.subjectName(content, key)} · ${Journal.hint(after, content, key)}")
+    }
+    val recipes = after.interactions.keys.filter { it.startsWith("sig:") }.sorted().mapNotNull { key ->
+        when {
+            after.state(key) == KnowledgeState.SIGNATURE_DISCOVERED && before.state(key) != KnowledgeState.SIGNATURE_DISCOVERED -> LearnedUi("Signature discovered", Journal.hint(after, content, key))
+            after.state(key) != KnowledgeState.SIGNATURE_DISCOVERED && (after.state(key) != before.state(key) || after.signatureClues[key] != before.signatureClues[key]) -> LearnedUi("Recipe clue earned", Journal.hint(after, content, key))
+            else -> null
+        }
+    }
+    val changes = learned + recipes
+    val studying = pairings.any { after.state(it) == KnowledgeState.OBSERVED }
+    return ForgeLearningUi(
+        changes,
+        when {
+            changes.isNotEmpty() -> null
+            studying -> "Another experiment recorded. Keep testing to understand this pairing."
+            else -> "No new discovery. Your notebook already knows these pairings."
+        },
+    )
+}
+
+/**
+ * The first metal and augment, in catalog order, that the smith has in stock and has never forged together. A draft
+ * suggestion only: it reads no affinity, no hidden recipe and no RNG, and spends nothing.
+ */
+fun GameEngine.untriedPairing(state: GameState): Pair<MaterialId, MaterialId>? {
+    fun stocked(category: MaterialCategory) = content.materials(category).filter { (state.materials[it.id] ?: 0) > 0 }
+    val journal = state.legacy.journal
+    for (core in stocked(MaterialCategory.CORE)) for (augment in stocked(MaterialCategory.AUGMENT)) {
+        if (journal.state(JournalModel.coreAugmentKey(core.id, augment.id)) == KnowledgeState.UNKNOWN) return core.id to augment.id
+    }
+    return null
+}

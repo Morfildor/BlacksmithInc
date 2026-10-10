@@ -16,7 +16,10 @@ import com.example.blacksmithproject.data.SaveStore
 import com.example.blacksmithproject.data.Settings
 import com.example.blacksmithproject.data.SettingsStore
 import com.example.blacksmithproject.data.ShopDaySpeed
+import com.example.blacksmithproject.ui.ForgeLearningUi
 import com.example.blacksmithproject.ui.ShopUi
+import com.example.blacksmithproject.ui.forgeLearning
+import com.example.blacksmithproject.ui.untriedPairing
 import com.example.blacksmithproject.ui.detail.StockAction
 import com.example.blacksmithproject.ui.detail.toCommand
 import com.example.blacksmithproject.ui.shopUi
@@ -102,6 +105,8 @@ sealed interface UiState {
         val notice: String? = null,
         /** Raised by "Forge this" and "Use this recipe": the Forge then opens the step to choose next and scrolls to it. UI-only. */
         val forgeReveal: Int = 0,
+        /** What the forge whose result is open added to the journal; null on a result reopened after a restart. UI-only. */
+        val learning: ForgeLearningUi? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
     }
@@ -165,6 +170,7 @@ class GameViewModel(
         val lastError: String? = null,
         val notice: String? = null,
         val forgeReveal: Int = 0,
+        val learning: ForgeLearningUi? = null,
         val loadFailure: SaveFailure? = null,
         /** True until the first load (and the hand-over of the old report key) has finished, and again during Retry. */
         val loading: Boolean = true,
@@ -257,7 +263,7 @@ class GameViewModel(
         }
         // Planning always arrives with the Shop's content: shopFor builds it before this is called, and now() checks.
         val planned = plan ?: planFor(run)
-        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal)
+        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -377,7 +383,30 @@ class GameViewModel(
     fun useRecipe(recipe: Command.Forge) = edit {
         it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = ForgeDraft(recipe.mode, recipe.familyId, recipe.coreId, recipe.augmentId, recipe.catalystId, recipe.risk, recipe.technique))
     }
-    fun dismissReveal() = edit { it.copy(revealWeaponId = null) }
+    fun dismissReveal() = edit { it.copy(revealWeaponId = null, learning = null) }
+
+    /** "Use" on a notebook row: its two ingredients go onto the workbench and the rest of the draft stays. Nothing is forged. */
+    fun usePairing(key: String) {
+        val ids = key.substringAfter(':').split("|").takeIf { it.size == 2 } ?: return
+        edit {
+            val draft = when {
+                key.startsWith("ca:") -> it.draft.copy(coreId = MaterialId(ids[0]), augmentId = MaterialId(ids[1]))
+                key.startsWith("af:") -> it.draft.copy(augmentId = MaterialId(ids[0]), familyId = WeaponFamilyId(ids[1]))
+                else -> return@edit it
+            }
+            it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = draft, notice = "Pairing selected. Forge when ready.")
+        }
+    }
+
+    /** "Try an untried pairing": a metal and an augment in stock that were never forged together go onto the workbench. Nothing is spent. */
+    fun tryUntried() {
+        val run = session.snapshot.value?.run ?: return
+        val pair = engine.untriedPairing(run)
+        edit {
+            if (pair == null) it.copy(notice = "Every metal pairing you have the stock for has been tried.")
+            else it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(coreId = pair.first, augmentId = pair.second), notice = "Untried ingredients selected. No materials spent.")
+        }
+    }
 
     /**
      * "List at N" on the forge result. The card closes only once the listing is saved, and the workshop then says where
@@ -388,14 +417,14 @@ class GameViewModel(
         launch(Op.Dispatch(Command.ToggleShelf(id, true, price), run.runId)) {
             val now = session.snapshot.value?.run ?: return@launch
             val name = now.weapons[id]?.name ?: return@launch
-            edit { it.copy(revealWeaponId = null, notice = "$name is on the shelf at $price gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}.") }
+            edit { it.copy(revealWeaponId = null, learning = null, notice = "$name is on the shelf at $price gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}. Your ingredients stay selected.") }
         }
     }
 
     /** "Store" on the forge result, and closing it any other way: the blade stays in storage, and the workshop says so. */
     fun storeForged() {
         val name = local.value.revealWeaponId?.let { session.snapshot.value?.run?.weapons?.get(it) }?.takeIf { it.isInStorage }?.name
-        edit { it.copy(revealWeaponId = null, notice = name?.let { n -> "$n is in storage, not for sale. List it from Storage in the Shop." } ?: it.notice) }
+        edit { it.copy(revealWeaponId = null, learning = null, notice = name?.let { n -> "$n is in storage, not for sale. Your ingredients stay selected." } ?: it.notice) }
     }
 
     /** The notice has been shown; a newer one is left alone. */
@@ -537,7 +566,13 @@ class GameViewModel(
 
     fun dispatch(command: Command) {
         val run = session.snapshot.value?.run ?: return
-        launch(Op.Dispatch(command, run.runId))
+        if (command !is Command.Forge) return launch(Op.Dispatch(command, run.runId))
+        // The journal on either side of the accepted forge: what the result card says was learned.
+        val before = run.legacy.journal
+        launch(Op.Dispatch(command, run.runId)) {
+            val after = session.snapshot.value?.run?.legacy?.journal ?: return@launch
+            edit { it.copy(learning = engine.forgeLearning(before, after, command)) }
+        }
     }
 
     /**

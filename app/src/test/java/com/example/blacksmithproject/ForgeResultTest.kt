@@ -63,7 +63,7 @@ class ForgeResultTest : ShopDayTestBase() {
         val s = vm.playing()
         assertEquals("the price on the shelf is the one chosen, not the suggested one", chosen, s.state.weapons.getValue(id).listedPrice)
         assertNull("the card closes once the listing is saved", s.revealWeaponId)
-        assertEquals("${blade.name} is on the shelf at $chosen gold. Shelf 1 of ${engine.shelfSlots(s.state)}.", s.notice)
+        assertEquals("${blade.name} is on the shelf at $chosen gold. Shelf 1 of ${engine.shelfSlots(s.state)}. Your ingredients stay selected.", s.notice)
         assertEquals(listOf(id to chosen), s.shop.shelf.map { it.weapon.id to it.price })
 
         // Shown once: an older notice does not clear a newer one.
@@ -83,7 +83,7 @@ class ForgeResultTest : ShopDayTestBase() {
         val s = vm.playing()
         assertNull(s.revealWeaponId)
         assertTrue("nothing was listed", s.state.weapons.getValue(id).isInStorage && s.state.listedWeapons().isEmpty())
-        assertEquals("${blade.name} is in storage, not for sale. List it from Storage in the Shop.", s.notice)
+        assertEquals("${blade.name} is in storage, not for sale. Your ingredients stay selected.", s.notice)
     }
 
     /** The screen is told the shelf is full before the tap; if a listing is refused all the same, the card stays open under the engine's reason. */

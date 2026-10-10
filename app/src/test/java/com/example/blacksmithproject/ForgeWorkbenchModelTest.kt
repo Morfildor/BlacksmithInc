@@ -103,7 +103,7 @@ class ForgeWorkbenchModelTest : ShopDayTestBase() {
         val untried = bench(ready).notes
         assertEquals(listOf("Metal + augment", "Augment + weapon"), untried.map { it.label })
         assertEquals(listOf("Untried", "Untried"), untried.map { it.stage })
-        assertTrue(untried.all { it.hint == "Forge to learn" && it.tone == com.example.blacksmithproject.ui.EffectKind.NEUTRAL })
+        assertTrue(untried.all { it.hint == "Forge to learn" })
 
         val knowing = fresh.copy(legacy = fresh.legacy.copy(journal = Journal(interactions = mapOf(ca to KnowledgeState.OBSERVED, af to KnowledgeState.UNDERSTOOD))))
         val notes = bench(ready, knowing).notes

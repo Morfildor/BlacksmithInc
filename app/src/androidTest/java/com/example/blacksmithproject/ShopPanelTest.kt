@@ -69,7 +69,7 @@ class ShopPanelTest {
         compose.setContent {
             BlacksmithProjectTheme {
                 Box(Modifier.width(360.dp).requiredHeight(6000.dp)) {
-                    shop?.let { ShopPanel(it, busy = false, reducedMotion = true, onLead = {}, onOpenBlade = {}, onOpenHero = {}, onAnswer = { _, _ -> }, onOpenStorage = {}, onOpenNews = {}) }
+                    shop?.let { ShopPanel(it, busy = false, reducedMotion = true, onLead = {}, onOpenBlade = {}, onOpenBoard = {}, onOpenStorage = {}, onOpenNews = {}) }
                 }
             }
         }
@@ -87,7 +87,7 @@ class ShopPanelTest {
         compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals("${fresh.aliveHeroes().size} heroes in Emberfall and nothing on the shelf.")
         compose.onNodeWithTag("shop_lead_action").assertTextEquals("Go to the forge  ›")
         assertTrue("the lead is the first thing under the counter", top("shop_counter") < top("shop_lead") && top("shop_lead") < top("shop_demand"))
-        compose.onNodeWithTag("shop_requests", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag("shop_board_detail", useUnmergedTree = true).assertTextEquals("No commissions · no customer wants")
         compose.onNodeWithTag("shop_yesterday", useUnmergedTree = true).assertDoesNotExist()
     }
 
@@ -99,8 +99,8 @@ class ShopPanelTest {
         assertNotNull("no morning with a request, a stocked shelf and yesterday's customers", day)
         show(day!!.state)
         val firstBlade = compose.onAllNodes(stockRow, useUnmergedTree = true).fetchSemanticsNodes().minOf { it.boundsInRoot.top }
-        val order = listOf("shop_counter", "shop_lead", "shop_requests", "shop_demand", "shop_yesterday", "shop_shelf").map { top(it).value }
-        assertEquals("counter, lead, requests, who is buying, yesterday, shelf", order.sorted(), order)
+        val order = listOf("shop_counter", "shop_lead", "shop_board", "shop_demand", "shop_yesterday", "shop_shelf").map { top(it).value }
+        assertEquals("counter, lead, the board, who is buying, yesterday, shelf", order.sorted(), order)
         assertTrue("the shelf rows follow their heading", with(compose.density) { top("shop_shelf").toPx() } < firstBlade)
         assertTrue("storage is the last of them", top("shop_storage") > top("shop_shelf"))
     }
