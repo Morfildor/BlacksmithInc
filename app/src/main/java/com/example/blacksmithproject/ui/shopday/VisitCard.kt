@@ -25,9 +25,10 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.Sprites
+import com.example.blacksmithproject.ui.StatRow
+import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.SceneDeep
 import com.example.blacksmithproject.ui.theme.SceneWood1
 import com.example.blacksmithproject.ui.theme.Space
@@ -45,7 +46,7 @@ internal fun Overline(text: String, modifier: Modifier = Modifier, strong: Boole
 
 @Composable
 internal fun CardTitle(text: String, modifier: Modifier = Modifier) {
-    Text(text, style = MaterialTheme.typography.titleLarge, modifier = modifier.semantics { heading() })
+    Text(text, style = MaterialTheme.typography.titleLarge, color = Gold, modifier = modifier.semantics { heading() })
 }
 
 /**
@@ -57,10 +58,7 @@ fun ReceiptRows(rows: List<ReceiptRow>, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().testTag("shopday_receipt")) {
         rows.forEach { row ->
             if (row.total && rows.size > 1) HorizontalDivider(Modifier.padding(vertical = 2.dp), color = MaterialTheme.colorScheme.outline)
-            Row(Modifier.fillMaxWidth().padding(vertical = 2.dp).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Top) {
-                Text(row.label, style = MaterialTheme.typography.bodyLarge, fontWeight = if (row.total) FontWeight.SemiBold else null, modifier = Modifier.weight(1f).padding(end = Space.sm))
-                Text(row.value, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.End, color = if (row.total) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface)
-            }
+            StatRow(row.label, row.value, valueColor = if (row.total) Gold else null)
         }
     }
 }

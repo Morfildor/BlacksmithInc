@@ -14,10 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -27,9 +25,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.blacksmithproject.ui.FramedPanel
+import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.BlessingId
@@ -121,7 +120,7 @@ fun AftermathCard(
         }
         Body(card.text, Modifier.testTag("shopday_aftermath_text"))
         card.replay?.let { replay ->
-            OutlinedButton(onClick = { onWatchFight(replay) }, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_watch")) { Text("Watch the fight") }
+            OutlinedButton(onClick = { onWatchFight(replay) }, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_watch")) { Text("Watch the fight") }
         }
         if (beat.moreInGazette > 0) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -136,17 +135,15 @@ fun AftermathCard(
 @Composable
 fun ReplayOverlay(replay: CombatReplay, onClose: () -> Unit, modifier: Modifier = Modifier) {
     Dialog(onDismissRequest = onClose) {
-        Surface(shape = MaterialTheme.shapes.large, modifier = modifier.semantics { testTagsAsResourceId = true }) {
-            Column(Modifier.padding(Space.md), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-                CardTitle(replay.title)
-                Text(replay.outcome, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.testTag("shopday_replay_outcome"))
-                Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
-                    replay.rounds.forEachIndexed { i, round ->
-                        Quiet("${i + 1}. ${round.attacker} ${round.note} (${round.damage})", Modifier.padding(top = 2.dp))
-                    }
+        FramedPanel(modifier = modifier.semantics { testTagsAsResourceId = true }) {
+            CardTitle(replay.title)
+            Text(replay.outcome, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = Space.xs).testTag("shopday_replay_outcome"))
+            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
+                replay.rounds.forEachIndexed { i, round ->
+                    Quiet("${i + 1}. ${round.attacker} ${round.note} (${round.damage})", Modifier.padding(top = 2.dp))
                 }
-                Button(onClick = onClose, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("shopday_replay_close")) { Text("Close") }
             }
+            PrimaryActionButton("Close", onClose, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("shopday_replay_close"))
         }
     }
 }
@@ -189,7 +186,7 @@ fun BlessingChoices(choices: List<BlessingUi>, onChoose: (BlessingId) -> Unit, m
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         CardTitle("The town offers a blessing")
         choices.forEach { b ->
-            OutlinedButton(onClick = { onChoose(b.id) }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("blessing_${b.id.value}")) {
+            OutlinedButton(onClick = { onChoose(b.id) }, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("blessing_${b.id.value}")) {
                 Sprites.blessing(b.id)?.let { PixelSprite(it, wholeScale(48, 40.dp), Modifier.clearAndSetSemantics {}); Spacer(Modifier.width(12.dp)) }
                 Column(Modifier.weight(1f)) {
                     Text(b.name, style = MaterialTheme.typography.titleSmall)
@@ -203,10 +200,10 @@ fun BlessingChoices(choices: List<BlessingUi>, onChoose: (BlessingId) -> Unit, m
 /** Shown on a cold start with an unwatched day: the day is already saved, so both choices are safe. */
 @Composable
 fun ResumePrompt(day: Int, took: Int?, onResume: () -> Unit, onSkip: () -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxWidth().padding(Space.md), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+    FramedPanel(modifier = modifier.fillMaxWidth().padding(Space.md)) {
         CardTitle("Day $day is done and saved.")
-        took?.let { Body("The shop took $it gold.") }
-        Button(onClick = onResume, modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag("shopday_resume")) { Text("Resume the day", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
-        OutlinedButton(onClick = onSkip, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("shopday_resume_skip")) { Text("Skip to tomorrow") }
+        took?.let { Body("The shop took $it gold.", Modifier.padding(top = Space.sm)) }
+        PrimaryActionButton("Resume the day", onResume, Modifier.fillMaxWidth().padding(top = Space.md).testTag("shopday_resume"))
+        OutlinedButton(onClick = onSkip, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("shopday_resume_skip")) { Text("Skip to tomorrow") }
     }
 }

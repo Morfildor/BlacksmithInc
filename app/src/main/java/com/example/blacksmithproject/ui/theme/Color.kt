@@ -2,33 +2,30 @@ package com.example.blacksmithproject.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Warm forge palette: ember (primary), iron (secondary), brass (tertiary), parchment/soot surfaces.
-val Ember40 = Color(0xFFB4451A)
-val Ember80 = Color(0xFFFF9A5C)
-val EmberContainerLight = Color(0xFFFFD9C7)
-val EmberContainerDark = Color(0xFF7A2F0E)
-val Iron40 = Color(0xFF5B6068)
-val Iron80 = Color(0xFFB8BEC8)
-val IronContainerLight = Color(0xFFDADEE4)
-val IronContainerDark = Color(0xFF44494F)
-val Brass40 = Color(0xFF7A5C2E)
-val Brass80 = Color(0xFFE0B870)
-val BrassContainerLight = Color(0xFFF2E1B8)
-val BrassContainerDark = Color(0xFF5A4116)
+// Dark forge palette: night-navy grounds, cream text, ember (primary), bronze outlines, gold accents.
+val Ember = Color(0xFFFF9A5C)          // 8.3:1 on ForgePanel
+val EmberContainer = Color(0xFF6E2C10)
+val Iron = Color(0xFFB8BEC8)
+val Gold = Color(0xFFE8BC5A)           // headings, title plates, the primary action; 9.8:1 on ForgePanel
+val GoldBright = Color(0xFFFFE29A)
+val GoldDeep = Color(0xFF8A5E14)
+val Bronze = Color(0xFFA8803C)         // frames and outlines; 4.8:1 on ForgePanel
+val BronzeDeep = Color(0xFF4A3A1E)     // hairlines, dividers
+val BronzeContainer = Color(0xFF45371A)
 
-val ParchmentBg = Color(0xFFF3E6CF)
-val ParchmentSurface = Color(0xFFFAF1E0)
-val ParchmentVariant = Color(0xFFE8D9BE)
+val ForgeNight = Color(0xFF0C0F15)     // the ground behind every panel
+val ForgePanel = Color(0xFF151A23)     // panels, sheets, dialogs
+val ForgePanelRaised = Color(0xFF1D2330)
+val ForgeSlot = Color(0xFF090B10)      // sprite slots, empty bar segments
+val Cream = Color(0xFFF2E8D0)          // body text; 14.3:1 on ForgePanel
+val CreamMuted = Color(0xFFC9BFA8)     // secondary text; 9.6:1 on ForgePanel
+
+/** A buff and a flaw, light enough to read as text on a panel (10.6:1 and 8.6:1); always shown with "+" or "−" and words. */
+val BuffGreen = Color(0xFF8FDC8C)
+val FlawRed = Color(0xFFFF9C8C)
+
 val Ink = Color(0xFF2B2118)
-val InkMuted = Color(0xFF4A3B2C)  // 7.6:1 on parchment surface; secondary text stays readable
-val OutlineLight = Color(0xFF7D6C54)
-
-val SootBg = Color(0xFF1B1512)
-val SootSurface = Color(0xFF241C17)
-val SootVariant = Color(0xFF3A2F27)
-val Parchment = Color(0xFFF1E6D2)
-val ParchmentMuted = Color(0xFFCDBFA6)
-val OutlineDark = Color(0xFF8C7B66)
+val InkMuted = Color(0xFF4A3B2C)
 
 /** The Gazette is printed on paper in both themes, so its ink colours are fixed. */
 val PaperInk = Ink

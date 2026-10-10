@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -12,7 +13,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TextButton
@@ -43,6 +43,7 @@ import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.shopday.ShopDayHost
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.LegacyProfile
 
@@ -93,16 +94,20 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            ForgeScene(heat = 1f, reducedMotion = true, modifier = Modifier.padding(bottom = Space.md))
-            Text("Tiny Blacksmith", style = MaterialTheme.typography.headlineLarge, textAlign = TextAlign.Center)
-            Text(status, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = Space.sm))
-            legacy?.let { Secondary("Legacy points: ${it.points} · eras survived: ${it.eras.size}", Modifier.padding(top = Space.xs)) }
-            Button(onClick = onPrimary, enabled = enabled, modifier = Modifier.padding(top = Space.lg).widthIn(min = 220.dp).heightIn(min = 52.dp).testTag(primaryTag)) { Text(primary, style = MaterialTheme.typography.titleMedium) }
-            if (onAbandon != null) OutlinedButton(onClick = { confirmAbandon = true }, enabled = enabled, modifier = Modifier.padding(top = Space.sm).widthIn(min = 220.dp).heightIn(min = 48.dp).testTag("menu_abandon")) { Text("Abandon run") }
+            Text("Tiny Blacksmith", style = MaterialTheme.typography.headlineLarge, color = Gold, textAlign = TextAlign.Center)
+            FramedPanel(modifier = Modifier.padding(top = Space.md).widthIn(max = 420.dp)) {
+                ForgeScene(heat = 1f, reducedMotion = true)
+                Text(status, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = Space.md))
+                legacy?.let { Secondary("Legacy points: ${it.points} · eras survived: ${it.eras.size}", Modifier.align(Alignment.CenterHorizontally).padding(top = Space.xs)) }
+                PrimaryActionButton(primary, onPrimary, Modifier.fillMaxWidth().padding(top = Space.md).testTag(primaryTag), enabled)
+                if (onAbandon != null) OutlinedButton(onClick = { confirmAbandon = true }, enabled = enabled, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("menu_abandon")) { Text("Abandon run") }
+            }
         }
         IconButton(onClick = onSettings, modifier = Modifier.align(Alignment.TopEnd).padding(Space.sm).size(48.dp).testTag("menu_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings") }
     }
+    // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     if (confirmAbandon && onAbandon != null) AlertDialog(
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
         onDismissRequest = { confirmAbandon = false },
         title = { Text("Abandon this run?") },
         text = { Text("The run is discarded and cannot be recovered. It earns no legacy points, and its discoveries, legends and heroes are not recorded.") },
