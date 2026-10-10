@@ -24,12 +24,12 @@ import com.tinyblacksmith.core.shopday.ShopDayScript
 
 /** Beat lengths at 1x in milliseconds (plan 5.3). PROPOSED playtest values; 2x halves them, Tap has none. */
 object BeatLength {
-    const val OPEN = 1500
-    const val ARRIVE = 1200
-    const val BROWSE = 1200
-    const val DECIDE = 1600
+    const val OPEN = 1200
+    const val ARRIVE = 1000
+    const val BROWSE = 900
+    const val DECIDE = 1500
     const val TRANSACT = 1600
-    const val TALLY = 2500
+    const val TALLY = 2000
     const val CLOSE = 2000
     const val AFTERMATH = 2000
 }
