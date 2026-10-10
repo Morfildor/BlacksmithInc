@@ -47,7 +47,7 @@ object Labels {
         Battle.SiegeOdds.STRONG -> "Strong position"
         Battle.SiegeOdds.EVEN -> "Evenly matched"
         Battle.SiegeOdds.OUTMATCHED -> "Outmatched"
-        Battle.SiegeOdds.DIRE -> "Grave danger"
+        Battle.SiegeOdds.DIRE -> "Dire odds"   // never "grave": Grave is an element, and "Resists Grave · Grave danger" read as one fact
     }
 
     fun rarity(r: Rarity): String = when (r) {

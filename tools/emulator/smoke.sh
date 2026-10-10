@@ -63,7 +63,7 @@ tap_id forge_weapon || exit 1
 wait_text "Suggested price" && shot 04_result
 tap_id reveal_list || exit 1
 tap_id nav_shop; $ADB shell sleep 1; shot 05_shop_listed
-has "Seats 6 · shelf 1 of 8" && echo "CHECK shelf listed: ok" || echo "CHECK shelf listed: FAIL"
+has "Shelf 1 of 8" && echo "CHECK shelf listed: ok" || echo "CHECK shelf listed: FAIL"
 tap_id end_day || exit 1
 # The shop day opens on its first card: step a few cards, skip to the day's last card, read the Gazette over it (closing
 # it does not begin the next day), then begin the next day.

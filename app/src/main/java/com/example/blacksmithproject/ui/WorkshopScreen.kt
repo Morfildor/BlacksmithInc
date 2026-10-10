@@ -150,6 +150,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     onOpenStorage = { storageOpen = true },
                     onOpenNews = { vm.selectRecords(RecordsPage.GAZETTE) },
                     tip = tip?.let { { TipBanner(it, vm) } },
+                    // On the day itself the siege has its own row under the counter, so the strip does not say it twice.
+                    strip = if (s.shop.threat?.today == true) null else ({ ThreatStrip(s, "shop_threat", s.shop.threat?.note) { vm.selectDest(Dest.TOWN) } }),
                     onOpenSupplies = { suppliesOpen = true },
                 )
                 Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesFocus = it?.value; suppliesOpen = true }, onOpenBoard = { boardOpen = true }, onEndDay = { workshopHaptics.play(Moment.END_DAY); vm.endDay() })
@@ -247,7 +249,7 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
     }
 }
 
-/** The three segments of Records (News, Journal, Legacy) as one row of exclusive buttons. */
+/** The three segments of Records (News, Notebook, Legacy) as one row of exclusive buttons. */
 @Composable
 fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier: Modifier = Modifier) {
     val pages = RecordsPage.entries
@@ -258,7 +260,7 @@ fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier:
                 onClick = { onSelect(p) },
                 shape = SegmentedButtonDefaults.itemShape(i, pages.size, MaterialTheme.shapes.small),
                 modifier = Modifier.heightIn(min = 48.dp).testTag("page_${p.name.lowercase()}"),
-            ) { Text(when (p) { RecordsPage.GAZETTE -> "News"; RecordsPage.JOURNAL -> "Journal"; RecordsPage.LEGACY -> "Legacy" }, maxLines = 1) }
+            ) { Text(when (p) { RecordsPage.GAZETTE -> "News"; RecordsPage.JOURNAL -> "Notebook"; RecordsPage.LEGACY -> "Legacy" }, maxLines = 1) }
         }
     }
 }

@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -55,6 +56,7 @@ import com.example.blacksmithproject.ui.theme.BuffGreen
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.FlawRed
+import com.example.blacksmithproject.ui.theme.ForgeNight
 import com.example.blacksmithproject.ui.theme.ForgePanel
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
@@ -118,6 +120,13 @@ fun FramedPanel(
             content()
         }
     }
+}
+
+/** A list that goes on under a pinned bar fades into the ground at its foot while there is [more]: a cut row reads as "more below", not as a broken one. */
+fun Modifier.bottomFade(more: Boolean, color: Color = ForgeNight): Modifier = if (!more) this else drawWithContent {
+    drawContent()
+    val h = 28.dp.toPx()
+    drawRect(Brush.verticalGradient(listOf(Color.Transparent, color), startY = size.height - h, endY = size.height), Offset(0f, size.height - h), Size(size.width, h))
 }
 
 /** A row that is a thing of its own (a blade, a request, a door to a sheet): the panel ground inside a plain bronze line, without the corner work of [forgeFrame]. */

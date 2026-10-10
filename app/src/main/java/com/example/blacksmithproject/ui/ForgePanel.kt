@@ -1,5 +1,9 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -124,16 +128,16 @@ fun ForgePanel(
     var follow by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
-        EventStrip(s) { vm.selectDest(Dest.TOWN) }
+        ThreatStrip(s, "forge_threat") { vm.selectDest(Dest.TOWN) }
         val scroll = rememberScrollState()
         // The last choice closes the tray: the finished blade over the anvil comes back into view.
         LaunchedEffect(open) { if (open == null && follow) scroll.animateScrollTo(0) }
-        Column(Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = Space.md).padding(bottom = Space.md)) {
+        Column(Modifier.weight(1f).bottomFade(scroll.canScrollForward).verticalScroll(scroll).padding(horizontal = Space.md).padding(bottom = Space.md)) {
             ForgeHeading(s.shop.requests.size, endDayNote, onOpenBoard, { onOpenSupplies(null) }, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
-            Workbench(bench.title, d, vm.engine.content, compact = open != null)
+            Workbench(bench.title, d, vm.engine.content, compact = open != null, reducedMotion)
             bench.brief?.let { Brief(it, onOpenBoard) { vm.updateDraft { draft -> draft.copy(commissionId = null) } } }
-            SlotRow(bench.slots.take(3), d, engine.content, open) { opened = if (open == it) NO_SLOT else it.name; follow = true }
-            if (bench.slots.size > 3) SlotRow(bench.slots.drop(3), d, engine.content, open) { opened = if (open == it) NO_SLOT else it.name; follow = true }
+            SlotRow(bench.slots.take(3), d, engine.content, open, reducedMotion) { opened = if (open == it) NO_SLOT else it.name; follow = true }
+            if (bench.slots.size > 3) SlotRow(bench.slots.drop(3), d, engine.content, open, reducedMotion) { opened = if (open == it) NO_SLOT else it.name; follow = true }
             if (open != null) {
                 val options = remember(s.state, d, open, s.shop.threat) { engine.forgeOptions(s.state, d, open, s.shop.threat) }
                 Tray(open, options, engine.content, follow, onOpenSupplies, onDone = { opened = NO_SLOT }) { option -> vm.updateDraft { engine.place(it, open, option) }; opened = null; follow = true }
@@ -148,15 +152,16 @@ fun ForgePanel(
 
 /** When the siege comes, who brings it and what it is weak to, and how the forge stands: above the work, in two short lines. */
 @Composable
-private fun EventStrip(s: UiState.Playing, onOpenTown: () -> Unit) {
+internal fun ThreatStrip(s: UiState.Playing, tag: String, note: String? = null, onOpenTown: () -> Unit) {
     val threat = s.shop.threat
-    Column(Modifier.fillMaxWidth().background(SceneDeep).heightIn(min = 48.dp).clickable(onClickLabel = "Open Town", role = Role.Button, onClick = onOpenTown).padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag("forge_threat")) {
+    Column(Modifier.fillMaxWidth().background(SceneDeep).heightIn(min = 48.dp).clickable(onClickLabel = "Open Town", role = Role.Button, onClick = onOpenTown).padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag(tag)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(threat?.let { if (it.warned && !it.today) "Siege approaching · ${it.siege.removePrefix("Siege ")}" else it.siege } ?: "No siege in sight", style = MaterialTheme.typography.titleSmall, color = if (threat?.warned == true) Ember else Cream, modifier = Modifier.weight(1f))
             PixelImage(R.drawable.icon_integrity, wholePixelDp(24, 22.dp), description = null)
             Text("Forge health ${s.state.town.integrity}", style = MaterialTheme.typography.labelMedium, color = Cream)
         }
         listOfNotNull(threat?.matchup, threat?.outlook).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+        note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
     }
 }
 
@@ -173,7 +178,7 @@ private fun ForgeHeading(commissions: Int, endDayNote: String, onOpenBoard: () -
             TextButton(onClick = { more = true }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_more")) { Text("⋯", style = MaterialTheme.typography.titleLarge, color = CreamMuted, modifier = Modifier.semantics { contentDescription = "More" }) }
             DropdownMenu(expanded = more, onDismissRequest = { more = false }, containerColor = ForgePanel) {
                 DropdownMenuItem(text = { Text("Supplies") }, onClick = { more = false; onOpenSupplies() }, modifier = Modifier.testTag("forge_supplies"))
-                DropdownMenuItem(text = { Text("Journal") }, onClick = { more = false; onOpenJournal() }, modifier = Modifier.testTag("forge_journal"))
+                DropdownMenuItem(text = { Text("Notebook") }, onClick = { more = false; onOpenJournal() }, modifier = Modifier.testTag("forge_journal"))
                 DropdownMenuItem(text = { Column { Text("End day"); Text(endDayNote, style = MaterialTheme.typography.bodySmall, color = CreamMuted) } }, enabled = !busy, onClick = { more = false; onEndDay() }, modifier = Modifier.testTag("forge_end_day"))
             }
         }
@@ -186,7 +191,7 @@ private fun ForgeHeading(commissions: Int, endDayNote: String, onOpenBoard: () -
  * a signature) is shown only by the result. [compact] while a tray is open under it, so the choices get the height.
  */
 @Composable
-private fun Workbench(title: String, d: ForgeDraft, content: ContentCatalog, compact: Boolean) {
+private fun Workbench(title: String, d: ForgeDraft, content: ContentCatalog, compact: Boolean, reducedMotion: Boolean) {
     val large = LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenHeightDp < 620
     val height = if (compact) 72.dp else if (large) 88.dp else 132.dp
     val blade = wholePixelDp(56, if (compact || large) 56.dp else 104.dp)
@@ -198,7 +203,7 @@ private fun Workbench(title: String, d: ForgeDraft, content: ContentCatalog, com
                 val core = d.coreId ?: content.materials(MaterialCategory.CORE).first().id
                 PixelImage(
                     Sprites.weapon(family, core, d.augmentId?.let { content.material(it).element }), blade, description = null,
-                    modifier = Modifier.padding(bottom = if (compact || large) 22.dp else 30.dp).alpha(if (d.coreId != null) 1f else 0.55f),
+                    modifier = Modifier.padding(bottom = if (compact || large) 22.dp else 30.dp).alpha(if (d.coreId != null) 1f else 0.55f).landing(Triple(family, d.coreId, d.augmentId), reducedMotion),
                 )
             }
         }
@@ -225,6 +230,22 @@ private fun Brief(b: BriefUi, onOpen: () -> Unit, onClear: () -> Unit) {
     }
 }
 
+/**
+ * A thing just put in its place lands there: it starts a little small and settles. Only on a change the player made
+ * while looking (never when the Forge opens with a recipe already on it), and not at all with reduced motion.
+ */
+@Composable
+private fun Modifier.landing(what: Any?, reducedMotion: Boolean): Modifier {
+    val scale = remember { Animatable(1f) }
+    var shown by remember { mutableStateOf(what) }
+    LaunchedEffect(what) {
+        if (what == shown) return@LaunchedEffect
+        shown = what
+        if (!reducedMotion && what != null) { scale.snapTo(0.6f); scale.animateTo(1f, spring(dampingRatio = 0.45f, stiffness = Spring.StiffnessMedium)) }
+    }
+    return graphicsLayer { scaleX = scale.value; scaleY = scale.value }
+}
+
 private fun slotArt(slot: RecipeSlot, d: ForgeDraft, content: ContentCatalog): Int? = when (slot) {
     RecipeSlot.WEAPON -> d.familyId?.let { Sprites.weapon(it, content.materials(MaterialCategory.CORE).first().id, null) }
     RecipeSlot.METAL -> d.coreId?.let(Sprites::material)
@@ -235,7 +256,7 @@ private fun slotArt(slot: RecipeSlot, d: ForgeDraft, content: ContentCatalog): I
 
 /** The places of the recipe side by side: the thing chosen as an object, its kind over it, its name under it. */
 @Composable
-private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog, open: RecipeSlot?, onToggle: (RecipeSlot) -> Unit) {
+private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog, open: RecipeSlot?, reducedMotion: Boolean, onToggle: (RecipeSlot) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
         slots.forEach { slot ->
             val active = open == slot.slot
@@ -248,7 +269,7 @@ private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog,
                 Text(slot.slot.label, style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
                 Box(Modifier.fillMaxWidth().padding(vertical = 2.dp), contentAlignment = Alignment.Center) {
                     val art = slotArt(slot.slot, d, content)
-                    if (art != null) PixelImage(art, 40.dp, description = null)
+                    if (art != null) PixelImage(art, 40.dp, description = null, modifier = Modifier.landing(slot.value, reducedMotion))
                     else Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) { Text(if (slot.value != null) "✦" else "+", style = MaterialTheme.typography.titleMedium, color = if (slot.value != null) Gold else Bronze) }
                     slot.stock?.let { Text("$it", style = MaterialTheme.typography.labelSmall, color = if (it == 0) FlawRed else CreamMuted, modifier = Modifier.align(Alignment.CenterEnd).background(ForgeSlot, Chip).padding(horizontal = 6.dp, vertical = 4.dp)) }
                 }

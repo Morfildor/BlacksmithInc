@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +38,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.detail.WeaponStatLine
 import com.example.blacksmithproject.ui.detail.rarityColor
 import com.example.blacksmithproject.ui.shopday.BladeUi
@@ -57,11 +59,11 @@ import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponSnapshot
 
 /**
- * The Shop destination: where the day is planned. From the top: the counter with the live shelf and how many it seats,
- * the one lead of the day (under "Siege today" on that day), the shelf rows, the ways into the board, storage and
- * supplies, then the reports: who is buying and yesterday at the counter, folded. Merchandise before reports.
- * One lazy list of keyed rows; data in, events out. [tip] is the first-run banner, shown with the shelf it is
- * about; [more] appends rows.
+ * The Shop destination: where the day is planned. From the top: [strip] (the siege and the forge's health, as on the
+ * Forge), the counter with the shelf and its free places, the one lead of the day (under "Siege today" on that day),
+ * the shelf rows, the ways into the board, storage and supplies, then the reports: who is buying and yesterday at the
+ * counter, folded. Merchandise before reports. One lazy list of keyed rows; data in, events out. [tip] is the first-run
+ * banner about listing, shown until a blade is listed; [more] appends rows.
  */
 @Composable
 fun ShopPanel(
@@ -76,25 +78,25 @@ fun ShopPanel(
     modifier: Modifier = Modifier,
     onOpenSupplies: (() -> Unit)? = null,
     tip: (@Composable () -> Unit)? = null,
+    strip: (@Composable () -> Unit)? = null,
     more: LazyListScope.() -> Unit = {},
 ) {
     val side = Modifier.padding(horizontal = Space.md)
     // A low screen or large text: the scene gives height to the lead, which must be readable without scrolling.
     val short = LocalConfiguration.current.screenHeightDp < 700 || LocalDensity.current.fontScale > 1.15f
-    LazyColumn(modifier.fillMaxSize().testTag("shop_list"), contentPadding = PaddingValues(bottom = Space.lg)) {
+    val list = rememberLazyListState()
+    LazyColumn(modifier.fillMaxSize().bottomFade(list.canScrollForward).testTag("shop_list"), state = list, contentPadding = PaddingValues(bottom = Space.lg)) {
+        strip?.let { item(key = "strip") { it() } }
         item(key = "counter") {
             Column(Modifier.testTag("shop_counter")) {
                 CounterScene(
-                    plate = "Seats ${shop.seats} · shelf ${shop.shelf.size} of ${shop.slots}",
-                    // Under the seats: when the siege comes and what tells against the besieger, as the Forge's plate has it.
-                    // On the day itself the siege has its own row under the counter, so the plate does not say it twice.
-                    detail = shop.threat?.takeIf { !it.today }?.let { listOfNotNull(it.summary + ".", it.note).joinToString(" ") }, customer = null, customerKey = null,
+                    plate = shop.plate, detail = null, customer = null, customerKey = null,
                     reducedMotion = reducedMotion, onOpenHero = {}, backdropHeight = if (short) 56.dp else 88.dp,
                 )
-                // An empty shelf is already on the plate; the band is for blades.
-                if (shop.shelf.isNotEmpty()) ShelfBand(
+                // The shelf as a thing: the blades for sale and, beside them, the places still free.
+                ShelfBand(
                     shop.shelf.map { BladeUi(WeaponSnapshot.of(it.weapon), it.price ?: 0) }, gone = emptySet(), looking = emptySet(), sold = null,
-                    reducedMotion = reducedMotion, onOpenBlade = { onOpenBlade(it.blade.weaponId) },
+                    reducedMotion = reducedMotion, onOpenBlade = { onOpenBlade(it.blade.weaponId) }, slots = shop.slots,
                 )
             }
         }
@@ -111,9 +113,9 @@ fun ShopPanel(
 
         item(key = "shelf") {
             Column(side.testTag("shop_shelf")) {
-                SectionTitle("On the shelf · ${shop.shelf.size} of ${shop.slots}")
-                tip?.invoke()
-                if (shop.shelf.isEmpty()) Secondary("Nothing on display.")
+                // The count is on the counter's plate and the free places are on the shelf: an empty shelf needs no heading here.
+                if (shop.shelf.isEmpty()) tip?.let { Box(Modifier.padding(top = Space.md)) { it() } }
+                else SectionTitle("On the shelf")
             }
         }
         items(shop.shelf, key = { "stock_${it.weapon.id.value}" }) { ShelfRow(it, onOpen = { onOpenBlade(it.weapon.id) }, modifier = side) }
@@ -121,11 +123,11 @@ fun ShopPanel(
         // Commissions and customer wants live on one board; the Shop says how many there are and whether an offer waits.
         item(key = "board") {
             val board = remember(shop.requests, shop.wants) { shop.board() }
-            DoorRow("Commissions & customers", "Open the board", "shop_board", onOpenBoard, side.padding(top = Space.md), detail = listOfNotNull(board.summary, board.pending).joinToString(" · "))
+            DoorRow(R.drawable.icon_action_commission, "Commissions & customers", "Open the board", "shop_board", onOpenBoard, side.padding(top = Space.md), detail = listOfNotNull(board.summary, board.pending).joinToString(" · "))
         }
 
-        item(key = "storage") { DoorRow("Storage · ${shop.storage.size}", "Open storage", "shop_storage", onOpenStorage, side.padding(top = Space.sm)) }
-        if (onOpenSupplies != null) item(key = "supplies") { DoorRow("Supplies and tools", "Open supplies", "shop_supplies", onOpenSupplies, side.padding(top = Space.sm)) }
+        item(key = "storage") { DoorRow(R.drawable.icon_action_storage, "Storage · ${shop.storage.size}", "Open storage", "shop_storage", onOpenStorage, side.padding(top = Space.sm)) }
+        if (onOpenSupplies != null) item(key = "supplies") { DoorRow(R.drawable.icon_action_supplies, "Supplies and tools", "Open supplies", "shop_supplies", onOpenSupplies, side.padding(top = Space.sm)) }
 
         item(key = "demand") {
             Column(side.testTag("shop_demand")) {
@@ -163,11 +165,12 @@ fun ShopPanel(
 
 /** One wide row that opens a sheet. */
 @Composable
-private fun DoorRow(title: String, action: String, tag: String, onOpen: () -> Unit, modifier: Modifier = Modifier, detail: String? = null) {
+private fun DoorRow(icon: Int, title: String, action: String, tag: String, onOpen: () -> Unit, modifier: Modifier = Modifier, detail: String? = null) {
     Row(
         modifier.fillMaxWidth().forgeRow().clickable(onClickLabel = action, role = Role.Button, onClick = onOpen).heightIn(min = 56.dp).padding(horizontal = Space.md).testTag(tag),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        PixelImage(icon, 32.dp, description = null)
         Column(Modifier.weight(1f).padding(vertical = Space.sm)) {
             Text(title, style = MaterialTheme.typography.titleMedium)
             detail?.let { Secondary(it, Modifier.testTag("${tag}_detail")) }

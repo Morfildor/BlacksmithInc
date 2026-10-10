@@ -21,6 +21,23 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class ShopModelTest : ShopDayTestBase() {
 
+    /** The counter's plate says the shelf first, in whole words; what the siege brings is the strip's, not the plate's. */
+    @Test
+    fun theCounterPlateIsTheShelfAndTheDaysCustomers() {
+        val shop = engine.shopUi(stocked)
+        assertEquals("Shelf ${shop.shelf.size} of ${shop.slots} · ${shop.seats} customers a day", shop.plate)
+        assertTrue(shop.shelf.isNotEmpty())
+    }
+
+    /** "Resists Grave · Grave danger" read as one fact: no outlook is worded with an element's name. */
+    @Test
+    fun noOutlookBorrowsAnElementsName() {
+        for (odds in com.tinyblacksmith.core.battle.Battle.SiegeOdds.entries) {
+            val words = com.example.blacksmithproject.ui.Labels.outlook(odds).lowercase().split(' ')
+            for (e in com.tinyblacksmith.core.content.Element.entries) assertTrue("$odds / $e", e.name.lowercase() !in words)
+        }
+    }
+
     /** End Day, skip to the Tomorrow card, begin the next day: the Shop opens on the lead that card showed. Five days running. */
     @Test
     fun theShopOpensOnTheLeadTheTomorrowCardShowed() = vmTest {

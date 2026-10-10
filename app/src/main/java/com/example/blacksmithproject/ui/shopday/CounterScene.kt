@@ -231,11 +231,12 @@ fun ShelfBand(
     reducedMotion: Boolean,
     onOpenBlade: (BladeUi) -> Unit,
     modifier: Modifier = Modifier,
+    slots: Int = 0,
 ) {
     val list = rememberLazyListState()
     val focus = shelf.indexOfFirst { it.blade.weaponId == sold }.takeIf { it >= 0 } ?: shelf.indexOfFirst { it.blade.weaponId in looking }
     LaunchedEffect(focus) { if (focus >= 0) { if (reducedMotion) list.scrollToItem(focus) else list.animateScrollToItem(focus) } }
-    if (shelf.isEmpty()) {
+    if (shelf.isEmpty() && slots == 0) {
         Text("The shelf is bare.", style = MaterialTheme.typography.bodyMedium, color = SceneCream, modifier = modifier.fillMaxWidth().background(SceneInk).padding(horizontal = 12.dp, vertical = 14.dp))
         return
     }
@@ -252,6 +253,11 @@ fun ShelfBand(
                 else -> SlotState.ON_SHELF
             }
             WeaponSlot(b.blade, b.price, state, reducedMotion, onOpen = { onOpenBlade(b) })
+        }
+        // On the Shop the places still free stand beside the blades: how much room is left is seen, not counted.
+        items((slots - shelf.size).coerceAtLeast(0), key = { "free_$it" }) {
+            val side = with(LocalDensity.current) { (56 * wholeScale(56, 64.dp)).toDp() } + 4.dp
+            Box(Modifier.padding(top = 4.dp).size(side).background(SceneInk).border(2.dp, SceneWood1.copy(alpha = 0.45f)).clearAndSetSemantics {})
         }
     }
 }

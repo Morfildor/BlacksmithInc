@@ -135,7 +135,10 @@ data class ShopUi(
     val requestSlots: Int = 1,
     /** What each living hero can pay at the counter today (`Demand.funds`): the count under a price being chosen. */
     val funds: List<Int> = emptyList(),
-)
+) {
+    /** The counter's plate: the shelf first, then how many customers the shop serves in a day. */
+    val plate: String get() = "Shelf ${shelf.size} of $slots · $seats customers a day"
+}
 
 /**
  * The request a fresh blade was forged for, as the forge result shows it. [fit] is about that blade alone
