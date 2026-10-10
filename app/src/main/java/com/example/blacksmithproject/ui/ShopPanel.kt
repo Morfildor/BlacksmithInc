@@ -38,6 +38,7 @@ import com.example.blacksmithproject.ui.shopday.PersonChip
 import com.example.blacksmithproject.ui.shopday.ShelfBand
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.BuffGreen
+import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
@@ -78,7 +79,9 @@ fun ShopPanel(
         item(key = "counter") {
             Column(Modifier.testTag("shop_counter")) {
                 CounterScene(
-                    plate = "Seats ${shop.seats} · shelf ${shop.shelf.size} of ${shop.slots}", detail = null, customer = null, customerKey = null,
+                    plate = "Seats ${shop.seats} · shelf ${shop.shelf.size} of ${shop.slots}",
+                    // Under the seats: when the siege comes and what tells against the besieger, as the Forge's plate has it.
+                    detail = shop.threat?.let { listOfNotNull(it.plate, it.note).joinToString(" ") }, customer = null, customerKey = null,
                     reducedMotion = reducedMotion, onOpenHero = {}, backdropHeight = if (short) 56.dp else 88.dp,
                 )
                 // An empty shelf is already on the plate; the band is for blades.
@@ -91,7 +94,7 @@ fun ShopPanel(
         item(key = "lead") { LeadCard(shop.lead, onAct = { onLead(shop.lead) }, modifier = side.padding(top = Space.md)) }
 
         if (shop.requests.isNotEmpty()) {
-            item(key = "requests") { SectionTitle("Requests", side.testTag("shop_requests")) }
+            item(key = "requests") { SectionTitle("Requests · ${shop.requests.size} of ${shop.requestSlots} open", side.testTag("shop_requests")) }
             items(shop.requests, key = { "request_${it.id.value}" }) { RequestCard(it, busy, onOpenHero, onAnswer, onForgeThis, side) }
         }
 
@@ -147,6 +150,7 @@ private fun DoorRow(title: String, action: String, tag: String, onOpen: () -> Un
 internal fun RequestCard(r: RequestUi, busy: Boolean, onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, onForgeThis: (CommissionId) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().padding(horizontal = Space.md, vertical = Space.sm)) {
         Text(r.asks, style = MaterialTheme.typography.titleMedium)
+        r.why?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = CreamMuted, modifier = Modifier.testTag("request_why_${r.id.value}")) }
         PersonChip(r.buyer, onOpenHero = { face -> face.heroId?.let(onOpenHero) }, note = r.terms)
         r.readiness?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs)) }
         r.fits.forEach { Secondary(it) }
@@ -201,13 +205,14 @@ internal fun StockRow(stock: StockUi, busy: Boolean, onOpen: () -> Unit, onList:
     val listBelow = LocalDensity.current.fontScale > 1.3f
     Column(
         modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().clickable(onClickLabel = "Open ${w.name}", onClick = onOpen).testTag("stock_${w.id.value}").padding(horizontal = 12.dp, vertical = 10.dp)
-            .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${stock.summary}, ${stock.price?.let { "$it gold" } ?: "in storage"}. Tap for details and price." },
+            .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${stock.summary}, ${stock.price?.let { "$it gold" } ?: "in storage"}.${stock.threat?.let { " ${it.label}." } ?: ""} Tap for details and price." },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(2.dp)) { WeaponSprite(w, size = 44.dp) }
             Column(Modifier.weight(1f)) {
                 Text(w.name + (w.title?.let { " · \"$it\"" } ?: ""), style = MaterialTheme.typography.titleSmall, color = rarityColor(w.rarity))
                 WeaponStatLine(w.rarity, stock.stats, stock.buffs, stock.flaws)
+                stock.threat?.let { Text("${it.kind.sign} ${it.label}", style = MaterialTheme.typography.bodySmall, color = it.kind.color) }
                 stock.favoured?.let { Secondary(it) }
             }
             if (stock.price != null) Text("${stock.price} g", style = MaterialTheme.typography.titleMedium, color = Gold)

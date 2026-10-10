@@ -100,7 +100,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
         val short = LocalConfiguration.current.screenHeightDp < 700 || LocalDensity.current.fontScale > 1.15f
         Box(Modifier.fillMaxWidth().heightIn(min = if (short) 72.dp else 120.dp).testTag("forge_backdrop")) {
             Backdrop(R.drawable.bg_counter_forge, Modifier.matchParentSize().clearAndSetSemantics {}, sink = 0.2f)
-            ThreatLine(s, vm, Modifier.align(Alignment.BottomStart).background(SceneDeep.copy(alpha = 0.88f)))
+            ThreatLine(s, Modifier.align(Alignment.BottomStart).background(SceneDeep.copy(alpha = 0.88f)))
         }
         ForgeSummary(s, vm)
 
@@ -209,17 +209,10 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
 
 /** Forge integrity and the next siege: the run-over condition belongs with the forge, not in the global bar. */
 @Composable
-private fun ThreatLine(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier) {
+private fun ThreatLine(s: UiState.Playing, modifier: Modifier = Modifier) {
     val st = s.state
-    val faction = st.factions.values.maxByOrNull { it.pressure }
-    val daysLeft = st.town.nextSiegeDay - st.day
-    val siege = when {
-        daysLeft <= 0 -> "siege today"
-        daysLeft == 1 -> "siege tomorrow"
-        else -> "siege in $daysLeft days"
-    }
-    // The leader can change day to day; "lead" says it is a standing, not a promise. Town carries the descriptor.
-    val pressure = faction?.let { f -> vm.engine.content.faction(f.id).let { def -> "${def.name} lead" + (def.weakTo?.let { ", weak to ${it.name.lowercase()}" } ?: "") } } ?: "the roads are quiet"
+    // The besieger as things stand (the leader can change day to day) and what bites it or glances off: core's own words.
+    val threat = s.shop.threat?.plate ?: "The roads are quiet"
     Row(
         modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
@@ -229,10 +222,11 @@ private fun ThreatLine(s: UiState.Playing, vm: GameViewModel, modifier: Modifier
         Text(
             buildAnnotatedString {
                 withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append("Forge ${st.town.integrity}") }
-                append(" · ${siege.replaceFirstChar { it.uppercase() }} · $pressure")
+                append(" · $threat")
             },
             style = MaterialTheme.typography.labelMedium,
             color = SceneCream,
+            modifier = Modifier.testTag("forge_threat"),
         )
     }
 }
@@ -261,6 +255,7 @@ private fun Wanted(s: UiState.Playing, vm: GameViewModel) {
             Column(Modifier.weight(1f)) {
                 Text(r.asks, style = MaterialTheme.typography.bodyMedium, fontWeight = if (chosen) FontWeight.SemiBold else null)
                 Secondary("${r.buyer.name} · ${r.terms}")
+                r.why?.let { Secondary(it) }
             }
             if (chosen) TextButton(onClick = { vm.updateDraft { it.copy(commissionId = null) } }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Forging this ✓") }
             else TextButton(onClick = { vm.forgeFor(r.id) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_this_${r.id.value}")) { Text("Forge this") }
@@ -378,20 +373,31 @@ private fun MaterialChips(
 ) {
     val materials = vm.engine.content.materials(category)
     val missing = materials.filter { (s.state.materials[it.id] ?: 0) == 0 }
+    // An element the besieger is weak to or resists: its chip carries the sign, and the words stand once under the chips.
+    val marks = s.shop.threat?.marks.orEmpty()
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         if (noneLabel != null) FilterChip(selected = selected == null, onClick = { onPick(null) }, label = { Text(noneLabel) }, modifier = Modifier.heightIn(min = 48.dp))
         materials.forEach { m ->
             val n = s.state.materials[m.id] ?: 0
             val reason = if (n == 0) vm.describe(GameError.MissingMaterial(m.id)) else null
+            val mark = m.element?.let { marks[it] }
             FilterChip(
                 selected = selected == m.id,
                 enabled = n > 0,
                 onClick = { onPick(m.id) },
                 leadingIcon = Sprites.material(m.id)?.let { res -> { PixelImage(res, 20.dp, description = null) } },
+                trailingIcon = mark?.let { { Text(it.kind.sign, style = MaterialTheme.typography.titleSmall, color = it.kind.color) } },
                 label = { Text(if (n > 0) "${m.name} ×$n" else m.name) },
-                modifier = Modifier.heightIn(min = 48.dp).semantics { if (reason != null) contentDescription = "${m.name}: $reason" },
+                modifier = Modifier.heightIn(min = 48.dp).semantics {
+                    if (reason != null) contentDescription = "${m.name}: $reason"
+                    else if (mark != null) contentDescription = "${m.name}, $n in stock. ${mark.label}"
+                },
             )
         }
+    }
+    materials.mapNotNull { m -> m.element?.takeIf { it in marks } }.distinct().forEach { e ->
+        val mark = marks.getValue(e)
+        Text("${mark.kind.sign} ${e.name.lowercase().replaceFirstChar { it.uppercase() }}: ${mark.label}", style = MaterialTheme.typography.bodySmall, color = mark.kind.color, modifier = Modifier.padding(top = Space.xs).testTag("forge_mark_${e.name.lowercase()}"))
     }
     if (missing.isNotEmpty()) {
         Secondary("Out of stock: ${missing.joinToString { it.name }}. Buy more in Supplies.", Modifier.padding(top = Space.sm))

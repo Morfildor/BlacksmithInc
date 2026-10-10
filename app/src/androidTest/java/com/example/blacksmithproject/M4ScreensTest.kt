@@ -2,24 +2,38 @@ package com.example.blacksmithproject
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.blacksmithproject.ui.ForgePanel
 import com.example.blacksmithproject.ui.ShopPanel
+import com.example.blacksmithproject.ui.threatUi
 import com.example.blacksmithproject.ui.detail.HeroDetailContent
 import com.example.blacksmithproject.ui.detail.heroDetail
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.theme.BlacksmithProjectTheme
+import com.tinyblacksmith.core.content.MaterialCategory
+import com.tinyblacksmith.core.model.Commission
+import com.tinyblacksmith.core.model.CommissionId
+import com.tinyblacksmith.core.model.CommissionKind
+import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.Want
 import com.tinyblacksmith.core.model.WeaponFamilyId
+import com.tinyblacksmith.core.persistence.DayCursor
+import com.tinyblacksmith.core.persistence.SaveCodec
 import com.tinyblacksmith.core.shopday.Lines
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -65,6 +79,44 @@ class M4ScreensTest {
         compose.onNodeWithTag("want_answered_${hero.id.value}").assertDoesNotExist()
         compose.onNodeWithTag("forge_want_${hero.id.value}").performClick()
         assertEquals(family, forgedFamily)
+    }
+
+    @Test
+    fun theShopPlateSaysTheBesiegerAndARequestSaysWhy() {
+        val buyer = morning.aliveHeroes().first()
+        val asked = Commission(CommissionId("why1"), buyer.id, engine.content.families.first().id, 40, 80, morning.day, morning.day + 3, CommissionStatus.OFFERED, kind = CommissionKind.SIEGE_PREP)
+        val state = morning.copy(commissions = mapOf(asked.id to asked))
+        showShop(state)
+        compose.onNodeWithText(engine.threatUi(state)!!.plate, substring = true).assertIsDisplayed()
+        compose.onNodeWithTag("request_why_why1", useUnmergedTree = true).assertTextEquals(Lines.commissionWhy(asked, state)!!)
+    }
+
+    /** The Forge over a ViewModel on [state], opened on planning. */
+    private fun showForge(state: GameState): GameViewModel {
+        val repo = MemoryRepository(SaveCodec.encodeRun(state), SaveCodec.encodeLegacy(state.legacy), state.lastResolution?.let { DayCursor(it.commandId.value, DayCursor.Stage.DONE).encode() })
+        lateinit var vm: GameViewModel
+        compose.runOnUiThread { vm = GameViewModel(engine, GameSession(engine, repo), QuietSettings(), SavedStateHandle()) }
+        compose.waitUntil(10_000) { vm.ui.value is UiState.Playing }
+        compose.setContent {
+            BlacksmithProjectTheme {
+                val ui by vm.ui.collectAsState()
+                (ui as? UiState.Playing)?.let { Box(Modifier.size(360.dp, 2400.dp)) { ForgePanel(it, vm, reducedMotion = true, tip = null) } }
+            }
+        }
+        return vm
+    }
+
+    @Test
+    fun theForgeMarksTheElementsTheBesiegerCaresAbout() {
+        val threat = engine.threatUi(morning)!!
+        val vm = showForge(morning)
+        compose.onNodeWithTag("forge_threat", useUnmergedTree = true).assertTextContains(threat.plate, substring = true)
+        // With a family and a core chosen the augment step is the open one: its chips carry the marks.
+        compose.runOnUiThread { vm.updateDraft { it.copy(familyId = engine.content.families.first().id, coreId = engine.content.materials(MaterialCategory.CORE).first().id) } }
+        compose.waitForIdle()
+        for ((element, mark) in threat.marks) {
+            compose.onNodeWithTag("forge_mark_${element.name.lowercase()}", useUnmergedTree = true).assertTextContains(mark.label, substring = true)
+        }
     }
 
     @Test
