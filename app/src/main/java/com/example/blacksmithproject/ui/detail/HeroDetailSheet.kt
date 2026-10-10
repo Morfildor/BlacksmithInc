@@ -51,6 +51,7 @@ import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.VisitKind
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponSnapshot
+import com.tinyblacksmith.core.shopday.Lines as ShopLines
 
 /**
  * A hero as the sheet shows them. When a visit snapshot was supplied and the hero has changed since (or is gone),
@@ -67,6 +68,8 @@ data class HeroDetail(
     val lineage: String?,
     /** Fame and deeds in one line; null for a hero who is no longer in the save. */
     val deeds: String?,
+    /** The blade they left without and still ask for, in the words of `Lines.want`; null without a standing want. */
+    val want: String?,
     val counter: List<Fact>,
     val now: List<Fact>,
     /** What they bought, ordered and refused at this shop, newest first. */
@@ -114,6 +117,7 @@ fun GameEngine.heroDetail(state: GameState, heroId: HeroId, snapshot: CustomerSn
         marker = hero?.let { Sprites.marker(it.fate) },
         lineage = hero?.descendantOf?.let { "Of $it's line" },
         deeds = hero?.let { "Fame ${it.fame} · ${it.victories} ${if (it.victories == 1) "victory" else "victories"} · ${it.kills} ${if (it.kills == 1) "kill" else "kills"}" },
+        want = hero?.takeIf { it.isAlive }?.let { ShopLines.want(it, content) },
         counter = if (differs) counter else emptyList(),
         now = now,
         shop = (refusals + dealings).sortedByDescending { it.first }.map { it.second },
@@ -187,6 +191,7 @@ fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenIt
                     detail.deeds?.let { Secondary(it) }
                 }
             }
+            detail.want?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("hero_want")) }
             FactBlock(AT_THE_COUNTER.takeIf { detail.counter.isNotEmpty() }, detail.counter, "sheet_counter", onOpenHero, onOpenItem)
             FactBlock(NOW.takeIf { detail.counter.isNotEmpty() }, detail.now, "sheet_now", onOpenHero, onOpenItem)
         }

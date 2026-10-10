@@ -20,7 +20,8 @@ fun leadActionLabel(kind: LeadKind): String? = when (kind) {
     LeadKind.CHOOSE_BLESSING -> "See the blessings"
     LeadKind.LIST_STOCK -> "Open storage"
     LeadKind.PRICES_TOO_HIGH -> "Open the cheapest blade"
-    LeadKind.ANSWER_REQUEST, LeadKind.ANSWER_WANT -> null
+    LeadKind.ANSWER_WANT -> "Forge this"
+    LeadKind.ANSWER_REQUEST -> null
 }
 
 /**

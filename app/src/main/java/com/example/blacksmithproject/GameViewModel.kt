@@ -350,6 +350,8 @@ class GameViewModel(
         val augment = augments.firstOrNull { (run.materials[it.id] ?: 0) > 0 } ?: augments.firstOrNull()
         edit { it.copy(dest = Dest.FORGE, draft = it.draft.copy(familyId = asked.familyId, augmentId = augment?.id ?: it.draft.augmentId, commissionId = id)) }
     }
+    /** "Forge this" on a standing want (the Shop's lead, "Who is buying", the Forge): the forge opens with the family the hero left without. */
+    fun forgeFamily(id: WeaponFamilyId) = edit { it.copy(dest = Dest.FORGE, draft = it.draft.copy(familyId = id, commissionId = null)) }
     fun dismissReveal() = edit { it.copy(revealWeaponId = null) }
     fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet) }
     fun closeSheet() = edit { it.copy(sheet = null) }

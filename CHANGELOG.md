@@ -8,6 +8,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
+- "Who is buying" lists every hero who left without the blade they came for ("Wren Kestrel wants a bow; can spend about 90 gold."), with "Forge this" (the forge opens on that family) or a mark once a blade on the shelf answers it. The same line is on the hero's sheet and on the Forge, and when it is the day's lead the lead has the "Forge this" button.
 - Main menu: the game opens on a menu with New game or Continue run, Abandon run (discards the run after a confirmation, earning nothing) and a Settings icon in the corner; Settings in the workshop has a "Main menu" entry to return to it.
 - A save that cannot be opened no longer crashes the game. A recovery screen says what happened and what is safe, and
   offers Try again or, for a damaged or incompatible run, Start over (the unreadable run is kept as a backup on the
