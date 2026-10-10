@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.blacksmithproject.Dest
 import com.example.blacksmithproject.GameViewModel
-import com.example.blacksmithproject.Panel
+import com.example.blacksmithproject.RecordsPage
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
@@ -61,8 +61,10 @@ import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.detail.toCommand
 import com.example.blacksmithproject.ui.detail.weaponSnapshot
 import com.example.blacksmithproject.ui.theme.Space
+import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.HeroId
+import com.tinyblacksmith.core.shopday.LeadKind
 
 /**
  * One portrait workshop with four destinations (plan 1.2) and a settings sheet behind a gear. Chrome is deliberately
@@ -75,6 +77,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
     val seenTips by vm.settings.seenTips.collectAsStateWithLifecycle(initialValue = Tips.ALL)
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
+    var storageOpen by rememberSaveable { mutableStateOf(false) }
     // Back returns to Shop from any other destination; on Shop it is not handled here, so it leaves the app.
     BackHandler(enabled = s.dest != Dest.SHOP) { vm.back() }
     Scaffold(
@@ -88,31 +91,46 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
         Column(Modifier.padding(padding).fillMaxSize()) {
             TopBar(s, onSettings = { settingsOpen = true })
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            // Each tip belongs to one page and shows one at a time; dismissal lives in settings.
-            val tip = Tips.forPanel(s.panel).firstOrNull { it.id !in seenTips }
+            // Each tip belongs to one destination and shows one at a time; dismissal lives in settings.
+            val tip = Tips.forDest(s.dest).firstOrNull { it.id !in seenTips }
             when (s.dest) {
+                Dest.SHOP -> ShopPanel(
+                    s.shop, s.busy, reducedMotion,
+                    onLead = { lead ->
+                        when (lead.kind) {
+                            LeadKind.CHOOSE_BLESSING -> vm.reopenBlessingOffer()
+                            LeadKind.LIST_STOCK -> storageOpen = true
+                            LeadKind.PRICES_TOO_HIGH -> lead.weaponId?.let { vm.openSheet(Sheet.Item(it)) }
+                            else -> vm.selectDest(Dest.FORGE)
+                        }
+                    },
+                    onOpenBlade = { vm.openSheet(Sheet.Item(it)) },
+                    onOpenHero = { vm.openSheet(Sheet.Hero(it)) },
+                    onAnswer = { id, accept -> vm.dispatch(if (accept) Command.AcceptCommission(id) else Command.DeclineCommission(id)) },
+                    onOpenStorage = { storageOpen = true },
+                    onOpenNews = { vm.selectRecords(RecordsPage.GAZETTE) },
+                    tip = tip?.let { { TipBanner(it, vm) } },
+                    more = { supplierItems(s, vm) },
+                )
                 Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip)
                 Dest.RECORDS -> RecordsPanel(s, vm)
-                else -> {
-                    // Each page keeps its own scroll position; switching pages must not land mid-list.
-                    val scroll = remember(s.panel) { ScrollState(0) }
-                    Column(Modifier.fillMaxWidth().verticalScroll(scroll).padding(horizontal = Space.md, vertical = Space.sm)) {
-                        tip?.let { TipBanner(it, vm) }
-                        if (s.dest == Dest.SHOP) SegmentRow(listOf(Panel.HOME, Panel.MARKET), s.panel, vm::selectPanel)
-                        when (s.panel) {
-                            Panel.HOME -> HomePanel(s, vm)
-                            Panel.MARKET -> MarketPanel(s, vm)
-                            Panel.TOWN -> TownPanel(s, vm)
-                            else -> Unit
-                        }
-                        Spacer(Modifier.heightIn(min = Space.lg))
-                    }
+                Dest.TOWN -> Column(Modifier.fillMaxWidth().verticalScroll(remember { ScrollState(0) }).padding(horizontal = Space.md, vertical = Space.sm)) {
+                    TownPanel(s, vm)
+                    Spacer(Modifier.heightIn(min = Space.lg))
                 }
             }
         }
     }
     val haptics by vm.settings.haptics.collectAsStateWithLifecycle(initialValue = false)
     if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, haptics, vm::setHaptics, onDismiss = { settingsOpen = false }, onMainMenu = { settingsOpen = false; onMainMenu() })
+    if (storageOpen) {
+        StorageSheet(
+            s.shop.storage, shelfFree = s.shop.slots - s.shop.shelf.size, busy = s.busy,
+            onOpenBlade = { vm.openSheet(Sheet.Item(it)) },
+            onList = { id, price -> vm.dispatch(Command.ToggleShelf(id, true, price)) },
+            onDismiss = { storageOpen = false },
+        )
+    }
     s.sheet?.let { DetailSheet(s, it, vm) }
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)
@@ -165,9 +183,10 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
     }
 }
 
-/** The pages of a destination as one row of exclusive buttons (Shop: Home and Market; Records: News, Journal, Legacy). */
+/** The three segments of Records (News, Journal, Legacy) as one row of exclusive buttons. */
 @Composable
-fun SegmentRow(pages: List<Panel>, selected: Panel, onSelect: (Panel) -> Unit, modifier: Modifier = Modifier) {
+fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier: Modifier = Modifier) {
+    val pages = RecordsPage.entries
     SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth().padding(bottom = Space.sm)) {
         pages.forEachIndexed { i, p ->
             SegmentedButton(
@@ -175,7 +194,7 @@ fun SegmentRow(pages: List<Panel>, selected: Panel, onSelect: (Panel) -> Unit, m
                 onClick = { onSelect(p) },
                 shape = SegmentedButtonDefaults.itemShape(i, pages.size),
                 modifier = Modifier.heightIn(min = 48.dp).testTag("page_${p.name.lowercase()}"),
-            ) { Text(panelName(p), maxLines = 1) }
+            ) { Text(when (p) { RecordsPage.GAZETTE -> "News"; RecordsPage.JOURNAL -> "Journal"; RecordsPage.LEGACY -> "Legacy" }, maxLines = 1) }
         }
     }
 }
@@ -191,7 +210,7 @@ object Tips {
     val MARKET = Tip("market", "Heroes buy what suits them and their purse. List weapons here at a price you like.")
     val ORDER = listOf(FORGE, END_DAY, MARKET)
     val ALL = ORDER.map { it.id }.toSet()
-    fun forPanel(p: Panel): List<Tip> = when (p) { Panel.FORGE -> listOf(FORGE, END_DAY); Panel.MARKET -> listOf(MARKET); else -> emptyList() }
+    fun forDest(d: Dest): List<Tip> = when (d) { Dest.FORGE -> listOf(FORGE, END_DAY); Dest.SHOP -> listOf(MARKET); else -> emptyList() }
 }
 
 /** One slim line of guidance with a dismiss action; never a card that stays on every panel. */
@@ -258,11 +277,6 @@ private fun Stat(icon: Int, label: String, value: String) {
         Spacer(Modifier.width(6.dp))
         Text(value, style = MaterialTheme.typography.titleMedium, maxLines = 1)
     }
-}
-
-/** The page names the segments and the blocks on Home use ("Tap to open News"). */
-fun panelName(p: Panel) = when (p) {
-    Panel.HOME -> "Home"; Panel.FORGE -> "Forge"; Panel.MARKET -> "Market"; Panel.TOWN -> "Town"; Panel.JOURNAL -> "Journal"; Panel.GAZETTE -> "News"; Panel.LEGACY -> "Legacy"
 }
 
 fun destName(d: Dest) = when (d) { Dest.SHOP -> "Shop"; Dest.FORGE -> "Forge"; Dest.TOWN -> "Town"; Dest.RECORDS -> "Records" }

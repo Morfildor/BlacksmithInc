@@ -92,7 +92,7 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
                 if (w.affixes.isNotEmpty() || w.flaws.isNotEmpty()) Spacer(Modifier.heightIn(min = Space.sm))
                 w.affixes.forEach { Text("+ ${content.affix(it).name}: ${content.affix(it).description}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 2.dp)) }
                 w.flaws.forEach { Text("− ${content.affix(it).name}: ${content.affix(it).description}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 2.dp)) }
-                Secondary("Suggested price $suggested gold. Set your own in the Market.", Modifier.padding(top = Space.md))
+                Secondary("Suggested price $suggested gold. Set your own in the Shop.", Modifier.padding(top = Space.md))
             }
         },
         confirmButton = {

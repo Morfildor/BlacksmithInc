@@ -37,7 +37,7 @@ class SavedStateTest {
             val handle = SavedStateHandle()
             val vm = open(handle); advanceUntilIdle()
             vm.dispatch(Command.Forge(ForgeMode.QUICK, LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, null, Risk.BALANCED)); advanceUntilIdle()
-            vm.selectPanel(Panel.FORGE)
+            vm.selectRecords(RecordsPage.JOURNAL); vm.selectDest(Dest.FORGE)
             val draft = ForgeDraft(ForgeMode.ADVANCED, LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, null, Risk.SAFE, Technique.TEMPER)
             vm.updateDraft { draft }
             val sheet = Sheet.Hero(start.heroes.keys.first())
@@ -53,18 +53,18 @@ class SavedStateTest {
 
             val reopened = open(SavedStateHandle(kept)).also { advanceUntilIdle() }
             val after = reopened.ui.value as UiState.Playing
-            assertEquals(Panel.FORGE, after.panel)
+            assertEquals(Dest.FORGE to RecordsPage.JOURNAL, after.dest to after.records)
             assertEquals("the open hero sheet comes back", sheet, after.sheet)
             // Back closes the sheet before it leaves the destination.
             assertTrue(reopened.back()); advanceUntilIdle()
-            assertEquals(null to Panel.FORGE, (reopened.ui.value as UiState.Playing).let { it.sheet to it.panel })
+            assertEquals(null to Dest.FORGE, (reopened.ui.value as UiState.Playing).let { it.sheet to it.dest })
             assertEquals(draft, after.draft)
             assertEquals(before.revealWeaponId, after.revealWeaponId)
             assertEquals(before.state, after.state)
 
-            // A process that starts without saved state (a cold launch) starts on Home with an empty draft.
+            // A process that starts without saved state (a cold launch) starts on Shop with an empty draft.
             val cold = open(SavedStateHandle()).also { advanceUntilIdle() }.ui.value as UiState.Playing
-            assertEquals(Panel.HOME to ForgeDraft(), cold.panel to cold.draft)
+            assertEquals(Dest.SHOP to ForgeDraft(), cold.dest to cold.draft)
             assertEquals(null, cold.revealWeaponId)
             assertEquals(null, cold.sheet)
         } finally {

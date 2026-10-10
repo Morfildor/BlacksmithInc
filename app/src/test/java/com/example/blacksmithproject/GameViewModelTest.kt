@@ -112,18 +112,39 @@ class GameViewModelTest {
         assertTrue(vm.playing().state.gold < gold)
         assertTrue("closed stays closed in a new process", open(repo).ui.value is UiState.Playing)
 
-        // With no report open, back goes to Shop from another destination and is not consumed on Shop (any page of it).
+        // With no report open, back goes to Shop from another destination and is not consumed on Shop.
         vm.selectDest(Dest.RECORDS); advanceUntilIdle()
-        assertEquals(Panel.GAZETTE, vm.playing().panel)
+        assertEquals(Dest.RECORDS to RecordsPage.GAZETTE, vm.playing().dest to vm.playing().records)
         assertTrue(vm.back()); advanceUntilIdle()
-        assertEquals(Dest.SHOP to Panel.HOME, vm.playing().dest to vm.playing().panel)
-        assertFalse(vm.back())
-        vm.selectPanel(Panel.MARKET); advanceUntilIdle()
         assertEquals(Dest.SHOP, vm.playing().dest)
         assertFalse(vm.back())
-        // A bar tap inside the destination already shown keeps its page.
-        vm.selectPanel(Panel.LEGACY); vm.selectDest(Dest.RECORDS); advanceUntilIdle()
-        assertEquals(Panel.LEGACY, vm.playing().panel)
+        // A segment of Records is a destination change too, and a bar tap comes back to the segment that was left.
+        vm.selectRecords(RecordsPage.LEGACY); advanceUntilIdle()
+        assertEquals(Dest.RECORDS to RecordsPage.LEGACY, vm.playing().dest to vm.playing().records)
+        vm.selectDest(Dest.TOWN); vm.selectDest(Dest.RECORDS); advanceUntilIdle()
+        assertEquals(RecordsPage.LEGACY, vm.playing().records)
+    }
+
+    /** A day whose script cannot be built must not take the game down at every launch: it is treated as watched. */
+    @Test
+    fun aScriptThatThrowsOpensPlanningAndMarksTheDayWatched() = vmTest {
+        val after = afterOneDay()
+        val repo = repo(after)
+        var built = 0
+        val vm = GameViewModel(
+            engine, GameSession(engine, repo, compute = StandardTestDispatcher(testScheduler)), FakeSettings(), SavedStateHandle(),
+            compute = StandardTestDispatcher(testScheduler), buildScript = { _, _, _, _ -> built++; error("a day the script cannot lay out") },
+        )
+        advanceUntilIdle()
+        assertEquals("the builder was asked once, not in a loop", 1, built)
+        assertEquals("planning opens on the next day", after.day, vm.playing().state.day)
+        assertEquals(DayCursor(after.lastResolution!!.commandId.value, DayCursor.Stage.DONE), repo.storedCursor())
+        assertEquals("the day itself is untouched: the Gazette still has it", after.lastResolution, vm.playing().state.lastResolution)
+        // Planning is unlocked, and the next launch (with a builder that works) goes straight to planning.
+        val gold = vm.playing().state.gold
+        vm.dispatch(Command.BuyMaterial(LaunchContent.IRON)); advanceUntilIdle()
+        assertTrue(vm.playing().state.gold < gold)
+        assertTrue(open(repo).ui.value is UiState.Playing)
     }
 
     @Test

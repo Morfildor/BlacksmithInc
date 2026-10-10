@@ -239,6 +239,8 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
                 counts = listOfNotNull(
                     plural(sales, "sale", "sales"), plural(commissions, "commission", "commissions").takeIf { commissions > 0 },
                     plural(collectors, "collector", "collectors").takeIf { collectors > 0 }, "$left left without buying",
+                    // Willing heroes with no seat left (`DayResolution.turnedAway`): the reason to buy the Signboard.
+                    state.lastResolution?.takeIf { it.day == day }?.turnedAway?.size?.takeIf { it > 0 }?.let { "$it found the shop full" },
                     "${l.tradeInCredit} gold given in trade-in credit".takeIf { l.tradeInCredit > 0 },
                 ).joinToString(" · "),
                 purse = l.goldAtClose, gone = goneAll,

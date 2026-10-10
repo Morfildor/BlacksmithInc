@@ -13,7 +13,14 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   offers Try again or, for a damaged or incompatible run, Start over (the unreadable run is kept as a backup on the
   device and your legacy stays).
 - When a save fails while you play, a dialog says nothing has changed and offers Try again or Keep working.
-- The seven tabs are now four destinations: Shop (Home and Market as two pages), Forge, Town and Records (News, Journal
+- The Shop is one page that reads top to bottom as a plan for the day: the counter with the blades on the shelf and how
+  many customers it seats, the one thing worth doing first with its reason and a button that goes there (the same lead
+  the day before ended on), open requests with the blade that will be handed over or what is missing, "Who is buying"
+  (heroes with no blade, with a worn blade, how many can afford your cheapest and your middle price, classes nothing on
+  the shelf suits), yesterday at the counter, then the shelf. Storage opens as its own sheet and stays quick with
+  hundreds of blades. Home and Market are gone.
+- The closing till and yesterday's summary say how many found the shop full.
+- The seven tabs are now four destinations: Shop, Forge, Town and Records (News, Journal
   and Legacy as three segments). The four labels share one fixed size and do not shrink or clip at larger text sizes.
   Back returns to Shop from any other destination.
 - A settings sheet behind a gear in the top bar: reduced motion (moved here from the Legacy page) and the version.
@@ -135,6 +142,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   founded on.
 
 ### Fixed
+- A day the counter cannot lay out no longer stops the game from opening: that day counts as watched, the Shop opens on
+  the next morning and the Gazette still has the day.
 - A past day in the Gazette is tallied as its report was: visitors, shop takings and expeditions lost (a hero who died
   out there included) no longer change or vanish once the next day is played. Applies to days played from this version.
 - Two quick taps on the run-end screen (two upgrades, or an upgrade and Begin era) can no longer lose a purchase or
