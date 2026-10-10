@@ -81,13 +81,15 @@ fun CommissionBoardSheet(
         onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
         modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("board_sheet"),
-    ) { CommissionBoard(board, slots, busy, chosen, onOpenHero, onAnswer, onForgeThis, onForgeWant) }
+    ) { CommissionBoard(board, slots, busy, chosen, onOpenHero, onAnswer, onForgeThis, onForgeWant, onClose = onDismiss) }
 }
 
 @Composable
 fun CommissionBoard(
     board: BoardUi, slots: Int, busy: Boolean, chosen: CommissionId?,
     onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, onForgeThis: (CommissionId) -> Unit, onForgeWant: (WeaponFamilyId) -> Unit, modifier: Modifier = Modifier,
+    /** When given, the board ends with a "Close" button. */
+    onClose: (() -> Unit)? = null,
 ) {
     // One row open at a time: the commission the Forge is working toward to begin with.
     var open by rememberSaveable { mutableStateOf(chosen?.let { "c:${it.value}" }) }
@@ -115,6 +117,9 @@ fun CommissionBoard(
                 BoardRow(g.title, if (g.answered == g.wants.size) "The shelf answers them" else if (g.answered > 0) "The shelf answers ${g.answered}" else "Nothing on the shelf for them", if (open == id) "Hide" else "Show", g.answered == g.wants.size, "board_group_${g.familyId.value}") { open = if (open == id) null else id }
             }
             if (open == id) items(g.wants, key = { "want_${it.heroId.value}" }) { WantRow(it, onOpenHero, onForgeWant) }
+        }
+        if (onClose != null) item(key = "close") {
+            SecondaryActionButton("Close", onClose, Modifier.fillMaxWidth().padding(top = Space.md).testTag("board_close"))
         }
     }
 }

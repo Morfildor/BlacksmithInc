@@ -51,6 +51,8 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -65,6 +67,7 @@ import com.example.blacksmithproject.ui.detail.WeaponStatBody
 import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.detail.shelfFullLine
 import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.PaperInk
 import com.example.blacksmithproject.ui.theme.PaperInkMuted
 import com.example.blacksmithproject.ui.theme.PaperRule
@@ -258,7 +261,11 @@ fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reduc
                         Text("THE FORGE HAS FALLEN", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                     }
                 }
-                Button(onClick = vm::closeGazette, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 52.dp).testTag("report_close")) {
+                // Ink on the paper, cut like every other plate: the theme's ember pill belongs to the dark screens.
+                Button(
+                    onClick = vm::closeGazette, shape = MaterialTheme.shapes.small, colors = ButtonDefaults.buttonColors(containerColor = PaperInk, contentColor = Cream),
+                    modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 52.dp).testTag("report_close"),
+                ) {
                     Text("Close", style = MaterialTheme.typography.titleMedium)
                 }
             }
@@ -272,15 +279,26 @@ fun EditionBody(edition: Gazette.Edition, modifier: Modifier = Modifier) {
     val muted = LocalContentColor.current.copy(alpha = 0.7f)
     Column(modifier) {
         if (edition.lede.isEmpty() && edition.sections.isEmpty()) Text("A quiet day in Emberfall.", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium)
+        val rule = LocalContentColor.current.copy(alpha = 0.3f)
+        // The headline, then a second one in italics under it: a paper's head and its strap.
         edition.lede.forEachIndexed { i, h ->
-            Text(h, fontFamily = FontFamily.Serif, style = if (i == 0) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleMedium, modifier = Modifier.padding(bottom = Space.sm))
+            Text(h, fontFamily = FontFamily.Serif, style = if (i == 0) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall, fontStyle = if (i == 0) null else FontStyle.Italic, modifier = Modifier.padding(bottom = Space.sm))
         }
-        if (edition.tally.isNotEmpty()) Text(edition.tally.joinToString(" · "), style = MaterialTheme.typography.labelMedium, color = muted)
+        // The day's tally as the deck: one line over a hairline, and under one when a headline stands above it.
+        if (edition.tally.isNotEmpty()) {
+            if (edition.lede.isNotEmpty()) HorizontalDivider(color = rule)
+            Text(edition.tally.joinToString("  ·  "), style = MaterialTheme.typography.labelMedium, color = muted, modifier = Modifier.padding(top = if (edition.lede.isEmpty()) 0.dp else 6.dp, bottom = 6.dp))
+            HorizontalDivider(color = rule)
+        }
         edition.sections.forEach { section ->
-            Text(section.title.uppercase(), style = MaterialTheme.typography.labelMedium, color = muted, modifier = Modifier.padding(top = Space.md, bottom = 2.dp).semantics { heading() })
+            // A section label runs into a rule to the edge of the column.
+            Row(Modifier.padding(top = Space.md, bottom = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                Text(section.title.uppercase(), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, modifier = Modifier.semantics { heading() })
+                HorizontalDivider(Modifier.weight(1f), color = rule)
+            }
             section.lines.forEach { line ->
-                Row(Modifier.padding(top = Space.xs)) {
-                    Text("•", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.width(14.dp))
+                Row(Modifier.padding(top = 6.dp)) {
+                    Text("•", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, color = muted, modifier = Modifier.width(14.dp))
                     Text(line, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                 }
             }

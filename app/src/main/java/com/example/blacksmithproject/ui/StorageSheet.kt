@@ -116,7 +116,7 @@ fun StorageSheet(
                 BackRow("Storage", onBack)
             }
             notice?.let { NoticeLine(it) }
-            if (detail != null) detail() else StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk, filterState = filterState, listState = listState)
+            if (detail != null) detail() else StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk, filterState = filterState, listState = listState, onClose = onDismiss)
         }
     }
 }
@@ -133,6 +133,8 @@ fun StorageList(
     terms: BulkTerms? = null, onBulk: (StockAction, List<WeaponId>) -> Unit = { _, _ -> },
     filterState: MutableState<StorageFilter> = rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(StorageFilter()) },
     listState: LazyListState = rememberLazyListState(),
+    /** When given, "Close" stands beside the title: a storeroom can be far too long to end with it. */
+    onClose: (() -> Unit)? = null,
 ) {
     var filter by filterState
     var selecting by rememberSaveable { mutableStateOf(false) }
@@ -147,7 +149,10 @@ fun StorageList(
         LazyColumn(Modifier.weight(1f, fill = false).fillMaxWidth().testTag("storage_list"), state = listState, contentPadding = PaddingValues(start = Space.md, end = Space.md, bottom = Space.lg)) {
             item(key = "head") {
                 Column(Modifier.padding(bottom = Space.sm)) {
-                    Text(if (shown.size == storage.size) "Storage · ${storage.size}" else "Storage · ${shown.size} of ${storage.size}", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(if (shown.size == storage.size) "Storage · ${storage.size}" else "Storage · ${shown.size} of ${storage.size}", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.weight(1f).semantics { heading() })
+                        if (onClose != null) TextButton(onClick = onClose, modifier = Modifier.heightIn(min = 48.dp).testTag("storage_close")) { Text("Close", color = Gold) }
+                    }
                     Secondary(
                         when {
                             storage.isEmpty() -> "Nothing in storage. Forged blades wait here until you list them."

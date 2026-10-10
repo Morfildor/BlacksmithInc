@@ -6,7 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -24,17 +26,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.theme.BronzeContainer
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.BuffGreen
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.ForgePanel
+import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
+import com.example.blacksmithproject.ui.theme.GoldBright
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.model.KnowledgeState
@@ -68,27 +79,36 @@ fun LazyListScope.notebookItems(s: UiState.Playing, vm: GameViewModel, tab: Book
     }
     item(key = "book_head") {
         Column {
-            SectionTitle("Notebook", Modifier.padding(top = Space.sm))
-            Secondary("${book.counts}. Knowledge survives the forge's fall.", Modifier.testTag("book_counts"))
-            FlowRow(Modifier.padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+            // The page's head on a plate, as the Legacy page has its own.
+            FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
+                Text("Notebook", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
+                Secondary("${book.counts}. Knowledge survives the forge's fall.", Modifier.testTag("book_counts"))
+            }
+            // Three tabs of one width across the page; a label may take two lines, so nothing is cut at a larger text size.
+            Row(Modifier.fillMaxWidth().padding(top = 12.dp).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                 BookTab.entries.forEach { t ->
                     val on = t == tab
                     Box(
-                        Modifier.heightIn(min = 48.dp).clip(Tab).background(ForgePanel).border(1.dp, if (on) Gold else BronzeDeep, Tab).clickable(role = Role.Tab) { onTab(t) }
-                            .padding(horizontal = 12.dp).testTag("book_tab_${t.name.lowercase()}").semantics { selected = on },
+                        Modifier.weight(1f).fillMaxHeight().heightIn(min = 48.dp).clip(Tab).background(if (on) BronzeContainer else ForgePanel).border(1.dp, if (on) Gold else BronzeDeep, Tab).clickable(role = Role.Tab) { onTab(t) }
+                            .padding(horizontal = Space.sm, vertical = 6.dp).testTag("book_tab_${t.name.lowercase()}").semantics { selected = on },
                         contentAlignment = Alignment.Center,
-                    ) { Text(t.label, style = MaterialTheme.typography.labelMedium, color = if (on) Gold else CreamMuted) }
+                    ) { Text(t.label, style = MaterialTheme.typography.labelMedium, color = if (on) GoldBright else CreamMuted, textAlign = TextAlign.Center) }
                 }
             }
         }
     }
     val pairings = when (tab) { BookTab.METAL -> book.metal; BookTab.WEAPON -> book.weapon; BookTab.CLUES -> emptyList() }
     if ((tab == BookTab.CLUES && book.clues.isEmpty()) || (tab != BookTab.CLUES && pairings.isEmpty())) {
-        item(key = "book_empty") { Text(tab.empty, style = MaterialTheme.typography.bodyMedium, color = CreamMuted, modifier = Modifier.padding(top = Space.md).testTag("book_empty")) }
+        // An empty kind is a blank page of the same book, not a stray line.
+        item(key = "book_empty") {
+            Box(Modifier.fillMaxWidth().padding(top = 12.dp).forgeRow().padding(horizontal = Space.md, vertical = Space.lg), contentAlignment = Alignment.Center) {
+                Text(tab.empty, style = MaterialTheme.typography.bodyMedium, color = CreamMuted, textAlign = TextAlign.Center, modifier = Modifier.testTag("book_empty"))
+            }
+        }
     }
     items(pairings, key = { "journal_${it.key}" }) { p -> PairingRow(p, onBench = p.key in bench, art = pairingArt(p, vm)) { vm.usePairing(p.key) } }
     if (tab == BookTab.CLUES) items(book.clues, key = { "journal_$it" }) { key ->
-        Column {
+        Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = Space.sm)) {
             AffinityHint(journal, engine.content, key)
             signatureUi(journal, key, engine.content, engine.config)?.let { SignatureLadder(it, onUse = vm::useRecipe) }
         }
@@ -107,15 +127,23 @@ private fun pairingArt(p: PairingUi, vm: GameViewModel): List<Int> = listOfNotNu
 @Composable
 private fun PairingRow(p: PairingUi, onBench: Boolean, art: List<Int>, onUse: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().then(if (onBench) Modifier.border(1.dp, Gold, RoundedCornerShape(4.dp)) else Modifier)
+        Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().then(if (onBench) Modifier.border(1.dp, Gold, RoundedCornerShape(4.dp)) else Modifier)
             .padding(start = Space.sm).testTag("book_row_${p.key}"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        art.forEach { PixelImage(it, 36.dp, description = null) }
-        Column(Modifier.weight(1f).padding(horizontal = Space.sm, vertical = Space.sm).semantics(mergeDescendants = true) { contentDescription = "${p.subject}, ${p.stage}: ${p.hint}${if (onBench) ". On the workbench now" else ""}" }) {
+        // Both ingredients in one dark slot, as the workbench shows them.
+        Row(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(2.dp)) { art.forEach { PixelImage(it, 32.dp, description = null) } }
+        Column(Modifier.weight(1f).padding(start = 12.dp, end = Space.xs).padding(vertical = Space.sm).semantics(mergeDescendants = true) { contentDescription = "${p.subject}, ${p.stage}: ${p.hint}${if (onBench) ". On the workbench now" else ""}" }) {
             Text(p.subject, style = MaterialTheme.typography.titleSmall, color = Cream)
-            Text("${p.stage} · ${p.hint}", style = MaterialTheme.typography.bodySmall, color = p.state.color())
-            if (onBench) Text("On the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
+            // The stage in its own colour and weight, then the journal's words in the quiet one.
+            Text(
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = p.state.color(), fontWeight = FontWeight.SemiBold)) { append(p.stage) }
+                    append(" · ${p.hint}")
+                },
+                style = MaterialTheme.typography.bodySmall, color = CreamMuted,
+            )
+            if (onBench) Text("◆ On the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
         }
         TextButton(onClick = onUse, modifier = Modifier.heightIn(min = 48.dp).testTag("book_use_${p.key}")) { Text("Use ›", color = Gold) }
     }

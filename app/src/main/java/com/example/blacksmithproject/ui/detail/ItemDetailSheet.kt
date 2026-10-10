@@ -35,6 +35,7 @@ import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.NoticeLine
 import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.Secondary
+import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.Element
@@ -312,7 +313,7 @@ fun ItemDetailContent(
 
         SheetSection("History")
         Column(Modifier.testTag("sheet_history")) { Lines(detail.history, "Its story has not been written yet.") }
-        OutlinedButton(onClick = onDismiss, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close")) { Text(closeLabel) }
+        SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).testTag("sheet_close"))
     }
 }
 

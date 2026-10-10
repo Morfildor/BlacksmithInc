@@ -1,6 +1,24 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.background
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.text.font.FontFamily
+import com.example.blacksmithproject.ui.theme.PaperInk
+import com.example.blacksmithproject.ui.theme.PaperInkMuted
+import com.example.blacksmithproject.ui.theme.PaperRule
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +34,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -46,17 +63,14 @@ import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
-import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.GameState
-import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.model.Hero
 import com.tinyblacksmith.core.model.HeroFate
-import kotlin.math.roundToInt
 
 /**
  * Town: the threat, the champions and every adventurer, as one lazy list with a keyed row per hero. Rows open the
@@ -93,50 +107,65 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifi
 }
 
 /** The besieger, the other factions and the three champions. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     val st = s.state
-    val forecast = s.forecast
     // The engine's own choice of besieger (it breaks a pressure tie by ID), so Town agrees with the Shop and the siege.
-    val faction = forecast?.factionState ?: st.factions.values.maxByOrNull { it.pressure }
-    val daysLeft = st.town.nextSiegeDay - st.day
+    val siege = remember(st, s.forecast) { vm.engine.townSiege(st, s.forecast) }
+    val threat = s.shop.threat
 
-    // Header: the faction with the most pressure (the one the engine sends at the siege), numbers second.
     FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
-        Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
-            faction?.let { f -> Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 56.dp, description = null) } }
+        // Who and when: the besieger's face beside the day count, its name and how hard it presses.
+        Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            siege.factionId?.let { id -> Sprites.faction(id, elite = st.factions[id]?.let { it.pressure >= 60 } == true)?.let { SpriteSlot { PixelImage(it, 56.dp, description = null) } } }
             Column(Modifier.weight(1f)) {
-                // When, readiness and matchup first, as the Shop and the Forge say them; the numbers behind them after.
-                val threat = s.shop.threat
                 Text(threat?.let { if (it.warned && !it.today) "Siege approaching" else it.siege } ?: "No threat", style = MaterialTheme.typography.titleLarge, color = if (threat?.warned == true) Ember else Gold, modifier = Modifier.testTag("town_siege"))
                 threat?.takeIf { it.warned && !it.today }?.let { Text(it.siege.removePrefix("Siege ").replaceFirstChar { c -> c.uppercase() } + " · day ${st.town.nextSiegeDay}", style = MaterialTheme.typography.titleSmall) }
                 threat?.takeIf { it.today }?.let { Text("After today's trading", style = MaterialTheme.typography.titleSmall) }
-                threat?.matchup?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs).testTag("town_matchup")) }
-                StatRow("Outlook", threat?.outlook ?: "Unknown", Modifier.padding(top = Space.xs))
-                StatRow("Forge health", "${st.town.integrity}")
-                forecast?.let { o ->
-                    Secondary("Town defense ${o.townDefense.roundToInt()} against a raid of ${o.raidPower.roundToInt()}", Modifier.padding(top = Space.xs))
-                    if (o.warlord) Secondary("${o.faction.warlordName} leads them")
+                siege.foe?.let { Text(it, style = MaterialTheme.typography.titleSmall) }
+                Secondary(siege.pressure)
+            }
+        }
+        // What works against them: a sign, the words and a colour each, as on a blade's own row.
+        if (siege.weakTo != null || siege.resists != null) FlowRow(
+            Modifier.padding(top = Space.sm).testTag("town_matchup"), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs),
+        ) {
+            siege.weakTo?.let { MatchMark(EffectKind.BUFF, "Weak to $it") }
+            siege.resists?.let { MatchMark(EffectKind.FLAW, "Resists $it") }
+        }
+        siege.warlord?.let { Text("⚑ $it", style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = Space.sm)) }
+        HorizontalDivider(Modifier.padding(top = 12.dp, bottom = Space.sm), color = MaterialTheme.colorScheme.outlineVariant)
+        if (siege.defense != null && siege.raid != null) Versus(siege.defense, siege.raid)
+        StatRow("Outlook", threat?.outlook ?: "Unknown", Modifier.padding(top = Space.xs))
+        StatBar("Forge health", siege.forgeHealth, siege.forgeHealthMax)
+        HorizontalDivider(Modifier.padding(top = 12.dp, bottom = Space.sm), color = MaterialTheme.colorScheme.outlineVariant)
+        // The town's own numbers and the season, each a value over its label; they wrap as cells, never mid-phrase.
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.lg), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            (siege.standing + ("World" to siege.world)).forEach { (label, value) ->
+                Column(Modifier.semantics(mergeDescendants = true) {}) {
+                    Text(value, style = MaterialTheme.typography.titleSmall)
+                    Text(label, style = MaterialTheme.typography.labelSmall, color = CreamMuted)
                 }
-                Secondary(listOfNotNull(faction?.let { Battle.describePressure(it.pressure).replaceFirstChar { c -> c.uppercase() } }, "militia ${st.town.militia}", "sieges held ${st.town.siegesSurvived}", "armory ${st.town.armory}/${vm.engine.config.armoryMax}".takeIf { st.town.armory > 0 }).joinToString(" · "))
-                Secondary("World: ${st.world.name}")
             }
         }
     }
     // Every faction presses on the town (GDD 8); the others are listed so the leader's rise can be read coming.
-    st.factions.values.filter { it.id != faction?.id }.sortedByDescending { it.pressure }.forEach { f ->
-        val def = content.faction(f.id)
+    if (siege.others.isNotEmpty()) SectionHeader("Also pressing on the town")
+    siege.others.forEachIndexed { i, f ->
+        if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = Space.sm, vertical = Space.xs).semantics(mergeDescendants = true) {},
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(vertical = 6.dp).semantics(mergeDescendants = true) {},
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 40.dp, description = null) }
+            SpriteSlot { Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 44.dp, description = null) } ?: Spacer(Modifier.size(44.dp)) }
             Column(Modifier.weight(1f)) {
-                Text(def.name, style = MaterialTheme.typography.titleSmall)
-                Secondary(listOfNotNull(Battle.describePressure(f.pressure).replaceFirstChar { c -> c.uppercase() }, weakness(def.weakTo)).joinToString(" · "))
+                Text(f.name, style = MaterialTheme.typography.titleSmall)
+                Secondary(f.pressureWord)
             }
+            f.weakTo?.let { MatchMark(EffectKind.BUFF, "Weak to $it") }
         }
     }
 
@@ -146,28 +175,65 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     (0 until 3).forEach { i ->
         val h = champions.getOrNull(i)
         Row(
-            Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().then(if (h == null) Modifier else Modifier.clickable(onClickLabel = "Open details") { vm.openSheet(Sheet.Hero(h.id)) }).padding(12.dp).semantics(mergeDescendants = true) {},
+            Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().then(if (h == null) Modifier else Modifier.clickable(onClickLabel = "Open details") { vm.openSheet(Sheet.Hero(h.id)) })
+                .heightIn(min = 64.dp).padding(horizontal = 12.dp, vertical = Space.sm).semantics(mergeDescendants = true) {},
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (h == null) {
-                Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Secondary("No hero stands here yet.", Modifier.weight(1f))
-            } else {
+            // The place at the walls, in one column so the faces line up whether or not a place is filled.
+            Text("${i + 1}", style = MaterialTheme.typography.titleLarge, color = if (h == null) CreamMuted else Gold, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 20.dp))
+            if (h == null) Secondary("No hero stands here yet.", Modifier.weight(1f))
+            else {
                 val w = st.equippedWeapon(h.id)
-                PixelImage(Sprites.portrait(h), 56.dp, description = null)
+                SpriteSlot { PixelImage(Sprites.portrait(h), 48.dp, description = null) }
                 Column(Modifier.weight(1f)) {
-                    Text("${i + 1}. ${h.fullName}", style = MaterialTheme.typography.titleSmall)
+                    Text(h.fullName, style = MaterialTheme.typography.titleSmall)
+                    Text(w?.let { "Wields ${it.name}" + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "Unarmed", style = MaterialTheme.typography.bodySmall, color = Cream)
                     Secondary("${content.heroClass(h.classId).name} level ${h.level} · ${Labels.health(h)}")
-                    Secondary(w?.let { "Wields ${it.name}" + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "Unarmed")
                 }
-                w?.let { WeaponSprite(it, size = 44.dp) }
+                w?.let { WeaponSprite(it, size = 40.dp) }
             }
         }
     }
 }
 
-/** The faction's weakness in words; decorative, the engine applies the matchup itself. */
-private fun weakness(e: Element?): String? = e?.let { "Weak to ${it.name.lowercase()}" }
+/** The dark slot a face or a faction's sprite sits in, so every row of Town starts with the same shape. */
+@Composable
+private fun SpriteSlot(content: @Composable () -> Unit) {
+    Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { content() }
+}
+
+/** One mark of a matchup: "+" and green for what bites, "−" and red for what glances off, always with its words. */
+@Composable
+private fun MatchMark(kind: EffectKind, text: String) {
+    Text(
+        "${kind.sign} $text", style = MaterialTheme.typography.labelMedium, color = kind.color,
+        modifier = Modifier.background(kind.color.copy(alpha = 0.14f), MaterialTheme.shapes.extraSmall).border(1.dp, kind.color.copy(alpha = 0.6f), MaterialTheme.shapes.extraSmall).padding(horizontal = Space.sm, vertical = Space.xs),
+    )
+}
+
+/** Town defense against the raid: the two forecast numbers under their labels, and one bar split in their proportion. */
+@Composable
+private fun Versus(defense: Int, raid: Int) {
+    Column(Modifier.fillMaxWidth().clearAndSetSemantics { contentDescription = "Town defense $defense against a raid of $raid" }) {
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+            Column(Modifier.weight(1f)) {
+                Text("Town defense", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                Text("$defense", style = MaterialTheme.typography.titleLarge, color = Gold)
+            }
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                Text("Raid", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                Text("$raid", style = MaterialTheme.typography.titleLarge, color = Ember)
+            }
+        }
+        Canvas(Modifier.fillMaxWidth().padding(top = Space.xs).height(10.dp)) {
+            val gap = 3.dp.toPx()
+            val left = (size.width - gap) * defense.coerceAtLeast(0) / maxOf(1, defense.coerceAtLeast(0) + raid.coerceAtLeast(0))
+            drawRect(ForgeSlot)
+            drawRect(Gold, Offset.Zero, Size(left, size.height))
+            drawRect(Ember, Offset(left + gap, 0f), Size(size.width - left - gap, size.height))
+        }
+    }
+}
 
 @Composable
 private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
@@ -235,7 +301,7 @@ fun GazettePanel(s: UiState.Playing) {
     val days = st.events.map { it.day }.distinct().sortedDescending()
     val heroNames = remember(st.heroes) { st.heroes.values.associate { it.id.value to it.fullName } }
     var open by remember(days.firstOrNull()) { mutableStateOf(days.firstOrNull()) }
-    if (days.isEmpty()) Text("The presses are quiet.", modifier = Modifier.padding(top = Space.md))
+    if (days.isEmpty()) Secondary("The presses are quiet.", Modifier.padding(top = Space.md))
     days.forEach { day ->
         val edition = remember(st.events, day) {
             val res = st.lastResolution?.takeIf { it.day == day }
@@ -244,25 +310,42 @@ fun GazettePanel(s: UiState.Playing) {
         val expanded = open == day
         val toggle = Modifier.fillMaxWidth().clickable { open = if (expanded) null else day }.semantics { contentDescription = "${Gazette.masthead(day)}, ${if (expanded) "open" else "closed"}. Tap to ${if (expanded) "close" else "open"}." }
         if (expanded) {
-            Row(toggle, verticalAlignment = Alignment.Bottom) {
-                SectionTitle(Gazette.masthead(day), Modifier.weight(1f))
-                Secondary("Hide", Modifier.padding(bottom = Space.sm))
+            // The open edition is a sheet of the paper itself, as the day's own report is: fixed ink on parchment.
+            val head = remember(day) { gazetteHead(day) }
+            Column(Modifier.padding(top = Space.sm).fillMaxWidth().clip(MaterialTheme.shapes.small).paperBackground()) {
+                CompositionLocalProvider(LocalContentColor provides PaperInk) {
+                    // Masthead and dateline strip are one target: the paper's name, a double rule, then the day and "Hide" on one line.
+                    Column(toggle.padding(horizontal = Space.md).padding(top = 12.dp)) {
+                        Text(head.paper, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().semantics { heading() })
+                        HorizontalDivider(Modifier.padding(top = Space.sm), thickness = 2.dp, color = PaperInk)
+                        HorizontalDivider(Modifier.padding(top = 2.dp), color = PaperRule)
+                        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(head.dateline, style = MaterialTheme.typography.labelLarge, color = PaperInkMuted, modifier = Modifier.weight(1f))
+                            Text("Hide  ▴", style = MaterialTheme.typography.labelLarge)
+                        }
+                        HorizontalDivider(color = PaperRule)
+                    }
+                    EditionBody(edition, Modifier.padding(horizontal = Space.md).padding(top = 12.dp, bottom = Space.md))
+                }
             }
-            EditionBody(edition)
         } else {
             val marks = remember(st.events, day) { gazetteMarks(st.eventsForDay(day).map { it.type }) }
             val first = edition.lede.firstOrNull() ?: edition.sections.firstOrNull()?.lines?.firstOrNull() ?: "A quiet day in Emberfall."
             Row(
-                Modifier.padding(top = Space.xs).forgeRow().then(toggle).heightIn(min = 48.dp).padding(horizontal = Space.md, vertical = Space.sm),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                Modifier.padding(top = Space.sm).forgeRow().then(toggle).heightIn(min = 56.dp).padding(horizontal = 12.dp, vertical = Space.sm),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
+                // The day as a date block at the head of the row, so a column of editions reads as an archive.
+                Column(Modifier.widthIn(min = 36.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("DAY", style = MaterialTheme.typography.labelSmall, color = CreamMuted)
+                    Text("$day", style = MaterialTheme.typography.titleLarge, color = Gold)
+                }
                 Column(Modifier.weight(1f)) {
-                    Text("Day $day", style = MaterialTheme.typography.labelSmall, color = CreamMuted)
                     // A sign and a word, so the colour is never the only cue.
                     if (marks.isNotEmpty()) Text(marks.joinToString(" · "), style = MaterialTheme.typography.labelMedium, color = Ember)
-                    Text(first, style = MaterialTheme.typography.titleSmall)
+                    Text(first, style = MaterialTheme.typography.bodyMedium, fontFamily = FontFamily.Serif)
                 }
-                Secondary("Show")
+                Text("▾", style = MaterialTheme.typography.titleMedium, color = Gold)
             }
         }
     }
@@ -274,30 +357,41 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
     val legacy = s.state.legacy
     item(key = "legacy_head") {
         Column {
-            SectionTitle("Era ${s.state.era}", Modifier.padding(top = Space.sm))
-            if (s.state.pendingBlessingOffer.isNotEmpty()) {
-                PrimaryActionButton("Choose a blessing", vm::reopenBlessingOffer, Modifier.fillMaxWidth().padding(bottom = Space.sm))
+            // The account at a glance: the era on one side, the banked points as the one large number on the other.
+            FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
+                Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Era ${s.state.era}", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
+                        Secondary("Rewards are claimed when the forge falls; they survive every era.")
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("${legacy.points}", style = MaterialTheme.typography.headlineMedium, color = Gold)
+                        Text("legacy points banked", style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.End, modifier = Modifier.widthIn(max = 96.dp))
+                    }
+                }
             }
-            Text("${legacy.points} legacy points banked", style = MaterialTheme.typography.titleMedium)
-            Secondary("Rewards are claimed when the forge falls; they survive every era.")
-            SectionTitle("Permanent upgrades")
+            if (s.state.pendingBlessingOffer.isNotEmpty()) {
+                PrimaryActionButton("Choose a blessing", vm::reopenBlessingOffer, Modifier.fillMaxWidth().padding(top = Space.sm))
+            }
+            SectionHeader("Permanent upgrades")
         }
     }
-    items(content.upgrades, key = { "upgrade_${it.id.value}" }) { u ->
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 6.dp)) {
-            LevelDots(legacy.upgradeLevel(u.id), u.maxLevel)
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Text(u.name, style = MaterialTheme.typography.titleSmall)
-                Secondary(u.description)
-                Secondary(com.tinyblacksmith.core.legacy.Legacy.preview(u.id, legacy.upgradeLevel(u.id) + 1, content, vm.engine.config)?.text ?: "Fully upgraded: nothing more to buy.")
+    itemsIndexed(content.upgrades, key = { _, u -> "upgrade_${u.id.value}" }) { i, u ->
+        if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        // The name and its level share a line, so every track starts at the same edge whatever its number of levels.
+        Column(Modifier.fillMaxWidth().padding(vertical = Space.sm).semantics(mergeDescendants = true) {}) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                Text(u.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                LevelDots(legacy.upgradeLevel(u.id), u.maxLevel)
             }
+            Secondary(u.description)
+            Text(com.tinyblacksmith.core.legacy.Legacy.preview(u.id, legacy.upgradeLevel(u.id) + 1, content, vm.engine.config)?.text ?: "Fully upgraded: nothing more to buy.", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp))
         }
     }
     if (s.state.blessings.isNotEmpty()) {
-        item(key = "blessings_head") { SectionTitle("Active blessings") }
+        item(key = "blessings_head") { SectionHeader("Active blessings") }
         itemsIndexed(s.state.blessings, key = { i, b -> "blessing_${i}_${b.id.value}" }) { _, b ->
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.padding(vertical = 6.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).semantics(mergeDescendants = true) {}) {
                 Sprites.blessing(b.id)?.let { PixelImage(it, 32.dp, description = null) }
                 Column {
                     Text(content.blessing(b.id).name, style = MaterialTheme.typography.titleSmall)
@@ -308,13 +402,13 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
     }
     item(key = "legends_head") {
         Column {
-            SectionTitle("Legend Board")
-            if (legacy.legendBoard.isEmpty()) Secondary("No blade has earned a legend yet.")
+            SectionHeader("Legend Board")
+            if (legacy.legendBoard.isEmpty()) Secondary("No blade has earned a legend yet.", Modifier.padding(vertical = Space.xs))
         }
     }
     itemsIndexed(legacy.legendBoard, key = { i, _ -> "legend_$i" }) { i, entry ->
         val legend = remember(entry, s.state.era) { legendUi(entry, content, s.state.era) }
-        Column(Modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().padding(horizontal = Space.md, vertical = Space.sm).testTag("legend_$i")) {
+        Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm).testTag("legend_$i")) {
             Text(legend.head, style = MaterialTheme.typography.titleSmall, color = Gold)
             legend.lines.forEachIndexed { j, line ->
                 // An entry older than the record of its make: said as a note in its own voice, not as a property.
@@ -325,12 +419,13 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
     }
     item(key = "lineages_head") {
         Column {
-            SectionTitle("Lineages")
-            if (legacy.lineages.isEmpty()) Secondary("No lineage has been founded yet.")
+            SectionHeader("Lineages")
+            if (legacy.lineages.isEmpty()) Secondary("No lineage has been founded yet.", Modifier.padding(vertical = Space.xs))
         }
     }
-    itemsIndexed(legacy.lineages, key = { i, _ -> "lineage_$i" }) { _, it ->
-        Column(Modifier.padding(vertical = 6.dp)) {
+    itemsIndexed(legacy.lineages, key = { i, _ -> "lineage_$i" }) { i, it ->
+        if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Column(Modifier.fillMaxWidth().padding(vertical = Space.sm).semantics(mergeDescendants = true) {}) {
             Text(it.heroName, style = MaterialTheme.typography.titleSmall)
             Secondary("Era ${it.era} · ${it.deed}")
         }

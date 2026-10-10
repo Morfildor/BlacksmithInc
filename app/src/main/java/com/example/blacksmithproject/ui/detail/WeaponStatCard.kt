@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
@@ -144,7 +145,8 @@ private fun ColumnScope.WeaponStatDetails(detail: ItemDetail) {
         Cell(s.label, s.word?.let { "$it (${s.value})" } ?: s.value.toString(), delta = s.was?.let { StatDelta(it.toString(), if (s.value > it) EffectKind.BUFF else EffectKind.FLAW) })
     } + Cell("Element", detail.element?.let { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } } ?: "None", detail.element?.let { elementColor(it) }) +
         listOfNotNull(detail.stock?.let { Cell("Value", "${it.suggestedPrice} gold", Gold) })
-    if (LocalDensity.current.fontScale > 1f) cells.forEach { StatRow(it.label, it.value, valueColor = it.color, delta = it.delta) }
+    // On a 360 dp phone half a line cannot hold "Renown" and "Unsung (1)": the label broke mid-word. One to a line there.
+    if (LocalDensity.current.fontScale > 1f || LocalConfiguration.current.screenWidthDp < 400) cells.forEach { StatRow(it.label, it.value, valueColor = it.color, delta = it.delta) }
     else cells.chunked(2).forEach { pair ->
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
             pair.forEach { StatRow(it.label, it.value, Modifier.weight(1f), it.color, it.delta) }

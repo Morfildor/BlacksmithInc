@@ -7,10 +7,17 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
+import com.example.blacksmithproject.ui.theme.Bronze
+import com.example.blacksmithproject.ui.theme.ForgeSlot
+import com.example.blacksmithproject.ui.theme.Gold
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -42,12 +49,17 @@ fun SettingsSheet(
     val context = LocalContext.current
     val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "unknown" }
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
-    ModalBottomSheet(onDismissRequest = onDismiss, modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("settings_sheet")) {
-        FramedPanel("Settings", Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
+    // Opened whole, as the other sheets are: half open, the speed row and the way to the main menu were under the fold.
+    ModalBottomSheet(
+        onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
+        modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("settings_sheet"),
+    ) {
+        FramedPanel("Settings", Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = Space.md).padding(bottom = Space.lg)) {
             SwitchRow("Reduced motion", "Stops the ember animation, the reveal fade and the stepped battle replay.", reducedMotion, onReducedMotion, "settings_reduced_motion")
             SwitchRow("Haptics", "A short vibration when a blade is revealed, a day ends, a request is refused or an era ends.", haptics, onHaptics, "settings_haptics")
             if (onShopDaySpeed != null) SpeedRow(if (reducedMotion) ShopDaySpeed.TAP else shopDaySpeed, enabled = !reducedMotion, onShopDaySpeed)
-            onMainMenu?.let { OutlinedButton(onClick = it, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("settings_main_menu")) { Text("Main menu") } }
+            onMainMenu?.let { SecondaryActionButton("Main menu", it, Modifier.fillMaxWidth().padding(top = Space.md).testTag("settings_main_menu")) }
             Secondary("Version $version", Modifier.padding(top = Space.md).testTag("settings_version"))
         }
     }
@@ -63,7 +75,8 @@ private fun SwitchRow(title: String, detail: String, checked: Boolean, onChange:
             Text(title, style = MaterialTheme.typography.titleSmall)
             Secondary(detail)
         }
-        Switch(checked = checked, onCheckedChange = null)
+        // Gold when on, as every chosen thing in the workshop is; the thumb's place still says which way it is set.
+        Switch(checked = checked, onCheckedChange = null, colors = SwitchDefaults.colors(checkedTrackColor = Gold, checkedThumbColor = ForgeSlot, uncheckedTrackColor = ForgeSlot, uncheckedThumbColor = Bronze, uncheckedBorderColor = Bronze))
     }
 }
 

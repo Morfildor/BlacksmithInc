@@ -55,6 +55,9 @@ fun GameEngine.supplyNotes(state: GameState, m: MaterialDef): List<String> {
     )
 }
 
+/** A tool's level and what the next one costs (`GameEngine.toolCost`; null once there is no next level). */
+internal fun toolLine(level: Int, maxLevel: Int, cost: Int?): String = "Level $level of $maxLevel · " + (cost?.let { "$it gold" } ?: "fully built")
+
 /** The supplier and the workshop tools, as a sheet over the Shop or the Forge; with [focus] it opens on that material's row. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,11 +68,12 @@ fun SuppliesSheet(s: UiState.Playing, vm: GameViewModel, onDismiss: () -> Unit, 
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
         modifier = modifier.semantics { testTagsAsResourceId = true }.testTag("supplies_sheet"),
-    ) { SuppliesList(s, vm, focus = focus) }
+    ) { SuppliesList(s, vm, focus = focus, onClose = onDismiss) }
 }
 
+/** [onClose], when given, ends the list with a "Close" button: the list is long and its handle is far away by then. */
 @Composable
-fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier, focus: MaterialId? = null) {
+fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier, focus: MaterialId? = null, onClose: (() -> Unit)? = null) {
     val content = vm.engine.content
     val st = s.state
     val groups = MaterialCategory.entries.map { it to content.materials(it) }.filter { it.second.isNotEmpty() }
@@ -83,8 +87,12 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
     LazyColumn(modifier.fillMaxWidth().navigationBarsPadding().testTag("supplies_list"), state = listState, contentPadding = PaddingValues(start = Space.md, end = Space.md, bottom = Space.lg)) {
         item(key = "supplier") {
             Column {
-                Text("Supplies", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-                Secondary("${st.gold} gold in the purse. Buy one at a time. Basic metals are always in stock.")
+                // The purse beside the title: it is the one number every row below is read against.
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Supplies", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.weight(1f).semantics { heading() })
+                    Text("${st.gold} gold", style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.semantics { contentDescription = "${st.gold} gold in the purse" })
+                }
+                Secondary("Buy one at a time. Basic metals are always in stock.")
             }
         }
         groups.forEach { (category, group) ->
@@ -99,12 +107,12 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                 Row(
                     // The row the Forge asked for: a gold line and its own words, never the colour alone.
                     Modifier.fillMaxWidth().padding(vertical = Space.xs).then(if (needed) Modifier.border(1.dp, Gold, MaterialTheme.shapes.small).padding(Space.xs) else Modifier),
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     Sprites.material(m.id)?.let { PixelImage(it, wholePixelDp(48, 40.dp), description = null) }
                     Column(Modifier.weight(1f)) {
                         if (needed) Text("Needed on the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
-                        Text(m.name, style = MaterialTheme.typography.bodyMedium)
+                        Text(m.name, style = MaterialTheme.typography.titleSmall)
                         Secondary("Owned $have · $price gold" + (stock?.let { " · $it left today" } ?: ""))
                         vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
                     }
@@ -118,24 +126,32 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
         }
         item(key = "tools") {
             Column {
-                SectionTitle("Workshop tools")
+                SectionHeader("Workshop tools")
                 Secondary("Bought with gold; they last until the forge falls.")
             }
         }
         items(content.tools, key = { "tool_${it.id}" }) { t ->
             val cost = vm.engine.toolCost(st, t.id)
-            Row(Modifier.fillMaxWidth().padding(vertical = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+            val level = st.tools[t.id] ?: 0
+            // A tool's row is a material's row: the name, what it does, then its level and price, and the same "Buy".
+            Row(Modifier.fillMaxWidth().padding(vertical = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Column(Modifier.weight(1f)) {
-                    Text("${t.name} · level ${st.tools[t.id] ?: 0}/${t.maxLevel}", style = MaterialTheme.typography.bodyMedium)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                        Text(t.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f, fill = false))
+                        LevelDots(level, t.maxLevel)
+                    }
                     Secondary(t.description)
+                    Secondary(toolLine(level, t.maxLevel, cost))
                 }
-                if (cost == null) Secondary("Maxed")
-                else SecondaryActionButton(
-                    "Buy · $cost g", { vm.dispatch(Command.BuyTool(t.id)) },
-                    Modifier.semantics { contentDescription = "Buy ${t.name} for $cost gold" },
+                if (cost != null) SecondaryActionButton(
+                    "Buy", { vm.dispatch(Command.BuyTool(t.id)) },
+                    Modifier.testTag("buy_tool_${t.id}").semantics { contentDescription = "Buy ${t.name} for $cost gold" },
                     enabled = st.gold >= cost && !s.busy,
                 )
             }
+        }
+        if (onClose != null) item(key = "close") {
+            SecondaryActionButton("Close", onClose, Modifier.fillMaxWidth().padding(top = Space.md).testTag("supplies_close"))
         }
     }
 }
