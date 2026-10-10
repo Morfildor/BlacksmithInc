@@ -78,7 +78,7 @@ class RecordsPanelTest {
 
         compose.onNodeWithTag("page_journal").performClick()
         compose.onNodeWithTag("page_journal").assertIsSelected()
-        compose.onNodeWithText("Experiment Journal").assertIsDisplayed()
+        compose.onNodeWithText("Notebook").assertIsDisplayed()
         compose.onNodeWithText("EMBERFALL GAZETTE", substring = true).assertDoesNotExist()
 
         compose.onNodeWithTag("page_legacy").performClick()

@@ -55,9 +55,10 @@ tap_id title_new_run || exit 1
 wait_text "Forge your first blade" && shot 02_shop
 has_id shop_lead && echo "CHECK shop leads with a lead: ok" || echo "CHECK shop leads with a lead: FAIL"
 tap_id nav_forge || exit 1
-wait_text "Forge weapon" && shot 02_workshop
-scroll_to "Sword" && tap "Sword"; scroll_to "Iron" && tap "Iron"; scroll_to "Ember Resin" && tap "Ember Resin"
-scroll_to "Forge weapon"; shot 03_forge_ready
+wait_text "Forge · " && shot 02_workshop
+# The workbench: each tap fills the open slot and the tray moves on to the next one.
+tap_id forge_option_sword; tap_id forge_option_iron; tap_id forge_option_ember_resin
+shot 03_forge_ready
 tap_id forge_weapon || exit 1
 wait_text "Suggested price" && shot 04_result
 tap_id reveal_list || exit 1

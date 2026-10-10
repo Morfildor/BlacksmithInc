@@ -3724,3 +3724,71 @@ two day numbers, and Skip was explained as "to tomorrow" in one place and "to th
   is left to a full vocabulary pass.
 - A guild's stipend reads "Of that, paid by their guild" with no plus sign: it is part of the price, so the receipt's rows
   now add up to the total (the earlier "+N" row did not).
+
+## Forge-first redesign: workbench, commission board, sieges (2026-10-10; no balance, rules, schema or content change)
+
+Source: the owner's "Forge-first UI redesign and beauty pass" plan (10 October 2026) and two phone mock-ups of the Forge
+sent while the work was under way. Branch `ui-beauty-pass`, cut from `main` at `6c49f8e`. This entry covers the plan's
+slices U1 (workbench), U2 (board), U3 (notebook and what a forge taught), U4 (sieges) and the Shop, Supplies and Gazette
+parts of U5. **Not done:** U5 for Storage, Legacy and the hero and blade sheets; moving the new wording into
+`core/shopday/Lines.kt`; the plan's size and font matrix (360 x 640 and 320 x 569 dp, font scales 1.3 and 2.0);
+TalkBack; any animation of an ingredient into its slot. An HTML sketch of the Forge from the owner (the same day) was
+followed for the learning card, the notebook's tabs and strings, and the stage colours.
+
+**Checked against the tree before starting (the plan was written from GitHub).** `customers.maxOpenCommissions` is 2;
+`ForgeDraft.commissionId` exists; `Journal.hint` / `rungs`, `SignatureCatalog.forRecipe`, `Commissions.pick` / `fit` are
+as the plan says; core's `AftermathCard.forgeDamage` existed and the app's `AftermathUi` dropped it.
+
+**Rulings.**
+- The plan's wording is followed where it differs from the current screens: "Forge health" (not "Forge integrity"),
+  "Commissions" for the formal kind and "Customer wants" for the other. The uncommitted fourth UI batch in the
+  `ui-batch4` worktree chose "Forge integrity" and "request" everywhere; the two have to be reconciled by the owner
+  when that batch lands. Cost if wrong: a rename in `ForgePanel`, `InfoPanels`, `CommissionBoard` and `ShopPanel`.
+- The besieger's matchup is worded in the app ("Weak to Frost · Resists Fire", `ThreatUi.matchup`) beside core's
+  `Lines.threat` ("Frost bites the ..."), which the stock rows and the Gazette still use. Moving the wording into
+  `Lines` is part of U5.
+- A want group is titled with the weapon type in the singular ("Sword · 3 customers"), not "Swords": the catalog has
+  no plural forms ("Staff").
+- The siege card is titled "Siege · day N", not "Siege of Emberfall": the town's name is not a catalog value the app reads.
+- Wall casualties are not listed on the siege card: core's siege card does not carry them (a death has its own card after it).
+- The colour of a field note (green for a pairing that helps, red for one that hurts) is derived from the affinity
+  only once the journal has at least observed it, where `Journal.hint` already says the same in words; an untried
+  pairing is always gold and says nothing.
+- The first-run tip on the Forge ("Pick a family, a core and an augment") is no longer shown: the Forge button says the
+  next missing choice and the open tray says what it is for. Its ID stays in `Tips` so settings written by older builds read the same.
+- One existing test's rule changed on purpose: `ShopDayUiTest` asserted that no card before the evening waits for the
+  player. A siege card now does (`Beat.Aftermath.millis` is 0 when `card.siege` is set); every other card still moves on.
+
+**Engineering.**
+- `ui/ForgeUi.kt`: `forgeWorkbench(state, draft, requests)`, `forgeOptions(...)` and `place(...)` are pure readings of
+  the save and the draft. `ForgeWorkbenchUi.command` is exactly what the button sends; Quick never carries a catalyst or
+  technique whatever the draft holds. Choosing, opening a tray or the board sends no command.
+- `ui/CommissionBoard.kt`: `ShopUi.board()` regroups the Shop's own `requests` and `wants`; nothing is dropped or summed.
+  `RequestUi` and `WantUi` carry reward, days left, weapon type, element, minimum quality, budget and minimum power as
+  typed fields.
+- `SiegeOutcomeUi` (in `ShopDayUi.kt`): the day's `FORGE_DAMAGED` record and the saved forge health, never subtracted
+  from one another (recovery runs after the siege inside End Day).
+- `engine.shopUi(state, forecast)`: the view model passes the forecast it already computes, so `ThreatUi.outlook` costs
+  no second forecast.
+
+**Seen while testing, not changed.** In a new run played by hand on the emulator, the Shop and Town named the Ashclaw Raiders as
+besieger on the siege day and the siege that night was the Hollowbound's (two factions at "Rising threat"; pressure
+moves inside End Day before the siege resolves). The forecast is "as things stand"; whether the screens should say so is
+an owner decision.
+
+- What a forge taught is the journal before and after the accepted command (`forgeLearning`), taken around the one
+  dispatch in `GameViewModel.dispatch`; nothing is replayed or stored. It is not kept across a process death: a reopened
+  result shows no learning line rather than claim something is new. Its sentences are `Journal.hint` on the journal as it
+  now stands, so an observed pairing stays tentative even where the day's DISCOVERY event text names the stronger band.
+- The notebook lists only keys the journal's `interactions` hold, as the old Journal page did; a recipe known only by
+  rumour rungs still has no row. "Try an untried pairing" (`untriedPairing`) walks the catalog in order over what is in
+  stock and reads only the journal's state: no affinity, no signature table, no RNG.
+- A field note's colour follows the stage alone (gold, cream, green). An earlier version in this branch coloured it by
+  which way the pairing leans; the owner's sketch uses the stage, which also keeps colour from saying more than the words.
+- `core`: "Seems ordinary" became "Seems neutral" in `Journal.affinityHint`. Wording only; no rule, balance or schema change.
+- `ShopDayScreenTest.replayOutcomeIsNeverGatedOnATimer` now lets the clock run while it scrolls to "Watch the siege":
+  the siege card is taller than the test's screen and a scroll with the clock paused never finishes. What it asserts is unchanged.
+- Two agents did the Shop pass and the Supplies and Gazette pass in their own worktrees; their diffs were applied here.
+
+**Checks.** `:app:testDebugUnitTest` and `:core:test` pass (new app classes: `ForgeWorkbenchModelTest`,
+`BoardModelTest`, `SiegeOutcomeTest`, `ForgeLearningTest`). Device evidence is in PROGRESS.

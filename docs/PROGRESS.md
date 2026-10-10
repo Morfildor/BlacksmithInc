@@ -1,5 +1,46 @@
 # Progress — 2026-10-10 (major update, final state at about 13:00)
 
+## Forge-first redesign (2026-10-10, evening): on branch `ui-beauty-pass`, not merged
+Branch `ui-beauty-pass`, cut from `main` at `6c49f8e`; five commits; no balance, rules, schema or content change (one
+core wording change: "Seems neutral"). Source: the owner's redesign plan of 10 October, two phone mock-ups and an HTML
+sketch of the Forge. Rulings and engineering notes: DECISIONS, "Forge-first redesign".
+
+**Built.**
+- Forge as a workbench: blade over the anvil, three recipe places with art and stock, one tray for the open place, field
+  notes beside the recipe, Quick/Advanced toggle and Risk, one "Forge · N energy" action that names what is in its way.
+- Commission board (commissions; customer wants grouped by weapon type), opened from Shop and Forge.
+- What a forge taught, on the result card; the notebook (three tabs, "Use", "Try an untried pairing").
+- Sieges: one siege line on Shop, Forge and Town; a siege card that waits, with the recorded damage; a recap on the
+  evening card; End Day names the siege on its day.
+- Shop compact (shelf first, one-row lead, folded yesterday); Supplies in the Forge's words, opening on the missing
+  material; Gazette archive rows.
+
+**Checks run.**
+- `:app:testDebugUnitTest` and `:core:test`: pass.
+- `:app:connectedDebugAndroidTest` on a private read-only emulator (AVD `carbscan`, API 36, 1080x1920 at 420 dpi, font
+  scale 1.0; not Pixel_10_Pro): 69 tests, 67 pass, 2 fail.
+  - `StorageSheetTest.bulkSalvageAsksOnceAndIssuesOneCommandPerBlade`: fails on this AVD on untouched `main` as well
+    (noted in an earlier session); Storage was not changed here.
+  - `ShopPanelTest.theLeadIsTheSameAsTheTomorrowCard`: the evening card says "today" and the Shop says "yesterday" for
+    the same lead, since the wording commit `ce4f0a6` on `main`. By reading only: it was not run on `main` to confirm.
+- Seen on that emulator by hand: the Forge from empty to ready and with a tray open, a forge and its result card with
+  "New observation", the notebook, the board on day 5 with 2 commissions and 6 wants, Town and the Shop on a siege day,
+  a lost siege's card and the evening recap after "Skip day", the compact Shop.
+
+**Not done, not seen.**
+- The plan's matrix: 360 x 640 and 320 x 569 dp, font scales 1.3 and 2.0, TalkBack, a held siege's card, a destroyed
+  forge after a siege, Advanced mode with catalyst and technique, a commission brief on the Forge, the shelf-full and
+  no-energy states, Supplies opening on a missing material, the Gazette archive rows. All of these have code; none was looked at.
+- U5 for Storage, Legacy and the hero and blade sheets; the new wording is in the app, not yet in `core/shopday/Lines.kt`.
+- The result card's learning line sits under the stat block and can be below the fold on a short screen.
+- `tools/emulator/smoke.sh` was edited for the new Forge and not run; `runend.sh` was not run.
+
+**Open for the owner.**
+- The uncommitted fourth UI batch in the `ui-batch4` worktree edits the same screens (Forge, Shop, Town, Records tabs)
+  and chose other words ("Forge integrity", "request", "Gazette" for the News tab). Which lands first, and which words win.
+- The Shop and Town can name one faction as besieger on the siege day while another brings the siege that night
+  (pressure moves inside End Day). Seen once on the emulator; not changed.
+
 ## Current phase
 **Update, 2026-10-10 (afternoon):** at the owner's request the history was rebuilt as one commit per task (no merge or
 ledger-only commits; same files) and pushed to `main`. `main` now holds 0.7.0 as a debug-tested development build; it is

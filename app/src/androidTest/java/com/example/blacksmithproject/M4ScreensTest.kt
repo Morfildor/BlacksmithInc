@@ -203,6 +203,8 @@ class M4ScreensTest {
 
         // Journal: the found signature shows its whole ladder, and its recipe fills the forge.
         compose.runOnUiThread { vm.selectRecords(RecordsPage.JOURNAL) }
+        // Recipes are the notebook's third tab.
+        compose.onNodeWithTag("book_tab_clues").performClick()
         compose.onNodeWithTag("records_list").performScrollToNode(hasTestTag("use_recipe_${def.id}"))
         compose.onNodeWithText("✓ Catalyst: ${com.tinyblacksmith.core.crafting.Journal.clue(def, ClueRung.CATALYST, engine.config)}").assertIsDisplayed()
         compose.onNodeWithTag("use_recipe_${def.id}").performClick()

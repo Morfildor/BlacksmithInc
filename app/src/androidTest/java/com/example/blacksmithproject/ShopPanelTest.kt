@@ -111,7 +111,8 @@ class ShopPanelTest {
         // Yesterday is one row until asked: the Gazette button is behind "Show".
         compose.onNodeWithTag("shop_news").assertDoesNotExist()
         compose.onNodeWithTag("shop_yesterday_toggle").performClick()
-        compose.onNodeWithTag("shop_news").assertIsDisplayed()
+        // It opens under the row, which may be below the screen's edge: that it is there is the point.
+        compose.onNodeWithTag("shop_news").assertExists()
         compose.onNodeWithTag("shop_yesterday_toggle").performClick()
         compose.onNodeWithTag("shop_news").assertDoesNotExist()
     }

@@ -28,7 +28,9 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   open a recovery screen (`ui/Failures.kt`). DataStore holds only settings. Never compute outcomes in UI.
   Screens: main menu (`ui/App.kt`), then four destinations (Shop, Forge, Town, Records) in `ui/WorkshopScreen.kt` with
   Storage, Supplies, Settings and hero / blade sheets (`ui/detail/`); after End Day the saved day is shown card by card
-  (`ui/shopday/`). There is no Home or Market panel any more.
+  (`ui/shopday/`). There is no Home or Market panel any more. The Forge is a workbench built from the pure model in
+  `ui/ForgeUi.kt`; commissions and customer wants are one board (`ui/CommissionBoard.kt`) opened from Shop and Forge; the
+  Journal is a notebook (`ui/Notebook.kt`).
 - Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt` (schema 4; rules 3 and content 3 are
   enforced on load by `engine/Compatibility.kt`); migrations go there.
 - Content names are PROPOSED; counts are LOCKED. Vertical slice content lives in `content/SliceContent.kt`.
