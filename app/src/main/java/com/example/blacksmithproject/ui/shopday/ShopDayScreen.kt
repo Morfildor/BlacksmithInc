@@ -33,6 +33,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import com.example.blacksmithproject.R
+import com.example.blacksmithproject.ui.FramedPanel
 import com.example.blacksmithproject.ui.LocalHaptics
 import com.example.blacksmithproject.ui.Moment
 import com.example.blacksmithproject.ui.theme.Space
@@ -119,16 +120,18 @@ fun ShopDayScreen(
                     Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Space.md, vertical = 12.dp)
                         .testTag("shopday_card").semantics { liveRegion = LiveRegionMode.Polite },
                 ) {
-                    when (beat) {
-                        is Beat.Open -> ShopOpenCard(beat, model.day)
-                        is Beat.Visit -> VisitCard(beat.visit, openBlade)
-                        is Beat.Tally -> TallyCard(beat, openHero)
-                        is Beat.Close -> ShopCloseCard(beat)
-                        is Beat.Quiet -> QuietDayCard(beat, openHero)
-                        is Beat.Aftermath -> AftermathCard(beat, openHero, openBlade, onWatchFight = { onWatchFight(it.eventId) }, onOpenGazette = onOpenGazette)
-                        is Beat.Blessing -> BlessingChoices(beat.choices, onChooseBlessing)
-                        is Beat.Tomorrow -> TomorrowCard(beat, onOpenGazette = onOpenGazette)
-                        is Beat.Fallen -> FallenCard(beat, onOpenGazette = onOpenGazette)
+                    FramedPanel(modifier = Modifier.fillMaxWidth()) {
+                        when (beat) {
+                            is Beat.Open -> ShopOpenCard(beat, model.day)
+                            is Beat.Visit -> VisitCard(beat.visit, openBlade)
+                            is Beat.Tally -> TallyCard(beat, openHero)
+                            is Beat.Close -> ShopCloseCard(beat)
+                            is Beat.Quiet -> QuietDayCard(beat, openHero)
+                            is Beat.Aftermath -> AftermathCard(beat, openHero, openBlade, onWatchFight = { onWatchFight(it.eventId) }, onOpenGazette = onOpenGazette)
+                            is Beat.Blessing -> BlessingChoices(beat.choices, onChooseBlessing)
+                            is Beat.Tomorrow -> TomorrowCard(beat, onOpenGazette = onOpenGazette)
+                            is Beat.Fallen -> FallenCard(beat, onOpenGazette = onOpenGazette)
+                        }
                     }
                 }
             }

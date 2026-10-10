@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -24,6 +23,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.theme.SceneCream
 import com.example.blacksmithproject.ui.theme.SceneGold
 import com.example.blacksmithproject.ui.theme.SceneInk
@@ -54,7 +54,7 @@ fun ShopDayTopBar(
         // The cards that end the day wait for a choice at any speed, so they show neither control.
         if (canSkip) OutlinedButton(
             onClick = { onSpeedChange(speed.next) }, enabled = !reducedMotion,
-            border = BorderStroke(1.dp, SceneGold.copy(alpha = if (reducedMotion) 0.4f else 1f)),
+            border = BorderStroke(1.dp, SceneGold.copy(alpha = if (reducedMotion) 0.4f else 1f)), shape = MaterialTheme.shapes.small,
             colors = ButtonDefaults.outlinedButtonColors(contentColor = SceneCream, disabledContentColor = SceneCream.copy(alpha = 0.5f)),
             contentPadding = ButtonDefaults.TextButtonContentPadding,
             modifier = Modifier.heightIn(min = 48.dp).widthIn(min = 64.dp).testTag("shopday_speed")
@@ -75,7 +75,7 @@ fun ShopDayTopBar(
 @Composable
 fun ShopDayControls(canBack: Boolean, nextLabel: String, onBack: () -> Unit, onNext: () -> Unit, modifier: Modifier = Modifier, nextTag: String = "shopday_next") {
     Row(modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-        OutlinedButton(onClick = onBack, enabled = canBack, modifier = Modifier.heightIn(min = 52.dp).testTag("shopday_back")) { Text("Back", maxLines = 1) }
-        Button(onClick = onNext, modifier = Modifier.weight(1f).heightIn(min = 52.dp).testTag(nextTag)) { Text(nextLabel, style = MaterialTheme.typography.titleMedium, maxLines = 1) }
+        OutlinedButton(onClick = onBack, enabled = canBack, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 52.dp).testTag("shopday_back")) { Text("Back", maxLines = 1) }
+        PrimaryActionButton(nextLabel, onNext, Modifier.weight(1f).testTag(nextTag))
     }
 }

@@ -17,10 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.Secondary
+import com.example.blacksmithproject.ui.SectionHeader
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.DayResolution
 import com.tinyblacksmith.core.model.EventRecord
@@ -52,9 +52,7 @@ fun DayResolution.weaponSnapshot(id: WeaponId) = shopWeapons.firstOrNull { it.we
     ?: field.firstNotNullOfOrNull { f -> f.weapon?.takeIf { it.weaponId == id } }
 
 @Composable
-internal fun SheetSection(title: String, modifier: Modifier = Modifier) {
-    Text(title, style = MaterialTheme.typography.titleMedium, modifier = modifier.padding(top = Space.md, bottom = Space.xs).semantics { heading() })
-}
+internal fun SheetSection(title: String, modifier: Modifier = Modifier) = SectionHeader(title, modifier)
 
 /**
  * Label and value side by side; stacked once the text is large enough that two columns would wrap every line.

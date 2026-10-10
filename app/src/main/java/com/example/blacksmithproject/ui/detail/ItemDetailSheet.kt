@@ -1,7 +1,6 @@
 package com.example.blacksmithproject.ui.detail
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -12,11 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -34,25 +31,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.Labels
-import com.example.blacksmithproject.ui.PixelImage
+import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.Secondary
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.theme.Space
+import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.AffixId
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
+import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.Weapon
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponLocation
@@ -61,6 +57,13 @@ import com.tinyblacksmith.core.model.WeaponSnapshot
 /** An affix or a flaw with the sentence that says what it does. */
 @Immutable
 data class Property(val name: String, val description: String)
+
+/**
+ * One number of a blade exactly as core holds it. [max] is the bound core enforces on it (null when it has none), [word]
+ * the band the number falls in, and [was] the same number on the visit snapshot when the blade has changed since.
+ */
+@Immutable
+data class Stat(val label: String, val value: Int, val word: String? = null, val max: Int? = null, val was: Int? = null)
 
 /** What the shop may do with a blade it holds, with the labels that state each cost. Null on [ItemDetail] for a blade that is not in the shop. */
 @Immutable
@@ -109,6 +112,11 @@ data class ItemDetail(
     val signature: Boolean,
     /** "Spear", or "Frost spear". */
     val kind: String,
+    val rarity: Rarity,
+    val element: Element?,
+    val title: String?,
+    /** Power, quality, condition and renown of the blade of today (of the snapshot once the blade is gone). */
+    val stats: List<Stat>,
     val counter: List<Fact>,
     val now: List<Fact>,
     val affixes: List<Property>,
@@ -139,6 +147,10 @@ fun GameEngine.itemDetail(state: GameState, weaponId: WeaponId, snapshot: Weapon
         badge = Sprites.badge(shown.rarity),
         signature = shown.signatureId != null,
         kind = shown.element?.let { "${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }} ${family.lowercase()}" } ?: family,
+        rarity = shown.rarity,
+        element = shown.element,
+        title = shown.title,
+        stats = stats(shown, before = first.takeIf { differs && present != null }),
         counter = if (differs) facts(first) else emptyList(),
         now = when {
             weapon == null -> listOf(Fact("Where", "No longer in the forge's records"))
@@ -156,12 +168,28 @@ fun GameEngine.itemDetail(state: GameState, weaponId: WeaponId, snapshot: Weapon
 
 private fun GameEngine.property(id: AffixId) = content.affixById[id]?.let { Property(it.name, it.description) } ?: Property(id.value, "")
 
+private fun qualityWord(w: WeaponSnapshot) = Labels.quality(w.quality).replaceFirstChar { it.uppercase() }
+private fun conditionWord(w: WeaponSnapshot) = when { w.condition < 40 -> "Battered"; w.condition < 70 -> "Worn"; else -> "Sound" }
+private fun renownWord(w: WeaponSnapshot) = Labels.fame(w.fame)?.replaceFirstChar { it.uppercase() } ?: "Unsung"
+
 private fun facts(w: WeaponSnapshot): List<Fact> = listOfNotNull(
     Fact("Rarity", Labels.rarity(w.rarity)),
-    Fact("Quality", "${Labels.quality(w.quality).replaceFirstChar { it.uppercase() }} (${w.quality})"),
-    Fact("Condition", when { w.condition < 40 -> "Battered"; w.condition < 70 -> "Worn"; else -> "Sound" }),
-    Fact("Renown", Labels.fame(w.fame)?.replaceFirstChar { it.uppercase() } ?: "Unsung"),
+    Fact("Quality", "${qualityWord(w)} (${w.quality})"),
+    Fact("Condition", conditionWord(w)),
+    Fact("Renown", renownWord(w)),
     w.title?.let { Fact("Title", "\"$it\"") },
+)
+
+// Quality is 1..100 and condition 0..100 by the engine's invariants (core Invariants.kt); power and fame have no ceiling.
+private const val QUALITY_MAX = 100
+private const val CONDITION_MAX = 100
+
+/** The numbers of [w] as stored; [before] is the visit snapshot of a blade that has changed since, for the "was" of each. */
+private fun stats(w: WeaponSnapshot, before: WeaponSnapshot?): List<Stat> = listOf(
+    Stat("Power", w.power, was = before?.power?.takeIf { it != w.power }),
+    Stat("Quality", w.quality, qualityWord(w), QUALITY_MAX, before?.quality?.takeIf { it != w.quality }),
+    Stat("Condition", w.condition, conditionWord(w), CONDITION_MAX, before?.condition?.takeIf { it != w.condition }),
+    Stat("Renown", w.fame, renownWord(w), was = before?.fame?.takeIf { it != w.fame }),
 )
 
 /** Where the blade is today; the holder's line opens their sheet while they are still in the save. */
@@ -239,18 +267,11 @@ fun ItemDetailContent(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
-        Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
-            Box(Modifier.size(72.dp).drawBehind { if (detail.signature) drawCircle(Sprites.signatureRing, radius = size.minDimension / 2 - 1.dp.toPx(), style = Stroke(2.dp.toPx())) }) {
-                PixelImage(detail.sprite, 72.dp, description = null)
-                PixelImage(detail.badge, 24.dp, description = null)
-            }
-            Column(Modifier.weight(1f)) {
-                Text(detail.name, style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
-                Secondary(detail.kind + if (detail.signature) " · signature work" else "")
-            }
-        }
+        WeaponStatCard(detail)
         FactBlock(AT_THE_COUNTER.takeIf { detail.counter.isNotEmpty() }, detail.counter, "sheet_counter", onOpenHero, onOpenItem = {})
-        FactBlock(NOW.takeIf { detail.counter.isNotEmpty() }, detail.now, "sheet_now", onOpenHero, onOpenItem = {})
+        // The card already says the whole blade; "then and now" in words stays only for a blade that has changed since.
+        val onCard = setOf("Rarity", "Title") + detail.stats.map { it.label }
+        FactBlock(NOW.takeIf { detail.counter.isNotEmpty() }, if (detail.counter.isEmpty()) detail.now.filterNot { it.label in onCard } else detail.now, "sheet_now", onOpenHero, onOpenItem = {})
 
         // The price comes before the lore: on a blade of the shop it is what the player came to change.
         detail.stock?.let { stock ->
@@ -262,31 +283,11 @@ fun ItemDetailContent(
             }
         }
 
-        SheetSection("Properties")
-        if (detail.affixes.isEmpty()) Secondary("No special properties.")
-        detail.affixes.forEach { PropertyRow(it, flaw = false) }
-        if (detail.flaws.isNotEmpty()) {
-            SheetSection("Flaws")
-            detail.flaws.forEach { PropertyRow(it, flaw = true) }
-        }
-
         FactBlock("Recipe", detail.recipe, "sheet_recipe", onOpenHero, onOpenItem = {})
 
         SheetSection("History")
         Lines(detail.history, "Its story has not been written yet.")
-        OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close")) { Text("Close") }
-    }
-}
-
-/** Name and what it does. A flaw carries the flaw pip, and the section heading says "Flaws" in words. */
-@Composable
-private fun PropertyRow(p: Property, flaw: Boolean) {
-    Column(Modifier.fillMaxWidth().padding(vertical = Space.xs).semantics(mergeDescendants = true) {}) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-            if (flaw) PixelImage(Sprites.badgeFlaw, 16.dp, description = null)
-            Text(p.name, style = MaterialTheme.typography.titleSmall)
-        }
-        if (p.description.isNotEmpty()) Secondary(p.description)
+        OutlinedButton(onClick = onDismiss, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close")) { Text("Close") }
     }
 }
 
@@ -311,10 +312,10 @@ private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onSt
     }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
         if (stock.listedPrice != null) {
-            Button(onClick = { onStock(StockAction.SetPrice(price)) }, enabled = enabled, modifier = Modifier.heightIn(min = 48.dp).testTag("item_set_price")) { Text("Set price") }
-            OutlinedButton(onClick = { onStock(StockAction.Unlist) }, enabled = enabled, modifier = Modifier.heightIn(min = 48.dp).testTag("item_unlist")) { Text("Unlist") }
+            PrimaryActionButton("Set price", { onStock(StockAction.SetPrice(price)) }, Modifier.testTag("item_set_price"), enabled)
+            OutlinedButton(onClick = { onStock(StockAction.Unlist) }, enabled = enabled, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 52.dp).testTag("item_unlist")) { Text("Unlist") }
         } else {
-            Button(onClick = { onStock(StockAction.ListAt(price)) }, enabled = enabled, modifier = Modifier.heightIn(min = 48.dp).testTag("item_list")) { Text("List at $price") }
+            PrimaryActionButton("List at $price", { onStock(StockAction.ListAt(price)) }, Modifier.testTag("item_list"), enabled)
         }
     }
     TextButton(onClick = { onStock(StockAction.Salvage) }, enabled = enabled, modifier = Modifier.heightIn(min = 48.dp).testTag("item_salvage")) { Text(stock.salvage) }
@@ -327,6 +328,7 @@ private fun StepButton(label: String, description: String, onClick: () -> Unit) 
     OutlinedButton(
         onClick = onClick,
         contentPadding = PaddingValues(4.dp),
+        shape = MaterialTheme.shapes.small,
         modifier = Modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp).semantics { contentDescription = description },
     ) { Text(label) }
 }

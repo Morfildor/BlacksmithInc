@@ -49,6 +49,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.detail.WeaponStatCard
+import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.theme.PaperInk
 import com.example.blacksmithproject.ui.theme.PaperInkMuted
 import com.example.blacksmithproject.ui.theme.PaperRule
@@ -73,33 +75,22 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
     val reveal by animateFloatAsState(targetValue = 1f, animationSpec = tween(if (reducedMotion) 0 else 600), label = "reveal")
     val haptics = LocalHaptics.current
     LaunchedEffect(weaponId) { haptics.play(if (w.signatureId != null || w.rarity >= Rarity.EPIC) Moment.FORGE_SIGNATURE else Moment.FORGE_STRIKE) }
-    AlertDialog(
-        modifier = Modifier.semantics { testTagsAsResourceId = true },
-        onDismissRequest = vm::dismissReveal,
-        title = {
-            Column(Modifier.fillMaxWidth().graphicsLayer { alpha = reveal }, horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(Modifier.size(96.dp)) {
-                    WeaponSprite(w, size = 96.dp)
-                    if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(96.dp, reducedMotion)
-                }
-                Text(w.name, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, modifier = Modifier.padding(top = Space.sm))
-                Text("${Labels.rarity(w.rarity)} · ${Labels.quality(w.quality)}", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+    val detail = remember(s.state, weaponId) { vm.engine.itemDetail(s.state, weaponId) } ?: return
+    // The blade is revealed as its item card; the card scrolls when large text makes it taller than the screen.
+    Dialog(onDismissRequest = vm::dismissReveal) {
+        WeaponStatCard(
+            detail, Modifier.semantics { testTagsAsResourceId = true }.graphicsLayer { alpha = reveal }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp).verticalScroll(rememberScrollState()),
+            title = "Fresh from the forge",
+            overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
+        ) {
+            Secondary("${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}.", Modifier.padding(top = Space.md))
+            Secondary("Suggested price $suggested gold. Set your own in the Shop.")
+            Row(Modifier.fillMaxWidth().padding(top = Space.md), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+                OutlinedButton(onClick = vm::dismissReveal, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 52.dp).testTag("reveal_store")) { Text("Store") }
+                PrimaryActionButton("List at $suggested", { vm.dispatch(Command.ToggleShelf(w.id, true, suggested)); vm.dismissReveal() }, Modifier.weight(1f).testTag("reveal_list"), enabled = w.isInStorage)
             }
-        },
-        text = {
-            Column(Modifier.graphicsLayer { alpha = reveal }.verticalScroll(rememberScrollState())) {
-                Secondary("${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}" + (w.title?.let { " · \"$it\"" } ?: ""))
-                if (w.affixes.isNotEmpty() || w.flaws.isNotEmpty()) Spacer(Modifier.heightIn(min = Space.sm))
-                w.affixes.forEach { Text("+ ${content.affix(it).name}: ${content.affix(it).description}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 2.dp)) }
-                w.flaws.forEach { Text("− ${content.affix(it).name}: ${content.affix(it).description}", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(vertical = 2.dp)) }
-                Secondary("Suggested price $suggested gold. Set your own in the Shop.", Modifier.padding(top = Space.md))
-            }
-        },
-        confirmButton = {
-            Button(onClick = { vm.dispatch(Command.ToggleShelf(w.id, true, suggested)); vm.dismissReveal() }, enabled = w.isInStorage, modifier = Modifier.heightIn(min = 48.dp).testTag("reveal_list")) { Text("List at $suggested") }
-        },
-        dismissButton = { OutlinedButton(onClick = vm::dismissReveal, modifier = Modifier.heightIn(min = 48.dp).testTag("reveal_store")) { Text("Store") } },
-    )
+        }
+    }
 }
 
 /**

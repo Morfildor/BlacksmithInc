@@ -10,12 +10,12 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -43,12 +43,11 @@ fun SettingsSheet(
     val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "unknown" }
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     ModalBottomSheet(onDismissRequest = onDismiss, modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("settings_sheet")) {
-        Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
-            Text("Settings", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = Space.sm))
+        FramedPanel("Settings", Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
             SwitchRow("Reduced motion", "Stops the ember animation, the reveal fade and the stepped battle replay.", reducedMotion, onReducedMotion, "settings_reduced_motion")
             SwitchRow("Haptics", "A short vibration when a blade is revealed, a day ends, a request is refused or an era ends.", haptics, onHaptics, "settings_haptics")
             if (onShopDaySpeed != null) SpeedRow(if (reducedMotion) ShopDaySpeed.TAP else shopDaySpeed, enabled = !reducedMotion, onShopDaySpeed)
-            onMainMenu?.let { TextButton(onClick = it, modifier = Modifier.padding(top = Space.sm).heightIn(min = 48.dp).testTag("settings_main_menu")) { Text("Main menu") } }
+            onMainMenu?.let { OutlinedButton(onClick = it, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("settings_main_menu")) { Text("Main menu") } }
             Secondary("Version $version", Modifier.padding(top = Space.md).testTag("settings_version"))
         }
     }
