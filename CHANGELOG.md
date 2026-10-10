@@ -91,6 +91,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   wanted (it counts for more in the hand and sells with its own reason), the town's champions come to the shop more
   readily, and a blade of the element the besieger shrugs off that would have sold on a calm day stays on the shelf,
   and the visit says so. Stronger blades of a resisted element still sell.
+- A new look: one dark forge theme in both system modes, bronze-framed panels with gold headings and a gold primary button, and blades shown as an item card with power, quality and condition bars, buffs ("+") and flaws ("−"); a fresh forge is revealed as that card.
 - The walls can cost a champion. When a siege is lost badly (the raid at one and a half times the town's defense or
   more) it is a rout: the champions take a heavier wound, and one who went up barely recovered can fall there. The
   blade they carried is recovered by comrades more often than on the road, or seized, or lost. A narrow loss still only
