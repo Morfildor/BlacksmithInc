@@ -136,6 +136,14 @@ class GazetteDigestTest {
     }
 
     @Test
+    fun aHintAboutASignatureRecipeIsAClueNotAPairing() {
+        val d = digest(listOf(ev(EventType.DISCOVERY, 3, "Notes on Silver + Stormglass Bow. A signature recipe is hidden here.", data = mapOf("key" to "sig:stormsong"))))
+        val story = d.stories.single()
+        assertEquals(Kind.CLUE, story.kind)
+        assertTrue(story.opensNotebook)
+    }
+
+    @Test
     fun aSiegeWarningIsNewsOnceAndThenAReminder() {
         val trait = content.siegeTraits.first()
         val warning = ev(
