@@ -32,6 +32,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Debug builds only: a "Scenarios" entry on the main menu opens eight ready-made saves for things that are rare in normal play (a guild lesson, an inherited blade, a merchant resale, a death at the wall, a Known Name regular, a returned legend, a blade with three owners, a storage of 200 blades). Each says how it was made, and loading one asks first because it replaces the current run. Release builds contain neither the entry nor the saves.
 
 ### Changed
+- What just happened to a blade ("Iron Sword is on the shelf at 90 gold.") is said in a banner that drops in under the top bar, not in a bar at the foot of the screen, where it covered the Forge button and End Day for ten seconds. It leaves by itself after four seconds, or at a tap or a swipe up.
 - Title screen: the workshop at night as a full-width picture with the game's name on it, the era and legacy on a plate, and the actions at the foot of the screen.
 - Shop day: the first-run hint reads as a tip; long cards fade out at the controls; "No sale" is a red badge; the evening card shows purse, shelf and storage as tiles with a larger dawn on tall screens.
 - Shop: the siege line and the forge's health are one strip at the top, the same as on the Forge; the shelf is drawn with its free places; the day's lead is marked "Worth doing first"; the rows to the board, storage and supplies carry icons; the tip about listing leaves once a blade is listed. Lists fade where they run under a pinned button.

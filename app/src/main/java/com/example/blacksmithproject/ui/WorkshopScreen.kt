@@ -1,8 +1,15 @@
 package com.example.blacksmithproject.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,10 +33,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +45,7 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
@@ -87,6 +91,10 @@ import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.shopday.LeadKind
+import kotlinx.coroutines.delay
+
+/** How long a notice stays over the workshop before it leaves by itself. */
+private const val NOTICE_MILLIS = 4_000L
 
 /**
  * One portrait workshop with four destinations (plan 1.2) and a settings sheet behind a gear. Chrome is deliberately
@@ -113,15 +121,12 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     // What just happened to a blade (listed, stored, repriced, melted down): said once, over whichever destination is
     // open. Under a sheet it could not be seen, so there the sheet says it and this waits.
     val covered = storageOpen || s.sheet != null
-    val notices = remember { SnackbarHostState() }
-    LaunchedEffect(s.notice, covered) {
-        val notice = s.notice?.takeIf { !covered } ?: return@LaunchedEffect
-        try { notices.showSnackbar(notice, duration = SnackbarDuration.Long) } finally { vm.dismissNotice(notice) }
+    val notice = s.notice?.takeIf { !covered }
+    LaunchedEffect(notice) {
+        if (notice == null) return@LaunchedEffect
+        try { delay(NOTICE_MILLIS) } finally { vm.dismissNotice(notice) }
     }
     Scaffold(
-        snackbarHost = {
-            SnackbarHost(notices) { Snackbar(it, Modifier.testTag("notice"), shape = MaterialTheme.shapes.small, containerColor = BronzeContainer, contentColor = Cream) }
-        },
         bottomBar = {
             Column {
                 // End Day is the Shop's way forward. The Forge keeps it under "More", and beside its action when no forge is left today.
@@ -135,6 +140,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
             HorizontalDivider(color = Bronze)
             // Each tip belongs to one destination and shows one at a time; dismissal lives in settings.
             val tip = Tips.forDest(s.dest).firstOrNull { it.id !in seenTips }
+            // The notice drops in over the head of the destination: the actions at its foot (Forge, End Day) stay free.
+            Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
             when (s.dest) {
                 Dest.SHOP -> ShopPanel(
                     s.shop, s.busy, reducedMotion,
@@ -163,6 +170,16 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                 Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesFocus = it?.value; suppliesOpen = true }, onOpenBoard = { boardOpen = true }, onEndDay = { workshopHaptics.play(Moment.END_DAY); vm.endDay() })
                 Dest.RECORDS -> RecordsPanel(s, vm)
                 Dest.TOWN -> TownPanel(s, vm)
+            }
+            AnimatedContent(
+                notice, Modifier.align(Alignment.TopCenter),
+                transitionSpec = {
+                    // No size animation: the slide and the fade are the whole of it.
+                    (if (reducedMotion) fadeIn() togetherWith fadeOut()
+                    else (slideInVertically { -it } + fadeIn()) togetherWith (slideOutVertically { -it } + fadeOut())) using null
+                },
+                label = "notice",
+            ) { said -> if (said != null) NoticeBanner(said, onDismiss = { vm.dismissNotice(said) }) }
             }
         }
     } }

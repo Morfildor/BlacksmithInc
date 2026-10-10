@@ -1,5 +1,16 @@
 # Progress — 2026-10-10 (gameplay depth built in the evening; major update final at about 13:00)
 
+
+## Workshop notice moved off the Forge button (2026-10-10, night)
+The owner's phone screenshot showed the notice after a forge ("... is on the shelf at 108 gold.") lying over the Forge
+button for the ten seconds a snackbar stays. Every workshop notice is now a banner (`NoticeBanner` in `ui/Frames.kt`) that
+slides in under the top bar of `WorkshopScreen`, stays four seconds and leaves at a tap or a swipe up; with reduced motion
+it only fades. The wording and the ViewModel are unchanged. Checks: `:app:testDebugUnitTest` and `:app:assembleDebug` pass;
+on the `carbscan` AVD (API 36, port 5560, not Pixel_10_Pro) a forge and "List at" showed the banner at the top with the
+Forge button free, and a screen recording showed it slide in and out at full width. Not rerun: the device tests.
+`smoke.sh` line 66 reads "Shelf 1 of 8" a few seconds after listing; if that leaned on the notice and not the Shop's own
+shelf line it can now miss (the script is already listed below as broken by the relic offer).
+
 ## Gameplay depth on `main` (2026-10-10, late night)
 At the owner's request the gameplay-depth work below was committed as it stood (`7bac2de`, pushed as `origin/gameplay-depth`)
 and then brought onto `main` as one commit, over the Forge-first redesign, UI/UX batch 4 and the UI polish pass. The engine

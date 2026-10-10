@@ -5,6 +5,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -38,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -186,6 +189,34 @@ fun NoticeLine(text: String, modifier: Modifier = Modifier) {
         "✓ $text", style = MaterialTheme.typography.labelLarge, color = BuffGreen,
         modifier = modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.xs).semantics { liveRegion = LiveRegionMode.Polite }.testTag("sheet_notice"),
     )
+}
+
+/**
+ * What just happened, said over the head of the workshop: the first sentence in cream beside a gold tick, the rest muted
+ * under it. A tap or a swipe up puts it away.
+ */
+@Composable
+fun NoticeBanner(text: String, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+    val cut = text.indexOf(". ")
+    Row(
+        modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm)
+            .shadow(8.dp, MaterialTheme.shapes.small).background(ForgePanel, MaterialTheme.shapes.small).border(1.dp, Bronze, MaterialTheme.shapes.small)
+            .clip(MaterialTheme.shapes.small)
+            .pointerInput(onDismiss) { detectVerticalDragGestures { _, dy -> if (dy < 0) onDismiss() } }
+            .clickable(onClickLabel = "Dismiss", onClick = onDismiss)
+            .padding(horizontal = Space.md, vertical = 12.dp)
+            .semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }.testTag("notice"),
+        horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            Modifier.defaultMinSize(24.dp, 24.dp).background(Gold.copy(alpha = 0.14f), MaterialTheme.shapes.extraSmall).border(1.dp, Gold, MaterialTheme.shapes.extraSmall),
+            contentAlignment = Alignment.Center,
+        ) { Text("✓", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = Gold) }
+        Column(Modifier.weight(1f)) {
+            Text(if (cut < 0) text else text.substring(0, cut + 1), style = MaterialTheme.typography.titleSmall, color = Cream)
+            if (cut >= 0) Text(text.substring(cut + 2), style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+        }
+    }
 }
 
 /** The way back from a blade or a hero to the list it was opened from, pinned at the head of the sheet. */
