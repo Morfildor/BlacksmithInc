@@ -109,13 +109,13 @@ class M4ScreensTest {
     }
 
     @Test
-    fun theShopPlateSaysTheBesiegerAndARequestSaysWhy() {
+    fun theShopPlateSaysTheShelfAndARequestSaysWhy() {
         val buyer = morning.aliveHeroes().first()
         val asked = Commission(CommissionId("why1"), buyer.id, engine.content.families.first().id, 40, 80, morning.day, morning.day + 3, CommissionStatus.OFFERED, kind = CommissionKind.SIEGE_PREP)
         val state = morning.copy(commissions = mapOf(asked.id to asked))
         showShop(state)
-        // The plate is the top of the Shop: on screen without scrolling.
-        compose.onNodeWithText(engine.threatUi(state)!!.summary, substring = true).assertIsDisplayed()
+        // The plate is the top of the Shop: on screen without scrolling. The besieger is the strip's, over it (the workshop screen gives it).
+        compose.onNodeWithText(engine.shopUi(state).plate).assertIsDisplayed()
         showBoard(state)
         compose.onNodeWithTag("board_commission_why1").performClick()
         compose.onNodeWithTag("request_why_why1", useUnmergedTree = true).assertIsDisplayed()

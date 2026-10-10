@@ -141,7 +141,8 @@ class ShopPanelTest {
             compose.runOnUiThread { shop = engine.shopUi(day.state) }
             compose.waitForIdle()
             compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertTextEquals(tomorrow.action)
-            if (tomorrow.reason != null) compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals(tomorrow.reason!!)
+            // The same sentence a morning later: the day the card called "today" is the Shop's "yesterday" (`Lines.lead`).
+            if (tomorrow.reason != null) compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals(tomorrow.reason!!.replace("the price today", "the price yesterday"))
             else compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertDoesNotExist()
         }
     }

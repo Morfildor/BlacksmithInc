@@ -257,11 +257,11 @@ private fun slotArt(slot: RecipeSlot, d: ForgeDraft, content: ContentCatalog): I
 /** The places of the recipe side by side: the thing chosen as an object, its kind over it, its name under it. */
 @Composable
 private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog, open: RecipeSlot?, reducedMotion: Boolean, onToggle: (RecipeSlot) -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+    Row(Modifier.fillMaxWidth().padding(top = Space.sm).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
         slots.forEach { slot ->
             val active = open == slot.slot
             Column(
-                Modifier.weight(1f).heightIn(min = 84.dp).clip(Card).background(if (active) BronzeContainer else ForgePanelRaised).border(if (active) 1.5.dp else 1.dp, if (active) Gold else BronzeDeep, Card)
+                Modifier.weight(1f).fillMaxHeight().heightIn(min = 84.dp).clip(Card).background(if (active) BronzeContainer else ForgePanelRaised).border(if (active) 1.5.dp else 1.dp, if (active) Gold else BronzeDeep, Card)
                     .clickable(role = Role.Button) { onToggle(slot.slot) }.padding(horizontal = Space.xs, vertical = 6.dp).testTag("forge_slot_${slot.slot.name.lowercase()}")
                     .semantics(mergeDescendants = true) { contentDescription = "${slot.slot.label}: ${slot.value ?: "not chosen"}${slot.stock?.let { n -> ", $n in stock" }.orEmpty()}, ${if (active) "choosing" else "tap to change"}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -307,8 +307,9 @@ private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCata
         }
         @Composable
         fun grid(tiles: List<OptionUi>) = tiles.chunked(columns).forEach { row ->
-            Row(Modifier.fillMaxWidth().padding(bottom = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                row.forEach { o -> OptionTile(o, optionArt(slot, o, content), Modifier.weight(1f)) { if (o.usable) onPick(o) else inspected = o.id } }
+            // One height for the row: a name that wraps makes its neighbours as tall, not itself the odd one.
+            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(bottom = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                row.forEach { o -> OptionTile(o, optionArt(slot, o, content), Modifier.weight(1f).fillMaxHeight()) { if (o.usable) onPick(o) else inspected = o.id } }
                 repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
             }
         }
@@ -400,11 +401,11 @@ private fun ForgingOptions(d: ForgeDraft, onChange: ((ForgeDraft) -> ForgeDraft)
             ForgeMode.entries.forEach { mode ->
                 val on = d.mode == mode
                 Box(
-                    Modifier.heightIn(min = 48.dp).clip(Chip).background(if (on) ForgePanelRaised else ForgeNight)
+                    Modifier.heightIn(min = 48.dp).clip(Chip).background(if (on) BronzeContainer else ForgeNight).then(if (on) Modifier.border(1.dp, Gold, Chip) else Modifier)
                         .clickable(role = Role.RadioButton) { onChange { it.copy(mode = mode, catalystId = it.catalystId?.takeIf { mode == ForgeMode.ADVANCED }, technique = it.technique?.takeIf { mode == ForgeMode.ADVANCED }) } }
                         .padding(horizontal = 12.dp).testTag("forge_mode_${mode.name.lowercase()}").semantics { selected = on },
                     contentAlignment = Alignment.Center,
-                ) { Text(if (mode == ForgeMode.QUICK) "Quick" else "Advanced", style = MaterialTheme.typography.labelLarge, color = if (on) Cream else CreamMuted) }
+                ) { Text(if (mode == ForgeMode.QUICK) "Quick" else "Advanced", style = MaterialTheme.typography.labelLarge, color = if (on) Gold else CreamMuted) }
             }
         }
         Spacer(Modifier.weight(1f))
