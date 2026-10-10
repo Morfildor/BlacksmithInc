@@ -16,6 +16,10 @@ import com.example.blacksmithproject.data.SaveStore
 import com.example.blacksmithproject.data.Settings
 import com.example.blacksmithproject.data.SettingsStore
 import com.example.blacksmithproject.data.ShopDaySpeed
+import com.example.blacksmithproject.ui.ShopUi
+import com.example.blacksmithproject.ui.shopUi
+import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
@@ -25,6 +29,7 @@ import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.persistence.DayCursor
 import com.tinyblacksmith.core.shopday.ShopDay
 import com.tinyblacksmith.core.shopday.ShopDayScript
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,14 +48,8 @@ import kotlinx.coroutines.withContext
 /** The four places the player goes (plan 1.2); the bar shows these and nothing else. */
 enum class Dest { SHOP, FORGE, TOWN, RECORDS }
 
-/**
- * The fine-grained page inside a destination: HOME and MARKET are the two pages of Shop until the real Shop panel
- * (T2.8b) replaces them, GAZETTE ("News"), JOURNAL and LEGACY are the three segments of Records. Blocks on Home still
- * navigate with these names.
- */
-enum class Panel(val dest: Dest) {
-    HOME(Dest.SHOP), MARKET(Dest.SHOP), FORGE(Dest.FORGE), TOWN(Dest.TOWN), JOURNAL(Dest.RECORDS), GAZETTE(Dest.RECORDS), LEGACY(Dest.RECORDS)
-}
+/** The three segments of Records; GAZETTE is the one labelled "News". */
+enum class RecordsPage { GAZETTE, JOURNAL, LEGACY }
 
 /** The detail sheet that is open over the workshop: only who or what it shows; its content is read from the save on every render. */
 sealed interface Sheet {
@@ -78,7 +77,10 @@ sealed interface UiState {
     data class Title(val legacy: LegacyProfile, override val op: Status = Status.Idle) : UiState
     data class Playing(
         val state: GameState,
-        val panel: Panel = Panel.HOME,
+        /** The Shop destination's content, built from [state] off the main thread. */
+        val shop: ShopUi,
+        val dest: Dest = Dest.SHOP,
+        val records: RecordsPage = RecordsPage.GAZETTE,
         val draft: ForgeDraft = ForgeDraft(),
         val revealWeaponId: WeaponId? = null,
         val lastError: String? = null,
@@ -88,7 +90,6 @@ sealed interface UiState {
         val sheet: Sheet? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
-        val dest: Dest get() = panel.dest
     }
     /**
      * The last resolved day while the player has not watched it to its end (the day cursor is not at DONE). [state] is
@@ -135,10 +136,12 @@ class GameViewModel(
     private val session: GameSession,
     val settings: Settings,
     private val saved: SavedStateHandle,
-    private val compute: CoroutineDispatcher = Dispatchers.Default,   // builds the shop-day script off the main thread
+    private val compute: CoroutineDispatcher = Dispatchers.Default,   // builds the shop-day script and the Shop's content off the main thread
+    private val buildScript: (DayResolution, GameState, ContentCatalog, BalanceConfig) -> ShopDayScript = ShopDay::script,
 ) : ViewModel() {
     private data class Local(
-        val panel: Panel = Panel.HOME,
+        val dest: Dest = Dest.SHOP,
+        val records: RecordsPage = RecordsPage.GAZETTE,
         val draft: ForgeDraft = ForgeDraft(),
         val revealWeaponId: WeaponId? = null,
         val blessingOfferDismissedDay: Int? = null,
@@ -162,12 +165,18 @@ class GameViewModel(
     /** The script of the unwatched day, built once per saved state: moving through the day never builds it again. */
     private var script: Pair<GameState, ShopDayScript>? = null
 
+    /** A run whose last day could not be turned into a script: that day counts as watched (the Gazette still has it). */
+    private var unshowable: GameState? = null
+
+    /** The Shop destination's content, built once per saved state. */
+    private var shop: Pair<GameState, ShopUi>? = null
+
     /**
      * While a script is being built nothing is emitted, so the screen stays on what it showed (planning with its
      * controls locked, or the loading spinner) until the day can be shown whole.
      */
     val ui: StateFlow<UiState> = combine(session.snapshot, session.status, local, ::Triple)
-        .mapLatest { (snap, op, l) -> render(snap, op, l, scriptFor(snap)) }
+        .mapLatest { (snap, op, l) -> val script = scriptFor(snap); render(snap, op, l, script, shopFor(snap)) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Loading)
 
     init {
@@ -177,16 +186,38 @@ class GameViewModel(
 
     /** The last resolved day while it has not been watched to its end. */
     private fun unwatched(snap: GameSession.Snapshot?): DayResolution? =
-        snap?.run?.lastResolution?.takeIf { GameSession.pending(snap.run, snap.legacy, snap.cursor) != DayCursor.Stage.DONE }
+        snap?.run?.takeIf { it !== unshowable }?.lastResolution?.takeIf { GameSession.pending(snap.run, snap.legacy, snap.cursor) != DayCursor.Stage.DONE }
 
+    /**
+     * A script that cannot be built must not end the [ui] flow (the game would then crash at every launch): the day is
+     * treated as watched, its cursor moves to DONE so planning opens, and the Gazette still has the day.
+     */
     private suspend fun scriptFor(snap: GameSession.Snapshot?): ShopDayScript? {
         val last = unwatched(snap) ?: return null
         val run = snap?.run ?: return null
         script?.takeIf { it.first === run }?.let { return it.second }
-        return withContext(compute) { ShopDay.script(last, run, engine.content, engine.config) }.also { script = run to it }
+        return try {
+            withContext(compute) { buildScript(last, run, engine.content, engine.config) }.also { script = run to it }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            // Remembered before the cursor moves: the write re-enters this function through the session's status.
+            unshowable = run
+            viewModelScope.launch { session.run(Op.MoveCursor(DayCursor(last.commandId.value, DayCursor.Stage.DONE))) }
+            null
+        }
     }
 
-    private fun render(snap: GameSession.Snapshot?, op: Status, l: Local, script: ShopDayScript?): UiState {
+    /** True where the workshop is on screen: a run that goes on and whose last day has been watched. */
+    private fun plans(snap: GameSession.Snapshot?): Boolean = snap?.run?.isEnded == false && unwatched(snap) == null
+
+    private suspend fun shopFor(snap: GameSession.Snapshot?): ShopUi? {
+        val run = snap?.run?.takeIf { plans(snap) } ?: return null
+        shop?.takeIf { it.first === run }?.let { return it.second }
+        return withContext(compute) { engine.shopUi(run) }.also { shop = run to it }
+    }
+
+    private fun render(snap: GameSession.Snapshot?, op: Status, l: Local, script: ShopDayScript?, shop: ShopUi?): UiState {
         if (snap == null || l.loading) return l.loadFailure?.let { UiState.LoadFailed(it, working = l.loading) } ?: UiState.Loading
         val run = snap.run ?: return UiState.Title(snap.legacy, op)
         val last = unwatched(snap)
@@ -201,7 +232,8 @@ class GameViewModel(
             val end = closed?.takeIf { it.first === run }?.second ?: engine.closeRun(run).also { closed = run to it }
             return UiState.RunEnded(run, end, snap.legacy, claimed = run.runId.value in snap.legacy.claimedRunIds, lastError = l.lastError, op = op)
         }
-        return UiState.Playing(run, l.panel, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet)
+        // Planning always arrives with the Shop's content: shopFor builds it before this is called, and now() checks.
+        return UiState.Playing(run, shop ?: engine.shopUi(run), l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -209,7 +241,9 @@ class GameViewModel(
         val snap = session.snapshot.value
         val built = script?.takeIf { it.first === snap?.run }?.second
         if (unwatched(snap) != null && built == null) return ui.value
-        return render(snap, session.status.value, local.value, built)
+        val stocked = shop?.takeIf { it.first === snap?.run }?.second
+        if (plans(snap) && stocked == null) return ui.value
+        return render(snap, session.status.value, local.value, built, stocked)
     }
 
     /** A load, a retried load or a start over: the screen leaves Loading / LoadFailed only when it has finished. */
@@ -233,7 +267,8 @@ class GameViewModel(
 
     private fun edit(transform: (Local) -> Local) {
         val l = local.updateAndGet(transform)
-        saved[KEY_PANEL] = l.panel.name
+        saved[KEY_DEST] = l.dest.name
+        saved[KEY_RECORDS] = l.records.name
         saved[KEY_REVEAL] = l.revealWeaponId?.value
         saved[KEY_BLESSING_DAY] = l.blessingOfferDismissedDay
         saved[KEY_SHEET] = when (val sheet = l.sheet) { is Sheet.Hero -> "hero:${sheet.id.value}"; is Sheet.Item -> "item:${sheet.id.value}"; null -> null }
@@ -243,7 +278,8 @@ class GameViewModel(
     private fun restored(): Local {
         val d = saved.get<ArrayList<String?>>(KEY_DRAFT)?.takeIf { it.size == 7 }
         return Local(
-            panel = saved.get<String>(KEY_PANEL)?.let { name -> Panel.entries.firstOrNull { it.name == name } } ?: Panel.HOME,
+            dest = saved.get<String>(KEY_DEST)?.let { name -> Dest.entries.firstOrNull { it.name == name } } ?: Dest.SHOP,
+            records = saved.get<String>(KEY_RECORDS)?.let { name -> RecordsPage.entries.firstOrNull { it.name == name } } ?: RecordsPage.GAZETTE,
             draft = if (d == null) ForgeDraft() else ForgeDraft(
                 mode = ForgeMode.entries.firstOrNull { it.name == d[0] } ?: ForgeMode.QUICK,
                 familyId = d[1]?.let(::WeaponFamilyId), coreId = d[2]?.let(::MaterialId), augmentId = d[3]?.let(::MaterialId), catalystId = d[4]?.let(::MaterialId),
@@ -294,15 +330,16 @@ class GameViewModel(
         launch(Op.Abandon(run.runId)) { edit { Local(loading = false, speed = it.speed) } }
     }
 
-    fun selectPanel(panel: Panel) = edit { it.copy(panel = panel) }
-    /** A bar tap: the destination's first page, unless the screen is already inside it. */
-    fun selectDest(dest: Dest) = edit { if (it.panel.dest == dest) it else it.copy(panel = when (dest) { Dest.SHOP -> Panel.HOME; Dest.FORGE -> Panel.FORGE; Dest.TOWN -> Panel.TOWN; Dest.RECORDS -> Panel.GAZETTE }) }
+    /** A bar tap. Records opens on the segment it was left on. */
+    fun selectDest(dest: Dest) = edit { it.copy(dest = dest) }
+    /** A segment of Records, from its own row or from a link elsewhere (yesterday's news on the Shop). */
+    fun selectRecords(page: RecordsPage) = edit { it.copy(dest = Dest.RECORDS, records = page) }
     fun updateDraft(transform: (ForgeDraft) -> ForgeDraft) = edit { it.copy(draft = transform(it.draft)) }
     fun dismissReveal() = edit { it.copy(revealWeaponId = null) }
     fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet) }
     fun closeSheet() = edit { it.copy(sheet = null) }
     fun dismissError() = edit { it.copy(lastError = null) }
-    fun dismissBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = session.snapshot.value?.run?.day, panel = Panel.HOME) }
+    fun dismissBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = session.snapshot.value?.run?.day, dest = Dest.SHOP) }
     fun reopenBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = null) }
 
     // The shop day (plan 6.5). These move the saved position and what is open over it; only chooseBlessing issues a command.
@@ -371,7 +408,7 @@ class GameViewModel(
         val last = s.state.lastResolution ?: return
         if (s.resumed || !s.position.isLast) return
         // An offer still open was put off on the Blessing card: planning does not ask again today.
-        edit { it.copy(panel = Panel.HOME, blessingOfferDismissedDay = if (s.state.pendingBlessingOffer.isNotEmpty()) s.state.day else it.blessingOfferDismissedDay) }
+        edit { it.copy(dest = Dest.SHOP, blessingOfferDismissedDay = if (s.state.pendingBlessingOffer.isNotEmpty()) s.state.day else it.blessingOfferDismissedDay) }
         viewModelScope.launch {
             session.run(Op.MoveCursor(DayCursor(last.commandId.value, DayCursor.Stage.DONE)))
             local.update { it.copy(dayId = null, sheet = null, gazetteOpen = false) }
@@ -475,7 +512,8 @@ class GameViewModel(
     }
 
     companion object {
-        private const val KEY_PANEL = "panel"
+        private const val KEY_DEST = "dest"
+        private const val KEY_RECORDS = "records"
         private const val KEY_DRAFT = "draft"
         private const val KEY_REVEAL = "reveal"
         private const val KEY_BLESSING_DAY = "blessing_day"

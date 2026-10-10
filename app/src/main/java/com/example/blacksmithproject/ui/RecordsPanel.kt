@@ -11,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import com.example.blacksmithproject.GameViewModel
-import com.example.blacksmithproject.Panel
+import com.example.blacksmithproject.RecordsPage
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Space
 
@@ -22,10 +22,9 @@ import com.example.blacksmithproject.ui.theme.Space
  */
 @Composable
 fun RecordsPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier) {
-    val pages = listOf(Panel.GAZETTE, Panel.JOURNAL, Panel.LEGACY)
-    val page = if (s.panel in pages) s.panel else Panel.GAZETTE
+    val page = s.records
     Column(modifier.fillMaxSize().padding(horizontal = Space.md).padding(top = Space.sm)) {
-        SegmentRow(pages, page, vm::selectPanel)
+        SegmentRow(page, vm::selectRecords)
         LazyColumn(
             Modifier.fillMaxSize().testTag("records_list"),
             state = remember(page) { LazyListState() },
@@ -33,9 +32,9 @@ fun RecordsPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
         ) {
             when (page) {
                 // The edition archive is one item: its per-day rows keep the Gazette's own open and close state.
-                Panel.GAZETTE -> item(key = "news") { Column { GazettePanel(s) } }
-                Panel.JOURNAL -> journalItems(s, vm)
-                else -> legacyItems(s, vm)
+                RecordsPage.GAZETTE -> item(key = "news") { Column { GazettePanel(s) } }
+                RecordsPage.JOURNAL -> journalItems(s, vm)
+                RecordsPage.LEGACY -> legacyItems(s, vm)
             }
         }
     }

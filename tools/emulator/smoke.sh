@@ -8,7 +8,15 @@ OUT="$1"; mkdir -p "$OUT"
 PKG=com.example.blacksmithproject
 
 # Remove the previous dump first: a dump that fails mid-transition must not pass a check on stale content.
-dump() { $ADB shell rm -f /sdcard/ui.xml; $ADB shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; $ADB shell cat /sdcard/ui.xml 2>/dev/null; }
+# A dump can come back empty while the screen is moving or the emulator is busy: try three times before giving up.
+dump() {
+  local x=""
+  for i in 1 2 3; do
+    $ADB shell rm -f /sdcard/ui.xml; $ADB shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
+    x=$($ADB shell cat /sdcard/ui.xml 2>/dev/null); [ -n "$x" ] && break; $ADB shell sleep 1
+  done
+  printf '%s' "$x"
+}
 has() { dump | grep -q "text=\"$1" ; }
 # tap the first node whose text starts with $1
 tap() {
@@ -43,8 +51,9 @@ $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && shot 01_title
 tap_id title_new_run || exit 1
-# A new run lands on the Shop destination (its Home page); the forge is one destination over.
-wait_text "Today" && shot 02_home
+# A new run lands on the Shop destination, which leads with the day's one lead; the forge is one destination over.
+wait_text "Forge your first blade" && shot 02_shop
+has_id shop_lead && echo "CHECK shop leads with a lead: ok" || echo "CHECK shop leads with a lead: FAIL"
 tap_id nav_forge || exit 1
 wait_text "Forge weapon" && shot 02_workshop
 scroll_to "Sword" && tap "Sword"; scroll_to "Iron" && tap "Iron"; scroll_to "Ember Resin" && tap "Ember Resin"
@@ -52,8 +61,8 @@ scroll_to "Forge weapon"; shot 03_forge_ready
 tap_id forge_weapon || exit 1
 wait_text "Suggested price" && shot 04_result
 tap_id reveal_list || exit 1
-tap_id nav_shop; tap_id page_market; $ADB shell sleep 1; shot 05_market
-has "Shelves (1/8)" && echo "CHECK shelf listed: ok" || echo "CHECK shelf listed: FAIL"
+tap_id nav_shop; $ADB shell sleep 1; shot 05_shop_listed
+has "Seats 6 · shelf 1 of 8" && echo "CHECK shelf listed: ok" || echo "CHECK shelf listed: FAIL"
 tap_id end_day || exit 1
 # The shop day opens on its first card: step a few cards, skip to the day's last card, read the Gazette over it (closing
 # it does not begin the next day), then begin the next day.
@@ -79,7 +88,7 @@ tap_id nav_settings; wait_text "Reduced motion" && shot 07c_settings
 has_id settings_version && echo "CHECK settings sheet: ok" || echo "CHECK settings sheet: FAIL"
 $ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 2
 $ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 2
-has_id page_market && echo "CHECK back returns to Shop: ok" || echo "CHECK back returns to Shop: FAIL"
+has_id shop_list && echo "CHECK back returns to Shop: ok" || echo "CHECK back returns to Shop: FAIL"
 # Process-death resume: kill and relaunch, expect the same day.
 $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
 # A saved run opens on the main menu; Continue returns to the workshop.

@@ -178,8 +178,8 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
 
             val stored = st.storedWeapons().size
             Secondary(
-                if (stored == 0) "Forged weapons wait in storage until you list them in the Market."
-                else "$stored in storage, waiting to be listed in the Market.",
+                if (stored == 0) "Forged weapons wait in storage until you list them in the Shop."
+                else "$stored in storage, waiting to be listed in the Shop.",
                 Modifier.padding(top = Space.lg, bottom = Space.lg),
             )
         }
@@ -244,7 +244,7 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
     val missing = listOfNotNull(d.coreId, d.augmentId, d.catalystId).firstOrNull { (st.materials[it] ?: 0) == 0 }
     val note = when {
         !ready -> "Choose a family, a core and an augment."
-        missing != null -> vm.describe(GameError.MissingMaterial(missing)) + " Pick another or buy more in the Market."
+        missing != null -> vm.describe(GameError.MissingMaterial(missing)) + " Pick another or buy more in the Shop."
         !canAfford -> vm.describe(GameError.NotEnoughEnergy(cost, st.energy, overworkRoom)) + " Rest with End Day."
         overwork > 0 -> "Costs $cost energy; $overwork of it is overwork that tires you tomorrow."
         else -> "Costs $cost energy. Ready when you are."
@@ -340,7 +340,7 @@ private fun MaterialChips(
         }
     }
     if (missing.isNotEmpty()) {
-        Secondary("Out of stock: ${missing.joinToString { it.name }}. Buy more in the Market.", Modifier.padding(top = Space.sm))
+        Secondary("Out of stock: ${missing.joinToString { it.name }}. Buy more in the Shop.", Modifier.padding(top = Space.sm))
     }
 }
 
