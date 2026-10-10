@@ -22,7 +22,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.background
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import com.example.blacksmithproject.RecordsPage
+import com.example.blacksmithproject.ui.shopday.Backdrop
+import com.example.blacksmithproject.ui.theme.SceneCream
+import com.example.blacksmithproject.ui.theme.SceneDeep
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -76,15 +86,20 @@ private const val NO_STEP = "none"
  * which keeps familiar recipes to three taps.
  */
 @Composable
-fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, tip: Tips.Tip?) {
+fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, tip: Tips.Tip?, onOpenSupplies: () -> Unit = {}) {
     val content = vm.engine.content
     val config = vm.engine.config
     val st = s.state
     val d = s.draft
 
     Column(Modifier.fillMaxSize()) {
-        ForgeScene(heat = st.energy / config.baseDailyEnergy.toFloat(), reducedMotion = reducedMotion, height = 52.dp)
-        ThreatLine(s, vm)
+        // The forge as a place: the painted room at 120 dp (less on a low screen or with large text, where the steps
+        // need the height), with the forge's standing and the next siege on a plate along its foot.
+        val short = LocalConfiguration.current.screenHeightDp < 700 || LocalDensity.current.fontScale > 1.15f
+        Box(Modifier.fillMaxWidth().heightIn(min = if (short) 72.dp else 120.dp).testTag("forge_backdrop")) {
+            Backdrop(R.drawable.bg_counter_forge, Modifier.matchParentSize().clearAndSetSemantics {}, sink = 0.2f)
+            ThreatLine(s, vm, Modifier.align(Alignment.BottomStart).background(SceneDeep.copy(alpha = 0.88f)))
+        }
         ForgeSummary(s, vm)
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
@@ -103,6 +118,11 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
         val scroll = remember { ScrollState(0) }
         Column(Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = Space.md, vertical = Space.sm)) {
             tip?.let { TipBanner(it, vm) }
+            Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.fillMaxWidth()) {
+                OutlinedButton(onClick = onOpenSupplies, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("forge_supplies")) { Text("Supplies", maxLines = 1) }
+                OutlinedButton(onClick = { vm.selectRecords(RecordsPage.JOURNAL) }, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("forge_journal")) { Text("Journal", maxLines = 1) }
+            }
+            Wanted(s, vm)
 
             Step("mode", "Mode", if (d.mode == ForgeMode.QUICK) "Quick · ${config.quickForgeEnergy} energy" else "Advanced · ${config.advancedForgeEnergy} energy", open, scroll, ::toggle) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
@@ -188,7 +208,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
 
 /** Forge integrity and the next siege: the run-over condition belongs with the forge, not in the global bar. */
 @Composable
-private fun ThreatLine(s: UiState.Playing, vm: GameViewModel) {
+private fun ThreatLine(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier) {
     val st = s.state
     val faction = st.factions.values.maxByOrNull { it.pressure }
     val daysLeft = st.town.nextSiegeDay - st.day
@@ -198,22 +218,43 @@ private fun ThreatLine(s: UiState.Playing, vm: GameViewModel) {
         else -> "siege in $daysLeft days"
     }
     // The leader can change day to day; "lead" says it is a standing, not a promise. Town carries the descriptor.
-    val pressure = faction?.let { "${vm.engine.content.faction(it.id).name} lead" } ?: "the roads are quiet"
+    val pressure = faction?.let { f -> vm.engine.content.faction(f.id).let { def -> "${def.name} lead" + (def.weakTo?.let { ", weak to ${it.name.lowercase()}" } ?: "") } } ?: "the roads are quiet"
     Row(
-        Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {},
+        modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         PixelImage(R.drawable.icon_integrity, 18.dp, description = null)
         Text(
             buildAnnotatedString {
-                withStyle(SpanStyle(fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)) { append("Forge ${st.town.integrity}") }
+                withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append("Forge ${st.town.integrity}") }
                 append(" · ${siege.replaceFirstChar { it.uppercase() }} · $pressure")
             },
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 2,
+            color = SceneCream,
         )
+    }
+}
+
+/**
+ * What is asked for, beside the draft: every open request with "Forge this", which sets the family (and an augment of
+ * the element asked for). The request the draft was started from says so and shows what the shop still lacks for it.
+ */
+@Composable
+private fun Wanted(s: UiState.Playing, vm: GameViewModel) {
+    val requests = s.shop.requests
+    if (requests.isEmpty()) return
+    Text("Requests", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Space.md).semantics { heading() })
+    requests.forEach { r ->
+        val chosen = s.draft.commissionId == r.id
+        Row(Modifier.fillMaxWidth().padding(top = Space.xs).testTag("forge_request_${r.id.value}"), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(r.asks, style = MaterialTheme.typography.bodyMedium, fontWeight = if (chosen) FontWeight.SemiBold else null)
+                Secondary("${r.buyer.name} · ${r.terms}")
+            }
+            if (chosen) TextButton(onClick = { vm.updateDraft { it.copy(commissionId = null) } }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Forging this ✓") }
+            else TextButton(onClick = { vm.forgeFor(r.id) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_this_${r.id.value}")) { Text("Forge this") }
+        }
     }
 }
 
@@ -244,7 +285,7 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
     val missing = listOfNotNull(d.coreId, d.augmentId, d.catalystId).firstOrNull { (st.materials[it] ?: 0) == 0 }
     val note = when {
         !ready -> "Choose a family, a core and an augment."
-        missing != null -> vm.describe(GameError.MissingMaterial(missing)) + " Pick another or buy more in the Shop."
+        missing != null -> vm.describe(GameError.MissingMaterial(missing)) + " Pick another or buy more in Supplies."
         !canAfford -> vm.describe(GameError.NotEnoughEnergy(cost, st.energy, overworkRoom)) + " Rest with End Day."
         overwork > 0 -> "Costs $cost energy; $overwork of it is overwork that tires you tomorrow."
         else -> "Costs $cost energy. Ready when you are."
@@ -262,7 +303,7 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
                     )
                 }
                 Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
+                Column(Modifier.weight(1.5f)) {
                     Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 2)
                     Secondary(recipe)
                 }
@@ -273,10 +314,15 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
                     onClick = { vm.dispatch(Command.Forge(d.mode, d.familyId!!, d.coreId!!, d.augmentId!!, d.catalystId, d.risk, d.technique)) },
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = Space.sm),
                     // A disabled button says why, so a screen reader is not left with a dead "Forge weapon".
-                    modifier = Modifier.width(116.dp).heightIn(min = 56.dp).testTag("forge_weapon").semantics { if (!enabled) contentDescription = "Forge weapon, unavailable: $note" },
+                    modifier = Modifier.weight(1f).heightIn(min = 56.dp).testTag("forge_weapon").semantics { if (!enabled) contentDescription = "Forge weapon, unavailable: $note" },
                 ) { Text("Forge weapon", style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.Center, maxLines = 2) }
             }
             Text(note, style = MaterialTheme.typography.bodySmall, color = if (ready && canAfford && missing == null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
+            // The request this draft was started from stays in view while the steps scroll.
+            s.shop.requests.firstOrNull { it.id == d.commissionId }?.let { r ->
+                Text("For ${r.buyer.name}: ${r.asks}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = Space.xs).testTag("forge_for"))
+                r.readiness?.let { Secondary(it) }
+            }
         }
     }
 }
@@ -340,7 +386,7 @@ private fun MaterialChips(
         }
     }
     if (missing.isNotEmpty()) {
-        Secondary("Out of stock: ${missing.joinToString { it.name }}. Buy more in the Shop.", Modifier.padding(top = Space.sm))
+        Secondary("Out of stock: ${missing.joinToString { it.name }}. Buy more in Supplies.", Modifier.padding(top = Space.sm))
     }
 }
 

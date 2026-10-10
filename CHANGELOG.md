@@ -20,6 +20,13 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   the shelf suits), yesterday at the counter, then the shelf. Storage opens as its own sheet and stays quick with
   hundreds of blades. Home and Market are gone.
 - The closing till and yesterday's summary say how many found the shop full.
+- "Forge this" on a request (on the Shop and on the Forge) opens the forge with the family asked for and an augment of
+  the element asked for; the forge keeps the request in view beside the draft and says what the shop still lacks for it.
+- The Forge shows the forge room above the draft, with forge integrity, the next siege and the besieger's weakness on
+  it, and has Supplies and Journal buttons. The Forge button no longer has a fixed width.
+- Supplies (the supplier and the workshop tools) is a sheet opened from the Shop or the Forge. A rare material says when
+  Caravan Ties adds to its daily stock, when the ore merchant is in town and when the caravan is late.
+- Town is one fast list; each adventurer's row names their guild, their mentor and whether they are a regular.
 - The seven tabs are now four destinations: Shop, Forge, Town and Records (News, Journal
   and Legacy as three segments). The four labels share one fixed size and do not shrink or clip at larger text sizes.
   Back returns to Shop from any other destination.

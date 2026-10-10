@@ -31,15 +31,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-private class MemoryRepository(private var run: String?, private var legacy: String?) : GameRepository {
-    private var cursor: String? = null
+internal class MemoryRepository(private var run: String?, private var legacy: String?, private var cursor: String? = null) : GameRepository {
     override suspend fun load() = StoredRows(run, legacy, cursor)
     override suspend fun commit(run: String?, legacy: String) { this.run = run; this.legacy = legacy }
     override suspend fun saveCursor(cursor: String?) { this.cursor = cursor }
     override suspend fun quarantine(key: String) = Unit
 }
 
-private class QuietSettings : Settings {
+internal class QuietSettings : Settings {
     override val reducedMotion = MutableStateFlow(false)
     override val haptics = MutableStateFlow(true)
     override val seenTips = MutableStateFlow(emptySet<String>())

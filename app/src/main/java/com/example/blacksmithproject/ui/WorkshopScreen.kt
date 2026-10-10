@@ -1,7 +1,6 @@
 package com.example.blacksmithproject.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -78,6 +76,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     val seenTips by vm.settings.seenTips.collectAsStateWithLifecycle(initialValue = Tips.ALL)
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
     var storageOpen by rememberSaveable { mutableStateOf(false) }
+    var suppliesOpen by rememberSaveable { mutableStateOf(false) }
     // Back returns to Shop from any other destination; on Shop it is not handled here, so it leaves the app.
     BackHandler(enabled = s.dest != Dest.SHOP) { vm.back() }
     Scaffold(
@@ -110,14 +109,12 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     onOpenStorage = { storageOpen = true },
                     onOpenNews = { vm.selectRecords(RecordsPage.GAZETTE) },
                     tip = tip?.let { { TipBanner(it, vm) } },
-                    more = { supplierItems(s, vm) },
+                    onForgeThis = vm::forgeFor,
+                    onOpenSupplies = { suppliesOpen = true },
                 )
-                Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip)
+                Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesOpen = true })
                 Dest.RECORDS -> RecordsPanel(s, vm)
-                Dest.TOWN -> Column(Modifier.fillMaxWidth().verticalScroll(remember { ScrollState(0) }).padding(horizontal = Space.md, vertical = Space.sm)) {
-                    TownPanel(s, vm)
-                    Spacer(Modifier.heightIn(min = Space.lg))
-                }
+                Dest.TOWN -> TownPanel(s, vm)
             }
         }
     }
@@ -131,6 +128,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
             onDismiss = { storageOpen = false },
         )
     }
+    if (suppliesOpen) SuppliesSheet(s, vm, onDismiss = { suppliesOpen = false })
     s.sheet?.let { DetailSheet(s, it, vm) }
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)

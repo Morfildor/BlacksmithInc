@@ -20,6 +20,7 @@ import com.example.blacksmithproject.ui.ShopUi
 import com.example.blacksmithproject.ui.shopUi
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
+import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
@@ -65,6 +66,8 @@ data class ForgeDraft(
     val catalystId: MaterialId? = null,
     val risk: Risk = Risk.BALANCED,
     val technique: Technique? = null,
+    /** The request this draft was started from ("Forge this"); the forge shows it while that request is open. */
+    val commissionId: CommissionId? = null,
 )
 
 /** What is on screen. Game state in it is always the session's snapshot (what is saved); [op] is the session's status. */
@@ -272,11 +275,11 @@ class GameViewModel(
         saved[KEY_REVEAL] = l.revealWeaponId?.value
         saved[KEY_BLESSING_DAY] = l.blessingOfferDismissedDay
         saved[KEY_SHEET] = when (val sheet = l.sheet) { is Sheet.Hero -> "hero:${sheet.id.value}"; is Sheet.Item -> "item:${sheet.id.value}"; null -> null }
-        saved[KEY_DRAFT] = with(l.draft) { arrayListOf(mode.name, familyId?.value, coreId?.value, augmentId?.value, catalystId?.value, risk.name, technique?.name) }
+        saved[KEY_DRAFT] = with(l.draft) { arrayListOf(mode.name, familyId?.value, coreId?.value, augmentId?.value, catalystId?.value, risk.name, technique?.name, commissionId?.value) }
     }
 
     private fun restored(): Local {
-        val d = saved.get<ArrayList<String?>>(KEY_DRAFT)?.takeIf { it.size == 7 }
+        val d = saved.get<ArrayList<String?>>(KEY_DRAFT)?.takeIf { it.size >= 7 }
         return Local(
             dest = saved.get<String>(KEY_DEST)?.let { name -> Dest.entries.firstOrNull { it.name == name } } ?: Dest.SHOP,
             records = saved.get<String>(KEY_RECORDS)?.let { name -> RecordsPage.entries.firstOrNull { it.name == name } } ?: RecordsPage.GAZETTE,
@@ -285,6 +288,7 @@ class GameViewModel(
                 familyId = d[1]?.let(::WeaponFamilyId), coreId = d[2]?.let(::MaterialId), augmentId = d[3]?.let(::MaterialId), catalystId = d[4]?.let(::MaterialId),
                 risk = Risk.entries.firstOrNull { it.name == d[5] } ?: Risk.BALANCED,
                 technique = Technique.entries.firstOrNull { it.name == d[6] },
+                commissionId = d.getOrNull(7)?.let(::CommissionId),
             ),
             revealWeaponId = saved.get<String>(KEY_REVEAL)?.let(::WeaponId),
             blessingOfferDismissedDay = saved.get<Int>(KEY_BLESSING_DAY),
@@ -335,6 +339,17 @@ class GameViewModel(
     /** A segment of Records, from its own row or from a link elsewhere (yesterday's news on the Shop). */
     fun selectRecords(page: RecordsPage) = edit { it.copy(dest = Dest.RECORDS, records = page) }
     fun updateDraft(transform: (ForgeDraft) -> ForgeDraft) = edit { it.copy(draft = transform(it.draft)) }
+    /**
+     * "Forge this" on a request: the forge opens with the family asked for and, for an element, an augment of it (one
+     * in stock if there is one). The quality asked for cannot be chosen; the forge shows the request beside the draft.
+     */
+    fun forgeFor(id: CommissionId) {
+        val run = session.snapshot.value?.run ?: return
+        val asked = run.commissions[id] ?: return
+        val augments = engine.content.materials(MaterialCategory.AUGMENT).filter { asked.element != null && it.element == asked.element }
+        val augment = augments.firstOrNull { (run.materials[it.id] ?: 0) > 0 } ?: augments.firstOrNull()
+        edit { it.copy(dest = Dest.FORGE, draft = it.draft.copy(familyId = asked.familyId, augmentId = augment?.id ?: it.draft.augmentId, commissionId = id)) }
+    }
     fun dismissReveal() = edit { it.copy(revealWeaponId = null) }
     fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet) }
     fun closeSheet() = edit { it.copy(sheet = null) }
