@@ -82,6 +82,8 @@ import com.tinyblacksmith.core.model.HeroFate
  */
 @Composable
 fun TownPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier) {
+    // A guild run: the same place is the guild's (the wall instead of the classic siege card, then the party, the board and the roster).
+    s.guild?.let { return GuildPanel(s, it, vm, modifier) }
     val (living, gone) = remember(s.state.heroes) { s.state.heroes.values.sortedByDescending { it.fame }.partition { it.isAlive } }
     var showGone by rememberSaveable { mutableStateOf(false) }
     LazyColumn(modifier.fillMaxSize().testTag("town_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.lg)) {
@@ -178,21 +180,7 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     }
     // Every faction presses on the town (GDD 8); the others are listed so the leader's rise can be read coming.
     if (siege.others.isNotEmpty()) SectionHeader("Also pressing on the town")
-    siege.others.forEachIndexed { i, f ->
-        if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        Row(
-            Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(vertical = 6.dp).semantics(mergeDescendants = true) {},
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            SpriteSlot { Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 44.dp, description = null) } ?: Spacer(Modifier.size(44.dp)) }
-            Column(Modifier.weight(1f)) {
-                Text(f.name, style = MaterialTheme.typography.titleSmall)
-                Secondary("Pressure: ${f.pressureWord.lowercase()}")
-            }
-            f.weakTo?.let { MatchMark(EffectKind.BUFF, "Weak to $it") }
-        }
-    }
+    FactionRows(siege.others)
 
     SectionTitle("Champions")
     // The engine's rule (`Battle.selectChampions`): alive, not wounded, the three strongest against the besieger. Shown is
@@ -225,15 +213,35 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     }
 }
 
+/** Factions that press on the town beside the besieger: sprite, name, pressure in a word, and the element that bites. */
+@Composable
+internal fun FactionRows(rows: List<FactionRowUi>) {
+    rows.forEachIndexed { i, f ->
+        if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(vertical = 6.dp).semantics(mergeDescendants = true) {},
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SpriteSlot { Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 44.dp, description = null) } ?: Spacer(Modifier.size(44.dp)) }
+            Column(Modifier.weight(1f)) {
+                Text(f.name, style = MaterialTheme.typography.titleSmall)
+                Secondary("Pressure: ${f.pressureWord.lowercase()}")
+            }
+            f.weakTo?.let { MatchMark(EffectKind.BUFF, "Weak to $it") }
+        }
+    }
+}
+
 /** The dark slot a face or a faction's sprite sits in, so every row of Town starts with the same shape. */
 @Composable
-private fun SpriteSlot(content: @Composable () -> Unit) {
+internal fun SpriteSlot(content: @Composable () -> Unit) {
     Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { content() }
 }
 
 /** One mark of a matchup: "+" and green for what bites, "−" and red for what glances off, always with its words. */
 @Composable
-private fun MatchMark(kind: EffectKind, text: String) {
+internal fun MatchMark(kind: EffectKind, text: String) {
     Text(
         "${kind.sign} $text", style = MaterialTheme.typography.labelMedium, color = kind.color,
         modifier = Modifier.background(kind.color.copy(alpha = 0.14f), MaterialTheme.shapes.extraSmall).border(1.dp, kind.color.copy(alpha = 0.6f), MaterialTheme.shapes.extraSmall).padding(horizontal = Space.sm, vertical = Space.xs),
@@ -265,7 +273,7 @@ private fun Versus(defense: Int, raid: Int) {
 }
 
 @Composable
-private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
+internal fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     val st = s.state
     val w = st.equippedWeapon(h.id)

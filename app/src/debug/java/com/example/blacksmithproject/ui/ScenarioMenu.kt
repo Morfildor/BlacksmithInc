@@ -44,7 +44,7 @@ private class ScenarioEntry(val id: String, val title: String, val description: 
 
 /**
  * Debug builds only (the release source set has an empty function of this name, and no scenario assets): the main
- * menu's "Scenarios" entry. It lists the constructed saves bundled under `assets/scenarios/` and, after a
+ * menu's "Scenarios" entry, with the "Combat sandbox" entry under it. It lists the constructed saves bundled under `assets/scenarios/` and, after a
  * confirmation, hands the chosen one to the session, which stores it in place of the current run.
  */
 @Composable
@@ -55,6 +55,12 @@ fun ScenarioMenu(vm: GameViewModel, hasRun: Boolean, enabled: Boolean, onLoaded:
     OutlinedButton(onClick = { open = true }, enabled = enabled, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("menu_scenarios")) {
         Text("Scenarios (debug)")
     }
+    // Beside it, and as far from a run: the fixture fights of the interaction engine (`CombatSandboxScreen`).
+    var sandbox by remember { mutableStateOf(false) }
+    OutlinedButton(onClick = { sandbox = true }, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("sandbox_open")) {
+        Text("Combat sandbox (debug)")
+    }
+    if (sandbox) CombatSandboxScreen(onClose = { sandbox = false })
     if (open) {
         val entries = remember {
             Json.parseToJsonElement(assets.open("scenarios/index.json").bufferedReader().use { it.readText() }).jsonArray.map { it.jsonObject }.map { row ->

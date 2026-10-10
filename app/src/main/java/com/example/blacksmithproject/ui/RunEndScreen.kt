@@ -40,12 +40,14 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
     val content = vm.engine.content
     val end = s.runEnd
     val nextEra = maxOf(s.legacy.nextEra, end.era + 1)
+    // A guild run the smith closed after securing the charter: an ending chosen, not a fall.
+    val retired = s.run.guild?.retired == true
     val haptics = LocalHaptics.current
     LaunchedEffect(s.lastError) { if (s.lastError != null) haptics.play(Moment.REJECTED) }
     // The next step stays pinned under the scrolling summary, so it never hides below the upgrade list.
     Column(Modifier.fillMaxSize().safeDrawingPadding()) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Space.md, vertical = Space.lg)) {
-            Text("The forge has fallen", style = MaterialTheme.typography.headlineMedium, color = Gold)
+            Text(if (retired) "The chapter is closed" else "The forge has fallen", style = MaterialTheme.typography.headlineMedium, color = Gold, modifier = Modifier.testTag("run_end_title"))
             Text(end.cause, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs))
             Secondary("Era ${end.era} lasted ${end.daysSurvived} days.", Modifier.padding(top = Space.xs))
 
@@ -102,6 +104,8 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
             }
         }
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm)) {
+            // What the next era begins under, chosen here; the button starts it with what is shown.
+            CharterPicker(vm, Modifier.padding(bottom = Space.sm))
             if (s.claimed) {
                 PrimaryActionButton("Begin era $nextEra", vm::beginNextEra, Modifier.fillMaxWidth().testTag("run_begin_era"), enabled = !s.busy)
             } else {
@@ -120,5 +124,6 @@ private fun milestoneLabel(key: String) = when (key) {
     "LEGENDARY_FORGED" -> "Forged a legendary weapon"
     "HERO_LEVEL_5" -> "A hero reached level 5"
     "WEAPON_FIVE_KILLS" -> "A weapon earned a title"
+    "CHARTER_SECURED" -> "Charter secured"
     else -> key
 }

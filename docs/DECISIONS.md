@@ -4124,3 +4124,105 @@ progress when the update is installed ends as a classic run. To reverse: nothing
 gated by the victory flag: at equal defence and raid power the formula still takes 24 integrity while the report says
 the town held. Not a rules bug (a costly victory is valid), but the result does not say so. In guild runs such a siege is
 to be labelled "held at a cost" (plan D7). Classic runs keep the scalar siege and its wording unchanged.
+
+## Guild evolution: how it was built, and what was measured (2026-10-11)
+
+Everything here is PROPOSED. Plan and ledger: `docs/GUILD_EVOLUTION_PLAN.md`. Versions: rules 5, save schema 6,
+content 5, balance 11. Raw tables: `docs/guild_evolution_evidence/guildsim_balance11.txt`.
+
+**Rulings made while building (each can be reversed without touching a classic run).**
+- **A classic run is still offered.** The title's charter picker has "No charter". The rules-4 golden state file is the
+  rules-5 golden state file, byte for byte (`GoldenStateTest`), which is the evidence that a classic run plays as it did.
+- **Contracted members leave the town's ordinary life.** They do not shop at the counter, take commissions, wander on
+  expeditions, retire by level or get named by a visitor (`ResolutionContext.residents()`). The town refills its
+  customers around them. A member keeps a private weapon they already owned; a loan always takes precedence in a fight.
+- **Counts stay LOCKED; catalysts got identities instead of new ones being added.** The four catalysts were "all alike"
+  by a comment in the catalog. Now Binding Salt makes a capacitor (healing received becomes Charge), Runestone Shard
+  answers a broken Guard once a blade has cracked, Dragon Oil spreads Burn and vents Steam as a lance, Void Ink turns
+  Burn into Guard and Steam into a veil. No material, affix or family was added. A blade's element gives it a rule on
+  every hit even with no affix (spec 7.1: no blank low-tier blades).
+- **Flaws are costs that a build can use.** Brittle cracks once a fight for Scrap (useless without the Salvage Bell,
+  and a repair bill either way); Heavy starts slowed and shatters Chill; Bloodbound pays health for a harder cut.
+- **No command IDs on guild commands.** The spec lists one on each. Each command states what should be (this member
+  holds this blade; this party goes on this contract), so the same command twice changes nothing; the tests assert it.
+  End Day keeps its ID.
+- **`PlanDeployment` has no gear list.** A member fights with the loan they hold, else their own blade; the loadout is
+  noted when the party leaves and nothing done at home afterwards changes a committed fight (relics included).
+- **The contract's fee is paid when the plan is made** and returned whole if the plan is cancelled or replaced the same
+  morning. End Day therefore only adds gold, and the day's ledger balances as before.
+- **What a stage wins is the forge's the same evening.** "Secured" means exactly that; a deeper optional stage only adds
+  its own reward if won. Nothing secured is ever taken back.
+- **Who is lost, and when.** Only when the whole party goes down. Safe contract: nobody. Dangerous: the last to fall is
+  taken alive. Lethal (the deep hall of a delve): the first to fall dies and the last is taken. A party that pulls back
+  always brings its fallen home. A captive has `captiveDays` (5) days; a rescue contract stands on the board for them.
+- **The siege of a guild run** is the besieger's stored field against the three on the wall, after the watch and the
+  militia have taken health off the rank and file. Held: every enemy down and nobody on the wall down. Held at a cost:
+  the enemy beaten with a defender down, or the wall still standing at the last round. Breached: the defenders fell
+  back or fell. Forge damage is a share of `maxForgeDamagePerSiege` by the enemy strength left standing. The report
+  says "held, at a cost" in words (spec 1.2).
+- **Sabotage** removes the announced trait if the siege has one, else the last unit of the field. Once a siege.
+- **The charter milestone's points are the run's**, counted in `Legacy.closeRun` however the run ends (retired with it,
+  or fallen later), and the run is claimed once as before.
+- **Twelve visitor scenes**: the eight older ones and four that only a guild run has. The festival gained a tournament
+  for a member; a family blade restored for its heir makes the heir willing to sign at half the fee (spec 17.6: a
+  benefit the collector's coin does not have).
+
+**Not built (the spec marks each "later", "optional" or "after the slice works").** A secondary imprint in the
+Advanced Forge (7.2). Risk that changes the kind of quirk rather than its odds (7.3). A mastery stamp that secures a
+known signature (7.5). Relic drafts that know the party's tags (9.3). A workshop specialisation slot (13.3). An
+opportunity scheduler and the recovery choice after a lost siege (11.2). A harder optional wager and the siege-trait
+breakdown by siege number (17.6). Ordinary residents' own expeditions through the new engine (15.5): they keep the
+scalar resolver, so a blade's fight rules are shown as applying to guild members and to the three on the wall, which
+is where they are resolved. Upgraded portraits by deed, overlays for scars (12.3). Eight of the spec's twelve named
+choice scenes (11.3): four are built.
+
+**Enemy scaling tried (Town's Last Hope, new account, horizon day 30; charter secured).**
+
+| Contract percent base / per day | Siege percent base / per day | Passive | Novice | Synergy | Adaptive |
+|---|---|---|---|---|---|
+| 100 / 3 | 90 / 3.5 | 2% | 97% | 100% | 100% |
+| 180 / 5 | 170 / 6 | 0% | 1% | 21% | 6% |
+| 230 / 7 | 220 / 8 | 0% | 0% | 0% | 0% |
+| **165 / 4 (kept)** | **150 / 5 (kept)** | 0% | 20% | 81% | 76% |
+
+The first three rows are 60 to 100 seeds, the kept row 300.
+
+**Kept setting (charter secured / forge fallen / neither by day 30, percent of runs).**
+
+| Policy | Town's Last Hope (300) | Licensed Bad Ideas (150) | Honest Business (150) | Maxed account, Last Hope (150) |
+|---|---|---|---|---|
+| Passive | 0 / 100 / 0 | 0 / 100 / 0 | 0 / 100 / 0 | 0 / 96 / 4 |
+| Novice (safe contracts only) | 20 / 17 / 63 | 3 / 42 / 55 | 13 / 27 / 61 | 55 / 0 / 45 |
+| Shop-focused (two members) | 19 / 35 / 46 | 26 / 28 / 46 | 23 / 28 / 49 | 21 / 15 / 65 |
+| Highest stat, richest contract | 28 / 26 / 46 | 18 / 44 / 38 | 17 / 33 / 50 | 40 / 2 / 58 |
+| Greedy diver (reckless, always pushes) | 23 / 32 / 45 | 17 / 52 / 31 | 18 / 43 / 39 | 35 / 6 / 59 |
+| Recovery-aware (cautious) | 39 / 1 / 60 | 23 / 5 / 71 | 34 / 1 / 65 | 65 / 0 / 35 |
+| Defence first | 79 / 0 / 21 | 44 / 3 / 53 | 83 / 1 / 17 | 87 / 0 / 13 |
+| Synergy builder | 81 / 0 / 18 | 67 / 5 / 29 | 75 / 1 / 24 | 87 / 0 / 13 |
+| Adaptive | 76 / 0 / 24 | 42 / 1 / 57 | 69 / 0 / 31 | 90 / 0 / 10 |
+
+A run that reaches day 30 with neither is censored, not immortal. A bot that secures the charter retires at once, which
+counts as a completed success.
+
+**What the tables say, against the spec's provisional targets (17.2).**
+- Neglect loses: the passive smith falls in every run, median day 20.
+- Planning matters: the policies that build a chain or keep the wall (81%, 79%, 76%) are far ahead of the one that
+  hands everybody the largest number and takes the richest contract (28%), which is still playable.
+- **Above the target band.** The spec asks that competent play secure the first charter in roughly 40 to 65% of runs.
+  Synergy, Defence first and Adaptive are at 76 to 81% under Town's Last Hope and at 42 to 67% under Licensed Bad Ideas.
+  Not retuned: the band is a hypothesis to be set after people have played (spec 17.2), and the standing rule here is
+  that a number is not moved to hit a target without the owner. The lever is `guild.enemyPercentBase` / `PerDay` and
+  `guild.siegePercentBase` / `PerDay`; the 180 / 5 and 170 / 6 row shows how steep it is.
+- **The first siege is not yet a test.** Every policy but the passive one leaves the day-5 siege with the forge at 94 to
+  100. The spec wants day 5 to be "the first meaningful defence". Open.
+- Hunts are won 84 to 99% of the time by the policies that take them; the deep hall of a delve 16 to 39% (a new
+  account). Rescues 24 to 79%, recoveries 16 to 40%: the contracts that undo a loss are the hard ones. Open: whether a
+  recovery should be easier than the hunt that lost the blade.
+- Reckless greed is paid for in people: 5.2 captures and 5.1 deaths a run for the greedy diver, against 0.4 and 0.2
+  for the adaptive smith.
+- A first chain is noted on day 2 to 3 for the chain builders (spec: by day 3).
+- No policy sent a command the engine refused (`GuildRunTest`: 9 policies, 12 seeds, 25 days).
+- Bots are not people. Whether a result is understood, and whether the fights are worth watching, is not measured here.
+
+**Version fingerprints.** Content 5 and balance 11 are pinned in `VersionFingerprintTest`; they were re-pinned while
+the update was unreleased and are final when the version ships.

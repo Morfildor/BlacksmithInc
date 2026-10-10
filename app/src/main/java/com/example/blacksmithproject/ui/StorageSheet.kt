@@ -1,6 +1,7 @@
 package com.example.blacksmithproject.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -89,7 +91,8 @@ private val FilterSaver = listSaver<StorageFilter, String>(
 /**
  * Storage as a bottom sheet over the Shop. A blade opened from the list is shown in this same sheet ([detail], under a
  * "Storage" row that goes back, as system Back does); the list keeps its filters, its order and its place meanwhile.
- * [notice] is what the last stock change did.
+ * [notice] is what the last stock change did. [loans] (a guild run) are the blades out on loan: listed apart, under the
+ * stock, never among the rows a bulk action can choose.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,6 +104,7 @@ fun StorageSheet(
     // not come back when the sheet was restored (ShopDayPersistenceTest). Closing the sheet still forgets it.
     filterState: MutableState<StorageFilter> = rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(StorageFilter()) },
     notice: String? = null, detail: (@Composable () -> Unit)? = null, onBack: () -> Unit = {},
+    loans: List<LoanRowUi> = emptyList(),
 ) {
     val listState = rememberLazyListState()
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
@@ -116,7 +120,7 @@ fun StorageSheet(
                 BackRow("Storage", onBack)
             }
             notice?.let { NoticeLine(it) }
-            if (detail != null) detail() else StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk, scrapBack = scrapBack, onScrap = onScrap, filterState = filterState, listState = listState, onClose = onDismiss)
+            if (detail != null) detail() else StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk, scrapBack = scrapBack, onScrap = onScrap, filterState = filterState, listState = listState, onClose = onDismiss, loans = loans)
         }
     }
 }
@@ -127,6 +131,7 @@ fun StorageSheet(
  * a bar under the list salvages the chosen blades or gives them to the watch: each asks once, then [onBulk] gets the
  * action and the blades in the order shown. Only blades that are both chosen and shown are acted on. "Scrap" clears
  * the chosen blades in one command ([onScrap]); [scrapBack] is the engine's word on what comes back for them.
+ * [loans] close the list as their own group, "On loan": blade and holder, a tap opens the blade.
  */
 @Composable
 fun StorageList(
@@ -137,6 +142,7 @@ fun StorageList(
     listState: LazyListState = rememberLazyListState(),
     /** When given, "Close" stands beside the title: a storeroom can be far too long to end with it. */
     onClose: (() -> Unit)? = null,
+    loans: List<LoanRowUi> = emptyList(),
 ) {
     var filter by filterState
     var scrapping by remember { mutableStateOf(false) }
@@ -146,7 +152,7 @@ fun StorageList(
     var asking by remember { mutableStateOf<StockAction?>(null) }
     val shown = remember(storage, filter) { storage.shown(filter) }
     // A blade kept for an order can be neither salvaged, scrapped nor given away: it is never among the chosen.
-    val free = remember(shown) { shown.filter { it.promised == null }.map { it.weapon.id } }
+    val free = remember(shown) { shown.filter { it.promised == null && !it.weapon.isLoaned }.map { it.weapon.id } }
     val chosen = remember(free, picked) { free.filter { it in picked } }
     val select = selecting && terms != null
 
@@ -181,6 +187,23 @@ fun StorageList(
                 val id = s.weapon.id
                 if (select) StockRow(s, busy, onOpen = { picked = if (id in picked) picked - id else picked + id }, onList = null, selected = id in picked)
                 else StockRow(s, busy || shelfFree <= 0, onOpen = { onOpenBlade(id) }, onList = { price -> onList(id, price) })
+            }
+            if (loans.isNotEmpty()) {
+                item(key = "loans") {
+                    Column(Modifier.testTag("storage_loans")) {
+                        SectionHeader("On loan · ${loans.size}")
+                        Secondary("Carried by members of the guild. Tap a blade to see it or call it back.")
+                    }
+                }
+                items(loans, key = { "loan_${it.weaponId.value}" }) { l ->
+                    Column(
+                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClickLabel = "Open ${l.blade}", role = Role.Button) { onOpenBlade(l.weaponId) }
+                            .padding(vertical = Space.xs).testTag("storage_loan_${l.weaponId.value}").semantics(mergeDescendants = true) {},
+                    ) {
+                        Text(l.blade, style = MaterialTheme.typography.titleSmall)
+                        Secondary("With ${l.holder}")
+                    }
+                }
             }
         }
         if (select) SecondaryActionButton("Scrap ${chosen.size} (no energy)", { scrapping = true }, Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = Space.sm).testTag("storage_bulk_scrap"), enabled = !busy && chosen.isNotEmpty())

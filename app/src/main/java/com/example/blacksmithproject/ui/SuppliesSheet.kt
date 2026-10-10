@@ -115,6 +115,8 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                         Text(m.name, style = MaterialTheme.typography.titleSmall)
                         Secondary("Owned $have · $price gold" + (stock?.let { " · $it left today" } ?: ""))
                         vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
+                        // A guild run: what an augment or a catalyst gives a blade in a fight, in the catalog's own words.
+                        if (st.guild != null) materialRules(content, m.id).forEach { Secondary("In a fight · ${it.name}: ${it.description}") }
                     }
                     // A greyed Buy says why to a screen reader; on screen the row's own lines do (the price, "0 left today").
                     val blocked = when { stock == 0 -> "none left today"; st.gold < price -> "it costs $price gold and you have ${st.gold}"; else -> null }

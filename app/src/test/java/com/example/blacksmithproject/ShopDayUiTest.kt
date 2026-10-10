@@ -37,6 +37,7 @@ class ShopDayUiTest {
             assertEquals("seed ${d.seed} day ${script.day}", ShopDayPosition(cards, 0).ending, ui.endingIndex)
             cards.zip(ui.beats).forEach { (card, beat) ->
                 val same = when (card) {
+                    com.example.blacksmithproject.Beat.Contract -> beat is Beat.Contract
                     com.example.blacksmithproject.Beat.ShopOpens -> beat is Beat.Open
                     is com.example.blacksmithproject.Beat.Visit -> beat is Beat.Visit
                     com.example.blacksmithproject.Beat.Tally -> beat is Beat.Tally

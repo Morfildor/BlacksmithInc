@@ -22,6 +22,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -35,6 +39,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.blacksmithproject.ui.EffectKind
+import com.example.blacksmithproject.ui.FightReport
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.example.blacksmithproject.ui.BlessingOption
@@ -53,6 +58,8 @@ import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.BlessingId
 import com.tinyblacksmith.core.model.CombatReplay
+import com.tinyblacksmith.core.model.MissionOutcome
+import com.tinyblacksmith.core.model.SiegeVerdict
 import com.tinyblacksmith.core.model.WeaponSnapshot
 import com.tinyblacksmith.core.shopday.AftermathKind
 
@@ -89,6 +96,43 @@ fun ShopOpenCard(open: Beat.Open, modifier: Modifier = Modifier) {
             },
             Modifier.testTag("shopday_open_shown"),
         )
+    }
+}
+
+/**
+ * The guild's party, first card of the day: where it went and who, how it ended in the report's own outcome, the
+ * fight's highlights, what the day brought and cost, and the whole fight behind a button. Real text throughout.
+ */
+@Composable
+fun ContractCard(contract: ContractUi, onOpenHero: (FaceUi) -> Unit, modifier: Modifier = Modifier) {
+    var whole by rememberSaveable { mutableStateOf(false) }
+    val kind = when { contract.result == MissionOutcome.WON -> EffectKind.BUFF; contract.result == MissionOutcome.LOST -> EffectKind.FLAW; else -> EffectKind.NEUTRAL }
+    Column(modifier.fillMaxWidth().testTag("shopday_contract"), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        Overline(contract.title, Modifier.testTag("shopday_contract_title"), strong = true)
+        Text(contract.outcome, style = MaterialTheme.typography.headlineSmall, color = kind.color, modifier = Modifier.semantics { heading() }.testTag("shopday_contract_outcome"))
+        if (contract.party.isNotEmpty()) {
+            Overline("Who went")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) { contract.party.forEach { PersonChip(it, onOpenHero) } }
+        }
+        FightHighlights(contract.highlights, "shopday_contract_highlights")
+        if (contract.lines.isNotEmpty()) {
+            Column(Modifier.padding(top = Space.xs).testTag("shopday_contract_lines"), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+                Overline("What it came to")
+                contract.lines.forEach { Body(it) }
+            }
+        }
+        // The highlights are said above, so the report lists none of its own.
+        contract.fight?.let { FightReport(it, Modifier.padding(top = Space.xs), expanded = whole, onToggle = { whole = !whole }, highlights = 0) }
+    }
+}
+
+/** Up to three chains of the fight, each the sentence its own events make (spec 6.5). */
+@Composable
+private fun FightHighlights(highlights: List<String>, tag: String) {
+    if (highlights.isEmpty()) return
+    Column(Modifier.padding(top = Space.xs).testTag(tag), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        Overline("What decided it")
+        highlights.forEach { Body(it) }
     }
 }
 
@@ -178,7 +222,8 @@ fun AftermathCard(
 @Composable
 fun SiegeOutcomeCard(beat: Beat.Aftermath, siege: SiegeOutcomeUi, onOpenHero: (FaceUi) -> Unit, onWatchFight: (CombatReplay) -> Unit, modifier: Modifier = Modifier) {
     val card = beat.card
-    val kind = if (siege.held) EffectKind.BUFF else EffectKind.FLAW
+    var whole by rememberSaveable { mutableStateOf(false) }
+    val kind = when { siege.verdict == SiegeVerdict.HELD_AT_A_COST -> EffectKind.NEUTRAL; siege.held -> EffectKind.BUFF; else -> EffectKind.FLAW }
     Column(modifier.fillMaxWidth().testTag("shopday_siege"), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         siege.foe?.let { Overline(it, strong = true) }
         Text(siege.outcome, style = MaterialTheme.typography.headlineMedium, color = kind.color, modifier = Modifier.semantics { heading() }.testTag("shopday_siege_outcome"))
@@ -193,8 +238,13 @@ fun SiegeOutcomeCard(beat: Beat.Aftermath, siege: SiegeOutcomeUi, onOpenHero: (F
             Overline("On the wall")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) { card.champions.forEach { PersonChip(it, onOpenHero) } }
         }
+        // A guild run: what the watch did before the wall, then what decided the fight on it.
+        siege.outerLine?.let { Body(it, Modifier.testTag("shopday_siege_outer")) }
+        FightHighlights(siege.highlights, "shopday_siege_highlights")
         Body(card.text, Modifier.testTag("shopday_aftermath_text"))
-        card.replay?.let { replay ->
+        siege.fight?.let { FightReport(it, Modifier.padding(top = Space.xs), expanded = whole, onToggle = { whole = !whole }, highlights = 0) }
+        // The wall's fight has its whole timeline above; the round list is for a siege that has none.
+        card.replay?.takeIf { siege.fight == null }?.let { replay ->
             SecondaryActionButton("Watch the siege", { onWatchFight(replay) }, Modifier.heightIn(min = 48.dp).testTag("shopday_watch"))
         }
     }

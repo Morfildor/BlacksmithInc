@@ -1,0 +1,1066 @@
+================================================================================================
+Stormwell  [stormwell]
+Healing fills the capacitor; three Charge become a burst on the marked warchief.
+
+  + Brann with Stormglass Capacitor: health 40/40, strike 9, support 4
+      Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
+      Arc: The wielder's first hit each round arcs to the last enemy in the line for 2.
+      Capacitor: When the wielder is healed for at least 1, the blade stores 1 Charge. Once a round. Healing at full health stores nothing.
+      Charge burst: At 3 Charge, spends all of it and strikes for 8 storm damage. Once a round.
+  + Mira with Sapwood Staff: health 32/32, strike 7, support 8
+      Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
+  + Nessa with Ember Staff: health 26/26, strike 9, support 3
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+  - Ashclaw warchief: health 54/54, strike 11
+      Known: Every third round, from the second, gives every raider 4 Guard.
+  - Ashclaw brute: health 33/33, strike 10
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  - Ashclaw scout: health 18/18, strike 6
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  * Overflow Basin: Healing an ally cannot use becomes Guard on them, up to 4 a round each. It is not healing: nothing that answers healing sees it.
+
+RESULT: WON after 4 rounds. Brann 24/40, Mira 32/32, Nessa 26/26
+
+HIGHLIGHTS
+  > Round 1: Mira: Mend. Mira has nothing to heal on Brann (8 over). Overflow Basin gives Brann 4 Guard.
+  > Round 3: Mira: Mend. Mira heals Brann for 8. Brann's Capacitor stores Charge (3). Brann's Charge burst spends 3 Charge. Brann's Charge burst hits Ashclaw brute for 8.
+  > Round 4: Ashclaw scout: Slash. Brann's Guard breaks. Brann's Riposte hits Ashclaw scout for 5. Ashclaw scout is down.
+
+TIMELINE
+    1       Round 1.
+    2       Brann: Hold the line.
+    3 <  2  Brann raises 4 Guard.
+    4 <  2  Brann hits Ashclaw warchief for 9.
+    6 <  4  Brann's Arc hits Ashclaw scout for 2.
+    7       Mira: Mend.
+    8 <  7  Mira has nothing to heal on Brann (8 over).
+    9 <  7  Mira hits Ashclaw warchief for 4.
+   11 <  8  Overflow Basin gives Brann 4 Guard.
+   12 <  9  Mira's Sap stores Regeneration (1).
+   13       Nessa: Opening sigil.
+   14 < 13  Nessa puts Charge on Brann.
+   15 < 13  Nessa puts Mark on Ashclaw warchief.
+   16 < 13  Nessa strikes the Mark on Ashclaw warchief.
+   17 < 13  Nessa hits Ashclaw warchief for 7.
+   19 < 17  Nessa's Ember puts Burn on Ashclaw warchief.
+   20 < 19  Nessa's Echo puts Burn on Ashclaw warchief (2).
+   21       Ashclaw warchief: Cleave.
+   23 < 21  Brann's Guard breaks.
+   24 < 21  Ashclaw warchief hits Brann for 3.
+   26 < 23  Brann's Riposte hits Ashclaw warchief for 5.
+   27       Ashclaw brute: Club.
+   28 < 27  Ashclaw brute hits Brann for 10.
+   30       Ashclaw scout: Slash.
+   31 < 30  Ashclaw scout hits Brann for 6.
+   35 < 34  Overflow Basin gives Mira 3 Guard.
+   37 < 36  Ashclaw warchief burns for 2.
+   39       Round 2.
+   40       Brann: Hold the line.
+   41 < 40  Brann raises 4 Guard.
+   42 < 40  Brann hits Ashclaw warchief for 9.
+   44 < 42  Brann's Arc hits Ashclaw scout for 2.
+   45       Mira: Mend.
+   46 < 45  Mira heals Brann for 8.
+   47 < 45  Mira hits Ashclaw warchief for 4.
+   49 < 46  Brann's Capacitor stores Charge (2).
+   50 < 47  Mira's Sap stores Regeneration (1).
+   51       Nessa: Bolt.
+   52 < 51  Nessa hits Ashclaw warchief for 6.
+   54 < 52  Nessa's Ember puts Burn on Ashclaw warchief (2).
+   55 < 54  Nessa's Echo puts Burn on Ashclaw warchief (3).
+   56       Ashclaw warchief: War cry.
+   57 < 56  Ashclaw warchief raises 4 Guard.
+   58 < 56  Ashclaw warchief gives Ashclaw brute 4 Guard.
+   59 < 56  Ashclaw warchief gives Ashclaw scout 4 Guard.
+   61       Ashclaw brute: Club.
+   63 < 61  Brann's Guard breaks.
+   64 < 61  Ashclaw brute hits Brann for 6.
+   67 < 63  Ashclaw brute's Guard breaks.
+   68 < 63  Brann's Riposte hits Ashclaw brute for 1.
+   69       Ashclaw scout: Slash.
+   70 < 69  Ashclaw scout hits Brann for 6.
+   74 < 73  Overflow Basin gives Mira 3 Guard.
+   76 < 75  Ashclaw warchief's Guard takes Ashclaw warchief's blow (3).
+   78       Round 3.
+   79       Brann: Hold the line.
+   80 < 79  Brann raises 4 Guard.
+   82 < 79  Ashclaw warchief's Guard breaks.
+   83 < 79  Brann hits Ashclaw warchief for 8.
+   84 < 83  Ashclaw warchief is down.
+   86 < 83  Ashclaw scout's Guard takes Brann's Arc's blow (2).
+   87 < 84  Ashclaw brute's Rout stores Chill (2).
+   88 < 84  Ashclaw scout's Rout stores Chill (2).
+   89 < 87  Nessa's Echo puts Chill on Ashclaw brute (3).
+   90       Mira: Mend.
+   91 < 90  Mira heals Brann for 8.
+   92 < 90  Mira hits Ashclaw brute for 4.
+   94 < 91  Brann's Capacitor stores Charge (3).
+   95 < 92  Mira's Sap stores Regeneration (1).
+   96 < 94  Brann's Charge burst spends 3 Charge.
+   97 < 96  Brann's Charge burst hits Ashclaw brute for 8.
+   98       Nessa: Bolt.
+   99 < 98  Nessa hits Ashclaw brute for 6.
+  101 < 99  Nessa's Ember boils off Chill on Ashclaw brute.
+  102 <101  Nessa's Ember stores Steam (1).
+  103       Ashclaw brute: Club.
+  104 <103  Ashclaw brute is slowed by the cold.
+  106 <103  Brann's Guard breaks.
+  107 <103  Ashclaw brute hits Brann for 3.
+  109 <106  Brann's Riposte hits Ashclaw brute for 5.
+  110       Ashclaw scout: Slash.
+  111 <110  Ashclaw scout is slowed by the cold.
+  112 <110  Ashclaw scout hits Brann for 4.
+  116 <115  Overflow Basin gives Mira 3 Guard.
+  118       Round 4.
+  119       Brann: Hold the line.
+  120 <119  Brann raises 4 Guard.
+  121 <119  Brann hits Ashclaw brute for 9.
+  122 <121  Ashclaw brute is down.
+  124 <121  Ashclaw scout's Guard takes Brann's Arc's blow (2).
+  125 <121  Ashclaw scout's Guard breaks.
+  126       Mira: Mend.
+  127 <126  Mira heals Brann for 8.
+  128 <126  Mira hits Ashclaw scout for 4.
+  130 <127  Brann's Capacitor stores Charge (1).
+  131 <128  Mira's Sap stores Regeneration (1).
+  132       Nessa: Bolt.
+  133 <132  Nessa hits Ashclaw scout for 6.
+  135 <133  Nessa's Ember boils off Chill on Ashclaw scout.
+  136 <135  Nessa's Ember stores Steam (2).
+  137       Ashclaw scout: Slash.
+  139 <137  Brann's Guard breaks.
+  140 <137  Ashclaw scout hits Brann for 2.
+  142 <139  Brann's Riposte hits Ashclaw scout for 5.
+  143 <142  Ashclaw scout is down.
+  145       The party has won.
+
+================================================================================================
+Stormwell without the capacitor  [stormwell-no-capacitor]
+The same party and foes; Brann carries the same sword forged without Binding Salt. No Charge, no burst.
+
+  + Brann with Stormglass Iron Sword: health 40/40, strike 9, support 4
+      Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
+      Arc: The wielder's first hit each round arcs to the last enemy in the line for 2.
+  + Mira with Sapwood Staff: health 32/32, strike 7, support 8
+      Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
+  + Nessa with Ember Staff: health 26/26, strike 9, support 3
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+  - Ashclaw warchief: health 54/54, strike 11
+      Known: Every third round, from the second, gives every raider 4 Guard.
+  - Ashclaw brute: health 33/33, strike 10
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  - Ashclaw scout: health 18/18, strike 6
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  * Overflow Basin: Healing an ally cannot use becomes Guard on them, up to 4 a round each. It is not healing: nothing that answers healing sees it.
+
+RESULT: WON after 5 rounds. Brann 26/40, Mira 32/32, Nessa 26/26
+
+HIGHLIGHTS
+  > Round 1: Mira: Mend. Mira has nothing to heal on Brann (8 over). Overflow Basin gives Brann 4 Guard.
+  > Round 3: Brann: Hold the line. Brann hits Ashclaw warchief for 8. Ashclaw warchief is down.
+  > Round 4: Nessa: Bolt. Nessa hits Ashclaw brute for 6. Ashclaw brute is down.
+
+TIMELINE
+    1       Round 1.
+    2       Brann: Hold the line.
+    3 <  2  Brann raises 4 Guard.
+    4 <  2  Brann hits Ashclaw warchief for 9.
+    6 <  4  Brann's Arc hits Ashclaw scout for 2.
+    7       Mira: Mend.
+    8 <  7  Mira has nothing to heal on Brann (8 over).
+    9 <  7  Mira hits Ashclaw warchief for 4.
+   11 <  8  Overflow Basin gives Brann 4 Guard.
+   12 <  9  Mira's Sap stores Regeneration (1).
+   13       Nessa: Opening sigil.
+   14 < 13  Nessa puts Mark on Ashclaw warchief.
+   15 < 13  Nessa strikes the Mark on Ashclaw warchief.
+   16 < 13  Nessa hits Ashclaw warchief for 7.
+   18 < 16  Nessa's Ember puts Burn on Ashclaw warchief.
+   19 < 18  Nessa's Echo puts Burn on Ashclaw warchief (2).
+   20       Ashclaw warchief: Cleave.
+   22 < 20  Brann's Guard breaks.
+   23 < 20  Ashclaw warchief hits Brann for 3.
+   25 < 22  Brann's Riposte hits Ashclaw warchief for 5.
+   26       Ashclaw brute: Club.
+   27 < 26  Ashclaw brute hits Brann for 10.
+   29       Ashclaw scout: Slash.
+   30 < 29  Ashclaw scout hits Brann for 6.
+   34 < 33  Overflow Basin gives Mira 3 Guard.
+   36 < 35  Ashclaw warchief burns for 2.
+   38       Round 2.
+   39       Brann: Hold the line.
+   40 < 39  Brann raises 4 Guard.
+   41 < 39  Brann hits Ashclaw warchief for 9.
+   43 < 41  Brann's Arc hits Ashclaw scout for 2.
+   44       Mira: Mend.
+   45 < 44  Mira heals Brann for 8.
+   46 < 44  Mira hits Ashclaw warchief for 4.
+   48 < 46  Mira's Sap stores Regeneration (1).
+   49       Nessa: Bolt.
+   50 < 49  Nessa hits Ashclaw warchief for 6.
+   52 < 50  Nessa's Ember puts Burn on Ashclaw warchief (2).
+   53 < 52  Nessa's Echo puts Burn on Ashclaw warchief (3).
+   54       Ashclaw warchief: War cry.
+   55 < 54  Ashclaw warchief raises 4 Guard.
+   56 < 54  Ashclaw warchief gives Ashclaw brute 4 Guard.
+   57 < 54  Ashclaw warchief gives Ashclaw scout 4 Guard.
+   59       Ashclaw brute: Club.
+   61 < 59  Brann's Guard breaks.
+   62 < 59  Ashclaw brute hits Brann for 6.
+   65 < 61  Ashclaw brute's Guard breaks.
+   66 < 61  Brann's Riposte hits Ashclaw brute for 1.
+   67       Ashclaw scout: Slash.
+   68 < 67  Ashclaw scout hits Brann for 6.
+   72 < 71  Overflow Basin gives Mira 3 Guard.
+   74 < 73  Ashclaw warchief's Guard takes Ashclaw warchief's blow (3).
+   76       Round 3.
+   77       Brann: Hold the line.
+   78 < 77  Brann raises 4 Guard.
+   80 < 77  Ashclaw warchief's Guard breaks.
+   81 < 77  Brann hits Ashclaw warchief for 8.
+   82 < 81  Ashclaw warchief is down.
+   84 < 81  Ashclaw scout's Guard takes Brann's Arc's blow (2).
+   85 < 82  Ashclaw brute's Rout stores Chill (2).
+   86 < 82  Ashclaw scout's Rout stores Chill (2).
+   87 < 85  Nessa's Echo puts Chill on Ashclaw brute (3).
+   88       Mira: Mend.
+   89 < 88  Mira heals Brann for 8.
+   90 < 88  Mira hits Ashclaw brute for 4.
+   92 < 90  Mira's Sap stores Regeneration (1).
+   93       Nessa: Bolt.
+   94 < 93  Nessa hits Ashclaw brute for 6.
+   96 < 94  Nessa's Ember boils off Chill on Ashclaw brute.
+   97 < 96  Nessa's Ember stores Steam (1).
+   98       Ashclaw brute: Club.
+   99 < 98  Ashclaw brute is slowed by the cold.
+  101 < 98  Brann's Guard breaks.
+  102 < 98  Ashclaw brute hits Brann for 3.
+  104 <101  Brann's Riposte hits Ashclaw brute for 5.
+  105       Ashclaw scout: Slash.
+  106 <105  Ashclaw scout is slowed by the cold.
+  107 <105  Ashclaw scout hits Brann for 4.
+  111 <110  Overflow Basin gives Mira 3 Guard.
+  113       Round 4.
+  114       Brann: Hold the line.
+  115 <114  Brann raises 4 Guard.
+  116 <114  Brann hits Ashclaw brute for 9.
+  118 <116  Ashclaw scout's Guard takes Brann's Arc's blow (2).
+  119 <116  Ashclaw scout's Guard breaks.
+  120       Mira: Mend.
+  121 <120  Mira heals Brann for 8.
+  122 <120  Mira hits Ashclaw brute for 4.
+  124 <122  Mira's Sap stores Regeneration (1).
+  125       Nessa: Bolt.
+  126 <125  Nessa hits Ashclaw brute for 6.
+  127 <126  Ashclaw brute is down.
+  129       Ashclaw scout: Slash.
+  130 <129  Ashclaw scout is slowed by the cold.
+  131 <129  Brann's Guard takes Ashclaw scout's blow (4).
+  132 <129  Brann's Guard breaks.
+  134 <132  Brann's Riposte hits Ashclaw scout for 5.
+  137 <136  Overflow Basin gives Mira 3 Guard.
+  139       Round 5.
+  140       Brann: Hold the line.
+  141 <140  Brann raises 4 Guard.
+  142 <140  Brann hits Ashclaw scout for 9.
+  143 <142  Ashclaw scout is down.
+  146       The party has won.
+
+================================================================================================
+Stormwell without the Warden  [stormwell-no-healer]
+The capacitor has only the Battlemage's opening Charge; nobody heals, so it never fills.
+
+  + Brann with Stormglass Capacitor: health 40/40, strike 9, support 4
+      Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
+      Arc: The wielder's first hit each round arcs to the last enemy in the line for 2.
+      Capacitor: When the wielder is healed for at least 1, the blade stores 1 Charge. Once a round. Healing at full health stores nothing.
+      Charge burst: At 3 Charge, spends all of it and strikes for 8 storm damage. Once a round.
+  + Oda: health 28/28, strike 7, support 2
+  + Nessa with Ember Staff: health 26/26, strike 9, support 3
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+  - Ashclaw warchief: health 54/54, strike 11
+      Known: Every third round, from the second, gives every raider 4 Guard.
+  - Ashclaw brute: health 33/33, strike 10
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  - Ashclaw scout: health 18/18, strike 6
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  * Overflow Basin: Healing an ally cannot use becomes Guard on them, up to 4 a round each. It is not healing: nothing that answers healing sees it.
+
+RESULT: WON after 4 rounds. Brann 3/40, Oda 28/28, Nessa 26/26
+
+HIGHLIGHTS
+  > Round 2: Nessa: Bolt. Nessa hits Ashclaw warchief for 9. Ashclaw warchief is down.
+  > Round 3: Ashclaw brute: Club. Brann's Guard breaks. Brann's Riposte hits Ashclaw brute for 5. Ashclaw brute is down.
+  > Round 4: Oda: Mark and loose. Oda hits Ashclaw scout for 7. Ashclaw scout is down.
+
+TIMELINE
+    1       Round 1.
+    2       Brann: Hold the line.
+    3 <  2  Brann raises 4 Guard.
+    4 <  2  Brann hits Ashclaw warchief for 9.
+    6 <  4  Brann's Arc hits Ashclaw scout for 2.
+    7       Oda: Mark and loose.
+    8 <  7  Oda hits Ashclaw warchief for 7.
+    9 <  7  Oda puts Mark on Ashclaw warchief.
+   11       Nessa: Opening sigil.
+   12 < 11  Nessa puts Charge on Brann.
+   13 < 11  Nessa strikes the Mark on Ashclaw warchief.
+   14 < 11  Nessa hits Ashclaw warchief for 7.
+   16 < 14  Nessa's Ember puts Burn on Ashclaw warchief.
+   17 < 16  Nessa's Echo puts Burn on Ashclaw warchief (2).
+   18       Ashclaw warchief: Cleave.
+   20 < 18  Brann's Guard breaks.
+   21 < 18  Ashclaw warchief hits Brann for 7.
+   23 < 20  Brann's Riposte hits Ashclaw warchief for 5.
+   24       Ashclaw brute: Club.
+   25 < 24  Ashclaw brute hits Brann for 10.
+   27       Ashclaw scout: Slash.
+   28 < 27  Ashclaw scout hits Brann for 6.
+   31 < 30  Ashclaw warchief burns for 2.
+   33       Round 2.
+   34       Brann: Hold the line.
+   35 < 34  Brann raises 4 Guard.
+   36 < 34  Brann hits Ashclaw warchief for 9.
+   38 < 36  Brann's Arc hits Ashclaw scout for 2.
+   39       Oda: Mark and loose.
+   40 < 39  Oda hits Ashclaw warchief for 7.
+   41 < 39  Oda puts Mark on Ashclaw warchief.
+   43       Nessa: Bolt.
+   44 < 43  Nessa strikes the Mark on Ashclaw warchief.
+   45 < 43  Nessa hits Ashclaw warchief for 9.
+   46 < 45  Ashclaw warchief is down.
+   48 < 46  Ashclaw brute's Rout stores Chill (2).
+   49 < 46  Ashclaw scout's Rout stores Chill (2).
+   50 < 48  Nessa's Echo puts Chill on Ashclaw brute (3).
+   51       Ashclaw brute: Club.
+   52 < 51  Ashclaw brute is slowed by the cold.
+   54 < 51  Brann's Guard breaks.
+   55 < 51  Ashclaw brute hits Brann for 3.
+   57 < 54  Brann's Riposte hits Ashclaw brute for 5.
+   58       Ashclaw scout: Slash.
+   59 < 58  Ashclaw scout is slowed by the cold.
+   60 < 58  Ashclaw scout hits Brann for 4.
+   63       Round 3.
+   64       Brann: Hold the line.
+   65 < 64  Brann raises 4 Guard.
+   66 < 64  Brann hits Ashclaw brute for 9.
+   68 < 66  Brann's Arc hits Ashclaw scout for 2.
+   69       Oda: Mark and loose.
+   70 < 69  Oda hits Ashclaw brute for 7.
+   71 < 69  Oda puts Mark on Ashclaw brute.
+   73       Nessa: Bolt.
+   74 < 73  Nessa strikes the Mark on Ashclaw brute.
+   75 < 73  Nessa hits Ashclaw brute for 9.
+   77 < 75  Nessa's Ember boils off Chill on Ashclaw brute.
+   78 < 77  Nessa's Ember stores Steam (1).
+   79       Ashclaw brute: Club.
+   80 < 79  Ashclaw brute is slowed by the cold.
+   82 < 79  Brann's Guard breaks.
+   83 < 79  Ashclaw brute hits Brann for 3.
+   85 < 82  Brann's Riposte hits Ashclaw brute for 5.
+   86 < 85  Ashclaw brute is down.
+   87       Ashclaw scout: Slash.
+   88 < 87  Ashclaw scout is slowed by the cold.
+   89 < 87  Ashclaw scout hits Brann for 4.
+   92       Round 4.
+   93       Brann: Hold the line.
+   94 < 93  Brann raises 4 Guard.
+   95 < 93  Brann hits Ashclaw scout for 9.
+   97 < 95  Brann's Arc hits Ashclaw scout for 2.
+   98       Oda: Mark and loose.
+   99 < 98  Oda hits Ashclaw scout for 7.
+  100 < 99  Ashclaw scout is down.
+  103       The party has won.
+
+================================================================================================
+Overheal without Charge  [overheal]
+Nobody is hurt in the first round: the Warden's heal is all overheal. The Basin turns it into Guard; the capacitor stores nothing from it.
+
+  + Brann with Stormglass Capacitor: health 40/40, strike 9, support 4
+      Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
+      Arc: The wielder's first hit each round arcs to the last enemy in the line for 2.
+      Capacitor: When the wielder is healed for at least 1, the blade stores 1 Charge. Once a round. Healing at full health stores nothing.
+      Charge burst: At 3 Charge, spends all of it and strikes for 8 storm damage. Once a round.
+  + Mira with Sapwood Staff: health 32/32, strike 7, support 8
+      Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
+  - Ashclaw brute: health 33/33, strike 10
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  * Overflow Basin: Healing an ally cannot use becomes Guard on them, up to 4 a round each. It is not healing: nothing that answers healing sees it.
+
+RESULT: WON after 2 rounds. Brann 40/40, Mira 32/32
+
+HIGHLIGHTS
+  > Round 1: Mira: Mend. Mira has nothing to heal on Brann (8 over). Overflow Basin gives Brann 4 Guard.
+  > Round 1: Ashclaw brute: Club. Brann's Guard breaks. Brann's Riposte hits Ashclaw brute for 5.
+  > Round 2: Mira: Mend. Mira hits Ashclaw brute for 4. Ashclaw brute is down.
+
+TIMELINE
+    1       Round 1.
+    2       Brann: Hold the line.
+    3 <  2  Brann raises 4 Guard.
+    4 <  2  Brann hits Ashclaw brute for 9.
+    6 <  4  Brann's Arc hits Ashclaw brute for 2.
+    7       Mira: Mend.
+    8 <  7  Mira has nothing to heal on Brann (8 over).
+    9 <  7  Mira hits Ashclaw brute for 4.
+   11 <  8  Overflow Basin gives Brann 4 Guard.
+   12 <  9  Mira's Sap stores Regeneration (1).
+   13       Ashclaw brute: Club.
+   15 < 13  Brann's Guard breaks.
+   16 < 13  Ashclaw brute hits Brann for 2.
+   18 < 15  Brann's Riposte hits Ashclaw brute for 5.
+   21 < 20  Overflow Basin gives Mira 3 Guard.
+   23       Round 2.
+   24       Brann: Hold the line.
+   25 < 24  Brann raises 4 Guard.
+   26 < 24  Brann hits Ashclaw brute for 9.
+   28 < 26  Brann's Arc hits Ashclaw brute for 2.
+   29       Mira: Mend.
+   30 < 29  Mira heals Brann for 2.
+   32 < 29  Mira hits Ashclaw brute for 4.
+   33 < 32  Ashclaw brute is down.
+   36       The party has won.
+
+================================================================================================
+Scrap Choir  [scrap-choir]
+The Bellblade cracks when Brann's Guard breaks; the Salvage Bell turns its Scrap into Guard for everyone; the rune answers when that Guard breaks.
+
+  + Brann with Brittle Bellblade: health 40/40, strike 8, support 4
+      Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+      Brittle: The first time an enemy breaks the wielder's Guard, the blade cracks: 2 Scrap now, a repair after the fight. Guard the wielder gives up itself never cracks it.
+  + Mira with Sapwood Staff: health 32/32, strike 7, support 8
+      Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
+  + Nessa with Scrap-Tuned Staff: health 26/26, strike 9, support 3
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+      Rune of answer: After a blade of the party has cracked, when an enemy breaks an ally's Guard the wielder strikes that enemy for 5. Once a round, twice a fight.
+  - Ashclaw brute: health 33/33, strike 10
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  - Ashclaw brute: health 33/33, strike 10
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  - Ashclaw thief: health 21/21, strike 7
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+      Known: Strikes the last member of the party, past the front.
+  * Salvage Bell: When an ally's blade cracks, its 2 Scrap are spent and every ally gains 3 Guard. Once a fight for each cracked blade.
+
+RESULT: WON after 5 rounds. Brann 21/40 (blade cracked), Mira 32/32, Nessa 9/26
+
+HIGHLIGHTS
+  > Round 1: Ashclaw brute: Club. Brann's Guard breaks. Brann's Brittle Bellblade cracks. Salvage Bell spends 2 Scrap. Salvage Bell gives Brann 3 Guard.
+  > Round 2: Ashclaw brute: Club. Brann's Guard breaks. Brann's Riposte hits Ashclaw brute for 3. Ashclaw brute is down.
+  > Round 3: Ashclaw brute burns for 3. Ashclaw brute is down.
+
+TIMELINE
+    1       Round 1.
+    2       Brann: Hold the line.
+    3 <  2  Brann raises 4 Guard.
+    4 <  2  Brann hits Ashclaw brute for 6.
+    6 <  4  Brann's Ember puts Burn on Ashclaw brute.
+    7 <  6  Nessa's Echo puts Burn on Ashclaw brute (2).
+    8       Mira: Mend.
+    9 <  8  Mira has nothing to heal on Brann (8 over).
+   10 <  8  Mira hits Ashclaw brute for 4.
+   12 < 10  Mira's Sap stores Regeneration (1).
+   13       Nessa: Opening sigil.
+   14 < 13  Nessa puts Mark on Ashclaw brute.
+   15 < 13  Nessa strikes the Mark on Ashclaw brute.
+   16 < 13  Nessa hits Ashclaw brute for 7.
+   18 < 16  Nessa's Ember puts Burn on Ashclaw brute.
+   19       Ashclaw brute: Club.
+   21 < 19  Brann's Guard breaks.
+   22 < 19  Ashclaw brute hits Brann for 6.
+   24 < 21  Brann's Riposte hits Ashclaw brute for 3.
+   25 < 21  Brann's Brittle Bellblade cracks.
+   26 < 25  Brann's Brittle stores Scrap (2).
+   27 < 25  Salvage Bell spends 2 Scrap.
+   28 < 27  Salvage Bell gives Brann 3 Guard.
+   29 < 27  Salvage Bell gives Mira 3 Guard.
+   30 < 27  Salvage Bell gives Nessa 3 Guard.
+   31       Ashclaw brute: Club.
+   33 < 31  Brann's Guard breaks.
+   34 < 31  Ashclaw brute hits Brann for 7.
+   36 < 33  Nessa's Rune of answer hits Ashclaw brute for 5.
+   37       Ashclaw thief: Cut and run.
+   39 < 37  Nessa's Guard breaks.
+   40 < 37  Ashclaw thief hits Nessa for 4.
+   45 < 44  Ashclaw brute burns for 2.
+   47 < 46  Ashclaw brute burns for 1.
+   49       Round 2.
+   50       Brann: Hold the line.
+   51 < 50  Brann raises 4 Guard.
+   52 < 50  Brann hits Ashclaw brute for 6.
+   54 < 52  Brann's Ember puts Burn on Ashclaw brute (2).
+   55 < 54  Nessa's Echo puts Burn on Ashclaw brute (3).
+   56       Mira: Mend.
+   57 < 56  Mira heals Brann for 8.
+   58 < 56  Mira hits Ashclaw brute for 4.
+   60 < 58  Mira's Sap stores Regeneration (1).
+   61       Nessa: Bolt.
+   62 < 61  Nessa hits Ashclaw brute for 6.
+   64 < 62  Nessa's Ember puts Burn on Ashclaw brute (4).
+   65       Ashclaw brute: Club.
+   67 < 65  Brann's Guard breaks.
+   68 < 65  Ashclaw brute hits Brann for 6.
+   70 < 67  Brann's Riposte hits Ashclaw brute for 3.
+   71 < 70  Ashclaw brute is down.
+   72       Ashclaw brute: Club.
+   73 < 72  Ashclaw brute hits Brann for 10.
+   75       Ashclaw thief: Cut and run.
+   76 < 75  Ashclaw thief hits Nessa for 7.
+   81       Round 3.
+   82       Brann: Hold the line.
+   83 < 82  Brann raises 4 Guard.
+   84 < 82  Brann hits Ashclaw brute for 6.
+   86 < 84  Brann's Ember puts Burn on Ashclaw brute.
+   87 < 86  Nessa's Echo puts Burn on Ashclaw brute (2).
+   88       Mira: Mend.
+   89 < 88  Mira heals Brann for 8.
+   90 < 88  Mira hits Ashclaw brute for 4.
+   92 < 90  Mira's Sap stores Regeneration (1).
+   93       Nessa: Bolt.
+   94 < 93  Nessa hits Ashclaw brute for 6.
+   96 < 94  Nessa's Ember puts Burn on Ashclaw brute (3).
+   97       Ashclaw brute: Club.
+   99 < 97  Brann's Guard breaks.
+  100 < 97  Ashclaw brute hits Brann for 6.
+  102 < 99  Brann's Riposte hits Ashclaw brute for 3.
+  103       Ashclaw thief: Cut and run.
+  104 <103  Ashclaw thief hits Nessa for 7.
+  109 <108  Ashclaw brute burns for 3.
+  110 <109  Ashclaw brute is down.
+  112       Round 4.
+  113       Brann: Hold the line.
+  114 <113  Brann raises 4 Guard.
+  115 <113  Brann hits Ashclaw thief for 6.
+  117 <115  Brann's Ember puts Burn on Ashclaw thief.
+  118 <117  Nessa's Echo puts Burn on Ashclaw thief (2).
+  119       Mira: Mend.
+  120 <119  Mira heals Nessa for 8.
+  121 <119  Mira hits Ashclaw thief for 4.
+  123 <121  Mira's Sap stores Regeneration (1).
+  124       Nessa: Bolt.
+  125 <124  Nessa hits Ashclaw thief for 6.
+  127 <125  Nessa's Ember puts Burn on Ashclaw thief (3).
+  128       Ashclaw thief: Cut and run.
+  129 <128  Ashclaw thief hits Nessa for 7.
+  134 <133  Ashclaw thief burns for 3.
+  136       Round 5.
+  137       Brann: Hold the line.
+  138 <137  Brann raises 4 Guard.
+  139 <137  Brann hits Ashclaw thief for 6.
+  140 <139  Ashclaw thief is down.
+  143       The party has won.
+
+================================================================================================
+Scrap Choir with a sound blade  [scrap-choir-sound-blade]
+The same party; Brann's sword is not brittle. Nothing cracks, the Bell stays silent, the rune never answers.
+
+  + Brann with Ember Iron Sword: health 40/40, strike 9, support 4
+      Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+  + Mira with Sapwood Staff: health 32/32, strike 7, support 8
+      Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
+  + Nessa with Scrap-Tuned Staff: health 26/26, strike 9, support 3
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+      Rune of answer: After a blade of the party has cracked, when an enemy breaks an ally's Guard the wielder strikes that enemy for 5. Once a round, twice a fight.
+  - Ashclaw brute: health 33/33, strike 10
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  - Ashclaw brute: health 33/33, strike 10
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  - Ashclaw thief: health 21/21, strike 7
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+      Known: Strikes the last member of the party, past the front.
+  * Salvage Bell: When an ally's blade cracks, its 2 Scrap are spent and every ally gains 3 Guard. Once a fight for each cracked blade.
+
+RESULT: WON after 5 rounds. Brann 18/40, Mira 32/32, Nessa 14/26
+
+HIGHLIGHTS
+  > Round 2: Ashclaw brute: Club. Brann's Guard breaks. Brann's Riposte hits Ashclaw brute for 4. Ashclaw brute is down.
+  > Round 4: Brann: Hold the line. Brann hits Ashclaw brute for 6. Ashclaw brute is down.
+  > Round 5: Mira: Mend. Mira hits Ashclaw thief for 4. Ashclaw thief is down.
+
+TIMELINE
+    1       Round 1.
+    2       Brann: Hold the line.
+    3 <  2  Brann raises 4 Guard.
+    4 <  2  Brann hits Ashclaw brute for 6.
+    6 <  4  Brann's Ember puts Burn on Ashclaw brute.
+    7 <  6  Nessa's Echo puts Burn on Ashclaw brute (2).
+    8       Mira: Mend.
+    9 <  8  Mira has nothing to heal on Brann (8 over).
+   10 <  8  Mira hits Ashclaw brute for 4.
+   12 < 10  Mira's Sap stores Regeneration (1).
+   13       Nessa: Opening sigil.
+   14 < 13  Nessa puts Mark on Ashclaw brute.
+   15 < 13  Nessa strikes the Mark on Ashclaw brute.
+   16 < 13  Nessa hits Ashclaw brute for 7.
+   18 < 16  Nessa's Ember puts Burn on Ashclaw brute.
+   19       Ashclaw brute: Club.
+   21 < 19  Brann's Guard breaks.
+   22 < 19  Ashclaw brute hits Brann for 6.
+   24 < 21  Brann's Riposte hits Ashclaw brute for 4.
+   25       Ashclaw brute: Club.
+   26 < 25  Ashclaw brute hits Brann for 10.
+   28       Ashclaw thief: Cut and run.
+   29 < 28  Ashclaw thief hits Nessa for 7.
+   34 < 33  Ashclaw brute burns for 2.
+   36 < 35  Ashclaw brute burns for 1.
+   38       Round 2.
+   39       Brann: Hold the line.
+   40 < 39  Brann raises 4 Guard.
+   41 < 39  Brann hits Ashclaw brute for 6.
+   43 < 41  Brann's Ember puts Burn on Ashclaw brute (2).
+   44 < 43  Nessa's Echo puts Burn on Ashclaw brute (3).
+   45       Mira: Mend.
+   46 < 45  Mira heals Brann for 8.
+   47 < 45  Mira hits Ashclaw brute for 4.
+   49 < 47  Mira's Sap stores Regeneration (1).
+   50       Nessa: Bolt.
+   51 < 50  Nessa hits Ashclaw brute for 6.
+   53 < 51  Nessa's Ember puts Burn on Ashclaw brute (4).
+   54       Ashclaw brute: Club.
+   56 < 54  Brann's Guard breaks.
+   57 < 54  Ashclaw brute hits Brann for 6.
+   59 < 56  Brann's Riposte hits Ashclaw brute for 4.
+   60 < 59  Ashclaw brute is down.
+   61       Ashclaw brute: Club.
+   62 < 61  Ashclaw brute hits Brann for 10.
+   64       Ashclaw thief: Cut and run.
+   65 < 64  Ashclaw thief hits Nessa for 7.
+   70       Round 3.
+   71       Brann: Hold the line.
+   72 < 71  Brann raises 4 Guard.
+   73 < 71  Brann hits Ashclaw brute for 6.
+   75 < 73  Brann's Ember puts Burn on Ashclaw brute.
+   76 < 75  Nessa's Echo puts Burn on Ashclaw brute (2).
+   77       Mira: Mend.
+   78 < 77  Mira heals Brann for 8.
+   79 < 77  Mira hits Ashclaw brute for 4.
+   81 < 79  Mira's Sap stores Regeneration (1).
+   82       Nessa: Bolt.
+   83 < 82  Nessa hits Ashclaw brute for 6.
+   85 < 83  Nessa's Ember puts Burn on Ashclaw brute (3).
+   86       Ashclaw brute: Club.
+   88 < 86  Brann's Guard breaks.
+   89 < 86  Ashclaw brute hits Brann for 6.
+   91 < 88  Brann's Riposte hits Ashclaw brute for 4.
+   92       Ashclaw thief: Cut and run.
+   93 < 92  Ashclaw thief hits Nessa for 7.
+   98 < 97  Ashclaw brute burns for 3.
+  100       Round 4.
+  101       Brann: Hold the line.
+  102 <101  Brann raises 4 Guard.
+  103 <101  Brann hits Ashclaw brute for 6.
+  104 <103  Ashclaw brute is down.
+  106       Mira: Mend.
+  107 <106  Mira heals Nessa for 8.
+  108 <106  Mira hits Ashclaw thief for 4.
+  110 <108  Mira's Sap stores Regeneration (1).
+  111       Nessa: Bolt.
+  112 <111  Nessa hits Ashclaw thief for 6.
+  114 <112  Nessa's Ember puts Burn on Ashclaw thief.
+  115 <114  Nessa's Echo puts Burn on Ashclaw thief (2).
+  116       Ashclaw thief: Cut and run.
+  117 <116  Ashclaw thief hits Nessa for 7.
+  122 <121  Ashclaw thief burns for 2.
+  124       Round 5.
+  125       Brann: Hold the line.
+  126 <125  Brann raises 4 Guard.
+  127 <125  Brann hits Ashclaw thief for 6.
+  129 <127  Brann's Ember puts Burn on Ashclaw thief (2).
+  130 <129  Nessa's Echo puts Burn on Ashclaw thief (3).
+  131       Mira: Mend.
+  132 <131  Mira heals Nessa for 8.
+  133 <131  Mira hits Ashclaw thief for 4.
+  134 <133  Ashclaw thief is down.
+  137       The party has won.
+
+================================================================================================
+Scrap Choir without the Bell  [scrap-choir-no-bell]
+The Bellblade cracks and its Scrap lies there: no relic to spend it. The flaw is only a repair bill.
+
+  + Brann with Brittle Bellblade: health 40/40, strike 8, support 4
+      Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+      Brittle: The first time an enemy breaks the wielder's Guard, the blade cracks: 2 Scrap now, a repair after the fight. Guard the wielder gives up itself never cracks it.
+  + Mira with Sapwood Staff: health 32/32, strike 7, support 8
+      Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
+  + Nessa with Scrap-Tuned Staff: health 26/26, strike 9, support 3
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+      Rune of answer: After a blade of the party has cracked, when an enemy breaks an ally's Guard the wielder strikes that enemy for 5. Once a round, twice a fight.
+  - Ashclaw brute: health 33/33, strike 10
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  - Ashclaw brute: health 33/33, strike 10
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+  - Ashclaw thief: health 21/21, strike 7
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+      Known: Strikes the last member of the party, past the front.
+
+RESULT: WON after 5 rounds. Brann 18/40 (blade cracked), Mira 32/32, Nessa 6/26
+
+HIGHLIGHTS
+  > Round 2: Ashclaw brute: Club. Brann's Guard breaks. Brann's Riposte hits Ashclaw brute for 3. Ashclaw brute is down.
+  > Round 3: Ashclaw brute burns for 3. Ashclaw brute is down.
+  > Round 5: Brann: Hold the line. Brann hits Ashclaw thief for 6. Ashclaw thief is down.
+
+TIMELINE
+    1       Round 1.
+    2       Brann: Hold the line.
+    3 <  2  Brann raises 4 Guard.
+    4 <  2  Brann hits Ashclaw brute for 6.
+    6 <  4  Brann's Ember puts Burn on Ashclaw brute.
+    7 <  6  Nessa's Echo puts Burn on Ashclaw brute (2).
+    8       Mira: Mend.
+    9 <  8  Mira has nothing to heal on Brann (8 over).
+   10 <  8  Mira hits Ashclaw brute for 4.
+   12 < 10  Mira's Sap stores Regeneration (1).
+   13       Nessa: Opening sigil.
+   14 < 13  Nessa puts Mark on Ashclaw brute.
+   15 < 13  Nessa strikes the Mark on Ashclaw brute.
+   16 < 13  Nessa hits Ashclaw brute for 7.
+   18 < 16  Nessa's Ember puts Burn on Ashclaw brute.
+   19       Ashclaw brute: Club.
+   21 < 19  Brann's Guard breaks.
+   22 < 19  Ashclaw brute hits Brann for 6.
+   24 < 21  Brann's Riposte hits Ashclaw brute for 3.
+   25 < 21  Brann's Brittle Bellblade cracks.
+   26 < 25  Brann's Brittle stores Scrap (2).
+   27       Ashclaw brute: Club.
+   28 < 27  Ashclaw brute hits Brann for 10.
+   30       Ashclaw thief: Cut and run.
+   31 < 30  Ashclaw thief hits Nessa for 7.
+   36 < 35  Ashclaw brute burns for 2.
+   38 < 37  Ashclaw brute burns for 1.
+   40       Round 2.
+   41       Brann: Hold the line.
+   42 < 41  Brann raises 4 Guard.
+   43 < 41  Brann hits Ashclaw brute for 6.
+   45 < 43  Brann's Ember puts Burn on Ashclaw brute (2).
+   46 < 45  Nessa's Echo puts Burn on Ashclaw brute (3).
+   47       Mira: Mend.
+   48 < 47  Mira heals Brann for 8.
+   49 < 47  Mira hits Ashclaw brute for 4.
+   51 < 49  Mira's Sap stores Regeneration (1).
+   52       Nessa: Bolt.
+   53 < 52  Nessa hits Ashclaw brute for 6.
+   55 < 53  Nessa's Ember puts Burn on Ashclaw brute (4).
+   56       Ashclaw brute: Club.
+   58 < 56  Brann's Guard breaks.
+   59 < 56  Ashclaw brute hits Brann for 6.
+   61 < 58  Brann's Riposte hits Ashclaw brute for 3.
+   62 < 61  Ashclaw brute is down.
+   63       Ashclaw brute: Club.
+   64 < 63  Ashclaw brute hits Brann for 10.
+   66       Ashclaw thief: Cut and run.
+   67 < 66  Ashclaw thief hits Nessa for 7.
+   72       Round 3.
+   73       Brann: Hold the line.
+   74 < 73  Brann raises 4 Guard.
+   75 < 73  Brann hits Ashclaw brute for 6.
+   77 < 75  Brann's Ember puts Burn on Ashclaw brute.
+   78 < 77  Nessa's Echo puts Burn on Ashclaw brute (2).
+   79       Mira: Mend.
+   80 < 79  Mira heals Brann for 8.
+   81 < 79  Mira hits Ashclaw brute for 4.
+   83 < 81  Mira's Sap stores Regeneration (1).
+   84       Nessa: Bolt.
+   85 < 84  Nessa hits Ashclaw brute for 6.
+   87 < 85  Nessa's Ember puts Burn on Ashclaw brute (3).
+   88       Ashclaw brute: Club.
+   90 < 88  Brann's Guard breaks.
+   91 < 88  Ashclaw brute hits Brann for 6.
+   93 < 90  Brann's Riposte hits Ashclaw brute for 3.
+   94 < 90  Nessa's Rune of answer hits Ashclaw brute for 5.
+   95       Ashclaw thief: Cut and run.
+   96 < 95  Ashclaw thief hits Nessa for 7.
+  101 <100  Ashclaw brute burns for 3.
+  102 <101  Ashclaw brute is down.
+  104       Round 4.
+  105       Brann: Hold the line.
+  106 <105  Brann raises 4 Guard.
+  107 <105  Brann hits Ashclaw thief for 6.
+  109 <107  Brann's Ember puts Burn on Ashclaw thief.
+  110 <109  Nessa's Echo puts Burn on Ashclaw thief (2).
+  111       Mira: Mend.
+  112 <111  Mira heals Nessa for 8.
+  113 <111  Mira hits Ashclaw thief for 4.
+  115 <113  Mira's Sap stores Regeneration (1).
+  116       Nessa: Bolt.
+  117 <116  Nessa hits Ashclaw thief for 6.
+  119 <117  Nessa's Ember puts Burn on Ashclaw thief (3).
+  120       Ashclaw thief: Cut and run.
+  121 <120  Ashclaw thief hits Nessa for 7.
+  126 <125  Ashclaw thief burns for 3.
+  128       Round 5.
+  129       Brann: Hold the line.
+  130 <129  Brann raises 4 Guard.
+  131 <129  Brann hits Ashclaw thief for 6.
+  132 <131  Ashclaw thief is down.
+  135       The party has won.
+
+================================================================================================
+Icebreaker  [icebreaker]
+The Ranger's frost bow chills the drake; the heavy axe shatters the Chill. A chilled drake also breathes weaker.
+
+  + Oda with Frostbound Bow: health 28/28, strike 13, support 2
+      Second arrow: After the wielder acts, a second arrow hits the last enemy in the line for a third of a strike. Once a round.
+      Rime: The wielder's first hit each round puts 1 Chill on its target.
+      Frostbound: The wielder's first hit each round puts 1 more Chill on its target.
+  + Brann with Heavy Bronze Axe: health 40/40, strike 11, support 4
+      Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+      Heavy: The wielder starts a fight slowed: its first strike is weaker.
+      Shatter: The wielder's first hit each round on a chilled enemy shatters up to 3 Chill on it for 6 more damage.
+  + Mira with Sapwood Staff: health 32/32, strike 7, support 8
+      Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
+  - Embermaw drake: health 75/75, strike 14
+      Known: Every third round breathes fire on the whole party. A chilled drake breathes weaker.
+  - Embermaw whelp: health 26/26, strike 6
+
+RESULT: WON after 3 rounds. Oda 21/28, Brann 20/40, Mira 32/32
+
+HIGHLIGHTS
+  > Round 1: Oda: Mark and loose. Oda's Second arrow hits Embermaw whelp for 7.
+  > Round 1: Brann: Hold the line. Brann hits Embermaw drake for 8. Brann's Shatter hits Embermaw drake for 6.
+  > Round 2: Embermaw drake: Bite. Brann's Guard breaks. Brann's Riposte hits Embermaw drake for 1. Embermaw drake is down.
+
+TIMELINE
+    1       Round 1.
+    2 <  1  Brann's Heavy stores Chill (1).
+    3       Oda: Mark and loose.
+    4 <  3  Oda hits Embermaw drake for 17.
+    5 <  3  Oda puts Mark on Embermaw drake.
+    7 <  4  Oda's Rime puts Chill on Embermaw drake.
+    8 <  4  Oda's Frostbound puts Chill on Embermaw drake (2).
+    9 <  6  Oda's Second arrow hits Embermaw whelp for 7.
+   10       Brann: Hold the line.
+   11 < 10  Brann raises 4 Guard.
+   12 < 10  Brann is slowed by the cold.
+   13 < 10  Brann strikes the Mark on Embermaw drake.
+   14 < 10  Brann hits Embermaw drake for 8.
+   16 < 14  Brann's Ember boils off Chill on Embermaw drake.
+   17 < 16  Brann's Ember stores Steam (1).
+   18 < 14  Brann's Shatter takes 1 Chill from Embermaw drake.
+   19 < 14  Brann's Shatter hits Embermaw drake for 6.
+   20       Mira: Mend.
+   21 < 20  Mira has nothing to heal on Oda (8 over).
+   22 < 20  Mira hits Embermaw drake for 4.
+   24 < 22  Mira's Sap stores Regeneration (1).
+   25       Embermaw drake: Bite.
+   26 < 25  Embermaw drake raises 3 Guard.
+   28 < 25  Brann's Guard breaks.
+   29 < 25  Embermaw drake hits Brann for 10.
+   32 < 28  Embermaw drake's Guard breaks.
+   33 < 28  Brann's Riposte hits Embermaw drake for 1.
+   34       Embermaw whelp: Nip.
+   35 < 34  Embermaw whelp hits Oda for 6.
+   36 < 34  Embermaw whelp puts Burn on Oda.
+   39 < 38  Oda burns for 1.
+   43       Round 2.
+   44       Oda: Mark and loose.
+   45 < 44  Oda hits Embermaw drake for 17.
+   46 < 44  Oda puts Mark on Embermaw drake.
+   48 < 45  Oda's Rime puts Chill on Embermaw drake.
+   49 < 45  Oda's Frostbound puts Chill on Embermaw drake (2).
+   50 < 47  Oda's Second arrow hits Embermaw whelp for 7.
+   51       Brann: Hold the line.
+   52 < 51  Brann raises 4 Guard.
+   53 < 51  Brann strikes the Mark on Embermaw drake.
+   54 < 51  Brann hits Embermaw drake for 11.
+   56 < 54  Brann's Ember boils off Chill on Embermaw drake.
+   57 < 56  Brann's Ember stores Steam (2).
+   58 < 54  Brann's Shatter takes 1 Chill from Embermaw drake.
+   59 < 54  Brann's Shatter hits Embermaw drake for 6.
+   60       Mira: Mend.
+   61 < 60  Mira heals Oda for 7.
+   63 < 60  Mira hits Embermaw drake for 4.
+   65 < 63  Mira's Sap stores Regeneration (1).
+   66       Embermaw drake: Bite.
+   67 < 66  Embermaw drake raises 3 Guard.
+   69 < 66  Brann's Guard breaks.
+   70 < 66  Embermaw drake hits Brann for 10.
+   73 < 69  Embermaw drake's Guard breaks.
+   74 < 69  Brann's Riposte hits Embermaw drake for 1.
+   75 < 74  Embermaw drake is down.
+   76       Embermaw whelp: Nip.
+   77 < 76  Embermaw whelp hits Oda for 6.
+   78 < 76  Embermaw whelp puts Burn on Oda.
+   81 < 80  Oda burns for 1.
+   85       Round 3.
+   86       Oda: Mark and loose.
+   87 < 86  Oda hits Embermaw whelp for 17.
+   88 < 87  Embermaw whelp is down.
+   91       The party has won.
+
+================================================================================================
+Blood Bank  [blood-bank]
+The Duelist pays health to the dagger for a harder cut; the Warden heals what was paid. Paying is not damage.
+
+  + Perrin with Bloodbound Dagger: health 30/30, strike 8, support 2
+      Off-hand cut: After the wielder acts, one more light cut. Once a round.
+      Grave chill: The wielder's first hit each round puts 1 Bleed on its target.
+      Bloodbound: Before the wielder acts, it pays up to 4 health (never below 12) and strikes for twice what it paid. Paying is not damage: nothing answers it.
+  + Mira with Sapwood Staff: health 32/32, strike 7, support 8
+      Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
+  + Brann with Ember Iron Sword: health 40/40, strike 9, support 4
+      Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
+      Ember: The wielder's first hit each round puts 1 Burn on its target.
+  - Bone warden: health 44/44, strike 8
+  - Hollowbound shambler: health 26/26, strike 7
+  - Gravecaller: health 37/37, strike 4, support 9
+      Known: Every third round raises a shambler while there is room in the line.
+      Known: Every round mends the weakest of the dead.
+  * Blood Receipt: After an ally has paid health to a blade, healing that ally also gives them that much Guard, up to 4 a round each.
+
+RESULT: WON after 5 rounds. Perrin 22/30, Mira 32/32, Brann 40/40
+
+HIGHLIGHTS
+  > Round 1: Perrin: Double cut. Perrin pays 4 health to Bloodbound. Perrin's Bloodbound hits Bone warden for 8.
+  > Round 3: Perrin: Double cut. Perrin pays 4 health to Bloodbound. Perrin's Bloodbound hits Hollowbound shambler for 8.
+  > Round 5: Perrin: Double cut. Perrin pays 4 health to Bloodbound. Perrin's Bloodbound hits Hollowbound shambler for 8. Hollowbound shambler is down.
+
+TIMELINE
+    1       Round 1.
+    2       Perrin: Double cut.
+    3 <  2  Perrin pays 4 health to Bloodbound.
+    4 <  3  Perrin's Bloodbound hits Bone warden for 8.
+    5 <  2  Perrin hits Bone warden for 4.
+    6 <  2  Perrin hits Bone warden for 4.
+    8 <  5  Perrin's Grave chill puts Bleed on Bone warden.
+    9 <  7  Perrin's Off-hand cut hits Bone warden for 3.
+   10       Mira: Mend.
+   11 < 10  Mira heals Perrin for 4.
+   13 < 10  Mira hits Bone warden for 4.
+   15 < 11  Blood Receipt gives Perrin 4 Guard.
+   16 < 13  Mira's Sap stores Regeneration (1).
+   17       Brann: Hold the line.
+   18 < 17  Brann raises 4 Guard.
+   19 < 17  Brann hits Bone warden for 9.
+   21 < 19  Brann's Ember puts Burn on Bone warden.
+   23 < 22  Bone warden bleeds for 1.
+   24       Bone warden: Shield wall.
+   25 < 24  Bone warden raises 3 Guard.
+   27 < 24  Brann's Guard breaks.
+   28 < 24  Bone warden hits Brann for 4.
+   31 < 27  Bone warden's Guard breaks.
+   32 < 27  Brann's Riposte hits Bone warden for 2.
+   33       Hollowbound shambler: Claw.
+   35 < 33  Perrin's Guard breaks.
+   36 < 33  Hollowbound shambler hits Perrin for 3.
+   38       Gravecaller: Knit bone.
+   39 < 38  Gravecaller heals Bone warden for 9.
+   40 < 38  Gravecaller hits Perrin for 4.
+   45 < 44  Bone warden burns for 1.
+   47       Round 2.
+   48       Perrin: Double cut.
+   49 < 48  Perrin pays 4 health to Bloodbound.
+   50 < 49  Perrin's Bloodbound hits Bone warden for 8.
+   51 < 48  Perrin hits Bone warden for 4.
+   52 < 48  Perrin hits Bone warden for 4.
+   54 < 51  Perrin's Grave chill puts Bleed on Bone warden.
+   55 < 53  Perrin's Off-hand cut hits Bone warden for 3.
+   56 < 55  Bone warden is down.
+   57       Mira: Mend.
+   58 < 57  Mira heals Perrin for 8.
+   59 < 57  Mira hits Hollowbound shambler for 4.
+   61 < 58  Blood Receipt gives Perrin 4 Guard.
+   62 < 59  Mira's Sap stores Regeneration (1).
+   63       Brann: Hold the line.
+   64 < 63  Brann raises 4 Guard.
+   65 < 63  Brann hits Hollowbound shambler for 9.
+   67 < 65  Brann's Ember puts Burn on Hollowbound shambler.
+   68       Hollowbound shambler: Claw.
+   70 < 68  Brann's Guard breaks.
+   71 < 68  Hollowbound shambler hits Brann for 3.
+   73 < 70  Brann's Riposte hits Hollowbound shambler for 5.
+   74       Gravecaller: Knit bone.
+   75 < 74  Gravecaller heals Hollowbound shambler for 9.
+   76 < 74  Perrin's Guard takes Gravecaller's blow (4).
+   77 < 74  Perrin's Guard breaks.
+   82 < 81  Hollowbound shambler burns for 1.
+   84       Round 3.
+   85       Perrin: Double cut.
+   86 < 85  Perrin pays 4 health to Bloodbound.
+   87 < 86  Perrin's Bloodbound hits Hollowbound shambler for 8.
+   88 < 85  Perrin hits Hollowbound shambler for 4.
+   89 < 85  Perrin hits Hollowbound shambler for 4.
+   90 < 89  Hollowbound shambler is down.
+   92 < 91  Perrin's Off-hand cut hits Gravecaller for 3.
+   93       Mira: Mend.
+   94 < 93  Mira heals Perrin for 7.
+   96 < 93  Mira hits Gravecaller for 4.
+   98 < 94  Blood Receipt gives Perrin 4 Guard.
+   99 < 96  Mira's Sap stores Regeneration (1).
+  100       Brann: Hold the line.
+  101 <100  Brann raises 4 Guard.
+  102 <100  Brann hits Gravecaller for 9.
+  104 <102  Brann's Ember puts Burn on Gravecaller.
+  105       Gravecaller: Raise the fallen.
+  106 <105  Hollowbound shambler joins the enemy.
+  111 <110  Gravecaller burns for 1.
+  113       Round 4.
+  114       Perrin: Double cut.
+  115 <114  Perrin pays 4 health to Bloodbound.
+  116 <115  Perrin's Bloodbound hits Gravecaller for 8.
+  117 <114  Perrin hits Gravecaller for 4.
+  118 <114  Perrin hits Gravecaller for 4.
+  120 <117  Perrin's Grave chill puts Bleed on Gravecaller.
+  121 <119  Perrin's Off-hand cut hits Gravecaller for 3.
+  122       Mira: Mend.
+  123 <122  Mira heals Brann for 7.
+  125 <122  Mira hits Gravecaller for 4.
+  126 <125  Gravecaller is down.
+  128 <123  Blood Receipt gives Brann 4 Guard.
+  129 <125  Mira's Sap stores Regeneration (1).
+  130       Brann: Hold the line.
+  131 <130  Brann raises 4 Guard.
+  132 <130  Brann hits Hollowbound shambler for 9.
+  134 <132  Brann's Ember puts Burn on Hollowbound shambler.
+  135       Hollowbound shambler: Claw.
+  136 <135  Brann's Guard takes Hollowbound shambler's blow (4).
+  141 <140  Hollowbound shambler burns for 1.
+  143       Round 5.
+  144       Perrin: Double cut.
+  145 <144  Perrin pays 4 health to Bloodbound.
+  146 <145  Perrin's Bloodbound hits Hollowbound shambler for 8.
+  147 <146  Hollowbound shambler is down.
+  149       The party has won.
+
+================================================================================================
+A cautious retreat  [retreat]
+Two unarmed novices meet a warchief under a cautious posture and leave when it turns.
+
+  + Oda: health 28/28, strike 7, support 2
+  + Perrin: health 30/30, strike 6, support 2
+  - Ashclaw warchief: health 90/90, strike 19
+      Known: Every third round, from the second, gives every raider 4 Guard.
+  - Ashclaw brute: health 55/55, strike 16
+      Rout: When the warchief falls, the raiders lose heart: 2 Chill.
+
+RESULT: RETREATED after 1 rounds. Oda down, Perrin 30/30
+
+HIGHLIGHTS
+  > Round 1: Ashclaw brute: Club. Ashclaw brute hits Oda for 16. Oda is down.
+
+TIMELINE
+    1       Round 1.
+    2       Oda: Mark and loose.
+    3 <  2  Oda hits Ashclaw warchief for 7.
+    4 <  2  Oda puts Mark on Ashclaw warchief.
+    6       Perrin: Double cut.
+    7 <  6  Perrin strikes the Mark on Ashclaw warchief.
+    8 <  6  Perrin hits Ashclaw warchief for 7.
+    9 <  6  Perrin hits Ashclaw warchief for 4.
+   11       Ashclaw warchief: Cleave.
+   12 < 11  Ashclaw warchief hits Oda for 19.
+   14       Ashclaw brute: Club.
+   15 < 14  Ashclaw brute hits Oda for 16.
+   16 < 15  Oda is down.
+   19       The party pulls back.
+

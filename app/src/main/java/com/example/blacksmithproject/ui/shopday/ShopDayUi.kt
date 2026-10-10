@@ -2,6 +2,7 @@ package com.example.blacksmithproject.ui.shopday
 
 import androidx.compose.runtime.Immutable
 import com.example.blacksmithproject.data.ShopDaySpeed
+import com.tinyblacksmith.core.combat.FightResult
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.model.BlessingId
@@ -14,6 +15,8 @@ import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.IncomeKind
 import com.tinyblacksmith.core.model.MarketVisit
 import com.tinyblacksmith.core.model.MaterialId
+import com.tinyblacksmith.core.model.MissionOutcome
+import com.tinyblacksmith.core.model.SiegeVerdict
 import com.tinyblacksmith.core.model.VisitKind
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponSnapshot
@@ -95,11 +98,35 @@ data class AftermathUi(
  * A lost siege is not a fallen forge: that is the day's last card.
  */
 @Immutable
-data class SiegeOutcomeUi(val day: Int, val held: Boolean, val foe: String?, val forgeDamage: Int?, val forgeHealthNow: Int) {
-    val outcome: String get() = if (held) "The town held" else "The defenses broke"
+data class SiegeOutcomeUi(
+    val day: Int, val held: Boolean, val foe: String?, val forgeDamage: Int?, val forgeHealthNow: Int,
+    /** A guild run's siege, fought on the wall (`DayResolution.siege`); all four are absent in a classic run. */
+    val verdict: SiegeVerdict? = null,
+    val outerLine: String? = null,
+    val highlights: List<String> = emptyList(),
+    val fight: FightResult? = null,
+) {
+    val outcome: String get() = when (verdict) {
+        SiegeVerdict.HELD -> "The town held"
+        // A town that holds while the forge is hit or a defender goes down: both are said (spec 1.2).
+        SiegeVerdict.HELD_AT_A_COST -> "The town held, at a cost"
+        SiegeVerdict.BREACHED -> "The wall was breached"
+        null -> if (held) "The town held" else "The defenses broke"
+    }
     /** One line for the evening card, so a skipped day still says what the siege did. */
     val recap: String get() = listOfNotNull(outcome, forgeDamage?.let { if (it > 0) "forge damage $it" else "no forge damage" }).joinToString(" · ")
 }
+
+/**
+ * What the guild's party did today (`DayResolution.mission`), in the record's own words: [outcome] is the report's
+ * outcome as a heading, [highlights] the fight's first three, [lines] what it brought and cost. [fight] is null for
+ * work without a fight.
+ */
+@Immutable
+data class ContractUi(
+    val title: String, val party: List<FaceUi>, val outcome: String, val result: MissionOutcome, val continues: Boolean,
+    val highlights: List<String>, val lines: List<String>, val fight: FightResult?,
+)
 
 @Immutable data class BlessingUi(val id: BlessingId, val name: String, val description: String)
 
@@ -116,6 +143,11 @@ sealed interface Beat {
     /** [visitors] is everyone who came; [shown] are those with a card of their own, the rest are in the tally. */
     @Immutable data class Open(val visitors: Int, val shown: Int, override val progress: String = "The shop opens") : Beat {
         override val millis get() = BeatLength.OPEN
+        override val gone: Set<WeaponId> get() = emptySet()
+    }
+    /** The party's day: it waits for the player at any speed, like the siege. */
+    @Immutable data class Contract(val contract: ContractUi, override val progress: String = "The guild's contract") : Beat {
+        override val millis get() = 0
         override val gone: Set<WeaponId> get() = emptySet()
     }
     @Immutable data class Visit(val visit: VisitUi, override val progress: String, override val gone: Set<WeaponId>) : Beat {
@@ -162,6 +194,9 @@ data class ShopDayUiModel(val day: Int, val shelf: List<BladeUi>, val beats: Lis
     fun beat(position: Int): Beat = beats[position.coerceIn(0, beats.lastIndex)]
 }
 
+/** Spec 6.5: three highlights by default, the exact timeline behind an expander. */
+const val HIGHLIGHTS_SHOWN = 3
+
 private fun incomeLabel(kind: IncomeKind): String = when (kind) {
     IncomeKind.SHELF_SALE -> "Shelf sales"
     IncomeKind.SALE_BONUS -> "Town's blessing"
@@ -170,6 +205,7 @@ private fun incomeLabel(kind: IncomeKind): String = when (kind) {
     IncomeKind.COLLECTOR -> "Collector"
     IncomeKind.TRIBUTE -> "Tribute from the town"
     IncomeKind.CONTRACT -> "Guild contracts"
+    IncomeKind.INSURANCE -> "Insurance"
 }
 
 private fun aftermathLabel(kind: AftermathKind): String = when (kind) {
@@ -195,8 +231,10 @@ private fun plural(n: Int, one: String, many: String) = "$n ${if (n == 1) one el
  * The script as immutable UI models: every sentence is a `Lines` template over the day's records or a recorded number
  * under a fixed label. Pure: reads [state] (the state End Day returned), draws nothing, decides nothing.
  */
-fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: BalanceConfig): ShopDayUiModel {
+fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: BalanceConfig, contract: Boolean = false): ShopDayUiModel {
     val script = this
+    // A guild run's own records of the day; a classic run has neither.
+    val resolution = state.lastResolution?.takeIf { it.day == day && state.guild != null }
     val all = visits
     val snapshots = all.mapNotNull { v -> v.customer?.let { it.heroId to it } }.toMap()
     fun face(id: HeroId, name: String? = null): FaceUi {
@@ -253,6 +291,24 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
     }
 
     val beats = mutableListOf<Beat>()
+    // The party's day leads the evening (spec 14.6): it is what the smith's own choice of the morning came to.
+    resolution?.mission?.takeIf { contract }?.let { m ->
+        val checkpoint = state.guild?.mission?.takeIf { it.id == m.missionId }?.let { it.outcome == null && it.offer.optionalPush } == true
+        beats += Beat.Contract(
+            ContractUi(
+                title = m.title, party = m.party.map { face(it) },
+                outcome = when {
+                    m.outcome == MissionOutcome.RETREATED -> "Pulled back"
+                    m.outcome == MissionOutcome.LOST -> "Beaten"
+                    !m.continues -> "Finished"
+                    checkpoint -> "Won the first stage; the smith decides in the morning"
+                    else -> "Won the first day; the party presses on tomorrow"
+                },
+                result = m.outcome, continues = m.continues,
+                highlights = m.fight?.highlights.orEmpty().take(HIGHLIGHTS_SHOWN).map { it.text }, lines = m.lines, fight = m.fight,
+            ),
+        )
+    }
     val quiet = script.quiet
     if (quiet != null) {
         beats += Beat.Quiet(quiet.kind, Lines.quietCount(quiet),quiet.visitors.distinctBy { it.heroId ?: it.heroName }.map { face(it) }, quiet.visitors.map { it.seq })
@@ -293,7 +349,14 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
         }
     }
     val siege = aftermath.firstOrNull { it.kind == AftermathKind.SIEGE_HELD || it.kind == AftermathKind.SIEGE_LOST }
-        ?.let { SiegeOutcomeUi(day, it.kind == AftermathKind.SIEGE_HELD, it.foe, it.forgeDamage, state.town.integrity) }
+        ?.let { card ->
+            val wall = resolution?.siege
+            SiegeOutcomeUi(
+                day, card.kind == AftermathKind.SIEGE_HELD, card.foe, card.forgeDamage, state.town.integrity,
+                verdict = wall?.verdict, outerLine = wall?.outerLine?.takeIf { it.isNotEmpty() },
+                highlights = wall?.fight?.highlights.orEmpty().take(HIGHLIGHTS_SHOWN).map { it.text }, fight = wall?.fight,
+            )
+        }
     aftermath.forEachIndexed { i, card ->
         beats += Beat.Aftermath(
             AftermathUi(

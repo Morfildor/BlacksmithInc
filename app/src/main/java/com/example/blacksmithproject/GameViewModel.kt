@@ -17,6 +17,9 @@ import com.example.blacksmithproject.data.Settings
 import com.example.blacksmithproject.data.SettingsStore
 import com.example.blacksmithproject.data.ShopDaySpeed
 import com.example.blacksmithproject.ui.ForgeLearningUi
+import com.example.blacksmithproject.ui.GuildUi
+import com.example.blacksmithproject.ui.guildUi
+import com.example.blacksmithproject.ui.threat
 import com.example.blacksmithproject.ui.ShopUi
 import com.example.blacksmithproject.ui.forgeLearning
 import com.example.blacksmithproject.ui.untriedPairing
@@ -100,7 +103,7 @@ sealed interface UiState {
         val state: GameState,
         /** The Shop destination's content, built from [state] off the main thread. */
         val shop: ShopUi,
-        /** The next siege as the engine weighs it today (Town), computed once per [state] off the main thread; null when no faction presses. */
+        /** The next siege as the engine weighs it today (Town), computed once per [state] off the main thread; null when no faction presses, and in a guild run (its siege is fought on the wall: [guild]). */
         val forecast: Battle.SiegeOutlook? = null,
         val dest: Dest = Dest.SHOP,
         val records: RecordsPage = RecordsPage.GAZETTE,
@@ -123,6 +126,8 @@ sealed interface UiState {
         val relics: List<Relics.View> = emptyList(),
         /** Day on which the player chose "Decide later" for the relic offer; UI-only, like [blessingOfferDismissedDay]. */
         val relicOfferDismissedDay: Int? = null,
+        /** The Guild destination's content, built with [shop]; null on a classic run. */
+        val guild: GuildUi? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
     }
@@ -204,7 +209,7 @@ class GameViewModel(
     private var closed: Pair<GameState, RunEndResult>? = null
 
     private class Day(val script: ShopDayScript, val model: ShopDayUiModel)
-    private class Plan(val shop: ShopUi, val forecast: Battle.SiegeOutlook?, val encounter: Encounters.View?, val relics: List<Relics.View>)
+    private class Plan(val shop: ShopUi, val forecast: Battle.SiegeOutlook?, val encounter: Encounters.View?, val relics: List<Relics.View>, val guild: GuildUi? = null)
 
     /** The script of the unwatched day and its screen model, built once per saved state: moving through the day never builds them again. */
     private var script: Pair<GameState, Day>? = null
@@ -241,7 +246,7 @@ class GameViewModel(
         val run = snap?.run ?: return null
         script?.takeIf { it.first === run }?.let { return it.second }
         return try {
-            withContext(compute) { buildScript(last, run, engine.content, engine.config).let { Day(it, it.toUi(run, engine.content, engine.config)) } }.also { script = run to it }
+            withContext(compute) { buildScript(last, run, engine.content, engine.config).let { Day(it, it.toUi(run, engine.content, engine.config, contract = last.mission != null)) } }.also { script = run to it }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -261,7 +266,11 @@ class GameViewModel(
         return withContext(compute) { planFor(run) }.also { shop = run to it }
     }
 
-    private fun planFor(run: GameState) = engine.siegeForecast(run).let { Plan(engine.shopUi(run, it), it, engine.encounterView(run), engine.relicViews(run)) }
+    private fun planFor(run: GameState): Plan {
+        // A guild run: the siege is fought on the wall, so the classic forecast is not built and the Shop's siege strip says the besieger and the day only.
+        val guild = engine.guildUi(run) ?: return engine.siegeForecast(run).let { Plan(engine.shopUi(run, it), it, engine.encounterView(run), engine.relicViews(run)) }
+        return Plan(engine.shopUi(run).let { it.copy(threat = guild.threat(it.threat)) }, null, engine.encounterView(run), engine.relicViews(run), guild)
+    }
 
     private fun render(snap: GameSession.Snapshot?, op: Status, l: Local, day: Day?, plan: Plan?): UiState {
         if (snap == null || l.loading) return l.loadFailure?.let { UiState.LoadFailed(it, working = l.loading) } ?: UiState.Loading
@@ -270,7 +279,7 @@ class GameViewModel(
         // An unwatched day always arrives with its script: scriptFor builds it before this is called, and now() checks.
         if (last != null && day != null) {
             val id = last.commandId.value
-            val beats = ShopDayPosition.beats(day.script)
+            val beats = ShopDayPosition.beats(day.script, contract = last.mission != null)   // the same flag as the cards above: the two lists are one length
             val at = if (l.dayId == id) l.dayAt.coerceIn(beats.indices) else ShopDayPosition.index(beats, snap.cursor?.takeIf { it.commandId == id })
             return UiState.ShopDay(run, day.script, day.model, ShopDayPosition(beats, at), l.speed, l.sheet, l.gazetteOpen, l.resumed, op, l.lastError)
         }
@@ -280,7 +289,7 @@ class GameViewModel(
         }
         // Planning always arrives with the Shop's content: shopFor builds it before this is called, and now() checks.
         val planned = plan ?: planFor(run)
-        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, l.relicOfferDismissedDay)
+        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, l.relicOfferDismissedDay, planned.guild)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -487,6 +496,8 @@ class GameViewModel(
                 ).joinToString(", ").let { if (it.isEmpty()) "." else ": $it." }
                 StockAction.Salvage -> "$name was melted down. 1 ${engine.content.material(blade.coreId).name} is back in your stock."
                 StockAction.Donate -> "$name went to the town watch. Armory ${before.town.armory} to ${now.town.armory}."
+                is StockAction.Loan -> "$name is on loan to ${now.heroes[action.heroId]?.fullName ?: "a member of the guild"}."
+                StockAction.Recall -> "$name is back in storage."
             }
             val leaves = action is StockAction.ListAt || action == StockAction.Salvage || action == StockAction.Donate
             edit { it.copy(notice = said, sheet = if (leaves && it.sheet == Sheet.Item(id)) null else it.sheet) }
@@ -741,6 +752,16 @@ class GameViewModel(
 
     private fun heroName(id: HeroId) = session.snapshot.value?.run?.heroes?.get(id)?.fullName ?: "That hero"
     private fun relicName(id: String) = engine.content.relic(id)?.name ?: "That relic"
+
+    /** "Loan" on the forge result: the card closes once the loan is saved, and the workshop says who carries the blade; a refusal leaves the card open under the engine's reason. */
+    fun loanForged(id: WeaponId, heroId: HeroId) {
+        val run = session.snapshot.value?.run ?: return
+        launch(Op.Dispatch(Command.LoanWeapon(heroId, id), run.runId)) {
+            val now = session.snapshot.value?.run ?: return@launch
+            val name = now.weapons[id]?.name ?: return@launch
+            edit { it.copy(revealWeaponId = null, learning = null, notice = "$name is on loan to ${now.heroes[heroId]?.fullName ?: "a member of the guild"}. Your ingredients stay selected.") }
+        }
+    }
 
     companion object {
         /** Who an order's blade is kept for, by name; null when the order or its buyer has left the save. */

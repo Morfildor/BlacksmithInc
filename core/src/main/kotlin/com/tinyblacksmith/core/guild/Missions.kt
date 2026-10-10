@@ -81,7 +81,7 @@ object Missions {
         for (c in g.captives) if (offers.none { it.subjectHeroId == c.heroId }) cat.missionById[GuildContent.RESCUE]?.let { def ->
             val hero = ctx.heroes[c.heroId] ?: return@let
             val blade = c.weaponId?.let { ctx.weapons[it] }
-            post(def, c.factionId, hero = c.heroId, reason = "${hero.fullName} is alive in ${cat.route(c.factionId)?.name ?: "their camp"}." + (blade?.let { " The loaned ${it.name} is with the captor." } ?: ""), expires = c.deadlineDay - 1)
+            post(def, c.factionId, hero = c.heroId, reason = "${hero.fullName} is alive ${cat.route(c.factionId)?.where ?: "in their camp"}." + (blade?.let { " The loaned ${it.name} is with the captor." } ?: ""), expires = c.deadlineDay - 1)
         }
         g.nemesis?.let { n -> if (offers.none { it.subjectWeaponId == n.weaponId }) cat.missionById[GuildContent.RECOVERY]?.let { def ->
             ctx.weapons[n.weaponId]?.let { blade -> post(def, n.factionId, weapon = n.weaponId, reason = "${n.name} carries ${blade.name}, a blade of this forge.") }
@@ -182,7 +182,7 @@ object Missions {
     fun title(ctx: ResolutionContext, offer: MissionOffer): String {
         val cat = GuildOps.catalog(ctx)
         val def = cat.mission(offer.defId)
-        return if (def.archetype == MissionArchetype.EMERGENCY) def.name.lowercase() else "${def.name.lowercase()} on ${cat.route(offer.factionId)?.name ?: "the road"}"
+        return if (def.archetype == MissionArchetype.EMERGENCY) def.name.lowercase() else "${def.name.lowercase()} ${cat.route(offer.factionId)?.where ?: "on the road"}"
     }
 
     /** The fight of [stageIndex] as the party that left would meet it. Pure: builds the setup, resolves nothing. */

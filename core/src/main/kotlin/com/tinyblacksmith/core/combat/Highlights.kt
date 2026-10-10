@@ -41,10 +41,10 @@ object Highlights {
             if (chosen.size == MAX) break
             if (!usedRoots.add(e.rootId)) continue
             // The same effect ending the same way is one story, however often it happened.
-            val shape = "${e.kind}|${e.effectId}|${e.target}"
+            val shape = "${e.kind}|${e.effectId}"
             if ((usedKinds[shape] ?: 0) >= 1) continue
             usedKinds[shape] = 1
-            val told = p.filter { it.text.isNotEmpty() }.let { if (it.size <= MAX_SENTENCES) it else listOf(it.first()) + it.takeLast(MAX_SENTENCES - 1) }
+            val told = p.filter { it.text.isNotEmpty() && it.kind != EventKind.ROUND_START }   // the round is already the highlight's first words.let { if (it.size <= MAX_SENTENCES) it else listOf(it.first()) + it.takeLast(MAX_SENTENCES - 1) }
             if (told.isEmpty()) continue
             chosen += Highlight(told.map { it.id }, "Round ${e.round}: " + told.joinToString(" ") { it.text }, w)
         }

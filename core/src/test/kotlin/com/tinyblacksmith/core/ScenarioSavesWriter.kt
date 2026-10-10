@@ -16,7 +16,7 @@ import kotlin.test.Test
 class ScenarioSavesWriter {
     @Test
     fun write() {
-        if (System.getProperty("scenarios.search") == "true") { println(ScenarioSaves.candidates()); return }
+        if (System.getProperty("scenarios.search") == "true") { println(GuildScenarios.candidates()); println(ScenarioSaves.candidates()); return }
         val out = File(requireNotNull(System.getProperty("scenarios.out")) { "scenarios.out is not set; run ./gradlew :core:scenarios" }).apply { mkdirs() }
         out.listFiles { f -> f.extension == "json" }?.forEach { it.delete() }
         for (sc in ScenarioSaves.all) File(out, "${sc.id}.json").writeText(SaveCodec.encodeRun(sc.state))

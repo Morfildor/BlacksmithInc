@@ -36,7 +36,12 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.ui.BladeRulesUi
 import com.example.blacksmithproject.ui.InlineActionButton
+import com.example.blacksmithproject.ui.LoanPicker
+import com.example.blacksmithproject.ui.LoanUi
+import com.example.blacksmithproject.ui.bladeRules
+import com.example.blacksmithproject.ui.loanUi
 import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.NoticeLine
@@ -98,6 +103,10 @@ sealed interface StockAction {
     data object Salvage : StockAction
     data object Hone : StockAction
     data object Donate : StockAction
+    /** Lends the blade to a member of the guild; the blade they held on loan goes back to storage. */
+    data class Loan(val heroId: HeroId) : StockAction
+    /** Calls a loaned blade back to storage. */
+    data object Recall : StockAction
 }
 
 /** The engine command a stock change stands for. */
@@ -108,6 +117,8 @@ fun StockAction.toCommand(weaponId: WeaponId): Command = when (this) {
     StockAction.Salvage -> Command.Salvage(weaponId)
     StockAction.Hone -> Command.Hone(weaponId)
     StockAction.Donate -> Command.DonateWeapon(weaponId)
+    is StockAction.Loan -> Command.LoanWeapon(heroId, weaponId)
+    StockAction.Recall -> Command.RecallLoan(weaponId)
 }
 
 /**
@@ -142,6 +153,10 @@ data class ItemDetail(
     /** Newest first. */
     val history: List<String>,
     val stock: Stock?,
+    /** What the blade does in a fight; null in a classic run and for a blade that has left the save. */
+    val rules: BladeRulesUi? = null,
+    /** Who holds it on loan, or who it could be lent to; null in a classic run and for a blade the guild cannot lend. */
+    val loan: LoanUi? = null,
 )
 
 /**
@@ -182,6 +197,8 @@ fun GameEngine.itemDetail(state: GameState, weaponId: WeaponId, snapshot: Weapon
         history = weapon?.history?.asReversed()?.map { dated(state, it.era, it.day, it.text) }
             ?: recordsOf(state, weaponId.value).asReversed().map { dated(state, it.era, it.day, it.text) },
         stock = if (inShop) stock(state, weapon!!) else null,
+        rules = weapon?.let { bladeRules(state, it) },
+        loan = weapon?.let { loanUi(state, it) },
     )
 }
 
@@ -220,7 +237,7 @@ private fun whereabouts(state: GameState, w: Weapon): Fact = when (val l = w.loc
     }
     is WeaponLocation.Lost -> Fact("Where", "${l.reason.replaceFirstChar { it.uppercase() }} since day ${l.day}")
     is WeaponLocation.Destroyed -> Fact("Where", "Destroyed on day ${l.day}")
-    is WeaponLocation.Loaned -> Fact("Where", "On loan to ${state.heroes[l.heroId]?.fullName ?: "a member of the guild"}")
+    is WeaponLocation.Loaned -> state.heroes[l.heroId].let { h -> Fact("On loan to", h?.fullName ?: "a member of the guild", heroId = h?.id) }
 }
 
 /** What it was made of. A snapshot kept the family, core and augment; the catalyst, method and day need the blade itself. */
@@ -315,6 +332,7 @@ fun ItemDetailContent(
                 Secondary("Suggested price ${stock.suggestedPrice} gold. Stock can be changed once the shop day is over.")
             }
         }
+        if (planning) detail.loan?.let { LoanSection(detail.name, it, enabled, onStock) }
 
         FactBlock("Recipe", detail.recipe, "sheet_recipe", onOpenHero, onOpenItem = {})
 
@@ -327,6 +345,30 @@ fun ItemDetailContent(
         SheetSection("History")
         Column(Modifier.testTag("sheet_history")) { Lines(detail.history, "Its story has not been written yet.") }
         SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close"))
+    }
+}
+
+/**
+ * The blade and the guild. In the shop: "Loan to..." opens the members it could go to. On loan: who holds it, the way to
+ * call it back, and why the shop's own actions are not offered meanwhile (the engine refuses each for a loaned blade).
+ */
+@Composable
+private fun LoanSection(blade: String, loan: LoanUi, enabled: Boolean, onStock: (StockAction) -> Unit) {
+    var picking by rememberSaveable { mutableStateOf(false) }
+    SheetSection("Guild")
+    if (loan.holder != null) {
+        Text("On loan to ${loan.holder}: recall it first to list, hone, salvage or give it away.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("item_on_loan"))
+        loan.recallBlocked?.let { Secondary("$it: it cannot be recalled today.", Modifier.testTag("item_recall_blocked")) }
+        SecondaryActionButton(
+            "Recall to storage", { onStock(StockAction.Recall) },
+            Modifier.padding(top = Space.sm).heightIn(min = 48.dp).testTag("item_recall").semantics { loan.recallBlocked?.let { contentDescription = "Recall to storage, unavailable: $it" } },
+            enabled = enabled && loan.recallBlocked == null,
+        )
+    } else {
+        val open = loan.blocked == null && loan.targets.any { it.enabled }
+        Secondary(loan.blocked ?: if (loan.targets.isEmpty()) "The guild has no members to carry it." else "A member carries a loaned blade instead of their own. It stays the forge's, and can be recalled while they are in town.")
+        SecondaryActionButton("Loan to...", { picking = true }, Modifier.padding(top = Space.sm).heightIn(min = 48.dp).testTag("item_loan"), enabled = enabled && open)
+        if (picking) LoanPicker(blade, loan.targets, onPick = { picking = false; onStock(StockAction.Loan(it)) }, onDismiss = { picking = false })
     }
 }
 

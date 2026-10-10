@@ -29,6 +29,14 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   Morning visitors (`engine/Encounters.kt`, what each is in `EncounterCatalog.kt`), what they set in motion
   (`Consequences.kt`), workshop relics (`Relics.kt`) and siege traits (`Battle.scheduleNext` / `outlook`) draw only on the
   ENCOUNTERS stream; their definitions are content (`content/Depth.kt`), their numbers `BalanceConfig.depth`.
+  A run started with a charter is a guild run (`GameState.guild`, `model/Guild.kt`); without one it is a classic run and
+  plays as rules 4 did (the rules-4 golden state must keep passing). `combat/` is the automatic fight: typed events and
+  effects (trigger, condition, cost, action, limit), pure, no `GameState`; what it runs on is content
+  (`content/CombatContent.kt`: class kits, the rule each element, affix, catalyst, family and signature gives a blade,
+  enemy units, party relics). `guild/` is the roster and loans (`GuildOps`), the contract board and deployments
+  (`Missions`), the siege fought through the engine (`SiegeFight`), the charter, nemesis, rival, bonds, laws (`Stories`)
+  and the guild's visitors (`GuildVisitors`); it draws only on the GUILD stream, its numbers are `BalanceConfig.guild`,
+  its definitions `content/GuildContent.kt`. Members are not `residents()`: nothing autonomous touches them.
 - `:app` — Compose UI is an observer: `GameViewModel` sends every operation (commands, legacy purchases, claim, Begin
   era, abandon, the shop-day position) through `GameSession`, the one serialized boundary, which saves accepted results
   atomically (Room, `data/SaveStore.kt` behind `data/GameRepository.kt`) before the screen renders them; load failures
@@ -38,7 +46,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   (`ui/shopday/`). There is no Home or Market panel any more. The Forge is a workbench built from the pure model in
   `ui/ForgeUi.kt`; commissions and customer wants are one board (`ui/CommissionBoard.kt`) opened from Shop and Forge; the
   Journal is a notebook (`ui/Notebook.kt`).
-- Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt` (schema 5; rules 4 and content 4 are
+- Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt` (schema 6; rules 5 and content 5 are
   enforced on load by `engine/Compatibility.kt`); migrations go there.
 - Content names are PROPOSED; counts are LOCKED. Vertical slice content lives in `content/SliceContent.kt`.
 - Pixel art has several sources, never hand-edited PNGs, all imported by `tools/pixelart/import_assets.py` into
@@ -60,6 +68,8 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 #   catalog sweeps: --noTool id[,id], --toolCost id=mult[,id=mult], --noAffixEffect id[,id]|all (keeps the affix, neutralises its v3 effect); --noFates turns the v5 weapon fates off (v4 odds, no guild heir, no merchant); --noImpact skips the maxed-legacy and per-upgrade runs
 #   legacy: --upgrades id=level[,id=level] plays the policy rows on that account, --yardsticks adds the first-siege and premium-sale table, --legends gives the maxed and impact runs a veteran Legend Board, --knownNameGold N
 ./gradlew :core:scenarios                              # rewrites the debug scenario saves in app/src/debug/assets/scenarios (played and constructed; run after a rules, content or balance change)
+./gradlew :core:combat                                 # prints the fixture fights of the interaction engine (highlights and timeline); --args="stormwell" for one
+./gradlew :core:guildsim --args="--runs 300 --seed 1"  # nine guild policies over guild runs (--policy X[,Y], --charter ID, --horizon N, --maxed x, --set enemyPercentBase=180,..., --why x)
 ./gradlew :core:soak                                   # long-save soak, outside the default suite (about 70 s): 2,000 forced-survival days for two smiths; tables and the day-1,000 / 2,000 saves in core/build/soak/
 ./gradlew :app:testDebugUnitTest                       # app JVM tests (session, ViewModel, screen models; no device)
 ./gradlew :app:assembleDebug                           # APK (needs Android SDK at local.properties sdk.dir)

@@ -2,6 +2,7 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +45,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -99,6 +101,8 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
         ForgeResultCard(
             detail, "${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}.", request,
             enabled = !s.busy, onStore = vm::storeForged, onList = { vm.listForged(w.id, it) },
+            // Only a guild has members to lend to; the blade goes nowhere until one is chosen.
+            onLoan = if (s.state.guild != null) { heroId -> vm.loanForged(w.id, heroId) } else null,
             modifier = Modifier.safeDrawingPadding().padding(horizontal = Space.md, vertical = Space.sm).semantics { testTagsAsResourceId = true }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp),
             reveal = !reducedMotion,
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
@@ -125,6 +129,9 @@ private const val REVEAL_FADE_MS = 250
  * in under them; a tap anywhere on the card brings them at once. Nothing moves and the price and both buttons are there
  * and live from the first frame, so the reveal never costs a tap or a wait. Without it (reduced motion) the card is
  * whole at once. A brand-new blade has no renown to show, so the zero is left out here; the blade's sheet keeps it.
+ *
+ * With [onLoan] (a guild run) a third way on, "Loan", opens the members the blade could go to; nothing is lent until
+ * one is chosen.
  */
 @Composable
 fun ForgeResultCard(
@@ -135,6 +142,7 @@ fun ForgeResultCard(
     onStore: () -> Unit,
     onList: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onLoan: ((HeroId) -> Unit)? = null,
     reveal: Boolean = false,
     overSprite: @Composable BoxScope.() -> Unit = {},
     learning: ForgeLearningUi? = null,
@@ -180,6 +188,12 @@ fun ForgeResultCard(
                     enabled = enabled && chosen != null && !full,
                 )
             }
+        }
+        val loan = detail.loan
+        if (onLoan != null && loan != null) {
+            var picking by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
+            SecondaryActionButton("Loan to a member", { picking = true }, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("reveal_loan"), enabled = enabled && loan.blocked == null && loan.targets.any { it.enabled })
+            if (picking) LoanPicker(detail.name, loan.targets, onPick = { picking = false; onLoan(it) }, onDismiss = { picking = false })
         }
     }
     val large = LocalDensity.current.fontScale > 1.3f
@@ -326,6 +340,36 @@ fun BlessingDialog(s: UiState.Playing, vm: GameViewModel) {
     )
 }
 
+/**
+ * Who [blade] is lent to: the guild's members, each with their class and what they carry now. A member who is away or
+ * held cannot take it and says why; a wounded one in town can. Choosing is the loan; "Keep it" lends nothing.
+ */
+@Composable
+fun LoanPicker(blade: String, targets: List<LoanTargetUi>, onPick: (HeroId) -> Unit, onDismiss: () -> Unit) {
+    // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
+    AlertDialog(
+        modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("loan_picker"),
+        onDismissRequest = onDismiss,
+        title = { Text("Loan $blade to...") },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                if (targets.isEmpty()) Secondary("The guild has no members.")
+                targets.forEach { t ->
+                    Column(
+                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(enabled = t.enabled, onClickLabel = "Loan to ${t.name}", role = Role.Button) { onPick(t.heroId) }
+                            .padding(vertical = Space.xs).testTag("loan_member_${t.heroId.value}").semantics(mergeDescendants = true) {},
+                    ) {
+                        Text("${t.name} · ${t.role}", style = MaterialTheme.typography.titleSmall, color = if (t.enabled) Cream else LocalContentColor.current.copy(alpha = 0.5f))
+                        Secondary(t.carrying)
+                        t.reason?.let { Secondary(if (t.enabled) it else "$it: cannot take a loan today") }
+                    }
+                }
+            }
+        },
+        confirmButton = { InlineActionButton("Keep it", onDismiss, Modifier.testTag("loan_cancel")) },
+    )
+}
+
 @Composable
 fun ErrorDialog(message: String, onDismiss: () -> Unit) {
     val haptics = LocalHaptics.current
@@ -347,7 +391,7 @@ private fun ReplayStage(replay: CombatReplay, shown: Int, state: GameState, vm: 
     val faction = vm.engine.content.factions.firstOrNull { f -> replay.rounds.any { it.attacker == f.siegeName || it.defender == f.siegeName } }
     val heroes = replay.rounds.mapNotNull { round -> round.attackerId?.let { state.heroes[HeroId(it)] } }.distinctBy { it.id }.take(3)
     val raidersAttack = currentRound != null && faction != null && currentRound.attacker == faction.siegeName
-    val lost = current >= replay.rounds.size && replay.outcome != "Town held"
+    val lost = current >= replay.rounds.size && replay.outcome == "Defenses broken"
     val defenders = heroes.map { h ->
         StageActor({ pose, tick -> Sprites.heroFrame(h.classId, pose, tick) }, if (currentRound?.attackerId == h.id.value) Sprites.Pose.ATTACK else Sprites.Pose.IDLE, flipped = false)
     }

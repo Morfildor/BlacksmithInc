@@ -134,6 +134,7 @@ fun ShopDayScreen(
                         reducedMotion = reducedMotion, onOpenBlade = { onOpenBlade(it.blade.weaponId, it.blade) },
                     )
                 }
+                is Beat.Contract -> StageBanner("The guild's party", R.drawable.bg_title_workshop_night)
                 is Beat.Fallen -> StageBanner("The forge has fallen", R.drawable.art_day_fallen_forge, vignette = true)
                 is Beat.Aftermath ->
                     // A siege is not one more thing beyond the door: its own name, and a stage half as tall again.
@@ -156,6 +157,7 @@ fun ShopDayScreen(
                     ) {
                         FramedPanel(modifier = Modifier.fillMaxWidth()) {
                             when (beat) {
+                                is Beat.Contract -> ContractCard(beat.contract, openHero)
                                 is Beat.Open -> ShopOpenCard(beat)
                                 is Beat.Visit -> VisitCard(beat.visit, openBlade)
                                 is Beat.Tally -> TallyCard(beat, openHero)

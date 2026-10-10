@@ -109,7 +109,7 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
             when (val s = ui) {
                 UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 is UiState.LoadFailed -> LoadFailedScreen(s.failure, s.working, onRetry = vm::retry, onStartOver = vm::startOver)
-                is UiState.Title -> MainMenu("Era ${s.legacy.nextEra} awaits", s.legacy, "New game", "title_new_run", s.op !is GameSession.Status.Working, onPrimary = { leaveMenu(); vm.newRun() }, onSettings = { menuSettings = true }, extra = scenarios)
+                is UiState.Title -> MainMenu("Era ${s.legacy.nextEra} awaits", s.legacy, "New game", "title_new_run", s.op !is GameSession.Status.Working, onPrimary = { leaveMenu(); vm.newRun() }, onSettings = { menuSettings = true }, extra = scenarios, picker = { CharterPicker(vm, Modifier.padding(bottom = Space.sm)) })
                 is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", !s.busy, leaveMenu, { menuSettings = true }, onAbandon = vm::abandonRun, extra = scenarios) else screens.SaveableStateProvider(play!!) { WorkshopScreen(s, vm, onMainMenu = { menuOpen = true }) }
                 is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }, extra = scenarios) else screens.SaveableStateProvider(play!!) { ShopDayHost(s, vm, onMainMenu = { menuOpen = true }) }
                 is UiState.RunEnded -> if (menuOpen) MainMenu("Era ${s.run.era} has ended", s.legacy, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }, extra = scenarios) else RunEndScreen(s, vm)
@@ -150,10 +150,11 @@ private fun LegacyCount(value: Int, label: String, modifier: Modifier = Modifier
  * runs) on a plate, and the actions at the foot within reach of a thumb: one primary action (a new game, or the saved
  * run) and "Abandon run" while a run is being planned ([onAbandon]); abandoning discards the run after a confirmation.
  * Settings is in the corner. The gaps are weights, so a taller screen spreads the three parts and large text scrolls.
- * [extra] sits under the buttons: the debug build's Scenarios entry.
+ * [extra] sits under the buttons: the debug build's Scenarios entry. [picker] stands over the primary action: the
+ * charter a new game begins under, chosen in place so one tap on the button still starts it.
  */
 @Composable
-fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag: String, enabled: Boolean, onPrimary: () -> Unit, onSettings: () -> Unit, onAbandon: (() -> Unit)? = null, extra: @Composable () -> Unit = {}) {
+fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag: String, enabled: Boolean, onPrimary: () -> Unit, onSettings: () -> Unit, onAbandon: (() -> Unit)? = null, extra: @Composable () -> Unit = {}, picker: @Composable () -> Unit = {}) {
     var confirmAbandon by remember { mutableStateOf(false) }
     BoxWithConstraints(Modifier.fillMaxSize().testTag("main_menu")) {
         // One whole step past the scale that covers the width, more on a tall screen: the picture carries over a third of the height and loses little at the sides.
@@ -187,6 +188,7 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
             }
             Spacer(Modifier.weight(3f).heightIn(min = Space.md))
             Column(Modifier.padding(horizontal = Space.lg).padding(bottom = Space.lg).widthIn(max = 420.dp).fillMaxWidth()) {
+                picker()
                 PrimaryActionButton(primary, onPrimary, Modifier.fillMaxWidth().testTag(primaryTag), enabled)
                 if (onAbandon != null) SecondaryActionButton("Abandon run", { confirmAbandon = true }, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("menu_abandon"), enabled = enabled)
                 extra()

@@ -68,6 +68,7 @@ import com.example.blacksmithproject.ui.detail.HeroDetailContent
 import com.example.blacksmithproject.ui.detail.HeroDetailSheet
 import com.example.blacksmithproject.ui.detail.ItemDetailContent
 import com.example.blacksmithproject.ui.detail.ItemDetailSheet
+import com.example.blacksmithproject.ui.detail.MemberActions
 import com.example.blacksmithproject.ui.detail.StockAction
 import com.example.blacksmithproject.ui.detail.customerSnapshot
 import com.example.blacksmithproject.ui.detail.heroDetail
@@ -131,7 +132,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
             Column {
                 // End Day is the Shop's way forward. The Forge keeps it under "More", and beside its action when no forge is left today.
                 if (s.dest == Dest.SHOP) EndDayButton(s, vm, primary = true)
-                DestinationBar(s.dest, vm::selectDest)
+                DestinationBar(s.dest, vm::selectDest, guild = s.guild != null)
             }
         },
     ) { padding -> positions.SaveableStateProvider(s.dest) {
@@ -196,6 +197,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
             scrapBack = { ids -> scrapBackText(vm.engine, state, ids) },
             onScrap = { ids -> vm.dispatch(Command.Scrap(ids)) },
             notice = s.notice,
+            loans = s.state.loanRows(),
             // A blade opened from the list is shown in this same sheet, not in a second one over it.
             detail = s.sheet?.let { sheet -> { DetailSheet(s, sheet, vm, inStorage = true) } }, onBack = vm::closeSheet,
         )
@@ -234,7 +236,16 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inS
             val detail = remember(st, sheet) { vm.engine.heroDetail(st, sheet.id, st.lastResolution?.takeIf { sheet.id !in st.heroes }?.customerSnapshot(sheet.id)) }
             if (detail == null) LaunchedEffect(sheet) { vm.closeSheet() }
             else if (inStorage) HeroDetailContent(detail, openHero, onOpenItem = { vm.openSheet(Sheet.Item(it)) }, onDismiss = vm::closeSheet, closeLabel = "Back to storage")
-            else HeroDetailSheet(detail, openHero, onOpenItem = { vm.openSheet(Sheet.Item(it)) }, onDismiss = vm::closeSheet)
+            else HeroDetailSheet(
+                detail, openHero, onOpenItem = { vm.openSheet(Sheet.Item(it)) }, onDismiss = vm::closeSheet,
+                // A member of the guild: the smith's own actions on them (a branch, a loan, letting them go).
+                member = MemberActions(
+                    enabled = !s.busy,
+                    onChooseBranch = { vm.dispatch(Command.ChooseSpeciality(sheet.id, it)) },
+                    onLoan = { vm.dispatch(Command.LoanWeapon(sheet.id, it)) }, onRecall = { vm.dispatch(Command.RecallLoan(it)) },
+                    onDismissMember = { vm.closeSheet(); vm.dispatch(Command.DismissHero(sheet.id)) },
+                ).takeIf { detail.member != null },
+            )
         }
         is Sheet.Item -> {
             val detail = remember(st, sheet) { vm.engine.itemDetail(st, sheet.id, st.lastResolution?.takeIf { sheet.id !in st.weapons }?.weaponSnapshot(sheet.id)) }
@@ -257,10 +268,11 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inS
 
 /**
  * The four destinations. Every label has the same fixed style and never shrinks to fit: a larger font scale makes the
- * label taller, not smaller, and the four names are short enough to stay on one line.
+ * label taller, not smaller, and the four names are short enough to stay on one line. [guild]: a guild run, where the
+ * third destination is called Guild.
  */
 @Composable
-fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier = Modifier) {
+fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier = Modifier, guild: Boolean = false) {
     // 72dp instead of the 80dp default: the workshop needs the vertical space more than the bar does.
     // A panel under a bronze rule; the chosen destination is a lit plate with a gold edge, not Material's pill.
     NavigationBar(
@@ -279,7 +291,7 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
                     }
                 },
                 icon = { PixelImage(destIcon(d), wholePixelDp(40, 36.dp), description = null) },
-                label = { Text(destName(d), style = MaterialTheme.typography.labelMedium, maxLines = 1, softWrap = false, modifier = Modifier.testTag("nav_label_${d.name.lowercase()}")) },
+                label = { Text(destName(d, guild), style = MaterialTheme.typography.labelMedium, maxLines = 1, softWrap = false, modifier = Modifier.testTag("nav_label_${d.name.lowercase()}")) },
             )
         }
     }
@@ -362,17 +374,22 @@ private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean
 internal fun endDayNote(s: UiState.Playing): String {
     val state = s.state
     val offers = state.commissions.values.count { it.status == CommissionStatus.OFFERED }
-    return when {
+    // A guild run: what End Day sets in motion for the guild (the party that leaves, tonight's siege and who stands, a checkpoint without word), under whatever still waits.
+    val guild = s.guild?.endDay.orEmpty()
+    val note = when {
         state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
-        // The run can end tonight: said before anything else that waits.
-        s.shop.threat?.today == true -> "A siege follows today's trading"
+        // The run can end tonight: said before anything else that waits. In a guild run the guild's own line says it, with who stands.
+        s.guild == null && s.shop.threat?.today == true -> "A siege follows today's trading"
         // A visitor who waits, then a relic on offer: the words of the rule below.
         s.encounter?.instance?.isOpen == true || state.pendingRelicOffer.isNotEmpty() -> endDayNote(state, s.encounter)
         offers > 0 -> if (offers == 1) "1 unaccepted commission" else "$offers unaccepted commissions"
         state.overworkToday > 0 -> "Overwork: ${state.overworkToday} less energy tomorrow"
+        // What is merely left over is not said beside what the guild sets in motion.
+        guild.isNotEmpty() -> null
         state.energy > 0 -> "${state.energy} energy unused"
         else -> "Rest until dawn"
     }
+    return (listOfNotNull(note) + guild).joinToString("\n")
 }
 
 /** What End Day will leave behind, most pressing first. An unanswered visitor is told the free answer; an offer waits for another day. */
@@ -415,6 +432,9 @@ private fun Stat(icon: Int, label: String, value: String, color: Color = Cream) 
 fun recordsPageName(p: RecordsPage) = when (p) { RecordsPage.GAZETTE -> "Gazette"; RecordsPage.JOURNAL -> "Notebook"; RecordsPage.LEGACY -> "Legacy" }
 
 fun destName(d: Dest) = when (d) { Dest.SHOP -> "Shop"; Dest.FORGE -> "Forge"; Dest.TOWN -> "Town"; Dest.RECORDS -> "Records" }
+
+/** In a guild run the third destination is the guild's own: the wall, the party, the board and the roster. The place itself ([Dest.TOWN]) and its tags stay. */
+fun destName(d: Dest, guild: Boolean) = if (guild && d == Dest.TOWN) "Guild" else destName(d)
 
 private fun destIcon(d: Dest) = when (d) {
     Dest.SHOP -> R.drawable.icon_nav_market; Dest.FORGE -> R.drawable.icon_nav_forge; Dest.TOWN -> R.drawable.icon_nav_town; Dest.RECORDS -> R.drawable.icon_nav_journal

@@ -117,8 +117,8 @@ object ScenarioSaves {
         return s
     }
 
-    /** The played cases, then the constructed ones for visitors, relics, siege traits and the pledge chain ([DepthScenarios]). */
-    val all: List<Scenario> by lazy { played + DepthScenarios.all }
+    /** The played cases, the constructed ones for visitors, relics, siege traits and the pledge chain ([DepthScenarios]), then the guild runs ([GuildScenarios]). */
+    val all: List<Scenario> by lazy { played + DepthScenarios.all + GuildScenarios.all }
 
     val played: List<Scenario> = listOf(
         Scenario(

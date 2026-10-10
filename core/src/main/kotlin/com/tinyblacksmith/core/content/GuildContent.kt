@@ -58,7 +58,8 @@ data class MissionDef(
 )
 
 /** The road a faction's contracts lie on. */
-data class RouteDef(val id: String, val name: String, val factionId: FactionId, val description: String)
+/** [where] is the route with its preposition, for a sentence: "on the Ashroad", "in the Flooded Crypt". */
+data class RouteDef(val id: String, val name: String, val factionId: FactionId, val description: String, val where: String = "on $name")
 
 /**
  * A member's defining trait (spec 4.3): six that change how they behave, six that are a hook for a build. A trait is a
@@ -277,8 +278,8 @@ object GuildContent {
 
     val routes = listOf(
         RouteDef("ashroad", "the Ashroad", A, "The raiders' road: many of them, and one who gives the orders."),
-        RouteDef("flooded_crypt", "the Flooded Crypt", H, "The dead keep coming back while the one who calls them stands."),
-        RouteDef("cinder_quarry", "the Cinder Quarry", E, "Few, slow and guarded, and every third breath is fire."),
+        RouteDef("flooded_crypt", "the Flooded Crypt", H, "The dead keep coming back while the one who calls them stands.", where = "in the Flooded Crypt"),
+        RouteDef("cinder_quarry", "the Cinder Quarry", E, "Few, slow and guarded, and every third breath is fire.", where = "at the Cinder Quarry"),
     )
 
     private fun t(id: String, name: String, trigger: Trigger, actions: List<Action>, limit: Limit, description: String, conditions: List<Condition> = emptyList()) =

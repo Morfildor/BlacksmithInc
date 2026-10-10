@@ -13,6 +13,8 @@ import com.tinyblacksmith.core.shopday.ShopDayScript
 sealed interface Beat {
     val stage: DayCursor.Stage
 
+    /** A guild run's party report, when the day has one: the first card of the day, before the shop opens. */
+    data object Contract : Beat { override val stage get() = DayCursor.Stage.COUNTER }
     data object ShopOpens : Beat { override val stage get() = DayCursor.Stage.COUNTER }
     /** [visit] indexes `script.featured`. */
     data class Visit(val visit: Int) : Beat { override val stage get() = DayCursor.Stage.COUNTER }
@@ -39,7 +41,13 @@ data class ShopDayPosition(val beats: List<Beat>, val at: Int) {
     fun cursor(commandId: String): DayCursor = DayCursor(commandId, beat.stage, beats.take(at).count { it.stage == beat.stage })
 
     companion object {
-        fun beats(script: ShopDayScript): List<Beat> = buildList {
+        /**
+         * [contract] is true when the day's record has a party report (`DayResolution.mission`), which the script does
+         * not carry: pass it together with the same flag of `ShopDayScript.toUi`, or the two lists disagree. A classic
+         * day and every day stored before the guild have none, so their cards and cursors are what they always were.
+         */
+        fun beats(script: ShopDayScript, contract: Boolean = false): List<Beat> = buildList {
+            if (contract) add(Beat.Contract)
             if (script.quiet != null) add(Beat.Quiet) else {
                 add(Beat.ShopOpens)
                 script.featured.indices.forEach { add(Beat.Visit(it)) }

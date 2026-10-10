@@ -60,7 +60,8 @@ class EncountersTest {
         }.forced(defId)
     }
 
-    private val drawn = content.encounters.filter { !it.followUp }.map { it.id }
+    // The eight visitors of every run. The four a guild brings are tested where a guild is (GuildStoriesTest).
+    private val drawn = Depth.encounters.filter { !it.followUp }.map { it.id }
 
     @Test
     fun theCatalogueHoldsEightVisitorsAndTheChainsSecondStage() {

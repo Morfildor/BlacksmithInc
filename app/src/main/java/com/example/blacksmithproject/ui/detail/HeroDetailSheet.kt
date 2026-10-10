@@ -29,7 +29,20 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.SecondaryActionButton
+import com.example.blacksmithproject.ui.EffectKind
+import com.example.blacksmithproject.ui.EffectRow
 import com.example.blacksmithproject.ui.FramedPanel
+import com.example.blacksmithproject.ui.InlineActionButton
+import com.example.blacksmithproject.ui.MemberDetailUi
+import com.example.blacksmithproject.ui.StatRow
+import com.example.blacksmithproject.ui.memberDetail
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.AlertDialog
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.semantics.Role
 import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.Secondary
@@ -77,6 +90,8 @@ data class HeroDetail(
     val shop: List<String>,
     /** Everything else the town's records say about them, newest first. */
     val events: List<String>,
+    /** What the guild knows of them, when they are one of its members (a guild run only). */
+    val member: MemberDetailUi? = null,
 )
 
 private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)
@@ -123,6 +138,7 @@ fun GameEngine.heroDetail(state: GameState, heroId: HeroId, snapshot: CustomerSn
         now = now,
         shop = (refusals + dealings).sortedByDescending { it.first }.map { it.second },
         events = records.filter { it.type !in shopTypes }.asReversed().take(RECENT_EVENTS).map { dated(state, it.era, it.day, it.text) },
+        member = memberDetail(state, heroId),
     )
 }
 
@@ -166,19 +182,19 @@ private fun fateWord(h: Hero): String? = when (h.fate) {
 /** The hero sheet as a modal bottom sheet. Dismissal (scrim, swipe, Back, Close) is reported, never acted on here. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HeroDetailSheet(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+fun HeroDetailSheet(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier, member: MemberActions? = null) {
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },   // the handle is a target too: 48 dp, not the default 32
         modifier = modifier.semantics { testTagsAsResourceId = true }.testTag("hero_sheet"),
-    ) { HeroDetailContent(detail, onOpenHero, onOpenItem, onDismiss) }
+    ) { HeroDetailContent(detail, onOpenHero, onOpenItem, onDismiss, member = member) }
 }
 
 /** The body of the hero sheet: one scrolling column, usable outside a sheet (the shop day's overlay, tests). */
 @Composable
-fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier, closeLabel: String = "Close") {
+fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier, closeLabel: String = "Close", member: MemberActions? = null) {
     Column(modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
         FramedPanel(modifier = Modifier.fillMaxWidth()) {
             Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
@@ -196,10 +212,90 @@ fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenIt
             FactBlock(AT_THE_COUNTER.takeIf { detail.counter.isNotEmpty() }, detail.counter, "sheet_counter", onOpenHero, onOpenItem)
             FactBlock(NOW.takeIf { detail.counter.isNotEmpty() }, detail.now, "sheet_now", onOpenHero, onOpenItem)
         }
+        detail.member?.let { MemberSection(it, member, onOpenItem) }
         SheetSection("With your shop")
         Lines(detail.shop, "Nothing between you yet.")
         SheetSection("Recent events")
         Lines(detail.events, "The town's records say nothing of late.")
         SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close"))
     }
+}
+
+/** What the smith can do to a member from their sheet; every one of them is a command, sent by the caller. */
+class MemberActions(
+    val enabled: Boolean, val onChooseBranch: (String) -> Unit, val onLoan: (WeaponId) -> Unit, val onRecall: (WeaponId) -> Unit, val onDismissMember: () -> Unit,
+)
+
+/**
+ * A member of the guild on their sheet: trait and bonds, their share, the numbers and rules they bring to a fight, a
+ * branch their deeds opened, the blade on loan and what could be loaned instead, and letting them go. Without
+ * [actions] (the day's report, a test) the same facts with nothing to tap.
+ */
+@Composable
+private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem: (WeaponId) -> Unit) {
+    var confirmDismiss by remember { mutableStateOf(false) }
+    Column(Modifier.fillMaxWidth().testTag("sheet_member")) {
+        SheetSection("In the guild")
+        Text(m.trait, style = MaterialTheme.typography.bodyMedium)
+        m.speciality?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        Secondary(m.share)
+        m.bonds.forEach { Secondary(it) }
+
+        if (m.branches.isNotEmpty()) {
+            SheetSection("A branch is open")
+            Secondary("Their deeds opened these. Choose one, or neither; a choice is kept.")
+            m.branches.forEach { b ->
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    Column(Modifier.weight(1f)) {
+                        Text(b.name, style = MaterialTheme.typography.titleSmall)
+                        Secondary(b.description)
+                    }
+                    if (actions != null) InlineActionButton("Choose", { actions.onChooseBranch(b.id) }, Modifier.testTag("sheet_branch_${b.id}"), enabled = actions.enabled)
+                }
+            }
+        }
+
+        SheetSection("In a fight")
+        m.numbers.forEach { (label, value) -> StatRow(label, value) }
+        if (m.rules.isEmpty()) Secondary("No rule of their own with this blade.")
+        m.rules.forEach { (name, description) -> EffectRow(EffectKind.NEUTRAL, name, description) }
+
+        SheetSection("Blade")
+        val loan = m.loan
+        if (loan != null) {
+            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                Column(Modifier.weight(1f).clickable(onClickLabel = "Open ${loan.name}", role = Role.Button) { onOpenItem(loan.weaponId) }) {
+                    Text("On loan: ${loan.name}  ›", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Secondary(loan.summary)
+                }
+                if (actions != null) InlineActionButton("Recall", { actions.onRecall(loan.weaponId) }, Modifier.testTag("sheet_recall"), enabled = actions.enabled && m.loanBlocked == null)
+            }
+        } else Secondary(m.ownBlade?.let { "Carries their own $it. A loan takes its place while it lasts." } ?: "Unarmed. Loan them a blade from storage.")
+        m.loanBlocked?.let { Secondary(it) }
+        if (actions != null && m.loanBlocked == null) {
+            if (m.loanable.isEmpty()) Secondary("Nothing in storage to loan.")
+            else Text("Loan a blade", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.sm))
+            m.loanable.forEach { w ->
+                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    Column(Modifier.weight(1f)) {
+                        Text(w.name, style = MaterialTheme.typography.bodyMedium)
+                        Secondary(w.summary)
+                    }
+                    InlineActionButton("Loan", { actions.onLoan(w.weaponId) }, Modifier.testTag("sheet_loan_${w.weaponId.value}"), enabled = actions.enabled)
+                }
+            }
+        }
+
+        if (actions != null) {
+            SecondaryActionButton("Dismiss from the guild", { confirmDismiss = true }, Modifier.fillMaxWidth().padding(top = Space.md).testTag("sheet_dismiss_member"), enabled = actions.enabled && m.dismissBlocked == null)
+        }
+    }
+    if (confirmDismiss && actions != null) AlertDialog(
+        modifier = Modifier.semantics { testTagsAsResourceId = true },
+        onDismissRequest = { confirmDismiss = false },
+        title = { Text("Let ${m.name} go?") },
+        text = { Text("The signing fee is not returned. A blade on loan returns to storage.") },
+        confirmButton = { InlineActionButton("Dismiss", { confirmDismiss = false; actions.onDismissMember() }, Modifier.testTag("sheet_dismiss_yes")) },
+        dismissButton = { InlineActionButton("Keep them", { confirmDismiss = false }, Modifier.testTag("sheet_dismiss_no")) },
+    )
 }

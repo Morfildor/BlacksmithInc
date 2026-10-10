@@ -29,8 +29,9 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
 /**
  * One choice in a slot's tray. [id] is the family, material or technique it stands for (null: "None" or "Plain");
  * [stock] is what the smith owns of a material (null for what is not counted). An empty material is listed last.
+ * [fight] (a guild run) is what an augment or a catalyst gives the blade in a fight, one "Name: rule" line each.
  */
-@Immutable data class OptionUi(val id: String?, val name: String, val stock: Int?, val selected: Boolean, val mark: MarkUi? = null, val detail: String? = null) {
+@Immutable data class OptionUi(val id: String?, val name: String, val stock: Int?, val selected: Boolean, val mark: MarkUi? = null, val detail: String? = null, val fight: List<String> = emptyList()) {
     val usable: Boolean get() = stock != 0
 }
 
@@ -52,10 +53,12 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
 /**
  * The Forge destination for one save and one draft. [next] is the first place still empty; [command] is exactly what
  * the action sends (null until the three ingredients are chosen). Pure: reads the save, changes nothing.
+ * [fight] (a guild run) is what the chosen augment and catalyst will give the blade in a fight.
  */
 @Immutable
 data class ForgeWorkbenchUi(
     val title: String, val slots: List<SlotUi>, val next: RecipeSlot?, val notes: List<NoteUi>, val brief: BriefUi?, val action: ForgeActionUi, val command: Command.Forge?,
+    val fight: List<BladeRuleUi> = emptyList(),
 )
 
 fun KnowledgeState.stage(): String = when (this) {
@@ -129,13 +132,19 @@ fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: Lis
     return ForgeWorkbenchUi(
         title = when { family != null && core != null -> "${core.name} ${family.name.lowercase()}"; family != null -> family.name; else -> "Empty anvil" },
         slots = slots, next = next, notes = notes, brief = brief, action = action, command = command,
+        fight = draftRules(state, content, augment?.id, catalyst?.id),
     )
 }
 
 /** What a slot's tray offers, in catalog order, with the materials that have run out after those that can be used. */
 fun GameEngine.forgeOptions(state: GameState, draft: ForgeDraft, slot: RecipeSlot, threat: ThreatUi?): List<OptionUi> {
+    // In a guild run an augment and a catalyst are also a rule in a fight: said where they are chosen, in the catalog's words.
+    val guild = state.guild != null
     fun materials(category: MaterialCategory, chosen: MaterialId?) = content.materials(category).map { m ->
-        OptionUi(m.id.value, m.name, state.materials[m.id] ?: 0, chosen == m.id, m.element?.let { threat?.marks?.get(it) }, m.element?.let { "Adds ${it.word()}" })
+        OptionUi(
+            m.id.value, m.name, state.materials[m.id] ?: 0, chosen == m.id, m.element?.let { threat?.marks?.get(it) }, m.element?.let { "Adds ${it.word()}" },
+            fight = if (guild) materialRules(content, m.id).map { "${it.name}: ${it.description}" } else emptyList(),
+        )
     }.sortedBy { !it.usable }
     return when (slot) {
         RecipeSlot.WEAPON -> content.families.map { OptionUi(it.id.value, it.name, null, draft.familyId == it.id) }

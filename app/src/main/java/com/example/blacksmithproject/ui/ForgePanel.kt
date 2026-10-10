@@ -147,6 +147,7 @@ fun ForgePanel(
                 Tray(open, options, engine.content, follow, onOpenSupplies, onDone = { opened = NO_SLOT }) { option -> vm.updateDraft { engine.place(it, open, option) }; opened = null; follow = true }
             }
             if (bench.notes.isNotEmpty()) FieldNotes(bench.notes) { vm.selectRecords(RecordsPage.JOURNAL) }
+            if (bench.fight.isNotEmpty()) FightNotes(bench.fight)
             ForgingOptions(d) { change -> vm.updateDraft(change) }
             // The workshop's relics that bear on this forge: the bellows as a switch, the ledger's word on the family chosen.
             BellowsRow(s, vm)
@@ -164,7 +165,7 @@ fun ForgePanel(
 @Composable
 internal fun ThreatStrip(s: UiState.Playing, tag: String, note: String? = null, onOpenTown: () -> Unit) {
     val threat = s.shop.threat
-    Column(Modifier.fillMaxWidth().background(SceneDeep).heightIn(min = 48.dp).clickable(onClickLabel = "Open Town", role = Role.Button, onClick = onOpenTown).padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag(tag)) {
+    Column(Modifier.fillMaxWidth().background(SceneDeep).heightIn(min = 48.dp).clickable(onClickLabel = "Siege details", role = Role.Button, onClick = onOpenTown).padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag(tag)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(threat?.let { if (it.warned && !it.today) "Siege approaching · ${it.siege.removePrefix("Siege ")}" else it.siege } ?: "No siege in sight", style = MaterialTheme.typography.titleSmall, color = if (threat?.warned == true) Ember else Cream, modifier = Modifier.weight(1f))
             PixelImage(R.drawable.icon_integrity, wholePixelDp(24, 22.dp), description = null)
@@ -334,6 +335,17 @@ private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCata
         options.mapNotNull { it.mark }.distinct().forEach { mark ->
             Text("${mark.kind.sign} Against the siege: ${mark.label}", style = MaterialTheme.typography.bodySmall, color = mark.kind.color, modifier = Modifier.padding(bottom = Space.xs).testTag("forge_siege_mark"))
         }
+        // A guild run: what each choice of this tray does in a fight, so the choice can be made before it is placed.
+        val rules = options.filter { it.fight.isNotEmpty() }
+        if (rules.isNotEmpty()) Column(Modifier.fillMaxWidth().padding(bottom = Space.sm).testTag("forge_tray_fight")) {
+            Text("In a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+            rules.forEach { o ->
+                Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
+                    Text(o.name, style = MaterialTheme.typography.labelLarge, color = if (o.selected) Gold else Cream)
+                    o.fight.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+                }
+            }
+        }
         if (shown == null) Text(slot.hint, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
         else Row(Modifier.fillMaxWidth().testTag("forge_tray_detail"), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
@@ -384,6 +396,23 @@ fun FieldNotes(notes: List<NoteUi>, modifier: Modifier = Modifier, onOpenJournal
             notes.forEachIndexed { i, n ->
                 if (i > 0) Box(Modifier.padding(horizontal = 12.dp).width(1.dp).fillMaxHeight().background(BronzeDeep))
                 FieldNote(i, n, Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+/**
+ * What the recipe on the bench will do in a fight (guild runs): the rule of the augment's element and the rules of the
+ * catalyst, each in the catalog's own words under the material that gives it. The forge still decides quality and buffs.
+ */
+@Composable
+private fun FightNotes(rules: List<BladeRuleUi>) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(SceneDeep).border(1.dp, BronzeDeep, Card).padding(12.dp).testTag("forge_fight_notes")) {
+        Text("In a fight", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Normal, color = CreamMuted, modifier = Modifier.semantics { heading() })
+        rules.forEach { r ->
+            Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
+                Text("${r.name} · ${r.source}", style = MaterialTheme.typography.titleSmall, color = Cream)
+                Text(r.description, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
             }
         }
     }

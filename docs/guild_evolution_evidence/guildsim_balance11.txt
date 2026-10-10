@@ -1,0 +1,80 @@
+Guild runs: 300 seeds from 1, charter towns_last_hope, horizon day 30, new account, balance 11
+PASSIVE         charter   0%  defeated 100%  neither by day 30   0% | days med 20 mean 18.2 | first siege leaves  75 | sieges held  3% cost  2% breached 95% | per run: contracts 0.0 captured 0.00 rescued 0.00 dead 1.20 chains 0.0 (first day -) members 0.8 gold 210 rejected 0
+                contracts: 
+NOVICE          charter  20%  defeated  17%  neither by day 31  63% | days med 31 mean 29.3 | first siege leaves  99 | sieges held 42% cost  8% breached 50% | per run: contracts 22.6 captured 0.00 rescued 0.00 dead 0.49 chains 0.2 (first day 13.8) members 2.8 gold 3162 rejected 0
+                contracts: SUPPLY 100% (won 99%)
+SHOP_FOCUSED    charter  19%  defeated  35%  neither by day 31  46% | days med 30 mean 28.3 | first siege leaves  94 | sieges held 24% cost 15% breached 61% | per run: contracts 27.7 captured 0.00 rescued 0.00 dead 0.00 chains 0.1 (first day 14.6) members 2.0 gold 330 rejected 0
+                contracts: SUPPLY 100% (won 100%)
+HIGHEST_STAT    charter  28%  defeated  26%  neither by day 31  46% | days med 30 mean 27.9 | first siege leaves  96 | sieges held 34% cost 13% breached 53% | per run: contracts 19.3 captured 1.84 rescued 0.00 dead 1.62 chains 1.7 (first day 4.1) members 3.7 gold 272 rejected 0
+                contracts: DELVE 16% (won 33%)  ESCORT 22% (won 86%)  HUNT 33% (won 94%)  RECOVERY 8% (won 25%)  SUPPLY 20% (won 99%)
+SYNERGY         charter  81%  defeated   0%  neither by day 31  18% | days med 21 mean 24.5 | first siege leaves 100 | sieges held 70% cost 10% breached 19% | per run: contracts 17.1 captured 0.09 rescued 0.04 dead 0.10 chains 2.6 (first day 2.5) members 4.0 gold 471 rejected 0
+                contracts: ESCORT 9% (won 96%)  HUNT 50% (won 99%)  RESCUE 0% (won 57%)  SABOTAGE 25% (won 99%)  SUPPLY 15% (won 100%)
+DEFENCE_FIRST   charter  79%  defeated   0%  neither by day 31  21% | days med 21 mean 24.4 | first siege leaves 100 | sieges held 71% cost 10% breached 19% | per run: contracts 17.8 captured 0.40 rescued 0.00 dead 0.37 chains 0.7 (first day 7.5) members 3.8 gold 445 rejected 0
+                contracts: RESCUE 0% (won 25%)  SABOTAGE 29% (won 90%)  SUPPLY 71% (won 97%)
+GREEDY_DIVER    charter  23%  defeated  32%  neither by day 31  45% | days med 30 mean 28.3 | first siege leaves  96 | sieges held 33% cost 14% breached 53% | per run: contracts 19.1 captured 5.18 rescued 0.00 dead 5.11 chains 1.8 (first day 5.1) members 3.1 gold 216 rejected 0
+                contracts: DELVE 16% (won 39%)  ESCORT 17% (won 89%)  HUNT 35% (won 84%)  RECOVERY 14% (won 16%)  SUPPLY 18% (won 99%)
+RECOVERY_AWARE  charter  39%  defeated   1%  neither by day 31  60% | days med 31 mean 27.9 | first siege leaves  99 | sieges held 47% cost 11% breached 41% | per run: contracts 21.5 captured 0.00 rescued 0.00 dead 0.37 chains 0.2 (first day 11.1) members 3.8 gold 333 rejected 0
+                contracts: EMERGENCY 6% (won 100%)  RECOVERY 0% (won 40%)  SUPPLY 94% (won 100%)
+ADAPTIVE        charter  76%  defeated   0%  neither by day 31  24% | days med 21 mean 24.3 | first siege leaves 100 | sieges held 70% cost 11% breached 20% | per run: contracts 15.3 captured 0.38 rescued 0.30 dead 0.18 chains 2.3 (first day 2.6) members 3.9 gold 453 rejected 0
+                contracts: EMERGENCY 0% (won 100%)  ESCORT 10% (won 99%)  HUNT 28% (won 99%)  RESCUE 3% (won 79%)  SABOTAGE 31% (won 92%)  SUPPLY 28% (won 95%)
+
+Guild runs: 150 seeds from 1, charter licensed_bad_ideas, horizon day 30, new account, balance 11
+PASSIVE         charter   0%  defeated 100%  neither by day 30   0% | days med 15 mean 17.7 | first siege leaves  74 | sieges held  3% cost  1% breached 97% | per run: contracts 0.0 captured 0.00 rescued 0.00 dead 0.56 chains 0.0 (first day -) members 1.4 gold 170 rejected 0
+                contracts: 
+NOVICE          charter   3%  defeated  42%  neither by day 31  55% | days med 31 mean 29.5 | first siege leaves  97 | sieges held 25% cost 14% breached 61% | per run: contracts 23.0 captured 0.00 rescued 0.00 dead 0.75 chains 0.2 (first day 11.0) members 2.7 gold 3001 rejected 0
+                contracts: SUPPLY 100% (won 98%)
+SHOP_FOCUSED    charter  26%  defeated  28%  neither by day 31  46% | days med 30 mean 27.6 | first siege leaves  95 | sieges held 35% cost 13% breached 52% | per run: contracts 23.4 captured 0.00 rescued 0.00 dead 0.00 chains 0.2 (first day 16.1) members 2.0 gold 318 rejected 0
+                contracts: SUPPLY 100% (won 73%)
+HIGHEST_STAT    charter  18%  defeated  44%  neither by day 31  38% | days med 30 mean 27.6 | first siege leaves  95 | sieges held 30% cost 11% breached 59% | per run: contracts 18.5 captured 4.62 rescued 0.00 dead 4.17 chains 1.6 (first day 7.4) members 3.4 gold 210 rejected 0
+                contracts: DELVE 17% (won 16%)  ESCORT 20% (won 64%)  HUNT 26% (won 78%)  RECOVERY 22% (won 16%)  SUPPLY 15% (won 97%)
+SYNERGY         charter  67%  defeated   5%  neither by day 31  29% | days med 25 mean 25.4 | first siege leaves 100 | sieges held 60% cost 12% breached 28% | per run: contracts 17.0 captured 1.09 rescued 0.21 dead 0.83 chains 2.5 (first day 4.8) members 3.9 gold 427 rejected 0
+                contracts: ESCORT 12% (won 90%)  HUNT 46% (won 92%)  RESCUE 5% (won 24%)  SABOTAGE 28% (won 91%)  SUPPLY 10% (won 99%)
+DEFENCE_FIRST   charter  44%  defeated   3%  neither by day 31  53% | days med 31 mean 27.4 | first siege leaves 100 | sieges held 50% cost 13% breached 36% | per run: contracts 19.4 captured 0.98 rescued 0.02 dead 0.90 chains 0.5 (first day 12.5) members 3.6 gold 340 rejected 0
+                contracts: RESCUE 0% (won 23%)  SABOTAGE 33% (won 81%)  SUPPLY 67% (won 97%)
+GREEDY_DIVER    charter  17%  defeated  52%  neither by day 31  31% | days med 30 mean 27.7 | first siege leaves  96 | sieges held 29% cost 13% breached 59% | per run: contracts 17.7 captured 8.25 rescued 0.00 dead 8.07 chains 1.9 (first day 7.2) members 3.1 gold 182 rejected 0
+                contracts: DELVE 21% (won 17%)  ESCORT 16% (won 65%)  HUNT 29% (won 61%)  RECOVERY 22% (won 19%)  SUPPLY 11% (won 98%)
+RECOVERY_AWARE  charter  23%  defeated   5%  neither by day 31  71% | days med 31 mean 28.9 | first siege leaves  98 | sieges held 33% cost 16% breached 51% | per run: contracts 22.4 captured 0.00 rescued 0.00 dead 0.49 chains 0.2 (first day 10.2) members 3.8 gold 275 rejected 0
+                contracts: EMERGENCY 10% (won 100%)  RECOVERY 0% (won 9%)  SUPPLY 90% (won 100%)
+ADAPTIVE        charter  42%  defeated   1%  neither by day 31  57% | days med 31 mean 27.6 | first siege leaves 100 | sieges held 48% cost 13% breached 39% | per run: contracts 16.4 captured 1.03 rescued 0.62 dead 0.79 chains 2.0 (first day 5.6) members 3.8 gold 356 rejected 0
+                contracts: EMERGENCY 2% (won 100%)  ESCORT 10% (won 93%)  HUNT 23% (won 94%)  RECOVERY 0% (won 71%)  RESCUE 6% (won 60%)  SABOTAGE 33% (won 81%)  SUPPLY 25% (won 93%)
+
+Guild runs: 150 seeds from 1, charter honest_business, horizon day 30, new account, balance 11
+PASSIVE         charter   0%  defeated 100%  neither by day 30   0% | days med 15 mean 17.1 | first siege leaves  72 | sieges held  3% cost  0% breached 97% | per run: contracts 0.0 captured 0.00 rescued 0.00 dead 0.51 chains 0.0 (first day -) members 1.5 gold 250 rejected 0
+                contracts: 
+NOVICE          charter  13%  defeated  27%  neither by day 31  61% | days med 31 mean 29.6 | first siege leaves  99 | sieges held 37% cost 10% breached 54% | per run: contracts 22.8 captured 0.00 rescued 0.00 dead 0.53 chains 0.3 (first day 13.3) members 2.8 gold 3029 rejected 0
+                contracts: SUPPLY 100% (won 98%)
+SHOP_FOCUSED    charter  23%  defeated  28%  neither by day 31  49% | days med 31 mean 28.2 | first siege leaves  96 | sieges held 30% cost 14% breached 56% | per run: contracts 27.5 captured 0.00 rescued 0.00 dead 0.00 chains 0.2 (first day 7.2) members 2.0 gold 333 rejected 0
+                contracts: SUPPLY 100% (won 100%)
+HIGHEST_STAT    charter  17%  defeated  33%  neither by day 31  50% | days med 31 mean 28.7 | first siege leaves  96 | sieges held 33% cost 12% breached 55% | per run: contracts 19.8 captured 5.82 rescued 0.00 dead 5.05 chains 1.8 (first day 7.4) members 3.2 gold 186 rejected 0
+                contracts: DELVE 23% (won 28%)  ESCORT 9% (won 69%)  HUNT 33% (won 87%)  RECOVERY 27% (won 19%)  SUPPLY 9% (won 97%)
+SYNERGY         charter  75%  defeated   1%  neither by day 31  24% | days med 26 mean 25.1 | first siege leaves 100 | sieges held 66% cost 11% breached 23% | per run: contracts 18.9 captured 0.25 rescued 0.11 dead 0.16 chains 2.1 (first day 7.8) members 3.9 gold 438 rejected 0
+                contracts: ESCORT 1% (won 97%)  HUNT 73% (won 98%)  RESCUE 1% (won 55%)  SABOTAGE 18% (won 98%)  SUPPLY 7% (won 100%)
+DEFENCE_FIRST   charter  83%  defeated   1%  neither by day 31  17% | days med 21 mean 24.3 | first siege leaves 100 | sieges held 73% cost  9% breached 18% | per run: contracts 17.8 captured 0.34 rescued 0.00 dead 0.34 chains 0.5 (first day 9.4) members 3.8 gold 444 rejected 0
+                contracts: RESCUE 0% (won 0%)  SABOTAGE 29% (won 91%)  SUPPLY 71% (won 97%)
+GREEDY_DIVER    charter  18%  defeated  43%  neither by day 31  39% | days med 30 mean 28.1 | first siege leaves  95 | sieges held 33% cost 12% breached 56% | per run: contracts 18.1 captured 7.57 rescued 0.00 dead 8.16 chains 1.8 (first day 7.2) members 2.7 gold 183 rejected 0
+                contracts: DELVE 35% (won 26%)  ESCORT 8% (won 69%)  HUNT 43% (won 71%)  RECOVERY 5% (won 31%)  SUPPLY 8% (won 97%)
+RECOVERY_AWARE  charter  34%  defeated   1%  neither by day 31  65% | days med 31 mean 28.5 | first siege leaves  99 | sieges held 44% cost 11% breached 45% | per run: contracts 22.0 captured 0.00 rescued 0.00 dead 0.47 chains 0.1 (first day 14.6) members 3.8 gold 311 rejected 0
+                contracts: EMERGENCY 8% (won 100%)  RECOVERY 0% (won 50%)  SUPPLY 92% (won 100%)
+ADAPTIVE        charter  69%  defeated   0%  neither by day 31  31% | days med 21 mean 25.1 | first siege leaves 100 | sieges held 64% cost 12% breached 24% | per run: contracts 16.9 captured 0.33 rescued 0.29 dead 0.14 chains 1.5 (first day 7.6) members 4.0 gold 424 rejected 0
+                contracts: EMERGENCY 0% (won 100%)  ESCORT 2% (won 100%)  HUNT 38% (won 100%)  RECOVERY 0% (won 100%)  RESCUE 2% (won 88%)  SABOTAGE 29% (won 91%)  SUPPLY 29% (won 96%)
+
+Guild runs: 150 seeds from 1, charter towns_last_hope, horizon day 30, maxed legacy, balance 11
+PASSIVE         charter   0%  defeated  96%  neither by day 31   4% | days med 25 mean 25.1 | first siege leaves 135 | sieges held  2% cost  1% breached 96% | per run: contracts 0.0 captured 0.00 rescued 0.00 dead 1.36 chains 0.0 (first day -) members 0.6 gold 510 rejected 0
+                contracts: 
+NOVICE          charter  55%  defeated   0%  neither by day 31  45% | days med 31 mean 26.4 | first siege leaves 160 | sieges held 60% cost  8% breached 32% | per run: contracts 20.3 captured 0.00 rescued 0.00 dead 0.15 chains 0.2 (first day 11.6) members 3.0 gold 4186 rejected 0
+                contracts: SUPPLY 100% (won 100%)
+SHOP_FOCUSED    charter  21%  defeated  15%  neither by day 31  65% | days med 31 mean 29.0 | first siege leaves 149 | sieges held 16% cost 13% breached 71% | per run: contracts 28.2 captured 0.00 rescued 0.00 dead 0.00 chains 0.2 (first day 14.2) members 2.0 gold 322 rejected 0
+                contracts: SUPPLY 100% (won 100%)
+HIGHEST_STAT    charter  40%  defeated   2%  neither by day 31  58% | days med 31 mean 28.0 | first siege leaves 157 | sieges held 38% cost 15% breached 47% | per run: contracts 19.1 captured 1.45 rescued 0.00 dead 1.35 chains 1.8 (first day 6.6) members 3.8 gold 331 rejected 0
+                contracts: DELVE 17% (won 51%)  ESCORT 23% (won 90%)  HUNT 34% (won 95%)  RECOVERY 7% (won 34%)  SUPPLY 18% (won 99%)
+SYNERGY         charter  87%  defeated   0%  neither by day 31  13% | days med 21 mean 24.1 | first siege leaves 160 | sieges held 73% cost 10% breached 17% | per run: contracts 16.8 captured 0.04 rescued 0.04 dead 0.02 chains 2.3 (first day 3.6) members 4.0 gold 504 rejected 0
+                contracts: ESCORT 10% (won 97%)  HUNT 49% (won 99%)  RESCUE 0% (won 100%)  SABOTAGE 25% (won 99%)  SUPPLY 15% (won 100%)
+DEFENCE_FIRST   charter  87%  defeated   0%  neither by day 31  13% | days med 21 mean 23.3 | first siege leaves 160 | sieges held 78% cost  9% breached 13% | per run: contracts 17.4 captured 0.21 rescued 0.00 dead 0.17 chains 0.5 (first day 10.6) members 3.9 gold 450 rejected 0
+                contracts: RESCUE 0% (won 0%)  SABOTAGE 27% (won 94%)  SUPPLY 73% (won 97%)
+GREEDY_DIVER    charter  35%  defeated   6%  neither by day 31  59% | days med 31 mean 28.1 | first siege leaves 157 | sieges held 35% cost 19% breached 46% | per run: contracts 18.6 captured 3.49 rescued 0.00 dead 3.47 chains 1.8 (first day 6.8) members 3.3 gold 286 rejected 0
+                contracts: DELVE 17% (won 56%)  ESCORT 21% (won 94%)  HUNT 34% (won 90%)  RECOVERY 10% (won 22%)  SUPPLY 17% (won 99%)
+RECOVERY_AWARE  charter  65%  defeated   0%  neither by day 31  35% | days med 26 mean 25.6 | first siege leaves 160 | sieges held 60% cost 12% breached 28% | per run: contracts 19.6 captured 0.00 rescued 0.00 dead 0.11 chains 0.1 (first day 14.3) members 3.9 gold 431 rejected 0
+                contracts: EMERGENCY 0% (won 100%)  RECOVERY 0% (won 100%)  SUPPLY 100% (won 100%)
+ADAPTIVE        charter  90%  defeated   0%  neither by day 31  10% | days med 21 mean 23.4 | first siege leaves 160 | sieges held 75% cost 11% breached 13% | per run: contracts 15.0 captured 0.14 rescued 0.12 dead 0.04 chains 2.0 (first day 3.6) members 4.0 gold 497 rejected 0
+                contracts: ESCORT 10% (won 98%)  HUNT 30% (won 100%)  RESCUE 1% (won 90%)  SABOTAGE 30% (won 95%)  SUPPLY 28% (won 99%)
+
