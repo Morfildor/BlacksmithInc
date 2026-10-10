@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -61,6 +62,7 @@ class ShopDayScreenTest {
     private var speed by mutableStateOf(ShopDaySpeed.TAP)
     private var reduced by mutableStateOf(false)
     private var paused by mutableStateOf(false)
+    private var coach by mutableStateOf<String?>(null)
     private var replay by mutableStateOf<CombatReplay?>(null)
     private var nexts = 0
     private var closes = 0
@@ -91,6 +93,7 @@ class ShopDayScreenTest {
                     onOpenGazette = {},
                     onWatchFight = { id -> watched += id; replay = resolutionReplays.firstOrNull { if (id == null) it.kind == ReplayKind.SIEGE else it.eventId == id } },
                     onClose = { closes++ },
+                    coach = coach,
                 )
                 replay?.let { ReplayOverlay(it, onClose = { replay = null }) }
             }
@@ -99,6 +102,22 @@ class ShopDayScreenTest {
     }
 
     private fun text(value: String) = compose.onNodeWithText(value, useUnmergedTree = true)
+
+    /** The first-run line sits above the controls while the host passes it, and a tap on it is a tap anywhere: Next. */
+    @Test
+    fun theCoachLineShowsWhilePassedAndATapOnItIsNext() {
+        val m = day("purchase").ui()
+        coach = "Tap anywhere to continue · Skip day jumps to the evening"
+        show(m, m.first { it is Beat.Visit })
+        compose.onNodeWithTag("shopday_coach").assertIsDisplayed().assertTextEquals(coach!!)
+        assertTrue("above the controls", compose.onNodeWithTag("shopday_coach").getUnclippedBoundsInRoot().bottom <= compose.onNodeWithTag("shopday_next").getUnclippedBoundsInRoot().top)
+        compose.onNodeWithTag("shopday_coach").performClick()
+        assertEquals(1, nexts)
+        coach = null
+        compose.waitForIdle()
+        compose.onNodeWithTag("shopday_coach").assertDoesNotExist()
+        compose.onNodeWithTag("shopday_next").assertIsDisplayed()
+    }
 
     @Test
     fun purchaseShowsBuyerReasonAndSeparateReceiptRows() {

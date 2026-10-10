@@ -30,6 +30,7 @@ import com.example.blacksmithproject.ui.theme.BlacksmithProjectTheme
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.GameState
+import com.tinyblacksmith.core.model.LegacyProfile
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponLocation
 import org.junit.Assert.assertEquals
@@ -68,6 +69,19 @@ class ShopPanelTest {
     }
 
     private fun top(tag: String) = compose.onNodeWithTag(tag, useUnmergedTree = true).getUnclippedBoundsInRoot().top
+
+    /** A new game (A01): the Shop opens on "Forge your first blade", its reason and the button to the forge, above everything else to do. */
+    @Test
+    fun dayOneLeadsWithForgeYourFirstBlade() {
+        val fresh = engine.newRun(LegacyProfile(), 42L)
+        show(fresh)
+        compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertTextEquals("Forge your first blade")
+        compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals("${fresh.aliveHeroes().size} heroes in Emberfall and nothing on the shelf.")
+        compose.onNodeWithTag("shop_lead_action").assertTextEquals("Go to the forge")
+        assertTrue("the lead is the first thing under the counter", top("shop_counter") < top("shop_lead") && top("shop_lead") < top("shop_demand"))
+        compose.onNodeWithTag("shop_requests", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag("shop_yesterday", useUnmergedTree = true).assertDoesNotExist()
+    }
 
     @Test
     fun requestsAndYesterdaySitAboveTheShelf() {
