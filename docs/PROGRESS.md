@@ -494,8 +494,53 @@ the rebase, so they show the older backdrop and rarity pips.
 - The emulator hung once in "not responding" dialogs after a cold boot while the machine was busy; it was restarted (this
   session's instance only) and the runs above are from the second boot.
 
+## UI/UX improvement 4: consistency, readability, accessibility (2026-10-10, night; on the branch `ui-batch-4`, not on `main`)
+The fourth batch from the UI/UX reviews, and the evidence for reviewing all four together. The handoff is
+`docs/ui_review_2026-10-10/REVIEW_HANDOFF.md`: revisions and builds tested, a summary of the four batches, the screenshots,
+the verification table (automated, looked at, not verified) and the remaining issues by player impact. Reasons are in
+`docs/DECISIONS.md` ("Consistency, readability and accessibility: the fourth UI/UX batch"); player-facing lines are in
+`CHANGELOG.md` under `[Unreleased]`. No balance, rules, save, schema or content version changed; core changed in wording
+only (three shop-day lines and the Gazette's tally say "request").
+
+**Which build.** Worktree `.claude/worktrees/ui-batch4`, branch `ui-batch-4`, cut from `ui-batch-2` at `e1fe41c` (batch 3,
+itself one commit above `main`). Two commits: `39c7bb9` (the batch) and `bdee417` (the shop day with text above 1.3).
+Not merged and not pushed: that is the owner's call, as for batch 3.
+
+**What changed.** One look for each kind of action (gold plate, bronze outline, gold inline), with no stock pill left;
+Records tabs without check marks, the first named "Gazette"; one name each for Supplies, requests, heroes and the Gazette;
+"Up to 6 visitors a day", "Requests · N" with a line under it, "Forge integrity 100", "Not tried yet…"; playback as
+"Manual / Auto 1x / Auto 2x" and "Skip to evening" in all three places; the Records masthead apart from its Hide/Show;
+Town's outlook first with both numbers, and the champion rule in words; "Worn" at the engine's threshold of 50; a tap on
+the day strip no longer advances a card; above font 1.3 the Forge is one scrolling page and the day's scene is lower;
+greyed Buy, upgrade and Begin era buttons say why to a screen reader.
+
+**Checks.** Emulator: AVD `carbscan`, API 36, read-only, isolated on its own adb server after another session's device
+tests installed a different build on it once (everything captured then was discarded).
+| Check | Result |
+|---|---|
+| Core JVM tests | 395 pass (`bdee417`) |
+| App JVM tests | 142 pass (`bdee417`) |
+| Debug and release builds, device-test compile, lint, from scratch | pass (`39c7bb9`) |
+| Device tests, 411x731 dp, font 1.0 | 70 of 71 (`bdee417`); the one failure is `StorageSheetTest.bulkSalvage…`, as on untouched `main` on this AVD since batch 1 |
+| Scripted journey in a live game, 17 checks, build hash checked before and after (`39c7bb9`) | 411x731 at 1.0, 1.3 and 2.0: 17 of 17 each. 360x640 at 1.0: 17 of 17; at 1.3: 16 of 17 (one step not exercised, a script timing miss); at 2.0: 15 of 17 (one script miss; the sale card's text was off screen, which `bdee417` then addressed; the journey was not rerun after it) |
+| Screenshots | 79 in `docs/ui_review_2026-10-10/improvement_4/`; which were opened and looked at is listed in the handoff |
+
+Found and fixed on the way, each from a device look: the longer playback and skip labels cut the strip's label short
+(the controls now wrap under it); at font 2.0 the Forge's steps had about one line of height (one scrolling page above
+1.3); at 360x640 with font 2.0 the day card had no height on the first customer (lower scene, no hint there).
+
+**Not verified, and limits.** TalkBack (switched on once; its own dialog covered the game and the AVD has no speech);
+an accepted request played through to its handover in a live game (the paid card is seen in the debug preview only);
+`smoke.sh` and `runend.sh` (edited for the new wording, not run); reduced motion in this batch; touch-target heights on a
+device; the error, failure, blessing and run-end surfaces with their new buttons; any physical phone. The remaining
+issues are ranked in the handoff.
+
 ## Next actions
-0. UI/UX improvement 3 (above) is on `main` (fast-forward from `ui-batch-2`, no checks re-run for the merge).
+0. UI/UX improvement 4 (above) is on `main`, rebased onto the Forge-first redesign (see the note at the head of its
+   section for what the rebase kept and dropped). The combined review reads
+   `docs/ui_review_2026-10-10/REVIEW_HANDOFF.md`. Still owed: a TalkBack pass, a request played to its handover,
+   `smoke.sh` and `runend.sh`, and the device journeys on the merged build.
+   UI/UX improvement 3 (above) is on `main` (fast-forward from `ui-batch-2`, no checks re-run for the merge).
    UI/UX improvement 2 (navigation) is on `main`.
    UI/UX improvement 1 is on `main` and still to be reconciled with `post-0.7.0`; a request blade's result card still
    needs a look in a live game.

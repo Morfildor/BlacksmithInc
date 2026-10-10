@@ -78,6 +78,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - A tap on the strip above the shop day (beside the playback control or the skip) no longer counts as "tap anywhere" and moves the day on.
 - The first-day hint is not shown while a screen reader is exploring by touch, where a tap anywhere is not Next.
 - With text larger than 1.3 the Forge is one scrolling page (the room, the anvil plate and the steps together) and returns to the plate when the recipe is complete; before, the pinned plates left the steps about one line of height at the largest text.
+- During a shop day with text larger than 1.3 the painted scene is lower, so the card under it has room; on a low screen with such text the first-day hint is left out, where its three lines would leave the card none.
 - On the strip above the shop day, the playback control and the skip move to their own line when they do not fit beside the day's label, instead of cutting the label short.
 
 ## [0.7.0] - 2026-10-10
