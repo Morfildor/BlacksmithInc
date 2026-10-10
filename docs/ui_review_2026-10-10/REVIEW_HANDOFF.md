@@ -135,7 +135,7 @@ tap on the greyed Back on the first card does nothing; system Back on the first 
 1. **Screen readers are untested.** Everything said about accessibility in these four batches rests on code and tests.
 2. **360x640 with the largest text is still cramped during the shop day.** After the follow-up the sale card shows its
    band, "Earned today" and the blade's name without a scroll, and the rest by scrolling; before it, one line. The first-day
-   hint is not shown at this size. On the Forge the "Forge weapon" button is a scroll away after each forge.
+   hint is not shown at this size, and it still counts as seen, so these players never get it. On the Forge the "Forge weapon" button is a scroll away after each forge.
 3. **At font 2.0 the Shop's shelf and storage rows are very tall.** The text column beside the blade's picture is narrow, so
    "Guardians and Duelists and Battlemages favour the sword" takes four lines and "Battlemages" breaks mid-word at 360 dp.
 4. **At 360x640 with font 1.3 the till card's picture pushes its rows below the fold.** The total is a scroll away.

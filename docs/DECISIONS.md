@@ -3858,6 +3858,12 @@ Back leaving the game; the Forge scrolling by itself.
 - The playback chip and the skip keep their behaviour; only their words and spoken descriptions changed
   (`ShopDaySpeed.label`, `SKIP_TO_EVENING`). The strip now takes its own taps, so a tap that misses the chip or the skip is
   not "tap anywhere". The card, the scene, the hint line and the gap around the buttons are still Next.
+- Three layout fixes came from looking at the device. The strip above the shop day is a `FlowRow`: the playback chip and
+  the skip take the line under the day's label when they do not fit beside it (the longer words had cut the label short).
+  Above font scale 1.3 the Forge's room and anvil plate scroll with the steps as one column, as the forge result already
+  does, and it scrolls back to the plate when the player's own pick completes the recipe (pinned, they left the steps about
+  one line at 2.0). Above 1.3 the day's scene is 56 dp, and on a screen under 700 dp high the first-day hint is not drawn.
+  That hint still counts as seen once the player moves on from the first customer, so those players never get it.
 - Core changed in wording only: three shop-day lines (`Lines.reason`, `Lines.decision`, `Lines.tally`) and the Gazette's
   tally line say "request". Event records are untouched, so nothing about a save, the golden run or the simulator moves.
 
