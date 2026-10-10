@@ -363,6 +363,10 @@ class GameViewModel(
         }
     }
 
+    /** The charter a new era begins under unless the player picks another on the title or the run-end screen; null is the classic shop. UI-only until the era begins. */
+    val charter = MutableStateFlow<String?>(engine.content.guild?.charters?.firstOrNull()?.id)
+    fun selectCharter(id: String?) { charter.value = id }
+
     fun newRun() = beginEra(null)
 
     /** Debug launch extra only (MainActivity checks the debuggable flag): a fixed-seed run, and only when no run is saved. */
@@ -373,7 +377,7 @@ class GameViewModel(
     /** From the title (no run) or from the run-end screen (the session refuses it until the legacy is claimed). */
     private fun beginEra(seed: Long?) {
         val snap = session.snapshot.value ?: return
-        launch(Op.BeginEra(seed ?: (System.nanoTime() xor snap.legacy.eras.size.toLong()), snap.run?.runId)) { edit { Local(loading = false, speed = it.speed) } }
+        launch(Op.BeginEra(seed ?: (System.nanoTime() xor snap.legacy.eras.size.toLong()), snap.run?.runId, charter.value)) { edit { Local(loading = false, speed = it.speed) } }
     }
 
     /** Main menu, "Abandon run": the run is discarded unclaimed and the menu offers a new game. */
@@ -718,10 +722,24 @@ class GameViewModel(
         GameError.RelicSlotsFull -> "Every relic slot is taken. Choose which relic it replaces."
         is GameError.RelicSpent -> "${relicName(e.relicId)} has already been used today."
         is GameError.WeaponPromised -> "That blade is kept for ${session.snapshot.value?.run?.let { promisedBuyer(it, e.commissionId) } ?: "a patron"}'s order."
+        GameError.NotAGuildRun -> "This era has no guild."
+        is GameError.NotAMember -> "${heroName(e.heroId)} is not a member of the guild."
+        is GameError.NotACandidate -> "${heroName(e.heroId)} is not looking to sign today."
+        GameError.RosterFull -> "The guild's roster is full (${engine.config.guild.maxMembers} members)."
+        is GameError.MemberUnavailable -> "${heroName(e.heroId)} ${e.reason}."
+        is GameError.WeaponOnLoan -> "That blade is on loan to ${heroName(e.heroId)}. Recall it first."
+        is GameError.NotOnLoan -> "That blade is not on loan."
+        is GameError.MissionNotOffered -> "That contract is no longer on the board."
+        is GameError.PartyInvalid -> e.reason
+        GameError.PartyAway -> "The party is still out."
+        GameError.NoDeploymentPlanned -> "No party is planned for today."
+        GameError.NoMissionCheckpoint -> "The party is not waiting for word."
+        is GameError.MilestoneNotEarned -> "The charter is not secured yet."
         // Core grows concurrently; unmapped errors still get a readable line instead of a build break.
         else -> "The forge cannot do that right now."
     }
 
+    private fun heroName(id: HeroId) = session.snapshot.value?.run?.heroes?.get(id)?.fullName ?: "That hero"
     private fun relicName(id: String) = engine.content.relic(id)?.name ?: "That relic"
 
     companion object {
