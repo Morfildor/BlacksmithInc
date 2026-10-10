@@ -5,11 +5,11 @@ File rules: PNG with a transparent background unless the piece is a full scene o
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
-Status as of 2026-10-10: nothing delivered yet. New with the visitors update: not in the game yet, optional. The relics are shown by name and text today.
-Planned IDs (5), with the planned in-game size. Keep them apart from the blessing icons at a glance: a relic is an
-object that stays in the workshop for the whole run, a blessing is a five-day favour.
-  relic_salvagers_crucible                48x48   a small crucible that gives a melted blade's augment back
-  relic_tempering_ledger                  48x48   a smith's ledger: rewards forging a different weapon family each time
-  relic_collectors_seal                   48x48   a wax seal or signet: costly shelf sales earn seals
-  relic_ashen_bellows                     48x48   ash-grey bellows: one forge a day burns tomorrow's strength
-  relic_slot_empty                        48x48   an empty place on the relic shelf (the workshop holds three)
+Status as of 2026-10-10. Pieces already delivered are not listed as wanted: do not resend them.
+
+DELIVERED, NOT IN THE GAME YET (do not resend; the relics feature itself is not in the game yet, so there is nothing to show them in)
+  relic_salvagers_crucible   relic_tempering_ledger   relic_collectors_seal   relic_ashen_bellows   relic_slot_empty   (48x48)
+  They are the five files in this folder.
+
+STILL WANTED
+  Nothing.
