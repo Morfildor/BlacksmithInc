@@ -1,16 +1,15 @@
 Assets/Backgrounds
-Full scenes behind screens: shop counter, forge, title, run end. Wide pieces are cropped to portrait in the app.
+Full scenes behind screens: shop counter, forge, title, run end, and the wall and floor tiles.
 
 File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
-IDs in the game today (6), with the current in-game size:
-  bg_counter_forge                        540x270
-  bg_forge_night                          232x211
-  bg_run_end_fallen_forge                 270x150
-  bg_title_workshop_night                 270x150
-  tile_wall                               64x64
-  tile_floor                              64x32
+Status as of 2026-10-10.
 
-Status as of 2026-10-10: nothing in this folder is delivered yet; everything above is still wanted.
+DELIVERED AND IN THE GAME (do not resend)
+  bg_counter_forge (540x270), bg_forge_night (232x211), bg_run_end_fallen_forge (270x150),
+  bg_title_workshop_night (270x150), tile_wall (64x64), tile_floor (64x32).
+
+STILL WANTED
+  Nothing.

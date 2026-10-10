@@ -1,0 +1,281 @@
+{
+  "version": "2026-10-10",
+  "art_style": "warm whimsical fantasy pixel art, dark ink linework and warm gold highlights",
+  "assets": [
+    {
+      "id": "icon_integrity",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "replacement",
+      "file": "icons/icon_integrity.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    },
+    {
+      "id": "icon_militia",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "replacement",
+      "file": "icons/icon_militia.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    },
+    {
+      "id": "icon_reputation",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "replacement",
+      "file": "icons/icon_reputation.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    },
+    {
+      "id": "icon_nav_gazette",
+      "game_size": [
+        40,
+        40
+      ],
+      "category": "replacement",
+      "file": "icons/icon_nav_gazette.png",
+      "pixel_size": [
+        80,
+        80
+      ]
+    },
+    {
+      "id": "icon_nav_home",
+      "game_size": [
+        40,
+        40
+      ],
+      "category": "replacement",
+      "file": "icons/icon_nav_home.png",
+      "pixel_size": [
+        80,
+        80
+      ]
+    },
+    {
+      "id": "icon_nav_legacy",
+      "game_size": [
+        40,
+        40
+      ],
+      "category": "replacement",
+      "file": "icons/icon_nav_legacy.png",
+      "pixel_size": [
+        80,
+        80
+      ]
+    },
+    {
+      "id": "icon_purse",
+      "game_size": [
+        40,
+        40
+      ],
+      "category": "replacement",
+      "file": "icons/icon_purse.png",
+      "pixel_size": [
+        80,
+        80
+      ]
+    },
+    {
+      "id": "icon_settings",
+      "game_size": [
+        40,
+        40
+      ],
+      "category": "replacement",
+      "file": "icons/icon_settings.png",
+      "pixel_size": [
+        80,
+        80
+      ]
+    },
+    {
+      "id": "badge_common",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "replacement",
+      "file": "icons/badge_common.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    },
+    {
+      "id": "badge_uncommon",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "replacement",
+      "file": "icons/badge_uncommon.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    },
+    {
+      "id": "badge_rare",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "replacement",
+      "file": "icons/badge_rare.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    },
+    {
+      "id": "badge_epic",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "replacement",
+      "file": "icons/badge_epic.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    },
+    {
+      "id": "badge_legendary",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "replacement",
+      "file": "icons/badge_legendary.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    },
+    {
+      "id": "badge_flaw",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "replacement",
+      "file": "icons/badge_flaw.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    },
+    {
+      "id": "marker_dead",
+      "game_size": [
+        8,
+        8
+      ],
+      "category": "replacement",
+      "file": "icons/marker_dead.png",
+      "pixel_size": [
+        16,
+        16
+      ]
+    },
+    {
+      "id": "marker_retired",
+      "game_size": [
+        8,
+        8
+      ],
+      "category": "replacement",
+      "file": "icons/marker_retired.png",
+      "pixel_size": [
+        16,
+        16
+      ]
+    },
+    {
+      "id": "icon_visitor",
+      "game_size": [
+        40,
+        40
+      ],
+      "category": "optional",
+      "file": "icons/icon_visitor.png",
+      "pixel_size": [
+        80,
+        80
+      ]
+    },
+    {
+      "id": "icon_relic",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "optional",
+      "file": "icons/icon_relic.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    },
+    {
+      "id": "icon_trait_long_assault",
+      "game_size": [
+        40,
+        40
+      ],
+      "category": "optional",
+      "file": "icons/icon_trait_long_assault.png",
+      "pixel_size": [
+        80,
+        80
+      ]
+    },
+    {
+      "id": "icon_trait_many_breaches",
+      "game_size": [
+        40,
+        40
+      ],
+      "category": "optional",
+      "file": "icons/icon_trait_many_breaches.png",
+      "pixel_size": [
+        80,
+        80
+      ]
+    },
+    {
+      "id": "icon_promised",
+      "game_size": [
+        24,
+        24
+      ],
+      "category": "optional",
+      "file": "icons/icon_promised.png",
+      "pixel_size": [
+        48,
+        48
+      ]
+    }
+  ],
+  "format": "Transparent PNG; images exported at 2x game-unit resolution; maintain aspect ratio and display at stated game_size",
+  "source_list": "WANTED(5).txt provided by project owner"
+}

@@ -1,10 +1,10 @@
 {
  "anvil": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "sheet": "pack:scene",
   "width": 109,
   "height": 72,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "d08e1e6616c677ce8c2ffd7b14ae9627b8a4ad0bab432a369f3addf7b0eb86c1"
  },
  "art_day_fallen_forge": {
   "sheet": "pack:day_art",
@@ -28,74 +28,74 @@
   "sha256": "15ed79b4f5f5626e15e9e707df787e8b7394166f21ad8f509762569c446cf6cf"
  },
  "badge_common": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-  "width": 24,
-  "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "1c3b64fc3d0a2f4274e4a617f40fb4671748de67e096f99164b34b22a3aaf9bf"
  },
  "badge_epic": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-  "width": 24,
-  "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3b5267427bea43060eafbdff4bc5083d9e8db6c1fafd4379b5bbb19b9534e350"
  },
  "badge_flaw": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-  "width": 24,
-  "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "69ed1ec05764ddc7bd6ed7caf53f110a978e39ab0469eb8c5fffb958881e66e4"
  },
  "badge_legendary": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-  "width": 24,
-  "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "9c013c4f4d2414a95800ec75b27ff7c62e9f6184da7f438d1b3aaeccca3d1e31"
  },
  "badge_rare": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-  "width": 24,
-  "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "2f390f33f9fe11d0ffc090c707d046f78fa64c160358d1b8ede7fed78a6a078f"
  },
  "badge_uncommon": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-  "width": 24,
-  "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "983634785f4665fcd5fe9a24da011bdfa0c20ce29184157811abc9dd93709659"
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3a2edd171b5800a3d772b9a6bbb8f6705d4f4fb61d5691f390581d4a34f0ff79"
  },
  "bg_counter_forge": {
-  "sheet": "approved_hybrid_direction.png",
+  "sheet": "pack:backgrounds",
   "width": 540,
   "height": 270,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7841d827153ba86dad8f4b059658cf6e8a3e3a08d4b09c5b4abc8f85f1e8a5e6"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "9a17430e175284ccbce9c385326acdeb5d572fb5ed8eb68c61e42ce1bd765fef"
  },
  "bg_forge_night": {
-  "sheet": "Tiny Blacksmith RPG Asset Atlas.png",
+  "sheet": "pack:backgrounds",
   "width": 232,
   "height": 211,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "966f57c874a9f12e5d122a927878ddc64353ba96b4f2359e93dfc3b7b7f3404a"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "e29ddf200d4b2f8c666622231ce06d8e6ec38cacdc63bc2c697d2d8a2ecfa34e"
  },
  "bg_run_end_fallen_forge": {
-  "sheet": "pack:Tiny_Blacksmith_UI_Backgrounds_v3",
+  "sheet": "pack:backgrounds",
   "width": 270,
   "height": 150,
   "sourceKind": "script_drawn_pack",
-  "sha256": "a2fb6139bf1bfb05dc3318d48536f172ceb95b86e3f9f1b07e07cb93e573e749"
+  "sha256": "ed71da6e3930a0502fee9b1f477d10c637416cf24c1053b01182879f14952d4d"
  },
  "bg_title_workshop_night": {
-  "sheet": "pack:Tiny_Blacksmith_UI_Backgrounds_v3",
+  "sheet": "pack:backgrounds",
   "width": 270,
   "height": 150,
   "sourceKind": "script_drawn_pack",
-  "sha256": "3fdc02d8605bdb5124b9c1666dcfe9d22577eb83d2321f758657d4c5cf7c17a7"
+  "sha256": "d870757e1b6a34b90c9ef2c51206a5ab061358ca5bd85eb93db138777efe5487"
  },
  "blessing_forgefire": {
   "sheet": "pack:blessings",
@@ -266,25 +266,25 @@
   "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "furnace_cold": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "sheet": "pack:scene",
   "width": 77,
   "height": 96,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "fef8357d99b4e47c5aab0a289bfb5dc194bca45a5b3f5c7f306c8199725262e4"
  },
  "furnace_hot": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "sheet": "pack:scene",
   "width": 80,
   "height": 96,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "49f9e1fcb3206e61b1f1b12dd9fa5ca83d304b71acbb13e29a7259314af06b56"
  },
  "furnace_warm": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "sheet": "pack:scene",
   "width": 79,
   "height": 96,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "b63c57b06747ff5e1a760e2cbfa2d5f577ca87fadc78aad00546d1b03a058efc"
  },
  "fx_milestone_0": {
   "sheet": "pack:New folder",
@@ -572,18 +572,18 @@
   "sha256": "a7b76d2d5e330f52f7a4d4b99463c22c770fd078f3b7480b6c98e6eb6d363e1f"
  },
  "icon_integrity": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-  "width": 24,
-  "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "a33c2d422a54747207891a8b061203e2df08cf0cfe24a215b16074b867148e67"
  },
  "icon_militia": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-  "width": 24,
-  "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "a6896e4fb79fc2584a90af7ed958a15db7d1ea810257162bda5dc8985bd17844"
  },
  "icon_nav_forge": {
   "sheet": "pack:icons",
@@ -593,18 +593,18 @@
   "sha256": "b6a9ae1a09594a6a78414b95f3b351becc42a8782fd27d06cc11fb7fb607e22b"
  },
  "icon_nav_gazette": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-  "width": 40,
-  "height": 40,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sheet": "pack:icons",
+  "width": 80,
+  "height": 80,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "cd307cfcc3a876fc8336fa7d2d7611aec1e459a8dbe8114969f5c380b4066efb"
  },
  "icon_nav_home": {
-  "sheet": "Tiny Blacksmith RPG Asset Atlas.png",
-  "width": 40,
-  "height": 40,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "966f57c874a9f12e5d122a927878ddc64353ba96b4f2359e93dfc3b7b7f3404a"
+  "sheet": "pack:icons",
+  "width": 80,
+  "height": 80,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "643f62f13363a92d0152a5ed01e4fc723535bc04e458ed2fc8360ecb7354b210"
  },
  "icon_nav_journal": {
   "sheet": "pack:icons",
@@ -614,11 +614,11 @@
   "sha256": "6661aa249803d87763a933369f6e1930689c48729014c605fbb523a1a704d16a"
  },
  "icon_nav_legacy": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-  "width": 40,
-  "height": 40,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sheet": "pack:icons",
+  "width": 80,
+  "height": 80,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "13ed9878e3875ffcdd9be907120dcf44fa1ba71700649c3d742bcbf7e0ac8768"
  },
  "icon_nav_market": {
   "sheet": "pack:icons",
@@ -635,45 +635,39 @@
   "sha256": "6ed5c35bd165b153ae70bb2e73de64a8fadc737f577566fef2efc3cedd0bef6c"
  },
  "icon_purse": {
-  "sheet": "Tiny Blacksmith RPG Asset Atlas.png",
-  "width": 40,
-  "height": 40,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "966f57c874a9f12e5d122a927878ddc64353ba96b4f2359e93dfc3b7b7f3404a"
+  "sheet": "pack:icons",
+  "width": 80,
+  "height": 80,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "b472d32c3ae93b19c609040d9aaec82491488de6d788315bd04e3cc77d98f590"
  },
  "icon_reputation": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-  "width": 24,
-  "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sheet": "pack:icons",
+  "width": 48,
+  "height": 48,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "19f1177f9ee6df6b6a0c2e6231b36d21ebf219d77da53ea2cb8de0cc5915b46d"
  },
  "icon_settings": {
-  "sheet": "Tiny Blacksmith RPG Asset Atlas.png",
-  "width": 40,
-  "height": 40,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "966f57c874a9f12e5d122a927878ddc64353ba96b4f2359e93dfc3b7b7f3404a"
+  "sheet": "pack:icons",
+  "width": 80,
+  "height": 80,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "bd767edffacaae0c5d558144b01144d52c229bc9e45c5bfb44eb6d864f6a8b0b"
  },
  "marker_dead": {
-  "sheet": "pack:New folder",
-  "width": 8,
-  "height": 8,
+  "sheet": "pack:icons",
+  "width": 16,
+  "height": 16,
   "sourceKind": "script_drawn_pack",
-  "sha256": "c9149086da46f05e1761bdc668d7b3ad812b7ecadc890dccc15c6bff77638a22",
-  "anchor": "top-left",
-  "kind": "marker",
-  "notes": "Gravestone"
+  "sha256": "f2a3b06723ef09d26313e1d9f2c1e30786b0927495ac628c034eb754b820a4f8"
  },
  "marker_retired": {
-  "sheet": "pack:New folder",
-  "width": 8,
-  "height": 8,
+  "sheet": "pack:icons",
+  "width": 16,
+  "height": 16,
   "sourceKind": "script_drawn_pack",
-  "sha256": "143c4ecc5a71816ff5858e7b46cd806ead48af6a45f97148321afba869bfc59e",
-  "anchor": "top-left",
-  "kind": "marker",
-  "notes": "Laurel wreath"
+  "sha256": "c6a66b6f05ea1710de7d5f4bfd72130cefd9cc9cf2d08c063dcdd90e6bf58929"
  },
  "material_binding_salt": {
   "sheet": "pack:materials",
@@ -2232,38 +2226,32 @@
   ]
  },
  "shelf": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "sheet": "pack:scene",
   "width": 122,
   "height": 64,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "6b075125e526b23f57d98c452777bbd2c56a922334b2701bddc97b7973385805"
  },
  "siege_wall": {
-  "sheet": "pack:New folder",
+  "sheet": "pack:scene",
   "width": 96,
   "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "dc649c510f79b375f2336c0fb4bddb652290fc53dc9f1e8007aeb57a810eb490",
-  "anchor": "tile",
-  "kind": "siege",
-  "notes": "Siege backdrop 96x32"
+  "sha256": "c668aee08137e935f5f39639b494c9bcdf4ba39064cc0a36d520da9b62e1fe62"
  },
  "siege_wall_damaged": {
-  "sheet": "pack:New folder",
+  "sheet": "pack:scene",
   "width": 96,
   "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "5d0e7857a42aca6c572bea665f1e24a373f770a785629083af2245b16bd6a7c4",
-  "anchor": "tile",
-  "kind": "siege",
-  "notes": "Siege backdrop 96x32"
+  "sha256": "23cc88de91d677ae40c92ad5d9ba4c1efd89bebeb7a403e967ff566ddbc5673b"
  },
  "tile_floor": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "sheet": "pack:backgrounds",
   "width": 64,
   "height": 32,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "603ae52963a411fc9cc1b249c1007ed0ea551efd95b9fd11ad0e1fe137491170"
  },
  "tile_paper": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
@@ -2273,18 +2261,18 @@
   "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "tile_wall": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "sheet": "pack:backgrounds",
   "width": 64,
   "height": 64,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "115673d2adef65867bd6e432a90a2a9db87a4472c137b640129054b19b21266a"
  },
  "tool_rack": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
+  "sheet": "pack:scene",
   "width": 54,
   "height": 88,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3eca0ac17786bc919d30c7e5bd78679532d690c0a90bde44c927329f7d5cb42b"
  },
  "weapon_axe_base_1": {
   "sheet": "Weapons master",

@@ -1,0 +1,75 @@
+{
+  "pack": "Tiny Blacksmith — Backgrounds Batch 01",
+  "version": "1.0",
+  "asset_count": 6,
+  "pixels": "Native dimensions, 2× crisp art grid for backgrounds; transparent 1× masonry tiles",
+  "source": "Original generated game artwork with commissioned-style pixel treatment",
+  "assets": [
+    {
+      "id": "bg_counter_forge",
+      "file": "bg_counter_forge.png",
+      "size": [
+        540,
+        270
+      ],
+      "kind": "scene",
+      "alpha": false,
+      "notes": "Cozy shop counter with blazing hearth and hanging blades; a little sleeping workshop cat lounges on a red cushion beside the tools."
+    },
+    {
+      "id": "bg_forge_night",
+      "file": "bg_forge_night.png",
+      "size": [
+        232,
+        211
+      ],
+      "kind": "scene",
+      "alpha": false,
+      "notes": "Exterior blacksmith workshop under crescent moon, blue mountain silhouettes and forge glow."
+    },
+    {
+      "id": "bg_run_end_fallen_forge",
+      "file": "bg_run_end_fallen_forge.png",
+      "size": [
+        270,
+        150
+      ],
+      "kind": "scene",
+      "alpha": false,
+      "notes": "Ashen defeated forge with cracked anvil, planted swords, lava and a dusk-red horizon."
+    },
+    {
+      "id": "bg_title_workshop_night",
+      "file": "bg_title_workshop_night.png",
+      "size": [
+        270,
+        150
+      ],
+      "kind": "scene",
+      "alpha": false,
+      "notes": "Nighttime clifftop smithy, winding bridge, stars, warm windows and a glowing open forge."
+    },
+    {
+      "id": "tile_wall",
+      "file": "tile_wall.png",
+      "size": [
+        64,
+        64
+      ],
+      "kind": "seamless_texture",
+      "alpha": true,
+      "notes": "Mossy ancient fitted fieldstone and green lichen; native 64×64 textured masonry tile with transparent grout."
+    },
+    {
+      "id": "tile_floor",
+      "file": "tile_floor.png",
+      "size": [
+        64,
+        32
+      ],
+      "kind": "seamless_texture",
+      "alpha": true,
+      "notes": "Irregular hand-laid flagstones with scratches and moss, native 64×32 textured floor tile with transparent grout."
+    }
+  ]
+}

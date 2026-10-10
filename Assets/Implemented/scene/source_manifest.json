@@ -1,0 +1,55 @@
+{
+  "category": "Assets/Scene",
+  "format": "RGBA PNG transparent",
+  "pixels": "native pixel dimensions, use nearest-neighbor sampling in game",
+  "assets": [
+    {
+      "id": "furnace_cold",
+      "file": "furnace_cold.png",
+      "width": 77,
+      "height": 96
+    },
+    {
+      "id": "furnace_warm",
+      "file": "furnace_warm.png",
+      "width": 79,
+      "height": 96
+    },
+    {
+      "id": "furnace_hot",
+      "file": "furnace_hot.png",
+      "width": 80,
+      "height": 96
+    },
+    {
+      "id": "anvil",
+      "file": "anvil.png",
+      "width": 109,
+      "height": 72
+    },
+    {
+      "id": "tool_rack",
+      "file": "tool_rack.png",
+      "width": 54,
+      "height": 88
+    },
+    {
+      "id": "shelf",
+      "file": "shelf.png",
+      "width": 122,
+      "height": 64
+    },
+    {
+      "id": "siege_wall",
+      "file": "siege_wall.png",
+      "width": 96,
+      "height": 32
+    },
+    {
+      "id": "siege_wall_damaged",
+      "file": "siege_wall_damaged.png",
+      "width": 96,
+      "height": 32
+    }
+  ]
+}

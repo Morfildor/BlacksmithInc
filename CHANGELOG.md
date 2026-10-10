@@ -8,6 +8,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
+- New owner art for the six backgrounds and wall and floor tiles, the eight workshop props (furnace states, anvil, tool rack, shelf, siege walls) and sixteen icons (rarity and flaw badges, Integrity, Militia, Reputation, Purse, Settings, the Gazette, Home and Legacy tabs, the hero markers).
 - New owner art for all eight blessings (the blessing choice, the Town panel and the Shop).
 - New owner art for all sixteen materials and seven icons (day, energy, gold and the Forge, Market, Town and Journal tabs).
 - New painted vignettes on the shop-day banners: the ruined forge on "The forge has fallen", the dawn at the open door on the "Day N" card and the gatehouse on a held siege (they replace the plain backdrops there).

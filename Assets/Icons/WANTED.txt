@@ -8,33 +8,18 @@ Any resolution is fine if it is a clean multiple of the listed in-game size; nat
 Status as of 2026-10-10. Pieces already delivered and in the game are not listed as wanted: do not resend them.
 
 DELIVERED AND IN THE GAME (do not resend)
-  icon_day, icon_energy, icon_gold (24x24); icon_nav_forge, icon_nav_journal, icon_nav_market, icon_nav_town (40x40).
+  icon_day, icon_energy, icon_gold, icon_integrity, icon_militia, icon_reputation (24x24)
+  icon_nav_forge, icon_nav_gazette, icon_nav_home, icon_nav_journal, icon_nav_legacy, icon_nav_market, icon_nav_town,
+  icon_purse, icon_settings (40x40)
+  badge_common, badge_uncommon, badge_rare, badge_epic, badge_legendary, badge_flaw (24x24)
+  marker_dead, marker_retired (8x8)
+  (the newest 16 arrived at 2x the in-game size and are used as delivered)
 
-DELIVERED, NOT IN THE GAME YET (do not resend; they wait for a place in the screens)
+DELIVERED, NOT IN THE GAME YET (do not resend; they wait for a screen that can show them)
   icon_action_commission, icon_action_donate, icon_action_hone, icon_action_legacy,
-  icon_action_price, icon_action_scrap, icon_action_storage, icon_action_supplies (48x48).
+  icon_action_price, icon_action_scrap, icon_action_storage, icon_action_supplies (48x48)
+  icon_visitor (40x40), icon_relic (24x24), icon_trait_long_assault (40x40), icon_trait_many_breaches (40x40),
+  icon_promised (24x24)
 
-STILL WANTED (in the game today, art to be replaced)
-  icon_integrity                          24x24
-  icon_militia                            24x24
-  icon_reputation                         24x24
-  icon_nav_gazette                        40x40
-  icon_nav_home                           40x40
-  icon_nav_legacy                         40x40
-  icon_purse                              40x40
-  icon_settings                           40x40
-  badge_common                            24x24
-  badge_uncommon                          24x24
-  badge_rare                              24x24
-  badge_epic                              24x24
-  badge_legendary                         24x24
-  badge_flaw                              24x24
-  marker_dead                             8x8
-  marker_retired                          8x8
-
-OPTIONAL, NEW WITH THE VISITORS UPDATE (not in the game yet; text stands in today)
-  icon_visitor                            40x40   Shop card "A visitor at the forge" (a figure at a door, or a knocker)
-  icon_relic                              24x24   heading of the Workshop relics row on the Shop
-  icon_trait_long_assault                 40x40   siege trait in Town: a fight that lasts till dawn, blades wearing down
-  icon_trait_many_breaches                40x40   siege trait in Town: the wall broken in several places at once
-  icon_promised                           24x24   badge on a stored blade that is kept for an order
+STILL WANTED
+  Nothing.

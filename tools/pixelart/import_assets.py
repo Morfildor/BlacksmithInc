@@ -98,7 +98,9 @@ HEROES_SHEET = "Assets/Implemented/heroes"
 OWNER_ROOT = ROOT / "Assets/Implemented"
 OWNER_PACKS = {
     "day_art": ("art_day_",),
-    "icons": ("icon_",),
+    "icons": ("icon_", "badge_", "marker_"),
+    "backgrounds": ("bg_", "tile_"),
+    "scene": ("furnace_", "anvil", "tool_rack", "shelf", "siege_wall"),
     "materials": ("material_",),
     "blessings": ("blessing_",),
 }

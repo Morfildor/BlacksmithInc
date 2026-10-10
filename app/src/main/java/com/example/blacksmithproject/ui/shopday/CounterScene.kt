@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.blacksmithproject.R
+import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.heroUpgraded
 import com.example.blacksmithproject.ui.theme.SceneCream
@@ -113,7 +114,7 @@ fun PortraitTile(face: FaceUi, scale: Int, modifier: Modifier = Modifier, frame:
     ) {
         val res = faceRes(face)
         if (res != null) PixelSprite(res, scale)
-        else Box(Modifier.size(with(LocalDensity.current) { (64 * scale).toDp() }), contentAlignment = Alignment.Center) { PixelSprite(R.drawable.icon_purse, scale) }
+        else Box(Modifier.size(with(LocalDensity.current) { (64 * scale).toDp() }), contentAlignment = Alignment.Center) { PixelImage(R.drawable.icon_purse, with(LocalDensity.current) { (40 * scale).toDp() }, description = null) }
     }
 }
 
@@ -206,8 +207,10 @@ fun WeaponSlot(blade: WeaponSnapshot, price: Int, state: SlotState, reducedMotio
         val sprite = Sprites.weapon(blade.familyId, blade.coreId, blade.element, blade.rarity, signature = blade.signatureId != null)
         PixelSprite(sprite, scale, alpha = when (state) { SlotState.GONE -> 0.12f; SlotState.SOLD_NOW -> 0.4f; else -> 1f })
         if (!gone) {
-            PixelSprite(Sprites.badge(blade.rarity), pip, Modifier.align(Alignment.TopStart))
-            if (blade.flaws.isNotEmpty()) PixelSprite(Sprites.badgeFlaw, pip, Modifier.align(Alignment.TopEnd))
+            // The badges are 48 px art for a 24 px slot: drawn at the pip's size, not at a whole-number scale of their own.
+            val badgeSize = with(LocalDensity.current) { (24 * pip).toDp() }
+            PixelImage(Sprites.badge(blade.rarity), badgeSize, description = null, modifier = Modifier.align(Alignment.TopStart))
+            if (blade.flaws.isNotEmpty()) PixelImage(Sprites.badgeFlaw, badgeSize, description = null, modifier = Modifier.align(Alignment.TopEnd))
         }
         Text(
             if (gone) "sold" else "$price",

@@ -36,12 +36,12 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | faction_hollowbound_wraith | 112×112 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=hollowbound, variant=elite |
 | faction_embermaw_whelp | 80×80 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=embermaw_brood |
 | faction_embermaw_drake | 112×112 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=embermaw_brood, variant=elite |
-| badge_common | 24×24 | badge | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png | rarity=COMMON |
-| badge_uncommon | 24×24 | badge | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png | rarity=UNCOMMON |
-| badge_rare | 24×24 | badge | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png | rarity=RARE |
-| badge_epic | 24×24 | badge | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png | rarity=EPIC |
-| badge_legendary | 24×24 | badge | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png | rarity=LEGENDARY |
-| badge_flaw | 24×24 | badge | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png | meaning=flaw |
+| badge_common | 48×48 | badge | imported: script-drawn pack | pack:icons | rarity=COMMON |
+| badge_uncommon | 48×48 | badge | imported: script-drawn pack | pack:icons | rarity=UNCOMMON |
+| badge_rare | 48×48 | badge | imported: script-drawn pack | pack:icons | rarity=RARE |
+| badge_epic | 48×48 | badge | imported: script-drawn pack | pack:icons | rarity=EPIC |
+| badge_legendary | 48×48 | badge | imported: script-drawn pack | pack:icons | rarity=LEGENDARY |
+| badge_flaw | 48×48 | badge | imported: script-drawn pack | pack:icons | meaning=flaw |
 | material_iron | 48×48 | material | imported: script-drawn pack | pack:materials | material=iron, category=CORE |
 | material_bronze | 48×48 | material | imported: script-drawn pack | pack:materials | material=bronze, category=CORE |
 | material_silver | 48×48 | material | imported: script-drawn pack | pack:materials | material=silver, category=CORE |
@@ -69,24 +69,24 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | ember_0 | 32×32 | fx | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | frames=1 |
 | ember_1 | 32×32 | fx | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | frames=1 |
 | ember_2 | 32×32 | fx | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | frames=1 |
-| tile_wall | 64×64 | background | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | tile=True |
-| tile_floor | 64×32 | background | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | tile=True |
+| tile_wall | 64×64 | background | imported: script-drawn pack | pack:backgrounds | tile=True |
+| tile_floor | 64×32 | background | imported: script-drawn pack | pack:backgrounds | tile=True |
 | tile_paper | 64×64 | ui | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | tile=True |
 | panel_gazette | 256×126 | ui | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | tile=True |
 | panel_journal | 256×163 | ui | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | tile=True |
-| furnace_cold | 77×96 | scene | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | anchor=bottom-left, state=cold |
-| furnace_warm | 79×96 | scene | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | anchor=bottom-left, state=warm |
-| furnace_hot | 80×96 | scene | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | anchor=bottom-left, state=hot |
-| anvil | 109×72 | scene | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | anchor=bottom-left |
-| tool_rack | 54×88 | scene | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | anchor=top-left |
-| shelf | 122×64 | scene | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | anchor=bottom-left |
+| furnace_cold | 77×96 | scene | imported: script-drawn pack | pack:scene | anchor=bottom-left, state=cold |
+| furnace_warm | 79×96 | scene | imported: script-drawn pack | pack:scene | anchor=bottom-left, state=warm |
+| furnace_hot | 80×96 | scene | imported: script-drawn pack | pack:scene | anchor=bottom-left, state=hot |
+| anvil | 109×72 | scene | imported: script-drawn pack | pack:scene | anchor=bottom-left |
+| tool_rack | 54×88 | scene | imported: script-drawn pack | pack:scene | anchor=top-left |
+| shelf | 122×64 | scene | imported: script-drawn pack | pack:scene | anchor=bottom-left |
 | art_day_fallen_forge | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
 | art_day_new_dawn | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
 | art_day_siege_victory | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
-| bg_counter_forge | 540×270 | bg | imported: AI-generated sheet | approved_hybrid_direction.png |  |
-| bg_forge_night | 232×211 | bg | imported: AI-generated sheet | Tiny Blacksmith RPG Asset Atlas.png |  |
-| bg_run_end_fallen_forge | 270×150 | bg | imported: script-drawn pack | pack:Tiny_Blacksmith_UI_Backgrounds_v3 |  |
-| bg_title_workshop_night | 270×150 | bg | imported: script-drawn pack | pack:Tiny_Blacksmith_UI_Backgrounds_v3 |  |
+| bg_counter_forge | 540×270 | bg | imported: script-drawn pack | pack:backgrounds |  |
+| bg_forge_night | 232×211 | bg | imported: script-drawn pack | pack:backgrounds |  |
+| bg_run_end_fallen_forge | 270×150 | bg | imported: script-drawn pack | pack:backgrounds |  |
+| bg_title_workshop_night | 270×150 | bg | imported: script-drawn pack | pack:backgrounds |  |
 | ember_3 | 32×32 | ember | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png |  |
 | faction_ashclaw_alt_0 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
 | faction_ashclaw_alt_1 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
@@ -121,20 +121,20 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | icon_day | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_energy | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_gold | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_integrity | 24×24 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
-| icon_militia | 24×24 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
+| icon_integrity | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_militia | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_nav_forge | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_nav_gazette | 40×40 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
-| icon_nav_home | 40×40 | icon | imported: AI-generated sheet | Tiny Blacksmith RPG Asset Atlas.png |  |
+| icon_nav_gazette | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_nav_home | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_nav_journal | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_nav_legacy | 40×40 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
+| icon_nav_legacy | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_nav_market | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_nav_town | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_purse | 40×40 | icon | imported: AI-generated sheet | Tiny Blacksmith RPG Asset Atlas.png |  |
-| icon_reputation | 24×24 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
-| icon_settings | 40×40 | icon | imported: AI-generated sheet | Tiny Blacksmith RPG Asset Atlas.png |  |
-| marker_dead | 8×8 | marker | imported: script-drawn pack | pack:New folder | anchor=top-left, notes=Gravestone |
-| marker_retired | 8×8 | marker | imported: script-drawn pack | pack:New folder | anchor=top-left, notes=Laurel wreath |
+| icon_purse | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_reputation | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_settings | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
+| marker_dead | 16×16 | marker | imported: script-drawn pack | pack:icons |  |
+| marker_retired | 16×16 | marker | imported: script-drawn pack | pack:icons |  |
 | monster_ashclaw_brute_attack_0 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Combat attack frame |
 | monster_ashclaw_brute_attack_1 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Combat attack frame |
 | monster_ashclaw_brute_hit | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Combat hit frame |
@@ -265,8 +265,8 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | portrait_warden_2 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 59] |
 | portrait_warden_3 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 62] |
 | portrait_warden_4 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 60] |
-| siege_wall | 96×32 | siege | imported: script-drawn pack | pack:New folder | anchor=tile, notes=Siege backdrop 96x32 |
-| siege_wall_damaged | 96×32 | siege | imported: script-drawn pack | pack:New folder | anchor=tile, notes=Siege backdrop 96x32 |
+| siege_wall | 96×32 | siege | imported: script-drawn pack | pack:scene |  |
+| siege_wall_damaged | 96×32 | siege | imported: script-drawn pack | pack:scene |  |
 | weapon_axe_base_1 | 56×56 | weapon | imported: AI-generated sheet | Weapons master |  |
 | weapon_axe_base_2 | 56×56 | weapon | imported: AI-generated sheet | Weapons master |  |
 | weapon_axe_base_3 | 56×56 | weapon | imported: AI-generated sheet | Weapons master |  |

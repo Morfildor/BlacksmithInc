@@ -131,68 +131,68 @@
     {
       "id": "badge_common",
       "file": "drawable-nodpi/badge_common.png",
-      "width": 24,
-      "height": 24,
+      "width": 48,
+      "height": 48,
       "layer": "badge",
       "rarity": "COMMON",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "badge_uncommon",
       "file": "drawable-nodpi/badge_uncommon.png",
-      "width": 24,
-      "height": 24,
+      "width": 48,
+      "height": 48,
       "layer": "badge",
       "rarity": "UNCOMMON",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "badge_rare",
       "file": "drawable-nodpi/badge_rare.png",
-      "width": 24,
-      "height": 24,
+      "width": 48,
+      "height": 48,
       "layer": "badge",
       "rarity": "RARE",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "badge_epic",
       "file": "drawable-nodpi/badge_epic.png",
-      "width": 24,
-      "height": 24,
+      "width": 48,
+      "height": 48,
       "layer": "badge",
       "rarity": "EPIC",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "badge_legendary",
       "file": "drawable-nodpi/badge_legendary.png",
-      "width": 24,
-      "height": 24,
+      "width": 48,
+      "height": 48,
       "layer": "badge",
       "rarity": "LEGENDARY",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "badge_flaw",
       "file": "drawable-nodpi/badge_flaw.png",
-      "width": 24,
-      "height": 24,
+      "width": 48,
+      "height": 48,
       "layer": "badge",
       "meaning": "flaw",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_iron",
@@ -515,8 +515,8 @@
       "layer": "background",
       "tile": true,
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:backgrounds",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "tile_floor",
@@ -526,8 +526,8 @@
       "layer": "background",
       "tile": true,
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:backgrounds",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "tile_paper",
@@ -571,8 +571,8 @@
       "layer": "scene",
       "state": "cold",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:scene",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "furnace_warm",
@@ -583,8 +583,8 @@
       "layer": "scene",
       "state": "warm",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:scene",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "furnace_hot",
@@ -595,8 +595,8 @@
       "layer": "scene",
       "state": "hot",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:scene",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "anvil",
@@ -606,8 +606,8 @@
       "anchor": "bottom-left",
       "layer": "scene",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:scene",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "tool_rack",
@@ -617,8 +617,8 @@
       "anchor": "top-left",
       "layer": "scene",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:scene",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "shelf",
@@ -628,8 +628,8 @@
       "anchor": "bottom-left",
       "layer": "scene",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:scene",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "art_day_fallen_forge",
@@ -668,8 +668,8 @@
       "height": 270,
       "layer": "bg",
       "source": "imported",
-      "sourceSheet": "approved_hybrid_direction.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:backgrounds",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "bg_forge_night",
@@ -678,8 +678,8 @@
       "height": 211,
       "layer": "bg",
       "source": "imported",
-      "sourceSheet": "Tiny Blacksmith RPG Asset Atlas.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:backgrounds",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "bg_run_end_fallen_forge",
@@ -688,7 +688,7 @@
       "height": 150,
       "layer": "bg",
       "source": "imported",
-      "sourceSheet": "pack:Tiny_Blacksmith_UI_Backgrounds_v3",
+      "sourceSheet": "pack:backgrounds",
       "sourceKind": "script_drawn_pack"
     },
     {
@@ -698,7 +698,7 @@
       "height": 150,
       "layer": "bg",
       "source": "imported",
-      "sourceSheet": "pack:Tiny_Blacksmith_UI_Backgrounds_v3",
+      "sourceSheet": "pack:backgrounds",
       "sourceKind": "script_drawn_pack"
     },
     {
@@ -1116,22 +1116,22 @@
     {
       "id": "icon_integrity",
       "file": "drawable-nodpi/icon_integrity.png",
-      "width": 24,
-      "height": 24,
+      "width": 48,
+      "height": 48,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_militia",
       "file": "drawable-nodpi/icon_militia.png",
-      "width": 24,
-      "height": 24,
+      "width": 48,
+      "height": 48,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_nav_forge",
@@ -1146,22 +1146,22 @@
     {
       "id": "icon_nav_gazette",
       "file": "drawable-nodpi/icon_nav_gazette.png",
-      "width": 40,
-      "height": 40,
+      "width": 80,
+      "height": 80,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_nav_home",
       "file": "drawable-nodpi/icon_nav_home.png",
-      "width": 40,
-      "height": 40,
+      "width": 80,
+      "height": 80,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "Tiny Blacksmith RPG Asset Atlas.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_nav_journal",
@@ -1176,12 +1176,12 @@
     {
       "id": "icon_nav_legacy",
       "file": "drawable-nodpi/icon_nav_legacy.png",
-      "width": 40,
-      "height": 40,
+      "width": 80,
+      "height": 80,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_nav_market",
@@ -1206,56 +1206,52 @@
     {
       "id": "icon_purse",
       "file": "drawable-nodpi/icon_purse.png",
-      "width": 40,
-      "height": 40,
+      "width": 80,
+      "height": 80,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "Tiny Blacksmith RPG Asset Atlas.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_reputation",
       "file": "drawable-nodpi/icon_reputation.png",
-      "width": 24,
-      "height": 24,
+      "width": 48,
+      "height": 48,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_settings",
       "file": "drawable-nodpi/icon_settings.png",
-      "width": 40,
-      "height": 40,
+      "width": 80,
+      "height": 80,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "Tiny Blacksmith RPG Asset Atlas.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "marker_dead",
       "file": "drawable-nodpi/marker_dead.png",
-      "width": 8,
-      "height": 8,
+      "width": 16,
+      "height": 16,
       "layer": "marker",
       "source": "imported",
-      "sourceSheet": "pack:New folder",
-      "sourceKind": "script_drawn_pack",
-      "anchor": "top-left",
-      "notes": "Gravestone"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "marker_retired",
       "file": "drawable-nodpi/marker_retired.png",
-      "width": 8,
-      "height": 8,
+      "width": 16,
+      "height": 16,
       "layer": "marker",
       "source": "imported",
-      "sourceSheet": "pack:New folder",
-      "sourceKind": "script_drawn_pack",
-      "anchor": "top-left",
-      "notes": "Laurel wreath"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "monster_ashclaw_brute_attack_0",
@@ -2804,10 +2800,8 @@
       "height": 32,
       "layer": "siege",
       "source": "imported",
-      "sourceSheet": "pack:New folder",
-      "sourceKind": "script_drawn_pack",
-      "anchor": "tile",
-      "notes": "Siege backdrop 96x32"
+      "sourceSheet": "pack:scene",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "siege_wall_damaged",
@@ -2816,10 +2810,8 @@
       "height": 32,
       "layer": "siege",
       "source": "imported",
-      "sourceSheet": "pack:New folder",
-      "sourceKind": "script_drawn_pack",
-      "anchor": "tile",
-      "notes": "Siege backdrop 96x32"
+      "sourceSheet": "pack:scene",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "weapon_axe_base_1",
