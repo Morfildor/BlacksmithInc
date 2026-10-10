@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,6 +29,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -53,6 +55,7 @@ import kotlinx.coroutines.delay
  * replay is open), with TalkBack exploring, or while the activity is not resumed. A tap anywhere is Next, except on
  * the cards that end the day, where only the wide button acts (Begin day, See the legacy, Decide later); Back steps
  * one beat and never closes the day; Skip day is one tap. [onWatchFight] passes the replay's event ID, null for the siege.
+ * [coach] is the first-run line that says so, shown above the controls while the caller passes it.
  */
 @Composable
 fun ShopDayScreen(
@@ -72,6 +75,7 @@ fun ShopDayScreen(
     onWatchFight: (String?) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    coach: String? = null,
 ) {
     val at = position.coerceIn(0, model.beats.lastIndex)
     val beat = model.beats[at]
@@ -134,6 +138,9 @@ fun ShopDayScreen(
                         }
                     }
                 }
+            }
+            coach?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md).testTag("shopday_coach"))
             }
             // One wide button is always the way forward; on the last cards it is the choice that ends the day.
             ShopDayControls(

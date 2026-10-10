@@ -8,6 +8,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
+- The first time a customer comes to the counter, one line under the card says how the day is watched ("Tap anywhere to continue · Skip day jumps to the evening"). It goes once you move on and does not come back.
 - The Legend Board (Records, Legacy) tells each blade in full: its era, victories and fame, what was worked into it, who carried it and its story; an entry from before a blade's make was recorded says its properties are lost to time.
 - A signature's row in the Journal shows its clue ladder (recipe, catalyst, temper, finish): each clue earned in the journal's words, each one still missing as "not yet known". A found signature has "Use this recipe", which fills the forge with its family, metals, catalyst and temper.
 - A blade's sheet has a "Story": what is worth telling of it, oldest first (its forging, its first victory and first siege, sales, names earned, its return in a later era), above the full History. A legend that came back with its properties asleep shows them under a gold "◆ Dormant" line, apart from its buffs, on its card and on its shelf or storage row, with what wakes them.

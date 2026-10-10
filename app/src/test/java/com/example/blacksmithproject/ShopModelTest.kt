@@ -1,12 +1,15 @@
 package com.example.blacksmithproject
 
 import com.example.blacksmithproject.ui.detail.itemDetail
+import com.example.blacksmithproject.ui.Tips
+import com.example.blacksmithproject.ui.leadActionLabel
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.shopday.Beat
 import com.example.blacksmithproject.ui.shopday.toUi
 import com.tinyblacksmith.core.content.AffixKind
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.shopday.Demand
+import com.tinyblacksmith.core.shopday.LeadKind
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import org.junit.Assert.assertEquals
@@ -47,6 +50,19 @@ class ShopModelTest : ShopDayTestBase() {
         assertEquals(listOf(marked.power, marked.quality, 35), row.stats.map { it.value })   // an unsung blade's renown of 0 is left out
         assertEquals(card.affixes.map { it.name }, row.buffs)
         assertEquals(card.flaws.map { it.name }, row.flaws)
+    }
+
+    /** A new game (A01): the Shop opens on the first-blade lead with its reason, and the lead's button goes to the forge. */
+    @Test
+    fun dayOneLeadsWithForgeYourFirstBlade() = vmTest {
+        val vm = open(repo(fresh))
+        val lead = vm.playing().shop.lead
+        assertEquals(LeadKind.FIRST_BLADE, lead.kind)
+        assertEquals("Forge your first blade" to "${fresh.aliveHeroes().size} heroes in Emberfall and nothing on the shelf.", lead.action to lead.reason)
+        assertEquals("Go to the forge", leadActionLabel(lead.kind))
+        assertEquals("a new game opens on the Shop", Dest.SHOP, vm.playing().dest)
+        // The coach line of the first counter visit is a tip like the others: unseen on a new install, and never a banner of a destination.
+        assertTrue(Tips.COUNTER.id in Tips.ALL && Dest.entries.none { Tips.COUNTER in Tips.forDest(it) })
     }
 
     @Test

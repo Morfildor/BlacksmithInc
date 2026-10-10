@@ -230,7 +230,9 @@ object Tips {
     val FORGE = Tip("forge", "Pick a family, a core and an augment, then forge. Every valid forge yields a usable weapon.")
     val END_DAY = Tip("end_day", "At End Day heroes shop, then fight or rest, and factions press on the town. Read it all in the Gazette.")
     val MARKET = Tip("market", "Heroes buy what suits them and their purse. List weapons here at a price you like.")
-    val ORDER = listOf(FORGE, END_DAY, MARKET)
+    /** Not a banner: one line under the first customer of the first shop day the player watches (`ShopDayHost`). */
+    val COUNTER = Tip("counter", "Tap anywhere to continue · Skip day jumps to the evening")
+    val ORDER = listOf(FORGE, END_DAY, MARKET, COUNTER)
     val ALL = ORDER.map { it.id }.toSet()
     fun forDest(d: Dest): List<Tip> = when (d) { Dest.FORGE -> listOf(FORGE, END_DAY); Dest.SHOP -> listOf(MARKET); else -> emptyList() }
 }

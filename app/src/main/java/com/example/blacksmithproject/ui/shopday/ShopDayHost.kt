@@ -19,6 +19,7 @@ import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.DayReportDialog
 import com.example.blacksmithproject.ui.ErrorDialog
+import com.example.blacksmithproject.ui.Tips
 import com.example.blacksmithproject.ui.detail.HeroDetailSheet
 import com.example.blacksmithproject.ui.detail.ItemDetailSheet
 import com.example.blacksmithproject.ui.detail.customerSnapshot
@@ -41,6 +42,13 @@ fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel) {
     // A fight being watched is the screen's own state, like the motion inside a card: null, or the replay's event ID ("" = the siege).
     var watching by rememberSaveable(s.script.day) { mutableStateOf<String?>(null) }
     val day = s.state.lastResolution
+    // The controls are explained once (GDD 3.3 onboarding): under the first customer the player ever watches, and the
+    // line counts as seen when they move on from that card. Seen until settings have loaded, so it never flashes.
+    val seenTips by vm.settings.seenTips.collectAsStateWithLifecycle(initialValue = Tips.ALL)
+    val coaching = Tips.COUNTER.id !in seenTips
+    val atFirstVisit = !s.resumed && s.position.at == model.beats.indexOfFirst { it is Beat.Visit }
+    var coached by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(coaching, atFirstVisit) { if (coaching && atFirstVisit) coached = true else if (coaching && coached) vm.dismissTip(Tips.COUNTER.id) }
     val replay = watching?.let { id -> day?.replays?.firstOrNull { if (id.isEmpty()) it.kind == ReplayKind.SIEGE else it.eventId == id } }
 
     BackHandler(enabled = s.backIsConsumed || replay != null) { if (replay != null) watching = null else vm.back() }
@@ -64,6 +72,7 @@ fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel) {
         onOpenGazette = vm::openGazette,
         onWatchFight = { watching = it ?: "" },
         onClose = vm::acknowledge,
+        coach = Tips.COUNTER.body.takeIf { coaching && atFirstVisit },
     )
     // Read-only here: the day is over and tomorrow's stock is planned on the Shop screen. The counter snapshot comes first.
     val openHero = { id: HeroId -> vm.openSheet(Sheet.Hero(id)) }
