@@ -65,7 +65,7 @@ class ForgeShortcutTest : ShopDayTestBase() {
         val tied = fresh.copy(legacy = fresh.legacy.copy(upgrades = mapOf(LaunchContent.UPG_CATALOG to 2)))
         assertEquals(listOf("Caravan Ties: ${2 * engine.config.legacyTracks.catalogStockPerLevel} more each day"), engine.supplyNotes(tied, rare))
         val merchant = fresh.copy(worldFlags = mapOf(WorldEvents.FLAG_ORE_MERCHANT + rare.id.value to fresh.day))
-        assertEquals(listOf("Ore merchant in town: ${WorldEvents.ORE_MERCHANT_STOCK} more today"), engine.supplyNotes(merchant, rare))
+        assertEquals(listOf("Ore merchant in town: ${engine.config.worldEvents.oreMerchantStock} more today"), engine.supplyNotes(merchant, rare))
         assertTrue("yesterday's merchant is gone", engine.supplyNotes(fresh.copy(worldFlags = mapOf(WorldEvents.FLAG_ORE_MERCHANT + rare.id.value to fresh.day - 1)), rare).isEmpty())
         assertEquals(1, engine.supplyNotes(fresh.copy(worldFlags = mapOf(WorldEvents.FLAG_CARAVAN_DELAYED to fresh.day)), rare).size)
         assertTrue("a metal that is always in stock has no note", engine.supplyNotes(tied.copy(worldFlags = merchant.worldFlags), common).isEmpty())
