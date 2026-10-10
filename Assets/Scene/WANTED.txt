@@ -1,11 +1,19 @@
 Assets/Scene
-Workshop props drawn over a background: furnace states, anvil, tool rack, shelf, siege wall.
+Workshop props drawn over a background, and the shop-day banner vignettes.
 
 File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
-IDs in the game today (8), with the current in-game size:
+Status as of 2026-10-10. Pieces already delivered and in the game are not listed as wanted: do not resend them.
+
+DELIVERED AND IN THE GAME (do not resend)
+  art_day_fallen_forge, art_day_new_dawn, art_day_siege_victory (128x64, transparent): the shop-day banners.
+
+DELIVERED, NOT IN THE GAME YET (do not resend; they wait for a place on a card)
+  art_day_till, art_day_sale_receipt, art_day_rumour (128x64).
+
+STILL WANTED (in the game today, art to be replaced)
   furnace_cold                            77x96
   furnace_warm                            79x96
   furnace_hot                             80x96
@@ -14,9 +22,3 @@ IDs in the game today (8), with the current in-game size:
   shelf                                   122x64
   siege_wall                              96x32
   siege_wall_damaged                      96x32
-
-Delivered, not implemented yet (2026-10-10): Assets/Scene/art_day_unwired/ holds three shop-day vignettes (128x64, transparent)
-that no screen slot uses yet. Each needs a place on a card; nothing is imported until one is chosen.
-  art_day_till                            128x64  chest of coins: the day's takings (Tally card)
-  art_day_sale_receipt                    128x64  scroll, seal and coins: the receipt (Close card)
-  art_day_rumour                          128x64  sealed letter and lantern: a rumour (no card yet)

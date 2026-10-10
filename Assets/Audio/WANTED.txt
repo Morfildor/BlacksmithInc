@@ -5,3 +5,4 @@ File rules: PNG with a transparent background unless the piece is a full scene o
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
+Status as of 2026-10-10: nothing in this folder is delivered yet; everything above is still wanted.

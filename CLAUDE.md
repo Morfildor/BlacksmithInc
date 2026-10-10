@@ -36,7 +36,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   `tools/pixelart/overrides.json`: concept sheets in `Pixel art assets/` (sliced by cell layout, rich 64 px icons
   and the forge scene), the weapon master sheet (`Weapons master`, 6 families × 7 element rows × 8 levels, sliced into
   336 sprites and the generated `ui/WeaponArt.kt` lookup), loose `<id>.png` files, the owner's hero portrait set
-  (`Assets/Heroes`, 20 heroes with a base and an upgraded face, `--heroes PATH`; the folder is not committed and the step is
+  (`Assets/Implemented/heroes`, 20 heroes with a base and an upgraded face, `--heroes PATH`; the folder is committed and the step is
   skipped without it), and the artist's 1x production pack (a subfolder with
   `drawable-nodpi/` + `manifest.json`), from which only battle frames, siege wall, milestone burst and hero markers
   are taken by default (`--pack-all` takes everything). `generate_assets.py` draws placeholders only for IDs without

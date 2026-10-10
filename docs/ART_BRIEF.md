@@ -72,13 +72,13 @@ The game draws heroes from one set of 20: `portrait_hero_01` to `portrait_hero_2
 guardian 5 (01, 06, 09, 11, 16), ranger 4 (02, 07, 12, 17), duelist 4 (03, 10, 13, 18), battlemage 4 (04, 08, 14, 19),
 warden 3 (05, 15, 20). A class with fewer faces repeats them sooner; more faces for warden first.
 
-Provenance: the set was supplied by the owner as the folder `Assets/Heroes/` (40 PNGs, `manifest.json`, `README.txt`).
+Provenance: the set was supplied by the owner as the folder `Assets/Implemented/heroes/` (40 PNGs, `manifest.json`, `README.txt`).
 Its README describes the portraits as generated: heroes 01-10 as 1254 px renders, heroes 11-20 as native 64 px
 tiles. They are AI-generated images, imported and resized by `tools/pixelart/import_assets.py`; nothing is hand-drawn
 or retouched. The folder is not in Git (large sources); only the 64 px imports are. To re-import:
 
 ```
-python tools/pixelart/import_assets.py --heroes "<path>/Assets/Heroes"   # default <repo root>/Assets/Heroes, or TINY_BLACKSMITH_HEROES
+python tools/pixelart/import_assets.py --heroes "<path>/Assets/Implemented/heroes"   # default <repo root>/Assets/Implemented/heroes, or TINY_BLACKSMITH_HEROES
 python tools/pixelart/generate_assets.py
 ```
 

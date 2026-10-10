@@ -36,7 +36,7 @@ optional: pass `--atlas PATH` when it is not in the folder; without it its earli
 lookup `ui/PortraitArt.kt` is regenerated on every run.
 
 The hero portrait set (20 heroes, a base and an upgraded face each) is read from a folder that is not in Git:
-`--heroes PATH`, else the environment variable TINY_BLACKSMITH_HEROES, else `<repo root>/Assets/Heroes` (`manifest.json`
+`--heroes PATH`, else the environment variable TINY_BLACKSMITH_HEROES, else `<repo root>/Assets/Implemented/heroes` (`manifest.json`
 plus `hero_XX_<class>_<base|upgraded>.png`). Each file becomes the opaque tile `portrait_hero_XX` or
 `portrait_hero_XX_up`: a 64 px file is taken as it is, a larger render is reduced to HERO_BOX and HERO_COLOURS; the
 heroes in HERO_SMALL also get a tighter `_sm` tile for small list rows. When the folder is
@@ -91,8 +91,8 @@ TILE_INSET = 3
 # The second face set stays out of the appearance pool until it has been verified on a device (PortraitArt.kt).
 SECOND_SET_ENABLED = False
 # The hero set lives outside Git (see the module text). Its tiles are HERO_BOX px: ten of the heroes are supplied at that size.
-HEROES_DIR = Path(os.environ.get("TINY_BLACKSMITH_HEROES") or ROOT / "Assets/Heroes")
-HEROES_SHEET = "Assets/Heroes"
+HEROES_DIR = Path(os.environ.get("TINY_BLACKSMITH_HEROES") or ROOT / "Assets/Implemented/heroes")
+HEROES_SHEET = "Assets/Implemented/heroes"
 # The owner's delivered pieces that the game uses (Assets/Implemented/<name>): taken verbatim from the drawable-nodpi
 # subfolder, by ID prefix. New deliveries stay in Assets/<kind>/ until they are wired in, then move here.
 OWNER_ROOT = ROOT / "Assets/Implemented"
@@ -663,7 +663,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--sheet", type=int, default=None)
     ap.add_argument("--atlas", type=Path, default=SRC / ATLAS_NAME, help="path of the asset atlas when it is not in 'Pixel art assets/'")
-    ap.add_argument("--heroes", type=Path, default=HEROES_DIR, help="folder of the hero portrait set (default: TINY_BLACKSMITH_HEROES, else Assets/Heroes)")
+    ap.add_argument("--heroes", type=Path, default=HEROES_DIR, help="folder of the hero portrait set (default: TINY_BLACKSMITH_HEROES, else Assets/Implemented/heroes)")
     ap.add_argument("--accept-changed-sources", action="store_true", help="import although a source differs from the file its cells were measured on")
     args = ap.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)

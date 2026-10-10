@@ -1894,7 +1894,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_01_guardian_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_01_guardian_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -1904,7 +1904,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_01_guardian_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_01_guardian_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -1914,7 +1914,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_02_ranger_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_02_ranger_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -1924,7 +1924,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_02_ranger_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_02_ranger_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -1934,7 +1934,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_03_duelist_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_03_duelist_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -1944,7 +1944,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_03_duelist_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_03_duelist_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -1954,7 +1954,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_04_battlemage_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_04_battlemage_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -1964,7 +1964,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_04_battlemage_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_04_battlemage_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -1974,7 +1974,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_05_warden_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_05_warden_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -1984,7 +1984,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_05_warden_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_05_warden_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -1994,7 +1994,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_06_guardian_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_06_guardian_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2004,7 +2004,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_06_guardian_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_06_guardian_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2014,7 +2014,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_07_ranger_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_07_ranger_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2024,7 +2024,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_07_ranger_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_07_ranger_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2034,7 +2034,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_08_battlemage_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_08_battlemage_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2044,7 +2044,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_08_battlemage_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_08_battlemage_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2054,7 +2054,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_09_guardian_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_09_guardian_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2064,7 +2064,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_09_guardian_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_09_guardian_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2074,7 +2074,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_10_duelist_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_10_duelist_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2084,7 +2084,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_10_duelist_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_10_duelist_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2094,7 +2094,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_11_guardian_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_11_guardian_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2104,7 +2104,7 @@
       "height": 48,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_11_guardian_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_11_guardian_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2114,7 +2114,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_11_guardian_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_11_guardian_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2124,7 +2124,7 @@
       "height": 48,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_11_guardian_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_11_guardian_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2134,7 +2134,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_12_ranger_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_12_ranger_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2144,7 +2144,7 @@
       "height": 48,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_12_ranger_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_12_ranger_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2154,7 +2154,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_12_ranger_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_12_ranger_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2164,7 +2164,7 @@
       "height": 48,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_12_ranger_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_12_ranger_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2174,7 +2174,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_13_duelist_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_13_duelist_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2184,7 +2184,7 @@
       "height": 48,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_13_duelist_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_13_duelist_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2194,7 +2194,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_13_duelist_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_13_duelist_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2204,7 +2204,7 @@
       "height": 48,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_13_duelist_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_13_duelist_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2214,7 +2214,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_14_battlemage_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_14_battlemage_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2224,7 +2224,7 @@
       "height": 48,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_14_battlemage_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_14_battlemage_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2234,7 +2234,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_14_battlemage_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_14_battlemage_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2244,7 +2244,7 @@
       "height": 48,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_14_battlemage_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_14_battlemage_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2254,7 +2254,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_15_warden_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_15_warden_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2264,7 +2264,7 @@
       "height": 48,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_15_warden_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_15_warden_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2274,7 +2274,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_15_warden_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_15_warden_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2284,7 +2284,7 @@
       "height": 48,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_15_warden_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_15_warden_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2294,7 +2294,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_16_guardian_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_16_guardian_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2304,7 +2304,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_16_guardian_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_16_guardian_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2314,7 +2314,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_17_ranger_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_17_ranger_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2324,7 +2324,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_17_ranger_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_17_ranger_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2334,7 +2334,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_18_duelist_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_18_duelist_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2344,7 +2344,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_18_duelist_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_18_duelist_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2354,7 +2354,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_19_battlemage_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_19_battlemage_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2364,7 +2364,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_19_battlemage_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_19_battlemage_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2374,7 +2374,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_20_warden_base.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_20_warden_base.png",
       "sourceKind": "ai_generated_portrait"
     },
     {
@@ -2384,7 +2384,7 @@
       "height": 64,
       "layer": "portrait",
       "source": "imported",
-      "sourceSheet": "Assets/Heroes/hero_20_warden_upgraded.png",
+      "sourceSheet": "Assets/Implemented/heroes/hero_20_warden_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {

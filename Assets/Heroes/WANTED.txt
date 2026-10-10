@@ -1,12 +1,18 @@
 Assets/Heroes
-Hero and townsfolk portraits. Already delivered: hero_XX_<class>_base.png and hero_XX_<class>_upgraded.png with manifest.json.
+Hero and townsfolk portraits, and the small hero battle frames.
 
 File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
-Still wanted here: small battle frames for the fight replay (current IDs below), and more wardens if you have them (3 faces now).
-IDs in the game today (20), with the current in-game size:
+Status as of 2026-10-10. Pieces already delivered and in the game are not listed as wanted: do not resend them.
+
+DELIVERED AND IN THE GAME (do not resend)
+  The 20 hero portraits, each with a base and an upgraded face (hero_01 .. hero_20, 64x64).
+
+STILL WANTED
+  Small battle frames for the fight replay, 16x16, two idle frames and two attack frames per class
+  (today these are placeholders drawn by script):
   hero_battlemage_attack_0                16x16
   hero_battlemage_attack_1                16x16
   hero_battlemage_idle_0                  16x16
@@ -28,11 +34,11 @@ IDs in the game today (20), with the current in-game size:
   hero_warden_idle_0                      16x16
   hero_warden_idle_1                      16x16
 
-New with the visitors update (2026-10-10): not in the game yet, optional. The screens work without them.
-Morning visitors who are not heroes of the town have no face today: their sheet shows text only. A visitor who is a
-hero (the defender asking for a blade on trust, the friend of a fallen hero, the debtor who returns) already uses
-that hero's own portrait and needs nothing new.
-Wanted, in the same framed tile style as the hero portraits (64x64 native), one face each, no upgraded state:
+  More wardens, if you have them (three warden faces exist now).
+
+OPTIONAL, NEW WITH THE VISITORS UPDATE (the screens work without them; text stands in today)
+  Morning visitors who are not heroes of the town have no face. Same framed tile style as the hero portraits,
+  64x64 native, one face each, no upgraded state. A visitor who is a hero already uses that hero's own portrait.
   visitor_carter                          64x64   The Last Crate: a road-worn carter with one crate left before a siege
   visitor_wandering_master                64x64   The Master's Afternoon: an old travelling master smith (a woman in the text)
   visitor_collector                       64x64   The Collector's Offer: a wealthy collector of famous blades

@@ -12,3 +12,5 @@ IDs in the game today (6), with the current in-game size:
   bg_title_workshop_night                 270x150
   tile_wall                               64x64
   tile_floor                              64x32
+
+Status as of 2026-10-10: nothing in this folder is delivered yet; everything above is still wanted.

@@ -5,7 +5,7 @@ File rules: PNG with a transparent background unless the piece is a full scene o
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
-New with the visitors update (2026-10-10): not in the game yet, optional. The relics are shown by name and text today.
+Status as of 2026-10-10: nothing delivered yet. New with the visitors update: not in the game yet, optional. The relics are shown by name and text today.
 Planned IDs (5), with the planned in-game size. Keep them apart from the blessing icons at a glance: a relic is an
 object that stays in the workshop for the whole run, a blessing is a five-day favour.
   relic_salvagers_crucible                48x48   a small crucible that gives a melted blade's augment back

@@ -8,3 +8,5 @@ Any resolution is fine if it is a clean multiple of the listed in-game size; nat
 IDs in the game today (336), with the current in-game size:
   weapon_<family>_<element>_<level>  56x56   families: axe bow dagger spear staff sword; levels 1-8
   elements: base fire frost grave storm sun verdant
+
+Status as of 2026-10-10: nothing in this folder is delivered yet; everything above is still wanted.

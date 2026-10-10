@@ -9,3 +9,5 @@ IDs in the game today (3), with the current in-game size:
   tile_paper                              64x64
   panel_gazette                           256x126
   panel_journal                           256x163
+
+Status as of 2026-10-10: nothing in this folder is delivered yet; everything above is still wanted.

@@ -1,1 +1,1 @@
-Implemented sources: moved here once the game uses them. Not wanted any more, kept for the importer and as source.
+Sources of art that is in the game: day_art, heroes, icons, materials. Read by tools/pixelart/import_assets.py. Not a wanted list; nothing to deliver here.
