@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -36,6 +39,9 @@ import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.battle.Battle
+import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.market.Market
+import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.heroes.Heroes
@@ -43,12 +49,28 @@ import com.tinyblacksmith.core.model.Hero
 import com.tinyblacksmith.core.model.HeroFate
 import kotlin.math.roundToInt
 
+/** Town: the threat, the champions and every adventurer, as one lazy list with a keyed row per hero. Rows open the hero's sheet. */
 @Composable
-fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
+fun TownPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier) {
+    val heroes = remember(s.state.heroes) { s.state.heroes.values.sortedWith(compareBy<Hero> { !it.isAlive }.thenByDescending { it.fame }) }
+    LazyColumn(modifier.fillMaxSize().testTag("town_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.lg)) {
+        item(key = "threat") { Column { TownThreat(s, vm) } }
+        item(key = "heroes_head") { SectionTitle("Adventurers (${s.state.aliveHeroes().size} alive)") }
+        itemsIndexed(heroes, key = { _, h -> "hero_${h.id.value}" }) { i, h ->
+            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HeroRow(h, s, vm)
+        }
+    }
+}
+
+/** The besieger, the other factions and the three champions. */
+@Composable
+private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
     val st = s.state
     val faction = st.factions.values.maxByOrNull { it.pressure }
     val daysLeft = st.town.nextSiegeDay - st.day
+    val forecast = remember(st) { vm.engine.siegeForecast(st) }
 
     // Header: the faction with the most pressure (the one the engine sends at the siege), numbers second.
     Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
@@ -62,7 +84,7 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 faction?.let { weakness(content.faction(it.id).weakTo) }?.let { Secondary(it, Modifier.padding(top = Space.xs)) }
-                vm.engine.siegeForecast(st)?.let { o ->
+                forecast?.let { o ->
                     val outlook = when (o.odds) {
                         Battle.SiegeOdds.STRONG -> "the town should hold"
                         Battle.SiegeOdds.EVEN -> "evenly matched"
@@ -121,12 +143,6 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel) {
             }
         }
     }
-
-    SectionTitle("Adventurers (${st.aliveHeroes().size} alive)")
-    st.heroes.values.sortedWith(compareBy<Hero> { !it.isAlive }.thenByDescending { it.fame }).forEachIndexed { i, h ->
-        if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        HeroRow(h, s, vm)
-    }
 }
 
 /** The faction's weakness in words; decorative, the engine applies the matchup itself. */
@@ -160,9 +176,17 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
                 else "${Heroes.describeTraits(h, content)} · fame ${h.fame} · ${h.kills} kills",
             )
             Heroes.describeAmbition(h, w, vm.engine.config)?.let { Secondary(it) }
+            townTies(h, st, vm.engine.config)?.let { Secondary(it) }
         }
     }
 }
+
+/** Where a hero stands with the town and the shop: guild, mentor and whether they are a regular (a Known Name regular is one from day 1). */
+internal fun townTies(h: Hero, st: GameState, config: BalanceConfig): String? = listOfNotNull(
+    h.guildId?.let { id -> st.town.guilds.firstOrNull { it.id == id }?.name },
+    h.mentorName?.let { "mentor $it" },
+    "a regular of your shop".takeIf { h.isAlive && Market.isRegular(h, config) },
+).joinToString(" · ").ifEmpty { null }
 
 /** Lazy rows of the experiment journal, for the Records list: keyed per pairing, so a long journal composes only what shows. */
 fun LazyListScope.journalItems(s: UiState.Playing, vm: GameViewModel) {

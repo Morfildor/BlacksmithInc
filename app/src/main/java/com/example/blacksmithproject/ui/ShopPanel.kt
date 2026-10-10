@@ -3,6 +3,7 @@ package com.example.blacksmithproject.ui
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -57,6 +58,8 @@ fun ShopPanel(
     onOpenStorage: () -> Unit,
     onOpenNews: () -> Unit,
     modifier: Modifier = Modifier,
+    onForgeThis: (CommissionId) -> Unit = {},
+    onOpenSupplies: (() -> Unit)? = null,
     tip: (@Composable () -> Unit)? = null,
     more: LazyListScope.() -> Unit = {},
 ) {
@@ -81,7 +84,7 @@ fun ShopPanel(
 
         if (shop.requests.isNotEmpty()) {
             item(key = "requests") { SectionTitle("Requests", side.testTag("shop_requests")) }
-            items(shop.requests, key = { "request_${it.id.value}" }) { RequestCard(it, busy, onOpenHero, onAnswer, side) }
+            items(shop.requests, key = { "request_${it.id.value}" }) { RequestCard(it, busy, onOpenHero, onAnswer, onForgeThis, side) }
         }
 
         item(key = "demand") {
@@ -111,35 +114,41 @@ fun ShopPanel(
         }
         items(shop.shelf, key = { "stock_${it.weapon.id.value}" }) { StockRow(it, busy, onOpen = { onOpenBlade(it.weapon.id) }, onList = null, modifier = side) }
 
-        item(key = "storage") {
-            Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = side.fillMaxWidth().padding(top = Space.md)) {
-                Row(
-                    Modifier.fillMaxWidth().clickable(onClickLabel = "Open storage", role = Role.Button, onClick = onOpenStorage).heightIn(min = 56.dp).padding(horizontal = Space.md).testTag("shop_storage"),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("Storage · ${shop.storage.size}", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                    Text("Open  ›", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                }
-            }
-        }
+        item(key = "storage") { DoorRow("Storage · ${shop.storage.size}", "Open storage", "shop_storage", onOpenStorage, side.padding(top = Space.md)) }
+        if (onOpenSupplies != null) item(key = "supplies") { DoorRow("Supplies and tools", "Open supplies", "shop_supplies", onOpenSupplies, side.padding(top = Space.sm)) }
         more()
+    }
+}
+
+/** One wide row that opens a sheet. */
+@Composable
+private fun DoorRow(title: String, action: String, tag: String, onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = modifier.fillMaxWidth()) {
+        Row(
+            Modifier.fillMaxWidth().clickable(onClickLabel = action, role = Role.Button, onClick = onOpen).heightIn(min = 56.dp).padding(horizontal = Space.md).testTag(tag),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            Text("Open  ›", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+        }
     }
 }
 
 /** A request: what is asked, by whom and on what terms; then Accept and Decline, or which blade will be handed over. */
 @Composable
-private fun RequestCard(r: RequestUi, busy: Boolean, onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, modifier: Modifier = Modifier) {
+internal fun RequestCard(r: RequestUi, busy: Boolean, onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, onForgeThis: (CommissionId) -> Unit, modifier: Modifier = Modifier) {
     Surface(tonalElevation = 1.dp, shape = MaterialTheme.shapes.medium, modifier = modifier.fillMaxWidth().padding(vertical = Space.xs)) {
         Column(Modifier.padding(horizontal = Space.md, vertical = Space.sm)) {
             Text(r.asks, style = MaterialTheme.typography.titleMedium)
             PersonChip(r.buyer, onOpenHero = { face -> face.heroId?.let(onOpenHero) }, note = r.terms)
             r.readiness?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs)) }
             r.fits.forEach { Secondary(it) }
-            if (r.offered) {
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
+                if (r.offered) {
                     Button(onClick = { onAnswer(r.id, true) }, enabled = !busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("Accept") }
                     OutlinedButton(onClick = { onAnswer(r.id, false) }, enabled = !busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("Decline") }
                 }
+                TextButton(onClick = { onForgeThis(r.id) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_this_${r.id.value}")) { Text("Forge this") }
             }
         }
     }
