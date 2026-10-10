@@ -363,7 +363,7 @@ action hierarchy"). No balance, rules, save or content version changed.
   the hone line names only what changed. Still unseen: Records, the Forge with a material out, the day cards, text at 2.0.
 - Merging `gameplay-depth` will conflict in `WorkshopScreen.kt`, `GameViewModel.kt`, `StorageSheet.kt`, `ItemDetailSheet.kt`
   and `CHANGELOG.md`; its `Sheet.Visitor` needs a branch in `DetailSheet`, and its relic dialog a place in Back's order.
-## UI/UX improvement 3: rewards and consequences (2026-10-10, evening; on the branch `ui-batch-2`, not on `main`)
+## UI/UX improvement 3: rewards and consequences (2026-10-10, evening; merged into `main` at `ce4f0a6`)
 The third batch from the UI/UX reviews: the forge result as a short reveal, a sale that looks unlike a refusal, a refusal
 that leads with its numbers, one card for the day's fights when nothing else tells them, and the repeated wording of the
 day sequence. Design notes and the reasons are in `docs/DECISIONS.md` ("Rewards and consequences: the third UI/UX
@@ -446,7 +446,7 @@ the rebase, so they show the older backdrop and rarity pips.
   session's instance only) and the runs above are from the second boot.
 
 ## Next actions
-0. UI/UX improvement 3 (above) is on the branch `ui-batch-2`: the owner looks at it and decides the merge into `main`.
+0. UI/UX improvement 3 (above) is on `main` (fast-forward from `ui-batch-2`, no checks re-run for the merge).
    UI/UX improvement 2 (navigation) is on `main`.
    UI/UX improvement 1 is on `main` and still to be reconciled with `post-0.7.0`; a request blade's result card still
    needs a look in a live game.
