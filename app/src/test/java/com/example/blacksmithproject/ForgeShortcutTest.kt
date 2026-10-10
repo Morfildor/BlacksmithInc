@@ -76,7 +76,7 @@ class ForgeShortcutTest : ShopDayTestBase() {
         val h = fresh.aliveHeroes().first()
         assertNull(townTies(h, fresh, engine.config))
         val regular = h.copy(loyalty = engine.config.regularLoyaltyThreshold, mentorName = "Old Bram")
-        assertEquals("mentor Old Bram · a regular of your shop", townTies(regular, fresh, engine.config))
+        assertEquals("mentor Old Bram · a shop regular", townTies(regular, fresh, engine.config))
         assertEquals("mentor Old Bram", townTies(regular.copy(fate = com.tinyblacksmith.core.model.HeroFate.DEAD), fresh, engine.config))
     }
 }

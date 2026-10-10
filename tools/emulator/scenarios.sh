@@ -106,7 +106,7 @@ tap_id menu_scenarios; wait_id scenario_list && shot 00_scenario_list
 has "Constructed saves for testing" && echo "CHECK the list is labelled as constructed: ok" || echo "CHECK the list is labelled as constructed: FAIL"
 
 load hall_lesson && { shot hall_lesson_1_planning; day_cards hall_lesson "At the guild hall" 2_lesson; }
-load inherited_blade && day_cards inherited_blade "A death" 1_death "A blade passed on" 2_passed_on
+load inherited_blade && day_cards inherited_blade "A death" 1_death "An inherited weapon" 2_passed_on
 load merchant_resale && day_cards merchant_resale "Sold on by a merchant" 1_resold
 load wall_death && day_cards wall_death "The siege" 1_siege "A death" 2_death_at_the_wall
 dump | grep -q "died defending the walls" && echo "CHECK wall_death names the wall: ok" || echo "CHECK wall_death names the wall: FAIL"
@@ -114,8 +114,8 @@ dump | grep -q "died defending the walls" && echo "CHECK wall_death names the wa
 # Known Name: the confirmation says the legacy is replaced; Town shows the regular on day 1; then the regular's visit.
 load known_name && {
   tap_id nav_town; $ADB shell sleep 1
-  for i in 1 2 3 4 5 6; do dump | grep -q "a regular of your shop" && break; $ADB shell input swipe 540 1300 540 800 600; $ADB shell sleep 1; done
-  dump | grep -q "a regular of your shop" && { shot known_name_1_town; echo "CHECK known_name shows a regular in Town on day 1: ok"; } || echo "CHECK known_name shows a regular in Town on day 1: FAIL"
+  for i in 1 2 3 4 5 6; do dump | grep -q "a shop regular" && break; $ADB shell input swipe 540 1300 540 800 600; $ADB shell sleep 1; done
+  dump | grep -q "a shop regular" && { shot known_name_1_town; echo "CHECK known_name shows a regular in Town on day 1: ok"; } || echo "CHECK known_name shows a regular in Town on day 1: FAIL"
   tap_id nav_shop; tap_id end_day; wait_id shopday_card
   found=""
   for i in $(seq 1 12); do dump | grep -q ", a regular" && { found=1; break; }; has_id shopday_next || break; tap_id shopday_next >/dev/null; done

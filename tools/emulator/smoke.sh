@@ -52,7 +52,7 @@ $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && shot 01_title
 tap_id title_new_run || exit 1
 # A new run lands on the Shop destination, which leads with the day's one lead; the forge is one destination over.
-wait_text "Forge your first blade" && shot 02_shop
+wait_text "Forge your first weapon" && shot 02_shop
 has_id shop_lead && echo "CHECK shop leads with a lead: ok" || echo "CHECK shop leads with a lead: FAIL"
 tap_id nav_forge || exit 1
 wait_text "Forge · " && shot 02_workshop

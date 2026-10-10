@@ -182,7 +182,7 @@ object GazetteDigest {
                 val body = if (sig != null) "${sig.name}. ${sig.flavor}".let { b -> if (b.endsWith(".")) b else "$b." } else LegacyProse.display(e.text)
                 add(3, e, Story(Kind.SIGNATURE, "New recipe discovered", body, subjectIds = e.subjectIds, opensNotebook = true))
             }
-            EventType.DISCOVERY -> if (e.data["rung"] != null) {
+            EventType.DISCOVERY -> if (e.data["rung"] != null || e.data["key"]?.startsWith("sig:") == true) {
                 add(3, e, Story(Kind.CLUE, "A recipe clue", LegacyProse.display(e.text), opensNotebook = true))
             } else if (e.priority >= 3) {
                 add(3, e, Story(Kind.PAIRING, "A pairing learned", LegacyProse.display(e.text).removePrefix("Pairing learned. "), opensNotebook = true))

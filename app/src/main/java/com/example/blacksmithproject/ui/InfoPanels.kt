@@ -298,7 +298,7 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
 internal fun townTies(h: Hero, st: GameState, config: BalanceConfig): String? = listOfNotNull(
     h.guildId?.let { id -> st.town.guilds.firstOrNull { it.id == id }?.name },
     h.mentorName?.let { "mentor $it" },
-    "a regular of your shop".takeIf { h.isAlive && Market.isRegular(h, config) },
+    "a shop regular".takeIf { h.isAlive && Market.isRegular(h, config) },
 ).joinToString(" · ").ifEmpty { null }
 
 /**
