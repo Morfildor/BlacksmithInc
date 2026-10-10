@@ -87,7 +87,7 @@ data class ThreatUi(
     /** Siege and matchup on one line, for a plate. */
     val plate: String get() = listOfNotNull(siege, line).joinToString(" · ")
     /** Said on the Shop on the days `Threat.warned` holds and the besieger cares about an element. */
-    val note: String? get() = "The siege warning is out: buyers weigh this today.".takeIf { warned && marks.isNotEmpty() }
+    val note: String? get() = "The siege warning is out. Buyers now consider the attackers' strengths and weaknesses.".takeIf { warned && marks.isNotEmpty() }
 }
 
 /** The sign and colour of a mark: what bites the besieger helps ("+"), what it resists hurts ("−"). */
@@ -114,7 +114,7 @@ data class StockUi(
 )
 
 /** "Kept for Wren Kestrel's order": a blade bound to an open order (`Weapon.promisedTo`); null for any other blade. */
-fun promisedLine(state: GameState, w: Weapon): String? = w.promisedTo?.let { "Kept for ${GameViewModel.promisedBuyer(state, it) ?: "a patron"}'s order" }
+fun promisedLine(state: GameState, w: Weapon): String? = w.promisedTo?.let { "Reserved for ${GameViewModel.promisedBuyer(state, it) ?: "a customer"}'s order" }
 
 /** One line of "Who is buying": a count from `Demand.summary` under a fixed label, with the names when they are few. */
 @Immutable data class DemandRow(val label: String, val value: String, val detail: String? = null)
@@ -163,9 +163,9 @@ fun GameEngine.forgedFor(state: GameState, weaponId: WeaponId, commissionId: Com
         title = "For ${state.heroes[c.buyerId]?.fullName ?: "Someone"}: ${Labels.request(c, content, config)}",
         terms = "${c.reward} gold · ${dueWords(c.deadlineDay - state.day, c.deadlineDay)}",
         fits = fits,
-        fit = if (fits) "This blade fits the request" else "This blade does not fit: ${Labels.fit(w, c, content)}",
+        fit = if (fits) "This weapon meets the order" else "This weapon doesn't meet the order. ${Labels.fit(w, c, content).replaceFirstChar { it.uppercase() }}.",
         accepted = accepted,
-        handover = if (accepted) Labels.readiness(c, state.weapons.values, content, config) else "Not accepted yet. Accept the request in the Shop, or nothing is handed over.",
+        handover = if (accepted) Labels.readiness(c, state.weapons.values, content, config) else "Accept this commission in the Shop before it can be collected.",
     )
 }
 
@@ -218,7 +218,7 @@ private fun GameEngine.yesterday(state: GameState, day: DayResolution): Yesterda
         val names = visits.map { it.heroName }.distinct()
         Lines.tally(TallyGroup(key.first, key.second, visits), script).replaceFirstChar { it.uppercase() } + if (names.size <= NAMES_SHOWN) ": ${names.joinToString()}" else ""
     }
-    return YesterdayUi(day.day, day.ledger?.let { "Took ${it.goldAtClose - it.goldAtOpen} gold" }, close?.counts, lines)
+    return YesterdayUi(day.day, day.ledger?.let { "Earned ${it.goldAtClose - it.goldAtOpen} gold" }, close?.counts, lines)
 }
 
 /** The Shop destination's content for [state]. Pure: reads the save, draws nothing, changes nothing. [forecast] is the siege forecast when it is already at hand. */
@@ -251,12 +251,12 @@ fun GameEngine.shopUi(state: GameState, forecast: Battle.SiegeOutlook? = null): 
     fun names(ids: List<HeroId>) = ids.takeIf { it.size in 1..NAMES_SHOWN }?.mapNotNull { state.heroes[it]?.fullName }?.joinToString()
     val demand = listOfNotNull(
         DemandRow("Heroes in town", "${d.living}"),
-        DemandRow("Carry no blade", "${d.unarmed.size}", names(d.unarmed)),
-        DemandRow("Carry a worn blade", "${d.worn.size}", names(d.worn)),
-        d.cheapestPrice?.let { DemandRow("Can afford the cheapest blade ($it gold)", "${d.canAffordCheapest} of ${d.living}") },
-        d.medianPrice?.takeIf { it != d.cheapestPrice }?.let { DemandRow("Can afford the middle blade ($it gold)", "${d.canAffordMedian} of ${d.living}") },
+        DemandRow("Need a weapon", "${d.unarmed.size}", names(d.unarmed)),
+        DemandRow("Need to replace a worn weapon", "${d.worn.size}", names(d.worn)),
+        d.cheapestPrice?.let { DemandRow("Can afford the cheapest weapon ($it gold)", "${d.canAffordCheapest} of ${d.living}") },
+        d.medianPrice?.takeIf { it != d.cheapestPrice }?.let { DemandRow("Can afford the middle-priced weapon ($it gold)", "${d.canAffordMedian} of ${d.living}") },
         // Only against a stocked shelf: with nothing listed every class is unserved, and the lead already says so.
-        d.unservedClasses.takeIf { it.isNotEmpty() && d.cheapestPrice != null }?.let { ids -> DemandRow("No listed blade suits", ids.joinToString { content.heroClass(it).name + "s" }) },
+        d.unservedClasses.takeIf { it.isNotEmpty() && d.cheapestPrice != null }?.let { ids -> DemandRow("No suitable weapon for", ids.joinToString { content.heroClass(it).name + "s" }) },
     )
 
     return ShopUi(

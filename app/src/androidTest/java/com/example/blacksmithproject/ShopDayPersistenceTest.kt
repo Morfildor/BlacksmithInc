@@ -135,7 +135,7 @@ class ShopDayPersistenceTest {
 
         tester.emulateSavedInstanceStateRestore()
         compose.onNodeWithTag("main_menu").assertDoesNotExist()
-        compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertTextEquals("Forge your first blade")
+        compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertTextEquals("Forge your first weapon")
     }
 
     @Test

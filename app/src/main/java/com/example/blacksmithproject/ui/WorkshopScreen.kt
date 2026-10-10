@@ -317,11 +317,11 @@ const val SKIP_TO_EVENING = "Skip to evening"
 /** First-run tips (GDD 3.3 onboarding): dismissed IDs live in settings, never in the save. */
 object Tips {
     data class Tip(val id: String, val body: String)
-    val FORGE = Tip("forge", "Pick a family, a core and an augment, then forge. Every valid forge yields a usable weapon.")
-    val END_DAY = Tip("end_day", "At End Day heroes shop, then fight or rest, and factions press on the town. Read it all in the Gazette.")
-    val MARKET = Tip("market", "Heroes buy what suits them and their purse. List weapons here at a price you like.")
+    val FORGE = Tip("forge", "Choose a weapon, metal and augment. Then forge. You'll always make something usable.")
+    val END_DAY = Tip("end_day", "End Day opens the shop and sends the heroes out. Check the Gazette to see who came back.")
+    val MARKET = Tip("market", "Put weapons on the shelf and set their prices. Heroes look for gear they like and can afford.")
     /** Not a banner: one line under the first customer of the first shop day the player watches (`ShopDayHost`). */
-    val COUNTER = Tip("counter", "Tap anywhere for the next card · $SKIP_TO_EVENING jumps to the day's last card")
+    val COUNTER = Tip("counter", "Tap to see the next card. $SKIP_TO_EVENING takes you to the day's final card.")
     val ORDER = listOf(FORGE, END_DAY, MARKET, COUNTER)
     val ALL = ORDER.map { it.id }.toSet()
     fun forDest(d: Dest): List<Tip> = when (d) { Dest.FORGE -> listOf(END_DAY); Dest.SHOP -> listOf(MARKET); else -> emptyList() }
@@ -363,13 +363,13 @@ internal fun endDayNote(s: UiState.Playing): String {
     val state = s.state
     val offers = state.commissions.values.count { it.status == CommissionStatus.OFFERED }
     return when {
-        state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
+        state.pendingBlessingOffer.isNotEmpty() -> "Choose a blessing"
         // The run can end tonight: said before anything else that waits.
-        s.shop.threat?.today == true -> "A siege follows today's trading"
+        s.shop.threat?.today == true -> "The siege starts after today's trading"
         // A visitor who waits, then a relic on offer: the words of the rule below.
         s.encounter?.instance?.isOpen == true || state.pendingRelicOffer.isNotEmpty() -> endDayNote(state, s.encounter)
         offers > 0 -> if (offers == 1) "1 unaccepted commission" else "$offers unaccepted commissions"
-        state.overworkToday > 0 -> "Overwork: ${state.overworkToday} less energy tomorrow"
+        state.overworkToday > 0 -> "You'll have ${state.overworkToday} less energy tomorrow"
         state.energy > 0 -> "${state.energy} energy unused"
         else -> "Rest until dawn"
     }
@@ -377,10 +377,10 @@ internal fun endDayNote(s: UiState.Playing): String {
 
 /** What End Day will leave behind, most pressing first. An unanswered visitor is told the free answer; an offer waits for another day. */
 internal fun endDayNote(state: GameState, visitor: Encounters.View?): String = when {
-    state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
-    visitor?.instance?.isOpen == true -> "The visitor leaves tonight: ${visitor.defaultLabel}"
-    state.pendingRelicOffer.isNotEmpty() -> "A relic awaits your choice"
-    state.commissions.values.any { it.status == CommissionStatus.OFFERED } -> "A commission is waiting"
+    state.pendingBlessingOffer.isNotEmpty() -> "Choose a blessing"
+    visitor?.instance?.isOpen == true -> "The visitor leaves tonight. No answer means ${visitor.defaultLabel.lowercase()}."
+    state.pendingRelicOffer.isNotEmpty() -> "Choose a workshop relic"
+    state.commissions.values.any { it.status == CommissionStatus.OFFERED } -> "A new commission needs an answer"
     state.overworkToday > 0 -> "Tomorrow starts ${state.overworkToday} energy short"
     state.energy > 0 -> "${state.energy} energy unused"
     else -> "Rest until dawn"
@@ -441,6 +441,6 @@ fun Secondary(text: String, modifier: Modifier = Modifier) {
 internal fun scrapBackText(engine: GameEngine, state: GameState, ids: List<WeaponId>): String {
     val back = engine.scrapYield(ids.mapNotNull { state.weapons[it] })
     val per = engine.config.saveGrowth.scrapBladesPerMaterial
-    return if (back.isEmpty()) "Nothing comes back: it takes $per blades of one metal to recover a unit of it."
-    else "You get back " + back.entries.joinToString(", ") { "${it.value} ${engine.content.material(it.key).name}" } + " (one unit for every $per blades of a metal)."
+    return if (back.isEmpty()) "No metal recovered. You need $per weapons of the same metal to recover one unit."
+    else "You get back " + back.entries.joinToString(", ") { "${it.value} ${engine.content.material(it.key).name}" } + " (one unit per $per weapons of the same metal)."
 }

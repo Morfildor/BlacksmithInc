@@ -31,7 +31,7 @@ internal object EncounterCatalog {
 
     private fun slotFree(ctx: ResolutionContext): Boolean = Market.openCommissions(ctx).size < ctx.config.customers.maxOpenCommissions
     private fun noSlot(ctx: ResolutionContext): String? = if (slotFree(ctx)) null else "The order book is full."
-    private fun gone(ctx: ResolutionContext, id: HeroId?): String? = ctx.heroes[id]?.takeIf { it.isAlive }.let { if (it == null) "They are no longer in Emberfall." else null }
+    private fun gone(ctx: ResolutionContext, id: HeroId?): String? = ctx.heroes[id]?.takeIf { it.isAlive }.let { if (it == null) "They're no longer in town." else null }
 
     /** A blade the smith can still part with: in storage or on the shelf, and not promised to an order. */
     private fun inShop(ctx: ResolutionContext, id: WeaponId?): Weapon? = ctx.weapons[id]?.takeIf { (it.isInStorage || it.isListed) && it.promisedTo == null }
@@ -152,8 +152,8 @@ internal object EncounterCatalog {
     // ---- wording --------------------------------------------------------------------------------------------
 
     private fun name(ctx: ResolutionContext, id: HeroId?): String = ctx.heroes[id]?.fullName ?: "someone"
-    private fun blade(ctx: ResolutionContext, i: EncounterInstance): String = ctx.weapons[i.weaponId]?.name ?: "the blade"
-    private fun family(ctx: ResolutionContext, id: WeaponFamilyId?): String = id?.let { ctx.content.family(it).name } ?: "blade"
+    private fun blade(ctx: ResolutionContext, i: EncounterInstance): String = ctx.weapons[i.weaponId]?.name ?: "the weapon"
+    private fun family(ctx: ResolutionContext, id: WeaponFamilyId?): String = id?.let { ctx.content.family(it).name } ?: "weapon"
     private fun mat(ctx: ResolutionContext, id: MaterialId?): String = id?.let { ctx.content.material(it).name } ?: "metal"
     private fun describe(ctx: ResolutionContext, w: Weapon): String =
         "${w.name}: ${QualityBand.of(w.quality, ctx.config).word} (quality ${w.quality}), power ${w.power}, " +
@@ -162,27 +162,27 @@ internal object EncounterCatalog {
     fun text(ctx: ResolutionContext, i: EncounterInstance, def: EncounterDef): String {
         val a = i.amounts
         return when (i.defId) {
-            Depth.LAST_CRATE -> "A carter has one crate left before the roads close for the day ${ctx.town.nextSiegeDay} invasion. ${mat(ctx, i.materialId)} is what " +
-                "${Battle.besieger(ctx)?.let { ctx.content.faction(it.id).name } ?: "the enemy"} fear most as things stand" + (if (ctx.siege?.factionId == null) "; who leads the attack is not yet certain." else ".")
-            Depth.BLADE_FOR_THE_WALL -> "${name(ctx, i.heroId)} has ${ctx.heroes[i.heroId]?.gold ?: 0} gold and ${if (ctx.heroes[i.heroId]?.let { ctx.equippedWeapon(it.id) } == null) "no blade" else "a worn blade"}, " +
-                "and asks for a ${family(ctx, i.familyId)} on trust before the siege. ${name(ctx, i.otherHeroId)} is waiting behind them with a full purse and an order of their own. The book has room for one."
-            Depth.MASTERS_AFTERNOON -> "A wandering master smith is in town for the day. " +
-                (i.key?.let { "She will work through ${Journal.subjectName(ctx.content, it)} with you if you give her the afternoon. " } ?: "") +
-                (i.otherKey?.let { "For coin she will say what she knows of a ${Journal.subjectName(ctx.content, it)}." } ?: "")
-            Depth.COLLECTORS_OFFER -> "A collector has heard of ${blade(ctx, i)} and offers ${a["price"]} gold for it today. Sold, it leaves Emberfall for a distant vault; kept, it stays for the town's own heroes."
-            Depth.CRACKED_FAMILY_BLADE -> "${name(ctx, i.heroId)} asks after ${blade(ctx, i)}, which came back to the forge without ${name(ctx, i.otherHeroId)}. " +
-                "They would carry it if it were made whole, and can pay ${a["reward"]} gold. A collector in town would give ${a["collector"]} for it as it is."
+            Depth.LAST_CRATE -> "The siege on day ${ctx.town.nextSiegeDay} will close the roads. A carter has one crate left. ${mat(ctx, i.materialId)} is effective against " +
+                "${Battle.besieger(ctx)?.let { ctx.content.faction(it.id).name } ?: "the likely attackers"}" + (if (ctx.siege?.factionId == null) ". The attacking faction isn't confirmed yet." else ".")
+            Depth.BLADE_FOR_THE_WALL -> "${name(ctx, i.heroId)} has ${ctx.heroes[i.heroId]?.gold ?: 0} gold and ${if (ctx.heroes[i.heroId]?.let { ctx.equippedWeapon(it.id) } == null) "no weapon" else "a worn weapon"}. " +
+                "They need a ${family(ctx, i.familyId)} on credit before the siege. ${name(ctx, i.otherHeroId)} can pay more for a separate order. You have room for one commission."
+            Depth.MASTERS_AFTERNOON -> "A master smith is visiting for the day. " +
+                (i.key?.let { "Spend the afternoon learning ${Journal.subjectName(ctx.content, it)} with her. " } ?: "") +
+                (i.otherKey?.let { "Or pay for a recipe clue about ${Journal.subjectName(ctx.content, it)}." } ?: "")
+            Depth.COLLECTORS_OFFER -> "A collector offers ${a["price"]} gold for ${blade(ctx, i)}. Sell it and it leaves town. Keep it and a local hero may buy it."
+            Depth.CRACKED_FAMILY_BLADE -> "${name(ctx, i.heroId)} asks about ${blade(ctx, i)}. It came back after ${name(ctx, i.otherHeroId)} died. " +
+                "Restore it for ${a["reward"]} gold, or sell it as it is to a collector for ${a["collector"]} gold."
             Depth.CROOKED_MERCHANT -> i.blade?.let { b ->
-                "A merchant with a quick smile offers a ${mat(ctx, i.materialId)} ${family(ctx, i.familyId)} for ${a["price"]} gold. He admits it has one flaw and will not say which. " +
-                    (if (i.inspected) "You have looked it over. ${describe(ctx, b)}." else "For ${a["fee"]} gold he will let you look it over first.")
+                "A merchant offers a ${mat(ctx, i.materialId)} ${family(ctx, i.familyId)} for ${a["price"]} gold. One flaw, he says. Which one costs extra to find out. " +
+                    (if (i.inspected) "Inspection complete. ${describe(ctx, b)}." else "Pay ${a["fee"]} gold to inspect it before buying.")
             } ?: def.description
-            Depth.SMITHS_WAGER -> "A smith passing through wagers ${a["stake"]} gold that you cannot forge a ${QualityBand.of(a["quality"] ?: 0, ctx.config).word} ${family(ctx, i.familyId)} " +
-                "(quality ${a["quality"]}+) by the end of day ${a["due"]}. If you can, he leaves you a relic of his own workshop."
-            Depth.FESTIVAL_CONTRACT -> "The council is planning its festival. A stall for the forge draws the crowd to the shop today; or the council will pay for arms for the watch instead."
-            Depth.DEBT_REPAID -> "${name(ctx, i.heroId)} is back, ${if (ctx.weapons[i.weaponId]?.isEquipped == true) "carrying" else "with"} ${blade(ctx, i)}, the blade you made on trust" +
-                (if (ctx.weapons[i.weaponId]?.isEquipped == true) ". " else ", kept as a spare. ") +
-                (if (a["stood"] == 1) "They stood on the wall with it" + (if (a["held"] == 1) " and the town held. " else " and the wall was lost all the same. ") else "They were not among the champions when the siege came. ") +
-                "They still owe ${a["owed"]} gold and have ${ctx.heroes[i.heroId]?.gold ?: 0}."
+            Depth.SMITHS_WAGER -> "A visiting smith puts ${a["stake"]} gold on a challenge. Forge a ${QualityBand.of(a["quality"] ?: 0, ctx.config).word} ${family(ctx, i.familyId)} " +
+                "with quality ${a["quality"]} or better by the end of day ${a["due"]}. The reward is shown below."
+            Depth.FESTIVAL_CONTRACT -> "The council offers two jobs. Pay for a festival stall to bring shoppers in today, or earn gold by arming the watch."
+            Depth.DEBT_REPAID -> "${name(ctx, i.heroId)} returned with ${blade(ctx, i)}, the weapon you made on credit" +
+                (if (ctx.weapons[i.weaponId]?.isEquipped == true) ". " else ". They're keeping it as a spare. ") +
+                (if (a["stood"] == 1) "They defended the walls with it" + (if (a["held"] == 1) ". Emberfall held. " else ". The defenses still fell. ") else "They weren't among the siege champions. ") +
+                "They owe ${a["owed"]} gold and have ${ctx.heroes[i.heroId]?.gold ?: 0} to spend."
             else -> def.description
         }
     }
@@ -205,121 +205,121 @@ internal object EncounterCatalog {
             Depth.LAST_CRATE -> listOf(
                 Opt("crate", "Buy the crate", "${n("units")} ${mat(ctx, i.materialId)}.", gold = n("cratePrice")) { c ->
                     c.materials[i.materialId!!] = (c.materials[i.materialId] ?: 0) + n("units")
-                    "The smith bought the last crate: ${n("units")} ${mat(c, i.materialId)} for ${n("cratePrice")} gold."
+                    "Bought the last crate. ${n("units")} ${mat(c, i.materialId)} for ${n("cratePrice")} gold."
                 },
                 Opt("metal", "Take plain metal instead", "${n("units")} ${mat(ctx, i.otherMaterialId)}.", gold = n("metalPrice")) { c ->
                     c.materials[i.otherMaterialId!!] = (c.materials[i.otherMaterialId] ?: 0) + n("units")
-                    "The smith took ${n("units")} ${mat(c, i.otherMaterialId)} from the carter for ${n("metalPrice")} gold."
+                    "Bought ${n("units")} ${mat(c, i.otherMaterialId)} for ${n("metalPrice")} gold."
                 },
                 pass("Let the carter go", "The carter left with the last crate unsold."),
             )
             Depth.BLADE_FOR_THE_WALL -> listOf(
-                Opt("pledge", "Arm ${name(ctx, i.heroId)} on trust",
-                    "An order for a ${Commissions.describe(Commission(CommissionId(""), i.heroId!!, i.familyId!!, n("pledgeQuality"), 0, 0, 0, CommissionStatus.OFFERED), ctx.content, config)} by day ${n("pledgeDeadline")} at ${n("pledgeReward")} gold, half the usual. They will owe you ${n("owed")}.",
+                Opt("pledge", "Take ${name(ctx, i.heroId)}'s order on credit",
+                    "Make a ${Commissions.describe(Commission(CommissionId(""), i.heroId!!, i.familyId!!, n("pledgeQuality"), 0, 0, 0, CommissionStatus.OFFERED), ctx.content, config)} by day ${n("pledgeDeadline")}. Receive ${n("pledgeReward")} gold on collection. They owe another ${n("owed")} gold afterward.",
                     blocked = gone(ctx, i.heroId) ?: noSlot(ctx)) { c ->
                     val o = order(c, i.heroId, i.familyId, n("pledgeQuality"), n("pledgeReward"), n("pledgeDeadline"), CommissionKind.WALL_PLEDGE)
                     c.consequences += ScheduledConsequence("q${i.id}", ConsequenceKind.WALL_PLEDGE, dueDay = 0, heroId = i.heroId, commissionId = o.id, amounts = mapOf("owed" to n("owed")))
-                    "The smith took ${name(c, i.heroId)}'s order on trust: a ${family(c, i.familyId)} by day ${n("pledgeDeadline")} for ${n("pledgeReward")} gold now and ${n("owed")} owed."
+                    "Accepted ${name(c, i.heroId)}'s order on credit. A ${family(c, i.familyId)} by day ${n("pledgeDeadline")}, for ${n("pledgeReward")} gold on collection and ${n("owed")} owed afterward."
                 },
                 Opt("patron", "Take ${name(ctx, i.otherHeroId)}'s order",
-                    "An order for a ${Commissions.describe(Commission(CommissionId(""), i.otherHeroId!!, i.otherFamilyId!!, n("richQuality"), 0, 0, 0, CommissionStatus.OFFERED), ctx.content, config)} by day ${n("richDeadline")} at ${n("richReward")} gold.",
+                    "Make a ${Commissions.describe(Commission(CommissionId(""), i.otherHeroId!!, i.otherFamilyId!!, n("richQuality"), 0, 0, 0, CommissionStatus.OFFERED), ctx.content, config)} by day ${n("richDeadline")}. Pays ${n("richReward")} gold.",
                     blocked = gone(ctx, i.otherHeroId) ?: noSlot(ctx)) { c ->
                     order(c, i.otherHeroId, i.otherFamilyId, n("richQuality"), n("richReward"), n("richDeadline"), CommissionKind.ORDINARY)
-                    "The smith took ${name(c, i.otherHeroId)}'s order for ${n("richReward")} gold; ${name(c, i.heroId)} left without one."
+                    "Accepted ${name(c, i.otherHeroId)}'s order for ${n("richReward")} gold. ${name(c, i.heroId)} left without an order."
                 },
-                pass("Turn both away", "The smith took neither order; ${name(ctx, i.heroId)} and ${name(ctx, i.otherHeroId)} left."),
+                pass("Turn both away", "Declined both orders. ${name(ctx, i.heroId)} and ${name(ctx, i.otherHeroId)} left."),
             )
             Depth.MASTERS_AFTERNOON -> listOf(
-                Opt("study", "Give her the afternoon", i.key?.let { "${Journal.subjectName(ctx.content, it)} becomes understood." } ?: "Nothing to study.", energy = n("energy"),
-                    blocked = if (i.key == null || ctx.legacy.journal.state(i.key) != KnowledgeState.OBSERVED) "There is nothing half-understood for her to finish." else null) { c ->
+                Opt("study", "Spend the afternoon learning", i.key?.let { "Completes your notes on ${Journal.subjectName(ctx.content, it)}." } ?: "Nothing to study.", energy = n("energy"),
+                    blocked = if (i.key == null || ctx.legacy.journal.state(i.key) != KnowledgeState.OBSERVED) "No partly learned pairings left to study." else null) { c ->
                     WorldEvents.setKnowledge(c, i.key!!, KnowledgeState.UNDERSTOOD)
                     c.discoveriesThisRun += 1
                     val subject = Journal.subjectName(c.content, i.key)
-                    c.emit(EventType.DISCOVERY, 3, "Journal: $subject is now understood: ${Journal.describeAffinity(Journal.affinityFor(c.content, i.key))}.", data = mapOf("key" to i.key))
-                    "The smith spent the afternoon with a wandering master and came to understand $subject."
+                    c.emit(EventType.DISCOVERY, 3, "Pairing learned. $subject. ${Journal.describeAffinity(Journal.affinityFor(c.content, i.key)).replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to i.key))
+                    "Spent the afternoon learning $subject with the master smith."
                 },
-                Opt("lesson", "Pay for what she knows", i.otherKey?.let { "A clue toward a ${Journal.subjectName(ctx.content, it)}." } ?: "Nothing to tell.", gold = n("gold"),
-                    blocked = openSignatures(ctx).firstOrNull { it.journalKey == i.otherKey }.let { if (it == null) "She knows nothing of a recipe you have not already traced." else null }) { c ->
+                Opt("lesson", "Buy a recipe clue", i.otherKey?.let { "Adds a recipe clue for ${Journal.subjectName(ctx.content, it)}." } ?: "Nothing to tell.", gold = n("gold"),
+                    blocked = openSignatures(ctx).firstOrNull { it.journalKey == i.otherKey }.let { if (it == null) "You've already learned all the clues she can offer." else null }) { c ->
                     val sig = openSignatures(c).first { it.journalKey == i.otherKey }
                     val rung = Journal.nextRung(c.legacy.journal, sig)!!
                     Journal.earn(c, sig, rung)
                     val clue = Journal.clue(sig, rung, c.config)
-                    c.emit(EventType.DISCOVERY, 3, "A wandering master spoke of a ${Journal.subjectName(c.content, sig.journalKey)}: $clue.", data = mapOf("key" to sig.journalKey, "rung" to rung.name))
-                    "The smith paid a wandering master ${n("gold")} gold for a recipe's secret."
+                    c.emit(EventType.DISCOVERY, 3, "The master smith shared a clue about ${Journal.subjectName(c.content, sig.journalKey)}. ${clue.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to sig.journalKey, "rung" to rung.name))
+                    "Paid ${n("gold")} gold for a recipe clue."
                 },
-                pass("Keep working", "The wandering master moved on; the forge kept to its work."),
+                pass("Keep working", "The master smith moved on. You kept working."),
             )
             Depth.COLLECTORS_OFFER -> {
                 val w = inShop(ctx, i.weaponId)
                 listOf(
-                    Opt("sell", "Sell ${blade(ctx, i)}", "+${n("price")} gold, +${config.worldEvents.collectorReputation} reputation. The blade leaves Emberfall for good.",
-                        blocked = if (w == null) "The blade is no longer in the shop." else null) { c ->
+                    Opt("sell", "Sell ${blade(ctx, i)}", "+${n("price")} gold, +${config.worldEvents.collectorReputation} reputation. The weapon leaves Emberfall permanently.",
+                        blocked = if (w == null) "The weapon is no longer in the shop." else null) { c ->
                         val blade = c.weapon(i.weaponId!!)
                         c.gold += n("price")
                         c.reputation += c.config.worldEvents.collectorReputation
                         c.updateWeapon(blade.copy(location = WeaponLocation.Lost(c.day, "sold to a collector")))
-                        c.addWeaponHistory(blade.id, "COLLECTED", "Bought by a collector for ${n("price")} gold and taken to a distant vault.")
-                        "A collector paid ${n("price")} gold for ${blade.name} and carried it off to a distant vault."
+                        c.addWeaponHistory(blade.id, "COLLECTED", "Bought by a collector for ${n("price")} gold. Left Emberfall.")
+                        "A collector bought ${blade.name} for ${n("price")} gold and took it out of town."
                     },
-                    pass("Keep it for the town", "The smith kept ${blade(ctx, i)}; the collector left empty-handed."),
+                    pass("Keep it for the town", "Kept ${blade(ctx, i)}. The collector left without it."),
                 )
             }
             Depth.CRACKED_FAMILY_BLADE -> {
                 val w = inShop(ctx, i.weaponId)?.takeIf { it.isInStorage }
-                val lost = if (w == null) "The blade is no longer in storage." else null
+                val lost = if (w == null) "The weapon is no longer in storage." else null
                 listOf(
-                    Opt("restore", "Restore it for ${name(ctx, i.heroId)}", "The blade is made whole and kept for them: they collect it by day ${n("deadline")} for ${n("reward")} gold.",
+                    Opt("restore", "Restore it for ${name(ctx, i.heroId)}", "Restores the weapon to full condition and reserves it for them. They pay ${n("reward")} gold when they collect it by day ${n("deadline")}.",
                         energy = n("energy"), material = i.materialId, blocked = lost ?: gone(ctx, i.heroId) ?: noSlot(ctx)) { c ->
                         val blade = c.weapon(i.weaponId!!)
                         val o = order(c, i.heroId!!, blade.familyId, 1, n("reward"), n("deadline"), CommissionKind.HEIRLOOM, blade.id)
                         c.updateWeapon(blade.copy(condition = 100, promisedTo = o.id))
-                        c.addWeaponHistory(blade.id, "RESTORED", "Made whole for ${name(c, i.heroId)}, who knew ${name(c, i.otherHeroId)}.", listOf(i.heroId.value))
-                        "The smith restored ${blade.name}, once ${name(c, i.otherHeroId)}'s, for ${name(c, i.heroId)}."
+                        c.addWeaponHistory(blade.id, "RESTORED", "Restored for ${name(c, i.heroId)}, who knew ${name(c, i.otherHeroId)}.", listOf(i.heroId.value))
+                        "Restored ${blade.name} for ${name(c, i.heroId)}. It once belonged to ${name(c, i.otherHeroId)}."
                     },
-                    Opt("collector", "Sell it to the collector", "+${n("collector")} gold. The blade leaves Emberfall for good.", blocked = lost) { c ->
+                    Opt("collector", "Sell it to the collector", "+${n("collector")} gold. The weapon leaves Emberfall permanently.", blocked = lost) { c ->
                         val blade = c.weapon(i.weaponId!!)
                         c.gold += n("collector")
                         c.updateWeapon(blade.copy(location = WeaponLocation.Lost(c.day, "sold to a collector")))
-                        c.addWeaponHistory(blade.id, "COLLECTED", "Sold to a collector for ${n("collector")} gold, though ${name(c, i.heroId)} had asked for it.")
-                        "The smith sold ${blade.name}, once ${name(c, i.otherHeroId)}'s, to a collector for ${n("collector")} gold; ${name(c, i.heroId)} left without it."
+                        c.addWeaponHistory(blade.id, "COLLECTED", "Sold to a collector for ${n("collector")} gold. ${name(c, i.heroId)} had wanted it.")
+                        "Sold ${blade.name} to a collector for ${n("collector")} gold. It once belonged to ${name(c, i.otherHeroId)}. ${name(c, i.heroId)} left without it."
                     },
-                    pass("Keep it as it is", "The smith kept ${blade(ctx, i)} in storage; ${name(ctx, i.heroId)} left without it."),
+                    pass("Keep it as it is", "Kept ${blade(ctx, i)} in storage. ${name(ctx, i.heroId)} left without it."),
                 )
             }
             Depth.CROOKED_MERCHANT -> listOfNotNull(
-                Opt("buy", if (i.inspected) "Buy it" else "Buy it unseen", if (i.inspected) "The blade joins your storage." else "A ${mat(ctx, i.materialId)} ${family(ctx, i.familyId)} with one unknown flaw joins your storage.", gold = n("price")) { c ->
+                Opt("buy", if (i.inspected) "Buy it" else "Buy it unseen", if (i.inspected) "Adds the weapon to storage." else "Adds a ${mat(ctx, i.materialId)} ${family(ctx, i.familyId)} with one unknown flaw to storage.", gold = n("price")) { c ->
                     val b = i.blade!!.copy(id = c.newWeaponId(), forgedDay = c.day, history = listOf(HistoryEntry(c.era, c.day, "BOUGHT", "Bought from a crooked merchant for ${n("price")} gold.")))
                     c.updateWeapon(b)
-                    "The smith bought ${b.name} from a crooked merchant for ${n("price")} gold" + (if (i.inspected) "." else ", unseen. It proved ${b.flaws.joinToString { f -> c.content.affix(f).name.lowercase() }}.")
+                    "Bought ${b.name} from the merchant for ${n("price")} gold" + (if (i.inspected) "." else " without inspecting it. Its flaw is ${b.flaws.joinToString { f -> c.content.affix(f).name }}.")
                 },
-                if (i.inspected) null else Opt("inspect", "Pay to look it over", "Shows exactly what the blade is. You can still buy it or leave.", gold = n("fee"), closes = false) { c ->
+                if (i.inspected) null else Opt("inspect", "Inspect the weapon", "Reveals the weapon's stats and flaw. You can then buy it or walk away.", gold = n("fee"), closes = false) { c ->
                     c.encounter = i.copy(inspected = true)
-                    "The smith paid ${n("fee")} gold to look over a crooked merchant's blade."
+                    "Paid ${n("fee")} gold to inspect the merchant's weapon."
                 },
-                pass("Walk away", "The smith sent a crooked merchant on his way."),
+                pass("Walk away", "Declined the merchant's offer."),
             )
             Depth.SMITHS_WAGER -> listOf(
-                Opt("wager", "Take the wager", "Stake ${n("stake")} gold. Forge a ${family(ctx, i.familyId)} of quality ${n("quality")}+ by the end of day ${n("due")}: " +
-                    (if (Relics.unowned(ctx).isNotEmpty()) "a relic to choose" else "${n("payout")} gold") + ". Otherwise the stake is lost.", gold = n("stake")) { c ->
+                Opt("wager", "Take the wager", "Stake ${n("stake")} gold. Forge a ${family(ctx, i.familyId)} with quality ${n("quality")} or better by the end of day ${n("due")}. Reward: " +
+                    (if (Relics.unowned(ctx).isNotEmpty()) "a relic to choose" else "${n("payout")} gold") + ". Miss the deadline and you lose the stake.", gold = n("stake")) { c ->
                     c.consequences += ScheduledConsequence("q${i.id}", ConsequenceKind.WAGER, n("due"), familyId = i.familyId, amounts = mapOf("serial" to c.nextWeaponSerial, "quality" to n("quality"), "payout" to n("payout"), "stake" to n("stake")))
-                    "The smith staked ${n("stake")} gold on forging a ${family(c, i.familyId)} of quality ${n("quality")} or better by day ${n("due")}."
+                    "Staked ${n("stake")} gold on a ${family(c, i.familyId)} with quality ${n("quality")} or better by day ${n("due")}."
                 },
-                Opt("order", "Take a plain order instead",
-                    i.otherHeroId?.let { "An order from ${name(ctx, it)} for a ${family(ctx, i.otherFamilyId)} of quality ${n("orderQuality")}+ by day ${n("orderDeadline")} at ${n("orderReward")} gold." } ?: "No patron is free.",
+                Opt("order", "Take a regular order",
+                    i.otherHeroId?.let { "An order from ${name(ctx, it)} for a ${family(ctx, i.otherFamilyId)} of quality ${n("orderQuality")}+ by day ${n("orderDeadline")} at ${n("orderReward")} gold." } ?: "No customer is available.",
                     blocked = if (i.otherHeroId == null) "Nobody in town has an order to place." else gone(ctx, i.otherHeroId) ?: noSlot(ctx)) { c ->
                     order(c, i.otherHeroId!!, i.otherFamilyId!!, n("orderQuality"), n("orderReward"), n("orderDeadline"), CommissionKind.ORDINARY)
-                    "The smith declined a wager and took ${name(c, i.otherHeroId)}'s order for ${n("orderReward")} gold instead."
+                    "Declined the wager and accepted ${name(c, i.otherHeroId)}'s ${n("orderReward")} gold order."
                 },
-                pass("Refuse", "The smith refused a passing smith's wager."),
+                pass("Refuse", "Declined the visiting smith's wager."),
             )
             Depth.FESTIVAL_CONTRACT -> listOf(
                 Opt("stall", "Pay for a festival stall", "The festival crowd comes to the shop today.", gold = n("fee")) { c ->
                     c.worldFlags[WorldEvents.FLAG_FESTIVAL] = c.day
-                    "The forge took a stall at the festival for ${n("fee")} gold; the crowd is at the shop today."
+                    "Paid ${n("fee")} gold for a festival stall. More shoppers will visit today."
                 },
-                Opt("watch", "Arm the watch for the council", "${n("bounty")} gold for each of the next ${n("blades")} blades you give the town watch, until the end of day ${n("until")}.") { c ->
+                Opt("watch", "Arm the watch for the council", "Earn ${n("bounty")} gold for each of the next ${n("blades")} weapons donated to the watch. Offer ends after day ${n("until")}.") { c ->
                     c.consequences += ScheduledConsequence("q${i.id}", ConsequenceKind.WATCH_BOUNTY, n("until"), amounts = mapOf("left" to n("blades"), "gold" to n("bounty")))
-                    "The council will pay the smith ${n("bounty")} gold a blade for arming the watch, ${n("blades")} blades until day ${n("until")}."
+                    "The council will pay ${n("bounty")} gold per weapon donated to the watch. Up to ${n("blades")} weapons, through day ${n("until")}."
                 },
                 pass("Stay out of it", "The forge kept out of the festival."),
             )
@@ -327,24 +327,24 @@ internal object EncounterCatalog {
                 val hero = ctx.heroes[i.heroId]?.takeIf { it.isAlive }
                 val pays = minOf(n("owed"), hero?.gold ?: 0)
                 listOfNotNull(
-                    Opt("collect", "Take what they owe", "+$pays gold from ${name(ctx, i.heroId)}'s purse" + (if (pays < n("owed")) ", all they have." else "."), blocked = gone(ctx, i.heroId)) { c ->
+                    Opt("collect", "Take what they owe", "Receive $pays gold from ${name(ctx, i.heroId)}" + (if (pays < n("owed")) ". That is all they have." else "."), blocked = gone(ctx, i.heroId)) { c ->
                         val h = c.hero(i.heroId!!)
                         val paid = minOf(n("owed"), h.gold)
                         c.updateHero(h.copy(gold = h.gold - paid))
                         c.gold += paid
-                        "${h.fullName} paid the smith $paid gold of the debt for ${blade(c, i)}."
+                        "${h.fullName} repaid $paid gold for ${blade(c, i)}."
                     },
-                    Opt("forgive", "Forgive the debt", "${name(ctx, i.heroId)} becomes a regular of the shop and drills the militia (+${config.depth.pledgeMilitia}).", blocked = gone(ctx, i.heroId)) { c ->
+                    Opt("forgive", "Forgive the debt", "${name(ctx, i.heroId)} becomes a regular and trains the militia. Adds ${config.depth.pledgeMilitia} militia strength.", blocked = gone(ctx, i.heroId)) { c ->
                         val h = c.hero(i.heroId!!)
                         c.updateHero(h.copy(loyalty = maxOf(h.loyalty, c.config.regularLoyaltyThreshold)))
                         c.town = c.town.copy(militia = minOf(maxOf(c.config.militiaMax, c.town.militia), c.town.militia + c.config.depth.pledgeMilitia))
-                        "The smith forgave ${h.fullName}'s debt; they drill the militia now and swear by the forge."
+                        "Forgave ${h.fullName}'s debt. They became a regular and trained the militia."
                     },
-                    if (n("stood") == 1 && n("held") == 1) Opt("speak", "Have them speak for the forge", "+${config.depth.pledgeReputation} reputation: the town hears whose blade held the wall.", blocked = gone(ctx, i.heroId)) { c ->
+                    if (n("stood") == 1 && n("held") == 1) Opt("speak", "Have them speak for the forge", "Adds ${config.depth.pledgeReputation} reputation. They tell the town about your weapon.", blocked = gone(ctx, i.heroId)) { c ->
                         c.reputation += c.config.depth.pledgeReputation
-                        "${name(c, i.heroId)} told the town whose blade held the wall; the debt was settled in good name."
+                        "${name(c, i.heroId)} praised your work around town. The debt was settled through reputation."
                     } else null,
-                    pass("Leave it for now", "The smith let ${name(ctx, i.heroId)}'s debt rest; nothing was settled."),
+                    pass("Leave it for now", "Left ${name(ctx, i.heroId)}'s debt unsettled."),
                 )
             }
             else -> listOf(pass("Send them away", "The visitor left."))

@@ -38,36 +38,36 @@ internal class StartOverText(val button: String, val does: String, val confirmTi
 internal class LoadFailureText(val title: String, val happened: String, val safe: String, val startOver: StartOverText?, val details: List<String> = emptyList())
 
 private const val UNTOUCHED = "Nothing has been deleted or changed."
-private const val NO_WAY_BACK = "The game cannot bring a backup back by itself"
+private const val NO_WAY_BACK = "The game cannot automatically restore this backup"
 
 private fun startOver(does: String, confirm: String) = StartOverText("Start over (keeps a backup)", does, "Start over?", confirm, "Start over")
 
 internal fun loadFailureText(f: SaveFailure): LoadFailureText = when (f) {
     is SaveFailure.Corrupt -> if (f.key == "legacy") legacyRowText(newer = false, runSound = f.runSound) else runRowText(
-        "The saved run cannot be read", "The save that holds your current run is damaged, so the game cannot open it.", "the unreadable run", newer = false,
+        "The saved run cannot be read", "Your current run's save is damaged and couldn't be opened.", "the unreadable run", newer = false,
     )
     is SaveFailure.Newer -> (if (f.key == "legacy") legacyRowText(newer = true, runSound = f.runSound) else newerRunText())
-        .let { LoadFailureText(it.title, it.happened, it.safe, it.startOver, listOf("Save format ${f.found}; this version reads up to ${f.supported}.")) }
+        .let { LoadFailureText(it.title, it.happened, it.safe, it.startOver, listOf("Save format ${f.found}. This version supports up to ${f.supported}.")) }
     is SaveFailure.Incompatible -> {
         val details = f.problems.take(3) + listOfNotNull("and ${f.problems.size - 3} more".takeIf { f.problems.size > 3 })
         // A run from newer rules or content is not a damaged run: the way on is to update the game.
         val text = if (f.problems.any { it.startsWith("Run uses rules") || it.startsWith("Run uses content") }) newerRunText() else runRowText(
-            "This version cannot continue the saved run", "The run holds something this version of the game does not know how to play.", "the run this version cannot play", newer = false,
+            "This version cannot continue the saved run", "This run contains game data that this version doesn't support.", "the run this version cannot play", newer = false,
         )
         LoadFailureText(text.title, text.happened, text.safe, text.startOver, details)
     }
     is SaveFailure.FileDamaged -> LoadFailureText(
         "The save file is damaged",
-        "The file that holds your current run and your legacy (points, upgrades and legends) is damaged, so the game cannot open it.",
+        "The save for your run and legacy is damaged. It couldn't be opened.",
         UNTOUCHED,
         startOver(
-            "Sets the damaged file aside on this device, not deleted, and begins again from era 1 with no run, points, upgrades or legends.",
-            "The damaged save file is set aside, not deleted. $NO_WAY_BACK, so your run and your points, upgrades and legends will be gone from the game. You begin again from era 1.",
+            "Keeps the damaged save as a backup on this device. Starts era 1 with no run, points, upgrades or legends.",
+            "Keeps the damaged save as a backup. Your run, points, upgrades and legends will be removed from the active game. Starts era 1. $NO_WAY_BACK.",
         ),
     )
     is SaveFailure.Io -> LoadFailureText(
         "The save could not be opened",
-        "The device's storage did not answer. This is often temporary, for example when storage is full.",
+        "Couldn't access the device's storage. Try again. Check for free space if this continues.",
         "Nothing has been deleted.",
         startOver = null,
     )
@@ -75,16 +75,16 @@ internal fun loadFailureText(f: SaveFailure): LoadFailureText = when (f) {
 
 private fun newerRunText() = runRowText(
     "This save is from a newer version",
-    "The save that holds your current run was written by a newer version of Tiny Blacksmith. Update the game to go on with it.",
+    "A newer version of Tiny Blacksmith saved this run. Update the game to continue.",
     "the run from the newer version", newer = true,
 )
 
 /** Only the run row is the problem: the legacy row was read, so it is safe and stays. */
 private fun runRowText(title: String, happened: String, theRun: String, newer: Boolean) = LoadFailureText(
-    title, happened, "$UNTOUCHED Your legacy (points, upgrades and legends) is stored separately and is safe.",
+    title, happened, "$UNTOUCHED Your points, upgrades and legends are stored separately and are safe.",
     startOver(
-        "Sets $theRun aside as a backup on this device and returns to the title. Your legacy is kept.",
-        "${theRun.replaceFirstChar { it.uppercase() }} is set aside, not deleted. $NO_WAY_BACK, so you will not be able to continue that run" + (if (newer) ", even after updating." else "."),
+        "Keeps $theRun as a backup on this device and returns to the title screen. Keeps your legacy.",
+        "Keeps ${theRun} as a backup. You won't be able to continue that run. $NO_WAY_BACK" + (if (newer) ", even after updating." else "."),
     ),
 )
 
@@ -96,27 +96,27 @@ private fun legacyRowText(newer: Boolean, runSound: Boolean): LoadFailureText {
     val theRecord = if (newer) "the legacy record from the newer version" else "the unreadable legacy record"
     val title = if (newer) "This save is from a newer version" else "The legacy record cannot be read"
     val happened = "The save that holds your legacy record (points, upgrades and legends) " +
-        (if (newer) "was written by a newer version of Tiny Blacksmith. Update the game to go on with it." else "is damaged, so the game cannot open it.")
+        (if (newer) "was saved by a newer version of Tiny Blacksmith. Update the game to continue." else "is damaged and couldn't be opened.")
     if (runSound) return LoadFailureText(
-        title, happened, "$UNTOUCHED Your current run can still be read, and it carries its own copy of your legacy.",
+        title, happened, "$UNTOUCHED Your current run can still be opened. It contains a copy of your legacy.",
         StartOverText(
             "Rebuild the legacy from the run",
-            "Sets $theRecord aside as a backup on this device and rebuilds it from the copy inside your current run. The run goes on." +
-                (if (newer) " Whatever the newer version added to the legacy stays in the backup." else ""),
+            "Keeps $theRecord as a backup. Restores the legacy copy from your current run, then continues the run." +
+                (if (newer) " Any legacy data added by the newer version stays only in the backup." else ""),
             "Rebuild the legacy?",
-            "${theRecord.replaceFirstChar { it.uppercase() }} is set aside, not deleted, and replaced by the copy your current run carries. " +
-                "Your run goes on with the points, upgrades and legends in that copy. If that run has already ended, you claim its legacy again, " +
-                "and upgrades bought after it ended are bought again with the points you get back." +
-                (if (newer) " $NO_WAY_BACK, so whatever the newer version added is not there, even after updating." else ""),
+            "Keeps $theRecord as a backup and replaces it with the legacy copy from your current run. " +
+                "Continues with the points, upgrades and legends in that copy. If the run has ended, claim its legacy again, " +
+                "then buy any later upgrades again using the restored points." +
+                (if (newer) " Data added by the newer version remains only in the backup, even after updating. $NO_WAY_BACK." else ""),
             "Rebuild",
         ),
     )
     return LoadFailureText(
         title, happened, UNTOUCHED,
         startOver(
-            "Sets $theRecord aside as a backup on this device, with the current run if there is one, then begins again from era 1 with no points, upgrades or legends.",
-            "${theRecord.replaceFirstChar { it.uppercase() }} is set aside, not deleted, and so is any run in progress. $NO_WAY_BACK, " +
-                "so your points, upgrades and legends and that run will be gone from the game" + (if (newer) ", even after updating." else ".") + " You begin again from era 1.",
+            "Keeps $theRecord and any current run as backups. Starts era 1 with no points, upgrades or legends.",
+            "Keeps $theRecord and any current run as backups. $NO_WAY_BACK. " +
+                "Your run, points, upgrades and legends will be removed from the active game" + (if (newer) ", even after updating." else ".") + " You begin again from era 1.",
         ),
     )
 }
@@ -138,7 +138,7 @@ fun LoadFailedScreen(failure: SaveFailure, working: Boolean, onRetry: () -> Unit
         Text(text.safe, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = Space.sm))
 
         PrimaryActionButton(if (working) "Reading the save..." else "Try again", onRetry, Modifier.fillMaxWidth().padding(top = Space.lg).testTag("load_retry"), enabled = !working)
-        Secondary("Reads the save again. Changes nothing.", Modifier.padding(top = Space.xs))
+        Secondary("Tries to open the save again without changing it.", Modifier.padding(top = Space.xs))
 
         text.startOver?.let { over ->
             SecondaryActionButton(over.button, { confirming = true }, Modifier.fillMaxWidth().padding(top = Space.lg).testTag("load_start_over"), enabled = !working)
@@ -176,11 +176,11 @@ fun SaveFailureDialog(op: GameSession.Op, unconfirmed: Boolean, onRetry: () -> U
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
                 if (unconfirmed) {
-                    Text("The game could not confirm whether " + (if (endDay) "the day" else "that last action") + " was saved. What you see is the game as it was before it.")
-                    Secondary("Try again saves it for certain; nothing is done twice. Keep working goes on without it. If this keeps happening, the device may be out of storage space.")
+                    Text("Couldn't confirm whether " + (if (endDay) "the day" else "that last action") + "was saved. You're seeing the state from before that action.")
+                    Secondary("Try again safely retries the save without repeating the action. Keep working continues from the state shown. Check storage space if this continues.")
                 } else {
-                    Text("Nothing has changed. The game is exactly as it was before " + (if (endDay) "you ended the day." else "that last action."))
-                    Secondary("Try again repeats it. Keep working goes back without it. If this keeps happening, the device may be out of storage space.")
+                    Text("The game is still in the state from before " + (if (endDay) "you ended the day." else "that last action."))
+                    Secondary("Try again retries the action. Keep working returns without it. Check storage space if this continues.")
                 }
             }
         },

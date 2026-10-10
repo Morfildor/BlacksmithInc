@@ -106,7 +106,7 @@ object Heroes {
     private fun rest(ctx: ResolutionContext, hero: Hero) {
         val healed = minOf(100, hero.health + ctx.config.heroRestHeal)
         ctx.updateHero(hero.copy(health = healed, lastActivity = HeroActivity.REST))
-        val e = ctx.emit(EventType.HERO_RESTED, 0, "${hero.fullName} rested and recovered.", listOf(hero.id.value))
+        val e = ctx.emit(EventType.HERO_RESTED, 0, "${hero.fullName} rested and regained health.", listOf(hero.id.value))
         ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.RESTED, eventIds = listOf(e.id))
     }
 
@@ -138,7 +138,7 @@ object Heroes {
             h = ctx.hero(h.id)
         }
         val guild = ctx.town.guilds.first { it.id == h.guildId }
-        val e = ctx.emit(EventType.GUILD_TRAINED, 0, "${h.fullName} trained at the hall of ${guild.name}.", listOf(h.id.value), mapOf("guild" to guild.id))
+        val e = ctx.emit(EventType.GUILD_TRAINED, 0, "${h.fullName} trained with ${guild.name}.", listOf(h.id.value), mapOf("guild" to guild.id))
         ctx.field += FieldResult(h.id, h.fullName, FieldOutcome.GUILD_TRAINED, eventIds = listOf(e.id))
         grantXp(ctx, h.copy(health = minOf(100, h.health + config.heroLife.guildHeal), lastActivity = HeroActivity.GUILD), config.heroLife.guildXp)
     }
@@ -151,7 +151,7 @@ object Heroes {
         val present = atHall.map { ctx.hero(it) }
         for (pupil in present) {
             val mentor = present.filter { it.guildId == pupil.guildId && it.level > pupil.level }.sortedWith(compareBy(IdOrder.numeric) { it.id.value }).maxByOrNull { it.level } ?: continue
-            val e = ctx.emit(EventType.GUILD_MENTORED, 2, "${pupil.fullName} was taught by ${mentor.fullName} at the guild hall.", listOf(pupil.id.value, mentor.id.value))
+            val e = ctx.emit(EventType.GUILD_MENTORED, 2, "${mentor.fullName} trained ${pupil.fullName} at the guild hall.", listOf(pupil.id.value, mentor.id.value))
             ctx.field += FieldResult(pupil.id, pupil.fullName, FieldOutcome.GUILD_LESSON, withHeroId = mentor.id, eventIds = listOf(e.id))
             ctx.field += FieldResult(mentor.id, mentor.fullName, FieldOutcome.GUILD_TAUGHT, withHeroId = pupil.id, eventIds = listOf(e.id))
             grantXp(ctx, pupil.copy(mentorName = pupil.mentorName ?: mentor.fullName), ctx.config.heroLife.mentorXp)
@@ -166,20 +166,20 @@ object Heroes {
         when (ambition) {
             // A slayer goes looking for the strongest foe in the field: an expedition with a raised elite chance.
             Ambition.SLAYER -> {
-                ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} went hunting for a foe worth the vow.", listOf(hero.id.value), data)
+                ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} went hunting to fulfill their vow.", listOf(hero.id.value), data)
                 expedition(ctx, hero, weapon, factionId, faction, config.heroLife.slayerHuntEliteChance)
             }
             // A sworn defender drills the watch: more militia than a patrol raises, but no suppression and no pay.
             Ambition.DEFENDER -> {
                 ctx.town = ctx.town.copy(militia = minOf(config.militiaMax, ctx.town.militia + config.heroLife.defenderDrillMilitia))
-                val e = ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} drilled the town watch.", listOf(hero.id.value), data)
+                val e = ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} trained the town watch.", listOf(hero.id.value), data)
                 ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.AMBITION_DAY, eventIds = listOf(e.id))
             }
             // A prized weapon and a fortune both take gold: a day of paid work, and nothing else.
             Ambition.COLLECTOR, Ambition.FORTUNE -> {
                 ctx.updateHero(hero.copy(gold = hero.gold + config.heroLife.ambitionWorkGold))
                 val goal = if (ambition == Ambition.COLLECTOR) "saving for a prized weapon" else "building a fortune"
-                val e = ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} took guard work for ${config.heroLife.ambitionWorkGold} gold, $goal.", listOf(hero.id.value), data + ("gold" to config.heroLife.ambitionWorkGold.toString()))
+                val e = ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} earned ${config.heroLife.ambitionWorkGold} gold from guard work. They're $goal.", listOf(hero.id.value), data + ("gold" to config.heroLife.ambitionWorkGold.toString()))
                 ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.AMBITION_DAY, gold = config.heroLife.ambitionWorkGold, eventIds = listOf(e.id))
             }
         }
@@ -190,7 +190,7 @@ object Heroes {
         var h = hero.copy(xp = hero.xp + xp)
         while (h.xp >= ctx.config.heroLevelXp && h.level < ctx.config.heroMaxLevel) {
             h = h.copy(level = h.level + 1, xp = h.xp - ctx.config.heroLevelXp)
-            ctx.emit(EventType.HERO_LEVELED, 2, "${h.fullName} grew stronger (level ${h.level}).", listOf(h.id.value))
+            ctx.emit(EventType.HERO_LEVELED, 2, "${h.fullName} reached level ${h.level}.", listOf(h.id.value))
             if (h.level >= ctx.config.heroLife.milestoneLevel) ctx.milestone("HERO_LEVEL_5", "${h.fullName} reached level ${ctx.config.heroLife.milestoneLevel}.")
         }
         ctx.updateHero(h)
@@ -209,7 +209,7 @@ object Heroes {
         if (alive >= cfg.minHeroPopulation && roll >= chance) return
         val h = generate(ctx, rng)
         ctx.updateHero(h)
-        ctx.emit(EventType.HERO_ARRIVED, 3, "A new adventurer, ${h.fullName} the ${ctx.content.heroClass(h.classId).name}, arrived in Emberfall.", listOf(h.id.value))
+        ctx.emit(EventType.HERO_ARRIVED, 3, "${h.fullName}, a ${ctx.content.heroClass(h.classId).name}, arrived in Emberfall.", listOf(h.id.value))
     }
 
     /**
@@ -232,13 +232,13 @@ object Heroes {
     fun retire(ctx: ResolutionContext, hero: Hero, rng: Rng) {
         ctx.updateHero(hero.copy(fate = HeroFate.RETIRED, retiredOnDay = ctx.day, lastActivity = HeroActivity.IDLE))
         ctx.town = ctx.town.copy(championIds = ctx.town.championIds.filter { it != hero.id })
-        ctx.emit(EventType.HERO_RETIRED, 6, "${hero.fullName} retired after a storied career (level ${hero.level}, ${hero.victories} victories).", listOf(hero.id.value))
+        ctx.emit(EventType.HERO_RETIRED, 6, "${hero.fullName} retired at level ${hero.level}, with ${hero.victories} victories.", listOf(hero.id.value))
         var guildId = hero.guildId
         if (guildId == null && hero.fame >= ctx.config.guildFameThreshold) guildId = foundGuild(ctx, ctx.hero(hero.id)).id
         val newcomer = generate(ctx, rng)
         val mentee = newcomer.copy(level = newcomer.level + ctx.config.heroLife.menteeLevelBonus, elementTaste = hero.elementTaste, guildId = guildId, mentorName = hero.fullName)
         ctx.updateHero(mentee)
-        ctx.emit(EventType.HERO_MENTORED, 4, "${mentee.fullName}, trained by ${hero.fullName}, took up the mentor's calling.", listOf(mentee.id.value, hero.id.value))
+        ctx.emit(EventType.HERO_MENTORED, 4, "${mentee.fullName} completed training with ${hero.fullName} and became an adventurer.", listOf(mentee.id.value, hero.id.value))
         // Every weapon the retiree owned passes to the mentee (one owner per weapon; retired heroes own nothing).
         for (w in ctx.weapons.values.filter { it.ownerId == hero.id }.sortedWith(compareByDescending<Weapon> { it.isEquipped }.thenBy(IdOrder.numeric) { it.id.value })) {
             ctx.addWeaponHistory(w.id, "INHERITED", "Inherited by ${mentee.fullName} from ${hero.fullName}.", listOf(mentee.id.value, hero.id.value))
@@ -278,13 +278,13 @@ object Heroes {
         ctx.reputation += config.ambitionReputation
         val weapon = ctx.equippedWeapon(heroId)
         val text = when (ambition) {
-            Ambition.SLAYER -> "${hero.fullName} kept a vow: ${config.ambitionSlayerWins} foes routed in the field."
-            Ambition.DEFENDER -> "${hero.fullName} swore to hold the walls of Emberfall, and held them."
-            Ambition.COLLECTOR -> "${hero.fullName} at last carries a weapon worth boasting of: ${weapon?.name ?: "a fine blade"}."
-            Ambition.FORTUNE -> "${hero.fullName} has made a fortune on the roads."
+            Ambition.SLAYER -> "${hero.fullName} fulfilled their vow by defeating ${config.ambitionSlayerWins} foes."
+            Ambition.DEFENDER -> "${hero.fullName} kept their promise to defend Emberfall."
+            Ambition.COLLECTOR -> "${hero.fullName} finally found a prized weapon. ${weapon?.name ?: "A fine piece of work"}."
+            Ambition.FORTUNE -> "${hero.fullName} reached their savings goal."
         }
         ctx.emit(EventType.AMBITION_FULFILLED, 6, text, listOfNotNull(hero.id.value, weapon?.id?.value), mapOf("ambition" to ambition.name))
-        ctx.milestone("AMBITION_FULFILLED", "A hero of Emberfall fulfilled a life's ambition.")
+        ctx.milestone("AMBITION_FULFILLED", "An Emberfall hero fulfilled their ambition.")
     }
 
     /** Player-facing line for the Town panel; progress is shown as plain counts, never weights. */
@@ -292,16 +292,16 @@ object Heroes {
         val a = hero.ambition ?: return null
         if (!hero.isAlive && !hero.ambitionDone) return null
         if (hero.ambitionDone) return when (a) {
-            Ambition.SLAYER -> "Kept a slayer's vow"
-            Ambition.DEFENDER -> "Held the walls as sworn"
+            Ambition.SLAYER -> "Fulfilled their slayer's vow"
+            Ambition.DEFENDER -> "Kept their promise to defend the walls"
             Ambition.COLLECTOR -> "Carries a prized weapon"
             Ambition.FORTUNE -> "Made a fortune"
         }
         return when (a) {
-            Ambition.SLAYER -> "Vows to rout ${config.ambitionSlayerWins} foes (${minOf(hero.expeditionWins, config.ambitionSlayerWins)}/${config.ambitionSlayerWins})"
-            Ambition.DEFENDER -> "Sworn to defend the walls in a siege"
-            Ambition.COLLECTOR -> "Wants a weapon of quality ${config.ambitionCollectorQuality}+ (has ${weapon?.quality ?: 0})"
-            Ambition.FORTUNE -> "Saving a fortune (${minOf(hero.gold, config.ambitionFortuneGold)}/${config.ambitionFortuneGold} gold)"
+            Ambition.SLAYER -> "Defeat ${config.ambitionSlayerWins} foes. ${minOf(hero.expeditionWins, config.ambitionSlayerWins)} defeated so far."
+            Ambition.DEFENDER -> "Wants to defend the walls during a siege"
+            Ambition.COLLECTOR -> "Wants quality ${config.ambitionCollectorQuality} or better. Current weapon quality ${weapon?.quality ?: 0}."
+            Ambition.FORTUNE -> "Save ${config.ambitionFortuneGold} gold. Currently ${minOf(hero.gold, config.ambitionFortuneGold)}."
         }
     }
 

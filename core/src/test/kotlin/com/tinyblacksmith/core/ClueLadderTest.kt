@@ -53,20 +53,20 @@ class ClueLadderTest {
         val first = s.forge(base(sunlance))
         s = first.state
         assertEquals(setOf(ClueRung.RECIPE), rungs(s, sunlance))
-        assertEquals("Hides something more", hint(s, sunlance))
-        assertTrue(first.events.single { it.data["key"] == sunlance.journalKey }.text.endsWith("it hides something more."))
+        assertEquals("A signature recipe is hidden here.", hint(s, sunlance))
+        assertTrue(first.events.single { it.data["key"] == sunlance.journalKey }.text.endsWith("This combination can make a signature weapon."))
         // Second miss without the catalyst: the catalyst rung, in the catalyst's own words.
         val second = s.forge(base(sunlance))
         s = second.state
         assertEquals(setOf(ClueRung.RECIPE, ClueRung.CATALYST), rungs(s, sunlance))
-        assertEquals("Hides something more; it wants a hotter fire", hint(s, sunlance))
+        assertEquals("A signature recipe is hidden here. This recipe needs a catalyst from dragon fire.", hint(s, sunlance))
         assertEquals(ClueRung.CATALYST.name, second.events.single { it.data["key"] == sunlance.journalKey }.data["rung"])
         // With the oil but the wrong temper: the temper rung. Then, right in everything it knows, the last rung.
         s = s.forge(base(sunlance, catalyst = true)).state
-        assertEquals("Hides something more; it wants a hotter fire; it wants more daring", hint(s, sunlance))
+        assertEquals("A signature recipe is hidden here. This recipe needs a catalyst from dragon fire. Use Reckless forging.", hint(s, sunlance))
         s = s.forge(base(sunlance, catalyst = true, risk = Risk.RECKLESS)).state
         assertEquals(ClueRung.entries.toSet(), rungs(s, sunlance))
-        assertTrue(hint(s, sunlance).endsWith("it wants finer work: at least superb"), hint(s, sunlance))
+        assertTrue(hint(s, sunlance).endsWith("Reach superb quality or better."), hint(s, sunlance))
         // The ladder is complete: a further miss says nothing new, and nothing above was a discovery.
         val more = s.forge(base(sunlance, catalyst = true, risk = Risk.RECKLESS))
         assertTrue(more.events.none { it.type == EventType.DISCOVERY && it.data["key"] == sunlance.journalKey })
@@ -80,7 +80,7 @@ class ClueLadderTest {
         // A recipe that takes no catalyst says so when its turn comes.
         var w = fresh()
         repeat(4) { w = w.forge(base(winterwake, risk = Risk.SAFE)).state }
-        assertEquals("Hides something more; it wants nothing added; it wants more patience; it wants finer work: at least fine", hint(w, winterwake))
+        assertEquals("A signature recipe is hidden here. This recipe needs no specific catalyst. Use Safe forging. Reach fine quality or better.", hint(w, winterwake))
     }
 
     @Test
@@ -91,11 +91,11 @@ class ClueLadderTest {
         assertEquals(catalysts.size, phrases.values.toSet().size, "one phrase each: $phrases")
         val generic = setOf(JournalRules.catalystPhrase(null), JournalRules.catalystPhrase(MaterialId("no_such_catalyst")))
         assertTrue(phrases.values.none { it in generic }, "and none is the fallback or the no-catalyst phrase: $phrases")
-        assertEquals("wants a hotter fire", phrases.getValue(LaunchContent.DRAGON_OIL))
-        assertEquals("wants nothing added", JournalRules.catalystPhrase(null))
+        assertEquals("needs a catalyst from dragon fire", phrases.getValue(LaunchContent.DRAGON_OIL))
+        assertEquals("needs no specific catalyst", JournalRules.catalystPhrase(null))
         // Every signature that needs a catalyst says so with that catalyst's phrase, and the catalyst's own description echoes it honestly.
         for (sig in SignatureCatalog.all) assertTrue(JournalRules.catalystPhrase(sig.catalystId) in JournalRules.clue(sig, ClueRung.CATALYST, config), sig.id)
-        for (c in catalysts) assertTrue(c.flavor.startsWith("Steadies the forge.") && "affix" !in c.flavor, "${c.name}: ${c.flavor}")
+        for (c in catalysts) assertTrue(c.flavor.startsWith("Helps the forge along.") && "affix" !in c.flavor, "${c.name}: ${c.flavor}")
         assertFalse(JournalRules.CATALYST_EFFECT.any { it.isDigit() || it == '%' })
     }
 
@@ -109,7 +109,7 @@ class ClueLadderTest {
                 // Only the rungs earned are shown: a clause appears exactly when its rung is held.
                 val have = JournalRules.rungs(journal, sig)
                 if (state != KnowledgeState.SIGNATURE_DISCOVERED) for (r in ClueRung.entries - ClueRung.RECIPE) {
-                    assertEquals(r in have && ClueRung.RECIPE in have, JournalRules.clue(sig, r, config) in text, "${sig.id} $bits $state $r: $text")
+                    assertEquals(r in have && ClueRung.RECIPE in have, JournalRules.clue(sig, r, config).replaceFirstChar { it.uppercase() } in text, "${sig.id} $bits $state $r: $text")
                 }
                 if (state == KnowledgeState.SIGNATURE_DISCOVERED) assertTrue(sig.name in text) else assertFalse(sig.name in text, text)
             }
@@ -118,7 +118,7 @@ class ClueLadderTest {
         // A profile from before the ladder: "observed" with no bits is the first rung, no more.
         val old = Journal(interactions = mapOf(sunlance.journalKey to KnowledgeState.OBSERVED))
         assertEquals(setOf(ClueRung.RECIPE), JournalRules.rungs(old, sunlance))
-        assertEquals("Hides something more", JournalRules.hint(old, content, sunlance.journalKey))
+        assertEquals("A signature recipe is hidden here.", JournalRules.hint(old, content, sunlance.journalKey))
     }
 
     @Test
@@ -132,7 +132,7 @@ class ClueLadderTest {
         assertEquals(setOf(ClueRung.RECIPE, ClueRung.CATALYST), JournalRules.rungs(afterOne.journal, sunlance))
 
         var two = fresh(8, legacy = afterOne)
-        assertEquals("Hides something more; it wants a hotter fire", hint(two, sunlance), "the new era opens knowing what the last one learned")
+        assertEquals("A signature recipe is hidden here. This recipe needs a catalyst from dragon fire.", hint(two, sunlance), "the new era opens knowing what the last one learned")
         two = two.forge(base(sunlance, catalyst = true)).state
         two = two.copy(town = two.town.copy(integrity = 1))
         while (!two.isEnded) two = (never.handle(two, Command.EndDay(TestSupport.endDayId(two))) as com.tinyblacksmith.core.engine.CommandOutcome.Accepted).state
@@ -184,7 +184,7 @@ class ClueLadderTest {
         assertTrue(WorldEvents.rumour(ctx, "Mira Vance, back from the kill,", HeroId("h1")))
         val told = ctx.newEvents.single()
         assertEquals(listOf(EventType.DISCOVERY, "true", "h1"), listOf(told.type, told.data["rumour"], told.data["hero"]))
-        assertTrue(told.text.startsWith("Mira Vance, back from the kill, spoke of a ") && told.text.endsWith("it hides something more.") && told.text.none { it == '%' }, told.text)
+        assertTrue(told.text.startsWith("Mira Vance, back from the kill, shared a clue about ") && told.text.endsWith("This combination can make a signature weapon.") && told.text.none { it == '%' }, told.text)
         val sig = SignatureCatalog.all.single { "sig:${it.id}" == told.data["key"] }
         assertEquals(setOf(ClueRung.RECIPE), JournalRules.rungs(ctx.legacy.journal, sig))
         assertTrue(ctx.rng(com.tinyblacksmith.core.rng.RngStream.EVENTS).state != before, "one pick on the EVENTS stream")

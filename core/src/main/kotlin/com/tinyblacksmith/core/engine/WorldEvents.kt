@@ -13,6 +13,7 @@ import com.tinyblacksmith.core.market.QualityBand
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.RngStream
 import com.tinyblacksmith.core.model.Journal as JournalModel
+import com.tinyblacksmith.core.text.asSentence
 
 /**
  * One scripted systemic world event (GDD 10): eligibility, weight, effects, story template and repetition limits.
@@ -62,7 +63,7 @@ object WorldEvents {
         ctx.eventCounters[RUMOUR] = (ctx.eventCounters[RUMOUR] ?: 0) + 1
         ctx.eventLastDay[RUMOUR] = ctx.day
         ctx.emit(
-            EventType.DISCOVERY, 3, "$teller spoke of a ${Journal.subjectName(ctx.content, sig.journalKey)}: ${Journal.clue(sig, rung, ctx.config)}.",
+            EventType.DISCOVERY, 3, "$teller shared a clue about ${Journal.subjectName(ctx.content, sig.journalKey)}. ${Journal.clue(sig, rung, ctx.config).replaceFirstChar { it.uppercase() }}.",
             data = mapOf("key" to sig.journalKey, "rung" to rung.name, "rumour" to "true") + (tellerId?.let { mapOf("hero" to it.value) } ?: emptyMap()),
         )
         return true
@@ -174,19 +175,19 @@ object WorldEvents {
                 ctx.worldFlags[FLAG_ORE_MERCHANT + m.id.value] = ctx.day + 1  // the morning's restock would overwrite stock added tonight
                 WorldEventOutcome(mapOf("material" to m.name, "materialId" to m.id.value))
             },
-            story = "A traveling ore merchant arrived with {material}.",
+            story = "An ore merchant arrived with {material} for sale.",
         ),
         // 2
         WorldEventDef(
             id = "caravan_delayed", name = "Trade Caravan Delayed", weight = 2.0, eligibility = { rareMaterials(it).isNotEmpty() }, maxPerRun = 4, cooldownDays = 3,
             apply = { ctx -> ctx.worldFlags[FLAG_CARAVAN_DELAYED] = ctx.day + 1; WorldEventOutcome() },
-            story = "The trade caravan was delayed on the mountain road; no rare ores will reach the supplier tomorrow.",
+            story = "The caravan is delayed in the mountains. The supplier gets no rare-material delivery tomorrow.",
         ),
         // 3
         WorldEventDef(
             id = "merchant_festival", name = "Merchant Festival", weight = 2.0, eligibility = { true }, maxPerRun = 4, cooldownDays = 4,
             apply = { ctx -> ctx.worldFlags[FLAG_FESTIVAL] = ctx.day + 1; WorldEventOutcome() },
-            story = "Emberfall declared a merchant festival: adventurers will crowd the shops tomorrow.",
+            story = "Emberfall's merchant festival starts tomorrow. Expect more shoppers.",
         ),
         // 4
         WorldEventDef(
@@ -197,7 +198,7 @@ object WorldEvents {
                 ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + n
                 WorldEventOutcome(mapOf("material" to m.name, "materialId" to m.id.value, "amount" to n.toString()))
             },
-            story = "Prospectors rediscovered an abandoned mine and sent {amount} {material} to the forge.",
+            story = "Prospectors reopened an old mine and sent you {amount} {material}.",
         ),
         // 5
         WorldEventDef(
@@ -216,7 +217,7 @@ object WorldEvents {
                 ctx.commissions[id] = c
                 WorldEventOutcome(mapOf("hero" to buyer.fullName, "family" to ctx.content.family(family).name, "request" to Commissions.describe(c, ctx.content, config), "reward" to reward.toString(), "day" to c.deadlineDay.toString()), listOf(buyer.id.value, id.value))
             },
-            story = "A noble patron, speaking through {hero}, commissions a {request} by day {day} for {reward} gold.",
+            story = "{hero} brings a noble's order. A {request} by day {day}, for {reward} gold.",
         ),
         // 6
         WorldEventDef(
@@ -226,11 +227,11 @@ object WorldEvents {
                 val rng = ctx.rng(RngStream.EVENTS)
                 val arrived = (1..ctx.config.newAdventurerCount).map { Heroes.generate(ctx, rng).also { h ->
                     ctx.updateHero(h)
-                    ctx.emit(EventType.HERO_ARRIVED, 2, "${h.fullName} the ${ctx.content.heroClass(h.classId).name} arrived in Emberfall.", listOf(h.id.value))
+                    ctx.emit(EventType.HERO_ARRIVED, 2, "${h.fullName}, a ${ctx.content.heroClass(h.classId).name}, arrived in Emberfall.", listOf(h.id.value))
                 } }
                 WorldEventOutcome(mapOf("names" to arrived.joinToString(" and ") { it.fullName }), arrived.map { it.id.value })
             },
-            story = "A band of new adventurers reached Emberfall: {names} are looking for work and weapons.",
+            story = "{names} arrived in Emberfall looking for work and weapons.",
         ),
         // 7
         WorldEventDef(
@@ -239,10 +240,10 @@ object WorldEvents {
                 val base = Heroes.generate(ctx, ctx.rng(RngStream.EVENTS))
                 val h = base.copy(level = maxOf(base.level, ctx.config.veteranLevel), gold = base.gold + ctx.config.veteranGold, fame = ctx.config.worldEvents.veteranFame)
                 ctx.updateHero(h)
-                ctx.emit(EventType.HERO_ARRIVED, 2, "${h.fullName} the ${ctx.content.heroClass(h.classId).name} arrived in Emberfall.", listOf(h.id.value))
+                ctx.emit(EventType.HERO_ARRIVED, 2, "${h.fullName}, a ${ctx.content.heroClass(h.classId).name}, arrived in Emberfall.", listOf(h.id.value))
                 WorldEventOutcome(mapOf("hero" to h.fullName, "class" to ctx.content.heroClass(h.classId).name), listOf(h.id.value))
             },
-            story = "{hero}, a veteran {class} of distant wars, returned to Emberfall with a heavy purse.",
+            story = "{hero}, a veteran {class}, returned with gold to spend.",
         ),
         // 8 Guild Founded and 9 Champion Retirement are deterministic generational rules (Heroes.resolveRetirements).
         // 10
@@ -259,12 +260,12 @@ object WorldEvents {
                 ctx.emit(EventType.WEAPON_INHERITED, 5, "${w.name} passed to ${heir.fullName}.", listOf(w.id.value, heir.id.value))
                 WorldEventOutcome(mapOf("weapon" to w.name, "fallen" to fallen, "hero" to heir.fullName), listOf(w.id.value, heir.id.value))
             },
-            story = "{weapon}, lost with {fallen}, was carried home by comrades and passed to {hero}.",
+            story = "Comrades recovered {weapon} after {fallen} died. It now belongs to {hero}.",
         ),
         // 11-13 faction pressure events; the slice has only the Ashclaw faction, the other two become eligible with their content.
         pressureEvent("raider_encampment", "Raider Encampment", "ashclaw_raiders", 3.0, "Scouts report a new {faction} encampment near Emberfall."),
-        pressureEvent("restless_graves", "Restless Graves", "hollowbound", 3.0, "The graves beyond the river stir; {faction} grow bolder."),
-        pressureEvent("volcanic_tremors", "Volcanic Tremors", "embermaw_brood", 3.0, "Tremors shake the ash slopes and the {faction} pour out of the vents."),
+        pressureEvent("restless_graves", "Restless Graves", "hollowbound", 3.0, "The graves across the river are stirring. {faction} pressure is rising."),
+        pressureEvent("volcanic_tremors", "Volcanic Tremors", "embermaw_brood", 3.0, "Tremors shake the ash slopes. The {faction} are gathering."),
         // 14
         WorldEventDef(
             id = "successful_patrol", name = "Successful Patrol", weight = 2.0,
@@ -276,7 +277,7 @@ object WorldEvents {
                 ctx.town = ctx.town.copy(militia = minOf(ctx.config.militiaMax, ctx.town.militia + ctx.config.successfulPatrolMilitia))
                 WorldEventOutcome(mapOf("hero" to hero.fullName, "faction" to ctx.content.faction(f.id).name), listOf(hero.id.value))
             },
-            story = "{hero} led a patrol that scattered {faction} scouts; the town breathes easier.",
+            story = "{hero}'s patrol scattered {faction} scouts. Pressure on the town eased.",
         ),
         // 15
         WorldEventDef(
@@ -289,7 +290,7 @@ object WorldEvents {
                 if (health < ctx.config.heroWoundedThreshold) ctx.emit(EventType.HERO_WOUNDED, 2, "${hero.fullName} returned wounded.", listOf(hero.id.value))
                 WorldEventOutcome(mapOf("hero" to hero.fullName), listOf(hero.id.value))
             },
-            story = "{hero} was ambushed on the border road and limped home bleeding.",
+            story = "{hero} was ambushed on the border road and returned wounded.",
         ),
         // 16
         WorldEventDef(
@@ -298,10 +299,10 @@ object WorldEvents {
                 val key = ctx.rng(RngStream.EVENTS).pick(keysInState(ctx, KnowledgeState.UNKNOWN))
                 setKnowledge(ctx, key, KnowledgeState.OBSERVED)
                 val subject = Journal.subjectName(ctx.content, key)
-                ctx.emit(EventType.DISCOVERY, 1, "Journal: $subject observed — ${Journal.describeAffinity(Journal.affinityFor(ctx.content, key))}.", data = mapOf("key" to key))
+                ctx.emit(EventType.DISCOVERY, 1, "New notes on $subject. ${Journal.describeAffinity(Journal.affinityFor(ctx.content, key)).replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 WorldEventOutcome(mapOf("subject" to subject, "key" to key))
             },
-            story = "Ancient smithing notes turned up in the market; they describe {subject}.",
+            story = "Old smithing notes turned up at the market. They describe {subject}.",
         ),
         // 17
         WorldEventDef(
@@ -311,10 +312,10 @@ object WorldEvents {
                 setKnowledge(ctx, key, KnowledgeState.OBSERVED)
                 key.substring(3).split("|").forEach { id -> ctx.materials[MaterialId(id)] = (ctx.materials[MaterialId(id)] ?: 0) + ctx.config.worldEvents.alloyMaterials }
                 val subject = Journal.subjectName(ctx.content, key)
-                ctx.emit(EventType.DISCOVERY, 1, "Journal: $subject observed — ${Journal.describeAffinity(Journal.affinityFor(ctx.content, key))}.", data = mapOf("key" to key))
+                ctx.emit(EventType.DISCOVERY, 1, "New notes on $subject. ${Journal.describeAffinity(Journal.affinityFor(ctx.content, key)).replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 WorldEventOutcome(mapOf("subject" to subject, "key" to key))
             },
-            story = "A mysterious alloy was traded to the forge; studying it taught something of {subject}.",
+            story = "A traded alloy revealed something about {subject}.",
         ),
         // 18
         WorldEventDef(
@@ -325,7 +326,7 @@ object WorldEvents {
                 ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + n
                 WorldEventOutcome(mapOf("material" to m.name, "materialId" to m.id.value, "amount" to n.toString()))
             },
-            story = "Pilgrims found a forgotten shrine and left {amount} {material} at the forge door.",
+            story = "Pilgrims found an old shrine and left you {amount} {material}.",
         ),
         // 19
         WorldEventDef(
@@ -336,10 +337,10 @@ object WorldEvents {
                 ctx.discoveriesThisRun += 1
                 val subject = Journal.subjectName(ctx.content, key)
                 val label = Journal.describeAffinity(Journal.affinityFor(ctx.content, key))
-                ctx.emit(EventType.DISCOVERY, 3, "Journal: $subject is now understood — $label.", data = mapOf("key" to key))
+                ctx.emit(EventType.DISCOVERY, 3, "Pairing learned. $subject. ${label.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 WorldEventOutcome(mapOf("subject" to subject, "label" to label, "key" to key))
             },
-            story = "A wandering master smith shared a trade secret: {subject} is {label}.",
+            story = "A master smith shared notes on {subject}. The pairing has {label}.",
         ),
         // 20
         WorldEventDef(
@@ -349,14 +350,14 @@ object WorldEvents {
                 Journal.earn(ctx, sig, ClueRung.RECIPE)   // the first rung of its ladder: the base recipe hides something more
                 for (id in listOf(sig.coreId, sig.augmentId)) ctx.materials[id] = (ctx.materials[id] ?: 0) + ctx.config.worldEvents.fragmentMaterials
                 val subject = Journal.subjectName(ctx.content, sig.journalKey)
-                ctx.emit(EventType.DISCOVERY, 3, "Journal: $subject — ${Journal.hint(ctx.legacy.journal, ctx.content, sig.journalKey)}.", data = mapOf("key" to sig.journalKey))
+                ctx.emit(EventType.DISCOVERY, 3, "Notes on $subject. ${Journal.hint(ctx.legacy.journal, ctx.content, sig.journalKey).asSentence()}", data = mapOf("key" to sig.journalKey))
                 WorldEventOutcome(mapOf("subject" to subject, "key" to sig.journalKey))
             },
-            story = "A strange weapon fragment was dug from the river mud; melted down it proved to be a {subject}, worked by hands that knew something more.",
+            story = "A weapon fragment found in the river held a clue to {subject}.",
         ),
         // 21
         WorldEventDef(
-            id = "famous_blade", name = "A Famous Blade Returns", weight = 1.0, eligibility = { returnable(it).isNotEmpty() }, maxPerRun = 1, cooldownDays = 0,
+            id = "famous_blade", name = "A Famous Weapon Returns", weight = 1.0, eligibility = { returnable(it).isNotEmpty() }, maxPerRun = 1, cooldownDays = 0,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)
                 val c = ctx.content
@@ -384,14 +385,14 @@ object WorldEvents {
                     mode = ForgeMode.ADVANCED, risk = Risk.BALANCED, quality = quality, rarity = Forge.rarityFor(quality, ctx.config), power = power,
                     element = legend.element ?: augment.element, affixes = emptyList(), flaws = flaws, location = WeaponLocation.Storage,
                     forgedEra = legend.era, forgedDay = 1, kills = legend.kills, fame = legend.fame, title = legend.title,
-                    history = legend.ownerLine + HistoryEntry(ctx.era, ctx.day, "RETURNED", "Returned to Emberfall in Era ${ctx.era}, worn and dormant; once carried by ${legend.owners.joinToString(", ").ifEmpty { "forgotten hands" }}."),
+                    history = legend.ownerLine + HistoryEntry(ctx.era, ctx.day, "RETURNED", "Returned to Emberfall in era ${ctx.era}, worn and dormant. Past owners include ${legend.owners.joinToString(", ").ifEmpty { "unknown heroes" }}."),
                     signatureId = signature, dormantAffixes = dormant, legendKey = legend.key,
                 )
                 ctx.updateWeapon(w)
                 ctx.emit(EventType.ARTIFACT_RETURNED, 6, "${w.name}, ${legend.title}, has returned to the forge.", listOf(w.id.value), mapOf("era" to legend.era.toString(), "legend" to legend.key, "power" to power.toString()))
                 WorldEventOutcome(mapOf("weapon" to w.name, "title" to legend.title, "era" to legend.era.toString()), listOf(w.id.value))
             },
-            story = "{weapon}, {title} of Era {era}, found its way back to the forge, dented and dormant.",
+            story = "{weapon}, known as {title} in era {era}, returned to the forge. Worn, with some properties dormant.",
         ),
         // 22
         WorldEventDef(
@@ -403,10 +404,10 @@ object WorldEvents {
                 val anchor = rng.pick(ctx.legacy.lineages.filter { l -> ctx.heroes.values.none { it.lineageId == l.id } })
                 val h = Heroes.generate(ctx, rng, anchor)
                 ctx.updateHero(h)
-                ctx.emit(EventType.HERO_ARRIVED, 2, "${h.fullName} the ${ctx.content.heroClass(h.classId).name} arrived in Emberfall.", listOf(h.id.value))
+                ctx.emit(EventType.HERO_ARRIVED, 2, "${h.fullName}, a ${ctx.content.heroClass(h.classId).name}, arrived in Emberfall.", listOf(h.id.value))
                 WorldEventOutcome(mapOf("hero" to h.fullName, "ancestor" to anchor.heroName, "deed" to anchor.deed), listOf(h.id.value))
             },
-            story = "{hero}, descendant of {ancestor} who {deed}, has come to Emberfall to honour the name.",
+            story = "{hero} arrived in Emberfall. Their ancestor {ancestor} {deed}.",
         ),
         // 23
         WorldEventDef(
@@ -417,7 +418,7 @@ object WorldEvents {
                 val era = ctx.legacy.eras.lastOrNull()?.era ?: ctx.era
                 WorldEventOutcome(mapOf("era" to era.toString()))
             },
-            story = "A forgotten guild banner from Era {era} was raised over the walls; the militia takes heart.",
+            story = "A guild banner from era {era} flies over the walls again. The militia's morale improved.",
         ),
         // 24
         WorldEventDef(
@@ -431,7 +432,7 @@ object WorldEvents {
                 ctx.earn(IncomeKind.COLLECTOR, price)
                 ctx.reputation += ctx.config.worldEvents.collectorReputation
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "sold to a collector")))
-                ctx.addWeaponHistory(w.id, "COLLECTED", "Bought by a collector for $price gold and taken to a distant vault.")
+                ctx.addWeaponHistory(w.id, "COLLECTED", "Bought by a collector for $price gold. Left Emberfall.")
                 WorldEventOutcome(
                     mapOf("weapon" to w.name, "price" to price.toString()), listOf(w.id.value),
                     MarketVisit(
@@ -440,13 +441,13 @@ object WorldEvents {
                     ),
                 )
             },
-            story = "A collector paid {price} gold for {weapon} and carried it off to a distant vault.",
+            story = "A collector bought {weapon} for {price} gold and took it out of town.",
         ),
         // 25
         WorldEventDef(
             id = "ballad", name = "Ballad of the Blacksmith", weight = 1.5, eligibility = { "FIRST_SALE" in it.milestones }, maxPerRun = 3, cooldownDays = 5,
             apply = { ctx -> ctx.reputation += ctx.config.balladReputation; WorldEventOutcome() },
-            story = "A bard's ballad of the Emberfall blacksmith spread through the taverns; customers arrive curious.",
+            story = "A bard is singing about your forge in the taverns. Word is getting around.",
         ),
     )
 }

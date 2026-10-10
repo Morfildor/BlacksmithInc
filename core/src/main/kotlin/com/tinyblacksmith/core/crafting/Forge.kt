@@ -144,19 +144,19 @@ object Forge {
         ctx.updateWeapon(weapon)
         ctx.emit(
             EventType.WEAPON_FORGED, 1,
-            "The smith forged $name (${rarity.name.lowercase()}, quality $quality)${if (flaws.isNotEmpty()) " with a flaw: ${flaws.joinToString { content.affix(it).name }}" else ""}.",
+            "Forged $name. ${rarity.name.lowercase().replaceFirstChar { it.uppercase() }}. Quality $quality${if (flaws.isNotEmpty()) ". Flaws include ${flaws.joinToString { content.affix(it).name }}" else ""}.",
             subjects = listOf(id.value),
             data = mapOf("quality" to quality.toString(), "rarity" to rarity.name, "exceptional" to exceptional.toString(), "defect" to defect.toString(), "augmentSaved" to augmentSaved.toString(),
                 "technique" to (cmd.technique?.name ?: "")) + (if (cmd.bellows) mapOf("bellows" to "true") else emptyMap()) + (if (ledger > 0) mapOf("ledger" to ledger.toString()) else emptyMap()),
         )
-        if (rarity == Rarity.LEGENDARY) ctx.milestone("LEGENDARY_FORGED", "A legendary weapon, $name, left the anvil.")
-        else if (rarity == Rarity.EPIC) ctx.milestone("EPIC_FORGED", "An epic weapon, $name, left the anvil.")
+        if (rarity == Rarity.LEGENDARY) ctx.milestone("LEGENDARY_FORGED", "Forged a legendary weapon. $name.")
+        else if (rarity == Rarity.EPIC) ctx.milestone("EPIC_FORGED", "Forged an epic weapon. $name.")
 
         if (signature != null) {
             val first = Journal.recordSignatureDiscovered(ctx, signature)
             ctx.emit(
                 EventType.SIGNATURE_DISCOVERED, 6,
-                if (first) "The metal answered: ${signature.name} was born on the anvil. ${signature.flavor}" else "${signature.name} rose from the anvil once more.",
+                if (first) "New signature discovered. ${signature.name}. ${signature.flavor}" else "Forged ${signature.name} again.",
                 subjects = listOf(id.value), data = mapOf("key" to signature.journalKey, "first" to first.toString()),
             )
         } else if (recipe != null) {

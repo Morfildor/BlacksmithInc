@@ -46,7 +46,7 @@ import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.WeaponId
 
 /** The order Storage is read in. STORED is the save's own order, the one the list had before it could be sorted. */
-enum class StorageSort(val label: String) { STORED("As stored"), STRONGEST("Strongest"), WEAKEST("Weakest"), DEAREST("Dearest") }
+enum class StorageSort(val label: String) { STORED("As stored"), STRONGEST("Strongest"), WEAKEST("Weakest"), DEAREST("Highest value") }
 
 /** Which stored blades are shown and in what order. [family] is a family's name and [rarity] a rarity, null for any; [unsold]: only blades no hero has carried. */
 data class StorageFilter(val family: String? = null, val rarity: Rarity? = null, val unsold: Boolean = false, val sort: StorageSort = StorageSort.STORED)
@@ -68,18 +68,18 @@ fun List<StockUi>.shown(filter: StorageFilter): List<StockUi> {
  */
 @Immutable data class BulkTerms(val salvageEnergy: Int, val energy: Int, val overworkLeft: Int, val armoryRoom: Int)
 
-private fun blades(n: Int) = if (n == 1) "1 blade" else "$n blades"
+private fun blades(n: Int) = if (n == 1) "1 weapon" else "$n weapons"
 
 /** The body of "Salvage n blades?": what it costs against what is left, and where it will stop. */
 internal fun salvageTerms(n: Int, t: BulkTerms): String {
     val cost = n * t.salvageEnergy
-    return "Each is melted down for one of its core metal and is gone for good. That is $cost energy; you have ${t.energy}." +
-        if (cost > t.energy) " Past that it is overwork (${t.overworkLeft} left today): tomorrow starts that much energy short. Salvaging stops when neither is left." else ""
+    return "Destroys each weapon and returns one unit of its metal. Costs $cost energy. You have ${t.energy}." +
+        if (cost > t.energy) "Extra energy is borrowed from tomorrow. You can borrow ${t.overworkLeft} more today. Salvaging stops when energy and overwork run out." else ""
 }
 
 /** The body of "Give n blades to the town watch?". */
 internal fun donateTerms(t: BulkTerms): String =
-    "They join the watch's armory and do not come back. The armory has room for ${t.armoryRoom} more defense; once it is full the watch takes no more."
+    "Gives these weapons to the town watch permanently. The armory can gain ${t.armoryRoom} more defense before it's full."
 
 private val FilterSaver = listSaver<StorageFilter, String>(
     save = { listOf(it.family.orEmpty(), it.rarity?.name.orEmpty(), it.unsold.toString(), it.sort.name) },
@@ -123,7 +123,7 @@ fun StorageSheet(
 
 /**
  * The stored blades as one lazy, keyed list: a storeroom of thousands composes only the rows in view. Its head narrows
- * the list (family, rarity, never sold) and orders it. With [terms], "Select blades" turns the rows into checkboxes and
+ * the list (family, rarity, never sold) and orders it. With [terms], "Select weapons" turns the rows into checkboxes and
  * a bar under the list salvages the chosen blades or gives them to the watch: each asks once, then [onBulk] gets the
  * action and the blades in the order shown. Only blades that are both chosen and shown are acted on. "Scrap" clears
  * the chosen blades in one command ([onScrap]); [scrapBack] is the engine's word on what comes back for them.
@@ -160,21 +160,21 @@ fun StorageList(
                     }
                     Secondary(
                         when {
-                            storage.isEmpty() -> "Nothing in storage. Forged blades wait here until you list them."
-                            select -> "Tap blades to choose them. ${blades(chosen.size)} chosen."
-                            shelfFree <= 0 -> "The shelf is full. Tap a blade to salvage, hone or give it to the watch."
-                            else -> "$shelfFree free on the shelf. Tap a blade for its details and price."
+                            storage.isEmpty() -> "Storage is empty. Keep forged weapons here until you're ready to sell them."
+                            select -> "Tap weapons to select them. ${blades(chosen.size)} selected."
+                            shelfFree <= 0 -> "The shelf is full. Tap a weapon to hone, salvage or donate it."
+                            else -> "$shelfFree shelf spaces free. Tap a weapon to see its details and set a price."
                         },
                     )
                     if (storage.size > 1) StorageFilters(storage, filter) { filter = it }
                     if (terms != null && storage.isNotEmpty()) Row(Modifier.padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                        if (!selecting) SecondaryActionButton("Select blades", { selecting = true }, Modifier.testTag("storage_select"))
+                        if (!selecting) SecondaryActionButton("Select weapons", { selecting = true }, Modifier.testTag("storage_select"))
                         else {
                             SecondaryActionButton("Select all shown (${free.size})", { picked = picked + free }, Modifier.weight(1f).testTag("storage_select_all"))
                             SecondaryActionButton("Done", { selecting = false; picked = emptySet() }, Modifier.testTag("storage_select_done"))
                         }
                     }
-                    if (shown.isEmpty() && storage.isNotEmpty()) Secondary("No stored blade matches.", Modifier.padding(top = Space.sm))
+                    if (shown.isEmpty() && storage.isNotEmpty()) Secondary("No stored weapons match these filters.", Modifier.padding(top = Space.sm))
                 }
             }
             items(shown, key = { "stock_${it.weapon.id.value}" }) { s ->
@@ -193,7 +193,7 @@ fun StorageList(
         modifier = Modifier.semantics { testTagsAsResourceId = true },
         onDismissRequest = { scrapping = false },
         title = { Text("Scrap ${blades(chosen.size)}?") },
-        text = { Text("They are carted to the scrap heap and are gone for good. It costs no energy. " + scrapBack(chosen)) },
+        text = { Text("Scraps these weapons permanently. Costs no energy. " + scrapBack(chosen)) },
         confirmButton = { InlineActionButton("Scrap", { scrapping = false; onScrap(chosen); picked = emptySet() }, Modifier.testTag("storage_scrap_confirm")) },
         dismissButton = { InlineActionButton("Keep them", { scrapping = false }) },
     )

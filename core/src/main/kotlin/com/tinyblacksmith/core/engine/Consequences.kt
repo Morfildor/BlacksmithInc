@@ -17,19 +17,19 @@ object Consequences {
             ConsequenceKind.WAGER -> {
                 val made = ctx.weapons.values.filter { serial(it.id) >= (q.amounts["serial"] ?: 0) && it.history.firstOrNull()?.kind == "FORGED" && it.familyId == q.familyId && it.quality >= (q.amounts["quality"] ?: 0) && it.forgedDay <= q.dueDay }
                     .minWithOrNull(compareBy(IdOrder.numeric) { it.id.value })
-                val family = q.familyId?.let { ctx.content.family(it).name } ?: "blade"
+                val family = q.familyId?.let { ctx.content.family(it).name } ?: "weapon"
                 if (made != null) {
                     ctx.consequences -= q
                     // The relic is the prize while the workshop lacks one; a workshop that holds them all is paid in coin.
-                    if (Relics.offer(ctx, "The smith won the wager with ${made.name}: the passing smith leaves a relic to choose.")) Unit
+                    if (Relics.offer(ctx, "You won the wager with ${made.name}. Choose your relic reward.")) Unit
                     else {
                         val payout = (q.amounts["payout"] ?: 0)
                         ctx.gold += payout
-                        ctx.emit(EventType.RELIC_OFFERED, 3, "The smith won the wager with ${made.name} and was paid $payout gold.", listOf(made.id.value))
+                        ctx.emit(EventType.RELIC_OFFERED, 3, "You won the wager with ${made.name} and earned $payout gold.", listOf(made.id.value))
                     }
                 } else if (ctx.day >= q.dueDay) {
                     ctx.consequences -= q
-                    ctx.emit(EventType.ENCOUNTER_RESOLVED, 3, "No $family of the quality wagered left the anvil in time; the stake of ${q.amounts["stake"] ?: 0} gold is lost.", data = mapOf("encounter" to Depth.SMITHS_WAGER, "option" to "lost"))
+                    ctx.emit(EventType.ENCOUNTER_RESOLVED, 3, "You missed the $family wager's deadline. Lost the ${q.amounts["stake"] ?: 0} gold stake.", data = mapOf("encounter" to Depth.SMITHS_WAGER, "option" to "lost"))
                 }
             }
             ConsequenceKind.WATCH_BOUNTY -> if (ctx.day >= q.dueDay) ctx.consequences -= q
@@ -45,7 +45,7 @@ object Consequences {
                     else -> {
                         ctx.consequences -= q
                         val hero = ctx.heroes[q.heroId]
-                        ctx.emit(EventType.PLEDGE_RESOLVED, 3, "The blade promised to ${hero?.fullName ?: "a defender"} on trust was never made; the pledge lapsed.", listOfNotNull(q.heroId?.value), mapOf("outcome" to "lapsed"))
+                        ctx.emit(EventType.PLEDGE_RESOLVED, 3, "The weapon promised to ${hero?.fullName ?: "a defender"} wasn't delivered. The order expired.", listOfNotNull(q.heroId?.value), mapOf("outcome" to "lapsed"))
                     }
                 }
             }
@@ -65,7 +65,7 @@ object Consequences {
             val blade = ctx.weapons[q.weaponId]
             val subjects = listOfNotNull(q.heroId?.value, q.weaponId?.value)
             val where = when (val l = blade?.location) {
-                null -> "has left the town's memory"
+                null -> "has no surviving record"
                 is WeaponLocation.Storage, is WeaponLocation.Shelf -> "is back at the forge"
                 is WeaponLocation.Owned -> "is carried by ${ctx.heroes[l.heroId]?.fullName ?: "another"}"
                 is WeaponLocation.Lost -> "is gone (${l.reason})"
@@ -73,11 +73,11 @@ object Consequences {
             }
             when {
                 hero == null || hero.fate == HeroFate.DEAD ->
-                    ctx.emit(EventType.PLEDGE_RESOLVED, 5, "${hero?.fullName ?: "The defender"}, armed on trust, did not live to settle the debt. ${blade?.name ?: "The blade"} $where.", subjects, mapOf("outcome" to "dead"))
+                    ctx.emit(EventType.PLEDGE_RESOLVED, 5, "${hero?.fullName ?: "The defender"} died before repaying the weapon. ${blade?.name ?: "The weapon"} $where.", subjects, mapOf("outcome" to "dead"))
                 hero.fate == HeroFate.RETIRED ->
-                    ctx.emit(EventType.PLEDGE_RESOLVED, 4, "${hero.fullName}, armed on trust, has laid down arms; the debt is forgotten. ${blade?.name ?: "The blade"} $where.", subjects, mapOf("outcome" to "retired"))
+                    ctx.emit(EventType.PLEDGE_RESOLVED, 4, "${hero.fullName} retired before repaying the weapon. The debt is closed. ${blade?.name ?: "The weapon"} $where.", subjects, mapOf("outcome" to "retired"))
                 blade == null || blade.ownerId != hero.id ->
-                    ctx.emit(EventType.PLEDGE_RESOLVED, 3, "${hero.fullName} no longer has the blade made on trust; ${blade?.name ?: "it"} $where, and nothing more was said of the debt.", subjects, mapOf("outcome" to "parted"))
+                    ctx.emit(EventType.PLEDGE_RESOLVED, 3, "${hero.fullName} no longer owns the weapon bought on credit. ${blade?.name ?: "It"} $where. The debt is closed.", subjects, mapOf("outcome" to "parted"))
                 else -> {
                     // The siege the blade was made for, as its own record tells it: who stood on the wall, and whether it held.
                     val siege = ctx.events.lastOrNull { (it.type == EventType.SIEGE_WON || it.type == EventType.SIEGE_LOST) && it.era == ctx.era && it.day == q.dueDay - 1 }

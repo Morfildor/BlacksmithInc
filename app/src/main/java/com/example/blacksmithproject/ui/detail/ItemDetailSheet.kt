@@ -311,7 +311,7 @@ fun ItemDetailContent(
             if (planning) StockEditor(detail.weaponId, stock, enabled, onStock)
             else {
                 Text(stock.listedPrice?.let { "Asking $it gold." } ?: "In storage, not for sale.", style = MaterialTheme.typography.bodyMedium)
-                Secondary("Suggested price ${stock.suggestedPrice} gold. Stock can be changed once the shop day is over.")
+                Secondary("Suggested price ${stock.suggestedPrice} gold. You can change stock after the shop day ends.")
             }
         }
 
@@ -324,7 +324,7 @@ fun ItemDetailContent(
         }
 
         SheetSection("History")
-        Column(Modifier.testTag("sheet_history")) { Lines(detail.history, "Its story has not been written yet.") }
+        Column(Modifier.testTag("sheet_history")) { Lines(detail.history, "No history recorded yet.") }
         SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close"))
     }
 }
@@ -347,7 +347,7 @@ private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onSt
     PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "item", Modifier.padding(top = Space.sm)) { price ->
         // The engine refuses a listing on a full shelf; the button says so before the tap.
         val full = stock.listedPrice == null && stock.shelfFree <= 0
-        if (full) Text("${shelfFullLine(stock.slots)} Unlist another blade to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("item_shelf_full"))
+        if (full) Text("${shelfFullLine(stock.slots)} Remove another weapon from the shelf to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("item_shelf_full"))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
             if (stock.listedPrice != null) {
                 PrimaryActionButton("Set price", { price?.let { onStock(StockAction.SetPrice(it)) } }, Modifier.testTag("item_set_price"), enabled && price != null)

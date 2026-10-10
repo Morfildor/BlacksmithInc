@@ -27,7 +27,7 @@ class LegacyPreviewTest {
             for (level in 1..def.maxLevel) {
                 val p = Legacy.preview(def.id, level)!!
                 assertTrue(p.text.isNotBlank(), "${def.name} level $level")
-                assertTrue(p.text.startsWith("Next era: "), p.text)
+                assertTrue(p.text.startsWith("Next era. "), p.text)
                 assertTrue("${p.before}" in p.text && "${p.after}" in p.text, "${def.name} level $level shows its before and after: ${p.text}")
                 assertNotEquals(p.before, p.after, p.text)
                 assertNotEquals(last, p.text, "${def.name} level $level differs from the level before")
@@ -58,8 +58,8 @@ class LegacyPreviewTest {
     @Test
     fun numbersFollowTheConfigAndLevelsOutsideTheTrackHaveNoPreview() {
         val energy = catalog.upgrades.first { it.effect == UpgradeEffect.STARTING_ENERGY }
-        assertEquals("Next era: 11 starting energy instead of 10", Legacy.preview(energy.id, 1)!!.text)
-        assertEquals("Next era: 14 starting energy instead of 13", Legacy.preview(energy.id, 3, config = config.copy(baseDailyEnergy = 11))!!.text)
+        assertEquals("Next era. Start with 11 energy, up from 10.", Legacy.preview(energy.id, 1)!!.text)
+        assertEquals("Next era. Start with 14 energy, up from 13.", Legacy.preview(energy.id, 3, config = config.copy(baseDailyEnergy = 11))!!.text)
         val stock = catalog.upgrades.first { it.effect == UpgradeEffect.CATALOG_ACCESS }
         assertEquals(6, Legacy.preview(stock.id, 3, config = config.copy(legacyTracks = tracks.copy(catalogStockPerLevel = 2)))!!.after)
         assertNull(Legacy.preview(energy.id, 0))

@@ -198,7 +198,7 @@ class M4ScreensTest {
         // Legacy: the old entry is told in core's lines and says its make is lost.
         compose.runOnUiThread { vm.selectRecords(RecordsPage.LEGACY) }
         compose.onNodeWithTag("records_list").performScrollToNode(hasTestTag("legend_lost_0"))
-        compose.onNodeWithTag("legend_lost_0", useUnmergedTree = true).assertTextContains("Its properties are lost to time.", substring = true)
+        compose.onNodeWithTag("legend_lost_0", useUnmergedTree = true).assertTextContains("No record of its properties survives.", substring = true)
         compose.onNodeWithText(Lines.legend(old, engine.content, start.era).first()).assertIsDisplayed()
 
         // Journal: the found signature shows its whole ladder, and its recipe fills the forge.

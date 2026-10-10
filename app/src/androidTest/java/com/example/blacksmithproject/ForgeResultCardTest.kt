@@ -119,7 +119,7 @@ class ForgeResultCardTest {
         show(engine.itemDetail(forged, blade.id)!!)
         // It opens on the suggested price, named apart from the player's own.
         compose.onNodeWithTag("reveal_price").assertTextContains("$suggested")
-        compose.onNodeWithTag("reveal_suggested").assertTextEquals("Suggested price $suggested gold. Your price matches it.")
+        compose.onNodeWithTag("reveal_suggested").assertTextEquals("Suggested price $suggested gold. You're asking the suggested price.")
         compose.onNodeWithTag("reveal_afford").assertTextEquals(afford(suggested))
         compose.onNodeWithText("List at $suggested").assertIsDisplayed()
 
@@ -168,8 +168,8 @@ class ForgeResultCardTest {
         show(engine.itemDetail(state, blade.id)!!, engine.forgedFor(state, blade.id, accepted.id))
         fun inRequest(text: String) = compose.onNode(hasText(text, substring = true) and hasAnyAncestor(hasTestTag("reveal_request"))).assertIsDisplayed()
         inRequest("For ${forged.aliveHeroes().first().fullName}")
-        inRequest("This blade fits the request")
-        inRequest("Ready: ${blade.name} will be handed over at End Day.")
+        inRequest("This weapon meets the order")
+        inRequest("Ready. ${blade.name} will be collected at End Day.")
         inRequest("None is set aside.")
         compose.onNodeWithText("reserved", substring = true, ignoreCase = true).assertDoesNotExist()
         // The request is told before the blade, and both ways on are still there.

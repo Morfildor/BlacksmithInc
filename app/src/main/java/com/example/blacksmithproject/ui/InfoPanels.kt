@@ -57,6 +57,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
+import com.example.blacksmithproject.RecordsPage
 import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Ember
@@ -72,6 +73,7 @@ import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.gazette.Gazette
+import com.tinyblacksmith.core.gazette.GazetteDigest
 import com.tinyblacksmith.core.model.Hero
 import com.tinyblacksmith.core.model.HeroFate
 
@@ -161,8 +163,8 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.sm).padding(top = Space.sm)) {
             Secondary("Defense is champions ${o.championPowers.sum().roundToInt()} · militia ${o.militia.roundToInt()} · watch ${o.armory.roundToInt()}", Modifier.testTag("town_defense_parts"))
             Secondary(
-                if (st.siege?.takeIf { it.siegeDay == st.town.nextSiegeDay }?.factionId != null) "The besieger is fixed: this is who comes."
-                else "As things stand: the besieger can still change before the first warning.",
+                if (st.siege?.takeIf { it.siegeDay == st.town.nextSiegeDay }?.factionId != null) "The warning confirms which faction will attack."
+                else "The attacking faction may change until the first warning.",
                 Modifier.testTag("town_besieger"),
             )
             o.trait?.let { t ->
@@ -177,7 +179,7 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
         }
     }
     // Every faction presses on the town (GDD 8); the others are listed so the leader's rise can be read coming.
-    if (siege.others.isNotEmpty()) SectionHeader("Also pressing on the town")
+    if (siege.others.isNotEmpty()) SectionHeader("Other threats")
     siege.others.forEachIndexed { i, f ->
         if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         Row(
@@ -198,9 +200,9 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     // The engine's rule (`Battle.selectChampions`): alive, not wounded, the three strongest against the besieger. Shown is
     // the engine's own pick as things stand today; the stored list is only filled by the first End Day.
     val fit = vm.engine.config.heroWoundedThreshold
-    Secondary("The three strongest living heroes who are not wounded (health $fit or more), as things stand today. They stand at the walls when the siege comes.")
+    Secondary("Your three strongest eligible heroes defend the walls. Each needs at least $fit health. The lineup may change before the siege.")
     val champions = forecast?.champions?.map { it.first } ?: st.town.championIds.mapNotNull { st.heroes[it] }
-    val empty = "Empty: no other living hero has health $fit or more."
+    val empty = "No other hero has enough health. This slot needs at least $fit."
     (0 until 3).forEach { i ->
         val h = champions.getOrNull(i)
         Row(
@@ -285,8 +287,8 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
             Sprites.marker(h.fate)?.let { PixelImage(it, 16.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
         }
         Column(Modifier.weight(1f)) {
-            Text(h.fullName + (h.descendantOf?.let { " · of $it's line" } ?: ""), style = MaterialTheme.typography.titleSmall)
-            Secondary("${content.heroClass(h.classId).name} ${h.level} · " + (fateLabel ?: Labels.health(h)) + " · " + (w?.let { it.name + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "unarmed"))
+            Text(h.fullName + (h.descendantOf?.let { " · descended from $it" } ?: ""), style = MaterialTheme.typography.titleSmall)
+            Secondary("${content.heroClass(h.classId).name} ${h.level} · " + (fateLabel ?: Labels.health(h)) + " · " + (w?.let { it.name + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "no weapon"))
             townTies(h, st, vm.engine.config)?.let { Secondary(it) }
         }
     }
@@ -325,17 +327,14 @@ internal fun gazetteMarks(types: Collection<EventType>): List<String> = listOfNo
 
 /** The archive: one edition per day, newest first; the newest is open, older days are a row (day, headline) until tapped. */
 @Composable
-fun GazettePanel(s: UiState.Playing) {
+fun GazettePanel(s: UiState.Playing, vm: GameViewModel) {
     val st = s.state
     val days = st.events.map { it.day }.distinct().sortedDescending()
-    val heroNames = remember(st.heroes) { st.heroes.values.associate { it.id.value to it.fullName } }
     var open by remember(days.firstOrNull()) { mutableStateOf(days.firstOrNull()) }
-    if (days.isEmpty()) Secondary("The presses are quiet.", Modifier.padding(top = Space.md))
+    if (days.isEmpty()) Secondary("No Gazette reports yet.", Modifier.padding(top = Space.md))
     days.forEach { day ->
-        val edition = remember(st.events, day) {
-            val res = st.lastResolution?.takeIf { it.day == day }
-            Gazette.edition(Gazette.dayRecords(st, day), heroNames, res?.visits ?: emptyList(), res?.ledger, res?.field ?: emptyList())
-        }
+        // One pipeline for the report and the archive: the same digest, read from the day's own records.
+        val digest = remember(st, day) { GazetteDigest.of(st, day, vm.engine.content, vm.engine.config) }
         val expanded = open == day
         val toggle = Modifier.fillMaxWidth().clickable { open = if (expanded) null else day }.semantics { contentDescription = "${Gazette.masthead(day)}, ${if (expanded) "open" else "closed"}. Tap to ${if (expanded) "close" else "open"}." }
         if (expanded) {
@@ -354,12 +353,16 @@ fun GazettePanel(s: UiState.Playing) {
                         }
                         HorizontalDivider(color = PaperRule)
                     }
-                    EditionBody(edition, Modifier.padding(horizontal = Space.md).padding(top = 12.dp, bottom = Space.md))
+                    var detailsOpen by remember(day) { mutableStateOf(false) }
+                    Column(Modifier.padding(horizontal = Space.md).padding(top = 12.dp, bottom = Space.md)) {
+                        DigestBody(digest, onOpenNotebook = { vm.selectRecords(RecordsPage.JOURNAL) })
+                        PaperDisclosure("All details", detailsOpen, { detailsOpen = !detailsOpen }, "archive_details_$day") { EditionBody(digest.details) }
+                    }
                 }
             }
         } else {
             val marks = remember(st.events, day) { gazetteMarks(st.eventsForDay(day).map { it.type }) }
-            val first = edition.lede.firstOrNull() ?: edition.sections.firstOrNull()?.lines?.firstOrNull() ?: "A quiet day in Emberfall."
+            val first = digest.headline
             Row(
                 Modifier.padding(top = Space.sm).forgeRow().then(toggle).heightIn(min = 56.dp).padding(horizontal = 12.dp, vertical = Space.sm),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -391,7 +394,7 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
                 Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
                     Column(Modifier.weight(1f)) {
                         Text("Era ${s.state.era}", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-                        Secondary("Rewards are claimed when the forge falls; they survive every era.")
+                        Secondary("Claim legacy points when an era ends. Keep them for future eras.")
                     }
                     Column(horizontalAlignment = Alignment.End) {
                         Text("${legacy.points}", style = MaterialTheme.typography.headlineMedium, color = Gold)
@@ -414,7 +417,7 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
                 LevelDots(legacy.upgradeLevel(u.id), u.maxLevel)
             }
             Secondary(u.description)
-            Text(com.tinyblacksmith.core.legacy.Legacy.preview(u.id, legacy.upgradeLevel(u.id) + 1, content, vm.engine.config)?.text ?: "Fully upgraded: nothing more to buy.", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp))
+            Text(com.tinyblacksmith.core.legacy.Legacy.preview(u.id, legacy.upgradeLevel(u.id) + 1, content, vm.engine.config)?.text ?: "Fully upgraded.", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp))
         }
     }
     if (s.state.blessings.isNotEmpty()) {
@@ -432,7 +435,7 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
     item(key = "legends_head") {
         Column {
             SectionHeader("Legend Board")
-            if (legacy.legendBoard.isEmpty()) Secondary("No blade has earned a legend yet.", Modifier.padding(vertical = Space.xs))
+            if (legacy.legendBoard.isEmpty()) Secondary("No legendary histories recorded yet.", Modifier.padding(vertical = Space.xs))
         }
     }
     itemsIndexed(legacy.legendBoard, key = { i, _ -> "legend_$i" }) { i, entry ->
@@ -449,7 +452,7 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
     item(key = "lineages_head") {
         Column {
             SectionHeader("Lineages")
-            if (legacy.lineages.isEmpty()) Secondary("No lineage has been founded yet.", Modifier.padding(vertical = Space.xs))
+            if (legacy.lineages.isEmpty()) Secondary("No family lines recorded yet.", Modifier.padding(vertical = Space.xs))
         }
     }
     itemsIndexed(legacy.lineages, key = { i, _ -> "lineage_$i" }) { i, it ->

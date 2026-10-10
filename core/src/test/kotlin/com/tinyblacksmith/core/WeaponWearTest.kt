@@ -196,7 +196,7 @@ class WeaponWearTest {
         assertEquals(honed.power, again.power)
         assertEquals(first.energy - config.honeEnergy, second.energy)
         assertEquals(first.materials.getValue(LaunchContent.IRON) - 1, second.materials.getValue(LaunchContent.IRON))
-        assertTrue(second.events.last { it.type == EventType.WEAPON_HONED }.text.contains("keen edge"))
+        assertTrue(second.events.last { it.type == EventType.WEAPON_HONED }.text.contains("full condition"))
         assertEquals(2, again.history.count { it.kind == "HONED" })
         assertIs<GameError.AlreadyHoned>(second.rejected(Command.Hone(id)))
     }

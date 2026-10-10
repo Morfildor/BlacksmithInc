@@ -41,8 +41,8 @@ class GazetteEditionTest {
         assertEquals(emptyList(), e.lede, "an ordinary expedition is not front-page news")
         assertEquals(
             listOf(
-                "Cassia Ellery routed Ashclaw foragers using Flaming Iron Sword; brought Starsteel back to the forge; grew stronger (level 2).",
-                "Thane Kestrel was driven back by Ashclaw foragers bare-handed; returned wounded. Iron Axe shattered in Thane Kestrel's hands. Brittle work.",
+                "Cassia Ellery routed Ashclaw foragers using Flaming Iron Sword. Cassia Ellery brought Starsteel back to the forge. Cassia Ellery grew stronger (level 2).",
+                "Thane Kestrel was driven back by Ashclaw foragers bare-handed. Thane Kestrel returned wounded. Iron Axe shattered in Thane Kestrel's hands. Brittle work.",
                 "On the walls: Sten Dunmore. Resting: Sable Stonebrook.",
             ),
             section(e, Gazette.HEROES),
@@ -69,15 +69,15 @@ class GazetteEditionTest {
             listOf(
                 events[0].text,
                 events[2].text,
-                "Sten Dunmore and Sable Stonebrook could afford nothing on the shelf.",
-                "Thane Kestrel found nothing better than the weapon in hand.",
+                "Sten Dunmore and Sable Stonebrook couldn't afford anything.",
+                "Thane Kestrel found no upgrade for their weapon.",
             ),
             section(e, Gazette.SHOP),
         )
-        assertEquals(listOf("Shop took 73 gold", "1 of 4 visitors bought"), e.tally)
+        assertEquals(listOf("Shop income 73 gold", "1 of 4 visitors bought"), e.tally)
         assertTrue(e.sections.flatMap { it.lines }.none { "now wields" in it }, "equipping is implied by the sale")
         // Without the visits (the archive) the tally still counts the sale.
-        assertEquals(listOf("Shop took 73 gold", "1 sold"), Gazette.edition(events, names).tally)
+        assertEquals(listOf("Shop income 73 gold", "1 sold"), Gazette.edition(events, names).tally)
     }
 
     @Test
@@ -121,8 +121,8 @@ class GazetteEditionTest {
         val e = Gazette.edition(events, names)
         assertEquals(
             listOf(
-                "Forged 3 weapons (1 legendary, 1 epic), listed 2, honed 1, armed the watch with 1, melted down 1, bought Display Case.",
-                events[3].text,
+                "Forged 3 weapons (1 legendary, 1 epic). Listed 2. Honed 1. Donated 1 weapon to the watch. Salvaged 1. Bought Display Case.",
+                "First notes on Ember Resin on Spears. Faint harmony.",
             ),
             section(e, Gazette.FORGE),
         )
@@ -149,7 +149,7 @@ class GazetteEditionTest {
         assertEquals(
             listOf(
                 "Cassia Ellery founded the Ellery Company in Emberfall.",
-                "Sten Dunmore joined the Ellery Company; was taught by Cassia Ellery at the guild hall; grew stronger (level 2).",
+                "Sten Dunmore joined the Ellery Company. Sten Dunmore was taught by Cassia Ellery at the guild hall. Sten Dunmore grew stronger (level 2).",
                 "Thane Kestrel went hunting for a foe worth the vow.",
                 "Sable Stonebrook drilled the town watch.",
                 "Torvald Ferris took guard work for 25 gold, building a fortune.",

@@ -75,7 +75,7 @@ class ShopModelTest : ShopDayTestBase() {
         val vm = open(repo(fresh))
         val lead = vm.playing().shop.lead
         assertEquals(LeadKind.FIRST_BLADE, lead.kind)
-        assertEquals("Forge your first blade" to "${fresh.aliveHeroes().size} heroes in Emberfall and nothing on the shelf.", lead.action to lead.reason)
+        assertEquals("Forge your first weapon" to "${fresh.aliveHeroes().size} heroes in town. Your shelf is empty.", lead.action to lead.reason)
         assertEquals("Go to the forge", leadActionLabel(lead.kind))
         assertEquals("a new game opens on the Shop", Dest.SHOP, vm.playing().dest)
         // The coach line of the first counter visit is a tip like the others: unseen on a new install, and never a banner of a destination.
@@ -85,7 +85,7 @@ class ShopModelTest : ShopDayTestBase() {
     @Test
     fun theShopFollowsEveryAcceptedCommand() = vmTest {
         val vm = open(repo(fresh))
-        assertEquals("Forge your first blade", vm.playing().shop.lead.action)
+        assertEquals("Forge your first weapon", vm.playing().shop.lead.action)
         assertNull("day 1 has no yesterday", vm.playing().shop.yesterday)
         vm.dispatch(forgeSword); advanceUntilIdle()
         val blade = vm.playing().state.storedWeapons().single()

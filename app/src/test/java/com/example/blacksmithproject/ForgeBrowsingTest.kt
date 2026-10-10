@@ -28,7 +28,7 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         assertEquals(Dest.FORGE, first.dest)
         assertEquals("the weapon chosen before stays", forgeSword.familyId, first.draft.familyId)
         assertTrue((saved.materials[first.draft.coreId] ?: 0) > 0 && (saved.materials[first.draft.augmentId] ?: 0) > 0)
-        assertEquals("Untried ingredients selected. No materials spent.", first.notice)
+        assertEquals("Selected a new pairing. No materials spent.", first.notice)
 
         vm.usePairing(Journal.augmentFamilyKey(forgeSword.augmentId, engine.content.families.last().id)); advanceUntilIdle()
         val second = vm.playing()
@@ -48,9 +48,9 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         val result = vm.playing()
         assertNotNull(result.revealWeaponId)
         val titles = result.learning!!.changes.map { it.title }
-        assertEquals(listOf("New observation", "New observation"), titles.take(2))
+        assertEquals(listOf("First notes", "First notes"), titles.take(2))
         // This recipe is also the base of a signature: the miss earns a rung, told in the journal's words and never by the signature's name.
-        assertTrue(titles.drop(2).all { it == "Recipe clue earned" })
+        assertTrue(titles.drop(2).all { it == "Recipe clue found" })
         val hidden = com.tinyblacksmith.core.crafting.SignatureCatalog.forRecipe(forgeSword)
         if (hidden != null) assertTrue(result.learning!!.changes.none { hidden.name in it.line })
         vm.storeForged(); advanceUntilIdle()

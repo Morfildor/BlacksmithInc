@@ -340,15 +340,15 @@ object Market {
         // Gazette-visible consequences: a regular is named as one; gold paid above the base fair price is recorded as a premium.
         val premium = price - askingPrice(weapon, ctx.config)
         val who = if (isRegular(hero, ctx.config)) "${hero.fullName}, a regular of the shop," else hero.fullName
-        val text = "$who bought ${weapon.name} for $price gold" + (if (premium > 0) ", $premium above the going rate on the shop's good name." else ".") +
-            (if (old != null) " ${old.name} came back to the shop in part payment ($credit gold)." else "") +
-            (if (stipend > 0) " Their guild paid $stipend gold of the price." else "")
+        val text = "$who bought ${weapon.name} for $price gold" + (if (premium > 0) ". Your reputation earned $premium gold above the usual price." else ".") +
+            (if (old != null) " They traded in ${old.name} for $credit gold of credit." else "") +
+            (if (stipend > 0) " Their guild covered $stipend gold." else "")
         val data = mapOf("price" to price.toString()) + (if (premium > 0) mapOf("premium" to premium.toString()) else emptyMap()) + (if (bonus > 0) mapOf("bonus" to bonus.toString()) else emptyMap()) +
             (if (old != null) mapOf("tradeIn" to credit.toString(), "tradedWeapon" to old.id.value) else emptyMap()) + (if (stipend > 0) mapOf("stipend" to stipend.toString()) else emptyMap())
         ctx.emit(EventType.WEAPON_SOLD, 4, text, listOf(hero.id.value, weapon.id.value), data)
         ctx.addWeaponHistory(weapon.id, "SOLD", "Sold to ${hero.fullName} for $price gold.", listOf(hero.id.value))
         giveAndEquip(ctx, ctx.hero(hero.id), ctx.weapon(weapon.id))
-        ctx.milestone("FIRST_SALE", "The shop made its first sale: ${weapon.name} to ${hero.fullName}.")
+        ctx.milestone("FIRST_SALE", "Your first sale. ${hero.fullName} bought ${weapon.name}.")
         return Sale(listedPrice = price, tradeInCredit = credit, tradeInWeaponId = old?.id, cashPaid = paid, saleBonus = bonus, stipend = stipend)
     }
 
@@ -382,7 +382,7 @@ object Market {
             if (ctx.day < arrives) continue
             val fallenId = w.history.lastOrNull { it.kind == "SCAVENGED" }?.subjectIds?.firstOrNull()
             val fallen = fallenId?.let { ctx.heroes[HeroId(it)]?.fullName } ?: "a fallen hero"
-            if (ctx.day == arrives) ctx.emit(EventType.WEAPON_SURFACED, 4, "A travelling merchant reached Emberfall offering ${w.name}, the blade $fallen fell with.", listOfNotNull(w.id.value, fallenId))
+            if (ctx.day == arrives) ctx.emit(EventType.WEAPON_SURFACED, 4, "A travelling merchant is selling ${w.name}, the weapon $fallen carried when they died.", listOfNotNull(w.id.value, fallenId))
             val price = askingPrice(w, config)
             val offer = w.copy(location = WeaponLocation.Shelf(price))
             val buyer = ctx.aliveHeroes().filter { it.gold >= price }
@@ -393,7 +393,7 @@ object Market {
                 ctx.updateHero(buyer.copy(gold = buyer.gold - price, want = null))
                 ctx.addWeaponHistory(w.id, "RESOLD", "Sold to ${buyer.fullName} by a travelling merchant for $price gold.", listOf(buyer.id.value))
                 giveAndEquip(ctx, ctx.hero(buyer.id), ctx.weapon(w.id))
-                ctx.emit(EventType.WEAPON_RESOLD, 5, "${buyer.fullName} bought ${w.name}, the blade $fallen fell with, from a travelling merchant for $price gold.", listOf(buyer.id.value, w.id.value), mapOf("price" to price.toString(), WeaponFate.KEY to WeaponFate.RESOLD.name))
+                ctx.emit(EventType.WEAPON_RESOLD, 5, "${buyer.fullName} paid a travelling merchant $price gold for ${w.name}. $fallen carried it before they died.", listOf(buyer.id.value, w.id.value), mapOf("price" to price.toString(), WeaponFate.KEY to WeaponFate.RESOLD.name))
             } else if (ctx.day >= arrives + config.weaponFates.merchantStayDays - 1) {
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "carried off by a travelling merchant")))
                 ctx.addWeaponHistory(w.id, "LOST", "Carried off unsold by a travelling merchant.", listOfNotNull(fallenId))
@@ -409,7 +409,7 @@ object Market {
             if (buyer == null || !buyer.isAlive) {
                 release(ctx, c)
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.EXPIRED)
-                ctx.emit(EventType.COMMISSION_EXPIRED, 2, "The commission for a ${ctx.content.family(c.familyId).name} lapsed; its patron is gone.", listOf(c.id.value))
+                ctx.emit(EventType.COMMISSION_EXPIRED, 2, "The ${ctx.content.family(c.familyId).name} commission closed. Its buyer is no longer in town.", listOf(c.id.value))
                 continue
             }
             val candidate = Commissions.pick(ctx.weapons.values, c, ctx.config)
@@ -424,7 +424,7 @@ object Market {
                 // A first blade is carried by the hero it was ordered for; should they be gone by now, the patron keeps it.
                 val receiver = c.recipientId?.let { ctx.heroes[it] }?.takeIf { it.isAlive }?.also { ctx.updateHero(it.copy(want = null)) } ?: buyer
                 val forWhom = if (receiver.id != buyer.id) " for ${receiver.fullName}" else ""
-                ctx.emit(EventType.COMMISSION_COMPLETED, 5, "${buyer.fullName} collected the commissioned ${candidate.name}$forWhom and paid ${c.reward} gold.", listOf(buyer.id.value, candidate.id.value, c.id.value),
+                ctx.emit(EventType.COMMISSION_COMPLETED, 5, "${buyer.fullName} collected ${candidate.name}$forWhom and paid ${c.reward} gold for the commission.", listOf(buyer.id.value, candidate.id.value, c.id.value),
                     mapOf("reward" to c.reward.toString(), "kind" to c.kind.name))
                 ctx.addWeaponHistory(candidate.id, "COMMISSION", if (receiver.id != buyer.id) "Ordered by ${buyer.fullName} and delivered to ${receiver.fullName}." else "Delivered to ${buyer.fullName} on commission.", listOf(receiver.id.value))
                 WorldEvents.rumour(ctx, "${buyer.fullName}, collecting the commission,", buyer.id)   // a satisfied patron talks (plan 4.6 E3)
@@ -440,7 +440,7 @@ object Market {
                 release(ctx, c)
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.EXPIRED)
                 ctx.reputation = maxOf(0, ctx.reputation - ctx.config.customers.commissionExpiredReputation)
-                ctx.emit(EventType.COMMISSION_EXPIRED, 2, "${buyer.fullName}'s commission for a ${ctx.content.family(c.familyId).name} expired unfulfilled.", listOf(buyer.id.value, c.id.value))
+                ctx.emit(EventType.COMMISSION_EXPIRED, 2, "${buyer.fullName}'s ${ctx.content.family(c.familyId).name} order expired without a delivery.", listOf(buyer.id.value, c.id.value))
             }
         }
         // Offered-but-unaccepted commissions quietly lapse at their deadline.
@@ -529,7 +529,7 @@ object Market {
         ctx.commissions[id] = c
         val who = if (isRegular(buyer, config)) "${buyer.fullName}, a regular of the shop," else buyer.fullName
         val why = Commissions.why(c, buyer.fullName, recipient?.fullName)?.let { " $it" }.orEmpty()
-        ctx.emit(EventType.COMMISSION_OFFERED, 3, "$who asks for a ${Commissions.describe(c, ctx.content, config)} by day ${c.deadlineDay}, offering $reward gold.$why",
+        ctx.emit(EventType.COMMISSION_OFFERED, 3, "$who wants a ${Commissions.describe(c, ctx.content, config)} by day ${c.deadlineDay}. Payment is $reward gold.$why",
             listOf(buyer.id.value, id.value), mapOf("kind" to kind.name) + (recipient?.let { mapOf("recipient" to it.id.value) } ?: emptyMap()))
     }
 }

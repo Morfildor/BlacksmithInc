@@ -39,7 +39,6 @@ import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.GameEngine
-import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.Ambition
@@ -53,6 +52,7 @@ import com.tinyblacksmith.core.model.VisitKind
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponSnapshot
 import com.tinyblacksmith.core.shopday.Lines as ShopLines
+import com.tinyblacksmith.core.text.joinSentences
 
 /**
  * A hero as the sheet shows them. When a visit snapshot was supplied and the hero has changed since (or is gone),
@@ -107,7 +107,7 @@ fun GameEngine.heroDetail(state: GameState, heroId: HeroId, snapshot: CustomerSn
     val refusals = state.lastResolution?.let { res ->
         res.visits.filter { it.heroId == heroId && it.kind == VisitKind.BROWSE && it.purchasedWeaponId == null }.map { v ->
             val dear = v.considered.filter { it.shortBy != null }.mapNotNull { c -> res.shopWeapons.firstOrNull { it.weaponId == c.weaponId }?.let { "${it.name} was ${c.shortBy} gold out of reach" } }
-            res.day to dated(state, state.era, res.day, (listOf("Left without buying: ${Gazette.visitReason(v.reason)}") + dear).joinToString("; ") + ".")
+            res.day to dated(state, state.era, res.day, (listOf("Left without buying: ${ShopLines.reason(v.reason)}") + dear).joinSentences())
         }
     }.orEmpty()
     val dealings = records.filter { it.type in shopTypes }.asReversed().map { it.day to dated(state, it.era, it.day, it.text) }
@@ -140,10 +140,10 @@ private fun GameEngine.present(state: GameState, h: Hero) = CustomerSnapshot(
 
 private fun GameEngine.facts(state: GameState, c: CustomerSnapshot): List<Fact> = listOfNotNull(
     Fact("Class", "${content.classById[c.classId]?.name ?: c.classId.value}, level ${c.level}"),
-    Fact("Element taste", c.elementTaste?.let { "Favours ${it.name.lowercase()} blades" } ?: "No favourite element"),
+    Fact("Element taste", c.elementTaste?.let { "Favors ${it.name.lowercase()} weapons" } ?: "No favourite element"),
     Fact("Traits", c.traits.joinToString { content.traitById[it]?.name ?: it.value }.ifEmpty { "None of note" }),
     Fact(PURSE, "${c.gold} gold"),
-    Fact(STANDING, if (c.regular) "A regular of your shop" else "Not a regular yet"),
+    Fact(STANDING, if (c.regular) "A shop regular" else "Not a regular yet"),
     c.ambition?.let { Fact(AMBITION, ambitionWord(it)) },
     c.guildId?.let { id -> Fact("Guild", state.town.guilds.firstOrNull { it.id == id }?.name ?: "A guild no longer standing") },
     c.mentorName?.let { m -> Fact("Mentor", m, heroId = state.heroes.values.firstOrNull { it.fullName == m }?.id) },
@@ -197,9 +197,9 @@ fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenIt
             FactBlock(NOW.takeIf { detail.counter.isNotEmpty() }, detail.now, "sheet_now", onOpenHero, onOpenItem)
         }
         SheetSection("With your shop")
-        Lines(detail.shop, "Nothing between you yet.")
+        Lines(detail.shop, "No visits or purchases recorded yet.")
         SheetSection("Recent events")
-        Lines(detail.events, "The town's records say nothing of late.")
+        Lines(detail.events, "No recent activity recorded.")
         SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close"))
     }
 }

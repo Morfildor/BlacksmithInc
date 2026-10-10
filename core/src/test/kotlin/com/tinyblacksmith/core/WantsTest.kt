@@ -163,7 +163,7 @@ class WantsTest {
         val lead = Advice.lead(s, content, config)
         assertEquals(LeadKind.ANSWER_WANT, lead.kind)
         assertEquals(listOf(hero.id, LaunchContent.SWORD, 93, 12), listOf(lead.heroId, lead.familyId, lead.gold, lead.power))
-        assertEquals("${hero.fullName} wants a sword; can spend about 90 gold.", Lines.want(s.hero(hero.id), content))
+        assertEquals("${hero.fullName} wants a sword. Budget about 90 gold.", Lines.want(s.hero(hero.id), content))
         val line = Lines.lead(lead, s, content, config)
         assertEquals("Forge a sword for ${hero.fullName}", line.action)
         assertTrue("about 90 gold" in line.reason!! && "%" !in line.reason!!, line.reason)

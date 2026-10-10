@@ -149,7 +149,7 @@ class ShopDayScreenTest {
         compose.onNodeWithTag("shopday_decision", useUnmergedTree = true).assertTextEquals(visit.decision!!).assertIsDisplayed()   // why
         // The money is rows of label and value, each its own pair of nodes; no row is folded into a sentence.
         assertTrue("listed, trade-in and the till: ${visit.receipt}", visit.receipt.size >= 3)
-        assertEquals(listOf("Listed price", "Coin to the till"), listOf(visit.receipt.first().label, visit.receipt.last().label))
+        assertEquals(listOf("Listed price", "Total received"), listOf(visit.receipt.first().label, visit.receipt.last().label))
         for (row in visit.receipt) {
             text(row.label).performScrollTo().assertIsDisplayed()
             compose.onAllNodesWithText(row.value, useUnmergedTree = true).fetchSemanticsNodes().let { assertTrue("${row.label} has its value ${row.value}", it.isNotEmpty()) }
@@ -197,8 +197,8 @@ class ShopDayScreenTest {
         compose.onNodeWithTag("shopday_progress").assertTextEquals("The shop opens")
         compose.onAllNodesWithText("The shop opens", useUnmergedTree = true).assertCountEquals(1)
         compose.onNodeWithTag("shopday_open_title", useUnmergedTree = true).assertTextEquals("${day.resolution.visits.size} visitors today")
-        compose.onNodeWithTag("shopday_open_shown", useUnmergedTree = true).assertTextEquals("3 are shown at the counter; the other ${open.visitors - 3} are summed up after.")
-        compose.onNodeWithTag("shopday_plate", useUnmergedTree = true).assertTextEquals("${m.shelf.size} blades on the shelf")
+        compose.onNodeWithTag("shopday_open_shown", useUnmergedTree = true).assertTextEquals("You'll see 3 at the counter. The remaining ${open.visitors - 3} are summarized afterward.")
+        compose.onNodeWithTag("shopday_plate", useUnmergedTree = true).assertTextEquals("${m.shelf.size} weapons on the shelf")
         compose.onNodeWithTag("shopday_next").performClick()
         compose.waitForIdle()
         compose.onNodeWithTag("shopday_progress").assertTextEquals("Counter · 1 of 3")
@@ -226,7 +226,7 @@ class ShopDayScreenTest {
         val m = day.ui(day.script.copy(quiet = QuietDay(QuietKind.NO_VISITORS), featured = emptyList(), tally = emptyList(), ledger = null, aftermath = emptyList(), ending = Ending.TOMORROW))
         assertEquals(listOf("Quiet", "Tomorrow"), m.beats.map { it::class.simpleName })
         show(m)
-        text("Nobody came to the shop today.").assertIsDisplayed()
+        text("No visitors today.").assertIsDisplayed()
         compose.onNodeWithTag("shopday_card").performTouchInput { click() }   // a tap anywhere
         compose.waitForIdle()
         assertEquals(1, nexts)
@@ -421,7 +421,7 @@ class ShopDayScreenTest {
         compose.onNodeWithTag("shopday_aftermath_text", useUnmergedTree = true).assertTextEquals(resale.text)
         compose.onNodeWithTag("shopday_receipt").assertDoesNotExist()
         compose.onNodeWithTag("shopday_outcome_chip", useUnmergedTree = true).assertDoesNotExist()
-        compose.onAllNodesWithText("Coin to the till", useUnmergedTree = true).assertCountEquals(0)
+        compose.onAllNodesWithText("Total received", useUnmergedTree = true).assertCountEquals(0)
         assertTrue("and it is no visit at the counter", m.beats.filterIsInstance<Beat.Visit>().none { it.visit.purchased?.weaponId == blade.weaponId && it.visit.face.heroId == buyer.id && it.visit.kind != VisitKind.BROWSE })
     }
 

@@ -54,9 +54,9 @@ private const val MAX_PRICE = 999_999
 /** How [price] stands against the going rate, which is always named first so the two numbers cannot be mistaken for each other. */
 internal fun priceAgainstSuggested(price: Int?, suggested: Int): String = "Suggested price $suggested gold. " + when {
     price == null -> "Enter your own price."
-    price == suggested -> "Your price matches it."
-    price < suggested -> "Your price is ${suggested - price} below it."
-    else -> "Your price is ${price - suggested} above it."
+    price == suggested -> "You're asking the suggested price."
+    price < suggested -> "You're asking ${suggested - price} gold less."
+    else -> "You're asking ${price - suggested} gold more."
 }
 
 /** How many of the living heroes could pay [price] today, by the counter's own rule ([funds] is `Demand.funds`). */
@@ -113,7 +113,7 @@ fun PriceEditor(
                 affordLine(funds, price), style = MaterialTheme.typography.bodyMedium, color = if (nobody) FlawRed else Cream,
                 modifier = Modifier.padding(top = Space.xs).semantics { liveRegion = LiveRegionMode.Polite }.testTag("${tag}_afford"),
             )
-            Secondary("Able to pay is not a sale: the blade must also suit them.")
+            Secondary("They may still pass. Price is only part of the decision.")
         }
         actions(price)
     }

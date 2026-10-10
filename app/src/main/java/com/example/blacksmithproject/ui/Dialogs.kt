@@ -3,6 +3,7 @@ package com.example.blacksmithproject.ui
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -46,6 +47,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontFamily
@@ -72,6 +74,7 @@ import com.example.blacksmithproject.ui.theme.PaperRule
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.gazette.Gazette
+import com.tinyblacksmith.core.gazette.GazetteDigest
 import com.tinyblacksmith.core.model.CombatReplay
 import com.tinyblacksmith.core.model.DayResolution
 import com.tinyblacksmith.core.model.GameState
@@ -150,7 +153,7 @@ fun ForgeResultCard(
                 Secondary(r.terms)
                 EffectRow(if (r.fits) EffectKind.BUFF else EffectKind.FLAW, r.fit, r.handover)
                 // The engine sets no blade aside (`Commissions.pick`): say what End Day does instead of promising this one.
-                if (r.accepted) Secondary("At End Day the patron takes a blade that fits, from storage first, then from the shelf. None is set aside.")
+                if (r.accepted) Secondary("At End Day, the buyer takes a matching weapon from storage first, then the shelf. Ordinary orders don't reserve a weapon.")
             }
         }
         WeaponStatBody(fresh, overSprite, detailAlpha = { shown })
@@ -163,7 +166,7 @@ fun ForgeResultCard(
         val stock = detail.stock?.takeIf { it.listedPrice == null }
         if (stock == null) {
             // Reopened after the blade was listed or left the shop: there is nothing left to choose here.
-            Secondary(detail.stock?.listedPrice?.let { "Already on the shelf, asking $it gold." } ?: "This blade is no longer in storage.")
+            Secondary(detail.stock?.listedPrice?.let { "Already on the shelf, asking $it gold." } ?: "This weapon is no longer in storage.")
             SecondaryActionButton("Close", onStore, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("reveal_store"))
             return@price
         }
@@ -171,7 +174,7 @@ fun ForgeResultCard(
         PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "reveal") { chosen ->
             // The engine refuses a listing on a full shelf; say so here and leave Store as the way on.
             val full = stock.shelfFree <= 0
-            if (full) Text("${shelfFullLine(stock.slots)} Store this blade; to list it, unlist another in the Shop first.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("reveal_shelf_full"))
+            if (full) Text("${shelfFullLine(stock.slots)} Store this weapon for now. Remove another from the shelf to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("reveal_shelf_full"))
             Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
                 SecondaryActionButton("Store", onStore, Modifier.heightIn(min = 52.dp).testTag("reveal_store"))
                 PrimaryActionButton(
@@ -198,18 +201,23 @@ fun ForgeResultCard(
 }
 
 /**
- * The Gazette as a newspaper: masthead, siege diorama, the day's edition (lede, tally, Shop / Heroes / Town / Forge),
- * then the field report with the rounds of each siege and each notable fight folded behind its outcome. Every line derives from real event
- * records; stepping is purely presentational and skippable (GDD 11).
+ * The Gazette as a newspaper: the masthead, then the day's briefing (what changed, the shop, before tomorrow), then
+ * All details and Battle replays as two closed disclosures. Every line derives from real event records. The outcome is
+ * on screen before any animation, the replay is decoration and skippable (GDD 11), and the disclosures are a reading
+ * preference only: they start closed every time and nothing here touches the saved game.
  */
 @Composable
 fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reducedMotion: Boolean) {
     val totalSteps = r.replays.sumOf { it.rounds.size + 1 }
+    var replaysOpen by remember(r.commandId) { mutableStateOf(false) }
+    var detailsOpen by remember(r.commandId) { mutableStateOf(false) }
     var shown by remember(r.commandId) { mutableIntStateOf(if (reducedMotion) totalSteps else 0) }
-    LaunchedEffect(r.commandId, reducedMotion) {
+    LaunchedEffect(r.commandId, reducedMotion, replaysOpen) {
         if (reducedMotion) { shown = totalSteps; return@LaunchedEffect }
+        if (!replaysOpen) return@LaunchedEffect
         while (shown < totalSteps) { delay(700); shown += 1 }
     }
+    val digest = remember(r.commandId) { GazetteDigest.of(state, r.day, vm.engine.content, vm.engine.config) }
     // The Gazette is read over the shop day: closing it (the button, back or a tap outside) never acknowledges the day.
     Dialog(onDismissRequest = { vm.back() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
@@ -219,24 +227,19 @@ fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reduc
             modifier = Modifier.fillMaxWidth().heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp).padding(horizontal = Space.md).paperBackground().semantics { testTagsAsResourceId = true },
         ) {
             Column(Modifier.padding(horizontal = Space.lg, vertical = Space.md)) {
-                // "EMBERFALL GAZETTE — DAY 3": the paper's name large, the date as a dateline under it.
-                val masthead = Gazette.masthead(r.day)
+                // The paper's name large, the date as a dateline under it.
                 Column(Modifier.fillMaxWidth().semantics(mergeDescendants = true) { heading() }, horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(masthead.substringBefore(" — "), style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, maxLines = 1)
-                    if (" — " in masthead) Text(masthead.substringAfter(" — "), style = MaterialTheme.typography.labelMedium, color = PaperInkMuted)
+                    Text(Gazette.PAPER, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
+                    Text(Gazette.dateline(r.day), style = MaterialTheme.typography.labelMedium, color = PaperInkMuted)
                 }
                 PaperRuleLine(top = Space.sm, bottom = 2.dp)
                 PaperRuleLine(top = 0.dp, bottom = Space.sm)
-                Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) {
-                    r.replays.firstOrNull()?.takeIf { it.kind == ReplayKind.SIEGE }?.let { replay -> ReplayStage(replay, shown, state, vm, reducedMotion) }  // the siege comes first; fights are text only
-                    val edition = remember(r.commandId) { Gazette.edition(Gazette.dayRecords(state, r.day), state.heroes.values.associate { it.id.value to it.fullName }, r.visits, r.ledger, r.field) }
-                    EditionBody(edition)
-                    if (r.replays.isNotEmpty()) {
-                        PaperRuleLine(top = Space.md, bottom = Space.sm)
-                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("FROM THE FIELD", style = MaterialTheme.typography.labelMedium, color = PaperInkMuted, modifier = Modifier.semantics { heading() })
-                            if (shown < totalSteps) TextButton(onClick = { shown = totalSteps }, modifier = Modifier.testTag("report_skip"), colors = ButtonDefaults.textButtonColors(contentColor = PaperInk)) { Text("Show all rounds") }
-                        }
+                Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).testTag("report_body")) {
+                    DigestBody(digest)
+                    PaperDisclosure("All details", detailsOpen, { detailsOpen = !detailsOpen }, "report_details") { EditionBody(digest.details, Modifier.padding(bottom = Space.sm)) }
+                    if (r.replays.isNotEmpty()) PaperDisclosure("Battle replays", replaysOpen, { replaysOpen = !replaysOpen }, "report_replays") {
+                        r.replays.firstOrNull()?.takeIf { it.kind == ReplayKind.SIEGE }?.let { replay -> ReplayStage(replay, shown, state, vm, reducedMotion) }  // the siege first; fights are text only
+                        if (shown < totalSteps) TextButton(onClick = { shown = totalSteps }, modifier = Modifier.testTag("report_skip"), colors = ButtonDefaults.textButtonColors(contentColor = PaperInk)) { Text("Show all rounds") }
                         var step = 0
                         r.replays.forEach { replay ->
                             var open by remember(r.commandId, replay.title) { mutableStateOf(false) }
@@ -254,10 +257,6 @@ fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reduc
                             step += 1
                         }
                     }
-                    if (r.defeated) {
-                        PaperRuleLine(top = Space.md, bottom = Space.sm)
-                        Text("THE FORGE HAS FALLEN", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    }
                 }
                 PrimaryActionButton("Close", vm::closeGazette, Modifier.fillMaxWidth().padding(top = Space.md).testTag("report_close"))
             }
@@ -265,16 +264,78 @@ fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reduc
     }
 }
 
-/** One day's edition below its masthead: the lede, the tally line, then each section as a bulleted list. */
+/**
+ * The concise paper under a masthead: the stories that matter, the shop in a line or two and what to do before
+ * tomorrow. A section with nothing to say is not drawn. [onOpenNotebook] gives a story about a recipe its button.
+ */
+@Composable
+fun DigestBody(digest: GazetteDigest.Digest, modifier: Modifier = Modifier, onOpenNotebook: (() -> Unit)? = null) {
+    var moreOpen by remember(digest) { mutableStateOf(false) }
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(Space.md)) {
+        if (digest.isQuiet) Text(GazetteDigest.QUIET, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+        digest.stories.forEach { StoryBlock(it, onOpenNotebook) }
+        if (digest.more.isNotEmpty()) {
+            PaperDisclosure("${digest.more.size} more ${if (digest.more.size == 1) "change" else "changes"}", moreOpen, { moreOpen = !moreOpen }, "report_more") {
+                Column(Modifier.padding(top = Space.xs), verticalArrangement = Arrangement.spacedBy(Space.md)) { digest.more.forEach { StoryBlock(it, onOpenNotebook) } }
+            }
+        }
+        if (digest.shop.isNotEmpty()) PaperSection("The shop", digest.shop)
+        if (digest.before.isNotEmpty()) PaperSection("Before tomorrow", digest.before)
+    }
+}
+
+@Composable
+private fun StoryBlock(story: GazetteDigest.Story, onOpenNotebook: (() -> Unit)?) {
+    Column(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}) {
+        Text(story.heading, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { heading() })
+        if (story.body.isNotEmpty()) Text(story.body, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp))
+        story.details.forEach { Text(it, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodySmall, color = PaperInkMuted, modifier = Modifier.padding(top = 2.dp)) }
+    }
+    if (story.opensNotebook && onOpenNotebook != null) {
+        TextButton(onClick = onOpenNotebook, colors = ButtonDefaults.textButtonColors(contentColor = PaperInk), modifier = Modifier.testTag("report_open_notebook")) { Text("Open notebook") }
+    }
+}
+
+/** A labelled run of short lines: the label runs into a rule to the edge of the column. */
+@Composable
+private fun PaperSection(title: String, lines: List<String>) {
+    val rule = LocalContentColor.current.copy(alpha = 0.3f)
+    Column(Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+            Text(title.uppercase(), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, modifier = Modifier.semantics { heading() })
+            HorizontalDivider(Modifier.weight(1f), color = rule)
+        }
+        lines.forEach { Text(it, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 6.dp)) }
+    }
+}
+
+/** A closed-by-default section of the paper: a full-width 48 dp target saying what it holds and whether it is open. */
+@Composable
+internal fun PaperDisclosure(title: String, open: Boolean, onToggle: () -> Unit, tag: String, content: @Composable ColumnScope.() -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm)) {
+        HorizontalDivider(color = PaperRule, thickness = 1.dp)
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onToggle).testTag(tag)
+                .semantics { contentDescription = "$title, ${if (open) "open" else "closed"}. Tap to ${if (open) "close" else "open"}." },
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(title, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+            Text(if (open) "▴" else "▾", style = MaterialTheme.typography.titleMedium)
+        }
+        if (open) content()
+    }
+}
+
+/** One day's full record below the briefing: the lede, the tally line, then each section as a bulleted list. */
 @Composable
 fun EditionBody(edition: Gazette.Edition, modifier: Modifier = Modifier) {
     val muted = LocalContentColor.current.copy(alpha = 0.7f)
     Column(modifier) {
-        if (edition.lede.isEmpty() && edition.sections.isEmpty()) Text("A quiet day in Emberfall.", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium)
+        if (edition.lede.isEmpty() && edition.sections.isEmpty() && edition.tally.isEmpty()) Text("Nothing else was recorded.", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium)
         val rule = LocalContentColor.current.copy(alpha = 0.3f)
         // The headline, then a second one in italics under it: a paper's head and its strap.
         edition.lede.forEachIndexed { i, h ->
-            Text(h, fontFamily = FontFamily.Serif, style = if (i == 0) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall, fontStyle = if (i == 0) null else FontStyle.Italic, modifier = Modifier.padding(bottom = Space.sm))
+            Text(h, fontFamily = FontFamily.Serif, style = if (i == 0) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall, fontStyle = if (i == 0) null else FontStyle.Italic, modifier = Modifier.padding(bottom = Space.sm))
         }
         // The day's tally as the deck: one line over a hairline, and under one when a headline stands above it.
         if (edition.tally.isNotEmpty()) {

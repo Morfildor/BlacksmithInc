@@ -53,7 +53,7 @@ class AdviceTest {
     @Test
     fun firstBlade() {
         assertEquals(Lead(LeadKind.FIRST_BLADE, count = fresh.aliveHeroes().size), lead(fresh))
-        assertEquals(LeadLine("Forge your first blade", "${fresh.aliveHeroes().size} heroes in Emberfall and nothing on the shelf."), line(fresh))
+        assertEquals(LeadLine("Forge your first weapon", "${fresh.aliveHeroes().size} heroes in town. Your shelf is empty."), line(fresh))
         assertNotEquals(LeadKind.FIRST_BLADE, lead(fresh.copy(day = 2)).kind, "day 1 only")
         assertNotEquals(LeadKind.FIRST_BLADE, lead(forged).kind, "and only with nothing forged")
     }
@@ -70,8 +70,8 @@ class AdviceTest {
     fun answerRequest() {
         val s = stocked.asked(CommissionStatus.OFFERED, LaunchContent.SWORD, dueIn = 1)
         assertEquals(Lead(LeadKind.ANSWER_REQUEST, heroId = buyer.id, commissionId = CommissionId("c900"), gold = 140, days = 1), lead(s))
-        assertEquals(LeadLine("Answer ${buyer.fullName}'s request", "A decent Sword (quality ${config.uncommonMin}+); 140 gold; the offer lapses tomorrow."), line(s))
-        assertEquals("the offer lapses today.", line(stocked.asked(CommissionStatus.OFFERED, LaunchContent.SWORD, dueIn = 0)).reason!!.substringAfterLast("; "))
+        assertEquals(LeadLine("Answer ${buyer.fullName}'s request", "A decent Sword (quality ${config.uncommonMin}+). It pays 140 gold. The offer expires tomorrow."), line(s))
+        assertEquals("The offer expires today.", line(stocked.asked(CommissionStatus.OFFERED, LaunchContent.SWORD, dueIn = 0)).reason!!.substringAfterLast(". "))
         assertNotEquals(LeadKind.ANSWER_REQUEST, lead(stocked.asked(CommissionStatus.OFFERED, LaunchContent.SWORD, dueIn = 2)).kind, "not yet urgent")
         assertNotEquals(LeadKind.ANSWER_REQUEST, lead(stocked.asked(CommissionStatus.DECLINED, LaunchContent.SWORD, dueIn = 1)).kind)
         val gone = s.copy(heroes = s.heroes + (buyer.id to buyer.copy(fate = HeroFate.DEAD)))
@@ -82,7 +82,7 @@ class AdviceTest {
     fun forgeForRequest() {
         val s = stocked.asked(CommissionStatus.ACCEPTED, LaunchContent.BOW, dueIn = 2)
         assertEquals(Lead(LeadKind.FORGE_FOR_REQUEST, heroId = buyer.id, commissionId = CommissionId("c900"), gold = 140, days = 2), lead(s))
-        assertEquals(LeadLine("Forge for ${buyer.fullName}'s request", "Nothing in the shop is a decent Bow (quality ${config.uncommonMin}+); due in 2 days."), line(s))
+        assertEquals(LeadLine("Forge for ${buyer.fullName}'s request", "You don't have a decent Bow (quality ${config.uncommonMin}+) ready. Due in 2 days."), line(s))
         assertNotEquals(LeadKind.FORGE_FOR_REQUEST, lead(stocked.asked(CommissionStatus.ACCEPTED, LaunchContent.BOW, dueIn = 3)).kind, "three days left: not yet")
         // The same rule End Day uses: a blade that fits means nothing is missing.
         val fits = stocked.copy(weapons = stocked.weapons.mapValues { it.value.copy(quality = 90) }).asked(CommissionStatus.ACCEPTED, LaunchContent.SWORD, dueIn = 1)
@@ -94,21 +94,21 @@ class AdviceTest {
     @Test
     fun listStock() {
         assertEquals(Lead(LeadKind.LIST_STOCK, count = 1), lead(forged))
-        assertEquals(LeadLine("Put a blade on the shelf", "The shelf is empty; 1 blade in storage."), line(forged))
+        assertEquals(LeadLine("Put a weapon on the shelf", "Your shelf is empty. 1 weapon in storage."), line(forged))
     }
 
     @Test
     fun forgeStock() {
         val s = fresh.copy(day = 2)
         assertEquals(Lead(LeadKind.FORGE_STOCK), lead(s))
-        assertEquals(LeadLine("Forge something to sell", "The shelf and the storeroom are empty."), line(s))
+        assertEquals(LeadLine("Forge something to sell", "You have no weapons in storage or on the shelf."), line(s))
     }
 
     @Test
     fun pricesTooHigh() {
         val s = stocked.refusedYesterday(VisitReason.TOO_EXPENSIVE, VisitReason.NOT_BETTER, VisitReason.OVERPRICED)
         assertEquals(Lead(LeadKind.PRICES_TOO_HIGH, weaponId = sword.id, gold = 60, count = 2), lead(s))
-        assertEquals(LeadLine("Lower a price", "2 customers left over the price yesterday; the cheapest blade is 60 gold."), line(s))
+        assertEquals(LeadLine("Review your prices", "2 customers left without buying on price yesterday. The cheapest weapon costs 60 gold."), line(s))
         assertNotEquals(LeadKind.PRICES_TOO_HIGH, lead(stocked.refusedYesterday(VisitReason.TOO_EXPENSIVE, VisitReason.NOT_BETTER)).kind, "one is not a pattern")
         assertNotEquals(LeadKind.PRICES_TOO_HIGH, lead(s.copy(day = 3)).kind, "yesterday only")
     }
@@ -119,8 +119,8 @@ class AdviceTest {
         val forecast = engine.siegeForecast(s)!!
         assertTrue(forecast.odds == Battle.SiegeOdds.OUTMATCHED || forecast.odds == Battle.SiegeOdds.DIRE, "the scenario: ${forecast.odds}")
         assertEquals(Lead(LeadKind.ARM_DEFENDERS, factionId = forecast.faction.id, days = 2, element = forecast.faction.weakTo), lead(s))
-        val weak = forecast.faction.weakTo?.let { ", weak to ${it.name.lowercase()}" }.orEmpty()
-        assertEquals(LeadLine("Arm the defenders", "${forecast.faction.name} in 2 days$weak."), line(s))
+        val weak = forecast.faction.weakTo?.let { " Weak to ${it.name.lowercase()}." }.orEmpty()
+        assertEquals(LeadLine("Arm the defenders", "${forecast.faction.name} expected in 2 days.$weak"), line(s))
         assertNotEquals(LeadKind.ARM_DEFENDERS, lead(stocked.besiegedIn(3)).kind, "three days off: not yet")
         val safe = stocked.besiegedIn(2, pressure = 0, militia = 100_000)
         assertEquals(Battle.SiegeOdds.STRONG, engine.siegeForecast(safe)!!.odds)
@@ -156,7 +156,7 @@ class AdviceTest {
         }
         assertTrue(leads > 300 && kinds.size >= 6, "leads=$leads kinds=$kinds")
         assertTrue(LeadKind.ANSWER_WANT in kinds, "wants are voiced in ordinary play: $kinds")
-        assertEquals(LeadLine("Forge a blade", null), Lines.lead(Lead(LeadKind.ANSWER_WANT), fresh, content, config))
+        assertEquals(LeadLine("Forge a weapon", null), Lines.lead(Lead(LeadKind.ANSWER_WANT), fresh, content, config))
     }
 
     @Test
@@ -164,7 +164,7 @@ class AdviceTest {
         // Nobody carries a blade on day 1: that is the demand fact.
         val demand = Demand.summary(stocked, content, config)
         assertEquals(Lead(LeadKind.FORGE_FOR_BUYERS, count = demand.unarmed.size), lead(stocked))
-        assertEquals(LeadLine("Forge for today's buyers", "${demand.unarmed.size} heroes carry no blade."), line(stocked))
+        assertEquals(LeadLine("Forge for today's buyers", "${demand.unarmed.size} heroes need a weapon."), line(stocked))
 
         // Everyone armed, one blade worn: the worn blade is named.
         fun armed(condition: (Hero) -> Int) = stocked.copy(weapons = stocked.weapons + stocked.aliveHeroes().associate { h ->
@@ -178,7 +178,7 @@ class AdviceTest {
         val keen = armed { 100 }
         val d = Demand.summary(keen, content, config)
         assertEquals(Lead(LeadKind.FORGE_FOR_BUYERS, gold = 60, count = d.canAffordCheapest), lead(keen))
-        assertEquals("${d.canAffordCheapest} hero${if (d.canAffordCheapest == 1) "" else "es"} can afford the cheapest blade (60 gold).", line(keen).reason)
+        assertEquals("${d.canAffordCheapest} hero${if (d.canAffordCheapest == 1) "" else "es"} can afford your cheapest weapon at 60 gold.", line(keen).reason)
     }
 
     @Test

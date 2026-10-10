@@ -252,7 +252,7 @@ class ArtifactFidelityTest {
         assertTrue(entry.lostToTime)
         assertEquals("era1:Flaming Keen Iron Sword:Bane of the Ashclaw Raiders", entry.key)
         val lines = Lines.legend(entry, content, 2)
-        assertEquals(listOf("Flaming Keen Iron Sword, Bane of the Ashclaw Raiders. Era 1; 12 victories; fame 9.", "Its properties are lost to time.", "Carried by Mira Vance."), lines)
+        assertEquals(listOf("Flaming Keen Iron Sword, Bane of the Ashclaw Raiders. Era 1. 12 victories. Fame 9.", "No record of its properties survives.", "Carried by Mira Vance."), lines)
         // What returns is honest about it: no affixes awake or asleep, no flaws, a plain name; its fame and title are all that is known.
         val (_, blade) = returned(legacy)
         assertEquals(listOf("Iron Sword", emptyList<AffixId>(), emptyList<AffixId>(), emptyList<AffixId>(), null, 9, "Bane of the Ashclaw Raiders"),
@@ -260,7 +260,7 @@ class ArtifactFidelityTest {
         assertNull(Lines.dormant(blade.dormantAffixes, content))
         // An entry of today says what the blade was instead.
         val now = Lines.legend(remembered.legendBoard.single(), content, 2)
-        assertTrue("lost to time" !in now.joinToString(" ") && "A signature blade: Dawnbrand" in now[1] && "flawed:" in now[1] && "forged with Binding Salt" in now[1], now[1])
+        assertTrue("lost to time" !in now.joinToString(" ") && "Signature weapon Dawnbrand" in now[1] && "Flaws include" in now[1] && "Forged with Binding Salt" in now[1], now[1])
         assertTrue(now.any { it.startsWith("Era 1, day 1: Forged from Iron and Ember Resin") }, "$now")
     }
 
@@ -285,9 +285,9 @@ class ArtifactFidelityTest {
         assertEquals("AWAKENED", awake.history.last().kind)
         val honed = out.events.single { it.type == EventType.WEAPON_HONED }
         assertEquals(entry.affixes.joinToString(",") { it.value }, honed.data["woke"])
-        assertTrue("woke" in honed.text)
+        assertTrue("Dormant properties restored" in honed.text)
         assertNull(Lines.dormant(awake.dormantAffixes, content))
-        assertTrue(Lines.story(awake, out.state.era).last().endsWith("Woke under the hone: ${entry.affixes.joinToString(", ") { content.affix(it).name }}."))
+        assertTrue(Lines.story(awake, out.state.era).last().endsWith("Honing restored dormant properties. ${entry.affixes.joinToString(", ") { content.affix(it).name }}."))
         // Waking happens once: a later hone of the worn blade restores its edge and nothing else.
         val worn = out.state.copy(weapons = mapOf(awake.id to awake.copy(condition = 40)), materials = out.state.materials + (awake.coreId to 1), energy = 10)
         val again = worn.accepted(Command.Hone(awake.id))

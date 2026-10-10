@@ -31,14 +31,14 @@ object Labels {
 
     /** Before End Day: the blade an accepted request will take ([Commissions.pick]), or what the nearest blade in the shop lacks. */
     fun readiness(c: Commission, weapons: Collection<Weapon>, content: ContentCatalog, config: BalanceConfig): String {
-        Commissions.pick(weapons, c, config)?.let { return "Ready: ${it.name} will be handed over at End Day." }
+        Commissions.pick(weapons, c, config)?.let { return "Ready. ${it.name} will be collected at End Day." }
         val family = content.family(c.familyId).name
         val nearest = weapons.filter { it.isInStorage || it.isListed }.maxWithOrNull(compareBy<Weapon> { Commissions.fit(it, c).ordinal }.thenBy { it.quality })
         val lacks = nearest?.let { Commissions.fit(it, c) }
-        return "Nothing fits yet: " + when {
-            nearest != null && lacks == Commissions.Fit.QUALITY -> "${nearest.name} is quality ${nearest.quality}, needs ${c.minQuality}."
-            lacks == Commissions.Fit.ELEMENT -> "no ${c.element?.name?.lowercase()} $family in the shop."
-            else -> "no $family in the shop."
+        return "No matching weapon yet. " + when {
+            nearest != null && lacks == Commissions.Fit.QUALITY -> "${nearest.name} has quality ${nearest.quality}. This order needs ${c.minQuality} or more."
+            lacks == Commissions.Fit.ELEMENT -> "You need a ${c.element?.name?.lowercase()} $family in storage or on the shelf."
+            else -> "You need a $family in storage or on the shelf."
         }
     }
 
@@ -59,9 +59,9 @@ object Labels {
     }
 
     fun risk(r: Risk): String = when (r) {
-        Risk.SAFE -> "Safe — steady work, few surprises"
-        Risk.BALANCED -> "Balanced — some flaws, some brilliance"
-        Risk.RECKLESS -> "Reckless — brilliance or flaws, often"
+        Risk.SAFE -> "Safe. Fewer flaws, fewer exceptional results."
+        Risk.BALANCED -> "Balanced. A chance of exceptional work or flaws."
+        Risk.RECKLESS -> "Reckless. More exceptional results and more flaws."
     }
 
     fun technique(t: Technique): String = when (t) {
@@ -71,17 +71,17 @@ object Labels {
     }
 
     fun techniqueExplanation(t: Technique): String = when (t) {
-        Technique.TEMPER -> "Patient heating: fewer flaws, fewer flashes of brilliance."
-        Technique.QUENCH -> "A hard quench binds the augment's element into the blade, at a small cost to finish."
-        Technique.ETCH -> "Etching makes room for one more property, but the needle slips more often."
+        Technique.TEMPER -> "Fewer flaws, but fewer exceptional results too."
+        Technique.QUENCH -> "Ensures the elemental property appears, at a small cost to quality."
+        Technique.ETCH -> "Adds one more property, with a greater risk of flaws."
     }
 
     fun health(h: Hero): String = when {
         !h.isAlive -> "dead"
-        h.health >= 85 -> "hale"
+        h.health >= 85 -> "healthy"
         h.health >= 50 -> "bruised"
         h.health >= 20 -> "wounded"
-        else -> "grave"
+        else -> "critical"
     }
 
     /** Wear in words; null while the blade is still sound. "Worn" is the engine's own line (`BalanceConfig.wornConditionThreshold`), "battered" half of it. */
@@ -97,7 +97,7 @@ object Labels {
     fun fame(f: Int): String? = when {
         f >= 10 -> "renowned"
         f >= 6 -> "famed"
-        f >= 3 -> "storied"
+        f >= 3 -> "well known"
         else -> null
     }
 

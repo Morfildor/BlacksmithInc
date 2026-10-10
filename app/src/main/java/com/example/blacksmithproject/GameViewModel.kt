@@ -40,6 +40,7 @@ import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.persistence.DayCursor
 import com.tinyblacksmith.core.shopday.ShopDay
 import com.tinyblacksmith.core.shopday.ShopDayScript
+import com.tinyblacksmith.core.text.joinSentences
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -430,8 +431,8 @@ class GameViewModel(
         val run = session.snapshot.value?.run ?: return
         val pair = engine.untriedPairing(run)
         edit {
-            if (pair == null) it.copy(notice = "Every metal pairing you have the stock for has been tried.")
-            else it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(coreId = pair.first, augmentId = pair.second), notice = "Untried ingredients selected. No materials spent.")
+            if (pair == null) it.copy(notice = "You've tried every metal pairing your stock allows.")
+            else it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(coreId = pair.first, augmentId = pair.second), notice = "Selected a new pairing. No materials spent.")
         }
     }
 
@@ -444,14 +445,14 @@ class GameViewModel(
         launch(Op.Dispatch(Command.ToggleShelf(id, true, price), run.runId)) {
             val now = session.snapshot.value?.run ?: return@launch
             val name = now.weapons[id]?.name ?: return@launch
-            edit { it.copy(revealWeaponId = null, learning = null, notice = "$name is on the shelf at $price gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}. Your ingredients stay selected.") }
+            edit { it.copy(revealWeaponId = null, learning = null, notice = "Listed $name for $price gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}. Ready to forge another.") }
         }
     }
 
     /** "Store" on the forge result, and closing it any other way: the blade stays in storage, and the workshop says so. */
     fun storeForged() {
         val name = local.value.revealWeaponId?.let { session.snapshot.value?.run?.weapons?.get(it) }?.takeIf { it.isInStorage }?.name
-        edit { it.copy(revealWeaponId = null, learning = null, notice = name?.let { n -> "$n is in storage, not for sale. Your ingredients stay selected." } ?: it.notice) }
+        edit { it.copy(revealWeaponId = null, learning = null, notice = name?.let { n -> "Stored $n. It isn't for sale. Ready to forge another." } ?: it.notice) }
     }
 
     /** The notice has been shown; a newer one is left alone. */
@@ -473,16 +474,17 @@ class GameViewModel(
             val blade = now.weapons[id] ?: was ?: return@launch
             val name = blade.name
             val said = when (action) {
-                is StockAction.ListAt -> "$name is on the shelf at ${action.price} gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}."
-                is StockAction.SetPrice -> "$name now asks ${action.price} gold."
-                StockAction.Unlist -> "$name is back in storage, not for sale."
+                is StockAction.ListAt -> "Listed $name for ${action.price} gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}."
+                is StockAction.SetPrice -> "Set $name to ${action.price} gold."
+                StockAction.Unlist -> "Moved $name to storage. It isn't for sale."
                 // Only what the hone changed: a first hone raises quality, any hone restores condition.
-                StockAction.Hone -> "$name was honed" + listOfNotNull(
-                    "quality ${was?.quality} to ${blade.quality}".takeIf { was?.quality != blade.quality },
-                    "condition ${was?.condition} to ${blade.condition}".takeIf { was?.condition != blade.condition },
-                ).joinToString(", ").let { if (it.isEmpty()) "." else ": $it." }
-                StockAction.Salvage -> "$name was melted down. 1 ${engine.content.material(blade.coreId).name} is back in your stock."
-                StockAction.Donate -> "$name went to the town watch. Armory ${before.town.armory} to ${now.town.armory}."
+                StockAction.Hone -> listOfNotNull(
+                    "Honed $name",
+                    "Quality ${was?.quality} to ${blade.quality}".takeIf { was?.quality != blade.quality },
+                    "Condition ${was?.condition} to ${blade.condition}".takeIf { was?.condition != blade.condition },
+                ).joinSentences()
+                StockAction.Salvage -> "Salvaged $name. Recovered one ${engine.content.material(blade.coreId).name}."
+                StockAction.Donate -> "Donated $name to the watch. Armory defense increased from ${before.town.armory} to ${now.town.armory}."
             }
             val leaves = action is StockAction.ListAt || action == StockAction.Salvage || action == StockAction.Donate
             edit { it.copy(notice = said, sheet = if (leaves && it.sheet == Sheet.Item(id)) null else it.sheet) }
@@ -634,14 +636,14 @@ class GameViewModel(
                 val result = session.run(Op.Dispatch(command, run.runId))
                 show(result)
                 // A batch cut short says how far it got; a save failure has its own dialog, which this line waits behind.
-                if (result is Result.Rejected && commands.size > 1) edit { it.copy(lastError = "Stopped after $done of ${commands.size}. ${describe(result.error)}") }
+                if (result is Result.Rejected && commands.size > 1) edit { it.copy(lastError = "Completed $done of ${commands.size} actions before stopping. ${describe(result.error)}") }
                 if (result !is Result.Done) break
                 done++
             }
-            val blades = if (done == 1) "1 blade" else "$done blades"
+            val blades = if (done == 1) "1 weapon" else "$done weapons"
             val said = when (commands.firstOrNull()) {
-                is Command.Salvage -> "$blades melted down."
-                is Command.DonateWeapon -> "$blades given to the town watch."
+                is Command.Salvage -> "Salvaged $blades."
+                is Command.DonateWeapon -> "Donated $blades to the watch."
                 else -> null
             }
             if (done > 0 && said != null) edit { it.copy(notice = said) }
@@ -688,9 +690,9 @@ class GameViewModel(
 
     /** Player-facing text for an engine error; the UI also uses it to explain disabled choices. */
     fun describe(e: GameError): String = when (e) {
-        GameError.RunEnded -> "The forge has fallen; this era is over."
-        is GameError.NotEnoughEnergy -> "Not enough energy (need ${e.needed}, have ${e.available}, overwork left ${e.overworkAvailable})."
-        is GameError.MissingMaterial -> "You are out of ${engine.content.material(e.materialId).name}."
+        GameError.RunEnded -> "The forge has fallen. This era is over."
+        is GameError.NotEnoughEnergy -> "This needs ${e.needed} energy. You have ${e.available}, with ${e.overworkAvailable} overwork left."
+        is GameError.MissingMaterial -> "You're out of ${engine.content.material(e.materialId).name}."
         is GameError.UnknownContent -> "Unknown item ${e.id}."
         is GameError.WrongMaterialCategory -> "${engine.content.material(e.materialId).name} is not a ${e.expected.lowercase()}."
         is GameError.CatalystRequiresAdvanced -> "Catalysts need the Advanced Forge."
@@ -699,25 +701,25 @@ class GameViewModel(
         is GameError.WeaponNotAvailable -> "That weapon is not in the shop."
         GameError.ShelfFull -> "All ${session.snapshot.value?.run?.let { engine.shelfSlots(it) } ?: engine.config.shelfSlots} shelf slots are full."
         is GameError.InvalidPrice -> "Price must be zero or more."
-        is GameError.InvalidQuantity -> "Quantity must be positive."
-        is GameError.NotEnoughGold -> "Not enough gold (need ${e.needed}, have ${e.available})."
+        is GameError.InvalidQuantity -> "Choose at least one."
+        is GameError.NotEnoughGold -> "This costs ${e.needed} gold. You have ${e.available}."
         is GameError.SupplierOutOfStock -> "The supplier is out of ${engine.content.material(e.materialId).name} today."
         is GameError.CommissionNotFound, is GameError.CommissionNotOpen -> "That request is no longer open."
-        GameError.NoBlessingOffer, is GameError.BlessingNotOffered -> "No such blessing is offered."
-        GameError.RunNotEnded -> "The run is still going."
-        is GameError.AlreadyClaimed -> "This era's legacy was already claimed."
-        is GameError.NotEnoughLegacyPoints -> "Need ${e.needed} legacy points, have ${e.available}."
-        is GameError.UpgradeMaxed -> "That upgrade is already at its highest level."
+        GameError.NoBlessingOffer, is GameError.BlessingNotOffered -> "That blessing isn't available."
+        GameError.RunNotEnded -> "This era hasn't ended yet."
+        is GameError.AlreadyClaimed -> "You've already claimed this era's legacy."
+        is GameError.NotEnoughLegacyPoints -> "This costs ${e.needed} legacy points. You have ${e.available}."
+        is GameError.UpgradeMaxed -> "This upgrade is at maximum level."
         is GameError.AlreadyHoned -> "That weapon has already been honed."
-        is GameError.ToolMaxed -> "That tool is already at its highest level."
+        is GameError.ToolMaxed -> "This tool is at maximum level."
         GameError.ArmoryFull -> "The town watch armory is full."
-        GameError.NoEncounter, is GameError.EncounterNotOpen -> "The visitor has already had an answer."
+        GameError.NoEncounter, is GameError.EncounterNotOpen -> "You've already answered this visitor."
         is GameError.EncounterOptionBlocked -> e.reason
-        GameError.NoRelicOffer, is GameError.RelicNotOffered -> "No such relic is offered."
-        is GameError.RelicNotOwned -> "The workshop does not hold ${relicName(e.relicId)}."
-        GameError.RelicSlotsFull -> "Every relic slot is taken. Choose which relic it replaces."
+        GameError.NoRelicOffer, is GameError.RelicNotOffered -> "That relic isn't available."
+        is GameError.RelicNotOwned -> "You don't have ${relicName(e.relicId)} in the workshop."
+        GameError.RelicSlotsFull -> "Your relic slots are full. Choose one to replace."
         is GameError.RelicSpent -> "${relicName(e.relicId)} has already been used today."
-        is GameError.WeaponPromised -> "That blade is kept for ${session.snapshot.value?.run?.let { promisedBuyer(it, e.commissionId) } ?: "a patron"}'s order."
+        is GameError.WeaponPromised -> "That weapon is reserved for ${session.snapshot.value?.run?.let { promisedBuyer(it, e.commissionId) } ?: "a customer"}'s order."
         // Core grows concurrently; unmapped errors still get a readable line instead of a build break.
         else -> "The forge cannot do that right now."
     }

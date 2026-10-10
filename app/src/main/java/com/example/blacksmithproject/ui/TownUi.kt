@@ -52,6 +52,4 @@ fun GameEngine.townSiege(state: GameState, forecast: Battle.SiegeOutlook?): Town
 /** The Gazette's masthead in its two parts: the paper's name and the day as a dateline. */
 @Immutable data class GazetteHeadUi(val paper: String, val dateline: String)
 
-fun gazetteHead(day: Int): GazetteHeadUi = Gazette.masthead(day).let { m ->
-    GazetteHeadUi(m.substringBefore(" — "), m.substringAfter(" — ", "").lowercase().replaceFirstChar { it.uppercase() })
-}
+fun gazetteHead(day: Int): GazetteHeadUi = GazetteHeadUi(Gazette.PAPER, Gazette.dateline(day).lowercase().replaceFirstChar { it.uppercase() })

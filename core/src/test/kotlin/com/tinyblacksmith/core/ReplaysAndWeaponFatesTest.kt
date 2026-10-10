@@ -106,7 +106,7 @@ class ReplaysAndWeaponFatesTest {
                         EventType.ELITE_SLAIN -> {
                             assertTrue(r.outcome.startsWith("${hero.fullName} slew "), r.outcome)
                             assertEquals(hero.fullName, last.attacker)
-                            assertTrue("with ${last.damage} gold in spoils" in e.text, "$where: the spoils shown are the record's: ${e.text} vs ${last.damage}")
+                            assertTrue("brought back ${last.damage} gold" in e.text, "$where: the spoils shown are the record's: ${e.text} vs ${last.damage}")
                         }
                         EventType.EXPEDITION_LOST -> {
                             assertEquals("${hero.fullName} was driven back", r.outcome)
@@ -290,7 +290,7 @@ class ReplaysAndWeaponFatesTest {
             assertEquals(EventType.WEAPON_INHERITED, told.type)
             assertEquals(WeaponFate.INHERITED.name, told.data[WeaponFate.KEY])
             assertEquals(listOf(bladeId.value, mate.value, victim.value), told.subjectIds)
-            assertEquals("${w.name} passed from the fallen $name to guildmate $mateName.", told.text)
+            assertEquals("After $name died, guildmate $mateName inherited ${w.name}.", told.text)
             assertEquals(listOf("INHERITED", "EQUIPPED"), w.history.takeLast(2).map { it.kind })
         }
         // What the enemy seized, the guild cannot claim.
@@ -453,7 +453,7 @@ class ReplaysAndWeaponFatesTest {
         val resold = events[2]
         assertEquals(listOf(guardian.value, bladeId.value), resold.subjectIds)
         assertEquals(mapOf("price" to "$price", WeaponFate.KEY to WeaponFate.RESOLD.name), resold.data)
-        assertTrue(resold.text.startsWith("${s.hero(guardian).fullName} bought "), resold.text)
+        assertTrue(resold.text.startsWith("${s.hero(guardian).fullName} paid a travelling merchant "), resold.text)
         assertEquals(WeaponLocation.Owned(guardian, equipped = true), sold.weapon(bladeId).location)
         assertEquals(listOf("RESOLD", "EQUIPPED"), sold.weapon(bladeId).history.takeLast(2).map { it.kind })
         // The hero pays the merchant: the gold leaves the economy and the smith sees none of it.
@@ -541,7 +541,7 @@ class ReplaysAndWeaponFatesTest {
         assertTrue(sold.state.weapon(bladeId).history.any { it.kind == "RESOLD" && it.subjectIds == listOf(buyer.value) })
         assertEquals(rich.gold, sold.state.gold)
         val edition = Gazette.edition(sold.resolution!!.events, sold.state.heroes.values.associate { it.id.value to it.fullName }, sold.resolution!!.visits)
-        assertTrue(edition.sections.first { it.title == Gazette.HEROES }.lines.any { "A travelling merchant reached Emberfall" in it })
+        assertTrue(edition.sections.first { it.title == Gazette.HEROES }.lines.any { "A travelling merchant is selling" in it })
     }
 
     @Test
@@ -557,7 +557,7 @@ class ReplaysAndWeaponFatesTest {
         // A blade's story sits with the heroes: the arrival under the fallen hero, the sale folded into the buyer's day.
         assertEquals(
             listOf(
-                "Bram Holt bought Stormwhisper, the blade Mira Ashwood fell with, from a travelling merchant for 120 gold; routed Ashclaw scouts using Stormwhisper.",
+                "Bram Holt bought Stormwhisper, the blade Mira Ashwood fell with, from a travelling merchant for 120 gold. Bram Holt routed Ashclaw scouts using Stormwhisper.",
                 surfaced.text,
             ),
             e.sections.single().lines,

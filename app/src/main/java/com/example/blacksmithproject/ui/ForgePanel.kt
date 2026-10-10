@@ -477,7 +477,7 @@ private fun ForgeAction(bench: ForgeWorkbenchUi, busy: Boolean, endDayNote: Stri
     }
 }
 
-private fun riskName(r: Risk) = Labels.risk(r).substringBefore(" —")
+private fun riskName(r: Risk) = Labels.risk(r).substringBefore(".")
 
 /** Live affinity hint: an icon per knowledge state (never colour alone) plus the journal's descriptive text. */
 @Composable
@@ -485,8 +485,8 @@ fun AffinityHint(journal: JournalModel, content: ContentCatalog, key: String) {
     val state = journal.state(key)
     val (glyph, stateLabel) = when (state) {
         KnowledgeState.UNKNOWN -> "?" to "unknown"
-        KnowledgeState.OBSERVED -> "◐" to "observed"
-        KnowledgeState.UNDERSTOOD -> "●" to "understood"
+        KnowledgeState.OBSERVED -> "◐" to "being studied"
+        KnowledgeState.UNDERSTOOD -> "●" to "learned"
         KnowledgeState.SIGNATURE_DISCOVERED -> "✦" to "signature"
     }
     val subject = Journal.subjectName(content, key)
@@ -508,9 +508,9 @@ fun AffinityHint(journal: JournalModel, content: ContentCatalog, key: String) {
 }
 
 private fun riskExplanation(r: Risk): String = when (r) {
-    Risk.SAFE -> "Steady work with few surprises. Flaws are rare, but so are brilliant results."
-    Risk.BALANCED -> "The usual gamble: some flaws, some brilliance, mostly honest work."
-    Risk.RECKLESS -> "Push the metal hard. Brilliance comes more often, and so do flaws. Every forge still yields a usable weapon."
+    Risk.SAFE -> "Fewer flaws and fewer exceptional results. A reliable choice for everyday orders."
+    Risk.BALANCED -> "A chance of exceptional work or flaws. Most results fall somewhere in between."
+    Risk.RECKLESS -> "More exceptional results and more flaws. Even a poor result is still usable."
 }
 
 /**
@@ -523,7 +523,7 @@ internal fun bellowsBlocked(s: UiState.Playing, config: BalanceConfig): String? 
     val debt = config.depth.bellowsDebt
     return when {
         s.relics.firstOrNull { it.id == Depth.ASHEN_BELLOWS }?.ready == false -> "Used today."
-        (cost - st.energy).coerceAtLeast(0) + debt > config.maxOverworkPerDay - st.overworkToday -> "Not enough overwork left today: the bellows take $debt."
+        (cost - st.energy).coerceAtLeast(0) + debt > config.maxOverworkPerDay - st.overworkToday -> "Not enough overwork left today. The bellows use $debt of it."
         else -> null
     }
 }
@@ -542,7 +542,7 @@ private fun BellowsRow(s: UiState.Playing, vm: GameViewModel) {
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
         Column(Modifier.weight(1f)) {
-            Text("Ashen Bellows: one more property, ${config.depth.bellowsDebt} energy from tomorrow", style = MaterialTheme.typography.titleSmall)
+            Text("Ashen Bellows adds one property and borrows ${config.depth.bellowsDebt} energy from tomorrow.", style = MaterialTheme.typography.titleSmall)
             blocked?.let { Secondary(it, Modifier.testTag("forge_bellows_blocked")) }
         }
         Switch(checked = on, onCheckedChange = null, enabled = blocked == null)
@@ -557,7 +557,7 @@ private fun LedgerLine(s: UiState.Playing, vm: GameViewModel) {
     val bonus = remember(st, family) { vm.engine.ledgerBonus(st, family) }
     val line = when {
         bonus > 0 -> "Tempering Ledger: +$bonus quality"
-        st.relics.any { it.id == Depth.TEMPERING_LEDGER && family in it.families } -> "Tempering Ledger: this family is already in the streak, so forging it starts the streak again."
+        st.relics.any { it.id == Depth.TEMPERING_LEDGER && family in it.families } -> "You've already forged this weapon type in the streak. Forging it again resets the streak."
         else -> return
     }
     Text(line, style = MaterialTheme.typography.bodySmall, color = Gold, modifier = Modifier.padding(top = Space.xs).testTag("forge_ledger"))

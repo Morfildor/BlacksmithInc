@@ -98,7 +98,7 @@ class StorageToolsTest : ShopDayTestBase() {
         assertEquals("the blades are taken in the order given", ids.drop(room), after.shop.storage.map { it.weapon.id })
         assertEquals(iron + room, after.state.materials[LaunchContent.IRON])
         assertNotNull("the refusal is said", after.lastError)
-        assertTrue(after.lastError!!, after.lastError!!.startsWith("Stopped after $room of 5. Not enough energy"))
+        assertTrue(after.lastError!!, after.lastError!!.startsWith("Completed $room of 5 actions before stopping. This needs"))
         assertFalse(after.busy)
         // What is on screen is what is stored.
         assertEquals(after.state, com.tinyblacksmith.core.persistence.SaveCodec.decodeRun(store.run!!))
@@ -115,7 +115,7 @@ class StorageToolsTest : ShopDayTestBase() {
         val back = engine.scrapYield(state.storedWeapons())
         val said = scrapBackText(engine, state, ids)
         back.forEach { (id, n) -> assertTrue(said, said.contains("$n ${engine.content.material(id).name}")) }
-        assertTrue(scrapBackText(engine, state, ids.take(1)), scrapBackText(engine, state, ids.take(1)).startsWith("Nothing comes back"))
+        assertTrue(scrapBackText(engine, state, ids.take(1)), scrapBackText(engine, state, ids.take(1)).startsWith("No metal recovered"))
         val commits = store.commitCount
 
         vm.dispatch(Command.Scrap(ids)); advanceUntilIdle()
@@ -137,7 +137,7 @@ class StorageToolsTest : ShopDayTestBase() {
         vm.dispatchAll(ids.map { StockAction.Donate.toCommand(it) }); advanceUntilIdle()
         val after = vm.playing()
         assertEquals(engine.config.armoryMax, after.state.town.armory)
-        assertTrue(after.lastError, after.lastError!!.startsWith("Stopped after ") && after.lastError!!.endsWith("of 40. The town watch armory is full."))
+        assertTrue(after.lastError, after.lastError!!.startsWith("Completed ") && after.lastError!!.endsWith("of 40 actions before stopping. The town watch armory is full."))
         assertTrue("some were given and the rest are still stored", after.shop.storage.size in 1 until 40)
         assertEquals(ids.takeLast(after.shop.storage.size), after.shop.storage.map { it.weapon.id })
     }
@@ -145,8 +145,8 @@ class StorageToolsTest : ShopDayTestBase() {
     @Test
     fun theSalvageConfirmationSaysTheCostAndWarnsOfOverworkOnlyWhenItIsReached() {
         val terms = BulkTerms(salvageEnergy = 1, energy = 3, overworkLeft = 4, armoryRoom = 30)
-        assertTrue(salvageTerms(3, terms).endsWith("That is 3 energy; you have 3."))
+        assertTrue(salvageTerms(3, terms).endsWith("Costs 3 energy. You have 3."))
         val over = salvageTerms(12, terms)
-        assertTrue(over, "That is 12 energy; you have 3." in over && "overwork (4 left today)" in over && "stops" in over)
+        assertTrue(over, "Costs 12 energy. You have 3." in over && "You can borrow 4 more today" in over && "stops" in over)
     }
 }

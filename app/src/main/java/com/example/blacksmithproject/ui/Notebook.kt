@@ -52,9 +52,9 @@ import com.tinyblacksmith.core.model.KnowledgeState
 
 /** The three kinds of thing the notebook keeps apart. */
 enum class BookTab(val label: String, val empty: String) {
-    METAL("Metal pairings", "No metal pairings recorded yet. Forge something to begin."),
-    WEAPON("Weapon pairings", "No weapon pairings recorded yet. Forge something to begin."),
-    CLUES("Recipe clues", "No recipe clues recorded yet. Earned clues will appear here."),
+    METAL("Metal pairings", "Your first forge will add a metal pairing here."),
+    WEAPON("Weapon pairings", "Your first forge will add a weapon pairing here."),
+    CLUES("Recipe clues", "No recipe clues yet. Experiments and visitors can reveal them."),
 }
 
 private val Tab = RoundedCornerShape(7.dp)
@@ -82,7 +82,7 @@ fun LazyListScope.notebookItems(s: UiState.Playing, vm: GameViewModel, tab: Book
             // The page's head on a plate, as the Legacy page has its own.
             FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
                 Text("Notebook", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-                Secondary("${book.counts}. Knowledge survives the forge's fall.", Modifier.testTag("book_counts"))
+                Secondary("${book.counts}. Your notes carry over to every era.", Modifier.testTag("book_counts"))
             }
             // Three tabs of one width across the page; a label may take two lines, so nothing is cut at a larger text size.
             Row(Modifier.fillMaxWidth().padding(top = 12.dp).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
@@ -114,7 +114,7 @@ fun LazyListScope.notebookItems(s: UiState.Playing, vm: GameViewModel, tab: Book
         }
     }
     item(key = "book_try") {
-        SecondaryActionButton("Try an untried pairing", vm::tryUntried, Modifier.fillMaxWidth().padding(top = Space.md).testTag("book_try"), detail = "Chooses ingredients only. Nothing is spent.")
+        SecondaryActionButton("Try a new pairing", vm::tryUntried, Modifier.fillMaxWidth().padding(top = Space.md).testTag("book_try"), detail = "Selects ingredients without spending anything.")
     }
 }
 

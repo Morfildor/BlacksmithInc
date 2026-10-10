@@ -36,7 +36,7 @@ fun RecordsPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
         ) {
             when (page) {
                 // The edition archive is one item: its per-day rows keep the Gazette's own open and close state.
-                RecordsPage.GAZETTE -> item(key = "news") { Column { GazettePanel(s) } }
+                RecordsPage.GAZETTE -> item(key = "news") { Column { GazettePanel(s, vm) } }
                 RecordsPage.JOURNAL -> notebookItems(s, vm, bookTab) { bookTab = it }
                 RecordsPage.LEGACY -> legacyItems(s, vm)
             }

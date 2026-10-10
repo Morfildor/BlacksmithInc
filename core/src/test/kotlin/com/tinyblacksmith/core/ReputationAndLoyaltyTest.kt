@@ -103,7 +103,7 @@ class ReputationAndLoyaltyTest {
             assertEquals(sale.data.getValue("price").toInt() - engine.suggestedPrice(s.weapon(id)), premium, "against the going rate of the blade as it lay on the shelf")
             assertTrue(premium > 0)
             assertTrue("a regular of the shop" in sale.text, sale.text)
-            assertTrue("above the going rate" in sale.text, sale.text)
+            assertTrue("above the usual price" in sale.text, sale.text)
             seen = true
             break
         }

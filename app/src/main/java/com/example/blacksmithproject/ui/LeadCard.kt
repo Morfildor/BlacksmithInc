@@ -26,7 +26,7 @@ fun leadActionLabel(kind: LeadKind): String? = when (kind) {
     LeadKind.FIRST_BLADE, LeadKind.FORGE_FOR_REQUEST, LeadKind.FORGE_STOCK, LeadKind.ARM_DEFENDERS, LeadKind.FORGE_FOR_BUYERS -> "Go to the forge"
     LeadKind.CHOOSE_BLESSING -> "See the blessings"
     LeadKind.LIST_STOCK -> "Open storage"
-    LeadKind.PRICES_TOO_HIGH -> "Open the cheapest blade"
+    LeadKind.PRICES_TOO_HIGH -> "Review the cheapest weapon"
     LeadKind.ANSWER_WANT -> "Forge this"
     LeadKind.ANSWER_REQUEST -> "Open the board"
 }

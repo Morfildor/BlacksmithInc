@@ -34,7 +34,7 @@ object Battle {
         fun losesWith(other: Weapon?): Boolean = roll >= (config.combat.winProbabilityBase + (Power.attackPower(hero, other, faction, ctx.content, config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite) - enemyPower) /
             config.winProbabilityScale).coerceIn(config.winProbabilityFloor, config.winProbabilityCeiling)
         if (weapon != null) wear(ctx, weapon.id, if (won) config.wearPerExpeditionWin else config.wearPerExpeditionLoss)
-        val weaponText = weapon?.let { " using ${it.name}" } ?: " bare-handed"
+        val weaponText = weapon?.let { " using ${it.name}" } ?: " without a weapon"
         val affixDefs = weapon?.let { w -> (w.affixes + w.flaws).map { ctx.content.affix(it) } } ?: emptyList()
         if (won) {
             ctx.expeditionWinsToday += 1
@@ -58,11 +58,11 @@ object Battle {
                 }
             }
             val told = if (elite) {
-                val slain = ctx.emit(EventType.ELITE_SLAIN, 7, "${hero.fullName} slew $encounter$weaponText and returned with $loot gold in spoils.", listOfNotNull(hero.id.value, weapon?.id?.value))
-                ctx.milestone("ELITE_SLAIN", "An elite foe fell to a hero of Emberfall: $encounter.")
+                val slain = ctx.emit(EventType.ELITE_SLAIN, 7, "${hero.fullName} killed $encounter$weaponText and brought back $loot gold.", listOfNotNull(hero.id.value, weapon?.id?.value), mapOf("foe" to encounter, "gold" to loot.toString()))
+                ctx.milestone("ELITE_SLAIN", "An Emberfall hero defeated $encounter.")
                 // A kill like that with a blade of the forge makes talk: a rumour of a recipe (plan 4.6 E3).
                 if (weapon != null) com.tinyblacksmith.core.engine.WorldEvents.rumour(ctx, "${hero.fullName}, back from the kill,", hero.id)
-                ctx.replays += fightReplay(ctx, hero, weapon, encounter, heroPower, enemyPower, winProbability, slain, heroWon = true, loot, "struck the killing blow and took the spoils", "${hero.fullName} slew $encounter")
+                ctx.replays += fightReplay(ctx, hero, weapon, encounter, heroPower, enemyPower, winProbability, slain, heroWon = true, loot, "landed the killing blow", "${hero.fullName} slew $encounter")
                 slain
             } else {
                 ctx.emit(EventType.EXPEDITION_WON, if (weapon != null) 5 else 3, "${hero.fullName} routed $encounter$weaponText.", listOfNotNull(hero.id.value, weapon?.id?.value))
@@ -105,7 +105,7 @@ object Battle {
                 if (weapon != null && breakChance > 0 && rng.chance(breakChance)) {
                     ctx.updateWeapon(ctx.weapon(weapon.id).copy(location = WeaponLocation.Destroyed(ctx.day)))
                     ctx.addWeaponHistory(weapon.id, "BROKEN", "Shattered in ${hero.fullName}'s hands against $encounter.", listOf(hero.id.value))
-                    ctx.emit(EventType.WEAPON_BROKEN, 4, "${weapon.name} shattered in ${hero.fullName}'s hands. Brittle work.", listOf(weapon.id.value, hero.id.value))
+                    ctx.emit(EventType.WEAPON_BROKEN, 4, "${weapon.name} broke during ${hero.fullName}'s retreat. It had the Brittle flaw.", listOf(weapon.id.value, hero.id.value))
                 }
             }
         }
@@ -127,7 +127,7 @@ object Battle {
             else -> "stood firm"
         }
         val rounds = listOf(
-            CombatRound(hero.fullName, encounter, heroPower.roundToInt(), weapon?.let { "met $encounter with ${it.name}" } ?: "met $encounter bare-handed", hero.id.value),
+            CombatRound(hero.fullName, encounter, heroPower.roundToInt(), weapon?.let { "met $encounter with ${it.name}" } ?: "fought $encounter without a weapon", hero.id.value),
             CombatRound(foe, hero.fullName, enemyPower.roundToInt(), stand),
             if (heroWon) CombatRound(hero.fullName, encounter, amount, finish, hero.id.value) else CombatRound(foe, hero.fullName, amount, finish),
         )
@@ -159,26 +159,26 @@ object Battle {
         val config = ctx.config
         val rng = ctx.rng(RngStream.COMBAT)
         ctx.updateHero(hero.copy(health = 0, fate = HeroFate.DEAD, diedOnDay = ctx.day, lastActivity = HeroActivity.IDLE))
-        val died = ctx.emit(EventType.HERO_DIED, 8, "${hero.fullName} $cause and will not return.", listOf(hero.id.value))
+        val died = ctx.emit(EventType.HERO_DIED, 8, "${hero.fullName} $cause.", listOf(hero.id.value))
         for (w in ctx.weapons.values.filter { it.ownerId == hero.id }) {
             val heir = if (w.isEquipped && (weaponRecovered || !weaponSeized)) guildHeir(ctx, hero, w) else null
             if (heir != null && roll(rng, config.weaponFates.guildInheritanceChance)) {
                 // The rule Heroes.retire applies to a mentee: equipped only if it beats their own blade by worn power, else kept as a spare.
-                ctx.addWeaponHistory(w.id, "INHERITED", "Inherited by ${heir.fullName}, guildmate of the fallen ${hero.fullName}.", listOf(heir.id.value, hero.id.value))
+                ctx.addWeaponHistory(w.id, "INHERITED", "Passed to ${heir.fullName} after guildmate ${hero.fullName} died.", listOf(heir.id.value, hero.id.value))
                 Market.giveAndEquip(ctx, heir, ctx.weapon(w.id))
-                ctx.emit(EventType.WEAPON_INHERITED, 5, "${w.name} passed from the fallen ${hero.fullName} to guildmate ${heir.fullName}.", listOf(w.id.value, heir.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.INHERITED.name))
+                ctx.emit(EventType.WEAPON_INHERITED, 5, "After ${hero.fullName} died, guildmate ${heir.fullName} inherited ${w.name}.", listOf(w.id.value, heir.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.INHERITED.name))
             } else if (w.isEquipped && weaponRecovered) {
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Storage))
                 ctx.addWeaponHistory(w.id, "RECOVERED", "Recovered after ${hero.fullName}'s death and returned to the forge.", listOf(hero.id.value))
-                ctx.emit(EventType.WEAPON_RECOVERED, 5, "${w.name} was recovered from ${hero.fullName}'s body and returned to the forge.", listOf(w.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.RECOVERED.name))
+                ctx.emit(EventType.WEAPON_RECOVERED, 5, "${w.name} returned to the forge after ${hero.fullName} died.", listOf(w.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.RECOVERED.name))
             } else if (w.isEquipped && weaponSeized) {
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "seized")))
                 ctx.addWeaponHistory(w.id, "SEIZED", "Seized by the enemy when ${hero.fullName} fell.", listOf(hero.id.value))
-                ctx.emit(EventType.WEAPON_STOLEN, 5, "${w.name} was seized by the enemy from ${hero.fullName}'s body.", listOf(w.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.SEIZED.name))
+                ctx.emit(EventType.WEAPON_STOLEN, 5, "The enemy took ${w.name} after ${hero.fullName} died.", listOf(w.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.SEIZED.name))
             } else if (w.isEquipped && roll(rng, merchantChance(w, config))) {
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, WeaponLocation.Lost.WITH_MERCHANT)))
                 ctx.addWeaponHistory(w.id, "SCAVENGED", "Taken from the field where ${hero.fullName} fell.", listOf(hero.id.value))
-                ctx.emit(EventType.WEAPON_LOST, 5, "${w.name} was gone from the field where ${hero.fullName} fell.", listOf(w.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.MERCHANT.name))
+                ctx.emit(EventType.WEAPON_LOST, 5, "${w.name} went missing where ${hero.fullName} died.", listOf(w.id.value, hero.id.value), mapOf(WeaponFate.KEY to WeaponFate.MERCHANT.name))
             } else {
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "lost with ${hero.fullName}")))
                 ctx.addWeaponHistory(w.id, "LOST", "Lost when ${hero.fullName} died.", listOf(hero.id.value))
@@ -257,7 +257,7 @@ object Battle {
         val number = ctx.town.siegesSurvived + ctx.town.siegesLost + 1
         val drawn = if (ctx.content.siegeTraits.isEmpty() || number < cfg.firstTraitSiege) null else ctx.rng(RngStream.ENCOUNTERS).let { if (it.chance(cfg.traitChance)) it.pick(ctx.content.siegeTraits) else null }
         ctx.siege = SiegeScenario(ctx.town.nextSiegeDay, drawn?.id)
-        if (drawn != null) ctx.emit(EventType.SIEGE_TRAIT, 6, "Scouts say the day ${ctx.town.nextSiegeDay} invasion will be a ${drawn.name}. ${drawn.description}", data = mapOf("trait" to drawn.id, "day" to ctx.town.nextSiegeDay.toString()))
+        if (drawn != null) ctx.emit(EventType.SIEGE_TRAIT, 6, "Scouts expect ${drawn.name.lowercase()} on day ${ctx.town.nextSiegeDay}. ${drawn.description}", data = mapOf("trait" to drawn.id, "day" to ctx.town.nextSiegeDay.toString()))
     }
 
     fun outlook(ctx: ResolutionContext, siegeDay: Int): SiegeOutlook? {
@@ -296,10 +296,10 @@ object Battle {
 
         val rounds = mutableListOf<CombatRound>()
         champions.forEachIndexed { i, (h, w) ->
-            rounds += CombatRound(h.fullName, faction.siegeName, championPowers[i].roundToInt(), w?.let { "strikes with ${it.name}" } ?: "fights bare-handed", h.id.value)
+            rounds += CombatRound(h.fullName, faction.siegeName, championPowers[i].roundToInt(), w?.let { "strikes with ${it.name}" } ?: "fights without a weapon", h.id.value)
         }
         if (ctx.town.militia > 0) rounds += CombatRound("Town militia", faction.siegeName, o.militia.roundToInt(), "holds the gate")
-        if (ctx.town.armory > 0) rounds += CombatRound("Town watch", faction.siegeName, o.armory.roundToInt(), "fights with arms from the forge")
+        if (ctx.town.armory > 0) rounds += CombatRound("Town watch", faction.siegeName, o.armory.roundToInt(), "fights with weapons donated by the forge")
         rounds += CombatRound(faction.siegeName, "the forge", forgeDamage, if (won) "is driven off" else "breaks through")
         val championNames = champions.joinToString(", ") { it.first.fullName }.ifEmpty { "no champion" }
         ctx.replays += CombatReplay("Siege of Emberfall, day ${ctx.day}", ctx.day, rounds, if (won) "Town held" else "Defenses broken")
@@ -312,8 +312,8 @@ object Battle {
         if (won) {
             ctx.town = ctx.town.copy(siegesSurvived = ctx.town.siegesSurvived + 1)
             ctx.factions[factionState.id] = factionState.copy(pressure = maxOf(0, factionState.pressure - config.siegeWinPressureDrop - (if (o.warlord) config.warlordPressureDrop else 0)))
-            val held = ctx.emit(EventType.SIEGE_WON, 9, "Emberfall repelled $attacker! Champions: $championNames.", champions.map { it.first.id.value },
-                mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()) + traitData(o))
+            val held = ctx.emit(EventType.SIEGE_WON, 9, "Emberfall held against $attacker. $championNames defended the walls.", champions.map { it.first.id.value },
+                mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString(), "attacker" to attacker) + traitData(o))
             for ((h, w) in champions) {
                 val hero = ctx.hero(h.id)
                 ctx.updateHero(hero.copy(health = maxOf(1, hero.health - config.championSiegeDamageOnWin), fame = hero.fame + config.combat.siegeFame, lastActivity = HeroActivity.DEFEND))
@@ -329,8 +329,8 @@ object Battle {
             }
             if (o.warlord) {
                 ctx.earn(IncomeKind.TRIBUTE, config.warlordTribute)
-                ctx.emit(EventType.MILESTONE, 6, "${faction.warlordName} was thrown back from the walls. The town paid the smith ${config.warlordTribute} gold in thanks.", data = mapOf("tribute" to config.warlordTribute.toString()))
-                ctx.milestone("WARLORD_DEFEATED", "Emberfall broke a warlord at its walls.")
+                ctx.emit(EventType.MILESTONE, 6, "${faction.warlordName} was defeated at the walls. The town paid you ${config.warlordTribute} gold.", data = mapOf("tribute" to config.warlordTribute.toString()))
+                ctx.milestone("WARLORD_DEFEATED", "Emberfall defeated a warlord at the walls.")
             }
             ctx.milestone("SIEGE_SURVIVED", "Emberfall survived its first siege.")
             offerBlessing(ctx)
@@ -339,7 +339,7 @@ object Battle {
             // A rout: the raid outweighs the defense so far that the champions are cut down where they stand, not driven off.
             val rout = raidPower >= townDefense * config.weaponFates.wallsRoutRatio
             val overrun = ctx.emit(EventType.SIEGE_LOST, 9, "${attacker.replaceFirstChar { it.uppercase() }} ${if (rout) "routed" else "overran"} the defenders ($championNames).", champions.map { it.first.id.value },
-                mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()) + (if (rout) mapOf("rout" to "true") else emptyMap()) + traitData(o))
+                mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString(), "attacker" to attacker) + (if (rout) mapOf("rout" to "true") else emptyMap()) + traitData(o))
             val rng = ctx.rng(RngStream.COMBAT)
             for ((h, _) in champions) {
                 val hero = ctx.hero(h.id)
@@ -356,7 +356,7 @@ object Battle {
             ctx.town = ctx.town.copy(integrity = 0)
             ctx.phase = Phase.ENDED
             ctx.endCause = "The forge fell to the ${faction.siegeName} on day ${ctx.day}."
-            ctx.emit(EventType.FORGE_DESTROYED, 10, "The forge has fallen. Emberfall's smith is no more.")
+            ctx.emit(EventType.FORGE_DESTROYED, 10, "The forge has fallen. This era is over.")
         } else scheduleNext(ctx)
     }
 
@@ -369,7 +369,7 @@ object Battle {
         val offer = mutableListOf<BlessingId>()
         repeat(minOf(ctx.config.blessingOfferSize, pool.size)) { val b = rng.pick(pool); offer += b; pool.remove(b) }
         ctx.pendingBlessingOffer = offer
-        ctx.emit(EventType.BLESSING_OFFERED, 3, "The grateful town offers the smith a blessing.", data = mapOf("offer" to offer.joinToString(",") { it.value }))
+        ctx.emit(EventType.BLESSING_OFFERED, 3, "The town offers a blessing for the forge.", data = mapOf("offer" to offer.joinToString(",") { it.value }))
     }
 
     /**
@@ -390,8 +390,9 @@ object Battle {
             val f = besieger(ctx) ?: return
             val def = ctx.content.faction(f.id)
             val led = if (def.warlordName != null && f.pressure >= ctx.config.warlordPressure) " ${def.warlordName} leads them." else ""
-            val weak = def.weakTo?.let { " ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }} weapons bite them hardest." } ?: ""
-            ctx.emit(EventType.SIEGE_WARNING, 6, "${def.name} gather for the day ${ctx.town.nextSiegeDay} invasion (${describePressure(f.pressure)}).$led$weak${trait(ctx)?.let { " It will be a ${it.name}." }.orEmpty()}", data = mapOf("day" to ctx.town.nextSiegeDay.toString()))
+            val weak = def.weakTo?.let { " ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }} weapons are especially effective against them." } ?: ""
+            ctx.emit(EventType.SIEGE_WARNING, 6, "${def.name} will attack on day ${ctx.town.nextSiegeDay}. Current pressure is ${describePressure(f.pressure)}.$led$weak${trait(ctx)?.let { " Expect ${it.name.lowercase()}." }.orEmpty()}", data = mapOf("day" to ctx.town.nextSiegeDay.toString(), "faction" to def.name) +
+                (def.weakTo?.let { mapOf("weak" to it.name.lowercase()) } ?: emptyMap()) + (trait(ctx)?.let { mapOf("trait" to it.id) } ?: emptyMap()))
         }
     }
 

@@ -1,5 +1,31 @@
 # Progress — 2026-10-10 (gameplay depth built in the evening; major update final at about 13:00)
 
+## Copy remaster and the Gazette briefing (2026-10-11)
+Source: the owner's `BlacksmithInc_Copy_Remaster.md`, `BlacksmithInc_Copy_Replacements.json` (665 entries, 44 files, reviewed
+against `8f2e284`) and the implementation prompt. Gameplay, balance, RNG draws,
+save schema, rules/content/balance versions are untouched (display prose is outside the fingerprint).
+- Catalog: all 665 entries applied (664 by script with longer anchors first, `T0585` by hand). Anchors that matched more
+  than once were reviewed one by one (comment-only hits skipped, display hits all changed).
+- Adapted, each for a reason: `T0110`/`T0113` say "one fifth" / "one tenth" (`LaunchContentTest` forbids a percent sign in
+  player text); `T0612`/`T0613`/`T0616` keep their before/after numbers (`LegacyPreviewTest` guarantees a concrete preview);
+  `T0425`/`T0517`/`T0638` had lost the space that joins a fragment; `T0366` doubled a period; `T0222` to `T0224` keep "of
+  them"; `T0522`/`T0474` read "Reward:"; `T0585` and `T0584` use `core/text/Sentences.kt` (`joinSentences`, one capital and one
+  period per clause) in `Lines`, `Journal` and the hero history; `T0581` to `T0583` and `T0664`/`T0665` are superseded by
+  `Gazette.PAPER` and `Gazette.dateline` (the masthead string is still "EMBERFALL GAZETTE | DAY n").
+- Beyond the catalog: leftover "blade" in labels, counts and fallbacks, "bare-handed", the arrival of a descendant, the
+  slice catalog's two affix descriptions, the Notebook's stage words, the Shop's fit reason, bulk-action notices.
+- Gazette: `core/gazette/Digest.kt` (`GazetteDigest.of(state, day, content, config)`) is the one presentation model for the
+  report modal and the Records archive; `Gazette.edition` stays as "All details". Selection is by event type, subject IDs and
+  recorded data, never prose; old records are shown through `core/text/LegacyProse.kt` (read-only, idempotent). Three event
+  kinds carry a few more `data` keys that the digest reads when present (`attacker`, `foe`, `gold`, `faction`, `weak`,
+  `trait`); a record without them falls back to its own text.
+- Tests: new `GazetteDigestTest` (12) and `ProseGuardTest` (a source scan: no em or en dash, no semicolon chain, no generic
+  "blade" in any displayed string). About 90 expectations in existing tests were updated to the new wording; none was removed.
+- Checks run: `:core:test` 467 pass; `:app:testDebugUnitTest` 183 pass; `:app:assembleDebug`, `:app:compileDebugAndroidTestKotlin`
+  and `:app:lintDebug` (0 errors, 50 warnings, none new in the changed code) pass.
+- Not run: the instrumented tests (their text expectations were updated by hand, `NavigationFlowTest` and the others are
+  unverified); the simulator gate and the scenario script were not rerun (nothing they measure changed). The Gazette's
+  "Open notebook" button is in the archive only: the report modal sits over the shop day, where Records is not a destination.
 
 ## Workshop notice moved off the Forge button (2026-10-10, night)
 The owner's phone screenshot showed the notice after a forge ("... is on the shelf at 108 gold.") lying over the Forge

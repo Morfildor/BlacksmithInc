@@ -70,8 +70,8 @@ object SliceContent {
             MaterialDef(BINDING_SALT, "Binding Salt", MaterialCategory.CATALYST, tier = 1, price = 15, dailySupplierStock = 2, flavor = "Steadies volatile forgings."),
         ),
         affixes = listOf(
-            AffixDef(FLAMING, "Flaming", AffixKind.BENEFICIAL, power = 4, element = Element.FIRE, description = "Burns foes; raiders fear it.", attackMultiplier = 1.08),
-            AffixDef(FROSTBOUND, "Frostbound", AffixKind.BENEFICIAL, power = 4, element = Element.FROST, description = "Slows enemies.", attackMultiplier = 1.05, defenseMultiplier = 1.05),
+            AffixDef(FLAMING, "Flaming", AffixKind.BENEFICIAL, power = 4, element = Element.FIRE, description = "Improves attacks with fire. Some enemies resist it.", attackMultiplier = 1.08),
+            AffixDef(FROSTBOUND, "Frostbound", AffixKind.BENEFICIAL, power = 4, element = Element.FROST, description = "Frost improves attack and defense.", attackMultiplier = 1.05, defenseMultiplier = 1.05),
             AffixDef(STORMCHARGED, "Stormcharged", AffixKind.BENEFICIAL, power = 5, element = Element.STORM, description = "Crackles with lightning.", attackMultiplier = 1.1),
             AffixDef(KEEN, "Keen", AffixKind.BENEFICIAL, power = 3, description = "Sharper than it looks.", attackMultiplier = 1.06),
             AffixDef(REINFORCED, "Reinforced", AffixKind.BENEFICIAL, power = 2, description = "Hard to break.", defenseMultiplier = 1.1),

@@ -17,9 +17,9 @@ class LoadFailureTextTest {
         for (f in listOf(SaveFailure.Corrupt("legacy", cause, runSound = true), SaveFailure.Newer("legacy", 3, 2, runSound = true))) {
             val text = loadFailureText(f)
             val over = text.startOver!!
-            assertTrue(text.safe, "Your current run can still be read" in text.safe)
+            assertTrue(text.safe, "Your current run can still be opened" in text.safe)
             assertEquals("Rebuild the legacy from the run", over.button)
-            assertTrue(over.does, "The run goes on." in over.does)
+            assertTrue(over.does, "continues the run" in over.does)
             assertFalse("the run is not set aside", "run aside" in over.does || "era 1" in over.does || "era 1" in over.confirm)
         }
     }
@@ -29,7 +29,7 @@ class LoadFailureTextTest {
         for (f in listOf(SaveFailure.Corrupt("legacy", cause), SaveFailure.Newer("legacy", 3, 2))) {
             val over = loadFailureText(f).startOver!!
             assertTrue(over.does, "no points, upgrades or legends" in over.does)
-            assertTrue(over.confirm, "your points, upgrades and legends and that run will be gone from the game" in over.confirm)
+            assertTrue(over.confirm, "removed from the active game" in over.confirm)
         }
     }
 
@@ -37,14 +37,14 @@ class LoadFailureTextTest {
     fun aDamagedFileIsNeverCalledSafeToStartOverFrom() {
         val text = loadFailureText(SaveFailure.FileDamaged(cause))
         assertEquals("Nothing has been deleted or changed.", text.safe)
-        assertTrue(text.startOver!!.confirm, "your run and your points, upgrades and legends will be gone from the game" in text.startOver!!.confirm)
-        assertTrue("set aside, not deleted" in text.startOver!!.confirm)
+        assertTrue(text.startOver!!.confirm, "removed from the active game" in text.startOver!!.confirm)
+        assertTrue("as a backup" in text.startOver!!.confirm)
     }
 
     @Test
     fun aRunRowKeepsTheLegacyAndAStorageErrorOffersNoStartOver() {
         val run = loadFailureText(SaveFailure.Corrupt("run", cause))
-        assertTrue("is safe" in run.safe && "Your legacy is kept." in run.startOver!!.does)
+        assertTrue("are safe" in run.safe && "Keeps your legacy." in run.startOver!!.does)
         assertNull(loadFailureText(SaveFailure.Io(cause)).startOver)
     }
 

@@ -63,7 +63,7 @@ class ForgeResultTest : ShopDayTestBase() {
         val s = vm.playing()
         assertEquals("the price on the shelf is the one chosen, not the suggested one", chosen, s.state.weapons.getValue(id).listedPrice)
         assertNull("the card closes once the listing is saved", s.revealWeaponId)
-        assertEquals("${blade.name} is on the shelf at $chosen gold. Shelf 1 of ${engine.shelfSlots(s.state)}. Your ingredients stay selected.", s.notice)
+        assertEquals("Listed ${blade.name} for $chosen gold. Shelf 1 of ${engine.shelfSlots(s.state)}. Ready to forge another.", s.notice)
         assertEquals(listOf(id to chosen), s.shop.shelf.map { it.weapon.id to it.price })
 
         // Shown once: an older notice does not clear a newer one.
@@ -83,7 +83,7 @@ class ForgeResultTest : ShopDayTestBase() {
         val s = vm.playing()
         assertNull(s.revealWeaponId)
         assertTrue("nothing was listed", s.state.weapons.getValue(id).isInStorage && s.state.listedWeapons().isEmpty())
-        assertEquals("${blade.name} is in storage, not for sale. Your ingredients stay selected.", s.notice)
+        assertEquals("Stored ${blade.name}. It isn't for sale. Ready to forge another.", s.notice)
     }
 
     /** The screen is told the shelf is full before the tap; if a listing is refused all the same, the card stays open under the engine's reason. */
@@ -106,7 +106,7 @@ class ForgeResultTest : ShopDayTestBase() {
         // Store is still the way on.
         vm.dismissError(); vm.storeForged(); advanceUntilIdle()
         assertNull(vm.playing().revealWeaponId)
-        assertTrue(vm.playing().notice!!.contains("in storage"))
+        assertTrue(vm.playing().notice!!.contains("Stored"))
     }
 
     /** One count on every surface: the Shop's model, the blade sheet and the forge result read `Demand.funds`. */
@@ -129,9 +129,9 @@ class ForgeResultTest : ShopDayTestBase() {
 
     @Test
     fun theSuggestedPriceIsNamedApartFromTheChosenOne() {
-        assertEquals("Suggested price 120 gold. Your price matches it.", priceAgainstSuggested(120, 120))
-        assertEquals("Suggested price 120 gold. Your price is 30 below it.", priceAgainstSuggested(90, 120))
-        assertEquals("Suggested price 120 gold. Your price is 15 above it.", priceAgainstSuggested(135, 120))
+        assertEquals("Suggested price 120 gold. You're asking the suggested price.", priceAgainstSuggested(120, 120))
+        assertEquals("Suggested price 120 gold. You're asking 30 gold less.", priceAgainstSuggested(90, 120))
+        assertEquals("Suggested price 120 gold. You're asking 15 gold more.", priceAgainstSuggested(135, 120))
         assertEquals("Suggested price 120 gold. Enter your own price.", priceAgainstSuggested(null, 120))
     }
 
@@ -147,8 +147,8 @@ class ForgeResultTest : ShopDayTestBase() {
         assertEquals("For $buyer: ${Labels.request(accepted, engine.content, engine.config)}", ready.title)
         assertTrue(ready.terms.startsWith("80 gold · due "))
         assertTrue(ready.fits && ready.accepted)
-        assertEquals("This blade fits the request", ready.fit)
-        assertEquals("Ready: ${blade.name} will be handed over at End Day.", ready.handover)
+        assertEquals("This weapon meets the order", ready.fit)
+        assertEquals("Ready. ${blade.name} will be collected at End Day.", ready.handover)
 
         // A lesser blade that also fits is what the engine hands over: the card names that one, not the fresh blade.
         val lesser = blade.copy(id = WeaponId("lesser"), name = "Plain Old Sword", quality = blade.quality - 1)
@@ -156,16 +156,16 @@ class ForgeResultTest : ShopDayTestBase() {
         assertEquals(lesser.id, Commissions.pick(two.weapons.values, accepted, engine.config)!!.id)
         engine.forgedFor(two, blade.id, accepted.id)!!.let {
             assertTrue("the fresh blade fits", it.fits)
-            assertEquals("Ready: Plain Old Sword will be handed over at End Day.", it.handover)
+            assertEquals("Ready. Plain Old Sword will be collected at End Day.", it.handover)
         }
 
         // Too poor for the request: said of this blade, with what the shop still lacks.
         val demanding = request(CommissionStatus.ACCEPTED, minQuality = blade.quality + 5)
         engine.forgedFor(with(demanding), blade.id, demanding.id)!!.let {
             assertFalse(it.fits)
-            assertEquals("This blade does not fit: quality ${blade.quality}, needs ${blade.quality + 5}", it.fit)
+            assertEquals("This weapon doesn't meet the order. Quality ${blade.quality}, needs ${blade.quality + 5}.", it.fit)
             assertEquals(Labels.readiness(demanding, with(demanding).weapons.values, engine.content, engine.config), it.handover)
-            assertTrue(it.handover.startsWith("Nothing fits yet"))
+            assertTrue(it.handover.startsWith("No matching weapon yet."))
         }
 
         // Offered but not accepted: End Day hands nothing over, and the card says so.
@@ -173,7 +173,7 @@ class ForgeResultTest : ShopDayTestBase() {
         engine.forgedFor(with(offered), blade.id, offered.id)!!.let {
             assertTrue(it.fits)
             assertFalse(it.accepted)
-            assertEquals("Not accepted yet. Accept the request in the Shop, or nothing is handed over.", it.handover)
+            assertEquals("Accept this commission in the Shop before it can be collected.", it.handover)
         }
 
         // No request, or one that is closed: nothing is shown.

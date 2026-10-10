@@ -54,7 +54,7 @@ class DayEditionTest {
         assertEquals(fromArchive, fromReport)
         assertEquals(fromReport, Gazette.edition(Gazette.dayRecords(out.state, res.day), names(out.state), res.visits))
         val forgeLine = fromReport.sections.first { it.title == Gazette.FORGE }.lines.first()
-        assertTrue("Forged 1 weapon" in forgeLine && "listed 1" in forgeLine && "honed 1" in forgeLine && "bought" in forgeLine, forgeLine)
+        assertTrue("Forged 1 weapon" in forgeLine && "Listed 1" in forgeLine && "Honed 1" in forgeLine && "Bought" in forgeLine, forgeLine)
         assertEquals(res.events.count { it.type == EventType.WEAPON_SOLD }, res.events.filter { it.type == EventType.WEAPON_SOLD }.map { it.id }.toSet().size, "sales are counted once")
     }
 

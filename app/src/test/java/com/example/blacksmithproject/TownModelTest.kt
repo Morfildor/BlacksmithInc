@@ -75,7 +75,7 @@ class TownModelTest : ShopDayTestBase() {
         val head = gazetteHead(7)
         assertEquals("EMBERFALL GAZETTE", head.paper)
         assertEquals("Day 7", head.dateline)
-        assertEquals(Gazette.masthead(7), "${head.paper} — ${head.dateline.uppercase()}")
+        assertEquals(Gazette.masthead(7), "${head.paper} | ${head.dateline.uppercase()}")
     }
 
     @Test

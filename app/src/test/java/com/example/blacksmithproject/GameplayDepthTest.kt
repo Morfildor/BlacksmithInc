@@ -98,7 +98,7 @@ class GameplayDepthTest : ShopDayTestBase() {
         val view = vm.playing().encounter!!
         assertEquals(run.encounter, view.instance)
         assertTrue(view.instance.isOpen)
-        assertEquals("The visitor leaves tonight: ${view.defaultLabel}", endDayNote(vm.playing().state, view))
+        assertEquals("The visitor leaves tonight. No answer means ${view.defaultLabel.lowercase()}.", endDayNote(vm.playing().state, view))
     }
 
     @Test
@@ -122,7 +122,7 @@ class GameplayDepthTest : ShopDayTestBase() {
         assertEquals("what is shown is what is stored", stored(repo), answered.state)
         assertEquals(1, repo.commitCount)
         assertEquals("${view.name}: you answered \"${option.label}\".", visitorNote(answered.encounter))
-        assertNotEquals("the visitor no longer holds up End Day", "The visitor leaves tonight: ${view.defaultLabel}", endDayNote(answered.state, answered.encounter))
+        assertNotEquals("the visitor no longer holds up End Day", "The visitor leaves tonight. No answer means ${view.defaultLabel.lowercase()}.", endDayNote(answered.state, answered.encounter))
 
         // The same tap again is the same command: accepted, nothing written, nothing said.
         val after = repo.run
@@ -132,7 +132,7 @@ class GameplayDepthTest : ShopDayTestBase() {
         assertNull(vm.playing().lastError)
         // Any other answer comes too late.
         vm.answerVisitor(Encounters.PASS); advanceUntilIdle()
-        assertEquals("The visitor has already had an answer.", vm.playing().lastError)
+        assertEquals("You've already answered this visitor.", vm.playing().lastError)
         assertEquals(after, repo.run)
     }
 
@@ -193,11 +193,11 @@ class GameplayDepthTest : ShopDayTestBase() {
     fun endDayNoteNamesWhatIsLeftOpenMostPressingFirst() {
         val run = quiet.withVisitor()
         val view = engine.encounterView(run)!!
-        assertEquals("The visitor leaves tonight: ${view.defaultLabel}", endDayNote(run, view))
-        assertEquals("A relic awaits your choice", endDayNote(fresh, engine.encounterView(fresh)))
+        assertEquals("The visitor leaves tonight. No answer means ${view.defaultLabel.lowercase()}.", endDayNote(run, view))
+        assertEquals("Choose a workshop relic", endDayNote(fresh, engine.encounterView(fresh)))
         val blessed = run.copy(pendingBlessingOffer = listOf(content.blessings.first().id), pendingRelicOffer = fresh.pendingRelicOffer)
-        assertEquals("A blessing awaits your choice", endDayNote(blessed, view))
-        assertEquals("the visitor before the relic", "The visitor leaves tonight: ${view.defaultLabel}", endDayNote(blessed.copy(pendingBlessingOffer = emptyList()), view))
+        assertEquals("Choose a blessing", endDayNote(blessed, view))
+        assertEquals("the visitor before the relic", "The visitor leaves tonight. No answer means ${view.defaultLabel.lowercase()}.", endDayNote(blessed.copy(pendingBlessingOffer = emptyList()), view))
         assertEquals("${quiet.energy} energy unused", endDayNote(quiet, null))
     }
 
@@ -247,7 +247,7 @@ class GameplayDepthTest : ShopDayTestBase() {
         val vm = open(repo)
 
         vm.chooseRelic(offered); advanceUntilIdle()
-        assertEquals("Every relic slot is taken. Choose which relic it replaces.", vm.playing().lastError)
+        assertEquals("Your relic slots are full. Choose one to replace.", vm.playing().lastError)
         assertEquals(held, vm.playing().relics.map { it.id })
         assertEquals(0, repo.commitCount)
 
@@ -299,14 +299,14 @@ class GameplayDepthTest : ShopDayTestBase() {
         val heir = run.aliveHeroes().first()
         val order = Commission(CommissionId("heirloom"), heir.id, fine.familyId, 1, 40, run.day, run.day + 3, CommissionStatus.ACCEPTED, kind = CommissionKind.HEIRLOOM, weaponId = fine.id)
         val kept = run.copy(weapons = mapOf(fine.id to fine.copy(promisedTo = order.id)), commissions = run.commissions + (order.id to order))
-        assertEquals("Kept for ${heir.fullName}'s order", engine.shopUi(kept).storage.single().promised)
-        assertEquals("Kept for ${heir.fullName}'s order", engine.itemDetail(kept, fine.id)!!.stock!!.promised)
+        assertEquals("Reserved for ${heir.fullName}'s order", engine.shopUi(kept).storage.single().promised)
+        assertEquals("Reserved for ${heir.fullName}'s order", engine.itemDetail(kept, fine.id)!!.stock!!.promised)
         val repo = repo(kept)
         val vm = open(repo)
         vm.dispatch(Command.ToggleShelf(fine.id, true, 10)); advanceUntilIdle()
-        assertEquals("That blade is kept for ${heir.fullName}'s order.", vm.playing().lastError)
+        assertEquals("That weapon is reserved for ${heir.fullName}'s order.", vm.playing().lastError)
         vm.dispatch(Command.Salvage(fine.id)); advanceUntilIdle()
-        assertEquals("That blade is kept for ${heir.fullName}'s order.", vm.playing().lastError)
+        assertEquals("That weapon is reserved for ${heir.fullName}'s order.", vm.playing().lastError)
         assertEquals(0, repo.commitCount)
     }
 }
