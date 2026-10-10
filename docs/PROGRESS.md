@@ -1,7 +1,7 @@
 # Progress — 2026-10-10 (major update, final state at about 13:00)
 
-## Forge-first redesign (2026-10-10, evening): on branch `ui-beauty-pass`, not merged
-Branch `ui-beauty-pass`, cut from `main` at `6c49f8e`; one commit per slice; no balance, rules, schema or content change (one
+## Forge-first redesign (2026-10-10, evening): on `main`
+Merged to `main` by fast-forward at the owner's request (branch `ui-beauty-pass`, cut from `main` at `6c49f8e`); one commit per slice; no balance, rules, schema or content change (one
 core wording change: "Seems neutral"). Source: the owner's redesign plan of 10 October, two phone mock-ups and an HTML
 sketch of the Forge. Rulings and engineering notes: DECISIONS, "Forge-first redesign".
 
@@ -41,7 +41,8 @@ sketch of the Forge. Rulings and engineering notes: DECISIONS, "Forge-first rede
 
 **Open for the owner.**
 - The uncommitted fourth UI batch in the `ui-batch4` worktree edits the same screens (Forge, Shop, Town, Records tabs)
-  and chose other words ("Forge integrity", "request", "Gazette" for the News tab). Which lands first, and which words win.
+  and chose other words ("Forge integrity", "request", "Gazette" for the News tab). This redesign landed first; that
+  batch now has to be rebased onto it, and which words win is still open.
 - The Shop and Town can name one faction as besieger on the siege day while another brings the siege that night
   (pressure moves inside End Day). Seen once on the emulator; not changed.
 
