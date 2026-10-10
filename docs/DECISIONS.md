@@ -3105,7 +3105,8 @@ One place for what was decided while the major update was being built, and for w
 "ruling" here is a decision the integrating session made on its own so that work could continue; each one says what it
 costs to reverse. Sources: the lines starting "Ruling:" in `docs/MAJOR_UPDATE_LEDGER.md` (which keep the full reasoning),
 the "Deviations" and "Concerns" sections of the task reports, and the dated sections above. State described: integration
-branch `shop-day/m0` at `d946c4f` (pushed as `major-update`), rules 3, save schema 4, balance 8, content 3. Nothing here
+branch `shop-day/m0` at `bceb326` (pushed as `major-update`; app version 0.7.0, built on that branch, not released,
+`main` still 0.6.0), rules 3, save schema 4, balance 8, content 3. Brought to the final state at about 13:00. Nothing here
 changes a LOCKED decision of the GDD. No number was lowered to meet a target: where a target is missed the measured
 distribution is reported and the decision is left open, as the owner asked.
 
@@ -3124,7 +3125,8 @@ Process and history
   committed unless the owner names them.
 - The plan's section 11 stood in for a new conflict scan; tasks with separate files ran in parallel worktrees.
 - Owner instruction of 2026-10-10: "finalize a build before adding features". Onboarding (T2.10) and storage tools (T6.3c)
-  were parked. An agent had already begun both; they exist on its branch and are not merged.
+  were parked. An agent had already begun both; once the build was otherwise complete they were merged the same day
+  (6223da8, 5b81c96) and passed the final device gate.
 
 Saves, versions and recovery
 - A double-tapped End Day returns "the day is not watched yet" and writes nothing, because the planning lock is checked
@@ -3185,32 +3187,80 @@ Art and presentation
   request (T4 app).
 - One dark theme in both system modes; there is no light theme and no setting for it (polish pass 1).
 
+The final gate and review (2026-10-10)
+- The first device gate on `d946c4f` read 45 of 50. All five failures were faults in new tests, not in screens, and
+  the tests were corrected. One real screen fault then showed and was fixed: the Storage sheet forgot its chosen order
+  when the system restored the screen (2eca650). The final gate on `2eca650` read 56 of 56, with both device scripts
+  and a main-menu walk-through passing. Later commits are documents only.
+- An independent read of the whole branch (`FINAL-REVIEW.md`; by reading, nothing was run) led to three fixes in
+  677876b: a run with no legacy record beside it now reads the legacy the run itself carries (before, a "Start over"
+  cut short between two writes could leave an empty legacy), with a JVM test; the Town names the besieger the engine
+  chose when two factions are tied; the Abandon dialog now says that journal discoveries stay, and abandoning clears
+  the saved day position.
+- The 10,000-seed review (section "Balance v8 at 10,000 seeds") changed no number. **The plan's exit condition for
+  milestone M5, "both bands hold at 10,000 seeds", is not met**: the plain smith's mean is over the band top at every
+  seed. This is recorded as an owner decision, not tuned away.
+
+### Known issues left open from the final review
+None of these was fixed; each is small or needs a build that does not exist yet.
+- A bulk Storage action stops silently when one save fails in the middle: "Try again" repeats only the failed blade,
+  the rest of the selection is never salvaged or given, and nothing says so (finding 4).
+- If a later build adds a new kind of record without raising the schema number, this build would call that save
+  "damaged" instead of "from a newer version", and "Start over" would set a good run aside (finding 5). Nothing in the
+  field is affected today; it bears on decision 13 below.
+- The blade sheet says "Worn" below condition 70 and "Battered" below 40, while the rule the engine and the Shop's
+  "carry a worn blade" count use is 50. A blade at 60 reads "Worn" on its sheet and is not worn to the game (finding 7).
+- Three rules are restated in the app instead of read from the engine: the seat count on the Shop's plate, the grouping
+  of yesterday's visits, and the pressure at which a faction's sprite turns elite. They agree today and can drift
+  (finding 8).
+- Hardening: building the Shop's content, the siege forecast or the run-end summary is not guarded the way the shop-day
+  script is. If one of them ever threw, the game would crash at every start with an intact save and no recovery
+  screen; so would an unreadable settings file. The reviewer found no state that triggers it.
+- "Select blades" mode in Storage may be lost when the system restores the screen, the same fault that was fixed for
+  the order. Untested.
+
+Not reviewed (the review did not reach them): the market rules (seating, wants, sidegrades, request situations),
+battles, world events, the journal's clue ladder and the Gazette in `:core`; whether every line of the shop day matches
+the stored record; the hero sheet, Records, Forge, Supplies, run-end and recovery screens; whether a damaged or
+hand-edited save that passes the checks can still make End Day fail; the simulator, all tests, the device scripts, the
+art tooling, and the documents beyond the lines the review cites.
+
 ### Open owner decisions
 
-Balance (numbers are 1,000 runs at base seeds 1 / 10001 / 20001 unless said; the 10,000-seed review T5.5 is running and
-may move them slightly)
+Balance (numbers are 10,000 runs at base seeds 1 / 10001 / 20001 from the section "Balance v8 at 10,000 seeds" unless
+said; that section has the full tables)
 1. **Guild Patronage.** It ships at a stipend of 30. Its own target (+0.6 mean days or +0.3 sales a day) is met by no
    setting that was tried; the blessing is live about 2 days in 22. Accept it as a blessing of ordinary size, raise the
    stipend, or restate the target.
-2. **The plain smith's first era.** FAIR mean 22.4 to 22.7 days against a band top of 22.5 (over by 0.15 and 0.015 at
-   two of three seeds). Accept, restate the top at 22.7, or take raid growth 6.5 to 6.6 a day, which costs 0.2 to 0.5
-   mean days on the maxed FAIR, ACTIVE and SYNERGY rows.
-3. **Maxed over new, SYNERGY.** A maxed account should outlast a new one by at least 10 mean days; SYNERGY measures
-   +9.96 to +10.3 depending on the seed and the task that measured it. No lever in the plan raises it without making
-   the game easier.
-4. **Forging what customers ask for.** REQUEST_DRIVEN lives +8.4 (after the wants task) to +9.6 (final tree) mean days
-   longer than FAIR against a bound of +5, while answering only about 30 to 34 % of wants against a target of 60 %. The
-   two lines pull apart: a bot that answers more wants lives longer still. Restate either line, or accept the reward as
-   the point of the feature.
-5. Smaller M4 lines that miss, for the record: "not better than mine" refusals fell 5 to 6 points, not 8; three new
-   purchase reasons (taste match, prized, storied) stay under 1 % of visits; 98 % of clue-following accounts find a
-   signature in their first era, which may be too fast; a champion's siege request is handed the weakest blade that fits.
+2. **The plain smith's first era.** FAIR mean 22.518 / 22.601 / 22.568 days against a band top of 22.5: over at every
+   seed, by 0.02 to 0.10 (at 1,000 runs it was over at two seeds of three). The median is 20 / 25 / 20 and the 10th and
+   90th percentiles hold. This is the line that keeps the plan's M5 exit condition unmet. Accept, restate the top at
+   22.7, or take raid growth 6.5 to 6.6 a day, which at 1,000 runs cost 0.2 to 0.5 mean days on the maxed FAIR, ACTIVE
+   and SYNERGY rows.
+3. **Maxed over new, SYNERGY: settled.** A maxed account should outlast a new one by at least 10 mean days; at 10,000
+   runs SYNERGY measures +10.151 / +10.152 / +10.151 and holds at every seed. The +9.955 seen at 1,000 runs was noise.
+   Kept in this list only so the numbering matches older references; no decision is needed.
+4. **Forging what customers ask for.** REQUEST_DRIVEN lives +9.7 to +9.8 mean days longer than FAIR against a bound of
+   +5, while answering only 29.5 to 29.6 % of wants against a target of 60 % (+8.4 and 34 % when the wants task alone
+   was measured). The two lines pull apart: a bot that answers more wants lives longer still. Restate either line, or
+   accept the reward as the point of the feature.
+5. The other lines that fail at all three seeds at 10,000 runs: "not better than mine" refusals fell 5 points, not 8;
+   three new purchase reasons (taste match, prized, storied) stay under 1 % of visits; the plain smith sees 0.87
+   sidegrade purchases a run against a floor of 1; a blade ordered for the wall is still wielded after its siege in
+   58 to 60 % of cases for the plain smith and 46 to 47 % for EXPERT against 60 % (the patron is handed the weakest
+   blade that fits); SIEGE_PREP is +3.8 to +3.9 over its starting value against +3, as before M4; the simulator's old
+   hard-lock counter reads 48 to 62 days in 10,000 runs for the over-spending bot, while the stuck-state measure that
+   replaced it holds. Also for the record, from 1,000 runs: 98 % of clue-following accounts find a signature in their
+   first era, which may be too fast.
 6. Numbers chosen by an agent rather than the plan: the seat weight of a want 0.5, at most 4 rumours a run, 3 days
    between rumours, and the weights of the five request kinds.
 
 Rules and saves
 7. **Abandon run.** From the main menu it discards the run after one confirmation and claims nothing: no legacy points,
-   no legends, no lineage. Confirm, or let an abandoned run claim what it earned.
+   no legends, no lineage. Confirm, or let an abandoned run claim what it earned. One thing does stay: journal
+   discoveries made in the abandoned run (pairings, clues, signatures) are kept, because knowledge is written to the
+   legacy as it is learned. The dialog now says so (677876b). **Decide whether abandoning should also erase the
+   discoveries made in that run.**
 8. **Numbers on the blade card.** The card and every shelf and storage row now show power, condition and fame as
    numbers; before, condition and fame were words and power was hidden. The GDD forbids showing probabilities and
    formulas, not stats, but this is a change of how much the player is told.
@@ -3223,14 +3273,24 @@ Rules and saves
     resolve a new day. The app never holds an old ID. Raise the number, or set it to keep all, if a stricter guarantee
     is wanted (about 23 bytes an ID).
 12. **The save does not level off.** It grows 3.3 to 4.2 KB a day (3.7 to 4.7 MB at day 1,000 under forced survival;
-    real runs end by day 65). Unsold stock is 60 to 65 % of it and is kept by decision. Storage tools exist on an
-    unmerged branch, but clearing hundreds of blades in a few taps needs a new core rule (salvage costs energy and the
-    armory fills); that rule is the owner's to ask for.
+    real runs end by day 65). Unsold stock is 60 to 65 % of it and is kept by decision. Storage now has filters, four orders
+    and multi-select Salvage / Arm the watch (T6.3c, merged), but two lines of the plan need new core rules that do not
+    exist: "a 200-blade storage can be cleared in under ten taps" (each salvage costs energy and the armory fills, so
+    about 14 blades a day is the limit), and a "never listed" filter (the save keeps no trace of a listing; "Never
+    sold" was built instead). Both rules are the owner's to ask for.
 13. **Schema number.** Whether fields added since schema 4 should have made a schema 5 before any build is given to
     testers (see the ruling above).
+14. **Look of the planning screens (polish pass 2).** Button hierarchy: gold for End Day, Forge weapon, the lead's
+    action, Accept and Choose a blessing; bronze outlines for the rest, so the Shop can show three gold buttons at once.
+    Numbers on every shelf and storage row (power, quality, condition) with each buff and flaw by name, and the blade's
+    title beside its name. Confirm or change.
+15. **Shop-day card timings.** Shortened (open 1200 ms, arrive 1000, browse 900, decide 1500, tally 2000) so an
+    unattended day fits 25 seconds with the larger town. Whether that pace reads well is a playtest call.
+16. **Onboarding wording.** The hint on the first customer reads "Tap anywhere to continue · Skip day jumps to the
+    evening" (the plan said "Tap to continue · Skip day"); it shows on the first day that has a customer.
 
 Outside the repository
-14. The release application ID (still `com.example.blacksmithproject`), the launcher icon, audio assets, further
+17. The release application ID (still `com.example.blacksmithproject`), the launcher icon, audio assets, further
     portraits and art, how the AI-generated art is described on the store, and name taste (a few names such as
     Isherwood, Wyndham, Jarvis, Merrick, Lysander, Idris and Rosalind may read as known people or characters).
 ## Balance v8 at 10,000 seeds (2026-10-10, task T5.5; B01)
