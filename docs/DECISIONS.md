@@ -3389,13 +3389,15 @@ maxed active smith 45 (40/50) and at most 60, the maxed EXPERT rows 55 (50/60) a
 
 Notes on the lines.
 - Relative lines use the 1,000-run values the gates were set with: M0 and M3 conversion and refusal shares per base seed. The
-  REQUEST_DRIVEN M3 conversion is taken back from the M4 gate record (28.9 / 28.7 / 28.8 at +9.7 / +9.7 / +9.6).
+  REQUEST_DRIVEN M3 conversion (19.2 / 19.0 / 19.2 %) is the M3 tip's own run (`T3.8-sim-bots-rout55-s<seed>.txt`).
 - "Hard-lock days" is the old counter (a day with nothing forged and nothing left on the shelf from the day before). T5.2 showed it
   is not a stuck state; the stuck-state probe that replaced it holds in every row (worst 0.09 % of days, SPENDTHRIFT, whose longest
   stuck streak is 7 days and who has a streak of three or more in 0.06 to 0.10 % of runs). NOVICE has none of three days, so the
   valve's trigger (more than 1 % of NOVICE runs) stays unmet.
 - The two-commission line was run at base seed 1 only (`--set maxOpenCommissions=1`).
-- Face clashes are reported, not gated.
+- Face clashes are reported, not gated. So is the served share among heroes alive ten days or more (ruling of T3.1), largest over
+  smallest per run: BALANCED_FAIR median 2.20 and p90 3.25 at each seed, BALANCED_ACTIVE 1.9 and 2.5, EXPERT 2.2 and 3.1 (M3: 2.2 and
+  3.2 to 3.3 for the plain smith).
 - Not re-measured at 10,000 seeds, so their 1,000-seed results stand: E3 first discovery by era 2 (needs the clue-following bot
   over two eras), G01 champion power at the first two sieges within 2 % (needs the gate-off arm), the Patronage band of sweep step 5,
   and the lines that are tests (`ArtifactFidelityTest`, `ClueLadderTest`).
