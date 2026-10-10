@@ -1,5 +1,6 @@
 package com.example.blacksmithproject.ui
 
+import kotlin.math.roundToInt
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -222,6 +223,16 @@ private const val UPGRADED_KILLS = 5
  * [UPGRADED_KILLS]. `Hero` has no title of its own; pass null for it unless the caller has one.
  */
 fun heroUpgraded(title: String?, kills: Int): Boolean = !title.isNullOrBlank() || kills >= UPGRADED_KILLS
+
+/**
+ * The dp size closest to [hint] at which art [artPx] wide is a whole-number multiple of device pixels (at least 1x),
+ * so a small icon is enlarged evenly instead of with uneven pixel columns.
+ */
+@Composable
+fun wholePixelDp(artPx: Int, hint: Dp): Dp {
+    val density = LocalDensity.current
+    return with(density) { (maxOf(1, (hint.toPx() / artPx).roundToInt()) * artPx).toDp() }
+}
 
 /**
  * Pixel image: nearest-neighbour when the bitmap is enlarged (keeps pixels square), bilinear when a larger

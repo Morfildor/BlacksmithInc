@@ -212,11 +212,11 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inS
  */
 @Composable
 fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier = Modifier) {
-    // 64dp instead of the 80dp default: the workshop needs the vertical space more than the bar does.
+    // 72dp instead of the 80dp default: the workshop needs the vertical space more than the bar does.
     // A panel under a bronze rule; the chosen destination is a lit plate with a gold edge, not Material's pill.
     NavigationBar(
         containerColor = ForgePanel, tonalElevation = 0.dp, windowInsets = WindowInsets(0, 0, 0, 0),
-        modifier = modifier.navigationBarsPadding().height(64.dp).drawWithContent { drawContent(); drawLine(Bronze, Offset.Zero, Offset(size.width, 0f), strokeWidth = 2.dp.toPx()) },
+        modifier = modifier.navigationBarsPadding().height(72.dp).drawWithContent { drawContent(); drawLine(Bronze, Offset.Zero, Offset(size.width, 0f), strokeWidth = 2.dp.toPx()) },
     ) {
         Dest.entries.forEach { d ->
             NavigationBarItem(
@@ -229,7 +229,7 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
                         drawRect(Gold, size = Size(size.width, 2.dp.toPx()))
                     }
                 },
-                icon = { PixelImage(destIcon(d), 24.dp, description = null) },
+                icon = { PixelImage(destIcon(d), wholePixelDp(40, 36.dp), description = null) },
                 label = { Text(destName(d), style = MaterialTheme.typography.labelMedium, maxLines = 1, softWrap = false, modifier = Modifier.testTag("nav_label_${d.name.lowercase()}")) },
             )
         }
@@ -325,7 +325,7 @@ private fun TopBar(s: UiState.Playing, onSettings: () -> Unit) {
 @Composable
 private fun Stat(icon: Int, label: String, value: String, color: Color = Cream) {
     Row(Modifier.semantics(mergeDescendants = true) { contentDescription = "$label $value" }, verticalAlignment = Alignment.CenterVertically) {
-        PixelImage(icon, 22.dp, description = null)
+        PixelImage(icon, wholePixelDp(24, 30.dp), description = null)
         Spacer(Modifier.width(6.dp))
         Text(value, style = MaterialTheme.typography.titleMedium, color = color, maxLines = 1)
     }
