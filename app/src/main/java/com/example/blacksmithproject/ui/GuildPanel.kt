@@ -57,8 +57,8 @@ import com.tinyblacksmith.core.model.HeroId
 private data class Confirm(val title: String, val body: String, val action: String, val command: Command)
 
 /**
- * The Guild destination of a guild run, in the place Town has in a classic run: the wall, the party that is out, the
- * board, the roster, who would sign, the region, then the town's own people. One lazy list; every row that changes
+ * The Guild destination of a guild run, in the place Town has in a classic run: the party that is out, the board, the
+ * roster, the wall (first when the siege is today or tomorrow), who would sign, the region, then the town's own people. One lazy list; every row that changes
  * something sends a command and waits for the save.
  */
 @Composable
@@ -74,8 +74,12 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
     val openHero = { id: HeroId -> vm.openSheet(Sheet.Hero(id)) }
     val enabled = !s.busy
     LazyColumn(modifier.fillMaxSize().testTag("guild_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.lg)) {
-        item(key = "wall") { WallCard(ui.wall, enabled, openHero) { id, keep -> vm.dispatch(Command.ReserveDefender(id, keep)) } }
+        // What asks for a decision comes first: a party waiting for word always; the wall on the siege day and the day before it.
+        // On any other morning the wall stands after the board and the roster, where it is one scroll away, not in the way.
+        val wallFirst = st.town.nextSiegeDay - st.day <= 1
+        val wall = { item(key = "wall") { WallCard(ui.wall, enabled, openHero) { id, keep -> vm.dispatch(Command.ReserveDefender(id, keep)) } } }
         ui.party?.let { p -> item(key = "party") { PartyCard(p, enabled) { id, choice -> vm.dispatch(Command.ChooseMissionCheckpoint(id, choice)) } } }
+        if (wallFirst) wall()
         ui.yesterday?.let { y -> item(key = "yesterday") { ReportCard(y) } }
         item(key = "board_head") {
             Column {
@@ -90,6 +94,7 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             MemberRow(m) { openHero(m.heroId) }
         }
+        if (!wallFirst) wall()
         item(key = "candidates_head") {
             Column {
                 SectionTitle("Would sign today")

@@ -7,6 +7,32 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-10-11
+
+### Added
+- **The guild.** A new era begins under a charter (three to choose from on the title and before each era, or "No charter" for the shop alone, as before). A charter gives the forge two contracted adventurers, something to start with and something it costs. Saves from 0.7.0 load and continue as they were: a run in progress never grows a guild.
+- **Members.** Up to six adventurers under contract. Two residents would sign on most mornings, each with a class, one defining trait and a fee, all shown before hiring. Members no longer shop or wander by themselves: the smith decides what they carry and where they go.
+- **Loans.** A blade can be lent to a member from the forge result, from its own sheet or from the member's sheet, and recalled while the member is in town. A loaned blade is still the forge's: it is not on the shelf, cannot be sold, melted or given away, and comes back if the member leaves.
+- **Contracts.** The Guild board posts contracts on three roads: a free supply run, hunts, sabotage before a siege, escorts, relic delves with a deeper hall to push into or leave, and work on the forge's own wall. Each card says who stands there and what they are known to do, what it pays and when, what failing costs, and the exact morning the party is home. A party is one to three members in the order they act, sent with a posture (cautious, balanced, reckless).
+- **Fights that can be read.** Contracts and sieges are fought automatically, action by action. Guard, Burn, Chill, Mark, Regeneration, Charge and the rest are rules with stated limits, and one rule can set off another: healing charges a capacitor blade, a cracked blade rings the Salvage Bell, heat on a chilled foe boils into Steam. The evening shows the three chains that decided the fight, built from what really happened, and the whole fight on demand.
+- **Blades that do something.** Every blade's card has an "In a fight" section: how its family strikes, and the rule its element, each buff and flaw, its catalyst and its signature give it. A common iron blade has a rule too. The four catalysts are no longer alike: Binding Salt stores healing as Charge, Runestone Shard answers a broken Guard, Dragon Oil spreads fire, Void Ink turns fire into Guard. The Forge says what the chosen augment and catalyst will give before the blade is made.
+- **Flaws worth keeping.** Brittle cracks once a fight for Scrap, Heavy starts slow and shatters Chill, Bloodbound pays health for a harder cut: each is a cost, and each is a piece of a build for the right party.
+- **Eight party relics** join the four workshop relics in the same three slots (Overflow Basin, Salvage Bell, Storm Ledger, Furnace Lung, Bone Music Box, Blood Receipt, The Blunt Oath, Coward's Medal).
+- **The wall.** In a guild run the siege is fought by the three who stand on the wall against the besieger's field, which is drawn and shown from the first warning, after the watch and the militia have thinned it. Members can be reserved for the wall; a party that is away is not on it, and the Guild screen says so before it leaves. The result says "held", "held, at a cost" or "breached" in words.
+- **What can be lost and won back.** A member who goes down comes home injured. When a whole party goes down on a dangerous contract one member is taken alive, with the blade they were lent, and a rescue contract stands on the board until a stated day. In the deep hall of a delve one dies. A blade the enemy keeps gets a bearer with a name, who uses what the blade does, and a recovery contract for that very blade.
+- **The charter.** From day 20 the charter warlord leads the siege until beaten. Beating it secures the charter: the smith may close the chapter there as a success, or go on, with optional harder ranks. The legacy points it earned are the run's either way, once.
+- **Four new visitors** in a guild run: a survivor back without a companion, a blade with a complaint, a dealer who knows where your blade is, an adjuster who insures a loan. The festival gained a tournament for a member, and a family blade restored for its heir makes the heir willing to sign.
+- A rival guild that takes a contract off the board on announced days, bonds between members who have fought or been rescued together, a branch a member's own deeds open, and a law of the season announced a day ahead.
+- Guild runs: the third destination is Guild (the board, the roster, the wall, who would sign, the region, then the townsfolk). End Day says which party leaves and when it is home, and who stands on the wall on a siege night.
+- The till lists contract gold and insurance payouts.
+- Debug builds: a "Combat sandbox" under Scenarios shows ten fixture fights with every fighter's rules and the full timeline; six guild scenario saves (33 in all). `./gradlew :core:combat` prints the same fights as text and `./gradlew :core:guildsim` plays nine guild policies.
+
+### Changed
+- A classic run (no charter) plays exactly as 0.7.0 did.
+- Save format 6, rules 5, content 5, balance 11.
+
+### Also in this version (made after 0.7.0, before the guild)
+
 ### Added
 - The shop-day Tally and closing cards carry a painted vignette (a chest of coins, a receipt with seal and coins).
 - New owner art for the six backgrounds and wall and floor tiles, the eight workshop props (furnace states, anvil, tool rack, shelf, siege walls) and sixteen icons (rarity and flaw badges, Integrity, Militia, Reputation, Purse, Settings, the Gazette, Home and Legacy tabs, the hero markers).

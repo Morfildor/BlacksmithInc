@@ -196,3 +196,22 @@ it, and the lines dated T2.x below say what exists now.
 - [ ] smoke.sh, runend.sh and the instrumented tests updated for the day-1 relic offer, then run
 - [ ] Visitor portraits and relic / trait icons (wanted lists in `Assets/`)
 - [ ] Seen on a physical phone; TalkBack
+
+## Guild evolution (revision of 2026-10-10; `docs/GDD_REVISION_2026-10-10.md`)
+Per-task status and evidence: `docs/GUILD_EVOLUTION_PLAN.md`. Ticked = built and JVM-tested; see the ledger for what was seen on a device.
+- [x] A run begins under a charter (three) or without one (the classic game, unchanged)
+- [x] Contracted members (up to six), recruiting with disclosed class, trait and fee
+- [x] Loans: one blade, one place, one custodian
+- [x] Contract board, one party of one to three, posture; one- and two-day contracts with a checkpoint
+- [x] Automatic fights as recorded events and limited effects; three highlights from the real chain
+- [x] Five class kits; a rule for every element, affix, flaw, catalyst and family; six signature rules
+- [x] Eight party relics in the existing three slots (twelve relics in all)
+- [x] Siege fought by the three on the wall; reserved defenders; "held, at a cost" in words
+- [x] Wounds, capture and rescue, death, a taken blade and its recovery
+- [x] Day-20 charter, retire or continue, legacy counted once; optional ranks
+- [x] Four guild visitors (twelve scenes); rival, nemesis, bonds, branches, laws
+- [x] Schema 6 with 0.7.0 saves as fixtures
+- [ ] Residents' own expeditions through the new engine
+- [ ] Secondary imprint, mastery stamp, risk that changes the quirk, tag-aware relic drafts, workshop specialisation
+- [ ] Event cadence scheduler; the other eight named choice scenes
+- [ ] Human playtest of the two gates; phone, large font and TalkBack pass of the new screens

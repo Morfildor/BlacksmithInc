@@ -74,7 +74,7 @@ past_offers || exit 1
 shot 05_shop_day1
 tap_id nav_town || exit 1
 check has "Guild"
-wait_id guild_wall; shot 06_guild_wall
+wait_id guild_list; shot 06_guild_top
 swipe_up; shot 07_guild_scroll1
 swipe_up; shot 08_guild_scroll2
 swipe_up; shot 09_guild_scroll3
@@ -92,9 +92,8 @@ scroll_to_id contract_send && tap_id contract_send
 $ADB shell sleep 1; shot 15_guild_planned
 check has_id guild_plan
 # a member's sheet
-for i in 1 2 3 4 5 6 7 8; do has "Would sign today" && break; swipe_up; done; $ADB shell input swipe 540 900 540 1500 400
-swipe_up; shot 15b_roster
-for i in 1 2 3 4 5 6 7 8; do has_id guild_member_ && break; $ADB shell input swipe 540 900 540 1300 400; $ADB shell sleep 1; done
+for i in 1 2 3 4 5 6 7 8 9 10; do has_id guild_member_ && break; swipe_up; done
+shot 15b_roster
 tap_id guild_member_
 $ADB shell sleep 1; shot 16_member_sheet
 swipe_up; shot 17_member_sheet_lower
@@ -111,13 +110,13 @@ for n in 21 22 23 24 25 26 27 28 29; do
   $ADB shell sleep 2
   has_id shopday_card || has_id shopday_progress || break
   shot ${n}_evening_card
-  if has_id shopday_contract; then echo "CHECK contract card shown: ok"; tap_id fight_toggle && { $ADB shell sleep 1; shot ${n}b_evening_contract_fight; }; fi
+  if has_id shopday_contract; then echo "CHECK contract card shown: ok"; for k in 1 2 3 4; do has_id fight_toggle && break; swipe_up; done; tap_id fight_toggle && { swipe_up; $ADB shell sleep 1; shot ${n}b_evening_contract_fight; }; fi
   tap_id shopday_next || { tap "Begin day"; break; }
 done
 has_id shopday_skip && tap_id shopday_skip
 $ADB shell sleep 2; shot 30_after_evening
 past_offers
-tap_id nav_town; wait_id guild_wall; shot 31_guild_day2
+tap_id nav_town; wait_id guild_list; shot 31_guild_day2
 swipe_up; shot 32_guild_day2_scroll1
 swipe_up; shot 33_guild_day2_scroll2
 echo "done"
