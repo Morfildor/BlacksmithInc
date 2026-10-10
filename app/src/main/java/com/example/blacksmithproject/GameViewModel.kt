@@ -465,6 +465,22 @@ class GameViewModel(
         launch(Op.Dispatch(command, run.runId))
     }
 
+    /**
+     * A bulk action from Storage: one command per blade, in the order given, each saved before the next is issued. The
+     * first one the engine refuses (no energy left, the armory full) is shown and the rest are not issued.
+     */
+    fun dispatchAll(commands: List<Command>) {
+        val run = session.snapshot.value?.run ?: return
+        if (session.status.value is Status.Working) return
+        viewModelScope.launch {
+            for (command in commands) {
+                val result = session.run(Op.Dispatch(command, run.runId))
+                show(result)
+                if (result !is Result.Done) break
+            }
+        }
+    }
+
     /** Deterministic per-day command ID: retrying after a crash cannot simulate the day twice. */
     fun endDay() {
         val run = session.snapshot.value?.run ?: return

@@ -140,6 +140,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
             onOpenBlade = { vm.openSheet(Sheet.Item(it)) },
             onList = { id, price -> vm.dispatch(Command.ToggleShelf(id, true, price)) },
             onDismiss = { storageOpen = false },
+            terms = with(vm.engine.config) { BulkTerms(salvageEnergy, state.energy, maxOverworkPerDay - state.overworkToday, armoryMax - state.town.armory) },
+            onBulk = { action, ids -> vm.dispatchAll(ids.map { action.toCommand(it) }) },
         )
     }
     if (suppliesOpen) SuppliesSheet(s, vm, onDismiss = { suppliesOpen = false })

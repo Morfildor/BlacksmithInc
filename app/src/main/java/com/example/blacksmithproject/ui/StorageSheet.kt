@@ -1,60 +1,191 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.ui.detail.StockAction
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
+import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.WeaponId
+
+/** The order Storage is read in. STORED is the save's own order, the one the list had before it could be sorted. */
+enum class StorageSort(val label: String) { STORED("As stored"), STRONGEST("Strongest"), WEAKEST("Weakest"), DEAREST("Dearest") }
+
+/** Which stored blades are shown and in what order. [family] is a family's name and [rarity] a rarity, null for any; [unsold]: only blades no hero has carried. */
+data class StorageFilter(val family: String? = null, val rarity: Rarity? = null, val unsold: Boolean = false, val sort: StorageSort = StorageSort.STORED)
+
+/** The stored blades [filter] lets through, in its order. Reads the rows' own fields; a sort keeps the stored order among equals. */
+fun List<StockUi>.shown(filter: StorageFilter): List<StockUi> {
+    val kept = filter { (filter.family == null || it.family == filter.family) && (filter.rarity == null || it.weapon.rarity == filter.rarity) && (!filter.unsold || it.unsold) }
+    return when (filter.sort) {
+        StorageSort.STORED -> kept
+        StorageSort.STRONGEST -> kept.sortedByDescending { it.weapon.power }
+        StorageSort.WEAKEST -> kept.sortedBy { it.weapon.power }
+        StorageSort.DEAREST -> kept.sortedByDescending { it.suggested }
+    }
+}
+
+/**
+ * What the two bulk actions cost today, for their confirmations: what one salvage costs, the energy and overwork left,
+ * and the room left in the watch's armory. Read from the save and the balance config; nothing here decides an outcome.
+ */
+@Immutable data class BulkTerms(val salvageEnergy: Int, val energy: Int, val overworkLeft: Int, val armoryRoom: Int)
+
+private fun blades(n: Int) = if (n == 1) "1 blade" else "$n blades"
+
+/** The body of "Salvage n blades?": what it costs against what is left, and where it will stop. */
+internal fun salvageTerms(n: Int, t: BulkTerms): String {
+    val cost = n * t.salvageEnergy
+    return "Each is melted down for one of its core metal and is gone for good. That is $cost energy; you have ${t.energy}." +
+        if (cost > t.energy) " Past that it is overwork (${t.overworkLeft} left today): tomorrow starts that much energy short. Salvaging stops when neither is left." else ""
+}
+
+/** The body of "Give n blades to the town watch?". */
+internal fun donateTerms(t: BulkTerms): String =
+    "They join the watch's armory and do not come back. The armory has room for ${t.armoryRoom} more defense; once it is full the watch takes no more."
+
+private val FilterSaver = listSaver<StorageFilter, String>(
+    save = { listOf(it.family.orEmpty(), it.rarity?.name.orEmpty(), it.unsold.toString(), it.sort.name) },
+    restore = { v -> StorageFilter(v[0].ifEmpty { null }, Rarity.entries.firstOrNull { it.name == v[1] }, v[2].toBoolean(), StorageSort.entries.firstOrNull { it.name == v[3] } ?: StorageSort.STORED) },
+)
 
 /** Storage as a bottom sheet over the Shop. A blade's own sheet opens over it, so Back returns here. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StorageSheet(storage: List<StockUi>, shelfFree: Int, busy: Boolean, onOpenBlade: (WeaponId) -> Unit, onList: (WeaponId, Int) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+fun StorageSheet(
+    storage: List<StockUi>, shelfFree: Int, busy: Boolean, onOpenBlade: (WeaponId) -> Unit, onList: (WeaponId, Int) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier,
+    terms: BulkTerms? = null, onBulk: (StockAction, List<WeaponId>) -> Unit = { _, _ -> },
+) {
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
         modifier = modifier.semantics { testTagsAsResourceId = true }.testTag("storage_sheet"),
-    ) { StorageList(storage, shelfFree, busy, onOpenBlade, onList) }
+    ) { StorageList(storage, shelfFree, busy, onOpenBlade, onList, terms = terms, onBulk = onBulk) }
 }
 
-/** The stored blades as one lazy, keyed list: a storeroom of hundreds composes only the rows in view. */
+/**
+ * The stored blades as one lazy, keyed list: a storeroom of thousands composes only the rows in view. Its head narrows
+ * the list (family, rarity, never sold) and orders it. With [terms], "Select blades" turns the rows into checkboxes and
+ * a bar under the list salvages the chosen blades or gives them to the watch: each asks once, then [onBulk] gets the
+ * action and the blades in the order shown. Only blades that are both chosen and shown are acted on.
+ */
 @Composable
-fun StorageList(storage: List<StockUi>, shelfFree: Int, busy: Boolean, onOpenBlade: (WeaponId) -> Unit, onList: (WeaponId, Int) -> Unit, modifier: Modifier = Modifier) {
-    LazyColumn(modifier.fillMaxWidth().navigationBarsPadding().testTag("storage_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, bottom = Space.lg)) {
-        item(key = "head") {
-            Column(Modifier.padding(bottom = Space.sm)) {
-                Text("Storage · ${storage.size}", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-                Secondary(
-                    when {
-                        storage.isEmpty() -> "Nothing in storage. Forged blades wait here until you list them."
-                        shelfFree <= 0 -> "The shelf is full. Tap a blade to salvage, hone or give it to the watch."
-                        else -> "$shelfFree free on the shelf. Tap a blade for its details and price."
-                    },
-                )
+fun StorageList(
+    storage: List<StockUi>, shelfFree: Int, busy: Boolean, onOpenBlade: (WeaponId) -> Unit, onList: (WeaponId, Int) -> Unit, modifier: Modifier = Modifier,
+    terms: BulkTerms? = null, onBulk: (StockAction, List<WeaponId>) -> Unit = { _, _ -> },
+) {
+    var filter by rememberSaveable(stateSaver = FilterSaver) { mutableStateOf(StorageFilter()) }
+    var selecting by rememberSaveable { mutableStateOf(false) }
+    // Not saved: thousands of IDs do not belong in a saved-state Bundle. A restored process starts with nothing chosen.
+    var picked by remember { mutableStateOf(emptySet<WeaponId>()) }
+    var asking by remember { mutableStateOf<StockAction?>(null) }
+    val shown = remember(storage, filter) { storage.shown(filter) }
+    val chosen = remember(shown, picked) { shown.map { it.weapon.id }.filter { it in picked } }
+    val select = selecting && terms != null
+
+    Column(modifier.fillMaxWidth().navigationBarsPadding()) {
+        LazyColumn(Modifier.weight(1f, fill = false).fillMaxWidth().testTag("storage_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, bottom = Space.lg)) {
+            item(key = "head") {
+                Column(Modifier.padding(bottom = Space.sm)) {
+                    Text(if (shown.size == storage.size) "Storage · ${storage.size}" else "Storage · ${shown.size} of ${storage.size}", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
+                    Secondary(
+                        when {
+                            storage.isEmpty() -> "Nothing in storage. Forged blades wait here until you list them."
+                            select -> "Tap blades to choose them. ${blades(chosen.size)} chosen."
+                            shelfFree <= 0 -> "The shelf is full. Tap a blade to salvage, hone or give it to the watch."
+                            else -> "$shelfFree free on the shelf. Tap a blade for its details and price."
+                        },
+                    )
+                    if (storage.size > 1) StorageFilters(storage, filter) { filter = it }
+                    if (terms != null && storage.isNotEmpty()) Row(Modifier.padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                        if (!selecting) SecondaryActionButton("Select blades", { selecting = true }, Modifier.testTag("storage_select"))
+                        else {
+                            SecondaryActionButton("Select all shown (${shown.size})", { picked = picked + shown.map { it.weapon.id } }, Modifier.weight(1f).testTag("storage_select_all"))
+                            SecondaryActionButton("Done", { selecting = false; picked = emptySet() }, Modifier.testTag("storage_select_done"))
+                        }
+                    }
+                    if (shown.isEmpty() && storage.isNotEmpty()) Secondary("No stored blade matches.", Modifier.padding(top = Space.sm))
+                }
+            }
+            items(shown, key = { "stock_${it.weapon.id.value}" }) { s ->
+                val id = s.weapon.id
+                if (select) StockRow(s, busy, onOpen = { picked = if (id in picked) picked - id else picked + id }, onList = null, selected = id in picked)
+                else StockRow(s, busy || shelfFree <= 0, onOpen = { onOpenBlade(id) }, onList = { price -> onList(id, price) })
             }
         }
-        items(storage, key = { "stock_${it.weapon.id.value}" }) { s ->
-            StockRow(s, busy || shelfFree <= 0, onOpen = { onOpenBlade(s.weapon.id) }, onList = { price -> onList(s.weapon.id, price) })
+        if (select) Row(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+            SecondaryActionButton("Salvage ${chosen.size}", { asking = StockAction.Salvage }, Modifier.weight(1f).testTag("storage_bulk_salvage"), enabled = !busy && chosen.isNotEmpty())
+            SecondaryActionButton("Arm the watch ${chosen.size}", { asking = StockAction.Donate }, Modifier.weight(1f).testTag("storage_bulk_donate"), enabled = !busy && chosen.isNotEmpty() && terms!!.armoryRoom > 0)
         }
+    }
+    val action = asking
+    if (action != null && terms != null) {
+        val salvage = action == StockAction.Salvage
+        // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
+        AlertDialog(
+            modifier = Modifier.semantics { testTagsAsResourceId = true },
+            onDismissRequest = { asking = null },
+            title = { Text(if (salvage) "Salvage ${blades(chosen.size)}?" else "Give ${blades(chosen.size)} to the town watch?") },
+            text = { Text(if (salvage) salvageTerms(chosen.size, terms) else donateTerms(terms)) },
+            confirmButton = { TextButton(onClick = { asking = null; onBulk(action, chosen); picked = emptySet() }, modifier = Modifier.testTag("storage_bulk_confirm")) { Text(if (salvage) "Salvage" else "Arm the watch") } },
+            dismissButton = { TextButton(onClick = { asking = null }) { Text("Keep them") } },
+        )
+    }
+}
+
+/** The filter and order chips: only the families and rarities that are in storage, each row scrolling sideways when it is long. A chosen chip tapped again lets everything through. */
+@Composable
+private fun StorageFilters(storage: List<StockUi>, filter: StorageFilter, onChange: (StorageFilter) -> Unit) {
+    val families = remember(storage) { storage.map { it.family }.distinct() }
+    val rarities = remember(storage) { storage.map { it.weapon.rarity }.distinct().sorted() }
+    val unsold = remember(storage) { storage.count { it.unsold } }
+    @Composable
+    fun ChipRow(tag: String, content: @Composable () -> Unit) =
+        Row(Modifier.horizontalScroll(rememberScrollState()).testTag(tag), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) { content() }
+    if (families.size > 1 || filter.family != null) ChipRow("storage_families") {
+        families.forEach { f -> FilterChip(selected = filter.family == f, onClick = { onChange(filter.copy(family = f.takeIf { filter.family != f })) }, label = { Text(f) }, modifier = Modifier.heightIn(min = 48.dp)) }
+    }
+    if (rarities.size > 1 || filter.rarity != null) ChipRow("storage_rarities") {
+        rarities.forEach { r -> FilterChip(selected = filter.rarity == r, onClick = { onChange(filter.copy(rarity = r.takeIf { filter.rarity != r })) }, label = { Text(Labels.rarity(r)) }, modifier = Modifier.heightIn(min = 48.dp)) }
+    }
+    ChipRow("storage_order") {
+        if (unsold in 1 until storage.size || filter.unsold) FilterChip(selected = filter.unsold, onClick = { onChange(filter.copy(unsold = !filter.unsold)) }, label = { Text("Never sold") }, modifier = Modifier.heightIn(min = 48.dp).testTag("storage_unsold"))
+        StorageSort.entries.forEach { o -> FilterChip(selected = filter.sort == o, onClick = { onChange(filter.copy(sort = o)) }, label = { Text(o.label) }, modifier = Modifier.heightIn(min = 48.dp)) }
     }
 }

@@ -10,6 +10,7 @@ import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.content.ToolEffect
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.WorldEvents
+import com.tinyblacksmith.core.legacy.Legacy
 import com.tinyblacksmith.core.model.Commission
 import com.tinyblacksmith.core.model.CommissionId
 import com.tinyblacksmith.core.model.CommissionStatus
@@ -76,6 +77,10 @@ data class StockUi(
     val threat: MarkUi? = null,
     /** A returned legend's sleeping affixes (`Lines.dormant`); never among [buffs]. */
     val dormant: String? = null,
+    /** The family's name, for Storage's filter. */
+    val family: String = "",
+    /** No hero has carried it this era and it is not a returned legend: forged here and never sold, ordered or handed back. */
+    val unsold: Boolean = false,
 )
 
 /** One line of "Who is buying": a count from `Demand.summary` under a fixed label, with the names when they are few. */
@@ -114,13 +119,15 @@ private fun GameEngine.favoured(familyId: WeaponFamilyId): String? {
     return if (fans.isEmpty()) null else "${fans.joinToString(" and ")} favour the ${content.family(familyId).name.lowercase()}"
 }
 
-private fun GameEngine.stock(w: Weapon, threat: ThreatUi?) = StockUi(
+private fun GameEngine.stock(w: Weapon, threat: ThreatUi?, era: Int) = StockUi(
     w, Labels.weaponSummary(w, content), favoured(w.familyId), w.listedPrice, suggestedPrice(w),
     // A number with a ceiling is always said; one without (power, renown) only when there is any.
     stats = weaponStats(WeaponSnapshot.of(w)).filter { it.max != null || it.value > 0 },
     buffs = w.affixes.map { content.affix(it).name }, flaws = w.flaws.map { content.affix(it).name },
     threat = w.element?.let { threat?.marks?.get(it) },
     dormant = Lines.dormant(w.dormantAffixes, content),
+    family = content.family(w.familyId).name,
+    unsold = w.legendKey == null && Legacy.holders(w, era).isEmpty(),
 )
 
 /** The besieger for the Shop's plate, the Forge's plate, the augment chips and the stock rows: `Threats` and `Lines`, plus the day count in words. */
@@ -195,8 +202,8 @@ fun GameEngine.shopUi(state: GameState): ShopUi {
         demand = demand,
         // A day that cannot be laid out is left out here; the Gazette still has it.
         yesterday = state.lastResolution?.takeIf { it.day == state.day - 1 }?.let { runCatching { yesterday(state, it) }.getOrNull() },
-        shelf = state.listedWeapons().map { stock(it, threat) },
-        storage = state.storedWeapons().map { stock(it, threat) },
+        shelf = state.listedWeapons().map { stock(it, threat, state.era) },
+        storage = state.storedWeapons().map { stock(it, threat, state.era) },
         threat = threat,
         requestSlots = config.customers.maxOpenCommissions,
         wants = d.wants.mapNotNull { id -> state.heroes[id]?.let { h -> Lines.want(h, content)?.let { WantUi(id, it, id in d.wantsAnswered, h.want!!.familyId) } } },
