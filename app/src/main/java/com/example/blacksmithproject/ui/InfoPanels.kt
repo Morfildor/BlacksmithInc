@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,21 +46,40 @@ import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.gazette.Gazette
-import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.model.Hero
 import com.tinyblacksmith.core.model.HeroFate
 import kotlin.math.roundToInt
 
-/** Town: the threat, the champions and every adventurer, as one lazy list with a keyed row per hero. Rows open the hero's sheet. */
+/**
+ * Town: the threat, the champions and every adventurer, as one lazy list with a keyed row per hero. Rows open the
+ * hero's sheet, which holds the rest (traits, purse, ambition); a row is two or three lines so sixteen can be scanned.
+ * The fallen and the retired wait under a header that opens them.
+ */
 @Composable
 fun TownPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier) {
-    val heroes = remember(s.state.heroes) { s.state.heroes.values.sortedWith(compareBy<Hero> { !it.isAlive }.thenByDescending { it.fame }) }
+    val (living, gone) = remember(s.state.heroes) { s.state.heroes.values.sortedByDescending { it.fame }.partition { it.isAlive } }
+    var showGone by rememberSaveable { mutableStateOf(false) }
     LazyColumn(modifier.fillMaxSize().testTag("town_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.lg)) {
         item(key = "threat") { Column { TownThreat(s, vm) } }
         item(key = "heroes_head") { SectionTitle("Adventurers (${s.state.aliveHeroes().size} alive)") }
-        itemsIndexed(heroes, key = { _, h -> "hero_${h.id.value}" }) { i, h ->
+        itemsIndexed(living, key = { _, h -> "hero_${h.id.value}" }) { i, h ->
             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             HeroRow(h, s, vm)
+        }
+        if (gone.isNotEmpty()) {
+            item(key = "gone_head") {
+                Row(
+                    Modifier.fillMaxWidth().padding(top = Space.md).clickable(onClickLabel = if (showGone) "Hide" else "Show", role = Role.Button) { showGone = !showGone }.heightIn(min = 48.dp).testTag("town_fallen"),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("Fallen and retired (${gone.size})", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    Text(if (showGone) "Hide  ▴" else "Show  ▾", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+            if (showGone) itemsIndexed(gone, key = { _, h -> "hero_${h.id.value}" }) { i, h ->
+                if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                HeroRow(h, s, vm)
+            }
         }
     }
 }
@@ -160,7 +181,7 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
     }
     Row(
         Modifier.fillMaxWidth().clickable(onClickLabel = "Open details") { vm.openSheet(Sheet.Hero(h.id)) }.testTag("town_hero_${h.id.value}")
-            .heightIn(min = 48.dp).padding(vertical = 10.dp).alpha(if (h.isAlive) 1f else 0.6f),
+            .heightIn(min = 48.dp).padding(vertical = 6.dp).alpha(if (h.isAlive) 1f else 0.6f),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -171,11 +192,6 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
         Column(Modifier.weight(1f)) {
             Text(h.fullName + (h.descendantOf?.let { " · of $it's line" } ?: ""), style = MaterialTheme.typography.titleSmall)
             Secondary("${content.heroClass(h.classId).name} ${h.level} · " + (fateLabel ?: Labels.health(h)) + " · " + (w?.let { it.name + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "unarmed"))
-            Secondary(
-                if (h.isAlive) "${Heroes.describeTraits(h, content)} · ${h.gold} gold · fame ${h.fame}"
-                else "${Heroes.describeTraits(h, content)} · fame ${h.fame} · ${h.kills} kills",
-            )
-            Heroes.describeAmbition(h, w, vm.engine.config)?.let { Secondary(it) }
             townTies(h, st, vm.engine.config)?.let { Secondary(it) }
         }
     }

@@ -27,6 +27,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Supplies (the supplier and the workshop tools) is a sheet opened from the Shop or the Forge. A rare material says when
   Caravan Ties adds to its daily stock, when the ore merchant is in town and when the caravan is late.
 - Town is one fast list; each adventurer's row names their guild, their mentor and whether they are a regular.
+- Town rows are shorter so a town of twelve to sixteen can be scanned (traits, purse and ambition are in the hero's
+  sheet), and the fallen and retired sit under a "Fallen and retired" header that opens them.
 - The seven tabs are now four destinations: Shop, Forge, Town and Records (News, Journal
   and Legacy as three segments). The four labels share one fixed size and do not shrink or clip at larger text sizes.
   Back returns to Shop from any other destination.
