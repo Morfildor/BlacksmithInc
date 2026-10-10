@@ -180,6 +180,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   and Start over keeps it on the device under a backup name before beginning a new save.
 - Storage errors of any kind now reach the recovery screen or the "Could not save" dialog instead of closing the game,
   and that dialog no longer claims nothing changed when the game could not check.
+- An adventurer whose only blade shattered more than thirty days ago can still ask for a replacement: the broken blade
+  stays on record until they carry another.
 ### Changed
 - A collector pays at most one and a half times the going rate for a blade, whatever its shelf price.
 - Commissions say exactly what they need. A request is always for a quality the game names (decent 35+, fine 50+; a
