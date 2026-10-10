@@ -1,5 +1,8 @@
 # Progress — 2026-10-10 (major update, final state at about 13:00)
 
+## UI polish pass (2026-10-10, late evening): first part on `main`
+Branch `ui-polish`. On `main`: the Shop (shared siege strip, shelf with free places, marked lead, door icons), the Forge (landing animation, even rows, gold mode), "Dire odds", "Notebook", list fades. Checks: app JVM tests pass; device tests ShopPanelTest, M4ScreensTest, NavigationFlowTest, LayoutMatrixTest pass on the carbscan AVD (`theLeadIsTheSameAsTheTomorrowCard` fixed: the test was stale); the full device suite was not rerun. Still in work, not merged: title screen and shop-day cards; Town, Records and sheets. This deepens the rebase the uncommitted `ui-batch4` work needs.
+
 ## Forge-first redesign (2026-10-10, evening): on `main`
 Merged to `main` by fast-forward at the owner's request (branch `ui-beauty-pass`, cut from `main` at `6c49f8e`); one commit per slice; no balance, rules, schema or content change (one
 core wording change: "Seems neutral"). Source: the owner's redesign plan of 10 October, two phone mock-ups and an HTML
