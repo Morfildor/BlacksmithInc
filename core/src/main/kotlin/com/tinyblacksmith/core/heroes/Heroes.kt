@@ -20,16 +20,16 @@ object Heroes {
         val cls = descendantOf?.let { content.classById[it.classId] } ?: rng.pick(classes)
         val name = Names.first(ctx, rng, descendantOf)
         val surname = descendantOf?.surname ?: Names.surname(ctx, rng, name)
-        val traitCount = rng.nextInt(2, 3)
+        val traitCount = rng.nextInt(ctx.config.heroLife.traitsMin, ctx.config.heroLife.traitsMax)
         val traits = mutableListOf<TraitId>()
         val pool = content.traits.map { it.id }.toMutableList()
         repeat(traitCount) { if (pool.isNotEmpty()) { val t = rng.pick(pool); traits += t; pool.remove(t) } }
         if (descendantOf != null && TraitId("loyal") in content.traitById && TraitId("loyal") !in traits) traits += TraitId("loyal")
         val tastePool = content.materials.mapNotNull { it.element }.distinct()  // only elements a weapon in this catalog can carry
-        val taste: Element? = if (rng.chance(0.6)) cls.preferredElement else if (rng.chance(0.5) && tastePool.isNotEmpty()) rng.pick(tastePool) else null
+        val taste: Element? = if (rng.chance(ctx.config.heroLife.classTasteChance)) cls.preferredElement else if (rng.chance(ctx.config.heroLife.otherTasteChance) && tastePool.isNotEmpty()) rng.pick(tastePool) else null
         return Hero(
             id = ctx.newHeroId(), name = name, surname = surname, classId = cls.id,
-            level = if (descendantOf != null) 2 else 1, xp = 0,
+            level = if (descendantOf != null) ctx.config.heroLife.descendantLevel else 1, xp = 0,
             gold = rng.nextInt(cls.startingGoldMin, cls.startingGoldMax), health = 100,
             traits = traits, elementTaste = taste, descendantOf = descendantOf?.heroName, lineageId = descendantOf?.id,
             ambition = rng.pick(Ambition.entries), arrivedOnDay = ctx.day,
@@ -79,14 +79,15 @@ object Heroes {
         val traitDefs = hero.traits.map { ctx.content.trait(it) }
         val poor = weapon == null && hero.gold < config.heroLife.poorHeroGold
         val setback = hero.drivenBackOnDay == ctx.day - 1
-        val expedition = (1.0 + traitDefs.sumOf { it.expeditionWeight } + faction.pressure / 100.0 * 0.5 + (if (weapon != null) 0.5 else -0.3)).coerceAtLeast(0.05)
-        val patrol = (0.8 + traitDefs.sumOf { it.patrolWeight } + (if (ctx.town.integrity < 60) 0.4 else 0.0) + (if (poor) config.heroLife.poorPatrolWeight else 0.0)).coerceAtLeast(0.05)
-        val rest = (0.2 + traitDefs.sumOf { it.restWeight } + (100 - hero.health) / 100.0 + (if (setback) config.heroLife.setbackRestWeight else 0.0)).coerceAtLeast(0.02)
+        val life = config.heroLife
+        val expedition = (life.expeditionBaseWeight + traitDefs.sumOf { it.expeditionWeight } + faction.pressure / 100.0 * life.expeditionPressureWeight + (if (weapon != null) life.armedExpeditionWeight else life.unarmedExpeditionWeight)).coerceAtLeast(life.fieldWeightFloor)
+        val patrol = (life.patrolBaseWeight + traitDefs.sumOf { it.patrolWeight } + (if (ctx.town.integrity < life.patrolLowIntegrity) life.patrolLowIntegrityWeight else 0.0) + (if (poor) life.poorPatrolWeight else 0.0)).coerceAtLeast(life.fieldWeightFloor)
+        val rest = (life.restBaseWeight + traitDefs.sumOf { it.restWeight } + (100 - hero.health) / 100.0 + (if (setback) life.setbackRestWeight else 0.0)).coerceAtLeast(life.quietWeightFloor)
         return buildList {
             add(HeroActivity.EXPEDITION to expedition)
             add(HeroActivity.PATROL to patrol)
             add(HeroActivity.REST to rest)
-            if (canTrain(ctx, hero)) add(HeroActivity.GUILD to (config.heroLife.guildBaseWeight + traitDefs.sumOf { it.guildWeight } + (if (setback) config.heroLife.setbackGuildWeight else 0.0)).coerceAtLeast(0.02))
+            if (canTrain(ctx, hero)) add(HeroActivity.GUILD to (config.heroLife.guildBaseWeight + traitDefs.sumOf { it.guildWeight } + (if (setback) config.heroLife.setbackGuildWeight else 0.0)).coerceAtLeast(life.quietWeightFloor))
             if (hero.ambition != null && !hero.ambitionDone) add(HeroActivity.AMBITION to config.ambitionActivityWeight)
         }
     }
@@ -190,7 +191,7 @@ object Heroes {
         while (h.xp >= ctx.config.heroLevelXp && h.level < ctx.config.heroMaxLevel) {
             h = h.copy(level = h.level + 1, xp = h.xp - ctx.config.heroLevelXp)
             ctx.emit(EventType.HERO_LEVELED, 2, "${h.fullName} grew stronger (level ${h.level}).", listOf(h.id.value))
-            if (h.level >= 5) ctx.milestone("HERO_LEVEL_5", "${h.fullName} reached level 5.")
+            if (h.level >= ctx.config.heroLife.milestoneLevel) ctx.milestone("HERO_LEVEL_5", "${h.fullName} reached level ${ctx.config.heroLife.milestoneLevel}.")
         }
         ctx.updateHero(h)
     }
@@ -235,7 +236,7 @@ object Heroes {
         var guildId = hero.guildId
         if (guildId == null && hero.fame >= ctx.config.guildFameThreshold) guildId = foundGuild(ctx, ctx.hero(hero.id)).id
         val newcomer = generate(ctx, rng)
-        val mentee = newcomer.copy(level = newcomer.level + 1, elementTaste = hero.elementTaste, guildId = guildId, mentorName = hero.fullName)
+        val mentee = newcomer.copy(level = newcomer.level + ctx.config.heroLife.menteeLevelBonus, elementTaste = hero.elementTaste, guildId = guildId, mentorName = hero.fullName)
         ctx.updateHero(mentee)
         ctx.emit(EventType.HERO_MENTORED, 4, "${mentee.fullName}, trained by ${hero.fullName}, took up the mentor's calling.", listOf(mentee.id.value, hero.id.value))
         // Every weapon the retiree owned passes to the mentee (one owner per weapon; retired heroes own nothing).

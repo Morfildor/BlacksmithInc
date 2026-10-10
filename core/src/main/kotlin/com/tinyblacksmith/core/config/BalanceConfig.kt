@@ -274,6 +274,9 @@ data class BalanceConfig(
     val commissions: CommissionConfig = CommissionConfig(),
     // v7: customers and population
     val customers: CustomerConfig = CustomerConfig(),
+    // T5.4: numbers that were inline in the resolvers (values unchanged, so no version step)
+    val combat: CombatConfig = CombatConfig(),
+    val worldEvents: WorldEventConfig = WorldEventConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()
@@ -306,6 +309,31 @@ data class HeroLifeConfig(
     /** Prior history: a hero driven back from an expedition yesterday leans toward rest and toward the hall. */
     val setbackRestWeight: Double = 0.5,
     val setbackGuildWeight: Double = 0.4,
+    // T5.4: were inline in heroes.Heroes; values unchanged.
+    // Generation: a hero has [traitsMin]..[traitsMax] traits, takes the class's element taste with [classTasteChance], else another element with [otherTasteChance], else none.
+    val traitsMin: Int = 2,
+    val traitsMax: Int = 3,
+    val classTasteChance: Double = 0.6,
+    val otherTasteChance: Double = 0.5,
+    /** A lineage's descendant arrives at this level; a retiree's mentee gains [menteeLevelBonus] on top of a newcomer's. */
+    val descendantLevel: Int = 2,
+    val menteeLevelBonus: Int = 1,
+    // Daily activity weights before trait weights (GDD 6 utility model). EXPEDITION: base + pressure / 100 x [expeditionPressureWeight] + armed or unarmed.
+    val expeditionBaseWeight: Double = 1.0,
+    val expeditionPressureWeight: Double = 0.5,
+    val armedExpeditionWeight: Double = 0.5,
+    val unarmedExpeditionWeight: Double = -0.3,
+    /** PATROL: base, plus [patrolLowIntegrityWeight] while the forge stands below [patrolLowIntegrity]. */
+    val patrolBaseWeight: Double = 0.8,
+    val patrolLowIntegrity: Int = 60,
+    val patrolLowIntegrityWeight: Double = 0.4,
+    /** REST: base plus the share of health missing. */
+    val restBaseWeight: Double = 0.2,
+    /** Floors: expedition and patrol never fall below the first, rest and the hall never below the second. */
+    val fieldWeightFloor: Double = 0.05,
+    val quietWeightFloor: Double = 0.02,
+    /** The level that earns the HERO_LEVEL_5 milestone. */
+    val milestoneLevel: Int = 5,
 )
 
 /**
@@ -401,6 +429,17 @@ data class CustomerConfig(
     // v8: commission situations (plan 4.6 E4).
     /** Commissions that may be offered or accepted at one time (1 before v8); a hero has at most one of them. */
     val maxOpenCommissions: Int = 2,
+    // T5.4: were inline in market.Market; values unchanged.
+    /** Loyalty counts in purchase utility as loyalty x this x [BalanceConfig.utilityLoyaltyWeight]. */
+    val utilityLoyaltyScale: Double = 0.01,
+    /** A refusal is recorded as OVERPRICED when the best blade's price penalty is above this. */
+    val overpricedPenalty: Double = 0.5,
+    /** Shop reputation per shelf sale and per commission delivered, and lost when an accepted commission expires. */
+    val saleReputation: Int = 1,
+    val commissionReputation: Int = 2,
+    val commissionExpiredReputation: Int = 1,
+    /** Loyalty the patron of a delivered commission gains. */
+    val commissionLoyalty: Int = 2,
 )
 
 /** v5: replays and weapon fates. What is told of a fight, and what becomes of a fallen hero's blade (GDD 7, 11; all PROPOSED). */
@@ -454,4 +493,64 @@ data class LegacyTracksConfig(
      * and has this much extra coin saved for a blade. Starting reputation alone measured -0.3 days (DECISIONS.md).
      */
     val knownNameRegularGold: Int = 30,
+    // T5.4: were inline in legacy.Legacy; values unchanged.
+    /** PROPOSED milestone bonus table (round 9: baseline rewards plus achievements). */
+    val milestonePoints: Map<String, Int> = mapOf(
+        "FIRST_SALE" to 1,
+        "SIEGE_SURVIVED" to 2,
+        "CHAMPION_ARMED" to 2,
+        "EPIC_FORGED" to 1,
+        "LEGENDARY_FORGED" to 3,
+        "HERO_LEVEL_5" to 1,
+        "WEAPON_FIVE_KILLS" to 2,
+        "ELITE_SLAIN" to 1,
+        "WARLORD_DEFEATED" to 3,
+        "AMBITION_FULFILLED" to 1,
+    ),
+    /** The most famous blades of a run that go onto the Legend Board; the board keeps the newest [legendBoardSize], the account the newest [lineagesKept] lineages. */
+    val legendsPerRun: Int = 3,
+    val legendBoardSize: Int = 20,
+    val lineagesKept: Int = 10,
+)
+
+/** T5.4: numbers that were inline in battle.Battle and battle.Power (all PROPOSED; values unchanged). */
+data class CombatConfig(
+    /** An expedition is won with this chance at equal powers; the difference moves it by 1 / [BalanceConfig.winProbabilityScale] per point. */
+    val winProbabilityBase: Double = 0.5,
+    /** Fame a hero and the blade in hand gain per won expedition and per siege held ([BalanceConfig.eliteFame] comes on top for an elite). */
+    val expeditionFame: Int = 1,
+    val siegeFame: Int = 2,
+    /** Victories at which a blade earns its "Bane of" title and the WEAPON_FIVE_KILLS milestone. */
+    val weaponTitleKills: Int = 5,
+    /** A warning goes out on each of this many evenings before a siege; heroes shop under it on the days that follow. */
+    val siegeWarningDays: Int = 2,
+    /** Power.condition: a hero fights at [healthPowerFloor] + [healthPowerRange] x the share of health left. */
+    val healthPowerFloor: Double = 0.6,
+    val healthPowerRange: Double = 0.4,
+    /** Bounds of the product of a hero's trait combat modifiers. */
+    val traitModifierMin: Double = 0.8,
+    val traitModifierMax: Double = 1.2,
+    /** The defensive weight of bare hands (a weapon family has its own). */
+    val unarmedDefensiveWeight: Double = 0.9,
+    /** An elite, or a blade with scarce loot, brings back catalysts and materials of this tier or higher. */
+    val scarceLootTier: Int = 3,
+)
+
+/** T5.4: effect sizes that were inline in engine.WorldEvents (all PROPOSED; values unchanged). Weights, limits and cooldowns stay in the event table. */
+data class WorldEventConfig(
+    /** Traveling Ore Merchant: units left at the forge, and extra units on sale at the supplier the next morning. */
+    val oreMerchantGift: Int = 1,
+    val oreMerchantStock: Int = 2,
+    /** Noble Commission: days added to [BalanceConfig.commissionDeadlineDays]. */
+    val nobleExtraDays: Int = 2,
+    val veteranFame: Int = 2,
+    /** Mysterious Alloy and Strange Weapon Fragment: units of each of the two materials. */
+    val alloyMaterials: Int = 1,
+    val fragmentMaterials: Int = 1,
+    val shrineCatalysts: Int = 2,
+    /** A Famous Blade Returns: the quality a legend recorded without one is taken to have had. */
+    val legendDefaultQuality: Int = 60,
+    val bannerReputation: Int = 2,
+    val bannerMilitia: Int = 3,
+    val collectorReputation: Int = 1,
 )

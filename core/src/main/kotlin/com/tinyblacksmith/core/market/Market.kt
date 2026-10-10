@@ -100,7 +100,7 @@ object Market {
                     evaluations.none { it.affordable } -> VisitReason.TOO_EXPENSIVE
                     evaluations.any { it.refusedAsResisted } -> VisitReason.RESISTED
                     evaluations.none { it.eligible } -> VisitReason.NOT_BETTER
-                    best != null && best.pricePenalty > 0.5 -> VisitReason.OVERPRICED
+                    best != null && best.pricePenalty > cfg.overpricedPenalty -> VisitReason.OVERPRICED
                     best != null && best.fit < 1.0 -> VisitReason.NOT_SUITED
                     else -> VisitReason.UNDECIDED
                 }
@@ -156,7 +156,7 @@ object Market {
         val fit = ctx.content.family(familyId).classFit[hero.classId] ?: config.offFamilyFit
         val held = valueInHand(ctx, hero, current, null)
         val worn = current != null && current.condition < config.wornConditionThreshold
-        val given = (fit - 1.0) * config.utilityClassFitWeight + hero.loyalty * 0.01 * config.utilityLoyaltyWeight + (if (worn) config.wornReplacementUtility else 0.0)
+        val given = (fit - 1.0) * config.utilityClassFitWeight + hero.loyalty * config.customers.utilityLoyaltyScale * config.utilityLoyaltyWeight + (if (worn) config.wornReplacementUtility else 0.0)
         val gain = maxOf(0.0, (config.purchaseUtilityThreshold - given) / config.utilityImprovementWeight)
         return Want(familyId, ((held + gain) / fit).toInt() + 1, hero.gold + tradeInCredit(current, config), hero.want?.sinceDay ?: ctx.day)
     }
@@ -259,7 +259,7 @@ object Market {
         val utility = gain * config.utilityImprovementWeight +
             (fit - 1.0) * config.utilityClassFitWeight +
             elementTaste * config.utilityElementTasteWeight +
-            hero.loyalty * 0.01 * config.utilityLoyaltyWeight +
+            hero.loyalty * config.customers.utilityLoyaltyScale * config.utilityLoyaltyWeight +
             collector +
             fame +
             (if (worn) config.wornReplacementUtility else 0.0) +
@@ -323,7 +323,7 @@ object Market {
         if (stipend > 0) ctx.earn(IncomeKind.STIPEND, stipend)
         if (bonus > 0) ctx.earn(IncomeKind.SALE_BONUS, bonus)
         ctx.tradeInCreditToday += credit
-        ctx.reputation += 1
+        ctx.reputation += ctx.config.customers.saleReputation
         val loyaltyGain = hero.traits.fold(1.0) { acc, t -> acc * ctx.content.trait(t).loyaltyGain }.toInt().coerceAtLeast(1)
         ctx.updateHero(hero.copy(
             gold = hero.gold - paid, loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP, want = null,
@@ -408,9 +408,9 @@ object Market {
                 val mark = ctx.newEvents.size
                 val customer = customer(ctx, buyer, ctx.equippedWeapon(buyer.id))
                 ctx.earn(IncomeKind.COMMISSION, c.reward)
-                ctx.reputation += 2
+                ctx.reputation += ctx.config.customers.commissionReputation
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.COMPLETED, deliveredWeaponId = candidate.id)
-                ctx.updateHero(buyer.copy(loyalty = buyer.loyalty + 2, want = null))
+                ctx.updateHero(buyer.copy(loyalty = buyer.loyalty + ctx.config.customers.commissionLoyalty, want = null))
                 // A first blade is carried by the hero it was ordered for; should they be gone by now, the patron keeps it.
                 val receiver = c.recipientId?.let { ctx.heroes[it] }?.takeIf { it.isAlive }?.also { ctx.updateHero(it.copy(want = null)) } ?: buyer
                 val forWhom = if (receiver.id != buyer.id) " for ${receiver.fullName}" else ""
@@ -428,7 +428,7 @@ object Market {
                 )
             } else if (ctx.day >= c.deadlineDay) {
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.EXPIRED)
-                ctx.reputation = maxOf(0, ctx.reputation - 1)
+                ctx.reputation = maxOf(0, ctx.reputation - ctx.config.customers.commissionExpiredReputation)
                 ctx.emit(EventType.COMMISSION_EXPIRED, 2, "${buyer.fullName}'s commission for a ${ctx.content.family(c.familyId).name} expired unfulfilled.", listOf(buyer.id.value, c.id.value))
             }
         }

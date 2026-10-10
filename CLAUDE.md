@@ -15,7 +15,11 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 
 ## Architecture boundaries
 - `:core` — pure Kotlin JVM, zero Android deps. Deterministic SplitMix64 streams per subsystem (`rng/`), content
-  by stable IDs (`content/`), every number in `config/BalanceConfig.kt` (versioned), immutable `GameState`
+  by stable IDs (`content/`), gameplay numbers in `config/BalanceConfig.kt` (versioned; new ones go into its nested
+  groups, the constructor is at the JVM limit of 255 slots). The six resolvers (`Heroes`, `Market`, `Battle`, `Power`,
+  `WorldEvents`, `Legacy`) hold none of their own: `ConstantsTest` scans them against a short allowlist (wording bands,
+  record sizes, the 0..100 scales). Catalog numbers and the world-event table (weights, limits, cooldowns) are content;
+  `GameEngine` (starting militia, the three season multipliers) and `Forge` (affix slots per rarity) still hold a few. Immutable `GameState`
   (`model/`), typed commands and errors (`engine/Commands.kt`), the only mutator `engine/GameEngine.kt`
   (End Day = fixed GDD 3.2 order, idempotent per command ID), invariants asserted after each command.
 - `:app` — Compose UI is an observer: `GameViewModel` dispatches commands, saves accepted results atomically

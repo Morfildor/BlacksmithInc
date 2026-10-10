@@ -383,7 +383,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // The ore merchant announced last night sells this morning, on top of the restock.
         for ((flag, flagDay) in ctx.worldFlags) if (flagDay == ctx.day && flag.startsWith(WorldEvents.FLAG_ORE_MERCHANT)) {
             val m = MaterialId(flag.removePrefix(WorldEvents.FLAG_ORE_MERCHANT))
-            ctx.supplierStock[m] = (ctx.supplierStock[m] ?: 0) + WorldEvents.ORE_MERCHANT_STOCK
+            ctx.supplierStock[m] = (ctx.supplierStock[m] ?: 0) + config.worldEvents.oreMerchantStock
         }
         ctx.worldFlags.entries.removeIf { it.value < ctx.day }
         for (h in ctx.aliveHeroes()) if (h.lastActivity == HeroActivity.SHOP) ctx.updateHero(h.copy(lastActivity = HeroActivity.IDLE))
@@ -402,7 +402,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
 
     fun closeRun(state: GameState): RunEndResult = Legacy.closeRun(state, content, config)
 
-    fun claimLegacy(current: LegacyProfile, runEnd: RunEndResult): LegacyOutcome = Legacy.claim(current, runEnd)
+    fun claimLegacy(current: LegacyProfile, runEnd: RunEndResult): LegacyOutcome = Legacy.claim(current, runEnd, config)
 
     fun purchaseUpgrade(current: LegacyProfile, upgradeId: UpgradeId): LegacyOutcome = Legacy.purchaseUpgrade(current, upgradeId, content)
 

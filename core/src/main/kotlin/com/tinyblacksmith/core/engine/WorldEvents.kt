@@ -38,9 +38,8 @@ object WorldEvents {
     const val UNLIMITED = Int.MAX_VALUE
     const val FLAG_FESTIVAL = "festival"
     const val FLAG_CARAVAN_DELAYED = "caravan_delayed"
-    /** Prefix of a day-keyed flag per material: the ore merchant's [ORE_MERCHANT_STOCK] extra units are on sale that morning. */
+    /** Prefix of a day-keyed flag per material: the ore merchant's `worldEvents.oreMerchantStock` extra units are on sale that morning. */
     const val FLAG_ORE_MERCHANT = "ore_merchant:"
-    const val ORE_MERCHANT_STOCK = 2
     /** Key of the run's rumour count and last rumour day in `eventCounters` / `eventLastDay`. Not a pooled event. */
     const val RUMOUR = "rumour"
 
@@ -170,7 +169,7 @@ object WorldEvents {
             id = "ore_merchant", name = "Traveling Ore Merchant", weight = 3.0, eligibility = { rareMaterials(it).isNotEmpty() }, maxPerRun = UNLIMITED, cooldownDays = 1,
             apply = { ctx ->
                 val m = ctx.rng(RngStream.EVENTS).pick(rareMaterials(ctx))
-                ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + 1
+                ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + ctx.config.worldEvents.oreMerchantGift
                 ctx.worldFlags[FLAG_ORE_MERCHANT + m.id.value] = ctx.day + 1  // the morning's restock would overwrite stock added tonight
                 WorldEventOutcome(mapOf("material" to m.name, "materialId" to m.id.value))
             },
@@ -212,7 +211,7 @@ object WorldEvents {
                 val minQuality = QualityBand.SUPERB.floor(config)
                 val reward = (config.commissionRewardBase + minQuality * config.commissionRewardPerQuality) * config.nobleCommissionRewardMultiplier
                 val id = ctx.newCommissionId()
-                val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, ctx.day + config.commissionDeadlineDays + 2, CommissionStatus.OFFERED, kind = CommissionKind.NOBLE)
+                val c = Commission(id, buyer.id, family, minQuality, reward, ctx.day, ctx.day + config.commissionDeadlineDays + config.worldEvents.nobleExtraDays, CommissionStatus.OFFERED, kind = CommissionKind.NOBLE)
                 ctx.commissions[id] = c
                 WorldEventOutcome(mapOf("hero" to buyer.fullName, "family" to ctx.content.family(family).name, "request" to Commissions.describe(c, ctx.content, config), "reward" to reward.toString(), "day" to c.deadlineDay.toString()), listOf(buyer.id.value, id.value))
             },
@@ -237,7 +236,7 @@ object WorldEvents {
             id = "veteran_returns", name = "Veteran Returns", weight = 1.5, eligibility = { ctx -> ctx.aliveHeroes().size < ctx.config.customers.maxHeroPopulation }, maxPerRun = 2, cooldownDays = 6,
             apply = { ctx ->
                 val base = Heroes.generate(ctx, ctx.rng(RngStream.EVENTS))
-                val h = base.copy(level = maxOf(base.level, ctx.config.veteranLevel), gold = base.gold + ctx.config.veteranGold, fame = 2)
+                val h = base.copy(level = maxOf(base.level, ctx.config.veteranLevel), gold = base.gold + ctx.config.veteranGold, fame = ctx.config.worldEvents.veteranFame)
                 ctx.updateHero(h)
                 ctx.emit(EventType.HERO_ARRIVED, 2, "${h.fullName} the ${ctx.content.heroClass(h.classId).name} arrived in Emberfall.", listOf(h.id.value))
                 WorldEventOutcome(mapOf("hero" to h.fullName, "class" to ctx.content.heroClass(h.classId).name), listOf(h.id.value))
@@ -309,7 +308,7 @@ object WorldEvents {
             apply = { ctx ->
                 val key = ctx.rng(RngStream.EVENTS).pick(keysInState(ctx, KnowledgeState.UNKNOWN, "ca:"))
                 setKnowledge(ctx, key, KnowledgeState.OBSERVED)
-                key.substring(3).split("|").forEach { id -> ctx.materials[MaterialId(id)] = (ctx.materials[MaterialId(id)] ?: 0) + 1 }
+                key.substring(3).split("|").forEach { id -> ctx.materials[MaterialId(id)] = (ctx.materials[MaterialId(id)] ?: 0) + ctx.config.worldEvents.alloyMaterials }
                 val subject = Journal.subjectName(ctx.content, key)
                 ctx.emit(EventType.DISCOVERY, 1, "Journal: $subject observed — ${Journal.describeAffinity(Journal.affinityFor(ctx.content, key))}.", data = mapOf("key" to key))
                 WorldEventOutcome(mapOf("subject" to subject, "key" to key))
@@ -321,8 +320,9 @@ object WorldEvents {
             id = "forgotten_shrine", name = "Forgotten Shrine", weight = 1.5, eligibility = { it.content.materials(MaterialCategory.CATALYST).isNotEmpty() }, maxPerRun = 3, cooldownDays = 5,
             apply = { ctx ->
                 val m = ctx.rng(RngStream.EVENTS).pick(ctx.content.materials(MaterialCategory.CATALYST))
-                ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + 2
-                WorldEventOutcome(mapOf("material" to m.name, "materialId" to m.id.value, "amount" to "2"))
+                val n = ctx.config.worldEvents.shrineCatalysts
+                ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + n
+                WorldEventOutcome(mapOf("material" to m.name, "materialId" to m.id.value, "amount" to n.toString()))
             },
             story = "Pilgrims found a forgotten shrine and left {amount} {material} at the forge door.",
         ),
@@ -346,7 +346,7 @@ object WorldEvents {
             apply = { ctx ->
                 val sig = ctx.rng(RngStream.EVENTS).pick(unknownSignatures(ctx))
                 Journal.earn(ctx, sig, ClueRung.RECIPE)   // the first rung of its ladder: the base recipe hides something more
-                for (id in listOf(sig.coreId, sig.augmentId)) ctx.materials[id] = (ctx.materials[id] ?: 0) + 1
+                for (id in listOf(sig.coreId, sig.augmentId)) ctx.materials[id] = (ctx.materials[id] ?: 0) + ctx.config.worldEvents.fragmentMaterials
                 val subject = Journal.subjectName(ctx.content, sig.journalKey)
                 ctx.emit(EventType.DISCOVERY, 3, "Journal: $subject — ${Journal.hint(ctx.legacy.journal, ctx.content, sig.journalKey)}.", data = mapOf("key" to sig.journalKey))
                 WorldEventOutcome(mapOf("subject" to subject, "key" to sig.journalKey))
@@ -368,7 +368,7 @@ object WorldEvents {
                 val dormant = legend.affixes.filter { it in c.affixById && c.affix(it).kind == com.tinyblacksmith.core.content.AffixKind.BENEFICIAL }
                 val flaws = legend.flaws.filter { it in c.affixById }
                 val factor = returnedLegendFactor(ctx)
-                val quality = maxOf(1, ((if (legend.quality > 0) legend.quality else 60) * factor).toInt())
+                val quality = maxOf(1, ((if (legend.quality > 0) legend.quality else ctx.config.worldEvents.legendDefaultQuality) * factor).toInt())
                 val fullPower = if (legend.power > 0) legend.power else family.basePower + core.tier * ctx.config.powerPerCoreTier + quality / ctx.config.powerPerQualityDivisor
                 // The power its sleeping affixes carried sleeps with them, and comes back whole when they wake (GameEngine.hone).
                 val power = maxOf(1, ((fullPower - dormant.sumOf { c.affix(it).power }) * factor).toInt())
@@ -411,8 +411,8 @@ object WorldEvents {
         WorldEventDef(
             id = "guild_banner", name = "Forgotten Guild Banner", weight = 1.0, eligibility = { it.legacy.eras.isNotEmpty() || it.town.guilds.isNotEmpty() }, maxPerRun = 1, cooldownDays = 0,
             apply = { ctx ->
-                ctx.reputation += 2
-                ctx.town = ctx.town.copy(militia = minOf(ctx.config.militiaMax, ctx.town.militia + 3))
+                ctx.reputation += ctx.config.worldEvents.bannerReputation
+                ctx.town = ctx.town.copy(militia = minOf(ctx.config.militiaMax, ctx.town.militia + ctx.config.worldEvents.bannerMilitia))
                 val era = ctx.legacy.eras.lastOrNull()?.era ?: ctx.era
                 WorldEventOutcome(mapOf("era" to era.toString()))
             },
@@ -428,7 +428,7 @@ object WorldEvents {
                 // The collector pays over the shelf price, but never above the going rate times the multiplier: an absurd price mints no gold.
                 val price = (minOf(w.listedPrice ?: 0, Market.askingPrice(w, ctx.config)) * ctx.config.collectorPriceMultiplier).toInt()
                 ctx.earn(IncomeKind.COLLECTOR, price)
-                ctx.reputation += 1
+                ctx.reputation += ctx.config.worldEvents.collectorReputation
                 ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, "sold to a collector")))
                 ctx.addWeaponHistory(w.id, "COLLECTED", "Bought by a collector for $price gold and taken to a distant vault.")
                 WorldEventOutcome(

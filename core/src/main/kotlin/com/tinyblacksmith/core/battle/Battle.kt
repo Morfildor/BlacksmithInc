@@ -25,12 +25,12 @@ object Battle {
         val enemyPower = (config.encounterBasePower + config.encounterPowerPerDay * ctx.day + config.encounterPowerPerPressure * pressure) * variance *
             (if (elite) config.elitePowerMultiplier else 1.0)
         val heroPower = Power.attackPower(hero, weapon, faction, ctx.content, config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite)
-        val winProbability = (0.5 + (heroPower - enemyPower) / config.winProbabilityScale).coerceIn(config.winProbabilityFloor, config.winProbabilityCeiling)
+        val winProbability = (config.combat.winProbabilityBase + (heroPower - enemyPower) / config.winProbabilityScale).coerceIn(config.winProbabilityFloor, config.winProbabilityCeiling)
         val encounter = rng.pick(if (elite) faction.eliteNames else faction.encounterNames)
         val roll = rng.nextDouble()  // the single draw of Rng.chance, kept so the day can say what the blade was worth
         val won = roll < winProbability
         // The same fight with another blade in hand: same foe, same roll, same formula. Draws nothing.
-        fun losesWith(other: Weapon?): Boolean = roll >= (0.5 + (Power.attackPower(hero, other, faction, ctx.content, config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite) - enemyPower) /
+        fun losesWith(other: Weapon?): Boolean = roll >= (config.combat.winProbabilityBase + (Power.attackPower(hero, other, faction, ctx.content, config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite) - enemyPower) /
             config.winProbabilityScale).coerceIn(config.winProbabilityFloor, config.winProbabilityCeiling)
         if (weapon != null) wear(ctx, weapon.id, if (won) config.wearPerExpeditionWin else config.wearPerExpeditionLoss)
         val weaponText = weapon?.let { " using ${it.name}" } ?: " bare-handed"
@@ -44,14 +44,14 @@ object Battle {
             val health = (hero.health + affixDefs.sumOf { it.healOnWin } - affixDefs.sumOf { it.selfDamageOnWin }).coerceIn(1, 100)
             val h = hero.copy(
                 gold = hero.gold + loot, health = health, kills = hero.kills + 1, victories = hero.victories + 1, expeditionWins = hero.expeditionWins + 1,
-                elitesSlain = hero.elitesSlain + (if (elite) 1 else 0), fame = hero.fame + 1 + (if (elite) config.eliteFame else 0), lastActivity = HeroActivity.EXPEDITION,
+                elitesSlain = hero.elitesSlain + (if (elite) 1 else 0), fame = hero.fame + config.combat.expeditionFame + (if (elite) config.eliteFame else 0), lastActivity = HeroActivity.EXPEDITION,
             )
             if (weapon != null) {
                 val w = ctx.weapon(weapon.id)
-                ctx.updateWeapon(w.copy(kills = w.kills + 1, victories = w.victories + 1, fame = w.fame + 1 + (if (elite) config.eliteFame else 0)))
+                ctx.updateWeapon(w.copy(kills = w.kills + 1, victories = w.victories + 1, fame = w.fame + config.combat.expeditionFame + (if (elite) config.eliteFame else 0)))
                 ctx.addWeaponHistory(weapon.id, "VICTORY", "${hero.fullName} ${if (elite) "slew" else "routed"} $encounter.", listOf(hero.id.value))
                 if (elite) com.tinyblacksmith.core.crafting.Forge.entitle(ctx, weapon.id, "Slayer of $encounter")
-                if (w.kills + 1 >= 5) {
+                if (w.kills + 1 >= config.combat.weaponTitleKills) {
                     com.tinyblacksmith.core.crafting.Forge.entitle(ctx, weapon.id, "Bane of the ${faction.name}")
                     ctx.milestone("WEAPON_FIVE_KILLS", "${weapon.name} earned a title after five victories.")
                 }
@@ -70,7 +70,7 @@ object Battle {
             if (elite || rng.chance(config.expeditionLootChance + affixDefs.sumOf { it.lootChanceBonus })) {
                 val lootable = ctx.content.materials.filter { it.category != MaterialCategory.CATALYST }
                 // Elites carry the good stuff: catalysts and high-tier materials when the catalog has them. A Lucky blade finds the same.
-                val pool = if (elite || affixDefs.any { it.scarceLoot }) ctx.content.materials.filter { it.category == MaterialCategory.CATALYST || it.tier >= 3 }.ifEmpty { lootable } else lootable
+                val pool = if (elite || affixDefs.any { it.scarceLoot }) ctx.content.materials.filter { it.category == MaterialCategory.CATALYST || it.tier >= config.combat.scarceLootTier }.ifEmpty { lootable } else lootable
                 val m = rng.pick(pool)
                 ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + 1
                 found = ctx.emit(EventType.EXPEDITION_WON, 2, "${hero.fullName} brought ${m.name} back to the forge.", listOf(hero.id.value), mapOf("material" to m.id.value))
@@ -284,11 +284,11 @@ object Battle {
                 mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()))
             for ((h, w) in champions) {
                 val hero = ctx.hero(h.id)
-                ctx.updateHero(hero.copy(health = maxOf(1, hero.health - config.championSiegeDamageOnWin), fame = hero.fame + 2, lastActivity = HeroActivity.DEFEND))
+                ctx.updateHero(hero.copy(health = maxOf(1, hero.health - config.championSiegeDamageOnWin), fame = hero.fame + config.combat.siegeFame, lastActivity = HeroActivity.DEFEND))
                 Heroes.grantXp(ctx, ctx.hero(h.id), config.siegeXp)
                 if (w != null) {
                     val ww = ctx.weapon(w.id)
-                    ctx.updateWeapon(ww.copy(siegesDefended = ww.siegesDefended + 1, fame = ww.fame + 2, victories = ww.victories + 1))
+                    ctx.updateWeapon(ww.copy(siegesDefended = ww.siegesDefended + 1, fame = ww.fame + config.combat.siegeFame, victories = ww.victories + 1))
                     ctx.addWeaponHistory(w.id, "SIEGE", "Defended Emberfall in ${hero.fullName}'s hands on day ${ctx.day}.", listOf(hero.id.value))
                     ctx.milestone("CHAMPION_ARMED", "A champion defended the town with a weapon from this forge: ${w.name}.")
                 }
@@ -338,19 +338,17 @@ object Battle {
         ctx.emit(EventType.BLESSING_OFFERED, 3, "The grateful town offers the smith a blessing.", data = mapOf("offer" to offer.joinToString(",") { it.value }))
     }
 
-    /** A warning goes out on each of the last [WARNING_DAYS] evenings before a siege. */
-    const val WARNING_DAYS = 2
-
     /**
-     * The besieger a warning is out for, on the days heroes shop under it: the [WARNING_DAYS] days that follow a warning
+     * A warning goes out on each of the last `combat.siegeWarningDays` evenings before a siege ([warnOfSiege]).
+     * The besieger a warning is out for, on the days heroes shop under it: the same number of days, each following a warning
      * evening (the day before the siege and the siege day itself). Null on every other day. The leader as it stands today.
      */
     fun warnedFaction(ctx: ResolutionContext): FactionDef? =
-        if (ctx.town.nextSiegeDay - ctx.day in 0 until WARNING_DAYS) leadingFaction(ctx)?.let { ctx.content.faction(it.id) } else null
+        if (ctx.town.nextSiegeDay - ctx.day in 0 until ctx.config.combat.siegeWarningDays) leadingFaction(ctx)?.let { ctx.content.faction(it.id) } else null
 
     fun warnOfSiege(ctx: ResolutionContext) {
         val daysLeft = ctx.town.nextSiegeDay - ctx.day
-        if (daysLeft in 1..WARNING_DAYS) {
+        if (daysLeft in 1..ctx.config.combat.siegeWarningDays) {
             val f = leadingFaction(ctx) ?: return
             val def = ctx.content.faction(f.id)
             val led = if (def.warlordName != null && f.pressure >= ctx.config.warlordPressure) " ${def.warlordName} leads them." else ""

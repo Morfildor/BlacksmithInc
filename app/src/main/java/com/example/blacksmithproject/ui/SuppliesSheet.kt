@@ -48,7 +48,7 @@ fun GameEngine.supplyNotes(state: GameState, m: MaterialDef): List<String> {
     return listOfNotNull(
         "The caravan is delayed: none came today".takeIf { state.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == state.day },
         "Caravan Ties: $ties more each day".takeIf { ties > 0 },
-        "Ore merchant in town: ${WorldEvents.ORE_MERCHANT_STOCK} more today".takeIf { state.worldFlags[WorldEvents.FLAG_ORE_MERCHANT + m.id.value] == state.day },
+        "Ore merchant in town: ${config.worldEvents.oreMerchantStock} more today".takeIf { state.worldFlags[WorldEvents.FLAG_ORE_MERCHANT + m.id.value] == state.day },
     )
 }
 

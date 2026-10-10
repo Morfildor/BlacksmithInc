@@ -173,7 +173,7 @@ class CustomerCollector(private val engine: GameEngine) {
                 if (c.deliveredWeaponId?.let { out.weapons[it] }?.let { it.isEquipped && it.ownerId == c.buyerId } == true) prepWielded++
             }
         }
-        if (pre.town.nextSiegeDay - day in 0 until com.tinyblacksmith.core.battle.Battle.WARNING_DAYS) {
+        if (pre.town.nextSiegeDay - day in 0 until engine.config.combat.siegeWarningDays) {
             windowVisits += served.size
             windowRefusals += served.count { it.purchasedWeaponId == null }
             windowResisted += served.count { it.reason == VisitReason.RESISTED }
