@@ -66,7 +66,9 @@ object SaveCodec {
         // (T4.2), `Journal.signatureClues` (the clue ladder, T4.3; a legacy field, merged by OR), `Weapon.dormantAffixes`,
         // `Weapon.legendKey`, `WeaponSnapshot.dormantAffixes` and the `LegendEntry` fields `affixes`, `flaws`, `catalystId`,
         // `signatureId`, `ownerLine`, `weaponKey` (artifact fidelity, T4.5; an entry without them reads as "lost to time"),
-        // `Commission.kind` and `recipientId` (commission situations, T4.6; a commission without them is ORDINARY).
+        // `Commission.kind` and `recipientId` (commission situations, T4.6; a commission without them is ORDINARY),
+        // `Weapon.ownerIds` (bounded histories, T6.3a; empty until old lines of a history are dropped, and `Legacy.holders`
+        // reads it together with the history, so a save without it answers as before).
         3 to { stampAppearances(linkDescendants(it)) },
     )
     internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 3 to { json.parseToJsonElement(it).jsonObject.let { l -> identifyLineages(l).takeIf { n -> n != l }?.toString() ?: it } })

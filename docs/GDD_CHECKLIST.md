@@ -102,6 +102,7 @@ by plan task T0.3: a ticked line states only what its evidence shows, and each n
 - [x] Typed, phase-checked commands and errors; invariants after every command
 - [x] Versioned JSON envelope, Room atomic save (run + legacy + events in one transaction), DataStore for settings
 - [x] Event-log compaction (30-day window, milestones kept), weapon-history cap, pruning of blades gone for good (30 days)
+- [x] Four more bounds (T6.3a, `BalanceConfig.saveGrowth`, each 0 = off, each with a same-seed pair test): closed commissions leave 30 days after their deadline, the newest 30 End Day command IDs are kept, world events and arrivals are kept 30 days, a blade keeps its newest 24 everyday history lines (holders remembered in `Weapon.ownerIds`)
 - [x] Migration scaffold with a checked-in v1 save fixture
 - [ ] First real migration step (schema still 1); a save-compatibility policy and with it RULES_VERSION (still 1; it seeds the run RNG, so it does not move alone)
 
@@ -140,4 +141,4 @@ by plan task T0.3: a ticked line states only what its evidence shows, and each n
 - [x] Known Name: one starting regular with savings per level (+1.6 mean days; first siege held in 94 % of runs against 86 %)
 - [ ] Home: Yesterday block repeats the Shelf line on days without a lede
 - [x] Weapons map pruning of terminal blades (salvaged, shattered, donated, collected) 30 days after they leave play
-- [ ] Bounded save growth: unsold stock, closed commissions, processed command IDs and routine kept-forever records still grow; production-shaped soak pending (review F10; plan T6.3a-c)
+- [ ] Bounded save growth (review F10): closed commissions, processed command IDs, routine kept-forever records and everyday history lines are bounded (T6.3a). **Still growing, by decision:** unsold stock (nothing the player owns is deleted; storage tools are T6.3c), blades seized or lost with a hero (an event can bring any of them home), dead and retired heroes, and history-grade records (deaths, retirements, sieges, milestones). At day 400 of an active forced-survival run the four rules take 76 KB off a 2.17 MB save; the rest is stock. Production-shaped soak pending (T6.3b)

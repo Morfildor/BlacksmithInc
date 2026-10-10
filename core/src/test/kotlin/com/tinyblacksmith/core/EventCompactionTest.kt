@@ -28,6 +28,7 @@ class EventCompactionTest {
         const val SEED = 77L
         val config = Simulator.forcedSurvival()
         val retention = config.eventRetentionDays
+        val routineRetention = config.saveGrowth.routineEventRetentionDays
 
         /** Same seed and policy; A compacts (default config), B never does (retention 0). No sim-side trimming. */
         val compacted: GameState by lazy { play(config) }
@@ -69,7 +70,7 @@ class EventCompactionTest {
         assertEquals(b.heroes, a.heroes)
         assertEquals(b.nextEventSerial, a.nextEventSerial, "every event is still emitted and numbered")
         // Daily compaction is equivalent to applying the policy once at the final End Day.
-        val expected = b.events.filter { EventCompaction.keeps(it, lastEndDay(a), retention) }
+        val expected = b.events.filter { EventCompaction.keeps(it, lastEndDay(a), retention, routineRetention) }
         assertEquals(expected, a.events)
     }
 
@@ -106,11 +107,12 @@ class EventCompactionTest {
         val a = compacted
         val b = uncompacted
         val cutoff = lastEndDay(a) - retention
-        val oldKept = b.events.filter { it.day <= cutoff && it.type in EventCompaction.keptForever }
+        // World events and arrivals are routine records since T6.3a: kept for their own window (SaveGrowthTest), not for the run.
+        val oldKept = b.events.filter { it.day <= cutoff && it.type in EventCompaction.keptForever && it.type !in EventCompaction.routine }
         val retainedIds = a.events.map { it.id }.toSet()
         for (e in oldKept) assertTrue(e.id in retainedIds, "${e.type} on day ${e.day} (${e.id}) was dropped")
         val oldTypes = oldKept.map { it.type }.toSet()
-        for (t in listOf(EventType.RUN_STARTED, EventType.HERO_DIED, EventType.MILESTONE, EventType.WORLD_EVENT, EventType.HERO_RETIRED)) {
+        for (t in listOf(EventType.RUN_STARTED, EventType.HERO_DIED, EventType.MILESTONE, EventType.HERO_RETIRED)) {
             assertTrue(t in oldTypes, "the 400-day run should contain an old $t to prove it survives; had $oldTypes")
         }
         assertTrue(a.events.none { it.day <= cutoff && it.type !in EventCompaction.keptForever })
@@ -136,7 +138,7 @@ class EventCompactionTest {
         val loaded = SaveCodec.decodeRun(SaveCodec.encodeRun(legacy))
         assertEquals(legacy, loaded)
         val next = loaded.endDay()  // TestSupport engine: default config, retention 30, sieges enabled
-        val expected = loaded.events.filter { EventCompaction.keeps(it, loaded.day, TestSupport.engine.config.eventRetentionDays) }
+        val expected = loaded.events.filter { EventCompaction.keeps(it, loaded.day, TestSupport.engine.config.eventRetentionDays, TestSupport.engine.config.saveGrowth.routineEventRetentionDays) }
         assertTrue(next.events.size < loaded.events.size / 4, "${next.events.size} vs ${loaded.events.size}")
         assertEquals(expected, next.events.filter { it.day < loaded.day }, "surviving old events; new events carry day ${loaded.day}")
     }

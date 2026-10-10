@@ -451,7 +451,7 @@ object Market {
         val daysToSiege = ctx.town.nextSiegeDay - ctx.day
         val forgeable = ctx.content.materials.mapNotNull { it.element }.toSet()
         val feared = Battle.leadingFaction(ctx)?.let { ctx.content.faction(it.id).weakTo }?.takeIf { it in forgeable }
-        fun carriedThisEra(h: Hero) = ctx.weapons.values.any { blade -> blade.history.any { it.era == ctx.era && it.kind in com.tinyblacksmith.core.legacy.Legacy.OWNERSHIP && it.subjectIds.firstOrNull() == h.id.value } }
+        fun carriedThisEra(h: Hero) = ctx.weapons.values.any { blade -> h.id in com.tinyblacksmith.core.legacy.Legacy.holders(blade, ctx.era) }
         val newcomers = free.filter { it.shopPurchases == 0 && ctx.equippedWeapon(it.id) == null }
         return linkedMapOf(
             CommissionKind.ORDINARY to (if (w.ordinaryWeight > 0) free else emptyList()),

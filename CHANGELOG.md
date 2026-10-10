@@ -79,6 +79,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Two requests can be open at once (it was one), never two from the same hero.
 
 ### Changed
+- Long runs keep a smaller save. A blade's story keeps what it is, how it was lost, its first owner and its newest
+  24 everyday lines (sales, trade-ins, hones, hand-overs); the Records pages keep arrivals and world events for 30 days,
+  as they keep other daily news; a request that was delivered, declined or lapsed more than 30 days ago is no longer
+  stored. Deaths, retirements, sieges, milestones, legends and everything in storage are kept as before. No outcome changes.
 - A legend that returns is the blade it was. It keeps its signature, its flaws, its catalyst, its title and its story
   (who bought it, who inherited it, the patron it was made for, the day it first held the wall). Its properties come
   back dormant: they do nothing until you hone the blade once, and then they wake, with the strength they carry. A
