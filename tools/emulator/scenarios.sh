@@ -69,6 +69,8 @@ load() {
     if printf '%s' "$x" | grep -q 'resource-id="relic_later"'; then
       case "$1" in relic_offer|relic_full_workshop) echo "CHECK $1 loads onto the relic offer: ok"; return 0;; esac
       tap_id relic_later >/dev/null
+    # A save may also open on a blessing offer: put it off, the scenario is about something else.
+    elif printf '%s' "$x" | grep -q 'resource-id="blessing_later"'; then tap_id blessing_later >/dev/null
     elif printf '%s' "$x" | grep -q 'resource-id="end_day"'; then echo "CHECK $1 loads onto planning: ok"; return 0
     else $ADB shell sleep 1; fi
   done

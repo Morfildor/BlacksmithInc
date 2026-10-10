@@ -29,6 +29,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Sieges with a trait. From the second siege on, scouts may report a Long Assault (worn blades count for less) or Many Breaches (the watch and militia count for more, the raid is stronger) five days ahead, with what can be done about it. Town shows it with the outlook.
 - Debug build: nineteen more scenario saves (every visitor, each relic, both siege traits, both ends of the trust chain).
 - Storage: "Scrap" clears every chosen blade in one go and costs no energy. The blades are gone for good; for every four made of the same metal you get one unit of that metal back, and the confirmation says exactly what comes back before you agree. Salvaging one blade at a time (one energy, one unit back) is still the better trade.
+- Debug builds only: a "Scenarios" entry on the main menu opens eight ready-made saves for things that are rare in normal play (a guild lesson, an inherited blade, a merchant resale, a death at the wall, a Known Name regular, a returned legend, a blade with three owners, a storage of 200 blades). Each says how it was made, and loading one asks first because it replaces the current run. Release builds contain neither the entry nor the saves.
 
 ### Changed
 - Title screen: the workshop at night as a full-width picture with the game's name on it, the era and legacy on a plate, and the actions at the foot of the screen.

@@ -136,6 +136,28 @@ sketch of the Forge. Rulings and engineering notes: DECISIONS, "Forge-first rede
   (pressure moves inside End Day). Seen once on the emulator; not changed.
 
 ## Current phase
+**Update, 2026-10-10 (after 0.7.0, branch `post-0.7.0`, not on `main`):** the owner asked for the leftover tasks that
+add function first. Built since 0.7.0 (version number unchanged, lines under `[Unreleased]` in the changelog):
+- **Bulk Scrap in Storage** (`Command.Scrap`, balance 9): any number of blades in one save, no energy, one unit of a
+  core material back per four blades of it. Closes the T6.3c line "a 200-blade storage can be cleared in under ten
+  taps". Passed: core test, app test (200 blades, one save), the storage screen test on the emulator. Not measured:
+  the return of one per four (no bot scraps). Rationale in DECISIONS, "After 0.7.0: bulk scrap, balance 9".
+- **Review findings 4 and 7 closed**; Town shows today's champions from day 1. Passed: JVM tests. Not seen on a device.
+- **Scenario saves and a debug-only Scenarios menu** (T2.9, scenario half): eight saves, seven reached by real play on
+  pinned seeds and one (200 blades) forged by real commands on added materials. Passed: `ScenarioSavesTest` (each save
+  is sound and End Day on it produces the named event) and `ScenarioAssetsTest` (each bundled save loads through the
+  session); the release APK holds no scenario asset. On the emulator, `tools/emulator/scenarios.sh` showed the menu
+  and the cards for the lesson, the inheritance, the wall death and the Known Name regular. **Not verified on a
+  device:** the merchant resale (the save opens on a blessing offer and the script did not put it off; a fix is in the
+  script and was not re-run), and the three Storage scenarios (the script did not find the Storage row). The emulator
+  was shared with other sessions during these runs, so the device results are weaker than usual.
+- Checks on the tip before the documents: `:core:test :app:testDebugUnitTest :app:assembleDebug
+  :app:compileDebugAndroidTestKotlin :app:assembleRelease :app:lintDebug` exit 0. The full instrumented suite, smoke
+  and run-end scripts were not re-run on this branch.
+- Still open and waiting for the owner: four mechanical jobs for the catalysts (T4.4, withdrawn in the plan), the
+  "never listed" filter (needs schema 5). Not started: `shopday_kill.sh`, `layout.sh`, T6.1, T6.2, T6.3b device
+  half, T5.3 table, T7.3.
+
 **Update, 2026-10-10 (afternoon):** at the owner's request the history was rebuilt as one commit per task (no merge or
 ledger-only commits; same files) and pushed to `main`. `main` now holds 0.7.0 as a debug-tested development build; it is
 still not a store release. Commit hashes quoted below and in the ledger are those of the working branch
