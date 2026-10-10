@@ -9,6 +9,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ### Added
 - Storage: "Scrap" clears every chosen blade in one go and costs no energy. The blades are gone for good; for every four made of the same metal you get one unit of that metal back, and the confirmation says exactly what comes back before you agree. Salvaging one blade at a time (one energy, one unit back) is still the better trade.
+- Debug builds only: a "Scenarios" entry on the main menu opens eight ready-made saves for things that are rare in normal play (a guild lesson, an inherited blade, a merchant resale, a death at the wall, a Known Name regular, a returned legend, a blade with three owners, a storage of 200 blades). Each says how it was made, and loading one asks first because it replaces the current run. Release builds contain neither the entry nor the saves.
 
 ### Changed
 - A blade now reads "worn" below condition 50, the line the game itself uses when heroes look to replace a blade, and "battered" below 25. Before, the blade sheet and Town said "worn" below 70 and "battered" below 40.

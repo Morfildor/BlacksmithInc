@@ -59,6 +59,8 @@ python tools/pixelart/import_assets.py                 # slice the source sheets
 python tools/pixelart/generate_assets.py               # placeholders for IDs without imported art + manifest
 ADB=<sdk>/platform-tools/adb bash tools/emulator/smoke.sh <dir>  # scripted device loop + screenshots (after installDebug)
 ADB=<sdk>/platform-tools/adb bash tools/emulator/runend.sh <dir> # passive run to defeat, then claim + next era (about 2 min)
+./gradlew :core:scenarios                              # rewrites the debug build's scenario saves (app/src/debug/assets/scenarios) from core test ScenarioSaves.kt
+ADB=<sdk>/platform-tools/adb bash tools/emulator/scenarios.sh <dir> # loads each scenario through the debug menu and screenshots its card (set ANDROID_SERIAL when several devices are attached)
 ```
 Toolchain: Gradle 9.5, AGP 9.3.3 (built-in Kotlin), Kotlin plugins 2.2.21 (compose/jvm/serialization), KSP 2.3.12,
 Compose BOM 2026.02.01, Room 2.8.5, DataStore 1.2.1, JDK 21 launcher / JDK 25 daemon toolchain.

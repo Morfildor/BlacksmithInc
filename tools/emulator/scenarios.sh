@@ -62,6 +62,8 @@ load() {
   wait_id scenario_confirm || return 1
   shot "$1_0_confirm"
   tap_id scenario_confirm || return 1
+  # A save may open on a blessing offer: put it off, the scenario is about something else.
+  $ADB shell sleep 2; if has_id blessing_later; then tap_id blessing_later; fi
   wait_id end_day && echo "CHECK $1 loads onto planning: ok" || { echo "CHECK $1 loads onto planning: FAIL"; return 1; }
 }
 
