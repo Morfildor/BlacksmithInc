@@ -14,6 +14,6 @@ Rules of thumb
 - A WANTED.txt may end with a "New with ... update" section: pieces a newer feature could use that are not in the
   game yet. They are optional; the feature works without them and nothing is drawn in their place.
 - Everything directly in these folders is NOT in the game yet. Pieces that are in the game live in
-  Assets/Implemented/<name> (the importer reads them from there): day_art, heroes, icons, materials.
+  Assets/Implemented/<name> (the importer reads them from there): day_art, heroes, icons, materials, blessings.
   Each WANTED.txt says what is delivered and in the game (do not resend), what is delivered but waiting for a place in
   the screens, and what is still wanted. Hand the WANTED.txt of a folder to the artist as it is.

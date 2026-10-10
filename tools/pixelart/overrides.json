@@ -98,60 +98,60 @@
   "sha256": "3fdc02d8605bdb5124b9c1666dcfe9d22577eb83d2321f758657d4c5cf7c17a7"
  },
  "blessing_forgefire": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "69e5dfea734a8532345172fee1ce5de9355a4cd1d2033df2d3f311bfe69eedd6"
  },
  "blessing_guild_patronage": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "415efec160568300d34b01574d008e3727c800691921152922e6575c62ace7e1"
  },
  "blessing_hunters_edge": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "409a88cbdda6676639c11a0e42cff42ca558aa1876729c940144059da3a28175"
  },
  "blessing_lucky_alloy": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "f8a7c49997c28e272de237be3a8d1f665bf79907d9c9934e6ca57df5dce6bb2e"
  },
  "blessing_merchants_favor": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "49a50ad6ef235ee74020b282b728cad5c500dfa3c493807991f96231c560852e"
  },
  "blessing_runic_insight": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "e8409fbb9f09650028889f24821f3e1b24c6492613e8872c5b916774650d4a4b"
  },
  "blessing_stalwart_town": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "121bd1d4c3dd26bf00fa27413d267c48579aa15672b19501b6267895af6a0b82"
  },
  "blessing_tireless_hands": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "b7b79071d97e0f0a206079a8b1493ca0025839c380c95458b8d8ab3c4d9a86f7"
  },
  "ember_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",

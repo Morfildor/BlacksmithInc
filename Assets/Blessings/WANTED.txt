@@ -5,14 +5,9 @@ File rules: PNG with a transparent background unless the piece is a full scene o
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
-IDs in the game today (8), with the current in-game size:
-  blessing_forgefire                      48x48
-  blessing_tireless_hands                 48x48
-  blessing_merchants_favor                48x48
-  blessing_runic_insight                  48x48
-  blessing_stalwart_town                  48x48
-  blessing_hunters_edge                   48x48
-  blessing_lucky_alloy                    48x48
-  blessing_guild_patronage                48x48
+DELIVERED AND IN THE GAME (do not resend)
+  All 8 blessings (48x48): forgefire, tireless_hands, merchants_favor, runic_insight, stalwart_town, hunters_edge,
+  lucky_alloy, guild_patronage.
 
-Status as of 2026-10-10: nothing in this folder is delivered yet; everything above is still wanted.
+STILL WANTED
+  Nothing.

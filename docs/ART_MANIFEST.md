@@ -58,14 +58,14 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | material_runestone_shard | 48×48 | material | imported: script-drawn pack | pack:materials | material=runestone_shard, category=CATALYST |
 | material_dragon_oil | 48×48 | material | imported: script-drawn pack | pack:materials | material=dragon_oil, category=CATALYST |
 | material_void_ink | 48×48 | material | imported: script-drawn pack | pack:materials | material=void_ink, category=CATALYST |
-| blessing_forgefire | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=forgefire |
-| blessing_tireless_hands | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=tireless_hands |
-| blessing_merchants_favor | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=merchants_favor |
-| blessing_runic_insight | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=runic_insight |
-| blessing_stalwart_town | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=stalwart_town |
-| blessing_hunters_edge | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=hunters_edge |
-| blessing_lucky_alloy | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=lucky_alloy |
-| blessing_guild_patronage | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=guild_patronage |
+| blessing_forgefire | 48×48 | blessing | imported: script-drawn pack | pack:blessings | blessing=forgefire |
+| blessing_tireless_hands | 48×48 | blessing | imported: script-drawn pack | pack:blessings | blessing=tireless_hands |
+| blessing_merchants_favor | 48×48 | blessing | imported: script-drawn pack | pack:blessings | blessing=merchants_favor |
+| blessing_runic_insight | 48×48 | blessing | imported: script-drawn pack | pack:blessings | blessing=runic_insight |
+| blessing_stalwart_town | 48×48 | blessing | imported: script-drawn pack | pack:blessings | blessing=stalwart_town |
+| blessing_hunters_edge | 48×48 | blessing | imported: script-drawn pack | pack:blessings | blessing=hunters_edge |
+| blessing_lucky_alloy | 48×48 | blessing | imported: script-drawn pack | pack:blessings | blessing=lucky_alloy |
+| blessing_guild_patronage | 48×48 | blessing | imported: script-drawn pack | pack:blessings | blessing=guild_patronage |
 | ember_0 | 32×32 | fx | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | frames=1 |
 | ember_1 | 32×32 | fx | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | frames=1 |
 | ember_2 | 32×32 | fx | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | frames=1 |

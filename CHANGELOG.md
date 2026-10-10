@@ -8,6 +8,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
+- New owner art for all eight blessings (the blessing choice, the Town panel and the Shop).
 - New owner art for all sixteen materials and seven icons (day, energy, gold and the Forge, Market, Town and Journal tabs).
 - New painted vignettes on the shop-day banners: the ruined forge on "The forge has fallen", the dawn at the open door on the "Day N" card and the gatehouse on a held siege (they replace the plain backdrops there).
 - The price is chosen on the forge result. "−10" and "+10" step it and the number can be typed; "List at" carries the chosen price and Store is still there. Under the price the suggested price is named apart from your own ("Suggested price 124 gold. Your price is 30 below it."), and a line counted again on every change says how many heroes can pay it ("4 of 12 heroes in town can afford this price."), in red when nobody can, with a note that being able to pay is not a sale. The blade sheet's price has the same lines.

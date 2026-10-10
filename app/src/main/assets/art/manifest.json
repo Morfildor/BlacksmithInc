@@ -394,8 +394,8 @@
       "layer": "blessing",
       "blessing": "forgefire",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:blessings",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "blessing_tireless_hands",
@@ -405,8 +405,8 @@
       "layer": "blessing",
       "blessing": "tireless_hands",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:blessings",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "blessing_merchants_favor",
@@ -416,8 +416,8 @@
       "layer": "blessing",
       "blessing": "merchants_favor",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:blessings",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "blessing_runic_insight",
@@ -427,8 +427,8 @@
       "layer": "blessing",
       "blessing": "runic_insight",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:blessings",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "blessing_stalwart_town",
@@ -438,8 +438,8 @@
       "layer": "blessing",
       "blessing": "stalwart_town",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:blessings",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "blessing_hunters_edge",
@@ -449,8 +449,8 @@
       "layer": "blessing",
       "blessing": "hunters_edge",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:blessings",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "blessing_lucky_alloy",
@@ -460,8 +460,8 @@
       "layer": "blessing",
       "blessing": "lucky_alloy",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:blessings",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "blessing_guild_patronage",
@@ -471,8 +471,8 @@
       "layer": "blessing",
       "blessing": "guild_patronage",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:blessings",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "ember_0",
