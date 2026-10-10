@@ -155,6 +155,30 @@ fun SecondaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier 
     }
 }
 
+/** An action inside a line or under a paragraph (Read the Gazette, Forge this, Got it): gold lettering, no outline. At least 48 dp tall. */
+@Composable
+fun InlineActionButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    TextButton(
+        onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small,
+        colors = ButtonDefaults.textButtonColors(contentColor = Gold), modifier = modifier.heightIn(min = 48.dp),
+    ) { Text(text, textAlign = TextAlign.Center) }
+}
+
+/** One blessing on offer, in the workshop's dialog and on the day's card: [icon], its name and what it does, in the outline of a secondary action. */
+@Composable
+fun BlessingOption(name: String, description: String, onClick: () -> Unit, modifier: Modifier = Modifier, icon: @Composable () -> Unit = {}) {
+    OutlinedButton(
+        onClick = onClick, shape = MaterialTheme.shapes.small, border = BorderStroke(1.dp, Bronze),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Cream), modifier = modifier.fillMaxWidth().heightIn(min = 56.dp),
+    ) {
+        icon()
+        Column(Modifier.weight(1f)) {
+            Text(name, style = MaterialTheme.typography.titleSmall, color = Gold)
+            Text(description, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+}
+
 /** What a stock action just did, said inside the sheet it was done in (the workshop's own notice is under the sheet there). */
 @Composable
 fun NoticeLine(text: String, modifier: Modifier = Modifier) {

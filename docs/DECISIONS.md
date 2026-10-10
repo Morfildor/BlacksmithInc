@@ -3810,3 +3810,72 @@ an owner decision.
 
 **Checks.** `:app:testDebugUnitTest` and `:core:test` pass (new app classes: `ForgeWorkbenchModelTest`,
 `BoardModelTest`, `SiegeOutcomeTest`, `ForgeLearningTest`). Device evidence is in PROGRESS.
+## Consistency, readability and accessibility: the fourth UI/UX batch (2026-10-10; no balance, rules, schema or content change)
+
+The reviews in `docs/ui_review_2026-10-10/` were checked once more against the tree this batch starts from: `ui-batch-2` at
+`e1fe41c` (batches 1 and 2 on `main` plus batch 3). What batches 1 to 3 had already settled was left alone; the list below
+is what still held there.
+
+**Confirmed open before this batch, and fixed in it.**
+- Stock Material buttons: the Gazette's Close, "Alright" in the refusal dialog, "Try again" and "Start over" on the load and
+  save failure surfaces were rounded pills in ember; the blessing choices in the workshop dialog had no shape either. Most
+  other secondary buttons had the right shape and the theme's ember lettering instead of the game's gold on bronze (A: 3.1,
+  3.3, P1-3).
+- Check marks on the Records tabs, and the first tab called "News" while every link says "Read the Gazette" (A: 3.2, 9.28;
+  B: E).
+- "Seats 6", "Requests · 1 of 2 open", "Forge 100" (Forge and Town), "Unknown / unknown", "Supplier" and "Supplies and
+  tools", "commission" beside "request", "Adventurers (12 alive)", the speed chip reading "Tap" (A: P2-9, 9.1, 9.5, 9.13,
+  9.17, 9.19, 9.23, 9.27, 9.32; B: E).
+- "Skip day" on the strip, "Skip to the evening" on the restart prompt and "Skip" in the Gazette for a different thing (A: 9.45).
+- The Records masthead running into its Open/Close word (A: P2-10). Town's outlook as the fourth grey line and "No hero
+  stands here yet." with no cause (A: P2-8).
+- The blade sheet and Town calling a blade "Worn" below 70 while the engine's line is 50 (final review of 0.7.0, finding 7).
+
+**Already fixed by batches 1 to 3, checked and left alone.** The unconditional coaching line on the opening card (gone in
+batch 3; one hint is left, under the first customer); "Customer 1 of 1"; the two day numbers on the last card; "Skip to
+tomorrow"; "Renown Unsung (0)" on a fresh blade; the price decision and its "can afford" count; End Day on Town and Records;
+Back leaving the game; the Forge scrolling by itself.
+
+**Engineering (what is derived from what).**
+- Three action components, all in `ui/Frames.kt`: `PrimaryActionButton` (the gold plate, existing), `SecondaryActionButton`
+  (bronze outline, gold lettering, existing) and `InlineActionButton` (gold lettering, new: the game had the first two and
+  raw `TextButton`s for the third). Every plain-text `Button`, `OutlinedButton` and `TextButton` in the app now goes through
+  one of them. `BlessingOption` is the one outline with an icon and two lines, shared by the workshop's dialog and the day's
+  card. Left as they are on purpose: the two text buttons on the Gazette's paper (ink on parchment), the playback chip and
+  the skip on the scene strip (cream on the scene's ink), the price steppers, the destination bar, chips and switches.
+- The Records tabs keep `SegmentedButton` inside `SingleChoiceSegmentedButtonRow`, so the selected state and its role are
+  spoken as before; only the icon is removed and the colours set. Mode and Risk on the Forge and the (unused) playback row
+  in Settings keep their check marks: they are settings of a recipe, not places.
+- The condition word is read from `BalanceConfig.wornConditionThreshold` (50), the line `Market` uses for a hero looking
+  to replace a blade and for a replacement request. "Battered" has no engine rule; it is the lower half of that band (below
+  25) so the worse word still exists. `Labels.condition` is the one place; the blade sheet, Town and the stock rows read it.
+- The champion rule printed in Town is `Battle.selectChampions` as `GameEngine` runs it at the end of every End Day: living
+  heroes with health at or above `heroWoundedThreshold` (50), the three strongest against the besieger. The slots show
+  `town.championIds`, the save's own list, which is what the market uses during the day (a champion's wish to arm, a
+  wall-blade request). On day 1 that list is empty because no End Day has run, and the slot says so. The siege forecast's
+  own champions (who would stand if the siege came now) are not shown in the slots: they can differ from the saved list
+  during a day, and showing them would name champions the day's rules do not yet treat as such.
+- The playback chip and the skip keep their behaviour; only their words and spoken descriptions changed
+  (`ShopDaySpeed.label`, `SKIP_TO_EVENING`). The strip now takes its own taps, so a tap that misses the chip or the skip is
+  not "tap anywhere". The card, the scene, the hint line and the gap around the buttons are still Next.
+- Core changed in wording only: three shop-day lines (`Lines.reason`, `Lines.decision`, `Lines.tally`) and the Gazette's
+  tally line say "request". Event records are untouched, so nothing about a save, the golden run or the simulator moves.
+
+**Presentation choices (PROPOSED, the owner can change any of them).**
+- "Up to 6 visitors a day": "visitors" is the word batch 3 gave the opening card ("6 visitors today"), and the number is a
+  ceiling, not a promise. The plate may now wrap to two lines instead of cutting the sentence with an ellipsis.
+- "Requests · 2" with "1 waiting for your answer · At most 2 are open at a time" under it.
+- "Manual", "Auto 1x", "Auto 2x". "Skip to evening" is the name; where it goes is in the hint and in the spoken description.
+- Town: the outlook is an `EffectRow` (sign plate, title, detail), the component blades use for a buff or a flaw. Both
+  forecast numbers stay. Pressure reads "Pressure: rising threat" so the band word cannot be taken for the world's name.
+- The Gazette's Close on the paper is the gold plate.
+
+**Not changed, and why.**
+- Event sentences still say "commission" ("... collected the commissioned Iron Sword"), and the world event is still named
+  "Noble Commission": they are stored records and content names. In the Gazette's prose "commissioned" reads as a verb.
+- "Era 1 begins in Emberfall under a restless roads." is a stored event sentence with save fixtures behind it; left.
+- The evening card's lead still says "customers ... yesterday" (core's line, written for the next morning).
+- "Who is buying", "hale", the rarity glyphs, "Got it", "Decide later", "Alright", "The forge says": flavour or taste, not
+  comprehension; the brief was not to rewrite every line.
+- The blessing offer in the workshop is still a system dialog and the first frame is still a spinner (reviews A 3.5, 3.6):
+  rebuilding either is a redesign item for the combined review.

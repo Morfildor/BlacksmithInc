@@ -15,10 +15,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -115,7 +113,7 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
                 Text(status, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(top = Space.md))
                 legacy?.let { Secondary("Legacy points: ${it.points} · eras survived: ${it.eras.size}", Modifier.align(Alignment.CenterHorizontally).padding(top = Space.xs)) }
                 PrimaryActionButton(primary, onPrimary, Modifier.fillMaxWidth().padding(top = Space.md).testTag(primaryTag), enabled)
-                if (onAbandon != null) OutlinedButton(onClick = { confirmAbandon = true }, enabled = enabled, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("menu_abandon")) { Text("Abandon run") }
+                if (onAbandon != null) SecondaryActionButton("Abandon run", { confirmAbandon = true }, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("menu_abandon"), enabled = enabled)
             }
         }
         IconButton(onClick = onSettings, modifier = Modifier.align(Alignment.TopEnd).padding(Space.sm).size(48.dp).testTag("menu_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings") }
@@ -126,7 +124,7 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
         onDismissRequest = { confirmAbandon = false },
         title = { Text("Abandon this run?") },
         text = { Text("The run is discarded and cannot be recovered. It earns no legacy points, and its legends and heroes are not recorded. Recipes already written in the journal stay.") },
-        confirmButton = { TextButton(onClick = { confirmAbandon = false; onAbandon() }, modifier = Modifier.testTag("menu_abandon_confirm")) { Text("Abandon run") } },
-        dismissButton = { TextButton(onClick = { confirmAbandon = false }) { Text("Keep playing") } },
+        confirmButton = { InlineActionButton("Abandon run", { confirmAbandon = false; onAbandon() }, Modifier.testTag("menu_abandon_confirm")) },
+        dismissButton = { InlineActionButton("Keep playing", { confirmAbandon = false }) },
     )
 }

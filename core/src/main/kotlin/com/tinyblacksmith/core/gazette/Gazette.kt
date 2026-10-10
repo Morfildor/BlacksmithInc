@@ -166,7 +166,7 @@ object Gazette {
             if (tribute > 0) add("Town tribute: $tribute gold")
             if (visitors > 0) {
                 add("$bought of ${count(visitors, "visitor")} bought")
-                if (commissions > 0) add("${count(commissions, "commission")} delivered")
+                if (commissions > 0) add("${count(commissions, "request")} delivered")
             } else if (sold > 0) add("$sold sold")
             if (won + lost > 0) add("Expeditions: $won won, $lost lost")
             if (fallen > 0) add(if (fallen == 1) "1 hero fell" else "$fallen heroes fell")

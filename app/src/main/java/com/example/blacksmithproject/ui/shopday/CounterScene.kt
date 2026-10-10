@@ -174,7 +174,7 @@ fun CounterScene(
             }.padding(start = 8.dp, end = 8.dp, top = 11.dp, bottom = 6.dp),
         ) {
             Column(Modifier.fillMaxWidth().background(SceneDeep).border(1.dp, SceneInk).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                Text(plate, style = MaterialTheme.typography.titleMedium, color = SceneCream, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() }.testTag("shopday_plate"))
+                Text(plate, style = MaterialTheme.typography.titleMedium, color = SceneCream, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() }.testTag("shopday_plate"))
                 if (!detail.isNullOrEmpty()) Text(detail, style = MaterialTheme.typography.bodySmall, color = Color(0xFFE6D9B8))
             }
         }

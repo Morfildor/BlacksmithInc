@@ -32,7 +32,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -255,18 +254,25 @@ fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier:
     val pages = RecordsPage.entries
     SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth().padding(bottom = Space.sm)) {
         pages.forEachIndexed { i, p ->
+            // These are pages, not a setting: no check mark. The chosen page is the lit bronze plate with gold lettering,
+            // and the row says which is selected to a screen reader.
             SegmentedButton(
                 selected = selected == p,
                 onClick = { onSelect(p) },
                 shape = SegmentedButtonDefaults.itemShape(i, pages.size, MaterialTheme.shapes.small),
+                colors = SegmentedButtonDefaults.colors(activeContainerColor = BronzeContainer, activeContentColor = Gold, activeBorderColor = Bronze, inactiveContentColor = CreamMuted, inactiveBorderColor = BronzeDeep),
+                icon = {},
                 modifier = Modifier.heightIn(min = 48.dp).testTag("page_${p.name.lowercase()}"),
-            ) { Text(when (p) { RecordsPage.GAZETTE -> "News"; RecordsPage.JOURNAL -> "Notebook"; RecordsPage.LEGACY -> "Legacy" }, maxLines = 1) }
+            ) { Text(recordsPageName(p), maxLines = 1) }
         }
     }
 }
 
 private fun UiState.Playing.pendingBlessingOffer() =
     state.pendingBlessingOffer.isNotEmpty() && revealWeaponId == null && blessingOfferDismissedDay != state.day
+
+/** The one name of the day's skip, on the strip, on the restart prompt and in the hint: it lands on the evening card, not on tomorrow. */
+const val SKIP_TO_EVENING = "Skip to evening"
 
 /** First-run tips (GDD 3.3 onboarding): dismissed IDs live in settings, never in the save. */
 object Tips {
@@ -275,7 +281,7 @@ object Tips {
     val END_DAY = Tip("end_day", "At End Day heroes shop, then fight or rest, and factions press on the town. Read it all in the Gazette.")
     val MARKET = Tip("market", "Heroes buy what suits them and their purse. List weapons here at a price you like.")
     /** Not a banner: one line under the first customer of the first shop day the player watches (`ShopDayHost`). */
-    val COUNTER = Tip("counter", "Tap anywhere to continue · Skip day jumps to the evening")
+    val COUNTER = Tip("counter", "Tap anywhere for the next card · $SKIP_TO_EVENING jumps to the day's last card")
     val ORDER = listOf(FORGE, END_DAY, MARKET, COUNTER)
     val ALL = ORDER.map { it.id }.toSet()
     fun forDest(d: Dest): List<Tip> = when (d) { Dest.FORGE -> listOf(END_DAY); Dest.SHOP -> listOf(MARKET); else -> emptyList() }
@@ -292,7 +298,7 @@ fun TipBanner(tip: Tips.Tip, vm: GameViewModel, modifier: Modifier = Modifier) {
     ) {
         Row(Modifier.padding(start = Space.md, end = Space.sm, top = Space.sm, bottom = Space.sm), verticalAlignment = Alignment.CenterVertically) {
             Text(tip.body, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-            TextButton(onClick = { vm.dismissTip(tip.id) }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Got it") }
+            InlineActionButton("Got it", { vm.dismissTip(tip.id) }, Modifier.heightIn(min = 48.dp))
         }
     }
 }
@@ -351,6 +357,9 @@ private fun Stat(icon: Int, label: String, value: String, color: Color = Cream) 
         Text(value, style = MaterialTheme.typography.titleMedium, color = color, maxLines = 1)
     }
 }
+
+/** The paper has one name everywhere: every link to this page says "Read the Gazette". */
+fun recordsPageName(p: RecordsPage) = when (p) { RecordsPage.GAZETTE -> "Gazette"; RecordsPage.JOURNAL -> "Notebook"; RecordsPage.LEGACY -> "Legacy" }
 
 fun destName(d: Dest) = when (d) { Dest.SHOP -> "Shop"; Dest.FORGE -> "Forge"; Dest.TOWN -> "Town"; Dest.RECORDS -> "Records" }
 

@@ -10,11 +10,8 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -140,15 +137,11 @@ fun LoadFailedScreen(failure: SaveFailure, working: Boolean, onRetry: () -> Unit
         Text(text.happened, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = Space.md))
         Text(text.safe, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = Space.sm))
 
-        Button(onClick = onRetry, enabled = !working, modifier = Modifier.fillMaxWidth().padding(top = Space.lg).heightIn(min = 52.dp).testTag("load_retry")) {
-            Text(if (working) "Reading the save..." else "Try again", style = MaterialTheme.typography.titleMedium)
-        }
+        PrimaryActionButton(if (working) "Reading the save..." else "Try again", onRetry, Modifier.fillMaxWidth().padding(top = Space.lg).testTag("load_retry"), enabled = !working)
         Secondary("Reads the save again. Changes nothing.", Modifier.padding(top = Space.xs))
 
         text.startOver?.let { over ->
-            OutlinedButton(onClick = { confirming = true }, enabled = !working, modifier = Modifier.fillMaxWidth().padding(top = Space.lg).heightIn(min = 48.dp).testTag("load_start_over")) {
-                Text(over.button)
-            }
+            SecondaryActionButton(over.button, { confirming = true }, Modifier.fillMaxWidth().padding(top = Space.lg).testTag("load_start_over"), enabled = !working)
             Secondary(over.does, Modifier.padding(top = Space.xs))
         }
         if (text.details.isNotEmpty()) {
@@ -163,8 +156,8 @@ fun LoadFailedScreen(failure: SaveFailure, working: Boolean, onRetry: () -> Unit
             onDismissRequest = { confirming = false },
             title = { Text(over.confirmTitle) },
             text = { Text(over.confirm) },
-            confirmButton = { Button(onClick = { confirming = false; onStartOver() }, modifier = Modifier.heightIn(min = 48.dp).testTag("load_start_over_confirm")) { Text(over.confirmButton) } },
-            dismissButton = { TextButton(onClick = { confirming = false }, modifier = Modifier.heightIn(min = 48.dp)) { Text("Not now") } },
+            confirmButton = { PrimaryActionButton(over.confirmButton, { confirming = false; onStartOver() }, Modifier.heightIn(min = 48.dp).testTag("load_start_over_confirm")) },
+            dismissButton = { InlineActionButton("Not now", { confirming = false }, Modifier.heightIn(min = 48.dp)) },
         )
     }
 }
@@ -191,7 +184,7 @@ fun SaveFailureDialog(op: GameSession.Op, unconfirmed: Boolean, onRetry: () -> U
                 }
             }
         },
-        confirmButton = { Button(onClick = onRetry, modifier = Modifier.heightIn(min = 48.dp).testTag("save_retry")) { Text("Try again") } },
-        dismissButton = { TextButton(onClick = onKeepWorking, modifier = Modifier.heightIn(min = 48.dp).testTag("save_keep_working")) { Text("Keep working") } },
+        confirmButton = { PrimaryActionButton("Try again", onRetry, Modifier.heightIn(min = 48.dp).testTag("save_retry")) },
+        dismissButton = { InlineActionButton("Keep working", onKeepWorking, Modifier.heightIn(min = 48.dp).testTag("save_keep_working")) },
     )
 }

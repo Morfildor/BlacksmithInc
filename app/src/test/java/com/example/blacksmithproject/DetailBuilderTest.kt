@@ -1,5 +1,6 @@
 package com.example.blacksmithproject
 
+import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.detail.StockAction
 import com.example.blacksmithproject.ui.detail.customerSnapshot
 import com.example.blacksmithproject.ui.detail.heroDetail
@@ -198,6 +199,16 @@ class DetailBuilderTest {
         assertEquals(55, engine.itemDetail(listed, stored.id)!!.stock!!.listedPrice)
     }
 
+    /** The condition word follows the engine's own line (`wornConditionThreshold`, which the market and the requests use), not a number of the screen's. */
+    @Test
+    fun conditionWordsFollowTheEnginesWornLine() {
+        val line = engine.config.wornConditionThreshold
+        assertEquals(listOf(null, "worn", "worn", "battered"), listOf(line, line - 1, line / 2, line / 2 - 1).map { Labels.condition(it) })
+        val f = fixture()
+        fun word(condition: Int) = f.blade.copy(condition = condition).let { w -> engine.itemDetail(f.state.copy(weapons = mapOf(w.id to w)), w.id)!!.stats.first { it.label == "Condition" }.word }
+        assertEquals(listOf("Sound", "Worn"), listOf(word(line), word(line - 1)))
+    }
+
     @Test
     fun aBladeThatChangedOrLeftTheSaveOpensFromItsSnapshot() {
         val f = fixture()
@@ -206,7 +217,7 @@ class DetailBuilderTest {
         val d = engine.itemDetail(f.state.copy(weapons = mapOf(worn.id to worn)), worn.id, morning)!!
         assertEquals("Sound", d.counter.first { it.label == "Condition" }.value)
         assertEquals(listOf("Carried by", "Condition", "Renown"), d.now.map { it.label })
-        assertEquals("Battered", d.now.first { it.label == "Condition" }.value)
+        assertEquals("Worn", d.now.first { it.label == "Condition" }.value)
 
         assertTrue("an unchanged blade is told once", engine.itemDetail(f.state, f.blade.id, WeaponSnapshot.of(f.blade))!!.counter.isEmpty())
 

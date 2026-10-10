@@ -108,10 +108,12 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                         Secondary("Owned $have · $price gold" + (stock?.let { " · $it left today" } ?: ""))
                         vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
                     }
+                    // A greyed Buy says why to a screen reader; on screen the row's own lines do (the price, "0 left today").
+                    val blocked = when { stock == 0 -> "none left today"; st.gold < price -> "it costs $price gold and you have ${st.gold}"; else -> null }
                     SecondaryActionButton(
                         "Buy", { vm.dispatch(Command.BuyMaterial(m.id, 1)) },
-                        Modifier.testTag("buy_${m.id.value}").semantics { contentDescription = "Buy ${m.name} for $price gold" },
-                        enabled = (stock == null || stock > 0) && st.gold >= price && !s.busy,
+                        Modifier.testTag("buy_${m.id.value}").semantics { contentDescription = blocked?.let { "Buy ${m.name}, unavailable: $it" } ?: "Buy ${m.name} for $price gold" },
+                        enabled = blocked == null && !s.busy,
                     )
                 }
             }
@@ -132,7 +134,7 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                 if (cost == null) Secondary("Maxed")
                 else SecondaryActionButton(
                     "Buy · $cost g", { vm.dispatch(Command.BuyTool(t.id)) },
-                    Modifier.semantics { contentDescription = "Buy ${t.name} for $cost gold" },
+                    Modifier.semantics { contentDescription = if (st.gold >= cost) "Buy ${t.name} for $cost gold" else "Buy ${t.name}, unavailable: it costs $cost gold and you have ${st.gold}" },
                     enabled = st.gold >= cost && !s.busy,
                 )
             }

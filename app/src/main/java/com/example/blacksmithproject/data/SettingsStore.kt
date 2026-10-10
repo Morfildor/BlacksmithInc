@@ -17,7 +17,7 @@ private val Context.settingsDataStore: DataStore<Preferences> by preferencesData
 /** How the shop day moves on. TAP (the default) never advances by itself; 1x and 2x are opt-in (plan 6.5). */
 /** How the shop day moves on. TAP is the default: nothing advances by itself (GDD: no time-pressure actions). */
 enum class ShopDaySpeed(val label: String, val divisor: Int) {
-    TAP("Tap", 0), X1("1x", 1), X2("2x", 2);
+    TAP("Manual", 0), X1("Auto 1x", 1), X2("Auto 2x", 2);
 
     val next: ShopDaySpeed get() = entries[(ordinal + 1) % entries.size]
 }

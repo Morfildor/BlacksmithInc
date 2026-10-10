@@ -80,7 +80,7 @@ class ShopLedgerTest {
             assertEquals(mapOf(IncomeKind.COMMISSION to 140), ledger.income)
             balances(ledger)
             val tally = edition(gone.state, r).tally
-            assertEquals(listOf("Shop took 140 gold", "0 of ${r.browsers.size} visitor${if (r.browsers.size == 1) "" else "s"} bought", "1 commission delivered"), tally.take(3))
+            assertEquals(listOf("Shop took 140 gold", "0 of ${r.browsers.size} visitor${if (r.browsers.size == 1) "" else "s"} bought", "1 request delivered"), tally.take(3))
             // The same day read from its records alone (the archive, an older build's report) says the same.
             assertEquals(tally.take(3), Gazette.edition(r.events, names(gone.state), r.visits).tally.take(3))
         }

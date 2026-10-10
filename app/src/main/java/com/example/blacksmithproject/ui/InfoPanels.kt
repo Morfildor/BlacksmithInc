@@ -33,7 +33,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
@@ -69,7 +74,7 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifi
     var showGone by rememberSaveable { mutableStateOf(false) }
     LazyColumn(modifier.fillMaxSize().testTag("town_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.lg)) {
         item(key = "threat") { Column { TownThreat(s, vm) } }
-        item(key = "heroes_head") { SectionTitle("Adventurers (${s.state.aliveHeroes().size} alive)") }
+        item(key = "heroes_head") { SectionTitle("Heroes · ${s.state.aliveHeroes().size} in town") }
         itemsIndexed(living, key = { _, h -> "hero_${h.id.value}" }) { i, h ->
             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             HeroRow(h, s, vm)
@@ -135,14 +140,18 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
             Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 40.dp, description = null) }
             Column(Modifier.weight(1f)) {
                 Text(def.name, style = MaterialTheme.typography.titleSmall)
-                Secondary(listOfNotNull(Battle.describePressure(f.pressure).replaceFirstChar { c -> c.uppercase() }, weakness(def.weakTo)).joinToString(" · "))
+                Secondary(listOfNotNull("Pressure: ${Battle.describePressure(f.pressure)}", weakness(def.weakTo)).joinToString(" · "))
             }
         }
     }
 
     SectionTitle("Champions")
-    Secondary("The three strongest heroes fit to stand at the walls.")
+    // The engine's rule (`Battle.selectChampions`, run at every End Day): alive, not wounded, the three strongest against the besieger.
+    val fit = vm.engine.config.heroWoundedThreshold
+    Secondary("Named at each End Day: the three strongest living heroes who are not wounded (health $fit or more). They stand at the walls when the siege comes.")
     val champions = st.town.championIds.mapNotNull { st.heroes[it] }
+    val empty = if (champions.isEmpty() && st.day == 1) "Not named yet: champions are chosen at the first End Day."
+    else "Empty: at the last End Day no other living hero had health $fit or more."
     (0 until 3).forEach { i ->
         val h = champions.getOrNull(i)
         Row(
@@ -151,7 +160,7 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
         ) {
             if (h == null) {
                 Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Secondary("No hero stands here yet.", Modifier.weight(1f))
+                Secondary(empty, Modifier.weight(1f).testTag("town_champion_empty_$i"))
             } else {
                 val w = st.equippedWeapon(h.id)
                 PixelImage(Sprites.portrait(h), 56.dp, description = null)

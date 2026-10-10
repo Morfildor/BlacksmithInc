@@ -13,6 +13,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import android.view.accessibility.AccessibilityManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.Sheet
@@ -45,7 +47,10 @@ fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel, onMainMenu: () -> Unit = 
     // The controls are explained once (GDD 3.3 onboarding): under the first customer the player ever watches, and the
     // line counts as seen when they move on from that card. Seen until settings have loaded, so it never flashes.
     val seenTips by vm.settings.seenTips.collectAsStateWithLifecycle(initialValue = Tips.ALL)
-    val coaching = Tips.COUNTER.id !in seenTips
+    // Not while a screen reader explores by touch: there a tap anywhere is not Next, and the buttons say what they do.
+    val context = LocalContext.current
+    val exploring = remember { context.getSystemService(AccessibilityManager::class.java)?.isTouchExplorationEnabled == true }
+    val coaching = Tips.COUNTER.id !in seenTips && !exploring
     val atFirstVisit = !s.resumed && s.position.at == model.beats.indexOfFirst { it is Beat.Visit }
     var coached by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(coaching, atFirstVisit) { if (coaching && atFirstVisit) coached = true else if (coaching && coached) vm.dismissTip(Tips.COUNTER.id) }

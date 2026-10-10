@@ -15,9 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +28,10 @@ import androidx.compose.ui.window.Dialog
 import com.example.blacksmithproject.ui.EffectKind
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import com.example.blacksmithproject.ui.BlessingOption
+import com.example.blacksmithproject.ui.SKIP_TO_EVENING
+import com.example.blacksmithproject.ui.InlineActionButton
+import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.FramedPanel
 import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.R
@@ -136,13 +138,13 @@ fun AftermathCard(
         }
         Body(card.text, Modifier.testTag("shopday_aftermath_text"))
         card.replay?.let { replay ->
-            OutlinedButton(onClick = { onWatchFight(replay) }, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_watch")) { Text("Watch the fight") }
+            SecondaryActionButton("Watch the fight", { onWatchFight(replay) }, Modifier.heightIn(min = 48.dp).testTag("shopday_watch"))
         }
         // The summary has no names: the Gazette is where each hero's day is told.
         if (beat.moreInGazette > 0 || card.kind == AftermathKind.FIELD_SUMMARY) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Quiet(if (beat.moreInGazette > 0) "${beat.moreInGazette} more in the Gazette" else "Who fought whom is in the Gazette", Modifier.weight(1f))
-                TextButton(onClick = onOpenGazette, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_gazette")) { Text("Read the Gazette") }
+                InlineActionButton("Read the Gazette", onOpenGazette, Modifier.heightIn(min = 48.dp).testTag("shopday_gazette"))
             }
         }
     }
@@ -172,7 +174,7 @@ fun SiegeOutcomeCard(beat: Beat.Aftermath, siege: SiegeOutcomeUi, onOpenHero: (F
         }
         Body(card.text, Modifier.testTag("shopday_aftermath_text"))
         card.replay?.let { replay ->
-            OutlinedButton(onClick = { onWatchFight(replay) }, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_watch")) { Text("Watch the siege") }
+            SecondaryActionButton("Watch the siege", { onWatchFight(replay) }, Modifier.heightIn(min = 48.dp).testTag("shopday_watch"))
         }
     }
 }
@@ -210,7 +212,7 @@ fun FallenCard(fallen: Beat.Fallen, onOpenGazette: () -> Unit, modifier: Modifie
         fallen.recap?.let { SiegeRecap(it) }
         Overline("The run ended on day ${fallen.days}", strong = true)
         fallen.cause?.let { CardTitle(it, Modifier.testTag("shopday_fallen_cause")) }
-        TextButton(onClick = onOpenGazette, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_gazette")) { Text("Read the Gazette") }
+        InlineActionButton("Read the Gazette", onOpenGazette, Modifier.heightIn(min = 48.dp).testTag("shopday_gazette"))
     }
 }
 
@@ -233,7 +235,7 @@ fun TomorrowCard(tomorrow: Beat.Tomorrow, onOpenGazette: () -> Unit, modifier: M
             Modifier.padding(top = Space.sm),
         )
         Quiet(tomorrow.siege)
-        TextButton(onClick = onOpenGazette, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_gazette")) { Text("Read the Gazette") }
+        InlineActionButton("Read the Gazette", onOpenGazette, Modifier.heightIn(min = 48.dp).testTag("shopday_gazette"))
     }
 }
 
@@ -244,12 +246,8 @@ fun BlessingChoices(choices: List<BlessingUi>, onChoose: (BlessingId) -> Unit, m
         siege?.let { SiegeRecap(it) }
         CardTitle("The town offers a blessing")
         choices.forEach { b ->
-            OutlinedButton(onClick = { onChoose(b.id) }, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("blessing_${b.id.value}")) {
+            BlessingOption(b.name, b.description, { onChoose(b.id) }, Modifier.testTag("blessing_${b.id.value}")) {
                 Sprites.blessing(b.id)?.let { PixelSprite(it, wholeScale(48, 40.dp), Modifier.clearAndSetSemantics {}); Spacer(Modifier.width(12.dp)) }
-                Column(Modifier.weight(1f)) {
-                    Text(b.name, style = MaterialTheme.typography.titleSmall)
-                    Text(b.description, style = MaterialTheme.typography.bodySmall)
-                }
             }
         }
     }
@@ -262,7 +260,7 @@ fun ResumePrompt(day: Int, took: Int?, onResume: () -> Unit, onSkip: () -> Unit,
         CardTitle("Day $day is done and saved.")
         took?.let { Body("The shop earned $it gold.", Modifier.padding(top = Space.sm)) }
         PrimaryActionButton("Resume the day", onResume, Modifier.fillMaxWidth().padding(top = Space.md).testTag("shopday_resume"))
-        // The same landing as Skip day: the evening card, where "Begin day N" still waits.
-        OutlinedButton(onClick = onSkip, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("shopday_resume_skip")) { Text("Skip to the evening") }
+        // The same landing and the same words as the day's own Skip: the evening card, where "Begin day N" still waits.
+        SecondaryActionButton(SKIP_TO_EVENING, onSkip, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("shopday_resume_skip"))
     }
 }

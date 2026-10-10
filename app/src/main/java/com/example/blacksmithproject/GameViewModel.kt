@@ -655,7 +655,7 @@ class GameViewModel(
         is GameError.InvalidQuantity -> "Quantity must be positive."
         is GameError.NotEnoughGold -> "Not enough gold (need ${e.needed}, have ${e.available})."
         is GameError.SupplierOutOfStock -> "The supplier is out of ${engine.content.material(e.materialId).name} today."
-        is GameError.CommissionNotFound, is GameError.CommissionNotOpen -> "That commission is no longer open."
+        is GameError.CommissionNotFound, is GameError.CommissionNotOpen -> "That request is no longer open."
         GameError.NoBlessingOffer, is GameError.BlessingNotOffered -> "No such blessing is offered."
         GameError.RunNotEnded -> "The run is still going."
         is GameError.AlreadyClaimed -> "This era's legacy was already claimed."
