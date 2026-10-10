@@ -84,6 +84,21 @@ data class GuildConfig(
     val charterLegacyPoints: Int = 6,
     val charterTribute: Int = 150,
 
+    // Visitors of the guild (spec 11)
+    val captiveTimeGold: Int = 40,
+    val captiveTimeDays: Int = 2,
+    /** A questioned survivor, a dealer's lead: the guards are this percent of what they were. */
+    val questionedPercent: Int = 85,
+    val silenceEnergy: Int = 2,
+    val oathMaxLevel: Int = 3,
+    val buyBackPercent: Int = 150,
+    val insuranceFeePercent: Int = 15,
+    val insurancePayoutPercent: Int = 60,
+    val insuranceDays: Int = 10,
+    val tournamentGold: Int = 40,
+    val tournamentReputation: Int = 1,
+    val tournamentFame: Int = 3,
+
     // Stories (spec 12)
     val rivalFirstDay: Int = 6,
     val rivalMoveEveryDays: Int = 4,

@@ -290,7 +290,7 @@ object LaunchContent {
             ToolDef("signboard", "Painted Signboard", ToolEffect.EXTRA_CUSTOMERS, magnitudePerLevel = 1, costPerLevel = listOf(150, 400), description = "+1 customer a day per level."),
             ToolDef("display_case", "Display Case", ToolEffect.SHELF_SLOTS, magnitudePerLevel = 2, costPerLevel = listOf(200), description = "+2 shelf slots."),
         ),
-        encounters = Depth.encounters,
+        encounters = Depth.encounters + GuildContent.encounters,
         relics = Depth.relics,
         siegeTraits = Depth.siegeTraits,
         combat = CombatContent.catalog,

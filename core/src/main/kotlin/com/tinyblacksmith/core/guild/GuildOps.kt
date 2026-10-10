@@ -63,13 +63,17 @@ object GuildOps {
         val scarred = member.wound?.takeIf { it.kind == WoundKind.SCARRED && it.untilDay > ctx.day } != null
         val max = com.tinyblacksmith.core.combat.Fight.pct(base.maxHealth, branch?.healthPercent ?: 100)
         val cap = if (scarred) com.tinyblacksmith.core.combat.Fight.pct(max, ctx.config.guild.scarredHealthPercent) else max
+        // A blade that took the oath rallies a party in which nobody is past the level the oath names.
+        val sworn = weapon?.history?.any { it.kind == GuildVisitors.HISTORY_OATH } == true
+        val novices = sworn && (beside + hero.id).all { (ctx.heroes[it]?.level ?: 1) <= ctx.config.guild.oathMaxLevel }
         val stats = HashMap<Stat, Int>(base.stats)
         trait?.startStats?.forEach { (s, n) -> stats[s] = (stats[s] ?: 0) + n }
         return base.copy(
             maxHealth = max, health = minOf(cap, maxOf(1, (max * hero.health + 99) / 100)),
             strikeMin = maxOf(1, com.tinyblacksmith.core.combat.Fight.pct(base.strikeMin, branch?.strikePercent ?: 100)), strikeMax = maxOf(1, com.tinyblacksmith.core.combat.Fight.pct(base.strikeMax, branch?.strikePercent ?: 100)),
             support = com.tinyblacksmith.core.combat.Fight.pct(base.support, branch?.supportPercent ?: 100),
-            effects = (base.effects + trait?.effects.orEmpty() + branch?.effects.orEmpty() + member.bonds.filter { it.withHeroId in beside }.flatMap { cat.bondEffects[it.kind].orEmpty() }).distinctBy { it.id }, tags = base.tags + trait?.tags.orEmpty(), stats = stats,
+            effects = (base.effects + trait?.effects.orEmpty() + branch?.effects.orEmpty() + member.bonds.filter { it.withHeroId in beside }.flatMap { cat.bondEffects[it.kind].orEmpty() } + (if (sworn) cat.oathEffects else emptyList())).distinctBy { it.id },
+            tags = base.tags + trait?.tags.orEmpty() + (if (novices) setOf(com.tinyblacksmith.core.content.GuildContent.TAG_NOVICE_PARTY) else emptySet()), stats = stats,
         )
     }
 
@@ -136,8 +140,10 @@ object GuildOps {
     fun refreshCandidates(ctx: ResolutionContext) {
         val g = ctx.guild ?: return
         val askable = askable(ctx).map { it.id }.toSet()
-        if (ctx.day - g.candidatesDay >= ctx.config.guild.candidateRefreshDays) drawCandidates(ctx)
-        else update(ctx) { it.copy(candidates = it.candidates.filter { c -> c.heroId in askable }) }
+        // Somebody who offered to sign for a reason of their own (a visitor's answer) stays on the list while they live, whatever else the town asks of them.
+        val standing = g.candidates.filter { it.complication != null && ctx.heroes[it.heroId]?.isAlive == true && !g.isMember(it.heroId) }
+        if (ctx.day - g.candidatesDay >= ctx.config.guild.candidateRefreshDays) { drawCandidates(ctx); update(ctx) { it.copy(candidates = (standing + it.candidates).distinctBy { c -> c.heroId }) } }
+        else update(ctx) { it.copy(candidates = it.candidates.filter { c -> c.heroId in askable || c in standing }) }
     }
 
     // ---- commands ----

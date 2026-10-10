@@ -45,7 +45,7 @@ data class EncounterRecord(val instanceId: String, val defId: String, val day: I
 @Serializable
 data class ActiveRelic(val id: String, val progress: Int = 0, val families: List<WeaponFamilyId> = emptyList())
 
-enum class ConsequenceKind { WALL_PLEDGE, WAGER, WATCH_BOUNTY }
+enum class ConsequenceKind { WALL_PLEDGE, WAGER, WATCH_BOUNTY, INSURANCE }
 
 /** Something a choice set in motion, read again on [dueDay] against the run as it then is. */
 @Serializable

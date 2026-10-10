@@ -82,7 +82,7 @@ internal object EncounterCatalog {
         Depth.CROOKED_MERCHANT -> true
         Depth.SMITHS_WAGER -> ctx.consequences.none { it.kind == ConsequenceKind.WAGER }
         Depth.FESTIVAL_CONTRACT -> ctx.consequences.none { it.kind == ConsequenceKind.WATCH_BOUNTY }
-        else -> false
+        else -> com.tinyblacksmith.core.guild.GuildVisitors.eligible(ctx, def)
     }
 
     fun build(ctx: ResolutionContext, def: EncounterDef, rng: Rng, id: String): EncounterInstance {
@@ -145,7 +145,7 @@ internal object EncounterCatalog {
                         "orderQuality" to decent, "orderReward" to orderReward(ctx, decent), "orderDeadline" to ctx.day + config.commissionDeadlineDays))
             }
             Depth.FESTIVAL_CONTRACT -> base.copy(amounts = mapOf("fee" to cfg.stallFee, "bounty" to cfg.watchBounty, "blades" to cfg.watchBountyBlades, "until" to ctx.day + cfg.watchBountyDays - 1))
-            else -> error("No offer for encounter ${def.id}")
+            else -> com.tinyblacksmith.core.guild.GuildVisitors.build(ctx, def, rng, id)
         }
     }
 
@@ -183,7 +183,7 @@ internal object EncounterCatalog {
                 (if (ctx.weapons[i.weaponId]?.isEquipped == true) ". " else ", kept as a spare. ") +
                 (if (a["stood"] == 1) "They stood on the wall with it" + (if (a["held"] == 1) " and the town held. " else " and the wall was lost all the same. ") else "They were not among the champions when the siege came. ") +
                 "They still owe ${a["owed"]} gold and have ${ctx.heroes[i.heroId]?.gold ?: 0}."
-            else -> def.description
+            else -> com.tinyblacksmith.core.guild.GuildVisitors.text(ctx, i, def)
         }
     }
 
@@ -197,7 +197,10 @@ internal object EncounterCatalog {
         return c
     }
 
-    fun options(ctx: ResolutionContext, i: EncounterInstance): List<Opt> {
+    /** Every answer of this morning's visitor, with what a guild run adds to a visitor that is older than the guild. */
+    fun options(ctx: ResolutionContext, i: EncounterInstance): List<Opt> = com.tinyblacksmith.core.guild.GuildVisitors.extend(ctx, i, ownOptions(ctx, i))
+
+    private fun ownOptions(ctx: ResolutionContext, i: EncounterInstance): List<Opt> {
         val a = i.amounts
         fun n(key: String) = a[key] ?: 0
         val config = ctx.config
@@ -347,7 +350,7 @@ internal object EncounterCatalog {
                     pass("Leave it for now", "The smith let ${name(ctx, i.heroId)}'s debt rest; nothing was settled."),
                 )
             }
-            else -> listOf(pass("Send them away", "The visitor left."))
+            else -> com.tinyblacksmith.core.guild.GuildVisitors.options(ctx, i)
         }
     }
 }

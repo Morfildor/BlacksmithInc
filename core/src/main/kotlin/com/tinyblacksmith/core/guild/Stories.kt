@@ -140,6 +140,13 @@ object Stories {
 
     /** A loan fell into enemy hands. The first such blade gets a bearer with a name; while that one lives, later ones are simply lost. */
     fun taken(ctx: ResolutionContext, weaponId: WeaponId, factionId: FactionId) {
+        // An insured loan pays here, once: the policy is spent with the payment.
+        ctx.consequences.firstOrNull { it.kind == ConsequenceKind.INSURANCE && it.weaponId == weaponId && ctx.day <= it.dueDay }?.let { q ->
+            ctx.consequences -= q
+            val payout = q.amounts["payout"] ?: 0
+            ctx.earn(IncomeKind.INSURANCE, payout)
+            ctx.emit(EventType.GUILD_STORY, 5, "The adjuster paid $payout gold for ${ctx.weapons[weaponId]?.name ?: "the blade"}, taken by the enemy.", listOf(weaponId.value), mapOf("insurance" to payout.toString()))
+        }
         val g = ctx.guild ?: return
         if (g.nemesis != null) return
         val faction = ctx.content.faction(factionId)

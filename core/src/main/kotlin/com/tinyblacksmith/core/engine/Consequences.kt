@@ -33,6 +33,8 @@ object Consequences {
                 }
             }
             ConsequenceKind.WATCH_BOUNTY -> if (ctx.day >= q.dueDay) ctx.consequences -= q
+            // A loan insured against the enemy (`guild.GuildVisitors`): paid where the blade is taken (`guild.Stories.taken`), lapsed here.
+            ConsequenceKind.INSURANCE -> if (ctx.day > q.dueDay) ctx.consequences -= q
             ConsequenceKind.WALL_PLEDGE -> if (q.weaponId == null) {
                 val order = ctx.commissions[q.commissionId]
                 when (order?.status) {

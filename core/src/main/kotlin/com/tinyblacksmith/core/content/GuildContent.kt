@@ -125,6 +125,7 @@ data class GuildCatalog(
     val rivalNames: List<Pair<String, String>> = emptyList(),
     /** What a bond adds to a fight both of its members are in, by `Bond.kind`. */
     val bondEffects: Map<String, List<EffectDef>> = emptyMap(),
+    val oathEffects: List<EffectDef> = emptyList(),
 ) {
     val missionById: Map<String, MissionDef> = missions.associateBy { it.id }
     val traitById: Map<String, GuildTraitDef> = traits.associateBy { it.id }
@@ -156,7 +157,7 @@ data class GuildCatalog(
         }
         if (missions.none { it.archetype == MissionArchetype.SUPPLY && it.fee == 0 }) problems += "No free supply contract"
         if (missions.none { it.archetype == MissionArchetype.EMERGENCY && it.fee == 0 }) problems += "No free emergency work"
-        problems += EffectRules.problems(traits.flatMap { it.effects } + specialities.flatMap { it.effects } + bondEffects.values.flatten(), units = combat.unitById)
+        problems += EffectRules.problems(traits.flatMap { it.effects } + specialities.flatMap { it.effects } + bondEffects.values.flatten() + oathEffects, units = combat.unitById)
         ranks.forEachIndexed { i, r -> if (r.rank != i + 1) problems += "Guild ranks must be numbered from 1 without gaps" }
         laws.forEach { if (it.days <= 0) problems += "Law ${it.id} lasts no days" }
         for (c in charters) {
@@ -195,6 +196,24 @@ object GuildContent {
     const val HONEST_BUSINESS = "honest_business"
 
     const val CHARTER_SECURED = "charter_secured"
+
+    const val COWARD_RETURNS = "coward_returns"
+    const val SWORD_COMPLAINT = "sword_complaint"
+    const val ACROSS_THE_COUNTER = "across_the_counter"
+    const val INSURANCE_ADJUSTER = "insurance_adjuster"
+    const val TAG_NOVICE_PARTY = "novice_party"
+
+    /** Visitors only a guild run can have (`guild.GuildVisitors`). With the eight older ones: twelve scenes. Weights, limits and cooldowns PROPOSED. */
+    val encounters = listOf(
+        EncounterDef(COWARD_RETURNS, "The Coward Returns Alone", 6.0, maxPerRun = 4, cooldownDays = 2, description = "One of the party is back without another, who is alive in enemy hands."),
+        EncounterDef(SWORD_COMPLAINT, "The Sword Files a Complaint", 2.5, maxPerRun = 3, cooldownDays = 5, description = "A blade with opinions has one about who carries it."),
+        EncounterDef(ACROSS_THE_COUNTER, "Your Best Sword Is Across the Counter", 4.0, maxPerRun = 3, cooldownDays = 3, description = "A dealer knows how to part the enemy from a blade of this forge."),
+        EncounterDef(INSURANCE_ADJUSTER, "Insurance Adjuster from the Underworld", 1.5, maxPerRun = 2, cooldownDays = 6, description = "An adjuster will insure one loan against the enemy.", minDay = 4),
+    )
+
+    /** What a blade that took the oath of `The Sword Files a Complaint` adds while its whole party is inexperienced. */
+    val oathEffects = listOf(EffectDef("oath_inexperienced", "Oath of inexperienced company", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.AllAllies, Fixed(3)), Give(Stat.REGEN, Aim.AllAllies)), Limit(perFight = 1),
+        "While everyone in the party is inexperienced, every ally starts a fight with 3 Guard and 1 Regeneration.", listOf(Condition.HolderTagged(TAG_NOVICE_PARTY))))
 
     private fun roster(a: List<String>, h: List<String>, e: List<String>) = mapOf(A to a, H to h, E to e)
 
@@ -344,7 +363,7 @@ object GuildContent {
     )
 
     val catalog = GuildCatalog(
-        missions, routes, traits, charters, specialities, laws, ranks, bondEffects = bondEffects,
+        missions, routes, traits, charters, specialities, laws, ranks, bondEffects = bondEffects, oathEffects = oathEffects,
         siegeLeaders = mapOf(A to "warlord_krag", H to "hollow_king", E to "broodmother"),
         siegeElites = mapOf(A to "ashclaw_warchief", H to "pale_knight", E to "ember_drake"),
         siegeGrunts = mapOf(A to listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_thief"), H to listOf("bone_warden", "hollow_shambler", "gravecaller"), E to listOf("cinder_knight", "ember_whelp", "ember_whelp")),

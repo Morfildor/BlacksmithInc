@@ -89,7 +89,7 @@ data class MarketVisit(
     @EncodeDefault(NEVER) val eventIds: List<String> = emptyList(),
 )
 
-enum class IncomeKind { SHELF_SALE, SALE_BONUS, STIPEND, COMMISSION, COLLECTOR, TRIBUTE, CONTRACT }   // every way End Day adds gold today; a new source adds a constant
+enum class IncomeKind { SHELF_SALE, SALE_BONUS, STIPEND, COMMISSION, COLLECTOR, TRIBUTE, CONTRACT, INSURANCE }   // every way End Day adds gold today; a new source adds a constant
 @Serializable data class ShopLedger(
     val goldAtOpen: Int, val goldAtClose: Int, val income: Map<IncomeKind, Int>,
     val tradeInCredit: Int, val spentPreparing: Int,
