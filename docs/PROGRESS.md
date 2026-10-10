@@ -502,6 +502,11 @@ the verification table (automated, looked at, not verified) and the remaining is
 `CHANGELOG.md` under `[Unreleased]`. No balance, rules, save, schema or content version changed; core changed in wording
 only (three shop-day lines and the Gazette's tally say "request").
 
+**Merged into `main` afterwards, at the owner's request**, by a rebase onto the Forge-first redesign that had landed there
+meanwhile. Where both had changed the same place `main`'s version was kept; what that kept and dropped, and that nothing
+ran on a device after the rebase, is in the handoff under "After the merge into `main`". JVM on the merged tree: core 395,
+app 163, debug build and lint pass. The rest of this section describes the batch as built and tested before the rebase.
+
 **Which build.** Worktree `.claude/worktrees/ui-batch4`, branch `ui-batch-4`, cut from `ui-batch-2` at `e1fe41c` (batch 3,
 itself one commit above `main`). Two commits: `39c7bb9` (the batch) and `bdee417` (the shop day with text above 1.3).
 Not merged and not pushed: that is the owner's call, as for batch 3.

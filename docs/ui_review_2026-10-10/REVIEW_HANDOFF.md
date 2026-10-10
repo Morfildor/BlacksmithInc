@@ -23,6 +23,23 @@ Which revision each piece of evidence comes from:
 - `bdee417` differs from `39c7bb9` only in `ShopDayScreen.kt`, and only when the font scale is above 1.3 (a lower scene;
   no first-day hint on a screen under 700 dp high). The font 2.0 journeys were therefore run on the build before that change.
 
+**After the merge into `main` (2026-10-10, late).** `main` had meanwhile taken the Forge-first redesign and the first part
+of a UI polish pass (16 commits over batch 3), which rewrote the Forge, the Shop's list, Town's header and the Gazette
+archive. Batch 4 was rebased onto it. Where both had changed the same place, `main`'s version was kept.
+- Kept from batch 4: the three action components and every button routed through them outside the Forge and the Notebook;
+  the Records tabs without check marks and the name "Gazette" (the second tab is `main`'s "Notebook"); "Supplies" as the
+  sheet's title; "Heroes · N in town"; "Manual / Auto 1x / Auto 2x" and "Skip to evening"; the day strip taking its own
+  taps and wrapping its controls; the lower day scene and the hint rule for large text; the champion rule in Town; "Worn"
+  at the engine's threshold; the spoken reasons on greyed Buy, upgrade and Begin era buttons; the Gazette tally's "request".
+- Dropped in favour of `main`'s redesign: the plate "Up to 6 visitors a day" and the "Requests · N" heading (the Shop is
+  rebuilt, with a commission board); "Forge integrity" (it is "Forge health" now); "Not tried yet…" and the Forge as one
+  scrolling page above 1.3 (the Forge is a workbench with its own large-text handling); Town's "Siege outlook" block (Town
+  has `main`'s siege header); the Records masthead row (the archive is `main`'s compact one); batch 4's three shop-day
+  sentences (`main` has its own: "Collected the requested Iron Sword…").
+- Checked on the merged tree: core 395 and app 163 JVM tests pass, the device tests compile, the debug build and lint pass.
+  **Nothing was run on a device after the rebase.** Every screenshot and journey result in this file is from before it and
+  shows the pre-rebase Forge, Shop and Town.
+
 ## 2. The four batches in short
 
 **Batch 1: forge, choose a price, list** (`5aa313e`, on `main`). The forge result carries the price: −10, a typed
