@@ -69,12 +69,12 @@ class SoakTest {
         )
     }
 
-    /** GDD 15.3 PROPOSED: nominal day sim p95 < 200 ms on mid-range Android. Records the JVM number. */
+    /** GDD 15.3 PROPOSED: nominal day sim p95 < 200 ms on mid-range Android. Records the JVM number and holds it to the same budget (a JVM that misses it leaves a phone no chance). */
     @Test
     fun endDayP95OverThousandDays() {
         val perf = Simulator.measureEndDay(days = 1000, seed = 1)
         assertEquals(1000, perf.days)
         println("PERF End Day over ${perf.days} days (JVM, forced survival, BALANCED_FAIR): p50=${"%.2f".format(perf.p50Ms)} ms p95=${"%.2f".format(perf.p95Ms)} ms max=${"%.2f".format(perf.maxMs)} ms; state at end: weapons=${perf.weaponsAtEnd} heroes=${perf.heroesAtEnd} events=${perf.eventsAtEnd}")
-        assertTrue(perf.p95Ms > 0.0)
+        assertTrue(perf.p95Ms > 0.0 && perf.p95Ms < 200.0, "End Day p95 ${perf.p95Ms} ms, budget 200 ms")
     }
 }

@@ -110,8 +110,8 @@ passed), the tripwire of plan 4.3 if it fires, the playtest gates, and the four 
 | T5.5 | 10,000-seed review after the update | SIM + INT | todo | | | |
 | T6.1 | Layout matrix | AB | todo | | | |
 | T6.2 | TalkBack and semantics | AA | todo | | | |
-| T6.3a | Bounded growth rules | CB | todo | | | |
-| T6.3b | Production soak and device measurement | SIM + AB | todo | | | |
+| T6.3a | Bounded growth rules | CB | merged | cb1d84d | Four retention rules (30 days / 30 IDs / 30 days / 24 lines), SaveGrowthTest 10; schema stays 4 (Ruling: defaulted field, no schema-4 build released). Open: End Day idempotence bounded to newest 30 IDs; two older pruning rules may interact with T4.6/T3.5 (read, not reproduced). | |
+| T6.3b | Production soak and device measurement | SIM + AB | JVM half merged; device half not run | 547ca70 | 2,000-day soak: End Day p95 1.7-6.7 ms (budget 200); save 3.7-4.7 MB at day 1,000 and still growing ~3.3-4.2 KB/day, 60-65% stock. Report-only flat-growth budget not met. Device half blocked: emulator hung. | |
 | T6.3c | Storage tools | AB | todo | | | |
 | T6.4 | Lifecycle tests | AB | todo | | | |
 | T6.5 | Main thread | AB | todo | | | |
