@@ -104,7 +104,7 @@ class ShopDayScriptTest {
     private fun allLines(s: ShopDayScript, after: GameState): List<String> = buildList {
         for (v in s.visits) {
             add(Lines.customer(v, content)); add(Lines.decision(v, s, content)); add(Lines.reason(v.reason))
-            v.considered.forEach { add(Lines.considered(it, s)) }
+            v.considered.forEach { k -> Lines.weighed(k).takeIf { it.isNotEmpty() }?.let { add(it) } }
         }
         s.tally.forEach { add(Lines.tally(it, s)) }
         s.quiet?.let { add(Lines.quiet(it)) }
@@ -468,7 +468,7 @@ class ShopDayScriptTest {
                 // Every number a visit's lines may print is one the visit recorded.
                 val recorded = (v.considered.flatMap { k -> listOfNotNull(k.price, k.shortBy, k.shortBy?.let { k.price - it }) } + r.shelfPrices.values +
                     listOfNotNull(v.sale?.listedPrice, v.sale?.cashPaid, v.sale?.tradeInCredit, v.sale?.saleBonus)).toSet()
-                val text = listOf(Lines.customer(v, content), Lines.decision(v, s, content)) + v.considered.map { Lines.considered(it, s) }
+                val text = listOf(Lines.customer(v, content), Lines.decision(v, s, content)) + v.considered.map { Lines.weighed(it) }
                 for (line in text) {
                     lines++
                     val stripped = (bladeNames + listOfNotNull(c?.equipped?.name, c?.name)).fold(line) { acc, name -> acc.replace(name, "") }
@@ -514,7 +514,6 @@ class ShopDayScriptTest {
         assertEquals("Bought a blade for 45 gold. Their old blade came back in part payment: 5 gold off, 40 gold in coin.", line(sale.copy(customer = null, purchasedWeaponId = WeaponId("gone"))))
         assertEquals("Hero h2, Guardian. Carries Iron Bow.", Lines.customer(sale, content))
         assertEquals("Hero h3, Guardian, a regular. Carries no weapon.", Lines.customer(bought(2, "h3", "a", regular = true), content))
-        assertEquals("Iron Sword, 60 gold: beyond their purse; short by 12 gold", Lines.considered(dear.considered.single(), day))
         // A refusal's heading leads with the recorded gap; without a price on record it is the plain label, never a guess.
         assertEquals("12 gold short of the cheapest blade", Lines.headline(dear, day))
         assertEquals("could afford nothing on the shelf", Lines.headline(dear, day.copy(prices = emptyMap())))
@@ -533,7 +532,7 @@ class ShopDayScriptTest {
         assertEquals("Bronze Axe is not a weapon for a Guardian.", line(left(4, "h5", VisitReason.NOT_SUITED, listOf(Considered(WeaponId("b"), 30, listOf(VisitFactor.OFF_CLASS))))))
         assertEquals("Bronze Axe at 300 gold is more than they hold fair.", line(left(5, "h6", VisitReason.OVERPRICED, listOf(Considered(WeaponId("b"), 300, listOf(VisitFactor.ABOVE_THEIR_CEILING))))))
         assertEquals("Balked at the price.", line(left(5, "h6", VisitReason.OVERPRICED)))
-        assertEquals("Collected the commissioned Iron Sword and paid 140 gold.", line(patron(6, "h7", "a")))
+        assertEquals("Collected the requested Iron Sword and paid 140 gold.", line(patron(6, "h7", "a")))
         assertEquals("Paid 90 gold for Bronze Axe and carried it off.", line(collector(7, "b")))
         VisitReason.entries.forEach { assertTrue(Lines.reason(it).isNotBlank()) }
         VisitFactor.entries.forEach { assertTrue(Lines.factor(it).isNotBlank()) }

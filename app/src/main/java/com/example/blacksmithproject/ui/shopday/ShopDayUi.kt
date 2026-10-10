@@ -293,7 +293,7 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
         beats += Beat.Fallen(state.endCause, day)
     } else {
         if (ending == Ending.BLESSING) beats += Beat.Blessing(state.pendingBlessingOffer.map { id -> content.blessing(id).let { BlessingUi(id, it.name, it.description) } })
-        val line = lead?.let { Lines.lead(it, state, content, config) }
+        val line = lead?.let { Lines.lead(it, state, content, config, evening = true) }
         val toSiege = state.town.nextSiegeDay - state.day
         beats += Beat.Tomorrow(
             day = state.day, gold = state.gold, shelf = state.listedWeapons().size, storage = state.storedWeapons().size,

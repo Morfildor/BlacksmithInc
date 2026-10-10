@@ -3719,7 +3719,8 @@ two day numbers, and Skip was explained as "to tomorrow" in one place and "to th
   when heroes only rested or patrolled gets no card. A day with one card about one hero still does not count the others'
   fights (the card says "N more in the Gazette" when there are more).
 - One word for where Skip lands: "the evening" (the day's last card, where "Begin day N" waits).
-- "Requests" is the word on the till and the receipt ("Request payment", "REQUEST PAID"); core's sentences and the Gazette
-  still say "commission". A full vocabulary pass is a later batch.
+- "Requests" is the word on the till, the receipt and the card's own sentences ("Request payment", "REQUEST PAID",
+  "Collected a requested blade"). The Gazette and the saved event records still say "commission"; changing saved sentences
+  is left to a full vocabulary pass.
 - A guild's stipend reads "Of that, paid by their guild" with no plus sign: it is part of the price, so the receipt's rows
   now add up to the total (the earlier "+N" row did not).

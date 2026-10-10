@@ -26,7 +26,7 @@ object Lines {
         VisitReason.WORN_OUT -> "replaced a worn blade"
         VisitReason.GREAT_FIT -> "found a blade that suits"
         VisitReason.GOOD_ENOUGH -> "bought a better blade"
-        VisitReason.COMMISSION_DELIVERED -> "collected a commission"
+        VisitReason.COMMISSION_DELIVERED -> "collected a requested blade"
         VisitReason.COLLECTOR_PURCHASE -> "bought for a collection"
         VisitReason.TASTE_MATCH -> "took a blade of their favoured element"
         VisitReason.PRIZED -> "took a prize for their collection"
@@ -61,12 +61,6 @@ object Lines {
         val worn = visit.considered.any { VisitFactor.OWN_BLADE_WORN in it.factors }
         return "$who. " + (c.equipped?.let { "Carries ${if (worn) "a worn " else ""}${it.name}." } ?: "Carries no weapon.")
     }
-
-    /** One blade a visitor weighed: "Iron Sword, 60 gold: suits their class, beyond their purse; short by 12 gold". */
-    fun considered(item: Considered, day: ShopDayScript): String =
-        listOfNotNull(day.blade(item.weaponId)?.name, "${item.price} gold").joinToString(", ") +
-            (if (item.factors.isEmpty()) "" else ": " + item.factors.joinToString(", ") { factor(it) }) +
-            (item.shortBy?.let { "; short by $it gold" } ?: "")
 
     private val against = setOf(VisitFactor.OFF_CLASS, VisitFactor.NOT_STRONGER_THAN_OWN, VisitFactor.CANNOT_AFFORD, VisitFactor.ABOVE_THEIR_CEILING, VisitFactor.THREAT_RESISTS)
 
@@ -126,7 +120,7 @@ object Lines {
                 if (own != null) blade?.let { "$it is stronger than their $own." } else "Came in unarmed.".takeIf { with(VisitFactor.UNARMED) != null },
                 bought(blade, sale),
             )
-            VisitReason.COMMISSION_DELIVERED -> listOf(sale?.let { "Collected the commissioned ${blade ?: "blade"} and paid ${it.cashPaid} gold." })
+            VisitReason.COMMISSION_DELIVERED -> listOf(sale?.let { "Collected the requested ${blade ?: "blade"} and paid ${it.cashPaid} gold." })
             VisitReason.COLLECTOR_PURCHASE -> listOf(sale?.let { "Paid ${it.cashPaid} gold for ${blade ?: "a blade"} and carried it off." })
             VisitReason.TASTE_MATCH -> listOf(sidegrade(blade, own, "it is of the element they favour"), bought(blade, sale))
             VisitReason.PRIZED -> listOf(sidegrade(blade, own, "fine work is what they collect"), bought(blade, sale))
@@ -174,7 +168,7 @@ object Lines {
     fun tally(group: TallyGroup, day: ShopDayScript): String {
         val n = group.visits.size
         return when (group.outcome) {
-            TallyOutcome.COMMISSION -> "$n collected a commission"
+            TallyOutcome.COMMISSION -> "$n collected a requested blade"
             TallyOutcome.COLLECTOR -> "$n sold to a collector"
             TallyOutcome.LEFT -> "$n ${reason(group.reason ?: VisitReason.UNDECIDED)}"
             TallyOutcome.BOUGHT -> "$n bought" + (group.visits.singleOrNull()?.let { v -> day.blade(v.purchasedWeaponId)?.let { b -> v.sale?.let { " (${b.name}, ${it.cashPaid} gold)" } } } ?: "")
@@ -230,8 +224,11 @@ object Lines {
         card.materialId?.let { content.materialById[it] }?.let { "Brought back ${it.name}." }?.takeIf { card.kind == AftermathKind.SCARCE_LOOT || card.kind == AftermathKind.ELITE_SLAIN },
     ).joinToString(" ")
 
-    /** The lead in words. Names come from [state]; a name that is gone drops its clause. */
-    fun lead(lead: Lead, state: GameState, content: ContentCatalog, config: BalanceConfig): LeadLine {
+    /**
+     * The lead in words. Names come from [state]; a name that is gone drops its clause. [evening] is the card that ends
+     * the day the lead was drawn from: there the day just watched is "today", on the next morning's Shop "yesterday".
+     */
+    fun lead(lead: Lead, state: GameState, content: ContentCatalog, config: BalanceConfig, evening: Boolean = false): LeadLine {
         val hero = lead.heroId?.let { state.heroes[it]?.fullName }
         val asked = lead.commissionId?.let { state.commissions[it] }?.let { Commissions.describe(it, content, config) }
         val faction = lead.factionId?.let { content.factionById[it]?.name }
@@ -251,7 +248,7 @@ object Lines {
             LeadKind.FORGE_STOCK -> LeadLine("Forge something to sell", "The shelf and the storeroom are empty.")
             LeadKind.PRICES_TOO_HIGH -> LeadLine(
                 "Lower a price",
-                listOfNotNull(lead.count?.let { "${count(it, "customer")} left over the price yesterday" }, lead.gold?.let { "the cheapest blade is $it gold" }).joinToString("; ").ifEmpty { null }?.plus("."),
+                listOfNotNull(lead.count?.let { "${count(it, "customer")} left over the price ${if (evening) "today" else "yesterday"}" }, lead.gold?.let { "the cheapest blade is $it gold" }).joinToString("; ").ifEmpty { null }?.plus("."),
             )
             LeadKind.ARM_DEFENDERS -> LeadLine(
                 "Arm the defenders",

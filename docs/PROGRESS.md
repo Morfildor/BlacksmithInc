@@ -433,12 +433,13 @@ the rebase, so they show the older backdrop and rarity pips.
   preview and all four are covered by the ledger test only where the fixture days produce them (the test requires a request
   and a held siege among them; a stipend row, a collector's receipt and a tribute row are not asserted to occur).
 - The reveal's fade cannot be told from a device test (a faded node is still "displayed"); the film above is the evidence.
-- The evening card's lead still says "yesterday" for the day just watched ("3 customers left over the price yesterday"): the
-  line is written for the next morning's Shop, where it is right. Left alone.
 - The summary card counts fights only. Rests, patrols and guild days are not mentioned, and on a day with one card about one
   hero the others' fights are still only in the Gazette.
-- "Requests" is now the till's and the receipt's word, but core's sentences on the same card still say "Collected a
-  commission". A vocabulary pass is a later batch.
+- Fixed afterwards, the same evening (JVM tests only, not looked at on a device; 141 app tests and the full core suite pass):
+  the evening card's lead says "left over the price today" (the next morning's Shop still says "yesterday"); a request's card
+  and the tally say "Collected a requested blade" and "Collected the requested Iron Spear and paid 110 gold." (they said
+  "commission"); the unused `Lines.considered` is removed and its tests read `Lines.weighed`. The Gazette and the event
+  records still say "commission": those are saved sentences, and a vocabulary pass over them is a later batch.
 - On a sale card at 360x640 with text 1.3 the reason and the receipt are below the fold (the band, the coin and "Earned today"
   are above it).
 - The emulator hung once in "not responding" dialogs after a cold boot while the machine was busy; it was restarted (this
