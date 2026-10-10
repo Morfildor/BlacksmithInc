@@ -125,7 +125,9 @@ fun StorageList(
     var picked by remember { mutableStateOf(emptySet<WeaponId>()) }
     var asking by remember { mutableStateOf<StockAction?>(null) }
     val shown = remember(storage, filter) { storage.shown(filter) }
-    val chosen = remember(shown, picked) { shown.map { it.weapon.id }.filter { it in picked } }
+    // A blade kept for an order can be neither salvaged, scrapped nor given away: it is never among the chosen.
+    val free = remember(shown) { shown.filter { it.promised == null }.map { it.weapon.id } }
+    val chosen = remember(free, picked) { free.filter { it in picked } }
     val select = selecting && terms != null
 
     Column(modifier.fillMaxWidth().navigationBarsPadding()) {
@@ -145,7 +147,7 @@ fun StorageList(
                     if (terms != null && storage.isNotEmpty()) Row(Modifier.padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                         if (!selecting) SecondaryActionButton("Select blades", { selecting = true }, Modifier.testTag("storage_select"))
                         else {
-                            SecondaryActionButton("Select all shown (${shown.size})", { picked = picked + shown.map { it.weapon.id } }, Modifier.weight(1f).testTag("storage_select_all"))
+                            SecondaryActionButton("Select all shown (${free.size})", { picked = picked + free }, Modifier.weight(1f).testTag("storage_select_all"))
                             SecondaryActionButton("Done", { selecting = false; picked = emptySet() }, Modifier.testTag("storage_select_done"))
                         }
                     }

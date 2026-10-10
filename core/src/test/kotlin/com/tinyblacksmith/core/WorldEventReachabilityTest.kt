@@ -1,5 +1,7 @@
 package com.tinyblacksmith.core
 
+import com.tinyblacksmith.core.content.LaunchContent
+import com.tinyblacksmith.core.engine.Encounters
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.WorldEvents
 import com.tinyblacksmith.core.legacy.LegacyOutcome
@@ -8,6 +10,7 @@ import com.tinyblacksmith.core.model.LegacyProfile
 import com.tinyblacksmith.core.sim.Policy
 import com.tinyblacksmith.core.sim.SimulationDriver
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -66,7 +69,10 @@ class WorldEventReachabilityTest {
         val table = (pooled + rules.keys).joinToString("\n") { id -> "  %-22s new account %4d of $perCohort runs, veteran account %4d".format(id, fresh[id] ?: 0, old[id] ?: 0) }
         println("World events seen in $perCohort + $perCohort runs (policies ${policies.joinToString { it.name }}):\n$table")
 
-        val unreachable = (pooled + rules.keys).filter { id ->
+        // An event that comes as a morning visitor in the launch catalogue no longer fires by itself; its reachability is the visitor's (EncountersTest, the simulator's depth table).
+        val asVisitors = pooled.filter { Encounters.replaces(LaunchContent.catalog, it) }
+        assertEquals(setOf("collector", "wandering_master", "merchant_festival"), asVisitors.toSet())
+        val unreachable = (pooled - asVisitors.toSet() + rules.keys).filter { id ->
             val seenWhereItMust = if (id in needsAHistory) old[id] ?: 0 else fresh[id] ?: 0
             seenWhereItMust == 0
         }

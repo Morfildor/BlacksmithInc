@@ -1,5 +1,10 @@
 package com.example.blacksmithproject.ui.detail
 
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Spacer
+import com.example.blacksmithproject.ui.wholePixelDp
+import com.example.blacksmithproject.ui.PixelImage
+import com.example.blacksmithproject.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -40,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.Secondary
+import com.example.blacksmithproject.ui.promisedLine
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.Element
@@ -76,6 +82,8 @@ data class Stock(
     val canHone: Boolean,
     val donate: String,
     val canDonate: Boolean,
+    /** "Kept for X's order" for a blade bound to an open order: it cannot be listed, salvaged or given away. Null otherwise. */
+    val promised: String? = null,
 )
 
 /** A stock change the player asked for. The sheet only reports it; the caller turns it into a command. */
@@ -230,11 +238,13 @@ private fun GameEngine.stock(state: GameState, w: Weapon): Stock {
     return Stock(
         listedPrice = w.listedPrice,
         suggestedPrice = suggestedPrice(w),
-        salvage = "Salvage (${config.salvageEnergy} energy, returns 1 $core)",
+        // With the Salvager's Crucible ready and a blade fine enough, the engine also gives the augment back.
+        salvage = "Salvage (${config.salvageEnergy} energy, returns 1 $core" + (if (salvageKeepsAugment(state, w)) ", also returns ${content.materialById[w.augmentId]?.name ?: w.augmentId.value}" else "") + ")",
         hone = if (!w.canBeHoned) "Honed" else "${if (w.honed) "Re-hone" else "Hone"} (${config.honeEnergy} energy, 1 $core)",
         canHone = w.canBeHoned,
         donate = if (room > 0) "Arm the watch (+${minOf(armoryValue(w), room)} defense)" else "Arm the watch (armory full)",
         canDonate = room > 0,
+        promised = promisedLine(state, w),
     )
 }
 
@@ -310,6 +320,14 @@ fun ItemDetailContent(
 private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onStock: (StockAction) -> Unit) {
     var priceText by rememberSaveable(weaponId.value, stock.listedPrice) { mutableStateOf((stock.listedPrice ?: stock.suggestedPrice).toString()) }
     val price = priceText.toIntOrNull() ?: 0
+    // A blade kept for an order stays where it is: the engine refuses to list it, melt it or give it away.
+    val free = stock.promised == null
+    stock.promised?.let {
+        Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+            PixelImage(R.drawable.icon_promised, wholePixelDp(48, 24.dp), description = null)
+            Text("$it. It stays in storage until the order is collected.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("item_promised"))
+        }
+    }
     Secondary(stock.listedPrice?.let { "Asking $it gold. Suggested price ${stock.suggestedPrice} gold." } ?: "In storage. Suggested price ${stock.suggestedPrice} gold.")
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
         StepButton("−10", "Lower price by 10") { priceText = (price - 10).coerceAtLeast(0).toString() }
@@ -328,12 +346,16 @@ private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onSt
             PrimaryActionButton("Set price", { onStock(StockAction.SetPrice(price)) }, Modifier.testTag("item_set_price"), enabled)
             OutlinedButton(onClick = { onStock(StockAction.Unlist) }, enabled = enabled, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 52.dp).testTag("item_unlist")) { Text("Unlist") }
         } else {
-            PrimaryActionButton("List at $price", { onStock(StockAction.ListAt(price)) }, Modifier.testTag("item_list"), enabled)
+            PrimaryActionButton("List at $price", { onStock(StockAction.ListAt(price)) }, Modifier.testTag("item_list"), enabled && free)
         }
     }
-    TextButton(onClick = { onStock(StockAction.Salvage) }, enabled = enabled, modifier = Modifier.heightIn(min = 48.dp).testTag("item_salvage")) { Text(stock.salvage) }
-    TextButton(onClick = { onStock(StockAction.Hone) }, enabled = enabled && stock.canHone, modifier = Modifier.heightIn(min = 48.dp).testTag("item_hone")) { Text(stock.hone) }
-    TextButton(onClick = { onStock(StockAction.Donate) }, enabled = enabled && stock.canDonate, modifier = Modifier.heightIn(min = 48.dp).testTag("item_donate")) { Text(stock.donate) }
+    TextButton(onClick = { onStock(StockAction.Salvage) }, enabled = enabled && free, modifier = Modifier.heightIn(min = 48.dp).testTag("item_salvage")) { Text(stock.salvage) }
+    TextButton(onClick = { onStock(StockAction.Hone) }, enabled = enabled && stock.canHone, modifier = Modifier.heightIn(min = 48.dp).testTag("item_hone")) {
+        PixelImage(R.drawable.icon_action_hone, wholePixelDp(48, 24.dp), description = null); Spacer(Modifier.width(Space.xs)); Text(stock.hone)
+    }
+    TextButton(onClick = { onStock(StockAction.Donate) }, enabled = enabled && free && stock.canDonate, modifier = Modifier.heightIn(min = 48.dp).testTag("item_donate")) {
+        PixelImage(R.drawable.icon_action_donate, wholePixelDp(48, 24.dp), description = null); Spacer(Modifier.width(Space.xs)); Text(stock.donate)
+    }
 }
 
 @Composable

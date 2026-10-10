@@ -3660,3 +3660,154 @@ game first, the checks after. This also answers open decision 12 above ("Storage
 - Town's champions on day 1: the stored champion list is filled by the first End Day, so Town showed three empty
   places on the first morning. Town now shows the engine's forecast for today (the same pick End Day stores).
 
+
+
+## Gameplay depth: visitors, relics, siege traits; balance 10 (2026-10-10)
+
+Source: the gameplay review of 2026-10-10 and its implementation prompt (first coherent release, delivery step 3). The
+plan with the full tables of options, costs and limits is `docs/GAMEPLAY_DEPTH_PLAN.md`. Built on the branch
+`gameplay-depth`, cut from `post-0.7.0`. Versions: rules 3 -> 4, save schema 4 -> 5, content 3 -> 4, balance 9 -> 10.
+Every number below is PROPOSED and lives in `BalanceConfig.depth` or the content tables in `content/Depth.kt`.
+
+**Rulings.**
+- **Morning visitors.** At most one a morning from day 2, on 75% of mornings, drawn on a new RNG stream (`ENCOUNTERS`)
+  so no other stream moves. The visitor is stored in the save with every subject it names; the answer is one command,
+  idempotent per command ID; an unanswered visitor gets the stated free answer at End Day. Presentation never answers.
+- **Three automatic events became visitors** (`wandering_master`, `collector`, `merchant_festival`). The old event can
+  no longer fire, and the visitor counts against the old event's limit, so nothing pays twice.
+- **Relics.** Three slots. Offers: three of the four on day 1, one after sieges 2 and 4 whether won or lost, one for a
+  won wager. A full workshop must name the relic it gives up. "Decide later" keeps the offer; End Day does not wait.
+- **Siege traits.** The first siege is plain. From the second, 70% carry a trait, drawn when that siege is scheduled
+  and named in the first warning. The besieging faction is fixed at the first warning (before, it was read on the day).
+  Forecast and fight read the same `Battle.outlook`.
+- **The chain.** A pledged blade (half reward) is remembered; the morning after the next siege the hero returns
+  (`debt_repaid`: collect, forgive for militia and reputation, or have them speak for the forge), or a record says why
+  not (dead, retired, parted with the blade, order lapsed).
+- **Old saves.** Schema 4 saves load: the new stream is seeded from the stored seed, every new field starts empty, the
+  siege after next is the first that can carry a trait. A 0.7.0 run gets the starting relic offer on its next morning,
+  and an offer for siege 2 or 4 it has already fought on the mornings after that, one at a time.
+- **Matched baseline.** `--noDepth` plays rules 4 without visitors, relics, traits or the committed besieger. Its
+  plain smith (mean 22.5, median 20) equals the balance 8 / 9 tables, so the pairs below compare like with like. The
+  seeds are the same; the days are not identical day for day after the first visitor, because a different choice
+  changes what later draws mean.
+
+**Numbers changed during tuning (small sweeps, 200 to 500 seeds), with the reason.**
+- Master and collector visitors: at most 2 a run, as the events they replace (3 broke an invariant).
+- Crooked merchant: price is 55% of a clean blade's asking but never below the supplier price of its core and augment
+  (buy-and-melt paid).
+- Smith's wager: needs a blade forged after the bet (a bought one counted) at SUPERB or better (FINE was automatic).
+- Chain: "parted" means the hero no longer owns the blade (was: no longer wields it; a spare ended the chain).
+- Long Assault: condition floor x0.6 (was 0.5); wear x2. Many Breaches: watch and militia x1.75; raid x1.05 (was 1.1).
+- Collector's Seal: a sale of 100 gold or more (was 80). Cracked family blade: weight 4 and a third kind of heir.
+
+### The gate: 10,000 seeds from base seed 1, without -> with the new systems
+
+Days are p10 / median / mean / p90. New account unless stated.
+
+| Policy | Days without | Days with | Gold earned, median | Sieges won a run |
+|---|---|---|---|---|
+| BALANCED_FAIR | 15/20/22.5/30 | 20/25/25.2/30 | 3,039 -> 3,708 | 1.46 -> 2.00 |
+| BALANCED_ACTIVE | 25/30/30.0/35 | 30/35/36.4/45 | 6,067 -> 8,189 | 2.78 -> 3.97 |
+| SYNERGY | 30/35/35.3/40 | 30/35/35.4/40 | 5,300 -> 5,653 | 3.89 -> 3.92 |
+| BALANCED_INVEST | 25/35/32.5/40 | 30/35/33.7/40 | 6,140 -> 6,597 | 3.26 -> 3.55 |
+| RANDOM | 15/25/25.5/35 | 20/30/27.2/35 | 4,115 -> 4,622 | 1.80 -> 2.16 |
+| BALANCED_EXPENSIVE | 10/15/14.0/20 | 10/15/15.7/20 | 1,493 -> 1,837 | 0.12 -> 0.27 |
+| NOVICE (bot) | 20/30/27.0/35 | 20/30/28.8/35 | 4,031 -> 4,371 | 2.07 -> 2.50 |
+| SIEGE_PREP (bot) | 40/45/43.4/50 | 40/45/45.1/50 | 8,735 -> 9,620 | 5.35 -> 5.65 |
+| EXPERT (bot) | 40/45/45.5/50 | 45/50/47.6/50 | 11,336 -> 12,686 | 5.70 -> 6.08 |
+| EXPERT_ACTIVE (bot) | 40/45/45.9/50 | 45/50/48.5/55 | 12,447 -> 13,851 | 5.70 -> 6.21 |
+| Maxed EXPERT | 50/55/54.6/60 | 50/55/56.0/60 | 14,069 -> 15,139 | 6.04 -> 6.29 |
+| Maxed EXPERT_ACTIVE | 50/55/56.1/60 | 55/60/57.6/60 | 16,176 -> 17,054 | 6.21 -> 6.49 |
+| Maxed BALANCED_FAIR | 30/40/37.4/40 | 35/40/37.9/40 | 6,664 -> 7,024 | 3.02 -> 3.16 |
+| Maxed BALANCED_ACTIVE | 40/45/44.0/50 | 45/50/48.7/55 | 10,450 -> 12,471 | 4.15 -> 5.01 |
+| Maxed SYNERGY | 40/45/45.4/50 | 40/45/45.6/50 | 7,377 -> 7,831 | 4.52 -> 4.56 |
+
+All 14 classic policies and all 14 bots are in `docs/gameplay_depth_evidence/` (the script that made them is `gate.sh` there); every one gains 0 to 6.4 mean
+days. No hard-lock day, no rejected command in any run (the bots send only what the engine offers).
+
+**Bands not met. Not relabelled, not retuned: owner decision.**
+- First-era band (BALANCED_FAIR median 20, mean at most 22.5): now median 25, mean 25.2. The update adds about 2.7
+  mean days to the plain smith. It was already over by 0.02 to 0.10.
+- Maxed account (median 35 to 45, at most 55): maxed EXPERT_ACTIVE median 60 (55 before), maxed BALANCED_ACTIVE 50
+  (45 before).
+- Options if the old band is wanted back: a lower visitor chance, dearer crates, or the earlier proposal
+  `raidPerDay` 6.5 -> 6.6. None applied.
+
+**Who chooses what (EXPERT; "adaptive" weighs the state, the others are fixed tastes).** Visitors come on 54% of the
+expert's days (26 a run) and 70% of the plain smith's (18 a run).
+
+| Visitor | A run | Adaptive bot | Take-everything bot (BALANCED_FAIR) |
+|---|---|---|---|
+| last_crate | 6.0 | crate 89%, pass 11%, metal never | crate 100% |
+| festival_contract | 4.0 | watch 78%, stall 22% | stall 100% |
+| blade_for_the_wall | 3.3 | pledge 93%, patron 7% | pledge 100% |
+| crooked_merchant | 3.0 | inspect 89% of visits, buy 22%, leave 78% | buy unseen 100% |
+| smiths_wager | 3.0 | order 67%, wager 32% | wager 100% |
+| debt_repaid | 2.3 | forgive 96%, collect 3%, speak 2% | collect 100% |
+| masters_afternoon | 2.0 | pass 83%, study 16%, lesson never | study 100% |
+| collectors_offer | 2.0 | keep 81%, sell 19% | sell 100% |
+| cracked_family_blade | 0.2 | restore 94% (blocked on 68% of offers) | collector 94% |
+
+By taste, EXPERT / BALANCED_ACTIVE mean days: decline all 47.0 / 32.7, cash 47.3 / 32.3, defense 47.4 / 35.3,
+first option 47.3 / 36.4, adaptive 47.6 / 37.6. Median gold: decline 11,891 / 6,686, cash 12,945 / 7,139,
+adaptive 12,686 / 8,724. For the expert the visitors move survival by half a day and gold by about 9%; for the
+active smith by five days and 30%.
+
+**Dead or dominated options (bots are scripted, so "never" means no bot's rule prefers it, not that no player would).**
+- `masters_afternoon / lesson` (60 gold for a clue rung): no bot ever took it. `last_crate / metal`: never taken by the
+  adaptive bot, 0 to 15% by others.
+- `smiths_wager`: won 94 to 98% of the times it is taken (2.23 of 2.28 for the plain smith). At SUPERB it is still
+  close to a free relic offer for a bot that forges for it.
+- `cracked_family_blade`: offered 0.13 to 0.27 times a run; "restore" is blocked on 51 to 94% of offers (no energy or
+  no core), and pays about half of what the collector pays for the same blade.
+- `debt_repaid`: the hero comes back for 70% of pledges (2.29 of 3.03 for the expert); the rest: parted 0.08,
+  retired 0.10, dead 0.01 a run. "Speak for the forge" is chosen 2% of the time.
+
+**Relics (EXPERT / BALANCED_ACTIVE mean days, one relic only, against none at 46.8 / 34.2).**
+
+| Relic | Mean days | Use a run |
+|---|---|---|
+| ashen_bellows | 48.9 / 36.3 | 46 / 34 bellows forges |
+| salvagers_crucible | 47.3 / 35.9 | 43 / 31 augments returned |
+| tempering_ledger | 46.9 / 35.4 | 62 / 129 forges with a bonus |
+| collectors_seal | 46.9 / 34.4 | 24 / 16 seals, 7.7 / 5.0 materials |
+| first three offered | 48.9 / 36.4 | |
+| adaptive (never takes the bellows) | 47.6 / 37.1 | |
+
+Combinations of three (EXPERT, relic preference "first", about 2,500 runs each): mean days 49.1 to 49.5 for the three
+that hold the bellows, 47.5 for the one without. The Ashen Bellows is the strongest single relic, the Collector's Seal
+and Tempering Ledger change survival by a tenth of a day for the expert. No combination stands out beyond the bellows.
+
+**Siege traits (sieges fought and won, 10,000 runs).** "Plain" includes the first siege, which is the easiest, so the
+gap overstates the traits.
+
+| Policy | Plain | Many Breaches | Long Assault |
+|---|---|---|---|
+| BALANCED_FAIR | 56% | 30% | 23% |
+| NOVICE | 53% | 39% | 33% |
+| BALANCED_ACTIVE | 63% | 54% | 44% |
+| EXPERT | 71% | 63% | 57% |
+
+**Exploit probes (1,000 seeds, `--probe`), all pass.**
+- Crucible forge-and-melt loop, new account: largest one-day gain in gold plus materials 0; never two returns a day;
+  never from a blade below fine.
+- Same on a maxed account: 49 beyond one spared augment, against 125 for the same loop with no relic. The gain comes
+  from Thrifty Hands (a spared core comes back from the melt), which is older than this update; the probe now measures
+  against that control. Noted for the owner as existing behaviour: it costs 3 energy a cycle.
+- Watch bounty: bound 240 gold a run, most paid 240. Merchant blade: of 1,000 bought, none worth more melted than paid
+  (best: 0 with the crucible, -7 without); scrapping one returns nothing.
+- Collector's Seal: none from 37,989 blades given away, none from 4,438 commissions, none from 1,000 collector sales;
+  never two a day.
+
+**Changed assumptions.**
+- `ShopRecordTest`: the largest ten-visitor day was bounded at 12,288 bytes (12,191 measured at balance 9); the seeds
+  now reach other days, 12,370 at the largest, and the bound is 12,800. A visit records nothing new.
+- Six played scenario saves were found again on new seeds (their old seeds no longer reach the situation).
+- `WorldEventsAndGenerationsTest`: runs now outlive the 30-day routine record window; the one-event-a-day check
+  counts inside the window.
+- A new run opens with the relic offer, so `smoke.sh`, `runend.sh` and the instrumented tests meet a dialog they do
+  not expect. `scenarios.sh` passes it; the other three are not updated and were not run.
+
+**Not built (as the prompt defers).** The rest of the encounter catalogue, ventures and recovery, a rival smith as a
+system, richer seasons, challenge tiers, distinct catalysts, the Never-listed filter. Visitor portraits and relic
+icons: the sheet shows the heroes' and blades' own art; the wanted lists are in `Assets/*/WANTED.txt`.

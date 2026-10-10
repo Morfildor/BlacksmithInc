@@ -5,8 +5,6 @@ import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.content.MaterialDef
-import com.tinyblacksmith.core.content.ToolEffect
-import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.content.WeaponFamilyDef
 import com.tinyblacksmith.core.crafting.SignatureCatalog
 import com.tinyblacksmith.core.engine.Command
@@ -129,6 +127,12 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
 
     fun noteRejected() = inc(BotCounter.REJECTED)
 
+    /** The next forge is one a visitor's answer asked for ([DepthPlay.obligationForge]), not this bot's own. */
+    fun noteDuty() { source = null }
+
+    /** Whether the family of the forge last chosen was the classic recipe's, so a relic may trade it for another. */
+    val familyFree: Boolean get() = source == null
+
     fun start(state: GameState): GameState = rules.startingGold?.let { state.copy(gold = it) } ?: state
 
     /** Before the forge: the spendthrift's tools, the scarce bot's stockpile. */
@@ -157,13 +161,11 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
     /** Energy, materials on hand or in stock, and gold: the command the engine will accept. */
     private fun feasible(state: GameState, cmd: Command.Forge) = state.energy >= cost(cmd) && d.obtainable(state, *mats(cmd))
 
-    private fun affinity(core: MaterialDef, augment: MaterialDef, family: WeaponFamilyDef) =
-        (content.coreAugmentAffinity[core.id to augment.id] ?: 0) + (content.augmentFamilyAffinity[augment.id to family.id] ?: 0)
+    private fun affinity(core: MaterialDef, augment: MaterialDef, family: WeaponFamilyDef) = Recipes.affinity(content, core, augment, family)
 
     /** The quality a forge averages (the roll is uniform in plus or minus the spread): formula of `Forge.apply` without roll, exceptional or defect. */
     private fun expectedQuality(state: GameState, family: WeaponFamilyDef, core: MaterialDef, augment: MaterialDef, catalyst: Boolean): Int =
-        cfg.qualityBase + cfg.qualityPerCoreTier * core.tier + cfg.qualityPerAugmentTier * augment.tier + affinity(core, augment, family) +
-            engine.upgradeTotal(state.legacy, UpgradeEffect.QUALITY_BONUS) + engine.toolTotal(state, ToolEffect.QUALITY_BONUS) + (if (catalyst) cfg.catalystQualityBonus else 0)
+        Recipes.expectedQuality(engine, state, family, core, augment, catalyst)
 
     /** Chance the roll lifts [expected] to [floor]. */
     private fun reachChance(expected: Int, floor: Int) = ((cfg.qualityRollSpread + expected - floor + 1) / (2.0 * cfg.qualityRollSpread + 1)).coerceIn(0.0, 1.0)
@@ -282,7 +284,7 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
         }
         reserved = ids
         // A blade somebody asked for must reach the shelf: when it is full, the weakest listed blade nobody asked for makes room.
-        var waiting = s.storedWeapons().count { it.id !in ids && asked(s, it) } - (engine.shelfSlots(s) - s.listedWeapons().size)
+        var waiting = d.freeStock(s).count { it.id !in ids && asked(s, it) } - (engine.shelfSlots(s) - s.listedWeapons().size)
         for (w in s.listedWeapons().filter { !asked(s, it) }.sortedBy { it.power }) {
             if (waiting-- <= 0) break
             s = send(s, Command.ToggleShelf(w.id, false))
@@ -298,7 +300,7 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
 
     /** The stored weapons in listing order, without the ones kept for a request; a requests bot lists what was asked for first. */
     fun stockToList(state: GameState): List<Weapon> {
-        val stored = state.storedWeapons().filter { it.id !in reserved }
+        val stored = d.freeStock(state).filter { it.id !in reserved }
         val ordered = if (policy.active || (rules.siegePrep && inWindow(state))) stored.sortedByDescending { it.power } else stored
         return if (rules.requests) ordered.sortedByDescending { asked(state, it) } else ordered
     }
@@ -328,7 +330,7 @@ internal class BotPlay(private val d: SimulationDriver, private val policy: Poli
     fun evening(state: GameState): GameState {
         if (!rules.siegePrep || !inWindow(state)) return state
         var s = state
-        for (w in s.storedWeapons().filter { it.id !in reserved }.sortedByDescending { it.power }) {
+        for (w in d.freeStock(s).filter { it.id !in reserved }.sortedByDescending { it.power }) {
             if (s.town.armory >= cfg.armoryMax) break
             val outlook = engine.siegeForecast(s) ?: break
             if (outlook.townDefense >= outlook.raidPower * SIEGE_MARGIN) break
@@ -586,8 +588,9 @@ object EraPlay {
     fun run(
         engine: GameEngine, policies: List<Policy>, accounts: Int, baseSeed: Long, eras: Int, rule: BuyRule, start: LegacyProfile = LegacyProfile(),
         maxDays: Int = engine.config.maxSimulatedDays, reserve: Int = SimulationDriver.DEFAULT_RESERVE, blessing: BlessingPref? = null,
+        encounters: EncounterPref? = null, relic: RelicPref? = null,
     ): List<EraPlaySummary> {
-        val driver = SimulationDriver(engine, maxDays = maxDays, reserve = reserve, blessing = blessing)
+        val driver = SimulationDriver(engine, maxDays = maxDays, reserve = reserve, blessing = blessing, encounters = encounters, relic = relic)
         return policies.map { p ->
             val runs = IntStream.range(0, accounts).parallel().mapToObj { i -> account(driver, p, baseSeed + i, eras, rule, start) }.collect(Collectors.toList())
             EraPlaySummary.of(p, rule.label, runs)

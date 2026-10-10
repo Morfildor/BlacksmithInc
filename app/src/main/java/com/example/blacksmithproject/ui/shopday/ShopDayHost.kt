@@ -87,7 +87,8 @@ fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel) {
             if (detail == null) LaunchedEffect(sheet) { vm.closeSheet() }
             else ItemDetailSheet(detail, planning = false, openHero, onStock = {}, onDismiss = vm::closeSheet, enabled = false)
         }
-        null -> Unit
+        // The visitor is answered in planning: a sheet left open from there is not shown over the day.
+        Sheet.Visitor, null -> Unit
     }
     if (s.gazetteOpen && day != null) DayReportDialog(s.state, day, vm, reducedMotion)
     replay?.let { ReplayOverlay(it, onClose = { watching = null }) }

@@ -211,6 +211,6 @@ class NameGenerationTest {
 
     @Test
     fun theStreamSetIsUnchanged() {
-        assertEquals(listOf("CRAFTING", "HEROES", "PURCHASES", "COMBAT", "FACTIONS", "EVENTS", "LEGACY", "WORLD"), RngStream.entries.map { it.name })
+        assertEquals(listOf("CRAFTING", "HEROES", "PURCHASES", "COMBAT", "FACTIONS", "EVENTS", "LEGACY", "WORLD", "ENCOUNTERS"), RngStream.entries.map { it.name })
     }
 }

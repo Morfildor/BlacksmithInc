@@ -72,6 +72,7 @@ import com.example.blacksmithproject.ui.theme.ForgePanel
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.engine.Encounters
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.GameState
@@ -128,6 +129,9 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     onForgeThis = vm::forgeFor,
                     onForgeWant = vm::forgeFamily,
                     onOpenSupplies = { suppliesOpen = true },
+                    visitor = s.encounter, onOpenVisitor = { vm.openSheet(Sheet.Visitor) },
+                    relics = s.relics, relicSlots = if (vm.engine.content.relics.isEmpty()) 0 else vm.engine.config.depth.relicSlots,
+                    relicOffer = state.pendingRelicOffer.isNotEmpty(), onOpenRelicOffer = vm::reopenRelicOffer,
                 )
                 Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesOpen = true })
                 Dest.RECORDS -> RecordsPanel(s, vm)
@@ -153,6 +157,11 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     s.sheet?.let { DetailSheet(s, it, vm) }
     s.revealWeaponId?.let { ForgeResultDialog(s, it, vm, reducedMotion) }
     if (s.pendingBlessingOffer()) BlessingDialog(s, vm)
+    // One offer at a time: the blessing first, then the relic.
+    else if (s.pendingRelicOffer()) RelicDialog(
+        state.pendingRelicOffer.mapNotNull { vm.engine.content.relic(it) }, s.relics, vm.engine.config.depth.relicSlots, s.busy,
+        onChoose = vm::chooseRelic, onDecline = vm::declineRelics, onLater = vm::dismissRelicOffer,
+    )
     s.lastError?.let { ErrorDialog(it, vm::dismissError) }
 }
 
@@ -178,6 +187,12 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel) {
                 onStock = { vm.dispatch(it.toCommand(sheet.id)) },
                 onDismiss = vm::closeSheet, enabled = !s.busy,
             )
+        }
+        Sheet.Visitor -> {
+            // Open only while the visitor waits: an answer that sends them away closes it, the inspection does not.
+            val view = s.encounter?.takeIf { it.instance.isOpen }
+            if (view == null) LaunchedEffect(sheet) { vm.closeSheet() }
+            else EncounterSheet(view, st, s.busy, onCommit = vm::answerVisitor, onDismiss = vm::closeSheet)
         }
     }
 }
@@ -231,6 +246,10 @@ fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier:
 private fun UiState.Playing.pendingBlessingOffer() =
     state.pendingBlessingOffer.isNotEmpty() && revealWeaponId == null && blessingOfferDismissedDay != state.day
 
+/** The relic offer; it is shown only when the blessing dialog is not (the blessing comes first, and once that is put off the relic may be chosen). */
+internal fun UiState.Playing.pendingRelicOffer() =
+    state.pendingRelicOffer.isNotEmpty() && revealWeaponId == null && sheet == null && relicOfferDismissedDay != state.day
+
 /** First-run tips (GDD 3.3 onboarding): dismissed IDs live in settings, never in the save. */
 object Tips {
     data class Tip(val id: String, val body: String)
@@ -265,18 +284,23 @@ fun TipBanner(tip: Tips.Tip, vm: GameViewModel, modifier: Modifier = Modifier) {
 private fun EndDayButton(s: UiState.Playing, vm: GameViewModel) {
     val state = s.state
     val haptics = LocalHaptics.current
-    val note = when {
-        state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
-        state.commissions.values.any { it.status == CommissionStatus.OFFERED } -> "A commission is waiting"
-        state.overworkToday > 0 -> "Tomorrow starts ${state.overworkToday} energy short"
-        state.energy > 0 -> "${state.energy} energy unused"
-        else -> "Rest until dawn"
-    }
+    val note = endDayNote(state, s.encounter)
     PrimaryActionButton(
         "End Day", { haptics.play(Moment.END_DAY); vm.endDay() },
         Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.xs).testTag("end_day"),
         enabled = !s.busy, detail = note,
     )
+}
+
+/** What End Day will leave behind, most pressing first. An unanswered visitor is told the free answer; an offer waits for another day. */
+internal fun endDayNote(state: GameState, visitor: Encounters.View?): String = when {
+    state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
+    visitor?.instance?.isOpen == true -> "The visitor leaves tonight: ${visitor.defaultLabel}"
+    state.pendingRelicOffer.isNotEmpty() -> "A relic awaits your choice"
+    state.commissions.values.any { it.status == CommissionStatus.OFFERED } -> "A commission is waiting"
+    state.overworkToday > 0 -> "Tomorrow starts ${state.overworkToday} energy short"
+    state.energy > 0 -> "${state.energy} energy unused"
+    else -> "Rest until dawn"
 }
 
 @Composable

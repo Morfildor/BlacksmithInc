@@ -88,6 +88,7 @@ object WorldEvents {
     }
 
     fun canFire(ctx: ResolutionContext, def: WorldEventDef): Boolean {
+        if (Encounters.replaces(ctx.content, def.id)) return false   // it comes as a morning visitor now, under the same counter
         if ((ctx.eventCounters[def.id] ?: 0) >= def.maxPerRun) return false
         val last = ctx.eventLastDay[def.id]
         if (last != null && ctx.day - last <= def.cooldownDays) return false
@@ -117,17 +118,17 @@ object WorldEvents {
         return (ca + af).sorted()
     }
 
-    private fun keysInState(ctx: ResolutionContext, state: KnowledgeState, prefix: String = "") =
+    internal fun keysInState(ctx: ResolutionContext, state: KnowledgeState, prefix: String = "") =
         journalKeys(ctx).filter { it.startsWith(prefix) && ctx.legacy.journal.state(it) == state }
 
-    private fun setKnowledge(ctx: ResolutionContext, key: String, state: KnowledgeState) {
+    internal fun setKnowledge(ctx: ResolutionContext, key: String, state: KnowledgeState) {
         val j = ctx.legacy.journal
         val experiments = if (state == KnowledgeState.UNDERSTOOD) ctx.config.experimentsToUnderstand else maxOf(1, j.experiments[key] ?: 0)
         ctx.legacy = ctx.legacy.copy(journal = j.copy(interactions = j.interactions + (key to state), experiments = j.experiments + (key to experiments)))
     }
 
     /** Signatures the active catalog can forge (catalog order, so picks are deterministic). */
-    private fun forgeableSignatures(ctx: ResolutionContext) = SignatureCatalog.all.filter { s ->
+    internal fun forgeableSignatures(ctx: ResolutionContext) = SignatureCatalog.all.filter { s ->
         s.familyId in ctx.content.familyById && s.coreId in ctx.content.materialById && s.augmentId in ctx.content.materialById &&
             (s.catalystId == null || s.catalystId in ctx.content.materialById)
     }

@@ -152,7 +152,8 @@ class CommissionSituationsTest {
             for ((kind, n) in offers) assertTrue(n <= 0.40 * total, "$policy: $kind is $n of $total")
             offers.forEach { (k, n) -> all.merge(k, n, Int::plus) }
         }
-        assertEquals(CommissionKind.entries.map { it.name }.toSet(), all.keys, "every kind is offered in ordinary play: $all")
+        // WALL_PLEDGE and HEIRLOOM are only ever made by a morning visitor's answer (EncountersTest), never by the daily offer.
+        assertEquals((CommissionKind.entries - CommissionKind.WALL_PLEDGE - CommissionKind.HEIRLOOM).map { it.name }.toSet(), all.keys, "every kind is offered in ordinary play: $all")
     }
 
     @Test

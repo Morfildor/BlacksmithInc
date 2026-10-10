@@ -1,6 +1,7 @@
 package com.example.blacksmithproject.ui
 
 import androidx.compose.runtime.Immutable
+import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.ui.detail.Stat
 import com.example.blacksmithproject.ui.detail.weaponStats
 import com.example.blacksmithproject.ui.shopday.Beat
@@ -81,7 +82,12 @@ data class StockUi(
     val family: String = "",
     /** No hero has carried it this era and it is not a returned legend: forged here and never sold, ordered or handed back. */
     val unsold: Boolean = false,
+    /** "Kept for X's order" for a blade the engine holds back for an open order (it cannot be listed, salvaged, scrapped or given away); null otherwise. */
+    val promised: String? = null,
 )
+
+/** "Kept for Wren Kestrel's order": a blade bound to an open order (`Weapon.promisedTo`); null for any other blade. */
+fun promisedLine(state: GameState, w: Weapon): String? = w.promisedTo?.let { "Kept for ${GameViewModel.promisedBuyer(state, it) ?: "a patron"}'s order" }
 
 /** One line of "Who is buying": a count from `Demand.summary` under a fixed label, with the names when they are few. */
 @Immutable data class DemandRow(val label: String, val value: String, val detail: String? = null)
@@ -119,7 +125,7 @@ private fun GameEngine.favoured(familyId: WeaponFamilyId): String? {
     return if (fans.isEmpty()) null else "${fans.joinToString(" and ")} favour the ${content.family(familyId).name.lowercase()}"
 }
 
-private fun GameEngine.stock(w: Weapon, threat: ThreatUi?, era: Int) = StockUi(
+private fun GameEngine.stock(w: Weapon, threat: ThreatUi?, era: Int, promised: String? = null) = StockUi(
     w, Labels.weaponSummary(w, content), favoured(w.familyId), w.listedPrice, suggestedPrice(w),
     // A number with a ceiling is always said; one without (power, renown) only when there is any.
     stats = weaponStats(WeaponSnapshot.of(w)).filter { it.max != null || it.value > 0 },
@@ -128,6 +134,7 @@ private fun GameEngine.stock(w: Weapon, threat: ThreatUi?, era: Int) = StockUi(
     dormant = Lines.dormant(w.dormantAffixes, content),
     family = content.family(w.familyId).name,
     unsold = w.legendKey == null && Legacy.holders(w, era).isEmpty(),
+    promised = promised,
 )
 
 /** The besieger for the Shop's plate, the Forge's plate, the augment chips and the stock rows: `Threats` and `Lines`, plus the day count in words. */
@@ -203,7 +210,7 @@ fun GameEngine.shopUi(state: GameState): ShopUi {
         // A day that cannot be laid out is left out here; the Gazette still has it.
         yesterday = state.lastResolution?.takeIf { it.day == state.day - 1 }?.let { runCatching { yesterday(state, it) }.getOrNull() },
         shelf = state.listedWeapons().map { stock(it, threat, state.era) },
-        storage = state.storedWeapons().map { stock(it, threat, state.era) },
+        storage = state.storedWeapons().map { stock(it, threat, state.era, promisedLine(state, it)) },
         threat = threat,
         requestSlots = config.customers.maxOpenCommissions,
         wants = d.wants.mapNotNull { id -> state.heroes[id]?.let { h -> Lines.want(h, content)?.let { WantUi(id, it, id in d.wantsAnswered, h.want!!.familyId) } } },

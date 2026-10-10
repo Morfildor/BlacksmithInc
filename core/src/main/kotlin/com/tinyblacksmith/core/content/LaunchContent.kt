@@ -103,7 +103,7 @@ object LaunchContent {
         ALL_CLASSES.associateWith { if (it in synergy) 1.2 else 0.85 }
 
     val catalog: ContentCatalog = ContentCatalog(
-        version = 3,
+        version = 4,
         families = listOf(
             // basePower / defensiveWeight are PROPOSED; Sword, Axe and Bow keep their slice values.
             WeaponFamilyDef(SWORD, "Sword", basePower = 10, classFit = fit(listOf(GUARDIAN, DUELIST, BATTLEMAGE)), defensiveWeight = 1.1),
@@ -290,5 +290,8 @@ object LaunchContent {
             ToolDef("signboard", "Painted Signboard", ToolEffect.EXTRA_CUSTOMERS, magnitudePerLevel = 1, costPerLevel = listOf(150, 400), description = "+1 customer a day per level."),
             ToolDef("display_case", "Display Case", ToolEffect.SHELF_SLOTS, magnitudePerLevel = 2, costPerLevel = listOf(200), description = "+2 shelf slots."),
         ),
+        encounters = Depth.encounters,
+        relics = Depth.relics,
+        siegeTraits = Depth.siegeTraits,
     )
 }

@@ -14,6 +14,7 @@ import com.tinyblacksmith.core.content.SliceContent
 import com.tinyblacksmith.core.crafting.Journal as JournalRules
 import com.tinyblacksmith.core.crafting.SignatureCatalog
 import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.engine.Encounters
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.Invariants
 import com.tinyblacksmith.core.engine.ResolutionContext
@@ -29,7 +30,8 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class WorldEventsAndGenerationsTest {
-    private fun ctx(state: GameState) = ResolutionContext(state, engine.content, engine.config)
+    /** A catalogue without morning visitors: the three events that come as visitors in the launch catalogue (collector, wandering master, merchant festival) still fire by themselves here, as in rules 3. */
+    private fun ctx(state: GameState) = ResolutionContext(state, engine.content.copy(encounters = emptyList()), engine.config)
     private fun eligible(state: GameState, id: String) = WorldEvents.canFire(ctx(state), WorldEvents.byId(id))
 
     /** Applies one event directly (bypassing the daily roll) and returns the new state. */
@@ -292,7 +294,12 @@ class WorldEventsAndGenerationsTest {
                 assertFalse(id in setOf("famous_blade", "descendant"), "seed $seed: $id needs legacy history")
                 if (id == "guild_banner") assertTrue(state.town.guilds.isNotEmpty(), "seed $seed: banner without eras needs an in-run guild")
             }
-            assertEquals(counts, state.eventCounters - WorldEvents.RUMOUR, "seed $seed counters mismatch")
+            // Morning visitors count under their own keys, or under the event they took over; neither leaves a WORLD_EVENT record.
+            val visitors = state.eventCounters.keys.filter { it.startsWith(Encounters.COUNTER_PREFIX) || Encounters.replaces(engine.content, it) }
+            val counters = state.eventCounters - WorldEvents.RUMOUR - visitors.toSet()
+            // A run that outlives the record window (routine records are kept `routineEventRetentionDays`) has counted events whose records are gone.
+            if (state.day <= engine.config.saveGrowth.routineEventRetentionDays) assertEquals(counts, counters, "seed $seed counters mismatch")
+            else counts.forEach { (id, n) -> assertTrue(n <= (counters[id] ?: 0), "seed $seed: $id has $n records for a count of ${counters[id]}") }
             seen += counts.keys
         }
         assertTrue(seen.size >= 12, "variety across 200 runs: $seen")

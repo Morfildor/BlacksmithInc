@@ -43,6 +43,11 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
+import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.content.Depth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -71,7 +76,6 @@ import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.crafting.Journal
-import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.model.ForgeMode
@@ -124,6 +128,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
                 SecondaryActionButton("Journal", { vm.selectRecords(RecordsPage.JOURNAL) }, Modifier.weight(1f).testTag("forge_journal"))
             }
             Wanted(s, vm)
+            BellowsRow(s, vm)
 
             Step("mode", "Mode", if (d.mode == ForgeMode.QUICK) "Quick · ${config.quickForgeEnergy} energy" else "Advanced · ${config.advancedForgeEnergy} energy", open, scroll, ::toggle) {
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
@@ -278,6 +283,9 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
     val overworkRoom = config.maxOverworkPerDay - st.overworkToday
     val overwork = (cost - st.energy).coerceAtLeast(0)
     val canAfford = overwork <= overworkRoom
+    // Asked for and still possible: a draft that has lost its bellows since forges without them.
+    val bellows = d.bellows && bellowsBlocked(s, config) == null
+    val bellowsNote = if (bellows) " The bellows take ${config.depth.bellowsDebt} more from tomorrow." else ""
     val title = if (chosen) "${content.material(core!!).name} ${content.family(family!!).name}" else "Nothing on the anvil"
     val recipe = buildList {
         add(if (d.mode == ForgeMode.QUICK) "Quick" else "Advanced")
@@ -292,8 +300,8 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
         !ready -> "Choose a family, a core and an augment."
         missing != null -> vm.describe(GameError.MissingMaterial(missing)) + " Pick another or buy more in Supplies."
         !canAfford -> vm.describe(GameError.NotEnoughEnergy(cost, st.energy, overworkRoom)) + " Rest with End Day."
-        overwork > 0 -> "Costs $cost energy; $overwork of it is overwork that tires you tomorrow."
-        else -> "Costs $cost energy. Ready when you are."
+        overwork > 0 -> "Costs $cost energy; $overwork of it is overwork that tires you tomorrow.$bellowsNote"
+        else -> "Costs $cost energy. Ready when you are.$bellowsNote"
     }
 
     // The anvil plate: what is being made, then the one gold action across its whole width (a button beside the title
@@ -316,17 +324,63 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
         }
         val enabled = ready && canAfford && missing == null && !s.busy
         PrimaryActionButton(
-            "Forge weapon", { vm.dispatch(Command.Forge(d.mode, d.familyId!!, d.coreId!!, d.augmentId!!, d.catalystId, d.risk, d.technique)) },
+            "Forge weapon", { d.copy(bellows = bellows).command()?.let(vm::dispatch) },
             // A disabled button says why, so a screen reader is not left with a dead "Forge weapon".
             Modifier.fillMaxWidth().padding(top = Space.sm).testTag("forge_weapon").semantics { if (!enabled) contentDescription = "Forge weapon, unavailable: $note" },
             enabled = enabled,
         )
         Text(note, style = MaterialTheme.typography.bodySmall, color = if (ready && canAfford && missing == null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
+        // The Tempering Ledger's word on the family on the anvil: what it adds now, or that this forge starts its streak again.
+        if (family != null) {
+            val bonus = remember(st, family) { vm.engine.ledgerBonus(st, family) }
+            val line = when {
+                bonus > 0 -> "Tempering Ledger: +$bonus quality"
+                st.relics.any { it.id == Depth.TEMPERING_LEDGER && family in it.families } -> "Tempering Ledger: this family is already in the streak, so forging it starts the streak again."
+                else -> null
+            }
+            line?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Gold, modifier = Modifier.padding(top = Space.xs).testTag("forge_ledger")) }
+        }
         // The request this draft was started from stays in view while the steps scroll.
         s.shop.requests.firstOrNull { it.id == d.commissionId }?.let { r ->
             Text("For ${r.buyer.name}: ${r.asks}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = Space.xs).testTag("forge_for"))
             r.readiness?.let { Secondary(it) }
         }
+    }
+}
+
+/**
+ * Why the Ashen Bellows cannot be asked for on this draft now, or null: the engine's own two reasons (`Relics.bellowsError`),
+ * said before the tap instead of after it. Only meaningful while the bellows are held.
+ */
+internal fun bellowsBlocked(s: UiState.Playing, config: BalanceConfig): String? {
+    val st = s.state
+    val cost = if (s.draft.mode == ForgeMode.QUICK) config.quickForgeEnergy else config.advancedForgeEnergy
+    val debt = config.depth.bellowsDebt
+    return when {
+        s.relics.firstOrNull { it.id == Depth.ASHEN_BELLOWS }?.ready == false -> "Used today."
+        (cost - st.energy).coerceAtLeast(0) + debt > config.maxOverworkPerDay - st.overworkToday -> "Not enough overwork left today: the bellows take $debt."
+        else -> null
+    }
+}
+
+/** The Ashen Bellows as a switch on the draft; shown only while the workshop holds them. Off and explained when they cannot be used. */
+@Composable
+private fun BellowsRow(s: UiState.Playing, vm: GameViewModel) {
+    if (s.relics.none { it.id == Depth.ASHEN_BELLOWS }) return
+    val config = vm.engine.config
+    val blocked = bellowsBlocked(s, config)
+    val on = s.draft.bellows && blocked == null
+    Row(
+        Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow()
+            .toggleable(value = on, enabled = blocked == null, role = Role.Switch) { v -> vm.updateDraft { it.copy(bellows = v) } }
+            .heightIn(min = 56.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag("forge_bellows"),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text("Ashen Bellows: one more property, ${config.depth.bellowsDebt} energy from tomorrow", style = MaterialTheme.typography.titleSmall)
+            blocked?.let { Secondary(it, Modifier.testTag("forge_bellows_blocked")) }
+        }
+        Switch(checked = on, onCheckedChange = null, enabled = blocked == null)
     }
 }
 

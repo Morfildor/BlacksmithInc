@@ -1,0 +1,14 @@
+Tiny Blacksmith headless simulator - content v4, balance v10, rules v4
+runs=1000 baseSeed=1 days=400 content=launch siegeModifier=2.0 recoveryCap=2 forgeDamage=24.0+50.0x(ratio-1) max 60 reserve=0 impactPolicy=BALANCED_FAIR threads=16
+
+== Depth exploit probes (1000 seeds from 1) ==
+  [ok] crucible forge-and-salvage loop (new account): largest planning-phase gain in gold + materials = 0 (seed 1 day 10); augments returned=8952 over 10000 days, most in a day=1, from a blade below fine=0
+  [ok] crucible forge-and-salvage loop (maxed account): largest planning-phase gain in gold + materials beyond one spared augment = 49 (seed 535 day 15), against 125 for the same loop without the relic; augments returned=14994 over 15000 days, most in a day=1, from a blade below fine=0
+  [ok] watch bounty bound: bound=240 gold a run; most paid in a run=240, mean=171.8, runs paid=1933 of 2000
+  [ok] merchant blade salvaged or scrapped: blades bought=1000, worth more melted than paid=0; best salvage return minus price=-7 (seed 460: Reinforced Obsidian Staff (quality 58) bought for 74, salvage returned 67); material units from scrapping one blade=0
+  [ok] merchant blade salvaged or scrapped (with the crucible): blades bought=1000, worth more melted than paid=0; best salvage return minus price=0 (seed 2: Guardian's Silver Axe (quality 57) bought for 89, salvage returned 89); material units from scrapping one blade=0
+  [ok] collector's seal: zero-cash sales: runs holding the seal=976, blades given away=37989, seals earned=0
+  [ok] collector's seal: commissions: commissions collected=4438 (paying 100+ gold: 4438), seals earned=0
+  [ok] collector's seal: the collector visitor: blades sold to the collector=1000 (for 100+ gold: 1000), seals earned=0
+  [ok] collector's seal: earned only by a paid shelf sale: seals earned=11212, days with more than one=0, days with a seal and no qualifying sale=0 
+elapsed 102604 ms

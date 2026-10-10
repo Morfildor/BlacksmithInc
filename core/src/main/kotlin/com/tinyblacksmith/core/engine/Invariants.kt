@@ -60,10 +60,19 @@ object Invariants {
         state.factions.values.forEach { f -> if (f.pressure !in 0..100) problems += "Faction pressure out of range" }
         state.town.guilds.forEach { g -> if (g.founderId !in state.heroes) problems += "Guild ${g.id} founded by unknown hero" }
         state.eventCounters.forEach { (id, n) ->
+            if (id.startsWith(Encounters.COUNTER_PREFIX)) return@forEach   // a morning visitor without a world event behind it
             if (id == WorldEvents.RUMOUR) return@forEach   // not a pooled event: the run's rumours, capped by `customers.maxRumoursPerRun` where they are told
             val def = WorldEvents.all.firstOrNull { it.id == id }
             if (def == null) problems += "Unknown world event counter $id" else if (n > def.maxPerRun) problems += "World event $id fired $n times (max ${def.maxPerRun})"
         }
+        if (state.relics.size > config.depth.relicSlots) problems += "More than ${config.depth.relicSlots} relics"
+        if (state.relics.map { it.id }.toSet().size != state.relics.size) problems += "A relic is held twice"
+        state.weapons.values.forEach { w ->
+            val order = w.promisedTo?.let { state.commissions[it] } ?: return@forEach
+            if (!w.isInStorage && !w.isListed) problems += "Weapon ${w.id.value} is promised to an order and not in the shop"
+            if (order.status != com.tinyblacksmith.core.model.CommissionStatus.ACCEPTED) problems += "Weapon ${w.id.value} is kept for a closed order"
+        }
+        state.weapons.values.forEach { w -> if (w.promisedTo != null && w.promisedTo !in state.commissions) problems += "Weapon ${w.id.value} is promised to an unknown order" }
         return problems
     }
 
@@ -87,6 +96,10 @@ object Invariants {
         state.tools.keys.forEach { need(content.tool(it) != null, "tool", it, "tools") }
         state.legacy.upgrades.keys.forEach { need(it in content.upgradeById, "upgrade", it.value, "legacy") }
         state.factions.keys.forEach { need(it in content.factionById, "faction", it.value, "factions") }
+        // A catalog without the depth content (the slice, a rules-3 comparison) simply ignores what a run stores of it.
+        if (content.relics.isNotEmpty()) (state.relics.map { it.id } + state.pendingRelicOffer).forEach { need(content.relic(it) != null, "relic", it, "relics") }
+        if (content.encounters.isNotEmpty()) state.encounter?.let { need(content.encounter(it.defId) != null, "encounter", it.defId, "visitor") }
+        if (content.siegeTraits.isNotEmpty()) state.siege?.traitId?.let { need(content.siegeTrait(it) != null, "siege trait", it, "siege") }
         return problems
     }
 }

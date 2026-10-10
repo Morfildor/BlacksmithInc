@@ -16,7 +16,7 @@ enum class CommissionStatus { OFFERED, ACCEPTED, COMPLETED, EXPIRED, DECLINED }
  * Why a commission is asked (plan 4.6 E4), read from the state when it is offered. ORDINARY and NOBLE are the two that
  * existed before the situations; a commission stored without the field is ORDINARY. Constants are only ever appended.
  */
-enum class CommissionKind { ORDINARY, NOBLE, REPLACEMENT, SIEGE_PREP, AMBITION, FIRST_BLADE }
+enum class CommissionKind { ORDINARY, NOBLE, REPLACEMENT, SIEGE_PREP, AMBITION, FIRST_BLADE, WALL_PLEDGE, HEIRLOOM }
 /** GDD 6 hero ambitions: a personal goal that shifts daily choices and makes news when fulfilled. */
 enum class Ambition { SLAYER, DEFENDER, COLLECTOR, FORTUNE }
 enum class KnowledgeState { UNKNOWN, OBSERVED, UNDERSTOOD, SIGNATURE_DISCOVERED }
@@ -98,6 +98,8 @@ data class Weapon(
      * ownership lines still in [history].
      */
     val ownerIds: List<HeroId> = emptyList(),
+    /** The open order this blade is kept for (an HEIRLOOM commission): until it closes the blade is not listed, melted, scrapped, given away or handed to another patron. */
+    val promisedTo: CommissionId? = null,
 ) {
     val isListed: Boolean get() = location is WeaponLocation.Shelf
     /** Hone is allowed on an unhoned weapon or one worn below full condition. */
@@ -210,6 +212,8 @@ data class Commission(
     val kind: CommissionKind = CommissionKind.ORDINARY,
     /** FIRST_BLADE: the hero the blade is ordered for; [buyerId] pays and collects. Null for every other kind. */
     val recipientId: HeroId? = null,
+    /** HEIRLOOM: the one blade this order is for. It is bound to the order: not listed, melted, given away or handed to another patron while the order is open. */
+    val weaponId: WeaponId? = null,
 )
 
 @Serializable
@@ -227,6 +231,7 @@ enum class EventType {
     WEAPON_SURFACED, WEAPON_RESOLD,
     MATERIAL_BOUGHT,
     SHOP_DAY,
+    ENCOUNTER_OFFERED, ENCOUNTER_RESOLVED, ENCOUNTER_EXPIRED, RELIC_OFFERED, RELIC_CHOSEN, RELIC_TRIGGERED, SIEGE_TRAIT, PLEDGE_RESOLVED,
 }
 
 /** Source of truth for the Gazette and replays (GDD Appendix B). Subjects are real entity IDs. */
@@ -392,6 +397,20 @@ data class GameState(
     val tools: Map<String, Int> = emptyMap(),
     /** `BalanceConfig.version` the run was last admitted under (`Compatibility.admit`); 0 = written before it was tracked. */
     val balanceVersion: Int = 0,
+    /** This morning's visitor (`engine.Encounters`), kept after it is answered until the next morning replaces it. */
+    val encounter: EncounterInstance? = null,
+    val encounterLog: List<EncounterRecord> = emptyList(),
+    val nextEncounterSerial: Int = 1,
+    /** Run-long workshop relics (`engine.Relics`), at most `depth.relicSlots`. */
+    val relics: List<ActiveRelic> = emptyList(),
+    val pendingRelicOffer: List<String> = emptyList(),
+    /** The relic offers this run has been made ("start", "siege2", ...): each once. */
+    val relicOffersMade: Set<String> = emptySet(),
+    /** The day each once-a-day relic was last used, by relic ID; kept when a relic is replaced so a charge is never had twice. */
+    val relicUses: Map<String, Int> = emptyMap(),
+    val consequences: List<ScheduledConsequence> = emptyList(),
+    /** The coming siege's trait and committed besieger; null in a run that predates them until its next siege is scheduled. */
+    val siege: SiegeScenario? = null,
 ) {
     val isEnded: Boolean get() = phase == Phase.ENDED
     fun weapon(id: WeaponId): Weapon = weapons[id] ?: error("Unknown weapon ${id.value}")

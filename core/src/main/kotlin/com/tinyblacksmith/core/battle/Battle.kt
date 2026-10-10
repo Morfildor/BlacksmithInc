@@ -4,6 +4,7 @@ import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.BlessingEffect
 import com.tinyblacksmith.core.content.FactionDef
 import com.tinyblacksmith.core.content.MaterialCategory
+import com.tinyblacksmith.core.content.SiegeTraitDef
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.market.Market
@@ -206,17 +207,21 @@ object Battle {
      * Three strongest available champions (GDD 6/8). Fewer than three is fine; none means the militia stands alone.
      * Ranked against the foe they will face: [elite] is the warlord flag of the siege, the same one their powers are valued with.
      */
-    fun selectChampions(ctx: ResolutionContext, faction: FactionDef, elite: Boolean = false): List<Pair<Hero, Weapon?>> =
+    fun selectChampions(ctx: ResolutionContext, faction: FactionDef, elite: Boolean = false, config: BalanceConfig = ctx.config): List<Pair<Hero, Weapon?>> =
         ctx.aliveHeroes()
             .filter { it.health >= ctx.config.heroWoundedThreshold }
             .map { it to ctx.equippedWeapon(it.id) }
-            .sortedWith(compareByDescending<Pair<Hero, Weapon?>> { Power.defensePower(it.first, it.second, faction, ctx.content, ctx.config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite) }.thenBy(IdOrder.numeric) { it.first.id.value })
+            .sortedWith(compareByDescending<Pair<Hero, Weapon?>> { Power.defensePower(it.first, it.second, faction, ctx.content, config, ctx.blessingMagnitude(BlessingEffect.HERO_POWER), elite) }.thenBy(IdOrder.numeric) { it.first.id.value })
             .take(ctx.config.championCount)
 
     /** What the next siege looks like as things stand; the same numbers [resolveSiegeIfDue] uses on the day. */
     data class SiegeOutlook(
         val factionState: FactionState, val faction: FactionDef, val warlord: Boolean,
         val champions: List<Pair<Hero, Weapon?>>, val championPowers: List<Double>, val townDefense: Double, val raidPower: Double,
+        /** The announced trait of this siege, already counted in every number here; null for a plain one. */
+        val trait: SiegeTraitDef? = null,
+        /** What the militia and the watch's armory are worth in this siege (the trait may raise them). */
+        val militia: Double = 0.0, val armory: Double = 0.0,
     ) {
         val odds: SiegeOdds get() = (townDefense / maxOf(1.0, raidPower)).let {
             when {
@@ -233,18 +238,45 @@ object Battle {
     /** The faction that will besiege the town: the highest pressure, ties by ID (never by the order the save lists them in). */
     fun leadingFaction(ctx: ResolutionContext): FactionState? = ctx.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure }
 
+    /**
+     * The faction the coming siege belongs to: the one committed at the first warning (`depth.commitBesieger`), and until
+     * then the leader as it stands today.
+     */
+    fun besieger(ctx: ResolutionContext): FactionState? =
+        ctx.siege?.takeIf { it.siegeDay == ctx.town.nextSiegeDay }?.factionId?.let { ctx.factions[it] } ?: leadingFaction(ctx)
+
+    /** The trait announced for the siege due on [siegeDay], or null. */
+    fun trait(ctx: ResolutionContext, siegeDay: Int = ctx.town.nextSiegeDay): SiegeTraitDef? = ctx.content.siegeTrait(ctx.siege?.takeIf { it.siegeDay == siegeDay }?.traitId)
+
+    /**
+     * Called when a siege has been fought and the next one is on the calendar: its trait is drawn now (ENCOUNTERS
+     * stream), so it is known for the whole time the smith has to prepare. The first `depth.firstTraitSiege - 1` sieges are plain.
+     */
+    fun scheduleNext(ctx: ResolutionContext) {
+        val cfg = ctx.config.depth
+        val number = ctx.town.siegesSurvived + ctx.town.siegesLost + 1
+        val drawn = if (ctx.content.siegeTraits.isEmpty() || number < cfg.firstTraitSiege) null else ctx.rng(RngStream.ENCOUNTERS).let { if (it.chance(cfg.traitChance)) it.pick(ctx.content.siegeTraits) else null }
+        ctx.siege = SiegeScenario(ctx.town.nextSiegeDay, drawn?.id)
+        if (drawn != null) ctx.emit(EventType.SIEGE_TRAIT, 6, "Scouts say the day ${ctx.town.nextSiegeDay} invasion will be a ${drawn.name}. ${drawn.description}", data = mapOf("trait" to drawn.id, "day" to ctx.town.nextSiegeDay.toString()))
+    }
+
     fun outlook(ctx: ResolutionContext, siegeDay: Int): SiegeOutlook? {
-        val config = ctx.config
-        val factionState = leadingFaction(ctx) ?: return null
+        val trait = trait(ctx, siegeDay)
+        // A trait that makes wear count for more does so through the one number the condition factor reads.
+        val config = trait?.conditionFloorFactor?.let { ctx.config.copy(conditionFloorFactor = it) } ?: ctx.config
+        val factionState = besieger(ctx) ?: return null
         val faction = ctx.content.faction(factionState.id)
         val warlord = faction.warlordName != null && factionState.pressure >= config.warlordPressure
         val blessing = ctx.blessingMagnitude(BlessingEffect.HERO_POWER)
-        val champions = selectChampions(ctx, faction, warlord)
+        val champions = selectChampions(ctx, faction, warlord, config)
         val championPowers = champions.map { (h, w) -> Power.defensePower(h, w, faction, ctx.content, config, blessing, warlord) }
-        val townDefense = championPowers.sum() + ctx.town.militia + ctx.town.armory
+        val watch = trait?.watchMultiplier ?: 1.0
+        val militia = ctx.town.militia * watch
+        val armory = ctx.town.armory * watch
+        val townDefense = championPowers.sum() + militia + armory
         val raidPower = (config.raidBase + config.raidPerDay * siegeDay + config.raidPerPressure * factionState.pressure) * config.siegeModifier *
-            ctx.world.raidMultiplier * (if (warlord) config.warlordRaidMultiplier else 1.0)
-        return SiegeOutlook(factionState, faction, warlord, champions, championPowers, townDefense, raidPower)
+            ctx.world.raidMultiplier * (if (warlord) config.warlordRaidMultiplier else 1.0) * (trait?.raidMultiplier ?: 1.0)
+        return SiegeOutlook(factionState, faction, warlord, champions, championPowers, townDefense, raidPower, trait, militia, armory)
     }
 
     fun resolveSiegeIfDue(ctx: ResolutionContext) {
@@ -266,8 +298,8 @@ object Battle {
         champions.forEachIndexed { i, (h, w) ->
             rounds += CombatRound(h.fullName, faction.siegeName, championPowers[i].roundToInt(), w?.let { "strikes with ${it.name}" } ?: "fights bare-handed", h.id.value)
         }
-        if (ctx.town.militia > 0) rounds += CombatRound("Town militia", faction.siegeName, ctx.town.militia, "holds the gate")
-        if (ctx.town.armory > 0) rounds += CombatRound("Town watch", faction.siegeName, ctx.town.armory, "fights with arms from the forge")
+        if (ctx.town.militia > 0) rounds += CombatRound("Town militia", faction.siegeName, o.militia.roundToInt(), "holds the gate")
+        if (ctx.town.armory > 0) rounds += CombatRound("Town watch", faction.siegeName, o.armory.roundToInt(), "fights with arms from the forge")
         rounds += CombatRound(faction.siegeName, "the forge", forgeDamage, if (won) "is driven off" else "breaks through")
         val championNames = champions.joinToString(", ") { it.first.fullName }.ifEmpty { "no champion" }
         ctx.replays += CombatReplay("Siege of Emberfall, day ${ctx.day}", ctx.day, rounds, if (won) "Town held" else "Defenses broken")
@@ -275,13 +307,13 @@ object Battle {
         ctx.town = ctx.town.copy(integrity = ctx.town.integrity - forgeDamage, championIds = champions.map { it.first.id }, nextSiegeDay = ctx.town.nextSiegeDay + config.siegeInterval,
             armory = (ctx.town.armory * (1.0 - config.armorySiegeWear)).toInt())
         if (forgeDamage > 0) ctx.emit(EventType.FORGE_DAMAGED, 7, "The forge took $forgeDamage damage in the siege.", data = mapOf("damage" to forgeDamage.toString()))
-        for ((_, w) in champions) if (w != null) wear(ctx, w.id, config.wearPerSiege)
+        for ((_, w) in champions) if (w != null) wear(ctx, w.id, (config.wearPerSiege * (o.trait?.wearMultiplier ?: 1.0)).roundToInt())
 
         if (won) {
             ctx.town = ctx.town.copy(siegesSurvived = ctx.town.siegesSurvived + 1)
             ctx.factions[factionState.id] = factionState.copy(pressure = maxOf(0, factionState.pressure - config.siegeWinPressureDrop - (if (o.warlord) config.warlordPressureDrop else 0)))
             val held = ctx.emit(EventType.SIEGE_WON, 9, "Emberfall repelled $attacker! Champions: $championNames.", champions.map { it.first.id.value },
-                mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()))
+                mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()) + traitData(o))
             for ((h, w) in champions) {
                 val hero = ctx.hero(h.id)
                 ctx.updateHero(hero.copy(health = maxOf(1, hero.health - config.championSiegeDamageOnWin), fame = hero.fame + config.combat.siegeFame, lastActivity = HeroActivity.DEFEND))
@@ -307,7 +339,7 @@ object Battle {
             // A rout: the raid outweighs the defense so far that the champions are cut down where they stand, not driven off.
             val rout = raidPower >= townDefense * config.weaponFates.wallsRoutRatio
             val overrun = ctx.emit(EventType.SIEGE_LOST, 9, "${attacker.replaceFirstChar { it.uppercase() }} ${if (rout) "routed" else "overran"} the defenders ($championNames).", champions.map { it.first.id.value },
-                mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()) + (if (rout) mapOf("rout" to "true") else emptyMap()))
+                mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString()) + (if (rout) mapOf("rout" to "true") else emptyMap()) + traitData(o))
             val rng = ctx.rng(RngStream.COMBAT)
             for ((h, _) in champions) {
                 val hero = ctx.hero(h.id)
@@ -325,8 +357,10 @@ object Battle {
             ctx.phase = Phase.ENDED
             ctx.endCause = "The forge fell to the ${faction.siegeName} on day ${ctx.day}."
             ctx.emit(EventType.FORGE_DESTROYED, 10, "The forge has fallen. Emberfall's smith is no more.")
-        }
+        } else scheduleNext(ctx)
     }
+
+    private fun traitData(o: SiegeOutlook): Map<String, String> = o.trait?.let { mapOf("trait" to it.id) } ?: emptyMap()
 
     private fun offerBlessing(ctx: ResolutionContext) {
         val rng = ctx.rng(RngStream.LEGACY)
@@ -344,16 +378,20 @@ object Battle {
      * evening (the day before the siege and the siege day itself). Null on every other day. The leader as it stands today.
      */
     fun warnedFaction(ctx: ResolutionContext): FactionDef? =
-        if (ctx.town.nextSiegeDay - ctx.day in 0 until ctx.config.combat.siegeWarningDays) leadingFaction(ctx)?.let { ctx.content.faction(it.id) } else null
+        if (ctx.town.nextSiegeDay - ctx.day in 0 until ctx.config.combat.siegeWarningDays) besieger(ctx)?.let { ctx.content.faction(it.id) } else null
 
     fun warnOfSiege(ctx: ResolutionContext) {
         val daysLeft = ctx.town.nextSiegeDay - ctx.day
         if (daysLeft in 1..ctx.config.combat.siegeWarningDays) {
-            val f = leadingFaction(ctx) ?: return
+            // The first warning names the besieger for good: what the smith prepares against is what comes.
+            if (ctx.config.depth.commitBesieger && ctx.siege?.takeIf { it.siegeDay == ctx.town.nextSiegeDay }?.factionId == null) leadingFaction(ctx)?.let {
+                ctx.siege = (ctx.siege?.takeIf { s -> s.siegeDay == ctx.town.nextSiegeDay } ?: SiegeScenario(ctx.town.nextSiegeDay)).copy(factionId = it.id)
+            }
+            val f = besieger(ctx) ?: return
             val def = ctx.content.faction(f.id)
             val led = if (def.warlordName != null && f.pressure >= ctx.config.warlordPressure) " ${def.warlordName} leads them." else ""
             val weak = def.weakTo?.let { " ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }} weapons bite them hardest." } ?: ""
-            ctx.emit(EventType.SIEGE_WARNING, 6, "${def.name} gather for the day ${ctx.town.nextSiegeDay} invasion (${describePressure(f.pressure)}).$led$weak", data = mapOf("day" to ctx.town.nextSiegeDay.toString()))
+            ctx.emit(EventType.SIEGE_WARNING, 6, "${def.name} gather for the day ${ctx.town.nextSiegeDay} invasion (${describePressure(f.pressure)}).$led$weak${trait(ctx)?.let { " It will be a ${it.name}." }.orEmpty()}", data = mapOf("day" to ctx.town.nextSiegeDay.toString()))
         }
     }
 

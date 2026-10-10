@@ -174,6 +174,10 @@ data class ContentCatalog(
     val firstNames: List<String>,
     val surnames: List<String>,
     val tools: List<ToolDef> = emptyList(),
+    /** Morning visitors, workshop relics and siege traits (rules 4). A catalog without them plays as rules 3 did. */
+    val encounters: List<EncounterDef> = emptyList(),
+    val relics: List<RelicDef> = emptyList(),
+    val siegeTraits: List<SiegeTraitDef> = emptyList(),
 ) {
     val familyById: Map<WeaponFamilyId, WeaponFamilyDef> = families.associateBy { it.id }
     val materialById: Map<MaterialId, MaterialDef> = materials.associateBy { it.id }
@@ -193,6 +197,9 @@ data class ContentCatalog(
     fun blessing(id: BlessingId) = blessingById[id] ?: error("Unknown blessing ${id.value}")
     fun upgrade(id: UpgradeId) = upgradeById[id] ?: error("Unknown upgrade ${id.value}")
     fun tool(id: String): ToolDef? = tools.firstOrNull { it.id == id }
+    fun encounter(id: String): EncounterDef? = encounters.firstOrNull { it.id == id }
+    fun relic(id: String): RelicDef? = relics.firstOrNull { it.id == id }
+    fun siegeTrait(id: String?): SiegeTraitDef? = siegeTraits.firstOrNull { it.id == id }
 
     fun materials(category: MaterialCategory) = materials.filter { it.category == category }
 
@@ -208,6 +215,15 @@ data class ContentCatalog(
         dup("trait", traits.map { it.id }); dup("faction", factions.map { it.id })
         dup("blessing", blessings.map { it.id }); dup("upgrade", upgrades.map { it.id })
         dup("tool", tools.map { it.id })
+        dup("encounter", encounters.map { it.id }); dup("relic", relics.map { it.id }); dup("siege trait", siegeTraits.map { it.id })
+        encounters.forEach { e -> if (!e.followUp && (e.weight <= 0.0 || e.maxPerRun <= 0)) problems += "Encounter ${e.id} can never be offered" }
+        // A visitor that replaced a world event counts under that event, whose limit the invariants hold: it may not ask for more.
+        encounters.forEach { e -> e.replacesEvent?.let { id ->
+            val event = com.tinyblacksmith.core.engine.WorldEvents.all.firstOrNull { it.id == id }
+            if (event == null) problems += "Encounter ${e.id} replaces unknown event $id" else if (e.maxPerRun > event.maxPerRun) problems += "Encounter ${e.id} may come ${e.maxPerRun} times, its event $id only ${event.maxPerRun}"
+        } }
+        dup("relic effect", relics.map { it.effect })
+        siegeTraits.forEach { t -> if (t.conditionFloorFactor != null && t.conditionFloorFactor !in 0.0..1.0) problems += "Siege trait ${t.id} condition floor out of range" }
         affixes.forEach { a -> a.baneFaction?.let { if (it !in factionById) problems += "Affix ${a.id.value} is the bane of unknown faction ${it.value}" } }
         families.forEach { f -> f.classFit.keys.forEach { c -> if (c !in classById) problems += "Family ${f.id.value} fit references unknown class ${c.value}" } }
         classes.forEach { c -> c.preferredFamilies.forEach { f -> if (f !in familyById) problems += "Class ${c.id.value} prefers unknown family ${f.value}" } }

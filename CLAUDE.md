@@ -22,6 +22,9 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   `GameEngine` (starting militia, the three season multipliers) and `Forge` (affix slots per rarity) still hold a few. Immutable `GameState`
   (`model/`), typed commands and errors (`engine/Commands.kt`), the only mutator `engine/GameEngine.kt`
   (End Day = fixed GDD 3.2 order, idempotent per command ID), invariants asserted after each command.
+  Morning visitors (`engine/Encounters.kt`, what each is in `EncounterCatalog.kt`), what they set in motion
+  (`Consequences.kt`), workshop relics (`Relics.kt`) and siege traits (`Battle.scheduleNext` / `outlook`) draw only on the
+  ENCOUNTERS stream; their definitions are content (`content/Depth.kt`), their numbers `BalanceConfig.depth`.
 - `:app` — Compose UI is an observer: `GameViewModel` sends every operation (commands, legacy purchases, claim, Begin
   era, abandon, the shop-day position) through `GameSession`, the one serialized boundary, which saves accepted results
   atomically (Room, `data/SaveStore.kt` behind `data/GameRepository.kt`) before the screen renders them; load failures
@@ -29,7 +32,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   Screens: main menu (`ui/App.kt`), then four destinations (Shop, Forge, Town, Records) in `ui/WorkshopScreen.kt` with
   Storage, Supplies, Settings and hero / blade sheets (`ui/detail/`); after End Day the saved day is shown card by card
   (`ui/shopday/`). There is no Home or Market panel any more.
-- Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt` (schema 4; rules 3 and content 3 are
+- Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt` (schema 5; rules 4 and content 4 are
   enforced on load by `engine/Compatibility.kt`); migrations go there.
 - Content names are PROPOSED; counts are LOCKED. Vertical slice content lives in `content/SliceContent.kt`.
 - Pixel art has several sources, never hand-edited PNGs, all imported by `tools/pixelart/import_assets.py` into
@@ -47,9 +50,10 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 ## Commands
 ```
 ./gradlew :core:test                                   # JVM tests (determinism, bounds, idempotence, e2e)
-./gradlew :core:simulate --args="--runs 1000 --seed 1"  # headless balance harness (add --policy X[,Y]|all|gdd|bots|every (`all` = the 14 classic policies, `bots` = the T0.7 bots), --blessing first|energy|quality|sales|patronage|defense, --eras N --buy cheapest|walls|track=ID for several eras on one account, --impactPolicy X, --reserve N, --content launch|slice, --rarityTable N, --siegeModifier, --forgeDamageBase/Slope, --recoveryCap, --customers for the customer/identity metrics, --set key=value[,key=value] for allowlisted BalanceConfig overrides)
+./gradlew :core:simulate --args="--runs 1000 --seed 1"  # headless balance harness (add --policy X[,Y]|all|gdd|bots|every (`all` = the 14 classic policies, `bots` = the T0.7 bots), --blessing first|energy|quality|sales|patronage|defense, --eras N --buy cheapest|walls|track=ID for several eras on one account, --impactPolicy X, --reserve N, --content launch|slice, --rarityTable N, --siegeModifier, --forgeDamageBase/Slope, --recoveryCap, --customers for the customer/identity metrics, --set key=value[,key=value] for allowlisted BalanceConfig overrides, --depth for the visitor / relic / siege-trait table, --encounters decline|first|cash|defense|adaptive and --relic first|adaptive|none|<id> to override how bots answer, --noDepth for the rules-3 baseline without them, --probe N for the exploit probes)
 #   catalog sweeps: --noTool id[,id], --toolCost id=mult[,id=mult], --noAffixEffect id[,id]|all (keeps the affix, neutralises its v3 effect); --noFates turns the v5 weapon fates off (v4 odds, no guild heir, no merchant); --noImpact skips the maxed-legacy and per-upgrade runs
 #   legacy: --upgrades id=level[,id=level] plays the policy rows on that account, --yardsticks adds the first-siege and premium-sale table, --legends gives the maxed and impact runs a veteran Legend Board, --knownNameGold N
+./gradlew :core:scenarios                              # rewrites the debug scenario saves in app/src/debug/assets/scenarios (played and constructed; run after a rules, content or balance change)
 ./gradlew :core:soak                                   # long-save soak, outside the default suite (about 70 s): 2,000 forced-survival days for two smiths; tables and the day-1,000 / 2,000 saves in core/build/soak/
 ./gradlew :app:testDebugUnitTest                       # app JVM tests (session, ViewModel, screen models; no device)
 ./gradlew :app:assembleDebug                           # APK (needs Android SDK at local.properties sdk.dir)
@@ -58,6 +62,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 python tools/pixelart/import_assets.py                 # slice the source sheets from 'Pixel art assets/' into drawables (Pillow, numpy)
 python tools/pixelart/generate_assets.py               # placeholders for IDs without imported art + manifest
 ADB=<sdk>/platform-tools/adb bash tools/emulator/smoke.sh <dir>  # scripted device loop + screenshots (after installDebug)
+ADB=<sdk>/platform-tools/adb bash tools/emulator/scenarios.sh <dir> # loads every debug scenario save and checks what its title promises (about an hour on a slow emulator)
 ADB=<sdk>/platform-tools/adb bash tools/emulator/runend.sh <dir> # passive run to defeat, then claim + next era (about 2 min)
 ```
 Toolchain: Gradle 9.5, AGP 9.3.3 (built-in Kotlin), Kotlin plugins 2.2.21 (compose/jvm/serialization), KSP 2.3.12,
@@ -67,7 +72,8 @@ Compose BOM 2026.02.01, Room 2.8.5, DataStore 1.2.1, JDK 21 launcher / JDK 25 da
 - Surgical edits; keep docs in `docs/` current: IMPLEMENTATION_PLAN (phase gates), DECISIONS (locked vs proposed,
   tuning evidence), PROGRESS (state, checks run, next actions), GDD_CHECKLIST (feature view: tick an item when it
   ships and is verified). Update PROGRESS before ending a session. While the major update is open, per-task status
-  and evidence live in `docs/MAJOR_UPDATE_LEDGER.md` (plan: `docs/MAJOR_UPDATE_PLAN.md`).
+  and evidence live in `docs/MAJOR_UPDATE_LEDGER.md` (plan: `docs/MAJOR_UPDATE_PLAN.md`). Visitors, relics and siege
+  traits: `docs/GAMEPLAY_DEPTH_PLAN.md` (tables of every option and number, task ledger).
 - Balance changes: run the simulator, record numbers in DECISIONS.md, bump `BalanceConfig.version` on semantic change.
 - New gameplay numbers go in `BalanceConfig`, never inline. New content goes through `ContentCatalog.validate()`.
 - Tests must pass before claiming a phase done; do not commit/push without being asked.

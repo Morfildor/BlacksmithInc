@@ -42,7 +42,7 @@ print(m.group(1) if m else '')
 " | tr -d '\r'; }
 wait_id() { for i in $(seq 1 20); do if has_id "$1"; then return 0; fi; $ADB shell sleep 1; done; echo "TIMEOUT waiting for id '$1'"; return 1; }
 # swipe the list up until the node with resource-id $1 is on screen
-scroll_to_id() { for i in 1 2 3 4 5 6 7 8 9 10; do if has_id "$1"; then return 0; fi; $ADB shell input swipe 540 1300 540 800 600; $ADB shell sleep 1; done; echo "SCROLL MISSING id: $1"; return 1; }
+scroll_to_id() { for i in $(seq 1 30); do if has_id "$1"; then return 0; fi; $ADB shell input swipe 540 1300 540 800 600; $ADB shell sleep 1; done; echo "SCROLL MISSING id: $1"; return 1; }
 shot() { $ADB exec-out screencap -p > "$OUT/$1.png"; echo "screenshot $1"; }
 field() { python -c "
 import json,sys
@@ -62,7 +62,17 @@ load() {
   wait_id scenario_confirm || return 1
   shot "$1_0_confirm"
   tap_id scenario_confirm || return 1
-  wait_id end_day && echo "CHECK $1 loads onto planning: ok" || { echo "CHECK $1 loads onto planning: FAIL"; return 1; }
+  # A save with a relic offer waiting opens on that dialog, which hides the Shop from the dump; "Decide later" keeps the
+  # offer. The two saves that are about the dialog leave it up.
+  for i in $(seq 1 20); do
+    local x=$(dump)
+    if printf '%s' "$x" | grep -q 'resource-id="relic_later"'; then
+      case "$1" in relic_offer|relic_full_workshop) echo "CHECK $1 loads onto the relic offer: ok"; return 0;; esac
+      tap_id relic_later >/dev/null
+    elif printf '%s' "$x" | grep -q 'resource-id="end_day"'; then echo "CHECK $1 loads onto planning: ok"; return 0
+    else $ADB shell sleep 1; fi
+  done
+  echo "CHECK $1 loads onto planning: FAIL"; return 1
 }
 
 # Presses End Day and steps through the shop day to the aftermath card titled $2, then screenshots it as $1_$3.
@@ -140,4 +150,28 @@ print(m.group(1) if m else 0)
   [ "$count" -ge 200 ] && { shot long_storage_1_storage; echo "CHECK long_storage holds two hundred blades or more ($count): ok"; } || echo "CHECK long_storage holds two hundred blades or more ($count): FAIL"
   tap_id storage_select && shot long_storage_2_select
 }
+
+# Gameplay depth: every morning visitor (card on the Shop, then its sheet), the relic saves, the two siege traits, the chain.
+for v in visitor_collector visitor_crate_no_gold visitor_pledge visitor_master visitor_heirloom visitor_merchant visitor_wager visitor_festival chain_debt_repaid; do
+  load $v && {
+    wait_id visitor_card && { shot ${v}_1_shop; tap_id visitor_open; wait_id visitor_sheet && { shot ${v}_2_sheet; echo "CHECK $v opens its visitor: ok"; } || echo "CHECK $v opens its visitor: FAIL"; } || echo "CHECK $v shows a visitor card: FAIL"
+  }
+done
+# The merchant's inspection keeps the sheet open and shows the blade.
+load visitor_merchant && wait_id visitor_card && tap_id visitor_open && wait_id visitor_sheet && {
+  tap_id visitor_option_inspect; tap_id visitor_commit; $ADB shell sleep 1
+  has_id visitor_sheet && ! has_id visitor_option_inspect && { shot visitor_merchant_3_inspected; echo "CHECK the inspection keeps the merchant at the forge: ok"; } || echo "CHECK the inspection keeps the merchant at the forge: FAIL"
+}
+# Left unanswered: the End Day note names the default; the day can be ended without answering.
+load visitor_unanswered && wait_id visitor_card && { shot visitor_unanswered_1_end_day_note; dump | grep -q "The visitor leaves tonight" && echo "CHECK End Day says what the visitor will be told: ok" || echo "CHECK End Day says what the visitor will be told: FAIL"; }
+load relic_offer && { wait_id relic_later && { shot relic_offer_1_draft; echo "CHECK relic_offer opens the draft on day 1: ok"; tap_id relic_later; scroll_to_id shop_relics && shot relic_offer_2_shop_row; } || echo "CHECK relic_offer opens the draft on day 1: FAIL"; }
+for r in relic_crucible relic_ledger relic_seal relic_bellows; do
+  load $r && { scroll_to_id shop_relics && { shot ${r}_1_shop_row; echo "CHECK $r shows its relic on the Shop: ok"; } || echo "CHECK $r shows its relic on the Shop: FAIL"; }
+done
+load relic_bellows && { tap_id nav_forge; scroll_to_id forge_bellows && { shot relic_bellows_2_forge; echo "CHECK relic_bellows has the forge switch: ok"; } || echo "CHECK relic_bellows has the forge switch: FAIL"; }
+load relic_ledger && { tap_id nav_forge; shot relic_ledger_2_forge; }
+load relic_full_workshop && { wait_id relic_later && shot relic_full_workshop_1_offer || echo "CHECK relic_full_workshop offers the fourth relic: FAIL"; }
+for s in siege_long_assault siege_many_breaches; do
+  load $s && { tap_id nav_town; scroll_to_id town_trait && { shot ${s}_1_town; echo "CHECK $s shows its trait in Town: ok"; } || echo "CHECK $s shows its trait in Town: FAIL"; }
+done
 echo SCENARIOS_DONE

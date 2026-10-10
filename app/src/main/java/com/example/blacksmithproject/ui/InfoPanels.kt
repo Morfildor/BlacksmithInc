@@ -1,5 +1,7 @@
 package com.example.blacksmithproject.ui
 
+import com.tinyblacksmith.core.content.Depth
+import com.example.blacksmithproject.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -121,7 +123,23 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
                         Battle.SiegeOdds.DIRE -> "grave danger"
                     }
                     Secondary("Outlook: $outlook · defense ${o.townDefense.roundToInt()} vs raid ${o.raidPower.roundToInt()}", Modifier.padding(top = Space.xs))
+                    // What stands behind the defense number, as the engine counts each part in this siege (a trait may raise the watch and the militia).
+                    Secondary("Defense is champions ${o.championPowers.sum().roundToInt()} · militia ${o.militia.roundToInt()} · watch ${o.armory.roundToInt()}", Modifier.testTag("town_defense_parts"))
                     if (o.warlord) Secondary("${o.faction.warlordName} leads them")
+                    Secondary(
+                        if (st.siege?.takeIf { it.siegeDay == st.town.nextSiegeDay }?.factionId != null) "The besieger is fixed: this is who comes."
+                        else "As things stand: the besieger can still change before the first warning.",
+                        Modifier.testTag("town_besieger"),
+                    )
+                    o.trait?.let { t ->
+                        Row(Modifier.padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+                            when (t.id) { Depth.LONG_ASSAULT -> R.drawable.icon_trait_long_assault; Depth.MANY_BREACHES -> R.drawable.icon_trait_many_breaches; else -> null }
+                                ?.let { PixelImage(it, wholePixelDp(80, 40.dp), description = null) }
+                            Text(t.name, style = MaterialTheme.typography.titleSmall, color = Gold, modifier = Modifier.testTag("town_trait"))
+                        }
+                        Text(t.description, style = MaterialTheme.typography.bodyMedium)
+                        Secondary(t.counsel)
+                    }
                 }
                 if (st.town.armory > 0) Secondary("Town watch armory: ${st.town.armory}/${vm.engine.config.armoryMax}")
                 Secondary("Forge ${st.town.integrity} · militia ${st.town.militia} · sieges held ${st.town.siegesSurvived}", Modifier.padding(top = Space.xs))
