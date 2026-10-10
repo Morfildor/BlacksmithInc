@@ -35,16 +35,20 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.Cream
+import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.content.Element
@@ -216,7 +220,30 @@ fun LazyListScope.journalItems(s: UiState.Playing, vm: GameViewModel) {
             if (entries.isEmpty()) Text("No experiments recorded yet. Forge something.", modifier = Modifier.padding(top = Space.md))
         }
     }
-    items(entries, key = { "journal_${it.key}" }) { (key, _) -> AffinityHint(journal, content, key) }
+    items(entries, key = { "journal_${it.key}" }) { (key, _) ->
+        Column {
+            AffinityHint(journal, content, key)
+            signatureUi(journal, key, content, vm.engine.config)?.let { SignatureLadder(it, onUse = vm::useRecipe) }
+        }
+    }
+}
+
+/**
+ * Under a signature's journal row: the four rungs of its clue ladder, each earned one in the journal's words and each
+ * unearned one said to be unknown (a sign and words, never colour alone); once found, "Use this recipe" fills the forge.
+ */
+@Composable
+internal fun SignatureLadder(sig: SignatureUi, onUse: (Command.Forge) -> Unit, modifier: Modifier = Modifier) {
+    // Indented to the text of the row above (the 32 dp mark and its 12 dp gap).
+    Column(modifier.fillMaxWidth().padding(start = 44.dp, bottom = Space.sm).testTag("ladder_${sig.id}")) {
+        sig.rungs.forEach { r ->
+            Text(
+                if (r.clue != null) "✓ ${r.label}: ${r.clue}" else "○ ${r.label}: not yet known",
+                style = MaterialTheme.typography.bodySmall, color = if (r.clue != null) Cream else CreamMuted,
+            )
+        }
+        sig.recipe?.let { recipe -> SecondaryActionButton("Use this recipe", { onUse(recipe) }, Modifier.padding(top = Space.xs).testTag("use_recipe_${sig.id}")) }
+    }
 }
 
 /** The archive: one edition per day, newest first; the newest is open, older days show their lede until tapped. */
@@ -293,10 +320,15 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
             if (legacy.legendBoard.isEmpty()) Secondary("No blade has earned a legend yet.")
         }
     }
-    itemsIndexed(legacy.legendBoard, key = { i, _ -> "legend_$i" }) { _, it ->
-        Column(Modifier.padding(vertical = 6.dp)) {
-            Text(it.title, style = MaterialTheme.typography.titleSmall)
-            Secondary("Era ${it.era} · ${it.kills} kills · carried by ${it.owners.joinToString().ifEmpty { "no one" }}")
+    itemsIndexed(legacy.legendBoard, key = { i, _ -> "legend_$i" }) { i, entry ->
+        val legend = remember(entry, s.state.era) { legendUi(entry, content, s.state.era) }
+        Column(Modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().padding(horizontal = Space.md, vertical = Space.sm).testTag("legend_$i")) {
+            Text(legend.head, style = MaterialTheme.typography.titleSmall, color = Gold)
+            legend.lines.forEachIndexed { j, line ->
+                // An entry older than the record of its make: said as a note in its own voice, not as a property.
+                if (j == 0 && legend.lostToTime) Text("◆ $line", style = MaterialTheme.typography.bodySmall, fontStyle = FontStyle.Italic, color = CreamMuted, modifier = Modifier.testTag("legend_lost_$i"))
+                else Secondary(line)
+            }
         }
     }
     item(key = "lineages_head") {

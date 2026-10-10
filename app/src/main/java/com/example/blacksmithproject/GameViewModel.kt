@@ -352,6 +352,10 @@ class GameViewModel(
     }
     /** "Forge this" on a standing want (the Shop's lead, "Who is buying", the Forge): the forge opens with the family the hero left without. */
     fun forgeFamily(id: WeaponFamilyId) = edit { it.copy(dest = Dest.FORGE, draft = it.draft.copy(familyId = id, commissionId = null)) }
+    /** "Use this recipe" on a found signature in the journal: the forge opens on the whole recipe (`SignatureCatalog.recipe`). Nothing is forged. */
+    fun useRecipe(recipe: Command.Forge) = edit {
+        it.copy(dest = Dest.FORGE, draft = ForgeDraft(recipe.mode, recipe.familyId, recipe.coreId, recipe.augmentId, recipe.catalystId, recipe.risk, recipe.technique))
+    }
     fun dismissReveal() = edit { it.copy(revealWeaponId = null) }
     fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet) }
     fun closeSheet() = edit { it.copy(sheet = null) }
