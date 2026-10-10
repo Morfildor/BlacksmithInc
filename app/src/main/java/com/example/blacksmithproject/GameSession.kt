@@ -145,7 +145,8 @@ class GameSession(
      */
     private fun decode(rows: StoredRows): Snapshot {
         val legacy = try {
-            rows.legacy?.let { decodeLegacy(it) } ?: LegacyProfile()
+            // A run with no legacy row beside it (a rebuild that was cut short) reads the copy the run carries.
+            rows.legacy?.let { decodeLegacy(it) } ?: soundRun(rows)?.legacy ?: LegacyProfile()
         } catch (e: SaveFailure) {
             throw when {
                 soundRun(rows) == null -> e
@@ -201,7 +202,9 @@ class GameSession(
                     if (rows == null || rows.run != step.runText || rows.legacy != step.legacyText) return@withContext Result.Failed(e, unconfirmed = rows == null)
                 }
                 runText = step.runText
-                _snapshot.value = Snapshot(step.run, step.legacy, snap.cursor)
+                // A discarded run takes its day position with it, so a later run with the same ID starts unwatched.
+                if (step.run == null) try { repo.saveCursor(null) } catch (_: SaveFailure) { }
+                _snapshot.value = Snapshot(step.run, step.legacy, if (step.run == null) null else snap.cursor)
                 Result.Done(step.accepted)
             }
         }

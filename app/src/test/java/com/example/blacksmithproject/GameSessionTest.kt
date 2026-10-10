@@ -197,6 +197,14 @@ class GameSessionTest {
     }
 
     @Test
+    fun aRunWithoutALegacyRowReadsTheLegacyItCarries() = sessionTest {
+        val live = engine.newRun(LegacyProfile(points = 12), 43L)
+        val session = session(repo(live, null))
+        session.load()
+        assertEquals(live.legacy, session.snapshot.value?.legacy)
+    }
+
+    @Test
     fun doubleBeginEraCreatesOneRun() = sessionTest {
         // From the run-end screen.
         val repo = claimedRepo()
