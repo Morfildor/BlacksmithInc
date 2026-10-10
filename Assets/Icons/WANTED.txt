@@ -29,3 +29,16 @@ IDs in the game today (23), with the current in-game size:
   badge_flaw                              24x24
   marker_dead                             8x8
   marker_retired                          8x8
+
+New with the visitors update (2026-10-10): not in the game yet, optional. Text stands in for each of them today.
+  icon_visitor                            40x40   Shop card "A visitor at the forge" (a figure at a door, or a knocker)
+  icon_relic                              24x24   heading of the Workshop relics row on the Shop
+  icon_trait_long_assault                 40x40   siege trait in Town: a fight that lasts till dawn, blades wearing down
+  icon_trait_many_breaches                40x40   siege trait in Town: the wall broken in several places at once
+  icon_promised                           24x24   badge on a stored blade that is kept for an order
+
+Delivered, not implemented yet (2026-10-10): eight action icons (48x48) sit in Assets/Icons/drawable-nodpi/. The game has no
+slot for them yet. The seven icons that replace existing ones (icon_day, icon_energy, icon_gold, icon_nav_forge,
+icon_nav_journal, icon_nav_market, icon_nav_town) are implemented and moved to Assets/Implemented/icons.
+  icon_action_commission  icon_action_donate  icon_action_hone  icon_action_legacy
+  icon_action_price  icon_action_scrap  icon_action_storage  icon_action_supplies

@@ -203,8 +203,8 @@
       "material": "iron",
       "category": "CORE",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_bronze",
@@ -215,8 +215,8 @@
       "material": "bronze",
       "category": "CORE",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_silver",
@@ -227,8 +227,8 @@
       "material": "silver",
       "category": "CORE",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_obsidian",
@@ -239,8 +239,8 @@
       "material": "obsidian",
       "category": "CORE",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_starsteel",
@@ -251,8 +251,8 @@
       "material": "starsteel",
       "category": "CORE",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_moonsteel",
@@ -263,8 +263,8 @@
       "material": "moonsteel",
       "category": "CORE",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_ember_resin",
@@ -275,8 +275,8 @@
       "material": "ember_resin",
       "category": "AUGMENT",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_frost_bloom",
@@ -287,8 +287,8 @@
       "material": "frost_bloom",
       "category": "AUGMENT",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_stormglass",
@@ -299,8 +299,8 @@
       "material": "stormglass",
       "category": "AUGMENT",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_grave_dust",
@@ -311,8 +311,8 @@
       "material": "grave_dust",
       "category": "AUGMENT",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_verdant_sap",
@@ -323,8 +323,8 @@
       "material": "verdant_sap",
       "category": "AUGMENT",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_sun_ash",
@@ -335,8 +335,8 @@
       "material": "sun_ash",
       "category": "AUGMENT",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_binding_salt",
@@ -347,8 +347,8 @@
       "material": "binding_salt",
       "category": "CATALYST",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_runestone_shard",
@@ -359,8 +359,8 @@
       "material": "runestone_shard",
       "category": "CATALYST",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_dragon_oil",
@@ -371,8 +371,8 @@
       "material": "dragon_oil",
       "category": "CATALYST",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "material_void_ink",
@@ -383,8 +383,8 @@
       "material": "void_ink",
       "category": "CATALYST",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:materials",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "blessing_forgefire",
@@ -630,6 +630,36 @@
       "source": "imported",
       "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
       "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "art_day_fallen_forge",
+      "file": "drawable-nodpi/art_day_fallen_forge.png",
+      "width": 128,
+      "height": 64,
+      "layer": "art",
+      "source": "imported",
+      "sourceSheet": "pack:day_art",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "art_day_new_dawn",
+      "file": "drawable-nodpi/art_day_new_dawn.png",
+      "width": 128,
+      "height": 64,
+      "layer": "art",
+      "source": "imported",
+      "sourceSheet": "pack:day_art",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "art_day_siege_victory",
+      "file": "drawable-nodpi/art_day_siege_victory.png",
+      "width": 128,
+      "height": 64,
+      "layer": "art",
+      "source": "imported",
+      "sourceSheet": "pack:day_art",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "bg_counter_forge",
@@ -1060,8 +1090,8 @@
       "height": 24,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_energy",
@@ -1070,8 +1100,8 @@
       "height": 24,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_gold",
@@ -1080,8 +1110,8 @@
       "height": 24,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_integrity",
@@ -1110,8 +1140,8 @@
       "height": 40,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_nav_gazette",
@@ -1140,8 +1170,8 @@
       "height": 40,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_nav_legacy",
@@ -1160,8 +1190,8 @@
       "height": 40,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_nav_town",
@@ -1170,8 +1200,8 @@
       "height": 40,
       "layer": "icon",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:icons",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "icon_purse",

@@ -6,6 +6,27 @@
   "sourceKind": "ai_generated_sheet",
   "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
  },
+ "art_day_fallen_forge": {
+  "sheet": "pack:day_art",
+  "width": 128,
+  "height": 64,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "19cfa71987e06979f059a4c53cc009e8c5e62ae8248f69dab6193d1368d30316"
+ },
+ "art_day_new_dawn": {
+  "sheet": "pack:day_art",
+  "width": 128,
+  "height": 64,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "435e05c763f38df457312447406a62298e48deae2d0b48f159ad0ede14272a52"
+ },
+ "art_day_siege_victory": {
+  "sheet": "pack:day_art",
+  "width": 128,
+  "height": 64,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "15ed79b4f5f5626e15e9e707df787e8b7394166f21ad8f509762569c446cf6cf"
+ },
  "badge_common": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png",
   "width": 24,
@@ -530,25 +551,25 @@
   "notes": "Side view facing right; empty attack hand"
  },
  "icon_day": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:icons",
   "width": 24,
   "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "0ec22a0673b6a9c23a6892e343644fbc7ff7f6066d84383d947393d1dbd03770"
  },
  "icon_energy": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:icons",
   "width": 24,
   "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "e8694b4aecf0ea8b3e396e1c16937a900ddeb67aff9f7e7d084b7caddf73653a"
  },
  "icon_gold": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:icons",
   "width": 24,
   "height": 24,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "a7b76d2d5e330f52f7a4d4b99463c22c770fd078f3b7480b6c98e6eb6d363e1f"
  },
  "icon_integrity": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
@@ -565,11 +586,11 @@
   "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_nav_forge": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:icons",
   "width": 40,
   "height": 40,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "b6a9ae1a09594a6a78414b95f3b351becc42a8782fd27d06cc11fb7fb607e22b"
  },
  "icon_nav_gazette": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
@@ -586,11 +607,11 @@
   "sha256": "966f57c874a9f12e5d122a927878ddc64353ba96b4f2359e93dfc3b7b7f3404a"
  },
  "icon_nav_journal": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:icons",
   "width": 40,
   "height": 40,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "6661aa249803d87763a933369f6e1930689c48729014c605fbb523a1a704d16a"
  },
  "icon_nav_legacy": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
@@ -600,18 +621,18 @@
   "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
  },
  "icon_nav_market": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:icons",
   "width": 40,
   "height": 40,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "20950b723bd6d0b45c94fafd1768335e816b7146b8798b5b1ba25ea6531808ee"
  },
  "icon_nav_town": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:icons",
   "width": 40,
   "height": 40,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "6ed5c35bd165b153ae70bb2e73de64a8fadc737f577566fef2efc3cedd0bef6c"
  },
  "icon_purse": {
   "sheet": "Tiny Blacksmith RPG Asset Atlas.png",
@@ -655,116 +676,116 @@
   "notes": "Laurel wreath"
  },
  "material_binding_salt": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "9486f5f68a1f039c9bc8ae428abdc0f336011330ad6cefe7654d2229f243c760"
  },
  "material_bronze": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "c9b21644c09b1064568fc9764933a1a67101e9b7c301208b66d4a1cd873585b8"
  },
  "material_dragon_oil": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "6e782e7afeb15027bad0010842893bbcadd11ff6a2b39dec1d999098e880dd39"
  },
  "material_ember_resin": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "89e866e8cf8c84dcef1ef75ea620e8ec29ae6ed639467c0f5213a15edef0a8e6"
  },
  "material_frost_bloom": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "64a5260a7589172c14ff32aea6cd73d83345d3cfd0fb020ccbefc976985080dc"
  },
  "material_grave_dust": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "694e2ad7961218131703141e99e691f02f5ff1f2c660b73d80786b1543a06bf0"
  },
  "material_iron": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "2b20bd3ed89fec8a2ff2c19b13baaf1d416d81aa77bc34b50a419e7759f0106d"
  },
  "material_moonsteel": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "58d5d695bbeaebfdd757d094ee4d810f406cccb5d9c9809fc072e72462065c95"
  },
  "material_obsidian": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "4d6019184c3e97ab16dd821a0701f55b17251541313d9d3ade6d2b8df4d083d1"
  },
  "material_runestone_shard": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "10d769ea8754d2cc3f1f0bc48ea496b65f701310eda66387383fbd80bb823555"
  },
  "material_silver": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "05cf19d36346a6cf8d3798c0a852e24cef73496094d4a1e5458a5212183a41af"
  },
  "material_starsteel": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "de0f8cf91fc1b4e07bc1bfb6427dd5b4c30d0683f0d4cc0c24625528ebaa630c"
  },
  "material_stormglass": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "48f59401ade5e74f2f62e6f8017e1ed2234d7ecc94bfa1e4b867e267fb785975"
  },
  "material_sun_ash": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "c8a45f27e9b56540d1b64a28c05d7db5ccd5f7941e2856b0f136d7cf8bb7f783"
  },
  "material_verdant_sap": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "d7330c9e2219b633a40803b654e7f6ccc3f6f5b0e5886d02ac6d95c7216be2fe"
  },
  "material_void_ink": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
+  "sheet": "pack:materials",
   "width": 48,
   "height": 48,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "de50193b1cc15b922b62dcef8e400de1278b40625053018a008cba223d27de54"
  },
  "monster_ashclaw_brute_attack_0": {
   "sheet": "pack:New folder",

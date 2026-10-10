@@ -93,6 +93,16 @@ SECOND_SET_ENABLED = False
 # The hero set lives outside Git (see the module text). Its tiles are HERO_BOX px: ten of the heroes are supplied at that size.
 HEROES_DIR = Path(os.environ.get("TINY_BLACKSMITH_HEROES") or ROOT / "Assets/Heroes")
 HEROES_SHEET = "Assets/Heroes"
+# The owner's delivered pieces that the game uses (Assets/Implemented/<name>): taken verbatim from the drawable-nodpi
+# subfolder, by ID prefix. New deliveries stay in Assets/<kind>/ until they are wired in, then move here.
+OWNER_ROOT = ROOT / "Assets/Implemented"
+OWNER_PACKS = {
+    "day_art": ("art_day_",),
+    "icons": ("icon_",),
+    "materials": ("material_",),
+}
+# An ID the owner delivered wins over every older source (concept sheets, atlas, packs) that also draws it.
+OWNED_IDS = {p.stem for name in OWNER_PACKS for p in (OWNER_ROOT / name / "drawable-nodpi").glob("*.png") if p.stem.startswith(OWNER_PACKS[name])}
 HERO_BOX = 64
 # The larger renders (1254 px, on pixel grids of about 117 to 290 cells, so no size reproduces them cell for cell) are
 # reduced to the same box and to the palette size of the native files (81 to 96 colours), without dithering. Compared
@@ -390,6 +400,8 @@ class Run:
 
     def put(self, sid: str, img: Image.Image, source: Path, kind: str, /, sheet: str | None = None, **extra):
         sheet = sheet or source.name
+        if sid in OWNED_IDS and OWNER_ROOT not in source.parents:
+            return
         if sid in self.overrides:
             sys.exit(f"ERROR duplicate sprite ID '{sid}': produced from '{self.overrides[sid]['sheet']}' and again from '{sheet}'")
         digest = self._hashes.get(source) or self._hashes.setdefault(source, sha256(source))
@@ -711,6 +723,14 @@ def main():
             n = import_pack(pack, run, PACK_ALLOW[pack.name])
             found += 1
             print(f"pack {pack.name}: {n} sprites copied verbatim")
+        for name, allow in OWNER_PACKS.items():
+            folder = OWNER_ROOT / name
+            if (folder / "drawable-nodpi").is_dir():
+                n = import_pack(folder, run, allow)
+                found += 1
+                print(f"owner art {name}: {n} sprites copied verbatim")
+            else:
+                absent.add(f"pack:{name}")
         if (args.heroes / "manifest.json").is_file():
             n = import_heroes(args.heroes, run)
             found += 1

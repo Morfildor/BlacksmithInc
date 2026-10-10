@@ -253,11 +253,20 @@ fun ShelfBand(
     }
 }
 
-/** The strip above the cards that are not at the counter (beyond the door, tomorrow, the fall): art and a title. */
+/**
+ * The strip above the cards that are not at the counter (beyond the door, tomorrow, the fall): art and a title.
+ * A [vignette] is a cut-out piece (the art_day_ set) drawn centred on the ink ground at the largest whole scale that fits.
+ */
 @Composable
-fun StageBanner(title: String, art: Int, modifier: Modifier = Modifier, height: Dp = 112.dp, anchorTop: Boolean = true) {
+fun StageBanner(title: String, art: Int, modifier: Modifier = Modifier, height: Dp = 112.dp, anchorTop: Boolean = true, vignette: Boolean = false) {
     Box(modifier.fillMaxWidth().height(height).background(SceneInk)) {
-        Backdrop(art, Modifier.matchParentSize().clearAndSetSemantics {}, dim = 0.15f, anchorTop = anchorTop)
+        if (vignette) {
+            val artHeight = ImageBitmap.imageResource(art).height
+            val scale = maxOf(1, with(LocalDensity.current) { height.toPx() / artHeight }.toInt())
+            PixelSprite(art, scale, Modifier.align(Alignment.Center).clearAndSetSemantics {})
+        } else {
+            Backdrop(art, Modifier.matchParentSize().clearAndSetSemantics {}, dim = 0.15f, anchorTop = anchorTop)
+        }
         Text(
             title, style = MaterialTheme.typography.titleLarge, color = SceneCream, maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.align(Alignment.BottomStart).padding(8.dp).background(SceneDeep).border(1.dp, SceneInk).padding(horizontal = 10.dp, vertical = 4.dp).semantics { heading() }.testTag("shopday_plate"),

@@ -22,3 +22,5 @@ IDs in the game today (16), with the current in-game size:
   material_runestone_shard                48x48
   material_dragon_oil                     48x48
   material_void_ink                       48x48
+
+All 16 materials are implemented (2026-10-10); their sources are in Assets/Implemented/materials. Nothing is wanted here now.

@@ -35,6 +35,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import com.example.blacksmithproject.R
+import com.tinyblacksmith.core.shopday.AftermathKind
 import com.example.blacksmithproject.ui.FramedPanel
 import com.example.blacksmithproject.ui.LocalHaptics
 import com.example.blacksmithproject.ui.Moment
@@ -114,10 +115,12 @@ fun ShopDayScreen(
                         reducedMotion = reducedMotion, onOpenBlade = { onOpenBlade(it.blade.weaponId, it.blade) },
                     )
                 }
-                is Beat.Fallen -> StageBanner("The forge has fallen", R.drawable.bg_run_end_fallen_forge)
-                is Beat.Aftermath -> StageBanner("Beyond the door", R.drawable.bg_title_workshop_night)
+                is Beat.Fallen -> StageBanner("The forge has fallen", R.drawable.art_day_fallen_forge, vignette = true)
+                is Beat.Aftermath ->
+                    if (beat.card.kind == AftermathKind.SIEGE_HELD) StageBanner("Beyond the door", R.drawable.art_day_siege_victory, vignette = true)
+                    else StageBanner("Beyond the door", R.drawable.bg_title_workshop_night)
                 is Beat.Blessing -> StageBanner(beat.progress, R.drawable.bg_title_workshop_night)
-                is Beat.Tomorrow -> StageBanner("Day ${beat.day}", R.drawable.bg_title_workshop_night)
+                is Beat.Tomorrow -> StageBanner("Day ${beat.day}", R.drawable.art_day_new_dawn, vignette = true)
             }
             key(at) {
                 Column(

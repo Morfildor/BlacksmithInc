@@ -42,22 +42,22 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | badge_epic | 24×24 | badge | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png | rarity=EPIC |
 | badge_legendary | 24×24 | badge | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png | rarity=LEGENDARY |
 | badge_flaw | 24×24 | badge | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_55 PM-2.png | meaning=flaw |
-| material_iron | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=iron, category=CORE |
-| material_bronze | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=bronze, category=CORE |
-| material_silver | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=silver, category=CORE |
-| material_obsidian | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=obsidian, category=CORE |
-| material_starsteel | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=starsteel, category=CORE |
-| material_moonsteel | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=moonsteel, category=CORE |
-| material_ember_resin | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=ember_resin, category=AUGMENT |
-| material_frost_bloom | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=frost_bloom, category=AUGMENT |
-| material_stormglass | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=stormglass, category=AUGMENT |
-| material_grave_dust | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=grave_dust, category=AUGMENT |
-| material_verdant_sap | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=verdant_sap, category=AUGMENT |
-| material_sun_ash | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=sun_ash, category=AUGMENT |
-| material_binding_salt | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=binding_salt, category=CATALYST |
-| material_runestone_shard | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=runestone_shard, category=CATALYST |
-| material_dragon_oil | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=dragon_oil, category=CATALYST |
-| material_void_ink | 48×48 | material | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | material=void_ink, category=CATALYST |
+| material_iron | 48×48 | material | imported: script-drawn pack | pack:materials | material=iron, category=CORE |
+| material_bronze | 48×48 | material | imported: script-drawn pack | pack:materials | material=bronze, category=CORE |
+| material_silver | 48×48 | material | imported: script-drawn pack | pack:materials | material=silver, category=CORE |
+| material_obsidian | 48×48 | material | imported: script-drawn pack | pack:materials | material=obsidian, category=CORE |
+| material_starsteel | 48×48 | material | imported: script-drawn pack | pack:materials | material=starsteel, category=CORE |
+| material_moonsteel | 48×48 | material | imported: script-drawn pack | pack:materials | material=moonsteel, category=CORE |
+| material_ember_resin | 48×48 | material | imported: script-drawn pack | pack:materials | material=ember_resin, category=AUGMENT |
+| material_frost_bloom | 48×48 | material | imported: script-drawn pack | pack:materials | material=frost_bloom, category=AUGMENT |
+| material_stormglass | 48×48 | material | imported: script-drawn pack | pack:materials | material=stormglass, category=AUGMENT |
+| material_grave_dust | 48×48 | material | imported: script-drawn pack | pack:materials | material=grave_dust, category=AUGMENT |
+| material_verdant_sap | 48×48 | material | imported: script-drawn pack | pack:materials | material=verdant_sap, category=AUGMENT |
+| material_sun_ash | 48×48 | material | imported: script-drawn pack | pack:materials | material=sun_ash, category=AUGMENT |
+| material_binding_salt | 48×48 | material | imported: script-drawn pack | pack:materials | material=binding_salt, category=CATALYST |
+| material_runestone_shard | 48×48 | material | imported: script-drawn pack | pack:materials | material=runestone_shard, category=CATALYST |
+| material_dragon_oil | 48×48 | material | imported: script-drawn pack | pack:materials | material=dragon_oil, category=CATALYST |
+| material_void_ink | 48×48 | material | imported: script-drawn pack | pack:materials | material=void_ink, category=CATALYST |
 | blessing_forgefire | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=forgefire |
 | blessing_tireless_hands | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=tireless_hands |
 | blessing_merchants_favor | 48×48 | blessing | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | blessing=merchants_favor |
@@ -80,6 +80,9 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | anvil | 109×72 | scene | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | anchor=bottom-left |
 | tool_rack | 54×88 | scene | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | anchor=top-left |
 | shelf | 122×64 | scene | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | anchor=bottom-left |
+| art_day_fallen_forge | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
+| art_day_new_dawn | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
+| art_day_siege_victory | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
 | bg_counter_forge | 540×270 | bg | imported: AI-generated sheet | approved_hybrid_direction.png |  |
 | bg_forge_night | 232×211 | bg | imported: AI-generated sheet | Tiny Blacksmith RPG Asset Atlas.png |  |
 | bg_run_end_fallen_forge | 270×150 | bg | imported: script-drawn pack | pack:Tiny_Blacksmith_UI_Backgrounds_v3 |  |
@@ -115,18 +118,18 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | hero_warden_attack_1 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
 | hero_warden_idle_0 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
 | hero_warden_idle_1 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
-| icon_day | 24×24 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
-| icon_energy | 24×24 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
-| icon_gold | 24×24 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
+| icon_day | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_energy | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_gold | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_integrity | 24×24 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
 | icon_militia | 24×24 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
-| icon_nav_forge | 40×40 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
+| icon_nav_forge | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_nav_gazette | 40×40 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
 | icon_nav_home | 40×40 | icon | imported: AI-generated sheet | Tiny Blacksmith RPG Asset Atlas.png |  |
-| icon_nav_journal | 40×40 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
+| icon_nav_journal | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_nav_legacy | 40×40 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
-| icon_nav_market | 40×40 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
-| icon_nav_town | 40×40 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
+| icon_nav_market | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_nav_town | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_purse | 40×40 | icon | imported: AI-generated sheet | Tiny Blacksmith RPG Asset Atlas.png |  |
 | icon_reputation | 24×24 | icon | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png |  |
 | icon_settings | 40×40 | icon | imported: AI-generated sheet | Tiny Blacksmith RPG Asset Atlas.png |  |

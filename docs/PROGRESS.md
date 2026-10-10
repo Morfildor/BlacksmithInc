@@ -189,6 +189,7 @@ built with `./gradlew :app:assembleDebug`.
 
 ## Not done, not verified, blocked
 
+- Shop-day vignettes (2026-10-10): `art_day_fallen_forge`, `art_day_new_dawn`, `art_day_siege_victory` are imported from `Assets/Implemented/day_art` and drawn on the three stage banners (`StageBanner(vignette = true)`). Build and app unit tests pass; not yet looked at on a device. `art_day_till`, `art_day_sale_receipt`, `art_day_rumour` wait in `Assets/Scene/art_day_unwired` for a card slot. Rule: files left in `Assets/<folder>` are not implemented; implemented sources move to `Assets/Implemented`.
 Not seen on a device by anyone (the code is merged and its tests pass)
 - Font scales 1.3 and 2.0 on the M4 screens and on the screens restyled by polish pass 2.
 - Small screens (360x640, 320 dp wide) beyond what `LayoutMatrixTest` covers. That test checks only that nothing

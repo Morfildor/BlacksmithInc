@@ -14,3 +14,9 @@ IDs in the game today (8), with the current in-game size:
   shelf                                   122x64
   siege_wall                              96x32
   siege_wall_damaged                      96x32
+
+Delivered, not implemented yet (2026-10-10): Assets/Scene/art_day_unwired/ holds three shop-day vignettes (128x64, transparent)
+that no screen slot uses yet. Each needs a place on a card; nothing is imported until one is chosen.
+  art_day_till                            128x64  chest of coins: the day's takings (Tally card)
+  art_day_sale_receipt                    128x64  scroll, seal and coins: the receipt (Close card)
+  art_day_rumour                          128x64  sealed letter and lantern: a rumour (no card yet)

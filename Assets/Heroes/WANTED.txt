@@ -27,3 +27,15 @@ IDs in the game today (20), with the current in-game size:
   hero_warden_attack_1                    16x16
   hero_warden_idle_0                      16x16
   hero_warden_idle_1                      16x16
+
+New with the visitors update (2026-10-10): not in the game yet, optional. The screens work without them.
+Morning visitors who are not heroes of the town have no face today: their sheet shows text only. A visitor who is a
+hero (the defender asking for a blade on trust, the friend of a fallen hero, the debtor who returns) already uses
+that hero's own portrait and needs nothing new.
+Wanted, in the same framed tile style as the hero portraits (64x64 native), one face each, no upgraded state:
+  visitor_carter                          64x64   The Last Crate: a road-worn carter with one crate left before a siege
+  visitor_wandering_master                64x64   The Master's Afternoon: an old travelling master smith (a woman in the text)
+  visitor_collector                       64x64   The Collector's Offer: a wealthy collector of famous blades
+  visitor_crooked_merchant                64x64   The Crooked Merchant: a merchant with a quick smile, not to be trusted
+  visitor_rival_smith                     64x64   The Smith's Wager: a proud smith passing through
+  visitor_council_envoy                   64x64   The Festival Contract: an envoy of the town council
