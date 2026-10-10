@@ -1,7 +1,7 @@
 # Progress — 2026-10-10 (major update, final state at about 13:00)
 
 ## Forge-first redesign (2026-10-10, evening): on branch `ui-beauty-pass`, not merged
-Branch `ui-beauty-pass`, cut from `main` at `6c49f8e`; five commits; no balance, rules, schema or content change (one
+Branch `ui-beauty-pass`, cut from `main` at `6c49f8e`; one commit per slice; no balance, rules, schema or content change (one
 core wording change: "Seems neutral"). Source: the owner's redesign plan of 10 October, two phone mock-ups and an HTML
 sketch of the Forge. Rulings and engineering notes: DECISIONS, "Forge-first redesign".
 
@@ -22,7 +22,7 @@ sketch of the Forge. Rulings and engineering notes: DECISIONS, "Forge-first rede
   - `StorageSheetTest.bulkSalvageAsksOnceAndIssuesOneCommandPerBlade`: fails on this AVD on untouched `main` as well
     (noted in an earlier session); Storage was not changed here.
   - `ShopPanelTest.theLeadIsTheSameAsTheTomorrowCard`: the evening card says "today" and the Shop says "yesterday" for
-    the same lead, since the wording commit `ce4f0a6` on `main`. By reading only: it was not run on `main` to confirm.
+    the same lead. Run alone against untouched `main` (`6c49f8e`) on the same emulator: it fails there in the same way.
 - Seen on that emulator by hand: the Forge from empty to ready and with a tray open, a forge and its result card with
   "New observation", the notebook, the board on day 5 with 2 commissions and 6 wants, Town and the Shop on a siege day,
   a lost siege's card and the evening recap after "Skip day", the compact Shop.
@@ -33,7 +33,10 @@ sketch of the Forge. Rulings and engineering notes: DECISIONS, "Forge-first rede
   no-energy states, Supplies opening on a missing material, the Gazette archive rows. All of these have code; none was looked at.
 - U5 for Storage, Legacy and the hero and blade sheets; the new wording is in the app, not yet in `core/shopday/Lines.kt`.
 - The result card's learning line sits under the stat block and can be below the fold on a short screen.
-- `tools/emulator/smoke.sh` was edited for the new Forge and not run; `runend.sh` was not run.
+- `tools/emulator/smoke.sh`, edited for the new Forge, ran to `SMOKE_DONE` with every CHECK ok (including the resume
+  after a process kill on day 2). `runend.sh` was not run.
+- The Forge at font scale 1.3 was looked at: the open tray's first row is in view on arriving, a choice brings the
+  tray into view, and the finished recipe returns to the workbench; the field notes are then partly under the Forge button.
 
 **Open for the owner.**
 - The uncommitted fourth UI batch in the `ui-batch4` worktree edits the same screens (Forge, Shop, Town, Records tabs)

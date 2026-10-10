@@ -3788,6 +3788,14 @@ an owner decision.
 - `core`: "Seems ordinary" became "Seems neutral" in `Journal.affinityHint`. Wording only; no rule, balance or schema change.
 - `ShopDayScreenTest.replayOutcomeIsNeverGatedOnATimer` now lets the clock run while it scrolls to "Watch the siege":
   the siege card is taller than the test's screen and a scroll with the clock paused never finishes. What it asserts is unchanged.
+- While a tray is open the workbench is 72 dp and the blade's name is not drawn (it stays in the content description),
+  so the choices are in view without a scroll at font scale 1.3; a tray opened by a tap scrolls into view and the
+  finished recipe scrolls back to the top. Arriving at the Forge moves nothing.
+- Deviations from the plan, kept and to be revisited: the Shop still shows the shelf as the picture strip and as
+  rows (the plan says one; the rows now carry only power, flaws and price). A result reopened after a restart shows
+  no learning line at all (the plan asks for the knowledge as it stands; the field notes on the Forge show that).
+  The tray does not show the two journal hints for an augment being browsed, only for the one chosen (the field notes
+  under the tray). The Forge's commission line says accepted or not, not "Ready for End Day" (the board does).
 - Two agents did the Shop pass and the Supplies and Gazette pass in their own worktrees; their diffs were applied here.
 
 **Checks.** `:app:testDebugUnitTest` and `:core:test` pass (new app classes: `ForgeWorkbenchModelTest`,

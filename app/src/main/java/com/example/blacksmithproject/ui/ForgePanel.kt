@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -117,17 +119,23 @@ fun ForgePanel(
         revealed = s.forgeReveal
     }
 
+    // Not saved: coming back to the Forge starts with it off, so nothing moves until the player acts.
+    var follow by remember { mutableStateOf(false) }
+
     Column(Modifier.fillMaxSize()) {
         EventStrip(s) { vm.selectDest(Dest.TOWN) }
-        Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Space.md).padding(bottom = Space.md)) {
+        val scroll = rememberScrollState()
+        // The last choice closes the tray: the finished blade over the anvil comes back into view.
+        LaunchedEffect(open) { if (open == null && follow) scroll.animateScrollTo(0) }
+        Column(Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = Space.md).padding(bottom = Space.md)) {
             ForgeHeading(s.shop.requests.size, onOpenBoard, { onOpenSupplies(null) }, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
             Workbench(bench.title, d, vm.engine.content, compact = open != null)
             bench.brief?.let { Brief(it, onOpenBoard) { vm.updateDraft { draft -> draft.copy(commissionId = null) } } }
-            SlotRow(bench.slots.take(3), d, engine.content, open) { opened = if (open == it) NO_SLOT else it.name }
-            if (bench.slots.size > 3) SlotRow(bench.slots.drop(3), d, engine.content, open) { opened = if (open == it) NO_SLOT else it.name }
+            SlotRow(bench.slots.take(3), d, engine.content, open) { opened = if (open == it) NO_SLOT else it.name; follow = true }
+            if (bench.slots.size > 3) SlotRow(bench.slots.drop(3), d, engine.content, open) { opened = if (open == it) NO_SLOT else it.name; follow = true }
             if (open != null) {
                 val options = remember(s.state, d, open, s.shop.threat) { engine.forgeOptions(s.state, d, open, s.shop.threat) }
-                Tray(open, options, engine.content, onOpenSupplies, onDone = { opened = NO_SLOT }) { option -> vm.updateDraft { engine.place(it, open, option) }; opened = null }
+                Tray(open, options, engine.content, follow, onOpenSupplies, onDone = { opened = NO_SLOT }) { option -> vm.updateDraft { engine.place(it, open, option) }; opened = null; follow = true }
             }
             if (bench.notes.isNotEmpty()) FieldNotes(bench.notes) { vm.selectRecords(RecordsPage.JOURNAL) }
             ForgingOptions(d) { change -> vm.updateDraft(change) }
@@ -179,7 +187,7 @@ private fun ForgeHeading(commissions: Int, onOpenBoard: () -> Unit, onOpenSuppli
 @Composable
 private fun Workbench(title: String, d: ForgeDraft, content: ContentCatalog, compact: Boolean) {
     val large = LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenHeightDp < 620
-    val height = if (compact || large) 88.dp else 132.dp
+    val height = if (compact) 72.dp else if (large) 88.dp else 132.dp
     val blade = wholePixelDp(56, if (compact || large) 56.dp else 104.dp)
     Column(Modifier.fillMaxWidth().testTag("forge_workbench").semantics(mergeDescendants = true) { contentDescription = "On the anvil: $title" }) {
         Box(Modifier.fillMaxWidth().height(height).clip(Card).border(1.dp, BronzeDeep, Card), contentAlignment = Alignment.BottomCenter) {
@@ -193,7 +201,8 @@ private fun Workbench(title: String, d: ForgeDraft, content: ContentCatalog, com
                 )
             }
         }
-        Text(
+        // While a tray is open the name gives its line to the choices; it is still said for a screen reader, above.
+        if (!compact) Text(
             title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Normal, color = Cream, textAlign = TextAlign.Center, maxLines = 2,
             modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = 6.dp).testTag("forge_title"),
         )
@@ -263,10 +272,13 @@ private fun optionArt(slot: RecipeSlot, option: OptionUi, content: ContentCatalo
  * what is missing and offers the way to buy it. What the chosen tile does is said once, under the grid.
  */
 @Composable
-private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, onRestock: (MaterialId?) -> Unit, onDone: () -> Unit, onPick: (OptionUi) -> Unit) {
+private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, follow: Boolean, onRestock: (MaterialId?) -> Unit, onDone: () -> Unit, onPick: (OptionUi) -> Unit) {
+    // A tray the player just opened (or was moved on to by a choice) comes into view; arriving at the Forge moves nothing.
+    val requester = remember { BringIntoViewRequester() }
+    LaunchedEffect(slot, follow) { if (follow) requester.bringIntoView() }
     val columns = if (LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340) 2 else 3
     var inspected by remember(slot) { mutableStateOf<OptionUi?>(null) }
-    Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeDeep, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).bringIntoViewRequester(requester).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeDeep, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(slot.choose, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Normal, color = CreamMuted, modifier = Modifier.weight(1f).semantics { heading() })
             TextButton(onClick = onDone, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_done")) { Text("Done", color = CreamMuted) }
