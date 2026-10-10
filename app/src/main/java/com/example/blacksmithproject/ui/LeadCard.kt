@@ -1,12 +1,8 @@
 package com.example.blacksmithproject.ui
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -14,7 +10,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.shopday.LeadKind
 
@@ -33,14 +29,12 @@ fun leadActionLabel(kind: LeadKind): String? = when (kind) {
  */
 @Composable
 fun LeadCard(lead: LeadUi, onAct: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(color = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer, shape = MaterialTheme.shapes.medium, modifier = modifier.fillMaxWidth()) {
-        Column(Modifier.padding(Space.md)) {
-            Text("WORTH DOING FIRST", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-            Text(lead.action, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = Space.xs).semantics { heading() }.testTag("shop_lead"))
-            lead.reason?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = Space.xs).testTag("shop_lead_reason")) }
-            leadActionLabel(lead.kind)?.let { label ->
-                Button(onClick = onAct, modifier = Modifier.padding(top = Space.sm).heightIn(min = 48.dp).testTag("shop_lead_action")) { Text(label) }
-            }
+    FramedPanel(modifier = modifier.fillMaxWidth()) {
+        Text("WORTH DOING FIRST", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = Gold)
+        Text(lead.action, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = Space.xs).semantics { heading() }.testTag("shop_lead"))
+        lead.reason?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = Space.xs).testTag("shop_lead_reason")) }
+        leadActionLabel(lead.kind)?.let { label ->
+            PrimaryActionButton(label, onAct, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("shop_lead_action"))
         }
     }
 }

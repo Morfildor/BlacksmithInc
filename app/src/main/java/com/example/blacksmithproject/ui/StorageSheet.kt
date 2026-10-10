@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.WeaponId
 
@@ -42,7 +43,7 @@ fun StorageList(storage: List<StockUi>, shelfFree: Int, busy: Boolean, onOpenBla
     LazyColumn(modifier.fillMaxWidth().navigationBarsPadding().testTag("storage_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, bottom = Space.lg)) {
         item(key = "head") {
             Column(Modifier.padding(bottom = Space.sm)) {
-                Text("Storage · ${storage.size}", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+                Text("Storage · ${storage.size}", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
                 Secondary(
                     when {
                         storage.isEmpty() -> "Nothing in storage. Forged blades wait here until you list them."

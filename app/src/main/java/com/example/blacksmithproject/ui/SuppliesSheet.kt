@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,7 +13,6 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -28,6 +26,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.content.MaterialDef
@@ -72,7 +71,7 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
     LazyColumn(modifier.fillMaxWidth().navigationBarsPadding().testTag("supplies_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, bottom = Space.lg)) {
         item(key = "supplier") {
             Column {
-                Text("Supplier", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { heading() })
+                Text("Supplier", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
                 Secondary("${st.gold} gold in the purse. Buy one at a time. Basic metals are always in stock.")
             }
         }
@@ -80,11 +79,7 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
             val group = content.materials(category)
             if (group.isEmpty()) return@forEach
             item(key = "supplier_${category.name}") {
-                Text(
-                    when (category) { MaterialCategory.CORE -> "Cores"; MaterialCategory.AUGMENT -> "Augments"; MaterialCategory.CATALYST -> "Catalysts" },
-                    style = MaterialTheme.typography.titleSmall,
-                    modifier = Modifier.padding(top = Space.md, bottom = Space.xs),
-                )
+                SectionHeader(when (category) { MaterialCategory.CORE -> "Cores"; MaterialCategory.AUGMENT -> "Augments"; MaterialCategory.CATALYST -> "Catalysts" })
             }
             items(group, key = { "material_${it.id.value}" }) { m ->
                 val price = vm.engine.materialPrice(st, m.id)
@@ -97,11 +92,11 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                         Secondary("You have $have" + (stock?.let { " · $it left today" } ?: ""))
                         vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
                     }
-                    OutlinedButton(
+                    SecondaryActionButton(
+                        "Buy", { vm.dispatch(Command.BuyMaterial(m.id, 1)) },
+                        Modifier.testTag("buy_${m.id.value}").semantics { contentDescription = "Buy ${m.name} for $price gold" },
                         enabled = (stock == null || stock > 0) && st.gold >= price && !s.busy,
-                        onClick = { vm.dispatch(Command.BuyMaterial(m.id, 1)) },
-                        modifier = Modifier.heightIn(min = 48.dp).testTag("buy_${m.id.value}").semantics { contentDescription = "Buy ${m.name} for $price gold" },
-                    ) { Text("Buy") }
+                    )
                 }
             }
         }
@@ -119,11 +114,11 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                     Secondary(t.description)
                 }
                 if (cost == null) Secondary("Maxed")
-                else OutlinedButton(
+                else SecondaryActionButton(
+                    "Buy · $cost g", { vm.dispatch(Command.BuyTool(t.id)) },
+                    Modifier.semantics { contentDescription = "Buy ${t.name} for $cost gold" },
                     enabled = st.gold >= cost && !s.busy,
-                    onClick = { vm.dispatch(Command.BuyTool(t.id)) },
-                    modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = "Buy ${t.name} for $cost gold" },
-                ) { Text("Buy · $cost g") }
+                )
             }
         }
     }

@@ -150,7 +150,7 @@ fun GameEngine.itemDetail(state: GameState, weaponId: WeaponId, snapshot: Weapon
         rarity = shown.rarity,
         element = shown.element,
         title = shown.title,
-        stats = stats(shown, before = first.takeIf { differs && present != null }),
+        stats = weaponStats(shown, before = first.takeIf { differs && present != null }),
         counter = if (differs) facts(first) else emptyList(),
         now = when {
             weapon == null -> listOf(Fact("Where", "No longer in the forge's records"))
@@ -184,8 +184,8 @@ private fun facts(w: WeaponSnapshot): List<Fact> = listOfNotNull(
 private const val QUALITY_MAX = 100
 private const val CONDITION_MAX = 100
 
-/** The numbers of [w] as stored; [before] is the visit snapshot of a blade that has changed since, for the "was" of each. */
-private fun stats(w: WeaponSnapshot, before: WeaponSnapshot?): List<Stat> = listOf(
+/** The numbers of [w] as stored; [before] is the visit snapshot of a blade that has changed since, for the "was" of each. The card and the stock rows both read this. */
+internal fun weaponStats(w: WeaponSnapshot, before: WeaponSnapshot? = null): List<Stat> = listOf(
     Stat("Power", w.power, was = before?.power?.takeIf { it != w.power }),
     Stat("Quality", w.quality, qualityWord(w), QUALITY_MAX, before?.quality?.takeIf { it != w.quality }),
     Stat("Condition", w.condition, conditionWord(w), CONDITION_MAX, before?.condition?.takeIf { it != w.condition }),

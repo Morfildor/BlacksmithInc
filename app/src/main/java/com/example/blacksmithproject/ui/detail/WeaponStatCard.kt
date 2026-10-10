@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +26,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.EffectKind
 import com.example.blacksmithproject.ui.EffectRow
@@ -62,6 +65,27 @@ fun elementColor(e: Element): Color = when (e) {
     Element.GRAVE -> Color(0xFFB9C2A8)
     Element.VERDANT -> Color(0xFF8FDC8C)
     Element.SUN -> Color(0xFFFFD76A)
+}
+
+/**
+ * A blade in one wrapping line, for a row of the shelf or the storeroom: the rarity in words, then the same [Stat]s the
+ * card shows as "Power 24", "Quality 52", then each buff ("+", green) and each flaw ("−", red) by name. Numbers, not
+ * bars: a row is one line of reading.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun WeaponStatLine(rarity: Rarity, stats: List<Stat>, buffs: List<String>, flaws: List<String>, modifier: Modifier = Modifier) {
+    FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+        Text(Labels.rarity(rarity), style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+        stats.forEach { s ->
+            Row {
+                Text("${s.label} ", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                Text("${s.value}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+            }
+        }
+        buffs.forEach { Text("${EffectKind.BUFF.sign} $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.BUFF.color) }
+        flaws.forEach { Text("${EffectKind.FLAW.sign} $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.FLAW.color) }
+    }
 }
 
 private class Cell(val label: String, val value: String, val color: Color? = null, val delta: StatDelta? = null)

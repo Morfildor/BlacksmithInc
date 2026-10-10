@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.BlacksmithProject" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@color/parchment</item>
+    <!-- Dark from the first frame: the window shows this ground until Compose draws the forge palette over it. -->
+    <style name="Theme.BlacksmithProject" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/forge_night</item>
     </style>
 </resources>
