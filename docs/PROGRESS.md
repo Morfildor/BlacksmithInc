@@ -1,6 +1,11 @@
 # Progress — 2026-10-10 (major update, final state at about 13:00)
 
 ## Current phase
+**Update, 2026-10-10 (afternoon):** at the owner's request the history was rebuilt as one commit per task (no merge or
+ledger-only commits; same files) and pushed to `main`. `main` now holds 0.7.0 as a debug-tested development build; it is
+still not a store release. Commit hashes quoted below and in the ledger are those of the working branch
+(`major-update` on GitHub), not of `main`.
+
 P7b, the major update (the "shop day"), is built as app version **0.7.0** (versionCode 7) on the integration branch
 `shop-day/m0`, which is pushed to GitHub as the branch `major-update`. It is **not released**: `main` is still 0.6.0.
 Everything is merged; no agent branch holds unmerged work. The last commit that changed code or tests is `2eca650`;
