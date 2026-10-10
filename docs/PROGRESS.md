@@ -16,9 +16,10 @@ sketch of the Forge. Rulings and engineering notes: DECISIONS, "Forge-first rede
   material; Gazette archive rows.
 
 **Checks run.**
-- `:app:testDebugUnitTest` and `:core:test`: pass.
+- `:app:testDebugUnitTest` (160 tests) and `:core:test` (395 tests): pass, on the last commit of the branch.
+- An independent read of the whole branch: no rule or disclosure violation; six defects found and fixed (DECISIONS).
 - `:app:connectedDebugAndroidTest` on a private read-only emulator (AVD `carbscan`, API 36, 1080x1920 at 420 dpi, font
-  scale 1.0; not Pixel_10_Pro): 69 tests, 67 pass, 2 fail.
+  scale 1.0; not Pixel_10_Pro), on the last commit: 69 tests, 67 pass, 2 fail.
   - `StorageSheetTest.bulkSalvageAsksOnceAndIssuesOneCommandPerBlade`: fails on this AVD on untouched `main` as well
     (noted in an earlier session); Storage was not changed here.
   - `ShopPanelTest.theLeadIsTheSameAsTheTomorrowCard`: the evening card says "today" and the Shop says "yesterday" for
