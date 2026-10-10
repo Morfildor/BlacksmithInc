@@ -22,6 +22,11 @@ class LegacyProseTest {
     }
 
     @Test
+    fun aRewrittenLineAlwaysEndsWithAPeriod() {
+        assertEquals("First notes on Iron on Axes. Hides something more.", LegacyProse.display("Journal: Iron on Axes observed $dash hides something more"))
+    }
+
+    @Test
     fun anyOtherTextKeepsItsFactsAndLosesOnlyItsSeparators() {
         assertEquals(
             "Mira Vance routed Ashclaw scouts using Winterwake. Brought Starsteel back to the forge. Grew stronger (level 2).",

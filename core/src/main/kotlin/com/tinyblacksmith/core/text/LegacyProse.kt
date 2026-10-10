@@ -28,14 +28,16 @@ object LegacyProse {
     /** [text] as the player reads it. Pure and idempotent: the result of a new emitter passes through unchanged. */
     fun display(text: String): String {
         val source = known.firstNotNullOfOrNull { (re, rewrite) -> re.matchEntire(text.trim())?.let(rewrite) } ?: text
-        if (emDash !in source && semicolon !in source) return source
+        if (emDash !in source && semicolon !in source) return if (source === text) source else closed(source)
         var out = source
         for (sep in listOf(emDash, semicolon)) {
             out = out.split(sep).mapIndexed { i, part -> if (i == 0) part else cap(part.trimStart()) }.joinToString(". ") { it.trimEnd().trimEnd('.') }
         }
-        out = out.trim()
-        return if (out.isEmpty() || out.last() == '.' || out.last() == '!' || out.last() == '?' || out.last() == '\'' || out.last() == '"') out else "$out."
+        return closed(out.trim())
     }
+
+    private fun closed(out: String): String =
+        if (out.isEmpty() || out.last() in ".!?'\"") out else "$out."
 
     private val wonNew = Regex("""^Emberfall held against (.+?)\. .+ defended the walls\.$""")
     private val wonOld = Regex("""^Emberfall repelled (.+)! Champions: .+\.$""")
