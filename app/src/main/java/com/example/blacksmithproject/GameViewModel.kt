@@ -18,6 +18,9 @@ import com.example.blacksmithproject.data.SettingsStore
 import com.example.blacksmithproject.data.ShopDaySpeed
 import com.example.blacksmithproject.ui.ShopUi
 import com.example.blacksmithproject.ui.shopUi
+import com.example.blacksmithproject.ui.shopday.ShopDayUiModel
+import com.example.blacksmithproject.ui.shopday.toUi
+import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.MaterialCategory
@@ -82,6 +85,8 @@ sealed interface UiState {
         val state: GameState,
         /** The Shop destination's content, built from [state] off the main thread. */
         val shop: ShopUi,
+        /** The next siege as the engine weighs it today (Town), computed once per [state] off the main thread; null when no faction presses. */
+        val forecast: Battle.SiegeOutlook? = null,
         val dest: Dest = Dest.SHOP,
         val records: RecordsPage = RecordsPage.GAZETTE,
         val draft: ForgeDraft = ForgeDraft(),
@@ -98,10 +103,12 @@ sealed interface UiState {
      * The last resolved day while the player has not watched it to its end (the day cursor is not at DONE). [state] is
      * the saved game after that day; [script] is derived from it and its stored record, never from RNG. Nothing here
      * changes the save except the blessing choice. [resumed]: the game was opened onto this day (the Resume prompt).
+     * [model] is the script laid out for the screen, built with it off the main thread.
      */
     data class ShopDay(
         val state: GameState,
         val script: ShopDayScript,
+        val model: ShopDayUiModel,
         val position: ShopDayPosition,
         val speed: ShopDaySpeed = ShopDaySpeed.TAP,
         val sheet: Sheet? = null,
@@ -139,7 +146,7 @@ class GameViewModel(
     private val session: GameSession,
     val settings: Settings,
     private val saved: SavedStateHandle,
-    private val compute: CoroutineDispatcher = Dispatchers.Default,   // builds the shop-day script and the Shop's content off the main thread
+    private val compute: CoroutineDispatcher = Dispatchers.Default,   // builds the shop day (script and screen model), the Shop's content and the siege forecast off the main thread
     private val buildScript: (DayResolution, GameState, ContentCatalog, BalanceConfig) -> ShopDayScript = ShopDay::script,
 ) : ViewModel() {
     private data class Local(
@@ -165,14 +172,17 @@ class GameViewModel(
     /** closeRun of the ended run, computed once per run instead of on every emission. */
     private var closed: Pair<GameState, RunEndResult>? = null
 
-    /** The script of the unwatched day, built once per saved state: moving through the day never builds it again. */
-    private var script: Pair<GameState, ShopDayScript>? = null
+    private class Day(val script: ShopDayScript, val model: ShopDayUiModel)
+    private class Plan(val shop: ShopUi, val forecast: Battle.SiegeOutlook?)
+
+    /** The script of the unwatched day and its screen model, built once per saved state: moving through the day never builds them again. */
+    private var script: Pair<GameState, Day>? = null
 
     /** A run whose last day could not be turned into a script: that day counts as watched (the Gazette still has it). */
     private var unshowable: GameState? = null
 
-    /** The Shop destination's content, built once per saved state. */
-    private var shop: Pair<GameState, ShopUi>? = null
+    /** The Shop destination's content and the siege forecast, built once per saved state. */
+    private var shop: Pair<GameState, Plan>? = null
 
     /**
      * While a script is being built nothing is emitted, so the screen stays on what it showed (planning with its
@@ -195,12 +205,12 @@ class GameViewModel(
      * A script that cannot be built must not end the [ui] flow (the game would then crash at every launch): the day is
      * treated as watched, its cursor moves to DONE so planning opens, and the Gazette still has the day.
      */
-    private suspend fun scriptFor(snap: GameSession.Snapshot?): ShopDayScript? {
+    private suspend fun scriptFor(snap: GameSession.Snapshot?): Day? {
         val last = unwatched(snap) ?: return null
         val run = snap?.run ?: return null
         script?.takeIf { it.first === run }?.let { return it.second }
         return try {
-            withContext(compute) { buildScript(last, run, engine.content, engine.config) }.also { script = run to it }
+            withContext(compute) { buildScript(last, run, engine.content, engine.config).let { Day(it, it.toUi(run, engine.content, engine.config)) } }.also { script = run to it }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -214,29 +224,32 @@ class GameViewModel(
     /** True where the workshop is on screen: a run that goes on and whose last day has been watched. */
     private fun plans(snap: GameSession.Snapshot?): Boolean = snap?.run?.isEnded == false && unwatched(snap) == null
 
-    private suspend fun shopFor(snap: GameSession.Snapshot?): ShopUi? {
+    private suspend fun shopFor(snap: GameSession.Snapshot?): Plan? {
         val run = snap?.run?.takeIf { plans(snap) } ?: return null
         shop?.takeIf { it.first === run }?.let { return it.second }
-        return withContext(compute) { engine.shopUi(run) }.also { shop = run to it }
+        return withContext(compute) { planFor(run) }.also { shop = run to it }
     }
 
-    private fun render(snap: GameSession.Snapshot?, op: Status, l: Local, script: ShopDayScript?, shop: ShopUi?): UiState {
+    private fun planFor(run: GameState) = Plan(engine.shopUi(run), engine.siegeForecast(run))
+
+    private fun render(snap: GameSession.Snapshot?, op: Status, l: Local, day: Day?, plan: Plan?): UiState {
         if (snap == null || l.loading) return l.loadFailure?.let { UiState.LoadFailed(it, working = l.loading) } ?: UiState.Loading
         val run = snap.run ?: return UiState.Title(snap.legacy, op)
         val last = unwatched(snap)
         // An unwatched day always arrives with its script: scriptFor builds it before this is called, and now() checks.
-        if (last != null && script != null) {
+        if (last != null && day != null) {
             val id = last.commandId.value
-            val beats = ShopDayPosition.beats(script)
+            val beats = ShopDayPosition.beats(day.script)
             val at = if (l.dayId == id) l.dayAt.coerceIn(beats.indices) else ShopDayPosition.index(beats, snap.cursor?.takeIf { it.commandId == id })
-            return UiState.ShopDay(run, script, ShopDayPosition(beats, at), l.speed, l.sheet, l.gazetteOpen, l.resumed, op, l.lastError)
+            return UiState.ShopDay(run, day.script, day.model, ShopDayPosition(beats, at), l.speed, l.sheet, l.gazetteOpen, l.resumed, op, l.lastError)
         }
         if (run.isEnded && last == null) {
             val end = closed?.takeIf { it.first === run }?.second ?: engine.closeRun(run).also { closed = run to it }
             return UiState.RunEnded(run, end, snap.legacy, claimed = run.runId.value in snap.legacy.claimedRunIds, lastError = l.lastError, op = op)
         }
         // Planning always arrives with the Shop's content: shopFor builds it before this is called, and now() checks.
-        return UiState.Playing(run, shop ?: engine.shopUi(run), l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet)
+        val planned = plan ?: planFor(run)
+        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
