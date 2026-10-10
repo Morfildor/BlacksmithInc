@@ -27,6 +27,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.example.blacksmithproject.ui.EffectKind
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.example.blacksmithproject.ui.FramedPanel
 import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.R
@@ -145,6 +148,44 @@ fun AftermathCard(
     }
 }
 
+/**
+ * The siege's own card: the outcome in the largest type of the day, then what it cost as recorded (the day's damage and
+ * the forge as it stands now, two separate facts), who stood on the wall, the day's own words, and the stored replay.
+ */
+@Composable
+fun SiegeOutcomeCard(beat: Beat.Aftermath, siege: SiegeOutcomeUi, onOpenHero: (FaceUi) -> Unit, onWatchFight: (CombatReplay) -> Unit, modifier: Modifier = Modifier) {
+    val card = beat.card
+    val kind = if (siege.held) EffectKind.BUFF else EffectKind.FLAW
+    Column(modifier.fillMaxWidth().testTag("shopday_siege"), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        siege.foe?.let { Overline(it, strong = true) }
+        Text(siege.outcome, style = MaterialTheme.typography.headlineMedium, color = kind.color, modifier = Modifier.semantics { heading() }.testTag("shopday_siege_outcome"))
+        ReceiptRows(
+            listOf(
+                ReceiptRow("Forge damage", siege.forgeDamage?.let { if (it > 0) "${EffectKind.FLAW.sign}$it" else "None" } ?: "None recorded"),
+                ReceiptRow("Forge health now", "${siege.forgeHealthNow}"),
+            ),
+            Modifier.padding(vertical = Space.xs).testTag("shopday_siege_cost"),
+        )
+        if (card.champions.isNotEmpty()) {
+            Overline("On the wall")
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) { card.champions.forEach { PersonChip(it, onOpenHero) } }
+        }
+        Body(card.text, Modifier.testTag("shopday_aftermath_text"))
+        card.replay?.let { replay ->
+            OutlinedButton(onClick = { onWatchFight(replay) }, shape = MaterialTheme.shapes.small, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_watch")) { Text("Watch the siege") }
+        }
+    }
+}
+
+/** Today's siege in one line on the evening cards: what a player who skipped the day still has to know. */
+@Composable
+private fun SiegeRecap(text: String) {
+    Column(Modifier.fillMaxWidth().padding(bottom = Space.xs).testTag("shopday_siege_recap")) {
+        Overline("Today's siege", strong = true)
+        Body(text)
+    }
+}
+
 /** The fight as recorded: the outcome first and at once, then every round. Nothing here waits on a timer. */
 @Composable
 fun ReplayOverlay(replay: CombatReplay, onClose: () -> Unit, modifier: Modifier = Modifier) {
@@ -176,6 +217,7 @@ fun FallenCard(fallen: Beat.Fallen, onOpenGazette: () -> Unit, modifier: Modifie
 @Composable
 fun TomorrowCard(tomorrow: Beat.Tomorrow, onOpenGazette: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        tomorrow.recap?.let { SiegeRecap(it) }
         if (tomorrow.action.isNotEmpty()) {
             Overline("Worth doing first", strong = true)
             CardTitle(tomorrow.action, Modifier.testTag("shopday_lead"))
@@ -196,8 +238,9 @@ fun TomorrowCard(tomorrow: Beat.Tomorrow, onOpenGazette: () -> Unit, modifier: M
 
 /** The town's thanks after a held siege: one button per blessing. "Decide later" is the screen's wide button. */
 @Composable
-fun BlessingChoices(choices: List<BlessingUi>, onChoose: (BlessingId) -> Unit, modifier: Modifier = Modifier) {
+fun BlessingChoices(choices: List<BlessingUi>, onChoose: (BlessingId) -> Unit, modifier: Modifier = Modifier, siege: String? = null) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+        siege?.let { SiegeRecap(it) }
         CardTitle("The town offers a blessing")
         choices.forEach { b ->
             OutlinedButton(onClick = { onChoose(b.id) }, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("blessing_${b.id.value}")) {

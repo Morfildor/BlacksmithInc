@@ -6,6 +6,7 @@ import com.example.blacksmithproject.ui.detail.weaponStats
 import com.example.blacksmithproject.ui.shopday.Beat
 import com.example.blacksmithproject.ui.shopday.FaceUi
 import com.example.blacksmithproject.ui.shopday.toUi
+import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.content.ToolEffect
 import com.tinyblacksmith.core.engine.GameEngine
@@ -76,7 +77,12 @@ data class ThreatUi(
     val siege: String, val line: String?, val warned: Boolean, val marks: Map<Element, MarkUi>,
     /** The besieger and its matchup as plain facts: "Ashclaw Raiders · Weak to Frost · Resists Fire". */
     val matchup: String? = null,
+    /** How the siege looks as things stand (`Labels.outlook`); null without a forecast. */
+    val outlook: String? = null,
+    val today: Boolean = false,
 ) {
+    /** When, who and what tells against them, and how the town stands: the one siege line every destination shows. */
+    val summary: String get() = listOfNotNull(if (today) "$siege, after today's trading" else siege, matchup, outlook).joinToString(" · ")
     /** Siege and matchup on one line, for a plate. */
     val plate: String get() = listOfNotNull(siege, line).joinToString(" · ")
     /** Said on the Shop on the days `Threat.warned` holds and the besieger cares about an element. */
@@ -181,7 +187,7 @@ fun GameEngine.threatUi(state: GameState): ThreatUi? = Threats.of(state, content
     ThreatUi(
         siege = when { t.daysToSiege <= 0 -> "Siege today"; t.daysToSiege == 1 -> "Siege tomorrow"; else -> "Siege in ${t.daysToSiege} days" },
         line = Lines.threat(t, content),
-        warned = t.warned,
+        warned = t.warned, today = t.daysToSiege <= 0,
         marks = Element.entries.mapNotNull { e -> Threats.mark(e, t)?.let { e to MarkUi(Lines.threatMark(it, t, content), it == ThreatMark.COUNTERS) } }.toMap(),
         matchup = content.factionById[t.factionId]?.name?.let { name -> listOfNotNull(name, t.weakTo?.let { "Weak to ${it.word()}" }, t.resists?.let { "Resists ${it.word()}" }).joinToString(" · ") },
     )
@@ -205,13 +211,13 @@ private fun GameEngine.yesterday(state: GameState, day: DayResolution): Yesterda
     return YesterdayUi(day.day, day.ledger?.let { "Took ${it.goldAtClose - it.goldAtOpen} gold" }, close?.counts, lines)
 }
 
-/** The Shop destination's content for [state]. Pure: reads the save, draws nothing, changes nothing. */
-fun GameEngine.shopUi(state: GameState): ShopUi {
+/** The Shop destination's content for [state]. Pure: reads the save, draws nothing, changes nothing. [forecast] is the siege forecast when it is already at hand. */
+fun GameEngine.shopUi(state: GameState, forecast: Battle.SiegeOutlook? = null): ShopUi {
     val lead = Advice.lead(state, content, config)
     val line = Lines.lead(lead, state, content, config)
     val festival = state.worldFlags[WorldEvents.FLAG_FESTIVAL] == state.day
     val inShop = state.storedWeapons() + state.listedWeapons()
-    val threat = threatUi(state)
+    val threat = threatUi(state)?.let { t -> t.copy(outlook = forecast?.let { Labels.outlook(it.odds) }) }
 
     val requests = state.commissions.values.filter { it.status == CommissionStatus.OFFERED || it.status == CommissionStatus.ACCEPTED }
         .sortedWith(compareBy<Commission> { it.deadlineDay }.thenBy(IdOrder.numeric) { it.id.value })

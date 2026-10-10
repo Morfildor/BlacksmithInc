@@ -238,7 +238,7 @@ class GameViewModel(
         return withContext(compute) { planFor(run) }.also { shop = run to it }
     }
 
-    private fun planFor(run: GameState) = Plan(engine.shopUi(run), engine.siegeForecast(run))
+    private fun planFor(run: GameState) = engine.siegeForecast(run).let { Plan(engine.shopUi(run, it), it) }
 
     private fun render(snap: GameSession.Snapshot?, op: Status, l: Local, day: Day?, plan: Plan?): UiState {
         if (snap == null || l.loading) return l.loadFailure?.let { UiState.LoadFailed(it, working = l.loading) } ?: UiState.Loading

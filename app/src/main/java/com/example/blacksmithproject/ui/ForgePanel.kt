@@ -142,11 +142,11 @@ private fun EventStrip(s: UiState.Playing) {
     val threat = s.shop.threat
     Column(Modifier.fillMaxWidth().background(SceneDeep).heightIn(min = 44.dp).padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag("forge_threat")) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(threat?.siege ?: "No siege in sight", style = MaterialTheme.typography.titleSmall, color = if (threat?.warned == true) Ember else Cream, modifier = Modifier.weight(1f))
+            Text(threat?.let { if (it.warned && !it.today) "Siege approaching · ${it.siege.removePrefix("Siege ")}" else it.siege } ?: "No siege in sight", style = MaterialTheme.typography.titleSmall, color = if (threat?.warned == true) Ember else Cream, modifier = Modifier.weight(1f))
             PixelImage(R.drawable.icon_integrity, wholePixelDp(24, 22.dp), description = null)
             Text("Forge health ${s.state.town.integrity}", style = MaterialTheme.typography.labelMedium, color = Cream)
         }
-        threat?.matchup?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+        listOfNotNull(threat?.matchup, threat?.outlook).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
     }
 }
 

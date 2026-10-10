@@ -78,7 +78,7 @@ class ShopModelTest : ShopDayTestBase() {
         assertEquals(listOf(blade.id to 40), shop.shelf.map { it.weapon.id to it.price })
         assertTrue(shop.storage.isEmpty())
         // The same object the screen is given is what the engine would build for the saved state.
-        assertEquals(engine.shopUi(vm.playing().state), shop)
+        assertEquals(vm.playing().state.let { engine.shopUi(it, engine.siegeForecast(it)) }, shop)
         assertEquals(Demand.summary(vm.playing().state, engine.content, engine.config).living.toString(), shop.demand.first().value)
         assertEquals(engine.config.customers.shopCapacity, shop.seats)
     }

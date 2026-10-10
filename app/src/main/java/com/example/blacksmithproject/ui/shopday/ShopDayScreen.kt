@@ -36,6 +36,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.currentStateAsState
 import com.example.blacksmithproject.R
 import com.tinyblacksmith.core.shopday.AftermathKind
+import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.FramedPanel
 import com.example.blacksmithproject.ui.LocalHaptics
 import com.example.blacksmithproject.ui.Moment
@@ -119,8 +120,11 @@ fun ShopDayScreen(
                 }
                 is Beat.Fallen -> StageBanner("The forge has fallen", R.drawable.art_day_fallen_forge, vignette = true)
                 is Beat.Aftermath ->
-                    if (beat.card.kind == AftermathKind.SIEGE_HELD) StageBanner("Beyond the door", R.drawable.art_day_siege_victory, vignette = true)
-                    else StageBanner("Beyond the door", R.drawable.bg_title_workshop_night)
+                    // A siege is not one more thing beyond the door: its own name, and a stage half as tall again.
+                    when (val siege = beat.card.siege) {
+                        null -> StageBanner("Beyond the door", R.drawable.bg_title_workshop_night)
+                        else -> StageBanner("Siege · day ${siege.day}", if (siege.held) R.drawable.art_day_siege_victory else Sprites.siegeWall(damaged = true), height = if (short) 112.dp else 168.dp, vignette = true)
+                    }
                 is Beat.Blessing -> StageBanner("The town's thanks", R.drawable.bg_title_workshop_night)
                 // Still the evening of the day just watched (the strip says so); the next day is named once here and once on its button.
                 is Beat.Tomorrow -> StageBanner("Tomorrow: day ${beat.day}", R.drawable.art_day_new_dawn, vignette = true)
@@ -137,8 +141,10 @@ fun ShopDayScreen(
                             is Beat.Tally -> TallyCard(beat, openHero)
                             is Beat.Close -> ShopCloseCard(beat)
                             is Beat.Quiet -> QuietDayCard(beat, openHero)
-                            is Beat.Aftermath -> AftermathCard(beat, openHero, openBlade, onWatchFight = { onWatchFight(it.eventId) }, onOpenGazette = onOpenGazette)
-                            is Beat.Blessing -> BlessingChoices(beat.choices, onChooseBlessing)
+                            is Beat.Aftermath ->
+                                if (beat.card.siege != null) SiegeOutcomeCard(beat, beat.card.siege, openHero, onWatchFight = { onWatchFight(it.eventId) })
+                                else AftermathCard(beat, openHero, openBlade, onWatchFight = { onWatchFight(it.eventId) }, onOpenGazette = onOpenGazette)
+                            is Beat.Blessing -> BlessingChoices(beat.choices, onChooseBlessing, siege = beat.siege)
                             is Beat.Tomorrow -> TomorrowCard(beat, onOpenGazette = onOpenGazette)
                             is Beat.Fallen -> FallenCard(beat, onOpenGazette = onOpenGazette)
                         }

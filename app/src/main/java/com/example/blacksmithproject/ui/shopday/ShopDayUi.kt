@@ -84,7 +84,21 @@ data class AftermathUi(
     val factionId: FactionId?,
     val materialId: MaterialId?,
     val replay: CombatReplay?,
+    /** Set on the siege's card only. */
+    val siege: SiegeOutcomeUi? = null,
 )
+
+/**
+ * A resolved siege as the day recorded it. [forgeDamage] is the day's own record (null when none was written);
+ * [forgeHealthNow] is the forge as saved, after the night's recovery: the two are shown apart and never subtracted.
+ * A lost siege is not a fallen forge: that is the day's last card.
+ */
+@Immutable
+data class SiegeOutcomeUi(val day: Int, val held: Boolean, val foe: String?, val forgeDamage: Int?, val forgeHealthNow: Int) {
+    val outcome: String get() = if (held) "The town held" else "The defenses broke"
+    /** One line for the evening card, so a skipped day still says what the siege did. */
+    val recap: String get() = listOfNotNull(outcome, forgeDamage?.let { if (it > 0) "forge damage $it" else "no forge damage" }).joinToString(" · ")
+}
 
 @Immutable data class BlessingUi(val id: BlessingId, val name: String, val description: String)
 
@@ -117,14 +131,15 @@ sealed interface Beat {
         override val gone: Set<WeaponId> get() = emptySet()
     }
     @Immutable data class Aftermath(val card: AftermathUi, val index: Int, val of: Int, val moreInGazette: Int, override val progress: String) : Beat {
-        override val millis get() = BeatLength.AFTERMATH
+        // A siege decides the run: its card waits for the player at any speed.
+        override val millis get() = if (card.siege != null) 0 else BeatLength.AFTERMATH
         override val gone: Set<WeaponId> get() = emptySet()
     }
-    @Immutable data class Blessing(val choices: List<BlessingUi>, override val progress: String = "Evening") : Beat {
+    @Immutable data class Blessing(val choices: List<BlessingUi>, val siege: String? = null, override val progress: String = "Evening") : Beat {
         override val millis get() = 0
         override val gone: Set<WeaponId> get() = emptySet()
     }
-    @Immutable data class Tomorrow(val day: Int, val gold: Int, val shelf: Int, val storage: Int, val action: String, val reason: String?, val siege: String, override val progress: String = "Evening") : Beat {
+    @Immutable data class Tomorrow(val day: Int, val gold: Int, val shelf: Int, val storage: Int, val action: String, val reason: String?, val siege: String, val recap: String? = null, override val progress: String = "Evening") : Beat {
         override val millis get() = 0
         override val gone: Set<WeaponId> get() = emptySet()
     }
@@ -275,6 +290,8 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
             )
         }
     }
+    val siege = aftermath.firstOrNull { it.kind == AftermathKind.SIEGE_HELD || it.kind == AftermathKind.SIEGE_LOST }
+        ?.let { SiegeOutcomeUi(day, it.kind == AftermathKind.SIEGE_HELD, it.foe, it.forgeDamage, state.town.integrity) }
     aftermath.forEachIndexed { i, card ->
         beats += Beat.Aftermath(
             AftermathUi(
@@ -282,6 +299,7 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
                 hero = card.heroId?.let { face(it, card.heroName) }, other = card.otherHeroId?.let { face(it) },
                 champions = card.championIds.map { face(it) }, blade = card.weapon, factionId = card.factionId,
                 materialId = card.materialId.takeIf { card.kind == AftermathKind.SCARCE_LOOT || card.kind == AftermathKind.ELITE_SLAIN }, replay = card.replay,
+                siege = siege.takeIf { card.kind == AftermathKind.SIEGE_HELD || card.kind == AftermathKind.SIEGE_LOST },
             ),
             index = i + 1, of = aftermath.size, moreInGazette = if (i == aftermath.lastIndex) moreInGazette else 0,
             // The banner under the strip says "Beyond the door"; the strip says when, and counts only when there is more than one.
@@ -292,13 +310,14 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
     if (ending == Ending.FALLEN) {
         beats += Beat.Fallen(state.endCause, day)
     } else {
-        if (ending == Ending.BLESSING) beats += Beat.Blessing(state.pendingBlessingOffer.map { id -> content.blessing(id).let { BlessingUi(id, it.name, it.description) } })
+        if (ending == Ending.BLESSING) beats += Beat.Blessing(state.pendingBlessingOffer.map { id -> content.blessing(id).let { BlessingUi(id, it.name, it.description) } }, siege?.recap)
         val line = lead?.let { Lines.lead(it, state, content, config, evening = true) }
         val toSiege = state.town.nextSiegeDay - state.day
         beats += Beat.Tomorrow(
             day = state.day, gold = state.gold, shelf = state.listedWeapons().size, storage = state.storedWeapons().size,
             action = line?.action ?: "", reason = line?.reason,
             siege = "Next siege: day ${state.town.nextSiegeDay}" + when { toSiege <= 0 -> ", today"; toSiege == 1 -> ", tomorrow"; else -> ", in $toSiege days" },
+            recap = siege?.recap,
         )
     }
     return ShopDayUiModel(

@@ -81,7 +81,7 @@ fun ShopPanel(
                 CounterScene(
                     plate = "Seats ${shop.seats} · shelf ${shop.shelf.size} of ${shop.slots}",
                     // Under the seats: when the siege comes and what tells against the besieger, as the Forge's plate has it.
-                    detail = shop.threat?.let { listOfNotNull(it.plate, it.note).joinToString(" ") }, customer = null, customerKey = null,
+                    detail = shop.threat?.let { listOfNotNull(it.summary + ".", it.note).joinToString(" ") }, customer = null, customerKey = null,
                     reducedMotion = reducedMotion, onOpenHero = {}, backdropHeight = if (short) 56.dp else 88.dp,
                 )
                 // An empty shelf is already on the plate; the band is for blades.

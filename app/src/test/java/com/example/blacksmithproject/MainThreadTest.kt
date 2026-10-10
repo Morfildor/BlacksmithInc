@@ -65,7 +65,7 @@ class MainThreadTest : ShopDayTestBase() {
         release(held)
 
         val first = vm.playing()
-        assertEquals(engine.shopUi(fresh), first.shop)
+        assertEquals(engine.shopUi(fresh, engine.siegeForecast(fresh)), first.shop)
         assertNotNull("a new run already has a besieger to weigh", first.forecast)
         assertEquals(engine.siegeForecast(fresh), first.forecast)
         assertEquals(1, held.ran)
@@ -84,7 +84,7 @@ class MainThreadTest : ShopDayTestBase() {
         release(held)
         val second = vm.playing()
         assertEquals(1, second.state.storedWeapons().size)
-        assertEquals(engine.shopUi(second.state), second.shop)
+        assertEquals(engine.shopUi(second.state, engine.siegeForecast(second.state)), second.shop)
         assertEquals(engine.siegeForecast(second.state), second.forecast)
         assertEquals(2, held.ran)
     }

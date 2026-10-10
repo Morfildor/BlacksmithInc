@@ -1,5 +1,6 @@
 package com.example.blacksmithproject.ui
 
+import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.engine.Technique
@@ -39,6 +40,14 @@ object Labels {
             lacks == Commissions.Fit.ELEMENT -> "no ${c.element?.name?.lowercase()} $family in the shop."
             else -> "no $family in the shop."
         }
+    }
+
+    /** How the next siege looks as things stand (`Battle.SiegeOutlook.odds`), in the same words on the Shop, the Forge and in Town. */
+    fun outlook(odds: Battle.SiegeOdds): String = when (odds) {
+        Battle.SiegeOdds.STRONG -> "Strong position"
+        Battle.SiegeOdds.EVEN -> "Evenly matched"
+        Battle.SiegeOdds.OUTMATCHED -> "Outmatched"
+        Battle.SiegeOdds.DIRE -> "Grave danger"
     }
 
     fun rarity(r: Rarity): String = when (r) {

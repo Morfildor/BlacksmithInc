@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.theme.Ember
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
@@ -106,25 +107,19 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
         Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
             faction?.let { f -> Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 56.dp, description = null) } }
             Column(Modifier.weight(1f)) {
-                Text(faction?.let { content.faction(it.id).name } ?: "No threat", style = MaterialTheme.typography.titleMedium, color = Gold)
-                Text(
-                    faction?.let { Battle.describePressure(it.pressure).replaceFirstChar { c -> c.uppercase() } + " · " } .orEmpty() +
-                        when { daysLeft <= 0 -> "siege today"; daysLeft == 1 -> "siege tomorrow"; else -> "siege on day ${st.town.nextSiegeDay}, in $daysLeft days" },
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-                faction?.let { weakness(content.faction(it.id).weakTo) }?.let { Secondary(it, Modifier.padding(top = Space.xs)) }
+                // When, readiness and matchup first, as the Shop and the Forge say them; the numbers behind them after.
+                val threat = s.shop.threat
+                Text(threat?.let { if (it.warned && !it.today) "Siege approaching" else it.siege } ?: "No threat", style = MaterialTheme.typography.titleLarge, color = if (threat?.warned == true) Ember else Gold, modifier = Modifier.testTag("town_siege"))
+                threat?.takeIf { it.warned && !it.today }?.let { Text(it.siege.removePrefix("Siege ").replaceFirstChar { c -> c.uppercase() } + " · day ${st.town.nextSiegeDay}", style = MaterialTheme.typography.titleSmall) }
+                threat?.takeIf { it.today }?.let { Text("After today's trading", style = MaterialTheme.typography.titleSmall) }
+                StatRow("Outlook", threat?.outlook ?: "Unknown", Modifier.padding(top = Space.xs))
+                threat?.matchup?.let { StatRow("Besieger", it) }
+                StatRow("Forge health", "${st.town.integrity}")
                 forecast?.let { o ->
-                    val outlook = when (o.odds) {
-                        Battle.SiegeOdds.STRONG -> "the town should hold"
-                        Battle.SiegeOdds.EVEN -> "evenly matched"
-                        Battle.SiegeOdds.OUTMATCHED -> "the walls are outmatched"
-                        Battle.SiegeOdds.DIRE -> "grave danger"
-                    }
-                    Secondary("Outlook: $outlook · defense ${o.townDefense.roundToInt()} vs raid ${o.raidPower.roundToInt()}", Modifier.padding(top = Space.xs))
+                    Secondary("Town defense ${o.townDefense.roundToInt()} against a raid of ${o.raidPower.roundToInt()}", Modifier.padding(top = Space.xs))
                     if (o.warlord) Secondary("${o.faction.warlordName} leads them")
                 }
-                if (st.town.armory > 0) Secondary("Town watch armory: ${st.town.armory}/${vm.engine.config.armoryMax}")
-                Secondary("Forge ${st.town.integrity} · militia ${st.town.militia} · sieges held ${st.town.siegesSurvived}", Modifier.padding(top = Space.xs))
+                Secondary(listOfNotNull(faction?.let { Battle.describePressure(it.pressure).replaceFirstChar { c -> c.uppercase() } }, "militia ${st.town.militia}", "sieges held ${st.town.siegesSurvived}", "armory ${st.town.armory}/${vm.engine.config.armoryMax}".takeIf { st.town.armory > 0 }).joinToString(" · "))
                 Secondary("World: ${st.world.name}")
             }
         }

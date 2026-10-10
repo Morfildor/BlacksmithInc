@@ -104,7 +104,8 @@ class ShopDayUiTest {
             assertEquals(day.script.aftermath.size, kinds.count { it == "Aftermath" })
             // Skip day lands on the first of the cards that wait for a choice, and nothing before it waits.
             assertTrue(model.beats[model.endingIndex].isEnding)
-            assertTrue(model.beats.take(model.endingIndex).none { it.isEnding || it.millis == 0 })
+            // Before the ending only a siege waits for the player (it decides the run); every other card moves on by itself.
+            assertTrue(model.beats.take(model.endingIndex).none { it.isEnding || (it.millis == 0 && (it as? Beat.Aftermath)?.card?.siege == null) })
             assertTrue(model.beats.drop(model.endingIndex).all { it.isEnding && it.millis == 0 })
             assertEquals(
                 when (day.script.ending) { Ending.FALLEN -> listOf("Fallen"); Ending.BLESSING -> listOf("Blessing", "Tomorrow"); Ending.TOMORROW -> listOf("Tomorrow") },

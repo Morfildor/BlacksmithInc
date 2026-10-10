@@ -299,10 +299,13 @@ fun TipBanner(tip: Tips.Tip, vm: GameViewModel, modifier: Modifier = Modifier) {
 private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean) {
     val state = s.state
     val haptics = LocalHaptics.current
+    val offers = state.commissions.values.count { it.status == CommissionStatus.OFFERED }
     val note = when {
         state.pendingBlessingOffer.isNotEmpty() -> "A blessing awaits your choice"
-        state.commissions.values.any { it.status == CommissionStatus.OFFERED } -> "A commission is waiting"
-        state.overworkToday > 0 -> "Tomorrow starts ${state.overworkToday} energy short"
+        // The run can end tonight: said before anything else that waits.
+        s.shop.threat?.today == true -> "A siege follows today's trading"
+        offers > 0 -> if (offers == 1) "1 unaccepted commission" else "$offers unaccepted commissions"
+        state.overworkToday > 0 -> "Overwork: ${state.overworkToday} less energy tomorrow"
         state.energy > 0 -> "${state.energy} energy unused"
         else -> "Rest until dawn"
     }
