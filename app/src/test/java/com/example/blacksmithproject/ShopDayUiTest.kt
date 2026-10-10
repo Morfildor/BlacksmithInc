@@ -1,9 +1,11 @@
 package com.example.blacksmithproject
 
+import com.example.blacksmithproject.data.ShopDaySpeed
 import com.example.blacksmithproject.ui.shopday.Beat
 import com.example.blacksmithproject.ui.shopday.ReceiptRow
 import com.example.blacksmithproject.ui.shopday.ShopDayUiModel
 import com.example.blacksmithproject.ui.shopday.isEnding
+import com.example.blacksmithproject.ui.shopday.pace
 import com.example.blacksmithproject.ui.shopday.toUi
 import com.tinyblacksmith.core.model.FieldOutcome
 import com.tinyblacksmith.core.model.IncomeKind
@@ -305,6 +307,13 @@ class ShopDayUiTest {
         )
         // A day with a card of its own beyond the door has no summary.
         for (d in days()) if (d.script.aftermath.size > 1) assertTrue(d.script.aftermath.none { it.kind == AftermathKind.FIELD_SUMMARY })
+    }
+
+    /** The control on the strip says what it sets: the pace of the cards, by tap or by itself. Reduced motion has no timer, so it reads "Tap" at any saved speed. */
+    @Test
+    fun thePaceControlNamesWhatItSets() {
+        assertEquals(listOf("Tap", "Auto 1x", "Auto 2x"), ShopDaySpeed.entries.map { it.pace(reducedMotion = false) })
+        assertEquals(listOf("Tap", "Tap", "Tap"), ShopDaySpeed.entries.map { it.pace(reducedMotion = true) })
     }
 }
 

@@ -2,13 +2,18 @@
 
 package com.example.blacksmithproject.ui.shopday
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -21,8 +26,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
@@ -31,9 +40,14 @@ import com.example.blacksmithproject.ui.EffectKind
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.example.blacksmithproject.ui.FramedPanel
+import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.PrimaryActionButton
+import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.Sprites
+import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.ForgePanelRaised
+import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.BlessingId
 import com.tinyblacksmith.core.model.CombatReplay
@@ -46,6 +60,13 @@ private fun Body(text: String, modifier: Modifier = Modifier) = Text(text, style
 @Composable
 private fun Quiet(text: String, modifier: Modifier = Modifier) =
     Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = modifier)
+
+/** The piece of art at the head of a card, in a box of its own height: `PixelSprite` alone boxes it square, which leaves a gap under art that is wider than tall. */
+@Composable
+private fun CardArt(art: Int, modifier: Modifier = Modifier) {
+    val scale = wholeScale(128, 110.dp)
+    PixelSprite(art, scale, modifier.height(with(LocalDensity.current) { (ImageBitmap.imageResource(art).height * scale).toDp() }).clearAndSetSemantics {})
+}
 
 private fun count(n: Int, one: String, many: String) = "$n ${if (n == 1) one else many}"
 
@@ -73,7 +94,7 @@ fun ShopOpenCard(open: Beat.Open, modifier: Modifier = Modifier) {
 @Composable
 fun TallyCard(tally: Beat.Tally, onOpenHero: (FaceUi) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-        PixelSprite(R.drawable.art_day_till, wholeScale(128, 110.dp), Modifier.align(Alignment.CenterHorizontally).clearAndSetSemantics {})
+        CardArt(R.drawable.art_day_till, Modifier.align(Alignment.CenterHorizontally))
         CardTitle(if (tally.featured == 0) "${tally.count} came by" else "${tally.count} more came by", Modifier.testTag("shopday_tally_title"))
         tally.groups.forEach { group ->
             Body(group.line, Modifier.padding(top = Space.xs))
@@ -87,7 +108,7 @@ fun TallyCard(tally: Beat.Tally, onOpenHero: (FaceUi) -> Unit, modifier: Modifie
 @Composable
 fun ShopCloseCard(close: Beat.Close, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-        PixelSprite(R.drawable.art_day_sale_receipt, wholeScale(128, 110.dp), Modifier.align(Alignment.CenterHorizontally).clearAndSetSemantics {})
+        CardArt(R.drawable.art_day_sale_receipt, Modifier.align(Alignment.CenterHorizontally))
         Overline("The till")
         ReceiptRows(close.rows)
         Body(close.counts, Modifier.padding(top = Space.xs))
@@ -214,26 +235,49 @@ fun FallenCard(fallen: Beat.Fallen, onOpenGazette: () -> Unit, modifier: Modifie
     }
 }
 
-/** The next morning in one glance: one lead and its reason, what is in the shop, the next siege. "Begin day N" is the screen's wide button. */
+/** One fact of the evening as a tile: its picture and number, and what it counts under them. One node for a screen reader, with the unit said. */
+@Composable
+private fun FactTile(icon: Int, value: String, label: String, said: String, modifier: Modifier = Modifier) {
+    Column(modifier.background(ForgePanelRaised, MaterialTheme.shapes.extraSmall).border(1.dp, BronzeDeep, MaterialTheme.shapes.extraSmall).padding(Space.sm).clearAndSetSemantics { contentDescription = said }) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+            PixelImage(icon, 24.dp, description = null)
+            Text(value, style = MaterialTheme.typography.titleLarge, color = Gold)
+        }
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+/**
+ * The next morning in one glance, in three parts: one lead and its reason, what is in the shop and when the next siege
+ * comes, and the way to the Gazette. The card is at least as tall as the room the screen leaves it ([modifier]), and the
+ * parts spread out over that. "Begin day N" is the screen's wide button.
+ */
 @Composable
 fun TomorrowCard(tomorrow: Beat.Tomorrow, onOpenGazette: () -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-        tomorrow.recap?.let { SiegeRecap(it) }
-        if (tomorrow.action.isNotEmpty()) {
-            Overline("Worth doing first", strong = true)
-            CardTitle(tomorrow.action, Modifier.testTag("shopday_lead"))
-            tomorrow.reason?.let { Body(it, Modifier.testTag("shopday_lead_reason")) }
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.SpaceBetween) {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+            tomorrow.recap?.let { SiegeRecap(it) }
+            if (tomorrow.action.isNotEmpty()) {
+                Overline("Worth doing first", strong = true)
+                CardTitle(tomorrow.action, Modifier.testTag("shopday_lead"))
+                tomorrow.reason?.let { Body(it, Modifier.testTag("shopday_lead_reason")) }
+            }
         }
-        ReceiptRows(
-            listOf(
-                ReceiptRow("Purse", "${tomorrow.gold} gold"),
-                ReceiptRow("On the shelf", count(tomorrow.shelf, "blade", "blades")),
-                ReceiptRow("In storage", count(tomorrow.storage, "blade", "blades")),
-            ),
-            Modifier.padding(top = Space.sm),
-        )
-        Quiet(tomorrow.siege)
-        TextButton(onClick = onOpenGazette, modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_gazette")) { Text("Read the Gazette") }
+        Column(Modifier.padding(vertical = Space.sm), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                FactTile(R.drawable.icon_gold, "${tomorrow.gold}", "Purse", "Purse: ${tomorrow.gold} gold", Modifier.weight(1f).fillMaxHeight())
+                FactTile(R.drawable.icon_nav_market, "${tomorrow.shelf}", "On the shelf", "On the shelf: ${count(tomorrow.shelf, "blade", "blades")}", Modifier.weight(1f).fillMaxHeight())
+                FactTile(R.drawable.icon_action_storage, "${tomorrow.storage}", "In storage", "In storage: ${count(tomorrow.storage, "blade", "blades")}", Modifier.weight(1f).fillMaxHeight())
+            }
+            Row(
+                Modifier.fillMaxWidth().background(ForgePanelRaised, MaterialTheme.shapes.extraSmall).border(1.dp, BronzeDeep, MaterialTheme.shapes.extraSmall).padding(Space.sm),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            ) {
+                PixelImage(R.drawable.icon_integrity, 24.dp, description = null)
+                Text(tomorrow.siege, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+            }
+        }
+        SecondaryActionButton("Read the Gazette", onOpenGazette, Modifier.fillMaxWidth().testTag("shopday_gazette"))
     }
 }
 

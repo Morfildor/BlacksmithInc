@@ -4,10 +4,15 @@ import android.view.accessibility.AccessibilityManager
 import com.example.blacksmithproject.data.ShopDaySpeed
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -21,7 +26,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -29,7 +37,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.coerceAtLeast
+import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -102,6 +113,8 @@ fun ShopDayScreen(
     BoxWithConstraints(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         // A low screen or large text: the scene gives height to the card, so the outcome and the receipt stay in view.
         val short = maxHeight < 700.dp || LocalDensity.current.fontScale > 1.15f
+        // The evening has one card and the whole screen for it: the dawn grows with the room a tall screen leaves.
+        val dawn = if (short) 112.dp else (maxHeight * 0.26f).coerceIn(112.dp, 232.dp)
         Column(Modifier.fillMaxSize().statusBarsPadding().pointerInput(Unit) { detectTapGestures { if (!ending) next() } }) {
             ShopDayTopBar(model.day, beat.progress, speed, reducedMotion, canSkip = at < model.endingIndex, onSpeedChange = onSpeedChange, onSkipDay = onSkipDay)
             when (beat) {
@@ -127,32 +140,43 @@ fun ShopDayScreen(
                     }
                 is Beat.Blessing -> StageBanner("The town's thanks", R.drawable.bg_title_workshop_night)
                 // Still the evening of the day just watched (the strip says so); the next day is named once here and once on its button.
-                is Beat.Tomorrow -> StageBanner("Tomorrow: day ${beat.day}", R.drawable.art_day_new_dawn, vignette = true)
+                is Beat.Tomorrow -> StageBanner("Tomorrow: day ${beat.day}", R.drawable.art_day_new_dawn, height = dawn, vignette = true)
             }
             key(at) {
-                Column(
-                    Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Space.md, vertical = 12.dp)
-                        .testTag("shopday_card").semantics { liveRegion = LiveRegionMode.Polite },
-                ) {
-                    FramedPanel(modifier = Modifier.fillMaxWidth()) {
-                        when (beat) {
-                            is Beat.Open -> ShopOpenCard(beat)
-                            is Beat.Visit -> VisitCard(beat.visit, openBlade)
-                            is Beat.Tally -> TallyCard(beat, openHero)
-                            is Beat.Close -> ShopCloseCard(beat)
-                            is Beat.Quiet -> QuietDayCard(beat, openHero)
-                            is Beat.Aftermath ->
-                                if (beat.card.siege != null) SiegeOutcomeCard(beat, beat.card.siege, openHero, onWatchFight = { onWatchFight(it.eventId) })
-                                else AftermathCard(beat, openHero, openBlade, onWatchFight = { onWatchFight(it.eventId) }, onOpenGazette = onOpenGazette)
-                            is Beat.Blessing -> BlessingChoices(beat.choices, onChooseBlessing, siege = beat.siege)
-                            is Beat.Tomorrow -> TomorrowCard(beat, onOpenGazette = onOpenGazette)
-                            is Beat.Fallen -> FallenCard(beat, onOpenGazette = onOpenGazette)
+                val scroll = rememberScrollState()
+                BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                    // The room under the stage, less this column's and the frame's padding: the evening card is at least that tall.
+                    val room = (maxHeight - 12.dp - Space.md * 3).coerceAtLeast(0.dp)
+                    Column(
+                        Modifier.fillMaxSize().verticalScroll(scroll).padding(start = Space.md, end = Space.md, top = 12.dp, bottom = Space.md)
+                            .testTag("shopday_card").semantics { liveRegion = LiveRegionMode.Polite },
+                    ) {
+                        FramedPanel(modifier = Modifier.fillMaxWidth()) {
+                            when (beat) {
+                                is Beat.Open -> ShopOpenCard(beat)
+                                is Beat.Visit -> VisitCard(beat.visit, openBlade)
+                                is Beat.Tally -> TallyCard(beat, openHero)
+                                is Beat.Close -> ShopCloseCard(beat)
+                                is Beat.Quiet -> QuietDayCard(beat, openHero)
+                                is Beat.Aftermath ->
+                                    if (beat.card.siege != null) SiegeOutcomeCard(beat, beat.card.siege, openHero, onWatchFight = { onWatchFight(it.eventId) })
+                                    else AftermathCard(beat, openHero, openBlade, onWatchFight = { onWatchFight(it.eventId) }, onOpenGazette = onOpenGazette)
+                                is Beat.Blessing -> BlessingChoices(beat.choices, onChooseBlessing, siege = beat.siege)
+                                is Beat.Tomorrow -> TomorrowCard(beat, onOpenGazette = onOpenGazette, modifier = Modifier.heightIn(min = room))
+                                is Beat.Fallen -> FallenCard(beat, onOpenGazette = onOpenGazette)
+                            }
                         }
                     }
+                    // A card that runs on under the controls is cut on purpose: it fades out there, and the fade goes once its end is in view.
+                    if (scroll.canScrollForward) Box(Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(Space.lg).background(Brush.verticalGradient(listOf(Color.Transparent, MaterialTheme.colorScheme.background))))
                 }
             }
+            // The first-run line is an aside, not a control: a muted italic under a small label, and a tap on it is a tap anywhere.
             coach?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md).testTag("shopday_coach"))
+                Row(Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    Text("TIP", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp))
+                    Text(it, style = MaterialTheme.typography.bodySmall, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f).testTag("shopday_coach"))
+                }
             }
             // One wide button is always the way forward; on the last cards it is the choice that ends the day.
             ShopDayControls(

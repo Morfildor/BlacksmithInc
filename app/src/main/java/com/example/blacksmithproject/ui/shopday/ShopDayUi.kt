@@ -1,6 +1,7 @@
 package com.example.blacksmithproject.ui.shopday
 
 import androidx.compose.runtime.Immutable
+import com.example.blacksmithproject.data.ShopDaySpeed
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.model.BlessingId
@@ -33,6 +34,9 @@ object BeatLength {
     const val CLOSE = 2000
     const val AFTERMATH = 2000
 }
+
+/** The value on the strip's pace control: the cards wait for a tap, or move on by themselves. With [reducedMotion] nothing runs on a timer. */
+fun ShopDaySpeed.pace(reducedMotion: Boolean): String = if (this == ShopDaySpeed.TAP || reducedMotion) "Tap" else "Auto $label"
 
 /** A face and the records behind it: the counter snapshot when the hero came in today, the hero as saved otherwise. */
 @Immutable

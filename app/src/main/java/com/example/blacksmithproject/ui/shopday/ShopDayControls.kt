@@ -1,6 +1,7 @@
 package com.example.blacksmithproject.ui.shopday
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import com.example.blacksmithproject.data.ShopDaySpeed
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +19,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,12 +30,13 @@ import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.theme.SceneCream
 import com.example.blacksmithproject.ui.theme.SceneGold
 import com.example.blacksmithproject.ui.theme.SceneInk
+import com.example.blacksmithproject.ui.theme.SceneWood1
 import com.example.blacksmithproject.ui.theme.Space
 
 /**
- * The strip above the scene: which day and which part of it, the speed chip and Skip day. Skip day is one tap and never
- * asks (nothing is lost by skipping). The speed chip cycles Tap, 1x, 2x; with reduced motion nothing runs on a timer,
- * so it shows Tap and is off.
+ * The strip above the scene: which day and which part of it, the pace control and Skip day. Skip day is one tap and never
+ * asks (nothing is lost by skipping). The pace control cycles Tap, Auto 1x, Auto 2x; with reduced motion nothing runs on a
+ * timer, so it shows Tap and is off.
  */
 @Composable
 fun ShopDayTopBar(
@@ -50,17 +54,20 @@ fun ShopDayTopBar(
             Text("DAY $day", style = MaterialTheme.typography.labelSmall, color = SceneGold, maxLines = 1)
             Text(progress, style = MaterialTheme.typography.labelLarge, color = SceneCream, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.testTag("shopday_progress"))
         }
-        val shown = if (reducedMotion) ShopDaySpeed.TAP else speed
         // The cards that end the day wait for a choice at any speed, so they show neither control.
-        if (canSkip) OutlinedButton(
-            onClick = { onSpeedChange(speed.next) }, enabled = !reducedMotion,
-            border = BorderStroke(1.dp, SceneGold.copy(alpha = if (reducedMotion) 0.4f else 1f)), shape = MaterialTheme.shapes.small,
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = SceneCream, disabledContentColor = SceneCream.copy(alpha = 0.5f)),
-            contentPadding = ButtonDefaults.TextButtonContentPadding,
-            modifier = Modifier.heightIn(min = 48.dp).widthIn(min = 64.dp).testTag("shopday_speed")
-                .semantics { contentDescription = "Speed: ${shown.label}. " + if (reducedMotion) "Off with reduced motion" else "Change speed" },
-        ) { Text(shown.label, maxLines = 1) }
+        // A setting, not a way forward: named above its value like the day beside it, and quieter than the gold button below.
         if (canSkip) {
+            val shown = speed.pace(reducedMotion)
+            Column(
+                Modifier.testTag("shopday_speed").heightIn(min = 48.dp).widthIn(min = 64.dp).clip(MaterialTheme.shapes.small).border(1.dp, SceneWood1, MaterialTheme.shapes.small)
+                    .clickable(enabled = !reducedMotion, onClickLabel = "Change pace", role = Role.Button) { onSpeedChange(speed.next) }
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                    .semantics(mergeDescendants = true) { contentDescription = "Pace: $shown. " + if (reducedMotion) "Off with reduced motion" else "Change pace" },
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text("PACE", style = MaterialTheme.typography.labelSmall, color = SceneGold.copy(alpha = if (reducedMotion) 0.5f else 1f))
+                Text(shown, style = MaterialTheme.typography.labelLarge, color = SceneCream.copy(alpha = if (reducedMotion) 0.5f else 1f))
+            }
             TextButton(onClick = onSkipDay, colors = ButtonDefaults.textButtonColors(contentColor = SceneCream), modifier = Modifier.heightIn(min = 48.dp).testTag("shopday_skip")) {
                 Text("Skip day", maxLines = 1)
             }

@@ -24,6 +24,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - A sale at the counter wears a gold band with the coin it brought ("SOLD +96 gold"; a request reads "REQUEST PAID"), and under its receipt "Earned today" shows what the day stood at before and after ("96 → 228 gold"). The tally shows the same line when someone in it bought.
 
 ### Changed
+- Title screen: the workshop at night as a full-width picture with the game's name on it, the era and legacy on a plate, and the actions at the foot of the screen.
+- Shop day: the speed control is labelled "Pace" (Tap, Auto 1x, Auto 2x); the first-run hint reads as a tip; long cards fade out at the controls; "No sale" is a red badge; the evening card shows purse, shelf and storage as tiles with a larger dawn on tall screens.
 - Shop: the siege line and the forge's health are one strip at the top, the same as on the Forge; the shelf is drawn with its free places; the day's lead is marked "Worth doing first"; the rows to the board, storage and supplies carry icons; the tip about listing leaves once a blade is listed. Lists fade where they run under a pinned button.
 - Forge: a chosen ingredient lands in its place (not with reduced motion); tiles and recipe places in one row share one height; the chosen mode is gold.
 - Wording: the worst siege outlook is "Dire odds" (it was "Grave danger", beside the Grave element); the Records tab and the Forge's menu say "Notebook".

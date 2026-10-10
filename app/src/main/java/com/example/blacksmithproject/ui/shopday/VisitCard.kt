@@ -117,39 +117,46 @@ internal fun BladeChip(blade: WeaponSnapshot, onOpenBlade: (WeaponSnapshot) -> U
 }
 
 /**
- * One customer's visit, whole on its first frame. A sale wears a gold band with the coin it brought, then why, the
- * receipt as separate rows and what the day has earned so far. A refusal is a plain card that leads with the recorded
- * reason and its numbers. Both end with the blades they weighed. Who they are is on the name plate of the scene above.
- * Every number is the visit's own record: the day is already saved, and nothing here adds to the purse.
+ * One customer's visit, whole on its first frame, in one order for every outcome: the result as a badge (a gold band with
+ * the coin it brought, or a red-edged "No sale": the word always, the colour with it), one headline, the reason under it,
+ * the recognition as an aside, then the receipt as separate rows and the blades they weighed. Who they are is on the name
+ * plate of the scene above. Every number is the visit's own record: the day is already saved, and nothing here adds to the purse.
  */
 @Composable
 fun VisitCard(visit: VisitUi, onOpenBlade: (WeaponSnapshot) -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         if (visit.sold) {
-            Row(
-                Modifier.fillMaxWidth().background(Gold, MaterialTheme.shapes.extraSmall).padding(horizontal = Space.sm, vertical = Space.xs).semantics(mergeDescendants = true) {},
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
-            ) {
-                Text(visit.banner.uppercase(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SceneInk, modifier = Modifier.weight(1f).testTag("shopday_outcome_chip"))
-                Text("+${visit.coin} gold", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SceneInk, modifier = Modifier.testTag("shopday_coin"))
+            Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+                Row(
+                    Modifier.fillMaxWidth().background(Gold, MaterialTheme.shapes.extraSmall).padding(horizontal = Space.sm, vertical = Space.xs).semantics(mergeDescendants = true) {},
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                ) {
+                    Text(visit.banner.uppercase(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SceneInk, modifier = Modifier.weight(1f).testTag("shopday_outcome_chip"))
+                    Text("+${visit.coin} gold", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SceneInk, modifier = Modifier.testTag("shopday_coin"))
+                }
+                // Straight under the band, so the rise is on screen without a scroll.
+                if (visit.coin > 0) EarnedToday(visit.earnedBefore, visit.earnedAfter)
             }
-            // Straight under the band, so the rise is on screen without a scroll.
-            if (visit.coin > 0) EarnedToday(visit.earnedBefore, visit.earnedAfter)
-            visit.purchased?.let { Text(it.name, style = MaterialTheme.typography.titleMedium) }
         } else {
             Text(
-                visit.banner.uppercase(), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.extraSmall).border(1.dp, MaterialTheme.colorScheme.outline, MaterialTheme.shapes.extraSmall)
-                    .padding(horizontal = 6.dp, vertical = 2.dp).testTag("shopday_outcome_chip"),
+                visit.banner.uppercase(), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = EffectKind.FLAW.color,
+                modifier = Modifier.background(EffectKind.FLAW.color.copy(alpha = 0.14f), MaterialTheme.shapes.extraSmall).border(1.dp, EffectKind.FLAW.color, MaterialTheme.shapes.extraSmall)
+                    .padding(horizontal = Space.sm, vertical = Space.xs).testTag("shopday_outcome_chip"),
             )
         }
-        visit.recognition?.let { Text(it, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic, modifier = Modifier.testTag("shopday_recognition")) }
-        if (visit.sold) CardTitle(visit.outcome, Modifier.testTag("shopday_outcome"))
-        else Text(visit.outcome, style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("shopday_outcome").semantics { heading() })
-        visit.decision?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("shopday_decision")) }
-        if (visit.receipt.isNotEmpty()) ReceiptRows(visit.receipt, Modifier.padding(top = Space.xs))
-        if (visit.looked.isNotEmpty()) {
-            Overline("Looked at", Modifier.padding(top = Space.sm))
+        Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+            if (visit.sold) CardTitle(visit.outcome, Modifier.testTag("shopday_outcome"))
+            else Text(visit.outcome, style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("shopday_outcome").semantics { heading() })
+            visit.decision?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("shopday_decision")) }
+            visit.recognition?.let { Text(it, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.testTag("shopday_recognition")) }
+        }
+        // The blade heads its own receipt, the way a bill names what was bought.
+        if (visit.purchased != null || visit.receipt.isNotEmpty()) Column {
+            visit.purchased?.let { Text(it.name, style = MaterialTheme.typography.titleSmall) }
+            if (visit.receipt.isNotEmpty()) ReceiptRows(visit.receipt)
+        }
+        if (visit.looked.isNotEmpty()) Column {
+            Overline("Looked at")
             visit.looked.forEach { item ->
                 if (item.blade != null) BladeChip(item.blade, onOpenBlade, Modifier.fillMaxWidth(), title = item.title, note = item.factors)
                 else Text(item.title + if (item.factors.isEmpty()) "" else ": ${item.factors}", style = MaterialTheme.typography.bodySmall)
