@@ -42,6 +42,14 @@ object Legacy {
     /** History kinds that put a blade in a hero's hands; the first subject of each is that hero. */
     val OWNERSHIP: Set<String> = setOf("SOLD", "COMMISSION", "INHERITED", "RESOLD")
 
+    /**
+     * Everyone who held [weapon] in [era], first to last: the holders it remembers from lines since dropped
+     * ([Weapon.ownerIds]) and those of the ownership lines still in its history. The same list whether or not old
+     * lines were trimmed.
+     */
+    fun holders(weapon: Weapon, era: Int): List<HeroId> =
+        (weapon.ownerIds + weapon.history.filter { it.era == era && it.kind in OWNERSHIP }.mapNotNull { it.subjectIds.firstOrNull() }.map { HeroId(it) }).distinct()
+
     /** About this many lines of a blade's story go onto the Legend Board. */
     const val STORY_MAX = 12
 
@@ -69,12 +77,12 @@ object Legacy {
         val legends = state.weapons.values
             .filter { it.fame >= config.legendFameThreshold }
             // A returned legend nobody carried this era does not go back on the board: it would re-enter ownerless and could multiply (X06).
-            .filter { w -> w.legendKey == null || w.history.any { it.era == state.era && it.kind in OWNERSHIP } }
+            .filter { w -> w.legendKey == null || holders(w, state.era).isNotEmpty() }
             .sortedByDescending { it.fame }
             .take(config.legacyTracks.legendsPerRun)
             .map { w ->
                 // Everyone who held it, in order: buyers, commission patrons, heirs (named first in the entry) and a merchant's customer.
-                val held = w.history.filter { it.era == state.era && it.kind in OWNERSHIP }.mapNotNull { it.subjectIds.firstOrNull() }.mapNotNull { state.heroes[HeroId(it)]?.fullName }
+                val held = holders(w, state.era).mapNotNull { state.heroes[it]?.fullName }
                 val before = w.legendKey?.let { key -> state.legacy.legendBoard.lastOrNull { it.key == key } }
                 LegendEntry(
                     state.era, w.name, w.title ?: "${w.name} of Era ${state.era}", w.kills, w.fame, ((before?.owners ?: emptyList()) + held).distinct(),

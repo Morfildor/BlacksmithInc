@@ -1,5 +1,6 @@
 package com.tinyblacksmith.core.persistence
 
+import com.tinyblacksmith.core.legacy.Legacy
 import com.tinyblacksmith.core.model.HistoryEntry
 import com.tinyblacksmith.core.model.Weapon
 import com.tinyblacksmith.core.model.WeaponId
@@ -30,5 +31,42 @@ object WeaponHistoryCompaction {
     fun compact(weapons: MutableMap<WeaponId, Weapon>, cap: Int) {
         if (cap <= 0) return
         weapons.replaceAll { _, w -> val h = compact(w.history, cap); if (h === w.history) w else w.copy(history = h) }
+    }
+
+    /**
+     * The lines a blade gathers as it changes hands and is looked after; the only unbounded kinds besides combat. What a
+     * blade is (FORGED, SIGNATURE, TITLED, RETURNED, AWAKENED) and how it left a hero (LOST, SEIZED, SCAVENGED, RECOVERED,
+     * BROKEN and the like, read by `WorldEvents` and `Market.resolveMerchant` as "the last of its kind") are never dropped.
+     */
+    val everyday: Set<String> = setOf("SOLD", "EQUIPPED", "TRADED_IN", "HONED", "COMMISSION", "INHERITED", "RESOLD")
+
+    /**
+     * Keeps the newest [cap] everyday lines of [weapon] (EQUIPPED lines are not counted: each follows a hand-over and
+     * goes with it) and drops the older ones, except the blade's first owner and any line that names a hero in [living].
+     * Before a line goes, everyone who held the blade in [era] is written to [Weapon.ownerIds], so `Legacy.holders`
+     * answers as it did. With that, every reader gets what it got from the full history:
+     *  - `Market.commissionSituations` and `Legacy.closeRun` ask who held the blade: `Legacy.holders`;
+     *  - `Recognitions` asks for a line of the blade's current carrier, who is living;
+     *  - the Legend Board's copy (`Legacy.closeRun`) is the lines that say what the blade is plus the newest everyday
+     *    ones up to `Legacy.STORY_MAX`, so [cap] is never taken below that.
+     * Returns [weapon] itself when nothing is dropped.
+     */
+    fun compactEveryday(weapon: Weapon, cap: Int, era: Int, living: Set<String>): Weapon {
+        if (cap <= 0) return weapon
+        val keep = maxOf(cap, Legacy.STORY_MAX)
+        val counted = weapon.history.count { it.kind in everyday && it.kind != "EQUIPPED" }
+        if (counted <= keep) return weapon
+        // Everything from the oldest of the newest `keep` counted lines on stays as it is.
+        var seen = 0
+        val cut = weapon.history.indexOfLast { e -> e.kind in everyday && e.kind != "EQUIPPED" && ++seen == keep }
+        val firstOwner = weapon.history.firstOrNull { it.kind in Legacy.OWNERSHIP }
+        val kept = weapon.history.filterIndexed { i, e -> i >= cut || e.kind !in everyday || e === firstOwner || e.subjectIds.any { it in living } }
+        return if (kept.size == weapon.history.size) weapon else weapon.copy(history = kept, ownerIds = Legacy.holders(weapon, era))
+    }
+
+    /** [compactEveryday] for every weapon in place, order-preserving. */
+    fun compactEveryday(weapons: MutableMap<WeaponId, Weapon>, cap: Int, era: Int, living: Set<String>) {
+        if (cap <= 0) return
+        weapons.replaceAll { _, w -> compactEveryday(w, cap, era, living) }
     }
 }

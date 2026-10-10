@@ -10,7 +10,7 @@ import com.tinyblacksmith.core.model.EventType
  * histories), so compaction never changes outcomes; it only bounds what the save and the Gazette archive carry.
  */
 object EventCompaction {
-    /** History-grade types kept for the whole run: siege results, deaths, lineage and guild events, famous-weapon developments, scripted events. */
+    /** History-grade types kept for the whole run: siege results, deaths, lineage and guild events, famous-weapon developments. The two [routine] ones are kept only for their window. */
     val keptForever: Set<EventType> = setOf(
         EventType.RUN_STARTED, EventType.HERO_ARRIVED, EventType.HERO_DIED, EventType.HERO_RETIRED, EventType.GUILD_FOUNDED, EventType.HERO_MENTORED,
         EventType.SIEGE_WON, EventType.SIEGE_LOST, EventType.FORGE_DESTROYED, EventType.SIGNATURE_DISCOVERED, EventType.MILESTONE,
@@ -18,12 +18,20 @@ object EventCompaction {
         EventType.WEAPON_RECOVERED, EventType.WEAPON_LOST, EventType.WEAPON_RESOLD,
     )
 
-    fun keeps(event: EventRecord, today: Int, retentionDays: Int): Boolean =
-        retentionDays <= 0 || event.type in keptForever || event.day > today - retentionDays
+    /**
+     * The two [keptForever] types that are routine news, not history: a town of twelve sees an arrival or a scripted
+     * event most days. With `saveGrowth.routineEventRetentionDays` above 0 they are kept that many days and then go,
+     * as ordinary records do (the hero, the run's event counters and the weapon carry what a rule needs of them).
+     */
+    val routine: Set<EventType> = setOf(EventType.WORLD_EVENT, EventType.HERO_ARRIVED)
 
-    /** Drops, in place and order-preserving, every ordinary event older than [retentionDays] days before [today]. */
-    fun compact(events: MutableList<EventRecord>, today: Int, retentionDays: Int) {
+    fun keeps(event: EventRecord, today: Int, retentionDays: Int, routineRetentionDays: Int = 0): Boolean =
+        retentionDays <= 0 || event.day > today - retentionDays ||
+            (event.type in keptForever && (routineRetentionDays <= 0 || event.type !in routine || event.day > today - routineRetentionDays))
+
+    /** Drops, in place and order-preserving, every ordinary event older than [retentionDays] days before [today], and every [routine] one older than [routineRetentionDays]. */
+    fun compact(events: MutableList<EventRecord>, today: Int, retentionDays: Int, routineRetentionDays: Int = 0) {
         if (retentionDays <= 0) return
-        events.retainAll { keeps(it, today, retentionDays) }
+        events.retainAll { keeps(it, today, retentionDays, routineRetentionDays) }
     }
 }

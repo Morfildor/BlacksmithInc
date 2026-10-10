@@ -277,6 +277,8 @@ data class BalanceConfig(
     // T5.4: numbers that were inline in the resolvers (values unchanged, so no version step)
     val combat: CombatConfig = CombatConfig(),
     val worldEvents: WorldEventConfig = WorldEventConfig(),
+    // T6.3a: what a long save stops carrying
+    val saveGrowth: SaveGrowthConfig = SaveGrowthConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()
@@ -553,4 +555,24 @@ data class WorldEventConfig(
     val bannerReputation: Int = 2,
     val bannerMilitia: Int = 3,
     val collectorReputation: Int = 1,
+)
+
+/**
+ * T6.3a: what a long save stops carrying (GDD 13.3, 15.3), beside the three older rules ([BalanceConfig.eventRetentionDays],
+ * [BalanceConfig.weaponHistoryCap], [BalanceConfig.weaponRetentionDays]). One number per rule, 0 switches the rule off.
+ * None of them is a balance number: each trims only what a screen may show and no rule reads (docs/DECISIONS.md, "hot
+ * state and archive"), and each has a test that plays the same seed with and without it to the same outcome.
+ */
+data class SaveGrowthConfig(
+    /** A closed commission (completed, expired or declined) leaves the save this many days after its deadline. */
+    val commissionRetentionDays: Int = 30,
+    /** End Day command IDs remembered for the retry check: the newest this many. */
+    val processedEndDayIdsKept: Int = 30,
+    /** Scripted world events and hero arrivals are kept this many days, as ordinary records are, and no longer for the whole run. */
+    val routineEventRetentionDays: Int = 30,
+    /**
+     * The newest this many everyday lines of a blade's history are kept (sales, trade-ins, hones, hand-overs; a line that
+     * names a living hero and the blade's first owner always stay). Never fewer than the Legend Board's story length.
+     */
+    val weaponEverydayHistoryCap: Int = 24,
 )

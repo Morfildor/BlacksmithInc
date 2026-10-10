@@ -32,7 +32,8 @@ class VersionFingerprintTest {
         7 to "daf9ca7290dac60a17921dde7e37676a45dab7db64bdffe5a093af7f94d5f9d7",  // re-pinned inside the unreleased M3 step: T3.1 pinned 66214786..., T3.4 (33af5dfb...) changed the town and pressure numbers, T3.6 (33499217...) added patronageStipend, T3.8 the two rout numbers
         // M4, one unreleased step, re-pinned inside it: standing wants (T4.1, c2e3b145...), the sidegrade gate and siege demand (T4.2, 8c796571...), the two rumour numbers (T4.3, d16456a5...), commission situations (T4.6, c644ab76...).
         // T5.4 re-pinned it for structure only: the resolvers' inline numbers became fields (`combat`, `worldEvents`, more of `heroLife`, `customers`, `legacyTracks`) with the values they had; no outcome moved, so the version did not.
-        8 to "3c90f806d61b95874569b27e7b99f4cda61dec0f2bc47fb3a131402d575d5c01",
+        // T6.3a re-pinned it again (from 3c90f806...) for the four `saveGrowth` numbers: they bound what a save keeps and move no outcome (SaveGrowthTest plays each on and off).
+        8 to "364bff16c8f448ea797def569dd3ae5f2aa16ffc828fd62163a48456d2d7d583",
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames")

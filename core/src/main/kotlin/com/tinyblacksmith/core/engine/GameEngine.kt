@@ -15,7 +15,9 @@ import com.tinyblacksmith.core.legacy.LegacyOutcome
 import com.tinyblacksmith.core.legacy.RunEndResult
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
+import com.tinyblacksmith.core.persistence.CommissionPruning
 import com.tinyblacksmith.core.persistence.EventCompaction
+import com.tinyblacksmith.core.persistence.ProcessedCommands
 import com.tinyblacksmith.core.persistence.WeaponHistoryCompaction
 import com.tinyblacksmith.core.persistence.WeaponPruning
 import com.tinyblacksmith.core.rng.RngState
@@ -342,8 +344,11 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         )
         ctx.lastResolution = resolution
         ctx.processedEndDayIds += commandId.value
-        EventCompaction.compact(ctx.events, day, config.eventRetentionDays)  // after the Gazette; keeps saves bounded (GDD 13.3)
-        WeaponHistoryCompaction.compact(ctx.weapons, config.weaponHistoryCap)  // newest combat entries per weapon; ownership entries kept
+        ProcessedCommands.trim(ctx.processedEndDayIds, config.saveGrowth.processedEndDayIdsKept)  // the newest few; a retry is of the latest
+        EventCompaction.compact(ctx.events, day, config.eventRetentionDays, config.saveGrowth.routineEventRetentionDays)  // after the Gazette; keeps saves bounded (GDD 13.3)
+        CommissionPruning.prune(ctx.commissions, day, config.saveGrowth.commissionRetentionDays)  // closed and past the event window
+        WeaponHistoryCompaction.compact(ctx.weapons, config.weaponHistoryCap)  // newest combat entries per weapon
+        WeaponHistoryCompaction.compactEveryday(ctx.weapons, config.saveGrowth.weaponEverydayHistoryCap, ctx.era, ctx.aliveHeroes().mapTo(HashSet()) { it.id.value })  // newest everyday lines; holders remembered
         WeaponPruning.prune(ctx.weapons, day, config.weaponRetentionDays, config.legendFameThreshold)  // blades gone for good leave the save
         if (ctx.phase != Phase.ENDED) newMorning(ctx)
         return accept(ctx, resolution = resolution)

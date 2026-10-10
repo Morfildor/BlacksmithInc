@@ -2904,3 +2904,73 @@ tier, which then moved) and `theScanSeesAStrayLiteralAndIgnoresTextAndComments`.
 **Signatures.** `Power.condition(hero, config)` and `Power.traitModifier(hero, content, config)` take the config;
 `Legacy.claim(current, runEnd, config = BalanceConfig.DEFAULT)`; `Battle.WARNING_DAYS`, `WorldEvents.ORE_MERCHANT_STOCK` and
 `Legacy.milestonePoints` are gone (no caller in `app/`).
+
+
+## Bounded save growth: four rules, and what is left to grow (2026-10-10, task T6.3a; F10, C12, M12)
+
+**Hot state and archive.** *Hot state* is what a rule can still read: living heroes, stock (storage and shelf), blades in
+heroes' hands, open commissions, blades that can still come home (seized, lost with a hero, with a merchant), the run's
+counters and flags, and the event window the day's report is built from. *Archive* is what only a screen reads: older
+editions of the Gazette, closed commissions, the full line-by-line story of a blade. The rules below trim archive only. A rule
+that would have to touch hot state was not written.
+
+**The four rules** (`BalanceConfig.saveGrowth`, a nested group; one number each, 0 switches the rule off; all run inside End Day
+after the day's report is built, beside the three older rules):
+
+| Rule | Number | What goes | Why no rule misses it |
+|---|---|---|---|
+| Closed commissions | `commissionRetentionDays` 30 | a completed, expired or declined commission, 30 days after its deadline | rules read open commissions only (`Market.openCommissions`, `resolveCommissions`); IDs come from a serial counter |
+| Processed End Day IDs | `processedEndDayIdsKept` 30 | all but the newest 30 command IDs | the retry check is for the End Day just sent, which returns its stored resolution as before |
+| Routine records | `routineEventRetentionDays` 30 | `WORLD_EVENT` and `HERO_ARRIVED` records older than 30 days (they were kept for the whole run) | no rule reads past events: cooldowns and limits are counters, an arrival is the hero |
+| Everyday history lines | `weaponEverydayHistoryCap` 24 | a blade's older SOLD, EQUIPPED, TRADED_IN, HONED, COMMISSION, INHERITED and RESOLD lines beyond the newest 24 (EQUIPPED lines are not counted and go with their hand-over) | see below |
+
+The everyday rule is the only one with readers to satisfy. `Market.commissionSituations` (a replacement request needs "carried
+a blade this era") and `Legacy.closeRun` (the owners on a Legend Board entry) ask who held a blade: before a line is dropped
+the holders are written to the new `Weapon.ownerIds`, and both now ask `Legacy.holders`, which joins that list with the
+ownership lines still in the history. `Recognitions` asks for a line of the blade's current carrier: a line naming a living
+hero is never dropped. The Legend Board's copy of a story is the lines that say what a blade is plus its newest everyday lines
+up to `Legacy.STORY_MAX` (12): the cap is never taken below 12, so the board gets the same lines. What a blade is (FORGED,
+SIGNATURE, TITLED, RETURNED, AWAKENED), how it left a hero (LOST, SEIZED, SCAVENGED, RECOVERED, BROKEN) and its first owner are
+never dropped.
+
+**Decisions recorded, not rules.**
+- **Nothing the player owns is deleted.** Unsold stock stays however much there is; T6.3b measures it and T6.3c gives the
+  Storage sheet filters and bulk actions. There is no inventory cap.
+- **Seized and lost-with-hero blades stay as they are**, for the rest of the run: Heroic Inheritance can bring any of them home.
+- **Dead and retired heroes stay** (about 33 bytes a day of play): rules read them by ID (the fallen owner's name, the
+  mentor's name, the holders of a legend, the lineage anchor).
+- **An ID older than the newest 30 is forgotten.** Re-sending it would resolve a new day. The app builds an End Day ID from
+  the run and the day it ends and never holds one that old.
+
+**Schema stays 4.** The plan (M6 "Save effect") foresaw a bump with a no-op step, "because an older build must not re-grow or
+misread" the trimmed fields. It is not needed: the one new field, `Weapon.ownerIds`, defaults to empty and is read together
+with the history, so a save written without it answers exactly as before; the other three rules remove entries and add no
+field; and no build that writes schema 4 has left the machine (`SaveCodec`), so there is no older schema-4 reader to protect.
+
+**Evidence** (`SaveGrowthTest`, forced survival, BALANCED_ACTIVE, seed 77, 400 days; one run with every rule on against four
+runs that each switch one off):
+
+| Rule | With | Without | Everything else in the state |
+|---|---|---|---|
+| closed commissions | 5 kept | 111 | equal |
+| processed IDs | 30 | 400 | equal; the latest End Day still retries to its stored resolution after a save and load |
+| routine records | 1,578 events | 1,706 (128 old arrivals and world events) | equal; every event still emitted and numbered |
+| everyday lines | longest 24 | longest 50 (3,430 lines in all against 3,370) | equal; holders of every blade equal; the Legend Board entry of every blade equal |
+
+Save size at day 400: 2,089,041 bytes with the four rules; 2,116,291 without the commission rule, 2,097,443 without the ID
+rule, 2,122,669 without the routine-record rule, 2,095,763 without the everyday rule; 2,165,043 with none. **The four rules
+take 76 KB (3.5 %) off; the save is stock.** The production soak (T6.3b) says how much.
+
+- Mutation check: with the four calls removed from `GameEngine.endDay`, 6 of the 10 tests fail (the other four test the rule
+  functions directly).
+- Old saves: the five fixtures (schemas 1, 2, 3) decode with empty `ownerIds`, round-trip, are admitted, and their next End
+  Day gives the same outcome as an engine with every rule off; only the trimmed fields differ (60 IDs become 30).
+- `GoldenStateTest` green without re-recording (15-day runs never reach a 30-day window). The 1,000-run simulator output at
+  seed 1 is identical to the output before T5.4, bar the elapsed line.
+- `VersionFingerprintTest` row 8 re-pinned in place (`3c90f806...` to `364bff16...`): four new fields, no outcome moved, version
+  not raised.
+- `EventCompactionTest`: three tests stated the old rule (world events kept for the run) and now state the new one.
+
+**Not bounded by these rules.** Stock; returnable blades; hero records; history-grade events (deaths, retirements, sieges,
+milestones, guilds, inheritances); the lines of a blade that are never dropped. A blade whose everyday lines all name living
+heroes keeps them until those heroes die or retire.

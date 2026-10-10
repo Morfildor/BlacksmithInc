@@ -80,7 +80,7 @@ data class Weapon(
     val siegesDefended: Int = 0,
     val fame: Int = 0,
     val title: String? = null,
-    /** Chronological; ownership-grade kinds are kept forever, combat kinds (VICTORY, SIEGE) are bounded by `WeaponHistoryCompaction` at End Day. */
+    /** Chronological; what a blade is (FORGED, TITLED, ...) and how it was lost are kept forever, combat kinds (VICTORY, SIEGE) and everyday kinds (sales, hones, hand-overs) are bounded by `WeaponHistoryCompaction` at End Day. */
     val history: List<HistoryEntry> = emptyList(),
     /** Set when a hidden signature recipe transformed this weapon (GDD 4.5). */
     val signatureId: String? = null,
@@ -92,6 +92,12 @@ data class Weapon(
     val dormantAffixes: List<AffixId> = emptyList(),
     /** Set on a blade that came back from the Legend Board: the [LegendEntry.key] it was remembered under, so one blade is one entry however many eras it lives. */
     val legendKey: String? = null,
+    /**
+     * Everyone who held the blade this era up to the last time old lines of [history] were dropped, first to last
+     * (`WeaponHistoryCompaction.compactEveryday`). Empty until then. Read it through `Legacy.holders`, which adds the
+     * ownership lines still in [history].
+     */
+    val ownerIds: List<HeroId> = emptyList(),
 ) {
     val isListed: Boolean get() = location is WeaponLocation.Shelf
     /** Hone is allowed on an unhoned weapon or one worn below full condition. */
