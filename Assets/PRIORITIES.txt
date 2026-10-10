@@ -1,0 +1,18 @@
+Tiny Blacksmith: what to deliver first (2026-10-10)
+
+Each folder's WANTED.txt has the IDs, sizes and notes. This is the order.
+
+1. AppIcon      one 1024x1024 launcher icon (+ optional background layer). Needed for the store listing.
+2. Audio        none exists yet: about 11 effects (forge_strike, blade_revealed, signature_found, sale, refusal, end_day,
+                siege_horn, siege_won, siege_lost, run_end, button_tap) and one or two looping tracks.
+3. Enemies      the 12 faction portraits: 80x80 and 112x112 (three factions, two ranks each) and 64x64 alternates.
+4. Enemies      the 30 small battle frames (16x16: idle x2, attack x2, hit, for six monsters).
+   Heroes       the 20 small battle frames (16x16: idle x2, attack x2, for five classes).
+5. Heroes       6 visitor faces (64x64), optional: the morning visitors have text only today.
+6. UI           3 panels and textures; Effects: 8 small frames (embers, milestone burst).
+7. Weapons      336 sprites, last and only as one consistent set (they exist and read fine; the style differs from
+                the newer icons, materials and blessings).
+
+Complete, nothing wanted: Backgrounds, Scene, Materials, Blessings, Relics, Icons.
+Delivered and waiting for a screen (do not resend): art_day_rumour (Scene), icon_action_legacy / icon_action_price /
+icon_action_scrap (Icons).

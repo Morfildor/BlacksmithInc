@@ -1,5 +1,6 @@
 Assets/Heroes
 Hero and townsfolk portraits, and the small hero battle frames.
+PRIORITY 4: the 20 small battle frames (16x16). PRIORITY 5 (optional): the 6 visitor faces. More wardens: low.
 
 File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.

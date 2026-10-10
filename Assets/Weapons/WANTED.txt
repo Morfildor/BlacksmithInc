@@ -1,5 +1,6 @@
 Assets/Weapons
 Weapon sprites: 6 families (sword, axe, spear, dagger, bow, staff) x 7 element rows (base + 6 elements) x 8 levels = 336. Either one file per sprite named by the IDs below, or one master sheet per family (rows = elements, columns = levels 1-8).
+PRIORITY 7 (last, only if the style mismatch matters): 336 sprites exist from one concept sheet and read fine on screen. Replace them only as one consistent set.
 
 File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.

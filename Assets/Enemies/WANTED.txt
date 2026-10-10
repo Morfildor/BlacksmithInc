@@ -1,5 +1,6 @@
 Assets/Enemies
 Faction enemies: portraits for reports and small battle frames (idle, attack, hit) for the fight replay.
+PRIORITY 3: the 12 faction portraits (80x80, 112x112, 64x64 alternates) first, then PRIORITY 4: the 30 small battle frames (16x16).
 
 File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.

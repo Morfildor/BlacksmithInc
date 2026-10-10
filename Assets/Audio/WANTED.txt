@@ -1,8 +1,8 @@
 Assets/Audio
 Sound effects and music (none exist yet). Suggested: forge_strike, blade_revealed, signature_found, sale, refusal, end_day, siege_horn, siege_won, siege_lost, run_end, button_tap, plus one or two looping ambience or music tracks. OGG or WAV, mono for effects.
+PRIORITY 2 (most urgent): no sound exists yet. About 11 effects and one or two music loops.
 
-File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
-Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
-Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
+File rules: OGG (preferred) or WAV, mono for effects, loops cut so they repeat without a click. Name each file <id>.ogg
+using the suggested IDs above (or tell us the names you used). Keep the loudness of all effects similar.
 
 Status as of 2026-10-10: nothing in this folder is delivered yet; everything above is still wanted.
