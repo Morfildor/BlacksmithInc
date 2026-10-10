@@ -17,10 +17,12 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.blacksmithproject.ui.ForgePanel
+import com.example.blacksmithproject.ui.RecordsPanel
 import com.example.blacksmithproject.ui.ShopPanel
 import com.example.blacksmithproject.ui.threatUi
 import com.example.blacksmithproject.ui.detail.HeroDetailContent
@@ -31,11 +33,18 @@ import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.theme.BlacksmithProjectTheme
 import com.tinyblacksmith.core.content.AffixKind
 import com.tinyblacksmith.core.content.MaterialCategory
+import com.tinyblacksmith.core.crafting.ClueRung
+import com.tinyblacksmith.core.crafting.SignatureCatalog
+import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.model.Commission
 import com.tinyblacksmith.core.model.CommissionId
 import com.tinyblacksmith.core.model.CommissionKind
 import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.GameState
+import com.tinyblacksmith.core.model.Journal
+import com.tinyblacksmith.core.model.KnowledgeState
+import com.tinyblacksmith.core.model.LegacyProfile
+import com.tinyblacksmith.core.model.LegendEntry
 import com.tinyblacksmith.core.model.Want
 import com.tinyblacksmith.core.model.WeaponFamilyId
 import com.tinyblacksmith.core.persistence.DayCursor
@@ -139,6 +148,40 @@ class M4ScreensTest {
         compose.onNode(hasTestTag("card_dormant") and hasText(Lines.dormant(legend.dormantAffixes, engine.content)!!)).assertExists()
         compose.onNode(hasText("+") and hasText(buffs[0].name)).assertExists()
         compose.onNode(hasText("+") and hasText(buffs[1].name)).assertDoesNotExist()   // asleep: not a buff
+    }
+
+    @Test
+    fun recordsShowTheLadderTheRecipeAndTheLegendBoard() {
+        val def = SignatureCatalog.all.first { it.catalystId != null && it.risk != null }
+        val old = LegendEntry(1, "Bronze Axe", "Old Faithful", kills = 4, fame = 3, owners = emptyList())
+        val legacy = LegacyProfile(journal = Journal(interactions = mapOf(def.journalKey to KnowledgeState.SIGNATURE_DISCOVERED)), legendBoard = listOf(old))
+        val start = engine.newRun(legacy, 42L)
+        val repo = MemoryRepository(SaveCodec.encodeRun(start), SaveCodec.encodeLegacy(legacy))
+        lateinit var vm: GameViewModel
+        compose.runOnUiThread { vm = GameViewModel(engine, GameSession(engine, repo), QuietSettings(), SavedStateHandle()) }
+        compose.setContent {
+            BlacksmithProjectTheme {
+                val ui by vm.ui.collectAsState()
+                (ui as? UiState.Playing)?.let { Box(Modifier.size(360.dp, 560.dp)) { RecordsPanel(it, vm) } }
+            }
+        }
+        compose.waitUntil(10_000) { vm.ui.value is UiState.Playing }
+
+        // Legacy: the old entry is told in core's lines and says its make is lost.
+        compose.runOnUiThread { vm.selectRecords(RecordsPage.LEGACY) }
+        compose.onNodeWithTag("records_list").performScrollToNode(hasTestTag("legend_lost_0"))
+        compose.onNodeWithTag("legend_lost_0", useUnmergedTree = true).assertTextContains("Its properties are lost to time.", substring = true)
+        compose.onNodeWithText(Lines.legend(old, engine.content, start.era).first()).assertIsDisplayed()
+
+        // Journal: the found signature shows its whole ladder, and its recipe fills the forge.
+        compose.runOnUiThread { vm.selectRecords(RecordsPage.JOURNAL) }
+        compose.onNodeWithTag("records_list").performScrollToNode(hasTestTag("use_recipe_${def.id}"))
+        compose.onNodeWithText("✓ Catalyst: ${com.tinyblacksmith.core.crafting.Journal.clue(def, ClueRung.CATALYST, engine.config)}").assertIsDisplayed()
+        compose.onNodeWithTag("use_recipe_${def.id}").performClick()
+        compose.waitForIdle()
+        val p = vm.ui.value as UiState.Playing
+        assertEquals(Dest.FORGE, p.dest)
+        assertEquals(SignatureCatalog.recipe(def), Command.Forge(p.draft.mode, p.draft.familyId!!, p.draft.coreId!!, p.draft.augmentId!!, p.draft.catalystId, p.draft.risk, p.draft.technique))
     }
 
     @Test
