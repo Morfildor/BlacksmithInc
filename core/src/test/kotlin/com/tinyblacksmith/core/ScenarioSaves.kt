@@ -39,6 +39,8 @@ object ScenarioSaves {
         val card: AftermathKind? = null,
         /** The run belongs to an account of its own (upgrades, Legend Board): loading it replaces the player's legacy. */
         val ownLegacy: Boolean = false,
+        /** The stored blade the case is about, when it is one: the menu names it and the device script opens it. */
+        val blade: (GameState) -> Weapon? = { null },
         build: () -> GameState,
     ) {
         val state: GameState by lazy(build)
@@ -146,12 +148,12 @@ object ScenarioSaves {
             "returned_legend", "A returned legend, asleep",
             "Open Storage: a blade from the Legend Board has come back with its affixes dormant. Hone it and they wake.",
             "Played: the Known Name account (era 1 on seed $ACCOUNT_SEED); era 2 on seed 13 (BALANCED_ACTIVE), stopped on the morning of day 9, the day after the blade returned.",
-            endDay = false, ownLegacy = true,
+            endDay = false, ownLegacy = true, blade = ::dormant,
         ) { morning(13, Policy.BALANCED_ACTIVE, 9, account) },
         Scenario(
             "storied_blade", "One blade through three owners",
-            "Open Storage and the traded-in blade with a title: its Story has three sales, its fights and a siege.",
-            "Played: BALANCED_ACTIVE, seed 1, stopped on the morning of day 12.", endDay = false,
+            "Open Storage and the blade: its Story has three sales, its fights and a siege.",
+            "Played: BALANCED_ACTIVE, seed 1, stopped on the morning of day 12.", endDay = false, blade = ::storied,
         ) { morning(1, Policy.BALANCED_ACTIVE, 12) },
         Scenario(
             "long_storage", "A long storage: $STORAGE_FORGES blades",

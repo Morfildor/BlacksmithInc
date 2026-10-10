@@ -21,8 +21,11 @@ class ScenarioSavesWriter {
         out.listFiles { f -> f.extension == "json" }?.forEach { it.delete() }
         for (sc in ScenarioSaves.all) File(out, "${sc.id}.json").writeText(SaveCodec.encodeRun(sc.state))
         val index = JsonArray(ScenarioSaves.all.map { sc ->
+            val blade = sc.blade(sc.state)
             JsonObject(buildMap {
-                put("id", JsonPrimitive(sc.id)); put("title", JsonPrimitive(sc.title)); put("description", JsonPrimitive(sc.description)); put("built", JsonPrimitive(sc.built))
+                put("id", JsonPrimitive(sc.id)); put("title", JsonPrimitive(sc.title)); put("built", JsonPrimitive(sc.built))
+                put("description", JsonPrimitive(sc.description + (blade?.let { " The blade is ${it.name}." } ?: "")))
+                blade?.let { put("blade", JsonPrimitive(it.id.value)) }
                 put("endDay", JsonPrimitive(sc.endDay)); put("ownLegacy", JsonPrimitive(sc.ownLegacy))
                 sc.card?.let { put("card", JsonPrimitive(it.name)) }
             })
