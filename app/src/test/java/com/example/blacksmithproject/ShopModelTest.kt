@@ -1,8 +1,10 @@
 package com.example.blacksmithproject
 
+import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.shopday.Beat
 import com.example.blacksmithproject.ui.shopday.toUi
+import com.tinyblacksmith.core.content.AffixKind
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.shopday.Demand
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -31,6 +33,20 @@ class ShopModelTest : ShopDayTestBase() {
             assertEquals("day ${day.state.day}", card.action to card.reason, shop.lead.action to shop.lead.reason)
             assertEquals("yesterday is the day just watched", day.state.day - 1, shop.yesterday?.day)
         }
+    }
+
+    /** A shelf row and the blade's sheet read one function: a number on the row is the number on the card. */
+    @Test
+    fun aStockRowSaysTheNumbersOfTheItemCard() {
+        val blade = stocked.listedWeapons().first()
+        val marked = blade.copy(affixes = listOf(engine.content.affixes.first { it.kind == AffixKind.BENEFICIAL }.id), flaws = listOf(engine.content.affixes.first { it.kind == AffixKind.FLAW }.id), condition = 35)
+        val state = stocked.copy(weapons = stocked.weapons + (blade.id to marked))
+        val row = engine.shopUi(state).shelf.first { it.weapon.id == blade.id }
+        val card = engine.itemDetail(state, blade.id)!!
+        assertEquals(card.stats.filter { it.max != null || it.value > 0 }, row.stats)
+        assertEquals(listOf(marked.power, marked.quality, 35), row.stats.map { it.value })   // an unsung blade's renown of 0 is left out
+        assertEquals(card.affixes.map { it.name }, row.buffs)
+        assertEquals(card.flaws.map { it.name }, row.flaws)
     }
 
     @Test

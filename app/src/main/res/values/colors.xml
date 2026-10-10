@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="parchment">#FFF3E6CF</color>
     <color name="soot">#FF1B1512</color>
+    <color name="forge_night">#FF0C0F15</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

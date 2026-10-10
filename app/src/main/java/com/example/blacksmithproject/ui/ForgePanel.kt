@@ -5,7 +5,6 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,14 +22,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
-import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.border
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import com.example.blacksmithproject.RecordsPage
 import com.example.blacksmithproject.ui.shopday.Backdrop
+import com.example.blacksmithproject.ui.theme.Bronze
+import com.example.blacksmithproject.ui.theme.BronzeContainer
+import com.example.blacksmithproject.ui.theme.ForgeSlot
+import com.example.blacksmithproject.ui.theme.Gold
+import com.example.blacksmithproject.ui.theme.GoldBright
 import com.example.blacksmithproject.ui.theme.SceneCream
 import com.example.blacksmithproject.ui.theme.SceneDeep
 import androidx.compose.material3.FilterChip
@@ -54,7 +57,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -101,7 +103,6 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
             ThreatLine(s, vm, Modifier.align(Alignment.BottomStart).background(SceneDeep.copy(alpha = 0.88f)))
         }
         ForgeSummary(s, vm)
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
         // null = open the first unfinished step; NO_STEP = everything collapsed; otherwise the step the player opened.
         var opened by rememberSaveable { mutableStateOf<String?>(null) }
@@ -119,8 +120,8 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
         Column(Modifier.weight(1f).verticalScroll(scroll).padding(horizontal = Space.md, vertical = Space.sm)) {
             tip?.let { TipBanner(it, vm) }
             Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.fillMaxWidth()) {
-                OutlinedButton(onClick = onOpenSupplies, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("forge_supplies")) { Text("Supplies", maxLines = 1) }
-                OutlinedButton(onClick = { vm.selectRecords(RecordsPage.JOURNAL) }, modifier = Modifier.weight(1f).heightIn(min = 48.dp).testTag("forge_journal")) { Text("Journal", maxLines = 1) }
+                SecondaryActionButton("Supplies", onOpenSupplies, Modifier.weight(1f).testTag("forge_supplies"))
+                SecondaryActionButton("Journal", { vm.selectRecords(RecordsPage.JOURNAL) }, Modifier.weight(1f).testTag("forge_journal"))
             }
             Wanted(s, vm)
 
@@ -130,7 +131,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
                         SegmentedButton(
                             selected = d.mode == mode,
                             onClick = { vm.updateDraft { it.copy(mode = mode, catalystId = it.catalystId?.takeIf { mode == ForgeMode.ADVANCED }, technique = it.technique?.takeIf { mode == ForgeMode.ADVANCED }) } },
-                            shape = SegmentedButtonDefaults.itemShape(index = i, count = ForgeMode.entries.size),
+                            shape = SegmentedButtonDefaults.itemShape(index = i, count = ForgeMode.entries.size, baseShape = MaterialTheme.shapes.small),
                             modifier = Modifier.heightIn(min = 48.dp),
                         ) { Text(if (mode == ForgeMode.QUICK) "Quick" else "Advanced", maxLines = 1) }
                     }
@@ -182,7 +183,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
                         SegmentedButton(
                             selected = d.risk == r,
                             onClick = { vm.updateDraft { it.copy(risk = r) } },
-                            shape = SegmentedButtonDefaults.itemShape(index = i, count = Risk.entries.size),
+                            shape = SegmentedButtonDefaults.itemShape(index = i, count = Risk.entries.size, baseShape = MaterialTheme.shapes.small),
                             modifier = Modifier.heightIn(min = 48.dp),
                         ) { Text(Labels.risk(r).substringBefore(" —"), maxLines = 1) }
                     }
@@ -191,7 +192,7 @@ fun ForgePanel(s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, ti
             }
 
             if (d.coreId != null && d.augmentId != null) {
-                Text("Journal says", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Space.lg, bottom = Space.xs).semantics { heading() })
+                SectionHeader("Journal says")
                 AffinityHint(st.legacy.journal, content, JournalModel.coreAugmentKey(d.coreId, d.augmentId))
                 if (d.familyId != null) AffinityHint(st.legacy.journal, content, JournalModel.augmentFamilyKey(d.augmentId, d.familyId))
             }
@@ -244,7 +245,7 @@ private fun ThreatLine(s: UiState.Playing, vm: GameViewModel, modifier: Modifier
 private fun Wanted(s: UiState.Playing, vm: GameViewModel) {
     val requests = s.shop.requests
     if (requests.isEmpty()) return
-    Text("Requests", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = Space.md).semantics { heading() })
+    SectionHeader("Requests")
     requests.forEach { r ->
         val chosen = s.draft.commissionId == r.id
         Row(Modifier.fillMaxWidth().padding(top = Space.xs).testTag("forge_request_${r.id.value}"), verticalAlignment = Alignment.CenterVertically) {
@@ -291,38 +292,36 @@ private fun ForgeSummary(s: UiState.Playing, vm: GameViewModel) {
         else -> "Costs $cost energy. Ready when you are."
     }
 
-    Surface(tonalElevation = 2.dp) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = 10.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val element = d.augmentId?.let { content.material(it).element }
-                Box(Modifier.size(56.dp).alpha(if (chosen) 1f else 0.35f)) {
-                    PixelImage(
-                        Sprites.weapon(family ?: content.families.first().id, core ?: content.materials(MaterialCategory.CORE).first().id, element),
-                        56.dp,
-                        description = "Preview: $title",
-                    )
-                }
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1.5f)) {
-                    Text(title, style = MaterialTheme.typography.titleMedium, maxLines = 2)
-                    Secondary(recipe)
-                }
-                Spacer(Modifier.width(Space.sm))
-                val enabled = ready && canAfford && missing == null && !s.busy
-                Button(
-                    enabled = enabled,
-                    onClick = { vm.dispatch(Command.Forge(d.mode, d.familyId!!, d.coreId!!, d.augmentId!!, d.catalystId, d.risk, d.technique)) },
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = Space.sm),
-                    // A disabled button says why, so a screen reader is not left with a dead "Forge weapon".
-                    modifier = Modifier.weight(1f).heightIn(min = 56.dp).testTag("forge_weapon").semantics { if (!enabled) contentDescription = "Forge weapon, unavailable: $note" },
-                ) { Text("Forge weapon", style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.Center, maxLines = 2) }
+    // The anvil plate: what is being made, then the one gold action across its whole width (a button beside the title
+    // had no room for its two words once the text was large), then what it costs or why it cannot be done.
+    FramedPanel(modifier = Modifier.fillMaxWidth().padding(horizontal = Space.sm, vertical = Space.xs), contentPadding = PaddingValues(horizontal = Space.md, vertical = 10.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val element = d.augmentId?.let { content.material(it).element }
+            Box(Modifier.background(ForgeSlot).border(1.dp, Bronze).padding(2.dp).size(52.dp).alpha(if (chosen) 1f else 0.35f)) {
+                PixelImage(
+                    Sprites.weapon(family ?: content.families.first().id, core ?: content.materials(MaterialCategory.CORE).first().id, element),
+                    52.dp,
+                    description = "Preview: $title",
+                )
             }
-            Text(note, style = MaterialTheme.typography.bodySmall, color = if (ready && canAfford && missing == null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
-            // The request this draft was started from stays in view while the steps scroll.
-            s.shop.requests.firstOrNull { it.id == d.commissionId }?.let { r ->
-                Text("For ${r.buyer.name}: ${r.asks}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = Space.xs).testTag("forge_for"))
-                r.readiness?.let { Secondary(it) }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleMedium, color = Gold, maxLines = 2)
+                Secondary(recipe)
             }
+        }
+        val enabled = ready && canAfford && missing == null && !s.busy
+        PrimaryActionButton(
+            "Forge weapon", { vm.dispatch(Command.Forge(d.mode, d.familyId!!, d.coreId!!, d.augmentId!!, d.catalystId, d.risk, d.technique)) },
+            // A disabled button says why, so a screen reader is not left with a dead "Forge weapon".
+            Modifier.fillMaxWidth().padding(top = Space.sm).testTag("forge_weapon").semantics { if (!enabled) contentDescription = "Forge weapon, unavailable: $note" },
+            enabled = enabled,
+        )
+        Text(note, style = MaterialTheme.typography.bodySmall, color = if (ready && canAfford && missing == null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp))
+        // The request this draft was started from stays in view while the steps scroll.
+        s.shop.requests.firstOrNull { it.id == d.commissionId }?.let { r ->
+            Text("For ${r.buyer.name}: ${r.asks}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = Space.xs).testTag("forge_for"))
+            r.readiness?.let { Secondary(it) }
         }
     }
 }
@@ -349,7 +348,7 @@ private fun Step(id: String, label: String, value: String?, open: String, scroll
                 value ?: "Choose",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = if (value != null) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (value != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (value != null) Gold else MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(if (isOpen) "▴" else "▾", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = Space.sm))
         }
@@ -406,7 +405,8 @@ fun AffinityHint(journal: JournalModel, content: ContentCatalog, key: String) {
         Modifier.padding(vertical = 6.dp).semantics(mergeDescendants = true) { contentDescription = "$subject, $stateLabel: $hint" },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(32.dp)) {
+        // Bronze, not ember: on navy an ember disc read as an error badge.
+        Surface(shape = CircleShape, color = BronzeContainer, contentColor = GoldBright, modifier = Modifier.size(32.dp)) {
             Box(contentAlignment = Alignment.Center) { Text(glyph, style = MaterialTheme.typography.titleSmall) }
         }
         Spacer(Modifier.width(12.dp))

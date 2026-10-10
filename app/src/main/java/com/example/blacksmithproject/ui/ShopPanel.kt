@@ -1,7 +1,10 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,10 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -30,10 +30,15 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.ui.detail.WeaponStatLine
+import com.example.blacksmithproject.ui.detail.rarityColor
 import com.example.blacksmithproject.ui.shopday.BladeUi
 import com.example.blacksmithproject.ui.shopday.CounterScene
 import com.example.blacksmithproject.ui.shopday.PersonChip
 import com.example.blacksmithproject.ui.shopday.ShelfBand
+import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.ForgeSlot
+import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.CommissionId
 import com.tinyblacksmith.core.model.HeroId
@@ -123,33 +128,30 @@ fun ShopPanel(
 /** One wide row that opens a sheet. */
 @Composable
 private fun DoorRow(title: String, action: String, tag: String, onOpen: () -> Unit, modifier: Modifier = Modifier) {
-    Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = modifier.fillMaxWidth()) {
-        Row(
-            Modifier.fillMaxWidth().clickable(onClickLabel = action, role = Role.Button, onClick = onOpen).heightIn(min = 56.dp).padding(horizontal = Space.md).testTag(tag),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-            Text("Open  ›", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-        }
+    Row(
+        modifier.fillMaxWidth().forgeRow().clickable(onClickLabel = action, role = Role.Button, onClick = onOpen).heightIn(min = 56.dp).padding(horizontal = Space.md).testTag(tag),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+        Text("Open  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
     }
 }
 
 /** A request: what is asked, by whom and on what terms; then Accept and Decline, or which blade will be handed over. */
 @Composable
 internal fun RequestCard(r: RequestUi, busy: Boolean, onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, onForgeThis: (CommissionId) -> Unit, modifier: Modifier = Modifier) {
-    Surface(tonalElevation = 1.dp, shape = MaterialTheme.shapes.medium, modifier = modifier.fillMaxWidth().padding(vertical = Space.xs)) {
-        Column(Modifier.padding(horizontal = Space.md, vertical = Space.sm)) {
-            Text(r.asks, style = MaterialTheme.typography.titleMedium)
-            PersonChip(r.buyer, onOpenHero = { face -> face.heroId?.let(onOpenHero) }, note = r.terms)
-            r.readiness?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs)) }
-            r.fits.forEach { Secondary(it) }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
-                if (r.offered) {
-                    Button(onClick = { onAnswer(r.id, true) }, enabled = !busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("Accept") }
-                    OutlinedButton(onClick = { onAnswer(r.id, false) }, enabled = !busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("Decline") }
-                }
-                TextButton(onClick = { onForgeThis(r.id) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_this_${r.id.value}")) { Text("Forge this") }
+    Column(modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().padding(horizontal = Space.md, vertical = Space.sm)) {
+        Text(r.asks, style = MaterialTheme.typography.titleMedium)
+        PersonChip(r.buyer, onOpenHero = { face -> face.heroId?.let(onOpenHero) }, note = r.terms)
+        r.readiness?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs)) }
+        r.fits.forEach { Secondary(it) }
+        // Accepting is the card's one gold action; the others are the same height beside it and wrap under it when the text is large.
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs), modifier = Modifier.padding(top = Space.sm)) {
+            if (r.offered) {
+                PrimaryActionButton("Accept", { onAnswer(r.id, true) }, enabled = !busy)
+                SecondaryActionButton("Decline", { onAnswer(r.id, false) }, Modifier.heightIn(min = 52.dp), enabled = !busy)
             }
+            SecondaryActionButton("Forge this", { onForgeThis(r.id) }, Modifier.heightIn(min = 52.dp).testTag("forge_this_${r.id.value}"))
         }
     }
 }
@@ -159,35 +161,37 @@ private fun DemandLine(row: DemandRow) {
     Column(Modifier.fillMaxWidth().padding(vertical = 3.dp).semantics(mergeDescendants = true) {}) {
         Row(verticalAlignment = Alignment.Top) {
             Text(row.label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f).padding(end = Space.sm))
-            Text(row.value, style = MaterialTheme.typography.titleSmall, textAlign = TextAlign.End)
+            Text(row.value, style = MaterialTheme.typography.titleSmall, color = Gold, textAlign = TextAlign.End)
         }
         row.detail?.let { Secondary(it) }
     }
 }
 
 /**
- * One blade on the shelf or in storage: sprite, name, what it is, who favours it, and its price. Tapping the row opens
+ * One blade on the shelf or in storage: sprite, name in its rarity's colour, the item card's numbers in one line with
+ * its buffs and flaws, who favours it, and its price. Tapping the row opens
  * the blade's sheet, where it is priced, listed, unlisted, salvaged, honed or given to the watch. A stored blade also
  * has the quick "List at" its suggested price ([onList]).
  */
 @Composable
 internal fun StockRow(stock: StockUi, busy: Boolean, onOpen: () -> Unit, onList: ((Int) -> Unit)?, modifier: Modifier = Modifier) {
     val w = stock.weapon
-    Surface(tonalElevation = 1.dp, shape = MaterialTheme.shapes.medium, modifier = modifier.fillMaxWidth().padding(vertical = Space.xs)) {
-        Row(
-            Modifier.fillMaxWidth().clickable(onClickLabel = "Open ${w.name}", onClick = onOpen).testTag("stock_${w.id.value}").padding(horizontal = 12.dp, vertical = 10.dp)
-                .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${stock.summary}, ${stock.price?.let { "$it gold" } ?: "in storage"}. Tap for details and price." },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            WeaponSprite(w, size = 48.dp)
+    // With large text the quick "List at" goes under the blade: beside it, it would leave the name a few dp.
+    val listBelow = LocalDensity.current.fontScale > 1.3f
+    Column(
+        modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().clickable(onClickLabel = "Open ${w.name}", onClick = onOpen).testTag("stock_${w.id.value}").padding(horizontal = 12.dp, vertical = 10.dp)
+            .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${stock.summary}, ${stock.price?.let { "$it gold" } ?: "in storage"}. Tap for details and price." },
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(2.dp)) { WeaponSprite(w, size = 44.dp) }
             Column(Modifier.weight(1f)) {
-                Text(w.name, style = MaterialTheme.typography.titleSmall)
-                Secondary(stock.summary)
+                Text(w.name + (w.title?.let { " · \"$it\"" } ?: ""), style = MaterialTheme.typography.titleSmall, color = rarityColor(w.rarity))
+                WeaponStatLine(w.rarity, stock.stats, stock.buffs, stock.flaws)
                 stock.favoured?.let { Secondary(it) }
             }
-            if (stock.price != null) Text("${stock.price} g", style = MaterialTheme.typography.titleMedium)
-            else if (onList != null) Button(onClick = { onList(stock.suggested) }, enabled = !busy, modifier = Modifier.heightIn(min = 48.dp)) { Text("List at ${stock.suggested}", maxLines = 1) }
+            if (stock.price != null) Text("${stock.price} g", style = MaterialTheme.typography.titleMedium, color = Gold)
+            else if (onList != null && !listBelow) SecondaryActionButton("List at ${stock.suggested}", { onList(stock.suggested) }, enabled = !busy)
         }
+        if (stock.price == null && onList != null && listBelow) SecondaryActionButton("List at ${stock.suggested}", { onList(stock.suggested) }, Modifier.fillMaxWidth().padding(top = Space.sm), enabled = !busy)
     }
 }

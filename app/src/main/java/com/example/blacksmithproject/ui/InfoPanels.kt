@@ -1,5 +1,7 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,10 +18,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,6 +39,9 @@ import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.ForgeSlot
+import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.config.BalanceConfig
@@ -73,7 +76,7 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifi
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text("Fallen and retired (${gone.size})", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                    Text(if (showGone) "Hide  ▴" else "Show  ▾", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                    Text(if (showGone) "Hide  ▴" else "Show  ▾", style = MaterialTheme.typography.labelLarge, color = Gold)
                 }
             }
             if (showGone) itemsIndexed(gone, key = { _, h -> "hero_${h.id.value}" }) { i, h ->
@@ -94,11 +97,11 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     val forecast = remember(st) { vm.engine.siegeForecast(st) }
 
     // Header: the faction with the most pressure (the one the engine sends at the siege), numbers second.
-    Surface(tonalElevation = 2.dp, shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
-        Row(Modifier.padding(Space.md).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+    FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
+        Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
             faction?.let { f -> Sprites.faction(f.id, elite = f.pressure >= 60)?.let { PixelImage(it, 56.dp, description = null) } }
             Column(Modifier.weight(1f)) {
-                Text(faction?.let { content.faction(it.id).name } ?: "No threat", style = MaterialTheme.typography.titleMedium)
+                Text(faction?.let { content.faction(it.id).name } ?: "No threat", style = MaterialTheme.typography.titleMedium, color = Gold)
                 Text(
                     faction?.let { Battle.describePressure(it.pressure).replaceFirstChar { c -> c.uppercase() } + " · " } .orEmpty() +
                         when { daysLeft <= 0 -> "siege today"; daysLeft == 1 -> "siege tomorrow"; else -> "siege on day ${st.town.nextSiegeDay}, in $daysLeft days" },
@@ -142,25 +145,22 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     val champions = st.town.championIds.mapNotNull { st.heroes[it] }
     (0 until 3).forEach { i ->
         val h = champions.getOrNull(i)
-        Surface(
-            tonalElevation = if (h != null) 1.dp else 0.dp,
-            shape = MaterialTheme.shapes.medium,
-            modifier = Modifier.fillMaxWidth().padding(top = Space.sm),
+        Row(
+            Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().then(if (h == null) Modifier else Modifier.clickable(onClickLabel = "Open details") { vm.openSheet(Sheet.Hero(h.id)) }).padding(12.dp).semantics(mergeDescendants = true) {},
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(Modifier.then(if (h == null) Modifier else Modifier.clickable(onClickLabel = "Open details") { vm.openSheet(Sheet.Hero(h.id)) }).padding(12.dp).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (h == null) {
-                    Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Secondary("No hero stands here yet.", Modifier.weight(1f))
-                } else {
-                    val w = st.equippedWeapon(h.id)
-                    PixelImage(Sprites.portrait(h), 56.dp, description = null)
-                    Column(Modifier.weight(1f)) {
-                        Text("${i + 1}. ${h.fullName}", style = MaterialTheme.typography.titleSmall)
-                        Secondary("${content.heroClass(h.classId).name} level ${h.level} · ${Labels.health(h)}")
-                        Secondary(w?.let { "Wields ${it.name}" + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "Unarmed")
-                    }
-                    w?.let { WeaponSprite(it, size = 44.dp) }
+            if (h == null) {
+                Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Secondary("No hero stands here yet.", Modifier.weight(1f))
+            } else {
+                val w = st.equippedWeapon(h.id)
+                PixelImage(Sprites.portrait(h), 56.dp, description = null)
+                Column(Modifier.weight(1f)) {
+                    Text("${i + 1}. ${h.fullName}", style = MaterialTheme.typography.titleSmall)
+                    Secondary("${content.heroClass(h.classId).name} level ${h.level} · ${Labels.health(h)}")
+                    Secondary(w?.let { "Wields ${it.name}" + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "Unarmed")
                 }
+                w?.let { WeaponSprite(it, size = 44.dp) }
             }
         }
     }
@@ -185,7 +185,7 @@ private fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box {
+        Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) {
             PixelImage(Sprites.portrait(h, small = true), 44.dp, description = null)
             Sprites.marker(h.fate)?.let { PixelImage(it, 16.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
         }
@@ -257,7 +257,7 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
         Column {
             SectionTitle("Era ${s.state.era}", Modifier.padding(top = Space.sm))
             if (s.state.pendingBlessingOffer.isNotEmpty()) {
-                Button(onClick = vm::reopenBlessingOffer, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(bottom = Space.sm)) { Text("Choose a blessing") }
+                PrimaryActionButton("Choose a blessing", vm::reopenBlessingOffer, Modifier.fillMaxWidth().padding(bottom = Space.sm))
             }
             Text("${legacy.points} legacy points banked", style = MaterialTheme.typography.titleMedium)
             Secondary("Rewards are claimed when the forge falls; they survive every era.")
@@ -319,7 +319,7 @@ fun LevelDots(level: Int, max: Int) {
     Text(
         "●".repeat(level) + "○".repeat((max - level).coerceAtLeast(0)),
         style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.primary,
+        color = Gold,
         modifier = Modifier.semantics { contentDescription = "level $level of $max" },
     )
 }

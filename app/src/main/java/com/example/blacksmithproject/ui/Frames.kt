@@ -1,5 +1,6 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,8 +16,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -112,9 +116,29 @@ fun FramedPanel(
     }
 }
 
-/** The one way forward on a screen: a wide gold plate with a lit top edge and a dark bevel under it. At least 52 dp tall. */
+/** A row that is a thing of its own (a blade, a request, a door to a sheet): the panel ground inside a plain bronze line, without the corner work of [forgeFrame]. */
+fun Modifier.forgeRow(): Modifier = background(ForgePanel, RowShape).border(1.dp, BronzeDeep, RowShape)
+
+private val RowShape = RoundedCornerShape(4.dp)
+
+/** Any action that is not the way forward: the same cut as the gold plate, as a bronze outline with gold lettering. At least 48 dp tall. */
 @Composable
-fun PrimaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+fun SecondaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    OutlinedButton(
+        onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small,
+        border = BorderStroke(1.dp, if (enabled) Bronze else BronzeDeep),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Gold),
+        contentPadding = PaddingValues(horizontal = Space.md, vertical = Space.sm),
+        modifier = modifier.heightIn(min = 48.dp),
+    ) { Text(text, textAlign = TextAlign.Center) }
+}
+
+/**
+ * The one way forward on a screen: a wide gold plate with a lit top edge and a dark bevel under it. At least 52 dp tall.
+ * [detail] is a second, smaller line under the label (what End Day will cost).
+ */
+@Composable
+fun PrimaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, detail: String? = null) {
     Box(
         modifier.heightIn(min = 52.dp).clip(MaterialTheme.shapes.small).drawBehind {
             val bevel = 3.dp.toPx()
@@ -131,7 +155,11 @@ fun PrimaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier = 
         contentAlignment = Alignment.Center,
     ) {
         // Dark on gold 9.4:1 (6.1:1 at the foot of the gradient); the disabled label 4.4:1 on its grey plate.
-        Text(text, style = MaterialTheme.typography.titleMedium, color = if (enabled) Color(0xFF2A1A04) else Color(0xFF9A927E), textAlign = TextAlign.Center)
+        val ink = if (enabled) Color(0xFF2A1A04) else Color(0xFF9A927E)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text, style = MaterialTheme.typography.titleMedium, color = ink, textAlign = TextAlign.Center)
+            if (detail != null) Text(detail, style = MaterialTheme.typography.labelSmall, color = ink, textAlign = TextAlign.Center)
+        }
     }
 }
 

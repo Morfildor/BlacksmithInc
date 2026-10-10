@@ -1,6 +1,8 @@
 package com.example.blacksmithproject.ui
 
 import androidx.compose.runtime.Immutable
+import com.example.blacksmithproject.ui.detail.Stat
+import com.example.blacksmithproject.ui.detail.weaponStats
 import com.example.blacksmithproject.ui.shopday.Beat
 import com.example.blacksmithproject.ui.shopday.FaceUi
 import com.example.blacksmithproject.ui.shopday.toUi
@@ -19,6 +21,7 @@ import com.tinyblacksmith.core.model.VisitKind
 import com.tinyblacksmith.core.model.Weapon
 import com.tinyblacksmith.core.model.WeaponFamilyId
 import com.tinyblacksmith.core.model.WeaponId
+import com.tinyblacksmith.core.model.WeaponSnapshot
 import com.tinyblacksmith.core.shopday.Advice
 import com.tinyblacksmith.core.shopday.Demand
 import com.tinyblacksmith.core.shopday.LeadKind
@@ -34,8 +37,15 @@ import com.tinyblacksmith.core.shopday.TallyOutcome
 @Immutable
 data class RequestUi(val id: CommissionId, val buyer: FaceUi, val asks: String, val terms: String, val offered: Boolean, val readiness: String?, val fits: List<String>)
 
-/** A blade on the shelf ([price] set) or in storage ([price] null, [suggested] is what the quick "List" asks). */
-@Immutable data class StockUi(val weapon: Weapon, val summary: String, val favoured: String?, val price: Int?, val suggested: Int)
+/**
+ * A blade on the shelf ([price] set) or in storage ([price] null, [suggested] is what the quick "List" asks). [stats] are
+ * the item card's own numbers (`weaponStats`), less a renown of nothing; [buffs] and [flaws] are the affix names.
+ */
+@Immutable
+data class StockUi(
+    val weapon: Weapon, val summary: String, val favoured: String?, val price: Int?, val suggested: Int,
+    val stats: List<Stat> = emptyList(), val buffs: List<String> = emptyList(), val flaws: List<String> = emptyList(),
+)
 
 /** One line of "Who is buying": a count from `Demand.summary` under a fixed label, with the names when they are few. */
 @Immutable data class DemandRow(val label: String, val value: String, val detail: String? = null)
@@ -69,7 +79,12 @@ private fun GameEngine.favoured(familyId: WeaponFamilyId): String? {
     return if (fans.isEmpty()) null else "${fans.joinToString(" and ")} favour the ${content.family(familyId).name.lowercase()}"
 }
 
-private fun GameEngine.stock(w: Weapon) = StockUi(w, Labels.weaponSummary(w, content), favoured(w.familyId), w.listedPrice, suggestedPrice(w))
+private fun GameEngine.stock(w: Weapon) = StockUi(
+    w, Labels.weaponSummary(w, content), favoured(w.familyId), w.listedPrice, suggestedPrice(w),
+    // A number with a ceiling is always said; one without (power, renown) only when there is any.
+    stats = weaponStats(WeaponSnapshot.of(w)).filter { it.max != null || it.value > 0 },
+    buffs = w.affixes.map { content.affix(it).name }, flaws = w.flaws.map { content.affix(it).name },
+)
 
 /** Yesterday's visits regrouped by outcome and reason, each sale on its own, and worded by `Lines.tally`. */
 private fun GameEngine.yesterday(state: GameState, day: DayResolution): YesterdayUi {

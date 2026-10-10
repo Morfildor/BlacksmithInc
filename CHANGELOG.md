@@ -105,6 +105,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
   readily, and a blade of the element the besieger shrugs off that would have sold on a calm day stays on the shelf,
   and the visit says so. Stronger blades of a resisted element still sell.
 - A new look: one dark forge theme in both system modes, bronze-framed panels with gold headings and a gold primary button, and blades shown as an item card with power, quality and condition bars, buffs ("+") and flaws ("−"); a fresh forge is revealed as that card.
+- The planning screens wear the same look: the Shop's lead, requests, shelf and storage rows, the Forge's anvil plate, Supplies, Town and Records sit in bronze-framed panels under gold headings; End Day and Forge weapon are gold buttons (Forge weapon now runs the width of the plate), other actions are bronze outlines; the top bar and the destination bar are dark panels with a gold mark on the chosen destination.
+- A blade's row on the shelf and in storage shows its name in the rarity's colour and one line of the item card's numbers (power, quality, condition) with each buff ("+") and flaw ("−") by name. With large text the quick "List at" button moves under the blade.
+- The app no longer flashes a light screen while it starts.
 - The walls can cost a champion. When a siege is lost badly (the raid at one and a half times the town's defense or
   more) it is a rout: the champions take a heavier wound, and one who went up barely recovered can fall there. The
   blade they carried is recovered by comrades more often than on the road, or seized, or lost. A narrow loss still only
