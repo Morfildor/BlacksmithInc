@@ -22,7 +22,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -42,6 +46,7 @@ import com.example.blacksmithproject.ui.shopday.ShelfBand
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.BuffGreen
 import com.example.blacksmithproject.ui.theme.CreamMuted
+import com.example.blacksmithproject.ui.theme.Ember
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
@@ -53,8 +58,9 @@ import com.tinyblacksmith.core.model.WeaponSnapshot
 
 /**
  * The Shop destination: where the day is planned. From the top: the counter with the live shelf and how many it seats,
- * the one lead of the day, the requests, who is buying, yesterday at the counter, then the shelf rows and the way into
- * storage. One lazy list of keyed rows; data in, events out. [tip] is the first-run banner, shown with the shelf it is
+ * the one lead of the day (under "Siege today" on that day), the shelf rows, the ways into the board, storage and
+ * supplies, then the reports: who is buying and yesterday at the counter, folded. Merchandise before reports.
+ * One lazy list of keyed rows; data in, events out. [tip] is the first-run banner, shown with the shelf it is
  * about; [more] appends rows.
  */
 @Composable
@@ -81,7 +87,8 @@ fun ShopPanel(
                 CounterScene(
                     plate = "Seats ${shop.seats} · shelf ${shop.shelf.size} of ${shop.slots}",
                     // Under the seats: when the siege comes and what tells against the besieger, as the Forge's plate has it.
-                    detail = shop.threat?.let { listOfNotNull(it.summary + ".", it.note).joinToString(" ") }, customer = null, customerKey = null,
+                    // On the day itself the siege has its own row under the counter, so the plate does not say it twice.
+                    detail = shop.threat?.takeIf { !it.today }?.let { listOfNotNull(it.summary + ".", it.note).joinToString(" ") }, customer = null, customerKey = null,
                     reducedMotion = reducedMotion, onOpenHero = {}, backdropHeight = if (short) 56.dp else 88.dp,
                 )
                 // An empty shelf is already on the plate; the band is for blades.
@@ -91,31 +98,16 @@ fun ShopPanel(
                 )
             }
         }
-        item(key = "lead") { LeadCard(shop.lead, onAct = { onLead(shop.lead) }, modifier = side.padding(top = Space.md)) }
-
-        // Commissions and customer wants live on one board; the Shop says how many there are and whether an offer waits.
-        item(key = "board") {
-            val board = remember(shop.requests, shop.wants) { shop.board() }
-            DoorRow("Commissions & customers", "Open the board", "shop_board", onOpenBoard, side.padding(top = Space.md), detail = listOfNotNull(board.summary, board.pending).joinToString(" · "))
-        }
-
-        item(key = "demand") {
-            Column(side.testTag("shop_demand")) {
-                SectionTitle("Who is buying")
-                shop.demand.forEach { DemandLine(it) }
-            }
-        }
-
-        shop.yesterday?.let { y ->
-            item(key = "yesterday") {
-                Column(side.testTag("shop_yesterday")) {
-                    SectionTitle("Yesterday at the counter")
-                    listOfNotNull(y.took, y.counts).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.titleSmall) }
-                    y.lines.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs)) }
-                    TextButton(onClick = onOpenNews, modifier = Modifier.heightIn(min = 48.dp).testTag("shop_news")) { Text("Read the Gazette") }
+        // The day of a siege says so first, in words; the lead keeps its place under it.
+        shop.threat?.takeIf { it.today }?.let { threat ->
+            item(key = "siege") {
+                Column(side.padding(top = Space.md).fillMaxWidth().forgeRow().heightIn(min = 56.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag("shop_siege").semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.Center) {
+                    Text("Siege today, after today's trading", style = MaterialTheme.typography.titleMedium, color = Ember)
+                    Secondary(listOfNotNull(threat.matchup, threat.outlook, threat.note).joinToString(" · "))
                 }
             }
         }
+        item(key = "lead") { LeadCard(shop.lead, onAct = { onLead(shop.lead) }, modifier = side.padding(top = Space.md)) }
 
         item(key = "shelf") {
             Column(side.testTag("shop_shelf")) {
@@ -124,10 +116,47 @@ fun ShopPanel(
                 if (shop.shelf.isEmpty()) Secondary("Nothing on display.")
             }
         }
-        items(shop.shelf, key = { "stock_${it.weapon.id.value}" }) { StockRow(it, busy, onOpen = { onOpenBlade(it.weapon.id) }, onList = null, modifier = side) }
+        items(shop.shelf, key = { "stock_${it.weapon.id.value}" }) { ShelfRow(it, onOpen = { onOpenBlade(it.weapon.id) }, modifier = side) }
 
-        item(key = "storage") { DoorRow("Storage · ${shop.storage.size}", "Open storage", "shop_storage", onOpenStorage, side.padding(top = Space.md)) }
+        // Commissions and customer wants live on one board; the Shop says how many there are and whether an offer waits.
+        item(key = "board") {
+            val board = remember(shop.requests, shop.wants) { shop.board() }
+            DoorRow("Commissions & customers", "Open the board", "shop_board", onOpenBoard, side.padding(top = Space.md), detail = listOfNotNull(board.summary, board.pending).joinToString(" · "))
+        }
+
+        item(key = "storage") { DoorRow("Storage · ${shop.storage.size}", "Open storage", "shop_storage", onOpenStorage, side.padding(top = Space.sm)) }
         if (onOpenSupplies != null) item(key = "supplies") { DoorRow("Supplies and tools", "Open supplies", "shop_supplies", onOpenSupplies, side.padding(top = Space.sm)) }
+
+        item(key = "demand") {
+            Column(side.testTag("shop_demand")) {
+                SectionTitle("Who is buying")
+                shop.demand.forEach { DemandLine(it) }
+            }
+        }
+
+        // Yesterday is a report: one row with the till and the counts, and the lines behind "Show".
+        shop.yesterday?.let { y ->
+            item(key = "yesterday") {
+                var open by rememberSaveable { mutableStateOf(false) }
+                Column(side.padding(top = Space.md).fillMaxWidth().forgeRow().testTag("shop_yesterday")) {
+                    Row(
+                        Modifier.fillMaxWidth().clickable(onClickLabel = if (open) "Hide yesterday's lines" else "Show yesterday's lines", role = Role.Button) { open = !open }
+                            .heightIn(min = 56.dp).padding(horizontal = Space.md).testTag("shop_yesterday_toggle"),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f).padding(vertical = Space.sm)) {
+                            Text("Yesterday at the counter", style = MaterialTheme.typography.titleMedium)
+                            listOfNotNull(y.took, y.counts).takeIf { it.isNotEmpty() }?.let { Secondary(it.joinToString(" · ")) }
+                        }
+                        Text(if (open) "Hide" else "Show", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(start = Space.sm))
+                    }
+                    if (open) Column(Modifier.padding(horizontal = Space.md)) {
+                        y.lines.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = Space.xs)) }
+                        TextButton(onClick = onOpenNews, modifier = Modifier.heightIn(min = 48.dp).testTag("shop_news")) { Text("Read the Gazette") }
+                    }
+                }
+            }
+        }
         more()
     }
 }
@@ -195,7 +224,7 @@ private fun DemandLine(row: DemandRow) {
 }
 
 /**
- * One blade on the shelf or in storage: sprite, name in its rarity's colour, the item card's numbers in one line with
+ * One blade in storage, in full (the Shop's shelf has the short [ShelfRow]): sprite, name in its rarity's colour, the item card's numbers in one line with
  * its buffs and flaws, who favours it, and its price. Tapping the row opens
  * the blade's sheet, where it is priced, listed, unlisted, salvaged, honed or given to the watch. A stored blade also
  * has the quick "List at" its suggested price ([onList]). With [selected] set the row is a checkbox (Storage's
@@ -210,7 +239,7 @@ internal fun StockRow(stock: StockUi, busy: Boolean, onOpen: () -> Unit, onList:
         modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow()
             .then(if (selected == null) Modifier.clickable(onClickLabel = "Open ${w.name}", onClick = onOpen) else Modifier.toggleable(selected, role = Role.Checkbox, onValueChange = { onOpen() }))
             .testTag("stock_${w.id.value}").padding(horizontal = 12.dp, vertical = 10.dp)
-            .semantics(mergeDescendants = true) { contentDescription = "${w.name}, ${stock.summary}, ${stock.price?.let { "$it gold" } ?: "in storage"}.${stock.threat?.let { " ${it.label}." } ?: ""}${stock.dormant?.let { " $it" } ?: ""}${if (selected == null) " Tap for details and price." else ""}" },
+            .semantics(mergeDescendants = true) { contentDescription = stock.spoken(tap = selected == null) },
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             if (selected != null) Checkbox(checked = selected, onCheckedChange = null)
@@ -226,5 +255,36 @@ internal fun StockRow(stock: StockUi, busy: Boolean, onOpen: () -> Unit, onList:
             else if (onList != null && !listBelow) SecondaryActionButton("List at ${stock.suggested}", { onList(stock.suggested) }, enabled = !busy)
         }
         if (stock.price == null && onList != null && listBelow) SecondaryActionButton("List at ${stock.suggested}", { onList(stock.suggested) }, Modifier.fillMaxWidth().padding(top = Space.sm), enabled = !busy)
+    }
+}
+
+/** What TalkBack says for a blade's row: its name, summary and price, then how it stands against the besieger and what sleeps in it. */
+private fun StockUi.spoken(tap: Boolean) =
+    "${weapon.name}, $summary, ${price?.let { "$it gold" } ?: "in storage"}.${threat?.let { " ${it.label}." } ?: ""}${dormant?.let { " $it" } ?: ""}${if (tap) " Tap for details and price." else ""}"
+
+/**
+ * A blade on the Shop's shelf, short: sprite, name in its rarity's colour, then the rarity in words, its power and each
+ * flaw ("−", red) by name, with the price at the end. The rest ([StockRow] has it in Storage) is one tap away, on the
+ * blade's sheet; TalkBack hears the same sentence as there.
+ */
+@Composable
+private fun ShelfRow(stock: StockUi, onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    val w = stock.weapon
+    Row(
+        modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().clickable(onClickLabel = "Open ${w.name}", onClick = onOpen)
+            .testTag("stock_${w.id.value}").heightIn(min = 56.dp).padding(horizontal = 12.dp, vertical = Space.sm)
+            .semantics(mergeDescendants = true) { contentDescription = stock.spoken(tap = true) },
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(2.dp)) { WeaponSprite(w, size = 36.dp) }
+        Column(Modifier.weight(1f)) {
+            Text(w.name + (w.title?.let { " · \"$it\"" } ?: ""), style = MaterialTheme.typography.titleSmall, color = rarityColor(w.rarity))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                WeaponStatLine(w.rarity, stock.stats.filter { it.label == "Power" }, emptyList(), stock.flaws, Modifier.weight(1f).padding(end = Space.sm))
+                stock.price?.let { Text("$it g", style = MaterialTheme.typography.titleMedium, color = Gold) }
+            }
+            stock.dormant?.let { Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold) }
+            stock.threat?.let { Text("${it.kind.sign} ${it.label}", style = MaterialTheme.typography.bodySmall, color = it.kind.color) }
+        }
     }
 }

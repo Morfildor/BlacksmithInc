@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -85,24 +86,47 @@ class ShopPanelTest {
         show(fresh)
         compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertTextEquals("Forge your first blade")
         compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals("${fresh.aliveHeroes().size} heroes in Emberfall and nothing on the shelf.")
-        compose.onNodeWithTag("shop_lead_action").assertTextEquals("Go to the forge  ›")
+        compose.onNodeWithTag("shop_lead_action", useUnmergedTree = true).assertTextEquals("Go to the forge  ›")
+        compose.onNodeWithTag("shop_siege", useUnmergedTree = true).assertDoesNotExist()
         assertTrue("the lead is the first thing under the counter", top("shop_counter") < top("shop_lead") && top("shop_lead") < top("shop_demand"))
         compose.onNodeWithTag("shop_board_detail", useUnmergedTree = true).assertTextEquals("No commissions · no customer wants")
         compose.onNodeWithTag("shop_yesterday", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test
-    fun requestsAndYesterdaySitAboveTheShelf() {
+    fun theShelfSitsAboveTheDoorsAndTheReportsAndYesterdayIsFolded() {
         val day = mornings().firstOrNull { d ->
             d.state.commissions.values.any { it.status == CommissionStatus.OFFERED || it.status == CommissionStatus.ACCEPTED } && d.state.listedWeapons().isNotEmpty() && d.resolution.visits.isNotEmpty()
         }
         assertNotNull("no morning with a request, a stocked shelf and yesterday's customers", day)
         show(day!!.state)
-        val firstBlade = compose.onAllNodes(stockRow, useUnmergedTree = true).fetchSemanticsNodes().minOf { it.boundsInRoot.top }
-        val order = listOf("shop_counter", "shop_lead", "shop_board", "shop_demand", "shop_yesterday", "shop_shelf").map { top(it).value }
-        assertEquals("counter, lead, the board, who is buying, yesterday, shelf", order.sorted(), order)
-        assertTrue("the shelf rows follow their heading", with(compose.density) { top("shop_shelf").toPx() } < firstBlade)
-        assertTrue("storage is the last of them", top("shop_storage") > top("shop_shelf"))
+        val blades = compose.onAllNodes(stockRow, useUnmergedTree = true).fetchSemanticsNodes().map { it.boundsInRoot.top }
+        val order = listOf("shop_counter", "shop_lead", "shop_shelf", "shop_board", "shop_storage", "shop_demand", "shop_yesterday").map { top(it).value }
+        assertEquals("counter, lead, shelf, the board, storage, who is buying, yesterday", order.sorted(), order)
+        assertTrue("the shelf rows sit between their heading and the board", with(compose.density) { top("shop_shelf").toPx() < blades.min() && blades.max() < top("shop_board").toPx() })
+        // A shelf row still names the blade and its price for TalkBack, though it shows less.
+        val blade = day.state.listedWeapons().first()
+        val spoken = compose.onNodeWithTag("stock_${blade.id.value}").fetchSemanticsNode().config.getOrNull(SemanticsProperties.ContentDescription).orEmpty().joinToString()
+        assertTrue(spoken, blade.name in spoken && "${blade.listedPrice} gold" in spoken)
+        // Yesterday is one row until asked: the Gazette button is behind "Show".
+        compose.onNodeWithTag("shop_news").assertDoesNotExist()
+        compose.onNodeWithTag("shop_yesterday_toggle").performClick()
+        compose.onNodeWithTag("shop_news").assertIsDisplayed()
+        compose.onNodeWithTag("shop_yesterday_toggle").performClick()
+        compose.onNodeWithTag("shop_news").assertDoesNotExist()
+    }
+
+    /** The day of a siege: one row says so above the lead, with the line every destination shows. */
+    @Test
+    fun theSiegeDayIsSaidAboveTheLead() {
+        val fresh = engine.newRun(LegacyProfile(), 42L)
+        val ui = engine.shopUi(fresh)
+        assertNotNull("a new game has a besieger", ui.threat)
+        show(fresh)
+        compose.runOnUiThread { shop = ui.copy(threat = ui.threat!!.copy(today = true)) }
+        compose.waitForIdle()
+        compose.onNodeWithTag("shop_siege").assertTextContains("Siege today, after today's trading")
+        assertTrue("the siege row is above the lead", top("shop_counter") < top("shop_siege") && top("shop_siege") < top("shop_lead"))
     }
 
     @Test

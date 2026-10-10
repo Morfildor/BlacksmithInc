@@ -34,7 +34,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
@@ -51,6 +50,7 @@ import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.market.Market
+import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.gazette.Gazette
@@ -222,7 +222,13 @@ internal fun SignatureLadder(sig: SignatureUi, onUse: (Command.Forge) -> Unit, m
     }
 }
 
-/** The archive: one edition per day, newest first; the newest is open, older days show their lede until tapped. */
+/** What an archive row says before its headline when the day held a siege or a death: read from the day's record types, never from their text. */
+internal fun gazetteMarks(types: Collection<EventType>): List<String> = listOfNotNull(
+    "⚔ Siege".takeIf { EventType.SIEGE_WON in types || EventType.SIEGE_LOST in types },
+    "† Death".takeIf { EventType.HERO_DIED in types },
+)
+
+/** The archive: one edition per day, newest first; the newest is open, older days are a row (day, headline) until tapped. */
 @Composable
 fun GazettePanel(s: UiState.Playing) {
     val st = s.state
@@ -236,18 +242,28 @@ fun GazettePanel(s: UiState.Playing) {
             Gazette.edition(Gazette.dayRecords(st, day), heroNames, res?.visits ?: emptyList(), res?.ledger, res?.field ?: emptyList())
         }
         val expanded = open == day
-        Row(
-            Modifier.fillMaxWidth().clickable { open = if (expanded) null else day }.semantics { contentDescription = "${Gazette.masthead(day)}, ${if (expanded) "open" else "closed"}. Tap to ${if (expanded) "close" else "open"}." },
-            verticalAlignment = Alignment.Bottom,
-        ) {
-            SectionTitle(Gazette.masthead(day), Modifier.weight(1f))
-            Secondary(if (expanded) "Close" else "Open", Modifier.padding(bottom = Space.sm))
-        }
-        if (expanded) EditionBody(edition)
-        else {
+        val toggle = Modifier.fillMaxWidth().clickable { open = if (expanded) null else day }.semantics { contentDescription = "${Gazette.masthead(day)}, ${if (expanded) "open" else "closed"}. Tap to ${if (expanded) "close" else "open"}." }
+        if (expanded) {
+            Row(toggle, verticalAlignment = Alignment.Bottom) {
+                SectionTitle(Gazette.masthead(day), Modifier.weight(1f))
+                Secondary("Hide", Modifier.padding(bottom = Space.sm))
+            }
+            EditionBody(edition)
+        } else {
+            val marks = remember(st.events, day) { gazetteMarks(st.eventsForDay(day).map { it.type }) }
             val first = edition.lede.firstOrNull() ?: edition.sections.firstOrNull()?.lines?.firstOrNull() ?: "A quiet day in Emberfall."
-            Text(first, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium)
-            if (edition.tally.isNotEmpty()) Secondary(edition.tally.joinToString(" · "), Modifier.padding(top = Space.xs))
+            Row(
+                Modifier.padding(top = Space.xs).forgeRow().then(toggle).heightIn(min = 48.dp).padding(horizontal = Space.md, vertical = Space.sm),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text("Day $day", style = MaterialTheme.typography.labelSmall, color = CreamMuted)
+                    // A sign and a word, so the colour is never the only cue.
+                    if (marks.isNotEmpty()) Text(marks.joinToString(" · "), style = MaterialTheme.typography.labelMedium, color = Ember)
+                    Text(first, style = MaterialTheme.typography.titleSmall)
+                }
+                Secondary("Show")
+            }
         }
     }
 }

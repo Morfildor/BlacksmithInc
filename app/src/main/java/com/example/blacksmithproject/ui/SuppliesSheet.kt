@@ -1,5 +1,6 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +18,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -35,6 +38,7 @@ import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.WorldEvents
 import com.tinyblacksmith.core.model.GameState
+import com.tinyblacksmith.core.model.MaterialId
 
 /**
  * Where today's stock of a limited material comes from, beyond the supplier's own: the Caravan Ties legacy track, the
@@ -51,45 +55,57 @@ fun GameEngine.supplyNotes(state: GameState, m: MaterialDef): List<String> {
     )
 }
 
-/** The supplier and the workshop tools, as a sheet over the Shop or the Forge. */
+/** The supplier and the workshop tools, as a sheet over the Shop or the Forge; with [focus] it opens on that material's row. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SuppliesSheet(s: UiState.Playing, vm: GameViewModel, onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+fun SuppliesSheet(s: UiState.Playing, vm: GameViewModel, onDismiss: () -> Unit, modifier: Modifier = Modifier, focus: MaterialId? = null) {
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
         modifier = modifier.semantics { testTagsAsResourceId = true }.testTag("supplies_sheet"),
-    ) { SuppliesList(s, vm) }
+    ) { SuppliesList(s, vm, focus = focus) }
 }
 
 @Composable
-fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier) {
+fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier, focus: MaterialId? = null) {
     val content = vm.engine.content
     val st = s.state
-    LazyColumn(modifier.fillMaxWidth().navigationBarsPadding().testTag("supplies_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, bottom = Space.lg)) {
+    val groups = MaterialCategory.entries.map { it to content.materials(it) }.filter { it.second.isNotEmpty() }
+    val listState = rememberLazyListState()
+    // The asked-for row's place in the list below, by the keys the list gives its items up to the last material.
+    LaunchedEffect(focus) {
+        val keys = listOf("supplier") + groups.flatMap { (category, group) -> listOf("supplier_${category.name}") + group.map { "material_${it.id.value}" } }
+        val at = keys.indexOf("material_${focus?.value}")
+        if (at >= 0) listState.scrollToItem(at)
+    }
+    LazyColumn(modifier.fillMaxWidth().navigationBarsPadding().testTag("supplies_list"), state = listState, contentPadding = PaddingValues(start = Space.md, end = Space.md, bottom = Space.lg)) {
         item(key = "supplier") {
             Column {
-                Text("Supplier", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
+                Text("Supplies", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
                 Secondary("${st.gold} gold in the purse. Buy one at a time. Basic metals are always in stock.")
             }
         }
-        MaterialCategory.entries.forEach { category ->
-            val group = content.materials(category)
-            if (group.isEmpty()) return@forEach
+        groups.forEach { (category, group) ->
             item(key = "supplier_${category.name}") {
-                SectionHeader(when (category) { MaterialCategory.CORE -> "Cores"; MaterialCategory.AUGMENT -> "Augments"; MaterialCategory.CATALYST -> "Catalysts" })
+                SectionHeader(when (category) { MaterialCategory.CORE -> "Metals";MaterialCategory.AUGMENT -> "Augments"; MaterialCategory.CATALYST -> "Catalysts" })
             }
             items(group, key = { "material_${it.id.value}" }) { m ->
                 val price = vm.engine.materialPrice(st, m.id)
                 val stock = st.supplierStock[m.id]
                 val have = st.materials[m.id] ?: 0
-                Row(Modifier.fillMaxWidth().padding(vertical = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                val needed = m.id == focus
+                Row(
+                    // The row the Forge asked for: a gold line and its own words, never the colour alone.
+                    Modifier.fillMaxWidth().padding(vertical = Space.xs).then(if (needed) Modifier.border(1.dp, Gold, MaterialTheme.shapes.small).padding(Space.xs) else Modifier),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+                ) {
                     Sprites.material(m.id)?.let { PixelImage(it, wholePixelDp(48, 40.dp), description = null) }
                     Column(Modifier.weight(1f)) {
-                        Text("${m.name} · $price gold", style = MaterialTheme.typography.bodyMedium)
-                        Secondary("You have $have" + (stock?.let { " · $it left today" } ?: ""))
+                        if (needed) Text("Needed on the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
+                        Text(m.name, style = MaterialTheme.typography.bodyMedium)
+                        Secondary("Owned $have · $price gold" + (stock?.let { " · $it left today" } ?: ""))
                         vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
                     }
                     SecondaryActionButton(

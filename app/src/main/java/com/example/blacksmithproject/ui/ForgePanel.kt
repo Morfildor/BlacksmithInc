@@ -101,7 +101,7 @@ private val Chip = RoundedCornerShape(6.dp)
 @Composable
 fun ForgePanel(
     s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, tip: Tips.Tip?,
-    onOpenSupplies: () -> Unit = {}, onOpenBoard: () -> Unit = {}, onEndDay: () -> Unit = {},
+    onOpenSupplies: (MaterialId?) -> Unit = {}, onOpenBoard: () -> Unit = {}, onEndDay: () -> Unit = {},
 ) {
     val engine = vm.engine
     val d = s.draft
@@ -120,7 +120,7 @@ fun ForgePanel(
     Column(Modifier.fillMaxSize()) {
         EventStrip(s) { vm.selectDest(Dest.TOWN) }
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Space.md).padding(bottom = Space.md)) {
-            ForgeHeading(s.shop.requests.size, onOpenBoard, onOpenSupplies, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
+            ForgeHeading(s.shop.requests.size, onOpenBoard, { onOpenSupplies(null) }, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
             Workbench(bench.title, d, vm.engine.content, compact = open != null)
             bench.brief?.let { Brief(it, onOpenBoard) { vm.updateDraft { draft -> draft.copy(commissionId = null) } } }
             SlotRow(bench.slots.take(3), d, engine.content, open) { opened = if (open == it) NO_SLOT else it.name }
@@ -133,7 +133,7 @@ fun ForgePanel(
             ForgingOptions(d) { change -> vm.updateDraft(change) }
             tip?.let { TipBanner(it, vm, Modifier.padding(top = Space.md)) }
         }
-        ForgeAction(bench, s.busy, onOpenSupplies, onEndDay) { bench.command?.let(vm::dispatch) }
+        ForgeAction(bench, s.busy, { onOpenSupplies(bench.action.restock) }, onEndDay) { bench.command?.let(vm::dispatch) }
     }
 }
 
@@ -263,7 +263,7 @@ private fun optionArt(slot: RecipeSlot, option: OptionUi, content: ContentCatalo
  * what is missing and offers the way to buy it. What the chosen tile does is said once, under the grid.
  */
 @Composable
-private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, onRestock: () -> Unit, onDone: () -> Unit, onPick: (OptionUi) -> Unit) {
+private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, onRestock: (MaterialId?) -> Unit, onDone: () -> Unit, onPick: (OptionUi) -> Unit) {
     val columns = if (LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340) 2 else 3
     var inspected by remember(slot) { mutableStateOf<OptionUi?>(null) }
     Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeDeep, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
@@ -291,7 +291,7 @@ private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCata
                 Text(if (shown.usable) listOfNotNull(shown.name, shown.detail).joinToString(" · ") else "No ${shown.name} left", style = MaterialTheme.typography.bodyMedium, color = Cream)
                 shown.mark?.let { Text("${it.kind.sign} ${it.label}", style = MaterialTheme.typography.bodySmall, color = it.kind.color, modifier = Modifier.testTag("forge_mark")) }
             }
-            if (!shown.usable) TextButton(onClick = onRestock, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_restock_tray")) { Text("Restock", color = Gold) }
+            if (!shown.usable) TextButton(onClick = { onRestock(shown.id?.let(::MaterialId)) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_restock_tray")) { Text("Restock", color = Gold) }
         }
     }
 }

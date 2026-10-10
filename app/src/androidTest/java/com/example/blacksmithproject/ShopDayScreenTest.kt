@@ -423,7 +423,11 @@ class ShopDayScreenTest {
         position = at
         compose.mainClock.advanceTimeByFrame()
         compose.onNodeWithTag("shopday_aftermath_text", useUnmergedTree = true).assertTextEquals(card.text).assertIsDisplayed()   // what happened, before any replay
-        compose.onNodeWithTag("shopday_watch").performScrollTo().performClick()
+        // The siege's card is taller than the screen: bringing the button into view is a scroll, which needs the clock.
+        compose.mainClock.autoAdvance = true
+        compose.onNodeWithTag("shopday_watch").performScrollTo()
+        compose.mainClock.autoAdvance = false
+        compose.onNodeWithTag("shopday_watch").performClick()
         repeat(3) { compose.mainClock.advanceTimeByFrame() }   // frames to open the overlay; no timer is waited out
         assertEquals(listOf(card.replay!!.eventId), watched)
         compose.onNodeWithTag("shopday_replay_outcome", useUnmergedTree = true).assertTextEquals(card.replay!!.outcome).assertIsDisplayed()

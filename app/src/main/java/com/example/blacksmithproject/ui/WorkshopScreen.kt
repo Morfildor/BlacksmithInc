@@ -82,6 +82,7 @@ import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.model.CommissionStatus
 import com.tinyblacksmith.core.model.HeroId
+import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.shopday.LeadKind
 
 /**
@@ -97,6 +98,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
     var storageOpen by rememberSaveable { mutableStateOf(false) }
     var suppliesOpen by rememberSaveable { mutableStateOf(false) }
+    // The material a "Restock" was tapped for: Supplies opens on its row. Any other way in opens at the top.
+    var suppliesFocus by rememberSaveable { mutableStateOf<String?>(null) }
     var boardOpen by rememberSaveable { mutableStateOf(false) }
     val workshopHaptics = LocalHaptics.current
     // Back returns to Shop from any other destination, and from Shop it opens the main menu. Sheets and dialogs are
@@ -136,6 +139,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                         when (lead.kind) {
                             LeadKind.CHOOSE_BLESSING -> vm.reopenBlessingOffer()
                             LeadKind.LIST_STOCK -> storageOpen = true
+                            LeadKind.ANSWER_REQUEST -> boardOpen = true
                             LeadKind.PRICES_TOO_HIGH -> lead.weaponId?.let { vm.openSheet(Sheet.Item(it)) }
                             LeadKind.ANSWER_WANT -> lead.familyId?.let(vm::forgeFamily) ?: vm.selectDest(Dest.FORGE)
                             else -> vm.selectDest(Dest.FORGE)
@@ -148,7 +152,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     tip = tip?.let { { TipBanner(it, vm) } },
                     onOpenSupplies = { suppliesOpen = true },
                 )
-                Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesOpen = true }, onOpenBoard = { boardOpen = true }, onEndDay = { workshopHaptics.play(Moment.END_DAY); vm.endDay() })
+                Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesFocus = it?.value; suppliesOpen = true }, onOpenBoard = { boardOpen = true }, onEndDay = { workshopHaptics.play(Moment.END_DAY); vm.endDay() })
                 Dest.RECORDS -> RecordsPanel(s, vm)
                 Dest.TOWN -> TownPanel(s, vm)
             }
@@ -169,7 +173,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
             detail = s.sheet?.let { sheet -> { DetailSheet(s, sheet, vm, inStorage = true) } }, onBack = vm::closeSheet,
         )
     }
-    if (suppliesOpen) SuppliesSheet(s, vm, onDismiss = { suppliesOpen = false })
+    if (suppliesOpen) SuppliesSheet(s, vm, onDismiss = { suppliesOpen = false; suppliesFocus = null }, focus = suppliesFocus?.let(::MaterialId))
     // Under a hero's sheet opened from it the board waits, as Storage does; "Forge this" closes it onto the Forge.
     if (boardOpen && s.sheet == null) CommissionBoardSheet(
         remember(s.shop.requests, s.shop.wants) { s.shop.board() }, s.shop.requestSlots, s.busy, s.draft.commissionId,

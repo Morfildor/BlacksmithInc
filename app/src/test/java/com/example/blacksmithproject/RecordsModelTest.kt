@@ -1,5 +1,6 @@
 package com.example.blacksmithproject
 
+import com.example.blacksmithproject.ui.gazetteMarks
 import com.example.blacksmithproject.ui.legendUi
 import com.example.blacksmithproject.ui.signatureUi
 import com.tinyblacksmith.core.content.AffixKind
@@ -8,6 +9,7 @@ import com.tinyblacksmith.core.crafting.Journal
 import com.tinyblacksmith.core.crafting.SignatureCatalog
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.model.CommissionId
+import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.HistoryEntry
 import com.tinyblacksmith.core.model.Journal as JournalModel
 import com.tinyblacksmith.core.model.KnowledgeState
@@ -86,5 +88,14 @@ class RecordsModelTest : ShopDayTestBase() {
         assertEquals(recipe, Command.Forge(d.mode, d.familyId!!, d.coreId!!, d.augmentId!!, d.catalystId, d.risk, d.technique))
         assertNull(d.commissionId)
         assertEquals("nothing was forged: the save is the same", fresh, p.state)
+    }
+
+    @Test
+    fun anArchiveRowMarksASiegeAndADeathFromTheRecordTypes() {
+        assertEquals(listOf("⚔ Siege"), gazetteMarks(listOf(EventType.WEAPON_SOLD, EventType.SIEGE_WON)))
+        assertEquals(listOf("⚔ Siege", "† Death"), gazetteMarks(listOf(EventType.SIEGE_LOST, EventType.HERO_DIED)))
+        assertEquals(listOf("† Death"), gazetteMarks(listOf(EventType.HERO_DIED)))
+        // A warning of a siege or a wound is neither.
+        assertEquals(emptyList<String>(), gazetteMarks(listOf(EventType.SIEGE_WARNING, EventType.HERO_WOUNDED, EventType.EXPEDITION_LOST)))
     }
 }
