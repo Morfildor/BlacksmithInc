@@ -102,6 +102,9 @@ fun ShopDayScreen(
     BoxWithConstraints(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         // A low screen or large text: the scene gives height to the card, so the outcome and the receipt stay in view.
         val short = maxHeight < 700.dp || LocalDensity.current.fontScale > 1.15f
+        // Text above 1.3: the strip and the plate are already twice their height, so the painted room gives up most of its own.
+        val large = LocalDensity.current.fontScale > 1.3f
+        val low = maxHeight < 700.dp
         Column(Modifier.fillMaxSize().statusBarsPadding().pointerInput(Unit) { detectTapGestures { if (!ending) next() } }) {
             ShopDayTopBar(model.day, beat.progress, speed, reducedMotion, canSkip = at < model.endingIndex, onSpeedChange = onSpeedChange, onSkipDay = onSkipDay)
             when (beat) {
@@ -111,7 +114,7 @@ fun ShopDayScreen(
                     val left = model.shelf.count { it.blade.weaponId !in beat.gone }
                     CounterScene(
                         plate = visit?.face?.name ?: when (left) { 0 -> if (model.shelf.isEmpty()) "Nobody at the counter" else "Every blade is sold"; 1 -> "1 blade on the shelf"; else -> "$left blades on the shelf" }, detail = visit?.detail, customer = visit?.face, customerKey = visit?.seq,
-                        reducedMotion = reducedMotion, onOpenHero = openHero, backdropHeight = if (short) 104.dp else 140.dp,
+                        reducedMotion = reducedMotion, onOpenHero = openHero, backdropHeight = if (large) 56.dp else if (short) 104.dp else 140.dp,
                     )
                     ShelfBand(
                         model.shelf, gone = beat.gone, looking = visit?.lookedIds ?: emptySet(), sold = visit?.purchased?.weaponId?.takeIf { visit.sold },
@@ -151,7 +154,8 @@ fun ShopDayScreen(
                     }
                 }
             }
-            coach?.let {
+            // Not on a low screen with large text: there the three lines of the hint would leave the card no room at all.
+            coach?.takeIf { !(large && low) }?.let {
                 Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md).testTag("shopday_coach"))
             }
             // One wide button is always the way forward; on the last cards it is the choice that ends the day.
