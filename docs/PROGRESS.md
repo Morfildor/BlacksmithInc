@@ -163,6 +163,54 @@ ledger-only commits; same files) and pushed to `main`. `main` now holds 0.7.0 as
 still not a store release. Commit hashes quoted below and in the ledger are those of the working branch
 (`major-update` on GitHub), not of `main`.
 
+### Left over after the work on `post-0.7.0` (2026-10-10, 14:00)
+State: `post-0.7.0` is pushed to GitHub, five commits ahead of `main`; `main` is unchanged. Debug APK of this branch:
+`TinyBlacksmith-0.7.0-post-debug.apk` (version number still 0.7.0).
+
+To finish what this branch started
+1. Re-run `tools/emulator/scenarios.sh` with `ANDROID_SERIAL` set and nothing else using the emulator. Never confirmed
+   on a device: the merchant resale scenario (the fix that puts the blessing offer off is written, not run) and the
+   three Storage scenarios (returned legend, three-owner blade, 200 blades). The script does not find the row
+   `shop_storage` by scrolling the Shop; the cause was not found. The 200-blade scenario is also the first chance to
+   try Scrap and the bulk actions on a long storage by hand.
+2. Run on this branch what was not re-run: the full instrumented suite, `smoke.sh`, `runend.sh` (`scratchpad gate.sh`
+   did all three for 0.7.0), and release build plus lint on the last commit (they passed one commit earlier).
+3. Look at the new things on a device: the Scrap button and its confirmation (also at font 1.3 and 2.0 and at 320 dp
+   wide, where three bulk buttons share the bottom of the sheet), "worn" / "battered" wording, Town's champions on
+   day 1, the "Stopped after N of M" message.
+4. Decide the scrap return (one unit per four blades, `saveGrowth.scrapBladesPerMaterial`): PROPOSED, not measured.
+   No simulator bot scraps, so a long-save player's gain from it is unknown.
+5. Merge `post-0.7.0` into `main`, and raise the version when a build is cut (`[Unreleased]` holds the lines).
+6. The rest of T2.9: `shopday_kill.sh` (kills at 0 / 50 / 150 / 400 ms after End Day) and `layout.sh` are not built;
+   `smoke.sh` and `runend.sh` do not yet do the extra steps the plan lists (force-stop on the second beat, HOME and
+   `am kill`, Decide later, a kill after Claim).
+
+Features left, each needing the owner's yes
+- Four different mechanical jobs for the four catalysts (T4.4, withdrawn in the plan; sketch in DECISIONS: salt fewer
+  defects, rune an affix slot, oil raw quality at risk, ink brilliance). Moves every signature blade's numbers and
+  needs new bots and a 10,000-seed run.
+- The "never listed" filter in Storage: a new stored field on a blade, so schema 5 with a migration and a fixture.
+- A gold return for scrap instead of metal: needs a ledger line for gold earned while preparing.
+- Deferred in the plan and unchanged: an explicit reserve-for-commission command, the recovery valve, audio and
+  haptic feel, a tutorial beyond the two hints, signature weapon sprites, the launcher icon.
+
+Known issues still open
+- A save failure in the middle of a bulk salvage or gift shows only the save dialog; "Try again" repeats one blade and
+  the rest of the selection is not done (the rest of finding 4). Scrap is one command and does not have this.
+- Finding 5 (a newer kind of record under the same schema number reads as "damaged"), finding 8 (three rules restated
+  in the app), "Select blades" mode after a screen restore (untested), a database file cut to 0 bytes opens as a new
+  game with no message.
+- The scenario saves were written at balance 8; they load and play under balance 9 (tests pass). Regenerate them with
+  `./gradlew :core:scenarios` after any change that moves outcomes, or the pinned seeds stop showing their mechanic
+  (the tests will say so).
+- A scenario that carries its own legacy (Known Name, returned legend) replaces the tester's legacy after one
+  confirmation; there is no way back except reinstalling or playing on.
+
+Unchanged from the 0.7.0 list below: the open owner decisions (balance lines that fail at 10,000 seeds, Guild
+Patronage, abandon and journal discoveries, timings, wording, save format), T5.2 shock arms, T5.3 gate table, T6.1
+layout matrix, T6.2 TalkBack, T6.3b device half, T6.5 frame times, T6.6 phone, T7.2 playtests, T7.3 walk-through,
+T7.4 application ID and icon.
+
 P7b, the major update (the "shop day"), is built as app version **0.7.0** (versionCode 7) on the integration branch
 `shop-day/m0`, which is pushed to GitHub as the branch `major-update`. It is **not released**: `main` is still 0.6.0.
 Everything is merged; no agent branch holds unmerged work. The last commit that changed code or tests is `2eca650`;
