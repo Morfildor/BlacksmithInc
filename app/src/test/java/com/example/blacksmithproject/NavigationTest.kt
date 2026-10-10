@@ -55,6 +55,19 @@ class NavigationTest : ShopDayTestBase() {
     }
 
     @Test
+    fun aBulkActionSaysHowManyBladesItTook() = vmTest {
+        val vm = open(repo(fresh))
+        vm.dispatch(forgeSword); advanceUntilIdle()
+        val id = vm.playing().revealWeaponId!!
+        vm.storeForged(); advanceUntilIdle()
+        vm.dispatchAll(listOf(Command.Salvage(id))); advanceUntilIdle()
+        assertEquals("1 blade melted down.", vm.playing().notice)
+        // Nothing done, nothing claimed: the blade is gone, so the engine refuses and only the reason shows.
+        vm.dismissNotice("1 blade melted down."); vm.dispatchAll(listOf(Command.Salvage(id))); advanceUntilIdle()
+        assertNull(vm.playing().notice)
+    }
+
+    @Test
     fun puttingOffABlessingKeepsTheDestination() = vmTest {
         val vm = open(repo(fresh))
         vm.selectDest(Dest.FORGE); vm.dismissBlessingOffer(); advanceUntilIdle()

@@ -355,8 +355,8 @@ action hierarchy"). No balance, rules, save or content version changed.
 - Nobody looked at the screens: no screenshots at 411x731, 360x640 or with enlarged text. End Day's spacing, the outline End
   Day on the Forge, the lead button and the "‹ Storage" row are untested by eye; the owner's hand test should cover them.
 - "Open Supplies, buy, return" was not run as a journey; Supplies is a sheet over the Forge, which stays composed under it.
-- Bulk salvage and bulk "Arm the watch" in Storage still say nothing afterwards.
-- Supplies is not on the pinned missing-material note (see DECISIONS); it is in the steps and at the top of the list.
+- Added afterwards (a second commit, JVM tests only, 134 pass): a bulk salvage or "Arm the watch" says how many blades it took, and
+  "Open Supplies" stands under the anvil plate while a chosen material is out. Neither was seen on a device.
 - Merging `gameplay-depth` will conflict in `WorkshopScreen.kt`, `GameViewModel.kt`, `StorageSheet.kt`, `ItemDetailSheet.kt`
   and `CHANGELOG.md`; its `Sheet.Visitor` needs a branch in `DetailSheet`, and its relic dialog a place in Back's order.
 

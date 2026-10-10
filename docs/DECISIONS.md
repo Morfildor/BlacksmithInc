@@ -3681,5 +3681,5 @@ entry; End Day was a gold plate 4 dp over the bar on all four destinations; Stor
 - **End Day (PROPOSED).** Shop and Forge only; gold on the Shop, outline on the Forge; 16 dp over the bar. The lead card's
   button is an outline with an arrow, so the Shop's gold is End Day and a request's Accept.
 - **Written to merge.** The branch `gameplay-depth` edits the same files; lines it changed (the `ShopPanel` call, End Day's
-  note, `StockEditor`, `ForgeSummary`) were left as they were. For that reason Supplies was not added to the pinned
-  missing-material note in `ForgeSummary`; it is beside the out-of-stock line in the steps instead.
+  note, `StockEditor`, `ForgeSummary`) were left as they were. For that reason the Supplies button for a material that ran out is
+  not inside `ForgeSummary` but directly under it, in `ForgePanel`; it is also beside the out-of-stock line in the steps.

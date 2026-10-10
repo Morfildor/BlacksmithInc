@@ -15,7 +15,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - A blade forged with "Forge this" from a request keeps the request on its result card: who asked for what and on what terms, whether this blade fits, and what End Day will hand over as the shop stands. It says that no blade is set aside.
 - Storage and a blade's details are one sheet: a blade opened from Storage shows in the Storage sheet under "‹ Storage", and Back returns to the list with its filters, order and place as they were.
 - Every stock change says what it did, in the sheet it was done in or over the workshop: listed, a new price, back in storage, honed (quality and condition, before and after), melted down, given to the watch. After List, Salvage or Arm the watch the blade's sheet closes onto where it was opened from; after Set price, Unlist or Hone it stays on the blade.
-- "Open Supplies" stands beside "Out of stock" in the Forge's material steps.
+- "Open Supplies" stands beside "Out of stock" in the Forge's material steps, and under the anvil plate when a material you chose has run out.
+- A bulk salvage or "Arm the watch" in Storage says how many blades it took.
 
 ### Changed
 - Each destination keeps its place: the scroll position of Shop, Forge, Town and each Records segment, and the Forge's open step, are as they were left when you come back, also after a visit to the main menu. A new day opens each at its top. "Forge this" still takes you to the Forge and shows the step to choose next.
