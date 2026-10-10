@@ -52,7 +52,7 @@ object Market {
         val stocked = ctx.weapons.values.any { it.isListed }
         // 1. Intent. A patron who collected a commission today has had their turn at the counter: one appearance per hero per day.
         val patrons = ctx.visits.filter { it.kind == VisitKind.COMMISSION }.mapNotNull { it.heroId }.toSet()
-        val willing = ctx.aliveHeroes().filter { rng.chance(willingness(ctx, it, festival)) }.filter { it.id !in patrons }
+        val willing = ctx.residents().filter { rng.chance(willingness(ctx, it, festival)) }.filter { it.id !in patrons }
         // 2a. The longest waiters first: whole groups from the highest streak down; a group that does not fit is drawn by weight.
         val seated = mutableListOf<Hero>()
         val waiting = willing.filter { it.turnedAwayStreak >= cfg.maxTurnedAwayDays }
@@ -385,7 +385,7 @@ object Market {
             if (ctx.day == arrives) ctx.emit(EventType.WEAPON_SURFACED, 4, "A travelling merchant reached Emberfall offering ${w.name}, the blade $fallen fell with.", listOfNotNull(w.id.value, fallenId))
             val price = askingPrice(w, config)
             val offer = w.copy(location = WeaponLocation.Shelf(price))
-            val buyer = ctx.aliveHeroes().filter { it.gold >= price }
+            val buyer = ctx.residents().filter { it.gold >= price }
                 .map { it to evaluate(ctx, it, ctx.equippedWeapon(it.id), offer, 0.5) }
                 .filter { (_, e) -> e.gain > 0 && e.utility >= config.purchaseUtilityThreshold }
                 .maxByOrNull { (_, e) -> e.utility }?.first
@@ -500,7 +500,7 @@ object Market {
         if (open.size >= config.customers.maxOpenCommissions) return
         if (!rng.chance(config.commissionChancePerDay)) return
         val named = open.flatMap { listOfNotNull(it.buyerId, it.recipientId) }.toSet()
-        val free = ctx.aliveHeroes().filter { it.id !in named }
+        val free = ctx.residents().filter { it.id !in named }
         val situations = commissionSituations(ctx, free)
         if (situations.isEmpty()) return
         val kind = rng.pickWeighted(situations.keys.map { it to kindWeight(it, config) })

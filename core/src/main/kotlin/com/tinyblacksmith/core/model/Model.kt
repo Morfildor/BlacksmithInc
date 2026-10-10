@@ -39,6 +39,8 @@ sealed class WeaponLocation {
         }
     }
     @Serializable @SerialName("com.tinyblacksmith.core.model.WeaponLocation.Destroyed") data class Destroyed(val day: Int) : WeaponLocation()
+    /** In the hands of a contracted guild member, still the smith's (schema 6). Never a private weapon: [Weapon.ownerId] is null for it. */
+    @Serializable @SerialName("com.tinyblacksmith.core.model.WeaponLocation.Loaned") data class Loaned(val heroId: HeroId) : WeaponLocation()
 }
 
 /**
@@ -108,6 +110,8 @@ data class Weapon(
     val isWithMerchant: Boolean get() = (location as? WeaponLocation.Lost)?.reason == WeaponLocation.Lost.WITH_MERCHANT
     val ownerId: HeroId? get() = (location as? WeaponLocation.Owned)?.heroId
     val isEquipped: Boolean get() = (location as? WeaponLocation.Owned)?.equipped == true
+    val isLoaned: Boolean get() = location is WeaponLocation.Loaned
+    val loanedTo: HeroId? get() = (location as? WeaponLocation.Loaned)?.heroId
     val listedPrice: Int? get() = (location as? WeaponLocation.Shelf)?.price
 }
 
@@ -232,6 +236,9 @@ enum class EventType {
     MATERIAL_BOUGHT,
     SHOP_DAY,
     ENCOUNTER_OFFERED, ENCOUNTER_RESOLVED, ENCOUNTER_EXPIRED, RELIC_OFFERED, RELIC_CHOSEN, RELIC_TRIGGERED, SIEGE_TRAIT, PLEDGE_RESOLVED,
+    // Schema 6: the guild.
+    GUILD_CHARTER, GUILD_RECRUITED, GUILD_DISMISSED, WEAPON_LOANED, MISSION_DEPARTED, MISSION_WON, MISSION_FAILED, MEMBER_CAPTURED, MEMBER_RESCUED,
+    SABOTAGE_DONE, CHARTER_SECURED, GUILD_STORY, COMBO_NOTED, RUN_RETIRED,
 }
 
 /** Source of truth for the Gazette and replays (GDD Appendix B). Subjects are real entity IDs. */
@@ -281,6 +288,9 @@ data class DayResolution(
     /** Heroes who came to browse and found every seat taken, in ID order. */
     val turnedAway: List<HeroId> = emptyList(),
     val recordVersion: Int = 0,                           // 0 = a 0.5.x day without snapshots, 1 = this record
+    /** A guild run: what the party did today and how the wall held, with the fights as they were recorded. */
+    val mission: MissionReport? = null,
+    val siege: SiegeReport? = null,
 ) {
     /** The heroes who came to look at the shelf; a commission patron and the collector are visits of their own kind. */
     val browsers: List<MarketVisit> get() = visits.filter { it.kind == VisitKind.BROWSE }
@@ -411,7 +421,13 @@ data class GameState(
     val consequences: List<ScheduledConsequence> = emptyList(),
     /** The coming siege's trait and committed besieger; null in a run that predates them until its next siege is scheduled. */
     val siege: SiegeScenario? = null,
+    /** The player's own guild (rules 5). Null in a classic run, which plays as rules 4 did. */
+    val guild: GuildRunState? = null,
 ) {
+    val isGuildRun: Boolean get() = guild != null
+    fun loanOf(heroId: HeroId): Weapon? = weapons.values.firstOrNull { it.loanedTo == heroId }
+    /** The living heroes who are not contracted to the guild: the town's customers. Everybody alive in a classic run. */
+    fun residents(): List<Hero> = aliveHeroes().filter { guild?.isMember(it.id) != true }
     val isEnded: Boolean get() = phase == Phase.ENDED
     fun weapon(id: WeaponId): Weapon = weapons[id] ?: error("Unknown weapon ${id.value}")
     fun hero(id: HeroId): Hero = heroes[id] ?: error("Unknown hero ${id.value}")

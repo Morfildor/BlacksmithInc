@@ -178,6 +178,10 @@ data class ContentCatalog(
     val encounters: List<EncounterDef> = emptyList(),
     val relics: List<RelicDef> = emptyList(),
     val siegeTraits: List<SiegeTraitDef> = emptyList(),
+    /** What the interaction engine reads (rules 5). A catalog without it has no guild runs. */
+    val combat: CombatCatalog? = null,
+    /** Contracts, charters and member traits (rules 5). A catalog without it has no guild runs. */
+    val guild: GuildCatalog? = null,
 ) {
     val familyById: Map<WeaponFamilyId, WeaponFamilyDef> = families.associateBy { it.id }
     val materialById: Map<MaterialId, MaterialDef> = materials.associateBy { it.id }
@@ -222,7 +226,18 @@ data class ContentCatalog(
             val event = com.tinyblacksmith.core.engine.WorldEvents.all.firstOrNull { it.id == id }
             if (event == null) problems += "Encounter ${e.id} replaces unknown event $id" else if (e.maxPerRun > event.maxPerRun) problems += "Encounter ${e.id} may come ${e.maxPerRun} times, its event $id only ${event.maxPerRun}"
         } }
-        dup("relic effect", relics.map { it.effect })
+        dup("relic effect", relics.map { it.effect }.filter { it != RelicEffect.COMBAT })
+        if (guild != null && combat == null) problems += "Guild content needs combat content"
+        if (guild != null && combat != null) problems += guild.problems(this, combat)
+        combat?.let { c ->
+            problems += c.problems()
+            classes.forEach { if (it.id !in c.kitByClass) problems += "Class ${it.id.value} has no combat kit" }
+            families.forEach { if (it.id !in c.familyById) problems += "Family ${it.id.value} has no combat pattern" }
+            c.affixEffects.keys.forEach { if (it !in affixById) problems += "Combat rule for unknown affix ${it.value}" }
+            c.catalystEffects.keys.forEach { if (materialById[it]?.category != MaterialCategory.CATALYST) problems += "Combat rule for ${it.value}, which is not a catalyst" }
+            if (relics.isNotEmpty()) c.relicEffects.keys.forEach { if (relic(it) == null) problems += "Combat rule for unknown relic $it" }
+            relics.filter { it.effect == RelicEffect.COMBAT }.forEach { if (it.id !in c.relicEffects) problems += "Combat relic ${it.id} has no rule" }
+        }
         siegeTraits.forEach { t -> if (t.conditionFloorFactor != null && t.conditionFloorFactor !in 0.0..1.0) problems += "Siege trait ${t.id} condition floor out of range" }
         affixes.forEach { a -> a.baneFaction?.let { if (it !in factionById) problems += "Affix ${a.id.value} is the bane of unknown faction ${it.value}" } }
         families.forEach { f -> f.classFit.keys.forEach { c -> if (c !in classById) problems += "Family ${f.id.value} fit references unknown class ${c.value}" } }

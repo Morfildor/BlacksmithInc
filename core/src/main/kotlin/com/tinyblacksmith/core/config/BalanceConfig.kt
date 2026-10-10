@@ -19,8 +19,9 @@ data class BalanceConfig(
      * v7 (2026-10-09): fair customer selection ([CustomerConfig]: one intent draw per living hero, weighted seats, a waiting bound; the loyalty and reputation terms of the visit chance are capped); a larger town (12 residents with all five classes, refill toward 12, floor 9, event cap 16; 6 seats, festival +3) with expedition suppression 2 and raid growth 6.5. Prices, purses and wear are unchanged. Guild Patronage is no longer +15 points of visit chance: guild members come at the ceiling and their guild pays [CustomerConfig.patronageStipend] toward one purchase each. See docs/DECISIONS.md.
      * v8 (2026-10-09): standing wants ([CustomerConfig.needWantMet], [CustomerConfig.seatWantWeight], [CustomerConfig.wantLapseDays]): a hero who left with nothing comes back more readily while the shelf holds what they asked for. The sidegrade gate ([CustomerConfig.sidegradeTolerance]: the gain is no longer rounded, affixes and fame count on both sides, a near-equal blade may be bought once for taste, a prize or a name) and siege demand ([CustomerConfig.threatUtility], [CustomerConfig.championSiegeWillingness]: in the warning window the besieger's weakness is wanted and its resistance refused). Rumours ([CustomerConfig.maxRumoursPerRun]): real events earn rungs of a signature's clue ladder, and every miss at a base recipe now earns one. Commission situations ([CommissionConfig] weights, [CustomerConfig.maxOpenCommissions] 2): a request has a reason read from the town, and two may be open at once. See docs/DECISIONS.md.
      * v10 (2026-10-10): morning visitors, workshop relics, siege traits and the committed besieger ([DepthConfig]); three automatic world events (the collector, the wandering master, the merchant festival) come as visitors instead. See docs/DECISIONS.md.
+     * v11 (2026-10-11): the guild ([GuildConfig]): contracted members, loans, contracts, the interaction engine and the siege fought through it. A run without a guild reads none of it and plays as v10. See docs/DECISIONS.md.
      */
-    val version: Int = 10,
+    val version: Int = 11,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -282,6 +283,8 @@ data class BalanceConfig(
     val saveGrowth: SaveGrowthConfig = SaveGrowthConfig(),
     // v10: visitors, relics, siege traits
     val depth: DepthConfig = DepthConfig(),
+    // v11: the guild (contracted members, missions, the interaction engine)
+    val guild: GuildConfig = GuildConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

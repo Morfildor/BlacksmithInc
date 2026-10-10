@@ -34,9 +34,12 @@ class GoldenStateTest {
         is WeaponLocation.Owned -> "owned:${l.heroId.value}:${l.equipped}"
         is WeaponLocation.Lost -> "lost:${l.day}:${l.reason}"
         is WeaponLocation.Destroyed -> "destroyed:${l.day}"
+        is WeaponLocation.Loaned -> "loaned:${l.heroId.value}"
     }
 
-    private fun streams(s: GameState): String = s.rng.streams.toSortedMap().entries.joinToString(",") { "${it.key}:${it.value}" }
+    // The GUILD stream (schema 6) is left out: a classic run never draws from it, and with it left out these goldens are the
+    // ones recorded before the guild existed. That they still hold is the proof that a classic run plays as it did.
+    private fun streams(s: GameState): String = s.rng.streams.filterKeys { it != com.tinyblacksmith.core.rng.RngStream.GUILD }.toSortedMap().entries.joinToString(",") { "${it.key}:${it.value}" }
 
     /** Adding a line here is a deliberate edit; nothing enters the projection because a model class grew a field. */
     private fun project(s: GameState): String = buildString {

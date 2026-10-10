@@ -26,7 +26,7 @@ internal object EncounterCatalog {
 
     private fun freeHeroes(ctx: ResolutionContext): List<Hero> {
         val named = Market.openCommissions(ctx).flatMap { listOfNotNull(it.buyerId, it.recipientId) }.toSet()
-        return ctx.aliveHeroes().filter { it.id !in named }
+        return ctx.residents().filter { it.id !in named }
     }
 
     private fun slotFree(ctx: ResolutionContext): Boolean = Market.openCommissions(ctx).size < ctx.config.customers.maxOpenCommissions

@@ -9,6 +9,11 @@ import kotlin.math.roundToInt
 import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.gazette.Gazette
+import com.tinyblacksmith.core.guild.GuildOps
+import com.tinyblacksmith.core.guild.Loadout
+import com.tinyblacksmith.core.guild.Missions
+import com.tinyblacksmith.core.guild.SiegeFight
+import com.tinyblacksmith.core.guild.Stories
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.legacy.Legacy
 import com.tinyblacksmith.core.legacy.LegacyOutcome
@@ -31,7 +36,7 @@ import com.tinyblacksmith.core.shopday.Recognitions
 class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.LaunchContent.catalog, val config: BalanceConfig = BalanceConfig.DEFAULT) {
 
     companion object {
-        const val RULES_VERSION = 4
+        const val RULES_VERSION = 5
 
         /**
          * The rules version that salts every stream seed ([RngState.seeded]). Rules 2 is a number only (a run now has to be
@@ -48,7 +53,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         require(problems.isEmpty()) { "Invalid content: $problems" }
     }
 
-    fun newRun(legacy: LegacyProfile, seed: Long, rulesVersion: Int = RULES_VERSION): GameState {
+    /** With [charterId] the run is a guild run under that charter (`GuildCatalog.charters`); without one it is a classic run and plays as rules 4 did. */
+    fun newRun(legacy: LegacyProfile, seed: Long, rulesVersion: Int = RULES_VERSION, charterId: String? = null): GameState {
+        require(charterId == null || content.guild?.charter(charterId) != null) { "Unknown charter $charterId" }
         val era = legacy.nextEra
         val runId = RunId("era$era-seed$seed")
         val startingGold = config.startingGold + upgradeTotal(legacy, UpgradeEffect.STARTING_GOLD)
@@ -100,6 +107,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         }
         // The first siege is on the calendar from the start (it is a plain one); the opening relic draft draws on ENCOUNTERS only.
         ctx.siege = SiegeScenario(config.siegeInterval)
+        // The guild is founded before the opening draft, so the draft can offer a party's relics; it draws on GUILD only.
+        if (charterId != null) { GuildOps.found(ctx, charterId); Missions.refreshBoard(ctx) }
         if (content.relics.isNotEmpty()) Relics.offerIfDue(ctx)
         val state = ctx.toState()
         assertInvariants(state)
@@ -127,7 +136,48 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             is Command.DeclineRelicOffer -> if (state.pendingRelicOffer.isEmpty()) CommandOutcome.Rejected(GameError.NoRelicOffer)
                 else ResolutionContext(state, content, config).let { ctx -> ctx.pendingRelicOffer = emptyList(); accept(ctx) }
             is Command.EndDay -> endDay(state, command.commandId)
+            is Command.RecruitHero -> guild(state) { GuildOps.recruit(it, command.heroId) }
+            is Command.DismissHero -> guild(state) { GuildOps.dismiss(it, command.heroId) }
+            is Command.LoanWeapon -> guild(state) { GuildOps.loan(it, command.heroId, command.weaponId) }
+            is Command.RecallLoan -> guild(state) { GuildOps.recall(it, command.weaponId) }
+            is Command.PlanDeployment -> guild(state) { Missions.plan(it, command) }
+            is Command.CancelPlannedDeployment -> guild(state) { Missions.cancelPlan(it) }
+            is Command.ReserveDefender -> guild(state) { GuildOps.reserve(it, command.heroId, command.reserved) }
+            is Command.ChooseMissionCheckpoint -> guild(state) { Missions.checkpoint(it, command) }
+            is Command.RetireAfterMilestone -> guild(state) { Stories.retire(it, command.milestoneId) }
+            is Command.ChooseSpeciality -> guild(state) { Stories.chooseBranch(it, command.heroId, command.specialityId) }
+            is Command.SetGuildRank -> guild(state) { Stories.setRank(it, command.rank) }
         }
+    }
+
+    /** A guild command: rejected on a classic run, otherwise applied whole or not at all. */
+    private fun guild(state: GameState, apply: (ResolutionContext) -> GameError?): CommandOutcome {
+        if (state.guild == null) return CommandOutcome.Rejected(GameError.NotAGuildRun)
+        val ctx = ResolutionContext(state, content, config)
+        apply(ctx)?.let { return CommandOutcome.Rejected(it) }
+        return accept(ctx)
+    }
+
+    /** The coming siege as a guild run sees it: who would stand, who is missing and why, what is known of the besieger. Read-only; null on a classic run. */
+    fun wallForecast(state: GameState): SiegeFight.Forecast? = SiegeFight.forecast(ResolutionContext(state, content, config))
+
+    /** Why a member cannot join a party or the wall today, or null. Read-only. */
+    fun memberUnavailable(state: GameState, heroId: HeroId): String? = state.guild?.member(heroId)?.let { GuildOps.unavailable(ResolutionContext(state, content, config), it) }
+
+    /** A member (or any hero) as they would enter a fight today with [weapon] in hand. Read-only. */
+    fun fighterView(state: GameState, heroId: HeroId, weapon: Weapon? = state.loanOf(heroId) ?: state.equippedWeapon(heroId), home: Boolean = false): com.tinyblacksmith.core.combat.Combatant? =
+        state.heroes[heroId]?.takeIf { content.combat != null }?.let { GuildOps.fighter(ResolutionContext(state, content, config), it, weapon, if (home) Loadout.Field.HOME else Loadout.Field.ROAD) }
+
+    /** The branches a member's deeds have opened and the smith has not answered. Read-only. */
+    fun openBranches(state: GameState, heroId: HeroId): List<com.tinyblacksmith.core.content.SpecialityDef> =
+        state.guild?.member(heroId)?.let { Stories.openBranches(ResolutionContext(state, content, config), it) }.orEmpty()
+
+    /** The fight of a contract's stage as [heroIds] would meet it today with [posture]: the setup only, nothing is resolved. Null for work without a fight. */
+    fun missionSetup(state: GameState, offerId: String, heroIds: List<HeroId>, posture: com.tinyblacksmith.core.combat.Posture, stage: Int = 0): com.tinyblacksmith.core.combat.FightSetup? {
+        val offer = state.guild?.offers?.firstOrNull { it.id == offerId } ?: return null
+        val ctx = ResolutionContext(state, content, config)
+        val gear = heroIds.mapNotNull { id -> GuildOps.weaponOf(ctx, id)?.let { id to it.id } }.toMap()
+        return Missions.setup(ctx, MissionInstance(offer.id, offer, heroIds, gear, posture, GuildOps.relicIds(ctx), state.day, state.day + offer.days), stage.coerceIn(0, offer.stages.lastIndex))
     }
 
     private fun forge(state: GameState, cmd: Command.Forge): CommandOutcome {
@@ -229,6 +279,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
     /** A weapon the smith can still work on: in storage or on the shelf. With [parting] it must also be free to leave the shop (not kept for an order). */
     private fun inShop(state: GameState, id: WeaponId, parting: Boolean = true): Pair<Weapon?, GameError?> {
         val weapon = state.weapons[id] ?: return null to GameError.WeaponNotFound(id)
+        weapon.loanedTo?.let { return null to GameError.WeaponOnLoan(id, it) }
         if (!weapon.isInStorage && !weapon.isListed) return null to GameError.WeaponNotAvailable(weapon.id, weapon.location)
         if (parting && weapon.promisedTo != null) return null to GameError.WeaponPromised(weapon.id, weapon.promisedTo)
         return weapon to null
@@ -359,6 +410,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // 1. Lock planning; RNG state is snapshotted implicitly (streams open lazily from the saved state).
         // The shelf as the day opens, before a patron or a browser takes anything from it: what every visit of the day refers to.
         val shelf = state.listedWeapons()
+        Missions.commit(ctx)  // a guild run: the planned party leaves before the day's business
         Encounters.expire(ctx)  // a visitor nobody answered leaves with the free answer; no draw
         // 2. Commissions, then customers: a patron collects before the browsers arrive, so the blade a request was promised is not sold first.
         Market.resolveCommissions(ctx)
@@ -367,8 +419,10 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         Recognitions.apply(ctx)  // what the counter knows each browser by; narration, no draw
         Market.resolveMerchant(ctx)  // GDD 7 merchant resale, after the smith's own customers; draws no RNG
         // 3. Equipment/finances were applied inside purchases.
-        // 4-5. Autonomous activities and encounters.
+        // 4-5. The guild's party, then autonomous activities and encounters; members in town last.
+        Missions.advance(ctx)
         Heroes.resolveActivities(ctx)
+        GuildOps.homeDay(ctx)
         // 6. Factions, world events, siege warnings.
         advanceFactions(ctx)
         WorldEvents.resolve(ctx)
@@ -379,6 +433,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // 8. Hero-driven recovery, retirements/guilds, then champion refresh.
         if (ctx.phase != Phase.ENDED) Heroes.resolveAmbitions(ctx)
         Heroes.resolveRetirements(ctx)
+        GuildOps.reconcile(ctx)
         recover(ctx)
         // 9. Histories and blessings expiry.
         ctx.blessings = ctx.blessings.filter { it.expiresDay > day }
@@ -396,6 +451,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             ledger = ledger, field = ctx.field.toList(),
             shopWeapons = (shelf + fromStorage).map { WeaponSnapshot.of(it) }, shelfPrices = shelf.associate { it.id to (it.listedPrice ?: 0) },
             turnedAway = ctx.turnedAway.toList(), recordVersion = 1,
+            mission = ctx.guild?.lastMission, siege = ctx.guild?.lastSiege,
         )
         ctx.lastResolution = resolution
         ctx.processedEndDayIds += commandId.value
@@ -432,7 +488,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         }
         ctx.town = ctx.town.copy(militia = maxOf(0, ctx.town.militia - config.militiaDecayPerDay))
         // The forecast's own champions: the same faction, warlord flag and ranking the siege will use.
-        Battle.outlook(ctx, ctx.town.nextSiegeDay)?.let { o -> ctx.town = ctx.town.copy(championIds = o.champions.map { it.first.id }) }
+        if (ctx.guild != null) ctx.town = ctx.town.copy(championIds = SiegeFight.forecast(ctx)?.defenders.orEmpty().map { it.first.id })
+        else Battle.outlook(ctx, ctx.town.nextSiegeDay)?.let { o -> ctx.town = ctx.town.copy(championIds = o.champions.map { it.first.id }) }
     }
 
     private fun newMorning(ctx: ResolutionContext) {
@@ -451,6 +508,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         for (h in ctx.aliveHeroes()) if (h.lastActivity == HeroActivity.SHOP) ctx.updateHero(h.copy(lastActivity = HeroActivity.IDLE))
         // A want stands for the mornings after it was voiced, `wantLapseDays` of them; the planning screen never shows one End Day would ignore.
         for (h in ctx.aliveHeroes()) if (h.want != null && ctx.day - h.want.sinceDay > config.customers.wantLapseDays) ctx.updateHero(h.copy(want = null))
+        // A guild run: the party that is due comes home, wounds heal, the board and the list of those who would sign are renewed.
+        if (ctx.guild != null) { Missions.morning(ctx); GuildOps.morning(ctx); Stories.morning(ctx) }
         // The morning's own business last, so it reads the town as the player will: a relic offer that has fallen due, then the visitor.
         if (content.relics.isNotEmpty()) Relics.offerIfDue(ctx)
         Encounters.offerMorning(ctx)

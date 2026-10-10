@@ -44,7 +44,7 @@ object Heroes {
         val faction = ctx.factions.values.sortedBy { it.id.value }.maxByOrNull { it.pressure } ?: return
         val factionDef = content.faction(faction.id)
         val atHall = mutableListOf<HeroId>()
-        for (h in ctx.aliveHeroes()) {
+        for (h in ctx.residents()) {
             val hero = ctx.hero(h.id)
             if (!hero.isAlive) continue
             if (hero.lastActivity == HeroActivity.SHOP && ctx.visits.any { it.heroId == hero.id && it.purchasedWeaponId != null }) {
@@ -204,7 +204,7 @@ object Heroes {
     internal fun arrivals(ctx: ResolutionContext, rng: Rng) {
         val cfg = ctx.config.customers
         val roll = rng.nextDouble()
-        val alive = ctx.aliveHeroes().size
+        val alive = ctx.residents().size   // the guild's members are not the town's customers: the town refills around them
         val chance = minOf(cfg.arrivalChanceMax, cfg.arrivalChancePerMissing * (cfg.populationTarget - alive))
         if (alive >= cfg.minHeroPopulation && roll >= chance) return
         val h = generate(ctx, rng)
@@ -221,7 +221,7 @@ object Heroes {
         if (ctx.phase == Phase.ENDED) return
         val config = ctx.config
         val rng = ctx.rng(RngStream.HEROES)
-        for (h in ctx.aliveHeroes()) {
+        for (h in ctx.residents()) {
             val hero = ctx.hero(h.id)
             val retires = hero.level >= config.retirementLevel ||
                 (hero.victories >= config.retirementVictories && rng.chance(config.retirementChance))

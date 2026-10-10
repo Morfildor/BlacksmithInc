@@ -46,11 +46,24 @@ if m:
 scroll_to() { for i in 1 2 3 4 5 6 7 8; do if has "$1"; then return 0; fi; $ADB shell input swipe 540 1200 540 950 600; $ADB shell sleep 1; done; has "$1" && return 0; echo "SCROLL MISSING: $1"; return 1; }
 shot() { $ADB exec-out screencap -p > "$OUT/$1.png"; echo "screenshot $1"; }
 wait_text() { for i in $(seq 1 20); do if has "$1"; then return 0; fi; $ADB shell sleep 1; done; echo "TIMEOUT waiting for '$1'"; return 1; }
+# A run with a relic offer waiting opens every morning (and after a restart) on that dialog, which hides the workshop
+# from the dump; "Decide later" keeps the offer, as in scenarios.sh. Returns once the Shop's End Day is on screen.
+past_offers() {
+  for i in $(seq 1 20); do
+    local x=$(dump)
+    if printf '%s' "$x" | grep -q 'resource-id="relic_later"'; then tap_id relic_later >/dev/null
+    elif printf '%s' "$x" | grep -q 'resource-id="blessing_later"'; then tap_id blessing_later >/dev/null
+    elif printf '%s' "$x" | grep -q 'resource-id="end_day"'; then return 0
+    else $ADB shell sleep 1; fi
+  done
+  echo "TIMEOUT waiting for planning past the offers"; return 1
+}
 
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && shot 01_title
 tap_id title_new_run || exit 1
+past_offers || exit 1
 # A new run lands on the Shop destination, which leads with the day's one lead; the forge is one destination over.
 wait_text "Forge your first blade" && shot 02_shop
 has_id shop_lead && echo "CHECK shop leads with a lead: ok" || echo "CHECK shop leads with a lead: FAIL"
@@ -79,6 +92,7 @@ dump | grep -o 'text="[^"]*"' | grep -iE "gazette|bought|forged|patrolled|routed
 tap_id report_close || exit 1
 has_id shopday_close && echo "CHECK gazette closes onto the day: ok" || echo "CHECK gazette closes onto the day: FAIL"
 tap_id shopday_close || exit 1
+past_offers || exit 1
 tap_id nav_town; $ADB shell sleep 1; shot 07_town
 has "Champions" && echo "CHECK town panel: ok"
 # Records: three segments; the gear opens the settings sheet; Back closes it, then returns from a destination to Shop.
@@ -94,6 +108,7 @@ has_id shop_list && echo "CHECK back returns to Shop: ok" || echo "CHECK back re
 $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
 # A saved run opens on the main menu; Continue returns to the workshop.
 wait_text "Continue run" && shot 07_menu && tap_id menu_continue
+past_offers
 wait_text "Day 2" && echo "CHECK resume after process death on day 2: ok" || echo "CHECK resume: FAIL"
 shot 08_resumed
 echo SMOKE_DONE

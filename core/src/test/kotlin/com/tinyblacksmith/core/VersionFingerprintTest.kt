@@ -25,10 +25,12 @@ class VersionFingerprintTest {
     private val catalogPins = mapOf(
         2 to "e5e5b96b392777abd63e6f7237fd96f5eee92411942f172035ba0c5c4adb6f9b",
         3 to "d9befd94929b3268c60ecdec67b8de06ec841ef8ec5e34ae6512b74894263db6",  // 120 first names, 96 surnames (T3.2); appearance keys per class (T3.3); Guild Patronage as its own effect (T3.6): one unreleased step, re-pinned from aa0a71b8...
-        4 to "283e8d4d3737b81228c15adbbc3ce72468462623c8f303a67c5f640d55dc39fe",  // morning visitors, workshop relics and siege traits join the catalog (gameplay depth, rules 4)
+        4 to "283e8d4d3737b81228c15adbbc3ce72468462623c8f303a67c5f640d55dc39fe",
+        // 5: the guild (rules 5): combat kits, the rule every element, affix, catalyst, family and six signatures give a blade, enemy units, eight party relics, contracts, charters, member traits. Re-pinned while the update is unreleased.
+        5 to "c8db99ca869fc62cb0267e4540c11cb65103f5de33bb4849d5925aa72707945e",  // morning visitors, workshop relics and siege traits join the catalog (gameplay depth, rules 4)
     )
     private val balancePins = mapOf(
-        5 to "a9d576db13b2983ebb4e45ed97ff6ddc9ece108aebb4738a14bfd90dc9ae37c1",
+        5 to "c8db99ca869fc62cb0267e4540c11cb65103f5de33bb4849d5925aa72707945e",
         6 to "adb451f9d456482d788d612daefebdbda892de44215fe4a3877152490d6c8e60",
         7 to "daf9ca7290dac60a17921dde7e37676a45dab7db64bdffe5a093af7f94d5f9d7",  // re-pinned inside the unreleased M3 step: T3.1 pinned 66214786..., T3.4 (33af5dfb...) changed the town and pressure numbers, T3.6 (33499217...) added patronageStipend, T3.8 the two rout numbers
         // M4, one unreleased step, re-pinned inside it: standing wants (T4.1, c2e3b145...), the sidegrade gate and siege demand (T4.2, 8c796571...), the two rumour numbers (T4.3, d16456a5...), commission situations (T4.6, c644ab76...).
@@ -39,9 +41,11 @@ class VersionFingerprintTest {
         9 to "77049208be3fb8e8c19ecd2ad2437c9a1f7c42495040dcb192ce0af6205a9ea8",
         // 10: the `depth` group (visitors, relics, siege traits, the committed besieger). All provisional.
         10 to "1368584cbd01a48d96bfd382087d9692ff9efa19540cb57131c85215f9d0cf0d",
+        // 11: the `guild` group. A classic run reads none of it (GoldenStateTest holds the rules-4 goldens under rules 5). Re-pinned while the update is unreleased.
+        11 to "46530ea1354408a872d016ed20a066729a13f156968361226d7c4a771ef6ed11",
     )
 
-    private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel")
+    private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames")
 
     private fun canonical(value: Any?, field: String? = null): String = when (value) {
         null -> "null"
@@ -51,6 +55,7 @@ class VersionFingerprintTest {
         is Enum<*> -> value.name
         is Pair<*, *> -> "(${canonical(value.first)},${canonical(value.second)})"
         is Map<*, *> -> value.entries.map { "${canonical(it.key)}=${canonical(it.value)}" }.sorted().joinToString(",", "{", "}")
+        is Set<*> -> value.map { canonical(it) }.sorted().joinToString(",", "<", ">")
         is List<*> -> if (field in prose) "texts${value.size}" else value.joinToString(",", "[", "]") { canonical(it) }
         else -> {
             check(value.javaClass.name.startsWith("com.tinyblacksmith.core.")) { "No canonical form for ${value.javaClass.name}" }

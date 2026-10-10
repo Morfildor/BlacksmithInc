@@ -38,10 +38,14 @@ object Relics {
             RelicEffect.FAMILY_STREAK -> View(r.id, def.name, def.description,
                 if (r.families.isEmpty()) "No streak yet: the next blade starts one."
                 else "Streak: ${r.families.joinToString(", ") { ctx.content.family(it).name }}. A family not in it is forged +${minOf(cfg.ledgerMaxBonus, r.families.size * cfg.ledgerQualityPerStep)} quality better.", null)
+            RelicEffect.COMBAT -> View(r.id, def.name, def.description, "A rule of your party in every fight.", null)
         }
     }
 
-    fun unowned(ctx: ResolutionContext): List<RelicDef> = ctx.content.relics.filter { d -> ctx.relics.none { it.id == d.id } }
+    /** A guild relic is a rule for a party: a run without a guild is never offered one, and draws as it always did. */
+    fun unowned(ctx: ResolutionContext): List<RelicDef> = ctx.content.relics.filter { d -> ctx.relics.none { it.id == d.id } && (d.effect != RelicEffect.COMBAT || guildRun(ctx)) }
+
+    private fun guildRun(ctx: ResolutionContext): Boolean = ctx.guild != null
 
     /** The offers a run is due by where it stands: the opening draft, then one after each siege numbered in `relicOfferSieges`. One at a time. */
     fun offerIfDue(ctx: ResolutionContext) {

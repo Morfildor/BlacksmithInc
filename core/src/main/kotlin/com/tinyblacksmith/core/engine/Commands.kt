@@ -47,6 +47,25 @@ sealed interface Command {
     data class ChooseRelic(val relicId: String, val replaceId: String? = null) : Command
     data object DeclineRelicOffer : Command
     data class EndDay(val commandId: CommandId) : Command
+
+    // ---- a guild run only (docs/GUILD_EVOLUTION_PLAN.md). Each states what should be, so the same command twice changes nothing. ----
+    /** Signs a resident who is among today's candidates, for the fee shown. */
+    data class RecruitHero(val heroId: HeroId) : Command
+    /** Lets a member in town go; a loan in their hands returns to storage. The signing fee is not returned. */
+    data class DismissHero(val heroId: HeroId) : Command
+    /** Loans a blade from storage or the shelf to a member in town; the blade they held on loan goes back to storage. */
+    data class LoanWeapon(val heroId: HeroId, val weaponId: WeaponId) : Command
+    data class RecallLoan(val weaponId: WeaponId) : Command
+    /** Today's party, whole: replaces any plan made earlier today. The contract's fee is paid now and returned if the plan is cancelled or replaced. */
+    data class PlanDeployment(val offerId: String, val heroIds: List<HeroId>, val posture: com.tinyblacksmith.core.combat.Posture) : Command
+    data object CancelPlannedDeployment : Command
+    data class ReserveDefender(val heroId: HeroId, val reserved: Boolean) : Command
+    /** At a checkpoint: push into the deeper stage or return. Unanswered, End Day returns. */
+    data class ChooseMissionCheckpoint(val instanceId: String, val choice: CheckpointChoice) : Command
+    /** Closes the run as a success once [milestoneId] is earned. */
+    data class RetireAfterMilestone(val milestoneId: String) : Command
+    data class ChooseSpeciality(val heroId: HeroId, val specialityId: String) : Command
+    data class SetGuildRank(val rank: Int) : Command
 }
 
 sealed interface GameError {
@@ -88,6 +107,21 @@ sealed interface GameError {
     data class WeaponPromised(val weaponId: WeaponId, val commissionId: CommissionId) : GameError
     /** The run was written under other rules or content than this engine's; [Compatibility.admit] brings it forward first. */
     data class IncompatibleRun(val rulesVersion: Int, val contentVersion: Int) : GameError
+    /** A guild command on a run that has no guild. */
+    data object NotAGuildRun : GameError
+    data class NotAMember(val heroId: HeroId) : GameError
+    data class NotACandidate(val heroId: HeroId) : GameError
+    data object RosterFull : GameError
+    /** [reason] finishes the sentence "<name> ...": "is away with the party". */
+    data class MemberUnavailable(val heroId: HeroId, val reason: String) : GameError
+    data class WeaponOnLoan(val weaponId: WeaponId, val heroId: HeroId) : GameError
+    data class NotOnLoan(val weaponId: WeaponId) : GameError
+    data class MissionNotOffered(val offerId: String) : GameError
+    data class PartyInvalid(val reason: String) : GameError
+    data object PartyAway : GameError
+    data object NoDeploymentPlanned : GameError
+    data object NoMissionCheckpoint : GameError
+    data class MilestoneNotEarned(val milestoneId: String) : GameError
 }
 
 sealed interface CommandOutcome {

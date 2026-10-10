@@ -95,13 +95,16 @@ object Legacy {
         val anchorHero = state.heroes.values.filter { it.fame > 0 }.maxWithOrNull(compareBy<Hero> { it.fame }.thenBy(IdOrder.numeric) { it.id.value })
         val lineage = anchorHero?.let {
             LineageAnchor(state.era, it.fullName, it.surname, it.classId, it.fame, when (it.fate) {
-                HeroFate.ALIVE -> "survived the fall of the forge"
+                HeroFate.ALIVE -> if (state.guild?.retired == true) "saw the charter secured" else "survived the fall of the forge"
                 HeroFate.RETIRED -> "retired on day ${it.retiredOnDay}"
                 HeroFate.DEAD -> "died on day ${it.diedOnDay}"
             }, id = "era${state.era}-${it.id.value}", appearance = Appearance.keyOf(it))
         }
         val discovery = minOf(config.legacyDiscoveryPointCap, state.discoveriesThisRun)
-        val milestoneBonus = state.milestones.sumOf { config.legacyTracks.milestonePoints[it] ?: 0 }
+        // What a guild run earned for good (the charter, a rank held to the end) counts once, here, however the run ended:
+        // retiring with it, or going on and falling later. The run itself is claimed once (`claim`).
+        val guildBonus = state.guild?.let { g -> g.milestones.sumOf { it.points } + (content.guild?.rank(g.rank)?.legacyPoints ?: 0) } ?: 0
+        val milestoneBonus = state.milestones.sumOf { config.legacyTracks.milestonePoints[it] ?: 0 } + guildBonus
         return RunEndResult(
             runId = state.runId, era = state.era, daysSurvived = state.day, cause = state.endCause ?: "The forge fell.",
             basePoints = config.legacyBasePoints, survivalPoints = state.day / config.legacyDaysPerPoint,

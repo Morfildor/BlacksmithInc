@@ -280,6 +280,8 @@ object Battle {
     }
 
     fun resolveSiegeIfDue(ctx: ResolutionContext) {
+        // A guild run fights its siege through the interaction engine; everything below is the classic, scalar siege.
+        if (ctx.guild != null) return com.tinyblacksmith.core.guild.SiegeFight.resolve(ctx)
         val config = ctx.config
         if (ctx.day != ctx.town.nextSiegeDay) return
         val o = outlook(ctx, ctx.day) ?: return
@@ -362,7 +364,7 @@ object Battle {
 
     private fun traitData(o: SiegeOutlook): Map<String, String> = o.trait?.let { mapOf("trait" to it.id) } ?: emptyMap()
 
-    private fun offerBlessing(ctx: ResolutionContext) {
+    internal fun offerBlessing(ctx: ResolutionContext) {
         val rng = ctx.rng(RngStream.LEGACY)
         // Guild Patronage needs a guild to send anybody; without one it is not among the choices.
         val pool = ctx.content.blessings.filter { ctx.town.guilds.isNotEmpty() || it.effect != BlessingEffect.GUILD_PATRONAGE }.map { it.id }.toMutableList()
@@ -387,6 +389,7 @@ object Battle {
             if (ctx.config.depth.commitBesieger && ctx.siege?.takeIf { it.siegeDay == ctx.town.nextSiegeDay }?.factionId == null) leadingFaction(ctx)?.let {
                 ctx.siege = (ctx.siege?.takeIf { s -> s.siegeDay == ctx.town.nextSiegeDay } ?: SiegeScenario(ctx.town.nextSiegeDay)).copy(factionId = it.id)
             }
+            com.tinyblacksmith.core.guild.SiegeFight.plan(ctx)   // a guild run: the committed besieger's field is drawn now and kept
             val f = besieger(ctx) ?: return
             val def = ctx.content.faction(f.id)
             val led = if (def.warlordName != null && f.pressure >= ctx.config.warlordPressure) " ${def.warlordName} leads them." else ""

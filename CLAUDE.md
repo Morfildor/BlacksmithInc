@@ -4,12 +4,16 @@ Premium (€1.99, offline, no ads/IAP/accounts) portrait Android game: a menu-on
 weapons are bought by autonomous heroes who fight, defend the town and die. Source of truth for design:
 `Tiny_Blacksmith_GDD_v1.0.md` (read it; do not copy it here). LOCKED = requirement, PROPOSED = tunable, DEFERRED = do not build.
 
-## Non-negotiables (LOCKED in the GDD)
-- Player never moves a character, commands combat or equips heroes. Only shop actions: forge, price, list, commissions, End Day.
+## Non-negotiables (LOCKED in the GDD, as revised by `docs/GDD_REVISION_2026-10-10.md`)
+- Player never moves a character or commands combat. Classic run (started without a charter): only shop actions (forge,
+  price, list, commissions, End Day), no equipping. Guild run: the smith may also recruit, loan a blade to a contracted
+  member, pick a party, a mission and a posture, and reserve defenders. Ordinary customers stay autonomous.
 - 10 daily energy; overwork causes next-day exhaustion. Every valid forge yields a usable (possibly flawed) weapon.
 - Predictable major siege timing; living faction pressure decides strength. Forge integrity 0 = run over.
-- Three dynamic champions = strongest *available* heroes (gracefully 0–2). Dead heroes never act or own equipment.
+- Three defence places, filled by automatic recommendation = strongest *available* heroes (gracefully 0–2); in a guild
+  run available members can be reserved for them. Dead heroes never act or own equipment.
 - Strong permanent legacy (knowledge, upgrades, legends, lineages); run-only state resets. Claim once per run.
+- Endless play stays. A guild run adds a day-20 charter milestone with an optional retirement; continuing is a choice.
 - Gazette and replays derive from real event records; animations never consume gameplay RNG.
 - No backend, telemetry, ads, billing SDK, runtime AI, timers or idle production.
 
@@ -78,6 +82,7 @@ Compose BOM 2026.02.01, Room 2.8.5, DataStore 1.2.1, JDK 21 launcher / JDK 25 da
   ships and is verified). Update PROGRESS before ending a session. While the major update is open, per-task status
   and evidence live in `docs/MAJOR_UPDATE_LEDGER.md` (plan: `docs/MAJOR_UPDATE_PLAN.md`). Visitors, relics and siege
   traits: `docs/GAMEPLAY_DEPTH_PLAN.md` (tables of every option and number, task ledger).
+  Guild evolution: plan and task ledger `docs/GUILD_EVOLUTION_PLAN.md`, spec `docs/GUILD_EVOLUTION_SPEC.md`.
 - Balance changes: run the simulator, record numbers in DECISIONS.md, bump `BalanceConfig.version` on semantic change.
 - New gameplay numbers go in `BalanceConfig`, never inline. New content goes through `ContentCatalog.validate()`.
 - Tests must pass before claiming a phase done; do not commit/push without being asked.

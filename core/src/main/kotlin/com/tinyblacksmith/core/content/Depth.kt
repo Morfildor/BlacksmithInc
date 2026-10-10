@@ -18,7 +18,8 @@ data class EncounterDef(
     val followUp: Boolean = false,
 )
 
-enum class RelicEffect { SALVAGE_AUGMENT, FAMILY_STREAK, PREMIUM_SEAL, BELLOWS }
+/** COMBAT: a party rule of the interaction engine (`CombatCatalog.relicEffects`); offered only in a guild run. */
+enum class RelicEffect { SALVAGE_AUGMENT, FAMILY_STREAK, PREMIUM_SEAL, BELLOWS, COMBAT }
 
 /** A run-long workshop relic; its numbers are in `BalanceConfig.depth`. */
 data class RelicDef(val id: String, val name: String, val effect: RelicEffect, val description: String)
@@ -76,6 +77,12 @@ object Depth {
         RelicDef(TEMPERING_LEDGER, "Tempering Ledger", RelicEffect.FAMILY_STREAK, "Each blade of a family not yet in the streak is forged better; repeating one starts the streak again."),
         RelicDef(COLLECTORS_SEAL, "Collector's Seal", RelicEffect.PREMIUM_SEAL, "The first costly shelf sale of a day earns a seal; three seals bring a rare material."),
         RelicDef(ASHEN_BELLOWS, "Ashen Bellows", RelicEffect.BELLOWS, "Once a day one forge may burn tomorrow's strength for an extra property."),
+    ) + CombatContent.relicEffects.keys.map { id ->
+        // A guild relic is a rule of the party in a fight; its text is the rule's own, so the card and the resolver cannot disagree.
+        val rules = CombatContent.relicEffects.getValue(id)
+        RelicDef(id, rules.firstOrNull()?.name ?: "Coward's Medal", RelicEffect.COMBAT,
+            rules.joinToString(" ") { it.description }.ifEmpty { "A party that pulls back from a fight still brings home half of the bonus it was promised. A retreat is never counted as a victory." })
+    } + listOf<RelicDef>(
     )
 
     // Catalog numbers, PROPOSED.

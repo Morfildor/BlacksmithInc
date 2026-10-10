@@ -57,6 +57,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     val relicUses: MutableMap<String, Int> = base.relicUses.toMutableMap()
     val consequences: MutableList<ScheduledConsequence> = base.consequences.toMutableList()
     var siege = base.siege
+    var guild = base.guild
 
     // Per-day scratch counters (not persisted).
     var patrolsToday = 0
@@ -110,6 +111,9 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
 
     /** In numeric ID order (h2 before h10). The order only assigns draws and breaks ties; it never decides who is served. */
     fun aliveHeroes(): List<Hero> = heroes.values.filter { it.isAlive }.sortedWith(compareBy(IdOrder.numeric) { it.id.value })
+
+    /** The living heroes who are not contracted to the guild: who shops, wanders, retires and is named by the town's business. Everybody alive in a classic run. */
+    fun residents(): List<Hero> = guild?.let { g -> aliveHeroes().filter { !g.isMember(it.id) } } ?: aliveHeroes()
 
     fun blessingMagnitude(effect: BlessingEffect): Int =
         blessings.filter { it.expiresDay >= day }.sumOf { b -> content.blessing(b.id).let { if (it.effect == effect) it.magnitude else 0 } }
@@ -190,6 +194,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
             relicUses = relicUses.toMap(),
             consequences = consequences.toList(),
             siege = siege,
+            guild = guild,
         )
     }
 }

@@ -121,7 +121,7 @@ class MigrationTest {
         val migrated = SaveCodec.migrate(env, SaveCodec.legacyMigrations)
         assertEquals(env, migrated)
         assertTrue(migrated.payload === payload, "the current schema must not rewrite the payload")
-        assertEquals(5, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")
+        assertEquals(6, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")   // schema 6: GuildMigrationTest
     }
 
     private fun v1Fixture(): String = javaClass.getResource("/saves/v1_forced_seed4242_day61.json")?.readText() ?: error("missing v1 fixture")
@@ -270,6 +270,7 @@ class MigrationTest {
             WeaponLocation.Owned(HeroId("h4"), true) to """{"type":"com.tinyblacksmith.core.model.WeaponLocation.Owned","heroId":"h4","equipped":true}""",
             WeaponLocation.Lost(22, "seized") to """{"type":"com.tinyblacksmith.core.model.WeaponLocation.Lost","day":22,"reason":"seized"}""",
             WeaponLocation.Destroyed(9) to """{"type":"com.tinyblacksmith.core.model.WeaponLocation.Destroyed","day":9}""",
+            WeaponLocation.Loaned(HeroId("h2")) to """{"type":"com.tinyblacksmith.core.model.WeaponLocation.Loaned","heroId":"h2"}""",
         )
         val subclasses = WeaponLocation::class.java.declaredClasses.filter { WeaponLocation::class.java.isAssignableFrom(it) }
         assertEquals(subclasses.map { it.simpleName }.sorted(), stored.map { it.first::class.java.simpleName }.sorted(), "every WeaponLocation subclass is pinned")

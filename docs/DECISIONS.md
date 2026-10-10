@@ -4080,3 +4080,47 @@ gap overstates the traits.
 **Not built (as the prompt defers).** The rest of the encounter catalogue, ventures and recovery, a rival smith as a
 system, richer seasons, challenge tiers, distinct catalysts, the Never-listed filter. Visitor portraits and relic
 icons: the sheet shows the heroes' and blades' own art; the wanted lists are in `Assets/*/WANTED.txt`.
+
+## Guild evolution: design revision (2026-10-10)
+
+Source: the owner's plan of 2026-10-10, kept verbatim as `docs/GUILD_EVOLUTION_SPEC.md` (section 2.2 is the revision).
+The addendum to the GDD is `docs/GDD_REVISION_2026-10-10.md`; the implementation plan and task ledger are
+`docs/GUILD_EVOLUTION_PLAN.md`. Branch `guild-evolution`, cut from `main` @ `8f2e284` (rules 4, save schema 5, content 4,
+balance 10). Unlike every section above, this one changes LOCKED decisions of the GDD. That is the owner's decision, made
+on 2026-10-10; no session made it on its own. Every number and name the revision brings is PROPOSED.
+
+**LOCKED before, revised now (guild runs only).**
+- **Only shop actions; the player never equips or directs heroes.** Contracted guild members can be loaned a blade, put
+  in a party and sent on a mission the smith picks, with a posture. Ordinary customers stay autonomous. Combat stays
+  automatic: no target, no turn, no timing input.
+- **Three champions, always the strongest available, always automatic.** Three defence places and the automatic
+  recommendation stay; the smith may reserve available members for them.
+- **No end point.** Endless play stays. A day-20 charter milestone and an optional successful retirement are added.
+- **Permanent upgrades mostly extend survival.** Earned upgrades are kept; new progression mostly unlocks other rules,
+  starting choices and optional difficulty.
+- **All information descriptive.** Hidden random odds stay descriptive; deterministic effect rules, thresholds, costs,
+  timing and trigger limits are shown exactly.
+- **Relaxed economy.** Ordinary crafting stays affordable; pressure moves to scarce ingredients, deployments, who is
+  available and opportunity cost.
+- **One workshop with panels.** Four destinations stay; Town becomes Guild, with the regional board inside it.
+- "Every successful craft produces a usable weapon" is in the spec's table but is kept, not revised.
+
+**Stays LOCKED.** Automatic combat; no moving avatar; no reaction or timing minigame; ten base forge energy; overwork
+costs the next day; player-controlled days; predictable major sieges; offline premium, no ads, IAP or accounts; no
+runtime AI; deterministic outcomes; readable and skippable presentation. Forge integrity 0 still ends the run.
+
+**Ruling: guild mode is a property of the run** (plan D1). A run started with a charter is a guild run. A run started
+without one is a classic run under the old contract, with the same draws and outcomes as rules 4, and a classic run in
+progress when the update is installed ends as a classic run. To reverse: nothing to undo for classic runs.
+
+**The owner's three answers (2026-10-10).**
+- The revision of the LOCKED rules is confirmed as spec 2.2 states it.
+- Milestone A (the combat core) is inspected as text first and then on a debug screen.
+- The whole plan is implemented in one run and tested afterwards. The spec's stop gates (after A: is the combat fun to
+  watch; after B: is the five-day slice fun) were therefore **not held** as gates. Both stay open questions for the
+  owner; nothing built after them should be read as having passed them.
+
+**A presentation mismatch the spec found in the existing game** (spec 1.2, last paragraph). Siege forge damage is not
+gated by the victory flag: at equal defence and raid power the formula still takes 24 integrity while the report says
+the town held. Not a rules bug (a costly victory is valid), but the result does not say so. In guild runs such a siege is
+to be labelled "held at a cost" (plan D7). Classic runs keep the scalar siege and its wording unchanged.

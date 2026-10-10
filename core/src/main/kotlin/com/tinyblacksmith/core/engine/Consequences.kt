@@ -70,6 +70,7 @@ object Consequences {
                 is WeaponLocation.Owned -> "is carried by ${ctx.heroes[l.heroId]?.fullName ?: "another"}"
                 is WeaponLocation.Lost -> "is gone (${l.reason})"
                 is WeaponLocation.Destroyed -> "was destroyed"
+                is WeaponLocation.Loaned -> "is on loan to ${ctx.heroes[l.heroId]?.fullName ?: "a member of the guild"}"
             }
             when {
                 hero == null || hero.fate == HeroFate.DEAD ->

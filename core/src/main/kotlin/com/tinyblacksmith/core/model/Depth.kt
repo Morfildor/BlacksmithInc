@@ -62,4 +62,12 @@ data class ScheduledConsequence(
 
 /** The siege that is coming: its trait from the day it is scheduled, its besieger from the first warning. */
 @Serializable
-data class SiegeScenario(val siegeDay: Int, val traitId: String? = null, val factionId: FactionId? = null)
+data class SiegeScenario(
+    val siegeDay: Int, val traitId: String? = null, val factionId: FactionId? = null,
+    /** A guild run: the besieger's field as it was drawn when the besieger was committed (`guild.SiegeFight`); empty until then. */
+    val plan: List<EnemySpec> = emptyList(),
+    /** Times the guild's party spoiled this siege's preparations: at most once. */
+    val sabotaged: Int = 0,
+    /** The charter warlord leads this one. */
+    val charter: Boolean = false,
+)

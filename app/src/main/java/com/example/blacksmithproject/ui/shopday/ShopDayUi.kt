@@ -169,6 +169,7 @@ private fun incomeLabel(kind: IncomeKind): String = when (kind) {
     IncomeKind.COMMISSION -> "Requests"
     IncomeKind.COLLECTOR -> "Collector"
     IncomeKind.TRIBUTE -> "Tribute from the town"
+    IncomeKind.CONTRACT -> "Guild contracts"
 }
 
 private fun aftermathLabel(kind: AftermathKind): String = when (kind) {

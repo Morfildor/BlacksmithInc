@@ -27,10 +27,13 @@ texts() { dump | grep -o 'text="[^"]\+"' | head -12; }
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && tap "New game" || exit 1
+# A new run opens on the relic offer, which hides the workshop from the dump: "Decide later" keeps the offer. The loop
+# below puts it off again each morning.
+wait_text "Decide later" && tap "Decide later"
 wait_text "End Day" || exit 1
 fallen=0
 # Each day: End Day, Skip to evening (to the day's last card), then Begin day; the day the forge falls ends on "See the legacy".
-for day in $(seq 1 160); do
+for day in $(seq 1 220); do
   if has "See the legacy"; then fallen=1; break; fi
   if has "Begin day"; then tap "Begin day"; continue; fi
   if has "Decide later"; then tap "Decide later"; continue; fi
@@ -60,6 +63,7 @@ shot 02b_runend_reopened
 for i in 1 2 3 4 5 6; do has "Begin era" && break; $ADB shell input swipe 540 1500 540 500 400; $ADB shell sleep 1; done
 shot 03_runend_bottom
 tap "Begin era" || exit 1
+wait_text "Decide later" && tap "Decide later"
 wait_text "Day 1" && echo "CHECK next era started: ok" || echo "CHECK next era: FAIL"
 shot 04_next_era
 echo RUNEND_DONE

@@ -103,7 +103,7 @@ object LaunchContent {
         ALL_CLASSES.associateWith { if (it in synergy) 1.2 else 0.85 }
 
     val catalog: ContentCatalog = ContentCatalog(
-        version = 4,
+        version = 5,
         families = listOf(
             // basePower / defensiveWeight are PROPOSED; Sword, Axe and Bow keep their slice values.
             WeaponFamilyDef(SWORD, "Sword", basePower = 10, classFit = fit(listOf(GUARDIAN, DUELIST, BATTLEMAGE)), defensiveWeight = 1.1),
@@ -293,5 +293,7 @@ object LaunchContent {
         encounters = Depth.encounters,
         relics = Depth.relics,
         siegeTraits = Depth.siegeTraits,
+        combat = CombatContent.catalog,
+        guild = GuildContent.catalog,
     )
 }

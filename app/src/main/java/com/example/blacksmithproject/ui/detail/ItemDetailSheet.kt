@@ -220,6 +220,7 @@ private fun whereabouts(state: GameState, w: Weapon): Fact = when (val l = w.loc
     }
     is WeaponLocation.Lost -> Fact("Where", "${l.reason.replaceFirstChar { it.uppercase() }} since day ${l.day}")
     is WeaponLocation.Destroyed -> Fact("Where", "Destroyed on day ${l.day}")
+    is WeaponLocation.Loaned -> Fact("Where", "On loan to ${state.heroes[l.heroId]?.fullName ?: "a member of the guild"}")
 }
 
 /** What it was made of. A snapshot kept the family, core and augment; the catalyst, method and day need the blade itself. */

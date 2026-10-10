@@ -40,11 +40,11 @@ class RelicsAndSiegeTraitsTest {
     @Test
     fun aRunOpensWithADraftOfThreeAndChoosingIsOnce() {
         val s = fresh()
-        assertEquals(4, content.relics.size)
+        assertEquals(4, content.relics.count { it.effect != com.tinyblacksmith.core.content.RelicEffect.COMBAT })   // the workshop's four; a guild run adds the party's
         assertEquals(3, s.pendingRelicOffer.toSet().size)
         assertTrue(s.relics.isEmpty() && s.relicOffersMade == setOf("start"))
         assertEquals(engine.newRun(LegacyProfile(), 7).pendingRelicOffer, s.pendingRelicOffer)
-        val notOffered = content.relics.map { it.id }.single { it !in s.pendingRelicOffer }
+        val notOffered = content.relics.filter { it.effect != com.tinyblacksmith.core.content.RelicEffect.COMBAT }.map { it.id }.single { it !in s.pendingRelicOffer }
         assertIs<GameError.RelicNotOffered>(s.rejected(Command.ChooseRelic(notOffered)))
         val chosen = s.run(Command.ChooseRelic(s.pendingRelicOffer.first()))
         assertEquals(listOf(ActiveRelic(s.pendingRelicOffer.first())), chosen.relics)

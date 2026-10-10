@@ -24,8 +24,8 @@ object SplitMix64 {
     }
 }
 
-/** ENCOUNTERS (schema 5) is appended: a stream is seeded by its ordinal, so the older ones keep the seeds they always had. */
-enum class RngStream { CRAFTING, HEROES, PURCHASES, COMBAT, FACTIONS, EVENTS, LEGACY, WORLD, ENCOUNTERS }
+/** ENCOUNTERS (schema 5) and GUILD (schema 6) are appended: a stream is seeded by its ordinal, so the older ones keep the seeds they always had. */
+enum class RngStream { CRAFTING, HEROES, PURCHASES, COMBAT, FACTIONS, EVENTS, LEGACY, WORLD, ENCOUNTERS, GUILD }
 
 /** Serializable snapshot of every gameplay stream. Saved with the run. */
 @Serializable

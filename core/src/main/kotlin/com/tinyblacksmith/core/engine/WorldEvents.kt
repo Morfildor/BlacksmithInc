@@ -202,12 +202,12 @@ object WorldEvents {
         // 5
         WorldEventDef(
             id = "noble_commission", name = "Noble Commission", weight = 2.0,
-            eligibility = { ctx -> Market.openCommissions(ctx).let { open -> open.size < ctx.config.customers.maxOpenCommissions && ctx.aliveHeroes().any { h -> open.none { it.buyerId == h.id || it.recipientId == h.id } } } },
+            eligibility = { ctx -> Market.openCommissions(ctx).let { open -> open.size < ctx.config.customers.maxOpenCommissions && ctx.residents().any { h -> open.none { it.buyerId == h.id || it.recipientId == h.id } } } },
             maxPerRun = 3, cooldownDays = 5,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)
                 val config = ctx.config
-                val buyer = rng.pick(Market.openCommissions(ctx).let { open -> ctx.aliveHeroes().filter { h -> open.none { it.buyerId == h.id || it.recipientId == h.id } } })
+                val buyer = rng.pick(Market.openCommissions(ctx).let { open -> ctx.residents().filter { h -> open.none { it.buyerId == h.id || it.recipientId == h.id } } })
                 val family = rng.pick(ctx.content.heroClass(buyer.classId).preferredFamilies)
                 val minQuality = QualityBand.SUPERB.floor(config)
                 val reward = (config.commissionRewardBase + minQuality * config.commissionRewardPerQuality) * config.nobleCommissionRewardMultiplier
@@ -221,7 +221,7 @@ object WorldEvents {
         // 6
         WorldEventDef(
             id = "new_adventurers", name = "New Adventurers Arrive", weight = 2.0,
-            eligibility = { ctx -> ctx.aliveHeroes().size + ctx.config.newAdventurerCount <= ctx.config.customers.maxHeroPopulation }, maxPerRun = 3, cooldownDays = 4,
+            eligibility = { ctx -> ctx.residents().size + ctx.config.newAdventurerCount <= ctx.config.customers.maxHeroPopulation }, maxPerRun = 3, cooldownDays = 4,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)
                 val arrived = (1..ctx.config.newAdventurerCount).map { Heroes.generate(ctx, rng).also { h ->
@@ -234,7 +234,7 @@ object WorldEvents {
         ),
         // 7
         WorldEventDef(
-            id = "veteran_returns", name = "Veteran Returns", weight = 1.5, eligibility = { ctx -> ctx.aliveHeroes().size < ctx.config.customers.maxHeroPopulation }, maxPerRun = 2, cooldownDays = 6,
+            id = "veteran_returns", name = "Veteran Returns", weight = 1.5, eligibility = { ctx -> ctx.residents().size < ctx.config.customers.maxHeroPopulation }, maxPerRun = 2, cooldownDays = 6,
             apply = { ctx ->
                 val base = Heroes.generate(ctx, ctx.rng(RngStream.EVENTS))
                 val h = base.copy(level = maxOf(base.level, ctx.config.veteranLevel), gold = base.gold + ctx.config.veteranGold, fame = ctx.config.worldEvents.veteranFame)
@@ -248,11 +248,11 @@ object WorldEvents {
         // 10
         WorldEventDef(
             id = "heroic_inheritance", name = "Heroic Inheritance", weight = 2.0,
-            eligibility = { ctx -> ctx.aliveHeroes().isNotEmpty() && ctx.weapons.values.any(::lostWithHero) }, maxPerRun = 3, cooldownDays = 3,
+            eligibility = { ctx -> ctx.residents().isNotEmpty() && ctx.weapons.values.any(::lostWithHero) }, maxPerRun = 3, cooldownDays = 3,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)
                 val w = rng.pick(ctx.weapons.values.filter(::lostWithHero).sortedWith(compareBy(IdOrder.numeric) { it.id.value }))
-                val heir = rng.pick(ctx.aliveHeroes())
+                val heir = rng.pick(ctx.residents())
                 val fallen = fallenOwnerName(ctx, w)
                 ctx.addWeaponHistory(w.id, "INHERITED", "Carried home after ${fallen}'s death and passed to ${heir.fullName}.", listOf(heir.id.value))
                 Market.giveAndEquip(ctx, ctx.hero(heir.id), ctx.weapon(w.id))
@@ -268,9 +268,9 @@ object WorldEvents {
         // 14
         WorldEventDef(
             id = "successful_patrol", name = "Successful Patrol", weight = 2.0,
-            eligibility = { ctx -> ctx.aliveHeroes().isNotEmpty() && ctx.factions.values.any { it.pressure > 0 } }, maxPerRun = UNLIMITED, cooldownDays = 2,
+            eligibility = { ctx -> ctx.residents().isNotEmpty() && ctx.factions.values.any { it.pressure > 0 } }, maxPerRun = UNLIMITED, cooldownDays = 2,
             apply = { ctx ->
-                val hero = ctx.rng(RngStream.EVENTS).pick(ctx.aliveHeroes())
+                val hero = ctx.rng(RngStream.EVENTS).pick(ctx.residents())
                 val f = ctx.factions.values.filter { it.pressure > 0 }.maxWith(compareBy<FactionState> { it.pressure }.thenBy { it.id.value })
                 ctx.factions[f.id] = f.copy(pressure = maxOf(0, f.pressure - ctx.config.successfulPatrolPressureDrop))
                 ctx.town = ctx.town.copy(militia = minOf(ctx.config.militiaMax, ctx.town.militia + ctx.config.successfulPatrolMilitia))
@@ -281,9 +281,9 @@ object WorldEvents {
         // 15
         WorldEventDef(
             id = "border_ambush", name = "Border Ambush", weight = 2.0,
-            eligibility = { ctx -> ctx.aliveHeroes().any { it.health >= ctx.config.heroWoundedThreshold } }, maxPerRun = UNLIMITED, cooldownDays = 2,
+            eligibility = { ctx -> ctx.residents().any { it.health >= ctx.config.heroWoundedThreshold } }, maxPerRun = UNLIMITED, cooldownDays = 2,
             apply = { ctx ->
-                val hero = ctx.rng(RngStream.EVENTS).pick(ctx.aliveHeroes().filter { it.health >= ctx.config.heroWoundedThreshold })
+                val hero = ctx.rng(RngStream.EVENTS).pick(ctx.residents().filter { it.health >= ctx.config.heroWoundedThreshold })
                 val health = maxOf(1, hero.health - ctx.config.ambushDamage)
                 ctx.updateHero(hero.copy(health = health))
                 if (health < ctx.config.heroWoundedThreshold) ctx.emit(EventType.HERO_WOUNDED, 2, "${hero.fullName} returned wounded.", listOf(hero.id.value))
@@ -396,7 +396,7 @@ object WorldEvents {
         // 22
         WorldEventDef(
             id = "descendant", name = "Descendant of a Champion", weight = 1.0,
-            eligibility = { ctx -> ctx.aliveHeroes().size < ctx.config.customers.maxHeroPopulation && ctx.legacy.lineages.any { l -> ctx.heroes.values.none { it.lineageId == l.id } } },
+            eligibility = { ctx -> ctx.residents().size < ctx.config.customers.maxHeroPopulation && ctx.legacy.lineages.any { l -> ctx.heroes.values.none { it.lineageId == l.id } } },
             maxPerRun = 2, cooldownDays = 5,
             apply = { ctx ->
                 val rng = ctx.rng(RngStream.EVENTS)

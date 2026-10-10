@@ -77,3 +77,19 @@ tasks.register<Test>("scenarios") {
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }
+
+// Fixture fights of the interaction engine as text: ./gradlew :core:combat   (--args="stormwell scrap-choir" for some)
+tasks.register<JavaExec>("combat") {
+    group = "tinyblacksmith"
+    description = "Prints the fixture fights of the interaction engine: highlights and timeline."
+    mainClass.set("com.tinyblacksmith.core.sim.CombatSandboxKt")
+    classpath = sourceSets["main"].runtimeClasspath
+}
+
+// Guild bots (spec 17.3): ./gradlew :core:guildsim --args="--runs 300 --seed 1"
+tasks.register<JavaExec>("guildsim") {
+    group = "tinyblacksmith"
+    description = "Plays guild runs with the nine guild policies and prints what became of them."
+    mainClass.set("com.tinyblacksmith.core.sim.GuildSimKt")
+    classpath = sourceSets["main"].runtimeClasspath
+}

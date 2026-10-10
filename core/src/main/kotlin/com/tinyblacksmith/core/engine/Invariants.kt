@@ -3,6 +3,7 @@ package com.tinyblacksmith.core.engine
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.model.GameState
+import com.tinyblacksmith.core.model.MemberStatus
 import com.tinyblacksmith.core.model.Phase
 import com.tinyblacksmith.core.model.WeaponLocation
 import com.tinyblacksmith.core.rng.RngStream
@@ -17,7 +18,10 @@ object Invariants {
         val problems = mutableListOf<String>()
         if (content != null) problems += unknownContent(state, content)
         RngStream.entries.forEach { if (it !in state.rng.streams) problems += "Missing RNG stream $it" }
-        if ((state.phase == Phase.ENDED) != (state.town.integrity == 0)) problems += "Phase ${state.phase} with forge integrity ${state.town.integrity}"
+        // A run ends when the forge falls, or, in a guild run, when the smith closes the chapter with a milestone earned.
+        val retired = state.guild?.retired == true
+        if (retired && state.guild?.milestones.isNullOrEmpty()) problems += "A run was closed without a milestone"
+        if ((state.phase == Phase.ENDED) != (state.town.integrity == 0 || retired)) problems += "Phase ${state.phase} with forge integrity ${state.town.integrity}"
         if (state.gold < 0) problems += "Negative gold ${state.gold}"
         if (state.energy < 0) problems += "Negative energy ${state.energy}"
         if (state.overworkToday < 0 || state.overworkToday > config.maxOverworkPerDay) problems += "Overwork out of bounds ${state.overworkToday}"
@@ -73,6 +77,51 @@ object Invariants {
             if (order.status != com.tinyblacksmith.core.model.CommissionStatus.ACCEPTED) problems += "Weapon ${w.id.value} is kept for a closed order"
         }
         state.weapons.values.forEach { w -> if (w.promisedTo != null && w.promisedTo !in state.commissions) problems += "Weapon ${w.id.value} is promised to an unknown order" }
+        problems += guild(state, config)
+        return problems
+    }
+
+    /** The guild's own books (plan D2): one blade, one place, one custodian; nobody listed anywhere who is not there. */
+    private fun guild(state: GameState, config: BalanceConfig): List<String> {
+        val problems = mutableListOf<String>()
+        val g = state.guild
+        val loans = state.weapons.values.filter { it.isLoaned }
+        if (g == null) {
+            if (loans.isNotEmpty()) problems += "A run without a guild has ${loans.size} blades on loan"
+            return problems
+        }
+        val cfg = config.guild
+        if (g.members.size > cfg.maxMembers) problems += "More than ${cfg.maxMembers} guild members"
+        if (g.members.map { it.heroId }.toSet().size != g.members.size) problems += "A guild member is listed twice"
+        for (m in g.members) {
+            val h = state.heroes[m.heroId]
+            if (h == null || !h.isAlive) problems += "Guild member ${m.heroId.value} is dead or missing"
+            if (m.bonds.any { !g.isMember(it.withHeroId) }) problems += "Guild member ${m.heroId.value} is bonded to somebody outside the guild"
+            if ((m.status == MemberStatus.CAPTURED) != g.captives.any { it.heroId == m.heroId }) problems += "Guild member ${m.heroId.value}: status ${m.status} and the captives' list disagree"
+        }
+        for (w in loans) {
+            val holder = g.member(w.loanedTo!!)
+            if (holder == null) problems += "Weapon ${w.id.value} is on loan to ${w.loanedTo!!.value}, who is not a member"
+            if (w.promisedTo != null) problems += "Weapon ${w.id.value} is on loan and promised to an order"
+        }
+        loans.groupingBy { it.loanedTo!! }.eachCount().forEach { (id, n) -> if (n > 1) problems += "Member ${id.value} holds $n loans" }
+        if (g.reserved.size > cfg.defenders || g.reserved.toSet().size != g.reserved.size) problems += "The wall's reservations are out of bounds"
+        g.reserved.forEach { if (!g.isMember(it)) problems += "${it.value} is reserved for the wall and is not a member" }
+        g.candidates.forEach { c -> if (g.isMember(c.heroId) || state.heroes[c.heroId]?.isAlive != true) problems += "Candidate ${c.heroId.value} cannot be asked" }
+        g.planned?.let { p ->
+            if (p.heroIds.isEmpty() || p.heroIds.size > cfg.partyMax) problems += "The planned party has ${p.heroIds.size} members"
+            p.heroIds.forEach { if (g.member(it)?.status != MemberStatus.HOME) problems += "${it.value} is planned for a party and is not in town" }
+            if (g.offers.none { it.id == p.offerId }) problems += "A party is planned for a contract that is not on the board"
+            if (g.mission != null) problems += "A party is planned while another is out"
+        }
+        val away = g.members.filter { it.status == MemberStatus.AWAY }.map { it.heroId }.toSet()
+        val out = g.mission?.party.orEmpty().filter { g.isMember(it) && g.member(it)?.status != MemberStatus.CAPTURED }.toSet() + listOfNotNull(g.mission?.offer?.subjectHeroId?.takeIf { g.member(it)?.status == MemberStatus.AWAY })
+        if (away != out.filter { g.member(it)?.status == MemberStatus.AWAY }.toSet() || !out.all { it in away }) problems += "Members away (${away.map { it.value }}) are not the party that is out (${out.map { it.value }})"
+        g.mission?.let { m -> if (m.stage > m.offer.stages.size || m.party.isEmpty()) problems += "The party's contract is out of bounds" }
+        g.captives.forEach { c -> if (state.heroes[c.heroId]?.isAlive != true) problems += "Captive ${c.heroId.value} is dead or missing" }
+        g.nemesis?.let { n -> if ((state.weapons[n.weaponId]?.location as? WeaponLocation.Lost) == null) problems += "The nemesis carries ${n.weaponId.value}, which is not lost" }
+        if (g.offers.map { it.id }.toSet().size != g.offers.size) problems += "A contract is on the board twice"
+        if (g.milestones.map { it.id }.toSet().size != g.milestones.size) problems += "A milestone is recorded twice"
         return problems
     }
 
