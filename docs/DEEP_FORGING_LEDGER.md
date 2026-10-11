@@ -3,7 +3,7 @@
 Sources: the owner's prompts "deep forging foundation" and "complete integration, correctness and targeted balance
 validation" (both 2026-10-11).
 Branch: `deep-forging-integration` (worktree `.claude/worktrees/deep-forging`). It holds `deep-forging` and
-`run-variety` up to its balance 13 commits, merged twice. Not pushed, not merged into `main`.
+`run-variety` up to its balance 13 commits, merged twice. On `main` since 2026-10-11 (fast-forward, pushed), at the owner's word.
 State: rules 6, schema 7, content 6, balance 14. Both suites pass.
 Evidence: `docs/deep_forging_evidence/`. Bots and bench fights, not people. None of it says the game is fun.
 

@@ -1,6 +1,6 @@
 # Progress — 2026-10-11 (run variety and consequences, unreleased; before it: guild evolution, 0.8.0)
 
-## Run variety and consequences (2026-10-11): built on branch `run-variety`, not pushed
+## Run variety and consequences (2026-10-11): built on branch `run-variety`, on `main` through `deep-forging-integration`
 Ledger with rulings, slice status, gates and open questions: `docs/RUN_VARIETY_LEDGER.md`. Evidence:
 `docs/run_variety_evidence/REPORT.md`. Versions: rules 6, save schema 7, content 6, balance 12. App version name
 still 0.8.0 (changelog entry under Unreleased).
@@ -25,7 +25,7 @@ not run, nobody has played it.
 3. Decide the version number and merge.
 
 
-## Deep forging foundation, integrated (2026-10-11): branch `deep-forging-integration`, not pushed, not merged into `main`
+## Deep forging foundation, integrated (2026-10-11): branch `deep-forging-integration`, on `main` and pushed
 It holds `deep-forging` and `run-variety` (balance 13) merged. Rules 6, schema 7, content 6, balance 14. Everything
 about it is in one place: `docs/DEEP_FORGING_LEDGER.md` (decisions, ingredient table, integration, the failures
 classified, versions, balance tables, device evidence, what is open). Numbers behind it: `docs/deep_forging_evidence/`.
@@ -42,7 +42,7 @@ classified, versions, balance tables, device evidence, what is open). Numbers be
 **Next actions.**
 1. Owner: play it. Then the open items at the end of the ledger (Synergy at the top of the band, what the factions
    are weak to, Ember Resin and Grave Dust).
-2. Merge `deep-forging-integration` into the release line together with run-variety: the two share schema 7.
+2. Done 2026-10-11: `main` fast-forwarded to `deep-forging-integration` (run-variety with it) and pushed. No version bump yet: the changelog entries stay under Unreleased.
 3. Delete by hand the half-removed folder `.claude/worktrees/deep-forging-base` in the main checkout (Windows long paths).
 
 ## Guild evolution (2026-10-11, night): built in one run, 0.8.0

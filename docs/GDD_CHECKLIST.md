@@ -216,7 +216,7 @@ Per-task status and evidence: `docs/GUILD_EVOLUTION_PLAN.md`. Ticked = built and
 - [ ] Event cadence scheduler; the other eight named choice scenes
 - [ ] Human playtest of the two gates; phone, large font and TalkBack pass of the new screens
 
-## Deep forging foundation (owner's prompt of 2026-10-11; `docs/DEEP_FORGING_LEDGER.md`, branch `deep-forging-integration` with run-variety merged in, not merged into `main`)
+## Deep forging foundation (owner's prompt of 2026-10-11; `docs/DEEP_FORGING_LEDGER.md`, branch `deep-forging-integration` with run-variety merged in, on `main`)
 Ticked = built and JVM-tested. What was seen on a device is in the ledger.
 - [x] One resolver composes a weapon's fight rules; fight, weapon card, forge outlook, bench and capabilities read it
 - [x] A fight rule for each of the six metals, on weapons forged from now on (`Weapon.craft`); older weapons unchanged
