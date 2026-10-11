@@ -41,7 +41,7 @@ object SiegeFight {
         val cfg = ctx.config.guild
         val state = ctx.factions[faction] ?: return
         val number = ctx.town.siegesSurvived + ctx.town.siegesLost + 1
-        val percent = cfg.siegePercentBase + (cfg.siegePercentPerDay * scenario.siegeDay + cfg.siegePercentPerPressure * state.pressure).toInt() + (cat.rank(ctx.guild!!.rank)?.enemyPercent ?: 0)
+        val percent = GuildOps.ranked(ctx, cfg.siegePercentBase + (cfg.siegePercentPerDay * scenario.siegeDay + cfg.siegePercentPerPressure * state.pressure).toInt())
         val charter = charterSiege(ctx, scenario.siegeDay)
         val warlord = charter || state.pressure >= ctx.config.warlordPressure
         val lead = if (warlord) cat.siegeLeaders.getValue(faction) else cat.siegeElites.getValue(faction)
@@ -49,8 +49,42 @@ object SiegeFight {
         var grunts = cfg.siegeGrunts + (number - 1) / cfg.siegeGruntEvery + (if (scenario.traitId == Depth.MANY_BREACHES) 1 else 0) + (if (cat.rank(ctx.guild!!.rank)?.extraSiegeUnit == true) 1 else 0)
         grunts = grunts.coerceIn(1, cfg.fight.maxActorsPerSide - 1)
         val units = listOf(EnemySpec(lead, if (charter) Fight.pct(percent, cfg.charterWarlordPercent) else percent)) + (0 until grunts).map { EnemySpec(pool[it % pool.size], percent) }
-        ctx.siege = scenario.copy(factionId = faction, plan = units, charter = charter)
+        // What they prepare is drawn with the field (GUILD stream) and kept: the smith reads it for as long as there is to prepare.
+        val prep = cat.preparations.filter { it.factionId == faction }.let { if (it.isEmpty()) null else ctx.rng(RngStream.GUILD).pick(it) }
+        ctx.siege = scenario.copy(factionId = faction, plan = units, charter = charter, prepId = prep?.id)
+        if (prep != null) ctx.emit(EventType.SIEGE_PREPARATION, 7, "Scouts report what the ${ctx.content.faction(faction).name} prepare for day ${scenario.siegeDay}: ${prep.name.lowercase()}. ${prep.description} ${prep.counters.joinToString(" ")}",
+            data = mapOf("prep" to prep.id, "day" to scenario.siegeDay.toString(), "faction" to faction.value))
     }
+
+    private const val TAG_PREP = "prep"
+    private const val TAG_NEMESIS = "nemesis"
+
+    /** The bearer of the smith's weapon when it belongs to the besieger and the weapon is still in enemy hands: it comes to the wall. */
+    private fun nemesisAtWall(ctx: ResolutionContext, scenario: SiegeScenario): Nemesis? =
+        ctx.guild?.nemesis?.takeIf { it.factionId == scenario.factionId && ctx.weapons[it.weaponId]?.location is WeaponLocation.Lost }
+
+    /**
+     * Who comes, as things stand: the stored plan, changed by the preparation while it is unspoiled, and joined by the
+     * nemesis. Pure and drawn from nothing, so the forecast, the sabotage and the night itself read the same field.
+     */
+    fun fieldPlan(ctx: ResolutionContext, scenario: SiegeScenario): List<EnemySpec> {
+        if (scenario.plan.isEmpty()) return emptyList()
+        val max = ctx.config.guild.fight.maxActorsPerSide
+        var units = scenario.plan
+        /** Takes a place in the line: a free one, else the place of the last of the rank and file. */
+        fun seat(spec: EnemySpec) {
+            units = if (units.size < max) units + spec else units.indexOfLast { it.tag == null && it != units.first() }.let { i -> if (i < 0) units else units.filterIndexed { j, _ -> j != i } + spec }
+        }
+        val grunt = units.last().percent
+        GuildOps.catalog(ctx).preparation(scenario.prepId)?.let { prep ->
+            prep.gruntUnit?.let { g -> units = units.mapIndexed { i, e -> if (i == 0) e else e.copy(unitId = g) } }
+            prep.addUnit?.let { seat(EnemySpec(it, grunt, TAG_PREP)) }
+        }
+        nemesisAtWall(ctx, scenario)?.let { seat(EnemySpec(it.unitId, grunt, TAG_NEMESIS)) }
+        return units
+    }
+
+    private fun withStats(c: Combatant, add: Map<com.tinyblacksmith.core.combat.Stat, Int>): Combatant = if (add.isEmpty()) c else c.copy(stats = (c.stats.keys + add.keys).associateWith { (c.stats[it] ?: 0) + (add[it] ?: 0) })
 
     /** What a won sabotage does: the announced trait is spoiled if there is one, else the last of their line does not come. Once a siege. */
     fun sabotage(ctx: ResolutionContext): String {
@@ -58,7 +92,11 @@ object SiegeFight {
         val s = ctx.siege?.takeIf { it.siegeDay == ctx.town.nextSiegeDay } ?: return "There was nothing left to spoil."
         if (s.sabotaged > 0) return "Their preparations were already spoiled."
         val trait = ctx.content.siegeTrait(s.traitId)
-        val text = if (trait != null) {
+        val prep = GuildOps.catalog(ctx).preparation(s.prepId)
+        val text = if (prep != null) {
+            ctx.siege = s.copy(prepId = null, prepSpoiled = prep.id, sabotaged = 1)
+            "Their ${prep.name.lowercase()} is spoiled. It will not come on day ${s.siegeDay}."
+        } else if (trait != null) {
             ctx.siege = s.copy(traitId = null, sabotaged = 1, plan = if (trait.id == Depth.MANY_BREACHES && s.plan.size > 2) s.plan.dropLast(1) else s.plan)
             "Their plan for a ${trait.name} is spoiled: the day ${s.siegeDay} siege will be a plain one."
         } else if (s.plan.size > 1) {
@@ -91,10 +129,15 @@ object SiegeFight {
     }
 
     /** The enemy as it reaches the wall: the plan, each unit less what the watch and militia took from it on the way in. */
-    private fun field(ctx: ResolutionContext, plan: List<EnemySpec>, watch: Double): Pair<List<Combatant>, Int> {
+    private fun field(ctx: ResolutionContext, scenario: SiegeScenario, watch: Double): Pair<List<Combatant>, Int> {
         val combat = ctx.content.combat!!
         val cfg = ctx.config.guild
-        val units = plan.mapIndexed { i, e -> Loadout.enemy(combat.unit(e.unitId), "e${i + 1}", e.percent) }
+        val prep = GuildOps.catalog(ctx).preparation(scenario.prepId)
+        val nemesis = nemesisAtWall(ctx, scenario)
+        val units = fieldPlan(ctx, scenario).mapIndexed { i, e ->
+            val foe = Loadout.enemy(combat.unit(e.unitId), "e${i + 1}", e.percent)
+            withStats(if (e.tag == TAG_NEMESIS && nemesis != null) Stories.armed(ctx, foe, nemesis) else foe, prep?.enemyStats.orEmpty())
+        }
         val total = units.sumOf { it.maxHealth }
         var pool = (watch * cfg.outerHealthPerPoint).roundToInt()
         // The outer line meets the rank and file first, the leader last.
@@ -110,6 +153,8 @@ object SiegeFight {
         val faction: FactionDef?, val plan: List<EnemySpec>, val committed: Boolean, val charter: Boolean, val defenders: List<Pair<Hero, Weapon?>>,
         /** Members who will not be on the wall, and why: away with the party, hurt, held. */
         val missing: List<Pair<Hero, String>>, val watch: Int, val sabotaged: Boolean,
+        /** What the besieger prepares, or what the party spoiled, and the bearer of the smith's weapon if it marches with them. */
+        val prep: com.tinyblacksmith.core.content.SiegePrepDef? = null, val spoiled: com.tinyblacksmith.core.content.SiegePrepDef? = null, val nemesis: Nemesis? = null,
     )
 
     /** What the Guild screen says of the coming siege. Reads only; simulates nothing. */
@@ -129,8 +174,9 @@ object SiegeFight {
             }
             why?.let { hero to it }
         }
-        return Forecast(faction, scenario?.plan.orEmpty(), scenario?.factionId != null, scenario?.charter == true, defenders(ctx, faction), missing,
-            ((ctx.town.militia + ctx.town.armory) * (trait?.watchMultiplier ?: 1.0)).roundToInt(), (scenario?.sabotaged ?: 0) > 0)
+        return Forecast(faction, scenario?.let { fieldPlan(ctx, it) }.orEmpty(), scenario?.factionId != null, scenario?.charter == true, defenders(ctx, faction), missing,
+            ((ctx.town.militia + ctx.town.armory) * (trait?.watchMultiplier ?: 1.0)).roundToInt(), (scenario?.sabotaged ?: 0) > 0,
+            GuildOps.catalog(ctx).preparation(scenario?.prepId), GuildOps.catalog(ctx).preparation(scenario?.prepSpoiled), scenario?.let { nemesisAtWall(ctx, it) })
     }
 
     /** Step 7 of End Day in a guild run. */
@@ -146,15 +192,22 @@ object SiegeFight {
         val trait = ctx.content.siegeTrait(scenario.traitId)
         val combat = ctx.content.combat!!
         val leadUnit = combat.unit(scenario.plan.first().unitId)
+        val cat = GuildOps.catalog(ctx)
+        val prep = cat.preparation(scenario.prepId)
+        val line = fieldPlan(ctx, scenario)
+        val nemesis = nemesisAtWall(ctx, scenario)
+        val nemesisKey = line.indexOfFirst { it.tag == TAG_NEMESIS }.takeIf { it >= 0 && nemesis != null }?.let { "e${it + 1}" }
+        // Who is not there, as the roster stands tonight: said in the report, because it is the smith's own doing.
+        val absent = ctx.guild!!.members.mapNotNull { m -> ctx.heroes[m.heroId]?.takeIf { it.isAlive }?.let { h -> when { m.status == MemberStatus.AWAY -> "${h.fullName} was away with the party."; m.status == MemberStatus.CAPTURED -> "${h.fullName} was in enemy hands."; GuildOps.laidUp(ctx, m) != null -> "${h.fullName} was laid up."; else -> null } } }
         val warlord = leadUnit.id == GuildOps.catalog(ctx).siegeLeaders[factionId]
         val attacker = if (warlord) "${leadUnit.name} and the ${faction.siegeName}" else "the ${faction.siegeName}"
         val watch = (ctx.town.militia + ctx.town.armory) * (trait?.watchMultiplier ?: 1.0)
-        val (enemies, enemyTotal) = field(ctx, scenario.plan, watch)
+        val (enemies, enemyTotal) = field(ctx, scenario, watch)
         val outerTaken = enemyTotal - enemies.sumOf { it.health }
         val outer = if (outerTaken > 0) "The watch and the militia bled them on the way in (${outerTaken * 100 / maxOf(1, enemyTotal)} parts in a hundred of their strength)." else "Nobody met them before the wall."
         val standing = enemies.filter { it.health > 0 }
         val wall = defenders(ctx, faction)
-        val party = wall.map { (h, w) -> GuildOps.fighter(ctx, h, w, Loadout.Field.HOME, wall.map { it.first.id }) }
+        val party = wall.map { (h, w) -> withStats(GuildOps.fighter(ctx, h, w, Loadout.Field.HOME, wall.map { it.first.id }), prep?.partyStats.orEmpty()) }
         val rules = if (trait?.id == Depth.LONG_ASSAULT) cfg.fight.copy(maxRounds = cfg.fight.maxRounds + cfg.fight.maxRounds / 2) else cfg.fight
         val fight = if (party.isNotEmpty() && standing.isNotEmpty())
             Fight.resolve(FightSetup("Siege of Emberfall, day ${ctx.day}", party, standing, GuildOps.relicRules(ctx, GuildOps.relicIds(ctx)), Objective(), Posture.BALANCED, rules, ctx.rng(RngStream.COMBAT).nextLong(), combat.unitById))
@@ -237,7 +290,41 @@ object SiegeFight {
                 ctx.field += FieldResult(h.id, h.fullName, FieldOutcome.HELD_THE_WALL, faction.siegeName, factionId = factionId, eventIds = listOf(event.id))
             }
         }
-        ctx.guild = ctx.guild!!.copy(lastSiege = SiegeReport(ctx.day, wall.map { it.first.id }, fight?.let { Missions.compact(it) }, verdict, forgeDamage, outer), reserved = emptyList())
+        // What decided it, from the night's own record.
+        val notes = ArrayList<String>()
+        cat.preparation(scenario.prepSpoiled)?.let { notes += "Your party had spoiled their ${it.name.lowercase()}. It did not come." }
+        prep?.let { notes += "They came with ${it.name.lowercase()}, as the scouts said. ${it.description}" }
+        notes += absent
+        if (wall.size < cfg.defenders) notes += "Only ${wall.size} of ${cfg.defenders} places on the wall were filled."
+        fight?.actors?.filter { it.side == Side.ENEMY && !it.downed && !it.summoned }?.forEach { a ->
+            val mended = fight.events.count { it.kind == EventKind.HEALED && it.source == a.key && it.target != a.key }
+            if (mended > 0) notes += "${a.name} was still standing at the end and mended the others $mended ${if (mended == 1) "time" else "times"}."
+        }
+        notes += if (forgeDamage > 0) "The forge lost $forgeDamage integrity." else "The forge was not touched."
+        // The lead felled by a defender's own hand is that weapon's deed, and a warlord broken on the wall leaves Heartfire.
+        val beatenOutright = fight?.outcome == FightOutcome.WON
+        if (beatenOutright && (scenario.charter || warlord)) {
+            fight!!.events.firstOrNull { it.kind == EventKind.DOWNED && it.target == "e1" }?.source?.let { key -> wall.firstOrNull { it.first.id.value == key } }?.let { (h, w) ->
+                if (w != null && ctx.weapons[w.id]?.location !is WeaponLocation.Lost) {
+                    val legend = ctx.config.depth.legend
+                    com.tinyblacksmith.core.crafting.Legends.deed(ctx, w.id, if (scenario.charter) legend.renownCharter else legend.renownWarlord, "${h.fullName} felled ${leadUnit.name} with it on the wall of Emberfall.", listOf(h.id.value))
+                    notes += "${h.fullName} felled ${leadUnit.name} with ${w.name}."
+                }
+            }
+            if (warlord) com.tinyblacksmith.core.crafting.Legends.gainHeartfire(ctx, 1, "${leadUnit.name} broke on the wall and left Heartfire behind.")
+        }
+        // The one who carried the smith's weapon came with them. Felled on a wall that held, the weapon is home.
+        if (nemesis != null && nemesisKey != null) {
+            val blade = ctx.weapons[nemesis.weaponId]
+            if (won && fight?.actor(nemesisKey)?.downed == true && blade != null) {
+                ctx.updateWeapon(blade.copy(location = WeaponLocation.Storage))
+                ctx.addWeaponHistory(blade.id, "RECOVERED", "Taken back on the wall from ${nemesis.name}, who had carried it against its own forge.")
+                ctx.emit(EventType.WEAPON_RECOVERED, 7, "${blade.name} is back at the forge. ${nemesis.name} carried it to the wall and fell there.", listOf(blade.id.value), mapOf(WeaponFate.KEY to WeaponFate.RECOVERED.name))
+                Stories.recovered(ctx, blade.id)
+                notes += "${nemesis.name} came carrying ${blade.name} and fell. It is back at the forge."
+            } else if (blade != null) notes += "${nemesis.name} fought on their side with ${blade.name}, a weapon of this forge."
+        }
+        ctx.guild = ctx.guild!!.copy(lastSiege = SiegeReport(ctx.day, wall.map { it.first.id }, fight?.let { Missions.compact(it) }, verdict, forgeDamage, outer, notes), reserved = emptyList())
 
         if (won) {
             ctx.town = ctx.town.copy(siegesSurvived = ctx.town.siegesSurvived + 1)

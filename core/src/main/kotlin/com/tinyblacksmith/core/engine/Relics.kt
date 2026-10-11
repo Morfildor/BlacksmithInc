@@ -51,7 +51,8 @@ object Relics {
     fun offerIfDue(ctx: ResolutionContext) {
         if (ctx.phase == Phase.ENDED || ctx.pendingRelicOffer.isNotEmpty()) return
         val fought = ctx.town.siegesSurvived + ctx.town.siegesLost
-        val key = (listOf(OFFER_START) + ctx.config.depth.relicOfferSieges.filter { it <= fought }.map { "siege$it" }).firstOrNull { it !in ctx.relicOffersMade } ?: return
+        val sieges = if (guildRun(ctx)) ctx.config.guild.relicOfferSieges else ctx.config.depth.relicOfferSieges
+        val key = (listOf(OFFER_START) + sieges.filter { it <= fought }.map { "siege$it" }).firstOrNull { it !in ctx.relicOffersMade } ?: return
         ctx.relicOffersMade += key
         offer(ctx, if (key == OFFER_START) "Choose one relic for your new workshop." else "After the siege, choose a relic for the workshop.")
     }
@@ -63,7 +64,13 @@ object Relics {
         if (pool.isEmpty()) return false
         val rng = ctx.rng(RngStream.ENCOUNTERS)
         val offer = mutableListOf<String>()
-        repeat(minOf(ctx.config.depth.relicOfferSize, pool.size)) { val r = rng.pick(pool); offer += r; pool.remove(r) }
+        // A guild's draft is three kinds of answer when the workshop still lacks one of each: a rule for the party, a tool for the forge, a pact.
+        if (guildRun(ctx)) {
+            val pacts = com.tinyblacksmith.core.content.CombatContent.pacts
+            val kinds = listOf(pool.filter { ctx.content.relic(it)?.effect == RelicEffect.COMBAT && it !in pacts }, pool.filter { ctx.content.relic(it)?.effect != RelicEffect.COMBAT }, pool.filter { it in pacts })
+            for (kind in kinds) if (kind.isNotEmpty() && offer.size < ctx.config.depth.relicOfferSize) { val r = rng.pick(kind); offer += r; pool.remove(r) }
+        }
+        repeat(minOf(ctx.config.depth.relicOfferSize - offer.size, pool.size)) { val r = rng.pick(pool); offer += r; pool.remove(r) }
         ctx.pendingRelicOffer = offer
         ctx.emit(EventType.RELIC_OFFERED, 3, text, data = mapOf("offer" to offer.joinToString(",")))
         return true

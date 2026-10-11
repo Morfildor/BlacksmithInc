@@ -36,7 +36,7 @@ import com.tinyblacksmith.core.shopday.Recognitions
 class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.LaunchContent.catalog, val config: BalanceConfig = BalanceConfig.DEFAULT) {
 
     companion object {
-        const val RULES_VERSION = 5
+        const val RULES_VERSION = 6
 
         /**
          * The rules version that salts every stream seed ([RngState.seeded]). Rules 2 is a number only (a run now has to be
@@ -147,6 +147,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             is Command.RetireAfterMilestone -> guild(state) { Stories.retire(it, command.milestoneId) }
             is Command.ChooseSpeciality -> guild(state) { Stories.chooseBranch(it, command.heroId, command.specialityId) }
             is Command.SetGuildRank -> guild(state) { Stories.setRank(it, command.rank) }
+            is Command.ChooseOpening -> guild(state) { GuildOps.chooseOpening(it, command.openingId) }
         }
     }
 
@@ -197,6 +198,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         Encounters.resolve(ctx, cmd)?.let { return CommandOutcome.Rejected(it) }
         return accept(ctx)
     }
+
+    /** What a Heartfire forging of [cmd] would be: Heartfire held, energy, the quality it needs and the chances at both ends of the roll. Read-only. */
+    fun heartfireOutlook(state: GameState, cmd: Command.Forge): Forge.HeartfireOutlook = Forge.heartfireOutlook(ResolutionContext(state, content, config), cmd)
 
     /** The workshop's relics with where each stands today. Read-only. */
     fun relicViews(state: GameState): List<Relics.View> = Relics.views(ResolutionContext(state, content, config))
@@ -336,7 +340,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // A returned legend's affixes wake under the first hone (GDD 7 "dormant"), and the power they carry with them.
         val woken = weapon.dormantAffixes
         val power = weapon.power + quality / config.powerPerQualityDivisor - weapon.quality / config.powerPerQualityDivisor + woken.sumOf { content.affix(it).power }
-        ctx.updateWeapon(weapon.copy(quality = quality, power = power, rarity = Forge.rarityFor(quality, config), honed = true, condition = 100, affixes = weapon.affixes + woken, dormantAffixes = emptyList()))
+        ctx.updateWeapon(weapon.copy(quality = quality, power = power, rarity = Forge.rarityAfter(weapon, quality, config), honed = true, condition = 100, affixes = weapon.affixes + woken, dormantAffixes = emptyList()))
         val note = if (weapon.honed) "Condition ${weapon.condition} to 100" else "Quality ${weapon.quality} to $quality"
         ctx.addWeaponHistory(weapon.id, "HONED", "Honed. $note.")
         if (woken.isNotEmpty()) ctx.addWeaponHistory(weapon.id, "AWAKENED", "Honing restored dormant properties. ${woken.joinToString(", ") { content.affix(it).name }}.")
@@ -405,6 +409,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             else CommandOutcome.Accepted(state, emptyList(), resolution = null)
         }
         if (state.isEnded) return CommandOutcome.Rejected(GameError.RunEnded)
+        if (state.guild?.openingOffer?.isNotEmpty() == true) return CommandOutcome.Rejected(GameError.OpeningPending)
         val ctx = ResolutionContext(state, content, config)
         val day = ctx.day
         // 1. Lock planning; RNG state is snapshotted implicitly (streams open lazily from the saved state).
@@ -498,7 +503,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.energy = maxOf(0, base - ctx.overworkToday)
         ctx.overworkToday = 0
         val caravanDelayed = ctx.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == ctx.day
-        for ((m, s) in restockedSupplier(ctx.legacy)) ctx.supplierStock[m] = if (caravanDelayed) 0 else s
+        // The supplier's mood (a guild run's answer to the supplier's road) moves every limited material's stock for a few days.
+        val mood = Missions.supplierStockDelta(ctx)
+        for ((m, s) in restockedSupplier(ctx.legacy)) ctx.supplierStock[m] = if (caravanDelayed) 0 else maxOf(0, s + mood)
         // The ore merchant announced last night sells this morning, on top of the restock.
         for ((flag, flagDay) in ctx.worldFlags) if (flagDay == ctx.day && flag.startsWith(WorldEvents.FLAG_ORE_MERCHANT)) {
             val m = MaterialId(flag.removePrefix(WorldEvents.FLAG_ORE_MERCHANT))

@@ -52,6 +52,7 @@ object Battle {
                 ctx.updateWeapon(w.copy(kills = w.kills + 1, victories = w.victories + 1, fame = w.fame + config.combat.expeditionFame + (if (elite) config.eliteFame else 0)))
                 ctx.addWeaponHistory(weapon.id, "VICTORY", "${hero.fullName} ${if (elite) "slew" else "routed"} $encounter.", listOf(hero.id.value))
                 if (elite) com.tinyblacksmith.core.crafting.Forge.entitle(ctx, weapon.id, "Slayer of $encounter")
+                if (elite) com.tinyblacksmith.core.crafting.Legends.deed(ctx, weapon.id, config.depth.legend.renownElite, "${hero.fullName} slew $encounter with it.", listOf(hero.id.value))
                 if (w.kills + 1 >= config.combat.weaponTitleKills) {
                     com.tinyblacksmith.core.crafting.Forge.entitle(ctx, weapon.id, "Bane of the ${faction.name}")
                     ctx.milestone("WEAPON_FIVE_KILLS", "${weapon.name} earned a title after five victories.")
@@ -333,7 +334,10 @@ object Battle {
                 ctx.earn(IncomeKind.TRIBUTE, config.warlordTribute)
                 ctx.emit(EventType.MILESTONE, 6, "${faction.warlordName} was defeated at the walls. The town paid you ${config.warlordTribute} gold.", data = mapOf("tribute" to config.warlordTribute.toString()))
                 ctx.milestone("WARLORD_DEFEATED", "Emberfall defeated a warlord at the walls.")
+                for ((h, w) in champions) if (w != null) com.tinyblacksmith.core.crafting.Legends.deed(ctx, w.id, config.depth.legend.renownWarlord, "${h.fullName} held the wall with it against ${faction.warlordName}.", listOf(h.id.value))
             }
+            // What a held wall leaves in the coals: the classic run's source of Heartfire, from the siege named in the config on.
+            if (ctx.town.siegesSurvived + ctx.town.siegesLost >= config.depth.legend.classicSiegeHeartfireFrom) com.tinyblacksmith.core.crafting.Legends.gainHeartfire(ctx, 1, "The wall held and something of the siege stayed in the coals.")
             ctx.milestone("SIEGE_SURVIVED", "Emberfall survived its first siege.")
             offerBlessing(ctx)
         } else {
@@ -384,12 +388,16 @@ object Battle {
 
     fun warnOfSiege(ctx: ResolutionContext) {
         val daysLeft = ctx.town.nextSiegeDay - ctx.day
-        if (daysLeft in 1..ctx.config.combat.siegeWarningDays) {
+        // A guild run commits the besieger earlier, so its preparation can be read, answered or spoiled in time.
+        val commitDays = if (ctx.guild != null) maxOf(ctx.config.combat.siegeWarningDays, ctx.config.guild.siegeCommitDays) else ctx.config.combat.siegeWarningDays
+        if (daysLeft in 1..commitDays) {
             // The first warning names the besieger for good: what the smith prepares against is what comes.
             if (ctx.config.depth.commitBesieger && ctx.siege?.takeIf { it.siegeDay == ctx.town.nextSiegeDay }?.factionId == null) leadingFaction(ctx)?.let {
                 ctx.siege = (ctx.siege?.takeIf { s -> s.siegeDay == ctx.town.nextSiegeDay } ?: SiegeScenario(ctx.town.nextSiegeDay)).copy(factionId = it.id)
             }
             com.tinyblacksmith.core.guild.SiegeFight.plan(ctx)   // a guild run: the committed besieger's field is drawn now and kept
+        }
+        if (daysLeft in 1..ctx.config.combat.siegeWarningDays) {
             val f = besieger(ctx) ?: return
             val def = ctx.content.faction(f.id)
             val led = if (def.warlordName != null && f.pressure >= ctx.config.warlordPressure) " ${def.warlordName} leads them." else ""

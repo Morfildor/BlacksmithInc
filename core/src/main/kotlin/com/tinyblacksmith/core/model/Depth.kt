@@ -45,7 +45,7 @@ data class EncounterRecord(val instanceId: String, val defId: String, val day: I
 @Serializable
 data class ActiveRelic(val id: String, val progress: Int = 0, val families: List<WeaponFamilyId> = emptyList())
 
-enum class ConsequenceKind { WALL_PLEDGE, WAGER, WATCH_BOUNTY, INSURANCE }
+enum class ConsequenceKind { WALL_PLEDGE, WAGER, WATCH_BOUNTY, INSURANCE, SUPPLIER_GRATEFUL, SUPPLIER_SHAKEN }
 
 /** Something a choice set in motion, read again on [dueDay] against the run as it then is. */
 @Serializable
@@ -70,4 +70,7 @@ data class SiegeScenario(
     val sabotaged: Int = 0,
     /** The charter warlord leads this one. */
     val charter: Boolean = false,
+    /** Rules 6, a guild run: what the besieger is preparing (`GuildContent.preparations`), drawn with the plan. [prepSpoiled] names one the party spoiled. */
+    val prepId: String? = null,
+    val prepSpoiled: String? = null,
 )

@@ -128,7 +128,7 @@ internal object EncounterCatalog {
                 val flaw = rng.pick(content.affixes.filter { it.kind == AffixKind.FLAW })
                 fun blade(flaws: List<AffixId>) = Weapon(
                     id = WeaponId("merchant"), name = Forge.weaponName(content, family.id, core.id, listOf(affix.id)), familyId = family.id, coreId = core.id, augmentId = augment.id,
-                    mode = ForgeMode.QUICK, risk = Risk.BALANCED, quality = quality, rarity = Forge.rarityFor(quality, config),
+                    mode = ForgeMode.QUICK, risk = Risk.BALANCED, quality = quality, rarity = Forge.forgedRarity(quality, config),
                     power = Forge.powerOf(content, config, family.id, core.id, quality, listOf(affix.id) + flaws), element = augment.element,
                     affixes = listOf(affix.id), flaws = flaws, location = WeaponLocation.Storage, forgedEra = ctx.era, forgedDay = ctx.day,
                 )

@@ -51,7 +51,9 @@ data class RecruitCandidate(val heroId: HeroId, val fee: Int, val sharePercent: 
 enum class Danger { SAFE, DANGEROUS, LETHAL }
 
 @Serializable
-data class EnemySpec(val unitId: String, val percent: Int = 100)
+data class EnemySpec(val unitId: String, val percent: Int = 100,
+    /** Who this one is beyond its unit: "nemesis" carries the smith's own weapon, "prep" came with the besieger's preparation. */
+    val tag: String? = null)
 
 /**
  * What a won stage brings. [suppression] lowers the faction's pressure; [sabotage] is what it does to the coming siege;
@@ -68,9 +70,12 @@ data class Reward(
     val relicOffer: Boolean = false,
     val weaponId: WeaponId? = null,
     val captiveId: HeroId? = null,
+    /** Rules 6: Heartfire for the forge, and the supplier's thanks (more limited stock for a few days). */
+    val heartfire: Int = 0,
+    val supplier: Boolean = false,
 ) {
     operator fun plus(o: Reward) = Reward(gold + o.gold, (materials.keys + o.materials.keys).associateWith { (materials[it] ?: 0) + (o.materials[it] ?: 0) }, suppression + o.suppression, integrity + o.integrity,
-        militia + o.militia, sabotage || o.sabotage, relicOffer || o.relicOffer, weaponId ?: o.weaponId, captiveId ?: o.captiveId)
+        militia + o.militia, sabotage || o.sabotage, relicOffer || o.relicOffer, weaponId ?: o.weaponId, captiveId ?: o.captiveId, heartfire + o.heartfire, supplier || o.supplier)
     val isEmpty: Boolean get() = this == Reward()
 }
 
@@ -100,7 +105,15 @@ data class MissionOffer(
     val reason: String? = null,
     val subjectHeroId: HeroId? = null,
     val subjectWeaponId: WeaponId? = null,
+    /** Rules 6: what is different about this one (`GuildContent.modifiers`), drawn when it was posted. */
+    val modifierId: String? = null,
+    /** What happens if nobody takes it before it leaves the board: "supplier" means the supplier is left to the road. */
+    val lapse: String? = null,
 )
+
+/** One opening package as it was drawn on the first morning: who would sign and with which defining trait. Looking at it draws nothing. */
+@Serializable
+data class OpeningOffer(val defId: String, val heroIds: List<HeroId>, val traitIds: List<String>)
 
 /** The party the smith has put together this morning; End Day sends it. Replaced whole by each `PlanDeployment`. */
 @Serializable
@@ -170,7 +183,9 @@ data class RunMilestoneClaim(val id: String, val day: Int, val claimed: Boolean 
 
 /** The siege of one evening in a guild run, for the report. */
 @Serializable
-data class SiegeReport(val day: Int, val defenders: List<HeroId>, val fight: FightResult?, val verdict: SiegeVerdict, val forgeDamage: Int, val outerLine: String = "")
+data class SiegeReport(val day: Int, val defenders: List<HeroId>, val fight: FightResult?, val verdict: SiegeVerdict, val forgeDamage: Int, val outerLine: String = "",
+    /** What decided it, each line from the siege's own record: the preparation that stood or was spoiled, who was not on the wall, what the fight shows. */
+    val notes: List<String> = emptyList())
 
 enum class SiegeVerdict { HELD, HELD_AT_A_COST, BREACHED }
 
@@ -203,6 +218,11 @@ data class GuildRunState(
     val completed: Map<String, Int> = emptyMap(),
     /** The run ended by the smith's own choice after a milestone, not by the forge falling. */
     val retired: Boolean = false,
+    /** Rules 6: the opening packages waiting for the smith's choice (empty once chosen, and in a run from before them), and the one taken. */
+    val openingOffer: List<OpeningOffer> = emptyList(),
+    val openingId: String? = null,
+    /** The days of the last few supply runs: a road worked often carries less. */
+    val supplyDays: List<Int> = emptyList(),
 ) {
     fun member(id: HeroId): GuildMember? = members.firstOrNull { it.heroId == id }
     fun isMember(id: HeroId): Boolean = members.any { it.heroId == id }

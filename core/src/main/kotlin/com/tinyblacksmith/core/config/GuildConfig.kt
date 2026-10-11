@@ -102,8 +102,27 @@ data class GuildConfig(
     // Stories (spec 12)
     val rivalFirstDay: Int = 6,
     val rivalMoveEveryDays: Int = 4,
-    val nemesisPercent: Int = 110,
+    val nemesisPercent: Int = 100,
     val bondMissions: Int = 3,
     val lawFirstDay: Int = 8,
     val lawChance: Double = 0.25,
+
+    // v12: run variety (docs/RUN_VARIETY_LEDGER.md)
+    /** Opening packages offered on the first morning. */
+    val openingsOffered: Int = 3,
+    /** The besieger, its field and its preparation are fixed this many days before the siege. */
+    val siegeCommitDays: Int = 4,
+    /** Sabotage and the siege's opportunity stay on the board for this many mornings. */
+    val siegeJobMornings: Int = 2,
+    /** A relic is offered after the siege of each of these numbers in a guild run. */
+    val relicOfferSieges: List<Int> = listOf(1, 2, 3),
+    /** A drawn contract is posted with a modifier this often. */
+    val modifierChance: Double = 0.5,
+    /** A supply road worked this many times in the last [supplyMemoryDays] days pays this percent of the usual. */
+    val supplyMemoryDays: Int = 4,
+    val supplyThinPercent: List<Int> = listOf(100, 70, 50, 35),
+    /** How long the supplier's thanks or the supplier's fright lasts, and what it does to each limited material's daily stock. */
+    val supplierDays: Int = 5,
+    val supplierGratefulStock: Int = 1,
+    val supplierShakenStock: Int = 1,
 )

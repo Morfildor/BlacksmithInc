@@ -196,7 +196,7 @@ object Stories {
             if (ctx.day >= r.nextMoveDay) {
                 // What the smith has already planned for today is the smith's: the rival never takes an accepted contract.
                 val planned = ctx.guild!!.planned?.offerId
-                val open = ctx.guild!!.offers.filter { o -> o.id != planned && o.subjectHeroId == null && o.subjectWeaponId == null && cat.mission(o.defId).let { it.weight > 0.0 && it.archetype != MissionArchetype.SUPPLY } }
+                val open = ctx.guild!!.offers.filter { o -> o.id != planned && o.subjectHeroId == null && o.subjectWeaponId == null && cat.mission(o.defId).let { it.weight > 0.0 && it.archetype != MissionArchetype.SUPPLY && it.archetype != MissionArchetype.SABOTAGE } }
                 val pick = open.firstOrNull { cat.mission(it.defId).archetype.name == r.wants } ?: open.minByOrNull { it.postedDay }
                 val line = pick?.let { Missions.title(ctx, it) }
                 update(ctx) { it.copy(offers = it.offers.filter { o -> o.id != pick?.id }, rival = r.copy(nextMoveDay = ctx.day + cfg.rivalMoveEveryDays, taken = (r.taken + listOfNotNull(line?.let { l -> "Day ${ctx.day}: $l" })).takeLast(5))) }

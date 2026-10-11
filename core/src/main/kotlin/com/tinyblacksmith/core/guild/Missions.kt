@@ -51,9 +51,11 @@ object Missions {
             o.expiresDay >= ctx.day && cat.missionById[o.defId] != null &&
                 (o.subjectHeroId == null || g.captives.any { it.heroId == o.subjectHeroId }) && (o.subjectWeaponId == null || g.nemesis?.weaponId == o.subjectWeaponId)
         }
+        // A supplier nobody went with was left to the road: the answer was the smith's, and so is what follows.
+        if (g.offers.any { it.lapse == GuildContent.LAPSE_SUPPLIER && it.expiresDay < ctx.day }) supplier(ctx, false, "Nobody went with the supplier.")
         var serial = g.nextMissionSerial
-        fun post(def: MissionDef, faction: FactionId, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = ctx.day + def.lifeDays - 1) {
-            offers = offers + generate(ctx, def, faction, rng, "m${serial++}", hero, weapon, reason, expires)
+        fun post(def: MissionDef, faction: FactionId, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = ctx.day + def.lifeDays - 1, modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null) {
+            offers = offers + generate(ctx, def, faction, rng, "m${serial++}", hero, weapon, reason, expires, modifier, lapse)
         }
         val factions = ctx.factions.values.sortedBy { it.id.value }
         fun anyFaction(): FactionId = rng.pickWeighted(factions.map { it.id to (it.pressure + 10).toDouble() })
@@ -68,15 +70,33 @@ object Missions {
         val untilSiege = ctx.town.nextSiegeDay - ctx.day
         val charter = GuildOps.charter(ctx)
         fun open(def: MissionDef) = ctx.day >= def.minDay || (charter?.earlyDanger == true)
+        // The siege's jobs: once its besieger is committed, the sabotage and one opportunity are posted together and leave together.
+        // Each takes two days and there is one party, so taking one lets the other go.
+        val scenario = ctx.siege?.takeIf { it.siegeDay == ctx.town.nextSiegeDay && it.factionId != null }
+        val jobsKey = "siegeJobs"
+        var jobsPosted = false
         cat.missions.firstOrNull { it.archetype == MissionArchetype.SABOTAGE }?.let { def ->
-            if (untilSiege in 0..cfg.sabotageWindowDays && open(def) && (ctx.siege?.sabotaged ?: 0) == 0 && offers.none { it.defId == def.id }) post(def, Battle.besieger(ctx)?.id ?: anyFaction())
+            // The party has to be home on the siege's morning: the last day to leave on a two-day job is two days before it.
+            val last = minOf(ctx.day + cfg.siegeJobMornings - 1, ctx.town.nextSiegeDay - def.days)
+            if (scenario != null && g.completed[jobsKey] != scenario.siegeDay && scenario.sabotaged == 0 && last >= ctx.day && open(def)) {
+                jobsPosted = true
+                val prep = cat.preparation(scenario.prepId)
+                val gone = "Leaves the board after day $last."
+                post(if (prep != null) def.copy(stages = listOf(def.stages.first(), prep.sabotage)) else def, scenario.factionId!!, reason = (prep?.let { "${it.sabotageBrief} " } ?: "") + gone, expires = last)
+                val chances = cat.missions.filter { it.archetype == MissionArchetype.OPPORTUNITY }
+                if (chances.isNotEmpty()) rng.pick(chances).let { chance ->
+                    post(chance, scenario.factionId, reason = "$gone One party cannot do this and the sabotage.", expires = last, lapse = GuildContent.LAPSE_SUPPLIER.takeIf { chance.stages.any { s -> s.supplier } })
+                }
+            }
         }
         val slots = cfg.offersOnBoard + (charter?.extraOffers ?: 0)
         fun ordinary() = offers.count { !special(it.defId) && it.defId != GuildContent.WALL_WORK }
         while (ordinary() < slots) {
             val pool = cat.missions.filter { drawn(it) && it.archetype != MissionArchetype.SUPPLY && it.archetype != MissionArchetype.SABOTAGE && open(it) && offers.none { o -> o.defId == it.id } }
             if (pool.isEmpty()) break
-            post(rng.pickWeighted(pool.map { it to it.weight }), anyFaction())
+            val def = rng.pickWeighted(pool.map { it to it.weight })
+            val faction = anyFaction()
+            post(def, faction, modifier = if (cat.modifiers.isNotEmpty() && rng.chance(cfg.modifierChance)) rng.pick(cat.modifiers) else null)
         }
         for (c in g.captives) if (offers.none { it.subjectHeroId == c.heroId }) cat.missionById[GuildContent.RESCUE]?.let { def ->
             val hero = ctx.heroes[c.heroId] ?: return@let
@@ -86,8 +106,27 @@ object Missions {
         g.nemesis?.let { n -> if (offers.none { it.subjectWeaponId == n.weaponId }) cat.missionById[GuildContent.RECOVERY]?.let { def ->
             ctx.weapons[n.weaponId]?.let { blade -> post(def, n.factionId, weapon = n.weaponId, reason = "${n.name} carries ${blade.name}, a weapon of this forge.") }
         } }
-        update(ctx) { it.copy(offers = offers, nextMissionSerial = serial) }
+        update(ctx) { it.copy(offers = offers, nextMissionSerial = serial, completed = if (jobsPosted) it.completed + (jobsKey to scenario!!.siegeDay) else it.completed) }
     }
+
+    /** The supplier's answer to what the guild did: more of every limited material each morning for a few days, or less. One mood at a time. */
+    fun supplier(ctx: ResolutionContext, grateful: Boolean, why: String): String {
+        val cfg = ctx.config.guild
+        ctx.consequences.removeAll { it.kind == ConsequenceKind.SUPPLIER_GRATEFUL || it.kind == ConsequenceKind.SUPPLIER_SHAKEN }
+        val until = ctx.day + cfg.supplierDays
+        ctx.consequences += ScheduledConsequence("supplier-${ctx.day}", if (grateful) ConsequenceKind.SUPPLIER_GRATEFUL else ConsequenceKind.SUPPLIER_SHAKEN, until)
+        val text = if (grateful) "$why Until day $until the supplier brings ${cfg.supplierGratefulStock} more of every limited material each morning."
+            else "$why Until day $until the supplier brings ${cfg.supplierShakenStock} fewer of every limited material each morning."
+        ctx.emit(EventType.SUPPLIER_NEWS, 6, text, data = mapOf("grateful" to grateful.toString(), "until" to until.toString()))
+        return text
+    }
+
+    /** What the supplier's mood adds to (or takes from) a limited material's stock this morning. */
+    fun supplierStockDelta(ctx: ResolutionContext): Int = ctx.consequences.firstOrNull { (it.kind == ConsequenceKind.SUPPLIER_GRATEFUL || it.kind == ConsequenceKind.SUPPLIER_SHAKEN) && ctx.day <= it.dueDay }
+        ?.let { if (it.kind == ConsequenceKind.SUPPLIER_GRATEFUL) ctx.config.guild.supplierGratefulStock else -ctx.config.guild.supplierShakenStock } ?: 0
+
+    /** Supply runs in the last `supplyMemoryDays` days: a road worked often carries less. */
+    fun recentSupplyRuns(ctx: ResolutionContext): Int = ctx.guild?.supplyDays.orEmpty().count { ctx.day - it < ctx.config.guild.supplyMemoryDays }
 
     private fun drawMaterials(ctx: ResolutionContext, rng: Rng, draw: MaterialDraw?): Map<MaterialId, Int> {
         if (draw == null) return emptyMap()
@@ -98,23 +137,30 @@ object Missions {
         return got.toSortedMap(compareBy { it.value })
     }
 
-    fun generate(ctx: ResolutionContext, def: MissionDef, faction: FactionId, rng: Rng, id: String, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = ctx.day + maxOf(1, def.lifeDays + (GuildOps.catalog(ctx).rank(ctx.guild?.rank ?: 0)?.offerLifeDelta ?: 0)) - 1): MissionOffer {
+    fun generate(ctx: ResolutionContext, def: MissionDef, faction: FactionId, rng: Rng, id: String, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = ctx.day + maxOf(1, def.lifeDays + (GuildOps.catalog(ctx).rank(ctx.guild?.rank ?: 0)?.offerLifeDelta ?: 0)) - 1,
+        modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null): MissionOffer {
         val cfg = ctx.config.guild
         val pressure = ctx.factions[faction]?.pressure ?: 0
-        val rank = GuildOps.catalog(ctx).rank(ctx.guild?.rank ?: 0)
-        val base = cfg.enemyPercentBase + (cfg.enemyPercentPerDay * ctx.day + cfg.enemyPercentPerPressure * pressure).toInt() + (rank?.enemyPercent ?: 0)
+        val base = GuildOps.ranked(ctx, cfg.enemyPercentBase + (cfg.enemyPercentPerDay * ctx.day + cfg.enemyPercentPerPressure * pressure).toInt())
+        // Safe work is a safety net: it does not grow richer with the day, and a road worked often carries less.
+        val supply = def.archetype == MissionArchetype.SUPPLY
+        val worked = if (supply) recentSupplyRuns(ctx) else 0
+        val thin = cfg.supplyThinPercent.getOrElse(worked) { cfg.supplyThinPercent.lastOrNull() ?: 100 }
         val stages = def.stages.mapIndexed { i, s ->
             val percent = Fight.pct(base, s.percent)
-            val gold = if (s.goldMax > 0) (rng.nextInt(s.goldMin, s.goldMax) * (1.0 + cfg.rewardPercentPerDay * ctx.day / 100.0)).toInt() else 0
+            val drawn = if (s.goldMax > 0) rng.nextInt(s.goldMin, s.goldMax) else 0
+            val gold = if (supply) drawn * thin / 100 else (drawn * (1.0 + cfg.rewardPercentPerDay * ctx.day / 100.0)).toInt() * (modifier?.goldPercent ?: 100) / 100
             val last = i == def.stages.lastIndex
+            val roster = s.rosters[faction].orEmpty().let { r -> if (r.isEmpty()) r else r + listOfNotNull(modifier?.addUnit?.get(faction)) }
             MissionStage(
-                enemies = s.rosters[faction].orEmpty().map { EnemySpec(it, percent) },
+                enemies = roster.map { EnemySpec(it, percent) },
                 objective = Objective(s.objective, s.rounds, s.protectUnitId?.let { "protected" }), danger = s.danger, seed = rng.nextLong(),
-                reward = Reward(gold, drawMaterials(ctx, rng, s.materials), s.suppression, s.integrity, s.militia, s.sabotage, s.relicOffer, weapon.takeIf { last }, hero.takeIf { last }),
+                reward = Reward(gold, drawMaterials(ctx, rng, s.materials), s.suppression, s.integrity, s.militia, s.sabotage, s.relicOffer, weapon.takeIf { last }, hero.takeIf { last }, s.heartfire, s.supplier),
                 protectUnitId = s.protectUnitId,
             )
         }
-        return MissionOffer(id, def.id, faction, ctx.day, if (def.id == GuildContent.WALL_WORK) Int.MAX_VALUE else expires, def.days, def.fee, stages, def.optionalPush, reason, hero, weapon)
+        return MissionOffer(id, def.id, faction, ctx.day, if (def.id == GuildContent.WALL_WORK) Int.MAX_VALUE else expires, def.days, def.fee, stages, def.optionalPush,
+            reason ?: "The road was worked $worked ${if (worked == 1) "time" else "times"} in the last ${cfg.supplyMemoryDays} days. This wagon is lighter.".takeIf { worked > 0 }, hero, weapon, modifier?.id, lapse)
     }
 
     // ---- planning ----
@@ -173,6 +219,7 @@ object Missions {
         }
         val gear = party.mapNotNull { id -> GuildOps.weaponOf(ctx, id)?.let { id to it.id } }.toMap()
         val instance = MissionInstance(offer.id, offer, party, gear, plan.posture, GuildOps.relicIds(ctx), ctx.day, ctx.day + offer.days)
+        if (def.archetype == MissionArchetype.SUPPLY) update(ctx) { it.copy(supplyDays = (it.supplyDays + ctx.day).takeLast(ctx.config.guild.supplyMemoryDays * 2)) }
         update(ctx) { it.copy(mission = instance, offers = it.offers.filter { o -> o.id != offer.id }, members = it.members.map { m -> if (m.heroId in party) m.copy(status = MemberStatus.AWAY, missions = m.missions + 1) else m }) }
         val names = party.map { ctx.hero(it).fullName }
         ctx.emit(EventType.MISSION_DEPARTED, 4, "${names.joinToString(", ")} left for ${title(ctx, offer)}." + (if (offer.fee > 0) " The forge had paid ${offer.fee} gold to send them." else ""), party.map { it.value },
@@ -192,7 +239,8 @@ object Missions {
         if (stage.enemies.isEmpty()) return null
         val law = GuildOps.catalog(ctx).law(ctx.guild?.law?.takeIf { ctx.day in it.fromDay until it.untilDay }?.id)
         fun lawStats(c: Combatant, add: Map<com.tinyblacksmith.core.combat.Stat, Int>) = if (add.isEmpty()) c else c.copy(stats = (c.stats.keys + add.keys).associateWith { (c.stats[it] ?: 0) + (add[it] ?: 0) })
-        val party = m.party.mapNotNull { id -> ctx.heroes[id]?.takeIf { it.isAlive } }.map { h -> lawStats(GuildOps.fighter(ctx, h, m.gear[h.id]?.let { ctx.weapons[it] }, Loadout.Field.ROAD, m.party), law?.partyStats.orEmpty()) } +
+        val modifier = GuildOps.catalog(ctx).modifier(m.offer.modifierId)
+        val party = m.party.mapNotNull { id -> ctx.heroes[id]?.takeIf { it.isAlive } }.map { h -> lawStats(lawStats(GuildOps.fighter(ctx, h, m.gear[h.id]?.let { ctx.weapons[it] }, Loadout.Field.ROAD, m.party), law?.partyStats.orEmpty()), modifier?.partyStats.orEmpty()) } +
             listOfNotNull(stage.protectUnitId?.let { Loadout.enemy(combat.unit(it), "protected").copy(side = Side.PARTY) })
         if (party.none { it.key != "protected" }) return null
         val nemesis = ctx.guild?.nemesis?.takeIf { m.offer.subjectWeaponId == it.weaponId }
@@ -201,7 +249,7 @@ object Missions {
             val foe = Loadout.enemy(unit, "e${i + 1}", e.percent)
             // The one who carries the smith's blade carries what it does, too: the rules of that blade this side of the field can use.
             if (i == 0 && nemesis != null && stageIndex == m.offer.stages.lastIndex) Stories.armed(ctx, foe, nemesis) else foe
-        }.map { lawStats(it, law?.enemyStats.orEmpty()) }
+        }.map { lawStats(lawStats(it, law?.enemyStats.orEmpty()), modifier?.enemyStats.orEmpty()) }
         return FightSetup(title(ctx, m.offer).replaceFirstChar { it.uppercase() }, party, enemies, GuildOps.relicRules(ctx, m.relics), stage.objective, m.posture, ctx.config.guild.fight, stage.seed, combat.unitById)
     }
 
@@ -239,6 +287,14 @@ object Missions {
         }
         grant(ctx, m, gained, lines)
         if (outcome == MissionOutcome.LOST) losses(ctx, m, fight!!, stage.danger, lines)
+        if (outcome != MissionOutcome.WON && m.offer.lapse == GuildContent.LAPSE_SUPPLIER) lines += supplier(ctx, false, "The supplier's cart was lost.")
+        // A deed: the weapon that did most of the work in a rescue, a recovery or a deep hall, from the fight's own record.
+        if (outcome == MissionOutcome.WON && fight != null && m.stage == m.offer.stages.lastIndex && (def.archetype == MissionArchetype.RESCUE || def.archetype == MissionArchetype.RECOVERY || stage.danger == Danger.LETHAL)) {
+            m.party.filter { ctx.heroes[it]?.isAlive == true && m.gear[it]?.let { w -> ctx.weapons[w]?.isLoaned } == true }
+                .maxByOrNull { id -> fight.events.count { e -> e.kind == EventKind.DOWNED && e.source == id.value } }?.let { id ->
+                    com.tinyblacksmith.core.crafting.Legends.deed(ctx, m.gear.getValue(id), ctx.config.depth.legend.renownDangerous, "${ctx.hero(id).fullName} carried it through ${title(ctx, m.offer)}.", listOf(id.value))
+                }
+        }
         val continues = outcome == MissionOutcome.WON && m.stage + 1 < m.offer.stages.size
         val after = m.copy(stage = m.stage + 1, secured = m.secured + gained, outcome = if (continues) null else outcome, returnDay = if (continues) m.returnDay else ctx.day + 1)
         update(ctx) { it.copy(mission = after) }
@@ -330,6 +386,11 @@ object Missions {
         }
         if (r.militia > 0) ctx.town = ctx.town.copy(militia = minOf(ctx.config.militiaMax, ctx.town.militia + r.militia))
         if (r.sabotage) lines += SiegeFight.sabotage(ctx)
+        if (r.heartfire > 0) {
+            com.tinyblacksmith.core.crafting.Legends.gainHeartfire(ctx, r.heartfire, "The party brought Heartfire back from ${title(ctx, m.offer)}.")
+            lines += "Heartfire came back with them. The forge holds ${ctx.heartfire}."
+        }
+        if (r.supplier) lines += supplier(ctx, true, "The supplier got through.")
         if (r.relicOffer && com.tinyblacksmith.core.engine.Relics.offer(ctx, "The party brought something out of the deep hall: the smith may take a relic.")) lines += "A relic came back with them."
         r.weaponId?.let { id -> ctx.weapons[id]?.let { w ->
             ctx.updateWeapon(w.copy(location = WeaponLocation.Storage))

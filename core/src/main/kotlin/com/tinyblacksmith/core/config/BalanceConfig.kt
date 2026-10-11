@@ -513,6 +513,7 @@ data class LegacyTracksConfig(
         "CHAMPION_ARMED" to 2,
         "EPIC_FORGED" to 1,
         "LEGENDARY_FORGED" to 3,
+        "LEGEND_EARNED" to 3,
         "HERO_LEVEL_5" to 1,
         "WEAPON_FIVE_KILLS" to 2,
         "ELITE_SLAIN" to 1,

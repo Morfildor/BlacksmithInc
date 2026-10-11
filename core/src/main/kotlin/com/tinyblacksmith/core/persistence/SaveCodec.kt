@@ -23,7 +23,7 @@ import kotlinx.serialization.json.jsonObject
 data class SaveEnvelope(val schemaVersion: Int, val payload: String)
 
 object SaveCodec {
-    const val SCHEMA_VERSION = 6
+    const val SCHEMA_VERSION = 7
 
     val json: Json = Json {
         encodeDefaults = true
@@ -82,8 +82,13 @@ object SaveCodec {
         // the guild itself: `GameState.guild`, the `Loaned` weapon location, the siege's plan, the day's mission and siege
         // reports. All defaulted. A run written before it has no guild and never grows one: it stays a classic run.
         5 to { seedStream(it, RngStream.GUILD) },
+        // Schema 7 (rules 6): Heartfire, a weapon's legend origin and renown, the opening packages, a siege's preparation, a
+        // contract's modifier, the supplier's mood. All defaulted and nothing stored is converted: a weapon keeps the rarity
+        // it has, a stored siege plan and a posted contract are played as stored. The number rises so that an older build
+        // refuses a save it would read wrongly.
+        6 to { it },
     )
-    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 4 to { it }, 5 to { it }, 3 to { json.parseToJsonElement(it).jsonObject.let { l -> identifyLineages(l).takeIf { n -> n != l }?.toString() ?: it } })
+    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 4 to { it }, 5 to { it }, 6 to { it }, 3 to { json.parseToJsonElement(it).jsonObject.let { l -> identifyLineages(l).takeIf { n -> n != l }?.toString() ?: it } })
 
     private fun text(o: JsonObject, key: String): String? = (o[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
 

@@ -40,7 +40,7 @@ data class GuildRunStats(
     val income: Map<IncomeKind, Int> = emptyMap(), val spent: Int = 0, val overworkDays: Int = 0, val recipes: Int = 0,
 )
 
-class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: String = GuildContent.TOWNS_LAST_HOPE, val horizon: Int = 30) {
+class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: String = GuildContent.TOWNS_LAST_HOPE, val horizon: Int = 30, val opening: String? = null) {
     private val content = engine.content
     private val cfg = engine.config
     private val guildCat = content.guild!!
@@ -66,6 +66,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
 
     fun play(seed: Long, legacy: LegacyProfile = LegacyProfile(), onDay: (GameState) -> Unit = {}): Pair<GuildRunStats, GameState> {
         var s = engine.newRun(legacy, seed, charterId = charterId)
+        s.guild?.openingOffer?.let { offer -> if (offer.isNotEmpty()) s = s.send(Command.ChooseOpening((opening?.let { want -> offer.firstOrNull { it.defId == want } } ?: offer.first()).defId)) }
         while (!s.isEnded && s.day <= horizon) {
             s = planDay(s)
             onDay(s)

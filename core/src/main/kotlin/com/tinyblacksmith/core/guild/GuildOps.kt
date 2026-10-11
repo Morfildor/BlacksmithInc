@@ -77,6 +77,9 @@ object GuildOps {
         )
     }
 
+    /** An enemy's strength under the guild's rank: a rank's percent is of what the enemy would be, not points on top (rules 6). One helper for contracts, sieges and forecasts. */
+    fun ranked(ctx: ResolutionContext, percent: Int): Int = com.tinyblacksmith.core.combat.Fight.pct(percent, 100 + (catalog(ctx).rank(ctx.guild?.rank ?: 0)?.enemyPercent ?: 0))
+
     // ---- the start of a guild run ----
 
     /**
@@ -93,16 +96,69 @@ object GuildOps {
         ctx.town = ctx.town.copy(militia = maxOf(0, ctx.town.militia + charter.militiaDelta))
         ctx.reputation += charter.reputationDelta
         charter.materials.forEach { (m, n) -> ctx.materials[m] = (ctx.materials[m] ?: 0) + n }
-        val taken = HashSet<HeroId>()
-        for (cls in charter.startClasses) {
-            val hero = ctx.aliveHeroes().firstOrNull { it.classId == cls && it.id !in taken } ?: Heroes.generate(ctx, rng, null, listOf(ctx.content.heroClass(cls))).also { ctx.updateHero(it) }
-            taken += hero.id
-            val trait = rng.pick(cat.traits.filter { t -> ctx.guild!!.members.none { it.traitId == t.id } })
-            update(ctx) { it.copy(members = it.members + GuildMember(hero.id, ctx.day, 0, ctx.config.guild.memberSharePercent + trait.shareDelta, trait.id)) }
+        val heroes = ArrayList<Hero>()
+        for (cls in charter.startClasses) heroes += ctx.aliveHeroes().firstOrNull { h -> h.classId == cls && heroes.none { it.id == h.id } } ?: Heroes.generate(ctx, rng, null, listOf(ctx.content.heroClass(cls))).also { ctx.updateHero(it) }
+        /** The defining trait of each of [heroes] under [opening]: the one it names for their class, else one drawn that nobody else has. */
+        fun traitsFor(opening: com.tinyblacksmith.core.content.OpeningDef?): List<String> {
+            val named = heroes.map { opening?.traits?.get(it.classId) }
+            val used = named.filterNotNull().toMutableList()
+            return named.map { n -> n ?: rng.pick(cat.traits.filter { it.id !in used }).id.also { used += it } }
         }
+        val pool = cat.openings.filter { charterId in it.charters }.toMutableList()
+        if (pool.isEmpty()) {
+            // A catalog without openings: the two sign as they did under rules 5.
+            sign(ctx, heroes.map { it.id }, traitsFor(null))
+            announce(ctx, charter)
+            drawCandidates(ctx, charter)
+            return
+        }
+        // The package brings the workshop's first relic: a guild run has no separate opening relic draft.
+        ctx.relicOffersMade += com.tinyblacksmith.core.engine.Relics.OFFER_START
+        val offers = ArrayList<OpeningOffer>()
+        repeat(minOf(ctx.config.guild.openingsOffered, pool.size)) { val o = rng.pick(pool); pool.remove(o); offers += OpeningOffer(o.id, heroes.map { it.id }, traitsFor(o)) }
+        update(ctx) { it.copy(openingOffer = offers) }
+        ctx.emit(EventType.GUILD_CHARTER, 5, "The guild opens under the charter \"${charter.name}\". ${heroes.joinToString(" and ") { it.fullName }} are ready to sign. Choose how the guild begins.", heroes.map { it.id.value }, mapOf("charter" to charter.id))
+    }
+
+    private fun sign(ctx: ResolutionContext, heroIds: List<HeroId>, traitIds: List<String>) {
+        val cat = catalog(ctx)
+        heroIds.forEachIndexed { i, id ->
+            val trait = cat.trait(traitIds[i])
+            update(ctx) { it.copy(members = it.members + GuildMember(id, ctx.day, 0, ctx.config.guild.memberSharePercent + (trait?.shareDelta ?: 0), traitIds[i])) }
+        }
+    }
+
+    private fun announce(ctx: ResolutionContext, charter: CharterDef) {
         val names = ctx.guild!!.members.map { ctx.hero(it.heroId) }.joinToString(" and ") { "${it.fullName} the ${ctx.content.heroClass(it.classId).name}" }
-        ctx.emit(EventType.GUILD_CHARTER, 5, "The guild opens under the charter \"${charter.name}\". $names have signed.", ctx.guild!!.members.map { it.heroId.value }, mapOf("charter" to charter.id))
+        ctx.emit(EventType.GUILD_CHARTER, 5, "$names have signed under the charter \"${charter.name}\".", ctx.guild!!.members.map { it.heroId.value }, mapOf("charter" to charter.id))
+    }
+
+    /** The smith takes one of the packages offered on the first morning: its members sign, its relic, stock and weapon arrive, its price is paid. Once. */
+    fun chooseOpening(ctx: ResolutionContext, openingId: String): GameError? {
+        val g = ctx.guild!!
+        if (g.openingOffer.isEmpty()) return if (g.openingId == openingId) null else GameError.NoOpeningOffer
+        val offer = g.openingOffer.firstOrNull { it.defId == openingId } ?: return GameError.OpeningNotOffered(openingId)
+        val def = catalog(ctx).opening(openingId) ?: return GameError.UnknownContent(openingId)
+        val charter = charter(ctx) ?: return GameError.UnknownContent(g.charterId)
+        update(ctx) { it.copy(openingOffer = emptyList(), openingId = def.id) }
+        sign(ctx, offer.heroIds.filter { ctx.heroes[it]?.isAlive == true }, offer.traitIds)
+        ctx.gold = maxOf(0, ctx.gold + def.goldDelta)
+        ctx.town = ctx.town.copy(militia = maxOf(0, ctx.town.militia + def.militiaDelta), integrity = maxOf(1, ctx.town.integrity + def.integrityDelta))
+        def.materials.forEach { (m, n) -> ctx.materials[m] = (ctx.materials[m] ?: 0) + n }
+        if (ctx.content.relic(def.relicId) != null && ctx.relics.none { it.id == def.relicId }) ctx.relics = ctx.relics + ActiveRelic(def.relicId)
+        val weapon = def.weapon?.let { w ->
+            val id = ctx.newWeaponId()
+            val core = ctx.content.material(w.coreId)
+            val augment = ctx.content.material(w.augmentId)
+            Weapon(id, com.tinyblacksmith.core.crafting.Forge.weaponName(ctx.content, w.familyId, w.coreId, emptyList()), w.familyId, w.coreId, w.augmentId, null, ForgeMode.QUICK, Risk.RECKLESS, w.quality,
+                com.tinyblacksmith.core.crafting.Forge.forgedRarity(w.quality, ctx.config), com.tinyblacksmith.core.crafting.Forge.powerOf(ctx.content, ctx.config, w.familyId, w.coreId, w.quality, listOf(w.flaw)), augment.element, emptyList(), listOf(w.flaw),
+                WeaponLocation.Storage, ctx.era, ctx.day, history = listOf(HistoryEntry(ctx.era, ctx.day, "FORGED", "Came with the guild's opening. ${core.name} and ${augment.name}, and a flaw somebody meant.")))
+                .also { ctx.updateWeapon(it) }
+        }
+        announce(ctx, charter)
+        ctx.emit(EventType.OPENING_CHOSEN, 6, "The guild begins with ${def.name}. ${def.pitch} ${def.drawback}", listOfNotNull(weapon?.id?.value), mapOf("opening" to def.id, "build" to def.build))
         drawCandidates(ctx, charter)
+        return null
     }
 
     // ---- candidates ----

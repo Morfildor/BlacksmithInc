@@ -35,6 +35,8 @@ object Consequences {
             ConsequenceKind.WATCH_BOUNTY -> if (ctx.day >= q.dueDay) ctx.consequences -= q
             // A loan insured against the enemy (`guild.GuildVisitors`): paid where the blade is taken (`guild.Stories.taken`), lapsed here.
             ConsequenceKind.INSURANCE -> if (ctx.day > q.dueDay) ctx.consequences -= q
+            // The supplier's mood after the guild's answer (`guild.Missions`): read by the morning's restock, gone after its last day.
+            ConsequenceKind.SUPPLIER_GRATEFUL, ConsequenceKind.SUPPLIER_SHAKEN -> if (ctx.day >= q.dueDay) ctx.consequences -= q
             ConsequenceKind.WALL_PLEDGE -> if (q.weaponId == null) {
                 val order = ctx.commissions[q.commissionId]
                 when (order?.status) {

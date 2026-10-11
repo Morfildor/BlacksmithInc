@@ -86,6 +86,10 @@ object CombatContent {
     const val BLOOD_RECEIPT = "blood_receipt"
     const val BLUNT_OATH = "blunt_oath"
     const val COWARDS_MEDAL = "cowards_medal"
+    const val WIDOWS_WHETSTONE = "widows_whetstone"
+    const val OATHBREAKERS_COIN = "oathbreakers_coin"
+    /** Pacts: a strong rule and its price in one relic. */
+    val pacts = setOf(WIDOWS_WHETSTONE, OATHBREAKERS_COIN)
 
     const val SPECTRAL_HELPER = "spectral_helper"
 
@@ -262,6 +266,13 @@ object CombatContent {
             "After an ally has paid health to a weapon, healing that ally also gives them that much Guard, up to 4 a round each.", listOf(Condition.Happened(EventKind.HEALTH_PAID)), party = true, perMember = true)),
         BLUNT_OATH to listOf(e("relic_blunt_oath", "The Blunt Oath", Trigger(EventKind.ACTED, Who.ALLY_SOURCE), listOf(Damage(Aim.Foe, Fixed(3)), Guard(Aim.Self, Fixed(2))), Limit(perRound = 1),
             "A member carrying a common weapon (or none) strikes for 3 more and raises 2 Guard when they act. A finer weapon in their hands ends it for them.", struck + Condition.HolderTagged(TAG_COMMON_GEAR), party = true, perMember = true)),
+        WIDOWS_WHETSTONE to listOf(e("relic_widows_whetstone", "Widow's Whetstone", Trigger(EventKind.ACTED, Who.ALLY_SOURCE), listOf(Damage(Aim.Foe, Amount.OfSpent(3))), Limit(perRound = 1),
+            "A pact. When a member acts they pay 2 health (never below 6) and strike for 6 more. Paying is not damage.", struck, Cost.PayHealth(2, floor = 6), party = true, perMember = true)),
+        OATHBREAKERS_COIN to listOf(
+            e("relic_oathbreakers_coin", "Oathbreaker's Coin", Trigger(EventKind.DOWNED, Who.FOE_TARGET), listOf(Heal(Aim.AllAllies, Fixed(4))), Limit(perRound = 1),
+                "A pact. When an enemy falls, every ally heals 4. Once a round.", party = true),
+            e("relic_oathbreakers_due", "Oathbreaker's due", Trigger(EventKind.DOWNED, Who.ALLY_TARGET), listOf(Give(Stat.BLEED, Aim.OtherAllies, Fixed(2))), Limit(perFight = 2),
+                "When an ally falls, every other ally gains 2 Bleed. Twice a fight.", party = true)),
         // The Coward's Medal changes what a retreat brings home, not the fight: `Missions` reads it.
         COWARDS_MEDAL to emptyList(),
     )
@@ -321,7 +332,7 @@ object CombatContent {
 
         // What a party protects on an escort or carries out of a rescue: it does nothing but stand.
         UnitDef("escort_cart", "The supply cart", kit("escort_cart", "Cart", Move("roll", "Rolls on", Cadence.Always, emptyList())), health = 30, strikeMin = 0),
-        UnitDef("captive", "The captive", kit("captive", "Captive", Move("stumble", "Keeps moving", Cadence.Always, emptyList())), health = 16, strikeMin = 0),
+        UnitDef("captive", "The captive", kit("captive", "Captive", Move("stumble", "Keeps moving", Cadence.Always, emptyList())), health = 24, strikeMin = 0),
     )
 
     val catalog = CombatCatalog(kits, families, elementEffects, affixEffects, affixHomeEffects, affixRoadEffects, catalystEffects, signatureEffects, relicEffects, units)

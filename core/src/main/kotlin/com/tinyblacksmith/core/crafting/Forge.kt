@@ -35,15 +35,67 @@ object Forge {
             if (cmd.mode != ForgeMode.ADVANCED) return Validation.Error(GameError.CatalystRequiresAdvanced(cmd.catalystId))
         }
         if (cmd.technique != null && cmd.mode != ForgeMode.ADVANCED) return Validation.Error(GameError.TechniqueRequiresAdvanced(cmd.technique))
+        if (cmd.heartfire && cmd.mode != ForgeMode.ADVANCED) return Validation.Error(GameError.HeartfireRequiresAdvanced)
+        if (cmd.heartfire && ctx.heartfire < 1) return Validation.Error(GameError.NoHeartfire)
         val needed = listOfNotNull(cmd.coreId, cmd.augmentId, cmd.catalystId)
         for (m in needed) if ((ctx.materials[m] ?: 0) < 1) return Validation.Error(GameError.MissingMaterial(m))
-        val cost = if (cmd.mode == ForgeMode.QUICK) config.quickForgeEnergy else config.advancedForgeEnergy
+        val cost = energyCost(config, cmd)
         val overworkAvailable = config.maxOverworkPerDay - ctx.overworkToday
         val shortfall = maxOf(0, cost - ctx.energy)
         if (shortfall > overworkAvailable) return Validation.Error(GameError.NotEnoughEnergy(cost, ctx.energy, overworkAvailable))
         if (cmd.bellows) Relics.bellowsError(ctx, cost, shortfall)?.let { return Validation.Error(it) }
         return Validation.Ok(cost, shortfall)
     }
+
+    fun energyCost(config: com.tinyblacksmith.core.config.BalanceConfig, cmd: Command.Forge): Int =
+        (if (cmd.mode == ForgeMode.QUICK) config.quickForgeEnergy else config.advancedForgeEnergy) + (if (cmd.heartfire) config.depth.legend.heartfireEnergy else 0)
+
+    /** The quality roll's reach either way under [risk]. */
+    fun rollSpread(config: com.tinyblacksmith.core.config.BalanceConfig, risk: Risk): Int = config.risk.getValue(risk).rollSpread ?: config.qualityRollSpread
+
+    /**
+     * The quality this forge lands on before luck: materials, affinity, mastery, catalyst, ledger and technique. The
+     * roll moves it by [rollSpread] either way, an exceptional result adds to it and a defect takes from it.
+     */
+    fun centreQuality(ctx: ResolutionContext, cmd: Command.Forge): Int {
+        val config = ctx.config
+        val core = ctx.content.material(cmd.coreId)
+        val augment = ctx.content.material(cmd.augmentId)
+        val affinity = (ctx.content.coreAugmentAffinity[core.id to augment.id] ?: 0) + (ctx.content.augmentFamilyAffinity[augment.id to cmd.familyId] ?: 0)
+        return config.qualityBase + config.qualityPerCoreTier * core.tier + config.qualityPerAugmentTier * augment.tier + affinity + masteryBonus(ctx) +
+            (if (cmd.catalystId != null) config.catalystQualityBonus else 0) + Relics.ledgerBonus(ctx, cmd.familyId) - (if (cmd.technique == Technique.QUENCH) config.quenchQualityPenalty else 0)
+    }
+
+    /** The chance that a Heartfire forging of [quality] breaks through to Legendary: none under the Epic floor. */
+    fun breakthroughChance(ctx: ResolutionContext, cmd: Command.Forge, quality: Int): Double {
+        val cfg = ctx.config.depth.legend
+        if (quality < ctx.config.epicMin) return 0.0
+        val known = SignatureCatalog.forRecipe(cmd)?.let { ctx.legacy.journal.state(it.journalKey) == KnowledgeState.SIGNATURE_DISCOVERED } == true
+        return (cfg.breakthroughBase + cfg.breakthroughPerQuality * (quality - ctx.config.epicMin) + (if (known) cfg.knownRecipeBonus else 0.0) +
+            when (cmd.risk) { Risk.SAFE -> cfg.safeBonus; Risk.BALANCED -> 0.0; Risk.RECKLESS -> cfg.recklessBonus }).coerceIn(0.0, cfg.breakthroughMax)
+    }
+
+    /**
+     * What a Heartfire forging of [cmd] would be, for the workbench: everything shown before the smith confirms.
+     * [qualityLow]..[qualityHigh] is the plain roll (no exceptional result, no defect); the chances are at those two ends.
+     */
+    data class HeartfireOutlook(val held: Int, val energy: Int, val floor: Int, val qualityLow: Int, val qualityHigh: Int, val chanceLow: Double, val chanceHigh: Double, val missSlots: Int)
+
+    fun heartfireOutlook(ctx: ResolutionContext, cmd: Command.Forge): HeartfireOutlook {
+        val centre = centreQuality(ctx, cmd)
+        val spread = rollSpread(ctx.config, cmd.risk)
+        val low = (centre - spread).coerceIn(1, 100)
+        val high = (centre + spread).coerceIn(1, 100)
+        return HeartfireOutlook(ctx.heartfire, energyCost(ctx.config, cmd.copy(mode = ForgeMode.ADVANCED, heartfire = true)), ctx.config.epicMin, low, high,
+            breakthroughChance(ctx, cmd, low), breakthroughChance(ctx, cmd, high), ctx.config.depth.legend.missExtraSlots)
+    }
+
+    /** The rarity a forged weapon's quality gives it: never past Epic. Legendary is earned (`Legends`), not rolled. */
+    fun forgedRarity(quality: Int, config: com.tinyblacksmith.core.config.BalanceConfig): Rarity = minOf(rarityFor(quality, config), Rarity.EPIC)
+
+    /** The rarity of [weapon] at a new [quality] (a hone): a Legendary weapon stays one, no other becomes one. */
+    fun rarityAfter(weapon: Weapon, quality: Int, config: com.tinyblacksmith.core.config.BalanceConfig): Rarity =
+        if (weapon.rarity == Rarity.LEGENDARY) Rarity.LEGENDARY else forgedRarity(quality, config)
 
     /** Applies a validated forge. Returns the new weapon. */
     fun apply(ctx: ResolutionContext, cmd: Command.Forge, ok: Validation.Ok): Weapon {
@@ -59,6 +111,7 @@ object Forge {
         ctx.energy -= (ok.energyCost - ok.overworkNeeded)
         ctx.overworkToday += ok.overworkNeeded
         for (m in listOfNotNull(cmd.coreId, cmd.augmentId, cmd.catalystId)) ctx.materials[m] = (ctx.materials[m] ?: 0) - 1
+        if (cmd.heartfire) ctx.heartfire -= 1
         // Thrifty Hands (MATERIAL_EFFICIENCY): percent chance per level that the augment survives the forge.
         val efficiency = upgradeTotal(ctx, UpgradeEffect.MATERIAL_EFFICIENCY)
         val augmentSaved = efficiency > 0 && rng.chance(efficiency / 100.0)
@@ -87,7 +140,8 @@ object Forge {
 
         val exceptional = rng.chance(exceptionalChance)
         val defect = rng.chance(defectChance)
-        val roll = rng.nextInt(-config.qualityRollSpread, config.qualityRollSpread)
+        // One draw whatever the temper: a narrower temper scales the same roll, so the stream is spent alike.
+        val roll = rng.nextInt(-config.qualityRollSpread, config.qualityRollSpread) * rollSpread(config, cmd.risk) / config.qualityRollSpread
 
         val affinity = (content.coreAugmentAffinity[core.id to augment.id] ?: 0) +
             (content.augmentFamilyAffinity[augment.id to family.id] ?: 0)
@@ -97,7 +151,9 @@ object Forge {
             affinity + mastery + ledger + roll + (if (exceptional) config.qualityExceptionalBonus else 0) -
             (if (defect) config.qualityDefectPenalty else 0) -
             (if (cmd.technique == Technique.QUENCH) config.quenchQualityPenalty else 0)).coerceIn(1, 100)
-        val rarity = rarityFor(quality, config)
+        // Quality alone stops at Epic. A Heartfire forging at the Epic floor or above may break through.
+        val breakthrough = cmd.heartfire && rng.chance(breakthroughChance(ctx, cmd, quality))
+        val rarity = if (breakthrough) Rarity.LEGENDARY else forgedRarity(quality, config)
 
         val affixes = mutableListOf<AffixId>()
         val flaws = mutableListOf<AffixId>()
@@ -105,6 +161,7 @@ object Forge {
         val neutralAffixes = content.affixes.filter { it.kind == AffixKind.BENEFICIAL && it.element == null }
         var affixSlots = when (rarity) { Rarity.COMMON -> 0; Rarity.UNCOMMON -> 0; Rarity.RARE -> 1; Rarity.EPIC -> 2; Rarity.LEGENDARY -> 3 } + (if (exceptional) 1 else 0)
         if (cmd.technique == Technique.ETCH) affixSlots += config.etchExtraAffixSlots
+        affixSlots += profile.extraSlots + (if (cmd.heartfire && !breakthrough) config.depth.legend.missExtraSlots else 0)
         affixSlots += bellowsSlots
         // QUENCH forces the element affix even on a weapon that rolled no slot (the baseline already leads with it when a slot exists).
         if (cmd.technique == Technique.QUENCH && affixSlots == 0 && elementAffix != null) affixSlots = 1
@@ -120,7 +177,9 @@ object Forge {
         var signature: SignatureDef? = null
         if (recipe != null && miss == null) {
             // Anvil Lore (RECIPE_ODDS) adds to the chance, never past the cap: a signature is not a certainty.
-            val chance = (config.signatureBaseChance + masteryBonus(ctx) * config.signatureChancePerMastery +
+            // A signature the journal already holds is knowledge: the exact recipe yields it most of the time.
+            val known = ctx.legacy.journal.state(recipe.journalKey) == KnowledgeState.SIGNATURE_DISCOVERED
+            val chance = if (known) config.depth.legend.knownSignatureChance else (config.signatureBaseChance + masteryBonus(ctx) * config.signatureChancePerMastery +
                 upgradeTotal(ctx, UpgradeEffect.RECIPE_ODDS) * config.legacyTracks.recipeOddsPerLevel).coerceIn(0.0, config.signatureMaxChance)
             if (rng.chance(chance)) signature = recipe
         }
@@ -136,10 +195,11 @@ object Forge {
             mode = cmd.mode, risk = cmd.risk, quality = quality, rarity = rarity, power = power, element = augment.element,
             affixes = affixes, flaws = flaws, location = WeaponLocation.Storage, forgedEra = ctx.era, forgedDay = ctx.day,
             history = listOfNotNull(
-                HistoryEntry(ctx.era, ctx.day, "FORGED", "Forged from ${core.name} and ${augment.name} (${cmd.risk.name.lowercase()} risk$techniqueNote)."),
+                HistoryEntry(ctx.era, ctx.day, "FORGED", "Forged from ${core.name} and ${augment.name} (${cmd.risk.name.lowercase()} risk$techniqueNote)." + (if (cmd.heartfire) " Heartfire went into it." else "")),
+                HistoryEntry(ctx.era, ctx.day, Legends.HISTORY_LEGEND, "The Heartfire took. It left the anvil a legend.").takeIf { breakthrough },
                 signature?.let { HistoryEntry(ctx.era, ctx.day, "SIGNATURE", "${it.name}: ${it.flavor}") },
             ),
-            signatureId = signature?.id,
+            signatureId = signature?.id, legend = LegendOrigin.HEARTFIRE.takeIf { breakthrough },
         )
         ctx.updateWeapon(weapon)
         ctx.emit(
@@ -147,7 +207,8 @@ object Forge {
             "Forged $name. ${rarity.name.lowercase().replaceFirstChar { it.uppercase() }}. Quality $quality${if (flaws.isNotEmpty()) ". Flaws include ${flaws.joinToString { content.affix(it).name }}" else ""}.",
             subjects = listOf(id.value),
             data = mapOf("quality" to quality.toString(), "rarity" to rarity.name, "exceptional" to exceptional.toString(), "defect" to defect.toString(), "augmentSaved" to augmentSaved.toString(),
-                "technique" to (cmd.technique?.name ?: "")) + (if (cmd.bellows) mapOf("bellows" to "true") else emptyMap()) + (if (ledger > 0) mapOf("ledger" to ledger.toString()) else emptyMap()),
+                "technique" to (cmd.technique?.name ?: "")) + (if (cmd.bellows) mapOf("bellows" to "true") else emptyMap()) + (if (ledger > 0) mapOf("ledger" to ledger.toString()) else emptyMap()) +
+                (if (cmd.heartfire) mapOf("heartfire" to "true", "breakthrough" to breakthrough.toString()) else emptyMap()),
         )
         if (rarity == Rarity.LEGENDARY) ctx.milestone("LEGENDARY_FORGED", "Forged a legendary weapon. $name.")
         else if (rarity == Rarity.EPIC) ctx.milestone("EPIC_FORGED", "Forged an epic weapon. $name.")
