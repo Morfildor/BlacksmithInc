@@ -404,8 +404,8 @@ object GuildContent {
             listOf(t("overhealer", "Overhealer", Trigger(EventKind.OVERHEAL, Who.SELF_SOURCE), listOf(Give(Stat.REGEN, Aim.EventTarget)), Limit(perRound = 1), "When their healing is more than an ally can use, that ally gains 1 Regeneration. Once a round.", listOf(Condition.FromAction)))),
         GuildTraitDef("second_wind", "Second Wind", true, "The first time a blow leaves them at a third of their health or less, heals themselves for 10. Once a fight. It does not bring back the fallen.",
             listOf(t("second_wind", "Second Wind", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Heal(Aim.Self, Fixed(10))), Limit(perFight = 1), "The first time a blow leaves them at a third of their health or less, heals themselves for 10. Once a fight.", listOf(Condition.HolderHealthAtMost(34))))),
-        GuildTraitDef("oathkeeper", "Oathkeeper", true, "While carrying a common weapon or none, raises 2 Guard at the start of every round.",
-            listOf(t("oathkeeper", "Oathkeeper", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(2))), Limit(perRound = 1), "While carrying a common weapon or none, raises 2 Guard at the start of every round.", listOf(Condition.HolderTagged(CombatContent.TAG_COMMON_GEAR))))),
+        GuildTraitDef("oathkeeper", "Oathkeeper", true, "While carrying a common or uncommon weapon or none, raises 2 Guard at the start of every round.",
+            listOf(t("oathkeeper", "Oathkeeper", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(2))), Limit(perRound = 1), "While carrying a common or uncommon weapon or none, raises 2 Guard at the start of every round.", listOf(Condition.HolderTagged(CombatContent.TAG_COMMON_GEAR))))),
     )
 
     val charters = listOf(
@@ -493,8 +493,8 @@ object GuildContent {
             plan = "Loan the Bloodbound axe to somebody sturdy and keep a healer behind them. The Receipt turns that healing into Guard. Never send it out without the healer.",
             drawback = "The axe takes health from whoever carries it. The forge starts 10 integrity lower.", charters = setOf(TOWNS_LAST_HOPE, HONEST_BUSINESS), traits = mapOf(G to "second_wind", R to "second_wind"), relicId = CombatContent.BLOOD_RECEIPT,
             weapon = StartWeaponDef(LaunchContent.AXE, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BLOODBOUND, 48), integrityDelta = -10),
-        OpeningDef("plain_oath", "The Plain Oath", "Common steel", "Common weapons, sworn to. Whoever carries one strikes harder and raises Guard.",
-            plan = "Forge cheap, common weapons on purpose and keep the good metal for the shelf. A finer weapon in a member's hands ends the oath for them.",
+        OpeningDef("plain_oath", "The Plain Oath", "Common steel", "Plain weapons, sworn to. Whoever carries a common or uncommon one strikes harder and raises Guard.",
+            plan = "Forge iron and bronze for the party on purpose and keep the good metal for the shelf. A rare or finer weapon in a member's hands ends the oath for them.",
             drawback = "60 gold less to start with. Fine weapons are wasted on the party.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(G to "oathkeeper", D to "oathkeeper", R to "oathkeeper"),
             relicId = CombatContent.BLUNT_OATH, materials = mapOf(LaunchContent.IRON to 3), goldDelta = -60),
         OpeningDef("careful_books", "Careful Books", "Take it and run", "A party that knows when to leave, and still gets paid for the walk.",

@@ -52,7 +52,8 @@ object Loadout {
         val effects = weaponEffects(weapon, combat, field)
         val tags = buildSet {
             addAll(extraTags)
-            if (weapon == null || weapon.rarity == Rarity.COMMON) add(CombatContent.TAG_COMMON_GEAR)
+            // Plain gear is what ordinary forging makes on purpose: a common or an uncommon weapon, or none (rules 6).
+            if (weapon == null || weapon.rarity <= Rarity.UNCOMMON) add(CombatContent.TAG_COMMON_GEAR)
             if (effects.any { it.id == CombatContent.CHARGE_BURST.id }) add(CombatContent.TAG_CHARGE)
         }
         return Combatant(
