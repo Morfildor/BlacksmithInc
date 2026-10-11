@@ -70,9 +70,11 @@ object Battle {
             }
             var found: EventRecord? = null
             if (elite || rng.chance(config.expeditionLootChance + affixDefs.sumOf { it.lootChanceBonus })) {
-                val lootable = ctx.content.materials.filter { it.category != MaterialCategory.CATALYST }
+                // What an ordinary fight turns up is what the supplier carries by now. Only an elite carries a metal the roads do not bring yet (rules 6).
+                fun onTheRoads(m: com.tinyblacksmith.core.content.MaterialDef) = ctx.day >= com.tinyblacksmith.core.crafting.Legends.stockedFromDay(m, config)
+                val lootable = ctx.content.materials.filter { it.category != MaterialCategory.CATALYST && onTheRoads(it) }
                 // Elites carry the good stuff: catalysts and high-tier materials when the catalog has them. A Lucky blade finds the same.
-                val pool = if (elite || affixDefs.any { it.scarceLoot }) ctx.content.materials.filter { it.category == MaterialCategory.CATALYST || it.tier >= config.combat.scarceLootTier }.ifEmpty { lootable } else lootable
+                val pool = if (elite || affixDefs.any { it.scarceLoot }) ctx.content.materials.filter { (it.category == MaterialCategory.CATALYST || it.tier >= config.combat.scarceLootTier) && (elite || onTheRoads(it)) }.ifEmpty { lootable } else lootable
                 val m = rng.pick(pool)
                 ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + 1
                 found = ctx.emit(EventType.EXPEDITION_WON, 2, "${hero.fullName} brought ${m.name} back to the forge.", listOf(hero.id.value), mapOf("material" to m.id.value))

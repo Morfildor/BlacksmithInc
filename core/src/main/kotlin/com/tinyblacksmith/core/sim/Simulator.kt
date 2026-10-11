@@ -202,6 +202,8 @@ class SimulationDriver(
     val eventRetentionDays: Int = 0,
     /** Caps forges per day (soak runs keep the weapon count bounded); null = as many as energy allows. */
     val maxForgesPerDay: Int? = null,
+    /** Rules 6: the smith puts Heartfire into the best fine metal it can pay for, as soon as the workbench shows a chance worth it. Off by default: the golden runs and the older tables do not spend it. */
+    val spendHeartfire: Boolean = false,
     /**
      * Gold the invest rule never spends on premium materials ([Policy.invest]). The cheapest fallback (iron + ember,
      * what every other policy restocks) is still bought below the reserve, so the bot forges whenever it can.
@@ -224,7 +226,36 @@ class SimulationDriver(
     }
 
     /** [from] continues a run another driver began (the transition sweep: a town raised under other numbers); null starts a new one. */
+    /** Heartfire forgings made and broken through in the run last played (rules 6, [spendHeartfire]). */
+    var heartfireForges = 0; private set
+    var heartfireBreakthroughs = 0; private set
+
+    /** One Heartfire forging when the forge holds Heartfire and can pay for a recipe whose chance at both ends of the roll adds up to a half or more. */
+    private fun heartfireForge(s0: GameState): GameState {
+        var s = s0
+        if (s.heartfire < 1) return s
+        val content = engine.content
+        fun have(m: MaterialId) = (s.materials[m] ?: 0) > 0
+        fun price(m: MaterialId) = if (have(m)) 0 else if ((s.supplierStock[m] ?: 1) > 0) engine.materialPrice(s, m) else Int.MAX_VALUE / 4
+        val family = content.families.first().id
+        val best = content.materials(MaterialCategory.CORE).flatMap { c -> content.materials(MaterialCategory.AUGMENT).map { a -> Command.Forge(ForgeMode.ADVANCED, family, c.id, a.id, null, Risk.BALANCED, heartfire = true) } }
+            .map { it to engine.heartfireOutlook(s, it) }
+            .filter { (c, o) -> o.chanceLow + o.chanceHigh >= 0.5 && price(c.coreId) + price(c.augmentId) + 40 <= s.gold && s.energy + engine.config.maxOverworkPerDay - s.overworkToday >= o.energy }
+            .maxByOrNull { it.second.chanceLow + it.second.chanceHigh }?.first ?: return s
+        for (m in listOf(best.coreId, best.augmentId)) if (!have(m)) s = engine.handle(s, Command.BuyMaterial(m)).state()
+        if (!have(best.coreId) || !have(best.augmentId)) return s
+        val out = engine.handle(s, best)
+        if (out is CommandOutcome.Accepted) {
+            heartfireForges++
+            if (out.state.lastForgedLegend()) heartfireBreakthroughs++
+        }
+        return out.state()
+    }
+
+    private fun GameState.lastForgedLegend(): Boolean = weapons.values.maxByOrNull { it.id.value.filter(Char::isDigit).toIntOrNull() ?: 0 }?.legend == LegendOrigin.HEARTFIRE
+
     fun playRun(legacy: LegacyProfile, seed: Long, policy: Policy, from: GameState? = null): Pair<RunStats, GameState> {
+        heartfireForges = 0; heartfireBreakthroughs = 0
         var state = from ?: engine.newRun(legacy, seed)
         val policyRng = Rng(seed xor 0x5EEDL)
         val bots = policy.rules?.let { BotPlay(this, policy, it, policyRng) }
@@ -292,6 +323,7 @@ class SimulationDriver(
                 state = bots.morning(state)
                 for (id in state.tools.keys) toolFirstDay.putIfAbsent(id, state.day)
             }
+            if (spendHeartfire && policy != Policy.PASSIVE) state = heartfireForge(state)
             if (policy != Policy.PASSIVE) {
                 var couldForge = false
                 var forgesToday = 0

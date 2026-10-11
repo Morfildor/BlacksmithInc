@@ -329,6 +329,7 @@ object CombatContent {
 
         // What a party protects on an escort or carries out of a rescue: it does nothing but stand.
         UnitDef("escort_cart", "The supply cart", kit("escort_cart", "Cart", Move("roll", "Rolls on", Cadence.Always, emptyList())), health = 30, strikeMin = 0),
+        UnitDef("town_watch", "A guard of the watch", kit("town_watch", "Watch", strikeMove("halberd", "Halberd")), health = 22, strikeMin = 4, strikeMax = 6),
         UnitDef("captive", "The captive", kit("captive", "Captive", Move("stumble", "Keeps moving", Cadence.Always, emptyList())), health = 24, strikeMin = 0),
     )
 

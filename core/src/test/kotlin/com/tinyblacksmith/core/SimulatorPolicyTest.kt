@@ -1,5 +1,6 @@
 package com.tinyblacksmith.core
 
+import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.engine.GameEngine
@@ -22,20 +23,33 @@ import kotlin.test.assertTrue
 class SimulatorPolicyTest {
     private val content = LaunchContent.catalog
 
-    private fun firstForgeTiers(reserve: Int): Pair<Int, Int> {
-        val (_, state) = SimulationDriver(maxDays = 1, reserve = reserve).playRun(LegacyProfile(), 1, Policy.BALANCED_INVEST)
+    private fun firstForgeTiers(reserve: Int, engine: GameEngine = GameEngine()): Pair<Int, Int> {
+        val (_, state) = SimulationDriver(engine, maxDays = 1, reserve = reserve).playRun(LegacyProfile(), 1, Policy.BALANCED_INVEST)
         val first = state.weapons.values.minBy { it.id.value }
         return content.material(first.coreId).tier to content.material(first.augmentId).tier
     }
 
     @Test
     fun investBuysTheBestTierWithinGoldMinusReserve() {
-        // 250 starting gold: moonsteel (180) then grave dust (55) fit in 250; sun ash (85) does not.
-        assertEquals(6 to 4, firstForgeTiers(reserve = 0))
-        // Budget 130: starsteel (120) fits; the 10 gold left cannot beat the owned stormglass (tier 3, cost 0).
-        assertEquals(5 to 3, firstForgeTiers(reserve = 120))
+        // Day 1 (rules 6): the supplier has no Starsteel or Moonsteel yet, so the best core on the shelf is obsidian.
+        // 250 starting gold: obsidian (75) then sun ash (85) fit in 250.
+        assertEquals(4 to 5, firstForgeTiers(reserve = 0))
+        // Budget 130: obsidian (75) fits; the 55 gold left buy grave dust (55), not sun ash (85).
+        assertEquals(4 to 4, firstForgeTiers(reserve = 120))
         // Budget 10: nothing premium fits, so the best owned pair from the starting kit (silver + stormglass) is forged.
         assertEquals(3 to 3, firstForgeTiers(reserve = 240))
+    }
+
+    @Test
+    fun investBuysTheFineMetalsOnceTheSupplierCarriesThem() {
+        // The same rule with every core on the shelf from day 1, as the supplier is from day 11 on.
+        val config = BalanceConfig.DEFAULT
+        val stocked = GameEngine(content, config.copy(depth = config.depth.copy(legend = config.depth.legend.copy(coreTierFromDay = emptyMap()))))
+        // 250 starting gold: moonsteel (180) then grave dust (55) fit in 250; sun ash (85) does not.
+        assertEquals(6 to 4, firstForgeTiers(reserve = 0, engine = stocked))
+        // Budget 130: starsteel (120) fits; the 10 gold left cannot beat the owned stormglass (tier 3, cost 0).
+        assertEquals(5 to 3, firstForgeTiers(reserve = 120, engine = stocked))
+        assertEquals(3 to 3, firstForgeTiers(reserve = 240, engine = stocked))
     }
 
     @Test
