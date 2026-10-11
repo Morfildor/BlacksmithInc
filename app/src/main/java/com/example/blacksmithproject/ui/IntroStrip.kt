@@ -4,6 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,6 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
@@ -46,7 +50,9 @@ import com.example.blacksmithproject.ui.theme.Space
 fun IntroStrip(ui: IntroUi, onSkip: () -> Unit, onDone: () -> Unit, modifier: Modifier = Modifier) {
     var why by rememberSaveable(ui.step) { mutableStateOf(false) }
     Column(
-        modifier.fillMaxWidth().background(ForgePanel)
+        // Never more than a part of the screen, however large the text or however much "Why?" has opened: past that the
+        // words scroll inside the strip, and its actions and the game's controls under it keep their places.
+        modifier.fillMaxWidth().heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.42f).dp).background(ForgePanel)
             .drawBehind { drawRect(Gold, size = Size(3.dp.toPx(), size.height)) }
             .padding(start = Space.md, end = Space.xs, bottom = Space.sm).testTag("intro_strip"),
     ) {
@@ -56,13 +62,16 @@ fun IntroStrip(ui: IntroUi, onSkip: () -> Unit, onDone: () -> Unit, modifier: Mo
             else InlineActionButton("Skip guidance", onSkip, Modifier.testTag("intro_skip"))
         }
         val overline: @Composable (Modifier) -> Unit = { Text(ui.overline, style = MaterialTheme.typography.labelSmall, color = Gold, modifier = it) }
-        // Large text: the actions get a row of their own under the words, as the stat rows stack.
+        // Large text: the actions get a row of their own under the words, as the stat rows stack, and the sentence waits
+        // behind "Why?" with the rest, so the step, its way out and the controls under the strip all stay within reach.
+        // The day's outcome keeps its sentence: there it is the news itself.
         val large = LocalDensity.current.fontScale > 1.3f
-        if (large) overline(Modifier.padding(top = Space.sm))
+        val folded = large && !ui.last
+        if (large) overline(Modifier.padding(top = Space.xs))
         else Row(verticalAlignment = Alignment.CenterVertically) { overline(Modifier.weight(1f)); actions() }
-        Column(Modifier.padding(end = Space.sm).semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }) {
+        Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(end = Space.sm).semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }) {
             Text(ui.line.objective, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.semantics { heading() }.testTag("intro_objective"))
-            Text(ui.line.sentence, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.testTag("intro_sentence"))
+            if (!folded || why) Text(ui.line.sentence, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.testTag("intro_sentence"))
             if (why) ui.line.why?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs).testTag("intro_why_text")) }
         }
         if (large) Row { actions() }
@@ -88,24 +97,31 @@ fun IntroCardLine(line: IntroLine, onSkip: () -> Unit, modifier: Modifier = Modi
 
 /**
  * The guidance on the title, only while it is waiting to be decided: queued for the game about to start (with its way
- * out), or stopped with its run and asking once whether to go on. Nothing otherwise.
+ * out), or stopped with its run and asking once whether to go on. Nothing otherwise. It stands under the menu's primary
+ * action, so "New game" is where it always was at every text size.
  */
 @Composable
 fun IntroMenuLine(vm: GameViewModel, modifier: Modifier = Modifier) {
     val record by vm.intro.collectAsStateWithLifecycle()
     val status = record?.status
     if (status != IntroStatus.QUEUED && status != IntroStatus.OFFERED) return
-    Row(modifier.fillMaxWidth().forgeRow().padding(start = Space.md, end = Space.xs).testTag("intro_menu"), verticalAlignment = Alignment.CenterVertically) {
+    val words: @Composable (Modifier) -> Unit = {
         Text(
             if (status == IntroStatus.QUEUED) "This game starts with a short guided first day." else "The guided first day stopped before its end.",
-            style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.weight(1f).padding(vertical = Space.sm),
+            style = MaterialTheme.typography.bodySmall, color = Cream, modifier = it.padding(vertical = Space.sm),
         )
+    }
+    val actions: @Composable () -> Unit = {
         if (status == IntroStatus.QUEUED) InlineActionButton("Skip guidance", { vm.skipIntro() }, Modifier.testTag("intro_menu_skip"))
         else {
             InlineActionButton("Resume", { vm.introAction() }, Modifier.testTag("intro_menu_resume"))
             InlineActionButton("Dismiss", { vm.skipIntro() }, Modifier.testTag("intro_menu_dismiss"))
         }
     }
+    val place = modifier.fillMaxWidth().forgeRow().padding(start = Space.md, end = Space.xs).testTag("intro_menu")
+    // Large text: the words get the whole width and the actions a row under them.
+    if (LocalDensity.current.fontScale > 1.3f) Column(place) { words(Modifier); Row { actions() } }
+    else Row(place, verticalAlignment = Alignment.CenterVertically) { words(Modifier.weight(1f)); actions() }
 }
 
 /**
@@ -121,3 +137,18 @@ fun Modifier.introMark(on: Boolean): Modifier = if (!on) this else this
         val p = 12.dp.toPx()
         drawPath(Path().apply { moveTo(0f, 0f); lineTo(p, 0f); lineTo(0f, p); close() }, Gold)
     }
+
+/**
+ * A first game begun under a charter: what a new player needs before the one choice that cannot be taken back, and the
+ * guidance's way out, which is otherwise not on this screen. Shown only while the guided first day is still ahead.
+ */
+@Composable
+fun OpeningIntroNote(onSkip: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().drawBehind { drawRect(Gold, size = Size(3.dp.toPx(), size.height)) }.padding(start = Space.md, end = Space.xs).testTag("opening_intro")) {
+        Text(
+            "First game? Each of these is a full start. The guided first day begins once you choose; the shop without a guild is \"No charter\" on the title.",
+            style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.sm),
+        )
+        InlineActionButton("Skip guidance", onSkip, Modifier.testTag("intro_skip"))
+    }
+}

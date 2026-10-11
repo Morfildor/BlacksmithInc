@@ -134,7 +134,7 @@ private const val REVEAL_FADE_MS = 250
  * and live from the first frame, so the reveal never costs a tap or a wait. Without it (reduced motion) the card is
  * whole at once. A brand-new blade has no renown to show, so the zero is left out here; the blade's sheet keeps it.
  *
- * [guide] is the guided first day's line, over the price.
+ * [guide] is the guided first day's line: over the price, or at the head of the card when the text is large.
  *
  * With [onLoan] (a guild run) a third way on, "Loan", opens the members the blade could go to; nothing is lent until
  * one is chosen.
@@ -182,7 +182,6 @@ fun ForgeResultCard(
             SecondaryActionButton("Close", onStore, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("reveal_store"))
             return@price
         }
-        guide?.invoke()
         var priceText by rememberSaveable(detail.weaponId.value) { mutableStateOf(stock.suggestedPrice.toString()) }
         PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "reveal") { chosen ->
             // The engine refuses a listing on a full shelf; say so here and leave Store as the way on.
@@ -210,11 +209,12 @@ fun ForgeResultCard(
     val typing = !large && WindowInsets.ime.getBottom(LocalDensity.current) > 0
     // No semantics on the tap: it only ends a moment's fade, and the buttons under it keep their own taps.
     FramedPanel("Fresh from the forge".takeIf { !typing }, modifier.fillMaxWidth().pointerInput(Unit) { detectTapGestures { revealed = true } }) {
-        if (large) Column(Modifier.verticalScroll(rememberScrollState())) { blade(); price() }
+        // Large text: the card is one long column, so the guided step and its way out come first, where they are seen without a scroll.
+        if (large) Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); blade(); price() }
         else {
             if (!typing) Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) { blade() }
             // Measured before the card above it, so it has the room it needs; it scrolls only when the keyboard leaves less.
-            Column(Modifier.verticalScroll(rememberScrollState())) { price() }
+            Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); price() }
         }
     }
 }

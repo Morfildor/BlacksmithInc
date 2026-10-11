@@ -64,6 +64,7 @@ import com.example.blacksmithproject.RecordsPage
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.data.IntroStatus
 import com.example.blacksmithproject.ui.detail.HeroDetailContent
 import com.example.blacksmithproject.ui.detail.HeroDetailSheet
 import com.example.blacksmithproject.ui.detail.ItemDetailContent
@@ -121,7 +122,11 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     // in the save, so this comes back after any restart; nothing dismisses it but the choice (Back opens the main menu).
     val opening = remember(state.guild?.openingOffer, state.heroes) { vm.engine.openingChooser(state) }
     if (opening != null) {
-        OpeningChooser(opening, enabled = !s.busy, onChoose = { vm.dispatch(Command.ChooseOpening(it)) })
+        val introRecord by vm.intro.collectAsStateWithLifecycle()
+        OpeningChooser(
+            opening, enabled = !s.busy, onChoose = { vm.dispatch(Command.ChooseOpening(it)) },
+            firstGame = if (introRecord?.status == IntroStatus.QUEUED) ({ OpeningIntroNote(onSkip = { vm.skipIntro() }) }) else null,
+        )
         s.lastError?.let { ErrorDialog(it, vm::dismissError) }
         return
     }

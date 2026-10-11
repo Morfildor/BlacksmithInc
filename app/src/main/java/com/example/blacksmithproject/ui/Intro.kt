@@ -8,10 +8,12 @@ import com.example.blacksmithproject.data.IntroStatus
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.model.DayResolution
 import com.tinyblacksmith.core.model.ForgeMode
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.LegacyProfile
+import com.tinyblacksmith.core.model.VisitReason
 
 /**
  * The guided first day (GDD 3.3 onboarding): the steps of one real day in a real run, in the order they are taught.
@@ -155,24 +157,38 @@ fun GameEngine.introUi(record: IntroRecord?, state: GameState, dest: Dest, draft
             ),
             mark = if (dest == Dest.SHOP) IntroMark.END_DAY else IntroMark.NAV_SHOP,
         )
-        IntroStep.OUTCOME -> IntroUi(step, overline, IntroLine(state.lastResolution?.let(::dayOutcome) ?: "Day 1 is over.", "Each morning, \"Worth doing first\" on the Shop names a useful next step."))
+        IntroStep.OUTCOME -> IntroUi(step, overline, state.lastResolution?.let(::dayOutcome) ?: IntroLine("Day 1 is over.", NEXT_STEP))
     }
 }
 
 private const val LIST_WHY = "Only listed weapons can sell. Heroes decide at End Day, and none can pay more than they carry."
 
-/** What the first day came to, from its record alone: what sold, or which of the three plain facts left the till empty. No hero's reason is guessed here; their cards said it. */
-internal fun dayOutcome(day: DayResolution): String {
+private const val NEXT_STEP = "Each morning, \"Worth doing first\" on the Shop names a useful next step."
+
+/**
+ * What the first day came to, from its record alone. A sale is named. A day without one says which plain fact left the
+ * till empty; where heroes looked and left, it counts the reasons the engine recorded for them (`MarketVisit.reason`,
+ * in the Gazette's own words) and says where each hero is named: the Gazette's "All details". Nothing is guessed.
+ */
+internal fun dayOutcome(day: DayResolution): IntroLine {
     val sales = day.browsers.filter { it.purchasedWeaponId != null }
     val gold = sales.sumOf { it.sale?.cashPaid ?: 0 }
-    val looked = day.browsers.size
-    return "Day ${day.day}: " + when {
-        sales.size == 1 -> "${day.shopWeapons.firstOrNull { it.weaponId == sales[0].purchasedWeaponId }?.name ?: "your weapon"} sold for $gold gold."
-        sales.size > 1 -> "${sales.size} weapons sold for $gold gold."
-        day.shelfPrices.isEmpty() -> "nothing was on the shelf, so nothing could sell."
-        looked == 0 -> "no hero came in."
-        looked == 1 -> "one hero looked and did not buy. Their card said why."
-        else -> "$looked heroes looked and none bought. Their cards said why."
+    val left = day.browsers.filter { it.purchasedWeaponId == null }
+    val head = "Day ${day.day}: "
+    return when {
+        sales.size == 1 -> IntroLine(head + "${day.shopWeapons.firstOrNull { it.weaponId == sales[0].purchasedWeaponId }?.name ?: "your weapon"} sold for $gold gold.", NEXT_STEP)
+        sales.size > 1 -> IntroLine(head + "${sales.size} weapons sold for $gold gold.", NEXT_STEP)
+        day.shelfPrices.isEmpty() -> IntroLine(head + "nothing was on the shelf, so nothing could sell.", "List a weapon before the next End Day: Storage is on the Shop.")
+        left.isEmpty() -> IntroLine(head + "no hero came in.", NEXT_STEP)
+        else -> {
+            val reasons = left.groupingBy { it.reason }.eachCount().entries.sortedWith(compareByDescending<Map.Entry<VisitReason, Int>> { it.value }.thenBy { it.key.ordinal })
+                .joinToString(", ") { "${it.value} ${Gazette.visitReason(it.key)}" }
+            IntroLine(
+                head + if (left.size == 1) "one hero looked and did not buy." else "${left.size} heroes looked and none bought.",
+                "Why they left: $reasons. The Gazette, in Records, names each under \"All details\".",
+                NEXT_STEP,
+            )
+        }
     }
 }
 

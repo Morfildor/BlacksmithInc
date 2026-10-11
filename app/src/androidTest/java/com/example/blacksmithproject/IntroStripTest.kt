@@ -1,5 +1,6 @@
 package com.example.blacksmithproject
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.example.blacksmithproject.data.IntroRecord
 import com.example.blacksmithproject.data.IntroStatus
 import com.example.blacksmithproject.ui.IntroCardLine
@@ -65,7 +67,8 @@ class IntroStripTest {
         compose.setContent {
             BlacksmithProjectTheme {
                 DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(size) then DeviceConfigurationOverride.FontScale(font)) {
-                    if (card) IntroCardLine(line, onSkip = {}) else IntroStrip(IntroUi(IntroStep.FORGE, "FIRST DAY · 2 of 5", line), onSkip = {}, onDone = {})
+                    // In a column, as in the workshop: the forced screen would otherwise stretch the strip to its own height.
+                    Column { if (card) IntroCardLine(line, onSkip = {}) else IntroStrip(IntroUi(IntroStep.FORGE, "FIRST DAY · 2 of 5", line), onSkip = {}, onDone = {}) }
                 }
             }
         }
@@ -86,6 +89,13 @@ class IntroStripTest {
                 if (n.config.contains(SemanticsActions.OnClick)) assertTrue("${w.width} x font $f: \"$label\" is ${b.height / density} dp tall", b.height / density >= 47.5f)
             }
             compose.onAllNodes(hasTestTag("intro_skip"))[0].assertIsDisplayed()
+            // However much is open, the strip leaves the larger part of the screen to the game. Its limit is a share of
+            // the device's own screen (the forced size does not change the configuration it reads), so that is the measure.
+            if (!which) {
+                val strip = compose.onNodeWithTag("intro_strip").fetchSemanticsNode().boundsInRoot.height
+                val screen = InstrumentationRegistry.getInstrumentation().targetContext.resources.displayMetrics.heightPixels
+                assertTrue("${w.width} x font $f: the strip is $strip of $screen", strip <= screen * 0.45f)
+            }
             compose.onAllNodes(hasTestTag("intro_why"))[0].performClick()
         }
     }

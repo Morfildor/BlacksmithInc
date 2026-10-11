@@ -280,7 +280,21 @@ class IntroTest : ShopDayTestBase() {
 
     @Test
     fun aDayWithoutASaleSaysSoFromItsRecordAlone() {
-        assertEquals("Day 1: nothing was on the shelf, so nothing could sell.", dayOutcome(fresh.nextDay().lastResolution!!))
+        val empty = dayOutcome(fresh.nextDay().lastResolution!!)
+        assertEquals("Day 1: nothing was on the shelf, so nothing could sell.", empty.objective)
+        assertTrue(empty.sentence, "Storage" in empty.sentence)
+        // Priced out of every purse: the heroes who looked are counted by the reason the engine recorded for each, and no other.
+        val once = (engine.handle(fresh, forgeSword) as CommandOutcome.Accepted).state
+        val dear = (engine.handle(once, Command.ToggleShelf(once.weapons.keys.first(), true, 99_999)) as CommandOutcome.Accepted).state
+        val day = (42L..60L).asSequence().map { seed -> engine.newRun(LegacyProfile(), seed) }
+            .map { s -> (engine.handle(s, forgeSword) as CommandOutcome.Accepted).state }
+            .map { s -> (engine.handle(s, Command.ToggleShelf(s.weapons.keys.first(), true, 99_999)) as CommandOutcome.Accepted).state.nextDay().lastResolution!! }
+            .first { it.browsers.isNotEmpty() }
+        val line = dayOutcome(day)
+        assertTrue(line.objective, "looked" in line.objective)
+        for ((reason, n) in day.browsers.groupingBy { it.reason }.eachCount()) assertTrue(line.sentence, "$n ${com.tinyblacksmith.core.gazette.Gazette.visitReason(reason)}" in line.sentence)
+        assertTrue(line.sentence, "Gazette" in line.sentence)
+        assertFalse("nothing sold at that price", day.browsers.any { it.purchasedWeaponId != null } || dear.listedWeapons().isEmpty())
     }
 
     @Test
