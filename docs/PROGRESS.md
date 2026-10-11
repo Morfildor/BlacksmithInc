@@ -12,9 +12,8 @@ sheet and the Forge open a bench that runs the real fight engine on made-up peop
 tab (learned, suggested, seen in a real fight). Classic runs get none of it and no screen says they do.
 
 **Checks actually run.**
-- `:core:test`: 585 tests, 58 failed, which is the 57 that fail on the base commit (`baseline_failures.txt`) plus one
-  prose guard failure of mine, fixed afterwards and confirmed by a targeted run of `ProseGuardTest` and
-  `DeepForgingTest` (24 of 24). The full suite was not rerun after that one-line fix.
+- `:core:test` (full run after the last code change): 585 tests, 57 failed, the same 57 that fail on the base commit
+  (`baseline_failures.txt`). `DeepForgingTest` 24 of 24.
 - `:app:testDebugUnitTest`: 220 tests, 15 failed, the same 15 that fail on the base commit (208 tests there).
   `DeepForgingUiTest` 12 of 12. `:app:assembleDebug` and `:app:compileDebugAndroidTestKotlin` pass.
 - Instrumented tests (`connectedDebugAndroidTest`): not run.
@@ -26,7 +25,7 @@ tab (learned, suggested, seen in a real fight). Classic runs get none of it and 
   Not tuned. Needs a rerun after the merge.
 - Device (`tools/emulator/forge.sh`, read-only AVD, 1080x1920, font scale 1.0 and 1.3, `device_1.0/`, `device_1.3/`):
   ingredient trays, outlook card and details, recipe bench, forge, weapon sheet, owned-weapon bench with "What
-  happened", notebook Fight notes with learned rules. All reached at both scales. Text wraps at 1.3 and nothing was
+  happened", notebook Fight notes with learned rules and one path marked "Suggested by the rules" (shot 20). All reached at both scales. Text wraps at 1.3 and nothing was
   seen cut off in the shots looked at (not every shot was inspected by eye).
 
 **Device findings.**
@@ -45,12 +44,14 @@ tab (learned, suggested, seen in a real fight). Classic runs get none of it and 
 - No human has played it. Coverage says the paths work, not that they are fun.
 
 **Next actions.**
-1. Merge `run-variety` (now `068a39e` or later) into this branch or the other way round. Expected conflicts: a
+1. Merge `run-variety` (now `719b685` or later) into this branch or the other way round. Expected conflicts: a
    neighbouring line in `Loadout.kt`, one line in `CombatContent.kt` and `GuildScenariosTest.kt`.
 2. After the merge: full `:core:test` and `:app:testDebugUnitTest`, take the content 6 fingerprint pin, rerun the guild
    simulator, run `:core:scenarios`.
 3. Owner decisions: the ten-point shift in guild difficulty, the weak metals, Ember Resin and Grave Dust.
-4. A throwaway checkout of the base commit is left at `.claude/worktrees/deep-forging-base` (used for the baseline).
+4. A throwaway checkout of the base commit (used for the baseline) is half removed: the repository no longer lists
+   it, Windows refused to delete some long paths under `.claude/worktrees/deep-forging-base` in the main checkout.
+   The folder can be deleted by hand.
 
 ## Guild evolution (2026-10-11, night): built in one run, 0.8.0
 The owner supplied `docs/GUILD_EVOLUTION_SPEC.md`, confirmed the revision of the LOCKED rules, and asked for the whole
