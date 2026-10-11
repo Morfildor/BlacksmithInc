@@ -184,6 +184,9 @@ class GuildEveningTest {
             assertEquals("$d", report.forgeDamage.takeIf { it > 0 }, siege.forgeDamage)
             assertEquals(report.fight?.highlights.orEmpty().take(3).map { it.text }, siege.highlights)
             assertEquals(report.fight, siege.fight)
+            // The night's cause lines are the report's own, in its order, and every siege has at least the forge's.
+            assertEquals("$d", report.notes, siege.notes)
+            assertTrue("$d", siege.notes.isNotEmpty())
             assertEquals("a siege waits for the player", 0, beat.millis)
             // A skipped day still says it: the evening card opens with the same words.
             val recap = when (val ending = d.ui().let { it.beats[it.endingIndex] }) { is Beat.Blessing -> ending.siege; is Beat.Tomorrow -> ending.recap; is Beat.Fallen -> ending.recap; else -> null }
