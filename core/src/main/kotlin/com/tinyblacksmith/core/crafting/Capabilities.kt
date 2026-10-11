@@ -21,7 +21,8 @@ import com.tinyblacksmith.core.combat.Who
  * spends) are written down here once, as [Capabilities.engine] facts.
  *
  * Bounds, on purpose: an enabler is looked for one step away (who puts Chill there), never further (who enables
- * the one who puts Chill there). Nothing here predicts a fight. The bench shows one.
+ * the one who puts Chill there). Where the answer hangs on a second step it says so ([Need.Unverified]) and does not
+ * guess. Nothing here predicts a fight. The bench shows one.
  */
 
 /** Something a rule makes, takes or waits for. The eleven fight states by their own names, and what is not a state. */
@@ -60,6 +61,8 @@ sealed interface Need {
     data class HolderIs(val tag: String) : Need
     /** A circumstance no party member can supply, in words. */
     data class Circumstance(val text: String) : Need
+    /** Something in the company answers [need], but only after a step of its own that is not followed here. Not a yes and not a no. */
+    data class Unverified(val need: Need) : Need
 }
 
 /**
@@ -86,11 +89,15 @@ sealed interface Query {
     data object ReachesBackline : Query
 }
 
+/**
+ * An answer, named for what it promises. [Available]: the weapon has the rule and the company brings every piece it
+ * waits for. Whether its moment comes in a given fight is not promised. [Needs]: the weapon has the rule and
+ * [Needs.missing] is what the company still has to bring, or what could not be checked. [CannotProvide]: no rule of it does this.
+ */
 sealed interface Verdict {
-    data class Satisfied(val by: List<Facet>) : Verdict
-    /** The weapon has the rule, and [missing] is what the company still has to bring. */
-    data class Conditional(val by: List<Facet>, val missing: List<Need>) : Verdict
-    data class Unsatisfied(val reason: String) : Verdict
+    data class Available(val by: List<Facet>) : Verdict
+    data class Needs(val by: List<Facet>, val missing: List<Need>) : Verdict
+    data class CannotProvide(val reason: String) : Verdict
 }
 
 /** Who stands with the weapon: the wielder's class, the allies with what they carry, the party's relics, the enemy when known. */
@@ -259,7 +266,8 @@ object Capabilities {
     /** Every fact in [p] that could answer [need], whether or not its own needs are met. */
     private fun candidates(need: Need, p: Pools): List<Facet> = when (need) {
         is Need.Present -> {
-            fun gives(f: Facet) = f.verb == Verb.PROVIDES && f.res in need.any
+            // A rule that only adds to what is already there (an echo, a fire that spreads) is not where it comes from.
+            fun gives(f: Facet) = f.verb == Verb.PROVIDES && f.res in need.any && f.needs.none { it is Need.Present && it.place == need.place && it.any.any { r -> r in need.any } }
             // What must be there before the hit: the wielder's own rules count when the wielder strikes twice in an action,
             // or when two of them stack it in one round, so that one is left after the enemy's strike has spent the other.
             val stacked = (p.weapon + p.kit).filter { gives(it) && !it.on.party }.map { it.ruleId }.distinct().size >= 2
@@ -273,7 +281,7 @@ object Capabilities {
             }
         }
         is Need.Spent -> (if (need.byWielder) p.weapon + p.kit else p.weapon + p.kit + p.others).filter { it.verb == Verb.SPENDS && it.res == need.res }
-        is Need.FoeIs, is Need.HolderIs, is Need.Circumstance -> emptyList()
+        is Need.FoeIs, is Need.HolderIs, is Need.Circumstance, is Need.Unverified -> emptyList()
     }
 
     /** One step and no further: what answers a need must itself have what it waits for, and what answers that is taken on trust. */
@@ -284,12 +292,23 @@ object Capabilities {
         is Need.Present -> candidates(need, p).filter { ready(it, p, depth) }.let { c -> if (need.atLeast <= 1) c.isNotEmpty() else c.any { it.limit.perFight == 0 } || c.sumOf { it.amount * it.limit.perFight } >= need.atLeast }
         is Need.Spent -> candidates(need, p).any { ready(it, p, depth) }
         is Need.FoeIs -> p.foeTags?.contains(need.tag) == true
-        is Need.HolderIs, is Need.Circumstance -> false
+        is Need.HolderIs, is Need.Circumstance, is Need.Unverified -> false
     }
 
-    /** What is still open behind [need]: nothing when it is met. When the weapon has the answer and the answer is what lacks something, that. */
+    /**
+     * Whether one step is enough to know. What answers [need] may wait for something itself: that is fine when what it
+     * waits for is brought by a rule that waits for nothing. A longer chain is not followed.
+     */
+    private fun established(need: Need, p: Pools): Boolean = need !is Need.Present && need !is Need.Spent || candidates(need, p).any { c ->
+        c.needs.all { n -> n is Need.Circumstance || if (n is Need.Present || n is Need.Spent) candidates(n, p).any { it.needs.all { last -> last is Need.Circumstance } } else met(n, p, 0) }
+    }
+
+    /**
+     * What is still open behind [need]: nothing when it is met and one step shows it. When the weapon has the answer and
+     * the answer is what lacks something, that. When the answer hangs on a second step, the need itself as [Need.Unverified].
+     */
     private fun open(need: Need, p: Pools): List<Need> {
-        if (met(need, p)) return emptyList()
+        if (met(need, p)) return if (established(need, p)) emptyList() else listOf(Need.Unverified(need))
         val behind = candidates(need, p).firstOrNull()?.needs?.filterNot { it is Need.Circumstance || met(it, p, 0) }.orEmpty()
         return behind.ifEmpty { listOf(need) }
     }
@@ -313,23 +332,23 @@ object Capabilities {
     }
 
     /**
-     * Pure. [Verdict.Satisfied] when a rule of [subject] answers [q] and [company] brings everything that rule waits
-     * for. [Verdict.Conditional] names what is missing for the rule that lacks the least. A question about what the
+     * Pure. [Verdict.Available] when a rule of [subject] answers [q] and [company] brings everything that rule waits
+     * for. [Verdict.Needs] names what is missing for the rule that lacks the least. A question about what the
      * weapon needs ([Query.Requires]) is answered yes or no: it has no enablers of its own.
      */
     fun evaluate(q: Query, subject: WeaponRules.Composition, company: Company = Company()): Verdict {
         val p = pools(subject, company)
         val by = matching(q, p.weapon)
-        if (by.isEmpty()) return Verdict.Unsatisfied(reason(q))
-        if (q is Query.Requires) return Verdict.Satisfied(by)
+        if (by.isEmpty()) return Verdict.CannotProvide(reason(q))
+        if (q is Query.Requires) return Verdict.Available(by)
         fun missing(f: Facet): List<Need> = f.needs.flatMap { open(it, p) }.distinct() +
             // Whoever is weakest may be the wielder: no company can promise otherwise.
             listOfNotNull(Need.Circumstance("It goes to whoever is weakest, which may be the wielder.").takeIf { q == Query.ProtectsAnother && f.on == On.WEAKEST_ALLY })
         val open = by.associateWith(::missing)
         val ready = open.filterValues { it.isEmpty() }.keys.toList()
-        if (ready.isNotEmpty()) return Verdict.Satisfied(ready)
+        if (ready.isNotEmpty()) return Verdict.Available(ready)
         val least = open.values.minOf { it.size }
-        return Verdict.Conditional(by, open.values.first { it.size == least })
+        return Verdict.Needs(by, open.values.first { it.size == least })
     }
 
     /** What every rule of [subject] still waits for in [company], by rule ID: the forge's "missing enablers". A rule with nothing open is absent. */
@@ -355,11 +374,15 @@ object Capabilities {
 
     // ---- words ----
 
-    private fun list(any: Set<Res>): String = any.map { it.word }.let { if (it.size == 1) it[0] else it.dropLast(1).joinToString(", ") + " or " + it.last() }
+    /** Nothing a smith forges, hires or meets puts Wet on anybody: only a Storm front does. Ordinary guidance leaves it out where something else serves. */
+    fun offered(any: Set<Res>): Set<Res> = if (any.size > 1) any - Res.WET else any
+
+    private fun list(any: Set<Res>): String = offered(any).map { it.word }.let { if (it.size == 1) it[0] else it.dropLast(1).joinToString(", ") + " or " + it.last() }
 
     /** A need as the forge says it: what the company has to bring. */
     fun text(need: Need): String = when (need) {
         is Need.Present -> when {
+            need.any == setOf(Res.WET) -> "Wet on ${if (need.place == Place.FOE) "an enemy" else "the party"}. Only a Storm front brings it."
             Res.HEALING in need.any && need.ownAction -> "A wielder whose own action heals."
             Res.HEALING in need.any && need.place == Place.WIELDER -> "Somebody or something that heals the wielder."
             Res.HEALING in need.any -> "A healer in the party."
@@ -379,6 +402,14 @@ object Capabilities {
         is Need.FoeIs -> when (need.tag) { "elite" -> "An elite or a leader among the enemies."; "undead" -> "One of the Hollowbound among the enemies."; else -> "An enemy of the right kind." }
         is Need.HolderIs -> "A wielder of the right kind."
         is Need.Circumstance -> need.text
+        is Need.Unverified -> "${text(need.need)} The company can bring it, but only after a step of its own. That is not checked here: the bench shows it."
+    }
+
+    /** A verdict as a smith reads it. "Available" never promises that the moment comes. */
+    fun text(v: Verdict, c: WeaponRules.Composition): String = when (v) {
+        is Verdict.Available -> "Available when its moment comes: ${v.by.map { c.rule(it.ruleId)?.effect?.name ?: it.ruleId }.distinct().joinToString(", ")}."
+        is Verdict.Needs -> "Needs: ${v.missing.joinToString(" ") { text(it) }}"
+        is Verdict.CannotProvide -> "Cannot provide. ${v.reason}"
     }
 
     private fun String.cap() = replaceFirstChar { it.uppercase() }

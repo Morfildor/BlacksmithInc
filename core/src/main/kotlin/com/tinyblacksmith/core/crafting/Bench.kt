@@ -38,17 +38,25 @@ object Bench {
     const val DEMO_QUALITY = 50
 
     /** [healthPercent]: the line is made to last, so a rule that needs a few rounds gets them. Its strikes are as the catalog writes them. */
-    data class Target(val id: String, val name: String, val about: String, val units: List<String>, val healthPercent: Int = 100)
+    /** [home]: the fight stands on the town's wall, where a weapon's wall-only rules hold and its road-only rules do not. */
+    data class Target(val id: String, val name: String, val about: String, val units: List<String>, val healthPercent: Int = 100, val home: Boolean = false)
 
     data class Ally(val classId: HeroClassId, val name: String, val familyId: WeaponFamilyId, val coreId: MaterialId, val augmentId: MaterialId, val weaponName: String)
 
     /** [ahead]: the companions stand in front of the wielder. They act first, and the enemy strikes them first. */
     data class Companions(val id: String, val name: String, val about: String, val allies: List<Ally>, val ahead: Boolean = false)
 
+    /**
+     * What a rehearsal is fought under. The sheet uses the default. `ForgeLab` varies it: other seeds, a green or a
+     * seasoned wielder, a stronger line, a fight that only has to be held for [holdRounds] rounds.
+     */
+    data class Setting(val seed: Long = SEED, val level: Int = LEVEL, val enemyPercent: Int = 100, val holdRounds: Int = 0)
+
     val targets: List<Target> = listOf(
         Target("armoured", "An armoured line", "Two enemies that raise Guard every round. Shows what gets through Guard and what Guard stops.", listOf("cinder_knight", "bone_warden"), 180),
         Target("backline", "A guarded caster", "A gravecaller mends its dead from behind a bone warden. Shows what reaches the back of the line.", listOf("bone_warden", "hollow_shambler", "gravecaller"), 170),
         Target("attrition", "A long fight", "A warchief and two brutes that hit hard and keep hitting. Shows what Guard, healing and broken Guard are worth.", listOf("ashclaw_brute", "ashclaw_brute", "ashclaw_warchief"), 150),
+        Target("wall", "The town's wall", "A raiding line met on the wall at home. Rules a weapon has only on the wall count here. Its road-only rules do not.", listOf("ashclaw_scout", "ashclaw_brute", "ashclaw_warchief"), 150, home = true),
     )
 
     val companions: List<Companions> = listOf(
@@ -74,11 +82,12 @@ object Bench {
     data class Report(
         val title: String, val synthetic: List<String>, val setup: FightSetup, val result: FightResult, val wielderKey: String,
         val fired: List<Fired>, val silent: List<Silent>,
-        /** Rules the weapon has only on the town's wall: the bench stands on the road and does not test them. */
+        /** Rules the weapon has only in the other place (the wall for a rehearsal on the road, the road for one on the wall): this fight does not test them. */
         val notTested: List<WeaponRules.Rule>,
+        val home: Boolean = false,
     )
 
-    private fun hero(key: String, name: String, classId: HeroClassId) = Hero(HeroId(key), name, "of the bench", classId, LEVEL, 0, 0, 100, emptyList(), null)
+    private fun hero(key: String, name: String, classId: HeroClassId, level: Int = LEVEL) = Hero(HeroId(key), name, "of the bench", classId, level, 0, 0, 100, emptyList(), null)
 
     private fun blade(id: String, name: String, family: WeaponFamilyId, core: MaterialId, augment: MaterialId, catalyst: MaterialId?, content: ContentCatalog, config: BalanceConfig, quality: Int = DEMO_QUALITY): Weapon = Weapon(
         id = WeaponId(id), name = name, familyId = family, coreId = core, augmentId = augment, catalystId = catalyst, mode = if (catalyst != null) ForgeMode.ADVANCED else ForgeMode.QUICK, risk = Risk.BALANCED,
@@ -105,26 +114,28 @@ object Bench {
         return Company(
             wielder = combat.kitByClass.getValue(wielder).kit,
             allies = c.allies.map { Fighter(combat.kitByClass.getValue(it.classId).kit, WeaponRules.of(blade("a", it.weaponName, it.familyId, it.coreId, it.augmentId, null, content, config), content)) },
-            foes = t.units.map { combat.unit(it) }, relics = relics.flatMap { combat.relicEffects[it].orEmpty() },
+            foes = t.units.map { combat.unit(it) }, relics = relics.flatMap { combat.relicEffects[it].orEmpty() }, home = t.home,
         )
     }
 
     /** [relics] are party relics by ID, for a smith who wants to see the ones the guild holds at work. They are named in the report like everything else. */
-    fun run(weapon: Weapon, demonstration: Boolean, wielder: HeroClassId, companionsId: String, targetId: String, content: ContentCatalog, config: BalanceConfig, relics: List<String> = emptyList()): Report {
+    fun run(weapon: Weapon, demonstration: Boolean, wielder: HeroClassId, companionsId: String, targetId: String, content: ContentCatalog, config: BalanceConfig, relics: List<String> = emptyList(), setting: Setting = Setting()): Report {
         val combat = content.combat ?: error("This catalog has no combat content")
         val c = companions.first { it.id == companionsId }
         val t = targets.first { it.id == targetId }
         val className = content.heroClass(wielder).name
-        val me = Loadout.combatant(hero("bench-wielder", "Bench $className", wielder), weapon, content, config)
-        val allies = c.allies.mapIndexed { i, a -> Loadout.combatant(hero("bench-ally-$i", a.name, a.classId), blade("bench-ally-weapon-$i", a.weaponName, a.familyId, a.coreId, a.augmentId, null, content, config), content, config) }
+        val field = if (t.home) Loadout.Field.HOME else Loadout.Field.ROAD
+        val me = Loadout.combatant(hero("bench-wielder", "Bench $className", wielder, setting.level), weapon, content, config, field)
+        val allies = c.allies.mapIndexed { i, a -> Loadout.combatant(hero("bench-ally-$i", a.name, a.classId, setting.level), blade("bench-ally-weapon-$i", a.weaponName, a.familyId, a.coreId, a.augmentId, null, content, config), content, config, field) }
         val party = if (c.ahead) allies + me else listOf(me) + allies
-        val foes = t.units.mapIndexed { i, id -> Loadout.enemy(combat.unit(id), "bench-foe-$i") }.map {
+        val foes = t.units.mapIndexed { i, id -> Loadout.enemy(combat.unit(id), "bench-foe-$i", setting.enemyPercent) }.map {
             val mid = (it.strikeMin + it.strikeMax) / 2
             val health = Fight.pct(it.maxHealth, t.healthPercent)
             it.copy(strikeMin = mid, strikeMax = mid, maxHealth = health, health = health)
         }
         val carried = relics.filter { it in combat.relicEffects }
-        val setup = FightSetup("${weapon.name} on the bench", party, foes, carried.flatMap { combat.relicEffects.getValue(it) }, Objective(), Posture.RECKLESS, config.guild.fight, SEED, combat.unitById)
+        val setup = FightSetup("${weapon.name} on the bench", party, foes, carried.flatMap { combat.relicEffects.getValue(it) },
+            if (setting.holdRounds > 0) Objective(com.tinyblacksmith.core.combat.ObjectiveKind.HOLD, setting.holdRounds) else Objective(), Posture.RECKLESS, config.guild.fight, setting.seed, combat.unitById)
         val result = Fight.resolve(setup)
 
         val composed = WeaponRules.of(weapon, content)
@@ -132,7 +143,7 @@ object Bench {
         val partyKeys = party.map { it.key }.toSet()
         val fired = ArrayList<Fired>()
         val silent = ArrayList<Silent>()
-        for (rule in composed.rules(home = false)) {
+        for (rule in composed.rules(t.home)) {
             val mine = result.events.filter { it.effectId == rule.id && (it.source == me.key || it.target == me.key) }
             if (mine.isEmpty()) silent += Silent(rule, why(rule, result.events, me, partyKeys, foes))
             else fired += Fired(rule, mine.mapNotNull { it.parentId }.distinct().size.coerceAtLeast(1), chain(mine.first(), byId))
@@ -140,15 +151,16 @@ object Bench {
         return Report(
             title = "${weapon.name}, ${t.name.lowercase()}, ${c.name.lowercase()}",
             synthetic = listOfNotNull(
-                "A made-up level $LEVEL $className carries it. Nobody from your town or guild is here.",
+                "A made-up level ${setting.level} $className carries it. Nobody from your town or guild is here.",
                 c.allies.takeIf { it.isNotEmpty() }?.let { a -> "The company is made up too: ${a.joinToString(", ") { "${it.name} with ${it.weaponName.lowercase().let { w -> if (w.first() in "aeiou") "an $w" else "a $w" }}" }}." },
                 carried.takeIf { it.isNotEmpty() }?.let { r -> "The party's relics are in play: ${r.joinToString(", ") { content.relic(it)?.name ?: it }}." },
                 "The enemies are a fixed line with more health than usual, striking the same every time. No contract or siege will look like this.",
+                "The wall here is made up as well. It is not the siege the scouts report.".takeIf { t.home },
                 "The party fights to the end here. On a contract its posture decides when it leaves.",
                 "A recipe, not a weapon you own: shown at middling quality with no buff, flaw or signature, because those are rolled.".takeIf { demonstration },
                 "Nothing here is paid, learned or recorded.",
             ),
-            setup = setup, result = result, wielderKey = me.key, fired = fired, silent = silent, notTested = composed.rules.filter { it.where == WeaponRules.Where.HOME },
+            setup = setup, result = result, wielderKey = me.key, fired = fired, silent = silent, notTested = composed.rules.filter { it.where != WeaponRules.Where.ANYWHERE && (it.where == WeaponRules.Where.HOME) != t.home }, home = t.home,
         )
     }
 
@@ -169,7 +181,7 @@ object Bench {
             EventKind.HEALTH_PAID -> Res.HEALTH_PAID in any
             else -> false
         }
-        fun words(any: Set<Res>) = any.joinToString(" or ") { it.word }
+        fun words(any: Set<Res>) = Capabilities.offered(any).joinToString(" or ") { it.word }
         if (events.none { it.kind == EventKind.ACTION && it.source == me.key && it.target == null }) return "The fight ended before ${me.name} acted."
         val needs = Capabilities.facets(rule.effect, rule.where).filter { !it.engine }.flatMap { it.needs }.distinct()
         for (n in needs) when (n) {
@@ -191,7 +203,7 @@ object Bench {
             is Need.Spent -> if (events.none { it.kind == EventKind.STAT_SPENT && it.stat?.let(Res::of) == n.res && (if (n.byWielder) it.source == me.key else it.source in party) })
                 return if (n.res == Res.MARK) "No Mark was there for ${me.name}'s hit to spend." else "Nobody spent ${n.res.word}."
             is Need.FoeIs -> if (foes.none { n.tag in it.tags || n.tag in it.kit.tags }) return when (n.tag) { "elite" -> "None of these enemies is an elite or a leader."; "undead" -> "None of these enemies is one of the Hollowbound."; else -> "None of these enemies is the kind it wants." }
-            is Need.HolderIs, is Need.Circumstance -> {}
+            is Need.HolderIs, is Need.Circumstance, is Need.Unverified -> {}
         }
         // Everything it waits for was there: say which moment never came.
         val t = rule.effect.trigger

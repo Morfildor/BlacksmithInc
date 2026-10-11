@@ -67,6 +67,8 @@ import com.tinyblacksmith.core.model.Weapon
 @Immutable
 data class BenchUi(
     val title: String, val synthetic: List<String>, val fired: List<BenchFiredUi>, val silent: List<BenchSilentUi>, val notTested: List<String>, val result: FightResult,
+    /** Heading and one line for [notTested]: which place this rehearsal stands in and where the other rules can be tried. */
+    val elsewhere: String = "", val elsewhereNote: String = "",
 )
 
 fun benchUi(report: Bench.Report): BenchUi = BenchUi(
@@ -74,6 +76,8 @@ fun benchUi(report: Bench.Report): BenchUi = BenchUi(
     report.fired.map { BenchFiredUi(it.rule.id, it.rule.effect.name, it.times, it.chain) },
     report.silent.map { BenchSilentUi(it.rule.id, it.rule.effect.name, it.why) },
     report.notTested.map { it.effect.name }, report.result,
+    elsewhere = if (report.home) "Only on a contract" else "Only on the town's wall",
+    elsewhereNote = if (report.home) "This rehearsal stands on the town's wall. Choose another line under Against to try these." else "This rehearsal stands on the road. Choose The town's wall under Against to try these.",
 )
 
 /** The party relics the workshop holds, by ID: what a party leaving today would take along. The bench names them in its report. */
@@ -129,9 +133,9 @@ fun BenchSheet(weapon: Weapon, demonstration: Boolean, content: ContentCatalog, 
                     }
                 }
 
-                SectionHeader("What stayed silent")
+                SectionHeader("Waiting for its moment")
                 Column(Modifier.fillMaxWidth().testTag("bench_silent")) {
-                    if (ui.silent.isEmpty()) Secondary("Every rule it has came into play.")
+                    if (ui.silent.isEmpty()) Secondary("Every rule it has here came into play.")
                     ui.silent.forEach { q ->
                         Column(Modifier.padding(top = Space.sm).semantics(mergeDescendants = true) {}) {
                             Text(q.name, style = MaterialTheme.typography.titleSmall, color = CreamMuted)
@@ -141,9 +145,9 @@ fun BenchSheet(weapon: Weapon, demonstration: Boolean, content: ContentCatalog, 
                 }
 
                 if (ui.notTested.isNotEmpty()) {
-                    SectionHeader("Only on the town's wall")
+                    SectionHeader(ui.elsewhere)
                     Column(Modifier.fillMaxWidth().testTag("bench_not_tested")) {
-                        Secondary("The bench stands on the road. It does not test these.")
+                        Secondary(ui.elsewhereNote)
                         ui.notTested.forEach { Text(it, style = MaterialTheme.typography.titleSmall, color = CreamMuted, modifier = Modifier.padding(top = Space.xs)) }
                     }
                 }

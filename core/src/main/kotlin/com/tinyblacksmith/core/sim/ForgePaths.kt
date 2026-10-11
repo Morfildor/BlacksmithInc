@@ -45,9 +45,10 @@ object ForgePaths {
         Path("steam", "Heat on cold into Steam", "Burn on a chilled enemy, or Chill on a burning one, cancels both and gives Steam to whoever did it. Dragon Oil spends Steam as a lance through Guard. Void Ink spends it as Guard for all.",
             "The Burn and the Chill are both gone. Nothing burns and the enemy is not slowed.",
             "Against a line with no Guard to pierce, leaving the Chill on to weaken their strikes can be worth more than the lance.", listOf(
-                Case("First recipe", "Bronze + Frost Bloom + Dragon Oil sword, a Guardian, alone", made(L.SWORD, L.BRONZE, L.FROST_BLOOM, L.DRAGON_OIL), L.GUARDIAN, "alone", "armoured", fires = setOf("catalyst_spreading", "catalyst_steam_lance")),
+                Case("First recipe", "Bronze + Frost Bloom + Dragon Oil sword, a Guardian, behind a fire mage", made(L.SWORD, L.BRONZE, L.FROST_BLOOM, L.DRAGON_OIL), L.GUARDIAN, "fire", "armoured", fires = setOf("catalyst_steam_lance")),
                 Case("Second recipe", "Iron + Ember Resin + Void Ink sword, a Duelist, behind a frost mage", made(L.SWORD, L.IRON, L.EMBER_RESIN, L.VOID_INK), L.DUELIST, "frost", "attrition", fires = setOf("catalyst_steam_shield")),
-                Case("Without its enabler", "Iron + Ember Resin + Dragon Oil sword, alone: fire with no cold to meet", made(L.SWORD, L.IRON, L.EMBER_RESIN, L.DRAGON_OIL), L.GUARDIAN, "alone", "armoured", fires = setOf("catalyst_spreading"), silent = setOf("catalyst_steam_lance")),
+                Case("Without its enabler", "Iron + Ember Resin + Dragon Oil sword, alone: fire with no cold to meet", made(L.SWORD, L.IRON, L.EMBER_RESIN, L.DRAGON_OIL), L.GUARDIAN, "alone", "armoured", fires = setOf("catalyst_spreading_fire"), silent = setOf("catalyst_steam_lance")),
+                Case("Without its enabler", "The first recipe alone: cold with no fire to meet, and nothing for the oil to spread", made(L.SWORD, L.BRONZE, L.FROST_BLOOM, L.DRAGON_OIL), L.GUARDIAN, "alone", "armoured", silent = setOf("catalyst_spreading_fire", "catalyst_steam_lance")),
             )),
         Path("burn_guard", "Burn into Guard", "After its wielder acts, Void Ink takes Burn off the enemy the wielder faces and gives it to your weakest ally as Guard.",
             "That Burn no longer deals damage. One Burn is one Guard, so it wants more fire than a single ember.",

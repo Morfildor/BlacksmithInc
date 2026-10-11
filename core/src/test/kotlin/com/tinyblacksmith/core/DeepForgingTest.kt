@@ -164,69 +164,75 @@ class DeepForgingTest {
     @Test fun `can it generate Charge - yes with what it waits for, conditional with the enabler named, no with a reason`() {
         val salted = made(L.SWORD, L.IRON, L.STORMGLASS, L.BINDING_SALT)
         // Alone it has the rule and lacks the healer: the missing enabler is the healing, a typed need.
-        val alone = assertIs<Verdict.Conditional>(verdict(Query.Generates(Res.CHARGE), salted, L.GUARDIAN))
+        val alone = assertIs<Verdict.Needs>(verdict(Query.Generates(Res.CHARGE), salted, L.GUARDIAN))
         assertEquals(listOf<Need>(Need.Present(setOf(Res.HEALING), Place.WIELDER)), alone.missing)
         assertEquals("Somebody or something that heals the wielder.", Capabilities.text(alone.missing.single()))
-        assertIs<Verdict.Satisfied>(verdict(Query.Generates(Res.CHARGE), salted, L.GUARDIAN, "healer"))
+        assertIs<Verdict.Available>(verdict(Query.Generates(Res.CHARGE), salted, L.GUARDIAN, "healer"))
         // The fights agree with both verdicts.
         assertTrue(bench(salted, L.GUARDIAN, "healer").fired.any { it.rule.id == "catalyst_capacitor" })
         assertTrue(bench(salted, L.GUARDIAN, "alone").silent.any { it.rule.id == "catalyst_capacitor" })
         // "Answers healing" is not "provides healing": the salted sword requires it and makes none.
-        assertIs<Verdict.Satisfied>(verdict(Query.Requires(Res.HEALING), salted))
-        val none = assertIs<Verdict.Unsatisfied>(verdict(Query.Generates(Res.HEALING), salted, L.GUARDIAN, "healer"))
+        assertIs<Verdict.Available>(verdict(Query.Requires(Res.HEALING), salted))
+        val none = assertIs<Verdict.CannotProvide>(verdict(Query.Generates(Res.HEALING), salted, L.GUARDIAN, "healer"))
         assertEquals("Nothing on it makes healing.", none.reason)
-        assertIs<Verdict.Unsatisfied>(verdict(Query.Generates(Res.CHARGE), made(L.SWORD, L.IRON, L.EMBER_RESIN), L.GUARDIAN, "healer"))
+        assertIs<Verdict.CannotProvide>(verdict(Query.Generates(Res.CHARGE), made(L.SWORD, L.IRON, L.EMBER_RESIN), L.GUARDIAN, "healer"))
     }
 
-    @Test fun `can it spend Charge - only with enough of it, and a source that gives once does not fill three`() {
+    @Test fun `can it spend Charge - only with enough of it, and silver brings enough for one burst`() {
         val salted = made(L.SWORD, L.IRON, L.STORMGLASS, L.BINDING_SALT)
-        assertIs<Verdict.Conditional>(verdict(Query.Spends(Res.CHARGE), salted, L.GUARDIAN))
-        assertIs<Verdict.Satisfied>(verdict(Query.Spends(Res.CHARGE), salted, L.GUARDIAN, "healer"))
-        // Silver's two Charge are a gift given once: with the salt still unfed, the burst is not ready.
+        assertIs<Verdict.Needs>(verdict(Query.Spends(Res.CHARGE), salted, L.GUARDIAN))
+        assertIs<Verdict.Available>(verdict(Query.Spends(Res.CHARGE), salted, L.GUARDIAN, "healer"))
+        // Silver's three Charge are a gift given once, and three is one burst: the salt needs nobody else for the first.
         val silver = made(L.SWORD, L.SILVER, L.STORMGLASS, L.BINDING_SALT)
-        val short = assertIs<Verdict.Conditional>(verdict(Query.Spends(Res.CHARGE), silver, L.GUARDIAN))
-        assertTrue(short.missing.isNotEmpty())
-        assertTrue(bench(silver, L.GUARDIAN, "alone").silent.any { it.rule.id == "charge_burst" })
-        // Two from silver and one from a Battlemage's opening add up.
-        assertIs<Verdict.Satisfied>(verdict(Query.Spends(Res.CHARGE), silver, L.GUARDIAN, "fire"))
-        assertTrue(bench(silver, L.GUARDIAN, "fire").fired.any { it.rule.id == "charge_burst" })
-        assertIs<Verdict.Unsatisfied>(verdict(Query.Spends(Res.CHARGE), made(L.SWORD, L.SILVER, L.EMBER_RESIN), L.GUARDIAN, "healer"))
+        assertIs<Verdict.Available>(verdict(Query.Spends(Res.CHARGE), silver, L.GUARDIAN))
+        assertTrue(bench(silver, L.GUARDIAN, "alone").fired.any { it.rule.id == "charge_burst" })
+        // The same weapon forged before silver held a charge still waits for a healer.
+        val old = silver.copy(craft = 1)
+        assertIs<Verdict.Needs>(verdict(Query.Spends(Res.CHARGE), old, L.GUARDIAN))
+        assertTrue(bench(old, L.GUARDIAN, "alone").silent.any { it.rule.id == "charge_burst" })
+        assertIs<Verdict.CannotProvide>(verdict(Query.Spends(Res.CHARGE), made(L.SWORD, L.SILVER, L.EMBER_RESIN), L.GUARDIAN, "healer"))
     }
 
     @Test fun `can it protect another ally - the weakest may be the wielder, everybody is everybody`() {
         // Void Ink shields whoever is weakest: no company can promise that is somebody else.
-        val ink = assertIs<Verdict.Conditional>(verdict(Query.ProtectsAnother, made(L.SWORD, L.IRON, L.EMBER_RESIN, L.VOID_INK), L.GUARDIAN, "healer"))
+        val ink = assertIs<Verdict.Needs>(verdict(Query.ProtectsAnother, made(L.SWORD, L.IRON, L.EMBER_RESIN, L.VOID_INK), L.GUARDIAN, "healer"))
         assertTrue(ink.missing.any { it is Need.Circumstance })
         // Dawnbrand shields every ally with the Burn it takes, and its own fire supplies the Burn.
         val dawn = made(L.SWORD, L.IRON, L.EMBER_RESIN, L.BINDING_SALT, buffs = listOf(L.FLAMING, L.KEEN), signature = "dawnbrand")
-        assertIs<Verdict.Satisfied>(verdict(Query.ProtectsAnother, dawn, L.GUARDIAN, "healer"))
-        assertIs<Verdict.Unsatisfied>(verdict(Query.ProtectsAnother, made(L.SWORD, L.IRON, L.EMBER_RESIN), L.GUARDIAN, "healer"))
+        assertIs<Verdict.Available>(verdict(Query.ProtectsAnother, dawn, L.GUARDIAN, "healer"))
+        assertIs<Verdict.CannotProvide>(verdict(Query.ProtectsAnother, made(L.SWORD, L.IRON, L.EMBER_RESIN), L.GUARDIAN, "healer"))
         // Iron's Guard is the wielder's own: it protects nobody else.
         assertTrue(Capabilities.facets(WeaponRules.of(made(L.SWORD, L.IRON, L.EMBER_RESIN), content)).none { it.res == Res.GUARD && it.on.others })
     }
 
     @Test fun `does it convert Burn into Guard - through the two rules of one weapon, and only where there is Burn to take`() {
         val fireInk = made(L.SWORD, L.IRON, L.EMBER_RESIN, L.VOID_INK)
-        assertIs<Verdict.Satisfied>(verdict(Query.Converts(Res.BURN, Res.GUARD), fireInk, L.GUARDIAN))
+        assertIs<Verdict.Available>(verdict(Query.Converts(Res.BURN, Res.GUARD), fireInk, L.GUARDIAN))
         assertTrue(bench(fireInk, L.GUARDIAN).fired.map { it.rule.id }.containsAll(listOf("catalyst_drinking", "catalyst_converted_guard")))
         // On a frost weapon the rule is there and the Burn is not: what is missing is the Burn, not the rule.
         val frostInk = made(L.SWORD, L.IRON, L.FROST_BLOOM, L.VOID_INK)
-        val cold = assertIs<Verdict.Conditional>(verdict(Query.Converts(Res.BURN, Res.GUARD), frostInk, L.GUARDIAN))
+        val cold = assertIs<Verdict.Needs>(verdict(Query.Converts(Res.BURN, Res.GUARD), frostInk, L.GUARDIAN))
         assertEquals(listOf<Need>(Need.Present(setOf(Res.BURN), Place.FOE)), cold.missing)
         assertTrue(bench(frostInk, L.GUARDIAN).silent.any { it.rule.id == "catalyst_converted_guard" })
-        assertIs<Verdict.Satisfied>(verdict(Query.Converts(Res.BURN, Res.GUARD), frostInk, L.GUARDIAN, "fire"))
-        assertIs<Verdict.Unsatisfied>(verdict(Query.Converts(Res.BURN, Res.GUARD), made(L.SWORD, L.IRON, L.EMBER_RESIN, L.DRAGON_OIL), L.GUARDIAN))
-        // Steam is a conversion too, and it goes two ways.
-        assertIs<Verdict.Satisfied>(verdict(Query.Converts(Res.STEAM, Res.DAMAGE), made(L.SWORD, L.BRONZE, L.FROST_BLOOM, L.DRAGON_OIL), L.GUARDIAN))
-        assertIs<Verdict.Conditional>(verdict(Query.Converts(Res.STEAM, Res.GUARD), made(L.SWORD, L.IRON, L.EMBER_RESIN, L.VOID_INK), L.GUARDIAN))
-        assertIs<Verdict.Satisfied>(verdict(Query.Converts(Res.STEAM, Res.GUARD), made(L.SWORD, L.IRON, L.EMBER_RESIN, L.VOID_INK), L.DUELIST, "frost"))
+        assertIs<Verdict.Available>(verdict(Query.Converts(Res.BURN, Res.GUARD), frostInk, L.GUARDIAN, "fire"))
+        assertIs<Verdict.CannotProvide>(verdict(Query.Converts(Res.BURN, Res.GUARD), made(L.SWORD, L.IRON, L.EMBER_RESIN, L.DRAGON_OIL), L.GUARDIAN))
+        // Steam is a conversion too, and it goes two ways. It takes a fire and a cold from two different hands:
+        // a frost weapon with Dragon Oil no longer lights its own fire, and one forged before that change still does.
+        val frostOil = made(L.SWORD, L.BRONZE, L.FROST_BLOOM, L.DRAGON_OIL)
+        val lone = assertIs<Verdict.Needs>(verdict(Query.Converts(Res.STEAM, Res.DAMAGE), frostOil, L.GUARDIAN))
+        assertEquals(listOf<Need>(Need.Present(setOf(Res.BURN), Place.FOE)), lone.missing)
+        assertIs<Verdict.Available>(verdict(Query.Converts(Res.STEAM, Res.DAMAGE), frostOil, L.GUARDIAN, "fire"))
+        assertIs<Verdict.Available>(verdict(Query.Converts(Res.STEAM, Res.DAMAGE), frostOil.copy(craft = 1), L.GUARDIAN))
+        assertTrue("catalyst_spreading" in rules(frostOil.copy(craft = 1)) && "catalyst_spreading_fire" in rules(frostOil))
+        assertIs<Verdict.Needs>(verdict(Query.Converts(Res.STEAM, Res.GUARD), made(L.SWORD, L.IRON, L.EMBER_RESIN, L.VOID_INK), L.GUARDIAN))
+        assertIs<Verdict.Available>(verdict(Query.Converts(Res.STEAM, Res.GUARD), made(L.SWORD, L.IRON, L.EMBER_RESIN, L.VOID_INK), L.DUELIST, "frost"))
     }
 
     @Test fun `can it reach the backline - a bow and a storm weapon do, a plain sword does not`() {
-        assertIs<Verdict.Satisfied>(verdict(Query.ReachesBackline, made(L.BOW, L.IRON, L.EMBER_RESIN), L.RANGER))
-        assertIs<Verdict.Satisfied>(verdict(Query.ReachesBackline, made(L.SWORD, L.IRON, L.STORMGLASS), L.GUARDIAN))
+        assertIs<Verdict.Available>(verdict(Query.ReachesBackline, made(L.BOW, L.IRON, L.EMBER_RESIN), L.RANGER))
+        assertIs<Verdict.Available>(verdict(Query.ReachesBackline, made(L.SWORD, L.IRON, L.STORMGLASS), L.GUARDIAN))
         val sword = made(L.SWORD, L.IRON, L.EMBER_RESIN)
-        assertIs<Verdict.Unsatisfied>(verdict(Query.ReachesBackline, sword, L.GUARDIAN))
+        assertIs<Verdict.CannotProvide>(verdict(Query.ReachesBackline, sword, L.GUARDIAN))
         // The fight agrees: the caster at the back of the line is hit by the bow's rule and by nothing of the sword's.
         fun reaches(w: Weapon, cls: HeroClassId): Boolean { val r = bench(w, cls, target = "backline"); return r.result.events.any { it.effectId in rules(w) && it.target == r.setup.enemies.last().key && it.kind == com.tinyblacksmith.core.combat.EventKind.DAMAGE && it.round == 1 } }
         assertTrue(reaches(made(L.BOW, L.IRON, L.EMBER_RESIN), L.RANGER))
@@ -235,8 +241,8 @@ class DeepForgingTest {
 
     @Test fun `does its payoff wait for a fracture - the runestone does, and a cracked weapon in the party is what it lacks`() {
         val rune = made(L.STAFF, L.IRON, L.EMBER_RESIN, L.RUNESTONE_SHARD)
-        assertIs<Verdict.Satisfied>(verdict(Query.Requires(Res.FRACTURE), rune))
-        assertIs<Verdict.Unsatisfied>(verdict(Query.Requires(Res.FRACTURE), made(L.STAFF, L.IRON, L.EMBER_RESIN)))
+        assertIs<Verdict.Available>(verdict(Query.Requires(Res.FRACTURE), rune))
+        assertIs<Verdict.CannotProvide>(verdict(Query.Requires(Res.FRACTURE), made(L.STAFF, L.IRON, L.EMBER_RESIN)))
         val alone = Capabilities.missing(WeaponRules.of(rune, content), Bench.company(L.BATTLEMAGE, "alone", "attrition", content, config)).getValue("catalyst_runed")
         assertTrue(Need.Present(setOf(Res.FRACTURE), Place.PARTY) in alone, alone.toString())
         // Behind a Guardian whose obsidian cracks, nothing is missing, and the rune answers.
@@ -505,5 +511,65 @@ class DeepForgingTest {
             assertTrue(p.cases.any { it.silent.isNotEmpty() }, "${p.id} has a case where it stays silent")
         }
         assertEquals(combat.interactions.map { it.id }.toSet(), ForgePaths.paths.map { it.id }.toSet())
+    }
+
+    // ---- what "available" promises, and what it does not ----
+
+    @Test fun `an answer that hangs on a second step is said to be unchecked, not available`() {
+        fun rule(id: String, trigger: com.tinyblacksmith.core.combat.Trigger, action: com.tinyblacksmith.core.combat.Action) =
+            EffectDef(id, id, trigger, listOf(action), com.tinyblacksmith.core.combat.Limit(perRound = 1), "", party = true)
+        val foe = com.tinyblacksmith.core.combat.Aim.Foe
+        // The Chill a Moonsteel weapon waits for comes only after a Mark, and the Mark only after healing: two steps.
+        val chillAfterMark = rule("t_chill", com.tinyblacksmith.core.combat.Trigger(com.tinyblacksmith.core.combat.EventKind.STAT_GAINED, com.tinyblacksmith.core.combat.Who.FOE_TARGET, com.tinyblacksmith.core.combat.Stat.MARK), com.tinyblacksmith.core.combat.Action.Give(com.tinyblacksmith.core.combat.Stat.CHILL, foe))
+        val markAfterHealing = rule("t_mark", com.tinyblacksmith.core.combat.Trigger(com.tinyblacksmith.core.combat.EventKind.HEALED, com.tinyblacksmith.core.combat.Who.ALLY_TARGET), com.tinyblacksmith.core.combat.Action.Give(com.tinyblacksmith.core.combat.Stat.MARK, foe))
+        val plainMark = rule("t_plain", com.tinyblacksmith.core.combat.Trigger(com.tinyblacksmith.core.combat.EventKind.ROUND_START, com.tinyblacksmith.core.combat.Who.ANY), com.tinyblacksmith.core.combat.Action.Give(com.tinyblacksmith.core.combat.Stat.MARK, foe))
+        val moon = WeaponRules.of(made(L.SWORD, L.MOONSTEEL, L.VERDANT_SAP), content)
+        val guardian = combat.kitByClass.getValue(L.GUARDIAN).kit
+        fun open(vararg relics: EffectDef) = Capabilities.missing(moon, Company(guardian, relics = relics.toList()))["core_moonsteel"]
+        // Nothing brings Chill: a plain need.
+        assertTrue(open()!!.none { it is Need.Unverified })
+        // Chill after a Mark, and a Mark that waits for nothing: one step, known.
+        assertEquals(null, open(chillAfterMark, plainMark))
+        // Chill after a Mark that itself waits for healing: not followed, and said so.
+        val far = open(chillAfterMark, markAfterHealing)!!
+        assertIs<Need.Unverified>(far.single())
+        assertTrue("not checked here" in Capabilities.text(far.single()))
+    }
+
+    @Test fun `a verdict reads as available when, needs, or cannot provide`() {
+        val salted = made(L.SWORD, L.IRON, L.STORMGLASS, L.BINDING_SALT)
+        val c = WeaponRules.of(salted, content)
+        fun say(q: Query, companions: String) = Capabilities.text(Capabilities.evaluate(q, c, Bench.company(L.GUARDIAN, companions, "attrition", content, config)), c)
+        assertTrue(say(Query.Generates(Res.CHARGE), "healer").startsWith("Available when its moment comes: "))
+        assertTrue(say(Query.Generates(Res.CHARGE), "alone").startsWith("Needs: "))
+        assertTrue(say(Query.Generates(Res.HEALING), "healer").startsWith("Cannot provide. "))
+    }
+
+    @Test fun `Wet is left out of ordinary guidance because only a Storm front brings it`() {
+        // True of the catalog: no weapon rule, class, relic or enemy puts Wet on anybody. When one does, this wording has to change.
+        val everything = combat.allEffects.flatMap { Capabilities.facets(it) } + combat.kits.flatMap { Capabilities.facets(it.kit) } + combat.units.flatMap { Capabilities.facets(it) }
+        // (A Battlemage echoes Wet that is already there. That is not a source.)
+        assertTrue(everything.none { f -> f.res == Res.WET && f.verb == com.tinyblacksmith.core.crafting.Verb.PROVIDES && f.needs.none { it is Need.Present && Res.WET in it.any } })
+        assertTrue(GuildContent.catalog.laws.any { com.tinyblacksmith.core.combat.Stat.WET in it.enemyStats })
+        assertEquals("Chill on an enemy.", Capabilities.text(Need.Present(setOf(Res.CHILL, Res.WET), Place.FOE)))
+        assertEquals("Wet on an enemy. Only a Storm front brings it.", Capabilities.text(Need.Present(setOf(Res.WET), Place.FOE)))
+        // The recipe guidance of a fire weapon names Chill for its Steam and never Wet.
+        val outlook = ForgeOutlook.of(guildRun(), content, config, Command.Forge(ForgeMode.ADVANCED, L.SWORD, L.IRON, L.EMBER_RESIN, L.DRAGON_OIL, Risk.BALANCED))!!
+        val words = outlook.missing.values.flatten().map(Capabilities::text)
+        assertTrue(words.isNotEmpty() && words.none { "Wet" in it }, "$words")
+    }
+
+    @Test fun `the bench can stand on the town's wall, where home rules count and road rules do not`() {
+        val sentient = made(L.SWORD, L.IRON, L.EMBER_RESIN, flaws = listOf(L.SENTIENT))
+        val road = bench(sentient, L.GUARDIAN)
+        val wall = bench(sentient, L.GUARDIAN, target = "wall")
+        assertFalse(road.home)
+        assertTrue(wall.home)
+        assertEquals(listOf("affix_sentient_home"), road.notTested.map { it.id })
+        assertEquals(listOf("affix_sentient_road"), wall.notTested.map { it.id })
+        assertTrue("affix_sentient_home" in wall.fired.map { it.rule.id }, "the home rule is fought, not only named")
+        assertTrue("affix_sentient_road" in (road.fired + road.silent.map { Bench.Fired(it.rule, 0, emptyList()) }).map { it.rule.id })
+        assertTrue(wall.synthetic.any { "wall here is made up" in it })
+        assertTrue(Bench.targets.single { it.home }.name == "The town's wall")
     }
 }

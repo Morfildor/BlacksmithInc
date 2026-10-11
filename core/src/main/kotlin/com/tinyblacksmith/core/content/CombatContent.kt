@@ -192,24 +192,28 @@ object CombatContent {
     )
 
     // ---- metals: the weapon's physical character. One reuse of an existing mechanic each, never a new one. ----
-    val cores = listOf(
+    /** The numbers of the six metal rules, in one place so that `ForgeLab` can fight the same recipes with others. */
+    data class CoreNumbers(val ironGuard: Int = 3, val bronzeAnswer: Int = 5, val silverCharge: Int = 3, val obsidianStrike: Int = 110, val starsteelBonus: Int = 3, val moonsteelBonus: Int = 3)
+
+    fun cores(n: CoreNumbers = CoreNumbers()) = listOf(
         CoreCombatDef(LaunchContent.IRON, "Plain and sturdy. The wielder starts every fight behind a little Guard.", "The weakest metal. It adds the least to a strike.", listOf(
-            e("core_iron", "Iron holds", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(3))), Limit(perFight = 1), "The wielder enters a fight with 3 Guard."))),
+            e("core_iron", "Iron holds", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(n.ironGuard))), Limit(perFight = 1), "The wielder enters a fight with ${n.ironGuard} Guard."))),
         CoreCombatDef(LaunchContent.BRONZE, "Rings when struck. It answers the blow that breaks the wielder's Guard.", "Does nothing for a wielder who never has Guard.", listOf(
-            e("core_bronze", "Bronze rings back", Trigger(EventKind.GUARD_BROKEN, Who.SELF_TARGET), listOf(Damage(Aim.EventSource, Fixed(5))), Limit(perRound = 1),
-                "When an enemy breaks the wielder's Guard, the weapon strikes that enemy for 5. Once a round.", listOf(Condition.SourceIsFoe)))),
-        CoreCombatDef(LaunchContent.SILVER, "Holds a charge. The wielder starts every fight with 2 Charge stored, one short of a burst.", "Charge is worth nothing until something on the weapon spends it.", listOf(
-            e("core_silver", "Silver holds a charge", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Give(Stat.CHARGE, Aim.Self, Fixed(2))), Limit(perFight = 1), "The wielder enters a fight with 2 Charge."))),
-        CoreCombatDef(LaunchContent.OBSIDIAN, "A glass edge. It strikes a tenth harder.", "It cracks the first time an enemy breaks the wielder's Guard. Poor in the hands of whoever holds the line.", listOf(
+            e("core_bronze", "Bronze rings back", Trigger(EventKind.GUARD_BROKEN, Who.SELF_TARGET), listOf(Damage(Aim.EventSource, Fixed(n.bronzeAnswer))), Limit(perRound = 1),
+                "When an enemy breaks the wielder's Guard, the weapon strikes that enemy for ${n.bronzeAnswer}. Once a round.", listOf(Condition.SourceIsFoe)))),
+        CoreCombatDef(LaunchContent.SILVER, "Holds a charge. The wielder starts every fight with ${n.silverCharge} Charge stored, enough for one burst.", "Charge is worth nothing until something on the weapon spends it: Binding Salt, or a Stormcharged roll.", listOf(
+            e("core_silver", "Silver holds a charge", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Give(Stat.CHARGE, Aim.Self, Fixed(n.silverCharge))), Limit(perFight = 1), "The wielder enters a fight with ${n.silverCharge} Charge."))),
+        CoreCombatDef(LaunchContent.OBSIDIAN, "A glass edge. It strikes ${n.obsidianStrike - 100}% harder.", "It cracks the first time an enemy breaks the wielder's Guard. It still cuts, but whoever holds the line brings it home needing the hone after most fights.", listOf(
             e("core_obsidian", "Obsidian cracks", Trigger(EventKind.GUARD_BROKEN, Who.SELF_TARGET), listOf(Action.Fracture(2)), Limit(perFight = 1),
-                "The first time an enemy breaks the wielder's Guard, the weapon cracks. 2 Scrap now, a repair after the fight.", listOf(Condition.SourceIsFoe))), strikePercent = 110),
+                "The first time an enemy breaks the wielder's Guard, the weapon cracks. 2 Scrap now, a repair after the fight.", listOf(Condition.SourceIsFoe))), strikePercent = n.obsidianStrike),
         CoreCombatDef(LaunchContent.STARSTEEL, "Finds the marked place. It hits harder when it spends a Mark.", "Costly, and its rule sleeps until a Mark is there for the wielder's own action to spend.", listOf(
-            e("core_starsteel", "Starsteel finds the Mark", Trigger(EventKind.STAT_SPENT, Who.SELF_SOURCE, Stat.MARK), listOf(Damage(Aim.EventTarget, Fixed(3))), Limit(perRound = 1),
-                "When the wielder's own action spends a Mark, that hit lands for 3 more. Once a round.", struck))),
+            e("core_starsteel", "Starsteel finds the Mark", Trigger(EventKind.STAT_SPENT, Who.SELF_SOURCE, Stat.MARK), listOf(Damage(Aim.EventTarget, Fixed(n.starsteelBonus))), Limit(perRound = 1),
+                "When the wielder's own action spends a Mark, that hit lands for ${n.starsteelBonus} more. Once a round.", struck))),
         CoreCombatDef(LaunchContent.MOONSTEEL, "Cold metal. It bites deeper into an enemy that is already chilled.", "The costliest metal, and its rule needs Chill on the target before the hit lands.", listOf(
-            e("core_moonsteel", "Moonsteel bites the cold", onOwnHit, listOf(Damage(Aim.EventTarget, Fixed(3))), Limit(perRound = 1),
-                "Once a round, the wielder's hit on an enemy that is already chilled deals 3 more. The Chill stays.", struck + Condition.TargetHas(Stat.CHILL)))),
+            e("core_moonsteel", "Moonsteel bites the cold", onOwnHit, listOf(Damage(Aim.EventTarget, Fixed(n.moonsteelBonus))), Limit(perRound = 1),
+                "Once a round, the wielder's hit on an enemy that is already chilled deals ${n.moonsteelBonus} more. The Chill stays.", struck + Condition.TargetHas(Stat.CHILL)))),
     )
+    val cores = cores()
 
     /** Augments and catalysts as a choice at the forge. Their rules are [elementEffects] and [catalystEffects]. */
     val notes: Map<MaterialId, IngredientNote> = mapOf(
@@ -221,7 +225,7 @@ object CombatContent {
         LaunchContent.SUN_ASH to IngredientNote("Sun. Each round the first hit leaves a Mark. The next hit on a Mark is harder, and the party aims at it.", "The Mark helps whoever strikes next, which is not always the wielder."),
         LaunchContent.BINDING_SALT to IngredientNote("Stores Charge when the wielder is healed. At 3 Charge it strikes for 8.", "It needs a healer, and healing a wielder at full health stores nothing."),
         LaunchContent.RUNESTONE_SHARD to IngredientNote("Strikes back for the party when an enemy breaks an ally's Guard.", "It sleeps until a weapon of the party has cracked."),
-        LaunchContent.DRAGON_OIL to IngredientNote("Spreads fire. When the wielder's hit leaves Burn or Chill, every enemy gets Burn. It spends Steam as a lance.", "Burn on a chilled enemy boils both away into Steam."),
+        LaunchContent.DRAGON_OIL to IngredientNote("Spreads fire. When the wielder's hit leaves Burn, every enemy gets Burn. It spends Steam as a lance.", "The spreading needs a fire weapon, and the lance needs Steam: fire and cold from two different hands."),
         LaunchContent.VOID_INK to IngredientNote("After the wielder acts, takes Burn off the enemy it faces and gives it to your weakest ally as Guard. It spends Steam as Guard for all.", "That Burn no longer deals damage."),
     )
 
@@ -301,6 +305,14 @@ object CombatContent {
         "After a weapon of the party has cracked, when an enemy breaks an ally's Guard the wielder strikes that enemy for 5. Once a round, twice a fight.", listOf(Condition.SourceIsFoe, Condition.Happened(EventKind.FRACTURED)))
     val SPREADING = e("catalyst_spreading", "Dragon oil", Trigger(EventKind.STAT_GAINED, Who.SELF_SOURCE), listOf(Action.Give(Stat.BURN, Aim.AllFoes)), Limit(perRound = 1),
         "When the wielder's hit puts Burn or Chill on an enemy, every enemy gets 1 Burn. Once a round.", listOf(Condition.StatIn(setOf(Stat.BURN, Stat.CHILL)), Condition.NotTick))
+    /**
+     * Dragon Oil on a weapon forged since the metals had rules: it spreads the fire its wielder lights and does nothing
+     * with Chill. The older rule also answered Chill with Burn on every enemy, so one frost weapon boiled its own Chill
+     * into Steam every round and Frost Bloom with Dragon Oil was in the top tenth of 60% of the lab's scenarios, half
+     * again as often as any other pair. Steam is meant to take a fire and a cold that meet.
+     */
+    val SPREADING_FIRE = e("catalyst_spreading_fire", "Dragon oil", Trigger(EventKind.STAT_GAINED, Who.SELF_SOURCE), listOf(Action.Give(Stat.BURN, Aim.AllFoes)), Limit(perRound = 1),
+        "When the wielder's hit puts Burn on an enemy, every enemy gets 1 Burn. Once a round.", listOf(Condition.StatIn(setOf(Stat.BURN)), Condition.NotTick))
     val CONVERTING = e("catalyst_converting", "Void ink", Trigger(EventKind.ROUND_END, Who.ANY), listOf(Action.Take(Stat.BURN, Aim.PriorityFoe, Fixed(3))), Limit(perRound = 1),
         "At the end of each round, takes up to 3 Burn off the enemy that matters most.")
     val CONVERTED_GUARD = e("catalyst_converted_guard", "Void ink (Guard)", Trigger(EventKind.STAT_SPENT, Who.SELF_SOURCE, Stat.BURN), listOf(Guard(Aim.WeakestAlly, Amount.OfEvent())), Limit(perRound = 1),
@@ -317,7 +329,7 @@ object CombatContent {
      */
     val DRINKING = e("catalyst_drinking", "Void ink", Trigger(EventKind.ACTED, Who.SELF_SOURCE), listOf(Action.Take(Stat.BURN, Aim.Foe, Fixed(3))), Limit(perRound = 1),
         "After the wielder acts, takes up to 3 Burn off the enemy it faces.")
-    val revisions: Map<String, EffectDef> = mapOf(CONVERTING.id to DRINKING)
+    val revisions: Map<String, EffectDef> = mapOf(CONVERTING.id to DRINKING, SPREADING.id to SPREADING_FIRE)
     val catalystEffects: Map<MaterialId, List<EffectDef>> = mapOf(
         LaunchContent.BINDING_SALT to listOf(CAPACITOR, CHARGE_BURST),
         LaunchContent.RUNESTONE_SHARD to listOf(RUNED),

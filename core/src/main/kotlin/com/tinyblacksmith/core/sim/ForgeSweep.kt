@@ -32,7 +32,7 @@ object ForgeSweep {
     class Result(val rules: Map<String, Tally>, val fights: List<Fought>, val maxEventsInARound: Int, val extraFights: Int)
 
     /** 0..200: the share of the enemy line taken down, and for a win the share of the party's health still standing. */
-    private fun score(report: Bench.Report): Int {
+    fun score(report: Bench.Report): Int {
         val foes = report.result.actors.filter { it.side == Side.ENEMY && !it.summoned }
         val party = report.result.actors.filter { it.side == Side.PARTY && !it.summoned }
         val taken = 100 - foes.sumOf { it.health } * 100 / maxOf(1, foes.sumOf { it.maxHealth })
