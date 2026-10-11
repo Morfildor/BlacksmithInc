@@ -1,38 +1,43 @@
 # Progress — 2026-10-11 (run variety and consequences, unreleased; before it: guild evolution, 0.8.0)
 
 ## Guided first day (2026-10-11): built on branch `first-day-guidance`, not pushed
-Branched off `run-variety` at 719b685 (local commits only). `run-variety` has moved since (ff656ef, written by
-another session): rebase before merging. Design and rulings: `docs/DECISIONS.md`, last section.
+Rebased onto `run-variety` at ff656ef (no conflicts; that branch's worktree has uncommitted work of another session,
+untouched). Design and rulings: `docs/DECISIONS.md`, last section. Playtest script: `docs/PLAYTEST_FIRST_DAY.md`.
 
 **What it is.** A new installation's first game is led through one real day: recipe, forge, list, a second forge
 without help, End Day, the day's outcome. One strip under the top bar (`ui/IntroStrip.kt`), the words and the step
 logic in `ui/Intro.kt`, the record in settings (`data/SettingsStore.kt`). Settings has a "Guided first day" row with
 Replay. A new account's picker starts on "No charter"; the charter picked, or last played under, is remembered.
 
-**Checks run on the final tree.** `:core:test` 581 tests, 0 failures (core untouched). `:app:testDebugUnitTest` 233
-tests, 0 failures (16 new in `IntroTest`). `:app:assembleDebug` built. Emulator, own instance on port 5556 (AVD
-carbscan, API 36, 1080x1920): `IntroStripTest` (3), `LayoutMatrixTest`, `SettingsSheetTest` pass.
-`tools/emulator/intro.sh`: every check ok (first game to "Done", killed midway, next game without it, Settings replay
-queued and cancelled, a second cleared install skipped at once and still off after a restart). `smoke.sh` passes on a
-cleared install again (it starts a classic run now). By hand through adb: an abandoned run leaves the invitation on
-the title and the next game is not guided; "Replay now" in a first morning; Tab reaches "Why?", "Skip guidance" and
-then the Shop's controls; the strip at font scale 1.3 and 2.0.
+**Cleanup pass (same day).** A day without a sale counts the recorded reasons and points to the Gazette's "All
+details" (seen on the device to name each hero). A first game under a charter gets one note and "Skip guidance" on
+the opening chooser. Large text: the sentence folds behind "Why?", the strip is at most 42% of the screen, the
+title's line stands under "New game", the forge result shows the step first.
 
-**Failing on the device and not from this work** (each fails the same way on 719b685): `ShopPanelTest`
-`theLeadIsTheSameAsTheTomorrowCard` and `demandBlockCountsUnarmedWornAndPurseBands`, `NavigationFlowTest`
-`theShopKeepsItsPlaceAcrossTheForgeAndTheMenu`, `ShopDayScreenTest` `fightsWithNoCardAreSummedUpBeyondTheDoor`.
+**Checks run on the integrated tree.** `:core:test` 581 tests, 0 failures. `:app:testDebugUnitTest` 233 tests, 0
+failures (16 in `IntroTest`). `:app:assembleDebug` built. Emulator, own instance on port 5556 (AVD carbscan, API 36,
+1080x1920): `IntroStripTest` (3), `LayoutMatrixTest`, `SettingsSheetTest` pass. `intro.sh`: all 31 checks ok.
+`smoke.sh`: all 9 ok. `runend.sh`: all 5 ok (it now skips the guidance on the title; before that it waited 20 s for a
+relic dialog the guidance keeps closed). `guild.sh`: its 5 checks ok. `scenarios.sh`: 59 checks ok, 3 fail (below).
+By hand through adb: a guild first game (note and Skip on the opening, strip after the choice, result line); a day
+priced out of reach (outcome line, then the Gazette's list of names); font scale 2.0 from the title to the listing
+(New game, Skip, End Day, the weapon choices, the Forge button with "Why?" open, the result's step and List).
 
-**Not verified.** Nobody has played it: that the steps are understood is unknown (T7.2). No physical phone, no
-TalkBack pass, no hardware keyboard (Tab was sent through adb). `guild.sh` (now skips the guidance and steps the picker to the first charter) ran through the opening chooser to the
-guild screens; two later taps (`guild_member_`, `shopday_next`) were missing and were not compared with the base. The
-whole instrumented suite, `runend.sh`
-and `scenarios.sh` were not run. A guided guild first game was tested in the JVM only; its opening chooser shows
-no strip and no Skip (the title has Skip, the strip comes after the choice). The outcome line says "Their cards said
-why" and does not say where to read them again (the Gazette). At font scale 2.0 on a
-640 dp screen the strip takes about a third of the height.
+**Failing on the device and not from this work.** Each was run on the base build (ff656ef) and fails the same way:
+- `scenarios.sh`: `wall_death` ("The siege" card not found, the wall not named) and `returned_legend` ("wakes under
+  the hone": the blade is not found in Storage again after the hone).
+- `guild.sh`: "MISSING id: guild_member_" (line 107 looks for an exact id where the app's ids carry the hero's id, so
+  it scrolls past the roster) and "MISSING id: shopday_next" (the loop's own way out on the last card).
+- Instrumented: `ShopPanelTest` `theLeadIsTheSameAsTheTomorrowCard` and `demandBlockCountsUnarmedWornAndPurseBands`,
+  `NavigationFlowTest` `theShopKeepsItsPlaceAcrossTheForgeAndTheMenu`, `ShopDayScreenTest`
+  `fightsWithNoCardAreSummedUpBeyondTheDoor` (compared with 719b685 earlier the same day).
 
-**Next actions.** 1. Play a cleared install once and read the six lines of copy. 2. Rebase onto `run-variety` and
-decide where it merges. 3. T7.2 with first-time players.
+**Not verified.** Nobody has played it: that the steps are understood is unknown (T7.2, script ready). No physical
+phone, no TalkBack pass, no hardware keyboard (Tab was sent through adb, before the cleanup pass). The whole
+instrumented suite was not run. At font scale 2.0 the Shop's lead card is under the fold on a 1080x1920 screen (the
+siege strip alone is four lines there; so it is without the guidance).
+
+**Next actions.** 1. Run the playtest script with five first-time players. 2. Decide where the branch merges.
 
 
 ## Run variety and consequences (2026-10-11): built on branch `run-variety`, not pushed

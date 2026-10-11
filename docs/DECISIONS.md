@@ -4319,5 +4319,16 @@ Source: the owner's brief of that day and its seven refinements. Built on `first
 - **Input.** The strip is a row of the layout, not an overlay. It is a polite live region; focus is never moved.
   Targets are 48 dp; the actions stack above font scale 1.3. The mark on a control is an outline and a corner
   pointer, with a state description. No keyboard handling was added, as the app has none.
+- **A day without a sale** (cleanup pass, same day). The outcome counts the heroes who looked by the reason the engine
+  recorded for each (`MarketVisit.reason`, in the Gazette's wording: "6 couldn't afford anything") and says where each
+  is named: the Gazette's "All details", which was checked on a device to list them by name. An empty shelf says to
+  list from Storage. The earlier line promised that "their cards said why"; a card of an undecided hero says no more
+  than that, so the promise went.
+- **A first game under a charter.** The opening chooser shows one note while the guidance is still ahead: each package
+  is a full start, the guided day follows the choice, the shop alone is "No charter" on the title; with "Skip
+  guidance". No more than that: the chooser is the guild's, and the guild is not what the first day teaches.
+- **Large text.** Above font scale 1.3 the strip shows the step and its two actions; the sentence opens with "Why?".
+  The strip is never taller than 42% of the screen (its words scroll inside it). The title's line stands under "New
+  game", so that button is where it was. On the forge result the step and "Skip guidance" come first.
 - **Not shown by this.** That the flow works is tested. That a new player understands the game from it is not: nobody
   has been watched playing it. T7.2 (five first-time players) is the check.

@@ -26,7 +26,10 @@ texts() { dump | grep -o 'text="[^"]\+"' | head -12; }
 
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
-wait_text "Tiny Blacksmith" && tap "New game" || exit 1
+wait_text "Tiny Blacksmith" || exit 1
+# A cleared install offers the guided first day, which keeps the relic offer closed on day 1: skipped, so the run opens as it always did.
+has "Skip guidance" && tap "Skip guidance"
+tap "New game" || exit 1
 # A new run opens on the relic offer, which hides the workshop from the dump: "Decide later" keeps the offer. The loop
 # below puts it off again each morning.
 wait_text "Decide later" && tap "Decide later"
