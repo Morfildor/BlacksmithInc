@@ -207,5 +207,4 @@ a person playing.
    number, so it was left for a decision.
 7. **The Guild screen is long.** The board is first and the wall moves up near a siege, but it is one scroll with
    seven sections. Tabs inside Guild, or a shorter wall card, are the obvious next step.
-8. **Merge.** The work is on `main` as 0.8.0 (see PROGRESS for whether the push went through). To play the old game,
-   choose "No charter".
+8. **Merge.** The work is on `main` as 0.8.0, pushed. To play the old game, choose "No charter".

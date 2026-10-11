@@ -37,6 +37,9 @@ charter" is the 0.7.0 game, unchanged (the rules-4 golden state file passes as t
     with its defense and raid numbers.
   Screenshots: `docs/guild_evolution_evidence/screens/`.
 
+**Pushed.** `main` on origin is the merge commit `06b2849` (0.8.0), fast-forwarded from the work branch `guild-evolution`,
+which is also on origin. The worktree `.claude/worktrees/guild-evolution` is left in place.
+
 **Merged with `main` before the push.** While this was built, `main` gained the copy remaster and the Gazette
 briefing (5 commits, 100 files). The merge had eight conflicts (relic and visitor texts, the stock notices, the End Day
 note, the Town panel's faction rows, DECISIONS, PROGRESS); each was resolved by keeping `main`'s wording and this
