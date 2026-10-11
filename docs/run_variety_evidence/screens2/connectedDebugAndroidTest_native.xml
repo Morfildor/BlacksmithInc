@@ -1,0 +1,294 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuites tests="72" failures="9" errors="0" skipped="0" time="203.765" timestamp="2026-10-11T18:53:31" hostname="localhost">
+  <testsuite name="com.example.blacksmithproject.ConsistencyPassTest" tests="2" failures="1" errors="0" skipped="0" time="7.447" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="townExplainsItsEmptyChampionPlaces" classname="com.example.blacksmithproject.ConsistencyPassTest" time="4.3">
+      <failure>java.lang.AssertionError: Failed: assertExists.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains 'health 50 or more' (ignoreCase: false) as substring)
+
+at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists(SemanticsNodeInteraction.kt:125)
+at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists$default(SemanticsNodeInteraction.kt:124)
+at com.example.blacksmithproject.ConsistencyPassTest.townExplainsItsEmptyChampionPlaces(ConsistencyPassTest.kt:77)
+</failure>
+    </testcase>
+    <testcase name="theGazettePageIsNamedGazette" classname="com.example.blacksmithproject.ConsistencyPassTest" time="3.147" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.DetailSheetTest" tests="7" failures="0" errors="0" skipped="0" time="26.754" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="atTwiceTheTextSizeTheSheetsScrollToTheirEndAndEveryTargetIsLargeEnough" classname="com.example.blacksmithproject.DetailSheetTest" time="4.466" />
+    <testcase name="thePriceEditorCountsWhoCanPayAndGuardsAFullShelf" classname="com.example.blacksmithproject.DetailSheetTest" time="4.551" />
+    <testcase name="itemSheetShowsAffixDescriptionsAndHistory" classname="com.example.blacksmithproject.DetailSheetTest" time="3.416" />
+    <testcase name="stockActionsAreReadOnlyInTheShopDay" classname="com.example.blacksmithproject.DetailSheetTest" time="5.251" />
+    <testcase name="heroSheetShowsTasteGuildMentorAndPurse" classname="com.example.blacksmithproject.DetailSheetTest" time="3.193" />
+    <testcase name="aBladeNoLongerInTheSaveOpensFromItsSnapshot" classname="com.example.blacksmithproject.DetailSheetTest" time="2.454" />
+    <testcase name="snapshotFirstThenNowWhenTheyDiffer" classname="com.example.blacksmithproject.DetailSheetTest" time="3.423" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.EndDayPerfTest" tests="1" failures="0" errors="0" skipped="0" time="5.051" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="endDayStaysUnderTheBudgetOnDevice" classname="com.example.blacksmithproject.EndDayPerfTest" time="5.051" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.ExampleInstrumentedTest" tests="1" failures="0" errors="0" skipped="0" time="0.003" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="useAppContext" classname="com.example.blacksmithproject.ExampleInstrumentedTest" time="0.003" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.ForgeHintTest" tests="2" failures="1" errors="0" skipped="0" time="3.419" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="unknownPairingShowsQuestionMarkAndUnknown" classname="com.example.blacksmithproject.ForgeHintTest" time="1.712" />
+    <testcase name="understoodPairingShowsFilledDotAndDescription" classname="com.example.blacksmithproject.ForgeHintTest" time="1.707">
+      <failure>java.lang.AssertionError: Assert failed: The component with Text + InputText + EditableText contains 'understood' (ignoreCase: false) is not displayed!
+at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+at com.example.blacksmithproject.ForgeHintTest.understoodPairingShowsFilledDotAndDescription(ForgeHintTest.kt:37)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.ForgeResultCardTest" tests="5" failures="2" errors="0" skipped="0" time="15.929" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="theRevealLeavesThePriceAndBothButtonsLiveFromTheFirstFrame" classname="com.example.blacksmithproject.ForgeResultCardTest" time="2.746" />
+    <testcase name="thePriceIsChosenOnTheCardAndTheCountFollowsIt" classname="com.example.blacksmithproject.ForgeResultCardTest" time="2.57">
+      <failure>java.lang.AssertionError: Failed to assert the following: (Text + EditableText = [Suggested price 116 gold. Your price is 20 below it.])
+Semantics of the node:
+Node #1285 at (l=48.0, t=1623.0, r=1055.0, b=1672.0)px, Tag: 'reveal_suggested'
+Text = '[Suggested price 116 gold. You're asking 20 gold less.]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+Has 7 siblings
+Selector used: (TestTag = 'reveal_suggested')
+
+at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:264)
+at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:254)
+at androidx.compose.ui.test.AssertionsKt.assertTextEquals(Assertions.kt:185)
+at androidx.compose.ui.test.AssertionsKt.assertTextEquals$default(Assertions.kt:181)
+at com.example.blacksmithproject.ForgeResultCardTest.thePriceIsChosenOnTheCardAndTheCountFollowsIt(ForgeResultCardTest.kt:130)
+</failure>
+    </testcase>
+    <testcase name="aFullShelfSaysWhyListingIsUnavailableAndLeavesStore" classname="com.example.blacksmithproject.ForgeResultCardTest" time="2.615" />
+    <testcase name="thePriceAndBothButtonsAreOnScreenAtEverySize" classname="com.example.blacksmithproject.ForgeResultCardTest" time="5.683" />
+    <testcase name="aBladeForgedForARequestSaysWhatEndDayWillDo" classname="com.example.blacksmithproject.ForgeResultCardTest" time="2.315">
+      <failure>java.lang.AssertionError: Assert failed: The component with (Text + InputText + EditableText contains 'None is set aside.' (ignoreCase: false) as substring) &amp;&amp; (hasAnyAncestorThat(TestTag = 'reveal_request')) is not displayed!
+at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+at com.example.blacksmithproject.ForgeResultCardTest.aBladeForgedForARequestSaysWhatEndDayWillDo$inRequest(ForgeResultCardTest.kt:169)
+at com.example.blacksmithproject.ForgeResultCardTest.aBladeForgedForARequestSaysWhatEndDayWillDo(ForgeResultCardTest.kt:173)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.LayoutMatrixTest" tests="1" failures="0" errors="0" skipped="0" time="4.895" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="noOverflow" classname="com.example.blacksmithproject.LayoutMatrixTest" time="4.895" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.M4ScreensTest" tests="6" failures="0" errors="0" skipped="0" time="15.214" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="recordsShowTheLadderTheRecipeAndTheLegendBoard" classname="com.example.blacksmithproject.M4ScreensTest" time="2.992" />
+    <testcase name="aStandingWantIsOnTheShopAndOnTheHeroSheet" classname="com.example.blacksmithproject.M4ScreensTest" time="2.486" />
+    <testcase name="theHeroSheetSaysTheWant" classname="com.example.blacksmithproject.M4ScreensTest" time="2.4" />
+    <testcase name="theForgeMarksTheElementsTheBesiegerCaresAbout" classname="com.example.blacksmithproject.M4ScreensTest" time="2.777" />
+    <testcase name="theShopPlateSaysTheShelfAndARequestSaysWhy" classname="com.example.blacksmithproject.M4ScreensTest" time="2.243" />
+    <testcase name="theBladeSheetHasItsStoryAndADormantMarker" classname="com.example.blacksmithproject.M4ScreensTest" time="2.316" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.NavigationBarTest" tests="1" failures="0" errors="0" skipped="0" time="4.667" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="fourDestinationsKeepTheirLabelSize" classname="com.example.blacksmithproject.NavigationBarTest" time="4.667" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.NavigationFlowTest" tests="4" failures="0" errors="0" skipped="0" time="21.087" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="theShopKeepsItsPlaceAcrossTheForgeAndTheMenu" classname="com.example.blacksmithproject.NavigationFlowTest" time="4.683" />
+    <testcase name="theForgeKeepsItsDraftAndItsOpenStepAndEndDayStaysOffTownAndRecords" classname="com.example.blacksmithproject.NavigationFlowTest" time="5.3" />
+    <testcase name="aBladeOpensInsideStorageAndComesBackToTheSameList" classname="com.example.blacksmithproject.NavigationFlowTest" time="7.52" />
+    <testcase name="backOnTheFirstCardOfADayOpensTheMenuAndTheDayIsStillThere" classname="com.example.blacksmithproject.NavigationFlowTest" time="3.584" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.RecordsPanelTest" tests="1" failures="0" errors="0" skipped="0" time="3.692" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="threeSegmentsKeepTheirContent" classname="com.example.blacksmithproject.RecordsPanelTest" time="3.692" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.SaveStoreTest" tests="4" failures="0" errors="0" skipped="0" time="2.301" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="savesAndRestoresRunAndLegacyTogether" classname="com.example.blacksmithproject.SaveStoreTest" time="0.412" />
+    <testcase name="corruptPayloadIsReportedAndTheRowIsUntouched" classname="com.example.blacksmithproject.SaveStoreTest" time="0.105" />
+    <testcase name="theCursorRowLivesBesideTheSaveAndNeitherTouchesTheOther" classname="com.example.blacksmithproject.SaveStoreTest" time="0.13" />
+    <testcase name="aCorruptDatabaseFileIsKeptAndOnlyStartOverMovesItAside" classname="com.example.blacksmithproject.SaveStoreTest" time="1.654" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.SettingsSheetTest" tests="3" failures="0" errors="0" skipped="0" time="7.296" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="theHapticsSwitchIsLabelledTogglesAndPersists" classname="com.example.blacksmithproject.SettingsSheetTest" time="3.028" />
+    <testcase name="theSheetTogglesReducedMotionAndShowsTheVersion" classname="com.example.blacksmithproject.SettingsSheetTest" time="2.575" />
+    <testcase name="everyMomentMapsToAPlatformEffectWithoutError" classname="com.example.blacksmithproject.SettingsSheetTest" time="1.693" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.ShopDayPersistenceTest" tests="3" failures="0" errors="0" skipped="0" time="10.468" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="anOpenStorageSheetAndItsOrderComeBackAfterSavedStateRestoration" classname="com.example.blacksmithproject.ShopDayPersistenceTest" time="4.094" />
+    <testcase name="theMenuStaysClosedAfterSavedStateRestoration" classname="com.example.blacksmithproject.ShopDayPersistenceTest" time="2.603" />
+    <testcase name="realRoomSurvivesRecreation" classname="com.example.blacksmithproject.ShopDayPersistenceTest" time="3.771" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.ShopDayScreenTest" tests="21" failures="2" errors="0" skipped="0" time="49.52" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="tenVisitorsFeatureThreeAndTheTallyCoversTheRest" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.535" />
+    <testcase name="emptyShelfListsEachNameOnce" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.41" />
+    <testcase name="aMerchantResaleIsNotShownAsAShopSale" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.041" />
+    <testcase name="theOpeningCardCountsVisitorsAndThoseShown" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.627" />
+    <testcase name="backStepsABeatAndNeverAcknowledges" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.773" />
+    <testcase name="nothingAdvancesByItselfAtTheDefaultSpeed" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.088" />
+    <testcase name="noVisitorsIsOneCardAndOneTap" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.379" />
+    <testcase name="autoAdvancePausesWhileASheetIsOpen" classname="com.example.blacksmithproject.ShopDayScreenTest" time="1.944" />
+    <testcase name="skipLandsOnTomorrowBlessingOrFallen" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.808" />
+    <testcase name="fallenLeadsToRunEnd" classname="com.example.blacksmithproject.ShopDayScreenTest" time="3.151" />
+    <testcase name="theCoachLineShowsWhilePassedAndATapOnItIsNext" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.288" />
+    <testcase name="purchaseShowsBuyerReasonAndSeparateReceiptRows" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.683" />
+    <testcase name="tomorrowShowsOneLeadAndItsReason" classname="com.example.blacksmithproject.ShopDayScreenTest" time="1.902" />
+    <testcase name="anInheritedBladeNamesBothGuildmates" classname="com.example.blacksmithproject.ShopDayScreenTest" time="1.978" />
+    <testcase name="fightsWithNoCardAreSummedUpBeyondTheDoor" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.322">
+      <failure>java.lang.AssertionError: 6 heroes fought without weapons. All had to retreat.
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.assertTrue(Assert.java:42)
+at com.example.blacksmithproject.ShopDayScreenTest.fightsWithNoCardAreSummedUpBeyondTheDoor(ShopDayScreenTest.kt:179)
+</failure>
+    </testcase>
+    <testcase name="replayOutcomeIsNeverGatedOnATimer" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.853" />
+    <testcase name="aftermathNamesHeroAndBlade" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.143" />
+    <testcase name="reducedMotionNeverAutoAdvances" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.084" />
+    <testcase name="outcomeIsVisibleOnTheFirstFrameOfABeat" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.113" />
+    <testcase name="refusalShowsTheTypedReasonWithItsNumbers" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.068" />
+    <testcase name="aTapOnTheStripBesideItsControlsDoesNotAdvance" classname="com.example.blacksmithproject.ShopDayScreenTest" time="2.33">
+      <failure>java.lang.AssertionError: the card still is expected:&lt;1&gt; but was:&lt;0&gt;
+at org.junit.Assert.fail(Assert.java:89)
+at org.junit.Assert.failNotEquals(Assert.java:835)
+at org.junit.Assert.assertEquals(Assert.java:120)
+at com.example.blacksmithproject.ShopDayScreenTest.aTapOnTheStripBesideItsControlsDoesNotAdvance(ShopDayScreenTest.kt:120)
+</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.ShopPanelTest" tests="5" failures="2" errors="0" skipped="0" time="11.419" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="dayOneLeadsWithForgeYourFirstBlade" classname="com.example.blacksmithproject.ShopPanelTest" time="1.974" />
+    <testcase name="theLeadIsTheSameAsTheTomorrowCard" classname="com.example.blacksmithproject.ShopPanelTest" time="2.926">
+      <failure>java.lang.AssertionError: Failed to assert the following: (Text + EditableText = [4 customers left without buying on price today. The cheapest weapon costs 100 gold.])
+Semantics of the node:
+Node #11502 at (l=96.0, t=-6770.0, r=984.0, b=-6601.0)px, Tag: 'shop_lead_reason'
+Text = '[4 customers left without buying on price yesterday. The cheapest weapon costs 100 gold.]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, SetTextSubstitution, ShowTextSubstitution]
+Has 3 siblings
+Selector used: (TestTag = 'shop_lead_reason')
+
+at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:264)
+at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:254)
+at androidx.compose.ui.test.AssertionsKt.assertTextEquals(Assertions.kt:185)
+at androidx.compose.ui.test.AssertionsKt.assertTextEquals$default(Assertions.kt:181)
+at com.example.blacksmithproject.ShopPanelTest.theLeadIsTheSameAsTheTomorrowCard(ShopPanelTest.kt:145)
+</failure>
+    </testcase>
+    <testcase name="demandBlockCountsUnarmedWornAndPurseBands" classname="com.example.blacksmithproject.ShopPanelTest" time="2.468">
+      <failure>java.lang.AssertionError: "Can afford the middle blade (72 gold)" should read 8 of 11
+Reason: Expected exactly '1' node but could not find any node that satisfies: ((Text + InputText + EditableText contains 'Can afford the middle blade (72 gold)' (ignoreCase: false)) &amp;&amp; (Text + InputText + EditableText contains '8 of 11' (ignoreCase: false)))
+
+at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+at androidx.compose.ui.test.SemanticsNodeInteraction.assertExists(SemanticsNodeInteraction.kt:125)
+at com.example.blacksmithproject.ShopPanelTest.demandBlockCountsUnarmedWornAndPurseBands$row(ShopPanelTest.kt:168)
+at com.example.blacksmithproject.ShopPanelTest.demandBlockCountsUnarmedWornAndPurseBands(ShopPanelTest.kt:173)
+</failure>
+    </testcase>
+    <testcase name="theSiegeDayIsSaidAboveTheLead" classname="com.example.blacksmithproject.ShopPanelTest" time="1.77" />
+    <testcase name="theShelfSitsAboveTheDoorsAndTheReportsAndYesterdayIsFolded" classname="com.example.blacksmithproject.ShopPanelTest" time="2.281" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.StorageSheetTest" tests="2" failures="1" errors="0" skipped="0" time="4.934" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="bulkSalvageAsksOnceAndIssuesOneCommandPerBlade" classname="com.example.blacksmithproject.StorageSheetTest" time="2.87">
+      <failure>java.lang.AssertionError: Failed to assert the following: (ToggleableState = 'Off')
+Reason: Expected exactly '1' node but could not find any node that satisfies: (TestTag = 'stock_t4')
+
+at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:262)
+at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:254)
+at androidx.compose.ui.test.AssertionsKt.assertIsOff(Assertions.kt:81)
+at com.example.blacksmithproject.StorageSheetTest.bulkSalvageAsksOnceAndIssuesOneCommandPerBlade(ShopPanelTest.kt:231)
+</failure>
+    </testcase>
+    <testcase name="twoHundredFiftyWeaponsComposeOnlyVisibleRows" classname="com.example.blacksmithproject.StorageSheetTest" time="2.064" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.TitleScreenTest" tests="1" failures="0" errors="0" skipped="0" time="2.5" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="titleOffersANewRun" classname="com.example.blacksmithproject.TitleScreenTest" time="2.5" />
+  </testsuite>
+  <testsuite name="com.example.blacksmithproject.WeaponStatCardTest" tests="2" failures="0" errors="0" skipped="0" time="4.99" timestamp="2026-10-11T18:53:31" hostname="localhost">
+    <properties>
+      <property name="device" value="Pixel_10_Pro(AVD) - 17" />
+      <property name="flavor" value="" />
+      <property name="project" value=":app" />
+    </properties>
+    <testcase name="buffsAndFlawsAreNamedUnderTheirHeadingsWithTheStoredNumbers" classname="com.example.blacksmithproject.WeaponStatCardTest" time="1.939" />
+    <testcase name="aBladeWornSinceTheCounterShowsBothRecordedNumbers" classname="com.example.blacksmithproject.WeaponStatCardTest" time="3.051" />
+  </testsuite>
+</testsuites>

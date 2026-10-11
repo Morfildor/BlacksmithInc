@@ -1,28 +1,31 @@
 # Progress — 2026-10-11 (run variety and consequences, unreleased; before it: guild evolution, 0.8.0)
 
-## Run variety and consequences (2026-10-11): built on branch `run-variety`, not pushed
-Ledger with rulings, slice status, gates and open questions: `docs/RUN_VARIETY_LEDGER.md`. Evidence:
-`docs/run_variety_evidence/REPORT.md`. Versions: rules 6, save schema 7, content 6, balance 12. App version name
-still 0.8.0 (changelog entry under Unreleased).
+## Run variety and consequences (2026-10-11): two passes on branch `run-variety`, not pushed
+Ledger with rulings, decisions, gates and open questions: `docs/RUN_VARIETY_LEDGER.md`. Evidence:
+`docs/run_variety_evidence/REPORT.md`. Versions: rules 6, save schema 7, content 6, balance 13. App version name
+still 0.8.0 (changelog entry under Unreleased): the release gates are not all met.
 
-**What it is.** Legendary only by a Heartfire forging or by deeds. Opening packages for a guild run. Siege
-preparations with their sabotage and one competing opportunity. Supplier mood, supply thinning, the nemesis on the
-wall, siege cause lines, rank scaling fixed, tempers that differ.
+**What it is.** First pass: Legendary only by a Heartfire forging or by deeds, opening packages for a guild run,
+siege preparations with their sabotage and one competing opportunity, supplier mood, supply thinning, the nemesis on
+the wall, siege cause lines, rank scaling fixed, tempers that differ. Second pass: Epic only in fine metal and the
+supplier's days for it, a rescue with the watch that takes nobody else, hunts that are a danger, four contract
+modifiers that change the decision, Licensed Bad Ideas reworked, bots for every package, classic smiths who spend
+Heartfire, no supplier penalty for a job left on the board.
 
-**Checks run on the final tree.** `:core:test` 581 tests, 0 failures. `:app:testDebugUnitTest` 217 tests, 0 failures.
-`:app:assembleDebug` built. `:core:scenarios` rewrote 33 saves. Guild bots: 1,000 unseen seeds for 13 policies under
-Town's Last Hope, 300 each for the other charters, a maxed account, play past the charter, and classic runs.
-Emulator (own instance, port 5560): `guild.sh` through the opening chooser to the next morning, process death on the
-chooser, font scale 1.3 on the board.
+**Checks run on the final tree.** `:core:test` 593 tests, 0 failures. `:app:testDebugUnitTest` 218 tests, 0 failures.
+`:app:assembleDebug` built. `:core:scenarios` wrote 39 saves. Guild bots on 1,000 fresh seeds a charter (200001
+onward), a maxed account, play past the charter, plan and drawback pairs, classic runs new and maxed.
+Emulator (own read-only AVD, 1080x1920): `tools/emulator/runvariety.sh` in three pieces, `guild.sh`, `smoke.sh`,
+`runend.sh`, `scenarios.sh`, `:app:connectedDebugAndroidTest` (72 run, 9 failed, see the report's device section).
+No physical phone.
 
-**Not verified.** See the report's "Not seen on a device" and "Not done or only partly done". In short: no Heartfire
-forging and no siege night seen on a device, no physical phone, instrumented tests and the other device scripts
-not run, nobody has played it.
+**Gates.** Twelve in force, eight met. Not fully met: G3 by one cell (Synergy under Town's Last Hope 66 %, band 40 to 65). G12 in substance (drawbacks
+cost nothing measurable). G14 (no physical phone). One clause of G13 (the classic golden state changed, by decision).
 
 **Next actions.**
-1. The owner starts a new guild run (the opening needs one) and answers the six questions in the ledger.
-2. A device pass of a Heartfire forging and a siege night (a scenario save with Heartfire would make that easy).
-3. Decide the version number and merge.
+1. The owner answers the ten questions at the end of the ledger. The first decides the version.
+2. A pass on a physical phone.
+3. The deep-forging branch merges `run-variety` and re-pins the content fingerprint once (agreed with that session).
 
 
 ## Guild evolution (2026-10-11, night): built in one run, 0.8.0

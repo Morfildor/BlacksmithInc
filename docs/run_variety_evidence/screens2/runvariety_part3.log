@@ -1,0 +1,57 @@
+== legends
+CHECK legend_lines loads onto planning: ok
+screenshot legends_0_storage
+screenshot legends_stock_w1_1_sheet
+SHEET stock_w1: ‹  Storage|Undead Bane Starsteel Sword| Legendary ✦ · Sun sword | legend [Forged with Heartfire] | deeds [] | Renown Unsung (0) 
+screenshot legends_stock_w1_2_history
+HISTORY stock_w1: Day 1: The Heartfire took. It left the anvil a legend.|Day 1: Forged from Starsteel and Sun Ash (balanced risk). Heartfire went into it.|
+screenshot legends_stock_w2_1_sheet
+SHEET stock_w2: ‹  Storage|Iron Sword| Legendary ✦ · Fire sword | legend [Legendary by its deeds] | deeds [Deeds: 4 of 3] | Renown Unsung (0) 
+screenshot legends_stock_w2_2_history
+HISTORY stock_w2: Day 1: Became a legend by its deeds.|Day 1: It was carried through a deep hall.|Day 1: It felled a warlord on the wall.|Day 1: Forged from Iron and Ember Resin (safe risk).|
+screenshot legends_stock_w3_1_sheet
+SHEET stock_w3: ‹  Storage|Iron Sword| Uncommon ◈ · Fire sword | legend [] | deeds [Deeds: 2 of 3] | Renown Unsung (0) 
+screenshot legends_stock_w3_2_history
+HISTORY stock_w3: Day 1: It was carried through a rescue.|Day 1: Forged from Iron and Ember Resin (safe risk).|
+STORAGE weapons opened: stock_w1 stock_w2 stock_w3
+CHECK legend_lines has three weapons to open: ok
+== font
+FONT SCALE: 1.3
+CHECK heartfire_breakthrough loads onto planning: ok
+screenshot font_forge_1_top
+screenshot font_forge_2_heartfire
+screenshot font_forge_3_heartfire_scrolled
+screenshot font_forge_4_heartfire_scrolled
+screenshot font_forge_5_heartfire_scrolled
+CHECK font 1.3: the Heartfire outlook is open: ok
+screenshot font_supplies_0_top
+screenshot font_supplies_1_starsteel_moonsteel
+ROW Starsteel (1.3): Owned 2 · 132 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.
+ROW Moonsteel (1.3): Owned 0 · 198 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.
+screenshot font_supplies_2_lower
+CHECK siege_preparation loads onto planning: ok
+screenshot font_guild_0_top
+screenshot font_wall_1_prep
+screenshot font_wall_2_lower
+screenshot font_wall_3_lower
+screenshot font_contract_1_card
+screenshot font_contract_2_card
+screenshot font_contract_3_card
+screenshot font_menu_0_run
+screenshot font_menu_1_abandon_confirm
+screenshot font_menu_2_title_charter
+CHARTER: Town's Last Hope
+CHECK font 1.3: a new guild run opens on the opening chooser: ok
+OPENINGS: 
+screenshot font_opening_1
+screenshot font_opening_2
+screenshot font_opening_3
+screenshot font_opening_4
+screenshot font_opening_5
+screenshot font_opening_6
+screenshot font_opening_7
+screenshot font_opening_8
+screenshot font_opening_9
+CHECK font 1.3: the chooser shows three packages: FAIL (2)
+FONT SCALE restored: 1.0
+RUNVARIETY_DONE

@@ -1,0 +1,15 @@
+BOARD guild_siege_eve:
+guild_offer_modifier_m7: Shields up: They are expecting somebody. Every enemy starts with 4 Guard. It pays a fifth more.
+guild_offer_modifier_m9: Shields up: They are expecting somebody. Every enemy starts with 4 Guard. It pays a fifth more.
+BOARD guild_captive:
+no contract with a modifier line on this board
+BOARD guild_charter_eve:
+guild_offer_modifier_m29: Tired sentries: They have been awake for days. Every enemy starts slowed. It pays less.
+BOARD guild_stormwell:
+no contract with a modifier line on this board
+BOARD guild_checkpoint:
+screenshot guild_checkpoint_modifier_10
+NEW MODIFIER ON SCREEN: A narrow way
+guild_offer_modifier_m17: A narrow way: Two can pass, not three. It pays half again.
+BOARD supplier_grateful:
+no contract with a modifier line on this board

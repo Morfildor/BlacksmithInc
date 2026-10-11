@@ -1,0 +1,163 @@
+== supplies
+CHECK heartfire_breakthrough loads onto planning: ok
+screenshot supplies_0_top
+screenshot supplies_1_plain_metals
+ROW Iron: Owned 6 · 11 gold | Holds work up to Rare.
+CHECK Iron says what it holds [Owned 6 · 11 gold | Holds work up to Rare.]: ok
+ROW Bronze: Owned 3 · 24 gold | Holds work up to Rare.
+CHECK Bronze says what it holds [Owned 3 · 24 gold | Holds work up to Rare.]: ok
+ROW Silver: Owned 1 · 49 gold · 1 left today | Holds work up to Rare.
+CHECK Silver says what it holds [Owned 1 · 49 gold · 1 left today | Holds work up to Rare.]: ok
+ROW Obsidian: Owned 0 · 82 gold · 1 left today | Holds work up to Rare.
+CHECK Obsidian says what it holds [Owned 0 · 82 gold · 1 left today | Holds work up to Rare.]: ok
+BUY Iron: content-desc="Buy Iron for 11 gold"  clickable="false" enabled="true"
+screenshot supplies_2_starsteel_moonsteel
+ROW Starsteel: Owned 2 · 132 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.
+ROW Moonsteel: Owned 0 · 198 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.
+CHECK Starsteel says what it holds [Owned 2 · 132 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.]: ok
+CHECK Starsteel says the supplier's day [Owned 2 · 132 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.]: ok
+CHECK Moonsteel says what it holds [Owned 0 · 198 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.]: ok
+CHECK Moonsteel says the supplier's day [Owned 0 · 198 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.]: ok
+BUY Starsteel: content-desc="Buy Starsteel, unavailable: the supplier carries it from day 6"  clickable="false" enabled="true"
+BUY Moonsteel: content-desc="Buy Moonsteel, unavailable: the supplier carries it from day 11"  clickable="false" enabled="true"
+== miss
+CHECK heartfire_miss loads onto planning: ok
+ENERGY before: Energy 10
+screenshot heartfire_miss_1_recipe
+RECIPE "Weapon: Sword, tap to change" "Metal: Starsteel, 2 in stock, tap to change" "Augment: Sun Ash, 2 in stock, tap to change" "Catalyst: not chosen, tap to change" "Technique: not chosen, tap to change"   mode=
+screenshot heartfire_miss_2_heartfire_before
+HEARTFIRE before: Heartfire 2 of 3 | Forge with Heartfire | Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 68 and 94, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none under quality 70, up to 75% at quality 94. If it does not break through, the weapon still gets one more property. 
+CHECK heartfire_miss holds two Heartfire before the forging [Heartfire 2 of 3]: ok
+CHECK heartfire_miss says what is spent [Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 68 and 94, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none under quality 70, up to 75% at quality 94. If it does not break through, the weapon still gets one more property. ]: ok
+CHECK heartfire_miss says the quality range [Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 68 and 94, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none under quality 70, up to 75% at quality 94. If it does not break through, the weapon still gets one more property. ]: ok
+CHECK heartfire_miss says the chance to break through [Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 68 and 94, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none under quality 70, up to 75% at quality 94. If it does not break through, the weapon still gets one more property. ]: ok
+CHECK heartfire_miss says what a miss gives [Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 68 and 94, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none under quality 70, up to 75% at quality 94. If it does not break through, the weapon still gets one more property. ]: ok
+CHECK heartfire_miss names the action [Forge with Heartfire · 6 energy]: ok
+screenshot heartfire_miss_3a_lesser_metal_iron_recipe
+screenshot heartfire_miss_3_lesser_metal_iron
+LESSER METAL: "Weapon: Sword, tap to change" "Metal: Iron, 6 in stock, tap to change" "Augment: Sun Ash, 2 in stock, tap to change" "Catalyst: not chosen, tap to change" "Technique: not chosen, tap to change"  | Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 33 and 59, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none in this metal. If it does not break through, the weapon still gets one more property. Heartfire does not take in this metal. Only Starsteel and Moonsteel hold Epic work. 
+CHECK heartfire_miss warns that Heartfire does not take in iron [Heartfire does not take in this metal. Only Starsteel and Moonsteel hold Epic work.]: ok
+CHECK heartfire_miss still holds two Heartfire [Heartfire 2 of 3]: ok
+RECIPE forged: "Weapon: Sword, tap to change" "Metal: Starsteel, 2 in stock, tap to change" "Augment: Sun Ash, 2 in stock, tap to change" "Catalyst: not chosen, tap to change" "Technique: not chosen, tap to change"  content-desc="Risk: Balanced, tap to change" | Heartfire 2 of 3 | Forge with Heartfire · 6 energy
+screenshot heartfire_miss_4_result
+RESULT: Undead Bane Starsteel Sword | Epic ★ · Sun sword | legend line []
+CHECK heartfire_miss result is Epic [Epic ★ · Sun sword]: ok
+CHECK heartfire_miss result has no legend line: ok
+screenshot heartfire_miss_4b_result_lower
+screenshot heartfire_miss_5_forge_after
+CHECK heartfire_miss holds one Heartfire after the forging [Heartfire 1 of 3]: ok
+ENERGY after: Energy 4
+CHECK heartfire_miss spent six energy of ten [Energy 4]: ok
+screenshot heartfire_miss_6_storage
+screenshot heartfire_miss_7_sheet
+SHEET: Epic ★ · Sun sword | legend line [] | deeds []
+CHECK heartfire_miss sheet is Epic [Epic ★ · Sun sword]: ok
+CHECK heartfire_miss sheet has no legend line: ok
+screenshot heartfire_miss_8_sheet_history
+HISTORY: Day 1: Forged from Starsteel and Sun Ash (balanced risk). Heartfire went into it.|
+== siege
+CHECK siege_preparation loads onto planning: ok
+screenshot siege_1_wall_prep
+WALL: The wall|Siege tonight, after today's trading|Hollowbound|+ Weak to Sun|− Resists Grave|They prepare|A gravecaller behind the line|A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third.|Your answers|· Marks pull your strikes onto it.|· A bow or a storm weapon reaches the back of their line.|· End the fight before the third round.|· Or send a party to spoil it. Kill the gravecaller before it marches.|Their field|The Pale Knight|· Every strike renews it.|Bone warden|Hollowbound shambler|Gravecaller|· Every third round raises a shambler while there is room in the line.|· Every round mends the weakest of the dead.|Watch|29|
+PREP: They prepare|A gravecaller behind the line|A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third.|Your answers|· Marks pull your strikes onto it.|· A bow or a storm weapon reaches the back of their line.|· End the fight before the third round.|· Or send a party to spoil it. Kill the gravecaller before it marches.|
+CHECK the wall card names the preparation and its answers: ok
+screenshot siege_1b_wall_lower
+BOARD siege_preparation:
+guild_offer_modifier_m8: Shields up: They are expecting somebody. Every enemy starts with 4 Guard. It pays a fifth more.
+guild_offer_modifier_m9: Tired sentries: They have been awake for days. Every enemy starts slowed. It pays less.
+CHECK the siege card comes: ok
+screenshot siege_3_siege_card
+SIEGE CARD: The wall was breached|Forge damage|−26|Forge health now|76|ON THE WALL|Ysolde Millrace|Ione Dray|Lysander Applegarth|The watch and the militia bled them on the way in (6 parts in a hundred of their strength).|WHAT DECIDED IT|Round 1: Lysander: Opening sigil. Lysander puts Charge on Ione (3). Ione's Charge burst spends 3 Charge. Ione's Charge burst hits The Pale Knight for 8.|
+screenshot siege_4_siege_card_scrolled
+SIEGE CARD (scroll 4): The watch and the militia bled them on the way in (6 parts in a hundred of their strength).|WHAT DECIDED IT|Round 1: Lysander: Opening sigil. Lysander puts Charge on Ione (3). Ione's Charge burst spends 3 Charge. Ione's Charge burst hits The Pale Knight for 8.|Round 1: The Pale Knight: Grave weapon. Ione's Guard breaks. Ione's Riposte hits The Pale Knight for 8.|Round 2: Bone warden: Shield wall. Bone warden hits Ysolde for 13. Ysolde is down.|· They came with what the scouts reported: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third.|
+NOTES: · They came with what the scouts reported: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third.|
+screenshot siege_5_siege_card_scrolled
+SIEGE CARD (scroll 5): Round 1: The Pale Knight: Grave weapon. Ione's Guard breaks. Ione's Riposte hits The Pale Knight for 8.|Round 2: Bone warden: Shield wall. Bone warden hits Ysolde for 13. Ysolde is down.|· They came with what the scouts reported: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third.|· Gravecaller was still standing at the end and mended the others 1 time.|· The forge lost 26 health.|The Hollowbound procession broke through (Ysolde Millrace, Ione Dray, Lysander Applegarth). Round 1: Lysander: Opening sigil. Lysander puts Charge on Ione (3). Ione's Charge burst spends 3 Charge. Ione's Charge burst hits The Pale Knight for 8. The forge took 26 damage in the siege.|
+NOTES: · They came with what the scouts reported: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third.|· Gravecaller was still standing at the end and mended the others 1 time.|· The forge lost 26 health.|
+screenshot siege_6_siege_card_scrolled
+SIEGE CARD (scroll 6): · Gravecaller was still standing at the end and mended the others 1 time.|· The forge lost 26 health.|The Hollowbound procession broke through (Ysolde Millrace, Ione Dray, Lysander Applegarth). Round 1: Lysander: Opening sigil. Lysander puts Charge on Ione (3). Ione's Charge burst spends 3 Charge. Ione's Charge burst hits The Pale Knight for 8. The forge took 26 damage in the siege.|Pulled back after 3 rounds|The party|Ysolde down|Ione down|Lysander 34/34|Against them|The Pale Knight down|Bone warden 56/56|Hollowbound shambler 32/32|Gravecaller 15/47|
+NOTES: · Gravecaller was still standing at the end and mended the others 1 time.|· The forge lost 26 health.|
+screenshot siege_7_siege_card_scrolled
+SIEGE CARD (scroll 7): The Hollowbound procession broke through (Ysolde Millrace, Ione Dray, Lysander Applegarth). Round 1: Lysander: Opening sigil. Lysander puts Charge on Ione (3). Ione's Charge burst spends 3 Charge. Ione's Charge burst hits The Pale Knight for 8. The forge took 26 damage in the siege.|Pulled back after 3 rounds|The party|Ysolde down|Ione down|Lysander 34/34|Against them|The Pale Knight down|Bone warden 56/56|Hollowbound shambler 32/32|Gravecaller 15/47|Hollowbound shambler 15/15, joined during the fight|The whole fight|
+NOTE: shopday_siege_notes not on screen after scrolling (see the SIEGE CARD lines above)
+== supplier
+CHECK supplier_grateful loads onto planning: ok
+screenshot supplier_grateful_1_day1_mood
+MOOD day 1 (grateful): The supplier is grateful. 1 more of every limited material each morning, until day 6.
+CHECK supplier_grateful names the mood: ok
+screenshot supplier_grateful_2_day1_stock
+ROW day 1 Silver: Owned 1 · 45 gold · 1 left today | Holds work up to Rare.
+ROW day 1 Obsidian: Owned 0 · 75 gold · 1 left today | Holds work up to Rare.
+ROW day 1 Starsteel: Owned 0 · 120 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.
+ROW day 1 Moonsteel: Owned 0 · 180 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.
+screenshot supplier_grateful_3_day2_mood
+MOOD day 2 (grateful): The supplier is grateful. 1 more of every limited material each morning, until day 6.
+screenshot supplier_grateful_4_day2_stock
+ROW day 2 Silver: Owned 1 · 45 gold · 2 left today | Holds work up to Rare.
+ROW day 2 Obsidian: Owned 0 · 75 gold · 2 left today | Holds work up to Rare.
+ROW day 2 Starsteel: Owned 0 · 120 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.
+ROW day 2 Moonsteel: Owned 0 · 180 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.
+CHECK supplier_grateful Silver stock on day 2 [Owned 1 · 45 gold · 2 left today | Holds work up to Rare.]: ok
+screenshot supplier_grateful_5_day2_lower
+CHECK supplier_shaken loads onto planning: ok
+screenshot supplier_shaken_1_day1_mood
+MOOD day 1 (shaken): The supplier is shaken. 1 fewer of every limited material each morning, until day 6.
+CHECK supplier_shaken names the mood: ok
+screenshot supplier_shaken_2_day1_stock
+ROW day 1 Silver: Owned 1 · 45 gold · 1 left today | Holds work up to Rare.
+ROW day 1 Obsidian: Owned 0 · 75 gold · 1 left today | Holds work up to Rare.
+ROW day 1 Starsteel: Owned 0 · 120 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.
+ROW day 1 Moonsteel: Owned 0 · 180 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.
+screenshot supplier_shaken_3_day2_mood
+MOOD day 2 (shaken): The supplier is shaken. 1 fewer of every limited material each morning, until day 6.
+screenshot supplier_shaken_4_day2_stock
+ROW day 2 Silver: Owned 1 · 45 gold · 0 left today | Holds work up to Rare.
+ROW day 2 Obsidian: Owned 0 · 75 gold · 0 left today | Holds work up to Rare.
+ROW day 2 Starsteel: Owned 0 · 120 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.
+ROW day 2 Moonsteel: Owned 0 · 180 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.
+CHECK supplier_shaken Silver stock on day 2 [Owned 1 · 45 gold · 0 left today | Holds work up to Rare.]: ok
+screenshot supplier_shaken_5_day2_lower
+== legends
+CHECK legend_lines loads onto planning: ok
+screenshot legends_0_storage
+STORAGE: stock_w1
+stock_w2
+screenshot legends_stock_w1_1_sheet
+SHEET stock_w1: ‹  Storage|Undead Bane Starsteel Sword| Legendary ✦ · Sun sword | legend [Forged with Heartfire] | deeds []
+screenshot legends_stock_w1_2_history
+HISTORY stock_w1: Day 1: The Heartfire took. It left the anvil a legend.|Day 1: Forged from Starsteel and Sun Ash (balanced risk). Heartfire went into it.|
+STORY stock_w1: Day 1: Forged from Starsteel and Sun Ash (balanced risk). Heartfire went into it.|Day 1: The Heartfire took. It left the anvil a legend.|
+screenshot legends_stock_w2_1_sheet
+SHEET stock_w2: ‹  Storage|Iron Sword| Legendary ✦ · Fire sword | legend [Legendary by its deeds] | deeds [Deeds: 4 of 3]
+screenshot legends_stock_w2_2_history
+HISTORY stock_w2: Day 1: Became a legend by its deeds.|Day 1: It was carried through a deep hall.|Day 1: It felled a warlord on the wall.|Day 1: Forged from Iron and Ember Resin (safe risk).|
+STORY stock_w2: Day 1: Forged from Iron and Ember Resin (safe risk).|Day 1: It felled a warlord on the wall.|Day 1: It was carried through a deep hall.|Day 1: Became a legend by its deeds.|
+== kill
+CHECK heartfire_miss loads onto planning: ok
+screenshot kill_1_draft_before
+DRAFT before: "Risk: Balanced, tap to change"  | Heartfire 2 of 3 | Forge with Heartfire · 6 energy | Energy 10
+PID before kill: [28265]
+PID after am kill: []
+CHECK the backgrounded process was killed: ok
+Warning: Activity not started, its current task has been brought to the front
+screenshot kill_2_back_first_screen
+FIRST SCREEN after the kill: Day 1|400|10|Siege in 4 days|Forge health 100|Besieger not yet known · Day 5 · see the wall in Guild|
+screenshot kill_3_back_forge
+DRAFT after the kill (top): "Weapon: Sword, tap to change" "Metal: Starsteel, 2 in stock, tap to change" "Augment: Sun Ash, 2 in stock, tap to change" "Catalyst: not chosen, tap to change" "Technique: not chosen, tap to change" 
+screenshot kill_4_back_heartfire
+DRAFT after the kill: mode advanced selected="false" | Heartfire 2 of 3 | Forge with Heartfire | outlook shown: yes | Forge with Heartfire · 6 energy | Energy 10
+CHECK Heartfire held is still two after the kill [Heartfire 2 of 3]: ok
+CHECK no energy was spent by the kill [Energy 10]: ok
+CHECK storage is still empty after the kill: ok
+screenshot kill_5_result
+RESULT after the kill: Undead Bane Starsteel Sword | Epic ★ · Sun sword | legend []
+screenshot kill_6_menu_after_force_stop
+screenshot kill_7_forge_after_force_stop
+CHECK Heartfire is one of three after the force-stop [Heartfire 1 of 3]: ok
+CHECK the energy stays spent after the force-stop [Energy 4]: ok
+screenshot kill_8_storage_after_force_stop
+CHECK the forged weapon is in storage after the force-stop: ok
+screenshot kill_9_sheet_after_force_stop
+SHEET after the force-stop: ‹  Storage|Undead Bane Starsteel Sword| Epic ★ · Sun sword | legend []
+CHECK it is still Epic [Epic ★ · Sun sword]: ok
+RUNVARIETY_DONE

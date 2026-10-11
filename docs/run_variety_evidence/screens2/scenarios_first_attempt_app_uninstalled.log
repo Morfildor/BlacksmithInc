@@ -1,0 +1,6 @@
+Failed
+Error type 3
+Error: Activity class {com.example.blacksmithproject/com.example.blacksmithproject.MainActivity} does not exist.
+TIMEOUT waiting for id 'title_new_run'
+TIMEOUT waiting for id 'menu_scenarios'
+CHECK the debug menu has a Scenarios entry: FAIL

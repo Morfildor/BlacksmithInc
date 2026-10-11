@@ -1,0 +1,49 @@
+screenshot 01_title
+tapped id 'charter_prev' at 137 1137
+tapped id 'title_new_run' at 540 1431
+screenshot 02_shop
+CHECK shop leads with a lead: ok
+tapped id 'nav_forge' at 403 1762
+screenshot 02_workshop
+tapped id 'forge_option_sword' at 222 1207
+tapped id 'forge_option_iron' at 222 979
+tapped id 'forge_option_ember_resin' at 222 818
+screenshot 03_forge_ready
+tapped id 'forge_weapon' at 540 1578
+screenshot 04_result
+tapped id 'reveal_list' at 645 1725
+tapped id 'nav_shop' at 127 1762
+screenshot 05_shop_listed
+CHECK shelf listed: ok
+tapped id 'end_day' at 540 1553
+CHECK shop day opens: ok
+screenshot 06_shopday
+tapped id 'shopday_next' at 641 1767
+screenshot 06b_shopday_card
+tapped id 'shopday_next' at 641 1767
+screenshot 06b2_shopday_card
+tapped id 'shopday_skip' at 888 200
+screenshot 06c_tomorrow
+tapped id 'shopday_gazette' at 282 1532
+screenshot 06_gazette
+text="EMBERFALL GAZETTE"
+text="Your first sale. Jorund Wainwright bought Iron Sword."
+tapped id 'report_close' at 540 1665
+CHECK gazette closes onto the day: ok
+tapped id 'shopday_close' at 641 1767
+tapped id 'nav_town' at 678 1762
+screenshot 07_town
+tapped id 'nav_records' at 953 1762
+screenshot 07b_records
+CHECK records segments: ok
+tapped id 'page_legacy' at 871 350
+CHECK legacy segment: ok
+tapped id 'nav_settings' at 1006 200
+screenshot 07c_settings
+CHECK settings sheet: ok
+CHECK back returns to Shop: ok
+screenshot 07_menu
+tapped id 'menu_continue' at 540 1284
+CHECK resume after process death on day 2: ok
+screenshot 08_resumed
+SMOKE_DONE

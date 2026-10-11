@@ -30,7 +30,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   (`Consequences.kt`), workshop relics (`Relics.kt`) and siege traits (`Battle.scheduleNext` / `outlook`) draw only on the
   ENCOUNTERS stream; their definitions are content (`content/Depth.kt`), their numbers `BalanceConfig.depth`.
   A run started with a charter is a guild run (`GameState.guild`, `model/Guild.kt`); without one it is a classic run and
-  plays as rules 4 did but for the rules-6 forge (the rules-6 golden state equals the rules-5 one apart from three new record kinds: deeds, legends, Heartfire). `combat/` is the automatic fight: typed events and
+  plays as rules 4 did but for the rules-6 forge: Legendary by Heartfire or deeds, Epic only in the fine metals, which the supplier carries from day 6 and 11 (so the rules-6 golden state is its own, not the rules-5 one). `combat/` is the automatic fight: typed events and
   effects (trigger, condition, cost, action, limit), pure, no `GameState`; what it runs on is content
   (`content/CombatContent.kt`: class kits, the rule each element, affix, catalyst, family and signature gives a blade,
   enemy units, party relics). `guild/` is the roster and loans (`GuildOps`), the contract board and deployments
@@ -69,7 +69,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 #   legacy: --upgrades id=level[,id=level] plays the policy rows on that account, --yardsticks adds the first-siege and premium-sale table, --legends gives the maxed and impact runs a veteran Legend Board, --knownNameGold N
 ./gradlew :core:scenarios                              # rewrites the debug scenario saves in app/src/debug/assets/scenarios (played and constructed; run after a rules, content or balance change)
 ./gradlew :core:combat                                 # prints the fixture fights of the interaction engine (highlights and timeline); --args="stormwell" for one
-./gradlew :core:guildsim --args="--runs 300 --seed 1"  # thirteen guild policies over guild runs (--policy X[,Y], --charter ID, --horizon N, --maxed x, --set enemyPercentBase=180,..., --why x, --byOpening x, --pair A,B, --playOn x, --opening ID, --classic x, --transcript x)
+./gradlew :core:guildsim --args="--runs 300 --seed 1"  # fourteen guild policies over guild runs (--policy X[,Y], --charter ID, --horizon N, --maxed x, --set enemyPercentBase=180,..., --why x, --byOpening x, --pair A,B[+C,D], --playOn x, --opening ID, --planPair POLICY, --drawbackPair POLICY, --transcript x; --classic x [--noSpend x] plays runs without a charter with a smith who spends Heartfire)
 ./gradlew :core:soak                                   # long-save soak, outside the default suite (about 70 s): 2,000 forced-survival days for two smiths; tables and the day-1,000 / 2,000 saves in core/build/soak/
 ./gradlew :app:testDebugUnitTest                       # app JVM tests (session, ViewModel, screen models; no device)
 ./gradlew :app:assembleDebug                           # APK (needs Android SDK at local.properties sdk.dir)
@@ -93,8 +93,9 @@ Compose BOM 2026.02.01, Room 2.8.5, DataStore 1.2.1, JDK 21 launcher / JDK 25 da
   and evidence live in `docs/MAJOR_UPDATE_LEDGER.md` (plan: `docs/MAJOR_UPDATE_PLAN.md`). Visitors, relics and siege
   traits: `docs/GAMEPLAY_DEPTH_PLAN.md` (tables of every option and number, task ledger).
   Guild evolution: plan and task ledger `docs/GUILD_EVOLUTION_PLAN.md`, spec `docs/GUILD_EVOLUTION_SPEC.md`.
-  Run variety (rules 6: Legendary by Heartfire or deeds in `crafting/Legends.kt`, opening packages, siege preparations,
-  the siege's two-day jobs): rulings, gates and open questions `docs/RUN_VARIETY_LEDGER.md`, evidence
+  Run variety (rules 6: Legendary by Heartfire or deeds in `crafting/Legends.kt`, Epic only in fine metal and the
+  supplier's days for it, opening packages, siege preparations, the siege's two-day jobs, contract modifiers, the watch
+  on a rescue): rulings, gates and open questions `docs/RUN_VARIETY_LEDGER.md`, evidence
   `docs/run_variety_evidence/REPORT.md`.
 - Balance changes: run the simulator, record numbers in DECISIONS.md, bump `BalanceConfig.version` on semantic change.
 - New gameplay numbers go in `BalanceConfig`, never inline. New content goes through `ContentCatalog.validate()`.

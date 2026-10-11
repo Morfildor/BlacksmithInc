@@ -1,0 +1,4 @@
+tapped 'New game' at 540 1432
+TIMEOUT waiting for 'Decide later'
+TIMEOUT waiting for 'End Day'
+ALL3_DONE

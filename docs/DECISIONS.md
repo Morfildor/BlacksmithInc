@@ -4278,3 +4278,21 @@ climbs more slowly (190 and 3 a day, was 150 and 5) and the charter warlord is a
 This overrides two earlier notes in this file: "a number is not moved to hit a target without the owner" (the owner
 moved it, by that prompt) and the open question on the first siege (it now costs a neglected wall about 8 forge
 health and a prepared one about 1).
+
+## Run variety, second pass: balance 13 (2026-10-11)
+Source: the owner's second prompt of that day (three rulings: no supplier penalty for a job left on the board,
+rescue eased further, target 0.9.0 with the changelog under Unreleased until the gates pass). Rulings R1 to R3,
+decisions D14 to D26, the gates and the open questions: `docs/RUN_VARIETY_LEDGER.md`. Measurements on seeds nothing
+was tuned on (200001 onward): `docs/run_variety_evidence/REPORT.md`. Not repeated here.
+
+In one paragraph: only Starsteel and Moonsteel hold Epic work and the supplier carries them from day 6 and 11, in
+every run, classic too. A rescue takes nobody else and the watch fills its empty places. Hunts are 130 % (105) and
+bring mid metal. Siege floor 186 (190). Licensed Bad Ideas offers a Guardian and a Warden on the first morning. No
+opening takes militia. Four contract modifiers change the decision. Classic Heartfire from the fourth siege won.
+
+What was tried and dropped, with the reason: an exceptional result worth 12 instead of 20 (did not hold the Epic
+target), a watch four times as strong (lifted every policy alike and took the forge's fall out of the game), a cap
+of 3 on the two strongest relics (no effect), militia and gold for Licensed Bad Ideas (no effect).
+
+This overrides the rules-5 note that a classic run plays as rules 4 did: its forge and its supplier follow rules 6.
+The version name stays 0.8.0: one cell of the charter band is a point over, and the device pass is emulator only.

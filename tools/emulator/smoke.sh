@@ -62,6 +62,9 @@ past_offers() {
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && shot 01_title
+# This loop is the classic shop: a new install offers the first charter, and a guild run (rules 6) opens on its opening
+# packages instead of the Shop. One step back from the first charter is "No charter".
+tap_id charter_prev; has "No charter" || { echo "CHECK the title offers a run without a charter: FAIL"; exit 1; }
 tap_id title_new_run || exit 1
 past_offers || exit 1
 # A new run lands on the Shop destination, which leads with the day's one lead; the forge is one destination over.

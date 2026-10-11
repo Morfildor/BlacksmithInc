@@ -1,0 +1,48 @@
+== supplies
+CHECK heartfire_breakthrough loads onto planning: ok
+screenshot supplies_0_top
+screenshot supplies_1_starsteel_moonsteel
+ROW Starsteel: Owned 2 · 132 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.
+ROW Moonsteel: Owned 0 · 198 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.
+CHECK Starsteel says what it holds [Owned 2 · 132 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.]: ok
+CHECK Starsteel says the supplier's day [Owned 2 · 132 gold · 0 left today | Holds Epic work. | The supplier carries it from day 6. Before that it comes only from dangerous work.]: ok
+CHECK Moonsteel says what it holds [Owned 0 · 198 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.]: ok
+CHECK Moonsteel says the supplier's day [Owned 0 · 198 gold · 0 left today | Holds Epic work. | The supplier carries it from day 11. Before that it comes only from dangerous work.]: ok
+BUY Starsteel: content-desc="Buy Starsteel, unavailable: the supplier carries it from day 6"  enabled="true"
+BUY Moonsteel: content-desc="Buy Moonsteel, unavailable: the supplier carries it from day 11"  enabled="true"
+screenshot supplies_2_plain_metals
+ROW Iron: 
+ROW Bronze: 
+ROW Silver: 
+ROW Obsidian: 
+== breakthrough
+CHECK heartfire_breakthrough loads onto planning: ok
+ENERGY before: Energy 10
+screenshot heartfire_breakthrough_1_recipe
+RECIPE "Weapon: Sword, tap to change" "Metal: Starsteel, 2 in stock, tap to change" "Augment: Sun Ash, 2 in stock, tap to change" "Catalyst: not chosen, tap to change" "Technique: not chosen, tap to change"   mode=
+screenshot heartfire_breakthrough_2_heartfire_before
+HEARTFIRE before: Heartfire 2 of 3 | Forge with Heartfire | Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 68 and 94, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none under quality 70, up to 75% at quality 94. If it does not break through, the weapon still gets one more property. 
+CHECK heartfire_breakthrough holds two Heartfire before the forging [Heartfire 2 of 3]: ok
+CHECK heartfire_breakthrough says what is spent [Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 68 and 94, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none under quality 70, up to 75% at quality 94. If it does not break through, the weapon still gets one more property. ]: ok
+CHECK heartfire_breakthrough says the quality range [Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 68 and 94, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none under quality 70, up to 75% at quality 94. If it does not break through, the weapon still gets one more property. ]: ok
+CHECK heartfire_breakthrough says the chance to break through [Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 68 and 94, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none under quality 70, up to 75% at quality 94. If it does not break through, the weapon still gets one more property. ]: ok
+CHECK heartfire_breakthrough says what a miss gives [Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 68 and 94, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none under quality 70, up to 75% at quality 94. If it does not break through, the weapon still gets one more property. ]: ok
+CHECK heartfire_breakthrough names the action [Forge with Heartfire · 6 energy]: ok
+screenshot heartfire_breakthrough_3_lesser_metal_iron
+LESSER METAL: "Risk: Balanced, tap to change"  | Uses 1 Heartfire and 2 more energy, 6 in all. Both are spent whether or not it breaks through. Quality lands between 33 and 59, before an exceptional result or a flaw. It can break through only at 70 or more. Chance to break through: none in this metal. If it does not break through, the weapon still gets one more property. Heartfire does not take in this metal. Only Starsteel and Moonsteel hold Epic work. 
+CHECK heartfire_breakthrough warns that Heartfire does not take in iron [Heartfire does not take in this metal. Only Starsteel and Moonsteel hold Epic work.]: ok
+CHECK heartfire_breakthrough still holds two Heartfire [Heartfire 2 of 3]: ok
+RECIPE forged: "Risk: Balanced, tap to change"  content-desc="Risk: Balanced, tap to change" | Heartfire 2 of 3 | Forge with Heartfire · 6 energy
+screenshot heartfire_breakthrough_4_result
+RESULT: Undead Bane Starsteel Sword | Legendary ✦ · Sun sword | legend line [Forged with Heartfire]
+CHECK heartfire_breakthrough result is Legendary [Legendary ✦ · Sun sword]: ok
+CHECK heartfire_breakthrough result says why it is Legendary [Forged with Heartfire]: ok
+screenshot heartfire_breakthrough_4b_result_lower
+screenshot heartfire_breakthrough_5_forge_after
+CHECK heartfire_breakthrough holds one Heartfire after the forging [Heartfire 1 of 3]: ok
+ENERGY after: Energy 4
+CHECK heartfire_breakthrough spent six energy of ten [Energy 4]: ok
+screenshot heartfire_breakthrough_6_storage
+TIMEOUT waiting for id 'item_sheet'
+CHECK heartfire_breakthrough opens the weapon's sheet: FAIL
+RUNVARIETY_DONE

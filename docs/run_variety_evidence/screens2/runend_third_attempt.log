@@ -1,0 +1,59 @@
+tapped 'New game' at 540 1432
+tapped 'Decide later' at 748 1552
+tapped 'End Day' at 541 1535
+tapped 'Skip to evening' at 888 200
+tapped 'Begin day' at 641 1768
+tapped 'Decide later' at 748 1552
+tapped 'End Day' at 540 1535
+tapped 'Skip to evening' at 888 200
+tapped 'Begin day' at 641 1768
+tapped 'Decide later' at 748 1552
+tapped 'End Day' at 540 1493
+tapped 'Skip to evening' at 888 200
+tapped 'Begin day' at 641 1768
+tapped 'Decide later' at 748 1552
+tapped 'End Day' at 541 1535
+tapped 'Skip to evening' at 888 200
+tapped 'Begin day' at 641 1768
+tapped 'Decide later' at 748 1552
+tapped 'End Day' at 540 1535
+tapped 'Skip to evening' at 888 200
+tapped 'Begin day' at 641 1768
+tapped 'Decide later' at 748 1552
+tapped 'End Day' at 540 1535
+tapped 'Skip to evening' at 888 200
+tapped 'Begin day' at 641 1768
+tapped 'Decide later' at 748 1552
+tapped 'End Day' at 541 1535
+tapped 'Skip to evening' at 888 200
+tapped 'Begin day' at 641 1768
+tapped 'Decide later' at 748 1552
+tapped 'End Day' at 540 1493
+tapped 'Skip to evening' at 888 200
+tapped 'Begin day' at 641 1768
+tapped 'Decide later' at 748 1552
+tapped 'End Day' at 540 1535
+tapped 'Skip to evening' at 888 200
+tapped 'Begin day' at 641 1768
+tapped 'Decide later' at 748 1552
+tapped 'End Day' at 540 1535
+tapped 'Skip to evening' at 888 200
+CHECK forge fell: ok
+screenshot 00_final_gazette
+tapped 'See the legacy' at 641 1768
+screenshot 01_runend_unclaimed
+tapped 'Claim [0-9]' at 540 1126
+CHECK claimed: ok
+screenshot 02_runend_claimed
+tapped 'Continue run' at 540 1432
+CHECK run end reopens after process death: ok
+CHECK upgrades available after reopening: ok
+screenshot 02b_runend_reopened
+screenshot 03_runend_bottom
+tapped 'Begin era' at 540 1768
+TIMEOUT waiting for 'Decide later'
+TIMEOUT waiting for 'Day 1'
+CHECK next era: FAIL
+screenshot 04_next_era
+RUNEND_DONE
+ALL_DONE
