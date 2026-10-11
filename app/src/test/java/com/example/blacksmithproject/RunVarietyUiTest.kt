@@ -84,6 +84,9 @@ class RunVarietyUiTest {
         }
         // End Day waits for the choice, with the engine's own error, and the workshop has nothing to choose once it is made.
         assertEquals(GameError.OpeningPending, (s.endDay() as CommandOutcome.Rejected).error)
+        // The workshop's own models still build on that morning (the ViewModel builds them under the chooser), with nobody signed yet.
+        assertTrue(engine.guildUi(s)!!.roster.isEmpty())
+        assertNotNull(engine.shopUi(s))
         val chosen = (engine.handle(s, Command.ChooseOpening(ui.openings[1].id)) as CommandOutcome.Accepted).state
         assertNull(engine.openingChooser(chosen))
         assertEquals(ui.openings[1].id, chosen.guild!!.openingId)

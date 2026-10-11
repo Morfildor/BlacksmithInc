@@ -242,7 +242,8 @@ fun SiegeOutcomeCard(beat: Beat.Aftermath, siege: SiegeOutcomeUi, onOpenHero: (F
         siege.outerLine?.let { Body(it, Modifier.testTag("shopday_siege_outer")) }
         FightHighlights(siege.highlights, "shopday_siege_highlights")
         if (siege.notes.isNotEmpty()) Column(Modifier.testTag("shopday_siege_notes")) {
-            Overline("Why it ended this way")
+            // Under the fight's highlights these lines go on under the same heading.
+            if (siege.highlights.isEmpty()) Overline("What decided it")
             siege.notes.forEach { Text("· $it", style = MaterialTheme.typography.bodyMedium) }
         }
         Body(card.text, Modifier.testTag("shopday_aftermath_text"))
