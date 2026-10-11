@@ -1,0 +1,19 @@
+Guild runs: 300 seeds from 100001, charter towns_last_hope, horizon day 40, new account, balance 12
+SYNERGY         charter  74%  defeated  16%  neither by day 41  11% | days med 41 mean 40.3 | first siege leaves  98 | sieges held 50% cost 18% breached 33% | per run: contracts 21.3 captured 0.14 rescued 0.13 dead 0.20 chains 3.1 (first day 9.2) members 3.9 gold 605 rejected 0
+                contracts: ESCORT 11% (won 91%)  HUNT 38% (won 99%)  RESCUE 1% (won 95%)  SABOTAGE 37% (won 98%)  SUPPLY 14% (won 100%)
+                forge: 176.9 a run (73.7 recipes), C=8% U=32% R=41% E=18% L=0% | legendary a run: mean 1.10 median 1 p90 2, runs with one  77%, first on day 23.8, by source deed=0.84 heartfire=0.26 | overwork days 0.0
+                sieges: #1 held 63% cost 27% breached 10% damage 2.6 (n=300)  #2 held 60% cost 23% breached 18% damage 3.8 (n=300)  #3 held 78% cost 14% breached 8% damage 2.0 (n=300)  #4 held 23% cost 14% breached 62% damage 16.4 (n=300)
+                heartfire a run: earned 0.76, forgings 0.74 | deeds 8.96 | sabotage done 7.68 | days with nobody fit 0.06 | charter rate 95% interval 68 to 78 %
+                till a run: shelf_sale 6552, sale_bonus 145, stipend 77, tribute 201, contract 1129, spent on stock and tools 7429
+ADAPTIVE        charter  52%  defeated  14%  neither by day 41  34% | days med 41 mean 40.6 | first siege leaves  99 | sieges held 50% cost 11% breached 39% | per run: contracts 20.7 captured 0.96 rescued 0.64 dead 1.12 chains 2.1 (first day 9.3) members 3.7 gold 385 rejected 0
+                contracts: EMERGENCY 11% (won 100%)  ESCORT 6% (won 85%)  HUNT 13% (won 95%)  OPPORTUNITY 1% (won 100%)  RECOVERY 0% (won 37%)  RESCUE 4% (won 71%)  SABOTAGE 34% (won 89%)  SUPPLY 32% (won 93%)
+                forge: 175.1 a run (69.8 recipes), C=9% U=34% R=41% E=16% L=0% | legendary a run: mean 0.91 median 1 p90 2, runs with one  63%, first on day 22.7, by source deed=0.69 heartfire=0.23 | overwork days 0.0
+                sieges: #1 held 81% cost 14% breached 4% damage 1.2 (n=300)  #2 held 63% cost 20% breached 16% damage 3.7 (n=300)  #3 held 79% cost 12% breached 9% damage 2.2 (n=300)  #4 held 19% cost 13% breached 68% damage 16.3 (n=300)
+                heartfire a run: earned 0.63, forgings 0.62 | deeds 9.71 | sabotage done 6.21 | days with nobody fit 0.62 | charter rate 95% interval 46 to 58 %
+                till a run: shelf_sale 6328, sale_bonus 132, stipend 71, tribute 143, contract 631, spent on stock and tools 6902
+LEGEND_SEEKER   charter  30%  defeated  16%  neither by day 41  54% | days med 41 mean 40.3 | first siege leaves  96 | sieges held 29% cost 13% breached 57% | per run: contracts 19.5 captured 1.04 rescued 0.71 dead 1.53 chains 2.1 (first day 9.8) members 3.6 gold 252 rejected 0
+                contracts: DELVE 3% (won 48%)  EMERGENCY 20% (won 100%)  ESCORT 1% (won 58%)  HUNT 6% (won 91%)  OPPORTUNITY 22% (won 96%)  RECOVERY 1% (won 77%)  RESCUE 5% (won 75%)  SABOTAGE 11% (won 66%)  SUPPLY 31% (won 94%)
+                forge: 163.0 a run (71.8 recipes), C=11% U=34% R=38% E=17% L=1% | legendary a run: mean 1.73 median 2 p90 4, runs with one  77%, first on day 15.0, by source deed=0.56 heartfire=1.17 | overwork days 0.0
+                sieges: #1 held 61% cost 20% breached 20% damage 4.6 (n=300)  #2 held 47% cost 24% breached 29% damage 6.8 (n=300)  #3 held 55% cost 24% breached 21% damage 5.4 (n=300)  #4 held 4% cost 10% breached 86% damage 22.7 (n=300)
+                heartfire a run: earned 2.88, forgings 2.86 | deeds 10.32 | sabotage done 1.40 | days with nobody fit 0.72 | charter rate 95% interval 25 to 35 %
+                till a run: shelf_sale 6210, sale_bonus 79, stipend 52, tribute 84, contract 564, spent on stock and tools 6739

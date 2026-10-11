@@ -482,6 +482,28 @@ fun main(args: Array<String>) {
         siegeGrunts = sets["siegeGrunts"]?.toInt() ?: g0.siegeGrunts, siegePercentPerPressure = sets["siegePercentPerPressure"]?.toDouble() ?: g0.siegePercentPerPressure,
         enemyPercentPerPressure = sets["enemyPercentPerPressure"]?.toDouble() ?: g0.enemyPercentPerPressure, outerMaxPercent = sets["outerMaxPercent"]?.toInt() ?: g0.outerMaxPercent,
         siegeGruntEvery = sets["siegeGruntEvery"]?.toInt() ?: g0.siegeGruntEvery, damageCostPercent = sets["damageCostPercent"]?.toInt() ?: g0.damageCostPercent))
+    // --transcript: one run told from its own records, for the evidence report. Reproducible: seed, policy, charter and opening are all it needs.
+    if ("--transcript" in args) {
+        val told = setOf(EventType.OPENING_CHOSEN, EventType.GUILD_RECRUITED, EventType.SIEGE_PREPARATION, EventType.MISSION_WON, EventType.MISSION_FAILED, EventType.MEMBER_CAPTURED, EventType.MEMBER_RESCUED, EventType.SABOTAGE_DONE,
+            EventType.SIEGE_WON, EventType.SIEGE_LOST, EventType.FORGE_DAMAGED, EventType.HEARTFIRE_GAINED, EventType.LEGEND_EARNED, EventType.CHARTER_SECURED, EventType.SUPPLIER_NEWS, EventType.WEAPON_RECOVERED, EventType.WEAPON_STOLEN,
+            EventType.RELIC_CHOSEN, EventType.FORGE_DESTROYED, EventType.RUN_RETIRED)
+        for (p in policies) {
+            val engine = GameEngine(config = config)
+            val bot = GuildBot(engine, p, charter, horizon, a["--opening"])
+            val lines = ArrayList<String>()
+            val seen = HashSet<String>()
+            val (stats, end) = bot.play(seed) { s ->
+                // The morning's plan, once the bot has made it: what each member carries, and what the day's forging was.
+                if (s.day == 5 || s.day == 10 || s.day == 20) lines += "day ${s.day} | carried: " + s.guild!!.members.joinToString(", ") { m -> "${s.hero(m.heroId).name} the ${engine.content.heroClass(s.hero(m.heroId).classId).name} (${m.traitId}) " + (s.loanOf(m.heroId)?.let { w -> "${w.name}, ${w.rarity.name.lowercase()}" + (if (w.flaws.isNotEmpty()) ", flawed" else "") } ?: "nothing") } + " | gold ${s.gold}, forge health ${s.town.integrity}, Heartfire ${s.heartfire}"
+                for (e in s.events) if (e.id !in seen && (e.type in told || (e.type == EventType.WEAPON_FORGED && e.data["heartfire"] == "true"))) { seen += e.id; lines += "day ${e.day} | ${e.text.take(230)}" }
+            }
+            for (e in end.events) if (e.id !in seen && (e.type in told || (e.type == EventType.WEAPON_FORGED && e.data["heartfire"] == "true"))) lines += "day ${e.day} | ${e.text.take(230)}"
+            println("Transcript: seed $seed, charter $charter, policy ${p.name}, opening ${stats.opening}, balance ${config.version}. Ended on day ${stats.days}: " + (if (stats.retired) "charter secured on day ${stats.charterDay}, chapter closed" else if (stats.defeated) "the forge fell" else "still standing at the horizon"))
+            lines.sortedBy { it.substringAfter("day ").substringBefore(" ").toIntOrNull() ?: 0 }.forEach { println("  $it") }
+            println()
+        }
+        return
+    }
     // --classic: what rules 6 do to a run without a charter. Legendary weapons by origin, renown earned and Heartfire left in the forge at the end.
     if ("--classic" in args) {
         for (policy in listOf(Policy.BALANCED_ACTIVE, Policy.EXPERT)) {

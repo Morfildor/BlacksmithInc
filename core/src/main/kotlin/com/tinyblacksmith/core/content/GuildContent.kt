@@ -358,9 +358,9 @@ object GuildContent {
             prep = "Enough to beat the guards, then Guard and healing: on the way out the captive has to stay on their feet.",
             failure = "The captive stays where they are and their time keeps running. If the whole party goes down, one more is taken.",
             stages = listOf(
-                StageDef(roster(listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_scout"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.DANGEROUS, percent = 75),
-                StageDef(roster(listOf("ashclaw_thief", "ashclaw_scout", "ashclaw_scout"), listOf("hollow_shambler", "hollow_shambler", "bone_warden"), listOf("ember_whelp", "ember_whelp", "cinder_knight")), Danger.DANGEROUS, percent = 70,
-                    objective = ObjectiveKind.HOLD, rounds = 4, protectUnitId = "captive"))),
+                StageDef(roster(listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_scout"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.DANGEROUS, percent = 60),
+                StageDef(roster(listOf("ashclaw_thief", "ashclaw_scout", "ashclaw_scout"), listOf("hollow_shambler", "hollow_shambler", "bone_warden"), listOf("ember_whelp", "ember_whelp", "cinder_knight")), Danger.DANGEROUS, percent = 55,
+                    objective = ObjectiveKind.HOLD, rounds = 3, protectUnitId = "captive"))),
         MissionDef(RECOVERY, MissionArchetype.RECOVERY, "Recovery", days = 1, fee = 10, weight = 0.0, lifeDays = 9,
             description = "A weapon of your forge is in one of their hands. The one who carries it has to fall.",
             prep = "The same as a hunt. What it took from you makes it harder. Winning it back leaves Heartfire.",

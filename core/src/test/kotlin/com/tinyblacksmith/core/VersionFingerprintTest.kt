@@ -29,7 +29,7 @@ class VersionFingerprintTest {
         // 5: the guild (rules 5): combat kits, the rule every element, affix, catalyst, family and six signatures give a blade, enemy units, eight party relics, contracts, charters, member traits. Re-pinned while the update is unreleased.
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",  // morning visitors, workshop relics and siege traits join the catalog (gameplay depth, rules 4)
         // 6: run variety (rules 6): opening packages, siege preparations, contract modifiers, the siege's jobs, two pacts
-        6 to "79ab938d302f79839167a76a99fdbb86b03316c547718f6ae750bfde1d25de27",
+        6 to "d047912e9c79605b00be1b76c042fa300370909c624c2b348f41083cc8fbc37a",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
