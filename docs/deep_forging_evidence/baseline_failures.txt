@@ -1,0 +1,58 @@
+CombatEngineTest > every class, family, element, affix, catalyst and signature fights to an end inside the rules FAILED
+EventCompactionTest > uncompactedSaveFromOlderBuildLoadsAndCompactsOnNextEndDay FAILED
+ForgeAndEnergyTest > defectRatesTrackRiskProfiles FAILED
+ForgeAndEnergyTest > everyValidAttemptYieldsUsableWeaponWithinBounds FAILED
+GoldenStateTest > rngStreamsAndGameplayMatchTheRecordedProjection FAILED
+GuildRunTest > sabotage spoils the siege once - the trait if it has one, else one of their line FAILED
+GuildRunTest > recruiting pays the fee once, is a no-op the second time and respects the roster and the purse FAILED
+GuildRunTest > a reserved member stands on the wall and a party that is away does not FAILED
+GuildRunTest > a plan pays its fee once, replacing or cancelling returns it, and End Day sends the party FAILED
+GuildRunTest > a contract resolves the same after a save and a reload at every step FAILED
+GuildRunTest > a one-day contract the day before the siege is back for it, a two-day one is not FAILED
+GuildRunTest > a two-day contract waits at its checkpoint, returns by default and pushes only when told FAILED
+GuildRunTest > a blade promised to an order is refused as a loan and a second loan sends the first home FAILED
+GuildRunTest > a charter founds the guild with its two classes, its gifts, its price and a third member on offer FAILED
+GuildRunTest > a loaned blade leaves the shop and cannot be listed, melted, scrapped, given away, honed or loaned twice FAILED
+GuildRunTest > members are not customers and the town refills around them FAILED
+GuildRunTest > a one-day contract - away tonight, home in the morning, rewards once, the ledger balances FAILED
+GuildRunTest > nobody buys, inherits or is handed a loaned blade over many days FAILED
+GuildRunTest > a guild run is offered the party's relics too FAILED
+GuildRunTest > dismissing a member returns their loan and never the fee FAILED
+GuildRunTest > the siege of a guild run is fought, reported with a verdict, and the forge damage is what the report says FAILED
+GuildRunTest > a party is one to three fit members in town, none of them kept for the wall FAILED
+GuildScenariosTest > stormwellIsAssembledAndTheHuntCanBeTaken FAILED
+GuildScenariosTest > aMemberIsHeldAndTheirRescueIsOnTheBoard FAILED
+GuildScenariosTest > everyGuildSaveIsASoundGuildRunOnAPlanningMorning FAILED
+GuildScenariosTest > dayOneHasOneSwordToLoanAndTakeBack FAILED
+GuildScenariosTest > thePartyWaitsAtTheDelvesCheckpointAndBothAnswersAreOpen FAILED
+GuildScenariosTest > theStrongRosterBeatsTheCharterWarlord FAILED
+GuildScenariosTest > onTheSiegeMorningOneIsReservedAndAContractWouldTakeTheOthers FAILED
+GuildStoriesTest > the festival can take a member for the tournament, and a restored heirloom makes its heir willing to sign FAILED
+GuildStoriesTest > the rival takes a contract on its day, never the one the smith has planned FAILED
+GuildStoriesTest > a rescue brings the captive and their loan home, scarred, exactly once FAILED
+GuildStoriesTest > the coward returns - time can be bought and the survivor questioned, each as the card says FAILED
+GuildStoriesTest > across the counter - the very blade can be bought back, once FAILED
+GuildStoriesTest > a law is announced a morning before it binds and then changes the field for everybody FAILED
+GuildStoriesTest > a taken loan has one bearer, who fights with what the blade does, and a recovery contract for that very blade FAILED
+GuildStoriesTest > the sword's complaint - an oath that needs novices, or a blade made quiet FAILED
+GuildStoriesTest > winning the recovery returns the blade once and ends the nemesis FAILED
+GuildStoriesTest > a party keeps the relics it left with when the workshop changes them FAILED
+GuildStoriesTest > insurance pays once, only when the enemy takes the blade, and never for a blade the smith disposes of FAILED
+GuildStoriesTest > a captive nobody brings out is dead on the deadline and the loan stays with the enemy FAILED
+GuildStoriesTest > beating the charter warlord secures the charter once, and the smith may close the chapter FAILED
+GuildStoriesTest > nobody is taken or killed on a safe contract however badly it goes FAILED
+GuildStoriesTest > three contracts won side by side make comrades, and a branch opens by deeds and is chosen once FAILED
+GuildStoriesTest > going on after the charter and falling later still counts it, once FAILED
+GuildStoriesTest > a warlord held off but not beaten leaves the charter open and leads the next siege too FAILED
+GuildStoriesTest > a party beaten on a dangerous contract loses one member alive, with the loan they carried, and a rescue is posted FAILED
+GuildStoriesTest > a chain that really happened is written down once, with who and what did it FAILED
+MigrationTest > migrateIsANoOpForTheCurrentSchema FAILED
+RarityShapeTest > meanQualityRisesWithCoreTierAndRisk FAILED
+RelicsAndSiegeTraitsTest > aRunOpensWithADraftOfThreeAndChoosingIsOnce FAILED
+ScenarioSavesTest > everySaveIsSoundAdmittedAndSurvivesTheCodec FAILED
+ScenarioSavesTest > theReturnedLegendSleepsUntilItIsHoned FAILED
+SimulatorDepthTest > withoutDepthThereIsNoVisitorRelicOrTraitAndTheOldEventsFireAgain FAILED
+SimulatorDepthTest > theCommandLineStopsWithExitCodeTwoOnAnUnknownValue FAILED
+VersionFingerprintTest > catalogFingerprintMatchesItsVersion FAILED
+VersionFingerprintTest > balanceFingerprintMatchesItsVersion FAILED
+561 tests completed, 57 failed

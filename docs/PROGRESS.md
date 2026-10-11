@@ -1,8 +1,8 @@
 # Progress — 2026-10-11 (run variety and consequences, unreleased; before it: guild evolution, 0.8.0)
 
-## Run variety and consequences (2026-10-11): two passes on branch `run-variety`, not pushed
+## Run variety and consequences (2026-10-11): two passes on branch `run-variety`, on `main` through `deep-forging-integration`
 Ledger with rulings, decisions, gates and open questions: `docs/RUN_VARIETY_LEDGER.md`. Evidence:
-`docs/run_variety_evidence/REPORT.md`. Versions: rules 6, save schema 7, content 6, balance 13. App version name
+`docs/run_variety_evidence/REPORT.md`. Versions: rules 6, save schema 7, content 6, balance 13 on the branch (14 on `main`, see deep forging below). App version name
 still 0.8.0 (changelog entry under Unreleased): the release gates are not all met.
 
 **What it is.** First pass: Legendary only by a Heartfire forging or by deeds, opening packages for a guild run,
@@ -25,8 +25,29 @@ cost nothing measurable). G14 (no physical phone). One clause of G13 (the classi
 **Next actions.**
 1. The owner answers the ten questions at the end of the ledger. The first decides the version.
 2. A pass on a physical phone.
-3. The deep-forging branch merges `run-variety` and re-pins the content fingerprint once (agreed with that session).
+3. Done 2026-10-11: the deep-forging integration merged `run-variety`, and this pass's report, ledger and device
+   evidence were merged into `main` after it. Its figures are for balance 13. `main` plays balance 14.
 
+
+## Deep forging foundation, integrated (2026-10-11): branch `deep-forging-integration`, on `main` and pushed
+It holds `deep-forging` and `run-variety` (balance 13) merged. Rules 6, schema 7, content 6, balance 14. Everything
+about it is in one place: `docs/DEEP_FORGING_LEDGER.md` (decisions, ingredient table, integration, the failures
+classified, versions, balance tables, device evidence, what is open). Numbers behind it: `docs/deep_forging_evidence/`.
+
+**Checks run on the final tree.**
+- `./gradlew :core:test`: 622 tests, 0 failures. `./gradlew :app:testDebugUnitTest`: 230 tests, 0 failures.
+- `:app:assembleDebug` and `:app:compileDebugAndroidTestKotlin` build. `connectedDebugAndroidTest` not run.
+- `./gradlew :core:scenarios` rewrote the debug scenario saves. `ScenarioSavesTest` and `GuildScenariosTest` load them.
+- `./gradlew :core:combat --args="sweep"`: 51,840 recipe fights and 22,800 for rolled properties, none threw.
+- `--args="lab seeds=31..33"` and `--args="guild seed=600001 runs=300"`: the tables in the ledger.
+- Emulator: `tools/emulator/journey.sh` (a real contract, seen and not seen, font 1.0 and 1.3), `forge.sh` (1.0 and
+  1.3), `scenarios.sh`.
+
+**Next actions.**
+1. Owner: play it. Then the open items at the end of the ledger (Synergy at the top of the band, what the factions
+   are weak to, Ember Resin and Grave Dust).
+2. Done 2026-10-11: `main` fast-forwarded to `deep-forging-integration` (run-variety with it) and pushed. No version bump yet: the changelog entries stay under Unreleased.
+3. Delete by hand the half-removed folder `.claude/worktrees/deep-forging-base` in the main checkout (Windows long paths).
 
 ## Guild evolution (2026-10-11, night): built in one run, 0.8.0
 The owner supplied `docs/GUILD_EVOLUTION_SPEC.md`, confirmed the revision of the LOCKED rules, and asked for the whole

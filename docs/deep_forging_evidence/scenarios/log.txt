@@ -1,0 +1,256 @@
+CHECK the debug menu has a Scenarios entry: ok
+tapped id 'menu_scenarios' at 540 1584
+screenshot 00_scenario_list
+CHECK the list is labelled as constructed: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_hall_lesson' at 540 535
+screenshot hall_lesson_0_confirm
+tapped id 'scenario_confirm' at 727 1295
+CHECK hall_lesson loads onto planning: ok
+screenshot hall_lesson_1_planning
+tapped id 'end_day' at 540 1553
+screenshot hall_lesson_2_lesson
+CHECK hall_lesson shows "At the guild hall": ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_inherited_blade' at 540 792
+screenshot inherited_blade_0_confirm
+tapped id 'scenario_confirm' at 727 1324
+CHECK inherited_blade loads onto planning: ok
+tapped id 'end_day' at 540 1553
+screenshot inherited_blade_1_death
+CHECK inherited_blade shows "A death": ok
+screenshot inherited_blade_2_passed_on
+CHECK inherited_blade shows "An inherited weapon": ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_merchant_resale' at 540 1049
+screenshot merchant_resale_0_confirm
+tapped id 'scenario_confirm' at 727 1324
+CHECK merchant_resale loads onto planning: ok
+tapped id 'end_day' at 540 1553
+screenshot merchant_resale_1_resold
+CHECK merchant_resale shows "Sold on by a merchant": ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_wall_death' at 540 1306
+screenshot wall_death_0_confirm
+tapped id 'scenario_confirm' at 727 1353
+CHECK wall_death loads onto planning: ok
+tapped id 'end_day' at 540 1553
+CHECK wall_death shows "The siege": FAIL
+CHECK wall_death names the wall: FAIL
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_known_name' at 540 1589
+screenshot known_name_0_confirm
+tapped id 'scenario_confirm' at 727 1469
+CHECK known_name loads onto planning: ok
+tapped id 'nav_town' at 678 1762
+screenshot known_name_1_town
+CHECK known_name shows a regular in Town on day 1: ok
+tapped id 'nav_shop' at 127 1762
+tapped id 'end_day' at 540 1553
+screenshot known_name_2_regular_visit
+CHECK known_name regular comes to the counter: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_returned_legend' at 540 1806
+screenshot returned_legend_0_confirm
+tapped id 'scenario_confirm' at 727 1440
+CHECK returned_legend loads onto planning: ok
+tapped id 'shop_storage' at 540 1419
+tapped id 'stock_w59' at 540 1676
+TIMEOUT waiting for id 'item_sheet'
+screenshot returned_legend_1_dormant
+CHECK returned_legend is dormant: ok
+tapped id 'item_hone' at 342 1901
+tapped id 'stock_w59' at 540 1676
+TIMEOUT waiting for id 'item_sheet'
+CHECK returned_legend wakes under the hone: FAIL
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_storied_blade' at 540 1715
+screenshot storied_blade_0_confirm
+tapped id 'scenario_confirm' at 727 1324
+CHECK storied_blade loads onto planning: ok
+tapped id 'shop_storage' at 540 1188
+tapped id 'stock_w6' at 540 1273
+TIMEOUT waiting for id 'item_sheet'
+screenshot storied_blade_1_sheet
+screenshot storied_blade_2_story
+CHECK storied_blade has a Story: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_long_storage' at 540 1816
+screenshot long_storage_0_confirm
+tapped id 'scenario_confirm' at 727 1411
+CHECK long_storage loads onto planning: ok
+tapped id 'shop_storage' at 540 1438
+TIMEOUT waiting for id 'storage_sheet'
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_visitor_collector' at 540 1687
+screenshot visitor_collector_0_confirm
+tapped id 'scenario_confirm' at 727 1411
+CHECK visitor_collector loads onto planning: ok
+screenshot visitor_collector_1_shop
+tapped id 'visitor_open' at 540 758
+screenshot visitor_collector_2_sheet
+CHECK visitor_collector opens its visitor: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_visitor_crate_no_gold' at 540 1809
+screenshot visitor_crate_no_gold_0_confirm
+tapped id 'scenario_confirm' at 727 1440
+CHECK visitor_crate_no_gold loads onto planning: ok
+screenshot visitor_crate_no_gold_1_shop
+tapped id 'visitor_open' at 540 758
+screenshot visitor_crate_no_gold_2_sheet
+CHECK visitor_crate_no_gold opens its visitor: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_visitor_pledge' at 540 1731
+screenshot visitor_pledge_0_confirm
+tapped id 'scenario_confirm' at 727 1411
+CHECK visitor_pledge loads onto planning: ok
+screenshot visitor_pledge_1_shop
+tapped id 'visitor_open' at 540 758
+screenshot visitor_pledge_2_sheet
+CHECK visitor_pledge opens its visitor: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_visitor_master' at 540 1450
+screenshot visitor_master_0_confirm
+tapped id 'scenario_confirm' at 727 1382
+CHECK visitor_master loads onto planning: ok
+screenshot visitor_master_1_shop
+tapped id 'visitor_open' at 540 758
+screenshot visitor_master_2_sheet
+CHECK visitor_master opens its visitor: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_visitor_heirloom' at 540 1748
+screenshot visitor_heirloom_0_confirm
+tapped id 'scenario_confirm' at 727 1469
+CHECK visitor_heirloom loads onto planning: ok
+screenshot visitor_heirloom_1_shop
+tapped id 'visitor_open' at 540 758
+screenshot visitor_heirloom_2_sheet
+CHECK visitor_heirloom opens its visitor: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_visitor_merchant' at 540 1743
+screenshot visitor_merchant_0_confirm
+tapped id 'scenario_confirm' at 727 1382
+CHECK visitor_merchant loads onto planning: ok
+screenshot visitor_merchant_1_shop
+tapped id 'visitor_open' at 540 758
+screenshot visitor_merchant_2_sheet
+CHECK visitor_merchant opens its visitor: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_visitor_wager' at 540 1771
+screenshot visitor_wager_0_confirm
+tapped id 'scenario_confirm' at 727 1382
+CHECK visitor_wager loads onto planning: ok
+screenshot visitor_wager_1_shop
+tapped id 'visitor_open' at 540 758
+screenshot visitor_wager_2_sheet
+CHECK visitor_wager opens its visitor: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_visitor_festival' at 540 1489
+screenshot visitor_festival_0_confirm
+tapped id 'scenario_confirm' at 727 1382
+CHECK visitor_festival loads onto planning: ok
+screenshot visitor_festival_1_shop
+tapped id 'visitor_open' at 540 758
+screenshot visitor_festival_2_sheet
+CHECK visitor_festival opens its visitor: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_chain_debt_repaid' at 540 1834
+screenshot chain_debt_repaid_0_confirm
+tapped id 'scenario_confirm' at 727 1498
+CHECK chain_debt_repaid loads onto planning: ok
+screenshot chain_debt_repaid_1_shop
+tapped id 'visitor_open' at 540 758
+screenshot chain_debt_repaid_2_sheet
+CHECK chain_debt_repaid opens its visitor: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_visitor_merchant' at 540 1847
+screenshot visitor_merchant_0_confirm
+tapped id 'scenario_confirm' at 727 1382
+CHECK visitor_merchant loads onto planning: ok
+tapped id 'visitor_open' at 540 758
+tapped id 'visitor_option_inspect' at 540 1217
+tapped id 'visitor_commit' at 436 1725
+screenshot visitor_merchant_3_inspected
+CHECK the inspection keeps the merchant at the forge: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_visitor_unanswered' at 540 1795
+screenshot visitor_unanswered_0_confirm
+tapped id 'scenario_confirm' at 727 1382
+CHECK visitor_unanswered loads onto planning: ok
+screenshot visitor_unanswered_1_end_day_note
+CHECK End Day says what the visitor will be told: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_relic_offer' at 540 1781
+screenshot relic_offer_0_confirm
+tapped id 'scenario_confirm' at 727 1295
+CHECK relic_offer loads onto the relic offer: ok
+screenshot relic_offer_1_draft
+CHECK relic_offer opens the draft on day 1: ok
+tapped id 'relic_later' at 748 1552
+screenshot relic_offer_2_shop_row
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_relic_crucible' at 540 1537
+screenshot relic_crucible_0_confirm
+tapped id 'scenario_confirm' at 727 1411
+CHECK relic_crucible loads onto planning: ok
+screenshot relic_crucible_1_shop_row
+CHECK relic_crucible shows its relic on the Shop: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_relic_ledger' at 540 1791
+screenshot relic_ledger_0_confirm
+tapped id 'scenario_confirm' at 727 1382
+CHECK relic_ledger loads onto planning: ok
+screenshot relic_ledger_1_shop_row
+CHECK relic_ledger shows its relic on the Shop: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_relic_seal' at 540 1541
+screenshot relic_seal_0_confirm
+tapped id 'scenario_confirm' at 727 1440
+CHECK relic_seal loads onto planning: ok
+screenshot relic_seal_1_shop_row
+CHECK relic_seal shows its relic on the Shop: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_relic_bellows' at 540 1739
+screenshot relic_bellows_0_confirm
+tapped id 'scenario_confirm' at 727 1353
+CHECK relic_bellows loads onto planning: ok
+screenshot relic_bellows_1_shop_row
+CHECK relic_bellows shows its relic on the Shop: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_relic_bellows' at 540 1761
+screenshot relic_bellows_0_confirm
+tapped id 'scenario_confirm' at 727 1353
+CHECK relic_bellows loads onto planning: ok
+tapped id 'nav_forge' at 403 1762
+screenshot relic_bellows_2_forge
+CHECK relic_bellows has the forge switch: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_relic_ledger' at 540 1815
+screenshot relic_ledger_0_confirm
+tapped id 'scenario_confirm' at 727 1382
+CHECK relic_ledger loads onto planning: ok
+tapped id 'nav_forge' at 403 1762
+screenshot relic_ledger_2_forge
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_relic_full_workshop' at 540 1487
+screenshot relic_full_workshop_0_confirm
+tapped id 'scenario_confirm' at 727 1411
+CHECK relic_full_workshop loads onto the relic offer: ok
+screenshot relic_full_workshop_1_offer
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_siege_long_assault' at 540 1796
+screenshot siege_long_assault_0_confirm
+tapped id 'scenario_confirm' at 727 1353
+CHECK siege_long_assault loads onto planning: ok
+tapped id 'nav_town' at 678 1762
+screenshot siege_long_assault_1_town
+CHECK siege_long_assault shows its trait in Town: ok
+tapped id 'menu_scenarios' at 540 1584
+tapped id 'scenario_siege_many_breaches' at 540 1458
+screenshot siege_many_breaches_0_confirm
+tapped id 'scenario_confirm' at 727 1353
+CHECK siege_many_breaches loads onto planning: ok
+tapped id 'nav_town' at 678 1762
+screenshot siege_many_breaches_1_town
+CHECK siege_many_breaches shows its trait in Town: ok
+SCENARIOS_DONE

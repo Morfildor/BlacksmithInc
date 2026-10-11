@@ -168,8 +168,8 @@ tier 5 material).
     day 5 loans in the report are mostly frost).
 
 ### After this branch: what the deep-forging branch does with these numbers
-The deep-forging session merged `run-variety` through `d71017a` into its local branch `deep-forging-integration`
-(not pushed). Its metal fight rules lift the charter rates, so on that branch the siege floor is 190 again (balance
+The deep-forging session merged `run-variety` through `d71017a` into its branch `deep-forging-integration`,
+which is now `main`. Its metal fight rules lift the charter rates, so on `main` the siege floor is 190 again (balance
 14) and it reports its own G3 on its own seeds (600001 onward): Last Hope 63 / 60 / 50, Licensed 66 / 53 / 45,
 Honest 54 / 57 / 52. Those figures are that session's, from `docs/DEEP_FORGING_LEDGER.md` on that branch. They were
 not checked here.

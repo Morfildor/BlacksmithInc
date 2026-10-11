@@ -212,6 +212,7 @@ object SiegeFight {
         val fight = if (party.isNotEmpty() && standing.isNotEmpty())
             Fight.resolve(FightSetup("Siege of Emberfall, day ${ctx.day}", party, standing, GuildOps.relicRules(ctx, GuildOps.relicIds(ctx)), Objective(), Posture.BALANCED, rules, ctx.rng(RngStream.COMBAT).nextLong(), combat.unitById))
         else null
+        fight?.let { com.tinyblacksmith.core.crafting.Interactions.witness(ctx, it) }
         val left = when {
             standing.isEmpty() -> 0
             fight == null -> standing.sumOf { it.health }

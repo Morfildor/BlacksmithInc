@@ -1,6 +1,8 @@
 # Run variety and consequences: evidence report (2026-10-11, second pass)
 
-Branch `run-variety`, not pushed. Rules 6, save schema 7, content 6, balance 13. Rulings and gates:
+Branch `run-variety`. Rules 6, save schema 7, content 6, balance 13. Every figure here was measured at balance 13.
+`main` has since taken this branch through the deep-forging integration and plays balance 14 (siege floor 190 and
+metal fight rules), so these figures are not measurements of `main`. Its own: `docs/DEEP_FORGING_LEDGER.md`. Rulings and gates:
 `docs/RUN_VARIETY_LEDGER.md`. All tables are bots, not people. Whether it is fun is the owner's to judge.
 
 This report replaces the first pass's report. The first pass's raw tables are still beside it (`before_*`, `after_*`,

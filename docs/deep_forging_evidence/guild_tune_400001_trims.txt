@@ -1,0 +1,18 @@
+GUILD RUNS WITH AND WITHOUT THE METALS' FIGHT RULES: seeds 400001 to 400300, new account, horizon 30 days, balance 13
+Counts of 300 runs, then the share. Interval: 95% for the charter share. Paired: seeds where only one of the two secured the charter.
+charter                policy         | with: charter / fallen / neither   | without: charter / fallen / neither | paired
+towns_last_hope        SYNERGY        | 209  10  81  70%  3% 27% (64 to 75) | 188  12 100  63%  4% 33% (57 to 68) | only with 53, only without 32, both 156, neither 59
+                                      | 205  10  85  68%  3% 28% (63 to 73) | moonsteel:2
+                                      | 199  10  91  66%  3% 30% (61 to 71) | moonsteel:2+obsidian:106
+                                      | 196  11  93  65%  4% 31% (60 to 70) | moonsteel:2+obsidian:106+iron:2
+                                      | 201   9  90  67%  3% 30% (61 to 72) | moonsteel:1+obsidian:105
+towns_last_hope        ADAPTIVE       | 205   0  95  68%  0% 32% (63 to 73) | 185   3 112  62%  1% 37% (56 to 67) | only with 59, only without 39, both 146, neither 56
+                                      | 199   0 101  66%  0% 34% (61 to 71) | moonsteel:2
+                                      | 210   2  88  70%  1% 29% (65 to 75) | moonsteel:2+obsidian:106
+                                      | 208   2  90  69%  1% 30% (64 to 74) | moonsteel:2+obsidian:106+iron:2
+                                      | 195   2 103  65%  1% 34% (59 to 70) | moonsteel:1+obsidian:105
+towns_last_hope        DEFENCE_FIRST  | 164  10 126  55%  3% 42% (49 to 60) | 160  11 129  53%  4% 43% (48 to 59) | only with 61, only without 57, both 103, neither 79
+                                      | 158  10 132  53%  3% 44% (47 to 58) | moonsteel:2
+                                      | 162  12 126  54%  4% 42% (48 to 60) | moonsteel:2+obsidian:106
+                                      | 161  13 126  54%  4% 42% (48 to 59) | moonsteel:2+obsidian:106+iron:2
+                                      | 156  12 132  52%  4% 44% (46 to 58) | moonsteel:1+obsidian:105

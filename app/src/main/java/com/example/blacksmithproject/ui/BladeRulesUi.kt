@@ -2,9 +2,9 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.runtime.Immutable
 import com.tinyblacksmith.core.combat.EffectDef
-import com.tinyblacksmith.core.content.CombatCatalog
 import com.tinyblacksmith.core.content.ContentCatalog
-import com.tinyblacksmith.core.guild.Loadout
+import com.tinyblacksmith.core.crafting.Capabilities
+import com.tinyblacksmith.core.crafting.WeaponRules
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.MaterialId
@@ -13,53 +13,44 @@ import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.Weapon
 import com.tinyblacksmith.core.model.WeaponId
 
-/** One rule a blade follows in a fight: the definition's own [name] and [description], and the part of the blade it comes from ([source]). */
-@Immutable data class BladeRuleUi(val id: String, val name: String, val description: String, val source: String)
+/**
+ * One rule a blade follows in a fight: the definition's own [name] and [description], and the part of the blade it comes
+ * from ([source]). [alsoFrom] names the other parts that bring the same rule: it is listed once and counts once.
+ */
+@Immutable data class BladeRuleUi(val id: String, val name: String, val description: String, val source: String, val alsoFrom: List<String> = emptyList()) {
+    /** "Arc · element", or "Charge burst · buff, also Binding Salt" for a rule two parts share. */
+    val heading: String get() = "$name · $source" + if (alsoFrom.isEmpty()) "" else ", also ${alsoFrom.joinToString(" and ")}"
+}
 
 /**
  * What a blade does in a fight (spec 7.1): how its family delivers a strike ([pattern]), the rules it follows anywhere
- * ([road]) and those it has only on the town's wall ([homeOnly]). Read from the combat catalog; nothing is resolved.
+ * ([road]) and those it has only on the town's wall ([homeOnly]), then what its rules do to each other ([notes]).
+ * Read from `WeaponRules`, the composition the fight itself runs; nothing is resolved.
  */
-@Immutable data class BladeRulesUi(val pattern: String?, val road: List<BladeRuleUi>, val homeOnly: List<BladeRuleUi>)
+@Immutable data class BladeRulesUi(val pattern: String?, val road: List<BladeRuleUi>, val homeOnly: List<BladeRuleUi>, val notes: List<String> = emptyList())
 
-/** Where on [weapon] the rule [id] comes from, asked in the order `Loadout.weaponEffects` lists them. */
-private fun source(weapon: Weapon, combat: CombatCatalog, id: String): String {
-    fun List<EffectDef>?.has() = orEmpty().any { it.id == id }
-    fun affix(a: com.tinyblacksmith.core.model.AffixId) = combat.affixEffects[a].has() || combat.affixRoadEffects[a].has() || combat.affixHomeEffects[a].has()
-    return when {
-        combat.familyById[weapon.familyId]?.effects.has() -> "weapon"
-        weapon.element?.let { combat.elementEffects[it] }.has() -> "element"
-        weapon.affixes.any(::affix) -> "buff"
-        weapon.flaws.any(::affix) -> "flaw"
-        weapon.catalystId?.let { combat.catalystEffects[it] }.has() -> "catalyst"
-        else -> "signature"
-    }
-}
+internal fun WeaponRules.Rule.ui() = BladeRuleUi(id, effect.name, effect.description, source.word, alsoFrom)
 
-/** The rules of [weapon] as `Loadout.weaponEffects` gives them, on the road and at home. */
-fun bladeRules(weapon: Weapon, combat: CombatCatalog): BladeRulesUi {
-    fun rule(e: EffectDef) = BladeRuleUi(e.id, e.name, e.description, source(weapon, combat, e.id))
-    val road = Loadout.weaponEffects(weapon, combat, Loadout.Field.ROAD)
-    val home = Loadout.weaponEffects(weapon, combat, Loadout.Field.HOME)
-    return BladeRulesUi(combat.familyById[weapon.familyId]?.pattern, road.map(::rule), home.filter { h -> road.none { it.id == h.id } }.map(::rule))
+/** The rules of [weapon] as `WeaponRules` composes them, on the road and at home. A weapon forged before metals had a rule (`Weapon.craft` 1) lists none for its metal. */
+fun bladeRules(weapon: Weapon, content: ContentCatalog): BladeRulesUi {
+    val composed = WeaponRules.of(weapon, content)
+    return BladeRulesUi(
+        composed.pattern, composed.rules(home = false).map { it.ui() }, composed.rules.filter { it.where == WeaponRules.Where.HOME }.map { it.ui() },
+        Capabilities.notes(composed).map { Capabilities.text(it, composed) },
+    )
 }
 
 /** The "In a fight" section of [weapon]'s card: only in a guild run, where blades are carried into fights the smith sees. */
-fun GameEngine.bladeRules(state: GameState, weapon: Weapon): BladeRulesUi? = content.combat?.takeIf { state.guild != null }?.let { bladeRules(weapon, it) }
+fun GameEngine.bladeRules(state: GameState, weapon: Weapon): BladeRulesUi? = content.takeIf { it.combat != null && state.guild != null }?.let { bladeRules(weapon, it) }
 
 /**
- * What the draft's augment and catalyst will give the blade in a fight, before it is forged: the element's rule and the
- * catalyst's rules, each under the material's name. Empty in a classic run.
+ * The fight rules a material puts on a blade forged today: a metal's rule, an augment's element rule, a catalyst's rules.
+ * A rule the catalog has rewritten is the rewritten one, as `WeaponRules` gives it to a new weapon.
  */
-fun draftRules(state: GameState, content: ContentCatalog, augmentId: MaterialId?, catalystId: MaterialId?): List<BladeRuleUi> {
-    if (state.guild == null) return emptyList()
-    return listOfNotNull(augmentId, catalystId).flatMap { id -> materialRules(content, id).map { BladeRuleUi(it.id, it.name, it.description, content.material(id).name) } }
-}
-
-/** The fight rules a material puts on a blade: an augment's element rule, a catalyst's rules; none for a metal. */
 fun materialRules(content: ContentCatalog, id: MaterialId): List<EffectDef> {
     val combat = content.combat ?: return emptyList()
-    return content.materialById[id]?.element?.let { combat.elementEffects[it] }.orEmpty() + combat.catalystEffects[id].orEmpty()
+    return (combat.coreById[id]?.effects.orEmpty() + content.materialById[id]?.element?.let { combat.elementEffects[it] }.orEmpty() + combat.catalystEffects[id].orEmpty())
+        .map { combat.revisions[it.id] ?: it }
 }
 
 /** A guild member a blade could be lent to. [reason] is why they are not at their best or not here ("Mira is away with the party"); only [enabled] ones can take a loan. */

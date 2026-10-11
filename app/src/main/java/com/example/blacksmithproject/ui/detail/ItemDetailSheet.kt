@@ -306,6 +306,8 @@ fun ItemDetailSheet(
     modifier: Modifier = Modifier,
     /** What the last stock change did, said at the head of the sheet. */
     notice: String? = null,
+    /** Opens the bench for this weapon. Offered only in a guild run, where the card has an "In a fight" section. */
+    onBench: (() -> Unit)? = null,
 ) {
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     ModalBottomSheet(
@@ -316,7 +318,7 @@ fun ItemDetailSheet(
     ) {
         Column {
             notice?.let { NoticeLine(it) }
-            ItemDetailContent(detail, planning, onOpenHero, onStock, onDismiss, enabled)
+            ItemDetailContent(detail, planning, onOpenHero, onStock, onDismiss, enabled, onBench = onBench)
         }
     }
 }
@@ -332,9 +334,12 @@ fun ItemDetailContent(
     enabled: Boolean = true,
     modifier: Modifier = Modifier,
     closeLabel: String = "Close",
+    onBench: (() -> Unit)? = null,
 ) {
     Column(modifier.fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
         WeaponStatCard(detail)
+        // Right under the card's "In a fight": the rules above, tried in a rehearsal that changes nothing.
+        if (detail.rules != null && onBench != null) SecondaryActionButton("Try it on the bench", onBench, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("card_bench_open"))
         FactBlock(AT_THE_COUNTER.takeIf { detail.counter.isNotEmpty() }, detail.counter, "sheet_counter", onOpenHero, onOpenItem = {})
         // The card already says the whole blade; "then and now" in words stays only for a blade that has changed since.
         val onCard = setOf("Rarity", "Title") + detail.stats.map { it.label }

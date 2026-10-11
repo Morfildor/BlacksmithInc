@@ -346,7 +346,9 @@ class CombatEngineTest {
                 val augment = augments[(ai + fi) % augments.size]
                 val catalyst = catalysts[(ai + ci) % catalysts.size]
                 val signature = combat.signatureEffects.keys.toList().let { it[(ai + fi + ci) % it.size] }.takeIf { ai % 3 == 0 }
-                val w = blade("w$n", family.id, LaunchContent.BRONZE, augment.id, catalyst, quality = 20 + (ai * 7) % 70,
+                // Every metal in turn, and both compositions: a weapon forged before the metals had rules and one forged since.
+                val metal = combat.cores[(ai + ci + fi) % combat.cores.size].coreId
+                val w = blade("w$n", family.id, metal, augment.id, catalyst, quality = 20 + (ai * 7) % 70, craft = 1 + n % 2,
                     affixes = set.filter { it.kind == com.tinyblacksmith.core.content.AffixKind.BENEFICIAL }.map { it.id }, flaws = set.filter { it.kind == com.tinyblacksmith.core.content.AffixKind.FLAW }.map { it.id }, signatureId = signature)
                 val lead = fighter(hero("h1", "Lead", cls.id, level = 1 + ai % 5, health = 40 + (ai * 13) % 61), w, if ((ai + ci + fi) % 2 == 0) Loadout.Field.ROAD else Loadout.Field.HOME)
                 val party = listOf(lead, fighter(CombatSandbox.mira, CombatSandbox.healingStaff), fighter(CombatSandbox.brann.copy(id = com.tinyblacksmith.core.model.HeroId("h7")), CombatSandbox.bellblade))

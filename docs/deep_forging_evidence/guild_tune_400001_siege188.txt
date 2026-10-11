@@ -1,0 +1,9 @@
+GUILD RUNS WITH AND WITHOUT THE METALS' FIGHT RULES: seeds 400001 to 400300, new account, horizon 30 days, balance 13
+Counts of 300 runs, then the share. Interval: 95% for the charter share. Paired: seeds where only one of the two secured the charter.
+charter                policy         | with: charter / fallen / neither   | without: charter / fallen / neither | paired
+towns_last_hope        SYNERGY        | 209  10  81  70%  3% 27% (64 to 75) | 188  12 100  63%  4% 33% (57 to 68) | only with 53, only without 32, both 156, neither 59
+                                      | 199  11  90  66%  4% 30% (61 to 71) | moonsteel:2+siege:188
+towns_last_hope        ADAPTIVE       | 205   0  95  68%  0% 32% (63 to 73) | 185   3 112  62%  1% 37% (56 to 67) | only with 59, only without 39, both 146, neither 56
+                                      | 203   1  96  68%  0% 32% (62 to 73) | moonsteel:2+siege:188
+towns_last_hope        DEFENCE_FIRST  | 164  10 126  55%  3% 42% (49 to 60) | 160  11 129  53%  4% 43% (48 to 59) | only with 61, only without 57, both 103, neither 79
+                                      | 148  11 141  49%  4% 47% (44 to 55) | moonsteel:2+siege:188

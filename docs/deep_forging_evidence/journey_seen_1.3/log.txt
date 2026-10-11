@@ -1,0 +1,117 @@
+tapped id 'menu_continue' at 540 1284
+screenshot 01_opening
+tapped id 'opening_choose_stormwell' at 540 1029
+tapped id 'opening_confirm_yes' at 794 1361
+tapped id 'nav_forge' at 403 1762
+tapped id 'forge_option_sword' at 222 1335
+tapped id 'forge_option_bronze' at 539 710
+tapped id 'forge_option_ember_resin' at 222 710
+screenshot 02_outlook
+--- outlook
+text="Bronze sword"
+text="Weapon"
+text="Sword"
+text="Metal"
+--
+text="Bronze"
+text="Augment"
+text="4"
+text="Ember Resin"
+--
+text="Bronze · Rings when struck. It answers the blow that breaks the wielder's Guard."
+text="Forge · 2 energy"
+text="Shop"
+text="Forge"
+tapped id 'forge_weapon' at 540 1578
+screenshot 03_forged
+tapped id 'reveal_store' at 191 1578
+tapped id 'nav_records' at 953 1762
+tapped id 'page_journal' at 540 350
+tapped id 'book_tab_fights' at 794 987
+screenshot 04_notes_before
+--- fight notes (04_notes_before)
+text="● Learned · The wielder's first hit each round puts 1 Burn on its target."
+text="A broken Guard answers"
+text="? Suggested by the rules · Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns."
+text="Trade-off: It needs Guard on the wielder and an enemy strong enough to break it."
+text="You have forged: Bronze rings back"
+text="6 more to find. They open when you forge something that takes part in them."
+COUNT rows of the path: 1
+STATE 04_notes_before: not seen
+STATE 04_notes_before: a path is suggested by the rules
+tapped id 'nav_town' at 678 1762
+tapped 'Urien' at 351 1076
+screenshot 05_member_sheet
+tapped id 'sheet_loan_' at 945 1702
+screenshot 06_member_loaned
+--- member sheet
+MISSING id: sheet_close
+tapped 'Choose a party' at 806 1484
+CHECK has Supply run: ok
+tapped id 'contract_pick_' at 540 834
+tapped id 'contract_pick_' at 540 1025
+screenshot 07_contract_party
+--- who goes
+text="Guardian level 1 · On loan: Bronze Sword"
+text="Warden level 1 · Unarmed"
+tapped id 'contract_send' at 540 1849
+tapped id 'nav_shop' at 127 1762
+tapped id 'end_day' at 540 1515
+screenshot 10_contract_card
+tapped id 'fight_toggle' at 316 1531
+screenshot 10b_contract_fight
+screenshot 10c_contract_fight_end
+--- the fight's lines that name bronze or a broken Guard
+text="Urien's Bronze rings back hits Ashclaw scout for 5."
+text="Urien's Guard breaks."
+FIGHT: the bronze rule is in the report
+tapped id 'shopday_next' at 653 1767
+tapped id 'shopday_next' at 653 1767
+tapped id 'shopday_next' at 653 1767
+MISSING id: shopday_next
+tapped 'Begin day' at 654 1767
+CHECK contract card shown: yes
+tapped id 'nav_records' at 953 1762
+tapped id 'page_journal' at 540 350
+tapped id 'book_tab_fights' at 794 987
+screenshot 20_notes_after
+--- fight notes (20_notes_after)
+text="● Learned · The wielder's first hit each round puts 1 Burn on its target."
+text="A broken Guard answers"
+text="✓ Seen in a real fight · Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns."
+text="Trade-off: It needs Guard on the wielder and an enemy strong enough to break it."
+text="You have forged: Bronze rings back"
+text="6 more to find. They open when you forge something that takes part in them."
+COUNT rows of the path: 1
+STATE 20_notes_after: seen in a real fight
+pid after kill: ''
+Warning: Activity not started, its current task has been brought to the front
+tapped id 'nav_records' at 953 1762
+tapped id 'page_journal' at 540 350
+tapped id 'book_tab_fights' at 794 987
+screenshot 21_notes_after_recreation
+--- fight notes (21_notes_after_recreation)
+text="● Learned · The wielder's first hit each round puts 1 Burn on its target."
+text="A broken Guard answers"
+text="✓ Seen in a real fight · Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns."
+text="Trade-off: It needs Guard on the wielder and an enemy strong enough to break it."
+text="You have forged: Bronze rings back"
+text="6 more to find. They open when you forge something that takes part in them."
+COUNT rows of the path: 1
+STATE 21_notes_after_recreation: seen in a real fight
+tapped id 'menu_continue' at 540 1284
+tapped id 'nav_records' at 953 1762
+tapped id 'page_journal' at 540 350
+tapped id 'book_tab_fights' at 794 987
+screenshot 22_notes_after_force_stop
+--- fight notes (22_notes_after_force_stop)
+text="● Learned · The wielder's first hit each round puts 1 Burn on its target."
+text="A broken Guard answers"
+text="✓ Seen in a real fight · Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns."
+text="Trade-off: It needs Guard on the wielder and an enemy strong enough to break it."
+text="You have forged: Bronze rings back"
+text="6 more to find. They open when you forge something that takes part in them."
+COUNT rows of the path: 1
+STATE 22_notes_after_force_stop: seen in a real fight
+EXPECTED: seen
+done

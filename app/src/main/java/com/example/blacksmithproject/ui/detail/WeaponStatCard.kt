@@ -173,7 +173,8 @@ private fun ColumnScope.WeaponStatDetails(detail: ItemDetail) {
 
 /**
  * What the blade does in a fight (guild runs): how its family strikes, then each rule in the catalog's own words with the
- * part of the blade it comes from, then the rules it has only on the town's wall.
+ * part of the blade it comes from (both parts for a rule two of them share), then the rules it has only on the town's
+ * wall, then what the rules do to each other.
  */
 @Composable
 private fun ColumnScope.FightRules(rules: BladeRulesUi) {
@@ -183,10 +184,14 @@ private fun ColumnScope.FightRules(rules: BladeRulesUi) {
         Secondary("On a guild contract, and for whoever stands on the wall.")
         rules.pattern?.let { Secondary(it) }
         if (rules.road.isEmpty() && rules.homeOnly.isEmpty()) Secondary("No rule of its own beyond the strike.")
-        rules.road.forEach { EffectRow(EffectKind.NEUTRAL, "${it.name} · ${it.source}", it.description) }
+        rules.road.forEach { EffectRow(EffectKind.NEUTRAL, it.heading, it.description) }
         if (rules.homeOnly.isNotEmpty()) {
             Text("Only when defending the town", style = MaterialTheme.typography.labelLarge, color = CreamMuted, modifier = Modifier.padding(top = Space.xs))
-            rules.homeOnly.forEach { EffectRow(EffectKind.NEUTRAL, "${it.name} · ${it.source}", it.description) }
+            rules.homeOnly.forEach { EffectRow(EffectKind.NEUTRAL, it.heading, it.description) }
+        }
+        if (rules.notes.isNotEmpty()) Column(Modifier.testTag("card_fight_notes")) {
+            Text("How its rules meet", style = MaterialTheme.typography.labelLarge, color = CreamMuted, modifier = Modifier.padding(top = Space.xs))
+            rules.notes.forEach { Secondary(it, Modifier.padding(top = 2.dp)) }
         }
     }
 }

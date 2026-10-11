@@ -257,13 +257,19 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inS
         }
         is Sheet.Item -> {
             val detail = remember(st, sheet) { vm.engine.itemDetail(st, sheet.id, st.lastResolution?.takeIf { sheet.id !in st.weapons }?.weaponSnapshot(sheet.id)) }
+            // The bench for this weapon, over the sheet. It reads the weapon and the workshop's relics and changes nothing.
+            var benching by rememberSaveable(sheet.id.value) { mutableStateOf(false) }
+            val onBench = { benching = true }
             if (detail == null) LaunchedEffect(sheet) { vm.closeSheet() }
-            else if (inStorage) ItemDetailContent(detail, planning = true, openHero, onStock = { vm.stock(sheet.id, it) }, onDismiss = vm::closeSheet, enabled = !s.busy, closeLabel = "Back to storage")
+            else if (inStorage) ItemDetailContent(detail, planning = true, openHero, onStock = { vm.stock(sheet.id, it) }, onDismiss = vm::closeSheet, enabled = !s.busy, closeLabel = "Back to storage", onBench = onBench)
             else ItemDetailSheet(
                 detail, planning = true, openHero,
                 onStock = { vm.stock(sheet.id, it) },
-                onDismiss = vm::closeSheet, enabled = !s.busy, notice = s.notice,
+                onDismiss = vm::closeSheet, enabled = !s.busy, notice = s.notice, onBench = onBench,
             )
+            if (benching && detail?.rules != null) st.weapons[sheet.id]?.let { weapon ->
+                BenchSheet(weapon, demonstration = false, vm.engine.content, vm.engine.config, remember(st.relics) { benchRelics(st, vm.engine.content) }) { benching = false }
+            }
         }
         Sheet.Visitor -> {
             // Open only while the visitor waits: an answer that sends them away closes it, the inspection does not.

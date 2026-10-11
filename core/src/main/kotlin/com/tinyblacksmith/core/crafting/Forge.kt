@@ -209,7 +209,7 @@ object Forge {
                 HistoryEntry(ctx.era, ctx.day, Legends.HISTORY_LEGEND, "The Heartfire took. It left the anvil a legend.").takeIf { breakthrough },
                 signature?.let { HistoryEntry(ctx.era, ctx.day, "SIGNATURE", "${it.name}: ${it.flavor}") },
             ),
-            signatureId = signature?.id, legend = LegendOrigin.HEARTFIRE.takeIf { breakthrough },
+            signatureId = signature?.id, legend = LegendOrigin.HEARTFIRE.takeIf { breakthrough }, craft = WeaponRules.CRAFT,
         )
         ctx.updateWeapon(weapon)
         ctx.emit(
@@ -234,6 +234,7 @@ object Forge {
             Journal.recordSignatureClue(ctx, recipe, recipe.misses(cmd, quality))
         }
         Journal.recordExperiment(ctx, core.id, augment.id, family.id, affinity)
+        Interactions.learn(ctx, weapon)
         return weapon
     }
 

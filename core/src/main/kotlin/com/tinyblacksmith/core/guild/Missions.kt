@@ -277,6 +277,7 @@ object Missions {
         val def = GuildOps.catalog(ctx).mission(m.offer.defId)
         val setup = setup(ctx, m, m.stage)
         val fight = setup?.let { Fight.resolve(it) }
+        fight?.let { com.tinyblacksmith.core.crafting.Interactions.witness(ctx, it) }
         val alive = m.party.filter { ctx.heroes[it]?.isAlive == true }
         val lines = ArrayList<String>()
         val outcome = when (fight?.outcome) {

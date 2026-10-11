@@ -23,6 +23,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - **Fine metal comes later.** The supplier carries Starsteel from day 6 and Moonsteel from day 11. Before that it comes from dangerous work: a deep hall, a starfall site, an elite slain, a contract paid in metal. Supplies names the day.
 - **The watch goes with a rescue.** A guard of the watch fills every empty place in a rescue party and stands in front, so one member can go for a captive.
 - `./gradlew :core:guildsim` plays a supply farmer who spends its gold later, follows every opening's plan and can ignore it on the same seeds (`--planPair`), measures what a drawback costs (`--drawbackPair`), reports when Epic arrives, rescue beside the other contracts by party, and wealth. `--classic` plays runs without a charter with a smith who spends Heartfire.
+- Guild runs: the Forge shows a card for the recipe on the anvil. It says what the weapon will do in a fight, who it suits, what each ingredient adds, what its rules still need from a party, and what only the forge's luck decides. "Details" lists every rule the recipe is sure to carry.
+- Guild runs: every metal now gives a newly forged weapon a rule of its own in a fight, shown where the metal is chosen and on the weapon's card. Weapons forged before this keep the rules they had.
+- Guild runs: the bench. "Try this recipe on the bench" at the Forge and "Try it on the bench" on a weapon's sheet play a rehearsal fight with a made-up wielder, company and enemy line that you choose. It shows which rules came into play, which were still waiting for their moment and why. One of the lines is the town's wall, where a weapon's wall-only rules count. Nothing is paid, learned or recorded.
+- Guild runs: the notebook has a "Fight notes" tab. It lists the rules you have forged, the combinations those rules suggest, and the ones a real contract or siege has shown ("Seen in a real fight"), each marked apart.
+- A weapon's card lists a rule that two of its parts share once, names both parts, and notes where its rules feed or get in the way of each other.
 
 ### Changed
 - **Tempers.** Safe narrows the quality roll to six either way. Reckless adds a property slot and flaws three times in ten. Balanced is as it was.
@@ -39,7 +44,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Licensed Bad Ideas: a Guardian and a Warden would both sign on the first morning, the levy is 50 gold (was 80), two bars of Silver come with it, and Paid in Blood is among its openings.
 - No opening takes militia any more (the watch thinned before the first siege whatever a package did). The Overflowing Cup and Borrowed Fire cost 40 gold, The Marked Card 50.
 - The Blunt Oath and the Oathkeeper trait count common and uncommon weapons as plain gear, so the build can be forged on purpose.
-- Save format 7, rules 6, content 6, balance 13. A save from 0.8.0 loads and plays on: every weapon keeps its rarity, stats, signature, title and history, a stored siege and posted contracts are played as stored. The opening choice needs a new run.
+- Save format 7, rules 6, content 6, balance 14. A save from 0.8.0 loads and plays on: every weapon keeps its rarity, stats, signature, title and history, a stored siege and posted contracts are played as stored. The opening choice needs a new run.
+- Guild runs: Void Ink on a newly forged weapon takes Burn off the enemy its wielder faces straight after the wielder acts, up to 3 a round, and gives it to the weakest ally as Guard. Before, it waited for the end of the round and looked only at the enemy that matters most, and seldom found any. Weapons forged before this keep the old rule.
+- Guild runs: Dragon Oil on a newly forged weapon spreads only the fire its wielder lights. It no longer answers Chill with Burn, so a frost weapon does not boil its own Chill into Steam every round: Steam takes a fire and a cold from two different hands. Weapons forged before this keep the old rule.
+- Guild sieges are a little stronger from the first day (the base is 190, it was 186), because weapons forged with the metals' new rules make a party stronger.
 
 ## [0.8.0] - 2026-10-11
 

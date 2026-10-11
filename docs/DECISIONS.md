@@ -4296,3 +4296,32 @@ of 3 on the two strongest relics (no effect), militia and gold for Licensed Bad 
 
 This overrides the rules-5 note that a classic run plays as rules 4 did: its forge and its supplier follow rules 6.
 The version name stays 0.8.0: one cell of the charter band is a point over, and the device pass is emulator only.
+
+## Deep forging foundation and its integration (2026-10-11, branch `deep-forging-integration`)
+Decisions F1 to F9, the ingredient table, versions and every table: `docs/DEEP_FORGING_LEDGER.md`. Not repeated here.
+
+**Locked by this work.** A weapon's fight rules come from one resolver. A stored weapon keeps the composition it was
+forged under (`Weapon.craft`). A preview or a bench fight never counts as evidence: only a real contract or siege
+marks an interaction as seen. A capability verdict of "available" never promises that the rule fires.
+
+**Proposed, tunable** (`CombatContent.CoreNumbers`): Iron 3 Guard, Bronze 5, Silver 3 Charge, Obsidian 110% and a
+crack, Starsteel 3, Moonsteel 2. Void Ink and Dragon Oil as rewritten for new weapons.
+
+**Changed, each with its reason and its evidence file.**
+- Silver 2 to 3 Charge: its rule paid only with Binding Salt and a third Charge from somebody else, in 15% of lab
+  fights. At 3 the preparation is one thing (a Charge burst on the weapon) and pays +9.2 score, +5.8 wins per 100
+  (`lab/tune_seed11_*`, validated on seeds 21 to 23 and 31 to 33).
+- Dragon Oil spreads only fire on new weapons: Frost Bloom with Dragon Oil was in the top tenth of 60% of lab
+  scenarios against 39% for the next pair, because one weapon made Steam alone. Now 43% beside 41% and 38%.
+- Moonsteel 3 to 2 and the guild siege base 186 to 190 (balance 14): the metals' rules lifted the charter share of
+  Synergy, Adaptive and Defence first by 5 to 16 points over run-variety's balance 13. After the change eight of nine
+  policy and charter pairs are inside its 40 to 65% band on seeds 600001 to 600300 and one is a point over
+  (`guild_paired_500001_300.txt`, `guild_tune_400001_*.txt`, `guild_validate_500001_moon2_siege190.txt`,
+  `guild_final_600001_300.txt`).
+- Not changed: Iron, Bronze, Obsidian, Starsteel, every augment. Bronze, Silver and Obsidian are not weak: the first
+  report measured "alone the best", which a tie with a dearer metal always loses.
+
+**For the owner.** Two of three factions are weak to frost and resist fire, and none is weak to fire, storm, grave or
+sap. That, not an ingredient number, is why Frost Bloom is the widest augment and Ember Resin and Grave Dust have no
+niche. A what-if is in the ledger. Changing it touches classic runs and golden states.
+

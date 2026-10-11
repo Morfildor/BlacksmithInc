@@ -1,0 +1,121 @@
+FORGE LAB: 155520 bench fights, seeds 11 to 11, metal numbers CoreNumbers(ironGuard=3, bronzeAnswer=5, silverCharge=3, obsidianStrike=110, starsteelBonus=3, moonsteelBonus=3), oil=fire, ashclaw=GRAVE
+  early: a level 2 wielder, the line as written, quality where the materials centre
+  late: a level 5 wielder, the line at 140%, quality 15 higher
+  hold: as early, but the party only has to be standing after 4 rounds
+Score: share of the enemy line's health removed (0 to 100), plus for a win the share of the party's health left (0 to 100).
+
+1. THE METAL'S RULE BY ITSELF: the same weapon at the same quality, forged since (with the rule) minus forged before (without)
+   prepared = the evaluator finds everything the rule waits for in that company. Score change is a mean. Wins: fights won with the rule that were lost without, minus the reverse, per 100 fights.
+metal      stage  price  prepared |    fires    score    wins |    fires    score    wins
+                                  |             when prepared |         when not prepared
+Iron       early     10         - |        -        -       - |        -        -       -
+Iron       late      10         - |        -        -       - |        -        -       -
+Iron       hold      10         - |        -        -       - |        -        -       -
+Bronze     early     22         - |        -        -       - |        -        -       -
+Bronze     late      22         - |        -        -       - |        -        -       -
+Bronze     hold      22         - |        -        -       - |        -        -       -
+Silver     early     45         - |        -        -       - |        -        -       -
+Silver     late      45         - |        -        -       - |        -        -       -
+Silver     hold      45         - |        -        -       - |        -        -       -
+Obsidian   early     75         - |        -        -       - |        -        -       -
+Obsidian   late      75         - |        -        -       - |        -        -       -
+Obsidian   hold      75         - |        -        -       - |        -        -       -
+Starsteel  early    120         - |        -        -       - |        -        -       -
+Starsteel  late     120         - |        -        -       - |        -        -       -
+Starsteel  hold     120         - |        -        -       - |        -        -       -
+Moonsteel  early    180         - |        -        -       - |        -        -       -
+Moonsteel  late     180         - |        -        -       - |        -        -       -
+Moonsteel  hold     180         - |        -        -       - |        -        -       -
+
+   Obsidian is a strike bonus that cracks: how often it cracked, and the score change where it did and did not
+   early  cracked    - | cracked  +0.0 | whole  +0.0 | by wielder: 
+   late   cracked    - | cracked  +0.0 | whole  +0.0 | by wielder: 
+   hold   cracked    - | cracked  +0.0 | whole  +0.0 | by wielder: 
+
+   Where a rule is prepared (share of that metal's fights, early stage), by company, wielder and catalyst: what the preparation costs
+   Iron       company: alone 100% healer 100% frost 100% fire 100% spotter 100% front 100%
+              wielder: guardian 100% duelist 100% battlemage 100% warden 100% ranger 100% | catalyst: No catalyst 100% Binding Salt 100% Runestone Shard 100% Dragon Oil 100% Void Ink 100%
+   Bronze     company: alone 25% healer 25% frost 25% fire 25% spotter 25% front 25%
+              wielder: guardian 100% duelist 0% battlemage 0% warden 0% ranger 0% | catalyst: No catalyst 25% Binding Salt 25% Runestone Shard 25% Dragon Oil 25% Void Ink 25%
+   Silver     company: alone 20% healer 20% frost 20% fire 20% spotter 20% front 20%
+              wielder: guardian 20% duelist 20% battlemage 20% warden 20% ranger 20% | catalyst: No catalyst 0% Binding Salt 100% Runestone Shard 0% Dragon Oil 0% Void Ink 0%
+   Obsidian   company: alone 25% healer 25% frost 25% fire 25% spotter 25% front 25%
+              wielder: guardian 100% duelist 0% battlemage 0% warden 0% ranger 0% | catalyst: No catalyst 25% Binding Salt 25% Runestone Shard 25% Dragon Oil 25% Void Ink 25%
+   Starsteel  company: alone 44% healer 44% frost 100% fire 100% spotter 100% front 44%
+              wielder: guardian 58% duelist 58% battlemage 100% warden 58% ranger 100% | catalyst: No catalyst 72% Binding Salt 72% Runestone Shard 72% Dragon Oil 72% Void Ink 72%
+   Moonsteel  company: alone 5% healer 5% frost 100% fire 100% spotter 5% front 5%
+              wielder: guardian 33% duelist 44% battlemage 44% warden 33% ranger 33% | catalyst: No catalyst 37% Binding Salt 37% Runestone Shard 37% Dragon Oil 37% Void Ink 37%
+
+2. THE CHOICE AT THE ANVIL: each metal at the quality it centres on, same family, augment, catalyst, wielder, company, line, stage and seed
+   competitive = within 5 of the best metal. beats cheaper = scores more than every cheaper metal. a cheaper one is as good = some cheaper metal scores at least as much.
+metal      stage  price   mean   wins  competitive beats cheaper   a cheaper is as good  competitive, prepared
+Iron       early     10    137    63%          41%             -                      -                    41%
+Iron       late      10    121    52%          34%             -                      -                    34%
+Iron       hold      10    131    90%          20%             -                      -                    20%
+Bronze     early     22    139    66%          43%           22%                    77%                    69%
+Bronze     late      22    124    55%          41%           34%                    65%                    70%
+Bronze     hold      22    134    89%          27%           34%                    65%                    55%
+Silver     early     45    145    71%          55%           36%                    63%                    74%
+Silver     late      45    128    57%          50%           29%                    70%                    66%
+Silver     hold      45    138    90%          41%           48%                    51%                    69%
+Obsidian   early     75    151    75%          74%           37%                    62%                    86%
+Obsidian   late      75    137    65%          82%           50%                    49%                    89%
+Obsidian   hold      75    144    91%          67%           55%                    44%                    76%
+Starsteel  early    120    152    76%          78%           13%                    86%                    77%
+Starsteel  late     120    135    63%          75%           10%                    89%                    75%
+Starsteel  hold     120    145    91%          73%           22%                    77%                    74%
+Moonsteel  early    180    154    78%          87%           15%                    84%                    93%
+Moonsteel  late     180    138    67%          89%           11%                    88%                    93%
+Moonsteel  hold     180    147    91%          88%           25%                    74%                    95%
+
+3. ONE PAIR EVERYWHERE? Share of scenarios (wielder, company, line, stage, seed) in which a recipe with this augment and catalyst is in the top tenth of all recipes fought there, averaged over its families and metals
+                  No catalyst    Binding Salt Runestone Shard      Dragon Oil        Void Ink   recipe price, iron
+Ember Resin                7%              9%              8%             11%             12%   18 to 108
+Frost Bloom               18%             24%             19%             29%             27%   28 to 118
+Verdant Sap               20%             29%             21%             21%             24%   26 to 116
+Stormglass                14%             18%             14%             14%             18%   50 to 140
+Grave Dust                19%             26%             21%             21%             24%   65 to 155
+Sun Ash                   25%             32%             27%             26%             30%   95 to 185
+
+   Frost Bloom with Dragon Oil (18 + 55 gold over the metal, an Advanced forge), top-tenth share by:
+   stage    early 30%  late 30%  hold 26%
+   company  alone 9%  healer 26%  frost 16%  fire 40%  spotter 26%  front 57%
+   line     armoured 40%  backline 23%  attrition 26%  wall 26%
+   family   sword 30%  axe 35%  spear 23%  bow 32%  dagger 28%  staff 26%
+   metal    Iron 16%  Bronze 19%  Silver 22%  Obsidian 32%  Starsteel 38%  Moonsteel 46%
+   wielder  guardian 23%  duelist 32%  battlemage 30%  warden 33%  ranger 25%
+   A cheaper recipe of the same family, same wielder and scenario, is within 5 of it in 97% of its fights and beats it in 78%.
+   Mean score: Frost Bloom + Dragon Oil 144, Frost Bloom alone 138, all recipes 139.
+
+4. AUGMENTS: share of groups (same family, metal, catalyst, wielder, stage, seed) in which the augment is within 5 of the best augment, by line and by company
+line           armoured  backline attrition      wall       all
+Ember Resin         24%       32%        9%       16%       20%
+Frost Bloom         74%       32%       38%       41%       46%
+Verdant Sap         44%       32%       35%       47%       40%
+Stormglass          40%       31%       29%       37%       34%
+Grave Dust          29%       11%       79%       78%       49%
+Sun Ash             58%       91%       43%       41%       58%
+
+company           alone    healer     frost      fire   spotter     front       all
+Ember Resin          2%       25%       22%        5%       15%       53%       20%
+Frost Bloom         25%       39%       36%       38%       58%       80%       46%
+Verdant Sap         31%       44%       37%       27%       28%       70%       40%
+Stormglass          12%       39%       25%       21%       31%       78%       34%
+Grave Dust          37%       46%       48%       47%       39%       79%       49%
+Sun Ash             47%       69%       53%       52%       48%       80%       58%
+
+stage             early      late      hold       all
+Ember Resin         27%       22%       12%       20%
+Frost Bloom         55%       47%       37%       46%
+Verdant Sap         50%       38%       31%       40%
+Stormglass          40%       35%       28%       34%
+Grave Dust          52%       49%       47%       49%
+Sun Ash             61%       56%       58%       58%
+
+   Alone the best augment (no other within 0), by line
+   Ember Resin          2%        2%        1%        1%
+   Frost Bloom         31%        7%       13%       11%
+   Verdant Sap         14%        7%       11%       18%
+   Stormglass           2%        1%        1%        2%
+   Grave Dust           0%        0%       43%       36%
+   Sun Ash             16%       60%        5%        2%

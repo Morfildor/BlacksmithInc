@@ -4,6 +4,9 @@ import androidx.compose.runtime.Immutable
 import com.example.blacksmithproject.ForgeDraft
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.MaterialCategory
+import com.tinyblacksmith.core.crafting.Bench
+import com.tinyblacksmith.core.crafting.Capabilities
+import com.tinyblacksmith.core.crafting.ForgeOutlook
 import com.tinyblacksmith.core.crafting.Journal
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
@@ -15,6 +18,7 @@ import com.tinyblacksmith.core.model.Journal as JournalModel
 import com.tinyblacksmith.core.model.KnowledgeState
 import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.model.Risk
+import com.tinyblacksmith.core.model.Weapon
 import kotlin.math.roundToInt
 
 /** The places of a recipe on the workbench. The last two exist only in an Advanced forge. */
@@ -32,7 +36,7 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
 /**
  * One choice in a slot's tray. [id] is the family, material or technique it stands for (null: "None" or "Plain");
  * [stock] is what the smith owns of a material (null for what is not counted). An empty material is listed last.
- * [fight] (a guild run) is what an augment or a catalyst gives the blade in a fight, one "Name: rule" line each.
+ * [fight] (a guild run) is what a metal, an augment or a catalyst gives the blade in a fight, one "Name: rule" line each.
  */
 @Immutable data class OptionUi(val id: String?, val name: String, val stock: Int?, val selected: Boolean, val mark: MarkUi? = null, val detail: String? = null, val fight: List<String> = emptyList()) {
     val usable: Boolean get() = stock != 0
@@ -53,15 +57,36 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
  */
 @Immutable data class ForgeActionUi(val label: String, val enabled: Boolean, val note: String?, val restock: MaterialId? = null, val endDay: Boolean = false)
 
+/** One chosen ingredient of the recipe: what it is for ([role]) and what choosing it costs ([constraint]). */
+@Immutable data class OutlookPartUi(val name: String, val role: String, val constraint: String?)
+
+/** A rule every forge of the recipe carries that still waits for something: the [rule] by name, what it [needs] in words. */
+@Immutable data class OutlookNeedUi(val rule: String, val needs: List<String>)
+
+/** Something the roll may add ([name]) and when ([text]). Never a rule the weapon is said to have. */
+@Immutable data class OutlookChanceUi(val name: String, val text: String)
+
+/**
+ * What can honestly be said of the recipe before it is forged (`ForgeOutlook`), for a guild run. [certain] holds only the
+ * rules every forge of this recipe carries, [needs] what those still wait for from a party, and [possible] what a roll
+ * may add: the two are never mixed. [demonstration] is the recipe as a weapon for the bench, at the middle of the
+ * quality the forge can give, with nothing rolled on it.
+ */
+@Immutable
+data class ForgeOutlookUi(
+    val role: String, val suits: List<String>, val parts: List<OutlookPartUi>, val needs: List<OutlookNeedUi>, val tradeoff: String?,
+    val possible: List<OutlookChanceUi>, val certain: List<BladeRuleUi>, val notes: List<String>, val demonstration: Weapon,
+)
+
 /**
  * The Forge destination for one save and one draft. [next] is the first place still empty; [command] is exactly what
  * the action sends (null until the three ingredients are chosen). Pure: reads the save, changes nothing.
- * [fight] (a guild run) is what the chosen augment and catalyst will give the blade in a fight.
+ * [outlook] (a guild run, once the three ingredients are chosen) is what the recipe will do in a fight.
  */
 @Immutable
 data class ForgeWorkbenchUi(
     val title: String, val slots: List<SlotUi>, val next: RecipeSlot?, val notes: List<NoteUi>, val brief: BriefUi?, val action: ForgeActionUi, val command: Command.Forge?,
-    val fight: List<BladeRuleUi> = emptyList(),
+    val outlook: ForgeOutlookUi? = null,
     val heartfire: HeartfireUi? = null,
 )
 
@@ -125,6 +150,23 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
     )
 }
 
+
+/** Null in a classic run, where no fight reads a weapon's rules. [forge] is the command as it will be sent, bellows included. */
+fun GameEngine.forgeOutlook(state: GameState, forge: Command.Forge): ForgeOutlookUi? {
+    if (state.guild == null) return null
+    val o = ForgeOutlook.of(state, content, config, forge) ?: return null
+    return ForgeOutlookUi(
+        role = o.role, suits = o.wielders,
+        parts = o.parts.filter { it.role.isNotEmpty() }.map { OutlookPartUi(it.name, it.role, it.constraint) },
+        needs = o.missing.map { (id, needs) -> OutlookNeedUi(o.certain.rule(id)?.effect?.name ?: id, needs.map(Capabilities::text)) },
+        tradeoff = o.tradeoff,
+        possible = o.possible.map { OutlookChanceUi(it.name, it.text) },
+        certain = o.certain.rules.map { it.ui() },
+        notes = o.notes.map { Capabilities.text(it, o.certain) },
+        demonstration = Bench.demonstration(forge.familyId, forge.coreId, forge.augmentId, forge.catalystId, content, config, (o.qualityLow + o.qualityHigh) / 2),
+    )
+}
+
 fun KnowledgeState.stage(): String = when (this) {
     KnowledgeState.UNKNOWN -> "Untried"
     KnowledgeState.OBSERVED -> "Studying"
@@ -139,7 +181,8 @@ fun GameEngine.note(journal: JournalModel, label: String, key: String): NoteUi {
     return NoteUi(label, Journal.subjectName(content, key), state, state.stage(), Journal.hint(journal, content, key))
 }
 
-fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: List<RequestUi>): ForgeWorkbenchUi {
+/** [bellows]: the forge will be sent with the Ashen Bellows (asked for and still possible), which the outlook has to count. */
+fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: List<RequestUi>, bellows: Boolean = false): ForgeWorkbenchUi {
     val advanced = draft.mode == ForgeMode.ADVANCED
     val family = draft.familyId?.let(content::family)
     val core = draft.coreId?.let(content::material)
@@ -199,14 +242,14 @@ fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: Lis
     return ForgeWorkbenchUi(
         title = when { family != null && core != null -> "${core.name} ${family.name.lowercase()}"; family != null -> family.name; else -> "Empty anvil" },
         slots = slots, next = next, notes = notes, brief = brief, action = action, command = command,
-        fight = draftRules(state, content, augment?.id, catalyst?.id),
+        outlook = command?.let { forgeOutlook(state, it.copy(bellows = bellows)) },
         heartfire = heartfire,
     )
 }
 
 /** What a slot's tray offers, in catalog order, with the materials that have run out after those that can be used. */
 fun GameEngine.forgeOptions(state: GameState, draft: ForgeDraft, slot: RecipeSlot, threat: ThreatUi?): List<OptionUi> {
-    // In a guild run an augment and a catalyst are also a rule in a fight: said where they are chosen, in the catalog's words.
+    // In a guild run a metal, an augment and a catalyst are also a rule in a fight: said where they are chosen, in the catalog's words.
     val guild = state.guild != null
     fun materials(category: MaterialCategory, chosen: MaterialId?) = content.materials(category).map { m ->
         OptionUi(
