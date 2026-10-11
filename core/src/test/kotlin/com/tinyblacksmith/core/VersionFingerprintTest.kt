@@ -30,7 +30,8 @@ class VersionFingerprintTest {
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",  // morning visitors, workshop relics and siege traits join the catalog (gameplay depth, rules 4)
         // 6: run variety (rules 6): opening packages, siege preparations, contract modifiers, the siege's jobs, two pacts
         // Re-pinned while rules 6 is unreleased (from d047912e...): four contract modifiers that change the decision and their fields, the watch on a rescue, a second class a charter offers, Licensed Bad Ideas, three opening drawbacks in gold, the Hunt's numbers.
-        6 to "e7f3d60dc96e5a439bc8e4c4b62304547bcb5cf0d24d131d0790bc071a67fa26",
+        // 6, re-pinned while unreleased: with the deep forging catalog (a fight rule for each metal, ingredient notes, interaction paths, Void Ink and Dragon Oil rewritten for new weapons).
+        6 to "03d44c0f993da80cb6ee44e6501095d425a08f73a54f45c00794e7c5fc4ee87c",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
@@ -50,6 +51,8 @@ class VersionFingerprintTest {
         12 to "6f3ad6d6c7cb3aff77b7610a5c3c5964aaec16d97787f451bb4ab7263958a0c3",
         // 13: Epic needs fine metal (`fineCoreTier`), the supplier carries Starsteel and Moonsteel from a later day (`coreTierFromDay`), a classic siege leaves Heartfire from the fourth on, the guild siege base 186.
         13 to "77f40409eeff8e5ec4ec8595d33c3170bf6f60c466dfb1158740325dc122e85e",
+        // 14: the guild siege base 190, measured with the metals' fight rules in the catalog.
+        14 to "d2bbbd8006abe14140974b640e35f41c2221e346820700bc2aa57addde50271d",
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where")

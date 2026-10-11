@@ -1,0 +1,24 @@
+GUILD RUNS WITH AND WITHOUT THE METALS' FIGHT RULES: seeds 400001 to 400300, new account, horizon 30 days, balance 13
+Counts of 300 runs, then the share. Interval: 95% for the charter share. Paired: seeds where only one of the two secured the charter.
+charter                policy         | with: charter / fallen / neither   | without: charter / fallen / neither | paired
+towns_last_hope        SYNERGY        | 209  10  81  70%  3% 27% (64 to 75) | 188  12 100  63%  4% 33% (57 to 68) | only with 53, only without 32, both 156, neither 59
+                                      | 206  11  83  69%  4% 28% (63 to 74) | iron:0
+                                      | 208  10  82  69%  3% 27% (64 to 74) | bronze:0
+                                      | 212  11  77  71%  4% 26% (65 to 76) | silver:0
+                                      | 202  13  85  67%  4% 28% (62 to 72) | obsidian:100
+                                      | 210  10  80  70%  3% 27% (65 to 75) | starsteel:0
+                                      | 195  11  94  65%  4% 31% (59 to 70) | moonsteel:0
+towns_last_hope        ADAPTIVE       | 205   0  95  68%  0% 32% (63 to 73) | 185   3 112  62%  1% 37% (56 to 67) | only with 59, only without 39, both 146, neither 56
+                                      | 201   0  99  67%  0% 33% (61 to 72) | iron:0
+                                      | 205   0  95  68%  0% 32% (63 to 73) | bronze:0
+                                      | 194   0 106  65%  0% 35% (59 to 70) | silver:0
+                                      | 191   2 107  64%  1% 36% (58 to 69) | obsidian:100
+                                      | 201   0  99  67%  0% 33% (61 to 72) | starsteel:0
+                                      | 192   0 108  64%  0% 36% (58 to 69) | moonsteel:0
+towns_last_hope        DEFENCE_FIRST  | 164  10 126  55%  3% 42% (49 to 60) | 160  11 129  53%  4% 43% (48 to 59) | only with 61, only without 57, both 103, neither 79
+                                      | 158  11 131  53%  4% 44% (47 to 58) | iron:0
+                                      | 164  10 126  55%  3% 42% (49 to 60) | bronze:0
+                                      | 157  11 132  52%  4% 44% (47 to 58) | silver:0
+                                      | 166  13 121  55%  4% 40% (50 to 61) | obsidian:100
+                                      | 163  10 127  54%  3% 42% (49 to 60) | starsteel:0
+                                      | 151  10 139  50%  3% 46% (45 to 56) | moonsteel:0

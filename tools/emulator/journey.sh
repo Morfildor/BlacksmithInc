@@ -54,6 +54,18 @@ for x1,y1,x2,y2 in sorted(nodes(sys.argv[1]), key=lambda n:n[1]):
   if [ -z "$x" ]; then echo "MISSING: $1 ${2:+below $2}"; return 1; fi
   $ADB shell input tap $x; echo "tapped '$1' at $x"; $ADB shell sleep 1.2
 }
+# taps the lowest node on screen whose text or description contains $1 (a contract's row says its name in either)
+tap_has() {
+  local x=$(dump | python -c "
+import sys,re
+s=sys.stdin.read()
+ms=re.findall(r'<node[^>]*?(?:text|content-desc)=\"[^\"]*'+re.escape(sys.argv[1])+r'[^\"]*\"[^>]*?bounds=\"\[(\d+),(\d+)\]\[(\d+),(\d+)\]', s)
+if ms:
+  x1,y1,x2,y2=map(int,ms[-1]); print((x1+x2)//2,(y1+y2)//2)
+" "$1")
+  if [ -z "$x" ]; then echo "MISSING anywhere: $1"; return 1; fi
+  $ADB shell input tap $x; echo "tapped what says '$1' at $x"; $ADB shell sleep 1.2
+}
 shot() { $ADB exec-out screencap -p > "$OUT/$1.png"; echo "screenshot $1"; }
 wait_text() { for i in $(seq 1 25); do if has "$1"; then return 0; fi; $ADB shell sleep 1; done; echo "TIMEOUT waiting for '$1'"; return 1; }
 wait_id() { for i in $(seq 1 25); do if has_id "$1"; then return 0; fi; $ADB shell sleep 1; done; echo "TIMEOUT waiting for id '$1'"; return 1; }
@@ -94,7 +106,9 @@ $ADB shell am start -n $PKG/.MainActivity --el seed "$SEED" >/dev/null
 # The seeded run is begun behind the menu: go on into it.
 wait_text "Continue run" && tap_id menu_continue
 wait_id opening_chooser || { shot 00_no_chooser; texts; exit 1; }
-for i in 1 2 3 4 5 6 7 8; do has_id "opening_choose_$OPENING" && break; swipe_up; done
+for i in 1 2 3 4 5 6 7 8 9 10 11 12; do has_id "opening_choose_$OPENING" && break; swipe_up; done
+# at a large font the button first shows as a sliver at the bottom edge: bring it up before tapping
+$ADB shell input swipe 540 1300 540 1000 500; $ADB shell sleep 1
 shot 01_opening
 tap_id "opening_choose_$OPENING" || exit 1
 tap_id opening_confirm_yes || exit 1
@@ -125,11 +139,13 @@ tap_id sheet_close || $ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 1
 
 # 3. A real contract: the supplier's road, both members.
 to_top
-for i in 1 2 3 4 5 6 7 8 9 10; do has "Supply run" && break; swipe_up; done
-$ADB shell input swipe 540 1300 540 1000 500; $ADB shell sleep 1
-tap "Choose a party" "Supply run" || exit 1
+for i in 1 2 3 4 5 6 7 8 9 10; do has "Bring a wagon" && has "Choose a party" && break; $ADB shell input swipe 540 1300 540 1000 500; $ADB shell sleep 1; done
+tap "Choose a party" "Bring a wagon" || tap_has "Supply run" || { shot 00_no_offer; texts 120; exit 1; }
+wait_id contract_sheet
+check has "Supply run"
 wait_id contract_sheet
 tap_id contract_pick_ 0; tap_id contract_pick_ 1; shot 07_contract_party
+echo "--- who goes"; texts 40 | grep -i "level" 
 scroll_to_id contract_send && tap_id contract_send
 $ADB shell sleep 1
 tap_id nav_shop; $ADB shell sleep 1

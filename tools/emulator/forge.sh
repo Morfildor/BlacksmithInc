@@ -60,6 +60,13 @@ wait_text "Tiny Blacksmith"
 check has_id charter_picker
 tap_id title_new_run || exit 1
 $ADB shell sleep 2
+# rules 6: a guild run opens on its three packages. The first one on screen is taken.
+if has_id opening_chooser; then
+  for i in 1 2 3 4 5 6 7 8 9 10 11 12; do has_pre opening_choose_ && break; swipe_up; done
+  $ADB shell input swipe 540 1300 540 1000 500; $ADB shell sleep 1
+  tap_id opening_choose_ || exit 1
+  tap_id opening_confirm_yes || exit 1
+fi
 past_offers || { shot 00_stuck_after_new_run; texts; exit 1; }
 
 # 1. Ingredient selection: the metal's tray says what each metal does in a fight.

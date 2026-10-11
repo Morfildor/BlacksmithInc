@@ -1,0 +1,194 @@
+CHECK has_id charter_picker: ok
+tapped id 'title_new_run' at 540 1431
+tapped id 'opening_choose_' at 540 1567
+tapped id 'opening_confirm_yes' at 809 1265
+tapped id 'nav_forge' at 403 1762
+screenshot 01_forge_empty
+tapped id 'forge_option_sword' at 222 1207
+screenshot 02_metal_tray
+CHECK has_id forge_tray_fight: ok
+tapped id 'forge_option_iron' at 222 612
+screenshot 03_augment_tray
+tapped id 'forge_option_frost_bloom' at 539 612
+screenshot 04_outlook
+CHECK has_id forge_outlook_role: ok
+--- outlook card
+1:text="Day 1"
+2:text="210"
+3:text="10"
+4:text="Siege in 4 days"
+5:text="Forge health 90"
+6:text="Besieger not yet known · Day 5 · see the wall in Guild"
+7:text="Field notes"
+8:text="Open book ›"
+9:text="Metal + augment"
+10:text="? Untried"
+11:text="Forge to learn"
+12:text="Augment + weapon"
+13:text="? Untried"
+14:text="Forge to learn"
+15:text="In a fight"
+16:text="Holds the line"
+17:text="Suits: Guardian, Duelist, Battlemage"
+18:text="Sword · One clean strike."
+19:text="Iron · Plain and sturdy. The wielder starts every fight behind a little Guard."
+20:text="Frost Bloom · Frost. Each round the first hit leaves Chill, which weakens that enemy's next strike."
+21:text="Trade-off"
+22:text="The weakest metal. It adds the least to a strike."
+23:text="Not certain"
+24:text="Frostbound, Another buff, A flaw"
+25:text="Details"
+26:text="Forge · 2 energy"
+27:text="Shop"
+28:text="Forge"
+29:text="Guild"
+30:text="Records"
+tapped id 'forge_outlook_details' at 174 1450
+screenshot 05_outlook_details
+CHECK has_id forge_outlook_expanded: ok
+screenshot 06_outlook_details_lower
+tapped id 'forge_bench_open' at 540 1137
+screenshot 07_bench_recipe
+CHECK has The bench: ok
+tapped id 'bench_company_frost' at 811 836
+screenshot 08_bench_recipe_frost
+tapped id 'bench_target_attrition' at 182 1670
+screenshot 09_bench_recipe_attrition
+tapped id 'bench_target_wall' at 562 1612
+screenshot 09b_bench_recipe_wall
+CHECK has_id bench_synthetic: FAIL
+screenshot 10_bench_recipe_what_happened
+CHECK has What happened: ok
+screenshot 11_bench_recipe_waiting
+CHECK has Waiting for its moment: ok
+--- bench (recipe)
+text="A long fight"
+text="✓ The town's wall"
+text="A raiding line met on the wall at home. Rules a weapon has only on the wall count here. Its road-only rules do not."
+text="This is a rehearsal"
+text="A made-up level 3 Guardian carries it. Nobody from your town or guild is here."
+text="The company is made up too: Bench Battlemage with a frost staff."
+text="The party's relics are in play: Blood Receipt."
+text="The enemies are a fixed line with more health than usual, striking the same every time. No contract or siege will look like this."
+text="The wall here is made up as well. It is not the siege the scouts report."
+text="The party fights to the end here. On a contract its posture decides when it leaves."
+text="A recipe, not a weapon you own: shown at middling quality with no buff, flaw or signature, because those are rolled."
+text="Nothing here is paid, learned or recorded."
+text="What happened"
+text="Iron holds"
+text="x 1"
+text="Round 1."
+text="Bench Guardian's Iron holds gives Bench Guardian 3 Guard."
+text="Rime"
+text="x 3"
+text="Bench Guardian: Hold the line."
+text="Bench Guardian hits Ashclaw scout for 14."
+text="Bench Guardian's Rime puts Chill on Ashclaw scout."
+text="Waiting for its moment"
+CHECK check_dead: ok
+Warning: Activity not started, its current task has been brought to the front
+screenshot 12_after_recreation_forge
+NOTE bench was closed after recreation
+CHECK draft_kept: ok
+tapped id 'forge_weapon' at 540 1578
+screenshot 13_forge_result
+--- result
+text="Fresh from the forge"
+text="Frostbound Iron Sword"
+text="Rare ◆ · Frost sword"
+text="Power"
+text="27"
+text="Element"
+text="Frost"
+text="Value"
+text="108 gold"
+text="Buffs"
+text="+"
+text="Frostbound"
+text="−10"
+text="108"
+text="Your price"
+text="gold"
+text="+10"
+text="Suggested price 108 gold. You're asking the suggested price."
+text="5 of 12 heroes in town can afford this price."
+text="They may still pass. Price is only part of the decision."
+text="Store"
+text="List at 108"
+text="Loan to a member"
+tapped id 'reveal_list' at 645 1578
+tapped id 'forge_slot_metal' at 540 1094
+tapped id 'forge_option_bronze' at 539 612
+tapped id 'forge_slot_augment' at 879 1094
+tapped id 'forge_option_ember_resin' at 222 612
+screenshot 14_outlook_bronze
+tapped id 'forge_weapon' at 540 1578
+tapped id 'reveal_store' at 178 1578
+tapped id 'nav_shop' at 127 1762
+tapped id 'stock_' at 540 1446
+screenshot 15_weapon_sheet
+screenshot 15b_weapon_card
+CHECK has_id card_bench_open: ok
+tapped id 'card_bench_open' at 540 1892
+TIMEOUT waiting for id 'bench_sheet'
+screenshot 16_bench_owned
+CHECK has The bench: FAIL
+MISSING id: bench_company_fire
+screenshot 17_bench_owned_fire
+screenshot 17b_bench_owned_lower
+--- bench (owned)
+text="The wielder's first hit each round puts 1 more Chill on its target."
+text="Try it on the bench"
+text="Where"
+text="On your shelf, asking 108 gold"
+text="Price"
+text="On the shelf, asking 108 gold."
+text="−10"
+text="108"
+text="Your price"
+text="gold"
+text="+10"
+text="Suggested price 108 gold. You're asking the suggested price."
+text="5 of 12 heroes in town can afford this price."
+text="They may still pass. Price is only part of the decision."
+text="Set price"
+text="Unlist"
+text="Salvage (1 energy, returns 1 Iron)"
+text="Hone (2 energy, 1 Iron)"
+text="Arm the watch (+5 defense)"
+text="Guild"
+text="A member carries a loaned weapon instead of their own. It stays the forge's, and can be recalled while they are in town."
+SCROLL MISSING id: bench_close
+tapped id 'nav_records' at 953 1762
+tapped id 'page_journal' at 540 350
+screenshot 18_notebook
+CHECK has_id book_tab_fights: ok
+tapped id 'book_tab_fights' at 917 798
+screenshot 19_fight_notes
+CHECK has_id book_learned: ok
+screenshot 20_fight_notes_lower
+--- fight notes
+text="Day 1"
+text="210"
+text="6"
+text="Gazette"
+text="Legacy"
+text="Notebook"
+text="Ember"
+text="● Learned · The wielder's first hit each round puts 1 Burn on its target."
+text="Rime"
+text="● Learned · The wielder's first hit each round puts 1 Chill on its target."
+text="Flaming"
+text="● Learned · The wielder's first hit each round puts 1 more Burn on its target."
+text="Frostbound"
+text="● Learned · The wielder's first hit each round puts 1 more Chill on its target."
+text="A broken Guard answers"
+text="? Suggested by the rules · Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns."
+text="Trade-off: It needs Guard on the wielder and an enemy strong enough to break it."
+text="You have forged: Bronze rings back"
+text="6 more to find. They open when you forge something that takes part in them."
+text="Shop"
+text="Forge"
+text="Guild"
+text="Records"
+done

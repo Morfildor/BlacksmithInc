@@ -58,7 +58,8 @@ data class GuildConfig(
     // Siege through the interaction engine (spec 10.3)
     val defenders: Int = 3,
     /** v12: a higher floor and a flatter climb (was 150 and 5.0): the first sieges ask something, the charter siege is less of a cliff. */
-    val siegePercentBase: Int = 186,
+    /** v14: 190 (v13 had 186). Weapons forged since the metals had fight rules make a party stronger, and the siege is where a charter is decided. */
+    val siegePercentBase: Int = 190,
     val siegePercentPerDay: Double = 3.0,
     val siegePercentPerPressure: Double = 0.5,
     /** Grunts beside the leader or elite: this many, one more every [siegeGruntEvery] sieges, up to the field's size. */

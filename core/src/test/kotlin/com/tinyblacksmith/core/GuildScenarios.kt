@@ -70,7 +70,7 @@ object GuildScenarios {
     private fun dayOne(): GameState = fresh(DAY_ONE_SEED).run(TestSupport.quickSword(Risk.SAFE))
 
     const val CHECKPOINT_SEED = 1L
-    const val CHECKPOINT_DAY = 10
+    const val CHECKPOINT_DAY = 5
 
     const val SIEGE_EVE_SEED = 1L
 
@@ -85,20 +85,20 @@ object GuildScenarios {
     const val CAPTIVE_SEED = 2L
     const val CAPTIVE_DAY = 8
 
-    const val CHARTER_SEED = 1L
+    const val CHARTER_SEED = 5L
     const val CHARTER_LEVEL = 8
     const val CHARTER_QUALITY = 90
 
     /** The morning of the charter day as the bot reached it: played on from here, the wall is breached. */
-    fun charterEveAsPlayed(): GameState = morning(CHARTER_SEED, GuildPolicy.SYNERGY, config.guild.charterDay).settled()
+    fun charterEveAsPlayed(seed: Long = CHARTER_SEED): GameState = morning(seed, GuildPolicy.SYNERGY, config.guild.charterDay).settled()
 
     /**
      * That morning made strong by hand: every member at home is level [CHARTER_LEVEL] in full health with no wound and
      * every blade on loan to them is quality [CHARTER_QUALITY] in full repair. Then the Guardian, the Warden and the
      * Battlemage are reserved for the wall by real commands, so it is they who meet the warlord.
      */
-    private fun charterEve(): GameState {
-        var s = charterEveAsPlayed()
+    fun charterEve(seed: Long = CHARTER_SEED): GameState {
+        var s = charterEveAsPlayed(seed)
         val home = s.guild!!.members.filter { it.status == MemberStatus.HOME }.map { it.heroId }.toSet()
         for (id in home) s = s.with(s.hero(id).copy(level = maxOf(s.hero(id).level, CHARTER_LEVEL), health = 100))
         s = s.copy(guild = s.guild!!.copy(members = s.guild!!.members.map { if (it.heroId in home) it.copy(wound = null) else it }))

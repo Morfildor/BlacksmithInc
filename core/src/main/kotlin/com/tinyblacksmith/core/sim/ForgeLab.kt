@@ -84,6 +84,55 @@ object ForgeLab {
         }.toList()
     }
 
+    /** The catalog as it was before the metals had fight rules: no metal rule, and Void Ink and Dragon Oil as they were. */
+    fun withoutDeepForging(): ContentCatalog = LaunchContent.catalog.let { c -> c.copy(combat = c.combat!!.copy(cores = emptyList(), revisions = emptyMap(), interactions = emptyList())) }
+
+    private fun wilson(k: Int, n: Int): String {
+        if (n == 0) return "-"
+        val z = 1.96; val p = k.toDouble() / n
+        val centre = (p + z * z / (2 * n)) / (1 + z * z / n)
+        val half = z * Math.sqrt(p * (1 - p) / n + z * z / (4.0 * n * n)) / (1 + z * z / n)
+        return "%.0f to %.0f".format(100 * (centre - half), 100 * (centre + half))
+    }
+
+    /**
+     * What the metals' fight rules do to a guild run (`./gradlew :core:combat --args="guild seed=500001 runs=300"`): the
+     * same policies, charters, seeds, account and horizon, once with today's catalog and once with [withoutDeepForging].
+     * A run ends in exactly one of three ways: the charter secured, the forge fallen, or neither by the horizon.
+     * `try=iron:2/iron:2+bronze:4` adds a row for each set of other metal numbers on the same seeds (a zero switches
+     * one rule off, which shows what that metal's rule is worth in a run, and `siege:190` tries another siege base).
+     */
+    fun guild(args: Set<String>, out: Appendable = System.out) {
+        val a = args.filter { "=" in it }.associate { it.substringBefore("=") to it.substringAfter("=") }
+        val seed = a["seed"]?.toLong() ?: 500001L
+        val runs = a["runs"]?.toInt() ?: 300
+        val horizon = a["horizon"]?.toInt() ?: 30
+        val policies = (a["policy"] ?: "SYNERGY,ADAPTIVE,DEFENCE_FIRST").split(",").map { GuildPolicy.valueOf(it.uppercase()) }
+        val charters = LaunchContent.catalog.guild!!.charters.map { it.id }.filter { a["charter"] == null || it == a["charter"] }
+        out.appendLine("GUILD RUNS WITH AND WITHOUT THE METALS' FIGHT RULES: seeds $seed to ${seed + runs - 1}, new account, horizon $horizon days, balance ${BalanceConfig.DEFAULT.version}")
+        out.appendLine("Counts of $runs runs, then the share. Interval: 95% for the charter share. Paired: seeds where only one of the two secured the charter.")
+        out.appendLine("%-22s %-14s | %-34s | %-34s | %s".format("charter", "policy", "with: charter / fallen / neither", "without: charter / fallen / neither", "paired"))
+        for (charter in charters) for (p in policies) {
+            val with = GuildSim.run(p, runs, seed, charterId = charter, horizon = horizon)
+            val without = GuildSim.run(p, runs, seed, charterId = charter, horizon = horizon, content = withoutDeepForging())
+            fun cell(r: GuildReport): String {
+                val won = r.runs.count { it.charterDay != null }; val fell = r.runs.count { it.charterDay == null && it.defeated }; val rest = r.runs.size - won - fell
+                return "%3d %3d %3d  %2.0f%% %2.0f%% %2.0f%% (%s)".format(won, fell, rest, 100.0 * won / r.runs.size, 100.0 * fell / r.runs.size, 100.0 * rest / r.runs.size, wilson(won, r.runs.size))
+            }
+            val pairs = with.runs.zip(without.runs).filter { it.first.seed == it.second.seed }
+            out.appendLine("%-22s %-14s | %-34s | %-34s | only with %d, only without %d, both %d, neither %d".format(charter, p.name, cell(with), cell(without),
+                pairs.count { it.first.charterDay != null && it.second.charterDay == null }, pairs.count { it.first.charterDay == null && it.second.charterDay != null },
+                pairs.count { it.first.charterDay != null && it.second.charterDay != null }, pairs.count { it.first.charterDay == null && it.second.charterDay == null }))
+            for (set in a["try"]?.split("/").orEmpty()) {
+                val n = set.split("+").associate { it.substringBefore(":") to it.substringAfter(":").toInt() }
+                val tuned = n["siege"]?.let { base -> BalanceConfig.DEFAULT.let { c -> c.copy(guild = c.guild.copy(siegePercentBase = base)) } } ?: BalanceConfig.DEFAULT
+                val d = CombatContent.CoreNumbers()
+                val tried = GuildSim.run(p, runs, seed, tuned, charterId = charter, horizon = horizon, content = content(CombatContent.CoreNumbers(n["iron"] ?: d.ironGuard, n["bronze"] ?: d.bronzeAnswer, n["silver"] ?: d.silverCharge, n["obsidian"] ?: d.obsidianStrike, n["starsteel"] ?: d.starsteelBonus, n["moonsteel"] ?: d.moonsteelBonus)))
+                out.appendLine("%-22s %-14s | %-34s | %s".format("", "", cell(tried), set))
+            }
+        }
+    }
+
     private fun List<Int>.mean(): Double = if (isEmpty()) 0.0 else sum().toDouble() / size
     private fun pct(n: Int, of: Int): String = if (of == 0) "   -" else "%3d%%".format(n * 100 / of)
 

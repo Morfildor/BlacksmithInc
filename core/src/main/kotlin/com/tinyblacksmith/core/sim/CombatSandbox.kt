@@ -137,5 +137,6 @@ fun main(args: Array<String>) {
     if ("sweep" in wanted) return ForgeSweep.print()
     if ("paths" in wanted) return ForgePaths.print(wanted - "paths")
     if ("lab" in wanted) return ForgeLab.print(wanted - "lab")
+    if ("guild" in wanted) return ForgeLab.guild(wanted - "guild")
     CombatSandbox.fixtures.filter { wanted.isEmpty() || it.id in wanted }.forEach { CombatSandbox.print(it) }
 }

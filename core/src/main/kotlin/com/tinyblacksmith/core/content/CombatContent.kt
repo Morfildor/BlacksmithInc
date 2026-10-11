@@ -193,7 +193,7 @@ object CombatContent {
 
     // ---- metals: the weapon's physical character. One reuse of an existing mechanic each, never a new one. ----
     /** The numbers of the six metal rules, in one place so that `ForgeLab` can fight the same recipes with others. */
-    data class CoreNumbers(val ironGuard: Int = 3, val bronzeAnswer: Int = 5, val silverCharge: Int = 3, val obsidianStrike: Int = 110, val starsteelBonus: Int = 3, val moonsteelBonus: Int = 3)
+    data class CoreNumbers(val ironGuard: Int = 3, val bronzeAnswer: Int = 5, val silverCharge: Int = 3, val obsidianStrike: Int = 110, val starsteelBonus: Int = 3, val moonsteelBonus: Int = 2)
 
     fun cores(n: CoreNumbers = CoreNumbers()) = listOf(
         CoreCombatDef(LaunchContent.IRON, "Plain and sturdy. The wielder starts every fight behind a little Guard.", "The weakest metal. It adds the least to a strike.", listOf(
@@ -203,7 +203,7 @@ object CombatContent {
                 "When an enemy breaks the wielder's Guard, the weapon strikes that enemy for ${n.bronzeAnswer}. Once a round.", listOf(Condition.SourceIsFoe)))),
         CoreCombatDef(LaunchContent.SILVER, "Holds a charge. The wielder starts every fight with ${n.silverCharge} Charge stored, enough for one burst.", "Charge is worth nothing until something on the weapon spends it: Binding Salt, or a Stormcharged roll.", listOf(
             e("core_silver", "Silver holds a charge", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Give(Stat.CHARGE, Aim.Self, Fixed(n.silverCharge))), Limit(perFight = 1), "The wielder enters a fight with ${n.silverCharge} Charge."))),
-        CoreCombatDef(LaunchContent.OBSIDIAN, "A glass edge. It strikes ${n.obsidianStrike - 100}% harder.", "It cracks the first time an enemy breaks the wielder's Guard. It still cuts, but whoever holds the line brings it home needing the hone after most fights.", listOf(
+        CoreCombatDef(LaunchContent.OBSIDIAN, "A glass edge. It strikes ${if (n.obsidianStrike == 110) "a tenth" else "${n.obsidianStrike - 100} parts in a hundred"} harder.", "It cracks the first time an enemy breaks the wielder's Guard. It still cuts, but whoever holds the line brings it home needing the hone after most fights.", listOf(
             e("core_obsidian", "Obsidian cracks", Trigger(EventKind.GUARD_BROKEN, Who.SELF_TARGET), listOf(Action.Fracture(2)), Limit(perFight = 1),
                 "The first time an enemy breaks the wielder's Guard, the weapon cracks. 2 Scrap now, a repair after the fight.", listOf(Condition.SourceIsFoe))), strikePercent = n.obsidianStrike),
         CoreCombatDef(LaunchContent.STARSTEEL, "Finds the marked place. It hits harder when it spends a Mark.", "Costly, and its rule sleeps until a Mark is there for the wielder's own action to spend.", listOf(

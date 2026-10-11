@@ -545,10 +545,12 @@ object GuildSim {
     }
 
     fun run(policy: GuildPolicy, runs: Int, seed: Long, config: BalanceConfig = BalanceConfig.DEFAULT, charterId: String = GuildContent.TOWNS_LAST_HOPE, horizon: Int = 30, legacy: (GameEngine) -> LegacyProfile = { LegacyProfile() },
-        opening: String? = null, retire: Boolean = true, followPlan: Boolean = true, noDrawback: Boolean = false): GuildReport {
+        opening: String? = null, retire: Boolean = true, followPlan: Boolean = true, noDrawback: Boolean = false,
+        /** Another catalog for the same runs (`ForgeLab.guild`: the metals' fight rules on and off). */
+        content: com.tinyblacksmith.core.content.ContentCatalog? = null): GuildReport {
         val list = IntStream.range(0, runs).parallel().mapToObj { i ->
             // Without drawbacks: every opening keeps its relic, trait, stock and weapon and loses only what it takes away (one gold is left, the catalog insists on a drawback). The measure of what a drawback costs.
-            val engine = if (noDrawback) GameEngine(config = config).let { e -> GameEngine(e.content.copy(guild = e.content.guild!!.copy(openings = e.content.guild.openings.map { it.copy(goldDelta = -1, militiaDelta = 0, integrityDelta = 0) })), config) } else GameEngine(config = config)
+            val engine = if (noDrawback) GameEngine(config = config).let { e -> GameEngine(e.content.copy(guild = e.content.guild!!.copy(openings = e.content.guild.openings.map { it.copy(goldDelta = -1, militiaDelta = 0, integrityDelta = 0) })), config) } else if (content != null) GameEngine(content, config) else GameEngine(config = config)
             GuildBot(engine, policy, charterId, horizon, opening, retire, followPlan).play(seed + i, legacy(engine)).first
         }.collect(Collectors.toList())
         return GuildReport(policy, list.sortedBy { it.seed })
