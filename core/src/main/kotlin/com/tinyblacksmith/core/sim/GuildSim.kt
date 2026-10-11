@@ -35,6 +35,9 @@ data class GuildRunStats(
     val seed: Long, val policy: GuildPolicy, val days: Int, val charterDay: Int?, val defeated: Boolean, val retired: Boolean,
     val contracts: Map<String, Int>, val captured: Int, val rescued: Int, val membersDead: Int, val sieges: Map<SiegeVerdict, Int>, val combos: Int, val firstComboDay: Int?,
     val goldAtEnd: Int, val members: Int, val rejected: Int, val firstSiegeIntegrity: Int?, val loansMade: Int,
+    /** Forged this run by rarity name, Legendary weapons by where they came from ("forged", "heartfire", "deed"), and the till by source. */
+    val forged: Map<String, Int> = emptyMap(), val legends: Map<String, Int> = emptyMap(), val firstLegendDay: Int? = null,
+    val income: Map<IncomeKind, Int> = emptyMap(), val spent: Int = 0, val overworkDays: Int = 0, val recipes: Int = 0,
 )
 
 class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: String = GuildContent.TOWNS_LAST_HOPE, val horizon: Int = 30) {
@@ -48,6 +51,13 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
     private var firstCombo: Int? = null
     private var firstSiegeIntegrity: Int? = null
     val rejections = ArrayList<String>()
+    private val forged = HashMap<String, Int>()
+    private val legends = HashMap<String, Int>()
+    private var firstLegend: Int? = null
+    private val income = HashMap<IncomeKind, Int>()
+    private var spent = 0
+    private var overworkDays = 0
+    private val recipes = HashSet<String>()
 
     private fun GameState.send(cmd: Command): GameState = when (val o = engine.handle(this, cmd)) {
         is CommandOutcome.Accepted -> o.state
@@ -67,11 +77,20 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         }
         val g = s.guild!!
         return GuildRunStats(seed, policy, s.day, g.milestone(GuildContent.CHARTER_SECURED)?.day, s.isEnded && !g.retired, g.retired, contracts.toMap(), captured, rescued, dead, sieges.toMap(), g.comboNotes.size, firstCombo,
-            s.gold, g.members.size, rejected, firstSiegeIntegrity, loans) to s
+            s.gold, g.members.size, rejected, firstSiegeIntegrity, loans, forged.toMap(), legends.toMap(), firstLegend, income.toMap(), spent, overworkDays, recipes.size) to s
     }
 
     private fun record(before: GameState, after: GameState) {
         val r = after.lastResolution ?: return
+        if (before.overworkToday > 0) overworkDays++
+        for (e in r.events.filter { it.type == EventType.WEAPON_FORGED }) {
+            val rarity = e.data["rarity"] ?: continue
+            forged.merge(rarity, 1, Int::plus)
+            after.weapons[WeaponId(e.subjectIds.firstOrNull() ?: "")]?.let { w -> recipes += "${w.familyId.value}|${w.coreId.value}|${w.augmentId.value}" }
+            if (rarity == Rarity.LEGENDARY.name) { legends.merge(if (e.data["heartfire"] == "true") "heartfire" else "forged", 1, Int::plus); if (firstLegend == null) firstLegend = r.day }
+        }
+        for (e in r.events.filter { it.type.name == "LEGEND_EARNED" }) { legends.merge("deed", 1, Int::plus); if (firstLegend == null) firstLegend = r.day }
+        r.ledger?.let { l -> l.income.forEach { (k, v) -> income.merge(k, v, Int::plus) }; spent += l.spentPreparing }
         r.mission?.let { m -> if (!m.continues) contracts.merge("${guildCat.mission(m.defId).archetype.name}:${m.outcome.name}", 1, Int::plus) }
         r.siege?.let { sieges.merge(it.verdict, 1, Int::plus); if (firstSiegeIntegrity == null) firstSiegeIntegrity = after.town.integrity }
         captured += r.events.count { it.type == EventType.MEMBER_CAPTURED }
@@ -279,6 +298,15 @@ data class GuildReport(val policy: GuildPolicy, val runs: List<GuildRunStats>) {
                 val all = list.sumOf { it.second }
                 "$a ${"%.0f%%".format(100.0 * all / total)} (won ${"%.0f%%".format(100.0 * (list.firstOrNull { it.first == "WON" }?.second ?: 0) / all)})"
             } + "\n")
+            val forges = runs.sumOf { it.forged.values.sum() }.coerceAtLeast(1)
+            val perRun = runs.map { it.legends.values.sum() }.sorted()
+            val sources = runs.flatMap { it.legends.entries }.groupBy({ it.key }, { it.value }).mapValues { it.value.sum() }
+            append("                forge: %.1f a run (%.1f recipes), %s | legendary a run: mean %.2f median %d p90 %d, runs with one %s, first on day %s, by source %s | overwork days %.1f\n".format(
+                forges / n, runs.sumOf { it.recipes } / n, Rarity.entries.joinToString(" ") { r -> "%s=%.0f%%".format(r.name.take(1), 100.0 * runs.sumOf { it.forged[r.name] ?: 0 } / forges) },
+                perRun.average(), perRun[perRun.size / 2], perRun[(perRun.size * 9 / 10).coerceAtMost(perRun.size - 1)], pct(perRun.count { it > 0 }),
+                runs.mapNotNull { it.firstLegendDay }.let { if (it.isEmpty()) "-" else "%.1f".format(it.average()) }, sources.entries.sortedBy { it.key }.joinToString(" ") { "${it.key}=%.2f".format(it.value / n) }.ifEmpty { "-" },
+                runs.sumOf { it.overworkDays } / n))
+            append("                till a run: " + IncomeKind.entries.mapNotNull { k -> runs.sumOf { it.income[k] ?: 0 }.takeIf { it > 0 }?.let { "${k.name.lowercase()} %.0f".format(it / n) } }.joinToString(", ") + ", spent on stock and tools %.0f\n".format(runs.sumOf { it.spent } / n))
         }
     }
 }
