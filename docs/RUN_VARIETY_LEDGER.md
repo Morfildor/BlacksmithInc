@@ -69,3 +69,36 @@ Heartfire as in D3, renown as in D4, classic Heartfire from the third siege foug
 4. The weapon sheet shows fame as "Renown" and deeds as "Deeds: 2 of 3". One of the two words could change.
 5. A Heartfire forging has no confirm step: the outlook is shown inline before the Forge button. Add one?
 6. Version: this is a 0.9.0-sized change. `versionName` is untouched and the changelog entry is under Unreleased.
+
+## Second pass (2026-10-11): the owner's rulings and the release gates
+The owner answered three of the open questions and asked for the rest of the work. The gates below were written
+before any number was changed. They replace G3, G4 and G7 above and add G10 to G14. Version 0.9.0 is set only if
+every one of them is met. Seeds: tuning on 1 to 300, 5001 to 5200 and the 100001 block (seen in the first pass).
+Final figures on 200001 onward, which nothing was tuned on.
+
+Rulings (owner):
+| # | Ruling |
+|---|---|
+| R1 | The supplier never brings less because an optional job was left on the board. Bonus stock stays as a reward. Less stock stays only where the card of a job the smith chose says so (the supplier's cart lost). |
+| R2 | Rescue is eased further. At comparable readiness it should be more reliable than the hunt that caused the loss. It keeps a cost and a risk, and it does not compound the setback. |
+| R3 | The target version is 0.9.0. The changelog stays under Unreleased until the gates pass. |
+
+Gates:
+| Gate | Measure | Target |
+|---|---|---|
+| G3 | Charter secured by Synergy, Adaptive and Defence first, new account, 1,000 unseen seeds, each charter | each of the three inside 40 to 65 % under Town's Last Hope, one by one, no average. The same band under Licensed Bad Ideas and Honest Business |
+| G4 | Supply farming | (a) the supply-only smith secures fewer charters than Adaptive on paired seeds, (b) a smith who farms supply runs and then spends the gold does not beat Adaptive on charters or on standing at day 40, (c) gold, stock value and spending are reported. More gold alone is not a failure (owner) |
+| G5 | Reading the scouts | Adaptive still beats the smith who ignores them on paired seeds, by a wide margin |
+| G7 | Rescue | (a) the same full-strength party wins the rescue at least as often as the hunt, over fixed fights, (b) in played runs each competent policy wins its rescues at least as often as its own dangerous one-day contracts, (c) a lost rescue takes no second member |
+| G10 | Epic progression, new account, competent policies | E1: a member carries an Epic on the morning of day 5 in at most 25 % of runs. E2: the median day of a run's first Epic is between 6 and 12. E3: a member carries one on day 20 in at least 75 % of runs that get there. E4: a member carries a Rare or better on day 5 in at least 80 % of runs. Classic runs are reported beside it |
+| G11 | Contract modifiers | at least three that change the objective, the party or the reward in kind, shown on the card, and a test in which one changes what a bot does |
+| G12 | Opening packages | every one of the eight has a bot that follows its plan. Following the plan is compared with ignoring it on paired seeds. No package under half or over one and a half times the mean of its charter for the plan follower. Each drawback's cost is measured |
+| G13 | Classic runs | Heartfire earned, spent and broken through is simulated, new and maxed account. A classic run has no opening, preparation or siege job (test). The classic golden state is unchanged apart from what the bot does not do |
+| G14 | Device | a checklist with three columns (emulator, phone, blocked): Heartfire forging that breaks through and one that misses, the wall's preparation card, siege cause lines, supplier stock after a won and a lost cart, legend lines, process death, font 1.3, instrumented tests, device scripts |
+
+Why the Epic target is what it is. A run to the charter has four sieges, on days 5, 10, 15 and 20, and five rarities.
+Legendary is the end of that arc (met in the first pass: median 0 to 1 by the charter). Epic should be the step
+before it: the reward of the middle of the run, bought with the first sieges' takings or brought back from dangerous
+work. So the first siege is met in Rare (E4 keeps the early step that feels good), the first Epic comes between the
+first and the third siege (E2), an Epic on day 5 stays possible but is luck or a costly bet (E1), and the charter
+siege is fought with Epic in hand (E3).
