@@ -73,7 +73,7 @@ fun IntroStrip(ui: IntroUi, onSkip: () -> Unit, onDone: () -> Unit, modifier: Mo
 @Composable
 fun IntroCardLine(line: IntroLine, onSkip: () -> Unit, modifier: Modifier = Modifier) {
     var why by rememberSaveable { mutableStateOf(false) }
-    Column(modifier.fillMaxWidth().padding(bottom = Space.sm).drawBehind { drawRect(Gold, size = Size(3.dp.toPx(), size.height)) }.padding(start = Space.md).testTag("intro_card")) {
+    Column(modifier.fillMaxWidth().padding(vertical = Space.sm).drawBehind { drawRect(Gold, size = Size(3.dp.toPx(), size.height)) }.padding(start = Space.md).testTag("intro_card")) {
         Column(Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }) {
             Text(line.objective, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.testTag("intro_objective"))
             Text(line.sentence, style = MaterialTheme.typography.bodySmall, color = CreamMuted)

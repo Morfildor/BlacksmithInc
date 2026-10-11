@@ -54,7 +54,17 @@ fun introFor(legacy: LegacyProfile, run: GameState?, seenTips: Set<String>): Int
     else -> IntroRecord(IntroStatus.QUEUED)
 }
 
-/** The furthest step the save itself shows. A choice undone later (a slot cleared, a blade taken off the shelf) lowers this, which is why [IntroRecord.reached] is kept. */
+/**
+ * The step to show. Choosing and forging follow the workbench as it stands: a recipe emptied (or lost with the process)
+ * is asked for again, because nothing was made yet. From the first forge on a step never comes back, whatever is
+ * undone afterwards (a blade taken off the shelf, melted down, lent out): [IntroRecord.reached] remembers it.
+ */
+internal fun GameEngine.introStep(record: IntroRecord, state: GameState, draft: ForgeDraft): IntroStep {
+    val floor = introFloor(record, state, draft)
+    return if (floor < IntroStep.LIST && record.reached < IntroStep.LIST.ordinal) floor else IntroStep.entries[maxOf(record.reached, floor.ordinal).coerceAtMost(IntroStep.entries.lastIndex)]
+}
+
+/** The furthest step the save and the workbench show today; on its own it would fall back when a choice is undone. */
 internal fun GameEngine.introFloor(record: IntroRecord, state: GameState, draft: ForgeDraft): IntroStep {
     val forged = state.nextWeaponSerial - record.startSerial
     return when {
@@ -86,7 +96,7 @@ fun GameEngine.introSynced(record: IntroRecord, run: GameState?, draft: ForgeDra
     IntroStatus.ACTIVE -> when {
         run == null || run.runId.value != record.runId -> IntroRecord(IntroStatus.OFFERED, completedOnce = record.completedOnce)
         run.isEnded || run.day > 2 -> IntroRecord(IntroStatus.COMPLETED, completedOnce = true)
-        else -> record.copy(reached = maxOf(record.reached, introFloor(record, run, draft).ordinal))
+        else -> record.copy(reached = introStep(record, run, draft).ordinal.takeIf { it >= IntroStep.LIST.ordinal } ?: record.reached)
     }
     else -> record
 }
@@ -94,7 +104,7 @@ fun GameEngine.introSynced(record: IntroRecord, run: GameState?, draft: ForgeDra
 /** The step to show in [state], or null where the guidance is not running in this run. */
 fun GameEngine.introUi(record: IntroRecord?, state: GameState, dest: Dest, draft: ForgeDraft): IntroUi? {
     if (record == null || record.status != IntroStatus.ACTIVE || record.runId != state.runId.value || state.isEnded || state.day > 2 || !state.guild?.openingOffer.isNullOrEmpty()) return null
-    val step = IntroStep.entries[maxOf(record.reached, introFloor(record, state, draft).ordinal).coerceAtMost(IntroStep.entries.lastIndex)]
+    val step = introStep(record, state, draft)
     val overline = if (step == IntroStep.OUTCOME) "FIRST DAY" else "FIRST DAY · ${step.ordinal + 1} of $STEPS"
     val onForge = dest == Dest.FORGE
     val toForge = "Open the Forge to do this."

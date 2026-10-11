@@ -78,6 +78,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 python tools/pixelart/import_assets.py                 # slice the source sheets from 'Pixel art assets/' into drawables (Pillow, numpy)
 python tools/pixelart/generate_assets.py               # placeholders for IDs without imported art + manifest
 ADB=<sdk>/platform-tools/adb bash tools/emulator/smoke.sh <dir>  # scripted device loop + screenshots (after installDebug)
+ADB=<sdk>/platform-tools/adb bash tools/emulator/intro.sh <dir>  # the guided first day on a cleared install: to "Done", killed midway, the next game, Settings replay, skip (about 5 min)
 ADB=<sdk>/platform-tools/adb bash tools/emulator/scenarios.sh <dir> # loads every debug scenario save and checks what its title promises (about an hour on a slow emulator)
 ADB=<sdk>/platform-tools/adb bash tools/emulator/runend.sh <dir> # passive run to defeat, then claim + next era (about 2 min)
 ./gradlew :core:scenarios                              # rewrites the debug build's scenario saves (app/src/debug/assets/scenarios) from core test ScenarioSaves.kt

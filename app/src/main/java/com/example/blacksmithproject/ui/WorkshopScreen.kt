@@ -394,8 +394,9 @@ internal fun endDayNote(s: UiState.Playing): String {
         state.pendingBlessingOffer.isNotEmpty() -> "Choose a blessing"
         // The run can end tonight: said before anything else that waits. In a guild run the guild's own line says it, with who stands.
         s.guild == null && s.shop.threat?.today == true -> "The siege starts after today's trading"
-        // A visitor who waits, then a relic on offer: the words of the rule below.
-        s.encounter?.instance?.isOpen == true || state.pendingRelicOffer.isNotEmpty() -> endDayNote(state, s.encounter)
+        // A visitor who waits, then a relic on offer: the words of the rule below. The guided first day keeps the relic
+        // for later (it waits as long as it takes), so it is not put beside the step that says to end the day.
+        s.encounter?.instance?.isOpen == true || (state.pendingRelicOffer.isNotEmpty() && s.intro == null) -> endDayNote(state, s.encounter)
         offers > 0 -> if (offers == 1) "1 unaccepted commission" else "$offers unaccepted commissions"
         state.overworkToday > 0 -> "You'll have ${state.overworkToday} less energy tomorrow"
         // What is merely left over is not said beside what the guild sets in motion.

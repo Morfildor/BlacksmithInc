@@ -115,6 +115,21 @@ class IntroTest : ShopDayTestBase() {
     }
 
     @Test
+    fun beforeTheFirstForgeTheStepFollowsTheWorkbench() = vmTest {
+        val settings = newInstall()
+        val store = repo(null)
+        val vm = open(store, settings)
+        vm.newRun(); advanceUntilIdle()
+        vm.selectDest(Dest.FORGE); vm.updateDraft { sword }; advanceUntilIdle()
+        assertEquals(IntroStep.FORGE, vm.step())
+        vm.updateDraft { it.copy(coreId = null) }; advanceUntilIdle()
+        assertEquals("a slot emptied is asked for again", IntroStep.RECIPE, vm.step())
+        vm.updateDraft { sword }; advanceUntilIdle()
+        // A cold start keeps the run and loses the recipe: "Forge it" is not said over an empty workbench.
+        assertEquals(IntroStep.RECIPE, open(store, settings).step())
+    }
+
+    @Test
     fun skippingAtTheStartOrMidwayEndsItForThisRunAndEveryLaterOne() = vmTest {
         for (midway in listOf(false, true)) {
             val settings = newInstall()

@@ -128,8 +128,9 @@ fun ForgePanel(
         revealed = s.forgeReveal
     }
 
-    // Not saved: coming back to the Forge starts with it off, so nothing moves until the player acts.
-    var follow by remember { mutableStateOf(false) }
+    // Not saved: coming back to the Forge starts with it off, so nothing moves until the player acts. The guided first
+    // day's first step is to choose: there the open tray comes into view by itself, under the step that asks for it.
+    var follow by remember { mutableStateOf(s.intro?.step == IntroStep.RECIPE) }
 
     Column(Modifier.fillMaxSize()) {
         ThreatStrip(s, "forge_threat") { vm.selectDest(Dest.TOWN) }
