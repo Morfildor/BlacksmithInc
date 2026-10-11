@@ -30,7 +30,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   (`Consequences.kt`), workshop relics (`Relics.kt`) and siege traits (`Battle.scheduleNext` / `outlook`) draw only on the
   ENCOUNTERS stream; their definitions are content (`content/Depth.kt`), their numbers `BalanceConfig.depth`.
   A run started with a charter is a guild run (`GameState.guild`, `model/Guild.kt`); without one it is a classic run and
-  plays as rules 4 did (the rules-4 golden state must keep passing). `combat/` is the automatic fight: typed events and
+  plays as rules 4 did but for the rules-6 forge (the rules-6 golden state equals the rules-5 one apart from three new record kinds: deeds, legends, Heartfire). `combat/` is the automatic fight: typed events and
   effects (trigger, condition, cost, action, limit), pure, no `GameState`; what it runs on is content
   (`content/CombatContent.kt`: class kits, the rule each element, affix, catalyst, family and signature gives a blade,
   enemy units, party relics). `guild/` is the roster and loans (`GuildOps`), the contract board and deployments

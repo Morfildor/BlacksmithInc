@@ -29,6 +29,7 @@ Evidence and final figures: `docs/run_variety_evidence/REPORT.md` (one report; t
 | D10 | Supply runs stay free and safe. Their pay no longer grows with the day, and a road used in the last four days carries less (shown on the card). |
 | D11 | Rank scaling multiplies. One helper feeds contracts, sieges and forecasts. |
 | D12 | New rules apply to every forge and every newly posted contract and newly committed siege. A stored siege plan, a posted contract and a party on the road are played as stored. The opening draft needs a new run. Existing weapons keep rarity, stats, signature, title and history. |
+| D13 | A legend returning from the Legend Board is at most Epic and has no legend origin: quality alone never makes a Legendary weapon, on any path. It can earn the status again by deeds. |
 
 ## Slices and status
 Status words: done (tested), partial (what is missing is named), not done.
@@ -51,7 +52,7 @@ Status words: done (tested), partial (what is missing is named), not done.
 | G4 | Supply farming | falls behind adaptive play on charter rate and end wealth | charter rate met (13 % against 50 %). End wealth not met: the supply farmer ends richer (2,465 gold against 529) because it sells much and spends little |
 | G5 | Ignoring an announced preparation | worse siege result on paired seeds | met: 475 seeds against 11, 41.0 more forge damage |
 | G6 | Each opening package | no package under half or over one and a half times the mean charter rate | met pooled (0.86 to 1.31). For Defence first alone, Paid in Blood is at 1.5 |
-| G7 | Rescue and recovery | won at least as often as the hunt that caused them, for a competent policy | not met: rescue 70 to 89 %, hunt 94 to 98 % (rescue was 57 to 79 % before) |
+| G7 | Rescue and recovery | won at least as often as the hunt that caused them, for a competent policy | not met: rescue 59 to 89 %, hunt 94 to 98 % (rescue was 25 to 79 % before) |
 | G8 | `:core:test`, `:app:testDebugUnitTest`, debug build | green | met: 581 and 217 tests, 0 failures, debug build |
 | G9 | Emulator: new flows, font scale, process death | seen | partial: opening chooser, process death, the siege's jobs, font 1.3, the Heartfire row. A Heartfire forging, the wall's preparation card and a siege night's cause lines were not seen |
 

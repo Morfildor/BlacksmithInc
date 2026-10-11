@@ -238,3 +238,50 @@ Transcript: seed 100021, charter licensed_bad_ideas, policy GREEDY_DIVER, openin
   day 15 | Warlord Krag and the Ashclaw horde broke through (Bertram Yewdale, Maud Kestrel, Onora Varley). Round 1: Maud: Double cut. Maud's Swift hits Warlord Krag for 7.
   day 15 | The forge has fallen. Emberfall's smith is no more.
 
+Transcript: seed 100036, charter towns_last_hope, policy SYNERGY, opening blood_price, balance 12. Ended on day 21: charter secured on day 20, chapter closed
+  day 1 | The guild begins with Paid in Blood. A weapon that drinks its wielder hits much harder. Healing them afterwards is also Guard. The axe takes health from whoever carries it. The forge starts with 10 less health.
+  day 1 | Runa Deepdale the Battlemage signed with the guild for 17 gold (Greedy).
+  day 1 | Tamsin Weaver the Duelist signed with the guild for 35 gold (Protective).
+  day 1 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished supply run in the Flooded Crypt. Round 1: Tamsin: Double cut. Tamsin hits Hollowbound shambler for 5. Hollowbound shambler is down.
+  day 1 | Scouts report what the Hollowbound prepare for day 5: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third. Marks pull your strikes onto it.
+  day 2 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Runa: Opening sigil. Runa pays 4 health to Bloodbound. Runa's Bloodbound hits Hollowbound shambler for 8.
+  day 3 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: a gravecaller behind the line. It will not come on day 5.
+  day 3 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished sabotage in the Flooded Crypt. Round 1: Runa: Opening sigil. Runa pays 4 health to Bloodbound. Runa's Bloodbound hits Gravecaller for 8.
+  day 4 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished hunt in the Flooded Crypt. Round 1: Runa: Opening sigil. Runa pays 4 health to Bloodbound. Runa's Bloodbound hits The Pale Knight for 8.
+  day 4 | Iron Axe returned to the forge after Othmar Yewdale died.
+  day 5 | carried: Mira the Guardian (second_wind) Stormcharged Starsteel Axe, epic, Varek the Warden (storm_touched) Undead Bane Moonsteel Staff, epic, Runa the Battlemage (greedy) Undead Bane Moonsteel Sword, epic, Tamsin the Duelist (protective) Iron Axe, uncommon, flawed | gold 47, forge health 98, Heartfire 0
+  day 5 | Emberfall repelled the Hollowbound procession! On the wall: Varek Fairweather, Runa Deepdale, Mira Stroud. Round 1: Varek: Mend. Varek hits The Pale Knight for 15. Varek's Undead Bane hits The Pale Knight for 8.
+  day 6 | Added Bone Music Box to the workshop.
+  day 6 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of escort at the Cinder Quarry and press on tomorrow. Round 1: Mira: Hold the line. Mira hits Embermaw whelp for 25. Embermaw whelp is down.
+  day 6 | Scouts report what the Ashclaw Raiders prepare for day 10: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 7 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished escort at the Cinder Quarry. Round 1: Tamsin: Double cut. Tamsin pays 4 health to Bloodbound. Tamsin's Bloodbound hits Cinder-knight for 8.
+  day 8 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Mira: Hold the line. Mira hits Ashclaw scout for 26. Ashclaw scout is down. Spectral helper joins the party (Bo
+  day 9 | Nobody went with the supplier. Until day 14 the supplier brings 1 fewer of every limited material each morning.
+  day 9 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 10.
+  day 9 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished sabotage on the Ashroad. Round 1: Tamsin: Double cut. Tamsin pays 4 health to Bloodbound. Tamsin's Bloodbound hits Ashclaw thief for 11.
+  day 10 | carried: Mira the Guardian (second_wind) Stormcharged Starsteel Axe, epic, Varek the Warden (storm_touched) Flaming Moonsteel Axe, rare, Runa the Battlemage (greedy) Undead Bane Moonsteel Sword, epic, Tamsin the Duelist (protective) Iron Axe, uncommon, flawed | gold 207, forge health 100, Heartfire 0
+  day 10 | The forge took 3 damage in the siege.
+  day 10 | Emberfall held against the Ashclaw horde, at a cost: the forge was hit and 1 of the defenders went down. On the wall: Quenna Arkwright, Runa Deepdale, Mira Stroud. Round 1: Mira: Hold the line. Mira hits Ashclaw warchief for 25. M
+  day 11 | Added Salvage Bell to the workshop.
+  day 11 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of escort at the Cinder Quarry and press on tomorrow. Round 1: Mira: Hold the line. Mira hits Embermaw whelp for 26. Embermaw whelp is down.
+  day 11 | Scouts report what the Embermaw Brood prepare for day 15: banked fires. They have fed the fires for days. Every defender starts with 2 Burn and every one of the brood with 2 Regeneration. A healer on the wall, or Verdant weapons. 
+  day 12 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished escort at the Cinder Quarry. Round 1: Cinder-knight: Ember guard. Mira's Guard breaks. Mira's Riposte hits Cinder-knight for 8. Cinder-knight is down.
+  day 13 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of sabotage at the Cinder Quarry and press on tomorrow. Round 1: Mira: Hold the line. Mira hits Embermaw whelp for 26. Embermaw whelp is down. Spectral helper joins the p
+  day 14 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: banked fires. It will not come on day 15.
+  day 14 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished sabotage at the Cinder Quarry. Round 1: Cinder-knight: Ember guard. Mira's Guard breaks. Mira's Riposte hits Cinder-knight for 7. Cinder-knight is down. Spectral helper joins the 
+  day 15 | The forge took 12 damage in the siege.
+  day 15 | The Embermaw Brood broke through (Quenna Arkwright, Runa Deepdale, Prisca Varley). Round 1: Quenna: Opening sigil. Quenna hits Embermaw drake for 19. Quenna's Giant Slayer hits Embermaw drake for 4.
+  day 16 | Mira Stroud, Tamsin Weaver, Varek Fairweather won the first day of escort on the Ashroad and press on tomorrow. Round 1: Mira: Hold the line. Mira hits Ashclaw thief for 26. Mira's Arc hits Ashclaw thief for 2. Ashclaw thief is do
+  day 16 | Scouts report what the Ashclaw Raiders prepare for day 20: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 17 | Mira Stroud, Tamsin Weaver, Varek Fairweather finished escort on the Ashroad. Round 1: Mira: Hold the line. Mira hits Ashclaw brute for 26. Mira's Arc hits Ashclaw thief for 2.
+  day 18 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Mira: Hold the line. Mira's Swift hits Ashclaw scout for 15.
+  day 19 | Nobody went with the supplier. Until day 24 the supplier brings 1 fewer of every limited material each morning.
+  day 19 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 20.
+  day 19 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished sabotage on the Ashroad. Round 1: Mira: Hold the line. Mira's Swift hits Ashclaw thief for 15.
+  day 20 | carried: Mira the Guardian (second_wind) Frostbound Moonsteel Axe, epic, Varek the Warden (storm_touched) Flaming Moonsteel Axe, rare, Runa the Battlemage (greedy) Frostbound Moonsteel Sword, epic, Tamsin the Duelist (protective) Stormcharged Starsteel Axe, epic | gold 68, forge health 98, Heartfire 0
+  day 20 | Emberfall repelled Warlord Krag and the Ashclaw horde! On the wall: Mira Stroud, Runa Deepdale, Eska Applegarth. Round 1: Warlord Krag: Reave. Mira's Guard breaks. Mira's Riposte hits Warlord Krag for 21.
+  day 20 | Frostbound Moonsteel Sword is a legend now. Runa Deepdale felled Warlord Krag with it on the wall of Emberfall.
+  day 20 | Warlord Krag broke on the wall and left Heartfire behind. The forge now holds 1 Heartfire.
+  day 20 | Charter secured. Warlord Krag broke on the walls of Emberfall on day 20, and the council paid 150 gold. The smith may close this chapter with honour, or go on.
+  day 21 | The smith closed the guild's chapter with its charter secured. The forge stands.
+

@@ -80,7 +80,8 @@ Branch `run-variety`, not pushed. Rules 6, save schema 7, content 6, balance 12.
   in `after_licensed_300.txt` and `after_honest_300.txt` but no plan-following bot.
 
 ## Setbacks and recovery
-- Rescue is won 70 to 89 % of the time by the competent policies (57 to 79 % before). Hunts are won 94 to 98 %.
+- Rescue is won 59 to 89 % of the time by the competent policies (Defence first 59, Adaptive 70, Synergy 89; it was
+  25 to 79 % before). Hunts are won 94 to 98 %.
   So a rescue is still harder than the hunt that caused it. Gate G7 is not met.
 - Days with nobody fit to send: Adaptive 0.41 a run, Synergy 0.05.
 - Captured and brought out, a run: Adaptive 0.68 and 0.39.
@@ -106,9 +107,15 @@ From `transcripts_raw.txt`. Reproduce with
 - Day 12: Onora the Warden is taken alive in a delve with her Moonsteel staff. Day 14: brought out.
 - Day 21: taken again on a recovery, out on day 24. Standing on day 31 with no charter and three breaches behind it.
 
-**3. Seed 100021, Licensed Bad Ideas, Greedy diver, Careful Books. Greed that does not pay.**
-- Day 1: the forge starts 15 health down. A member is taken alive in a delve on the first night.
-- The forge falls on day 15.
+**3. Seed 100036, Town's Last Hope, Synergy, Paid in Blood. A charter secured and a weapon made a legend by its deed.**
+- Day 1: the forge starts 10 health down and holds a Bloodbound Iron Axe. Day 3: the gravecaller is spoiled.
+- Day 5: the Duelist carries the flawed axe, the others Epic Starsteel and Moonsteel. Repelled outright. Gold 47.
+- Day 10: held at a cost, 3 damage. Day 15: nobody went with the supplier earlier, the Brood breaks through, 12 damage.
+- Day 19: knives for the back spoiled. Day 20: Warlord Krag repelled. Runa the Battlemage felled him with a
+  Frostbound Moonsteel Sword, which became Legendary by that deed. One Heartfire left behind. Charter secured.
+
+A fourth, for contrast (seed 100021, Licensed Bad Ideas, Greedy diver, Careful Books): a member taken in a delve on
+the first night, the forge fallen on day 15.
 
 ## Tests and builds as run on the final tree
 - `./gradlew :core:test`: 581 tests, 0 failures (561 before). New: `RunVarietyTest`, 20 tests.
@@ -137,6 +144,10 @@ Not seen on a device:
 
 ## Not done or only partly done
 - G7: rescue is easier than before but still harder than a hunt.
+- Epic is still routine. The transcripts show Epic Starsteel and Moonsteel weapons in members' hands by day 5. Only
+  the step to Legendary was gated. Quality itself was not rebalanced.
+- A legend returning from the Legend Board comes back at most Epic and without its Legendary status (the board's
+  entry does not record how it was earned). It can earn it again by deeds. Not simulated.
 - Charter rates: Synergy a little over the band, Licensed Bad Ideas under it.
 - Mission modifiers are three, and none changes an objective. Enemy rosters vary only by faction, modifier and preparation.
 - The supplier is left alone in most bot runs, so its "fewer stock" state is on about half the time. Whether that
