@@ -269,9 +269,9 @@ class RunVarietyUiTest {
         assertEquals("Forged with Heartfire", detail { it.copy(rarity = Rarity.LEGENDARY, legend = LegendOrigin.HEARTFIRE) }.legend)
         val earning = detail { it.copy(renown = 2) }
         assertNull(earning.legend)
-        assertEquals("Renown 2 of ${legend.renownForLegend}", earning.deeds)
+        assertEquals("2 of ${legend.renownForLegend}", earning.deeds)
         val earned = detail { it.copy(rarity = Rarity.LEGENDARY, legend = LegendOrigin.DEEDS, renown = legend.renownForLegend) }
         assertEquals("Legendary by its deeds", earned.legend)
-        assertEquals("Renown ${legend.renownForLegend} of ${legend.renownForLegend}", earned.deeds)
+        assertEquals("${legend.renownForLegend} of ${legend.renownForLegend}", earned.deeds)
     }
 }

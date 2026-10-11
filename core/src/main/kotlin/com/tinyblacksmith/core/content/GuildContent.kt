@@ -475,7 +475,7 @@ object GuildContent {
             materials = mapOf(LaunchContent.VERDANT_SAP to 2), militiaDelta = -2),
         OpeningDef("salvage", "Break It on Purpose", "Breakage", "A weapon that cracks rings the Bell: Guard for everybody, and a strike from whoever was waiting for it.",
             plan = "Loan the Brittle sword to whoever stands in front. When their Guard breaks it cracks, the Bell answers, the Rust Savant strikes. Hone it after every fight. A Runestone Shard makes a second answer.",
-            drawback = "The sword is Brittle and has to be mended after every fight. The forge starts 10 integrity lower.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS), traits = mapOf(W to "rust_savant", B to "rust_savant"),
+            drawback = "The sword is Brittle and has to be mended after every fight. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS), traits = mapOf(W to "rust_savant", B to "rust_savant"),
             relicId = CombatContent.SALVAGE_BELL, materials = mapOf(LaunchContent.RUNESTONE_SHARD to 1, LaunchContent.IRON to 2), weapon = StartWeaponDef(SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BRITTLE, 45), integrityDelta = -10),
         OpeningDef("stormwell", "The Stormwell", "Storm and Charge", "One member stores Charge with any weapon and lets it go as a burst. The Ledger turns each burst into Regeneration.",
             plan = "Forge a Stormglass weapon for the Storm-Touched member. With Binding Salt in an Advanced forge, healing them stores Charge too. Three Charge is one burst.",
@@ -491,7 +491,7 @@ object GuildContent {
             materials = mapOf(LaunchContent.SUN_ASH to 1, LaunchContent.GRAVE_DUST to 1), goldDelta = -30, militiaDelta = -3),
         OpeningDef("blood_price", "Paid in Blood", "Blood price", "A weapon that drinks its wielder hits much harder. Healing them afterwards is also Guard.",
             plan = "Loan the Bloodbound axe to somebody sturdy and keep a healer behind them. The Receipt turns that healing into Guard. Never send it out without the healer.",
-            drawback = "The axe takes health from whoever carries it. The forge starts 10 integrity lower.", charters = setOf(TOWNS_LAST_HOPE, HONEST_BUSINESS), traits = mapOf(G to "second_wind", R to "second_wind"), relicId = CombatContent.BLOOD_RECEIPT,
+            drawback = "The axe takes health from whoever carries it. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, HONEST_BUSINESS), traits = mapOf(G to "second_wind", R to "second_wind"), relicId = CombatContent.BLOOD_RECEIPT,
             weapon = StartWeaponDef(LaunchContent.AXE, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BLOODBOUND, 48), integrityDelta = -10),
         OpeningDef("plain_oath", "The Plain Oath", "Common steel", "Plain weapons, sworn to. Whoever carries a common or uncommon one strikes harder and raises Guard.",
             plan = "Forge iron and bronze for the party on purpose and keep the good metal for the shelf. A rare or finer weapon in a member's hands ends the oath for them.",
@@ -499,7 +499,7 @@ object GuildContent {
             relicId = CombatContent.BLUNT_OATH, materials = mapOf(LaunchContent.IRON to 3), goldDelta = -60),
         OpeningDef("careful_books", "Careful Books", "Take it and run", "A party that knows when to leave, and still gets paid for the walk.",
             plan = "Take contracts a step above your strength with a cautious plan. Pulling back still pays. Spend what it brings on the wall.",
-            drawback = "The forge starts 15 integrity lower.", charters = setOf(HONEST_BUSINESS, LICENSED_BAD_IDEAS), traits = mapOf(R to "cowardly", D to "cowardly"), relicId = CombatContent.COWARDS_MEDAL,
+            drawback = "The forge starts with 15 less health.", charters = setOf(HONEST_BUSINESS, LICENSED_BAD_IDEAS), traits = mapOf(R to "cowardly", D to "cowardly"), relicId = CombatContent.COWARDS_MEDAL,
             materials = mapOf(LaunchContent.BRONZE to 2), integrityDelta = -15),
     )
 

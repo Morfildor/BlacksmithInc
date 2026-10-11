@@ -172,7 +172,7 @@ internal fun legendLine(w: Weapon): String? = when (w.legend) {
 }
 
 /** What the deeds of [w] have earned, of the renown that makes a weapon Legendary ([needed]); null while it has none. */
-internal fun deedsLine(w: Weapon, needed: Int): String? = "Renown ${w.renown} of $needed".takeIf { w.renown > 0 }
+internal fun deedsLine(w: Weapon, needed: Int): String? = "${w.renown} of $needed".takeIf { w.renown > 0 }
 
 /**
  * Builds the sheet for [weaponId] from the save, and from [snapshot] (a visit record) when one is supplied. Null only

@@ -300,7 +300,7 @@ object SiegeFight {
             val mended = fight.events.count { it.kind == EventKind.HEALED && it.source == a.key && it.target != a.key }
             if (mended > 0) notes += "${a.name} was still standing at the end and mended the others $mended ${if (mended == 1) "time" else "times"}."
         }
-        notes += if (forgeDamage > 0) "The forge lost $forgeDamage integrity." else "The forge was not touched."
+        notes += if (forgeDamage > 0) "The forge lost $forgeDamage health." else "The forge was not touched."
         // The lead felled by a defender's own hand is that weapon's deed, and a warlord broken on the wall leaves Heartfire.
         val beatenOutright = fight?.outcome == FightOutcome.WON
         if (beatenOutright && (scenario.charter || warlord)) {
