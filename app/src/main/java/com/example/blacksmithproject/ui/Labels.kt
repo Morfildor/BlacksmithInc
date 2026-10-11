@@ -59,9 +59,9 @@ object Labels {
     }
 
     fun risk(r: Risk): String = when (r) {
-        Risk.SAFE -> "Safe. Fewer flaws, fewer exceptional results."
+        Risk.SAFE -> "Safe. A narrow quality roll and few flaws."
         Risk.BALANCED -> "Balanced. A chance of exceptional work or flaws."
-        Risk.RECKLESS -> "Reckless. More exceptional results and more flaws."
+        Risk.RECKLESS -> "Reckless. One more property and many more flaws."
     }
 
     fun technique(t: Technique): String = when (t) {

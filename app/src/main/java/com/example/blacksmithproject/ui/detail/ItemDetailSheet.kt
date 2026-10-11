@@ -57,6 +57,7 @@ import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.AffixId
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
+import com.tinyblacksmith.core.model.LegendOrigin
 import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.Weapon
 import com.tinyblacksmith.core.model.WeaponId
@@ -157,7 +158,21 @@ data class ItemDetail(
     val rules: BladeRulesUi? = null,
     /** Who holds it on loan, or who it could be lent to; null in a classic run and for a blade the guild cannot lend. */
     val loan: LoanUi? = null,
+    /** Why the weapon is Legendary ("Forged with Heartfire", "Legendary by its deeds"); null for any other weapon. */
+    val legend: String? = null,
+    /** "Renown 2 of 3": what its recorded deeds have earned toward being Legendary by them; null while it has none. */
+    val deeds: String? = null,
 )
+
+/** Why [w] is Legendary, in the sheet's words; null when it is not, or came to it before rules 6. */
+internal fun legendLine(w: Weapon): String? = when (w.legend) {
+    LegendOrigin.HEARTFIRE -> "Forged with Heartfire"
+    LegendOrigin.DEEDS -> "Legendary by its deeds"
+    null -> null
+}
+
+/** What the deeds of [w] have earned, of the renown that makes a weapon Legendary ([needed]); null while it has none. */
+internal fun deedsLine(w: Weapon, needed: Int): String? = "Renown ${w.renown} of $needed".takeIf { w.renown > 0 }
 
 /**
  * Builds the sheet for [weaponId] from the save, and from [snapshot] (a visit record) when one is supplied. Null only
@@ -199,6 +214,8 @@ fun GameEngine.itemDetail(state: GameState, weaponId: WeaponId, snapshot: Weapon
         stock = if (inShop) stock(state, weapon!!) else null,
         rules = weapon?.let { bladeRules(state, it) },
         loan = weapon?.let { loanUi(state, it) },
+        legend = weapon?.let(::legendLine),
+        deeds = weapon?.let { deedsLine(it, config.depth.legend.renownForLegend) },
     )
 }
 

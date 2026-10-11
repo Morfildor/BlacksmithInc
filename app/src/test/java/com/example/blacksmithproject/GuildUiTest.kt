@@ -36,7 +36,7 @@ class GuildUiTest {
     private val engine = GameEngine()
     private val cfg = engine.config.guild
 
-    private fun guildRun(seed: Long = 7): GameState = engine.newRun(LegacyProfile(), seed, charterId = GuildContent.TOWNS_LAST_HOPE)
+    private fun guildRun(seed: Long = 7): GameState = engine.guildRun(seed)
     private fun GameState.send(cmd: Command): GameState = (engine.handle(this, cmd) as CommandOutcome.Accepted).state
     private fun GameState.endDay(): GameState = send(Command.EndDay(CommandId("${runId.value}:day$day")))
     private fun GameState.siegeOn(day: Int): GameState = copy(town = town.copy(nextSiegeDay = day))

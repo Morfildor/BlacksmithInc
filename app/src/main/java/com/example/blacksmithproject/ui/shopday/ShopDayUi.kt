@@ -105,6 +105,8 @@ data class SiegeOutcomeUi(
     val outerLine: String? = null,
     val highlights: List<String> = emptyList(),
     val fight: FightResult? = null,
+    /** What decided the night, each line from the siege's own record (`SiegeReport.notes`). */
+    val notes: List<String> = emptyList(),
 ) {
     val outcome: String get() = when (verdict) {
         SiegeVerdict.HELD -> "The town held"
@@ -355,6 +357,7 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
                 day, card.kind == AftermathKind.SIEGE_HELD, card.foe, card.forgeDamage, state.town.integrity,
                 verdict = wall?.verdict, outerLine = wall?.outerLine?.takeIf { it.isNotEmpty() },
                 highlights = wall?.fight?.highlights.orEmpty().take(HIGHLIGHTS_SHOWN).map { it.text }, fight = wall?.fight,
+                notes = wall?.notes.orEmpty(),
             )
         }
     aftermath.forEachIndexed { i, card ->

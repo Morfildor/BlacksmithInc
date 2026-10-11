@@ -56,6 +56,9 @@ import com.tinyblacksmith.core.model.WoundKind
 /** A present member who is not kept for the wall yet, or is: the Reserve / Release toggle. */
 @Immutable data class ReserveUi(val heroId: HeroId, val name: String, val reserved: Boolean, val blocked: String?)
 
+/** What the besieger prepares for this siege: what it does, each answer the smith has besides spoiling it, and the job that spoils it. */
+@Immutable data class PrepUi(val name: String, val description: String, val answers: List<String>, val sabotage: String)
+
 @Immutable
 data class WallUi(
     val siegeDay: Int, val daysLeft: Int, val whenLine: String,
@@ -66,6 +69,8 @@ data class WallUi(
     /** In the order they would stand; fewer than [places] when the town has nobody else. */
     val defenders: List<DefenderUi>, val places: Int,
     val reserve: List<ReserveUi>, val missing: List<String>,
+    /** Rules 6: the preparation still standing, the one a party spoiled, and the bearer of a weapon of this forge who marches with them. */
+    val prep: PrepUi? = null, val spoiled: String? = null, val nemesis: String? = null,
 )
 
 /** The choice at the door of a deeper stage. [chosen] is what the smith has already sent word of today. */
@@ -83,6 +88,8 @@ data class OfferUi(
     val time: String, val missesSiege: String?, val fee: String,
     val stages: List<StageUi>, val prep: String, val failure: String, val expiry: String,
     val planned: Boolean,
+    /** Rules 6: "Opportunity" for a chance that comes with a siege, what is different about this posting, and what is lost if nobody takes it. */
+    val tag: String? = null, val modifier: String? = null, val stake: String? = null,
 )
 
 @Immutable
@@ -158,6 +165,8 @@ private fun GameEngine.rewardWords(state: GameState, r: Reward, factionId: Facti
     "strengthens the militia".takeIf { r.militia > 0 },
     "spoils their preparations for the siege".takeIf { r.sabotage },
     "a relic to choose".takeIf { r.relicOffer },
+    "${r.heartfire} Heartfire for the forge".takeIf { r.heartfire > 0 },
+    "the supplier's thanks: ${config.guild.supplierGratefulStock} more of every limited material each morning for ${config.guild.supplierDays} days".takeIf { r.supplier },
     r.weaponId?.let { state.weapons[it]?.name }?.let { "$it back at the forge" },
     r.captiveId?.let { state.heroes[it]?.fullName }?.let { "$it brought home" },
 ).joinToString(" · ").ifEmpty { "Nothing of its own" }
@@ -196,6 +205,9 @@ private fun GameEngine.offerUi(state: GameState, g: GuildRunState, offer: Missio
         stages = offer.stages.indices.map { stageUi(state, offer, it) }, prep = def.prep, failure = def.failure,
         expiry = if (offer.expiresDay == Int.MAX_VALUE) "Always on the board" else "On the board until day ${offer.expiresDay}",
         planned = g.planned?.offerId == offer.id,
+        tag = "Opportunity".takeIf { def.archetype == MissionArchetype.OPPORTUNITY },
+        modifier = content.guild!!.modifier(offer.modifierId)?.let { "${it.name}: ${it.description}" },
+        stake = "If nobody takes it, the supplier brings ${config.guild.supplierShakenStock} fewer of every limited material each morning for ${config.guild.supplierDays} days.".takeIf { offer.lapse == GuildContent.LAPSE_SUPPLIER },
     )
 }
 
@@ -234,7 +246,7 @@ private fun GameEngine.wallUi(state: GameState, g: GuildRunState): WallUi {
         field = enemies(f.plan),
         notes = listOfNotNull(
             "The charter warlord leads this one.".takeIf { f.charter },
-            "Their preparations are spoiled.".takeIf { f.sabotaged },
+            "Their preparations are spoiled.".takeIf { f.sabotaged && f.spoiled == null },
             plannedAway?.let { if (left <= 0) "The party you planned leaves today and is not on the wall tonight." else "The party you planned is away on the siege night of day ${town.nextSiegeDay}." },
         ),
         watch = f.watch, forgeHealth = town.integrity,
@@ -252,6 +264,9 @@ private fun GameEngine.wallUi(state: GameState, g: GuildRunState): WallUi {
             })
         },
         missing = f.missing.map { (h, why) -> "${h.fullName}: $why" },
+        prep = f.prep?.let { PrepUi(it.name, it.description, it.counters, it.sabotageBrief) },
+        spoiled = f.spoiled?.let { "Your party spoiled their preparation: ${it.name}. It will not come." },
+        nemesis = f.nemesis?.let { n -> "${n.name} marches with them" + (state.weapons[n.weaponId]?.let { ", carrying ${it.name}, a weapon of this forge." } ?: ".") },
     )
 }
 

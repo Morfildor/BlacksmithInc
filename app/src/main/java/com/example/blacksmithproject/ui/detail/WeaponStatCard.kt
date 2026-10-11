@@ -132,6 +132,9 @@ fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxSc
             Text("${Labels.rarity(detail.rarity)} · ${detail.kind}", style = MaterialTheme.typography.bodyMedium, color = CreamMuted)
             detail.title?.let { Text("\"$it\"", style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic) }
             if (detail.signature) Text("Signature work", style = MaterialTheme.typography.labelMedium, color = Gold)
+            // Why it is Legendary, and what its deeds have earned so far: said under the name, where the rarity is.
+            detail.legend?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = rarityColor(Rarity.LEGENDARY), modifier = Modifier.testTag("card_legend")) }
+            detail.deeds?.let { Text("Deeds: $it", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.testTag("card_deeds")) }
         }
     }
     Column(Modifier.graphicsLayer { alpha = detailAlpha() }) { WeaponStatDetails(detail) }
