@@ -43,7 +43,9 @@ class RarityShapeTest {
     fun meanQualityRisesWithCoreTierAndRisk() {
         val byTier = rows.filter { it.risk == Risk.BALANCED }.groupBy { it.coreTier }.mapValues { (_, r) -> r.map { it.meanQuality }.average() }
         for (tier in 1..5) assertTrue(byTier.getValue(tier) < byTier.getValue(tier + 1), "tier $tier ${byTier[tier]} vs ${byTier[tier + 1]}")
-        val byRisk = rows.groupBy { it.risk }.mapValues { (_, r) -> r.sumOf { it.rarity.getValue(Rarity.LEGENDARY) } / r.size }
+        // Rules 6: no temper forges a Legendary weapon from quality alone, and the bolder temper still reaches Epic more often.
+        assertTrue(rows.all { it.rarity.getValue(Rarity.LEGENDARY) == 0.0 })
+        val byRisk = rows.groupBy { it.risk }.mapValues { (_, r) -> r.sumOf { it.rarity.getValue(Rarity.EPIC) } / r.size }
         assertTrue(byRisk.getValue(Risk.SAFE) < byRisk.getValue(Risk.BALANCED) && byRisk.getValue(Risk.BALANCED) < byRisk.getValue(Risk.RECKLESS), "$byRisk")
     }
 }

@@ -50,7 +50,7 @@ class GuildScenariosTest {
     @Test
     fun dayOneHasOneSwordToLoanAndTakeBack() {
         val s = loaded("guild_day_one")
-        assertTrue(s.day == 1 && s.pendingRelicOffer.isEmpty() && s.relics.isEmpty())
+        assertTrue(s.day == 1 && s.pendingRelicOffer.isEmpty() && s.guild!!.openingOffer.isEmpty() && s.relics.map { it.id } == listOf(engine.content.guild!!.opening(s.guild!!.openingId)!!.relicId))
         assertEquals(listOf(LaunchContent.GUARDIAN, LaunchContent.WARDEN), s.guild!!.members.map { s.classOf(it.heroId) })
         val sword = s.storedWeapons().single()
         assertEquals(LaunchContent.SWORD, sword.familyId)

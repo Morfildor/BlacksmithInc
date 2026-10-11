@@ -226,7 +226,7 @@ data class GuildCatalog(
         if (charters.isEmpty()) problems += "No charter"
         dup("opening", openings.map { it.id }); dup("preparation", preparations.map { it.id }); dup("modifier", modifiers.map { it.id })
         for (o in openings) {
-            if (content.relic(o.relicId) == null) problems += "Opening ${o.id} names unknown relic ${o.relicId}"
+            if (content.relics.isNotEmpty() && content.relic(o.relicId) == null) problems += "Opening ${o.id} names unknown relic ${o.relicId}"
             o.traits.forEach { (c, t) -> if (c !in content.classById || t !in traitById) problems += "Opening ${o.id} names unknown class or trait" }
             o.materials.keys.forEach { if (it !in content.materialById) problems += "Opening ${o.id} gives unknown material ${it.value}" }
             o.charters.forEach { if (it !in charterById) problems += "Opening ${o.id} names unknown charter $it" }

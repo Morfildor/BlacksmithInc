@@ -31,7 +31,7 @@ import kotlin.test.assertTrue
 /** What can be lost and won back, and what a run earns for good (plan C02, C05, C06, D01 to D03; spec 10.4 to 10.7, 11, 12). */
 class GuildStoriesTest {
     private val base = BalanceConfig.DEFAULT
-    private val engine = TestSupport.engine
+    private val engine = TestSupport.engineWithoutOpenings
     private val content = engine.content
     private val cat = content.guild!!
     private val cfg = base.guild
@@ -280,7 +280,7 @@ class GuildStoriesTest {
 
     // ---- the charter ----
 
-    private fun easySieges(percent: Int) = GameEngine(config = base.copy(guild = cfg.copy(siegePercentBase = percent, siegePercentPerDay = 0.0, siegePercentPerPressure = 0.0)))
+    private fun easySieges(percent: Int) = GameEngine(engine.content, config = base.copy(guild = cfg.copy(siegePercentBase = percent, siegePercentPerDay = 0.0, siegePercentPerPressure = 0.0)))
 
     private fun charterEve(e: GameEngine): GameState {
         val s = run(e = e).mighty()

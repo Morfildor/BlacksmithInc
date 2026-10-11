@@ -31,7 +31,8 @@ object GuildScenarios {
     private val guildContent = content.guild!!
     const val CHARTER = GuildContent.TOWNS_LAST_HOPE
 
-    fun fresh(seed: Long): GameState = engine.newRun(LegacyProfile(), seed, charterId = CHARTER)
+    /** A new guild run with the first of its offered openings taken. */
+    fun fresh(seed: Long): GameState = with(TestSupport) { engine.guildRun(LegacyProfile(), seed, CHARTER) }
 
     /** The guild run of [seed] as [policy] plays it, up to the morning of [day] with nothing done on it yet. */
     fun morning(seed: Long, policy: GuildPolicy, day: Int): GameState {
@@ -66,7 +67,7 @@ object GuildScenarios {
     const val DAY_ONE_SEED = 3L
 
     /** Day 1: the opening relics declined, one quick iron sword forged by a real command and left in storage. */
-    private fun dayOne(): GameState = fresh(DAY_ONE_SEED).run(Command.DeclineRelicOffer).run(TestSupport.quickSword(Risk.SAFE))
+    private fun dayOne(): GameState = fresh(DAY_ONE_SEED).run(TestSupport.quickSword(Risk.SAFE))
 
     const val CHECKPOINT_SEED = 1L
     const val CHECKPOINT_DAY = 10
@@ -115,7 +116,7 @@ object GuildScenarios {
      * and loaned by real commands; the gold, the materials and the energy for that, the relic and the Hunt are set by hand.
      */
     private fun stormwell(): GameState {
-        var s = fresh(STORMWELL_SEED).run(Command.DeclineRelicOffer)
+        var s = fresh(STORMWELL_SEED)
         val mage = s.guild!!.candidates.first { s.hero(it.heroId).classId == LaunchContent.BATTLEMAGE }
         s = s.copy(
             gold = s.gold + 300, energy = s.energy + 2 * config.advancedForgeEnergy,

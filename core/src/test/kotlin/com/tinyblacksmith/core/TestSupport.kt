@@ -12,6 +12,16 @@ object TestSupport {
     /** The engine default (launch content, default balance). Slice-specific tests construct their own engine. */
     val engine = GameEngine()
 
+    /**
+     * The launch catalog without opening packages: a guild run founded here signs its charter's two classes at once and
+     * is offered the opening relic, as rules 5 did. For tests of rules the opening has no part in.
+     */
+    val engineWithoutOpenings = GameEngine(LaunchContent.catalog.copy(guild = LaunchContent.catalog.guild!!.copy(openings = emptyList())))
+
+    /** A guild run with the first offered opening taken. */
+    fun GameEngine.guildRun(legacy: LegacyProfile, seed: Long, charterId: String, openingId: String? = null): GameState =
+        newRun(legacy, seed, charterId = charterId).let { s -> handle(s, Command.ChooseOpening(openingId ?: s.guild!!.openingOffer.first().defId)).stateOrThrow() }
+
     fun quickSword(risk: Risk = Risk.BALANCED, core: MaterialId = LaunchContent.IRON, augment: MaterialId = LaunchContent.EMBER_RESIN) =
         Command.Forge(ForgeMode.QUICK, LaunchContent.SWORD, core, augment, null, risk)
 

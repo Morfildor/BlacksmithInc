@@ -30,12 +30,12 @@ class ForgeAndEnergyTest {
                 assertTrue(w.quality in 1..100, "quality ${w.quality}")
                 assertTrue(w.power >= 1)
                 assertEquals(WeaponLocation.Storage, w.location)
-                assertEquals(w.rarity, com.tinyblacksmith.core.crafting.Forge.rarityFor(w.quality, engine.config))
+                assertEquals(w.rarity, com.tinyblacksmith.core.crafting.Forge.forgedRarity(w.quality, engine.config))
                 if (w.rarity == Rarity.LEGENDARY) legendary++
                 s = out.state
             }
         }
-        assertTrue(legendary > 0, "silver+stormglass reckless forging should sometimes be legendary")
+        assertEquals(0, legendary, "quality alone never makes a Legendary weapon (rules 6)")
     }
 
     @Test
@@ -53,7 +53,7 @@ class ForgeAndEnergyTest {
         }
         val n = 400.0
         fun near(actual: Int, expected: Double) = assertTrue(kotlin.math.abs(actual / n - expected) < 0.05, "observed ${actual / n} expected $expected")
-        near(counts.getValue(Risk.SAFE)[0], 0.02); near(counts.getValue(Risk.RECKLESS)[0], 0.20)
+        near(counts.getValue(Risk.SAFE)[0], 0.02); near(counts.getValue(Risk.RECKLESS)[0], engine.config.risk.getValue(Risk.RECKLESS).defectChance)
         near(counts.getValue(Risk.SAFE)[1], 0.06); near(counts.getValue(Risk.RECKLESS)[1], 0.30)
     }
 
