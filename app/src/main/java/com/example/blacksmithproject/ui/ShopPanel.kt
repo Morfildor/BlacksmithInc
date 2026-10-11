@@ -227,7 +227,7 @@ internal fun WantRow(want: WantUi, onOpenHero: (HeroId) -> Unit, onForge: (Weapo
             want.line, style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.fillMaxWidth().clickable(onClickLabel = "Open details", role = Role.Button) { onOpenHero(want.heroId) }.heightIn(min = 48.dp).padding(horizontal = Space.md, vertical = Space.sm),
         )
-        if (want.answered) Text("✓ A blade on the shelf answers this", style = MaterialTheme.typography.labelLarge, color = BuffGreen, modifier = Modifier.padding(start = Space.md, end = Space.md, bottom = Space.sm).testTag("want_answered_${want.heroId.value}"))
+        if (want.answered) Text("✓ A suitable weapon is on the shelf", style = MaterialTheme.typography.labelLarge, color = BuffGreen, modifier = Modifier.padding(start = Space.md, end = Space.md, bottom = Space.sm).testTag("want_answered_${want.heroId.value}"))
         else SecondaryActionButton("Forge this", { onForge(want.familyId) }, Modifier.padding(start = Space.md, end = Space.md, bottom = Space.sm).testTag("forge_want_${want.heroId.value}"))
     }
 }

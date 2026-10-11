@@ -172,7 +172,7 @@ class GameplayDepthTest {
         val s0 = fresh()
         val hero = s0.aliveHeroes().first()
         val s = s0.copy(heroes = s0.heroes + (hero.id to hero.copy(ambition = Ambition.FORTUNE, gold = config.ambitionFortuneGold)))
-        assertTrue(Heroes.describeAmbition(s.hero(hero.id), null, config)!!.contains("${config.ambitionFortuneGold}/${config.ambitionFortuneGold}"))
+        assertTrue(Heroes.describeAmbition(s.hero(hero.id), null, config)!!.contains("Currently ${config.ambitionFortuneGold}"))
         val after = s.endDay()
         val news = after.events.filter { it.type == EventType.AMBITION_FULFILLED && hero.id.value in it.subjectIds }
         assertEquals(1, news.size)

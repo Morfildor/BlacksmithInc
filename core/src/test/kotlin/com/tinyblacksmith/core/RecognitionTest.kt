@@ -90,7 +90,7 @@ class RecognitionTest {
         }
         // Mentors' blades need a retirement and are met in longer runs; every other cue turns up in these thirty towns.
         assertEquals(RecognitionCue.entries.toSet() - RecognitionCue.MENTORS_BLADE, seen - RecognitionCue.MENTORS_BLADE)
-        assertTrue(lines().any { (_, v) -> v.recognition!!.cue == RecognitionCue.OF_THE_LINE && "of the line of Mira Vance, who held the walls of Emberfall" in Lines.recognition(v, ShopDay.script(days.first().res, days.first().post, content, config), days.first().post).orEmpty() })
+        assertTrue(lines().any { (_, v) -> v.recognition!!.cue == RecognitionCue.OF_THE_LINE && "is descended from Mira Vance, who held the walls of Emberfall" in Lines.recognition(v, ShopDay.script(days.first().res, days.first().post, content, config), days.first().post).orEmpty() })
     }
 
     /** The retired mentor's blade, which thirty short towns may never show: built by hand. */

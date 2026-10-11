@@ -32,12 +32,12 @@ object Relics {
         val used = ctx.relicUses[r.id] == ctx.day
         val cfg = ctx.config.depth
         when (def.effect) {
-            RelicEffect.SALVAGE_AUGMENT -> View(r.id, def.name, def.description, if (used) "Used today." else "Ready: the next fine blade you melt down returns its augment.", !used)
-            RelicEffect.BELLOWS -> View(r.id, def.name, def.description, if (used) "Used today." else "Ready: one forge today can take ${cfg.bellowsDebt} energy from tomorrow for an extra property.", !used)
+            RelicEffect.SALVAGE_AUGMENT -> View(r.id, def.name, def.description, if (used) "Used today." else "Ready. Salvage a fine weapon to recover its augment.", !used)
+            RelicEffect.BELLOWS -> View(r.id, def.name, def.description, if (used) "Used today." else "Ready. One forge can borrow ${cfg.bellowsDebt} energy from tomorrow to add a property.", !used)
             RelicEffect.PREMIUM_SEAL -> View(r.id, def.name, def.description, "Seals: ${r.progress} of ${cfg.sealsPerReward}." + (if (used) " Today's seal is earned." else ""), !used)
             RelicEffect.FAMILY_STREAK -> View(r.id, def.name, def.description,
-                if (r.families.isEmpty()) "No streak yet: the next blade starts one."
-                else "Streak: ${r.families.joinToString(", ") { ctx.content.family(it).name }}. A family not in it is forged +${minOf(cfg.ledgerMaxBonus, r.families.size * cfg.ledgerQualityPerStep)} quality better.", null)
+                if (r.families.isEmpty()) "No streak yet. Your next weapon starts it."
+                else "In the streak. ${r.families.joinToString(", ") { ctx.content.family(it).name }}. Forge a different type for +${minOf(cfg.ledgerMaxBonus, r.families.size * cfg.ledgerQualityPerStep)} quality.", null)
             RelicEffect.COMBAT -> View(r.id, def.name, def.description, "A rule of your party in every fight.", null)
         }
     }
@@ -53,7 +53,7 @@ object Relics {
         val fought = ctx.town.siegesSurvived + ctx.town.siegesLost
         val key = (listOf(OFFER_START) + ctx.config.depth.relicOfferSieges.filter { it <= fought }.map { "siege$it" }).firstOrNull { it !in ctx.relicOffersMade } ?: return
         ctx.relicOffersMade += key
-        offer(ctx, if (key == OFFER_START) "A workshop is known by its tools: the smith may take one relic to start with." else "After the siege, the smith may take a relic for the workshop.")
+        offer(ctx, if (key == OFFER_START) "Choose one relic for your new workshop." else "After the siege, choose a relic for the workshop.")
     }
 
     /** Offers up to `relicOfferSize` relics the workshop does not hold. False when it holds them all or an offer is already waiting. */
@@ -80,7 +80,7 @@ object Relics {
         val replaced = cmd.replaceId?.let { ctx.content.relic(it) }
         ctx.relics = ctx.relics.filter { it.id != cmd.replaceId } + ActiveRelic(def.id)
         ctx.pendingRelicOffer = emptyList()
-        ctx.emit(EventType.RELIC_CHOSEN, 4, "The workshop gained a relic: ${def.name}." + (replaced?.let { " ${it.name} was put away." } ?: ""), data = mapOf("relic" to def.id) + (replaced?.let { mapOf("replaced" to it.id) } ?: emptyMap()))
+        ctx.emit(EventType.RELIC_CHOSEN, 4, "Added ${def.name} to the workshop." + (replaced?.let { " ${it.name} was put away." } ?: ""), data = mapOf("relic" to def.id) + (replaced?.let { mapOf("replaced" to it.id) } ?: emptyMap()))
         return null
     }
 
@@ -151,6 +151,6 @@ object Relics {
         val reward = ctx.content.materials.filter { it.dailySupplierStock != null && it.category != MaterialCategory.CATALYST && it.tier >= cfg.sealMaterialTier }
             .minWithOrNull(compareBy({ ctx.materials[it.id] ?: 0 }, { it.id.value })) ?: return
         ctx.materials[reward.id] = (ctx.materials[reward.id] ?: 0) + 1
-        ctx.emit(EventType.RELIC_TRIGGERED, 3, "Three collector's seals brought the forge 1 ${reward.name}.", listOf(weapon.id.value), mapOf("relic" to seal.id, "material" to reward.id.value))
+        ctx.emit(EventType.RELIC_TRIGGERED, 3, "Collector's seals earned one ${reward.name} for the forge.", listOf(weapon.id.value), mapOf("relic" to seal.id, "material" to reward.id.value))
     }
 }

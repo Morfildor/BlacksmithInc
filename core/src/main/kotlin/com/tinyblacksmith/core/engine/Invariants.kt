@@ -87,7 +87,7 @@ object Invariants {
         val g = state.guild
         val loans = state.weapons.values.filter { it.isLoaned }
         if (g == null) {
-            if (loans.isNotEmpty()) problems += "A run without a guild has ${loans.size} blades on loan"
+            if (loans.isNotEmpty()) problems += "A run without a guild has ${loans.size} weapons on loan"
             return problems
         }
         val cfg = config.guild

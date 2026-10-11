@@ -213,14 +213,14 @@ private fun aftermathLabel(kind: AftermathKind): String = when (kind) {
     AftermathKind.DEATH -> "A death"
     AftermathKind.ELITE_SLAIN -> "An elite slain"
     AftermathKind.AMBITION_FULFILLED -> "An ambition fulfilled"
-    AftermathKind.TITLE_EARNED -> "A blade earns a name"
-    AftermathKind.INHERITED -> "A blade passed on"
+    AftermathKind.TITLE_EARNED -> "A weapon earns a name"
+    AftermathKind.INHERITED -> "An inherited weapon"
     AftermathKind.RESOLD -> "Sold on by a merchant"
-    AftermathKind.WIN_NEW_BLADE -> "First fight with a new blade"
+    AftermathKind.WIN_NEW_BLADE -> "First fight with a new weapon"
     AftermathKind.WIN -> "A fight won"
     AftermathKind.GUILD_LESSON -> "At the guild hall"
     AftermathKind.SCARCE_LOOT -> "Brought back"
-    AftermathKind.BLADE_GONE -> "A blade lost"
+    AftermathKind.BLADE_GONE -> "A weapon lost"
     AftermathKind.LOSS -> "Driven back"
     AftermathKind.FIELD_SUMMARY -> "Out in the field"
 }
@@ -253,7 +253,7 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
             else sale.listedPrice?.let { listed ->
                 add(ReceiptRow("Listed price", "$listed gold"))
                 if (v.kind == VisitKind.COLLECTOR && sale.cashPaid > listed) add(ReceiptRow("Collector's premium", "+${sale.cashPaid - listed} gold"))
-                if (v.kind == VisitKind.COLLECTOR && sale.cashPaid < listed) add(ReceiptRow("Collector's offer, under the tag", "−${listed - sale.cashPaid} gold"))
+                if (v.kind == VisitKind.COLLECTOR && sale.cashPaid < listed) add(ReceiptRow("Collector's discount", "−${listed - sale.cashPaid} gold"))
             }
             if (sale.tradeInWeaponId != null || sale.tradeInCredit != 0) {
                 val old = v.customer?.equipped?.takeIf { it.weaponId == sale.tradeInWeaponId }?.name
@@ -261,9 +261,9 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
             }
             if (sale.saleBonus != 0) add(ReceiptRow("Town's blessing", "+${sale.saleBonus} gold"))
             // Part of the price, not on top of it: the guild's share reaches the till with the customer's.
-            if (sale.stipend != 0) add(ReceiptRow("Of that, paid by their guild", "${sale.stipend} gold"))
+            if (sale.stipend != 0) add(ReceiptRow("Paid by the guild", "${sale.stipend} gold"))
             // What the shop's gold rose by, as the Sale record defines it.
-            add(ReceiptRow("Coin to the till", "${sale.cashPaid + sale.saleBonus + sale.stipend} gold", total = true))
+            add(ReceiptRow("Total received", "${sale.cashPaid + sale.saleBonus + sale.stipend} gold", total = true))
         }
     }
 
@@ -278,7 +278,7 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
             seq = v.seq, kind = v.kind, face = face(v),
             detail = Lines.customer(v, content).removePrefix(name).removePrefix(", ").removePrefix(". "),
             sold = sold,
-            banner = when { !sold -> "No sale"; v.kind == VisitKind.COMMISSION -> "Request paid"; v.kind == VisitKind.COLLECTOR -> "Sold to a collector"; else -> "Sold" },
+            banner = when { !sold -> "No sale"; v.kind == VisitKind.COMMISSION -> "Commission collected"; v.kind == VisitKind.COLLECTOR -> "Sold to a collector"; else -> "Sold" },
             coin = coin(v), earnedBefore = earnedBefore, earnedAfter = earnedBefore + coin(v),
             recognition = Lines.recognition(v, script, state), outcome = outcome,
             decision = Lines.decision(v, script, content).takeIf { it != "$outcome." },
@@ -301,8 +301,8 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
                     m.outcome == MissionOutcome.RETREATED -> "Pulled back"
                     m.outcome == MissionOutcome.LOST -> "Beaten"
                     !m.continues -> "Finished"
-                    checkpoint -> "Won the first stage; the smith decides in the morning"
-                    else -> "Won the first day; the party presses on tomorrow"
+                    checkpoint -> "Won the first stage. The smith decides in the morning"
+                    else -> "Won the first day. The party presses on tomorrow"
                 },
                 result = m.outcome, continues = m.continues,
                 highlights = m.fight?.highlights.orEmpty().take(HIGHLIGHTS_SHOWN).map { it.text }, lines = m.lines, fight = m.fight,

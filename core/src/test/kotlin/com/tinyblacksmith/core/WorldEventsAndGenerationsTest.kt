@@ -182,7 +182,7 @@ class WorldEventsAndGenerationsTest {
         val subject = JournalRules.subjectName(engine.content, key)
         assertTrue(record.text.contains(subject), record.text)
         val clue = after.events.single { it.type == EventType.DISCOVERY && it.data["key"] == key }
-        assertTrue(clue.text.contains("something more") && !clue.text.contains('%'), clue.text)
+        assertTrue(clue.text.contains("hidden here") && !clue.text.contains('%'), clue.text)
         val hint = JournalRules.hint(after.legacy.journal, engine.content, key)
         assertTrue(hint != "Unknown" && !hint.contains('%') && !hint.contains(def.name), hint)
 

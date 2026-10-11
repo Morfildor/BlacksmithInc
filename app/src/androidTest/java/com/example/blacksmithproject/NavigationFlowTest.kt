@@ -154,7 +154,7 @@ class NavigationFlowTest {
         compose.waitUntil(15_000) { (vm.ui.value as UiState.Playing).let { it.sheet == null && !it.busy } }
         compose.onNodeWithTag("storage_list").assertIsDisplayed()
         compose.onNode(hasTestTag("stock_t2") and hasAnyAncestor(hasTestTag("storage_list"))).assertDoesNotExist()   // it is on the Shop's shelf now
-        compose.onNodeWithText("Blade 2 is on the shelf", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Listed Blade 2 for", substring = true).assertIsDisplayed()
         compose.onNodeWithText("Weakest").assertIsSelected()
 
         // Melted down from its sheet: the same, on purpose.
@@ -163,7 +163,7 @@ class NavigationFlowTest {
         compose.waitUntil(15_000) { (vm.ui.value as UiState.Playing).let { it.sheet == null && !it.busy } }
         compose.onNodeWithTag("storage_list").assertIsDisplayed()
         compose.onNodeWithTag("stock_t1").assertDoesNotExist()
-        compose.onNodeWithText("Blade 1 was melted down", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Salvaged Blade 1.", substring = true).assertIsDisplayed()
 
         // Closing Storage closes the whole flow.
         back()

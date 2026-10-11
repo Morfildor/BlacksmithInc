@@ -16,11 +16,11 @@ import com.tinyblacksmith.core.model.MaterialId
 
 /** The places of a recipe on the workbench. The last two exist only in an Advanced forge. */
 enum class RecipeSlot(val label: String, val empty: String, val choose: String, val hint: String) {
-    WEAPON("Weapon", "Choose", "Choose weapon", "Choose the shape of your next weapon."),
-    METAL("Metal", "Choose", "Choose metal", "The metal is the body of the blade."),
-    AUGMENT("Augment", "Choose", "Choose augment", "An augment adds an element."),
-    CATALYST("Catalyst", "None", "Choose catalyst", "Optional. A catalyst is used up by the forge."),
-    TECHNIQUE("Technique", "Plain", "Choose technique", "Optional. How the blade is finished."),
+    WEAPON("Weapon", "Choose", "Choose weapon", "What are you making?"),
+    METAL("Metal", "Choose", "Choose metal", "Choose the metal you'll forge with."),
+    AUGMENT("Augment", "Choose", "Choose augment", "Add fire, frost or another element."),
+    CATALYST("Catalyst", "None", "Choose catalyst", "Optional. Improves the result and is used up when you forge."),
+    TECHNIQUE("Technique", "Plain", "Choose technique", "Optional. Changes how you finish the weapon."),
 }
 
 /** One place of the recipe: [value] is the chosen thing's name, null while nothing is chosen. */
@@ -63,8 +63,8 @@ data class ForgeWorkbenchUi(
 
 fun KnowledgeState.stage(): String = when (this) {
     KnowledgeState.UNKNOWN -> "Untried"
-    KnowledgeState.OBSERVED -> "Observed"
-    KnowledgeState.UNDERSTOOD -> "Understood"
+    KnowledgeState.OBSERVED -> "Studying"
+    KnowledgeState.UNDERSTOOD -> "Learned"
     KnowledgeState.SIGNATURE_DISCOVERED -> "Signature discovered"
 }
 
@@ -107,7 +107,7 @@ fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: Lis
         next == RecipeSlot.AUGMENT -> ForgeActionUi(label, false, "Choose an augment")
         missing != null -> ForgeActionUi(label, false, "No ${missing.name} left", restock = missing.id)
         !canAfford -> ForgeActionUi(label, false, "Not enough energy left today", endDay = true)
-        overwork > 0 -> ForgeActionUi(label, true, "Overwork: $overwork less energy tomorrow")
+        overwork > 0 -> ForgeActionUi(label, true, "You'll have $overwork less energy tomorrow")
         else -> ForgeActionUi(label, true, null)
     }
 
@@ -183,12 +183,12 @@ internal fun com.tinyblacksmith.core.content.Element.word() = name.lowercase().r
 fun GameEngine.forgeLearning(before: JournalModel, after: JournalModel, forged: Command.Forge): ForgeLearningUi {
     val pairings = listOf(JournalModel.coreAugmentKey(forged.coreId, forged.augmentId), JournalModel.augmentFamilyKey(forged.augmentId, forged.familyId))
     val learned = pairings.filter { after.state(it).ordinal > before.state(it).ordinal }.map { key ->
-        LearnedUi(if (after.state(key) == KnowledgeState.OBSERVED) "New observation" else "Pairing understood", "${Journal.subjectName(content, key)} · ${Journal.hint(after, content, key)}")
+        LearnedUi(if (after.state(key) == KnowledgeState.OBSERVED) "First notes" else "Pairing learned", "${Journal.subjectName(content, key)} · ${Journal.hint(after, content, key)}")
     }
     val recipes = after.interactions.keys.filter { it.startsWith("sig:") }.sorted().mapNotNull { key ->
         when {
             after.state(key) == KnowledgeState.SIGNATURE_DISCOVERED && before.state(key) != KnowledgeState.SIGNATURE_DISCOVERED -> LearnedUi("Signature discovered", Journal.hint(after, content, key))
-            after.state(key) != KnowledgeState.SIGNATURE_DISCOVERED && (after.state(key) != before.state(key) || after.signatureClues[key] != before.signatureClues[key]) -> LearnedUi("Recipe clue earned", "${Journal.subjectName(content, key)} · ${Journal.hint(after, content, key)}")
+            after.state(key) != KnowledgeState.SIGNATURE_DISCOVERED && (after.state(key) != before.state(key) || after.signatureClues[key] != before.signatureClues[key]) -> LearnedUi("Recipe clue found", "${Journal.subjectName(content, key)} · ${Journal.hint(after, content, key)}")
             else -> null
         }
     }
@@ -198,8 +198,8 @@ fun GameEngine.forgeLearning(before: JournalModel, after: JournalModel, forged: 
         changes,
         when {
             changes.isNotEmpty() -> null
-            studying -> "Another experiment recorded. Keep testing to understand this pairing."
-            else -> "No new discovery. Your notebook already knows these pairings."
+            studying -> "Experiment recorded. Try this pairing again to learn more."
+            else -> "No new findings. You've already learned these pairings."
         },
     )
 }

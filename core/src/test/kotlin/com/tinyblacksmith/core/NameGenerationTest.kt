@@ -107,7 +107,7 @@ class NameGenerationTest {
             val legacy = LegacyProfile(lineages = listOf(first, later), eras = listOf(EraSummary(1, 12, 8, "The forge fell."), EraSummary(2, 9, 6, "The forge fell.")))
             val s0 = engine.newRun(legacy, 5)
             assertEquals(later.id, s0.heroes.values.single { it.lineageId != null }.lineageId, "the run opens with a descendant of the latest lineage")
-            assertTrue(s0.events.any { it.type == EventType.HERO_ARRIVED && "descendant of $second" in it.text })
+            assertTrue(s0.events.any { it.type == EventType.HERO_ARRIVED && "Their ancestor $second" in it.text })
             assertTrue(eligible(s0), "$second: the older lineage of the same surname is still unclaimed")
             val s1 = fire(s0)
             val kin = s1.heroes.values.filter { it.lineageId != null }

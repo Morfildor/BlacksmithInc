@@ -180,7 +180,7 @@ class GuildUiTest {
         assertEquals(CheckpointChoice.PUSH, pushed.party!!.checkpoint!!.chosen)
         assertTrue(pushed.endDay.none { "unless you send word" in it })
         // Yesterday's contract is the stage that was won.
-        assertEquals("Won; the party is still out", ui.yesterday!!.outcome)
+        assertEquals("Won. The party is still out", ui.yesterday!!.outcome)
         assertEquals(s.guild!!.lastMission!!.lines, ui.yesterday!!.lines)
     }
 
@@ -201,7 +201,7 @@ class GuildUiTest {
 
         // Gold short: the reason names both numbers, and the engine refuses for the same reason.
         val poor = fresh.copy(gold = c.fee - 1)
-        assertEquals("Needs ${c.fee} gold; you have ${c.fee - 1}.", engine.guildUi(poor)!!.candidates.first { it.heroId == c.heroId }.blocked)
+        assertEquals("Needs ${c.fee} gold. You have ${c.fee - 1}.", engine.guildUi(poor)!!.candidates.first { it.heroId == c.heroId }.blocked)
         assertEquals(GameError.NotEnoughGold(c.fee, c.fee - 1), (engine.handle(poor, Command.RecruitHero(c.heroId)) as CommandOutcome.Rejected).error)
 
         // Roster full: said before the purse, as the engine checks it.
@@ -229,7 +229,7 @@ class GuildUiTest {
         val both = engine.contractUi(salted, offer.id, listOf(bearer, warden), Posture.BALANCED)!!
         val w = salted.heroes.getValue(warden).name
         val b = salted.heroes.getValue(bearer).name
-        assertTrue(both.together.toString(), "$w's healing charges $b's blade (Capacitor)." in both.together)
+        assertTrue(both.together.toString(), "$w's healing charges $b's weapon (Capacitor)." in both.together)
         assertFalse(both.watchOut.toString(), "Nobody in this party heals." in both.watchOut)
         assertEquals(listOf(1, 2), both.picks.filter { it.order != null }.sortedBy { it.order }.map { it.order })
         assertEquals(bearer, both.picks.first { it.order == 1 }.heroId)

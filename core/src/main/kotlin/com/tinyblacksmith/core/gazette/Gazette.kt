@@ -11,6 +11,8 @@ import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.ShopLedger
 import com.tinyblacksmith.core.model.VisitKind
 import com.tinyblacksmith.core.model.VisitReason
+import com.tinyblacksmith.core.text.LegacyProse
+import com.tinyblacksmith.core.text.joinSentences
 
 /** The Emberfall Gazette (GDD 11): headlines derive only from real event records, ordered by priority. */
 object Gazette {
@@ -30,7 +32,11 @@ object Gazette {
     fun dayRecords(state: GameState, day: Int): List<EventRecord> =
         state.lastResolution?.takeIf { it.day == day && it.recordVersion >= 1 }?.events ?: state.eventsForDay(day)
 
-    fun masthead(day: Int): String = "EMBERFALL GAZETTE — DAY $day"
+    /** The paper's name and the day as a dateline, kept apart so no screen has to split a string to show them. */
+    const val PAPER = "EMBERFALL GAZETTE"
+    fun dateline(day: Int): String = "DAY $day"
+
+    fun masthead(day: Int): String = "$PAPER | ${dateline(day)}"
 
     /** One day's paper: the lede (the day's biggest news, at most two lines), a short tally and the record by section. */
     data class Edition(val lede: List<String>, val tally: List<String>, val sections: List<Section>)
@@ -64,12 +70,12 @@ object Gazette {
 
     /** Why a visitor left without buying (`MarketVisit.reason`), as the paper puts it. */
     fun visitReason(reason: VisitReason): String = when (reason) {
-        VisitReason.TOO_EXPENSIVE -> "could afford nothing on the shelf"
-        VisitReason.NOT_BETTER -> "found nothing better than the weapon in hand"
-        VisitReason.EMPTY_SHELVES -> "found the shelves bare"
-        VisitReason.OVERPRICED -> "balked at the prices"
-        VisitReason.NOT_SUITED -> "found nothing to suit"
-        VisitReason.RESISTED -> "passed over a blade the besieger shrugs off"
+        VisitReason.TOO_EXPENSIVE -> "couldn't afford anything"
+        VisitReason.NOT_BETTER -> "found no upgrade for their weapon"
+        VisitReason.EMPTY_SHELVES -> "found an empty shelf"
+        VisitReason.OVERPRICED -> "thought the prices were too high"
+        VisitReason.NOT_SUITED -> "found no suitable weapon"
+        VisitReason.RESISTED -> "passed on a weapon the attackers resist"
         else -> "left undecided"
     }
 
@@ -89,7 +95,7 @@ object Gazette {
 
     fun shopDayText(visits: List<MarketVisit>): String {
         val browsers = visits.filter { it.kind == VisitKind.BROWSE }
-        return "The shop saw ${count(browsers.size, "visitor")}; ${browsers.count { it.purchasedWeaponId != null }} bought."
+        return "${count(browsers.size, "visitor")} came by. ${browsers.count { it.purchasedWeaponId != null }} bought something."
     }
 
     /**
@@ -162,7 +168,7 @@ object Gazette {
         val visitors = if (visits.isNotEmpty()) browsers.size else shopDay?.get(VISITORS)?.toIntOrNull() ?: 0
         val bought = if (visits.isNotEmpty()) browsers.count { it.purchasedWeaponId != null } else shopDay?.get(BOUGHT)?.toIntOrNull() ?: 0
         return buildList {
-            if (gold > 0 || sold > 0 || visitors > 0) add("Shop took $gold gold")
+            if (gold > 0 || sold > 0 || visitors > 0) add("Shop income $gold gold")
             if (tribute > 0) add("Town tribute: $tribute gold")
             if (visitors > 0) {
                 add("$bought of ${count(visitors, "visitor")} bought")
@@ -174,7 +180,7 @@ object Gazette {
     }
 
     private fun shopLines(events: List<EventRecord>, visits: List<MarketVisit>): List<String> {
-        val lines = events.filter { it.type in shopTypes }.map { it.text }.toMutableList()
+        val lines = events.filter { it.type in shopTypes }.map { LegacyProse.display(it.text) }.toMutableList()
         val left = visits.filter { it.purchasedWeaponId == null }
         for (reason in left.map { it.reason }.distinct()) {
             lines += "${names(left.filter { it.reason == reason }.map { it.heroName })} ${visitReason(reason)}."
@@ -187,7 +193,7 @@ object Gazette {
         val groups = byHero.entries.sortedWith(
             compareByDescending<Map.Entry<String, List<EventRecord>>> { g -> g.value.maxOf { it.priority } }.thenBy { it.value.first().serial },
         )
-        val lines = groups.map { (hero, es) -> compose(heroNames[hero], es.map { it.text }) }.toMutableList()
+        val lines = groups.map { (_, es) -> es.map { LegacyProse.display(it.text) }.joinSentences() }.toMutableList()
         val patrolled = events.filter { it.type == EventType.HERO_PATROLLED }.mapNotNull { heroNames[it.subjectIds.firstOrNull()] }
         val rested = events.filter { it.type == EventType.HERO_RESTED }.mapNotNull { heroNames[it.subjectIds.firstOrNull()] }
         val trained = events.filter { it.type == EventType.GUILD_TRAINED }.mapNotNull { heroNames[it.subjectIds.firstOrNull()] }
@@ -200,23 +206,9 @@ object Gazette {
         return lines
     }
 
-    /** "Name did A. Name did B." becomes "Name did A; did B."; sentences that do not start with the name stay whole. */
-    private fun compose(name: String?, texts: List<String>): String {
-        val sb = StringBuilder()
-        for (t in texts) {
-            val tail = if (name != null) t.removePrefix("$name ") else t
-            when {
-                sb.isEmpty() -> sb.append(t.trimEnd('.'))
-                tail.length < t.length -> sb.append("; ").append(tail.trimEnd('.'))
-                else -> sb.append(". ").append(t.trimEnd('.'))
-            }
-        }
-        return sb.append('.').toString()
-    }
-
     private fun townLines(events: List<EventRecord>): List<String> {
         val town = events.filter { it.type !in heroTypes && it.type !in quietTypes && it.type !in shopTypes && it.type !in forgeTypes }
-        return town.filter { it.type != EventType.SIEGE_WARNING }.map { it.text } + town.filter { it.type == EventType.SIEGE_WARNING }.map { it.text }.takeLast(1)
+        return town.filter { it.type != EventType.SIEGE_WARNING }.map { LegacyProse.display(it.text) } + town.filter { it.type == EventType.SIEGE_WARNING }.map { LegacyProse.display(it.text) }.takeLast(1)
     }
 
     private fun forgeLines(events: List<EventRecord>): List<String> {
@@ -229,13 +221,13 @@ object Gazette {
             }
             events.count { it.type == EventType.WEAPON_LISTED }.takeIf { it > 0 }?.let { add("listed $it") }
             events.count { it.type == EventType.WEAPON_HONED }.takeIf { it > 0 }?.let { add("honed $it") }
-            events.count { it.type == EventType.WEAPON_DONATED }.takeIf { it > 0 }?.let { add("armed the watch with $it") }
-            events.filter { it.type == EventType.WEAPON_SALVAGED }.sumOf { it.data["count"]?.toIntOrNull() ?: 1 }.takeIf { it > 0 }?.let { add("melted down $it") }
+            events.count { it.type == EventType.WEAPON_DONATED }.takeIf { it > 0 }?.let { add("donated ${count(it, "weapon")} to the watch") }
+            events.filter { it.type == EventType.WEAPON_SALVAGED }.sumOf { it.data["count"]?.toIntOrNull() ?: 1 }.takeIf { it > 0 }?.let { add("salvaged $it") }
             events.filter { it.type == EventType.TOOL_BOUGHT }.forEach { add("bought ${it.data["name"] ?: it.text.substringAfter(": ").trimEnd('.')}") }
             events.filter { it.type == EventType.MATERIAL_BOUGHT }.sumOf { it.data["cost"]?.toIntOrNull() ?: 0 }.takeIf { it > 0 }?.let { add("spent $it gold on materials") }
         }
-        val work = if (parts.isEmpty()) emptyList() else listOf(parts.joinToString(", ").replaceFirstChar { it.uppercase() } + ".")
-        return work + events.filter { it.type == EventType.DISCOVERY || it.type == EventType.SIGNATURE_DISCOVERED }.map { it.text }
+        val work = if (parts.isEmpty()) emptyList() else listOf(parts.joinSentences())
+        return work + events.filter { it.type == EventType.DISCOVERY || it.type == EventType.SIGNATURE_DISCOVERED }.map { LegacyProse.display(it.text) }
     }
 
     private fun count(n: Int, noun: String) = "$n $noun" + if (n == 1) "" else "s"

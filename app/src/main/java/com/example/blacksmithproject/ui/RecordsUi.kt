@@ -74,7 +74,7 @@ data class PairingUi(
  */
 @Immutable
 data class NotebookUi(val metal: List<PairingUi>, val weapon: List<PairingUi>, val clues: List<String>) {
-    val counts: String get() = (metal + weapon).let { all -> "${all.count { it.state == KnowledgeState.OBSERVED }} observed · ${all.count { it.state == KnowledgeState.UNDERSTOOD }} understood" }
+    val counts: String get() = (metal + weapon).let { all -> "${all.count { it.state == KnowledgeState.OBSERVED }} being studied · ${all.count { it.state == KnowledgeState.UNDERSTOOD }} learned" }
 }
 
 fun GameEngine.notebook(journal: JournalModel): NotebookUi {

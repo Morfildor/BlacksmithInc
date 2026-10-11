@@ -37,7 +37,7 @@ fun fightOutcomeLine(result: FightResult): String {
 
 /** Everybody of [side] as the fight left them: "Brann 21/40", "Mira down", with "blade cracked" where one did. */
 fun fightSide(result: FightResult, side: Side): List<String> = result.actors.filter { it.side == side }.map { a ->
-    listOfNotNull("${a.name} ${if (a.downed) "down" else "${a.health}/${a.maxHealth}"}", "blade cracked".takeIf { a.fractured }, "joined during the fight".takeIf { a.summoned }).joinToString(", ")
+    listOfNotNull("${a.name} ${if (a.downed) "down" else "${a.health}/${a.maxHealth}"}", "weapon cracked".takeIf { a.fractured }, "joined during the fight".takeIf { a.summoned }).joinToString(", ")
 }
 
 /**

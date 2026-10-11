@@ -91,7 +91,7 @@ fun ContractSheet(
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     // The place in the order, in the column where the wall has its place numbers.
-                    Text(p.order?.toString() ?: "–", style = MaterialTheme.typography.titleLarge, color = if (p.order != null) Gold else CreamMuted, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 20.dp))
+                    Text(p.order?.toString() ?: "-", style = MaterialTheme.typography.titleLarge, color = if (p.order != null) Gold else CreamMuted, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 20.dp))
                     Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { PixelImage(p.portrait, 44.dp, description = null) }
                     Column(Modifier.weight(1f)) {
                         Text(p.name, style = MaterialTheme.typography.titleSmall)

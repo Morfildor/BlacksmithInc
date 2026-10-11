@@ -13,7 +13,7 @@ three on the wall, capture and rescue, a nemesis carrying a real blade, the day-
 charter" is the 0.7.0 game, unchanged (the rules-4 golden state file passes as the rules-5 one).
 
 **Checks run on the final tree.**
-- `./gradlew :core:test`: 539 tests, 0 failures (453 before; new: `CombatEngineTest` 34, `GuildRunTest` 23,
+- `./gradlew :core:test`: 539 tests, 0 failures before the merge with `main` and 561 after it (453 before this work; new: `CombatEngineTest` 34, `GuildRunTest` 23,
   `GuildStoriesTest` 20, `GuildMigrationTest` 4, `GuildScenariosTest` 7).
 - `./gradlew :app:testDebugUnitTest`: 208 tests, 0 failures (183 before).
 - `:app:assembleDebug`, `:app:assembleRelease`, `:app:compileDebugAndroidTestKotlin`: built. `:app:lintDebug`: 0 errors,
@@ -32,10 +32,22 @@ charter" is the 0.7.0 game, unchanged (the rules-4 golden state file passes as t
   - `tools/emulator/runend.sh`: a passive guild run fell on day 15, the legacy was claimed, the run-end screen reopened
     after process death and era 2 began. Its one failing check ("upgrades available after reopening") was the charter
     picker pinned over the upgrade list, where the script's swipe (and a thumb) could not scroll it; the picker is now
-    the last item of the scroll. RUNEND_RERUN
+    the last item of the scroll. A second run after that change passed every check.
   - By hand: "No charter" chosen on the title starts a classic run: 250 gold, the tab reads Town, the classic siege card
     with its defense and raid numbers.
   Screenshots: `docs/guild_evolution_evidence/screens/`.
+
+**Merged with `main` before the push.** While this was built, `main` gained the copy remaster and the Gazette
+briefing (5 commits, 100 files). The merge had eight conflicts (relic and visitor texts, the stock notices, the End Day
+note, the Town panel's faction rows, DECISIONS, PROGRESS); each was resolved by keeping `main`'s wording and this
+work's code. `main`'s new `ProseGuardTest` then applied to every new string: "weapon" for a generic "blade", no em or
+en dash, no semicolon between clauses. 60 lines of new text were reworded by script and three test expectations
+followed. After the merge: `:core:test` 561 tests, 0 failures; `:app:testDebugUnitTest` 208 tests, 0 failures; debug
+and release built; the scenario saves and the fixture printout were rewritten. On the merged build `guild.sh` and
+`smoke.sh` were run again and passed as before (`guild.sh` still reports two script misses: it does not find the
+roster row it scrolls to, and the last evening card's button has another tag). The by-hand checks (member sheet,
+sandbox, siege scenario, "No charter", the instrumented tests, `runend.sh`) were made before the merge and not
+repeated; the screenshots in the evidence folder show the wording from before it ("blade").
 
 **Not verified. Read this before trusting a screen.**
 - Nothing on a physical phone. No TalkBack, no reduced motion, no font scale above 1.0, no small or wide screen for
@@ -75,6 +87,33 @@ charter" is the 0.7.0 game, unchanged (the rules-4 golden state file passes as t
 3. A device pass of the untapped flows above at font scale 1.3 and 2.0.
 4. Decide the open questions in the plan (charter difficulty, day 5, recoveries, residents' fights, Guild screen
    length).
+
+## Copy remaster and the Gazette briefing (2026-10-11)
+Source: the owner's `BlacksmithInc_Copy_Remaster.md`, `BlacksmithInc_Copy_Replacements.json` (665 entries, 44 files, reviewed
+against `8f2e284`) and the implementation prompt. Gameplay, balance, RNG draws,
+save schema, rules/content/balance versions are untouched (display prose is outside the fingerprint).
+- Catalog: all 665 entries applied (664 by script with longer anchors first, `T0585` by hand). Anchors that matched more
+  than once were reviewed one by one (comment-only hits skipped, display hits all changed).
+- Adapted, each for a reason: `T0110`/`T0113` say "one fifth" / "one tenth" (`LaunchContentTest` forbids a percent sign in
+  player text); `T0612`/`T0613`/`T0616` keep their before/after numbers (`LegacyPreviewTest` guarantees a concrete preview);
+  `T0425`/`T0517`/`T0638` had lost the space that joins a fragment; `T0366` doubled a period; `T0222` to `T0224` keep "of
+  them"; `T0522`/`T0474` read "Reward:"; `T0585` and `T0584` use `core/text/Sentences.kt` (`joinSentences`, one capital and one
+  period per clause) in `Lines`, `Journal` and the hero history; `T0581` to `T0583` and `T0664`/`T0665` are superseded by
+  `Gazette.PAPER` and `Gazette.dateline` (the masthead string is still "EMBERFALL GAZETTE | DAY n").
+- Beyond the catalog: leftover "blade" in labels, counts and fallbacks, "bare-handed", the arrival of a descendant, the
+  slice catalog's two affix descriptions, the Notebook's stage words, the Shop's fit reason, bulk-action notices.
+- Gazette: `core/gazette/Digest.kt` (`GazetteDigest.of(state, day, content, config)`) is the one presentation model for the
+  report modal and the Records archive; `Gazette.edition` stays as "All details". Selection is by event type, subject IDs and
+  recorded data, never prose; old records are shown through `core/text/LegacyProse.kt` (read-only, idempotent). Three event
+  kinds carry a few more `data` keys that the digest reads when present (`attacker`, `foe`, `gold`, `faction`, `weak`,
+  `trait`); a record without them falls back to its own text.
+- Tests: new `GazetteDigestTest` (12) and `ProseGuardTest` (a source scan: no em or en dash, no semicolon chain, no generic
+  "blade" in any displayed string). About 90 expectations in existing tests were updated to the new wording; none was removed.
+- Checks run: `:core:test` 467 pass; `:app:testDebugUnitTest` 183 pass; `:app:assembleDebug`, `:app:compileDebugAndroidTestKotlin`
+  and `:app:lintDebug` (0 errors, 50 warnings, none new in the changed code) pass.
+- Not run: the instrumented tests (their text expectations were updated by hand, `NavigationFlowTest` and the others are
+  unverified); the simulator gate and the scenario script were not rerun (nothing they measure changed). The Gazette's
+  "Open notebook" button is in the archive only: the report modal sits over the shop day, where Records is not a destination.
 
 ## Workshop notice moved off the Forge button (2026-10-10, night)
 The owner's phone screenshot showed the notice after a forge ("... is on the shelf at 108 gold.") lying over the Forge

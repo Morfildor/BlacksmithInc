@@ -4081,6 +4081,43 @@ gap overstates the traits.
 system, richer seasons, challenge tiers, distinct catalysts, the Never-listed filter. Visitor portraits and relic
 icons: the sheet shows the heroes' and blades' own art; the wanted lists are in `Assets/*/WANTED.txt`.
 
+
+## Copy remaster and the Gazette briefing (2026-10-11)
+
+**Ruled (owner's brief).** One voice for every displayed string; the Gazette is a briefing, not an event dump. LOCKED rules
+are untouched: the Gazette still derives only from real event records, replays draw no RNG, nothing is added to a save.
+
+**Decisions taken while building it.**
+- *Selection is typed.* A story is picked by event type, subject IDs, the day and recorded `data`, in the priority order of
+  the brief (era end, siege, deaths and a new siege warning are mandatory; then new knowledge and weapon outcomes; then
+  consequences; then an elite felled; then, with room, a first sale or an arrival). Ties go by record serial. Never prose.
+- *The five-story limit cannot hide news.* Mandatory blocks are always in the default view; several deaths become one block
+  (names in its details) only when they would not fit; everything else that did not fit is behind "N more changes".
+- *A new siege warning is news once.* A warning whose siege day the day before's paper already named is a reminder and is
+  left to All details. This reads the previous day's `SIEGE_WARNING` `data["day"]`, nothing new in the save.
+- *Fresh and archived days are one pipeline.* Stories, income and sale counts come from the same records either way (the
+  ledger when there is one, else the stored shop-day record, else the sale records). The one grouped shop problem needs the
+  day's typed visits, so only the latest day has it; an archived day shows none rather than a guess.
+- *Unknown is omitted.* An archived day whose takings its records cannot tell shows no income line (not "0 gold", not "No
+  sales"). Weapon fate with no record says nothing.
+- *Before tomorrow is for the latest day only.* From the post-resolution state: the siege after tomorrow's trading, an order
+  due tomorrow with whether a weapon fits, a pending blessing, relic or visitor, a delayed caravan or a festival, the siege
+  trait's counsel, and the shop's own lead (the fallback "forge for today's buyers" is not repeated). At most two. An older
+  paper shows only what its own records announced, with absolute day numbers.
+- *Old text is shown, not rewritten.* `LegacyProse.display` rewrites a few known old journal lines and otherwise only turns
+  " — " and "; " into sentence breaks. It is idempotent, so new text passes through unchanged.
+- *The record may grow by a key, never a field.* `ELITE_SLAIN` carries `foe` and `gold`, `SIEGE_WON`/`SIEGE_LOST` carry
+  `attacker`, `SIEGE_WARNING` carries `faction`, `weak` and `trait`. Older records lack them and the digest falls back to
+  their own text. No schema, rules or content version moved.
+- *Three catalog lines gave way to guarantees the tests already encode.* The percent sign (`LaunchContentTest`) and the
+  concrete preview numbers of three legacy tracks (`LegacyPreviewTest`) stay; the approved wording changed only as far as
+  needed.
+- *Guard.* `ProseGuardTest` scans every string literal in the production code for an em or en dash, a semicolon chain and a
+  generic "blade"; a literal that must break a rule is listed there with its reason.
+
+**Not decided here.** The Gazette's "Open notebook" from the report modal (it sits over the shop day, where Records is not a
+destination); the instrumented tests' new text expectations are unverified on a device.
+
 ## Guild evolution: design revision (2026-10-10)
 
 Source: the owner's plan of 2026-10-10, kept verbatim as `docs/GUILD_EVOLUTION_SPEC.md` (section 2.2 is the revision).

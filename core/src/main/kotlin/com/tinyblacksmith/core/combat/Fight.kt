@@ -96,7 +96,7 @@ object Fight {
                 FightOutcome.WON -> "The party has won."
                 FightOutcome.LOST -> "The party is beaten."
                 FightOutcome.RETREATED -> "The party pulls back."
-                FightOutcome.TIMED_OUT -> "Neither side can finish it; the party breaks off."
+                FightOutcome.TIMED_OUT -> "Neither side can finish it. The party breaks off."
             }
             emit(if (result == FightOutcome.RETREATED) EventKind.RETREATED else EventKind.OBJECTIVE, null, null, text = closing)
             queue.clear()

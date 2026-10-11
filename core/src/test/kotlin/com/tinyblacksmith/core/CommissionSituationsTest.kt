@@ -71,7 +71,7 @@ class CommissionSituationsTest {
             assertEquals(CommissionKind.REPLACEMENT, c.kind)
             assertTrue(c.buyerId in setOf(worn.id, bereft.id) && c.recipientId == null)
             assertTrue(c.familyId in content.heroClass(s.hero(c.buyerId).classId).preferredFamilies)
-            assertEquals("${s.hero(c.buyerId).fullName} needs a blade to replace their own.", Lines.commissionWhy(c, s))
+            assertEquals("${s.hero(c.buyerId).fullName} needs a replacement weapon.", Lines.commissionWhy(c, s))
             seen += c.buyerId
         }
         assertEquals(setOf(worn.id, bereft.id), seen)
@@ -83,7 +83,7 @@ class CommissionSituationsTest {
         // The paper's line carries the reason, and the record its kind.
         val (ctx, c) = offered(s, only(CommissionKind.REPLACEMENT))
         val told = ctx.newEvents.single { it.type == EventType.COMMISSION_OFFERED }
-        assertTrue(told.text.endsWith("needs a blade to replace their own.") && told.data["kind"] == "REPLACEMENT" && c!!.id.value in told.subjectIds, told.text)
+        assertTrue(told.text.endsWith("needs a replacement weapon.") && told.data["kind"] == "REPLACEMENT" && c!!.id.value in told.subjectIds, told.text)
     }
 
     /** The blade that broke leaves the save a retention window later (`WeaponPruning`); its carrier's reason to ask does not go with it. */
@@ -117,7 +117,7 @@ class CommissionSituationsTest {
             val s = at(days)
             val c = assertNotNull(offered(s, only(CommissionKind.SIEGE_PREP)).second, "$days days out")
             assertEquals(listOf(CommissionKind.SIEGE_PREP, champion.id, feared, s.town.nextSiegeDay), listOf(c.kind, c.buyerId, c.element, c.deadlineDay))
-            assertEquals("${champion.fullName} stands on the wall when the siege comes on day ${s.town.nextSiegeDay}.", Lines.commissionWhy(c, s))
+            assertEquals("${champion.fullName} is preparing to defend the walls on day ${s.town.nextSiegeDay}.", Lines.commissionWhy(c, s))
             assertTrue(c.reward > base.commissionRewardBase + c.minQuality * base.commissionRewardPerQuality, "an element asked for pays more")
         }
         assertNull(offered(at(base.commissions.siegePrepDays + 1), only(CommissionKind.SIEGE_PREP)).second, "too far off")
@@ -192,7 +192,7 @@ class CommissionSituationsTest {
         assertTrue(newcomer.id != patron.id && newcomer.shopPurchases == 0 && guilded.equippedWeapon(newcomer.id) == null)
         assertEquals(other.id, newcomer.id, "nobody else is of the patron's guild, so the earliest arrival")
         assertTrue(c.familyId in content.heroClass(newcomer.classId).preferredFamilies, "a blade for the newcomer's class, not the patron's")
-        assertEquals("A first blade for ${newcomer.fullName}, who carries nothing; ${patron.fullName} pays.", Lines.commissionWhy(c, guilded))
+        assertEquals("A first weapon for ${newcomer.fullName}. ${patron.fullName} pays for the order.", Lines.commissionWhy(c, guilded))
         assertNull(offered(town, only(CommissionKind.FIRST_BLADE)).second, "no guild member, no such request")
 
         val answer = blade.copy(id = WeaponId("w95"), familyId = c.familyId, quality = QualityBand.FINE.floor(base), location = WeaponLocation.Storage)

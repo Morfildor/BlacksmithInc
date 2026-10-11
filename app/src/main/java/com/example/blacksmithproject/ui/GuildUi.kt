@@ -200,7 +200,7 @@ private fun GameEngine.offerUi(state: GameState, g: GuildRunState, offer: Missio
 }
 
 private fun bladeLine(state: GameState, heroId: HeroId): String =
-    state.loanOf(heroId)?.let { "On loan: ${it.name}" } ?: state.equippedWeapon(heroId)?.let { "Own blade: ${it.name}" } ?: "Unarmed"
+    state.loanOf(heroId)?.let { "On loan: ${it.name}" } ?: state.equippedWeapon(heroId)?.let { "Own weapon: ${it.name}" } ?: "Unarmed"
 
 private fun memberStatus(state: GameState, g: GuildRunState, m: GuildMember): String? = when {
     m.status == MemberStatus.CAPTURED -> g.captives.firstOrNull { it.heroId == m.heroId }?.let { c ->
@@ -262,9 +262,9 @@ private fun GameEngine.partyUi(state: GameState, m: MissionInstance): PartyUi {
     return PartyUi(
         title = contractTitle(m.offer), who = names(who), returns = returnMorning(m.returnDay).replaceFirstChar { it.uppercase() } + ".",
         status = when (m.outcome) {
-            MissionOutcome.WON -> "The work is done; they are on the way home."
+            MissionOutcome.WON -> "The work is done. They are on the way home."
             MissionOutcome.RETREATED -> "They pulled back and are on the way home."
-            MissionOutcome.LOST -> "It went badly; those who can are on the way home."
+            MissionOutcome.LOST -> "It went badly. Those who can are on the way home."
             null -> if (at) "They wait at the door of the deeper stage for your word." else "Out since day ${m.departedDay}, ${postureName(m.posture).lowercase()}."
         },
         checkpoint = deeper?.takeIf { at }?.let { stage ->
@@ -284,7 +284,7 @@ private fun GameEngine.partyUi(state: GameState, m: MissionInstance): PartyUi {
 /** Why [c] cannot be signed today; the engine checks the roster before the purse, and so does this. */
 private fun GameEngine.recruitBlocked(state: GameState, g: GuildRunState, fee: Int): String? = when {
     g.members.size >= config.guild.maxMembers -> "The roster is full (${config.guild.maxMembers} members)."
-    state.gold < fee -> "Needs $fee gold; you have ${state.gold}."
+    state.gold < fee -> "Needs $fee gold. You have ${state.gold}."
     else -> null
 }
 
@@ -307,7 +307,7 @@ private fun GameEngine.regionUi(state: GameState, g: GuildRunState): RegionUi {
                 if (r.taken.isEmpty()) listOf("They have taken nothing yet.") else listOf("Taken so far:") + r.taken
         }.orEmpty(),
         nemesis = g.nemesis?.let { n ->
-            listOfNotNull("${n.name} of ${content.faction(n.factionId).name}", state.weapons[n.weaponId]?.let { "Carries ${it.name}, a blade of this forge, since day ${n.sinceDay}." })
+            listOfNotNull("${n.name} of ${content.faction(n.factionId).name}", state.weapons[n.weaponId]?.let { "Carries ${it.name}, a weapon of this forge, since day ${n.sinceDay}." })
         }.orEmpty(),
         combos = g.comboNotes.map { it.substringAfter('|') },
     )
@@ -343,7 +343,7 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
         yesterday = g.lastMission?.let { r ->
             ContractReportUi(
                 r.title.replaceFirstChar { it.uppercase() },
-                when (r.outcome) { MissionOutcome.WON -> if (r.continues) "Won; the party is still out" else "Won"; MissionOutcome.RETREATED -> "Pulled back"; MissionOutcome.LOST -> "Lost" },
+                when (r.outcome) { MissionOutcome.WON -> if (r.continues) "Won. The party is still out" else "Won"; MissionOutcome.RETREATED -> "Pulled back"; MissionOutcome.LOST -> "Lost" },
                 r.fight?.highlights?.firstOrNull()?.text, r.lines,
             )
         },
@@ -440,7 +440,7 @@ fun GameEngine.contractUi(state: GameState, offerId: String, picked: List<HeroId
         sendBlocked = when {
             g.mission != null -> "The party is still out."
             party.isEmpty() -> "Pick one to ${config.guild.partyMax} members."
-            purse < offer.fee -> "Needs ${offer.fee} gold; you have $purse."
+            purse < offer.fee -> "Needs ${offer.fee} gold. You have $purse."
             else -> null
         },
         planned = g.planned?.offerId == offer.id,
@@ -464,11 +464,11 @@ internal fun worksTogether(setup: FightSetup): List<String> {
         // Somebody else's healing, answered by a rule of this member's blade.
         val healer = party.firstOrNull { it.key != x.key && it.kit.moves.any { m -> m.actions.any { a -> a is Action.Heal } } }
         if (healer != null) all.filter { it.trigger.kind == EventKind.HEALED && it.trigger.who == Who.SELF_TARGET }.forEach { e ->
-            out += if (e.actions.any { it is Action.Give && it.stat == Stat.CHARGE }) "${healer.name}'s healing charges ${x.name}'s blade (${e.name})." else "${healer.name}'s healing sets off ${e.name} for ${x.name}."
+            out += if (e.actions.any { it is Action.Give && it.stat == Stat.CHARGE }) "${healer.name}'s healing charges ${x.name}'s weapon (${e.name})." else "${healer.name}'s healing sets off ${e.name} for ${x.name}."
         }
         // A blade that can crack, and a rule that answers a crack.
         if (all.any { e -> e.actions.any { it is Action.Fracture } }) {
-            val blade = x.weaponName ?: "${x.name}'s blade"
+            val blade = x.weaponName ?: "${x.name}'s weapon"
             setup.partyEffects.filter { it.trigger.kind == EventKind.FRACTURED }.forEach { e -> out += if (e.id == "relic_${CombatContent.SALVAGE_BELL}") "$blade cracking rings the ${e.name}." else "$blade cracking sets off ${e.name}." }
             party.filter { it.key != x.key }.forEach { y -> y.effects.filter { it.trigger.kind == EventKind.FRACTURED }.forEach { e -> out += "$blade cracking sets off ${y.name}'s ${e.name}." } }
         }
@@ -477,7 +477,7 @@ internal fun worksTogether(setup: FightSetup): List<String> {
             val stats = echo.conditions.filterIsInstance<Condition.StatIn>().flatMap { it.stats }.toSet()
             for (y in party) {
                 val stat = (y.effects + y.kit.passives).flatMap { it.actions }.filterIsInstance<Action.Give>().firstOrNull { it.stat in stats && it.target in foeAims }?.stat ?: continue
-                out += if (y.key == x.key) "${x.name} echoes the ${statWord(stat)} of their own blade." else "${x.name} echoes ${y.name}'s ${statWord(stat)}."
+                out += if (y.key == x.key) "${x.name} echoes the ${statWord(stat)} of their own weapon." else "${x.name} echoes ${y.name}'s ${statWord(stat)}."
             }
         }
         // Charge that is spent, and a rule that answers its spending.

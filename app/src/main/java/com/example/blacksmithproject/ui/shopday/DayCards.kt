@@ -90,9 +90,9 @@ fun ShopOpenCard(open: Beat.Open, modifier: Modifier = Modifier) {
         val rest = open.visitors - open.shown
         Body(
             when {
-                open.shown == 0 -> "What came of ${if (open.visitors == 1) "the visit" else "their visits"} is summed up on the next card."
-                rest == 0 -> if (open.shown == 1) "They are shown at the counter." else "Each is shown at the counter."
-                else -> "${open.shown} ${if (open.shown == 1) "is" else "are"} shown at the counter; the other $rest ${if (rest == 1) "is" else "are"} summed up after."
+                open.shown == 0 -> "The next card sums up ${if (open.visitors == 1) "this visit" else "these visits"}."
+                rest == 0 -> if (open.shown == 1) "You'll see this visit at the counter." else "You'll see each visit at the counter."
+                else -> "You'll see ${open.shown} at the counter. The remaining $rest ${if (rest == 1) "is" else "are"} summarized afterward."
             },
             Modifier.testTag("shopday_open_shown"),
         )
@@ -208,7 +208,7 @@ fun AftermathCard(
         // The summary has no names: the Gazette is where each hero's day is told.
         if (beat.moreInGazette > 0 || card.kind == AftermathKind.FIELD_SUMMARY) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Quiet(if (beat.moreInGazette > 0) "${beat.moreInGazette} more in the Gazette" else "Who fought whom is in the Gazette", Modifier.weight(1f))
+                Quiet(if (beat.moreInGazette > 0) "${beat.moreInGazette} more in the Gazette" else "Full battle reports are in the Gazette", Modifier.weight(1f))
                 InlineActionButton("Read the Gazette", onOpenGazette, Modifier.heightIn(min = 48.dp).testTag("shopday_gazette"))
             }
         }
@@ -351,7 +351,7 @@ fun BlessingChoices(choices: List<BlessingUi>, onChoose: (BlessingId) -> Unit, m
 @Composable
 fun ResumePrompt(day: Int, took: Int?, onResume: () -> Unit, onSkip: () -> Unit, modifier: Modifier = Modifier) {
     FramedPanel(modifier = modifier.fillMaxWidth().padding(Space.md)) {
-        CardTitle("Day $day is done and saved.")
+        CardTitle("Day $day saved.")
         took?.let { Body("The shop earned $it gold.", Modifier.padding(top = Space.sm)) }
         PrimaryActionButton("Resume the day", onResume, Modifier.fillMaxWidth().padding(top = Space.md).testTag("shopday_resume"))
         // The same landing and the same words as the day's own Skip: the evening card, where "Begin day N" still waits.

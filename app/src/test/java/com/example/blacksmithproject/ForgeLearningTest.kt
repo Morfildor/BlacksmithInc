@@ -40,22 +40,22 @@ class ForgeLearningTest : ShopDayTestBase() {
             val now = after.legacy.journal
             val learned = engine.forgeLearning(was, now, forgeSword)
             val moved = listOf(ca, af).filter { now.state(it).ordinal > was.state(it).ordinal }
-            val pairings = learned.changes.filter { it.title == "New observation" || it.title == "Pairing understood" }
+            val pairings = learned.changes.filter { it.title == "First notes" || it.title == "Pairing learned" }
             assertEquals(moved.size, pairings.size)
             moved.zip(pairings).forEach { (key, change) ->
-                assertEquals(if (now.state(key) == KnowledgeState.OBSERVED) "New observation" else "Pairing understood", change.title)
+                assertEquals(if (now.state(key) == KnowledgeState.OBSERVED) "First notes" else "Pairing learned", change.title)
                 // The words are the journal's own for the stage reached: an observed pairing stays tentative.
                 assertEquals("${JournalRules.subjectName(engine.content, key)} · ${JournalRules.hint(now, engine.content, key)}", change.line)
                 if (now.state(key) == KnowledgeState.OBSERVED) assertTrue(change.line, change.line.contains("· Seems "))
             }
             if (learned.changes.isEmpty()) assertNotNull(learned.note) else assertNull(learned.note)
-            if (learned.changes.isEmpty() && listOf(ca, af).any { now.state(it) == KnowledgeState.OBSERVED }) assertEquals("Another experiment recorded. Keep testing to understand this pairing.", learned.note)
+            if (learned.changes.isEmpty() && listOf(ca, af).any { now.state(it) == KnowledgeState.OBSERVED }) assertEquals("Experiment recorded. Try this pairing again to learn more.", learned.note)
             titles += learned.changes.map { it.title }
             learned.note?.let { notes += it }
         }
-        assertTrue("a first forge is a new observation", "New observation" in titles)
-        assertTrue("repeating reaches understanding", "Pairing understood" in titles)
-        assertTrue("a known recipe teaches nothing and says so", "No new discovery. Your notebook already knows these pairings." in notes)
+        assertTrue("a first forge is first notes", "First notes" in titles)
+        assertTrue("repeating reaches understanding", "Pairing learned" in titles)
+        assertTrue("a known recipe teaches nothing and says so", "No new findings. You've already learned these pairings." in notes)
     }
 
     @Test
@@ -66,7 +66,7 @@ class ForgeLearningTest : ShopDayTestBase() {
         assertEquals(listOf(ca), book.metal.map { it.key })
         assertEquals(listOf(af), book.weapon.map { it.key })
         assertEquals(journal.interactions.keys.count { it.startsWith("sig:") }, book.clues.size)
-        assertEquals("2 observed · 0 understood", book.counts)
+        assertEquals("2 being studied · 0 learned", book.counts)
         assertEquals(forgeSword.coreId to forgeSword.augmentId, book.metal.single().let { it.metalId to it.augmentId })
         assertEquals(forgeSword.familyId, book.weapon.single().familyId)
     }

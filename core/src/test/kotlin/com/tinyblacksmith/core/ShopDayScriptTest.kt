@@ -233,7 +233,7 @@ class ShopDayScriptTest {
         assertEquals(QuietDay(QuietKind.NO_VISITORS), s.quiet)
         assertTrue(s.featured.isEmpty() && s.tally.isEmpty() && s.aftermath.isEmpty())
         assertEquals(Ending.TOMORROW, s.ending)
-        assertEquals("Nobody came to the shop today.", Lines.quiet(s.quiet!!))
+        assertEquals("No visitors today.", Lines.quiet(s.quiet!!))
         assertEquals(start.listedWeapons().map { it.id }, s.shelf.map { it.weaponId }, "the stock is still shown")
     }
 
@@ -366,28 +366,28 @@ class ShopDayScriptTest {
         val told = event("e1", EventType.EXPEDITION_WON, "Hero h1 routed bone scouts using Blade a.", listOf("h1", "a"))
         fun card(result: FieldResult, traded: WeaponSnapshot? = old, boughtToday: Boolean = true): AftermathCard? =
             script(day(if (boughtToday) listOf(bought(0, "h1", "a", old = traded)) else emptyList(), listOf(told), listOf(result), listOf(blade("a")))).aftermath.singleOrNull()
-        val oldLine = "With the old Iron Bow the same fight was lost."
-        val bareLine = "Bare-handed the same fight was lost."
+        val oldLine = "Their old Iron Bow would have lost this fight."
+        val bareLine = "They would have lost this fight without a weapon."
 
         // A blade bought this morning in exchange for another: only the old blade may be named, and only when recorded.
         val recorded = card(won("h1", "e1", old = true))!!
         assertEquals(listOf(AftermathKind.WIN_NEW_BLADE, Counterfactual.OLD_BLADE, old), listOf(recorded.kind, recorded.counterfactual, recorded.oldWeapon))
-        assertEquals("${told.text} The blade left the shop this morning. $oldLine", Lines.aftermath(recorded, content))
+        assertEquals("${told.text} Bought from your shop this morning. $oldLine", Lines.aftermath(recorded, content))
         for (unrecorded in listOf(won("h1", "e1", old = false), won("h1", "e1", old = null), won("h1", "e1", old = false, bare = true))) {
             val c = card(unrecorded)!!
             assertEquals(listOf(AftermathKind.WIN_NEW_BLADE, null, null), listOf(c.kind, c.counterfactual, c.oldWeapon))
-            assertEquals("${told.text} The blade left the shop this morning.", Lines.aftermath(c, content), "she carried it, and the card stops there")
+            assertEquals("${told.text} Bought from your shop this morning.", Lines.aftermath(c, content), "she carried it, and the card stops there")
         }
         // Bought unarmed: bare-handed is what it replaced.
-        assertEquals("${told.text} The blade left the shop this morning. $bareLine", Lines.aftermath(card(won("h1", "e1", bare = true), traded = null)!!, content))
-        assertEquals("${told.text} The blade left the shop this morning.", Lines.aftermath(card(won("h1", "e1"), traded = null)!!, content))
+        assertEquals("${told.text} Bought from your shop this morning. $bareLine", Lines.aftermath(card(won("h1", "e1", bare = true), traded = null)!!, content))
+        assertEquals("${told.text} Bought from your shop this morning.", Lines.aftermath(card(won("h1", "e1"), traded = null)!!, content))
         // Any older blade: a card only when the roll says the blade was needed, and in those words.
         val older = card(won("h1", "e1", bare = true), boughtToday = false)!!
         assertEquals(listOf(AftermathKind.WIN, Counterfactual.BARE_HANDED), listOf(older.kind, older.counterfactual))
         assertEquals("${told.text} $bareLine", Lines.aftermath(older, content))
         // A plain win has no card of its own: it is counted in the day's summary and the Gazette tells it.
         val plain = card(won("h1", "e1"), boughtToday = false)!!
-        assertEquals(listOf(AftermathKind.FIELD_SUMMARY, null, null, "1 hero went out to fight: 1 won."), listOf(plain.kind, plain.heroId, plain.weapon, Lines.aftermath(plain, content)))
+        assertEquals(listOf(AftermathKind.FIELD_SUMMARY, null, null, "1 hero fought today. 1 won."), listOf(plain.kind, plain.heroId, plain.weapon, Lines.aftermath(plain, content)))
 
         // Real days: the line is on a card exactly when the field result holds the flag, and no card says a blade decided anything.
         var cards = 0; var claims = 0
@@ -397,7 +397,7 @@ class ShopDayScriptTest {
                 val line = Lines.aftermath(c, content)
                 assertFalse(Regex("decid|thanks to|because of", RegexOption.IGNORE_CASE).containsMatchIn(line), line)
                 val result = r.field.firstOrNull { f -> f.outcome == FieldOutcome.WON && f.eventIds == c.eventIds }
-                assertEquals(c.counterfactual == Counterfactual.OLD_BLADE, "With the old" in line, line)
+                assertEquals(c.counterfactual == Counterfactual.OLD_BLADE, "Their old" in line, line)
                 assertEquals(c.counterfactual == Counterfactual.BARE_HANDED, bareLine in line, line)
                 when (c.counterfactual) {
                     Counterfactual.OLD_BLADE -> { claims++; assertEquals(true, result!!.lostWithOldBlade) }
@@ -444,15 +444,15 @@ class ShopDayScriptTest {
         }
         assertTrue(summaries > 10 && allUnarmed > 0, "summaries=$summaries allUnarmed=$allUnarmed")
 
-        assertEquals("5 heroes went out unarmed and all were driven back.", Lines.field(FieldTally(0, 0, 5, 5, 0)))
-        assertEquals("1 hero went out unarmed and was driven back.", Lines.field(FieldTally(0, 0, 1, 1, 0)))
-        assertEquals("3 heroes went out to fight: 3 won.", Lines.field(FieldTally(3, 0, 0, 0, 0)))
-        assertEquals("3 heroes went out to fight: 2 won, 1 was driven back. 1 of them carried no blade and was driven back.", Lines.field(FieldTally(2, 0, 1, 1, 0)))
+        assertEquals("5 heroes fought without weapons. All had to retreat.", Lines.field(FieldTally(0, 0, 5, 5, 0)))
+        assertEquals("One hero fought without a weapon and had to retreat.", Lines.field(FieldTally(0, 0, 1, 1, 0)))
+        assertEquals("3 heroes fought today. 3 won.", Lines.field(FieldTally(3, 0, 0, 0, 0)))
+        assertEquals("3 heroes fought today. 2 won, 1 was driven back. 1 of them fought without weapons and was driven back.", Lines.field(FieldTally(2, 0, 1, 1, 0)))
         assertEquals(
-            "4 heroes went out to fight: 1 won, 2 were driven back, 1 did not come back. 2 of them carried no blade; 1 of those was driven back.",
+            "4 heroes fought today. 1 won, 2 were driven back, 1 died. 2 of them fought without weapons. 1 of those was driven back.",
             Lines.field(FieldTally(1, 1, 2, 1, 1)),
         )
-        assertEquals("2 heroes went out to fight: 2 won. 1 of them carried no blade.", Lines.field(FieldTally(2, 1, 0, 0, 0)))
+        assertEquals("2 heroes fought today. 2 won. 1 of them fought without weapons.", Lines.field(FieldTally(2, 1, 0, 0, 0)))
     }
 
     // ---- lines ----
@@ -479,9 +479,9 @@ class ShopDayScriptTest {
                 }
                 // A refusal over the purse states what they could pay; a purchase the listed price; a trade-in the blade that came back.
                 val decision = Lines.decision(v, s, content)
-                if (v.reason == VisitReason.TOO_EXPENSIVE) assertTrue("Could pay up to ${v.considered.first().let { it.price - it.shortBy!! }} gold; the cheapest blade is" in decision, decision)
+                if (v.reason == VisitReason.TOO_EXPENSIVE) assertTrue("Had ${v.considered.first().let { it.price - it.shortBy!! }} gold to spend. The cheapest weapon cost" in decision, decision)
                 if (v.kind == VisitKind.BROWSE && v.sale != null) assertTrue("for ${v.sale!!.listedPrice} gold" in decision && s.blade(v.purchasedWeaponId)!!.name in decision, decision)
-                if (v.sale?.tradeInWeaponId != null) assertTrue(c!!.equipped!!.name in decision && "${v.sale!!.tradeInCredit} gold off" in decision, decision)
+                if (v.sale?.tradeInWeaponId != null) assertTrue(c!!.equipped!!.name in decision && "${v.sale!!.tradeInCredit} gold of credit" in decision, decision)
                 if (c != null) assertTrue(c.name in Lines.customer(v, content) && (c.equipped?.name ?: "no weapon") in Lines.customer(v, content))
 
                 // The same visit with its fields gone says less, never something else: the bare label.
@@ -506,34 +506,34 @@ class ShopDayScriptTest {
         val day = script(day(shelf = shelf))
         fun line(v: MarketVisit) = Lines.decision(v, day, content)
         val dear = left(0, "h1", VisitReason.TOO_EXPENSIVE, listOf(Considered(WeaponId("a"), 60, listOf(VisitFactor.CANNOT_AFFORD), shortBy = 12)))
-        assertEquals("Could pay up to 48 gold; the cheapest blade is 60 gold.", line(dear))
-        assertEquals("Could pay up to 48 gold.", Lines.decision(dear, day.copy(prices = emptyMap()), content))
-        assertEquals("Could afford nothing on the shelf.", line(dear.copy(considered = listOf(Considered(WeaponId("a"), 60)))))
+        assertEquals("Had 48 gold to spend. The cheapest weapon cost 60 gold.", line(dear))
+        assertEquals("Had 48 gold to spend.", Lines.decision(dear, day.copy(prices = emptyMap()), content))
+        assertEquals("Couldn't afford anything.", line(dear.copy(considered = listOf(Considered(WeaponId("a"), 60)))))
         val sale = bought(1, "h2", "a", cash = 40, old = bow)
-        assertEquals("Iron Sword is stronger than their Iron Bow. Bought Iron Sword for 45 gold. Iron Bow came back in part payment: 5 gold off, 40 gold in coin.", line(sale))
-        assertEquals("Bought a blade for 45 gold. Their old blade came back in part payment: 5 gold off, 40 gold in coin.", line(sale.copy(customer = null, purchasedWeaponId = WeaponId("gone"))))
+        assertEquals("Iron Sword is stronger than their Iron Bow. Bought Iron Sword for 45 gold. Traded in Iron Bow for 5 gold of credit. Paid 40 gold in cash.", line(sale))
+        assertEquals("Bought a weapon for 45 gold. Traded in their old weapon for 5 gold of credit. Paid 40 gold in cash.", line(sale.copy(customer = null, purchasedWeaponId = WeaponId("gone"))))
         assertEquals("Hero h2, Guardian. Carries Iron Bow.", Lines.customer(sale, content))
         assertEquals("Hero h3, Guardian, a regular. Carries no weapon.", Lines.customer(bought(2, "h3", "a", regular = true), content))
         // A refusal's heading leads with the recorded gap; without a price on record it is the plain label, never a guess.
-        assertEquals("12 gold short of the cheapest blade", Lines.headline(dear, day))
-        assertEquals("could afford nothing on the shelf", Lines.headline(dear, day.copy(prices = emptyMap())))
-        assertEquals("could afford nothing on the shelf", Lines.headline(dear.copy(considered = listOf(Considered(WeaponId("a"), 60))), day))
-        assertEquals("found nothing to suit", Lines.headline(left(3, "h4", VisitReason.NOT_SUITED), day))
+        assertEquals("12 gold short of the cheapest weapon", Lines.headline(dear, day))
+        assertEquals("couldn't afford anything", Lines.headline(dear, day.copy(prices = emptyMap())))
+        assertEquals("couldn't afford anything", Lines.headline(dear.copy(considered = listOf(Considered(WeaponId("a"), 60))), day))
+        assertEquals("found no weapon that suited them", Lines.headline(left(3, "h4", VisitReason.NOT_SUITED), day))
         // The factors as sentences, what spoke for the blade apart from what spoke against it.
-        assertEquals("Against it: 12 gold beyond their purse.", Lines.weighed(dear.considered.single()))
+        assertEquals("Reasons to pass. 12 gold over their budget.", Lines.weighed(dear.considered.single()))
         assertEquals(
-            "For it: suits their class; they carry nothing. Against it: priced above what they hold fair.",
+            "Reasons to buy. Suits their class. They need a weapon. Reasons to pass. Costs more than they think it's worth.",
             Lines.weighed(Considered(WeaponId("a"), 60, listOf(VisitFactor.SUITS_CLASS, VisitFactor.ABOVE_THEIR_CEILING, VisitFactor.UNARMED))),
         )
-        assertEquals("Against it: beyond their purse.", Lines.weighed(Considered(WeaponId("a"), 60, listOf(VisitFactor.CANNOT_AFFORD))))
+        assertEquals("Reasons to pass. They can't afford it.", Lines.weighed(Considered(WeaponId("a"), 60, listOf(VisitFactor.CANNOT_AFFORD))))
         assertEquals("", Lines.weighed(Considered(WeaponId("a"), 60)))
-        assertEquals("Nothing on the shelf beats their Iron Bow.", line(left(3, "h4", VisitReason.NOT_BETTER).let { it.copy(customer = it.customer!!.copy(equipped = bow)) }))
-        assertEquals("Found nothing better than the blade in hand.", line(left(3, "h4", VisitReason.NOT_BETTER)))
-        assertEquals("Bronze Axe is not a weapon for a Guardian.", line(left(4, "h5", VisitReason.NOT_SUITED, listOf(Considered(WeaponId("b"), 30, listOf(VisitFactor.OFF_CLASS))))))
-        assertEquals("Bronze Axe at 300 gold is more than they hold fair.", line(left(5, "h6", VisitReason.OVERPRICED, listOf(Considered(WeaponId("b"), 300, listOf(VisitFactor.ABOVE_THEIR_CEILING))))))
-        assertEquals("Balked at the price.", line(left(5, "h6", VisitReason.OVERPRICED)))
-        assertEquals("Collected the requested Iron Sword and paid 140 gold.", line(patron(6, "h7", "a")))
-        assertEquals("Paid 90 gold for Bronze Axe and carried it off.", line(collector(7, "b")))
+        assertEquals("Nothing on the shelf improved on their Iron Bow.", line(left(3, "h4", VisitReason.NOT_BETTER).let { it.copy(customer = it.customer!!.copy(equipped = bow)) }))
+        assertEquals("Found no upgrade for their weapon.", line(left(3, "h4", VisitReason.NOT_BETTER)))
+        assertEquals("Bronze Axe doesn't suit a Guardian.", line(left(4, "h5", VisitReason.NOT_SUITED, listOf(Considered(WeaponId("b"), 30, listOf(VisitFactor.OFF_CLASS))))))
+        assertEquals("They didn't think Bronze Axe was worth 300 gold.", line(left(5, "h6", VisitReason.OVERPRICED, listOf(Considered(WeaponId("b"), 300, listOf(VisitFactor.ABOVE_THEIR_CEILING))))))
+        assertEquals("Thought the price was too high.", line(left(5, "h6", VisitReason.OVERPRICED)))
+        assertEquals("Collected Iron Sword and paid 140 gold.", line(patron(6, "h7", "a")))
+        assertEquals("Paid 90 gold for Bronze Axe for their collection.", line(collector(7, "b")))
         VisitReason.entries.forEach { assertTrue(Lines.reason(it).isNotBlank()) }
         VisitFactor.entries.forEach { assertTrue(Lines.factor(it).isNotBlank()) }
     }

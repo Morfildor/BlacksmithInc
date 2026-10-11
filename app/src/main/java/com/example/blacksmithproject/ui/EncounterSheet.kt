@@ -133,8 +133,8 @@ fun EncounterContent(view: Encounters.View, state: GameState, busy: Boolean, onC
                 }
             }
         }
-        if (view.options.none { it.id != Encounters.PASS && it.blocked == null }) Secondary("Nothing else can be agreed today; only the free answer is open.", Modifier.padding(top = Space.sm))
-        Secondary("If you do not answer by End Day: ${view.defaultLabel}", Modifier.padding(top = Space.sm).testTag("visitor_default"))
+        if (view.options.none { it.id != Encounters.PASS && it.blocked == null }) Secondary("You can't take the other options today. The free option is still available.", Modifier.padding(top = Space.sm))
+        Secondary("No answer by End Day means ${view.defaultLabel.lowercase()}.", Modifier.padding(top = Space.sm).testTag("visitor_default"))
 
         FlowRow(Modifier.fillMaxWidth().padding(top = Space.md), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
             PrimaryActionButton("Commit", { selected?.let { onCommit(it.id) } }, Modifier.weight(1f).testTag("visitor_commit"), enabled = selected != null && !busy)
@@ -179,7 +179,7 @@ fun RelicRows(relics: List<Relics.View>, slots: Int, offerPending: Boolean, onOp
                 }
             }
         }
-        if (offerPending) SecondaryActionButton("A relic is offered: choose", onOpenOffer, Modifier.fillMaxWidth().padding(top = Space.xs).testTag("relic_reopen"))
+        if (offerPending) SecondaryActionButton("Choose your offered relic", onOpenOffer, Modifier.fillMaxWidth().padding(top = Space.xs).testTag("relic_reopen"))
     }
 }
 
@@ -197,16 +197,16 @@ fun RelicDialog(
     AlertDialog(
         modifier = Modifier.semantics { testTagsAsResourceId = true },
         onDismissRequest = {},
-        title = { Text(if (taking == null) "A relic for the workshop" else "Which relic makes room?") },
+        title = { Text(if (taking == null) "A relic for the workshop" else "Which relic will you replace?") },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
                 if (taking == null) {
-                    if (held.size >= slots) Text("Every slot is taken: the relic you pick replaces one you hold.", style = MaterialTheme.typography.bodyMedium)
+                    if (held.size >= slots) Text("Your relic slots are full. Choose a new relic, then pick one to replace.", style = MaterialTheme.typography.bodyMedium)
                     offer.forEach { r ->
                         RelicChoice(r.name, r.description, "relic_${r.id}", !busy, relicIcon(r.id)) { if (held.size >= slots) picked = r.id else onChoose(r.id, null) }
                     }
                 } else {
-                    Text("${taking.name} takes the place of the relic you pick. That relic leaves the workshop and its progress is lost.", style = MaterialTheme.typography.bodyMedium)
+                    Text("${taking.name} replaces the relic you choose. You'll lose the old relic and its progress.", style = MaterialTheme.typography.bodyMedium)
                     held.forEach { r -> RelicChoice(r.name, r.status, "relic_replace_${r.id}", !busy, relicIcon(r.id)) { onChoose(taking.id, r.id) } }
                 }
             }

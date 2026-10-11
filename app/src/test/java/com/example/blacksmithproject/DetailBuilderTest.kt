@@ -79,13 +79,13 @@ class DetailBuilderTest {
         assertTrue("no snapshot, no counter block", d.counter.isEmpty())
         val now = d.now.associateBy { it.label }
         assertEquals(listOf("Health", "Class", "Element taste", "Traits", "Purse", "Standing", "Guild", "Mentor", "Carries"), d.now.map { it.label }.filter { it != "Ambition" })
-        assertEquals("Favours frost blades", now.getValue("Element taste").value)
+        assertEquals("Favors frost weapons", now.getValue("Element taste").value)
         assertEquals("77 gold", now.getValue("Purse").value)
-        assertEquals("A regular of your shop", now.getValue("Standing").value)
+        assertEquals("A shop regular", now.getValue("Standing").value)
         assertEquals("The Ember Hall", now.getValue("Guild").value)
         assertEquals(f.mentor.fullName to f.mentor.id, now.getValue("Mentor").let { it.value to it.heroId })
         assertEquals(f.blade.name to f.blade.id, now.getValue("Carries").let { it.value to it.weaponId })
-        assertEquals("Hale", now.getValue("Health").value)
+        assertEquals("Healthy", now.getValue("Health").value)
     }
 
     @Test
@@ -142,7 +142,7 @@ class DetailBuilderTest {
         )
         val d = engine.heroDetail(state, f.hero.id)!!
         assertEquals(
-            listOf("Day 5: Left without buying: could afford nothing on the shelf; Bronze Axe was 13 gold out of reach.", "Day 4: asked for a spear", "Day 2: bought a sword"),
+            listOf("Day 5: Left without buying: couldn't afford anything. Bronze Axe was 13 gold out of reach.", "Day 4: asked for a spear", "Day 2: bought a sword"),
             d.shop,
         )
         assertEquals(listOf("Day 5: rested", "Day 3: won on the road"), d.events)

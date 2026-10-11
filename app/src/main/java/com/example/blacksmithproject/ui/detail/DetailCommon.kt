@@ -27,6 +27,7 @@ import com.tinyblacksmith.core.model.EventRecord
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.WeaponId
+import com.tinyblacksmith.core.text.LegacyProse
 
 /** One labelled line of a detail sheet. A line with [heroId] or [weaponId] opens that hero's or blade's sheet. */
 @Immutable
@@ -39,7 +40,7 @@ internal const val NOW = "Now"
 internal fun changed(counter: List<Fact>, now: List<Fact>): List<Fact> = now.filter { n -> counter.none { it.label == n.label && it.value == n.value } }
 
 /** "Day 12: text", with the era when it is not the one being played. Records are stored oldest first; sheets show newest first. */
-internal fun dated(state: GameState, era: Int, day: Int, text: String): String = (if (era != state.era) "Era $era, day $day: " else "Day $day: ") + text
+internal fun dated(state: GameState, era: Int, day: Int, text: String): String = (if (era != state.era) "Era $era, day $day: " else "Day $day: ") + LegacyProse.display(text)
 
 internal fun recordsOf(state: GameState, id: String): List<EventRecord> = state.events.filter { id in it.subjectIds }
 

@@ -61,22 +61,22 @@ object Depth {
 
     // Weights, limits and cooldowns are PROPOSED.
     val encounters = listOf(
-        EncounterDef(LAST_CRATE, "The Last Crate", 3.0, maxPerRun = 6, cooldownDays = 3, description = "A carter has one crate left before the roads close for the siege."),
-        EncounterDef(BLADE_FOR_THE_WALL, "A Blade for the Wall", 2.5, maxPerRun = 4, cooldownDays = 4, description = "A defender with a thin purse asks for a blade; a richer patron waits behind them."),
-        EncounterDef(MASTERS_AFTERNOON, "The Master's Afternoon", 2.0, maxPerRun = 2, cooldownDays = 5, description = "A wandering master smith will teach, for an afternoon of your time or for coin.", replacesEvent = "wandering_master"),
-        EncounterDef(COLLECTORS_OFFER, "The Collector's Offer", 2.0, maxPerRun = 2, cooldownDays = 5, description = "A collector has heard of one of your blades and names a price.", replacesEvent = "collector"),
-        EncounterDef(CRACKED_FAMILY_BLADE, "A Cracked Family Blade", 4.0, maxPerRun = 3, cooldownDays = 3, description = "Someone close to a fallen hero asks after the blade that came back without them."),
-        EncounterDef(CROOKED_MERCHANT, "The Crooked Merchant", 1.5, maxPerRun = 3, cooldownDays = 5, description = "A merchant with a quick smile sells a blade cheap and will not say why.", minDay = 4),
-        EncounterDef(SMITHS_WAGER, "The Smith's Wager", 1.5, maxPerRun = 3, cooldownDays = 6, description = "A rival smith passing through wagers you cannot make what he names in three days.", minDay = 3),
-        EncounterDef(FESTIVAL_CONTRACT, "The Festival Contract", 2.0, maxPerRun = 4, cooldownDays = 4, description = "The town council is planning a festival and wants the forge for it, one way or the other.", replacesEvent = "merchant_festival"),
-        EncounterDef(DEBT_REPAID, "The Debt Repaid", 0.0, maxPerRun = Int.MAX_VALUE, cooldownDays = 0, description = "The defender you armed on trust is back at the forge.", followUp = true),
+        EncounterDef(LAST_CRATE, "The Last Crate", 3.0, maxPerRun = 6, cooldownDays = 3, description = "One crate left before the siege closes the roads."),
+        EncounterDef(BLADE_FOR_THE_WALL, "A Weapon for the Wall", 2.5, maxPerRun = 4, cooldownDays = 4, description = "A defender needs a weapon on credit. A wealthier customer is next in line."),
+        EncounterDef(MASTERS_AFTERNOON, "The Master's Afternoon", 2.0, maxPerRun = 2, cooldownDays = 5, description = "A visiting master smith offers a lesson for time or gold.", replacesEvent = "wandering_master"),
+        EncounterDef(COLLECTORS_OFFER, "The Collector's Offer", 2.0, maxPerRun = 2, cooldownDays = 5, description = "A collector wants one of your weapons and has made an offer.", replacesEvent = "collector"),
+        EncounterDef(CRACKED_FAMILY_BLADE, "A Cracked Heirloom", 4.0, maxPerRun = 3, cooldownDays = 3, description = "Someone close to a fallen hero wants their weapon restored."),
+        EncounterDef(CROOKED_MERCHANT, "The Crooked Merchant", 1.5, maxPerRun = 3, cooldownDays = 5, description = "A merchant offers a cheap weapon. There's a catch.", minDay = 4),
+        EncounterDef(SMITHS_WAGER, "The Smith's Wager", 1.5, maxPerRun = 3, cooldownDays = 6, description = "A visiting smith bets you can't meet his challenge in time.", minDay = 3),
+        EncounterDef(FESTIVAL_CONTRACT, "The Festival Contract", 2.0, maxPerRun = 4, cooldownDays = 4, description = "The council wants your help with the festival or the town watch.", replacesEvent = "merchant_festival"),
+        EncounterDef(DEBT_REPAID, "The Debt Repaid", 0.0, maxPerRun = Int.MAX_VALUE, cooldownDays = 0, description = "The defender you armed on credit has returned.", followUp = true),
     )
 
     val relics = listOf(
-        RelicDef(SALVAGERS_CRUCIBLE, "Salvager's Crucible", RelicEffect.SALVAGE_AUGMENT, "Once a day, melting down a fine blade also gives its augment back."),
-        RelicDef(TEMPERING_LEDGER, "Tempering Ledger", RelicEffect.FAMILY_STREAK, "Each blade of a family not yet in the streak is forged better; repeating one starts the streak again."),
-        RelicDef(COLLECTORS_SEAL, "Collector's Seal", RelicEffect.PREMIUM_SEAL, "The first costly shelf sale of a day earns a seal; three seals bring a rare material."),
-        RelicDef(ASHEN_BELLOWS, "Ashen Bellows", RelicEffect.BELLOWS, "Once a day one forge may burn tomorrow's strength for an extra property."),
+        RelicDef(SALVAGERS_CRUCIBLE, "Salvager's Crucible", RelicEffect.SALVAGE_AUGMENT, "Once daily, salvage a fine weapon to recover its augment as well as its metal."),
+        RelicDef(TEMPERING_LEDGER, "Tempering Ledger", RelicEffect.FAMILY_STREAK, "Forge different weapon types in a row to gain quality. Repeating a type resets the streak."),
+        RelicDef(COLLECTORS_SEAL, "Collector's Seal", RelicEffect.PREMIUM_SEAL, "Your first qualifying shelf sale each day earns a seal. Collect three for a rare material."),
+        RelicDef(ASHEN_BELLOWS, "Ashen Bellows", RelicEffect.BELLOWS, "Once daily, borrow energy from tomorrow to add a property to one forge."),
     ) + CombatContent.relicEffects.keys.map { id ->
         // A guild relic is a rule of the party in a fight; its text is the rule's own, so the card and the resolver cannot disagree.
         val rules = CombatContent.relicEffects.getValue(id)
@@ -87,9 +87,9 @@ object Depth {
 
     // Catalog numbers, PROPOSED.
     val siegeTraits = listOf(
-        SiegeTraitDef(LONG_ASSAULT, "Long Assault", "The fighting will last till dawn: worn blades count for much less, and every blade on the wall wears twice as fast.",
-            "Put fresh blades in the defenders' hands, or arm the watch: its arms do not tire.", conditionFloorFactor = 0.6, wearMultiplier = 2.0),
-        SiegeTraitDef(MANY_BREACHES, "Many Breaches", "They will come at every gate at once: the watch and the militia count for far more, and the raid is stronger.",
-            "Give blades to the town watch, even plain ones, or arm the champions well enough to hold regardless.", watchMultiplier = 1.75, raidMultiplier = 1.05),
+        SiegeTraitDef(LONG_ASSAULT, "Long Assault", "A long fight favors fresh weapons. Worn weapons contribute less, and defenders' weapons wear twice as fast.",
+            "Stock fresh weapons for the defenders or arm the watch. Watch weapons don't wear out.", conditionFloorFactor = 0.6, wearMultiplier = 2.0),
+        SiegeTraitDef(MANY_BREACHES, "Many Breaches", "Multiple gates are under attack. The watch and militia contribute much more, but the raid is stronger too.",
+            "Donate weapons to the watch or improve the champions' gear. Plain weapons help too.", watchMultiplier = 1.75, raidMultiplier = 1.05),
     )
 }

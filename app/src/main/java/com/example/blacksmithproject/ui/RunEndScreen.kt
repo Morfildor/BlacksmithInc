@@ -60,7 +60,7 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
                 HorizontalDivider(Modifier.padding(vertical = Space.xs), color = BronzeDeep)
                 StatRow("Total", "${end.totalPoints} points", valueColor = Gold)
                 Secondary(
-                    if (s.claimed) "This era's reward is banked. Each era can be claimed only once." else "Claim once to bank these points for good. They survive every future era.",
+                    if (s.claimed) "Reward claimed. These points are yours to keep." else "Claim these points to keep them for future eras.",
                     Modifier.padding(top = Space.sm),
                 )
                 if (!s.claimed) PrimaryActionButton("Claim ${end.totalPoints} legacy points", vm::claimLegacy, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("run_claim"), enabled = !s.busy)
@@ -68,10 +68,10 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
             }
 
             if (end.legends.isNotEmpty()) {
-                SectionTitle("Blades remembered")
+                SectionTitle("Weapons remembered")
                 end.legends.forEach { Text("${it.title} · ${it.kills} kills", style = MaterialTheme.typography.bodyMedium) }
             }
-            end.lineage?.let { SectionTitle("Lineage"); Text("${it.heroName} ${it.deed}; their line may return.", style = MaterialTheme.typography.bodyMedium) }
+            end.lineage?.let { SectionTitle("Lineage"); Text("${it.heroName} ${it.deed}. Their descendants may return.", style = MaterialTheme.typography.bodyMedium) }
 
             SectionTitle("Permanent upgrades · ${s.legacy.points} points")
             if (!s.claimed) Secondary("Claim your legacy first to spend points.")
@@ -88,7 +88,7 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
                                 Secondary("level $level of ${u.maxLevel}")
                             }
                             Secondary(u.description)
-                            Secondary(Legacy.preview(u.id, level + 1, content, vm.engine.config)?.text ?: "Fully upgraded: nothing more to buy.")
+                            Secondary(Legacy.preview(u.id, level + 1, content, vm.engine.config)?.text ?: "Fully upgraded.")
                         }
                         // A greyed button says why: nothing is bought before the claim, or the points are short.
                         val blocked = when { cost == null -> null; !s.claimed -> "claim the legacy first"; s.legacy.points < cost -> "it costs $cost points and you have ${s.legacy.points}"; else -> null }
@@ -111,7 +111,7 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
                 PrimaryActionButton("Begin era $nextEra", vm::beginNextEra, Modifier.fillMaxWidth().testTag("run_begin_era"), enabled = !s.busy)
             } else {
                 PrimaryActionButton("Begin era $nextEra", vm::beginNextEra, Modifier.fillMaxWidth().semantics { contentDescription = "Begin era $nextEra, unavailable: claim the legacy above first" }, enabled = false)
-                Secondary("Claim the legacy above to begin the next era.", Modifier.padding(top = Space.xs))
+                Secondary("Claim your legacy points to begin the next era.", Modifier.padding(top = Space.xs))
             }
         }
     }

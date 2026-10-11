@@ -108,8 +108,8 @@ class GuildEveningTest {
                 m.outcome == MissionOutcome.RETREATED -> "Pulled back".also { pulledBack++ }
                 m.outcome == MissionOutcome.LOST -> "Beaten".also { beaten++ }
                 !m.continues -> "Finished".also { finished++ }
-                still!!.offer.optionalPush -> "Won the first stage; the smith decides in the morning".also { checkpoints++ }
-                else -> "Won the first day; the party presses on tomorrow"
+                still!!.offer.optionalPush -> "Won the first stage. The smith decides in the morning".also { checkpoints++ }
+                else -> "Won the first day. The party presses on tomorrow"
             }
             assertEquals("$d", expected, c.outcome)
             if (m.fight != null) fights++
@@ -229,7 +229,7 @@ class GuildEveningTest {
             assertEquals(f.actors.count { it.side == Side.PARTY }, party.size)
             f.actors.filter { it.side == Side.PARTY }.zip(party).forEach { (a, text) ->
                 assertTrue(text, text.startsWith(a.name + " " + if (a.downed) "down" else "${a.health}/${a.maxHealth}"))
-                assertEquals(text, a.fractured, "blade cracked" in text)
+                assertEquals(text, a.fractured, "weapon cracked" in text)
             }
             assertTrue(fightOutcomeLine(f), fightOutcomeLine(f).endsWith("${f.rounds} round" + if (f.rounds == 1) "" else "s"))
         }

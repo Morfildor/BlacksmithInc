@@ -191,8 +191,8 @@ class ShopDayUiTest {
                     if (v.sale != null) { sales++; assertEquals("the receipt's total is the rise", coin, gold(beat.visit.receipt.last().value)) }
                     if (v.kind == VisitKind.COMMISSION) {
                         requests++
-                        assertEquals("Request paid", beat.visit.banner)
-                        assertEquals(listOf("Request payment" to "${v.sale!!.cashPaid} gold", "Coin to the till" to "$coin gold"), beat.visit.receipt.map { it.label to it.value })
+                        assertEquals("Commission collected", beat.visit.banner)
+                        assertEquals(listOf("Request payment" to "${v.sale!!.cashPaid} gold", "Total received" to "$coin gold"), beat.visit.receipt.map { it.label to it.value })
                     }
                     earned = beat.visit.earnedAfter
                 }
@@ -256,12 +256,12 @@ class ShopDayUiTest {
                 val funds = v.considered.first { it.shortBy != null }.let { it.price - it.shortBy!! }
                 val gone = day.script.visits.filter { it.seq < v.seq }.mapNotNull { it.purchasedWeaponId }
                 val cheapest = day.script.prices.filterKeys { it !in gone }.values.min()
-                assertEquals("${cheapest - funds} gold short of the cheapest blade", ui.outcome)
-                assertEquals("Could pay up to $funds gold; the cheapest blade is $cheapest gold.", ui.decision)
+                assertEquals("${cheapest - funds} gold short of the cheapest weapon", ui.outcome)
+                assertEquals("Had $funds gold to spend. The cheapest weapon cost $cheapest gold.", ui.decision)
                 short++
             }
             for (looked in ui.looked) {
-                assertTrue(looked.factors, looked.factors.isEmpty() || looked.factors.startsWith("For it: ") || looked.factors.startsWith("Against it: "))
+                assertTrue(looked.factors, looked.factors.isEmpty() || looked.factors.startsWith("Reasons to buy. ") || looked.factors.startsWith("Reasons to pass. "))
                 assertTrue(looked.title, looked.title.endsWith(" gold"))
             }
             // What was missing, never what a different price would have done.

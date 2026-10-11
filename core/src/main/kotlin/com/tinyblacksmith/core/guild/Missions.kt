@@ -84,7 +84,7 @@ object Missions {
             post(def, c.factionId, hero = c.heroId, reason = "${hero.fullName} is alive ${cat.route(c.factionId)?.where ?: "in their camp"}." + (blade?.let { " The loaned ${it.name} is with the captor." } ?: ""), expires = c.deadlineDay - 1)
         }
         g.nemesis?.let { n -> if (offers.none { it.subjectWeaponId == n.weaponId }) cat.missionById[GuildContent.RECOVERY]?.let { def ->
-            ctx.weapons[n.weaponId]?.let { blade -> post(def, n.factionId, weapon = n.weaponId, reason = "${n.name} carries ${blade.name}, a blade of this forge.") }
+            ctx.weapons[n.weaponId]?.let { blade -> post(def, n.factionId, weapon = n.weaponId, reason = "${n.name} carries ${blade.name}, a weapon of this forge.") }
         } }
         update(ctx) { it.copy(offers = offers, nextMissionSerial = serial) }
     }
@@ -245,7 +245,7 @@ object Missions {
         val where = title(ctx, m.offer)
         val names = alive.map { ctx.heroes[it]?.fullName ?: "?" }.joinToString(", ")
         val head = when {
-            continues && atCheckpoint(after) -> "$names won the first stage of $where. Deeper lies more; the smith decides in the morning."
+            continues && atCheckpoint(after) -> "$names won the first stage of $where. Deeper lies more. The smith decides in the morning."
             continues -> "$names won the first day of $where and press on tomorrow."
             outcome == MissionOutcome.WON -> "$names finished $where."
             outcome == MissionOutcome.RETREATED -> "$names pulled back from $where."

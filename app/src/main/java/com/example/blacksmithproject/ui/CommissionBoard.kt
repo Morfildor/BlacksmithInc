@@ -97,7 +97,7 @@ fun CommissionBoard(
         item(key = "commissions") {
             Column {
                 Text("Commissions", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() }.testTag("board_commissions"))
-                Secondary(if (board.commissions.isEmpty()) "None open. A hero may ask for a blade at End Day; up to $slots at a time." else "A paid order with a deadline. Accept it, then have a blade that fits in the shop at End Day.")
+                Secondary(if (board.commissions.isEmpty()) "No open commissions. Heroes may place orders at End Day. You can hold up to $slots at once." else "Accept an order, then have a matching weapon in storage or on the shelf at End Day.")
             }
         }
         items(board.commissions, key = { "c:${it.id.value}" }) { r ->
@@ -108,13 +108,13 @@ fun CommissionBoard(
         item(key = "wants") {
             Column {
                 Text("Customer wants", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.padding(top = Space.lg).semantics { heading() }.testTag("board_wants"))
-                Secondary(if (board.groups.isEmpty()) "Nobody has left without the blade they came for." else "Heroes who left without a blade. No order and no promise: they may buy one that suits them.")
+                Secondary(if (board.groups.isEmpty()) "No unmet requests yet." else "These heroes left without finding a weapon. Stock something suitable and they may buy it.")
             }
         }
         board.groups.forEach { g ->
             val id = "w:${g.familyId.value}"
             item(key = id) {
-                BoardRow(g.title, if (g.answered == g.wants.size) "The shelf answers them" else if (g.answered > 0) "The shelf answers ${g.answered}" else "Nothing on the shelf for them", if (open == id) "Hide" else "Show", g.answered == g.wants.size, "board_group_${g.familyId.value}") { open = if (open == id) null else id }
+                BoardRow(g.title, if (g.answered == g.wants.size) "Suitable weapons are on the shelf" else if (g.answered > 0) "Suitable weapons on the shelf for ${g.answered}" else "No suitable weapons on the shelf", if (open == id) "Hide" else "Show", g.answered == g.wants.size, "board_group_${g.familyId.value}") { open = if (open == id) null else id }
             }
             if (open == id) items(g.wants, key = { "want_${it.heroId.value}" }) { WantRow(it, onOpenHero, onForgeWant) }
         }

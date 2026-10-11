@@ -95,15 +95,15 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // Known Name: the shop is known before its doors open. One starting hero per level is already a regular with coin saved for a blade.
         val regulars = ctx.aliveHeroes().take(content.upgrades.filter { it.effect == UpgradeEffect.STARTING_REPUTATION }.sumOf { legacy.upgradeLevel(it.id) })
         for (h in regulars) ctx.updateHero(h.copy(loyalty = config.regularLoyaltyThreshold, gold = h.gold + config.legacyTracks.knownNameRegularGold))
-        ctx.emit(EventType.RUN_STARTED, 5, "Era $era begins in Emberfall under a ${ctx.world.name.lowercase()}. The first invasion is expected on day ${config.siegeInterval}.")
+        ctx.emit(EventType.RUN_STARTED, 5, "Era $era begins. World conditions are ${ctx.world.name.lowercase()}. The first siege is expected on day ${config.siegeInterval}.")
         descendant?.let { d ->
             val h = ctx.heroes.values.first { it.lineageId == d.id }
-            ctx.emit(EventType.HERO_ARRIVED, 4, "${h.fullName}, descendant of ${d.heroName} who ${d.deed}, has come to Emberfall.", listOf(h.id.value))
+            ctx.emit(EventType.HERO_ARRIVED, 4, "${h.fullName} arrived in Emberfall. Their ancestor ${d.heroName} ${d.deed}.", listOf(h.id.value))
         }
         if (regulars.isNotEmpty()) {
             val names = regulars.map { it.fullName }
             val who = if (names.size == 1) "${names[0]} is already a regular" else "${names.dropLast(1).joinToString(", ")} and ${names.last()} are already regulars"
-            ctx.emit(EventType.RUN_STARTED, 4, "The forge's name went before it: $who of the shop.", regulars.map { it.id.value })
+            ctx.emit(EventType.RUN_STARTED, 4, "Your forge is already known. $who here.", regulars.map { it.id.value })
         }
         // The first siege is on the calendar from the start (it is a plain one); the opening relic draft draws on ENCOUNTERS only.
         ctx.siege = SiegeScenario(config.siegeInterval)
@@ -245,7 +245,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.gold -= cost
         ctx.materials[def.id] = (ctx.materials[def.id] ?: 0) + cmd.quantity
         if (stock != null) ctx.supplierStock[def.id] = stock - cmd.quantity
-        ctx.emit(EventType.MATERIAL_BOUGHT, 0, "The smith bought ${cmd.quantity} ${def.name} for $cost gold.", data = mapOf("material" to def.id.value, "quantity" to cmd.quantity.toString(), "cost" to cost.toString()))
+        ctx.emit(EventType.MATERIAL_BOUGHT, 0, "Bought ${cmd.quantity} ${def.name} for $cost gold.", data = mapOf("material" to def.id.value, "quantity" to cmd.quantity.toString(), "cost" to cost.toString()))
         return accept(ctx)
     }
 
@@ -294,10 +294,10 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val ctx = ResolutionContext(state, content, config)
         spendEnergy(ctx, config.salvageEnergy)?.let { return CommandOutcome.Rejected(it) }
         ctx.materials[weapon.coreId] = (ctx.materials[weapon.coreId] ?: 0) + 1
-        val kept = if (Relics.onSalvage(ctx, weapon)) " and, in the crucible, its ${content.material(weapon.augmentId).name}" else ""
+        val kept = if (Relics.onSalvage(ctx, weapon)) " and its ${content.material(weapon.augmentId).name}" else ""
         ctx.updateWeapon(weapon.copy(location = WeaponLocation.Destroyed(state.day)))
         ctx.addWeaponHistory(weapon.id, "SALVAGED", "Melted down for its ${content.material(weapon.coreId).name}$kept.")
-        ctx.emit(EventType.WEAPON_SALVAGED, 0, "The smith melted ${weapon.name} down for its ${content.material(weapon.coreId).name}$kept.", listOf(weapon.id.value), if (kept.isEmpty()) emptyMap() else mapOf("augment" to weapon.augmentId.value))
+        ctx.emit(EventType.WEAPON_SALVAGED, 0, "Salvaged ${weapon.name}. Recovered its ${content.material(weapon.coreId).name}$kept.", listOf(weapon.id.value), if (kept.isEmpty()) emptyMap() else mapOf("augment" to weapon.augmentId.value))
         return accept(ctx)
     }
 
@@ -318,7 +318,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         }
         val got = back.entries.joinToString(", ") { "${it.value} ${content.material(it.key).name}" }
         // One record for the lot, with its count: two hundred blades are not two hundred lines in the save.
-        ctx.emit(EventType.WEAPON_SALVAGED, 0, "The smith carted ${weapons.size} ${if (weapons.size == 1) "blade" else "blades"} to the scrap heap" + (if (got.isEmpty()) "." else " and got $got back."),
+        ctx.emit(EventType.WEAPON_SALVAGED, 0, "Scrapped ${weapons.size} ${if (weapons.size == 1) "weapon" else "weapons"}" + (if (got.isEmpty()) "." else ". Recovered $got."),
             data = mapOf("count" to weapons.size.toString()))
         return accept(ctx)
     }
@@ -337,11 +337,11 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val woken = weapon.dormantAffixes
         val power = weapon.power + quality / config.powerPerQualityDivisor - weapon.quality / config.powerPerQualityDivisor + woken.sumOf { content.affix(it).power }
         ctx.updateWeapon(weapon.copy(quality = quality, power = power, rarity = Forge.rarityFor(quality, config), honed = true, condition = 100, affixes = weapon.affixes + woken, dormantAffixes = emptyList()))
-        val note = if (weapon.honed) "condition ${weapon.condition} to 100" else "quality ${weapon.quality} to $quality"
-        ctx.addWeaponHistory(weapon.id, "HONED", "Honed on the anvil ($note).")
-        if (woken.isNotEmpty()) ctx.addWeaponHistory(weapon.id, "AWAKENED", "Woke under the hone: ${woken.joinToString(", ") { content.affix(it).name }}.")
-        val text = (if (weapon.honed) "The smith honed ${weapon.name} back to a keen edge." else "The smith honed ${weapon.name} to quality $quality.") +
-            (if (woken.isNotEmpty()) " What slept in it woke: ${woken.joinToString(", ") { content.affix(it).name }}." else "")
+        val note = if (weapon.honed) "Condition ${weapon.condition} to 100" else "Quality ${weapon.quality} to $quality"
+        ctx.addWeaponHistory(weapon.id, "HONED", "Honed. $note.")
+        if (woken.isNotEmpty()) ctx.addWeaponHistory(weapon.id, "AWAKENED", "Honing restored dormant properties. ${woken.joinToString(", ") { content.affix(it).name }}.")
+        val text = (if (weapon.honed) "Restored ${weapon.name} to full condition." else "Honed ${weapon.name} to quality $quality.") +
+            (if (woken.isNotEmpty()) " Dormant properties restored. ${woken.joinToString(", ") { content.affix(it).name }}." else "")
         ctx.emit(EventType.WEAPON_HONED, 2, text, listOf(weapon.id.value), mapOf("quality" to quality.toString(), "condition" to "100") + (if (woken.isNotEmpty()) mapOf("woke" to woken.joinToString(",") { it.value }) else emptyMap()))
         return accept(ctx)
     }
@@ -358,7 +358,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.addWeaponHistory(weapon.id, "DONATED", "Given to the town watch of Emberfall.")
         val bounty = Consequences.bounty(ctx)
         ctx.gold += bounty
-        ctx.emit(EventType.WEAPON_DONATED, 3, "The smith armed the town watch with ${weapon.name}." + (if (bounty > 0) " The council paid $bounty gold for it." else ""), listOf(weapon.id.value),
+        ctx.emit(EventType.WEAPON_DONATED, 3, "You gave ${weapon.name} to the town watch." + (if (bounty > 0) " The council paid $bounty gold for it." else ""), listOf(weapon.id.value),
             mapOf("armory" to gain.toString()) + (if (bounty > 0) mapOf("bounty" to bounty.toString()) else emptyMap()))
         return accept(ctx)
     }
@@ -371,7 +371,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.gold -= cost
         ctx.tools[def.id] = (ctx.tools[def.id] ?: 0) + 1
         if (def.effect == ToolEffect.EXTRA_ENERGY) ctx.energy += def.magnitudePerLevel  // usable the day it is bought
-        ctx.emit(EventType.TOOL_BOUGHT, 2, "The forge gained a new tool: ${def.name}.", data = mapOf("tool" to def.id, "name" to def.name, "level" to ctx.tools.getValue(def.id).toString(), "cost" to cost.toString()))
+        ctx.emit(EventType.TOOL_BOUGHT, 2, "Bought ${def.name} for the forge.", data = mapOf("tool" to def.id, "name" to def.name, "level" to ctx.tools.getValue(def.id).toString(), "cost" to cost.toString()))
         return accept(ctx)
     }
 
@@ -390,7 +390,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val ctx = ResolutionContext(state, content, config)
         ctx.blessings = ctx.blessings.filter { it.id != def.id } + ActiveBlessing(def.id, state.day + def.durationDays - 1)
         ctx.pendingBlessingOffer = emptyList()
-        ctx.emit(EventType.BLESSING_CHOSEN, 3, "The smith accepted the blessing of ${def.name}.", data = mapOf("blessing" to def.id.value))
+        ctx.emit(EventType.BLESSING_CHOSEN, 3, "Chose the ${def.name} blessing.", data = mapOf("blessing" to def.id.value))
         return accept(ctx)
     }
 
@@ -484,7 +484,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val applied = minOf(earned, maxIntegrity - ctx.town.integrity)
         if (applied > 0) {
             ctx.town = ctx.town.copy(integrity = ctx.town.integrity + applied)
-            ctx.emit(EventType.TOWN_RECOVERED, 1, "Heroes shored up the forge defenses (+$applied integrity).", data = mapOf("amount" to applied.toString()))
+            ctx.emit(EventType.TOWN_RECOVERED, 1, "Heroes repaired the forge. Restored $applied health.", data = mapOf("amount" to applied.toString()))
         }
         ctx.town = ctx.town.copy(militia = maxOf(0, ctx.town.militia - config.militiaDecayPerDay))
         // The forecast's own champions: the same faction, warlord flag and ranking the siege will use.

@@ -120,10 +120,10 @@ class DetailSheetTest {
         val detail = engine.heroDetail(state, hero.id)!!
         show { detail }
         seen(hero.fullName)
-        seen("Favours frost blades")
+        seen("Favors frost weapons")
         seen("The Ember Hall")
         seen("77 gold")
-        seen("A regular of your shop")
+        seen("A shop regular")
         seen(engine.content.heroClass(hero.classId).name)
         compose.onNodeWithText("At the counter").assertDoesNotExist()
         // The mentor and the blade are doors to their own sheets.
@@ -177,7 +177,7 @@ class DetailSheetTest {
         compose.onNode(hasText("120 gold", substring = true) and hasAnyAncestor(hasTestTag("sheet_counter"))).performScrollTo().assertIsDisplayed()
         compose.onNode(hasText("77 gold", substring = true) and hasAnyAncestor(hasTestTag("sheet_now"))).performScrollTo().assertIsDisplayed()
         // What did not change is said once, at the counter.
-        compose.onNode(hasText("Favours frost blades") and hasAnyAncestor(hasTestTag("sheet_now"))).assertDoesNotExist()
+        compose.onNode(hasText("Favors frost weapons") and hasAnyAncestor(hasTestTag("sheet_now"))).assertDoesNotExist()
 
         // A snapshot that says what the save says: one block, no headings.
         val unchanged = state.copy(heroes = state.heroes + (hero.id to hero.copy(gold = 120, loyalty = 0)), weapons = emptyMap())

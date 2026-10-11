@@ -104,7 +104,7 @@ class SiegeDemandTest {
         assertNull(visit.purchasedWeaponId)
         assertTrue(VisitFactor.THREAT_RESISTS in visit.considered.first().factors)
         val told = Lines.decision(visit, ShopDay.script(out.resolution!!, out.state, content, config), content)
-        assertTrue("shrugs off" in told && "%" !in told, told)
+        assertTrue("resist" in told && "%" !in told, told)
         assertNotNull(out.state.hero(hero.id).want, "a refusal like any other: it leaves a want")
 
         // Not every refusal of a resisted blade is RESISTED: one they would not have bought anyway keeps its old reason.

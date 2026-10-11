@@ -207,8 +207,8 @@ object GuildContent {
     /** Visitors only a guild run can have (`guild.GuildVisitors`). With the eight older ones: twelve scenes. Weights, limits and cooldowns PROPOSED. */
     val encounters = listOf(
         EncounterDef(COWARD_RETURNS, "The Coward Returns Alone", 6.0, maxPerRun = 4, cooldownDays = 2, description = "One of the party is back without another, who is alive in enemy hands."),
-        EncounterDef(SWORD_COMPLAINT, "The Sword Files a Complaint", 2.5, maxPerRun = 3, cooldownDays = 5, description = "A blade with opinions has one about who carries it."),
-        EncounterDef(ACROSS_THE_COUNTER, "Your Best Sword Is Across the Counter", 4.0, maxPerRun = 3, cooldownDays = 3, description = "A dealer knows how to part the enemy from a blade of this forge."),
+        EncounterDef(SWORD_COMPLAINT, "The Sword Files a Complaint", 2.5, maxPerRun = 3, cooldownDays = 5, description = "A weapon with opinions has one about who carries it."),
+        EncounterDef(ACROSS_THE_COUNTER, "Your Best Sword Is Across the Counter", 4.0, maxPerRun = 3, cooldownDays = 3, description = "A dealer knows how to part the enemy from a weapon of this forge."),
         EncounterDef(INSURANCE_ADJUSTER, "Insurance Adjuster from the Underworld", 1.5, maxPerRun = 2, cooldownDays = 6, description = "An adjuster will insure one loan against the enemy.", minDay = 4),
     )
 
@@ -227,13 +227,13 @@ object GuildContent {
                 goldMin = 18, goldMax = 30, materials = MaterialDraw(3, 1, 2), suppression = 1))),
         MissionDef(HUNT, MissionArchetype.HUNT, "Hunt", days = 1, fee = 15, weight = 1.2, minDay = 2,
             description = "A named one of theirs has been seen with its guard. What it carries is worth having.",
-            prep = "A blade that bites their weakness, and a way through whatever protects the big one.",
+            prep = "A weapon that bites their weakness, and a way through whatever protects the big one.",
             failure = "Wounds and no prize. If the whole party goes down, one of them is taken.",
             stages = listOf(StageDef(roster(listOf("ashclaw_warchief", "ashclaw_scout"), listOf("pale_knight", "hollow_shambler"), listOf("ember_drake", "ember_whelp")), Danger.DANGEROUS, percent = 105,
                 goldMin = 55, goldMax = 85, materials = MaterialDraw(2, 3, 6, scarce = true), suppression = 6))),
         MissionDef(SABOTAGE, MissionArchetype.SABOTAGE, "Sabotage", days = 1, fee = 10, weight = 1.0, minDay = 3,
             description = "Get into their camp, spoil what they are preparing for the siege, and hold long enough to get out.",
-            prep = "Guard and healing. Nobody has to fall; the party has to last the rounds it says.",
+            prep = "Guard and healing. Nobody has to fall. The party has to last the rounds it says.",
             failure = "What they prepared stays prepared. If the whole party goes down, one of them is taken.",
             stages = listOf(StageDef(roster(listOf("ashclaw_brute", "ashclaw_thief", "ashclaw_scout"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.DANGEROUS, percent = 100,
                 objective = ObjectiveKind.HOLD, rounds = 4, goldMin = 15, goldMax = 25, suppression = 5, sabotage = true))),
@@ -265,9 +265,9 @@ object GuildContent {
                 StageDef(roster(listOf("ashclaw_thief", "ashclaw_scout", "ashclaw_brute"), listOf("hollow_shambler", "hollow_shambler", "gravecaller"), listOf("ember_whelp", "ember_whelp", "cinder_knight")), Danger.DANGEROUS, percent = 80,
                     objective = ObjectiveKind.HOLD, rounds = 4, protectUnitId = "captive"))),
         MissionDef(RECOVERY, MissionArchetype.RECOVERY, "Recovery", days = 1, fee = 10, weight = 0.0, lifeDays = 9,
-            description = "A blade of your forge is in one of their hands. The one who carries it has to fall.",
+            description = "A weapon of your forge is in one of their hands. The one who carries it has to fall.",
             prep = "The same as a hunt. What it took from you makes it harder.",
-            failure = "The blade stays with them, and you still know where. If the whole party goes down, one of them is taken.",
+            failure = "The weapon stays with them, and you still know where. If the whole party goes down, one of them is taken.",
             stages = listOf(StageDef(roster(listOf("ashclaw_warchief", "ashclaw_brute"), listOf("pale_knight", "bone_warden"), listOf("ember_drake", "cinder_knight")), Danger.DANGEROUS, percent = 95, goldMin = 20, goldMax = 30, suppression = 4))),
         MissionDef(WALL_WORK, MissionArchetype.EMERGENCY, "Work on the wall", days = 1, fee = 0, weight = 0.0,
             description = "No fight: a day of timber and stone at the forge's own wall.",
@@ -297,18 +297,18 @@ object GuildContent {
             listOf(t("methodical", "Methodical", Trigger(EventKind.STAT_SPENT, Who.SELF_SOURCE, Stat.MARK), listOf(Damage(Aim.EventTarget, Fixed(3))), Limit(perRound = 1), "When their own hit spends a Mark, it deals 3 more. Once a round."))),
         GuildTraitDef("loyal_guild", "Loyal", false, "When an ally goes down, strikes the one who did it for a full strike. Once a fight.",
             listOf(t("loyal", "Loyal", Trigger(EventKind.DOWNED, Who.ALLY_TARGET), listOf(Damage(Aim.EventSource, Strike())), Limit(perFight = 1), "When an ally goes down, strikes the one who did it for a full strike. Once a fight.", listOf(Condition.SourceIsFoe)))),
-        GuildTraitDef("storm_touched", "Storm-Touched", true, "Starts every fight with 1 Charge and can spend Charge with any blade: at 3 Charge, a burst of 8 storm damage.",
+        GuildTraitDef("storm_touched", "Storm-Touched", true, "Starts every fight with 1 Charge and can spend Charge with any weapon: at 3 Charge, a burst of 8 storm damage.",
             listOf(CombatContent.CHARGE_BURST), tags = setOf(CombatContent.TAG_CHARGE), startStats = mapOf(Stat.CHARGE to 1)),
         GuildTraitDef("pain_collector", "Pain Collector", true, "When an enemy's blow hurts them, gains 2 Thorns: the next enemy to strike them takes them. Once a round.",
             listOf(t("pain_collector", "Pain Collector", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Give(Stat.THORNS, Aim.Self, Fixed(2))), Limit(perRound = 1), "When an enemy's blow hurts them, gains 2 Thorns. Once a round.", listOf(Condition.SourceIsFoe, Condition.NotTick)))),
-        GuildTraitDef("rust_savant", "Rust Savant", true, "When an ally's blade cracks, strikes the first enemy for 6. Twice a fight.",
-            listOf(t("rust_savant", "Rust Savant", Trigger(EventKind.FRACTURED, Who.ALLY_SOURCE), listOf(Damage(Aim.Foe, Fixed(6))), Limit(perFight = 2), "When an ally's blade cracks, strikes the first enemy for 6. Twice a fight."))),
+        GuildTraitDef("rust_savant", "Rust Savant", true, "When an ally's weapon cracks, strikes the first enemy for 6. Twice a fight.",
+            listOf(t("rust_savant", "Rust Savant", Trigger(EventKind.FRACTURED, Who.ALLY_SOURCE), listOf(Damage(Aim.Foe, Fixed(6))), Limit(perFight = 2), "When an ally's weapon cracks, strikes the first enemy for 6. Twice a fight."))),
         GuildTraitDef("overhealer", "Overhealer", true, "When their healing is more than an ally can use, that ally gains 1 Regeneration. Once a round.",
             listOf(t("overhealer", "Overhealer", Trigger(EventKind.OVERHEAL, Who.SELF_SOURCE), listOf(Give(Stat.REGEN, Aim.EventTarget)), Limit(perRound = 1), "When their healing is more than an ally can use, that ally gains 1 Regeneration. Once a round.", listOf(Condition.FromAction)))),
-        GuildTraitDef("second_wind", "Second Wind", true, "The first time a blow leaves them at a third of their health or less, heals themselves for 10. Once a fight; it does not bring back the fallen.",
+        GuildTraitDef("second_wind", "Second Wind", true, "The first time a blow leaves them at a third of their health or less, heals themselves for 10. Once a fight. It does not bring back the fallen.",
             listOf(t("second_wind", "Second Wind", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Heal(Aim.Self, Fixed(10))), Limit(perFight = 1), "The first time a blow leaves them at a third of their health or less, heals themselves for 10. Once a fight.", listOf(Condition.HolderHealthAtMost(34))))),
-        GuildTraitDef("oathkeeper", "Oathkeeper", true, "While carrying a common blade or none, raises 2 Guard at the start of every round.",
-            listOf(t("oathkeeper", "Oathkeeper", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(2))), Limit(perRound = 1), "While carrying a common blade or none, raises 2 Guard at the start of every round.", listOf(Condition.HolderTagged(CombatContent.TAG_COMMON_GEAR))))),
+        GuildTraitDef("oathkeeper", "Oathkeeper", true, "While carrying a common weapon or none, raises 2 Guard at the start of every round.",
+            listOf(t("oathkeeper", "Oathkeeper", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(2))), Limit(perRound = 1), "While carrying a common weapon or none, raises 2 Guard at the start of every round.", listOf(Condition.HolderTagged(CombatContent.TAG_COMMON_GEAR))))),
     )
 
     val charters = listOf(
@@ -331,12 +331,12 @@ object GuildContent {
 
     val specialities = listOf(
         // Three contracts won.
-        SpecialityDef("vanguard", "Vanguard", "veteran", "A tenth more health; a twentieth less strike.", healthPercent = 110, strikePercent = 95),
-        SpecialityDef("striker", "Striker", "veteran", "A tenth more strike; a tenth less health.", healthPercent = 90, strikePercent = 110),
+        SpecialityDef("vanguard", "Vanguard", "veteran", "A tenth more health. A twentieth less strike.", healthPercent = 110, strikePercent = 95),
+        SpecialityDef("striker", "Striker", "veteran", "A tenth more strike. A tenth less health.", healthPercent = 90, strikePercent = 110),
         // Went down twice and came back.
         SpecialityDef("unbroken", "Unbroken", "survivor", "The first time a blow leaves them at a quarter of their health or less, they raise 8 Guard. Once a fight.",
             listOf(EffectDef("branch_unbroken", "Unbroken", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Guard(Aim.Self, Fixed(8))), Limit(perFight = 1), "The first time a blow leaves them at a quarter of their health or less, they raise 8 Guard. Once a fight.", listOf(Condition.HolderHealthAtMost(25))))),
-        SpecialityDef("careful", "Careful hand", "survivor", "A fifth more support (Guard raised, healing given); a twentieth less strike.", supportPercent = 120, strikePercent = 95),
+        SpecialityDef("careful", "Careful hand", "survivor", "A fifth more support (Guard raised, healing given). A twentieth less strike.", supportPercent = 120, strikePercent = 95),
         // Swore to hold the wall, and held it.
         SpecialityDef("wallwarden", "Wallwarden", "defender", "Starts every fight with 5 Guard.",
             listOf(EffectDef("branch_wallwarden", "Wallwarden", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(5))), Limit(perFight = 1), "Starts every fight with 5 Guard."))),
@@ -345,10 +345,10 @@ object GuildContent {
     )
 
     val laws = listOf(
-        WorldLawDef("storm_front", "Storm front", "Everybody on a field starts Wet. Storm strikes run through it for more; heat boils it off into Steam for whoever brings the heat.", days = 3,
+        WorldLawDef("storm_front", "Storm front", "Everybody on a field starts Wet. Storm strikes run through it for more. Heat boils it off into Steam for whoever brings the heat.", days = 3,
             partyStats = mapOf(Stat.WET to 2), enemyStats = mapOf(Stat.WET to 2)),
         WorldLawDef("eclipse", "Eclipse", "Every enemy starts with a Mark on it, and every member of a party starts with 1 Bleed.", days = 3, partyStats = mapOf(Stat.BLEED to 1), enemyStats = mapOf(Stat.MARK to 1)),
-        WorldLawDef("scrap_shortage", "Scrap shortage", "Mending a cracked blade costs twice the condition.", days = 4, repairPercent = 200),
+        WorldLawDef("scrap_shortage", "Scrap shortage", "Mending a cracked weapon costs twice the condition.", days = 4, repairPercent = 200),
     )
 
     val ranks = listOf(

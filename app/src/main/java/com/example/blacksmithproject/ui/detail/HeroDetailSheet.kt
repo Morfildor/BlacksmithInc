@@ -52,7 +52,6 @@ import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.GameEngine
-import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.Ambition
@@ -66,6 +65,7 @@ import com.tinyblacksmith.core.model.VisitKind
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponSnapshot
 import com.tinyblacksmith.core.shopday.Lines as ShopLines
+import com.tinyblacksmith.core.text.joinSentences
 
 /**
  * A hero as the sheet shows them. When a visit snapshot was supplied and the hero has changed since (or is gone),
@@ -122,7 +122,7 @@ fun GameEngine.heroDetail(state: GameState, heroId: HeroId, snapshot: CustomerSn
     val refusals = state.lastResolution?.let { res ->
         res.visits.filter { it.heroId == heroId && it.kind == VisitKind.BROWSE && it.purchasedWeaponId == null }.map { v ->
             val dear = v.considered.filter { it.shortBy != null }.mapNotNull { c -> res.shopWeapons.firstOrNull { it.weaponId == c.weaponId }?.let { "${it.name} was ${c.shortBy} gold out of reach" } }
-            res.day to dated(state, state.era, res.day, (listOf("Left without buying: ${Gazette.visitReason(v.reason)}") + dear).joinToString("; ") + ".")
+            res.day to dated(state, state.era, res.day, (listOf("Left without buying: ${ShopLines.reason(v.reason)}") + dear).joinSentences())
         }
     }.orEmpty()
     val dealings = records.filter { it.type in shopTypes }.asReversed().map { it.day to dated(state, it.era, it.day, it.text) }
@@ -156,10 +156,10 @@ private fun GameEngine.present(state: GameState, h: Hero) = CustomerSnapshot(
 
 private fun GameEngine.facts(state: GameState, c: CustomerSnapshot): List<Fact> = listOfNotNull(
     Fact("Class", "${content.classById[c.classId]?.name ?: c.classId.value}, level ${c.level}"),
-    Fact("Element taste", c.elementTaste?.let { "Favours ${it.name.lowercase()} blades" } ?: "No favourite element"),
+    Fact("Element taste", c.elementTaste?.let { "Favors ${it.name.lowercase()} weapons" } ?: "No favourite element"),
     Fact("Traits", c.traits.joinToString { content.traitById[it]?.name ?: it.value }.ifEmpty { "None of note" }),
     Fact(PURSE, "${c.gold} gold"),
-    Fact(STANDING, if (c.regular) "A regular of your shop" else "Not a regular yet"),
+    Fact(STANDING, if (c.regular) "A shop regular" else "Not a regular yet"),
     c.ambition?.let { Fact(AMBITION, ambitionWord(it)) },
     c.guildId?.let { id -> Fact("Guild", state.town.guilds.firstOrNull { it.id == id }?.name ?: "A guild no longer standing") },
     c.mentorName?.let { m -> Fact("Mentor", m, heroId = state.heroes.values.firstOrNull { it.fullName == m }?.id) },
@@ -214,9 +214,9 @@ fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenIt
         }
         detail.member?.let { MemberSection(it, member, onOpenItem) }
         SheetSection("With your shop")
-        Lines(detail.shop, "Nothing between you yet.")
+        Lines(detail.shop, "No visits or purchases recorded yet.")
         SheetSection("Recent events")
-        Lines(detail.events, "The town's records say nothing of late.")
+        Lines(detail.events, "No recent activity recorded.")
         SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close"))
     }
 }
@@ -243,7 +243,7 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
 
         if (m.branches.isNotEmpty()) {
             SheetSection("A branch is open")
-            Secondary("Their deeds opened these. Choose one, or neither; a choice is kept.")
+            Secondary("Their deeds opened these. Choose one, or neither. A choice is kept.")
             m.branches.forEach { b ->
                 Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                     Column(Modifier.weight(1f)) {
@@ -257,10 +257,10 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
 
         SheetSection("In a fight")
         m.numbers.forEach { (label, value) -> StatRow(label, value) }
-        if (m.rules.isEmpty()) Secondary("No rule of their own with this blade.")
+        if (m.rules.isEmpty()) Secondary("No rule of their own with this weapon.")
         m.rules.forEach { (name, description) -> EffectRow(EffectKind.NEUTRAL, name, description) }
 
-        SheetSection("Blade")
+        SheetSection("Weapon")
         val loan = m.loan
         if (loan != null) {
             Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
@@ -270,11 +270,11 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
                 }
                 if (actions != null) InlineActionButton("Recall", { actions.onRecall(loan.weaponId) }, Modifier.testTag("sheet_recall"), enabled = actions.enabled && m.loanBlocked == null)
             }
-        } else Secondary(m.ownBlade?.let { "Carries their own $it. A loan takes its place while it lasts." } ?: "Unarmed. Loan them a blade from storage.")
+        } else Secondary(m.ownBlade?.let { "Carries their own $it. A loan takes its place while it lasts." } ?: "Unarmed. Loan them a weapon from storage.")
         m.loanBlocked?.let { Secondary(it) }
         if (actions != null && m.loanBlocked == null) {
             if (m.loanable.isEmpty()) Secondary("Nothing in storage to loan.")
-            else Text("Loan a blade", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.sm))
+            else Text("Loan a weapon", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.sm))
             m.loanable.forEach { w ->
                 Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                     Column(Modifier.weight(1f)) {
@@ -294,7 +294,7 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
         modifier = Modifier.semantics { testTagsAsResourceId = true },
         onDismissRequest = { confirmDismiss = false },
         title = { Text("Let ${m.name} go?") },
-        text = { Text("The signing fee is not returned. A blade on loan returns to storage.") },
+        text = { Text("The signing fee is not returned. A weapon on loan returns to storage.") },
         confirmButton = { InlineActionButton("Dismiss", { confirmDismiss = false; actions.onDismissMember() }, Modifier.testTag("sheet_dismiss_yes")) },
         dismissButton = { InlineActionButton("Keep them", { confirmDismiss = false }, Modifier.testTag("sheet_dismiss_no")) },
     )

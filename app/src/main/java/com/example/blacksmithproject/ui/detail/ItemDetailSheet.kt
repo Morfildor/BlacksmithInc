@@ -329,7 +329,7 @@ fun ItemDetailContent(
             if (planning) StockEditor(detail.weaponId, stock, enabled, onStock)
             else {
                 Text(stock.listedPrice?.let { "Asking $it gold." } ?: "In storage, not for sale.", style = MaterialTheme.typography.bodyMedium)
-                Secondary("Suggested price ${stock.suggestedPrice} gold. Stock can be changed once the shop day is over.")
+                Secondary("Suggested price ${stock.suggestedPrice} gold. You can change stock after the shop day ends.")
             }
         }
         if (planning) detail.loan?.let { LoanSection(detail.name, it, enabled, onStock) }
@@ -343,7 +343,7 @@ fun ItemDetailContent(
         }
 
         SheetSection("History")
-        Column(Modifier.testTag("sheet_history")) { Lines(detail.history, "Its story has not been written yet.") }
+        Column(Modifier.testTag("sheet_history")) { Lines(detail.history, "No history recorded yet.") }
         SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close"))
     }
 }
@@ -366,7 +366,7 @@ private fun LoanSection(blade: String, loan: LoanUi, enabled: Boolean, onStock: 
         )
     } else {
         val open = loan.blocked == null && loan.targets.any { it.enabled }
-        Secondary(loan.blocked ?: if (loan.targets.isEmpty()) "The guild has no members to carry it." else "A member carries a loaned blade instead of their own. It stays the forge's, and can be recalled while they are in town.")
+        Secondary(loan.blocked ?: if (loan.targets.isEmpty()) "The guild has no members to carry it." else "A member carries a loaned weapon instead of their own. It stays the forge's, and can be recalled while they are in town.")
         SecondaryActionButton("Loan to...", { picking = true }, Modifier.padding(top = Space.sm).heightIn(min = 48.dp).testTag("item_loan"), enabled = enabled && open)
         if (picking) LoanPicker(blade, loan.targets, onPick = { picking = false; onStock(StockAction.Loan(it)) }, onDismiss = { picking = false })
     }
@@ -390,7 +390,7 @@ private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onSt
     PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "item", Modifier.padding(top = Space.sm)) { price ->
         // The engine refuses a listing on a full shelf; the button says so before the tap.
         val full = stock.listedPrice == null && stock.shelfFree <= 0
-        if (full) Text("${shelfFullLine(stock.slots)} Unlist another blade to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("item_shelf_full"))
+        if (full) Text("${shelfFullLine(stock.slots)} Remove another weapon from the shelf to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("item_shelf_full"))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), modifier = Modifier.padding(top = Space.sm)) {
             if (stock.listedPrice != null) {
                 PrimaryActionButton("Set price", { price?.let { onStock(StockAction.SetPrice(it)) } }, Modifier.testTag("item_set_price"), enabled && price != null)

@@ -89,7 +89,7 @@ class ForgeWorkbenchModelTest : ShopDayTestBase() {
         val cost = engine.config.quickForgeEnergy
         val tired = bench(ready, fresh.copy(energy = cost - 1))
         assertTrue(tired.action.enabled)
-        assertEquals("Overwork: 1 less energy tomorrow", tired.action.note)
+        assertEquals("You'll have 1 less energy tomorrow", tired.action.note)
         assertFalse(tired.action.endDay)
         val spent = bench(ready, fresh.copy(energy = 0, overworkToday = engine.config.maxOverworkPerDay))
         assertFalse(spent.action.enabled)
@@ -107,7 +107,7 @@ class ForgeWorkbenchModelTest : ShopDayTestBase() {
 
         val knowing = fresh.copy(legacy = fresh.legacy.copy(journal = Journal(interactions = mapOf(ca to KnowledgeState.OBSERVED, af to KnowledgeState.UNDERSTOOD))))
         val notes = bench(ready, knowing).notes
-        assertEquals(listOf("Observed", "Understood"), notes.map { it.stage })
+        assertEquals(listOf("Studying", "Learned"), notes.map { it.stage })
         assertTrue("an observed pairing stays tentative", notes[0].hint.startsWith("Seems"))
         assertEquals(com.tinyblacksmith.core.crafting.Journal.hint(knowing.legacy.journal, content, af), notes[1].hint)
     }

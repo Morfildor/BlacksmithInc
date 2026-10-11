@@ -5,12 +5,12 @@ Healing fills the capacitor; three Charge become a burst on the marked warchief.
   + Brann with Stormglass Capacitor: health 40/40, strike 9, support 4
       Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
       Arc: The wielder's first hit each round arcs to the last enemy in the line for 2.
-      Capacitor: When the wielder is healed for at least 1, the blade stores 1 Charge. Once a round. Healing at full health stores nothing.
+      Capacitor: When the wielder is healed for at least 1, the weapon stores 1 Charge. Once a round. Healing at full health stores nothing.
       Charge burst: At 3 Charge, spends all of it and strikes for 8 storm damage. Once a round.
   + Mira with Sapwood Staff: health 32/32, strike 7, support 8
       Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
   + Nessa with Ember Staff: health 26/26, strike 9, support 3
-      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round. An echo is never echoed.
       Ember: The wielder's first hit each round puts 1 Burn on its target.
   - Ashclaw warchief: health 54/54, strike 11
       Known: Every third round, from the second, gives every raider 4 Guard.
@@ -145,7 +145,7 @@ The same party and foes; Brann carries the same sword forged without Binding Sal
   + Mira with Sapwood Staff: health 32/32, strike 7, support 8
       Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
   + Nessa with Ember Staff: health 26/26, strike 9, support 3
-      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round. An echo is never echoed.
       Ember: The wielder's first hit each round puts 1 Burn on its target.
   - Ashclaw warchief: health 54/54, strike 11
       Known: Every third round, from the second, gives every raider 4 Guard.
@@ -159,8 +159,8 @@ RESULT: WON after 5 rounds. Brann 26/40, Mira 32/32, Nessa 26/26
 
 HIGHLIGHTS
   > Round 1: Mira: Mend. Mira has nothing to heal on Brann (8 over). Overflow Basin gives Brann 4 Guard.
+  > Round 1: Ashclaw warchief: Cleave. Brann's Guard breaks. Brann's Riposte hits Ashclaw warchief for 5.
   > Round 3: Brann: Hold the line. Brann hits Ashclaw warchief for 8. Ashclaw warchief is down.
-  > Round 4: Nessa: Bolt. Nessa hits Ashclaw brute for 6. Ashclaw brute is down.
 
 TIMELINE
     1       Round 1.
@@ -275,11 +275,11 @@ The capacitor has only the Battlemage's opening Charge; nobody heals, so it neve
   + Brann with Stormglass Capacitor: health 40/40, strike 9, support 4
       Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
       Arc: The wielder's first hit each round arcs to the last enemy in the line for 2.
-      Capacitor: When the wielder is healed for at least 1, the blade stores 1 Charge. Once a round. Healing at full health stores nothing.
+      Capacitor: When the wielder is healed for at least 1, the weapon stores 1 Charge. Once a round. Healing at full health stores nothing.
       Charge burst: At 3 Charge, spends all of it and strikes for 8 storm damage. Once a round.
   + Oda: health 28/28, strike 7, support 2
   + Nessa with Ember Staff: health 26/26, strike 9, support 3
-      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round. An echo is never echoed.
       Ember: The wielder's first hit each round puts 1 Burn on its target.
   - Ashclaw warchief: health 54/54, strike 11
       Known: Every third round, from the second, gives every raider 4 Guard.
@@ -292,9 +292,9 @@ The capacitor has only the Battlemage's opening Charge; nobody heals, so it neve
 RESULT: WON after 4 rounds. Brann 3/40, Oda 28/28, Nessa 26/26
 
 HIGHLIGHTS
+  > Round 1: Ashclaw warchief: Cleave. Brann's Guard breaks. Brann's Riposte hits Ashclaw warchief for 5.
   > Round 2: Nessa: Bolt. Nessa hits Ashclaw warchief for 9. Ashclaw warchief is down.
   > Round 3: Ashclaw brute: Club. Brann's Guard breaks. Brann's Riposte hits Ashclaw brute for 5. Ashclaw brute is down.
-  > Round 4: Oda: Mark and loose. Oda hits Ashclaw scout for 7. Ashclaw scout is down.
 
 TIMELINE
     1       Round 1.
@@ -382,7 +382,7 @@ Nobody is hurt in the first round: the Warden's heal is all overheal. The Basin 
   + Brann with Stormglass Capacitor: health 40/40, strike 9, support 4
       Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
       Arc: The wielder's first hit each round arcs to the last enemy in the line for 2.
-      Capacitor: When the wielder is healed for at least 1, the blade stores 1 Charge. Once a round. Healing at full health stores nothing.
+      Capacitor: When the wielder is healed for at least 1, the weapon stores 1 Charge. Once a round. Healing at full health stores nothing.
       Charge burst: At 3 Charge, spends all of it and strikes for 8 storm damage. Once a round.
   + Mira with Sapwood Staff: health 32/32, strike 7, support 8
       Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
@@ -431,13 +431,13 @@ The Bellblade cracks when Brann's Guard breaks; the Salvage Bell turns its Scrap
   + Brann with Brittle Bellblade: health 40/40, strike 8, support 4
       Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
       Ember: The wielder's first hit each round puts 1 Burn on its target.
-      Brittle: The first time an enemy breaks the wielder's Guard, the blade cracks: 2 Scrap now, a repair after the fight. Guard the wielder gives up itself never cracks it.
+      Brittle: The first time an enemy breaks the wielder's Guard, the weapon cracks: 2 Scrap now, a repair after the fight. Guard the wielder gives up itself never cracks it.
   + Mira with Sapwood Staff: health 32/32, strike 7, support 8
       Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
   + Nessa with Scrap-Tuned Staff: health 26/26, strike 9, support 3
-      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round. An echo is never echoed.
       Ember: The wielder's first hit each round puts 1 Burn on its target.
-      Rune of answer: After a blade of the party has cracked, when an enemy breaks an ally's Guard the wielder strikes that enemy for 5. Once a round, twice a fight.
+      Rune of answer: After a weapon of the party has cracked, when an enemy breaks an ally's Guard the wielder strikes that enemy for 5. Once a round, twice a fight.
   - Ashclaw brute: health 33/33, strike 10
       Rout: When the warchief falls, the raiders lose heart: 2 Chill.
   - Ashclaw brute: health 33/33, strike 10
@@ -445,7 +445,7 @@ The Bellblade cracks when Brann's Guard breaks; the Salvage Bell turns its Scrap
   - Ashclaw thief: health 21/21, strike 7
       Rout: When the warchief falls, the raiders lose heart: 2 Chill.
       Known: Strikes the last member of the party, past the front.
-  * Salvage Bell: When an ally's blade cracks, its 2 Scrap are spent and every ally gains 3 Guard. Once a fight for each cracked blade.
+  * Salvage Bell: When an ally's weapon cracks, its 2 Scrap are spent and every ally gains 3 Guard. Once a fight for each cracked weapon.
 
 RESULT: WON after 5 rounds. Brann 21/40 (blade cracked), Mira 32/32, Nessa 9/26
 
@@ -565,9 +565,9 @@ The same party; Brann's sword is not brittle. Nothing cracks, the Bell stays sil
   + Mira with Sapwood Staff: health 32/32, strike 7, support 8
       Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
   + Nessa with Scrap-Tuned Staff: health 26/26, strike 9, support 3
-      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round. An echo is never echoed.
       Ember: The wielder's first hit each round puts 1 Burn on its target.
-      Rune of answer: After a blade of the party has cracked, when an enemy breaks an ally's Guard the wielder strikes that enemy for 5. Once a round, twice a fight.
+      Rune of answer: After a weapon of the party has cracked, when an enemy breaks an ally's Guard the wielder strikes that enemy for 5. Once a round, twice a fight.
   - Ashclaw brute: health 33/33, strike 10
       Rout: When the warchief falls, the raiders lose heart: 2 Chill.
   - Ashclaw brute: health 33/33, strike 10
@@ -575,14 +575,14 @@ The same party; Brann's sword is not brittle. Nothing cracks, the Bell stays sil
   - Ashclaw thief: health 21/21, strike 7
       Rout: When the warchief falls, the raiders lose heart: 2 Chill.
       Known: Strikes the last member of the party, past the front.
-  * Salvage Bell: When an ally's blade cracks, its 2 Scrap are spent and every ally gains 3 Guard. Once a fight for each cracked blade.
+  * Salvage Bell: When an ally's weapon cracks, its 2 Scrap are spent and every ally gains 3 Guard. Once a fight for each cracked weapon.
 
 RESULT: WON after 5 rounds. Brann 18/40, Mira 32/32, Nessa 14/26
 
 HIGHLIGHTS
+  > Round 1: Ashclaw brute: Club. Brann's Guard breaks. Brann's Riposte hits Ashclaw brute for 4.
   > Round 2: Ashclaw brute: Club. Brann's Guard breaks. Brann's Riposte hits Ashclaw brute for 4. Ashclaw brute is down.
   > Round 4: Brann: Hold the line. Brann hits Ashclaw brute for 6. Ashclaw brute is down.
-  > Round 5: Mira: Mend. Mira hits Ashclaw thief for 4. Ashclaw thief is down.
 
 TIMELINE
     1       Round 1.
@@ -687,13 +687,13 @@ The Bellblade cracks and its Scrap lies there: no relic to spend it. The flaw is
   + Brann with Brittle Bellblade: health 40/40, strike 8, support 4
       Riposte: When an enemy breaks this Guardian's Guard, strikes back for half a strike. Once a round.
       Ember: The wielder's first hit each round puts 1 Burn on its target.
-      Brittle: The first time an enemy breaks the wielder's Guard, the blade cracks: 2 Scrap now, a repair after the fight. Guard the wielder gives up itself never cracks it.
+      Brittle: The first time an enemy breaks the wielder's Guard, the weapon cracks: 2 Scrap now, a repair after the fight. Guard the wielder gives up itself never cracks it.
   + Mira with Sapwood Staff: health 32/32, strike 7, support 8
       Sap: The wielder's first hit each round gives the wielder 1 Regeneration.
   + Nessa with Scrap-Tuned Staff: health 26/26, strike 9, support 3
-      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round; an echo is never echoed.
+      Echo: When an ally puts Burn, Chill or Wet on an enemy, puts one more on it. Once a round. An echo is never echoed.
       Ember: The wielder's first hit each round puts 1 Burn on its target.
-      Rune of answer: After a blade of the party has cracked, when an enemy breaks an ally's Guard the wielder strikes that enemy for 5. Once a round, twice a fight.
+      Rune of answer: After a weapon of the party has cracked, when an enemy breaks an ally's Guard the wielder strikes that enemy for 5. Once a round, twice a fight.
   - Ashclaw brute: health 33/33, strike 10
       Rout: When the warchief falls, the raiders lose heart: 2 Chill.
   - Ashclaw brute: health 33/33, strike 10
@@ -705,9 +705,9 @@ The Bellblade cracks and its Scrap lies there: no relic to spend it. The flaw is
 RESULT: WON after 5 rounds. Brann 18/40 (blade cracked), Mira 32/32, Nessa 6/26
 
 HIGHLIGHTS
+  > Round 1: Ashclaw brute: Club. Brann's Guard breaks. Brann's Riposte hits Ashclaw brute for 3.
   > Round 2: Ashclaw brute: Club. Brann's Guard breaks. Brann's Riposte hits Ashclaw brute for 3. Ashclaw brute is down.
   > Round 3: Ashclaw brute burns for 3. Ashclaw brute is down.
-  > Round 5: Brann: Hold the line. Brann hits Ashclaw thief for 6. Ashclaw thief is down.
 
 TIMELINE
     1       Round 1.
@@ -916,13 +916,13 @@ The Duelist pays health to the dagger for a harder cut; the Warden heals what wa
   - Gravecaller: health 37/37, strike 4, support 9
       Known: Every third round raises a shambler while there is room in the line.
       Known: Every round mends the weakest of the dead.
-  * Blood Receipt: After an ally has paid health to a blade, healing that ally also gives them that much Guard, up to 4 a round each.
+  * Blood Receipt: After an ally has paid health to a weapon, healing that ally also gives them that much Guard, up to 4 a round each.
 
 RESULT: WON after 5 rounds. Perrin 22/30, Mira 32/32, Brann 40/40
 
 HIGHLIGHTS
   > Round 1: Perrin: Double cut. Perrin pays 4 health to Bloodbound. Perrin's Bloodbound hits Bone warden for 8.
-  > Round 3: Perrin: Double cut. Perrin pays 4 health to Bloodbound. Perrin's Bloodbound hits Hollowbound shambler for 8.
+  > Round 1: Mira: Mend. Mira heals Perrin for 4. Blood Receipt gives Perrin 4 Guard.
   > Round 5: Perrin: Double cut. Perrin pays 4 health to Bloodbound. Perrin's Bloodbound hits Hollowbound shambler for 8. Hollowbound shambler is down.
 
 TIMELINE

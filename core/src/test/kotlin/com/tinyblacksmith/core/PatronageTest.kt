@@ -100,7 +100,7 @@ class PatronageTest {
                 val sale = v.sale!!
                 assertEquals(listOf(60, stipend, 60 - stipend), listOf(sale.listedPrice, sale.stipend, sale.cashPaid), "seed $seed ${v.heroName}")
                 assertEquals(stipend.toString(), r.events.first { it.id in v.eventIds && it.type == EventType.WEAPON_SOLD }.data["stipend"])
-                assertTrue("Their guild paid $stipend gold of the price; ${60 - stipend} gold came from their own purse." in Lines.decision(v, script, content), Lines.decision(v, script, content))
+                assertTrue("Their guild covered $stipend gold. They paid ${60 - stipend} gold themselves." in Lines.decision(v, script, content), Lines.decision(v, script, content))
                 assertEquals(pre.day + 4, done.state.hero(v.heroId!!).stipendSpentFor)
             }
             val ledger = r.ledger!!

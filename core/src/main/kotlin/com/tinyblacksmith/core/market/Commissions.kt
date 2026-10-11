@@ -52,13 +52,13 @@ object Commissions {
      */
     fun why(commission: Commission, buyer: String, recipient: String?): String? = when (commission.kind) {
         com.tinyblacksmith.core.model.CommissionKind.ORDINARY -> null
-        com.tinyblacksmith.core.model.CommissionKind.NOBLE -> "A noble patron's order, carried by $buyer."
-        com.tinyblacksmith.core.model.CommissionKind.REPLACEMENT -> "$buyer needs a blade to replace their own."
-        com.tinyblacksmith.core.model.CommissionKind.SIEGE_PREP -> "$buyer stands on the wall when the siege comes on day ${commission.deadlineDay}."
-        com.tinyblacksmith.core.model.CommissionKind.AMBITION -> "$buyer collects fine blades and has none yet."
-        com.tinyblacksmith.core.model.CommissionKind.FIRST_BLADE -> "A first blade for ${recipient ?: "a newcomer"}, who carries nothing; $buyer pays."
-        com.tinyblacksmith.core.model.CommissionKind.WALL_PLEDGE -> "Made on trust for $buyer, who pays half now and owes the rest."
-        com.tinyblacksmith.core.model.CommissionKind.HEIRLOOM -> "$buyer collects the blade you restored; it is kept for them."
+        com.tinyblacksmith.core.model.CommissionKind.NOBLE -> "$buyer is placing an order for a noble."
+        com.tinyblacksmith.core.model.CommissionKind.REPLACEMENT -> "$buyer needs a replacement weapon."
+        com.tinyblacksmith.core.model.CommissionKind.SIEGE_PREP -> "$buyer is preparing to defend the walls on day ${commission.deadlineDay}."
+        com.tinyblacksmith.core.model.CommissionKind.AMBITION -> "$buyer wants a fine weapon for their collection."
+        com.tinyblacksmith.core.model.CommissionKind.FIRST_BLADE -> "A first weapon for ${recipient ?: "a newcomer"}. $buyer pays for the order."
+        com.tinyblacksmith.core.model.CommissionKind.WALL_PLEDGE -> "$buyer pays half on collection and owes the rest."
+        com.tinyblacksmith.core.model.CommissionKind.HEIRLOOM -> "This restored weapon is reserved for $buyer."
     }
 
     /** What a request asks for, in the terms the rule checks: "fine frost Spear (quality 50+)". */

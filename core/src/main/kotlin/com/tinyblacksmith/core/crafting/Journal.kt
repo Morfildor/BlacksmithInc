@@ -12,6 +12,7 @@ import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.model.WeaponFamilyId
 import com.tinyblacksmith.core.model.Journal as JournalModel
+import com.tinyblacksmith.core.text.joinSentences
 
 /**
  * Experiment Journal (GDD 4.6): UNKNOWN -> OBSERVED -> UNDERSTOOD. Knowledge lives in the legacy profile so it
@@ -35,9 +36,9 @@ object Journal {
                 val subject = subjectName(ctx.content, key)
                 if (next == KnowledgeState.UNDERSTOOD) {
                     ctx.discoveriesThisRun += 1
-                    ctx.emit(EventType.DISCOVERY, 3, "Journal: $subject is now understood — $label.", data = mapOf("key" to key))
+                    ctx.emit(EventType.DISCOVERY, 3, "Pairing learned. $subject. ${label.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 } else {
-                    ctx.emit(EventType.DISCOVERY, 1, "Journal: $subject observed — $label.", data = mapOf("key" to key))
+                    ctx.emit(EventType.DISCOVERY, 1, "First notes on $subject. ${label.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 }
             }
         }
@@ -103,33 +104,33 @@ object Journal {
         val augment = ctx.content.material(def.augmentId).name
         // The family is named: two signatures can share a core and an augment (an iron and ember sword, an iron and ember axe).
         val family = ctx.content.family(def.familyId).name.lowercase()
-        ctx.emit(EventType.DISCOVERY, 3, "The $augment sang against the $core of the $family: ${clue(def, rung, ctx.config)}.", data = mapOf("key" to def.journalKey, "rung" to rung.name))
+        ctx.emit(EventType.DISCOVERY, 3, "Recipe clue for the $core $family with $augment. ${clue(def, rung, ctx.config).replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to def.journalKey, "rung" to rung.name))
     }
 
     /** One authored phrase per catalyst (the catalysts' identity, G07), and one for a recipe that takes none. */
     fun catalystPhrase(catalystId: MaterialId?): String = when (catalystId) {
-        null -> "wants nothing added"
-        LaunchContent.BINDING_SALT -> "wants something to bind it"
-        LaunchContent.RUNESTONE_SHARD -> "wants a word cut into it"
-        LaunchContent.DRAGON_OIL -> "wants a hotter fire"
-        LaunchContent.VOID_INK -> "wants a rule rewritten"
-        else -> "wants something added"
+        null -> "needs no specific catalyst"
+        LaunchContent.BINDING_SALT -> "needs a binding catalyst"
+        LaunchContent.RUNESTONE_SHARD -> "needs a runic catalyst"
+        LaunchContent.DRAGON_OIL -> "needs a catalyst from dragon fire"
+        LaunchContent.VOID_INK -> "needs a catalyst that changes the rules"
+        else -> "needs a catalyst"
     }
 
     /** What any catalyst does at the forge today, said plainly for the forge panel. */
-    const val CATALYST_EFFECT = "Any catalyst steadies the forge: finer work, more brilliant pieces, fewer flaws. Some recipes ask for one by name."
+    const val CATALYST_EFFECT = "Catalysts improve quality, make exceptional results more likely and reduce flaws. Some recipes need a specific catalyst."
 
     /** What one rung says about [def]. */
     fun clue(def: SignatureDef, rung: ClueRung, config: BalanceConfig): String = when (rung) {
-        ClueRung.RECIPE -> "it hides something more"
-        ClueRung.CATALYST -> "it ${catalystPhrase(def.catalystId)}"
+        ClueRung.RECIPE -> "this combination can make a signature weapon"
+        ClueRung.CATALYST -> "this recipe ${catalystPhrase(def.catalystId)}"
         ClueRung.TEMPER -> when (def.risk) {
-            Risk.SAFE -> "it wants more patience"
-            Risk.BALANCED -> "it wants a steady temper, neither patient nor daring"
-            Risk.RECKLESS -> "it wants more daring"
-            null -> "it takes any temper"
+            Risk.SAFE -> "use Safe forging"
+            Risk.BALANCED -> "use Balanced forging"
+            Risk.RECKLESS -> "use Reckless forging"
+            null -> "any forging risk will work"
         }
-        ClueRung.QUALITY -> "it wants finer work: at least ${QualityBand.of(def.minQuality, config).word}"
+        ClueRung.QUALITY -> "reach ${QualityBand.of(def.minQuality, config).word} quality or better"
     }
 
     fun affinityFor(content: ContentCatalog, key: String): Int {
@@ -151,11 +152,11 @@ object Journal {
 
     /** Descriptive, never numeric (GDD round 9 disclosure rule). */
     fun describeAffinity(affinity: Int): String = when {
-        affinity >= 7 -> "excellent affinity"
+        affinity >= 7 -> "excellent match"
         affinity >= 4 -> "promising match"
-        affinity >= 1 -> "faint harmony"
-        affinity == 0 -> "neutral"
-        affinity >= -2 -> "slight friction"
+        affinity >= 1 -> "slight benefit"
+        affinity == 0 -> "neutral match"
+        affinity >= -2 -> "slight drawback"
         else -> "poor match"
     }
 
@@ -168,10 +169,10 @@ object Journal {
     /** The rungs earned and nothing else: "Hides something more; it wants a hotter fire". A found signature is named. No odds, no numbers. */
     private fun signatureHint(journal: JournalModel, key: String, config: BalanceConfig = BalanceConfig.DEFAULT): String {
         val def = SignatureCatalog.byId[key.substring(4)] ?: return "Unknown"
-        if (journal.state(key) == KnowledgeState.SIGNATURE_DISCOVERED) return "Signature: ${def.name} — ${def.flavor}"
+        if (journal.state(key) == KnowledgeState.SIGNATURE_DISCOVERED) return "${def.name}. ${def.flavor}"
         val have = rungs(journal, def)
         if (ClueRung.RECIPE !in have) return "Unknown"
-        return (listOf("Hides something more") + (have - ClueRung.RECIPE).map { clue(def, it, config) }).joinToString("; ")
+        return (listOf("A signature recipe is hidden here") + (have - ClueRung.RECIPE).map { clue(def, it, config) }).joinSentences()
     }
 
     /** The core and augment of a "ca:" journal row, for "Use" on an understood row; null for any other key. */
@@ -182,7 +183,7 @@ object Journal {
         KnowledgeState.UNKNOWN -> "Unknown"
         KnowledgeState.OBSERVED -> {
             val a = affinityFor(content, key)
-            if (a > 0) "Seems promising" else if (a < 0) "Seems uneasy" else "Seems neutral"
+            if (a > 0) "Seems promising" else if (a < 0) "Seems like a poor match" else "No clear effect yet"
         }
         KnowledgeState.UNDERSTOOD, KnowledgeState.SIGNATURE_DISCOVERED -> describeAffinity(affinityFor(content, key)).replaceFirstChar { it.uppercase() }
     }

@@ -105,9 +105,9 @@ class SignatureAndTechniqueTest {
             assertNull(out.state.weapon(out.forgedWeaponId!!).signatureId, def.id)
             assertEquals(KnowledgeState.OBSERVED, out.state.legacy.journal.state(def.journalKey))
             val clue = out.events.single { it.type == EventType.DISCOVERY && it.data["key"] == def.journalKey }
-            assertTrue(clue.text.contains("hides something more"), clue.text)
+            assertTrue(clue.text.contains("signature weapon"), clue.text)
             val second = (poor.handle(out.state, exactCmd) as CommandOutcome.Accepted).events.single { it.type == EventType.DISCOVERY && it.data["key"] == def.journalKey }
-            assertTrue(second.text.contains("finer work"), second.text)
+            assertTrue(second.text.contains("quality or better"), second.text)
         }
     }
 
@@ -195,7 +195,7 @@ class SignatureAndTechniqueTest {
         val out = s0.forgeAccepted(Command.Forge(ForgeMode.QUICK, SliceContent.BOW, SliceContent.SILVER, SliceContent.STORMGLASS, null, Risk.SAFE))
         assertEquals(KnowledgeState.OBSERVED, out.state.legacy.journal.state(stormsong.journalKey))
         val clue = out.events.single { it.type == EventType.DISCOVERY && it.data["key"] == stormsong.journalKey }
-        assertTrue(clue.text.contains("Stormglass sang against the Silver") && clue.text.contains("hides something more"), clue.text)
+        assertTrue(clue.text.contains("Recipe clue for the Silver") && clue.text.contains("signature weapon"), clue.text)
         assertEquals(s0.discoveriesThisRun, out.state.discoveriesThisRun, "a clue is not a discovery")
         val hint = JournalRules.hint(out.state.legacy.journal, engine.content, stormsong.journalKey)
         assertTrue(hint != "Unknown" && !hint.contains('%') && !hint.contains(stormsong.name), hint)
@@ -203,7 +203,7 @@ class SignatureAndTechniqueTest {
         val again = out.state.forgeAccepted(Command.Forge(ForgeMode.QUICK, SliceContent.BOW, SliceContent.SILVER, SliceContent.STORMGLASS, null, Risk.SAFE))
         // The journal keeps answering (G07): the second miss says what kind of catalyst, in that catalyst's own words. `ClueLadderTest` has the rest.
         val second = again.events.single { it.type == EventType.DISCOVERY && it.data["key"] == stormsong.journalKey }
-        assertTrue(second.text.contains("wants something to bind it") && !second.text.contains('%'), second.text)
+        assertTrue(second.text.contains("needs a binding catalyst") && !second.text.contains('%'), second.text)
         assertEquals(KnowledgeState.OBSERVED, again.state.legacy.journal.state(stormsong.journalKey))
         assertEquals(s0.discoveriesThisRun, again.state.discoveriesThisRun, "nor is the second")
     }

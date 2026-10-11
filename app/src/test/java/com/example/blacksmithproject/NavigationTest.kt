@@ -61,9 +61,9 @@ class NavigationTest : ShopDayTestBase() {
         val id = vm.playing().revealWeaponId!!
         vm.storeForged(); advanceUntilIdle()
         vm.dispatchAll(listOf(Command.Salvage(id))); advanceUntilIdle()
-        assertEquals("1 blade melted down.", vm.playing().notice)
+        assertEquals("Salvaged 1 weapon.", vm.playing().notice)
         // Nothing done, nothing claimed: the blade is gone, so the engine refuses and only the reason shows.
-        vm.dismissNotice("1 blade melted down."); vm.dispatchAll(listOf(Command.Salvage(id))); advanceUntilIdle()
+        vm.dismissNotice("Salvaged 1 weapon."); vm.dispatchAll(listOf(Command.Salvage(id))); advanceUntilIdle()
         assertNull(vm.playing().notice)
     }
 
@@ -117,30 +117,30 @@ class NavigationTest : ShopDayTestBase() {
 
         // Listed: the blade has left storage, so its sheet closes (onto the Storage list it was opened from).
         vm.stock(id, StockAction.ListAt(50)); advanceUntilIdle()
-        assertEquals(null to "$name is on the shelf at 50 gold. Shelf 1 of $slots.", vm.playing().sheet to vm.playing().notice)
+        assertEquals(null to "Listed $name for 50 gold. Shelf 1 of $slots.", vm.playing().sheet to vm.playing().notice)
 
         // A new price, an unlisting and a hone keep the sheet on the blade.
         vm.openSheet(Sheet.Item(id)); advanceUntilIdle()
         vm.stock(id, StockAction.SetPrice(40)); advanceUntilIdle()
-        assertEquals(Sheet.Item(id) to "$name now asks 40 gold.", vm.playing().sheet to vm.playing().notice)
+        assertEquals(Sheet.Item(id) to "Set $name to 40 gold.", vm.playing().sheet to vm.playing().notice)
         assertEquals(40, vm.playing().state.weapons.getValue(id).listedPrice)
         vm.stock(id, StockAction.Unlist); advanceUntilIdle()
-        assertEquals(Sheet.Item(id) to "$name is back in storage, not for sale.", vm.playing().sheet to vm.playing().notice)
+        assertEquals(Sheet.Item(id) to "Moved $name to storage. It isn't for sale.", vm.playing().sheet to vm.playing().notice)
         val before = vm.playing().state.weapons.getValue(id)
         vm.stock(id, StockAction.Hone); advanceUntilIdle()
         val honed = vm.playing().state.weapons.getValue(id)
         assertNull(vm.playing().lastError)
         assertTrue(honed.honed)
-        assertEquals(Sheet.Item(id) to "$name was honed: quality ${before.quality} to ${honed.quality}.", vm.playing().sheet to vm.playing().notice)
+        assertEquals(Sheet.Item(id) to "Honed $name. Quality ${before.quality} to ${honed.quality}.", vm.playing().sheet to vm.playing().notice)
 
         // A refusal says why and claims nothing: the blade is honed already.
         vm.stock(id, StockAction.Hone); advanceUntilIdle()
-        if (vm.playing().lastError != null) { assertTrue(vm.playing().notice!!.contains("was honed")); vm.dismissError(); advanceUntilIdle() }
+        if (vm.playing().lastError != null) { assertTrue(vm.playing().notice!!.contains("Honed")); vm.dismissError(); advanceUntilIdle() }
 
         // Melted down: the blade is gone, and the sheet is closed on purpose with the reason left on screen.
         vm.stock(id, StockAction.Salvage); advanceUntilIdle()
         val s = vm.playing()
         assertTrue(s.state.weapons.getValue(id).location is WeaponLocation.Destroyed)
-        assertEquals(null to "$name was melted down. 1 Iron is back in your stock.", s.sheet to s.notice)
+        assertEquals(null to "Salvaged $name. Recovered one Iron.", s.sheet to s.notice)
     }
 }

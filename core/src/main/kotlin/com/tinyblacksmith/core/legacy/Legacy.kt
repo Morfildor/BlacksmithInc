@@ -155,7 +155,7 @@ object Legacy {
         val tracks = config.legacyTracks
         val prev = m * (level - 1)
         val next = m * level
-        fun make(before: Int, after: Int, text: String) = UpgradePreview(upgradeId, level, before, after, "Next era: $text")
+        fun make(before: Int, after: Int, text: String) = UpgradePreview(upgradeId, level, before, after, "Next era. $text")
         // Chance-like tracks are worded as forges in 10 (or in 100 when the numbers do not fall on tens), never as a percentage.
         fun forgesIn(what: (before: Int, after: Int, unit: Int) -> String): UpgradePreview {
             val tens = prev % 10 == 0 && next % 10 == 0
@@ -163,29 +163,29 @@ object Legacy {
             return make(prev / scale, next / scale, what(prev / scale, next / scale, 100 / scale))
         }
         return when (def.effect) {
-            UpgradeEffect.STARTING_ENERGY -> (config.baseDailyEnergy + prev).let { b -> make(b, b + m, "${b + m} starting energy instead of $b") }
-            UpgradeEffect.STARTING_GOLD -> (config.startingGold + prev).let { b -> make(b, b + m, "${b + m} starting gold instead of $b") }
-            UpgradeEffect.STARTING_INTEGRITY -> (config.startingForgeIntegrity + prev).let { b -> make(b, b + m, "the forge starts with ${b + m} integrity instead of $b") }
-            UpgradeEffect.QUALITY_BONUS -> make(prev, next, "+$next quality on every forge instead of +$prev")
-            UpgradeEffect.STARTING_MATERIALS -> make(prev, next, "start with $next extra of every starting material instead of $prev")
-            UpgradeEffect.MATERIAL_EFFICIENCY -> forgesIn { b, a, u -> "$a in $u forges spare their augment, up from $b" }
-            UpgradeEffect.EXCEPTIONAL_CHANCE -> forgesIn { b, a, u -> "$a in $u forges come out exceptional on top of the usual odds, up from $b" }
+            UpgradeEffect.STARTING_ENERGY -> (config.baseDailyEnergy + prev).let { b -> make(b, b + m, "Start with ${b + m} energy, up from $b.") }
+            UpgradeEffect.STARTING_GOLD -> (config.startingGold + prev).let { b -> make(b, b + m, "Start with ${b + m} gold, up from $b.") }
+            UpgradeEffect.STARTING_INTEGRITY -> (config.startingForgeIntegrity + prev).let { b -> make(b, b + m, "Start with ${b + m} forge health, up from $b.") }
+            UpgradeEffect.QUALITY_BONUS -> make(prev, next, "Gain $next quality on each forge, up from $prev.")
+            UpgradeEffect.STARTING_MATERIALS -> make(prev, next, "Start with $next extra of each starting material, up from $prev.")
+            UpgradeEffect.MATERIAL_EFFICIENCY -> forgesIn { b, a, u -> "The augment is kept in $a of $u forges, up from $b." }
+            UpgradeEffect.EXCEPTIONAL_CHANCE -> forgesIn { b, a, u -> "$a in $u forges are exceptional on top of the usual odds, up from $b." }
             UpgradeEffect.STARTING_REPUTATION ->
-                make(prev, next, "$next starting reputation and $level ${if (level == 1) "regular" else "regulars"} with ${tracks.knownNameRegularGold} gold saved, up from $prev and ${level - 1}")
+                make(prev, next, "Start with $next reputation and $level ${if (level == 1) "regular" else "regulars"}. Each has ${tracks.knownNameRegularGold} gold saved. Previously $prev reputation and ${level - 1} regulars.")
             UpgradeEffect.CATALOG_ACCESS -> {
                 val before = prev * tracks.catalogStockPerLevel
                 val after = next * tracks.catalogStockPerLevel
-                make(before, after, "the supplier keeps $after extra of every limited material in stock each day instead of $before")
+                make(before, after, "The supplier stocks $after extra of each limited material daily, up from $before.")
             }
             UpgradeEffect.RECIPE_ODDS -> {
                 val before = Math.round(prev * tracks.recipeOddsPerLevel * 100).toInt()
                 val after = Math.round(next * tracks.recipeOddsPerLevel * 100).toInt()
-                make(before, after, "signature recipes land $after more times in 100, up from $before, never for certain")
+                make(before, after, "Signature recipes land $after more times in 100, up from $before. It is never certain.")
             }
             UpgradeEffect.LEGACY_ARTIFACTS -> {
                 val base = config.returnedLegendQualityFactor
                 fun strength(steps: Int) = Math.round(100 * maxOf(base, minOf(tracks.returnedLegendQualityFactorMax, base + steps * tracks.legendQualityFactorPerLevel))).toInt()
-                make(strength(prev), strength(next), "a returning legend keeps ${strength(next)} of every 100 strength points instead of ${strength(prev)}, and returns sooner")
+                make(strength(prev), strength(next), "Returning legends retain ${strength(next)} quality per 100 original quality, up from ${strength(prev)}. They also return sooner.")
             }
         }
     }

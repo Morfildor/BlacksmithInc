@@ -49,7 +49,7 @@ fun GameEngine.supplyNotes(state: GameState, m: MaterialDef): List<String> {
     if (m.dailySupplierStock == null) return emptyList()
     val ties = upgradeTotal(state.legacy, UpgradeEffect.CATALOG_ACCESS) * config.legacyTracks.catalogStockPerLevel
     return listOfNotNull(
-        "The caravan is delayed: none came today".takeIf { state.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == state.day },
+        "Caravan delayed. No delivery today.".takeIf { state.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == state.day },
         "Caravan Ties: $ties more each day".takeIf { ties > 0 },
         "Ore merchant in town: ${config.worldEvents.oreMerchantStock} more today".takeIf { state.worldFlags[WorldEvents.FLAG_ORE_MERCHANT + m.id.value] == state.day },
     )
@@ -131,7 +131,7 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
         item(key = "tools") {
             Column {
                 SectionHeader("Workshop tools")
-                Secondary("Bought with gold; they last until the forge falls.")
+                Secondary("Buy with gold. Tools last for the current era.")
             }
         }
         items(content.tools, key = { "tool_${it.id}" }) { t ->

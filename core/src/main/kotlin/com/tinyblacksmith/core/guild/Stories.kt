@@ -155,7 +155,7 @@ object Stories {
         val names = faction.eliteNames.ifEmpty { listOf("a captain of the ${faction.name}") }
         val name = ctx.rng(RngStream.GUILD).pick(names).removePrefix("an ").removePrefix("a ").removePrefix("the ").replaceFirstChar { it.uppercase() }
         update(ctx) { it.copy(nemesis = Nemesis(name, factionId, weaponId, ctx.day, unit)) }
-        ctx.emit(EventType.GUILD_STORY, 7, "$name of the ${faction.name} now carries ${blade.name}, a blade of this forge. It can be taken back.", listOf(weaponId.value), mapOf("nemesis" to name))
+        ctx.emit(EventType.GUILD_STORY, 7, "$name of the ${faction.name} now carries ${blade.name}, a weapon of this forge. It can be taken back.", listOf(weaponId.value), mapOf("nemesis" to name))
     }
 
     fun recovered(ctx: ResolutionContext, weaponId: WeaponId) {

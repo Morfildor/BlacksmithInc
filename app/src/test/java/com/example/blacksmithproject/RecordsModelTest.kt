@@ -48,7 +48,7 @@ class RecordsModelTest : ShopDayTestBase() {
         val old = LegendEntry(1, "Bronze Axe", "Old Faithful", kills = 4, fame = 3, owners = emptyList())
         val lost = legendUi(old, engine.content, currentEra = 2)
         assertTrue(lost.lostToTime)
-        assertEquals("Its properties are lost to time.", lost.lines.first())
+        assertEquals("No record of its properties survives.", lost.lines.first())
         assertEquals(Lines.legend(old, engine.content, 2), listOf(lost.head) + lost.lines)
     }
 

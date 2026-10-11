@@ -73,7 +73,7 @@ internal object GuildVisitors {
             } ?: "${name(ctx, i.heroId)} is no longer held."
             GuildContent.SWORD_COMPLAINT -> "${blade ?: "A blade"} has opinions, and this morning it has a complaint: it will not be carried by people who think they know better. It wants inexperienced company."
             GuildContent.ACROSS_THE_COUNTER -> ctx.guild?.nemesis?.let { n -> "A dealer in things found on battlefields says ${n.name} can be parted from ${blade ?: "your blade"}: for ${a["price"]} gold it is on your counter today. Or he will say where ${n.name} sleeps." }
-                ?: "The dealer's news is stale: the blade is no longer in those hands."
+                ?: "The dealer's news is stale: the weapon is no longer in those hands."
             GuildContent.INSURANCE_ADJUSTER -> "An adjuster with ash on his cuffs will insure one loan against the enemy: ${blade ?: "a blade"}, carried by ${name(ctx, i.heroId)}. If it is taken from the guild by day ${a["until"]}, he pays ${a["payout"]} gold, once."
             else -> def.description
         }
@@ -104,16 +104,16 @@ internal object GuildVisitors {
             }
             GuildContent.SWORD_COMPLAINT -> {
                 val w = ctx.weapons[i.weaponId]
-                val gone = if (w == null || LaunchContent.SENTIENT !in w.flaws || w.location is WeaponLocation.Lost || w.location is WeaponLocation.Destroyed) "The blade is no longer at the forge." else null
+                val gone = if (w == null || LaunchContent.SENTIENT !in w.flaws || w.location is WeaponLocation.Lost || w.location is WeaponLocation.Destroyed) "The weapon is no longer at the forge." else null
                 listOf(
-                    Opt("oath", "\"It wants inexperienced company.\"", "The blade takes an oath: while everyone in its party is level ${n("level")} or lower, every ally starts a fight with 3 Guard and 1 Regeneration. In any other party it does nothing more than before.", blocked = gone) { c ->
+                    Opt("oath", "\"It wants inexperienced company.\"", "The weapon takes an oath: while everyone in its party is level ${n("level")} or lower, every ally starts a fight with 3 Guard and 1 Regeneration. In any other party it does nothing more than before.", blocked = gone) { c ->
                         c.addWeaponHistory(i.weaponId!!, HISTORY_OATH, "Swore to fight only beside the inexperienced.")
                         "${c.weapon(i.weaponId).name} took its oath: it rallies a party of novices."
                     },
-                    Opt("silence", "\"You are a sword.\"", "The blade is worked over until it has no more to say: it loses its Sentient flaw and stays as it otherwise is.", energy = n("energy"), material = i.materialId, blocked = gone) { c ->
+                    Opt("silence", "\"You are a sword.\"", "The weapon is worked over until it has no more to say: it loses its Sentient flaw and stays as it otherwise is.", energy = n("energy"), material = i.materialId, blocked = gone) { c ->
                         val blade = c.weapon(i.weaponId!!)
                         c.updateWeapon(blade.copy(flaws = blade.flaws - LaunchContent.SENTIENT, power = maxOf(1, blade.power - c.content.affix(LaunchContent.SENTIENT).power)))
-                        c.addWeaponHistory(blade.id, HISTORY_SILENCED, "Stabilised on the anvil; it has not spoken since.")
+                        c.addWeaponHistory(blade.id, HISTORY_SILENCED, "Stabilised on the anvil. It has not spoken since.")
                         "The smith worked ${blade.name} over until it stopped arguing."
                     },
                     pass("\"We'll discuss it later.\"", "The smith let ${w?.name ?: "the blade"} complain."),
@@ -121,9 +121,9 @@ internal object GuildVisitors {
             }
             GuildContent.ACROSS_THE_COUNTER -> {
                 val nem = g?.nemesis?.takeIf { it.weaponId == i.weaponId }
-                val gone = if (nem == null) "The blade is no longer in those hands." else null
+                val gone = if (nem == null) "The weapon is no longer in those hands." else null
                 listOf(
-                    Opt("buy", "Buy it back", "${ctx.weapons[i.weaponId]?.name ?: "The blade"} returns to storage today, the very blade. ${nem?.name ?: "Its bearer"} goes unpunished.", gold = n("price"), blocked = gone) { c ->
+                    Opt("buy", "Buy it back", "${ctx.weapons[i.weaponId]?.name ?: "The blade"} returns to storage today, the very weapon. ${nem?.name ?: "Its bearer"} goes unpunished.", gold = n("price"), blocked = gone) { c ->
                         val blade = c.weapon(i.weaponId!!)
                         c.updateWeapon(blade.copy(location = WeaponLocation.Storage))
                         c.addWeaponHistory(blade.id, "RECOVERED", "Bought back across the counter for ${n("price")} gold.")
@@ -139,8 +139,8 @@ internal object GuildVisitors {
                 )
             }
             GuildContent.INSURANCE_ADJUSTER -> listOf(
-                Opt("insure", "Insure the blade", "If the enemy takes ${ctx.weapons[i.weaponId]?.name ?: "it"} from the guild by day ${n("until")}, the forge is paid ${n("payout")} gold, once. Selling, melting, giving it away or losing it any other way pays nothing.", gold = n("fee"),
-                    blocked = if (ctx.weapons[i.weaponId]?.isLoaned != true) "The blade is no longer on loan." else null) { c ->
+                Opt("insure", "Insure the weapon", "If the enemy takes ${ctx.weapons[i.weaponId]?.name ?: "it"} from the guild by day ${n("until")}, the forge is paid ${n("payout")} gold, once. Selling, melting, giving it away or losing it any other way pays nothing.", gold = n("fee"),
+                    blocked = if (ctx.weapons[i.weaponId]?.isLoaned != true) "The weapon is no longer on loan." else null) { c ->
                     c.consequences += ScheduledConsequence("q${i.id}", ConsequenceKind.INSURANCE, n("until"), weaponId = i.weaponId, amounts = mapOf("payout" to n("payout")))
                     c.addWeaponHistory(i.weaponId!!, HISTORY_INSURED, "Insured against the enemy until day ${n("until")}.")
                     "The smith insured ${c.weapon(i.weaponId).name} for ${n("fee")} gold."
@@ -182,7 +182,7 @@ internal object GuildVisitors {
                     if (heir != null && !g.isMember(heir.id) && g.candidates.none { it.heroId == heir.id }) {
                         val trait = GuildOps.catalog(c).traits.first { t -> g.members.none { it.traitId == t.id } && g.candidates.none { it.traitId == t.id } }
                         val fee = (cfg.signingFeeBase + cfg.signingFeePerLevel * (heir.level - 1)) * cfg.openingFeePercent / 100
-                        c.guild = g.copy(candidates = g.candidates + RecruitCandidate(heir.id, fee, cfg.memberSharePercent + trait.shareDelta, trait.id, "Carries a family blade the smith made whole."))
+                        c.guild = g.copy(candidates = g.candidates + RecruitCandidate(heir.id, fee, cfg.memberSharePercent + trait.shareDelta, trait.id, "Carries a family weapon the smith made whole."))
                     }
                     told
                 }

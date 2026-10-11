@@ -126,7 +126,7 @@ fun ShopDayScreen(
                     // With nobody at the counter the plate says what is left on the shelf; the part of the day is on the strip above.
                     val left = model.shelf.count { it.blade.weaponId !in beat.gone }
                     CounterScene(
-                        plate = visit?.face?.name ?: when (left) { 0 -> if (model.shelf.isEmpty()) "Nobody at the counter" else "Every blade is sold"; 1 -> "1 blade on the shelf"; else -> "$left blades on the shelf" }, detail = visit?.detail, customer = visit?.face, customerKey = visit?.seq,
+                        plate = visit?.face?.name ?: when (left) { 0 -> if (model.shelf.isEmpty()) "Nobody at the counter" else "Every weapon is sold"; 1 -> "1 weapon on the shelf"; else -> "$left weapons on the shelf" }, detail = visit?.detail, customer = visit?.face, customerKey = visit?.seq,
                         reducedMotion = reducedMotion, onOpenHero = openHero, backdropHeight = if (large) 56.dp else if (short) 104.dp else 140.dp,
                     )
                     ShelfBand(

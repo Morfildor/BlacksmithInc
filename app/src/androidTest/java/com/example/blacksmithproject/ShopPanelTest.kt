@@ -79,13 +79,13 @@ class ShopPanelTest {
 
     private fun top(tag: String) = compose.onNodeWithTag(tag, useUnmergedTree = true).getUnclippedBoundsInRoot().top
 
-    /** A new game (A01): the Shop opens on "Forge your first blade", its reason and the button to the forge, above everything else to do. */
+    /** A new game (A01): the Shop opens on "Forge your first weapon", its reason and the button to the forge, above everything else to do. */
     @Test
     fun dayOneLeadsWithForgeYourFirstBlade() {
         val fresh = engine.newRun(LegacyProfile(), 42L)
         show(fresh)
-        compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertTextEquals("Forge your first blade")
-        compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals("${fresh.aliveHeroes().size} heroes in Emberfall and nothing on the shelf.")
+        compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertTextEquals("Forge your first weapon")
+        compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals("${fresh.aliveHeroes().size} heroes in town. Your shelf is empty.")
         compose.onNodeWithTag("shop_lead_action", useUnmergedTree = true).assertTextEquals("Go to the forge  ›")
         compose.onNodeWithTag("shop_siege", useUnmergedTree = true).assertDoesNotExist()
         assertTrue("the lead is the first thing under the counter", top("shop_counter") < top("shop_lead") && top("shop_lead") < top("shop_demand"))
@@ -167,9 +167,9 @@ class ShopPanelTest {
         fun row(label: String, value: String) =
             compose.onNode(hasText(label) and hasText(value)).assertExists("\"$label\" should read $value")
         row("Heroes in town", "${heroes.size}")
-        row("Carry no blade", "${heroes.count { s.equippedWeapon(it.id) == null }}")
-        row("Carry a worn blade", "${heroes.count { h -> s.equippedWeapon(h.id)?.let { it.condition < engine.config.wornConditionThreshold } == true }}")
-        row("Can afford the cheapest blade ($cheapest gold)", "${afford(cheapest)} of ${heroes.size}")
+        row("Need a weapon", "${heroes.count { s.equippedWeapon(it.id) == null }}")
+        row("Need to replace a worn weapon", "${heroes.count { h -> s.equippedWeapon(h.id)?.let { it.condition < engine.config.wornConditionThreshold } == true }}")
+        row("Can afford the cheapest weapon ($cheapest gold)", "${afford(cheapest)} of ${heroes.size}")
         if (middle != cheapest) row("Can afford the middle blade ($middle gold)", "${afford(middle)} of ${heroes.size}")
     }
 }
@@ -231,17 +231,17 @@ class StorageSheetTest {
         compose.onNodeWithTag("stock_t4").assertIsOff()
         compose.onNodeWithTag("storage_bulk_salvage").assertTextEquals("Salvage 3").performClick()
         assertTrue("nothing is issued before the answer", issued.isEmpty())
-        compose.onNodeWithText("Salvage 3 blades?").assertIsDisplayed()
+        compose.onNodeWithText("Salvage 3 weapons?").assertIsDisplayed()
         compose.onNodeWithTag("storage_bulk_confirm").performClick()
         assertEquals(listOf(listOf("t1", "t2", "t3").map { Command.Salvage(WeaponId(it)) }), issued)
-        compose.onNodeWithText("Salvage 3 blades?").assertDoesNotExist()
+        compose.onNodeWithText("Salvage 3 weapons?").assertDoesNotExist()
         // Asked once: nothing is left chosen, so the bar cannot fire again by itself.
         compose.onNodeWithTag("storage_bulk_salvage").assertIsNotEnabled()
         // Scrap is one command for the lot, asked once.
         compose.onNodeWithTag("storage_bulk_scrap").assertIsNotEnabled()
         for (id in listOf("t1", "t4")) compose.onNodeWithTag("stock_$id").performClick()
         compose.onNodeWithTag("storage_bulk_scrap").performClick()
-        compose.onNodeWithText("Scrap 2 blades?").assertIsDisplayed()
+        compose.onNodeWithText("Scrap 2 weapons?").assertIsDisplayed()
         assertTrue(scrapped.isEmpty())
         compose.onNodeWithTag("storage_scrap_confirm").performClick()
         assertEquals(listOf(listOf(WeaponId("t1"), WeaponId("t4"))), scrapped)
@@ -249,7 +249,7 @@ class StorageSheetTest {
         // "Select all shown" then the watch: the same single question.
         compose.onNodeWithTag("storage_select_all").performClick()
         compose.onNodeWithTag("storage_bulk_donate").assertTextEquals("Arm the watch 5").performClick()
-        compose.onNodeWithText("Give 5 blades to the town watch?").assertIsDisplayed()
+        compose.onNodeWithText("Give 5 weapons to the town watch?").assertIsDisplayed()
         compose.onNodeWithTag("storage_bulk_confirm").performClick()
         assertEquals((1..5).map { Command.DonateWeapon(WeaponId("t$it")) }, issued.last())
         assertEquals(2, issued.size)
