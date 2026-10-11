@@ -25,7 +25,7 @@ data class BalanceConfig(
      * v10 (2026-10-10): morning visitors, workshop relics, siege traits and the committed besieger ([DepthConfig]); three automatic world events (the collector, the wandering master, the merchant festival) come as visitors instead. See docs/DECISIONS.md.
      * v11 (2026-10-11): the guild ([GuildConfig]): contracted members, loans, contracts, the interaction engine and the siege fought through it. A run without a guild reads none of it and plays as v10. See docs/DECISIONS.md.
      */
-    val version: Int = 12,
+    val version: Int = 13,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -666,8 +666,12 @@ data class LegendConfig(
     val renownElite: Int = 1,
     /** Power a weapon gains when its deeds make it Legendary. */
     val deedPower: Int = 4,
+    /** A core of this tier or above holds Epic work. In a lesser metal quality stops at Rare, and Heartfire does not take. */
+    val fineCoreTier: Int = 5,
+    /** The supplier carries a core metal of this tier from this day on. Before it, that metal comes only from dangerous work or an event. */
+    val coreTierFromDay: Map<Int, Int> = mapOf(5 to 6, 6 to 11),
     /** A classic run: a siege won from this number on leaves one Heartfire. */
-    val classicSiegeHeartfireFrom: Int = 3,
+    val classicSiegeHeartfireFrom: Int = 4,
 )
 
 /**

@@ -69,7 +69,7 @@ object Forge {
     /** The chance that a Heartfire forging of [quality] breaks through to Legendary: none under the Epic floor. */
     fun breakthroughChance(ctx: ResolutionContext, cmd: Command.Forge, quality: Int): Double {
         val cfg = ctx.config.depth.legend
-        if (quality < ctx.config.epicMin) return 0.0
+        if (quality < ctx.config.epicMin || !holdsEpic(ctx.content.material(cmd.coreId).tier, ctx.config)) return 0.0
         val known = SignatureCatalog.forRecipe(cmd)?.let { ctx.legacy.journal.state(it.journalKey) == KnowledgeState.SIGNATURE_DISCOVERED } == true
         return (cfg.breakthroughBase + cfg.breakthroughPerQuality * (quality - ctx.config.epicMin) + (if (known) cfg.knownRecipeBonus else 0.0) +
             when (cmd.risk) { Risk.SAFE -> cfg.safeBonus; Risk.BALANCED -> 0.0; Risk.RECKLESS -> cfg.recklessBonus }).coerceIn(0.0, cfg.breakthroughMax)
@@ -79,7 +79,9 @@ object Forge {
      * What a Heartfire forging of [cmd] would be, for the workbench: everything shown before the smith confirms.
      * [qualityLow]..[qualityHigh] is the plain roll (no exceptional result, no defect); the chances are at those two ends.
      */
-    data class HeartfireOutlook(val held: Int, val energy: Int, val floor: Int, val qualityLow: Int, val qualityHigh: Int, val chanceLow: Double, val chanceHigh: Double, val missSlots: Int)
+    data class HeartfireOutlook(val held: Int, val energy: Int, val floor: Int, val qualityLow: Int, val qualityHigh: Int, val chanceLow: Double, val chanceHigh: Double, val missSlots: Int,
+        /** False when the recipe's metal cannot hold Epic work: Heartfire does not take in it at any quality. */
+        val fineMetal: Boolean = true)
 
     fun heartfireOutlook(ctx: ResolutionContext, cmd: Command.Forge): HeartfireOutlook {
         val centre = centreQuality(ctx, cmd)
@@ -87,15 +89,23 @@ object Forge {
         val low = (centre - spread).coerceIn(1, 100)
         val high = (centre + spread).coerceIn(1, 100)
         return HeartfireOutlook(ctx.heartfire, energyCost(ctx.config, cmd.copy(mode = ForgeMode.ADVANCED, heartfire = true)), ctx.config.epicMin, low, high,
-            breakthroughChance(ctx, cmd, low), breakthroughChance(ctx, cmd, high), ctx.config.depth.legend.missExtraSlots)
+            breakthroughChance(ctx, cmd, low), breakthroughChance(ctx, cmd, high), ctx.config.depth.legend.missExtraSlots, holdsEpic(ctx.content.material(cmd.coreId).tier, ctx.config))
     }
 
-    /** The rarity a forged weapon's quality gives it: never past Epic. Legendary is earned (`Legends`), not rolled. */
-    fun forgedRarity(quality: Int, config: com.tinyblacksmith.core.config.BalanceConfig): Rarity = minOf(rarityFor(quality, config), Rarity.EPIC)
+    /** Only the fine metals (`LegendConfig.fineCoreTier` and above) hold Epic work. In any other core, quality stops at Rare. */
+    fun holdsEpic(coreTier: Int, config: com.tinyblacksmith.core.config.BalanceConfig): Boolean = coreTier >= config.depth.legend.fineCoreTier
 
-    /** The rarity of [weapon] at a new [quality] (a hone): a Legendary weapon stays one, no other becomes one. */
-    fun rarityAfter(weapon: Weapon, quality: Int, config: com.tinyblacksmith.core.config.BalanceConfig): Rarity =
-        if (weapon.rarity == Rarity.LEGENDARY) Rarity.LEGENDARY else forgedRarity(quality, config)
+    /**
+     * The rarity a forged weapon's quality gives it in a core of [coreTier]: never past Epic, and never past Rare in a
+     * metal that does not hold Epic work. Legendary is earned (`Legends`), not rolled. Without a tier only the first holds
+     * (a legend that comes back from the board).
+     */
+    fun forgedRarity(quality: Int, config: com.tinyblacksmith.core.config.BalanceConfig, coreTier: Int? = null): Rarity =
+        minOf(rarityFor(quality, config), if (coreTier == null || holdsEpic(coreTier, config)) Rarity.EPIC else Rarity.RARE)
+
+    /** The rarity of [weapon] at a new [quality] (a hone): it never falls, a Legendary weapon stays one, no other becomes one. */
+    fun rarityAfter(weapon: Weapon, quality: Int, config: com.tinyblacksmith.core.config.BalanceConfig, coreTier: Int): Rarity =
+        maxOf(weapon.rarity, forgedRarity(quality, config, coreTier))
 
     /** Applies a validated forge. Returns the new weapon. */
     fun apply(ctx: ResolutionContext, cmd: Command.Forge, ok: Validation.Ok): Weapon {
@@ -153,7 +163,7 @@ object Forge {
             (if (cmd.technique == Technique.QUENCH) config.quenchQualityPenalty else 0)).coerceIn(1, 100)
         // Quality alone stops at Epic. A Heartfire forging at the Epic floor or above may break through.
         val breakthrough = cmd.heartfire && rng.chance(breakthroughChance(ctx, cmd, quality))
-        val rarity = if (breakthrough) Rarity.LEGENDARY else forgedRarity(quality, config)
+        val rarity = if (breakthrough) Rarity.LEGENDARY else forgedRarity(quality, config, core.tier)
 
         val affixes = mutableListOf<AffixId>()
         val flaws = mutableListOf<AffixId>()

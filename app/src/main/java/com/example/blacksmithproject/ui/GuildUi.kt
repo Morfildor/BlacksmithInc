@@ -171,10 +171,14 @@ private fun GameEngine.rewardWords(state: GameState, r: Reward, factionId: Facti
     r.captiveId?.let { state.heroes[it]?.fullName }?.let { "$it brought home" },
 ).joinToString(" · ").ifEmpty { "Nothing of its own" }
 
+/** Who has to be standing at the end besides the party, in a sentence: " and keep the supply cart standing". */
+private fun GameEngine.protectedWords(stage: MissionStage): String =
+    stage.protectUnitId?.let { id -> content.combat?.unitById?.get(id)?.name }?.let { " and keep the ${it.lowercase().removePrefix("the ")} standing" } ?: ""
+
 private fun GameEngine.objectiveWords(stage: MissionStage): String = when {
     stage.enemies.isEmpty() -> "No fight"
-    stage.objective.kind == ObjectiveKind.DEFEAT -> "Defeat them all"
-    else -> "Last ${stage.objective.rounds} rounds" + (stage.protectUnitId?.let { id -> content.combat?.unitById?.get(id)?.name }?.let { " and keep the ${it.lowercase()} standing" } ?: "")
+    stage.objective.kind == ObjectiveKind.DEFEAT -> "Defeat them all" + protectedWords(stage)
+    else -> "Last ${stage.objective.rounds} rounds" + protectedWords(stage)
 }
 
 /** "Hunt on the Ashroad": the contract's name and the road it lies on; work at home has no road. */
@@ -207,7 +211,7 @@ private fun GameEngine.offerUi(state: GameState, g: GuildRunState, offer: Missio
         planned = g.planned?.offerId == offer.id,
         tag = "Opportunity".takeIf { def.archetype == MissionArchetype.OPPORTUNITY },
         modifier = content.guild!!.modifier(offer.modifierId)?.let { "${it.name}: ${it.description}" },
-        stake = "If nobody takes it, the supplier brings ${config.guild.supplierShakenStock} fewer of every limited material each morning for ${config.guild.supplierDays} days.".takeIf { offer.lapse == GuildContent.LAPSE_SUPPLIER },
+        stake = "If the cart is lost, the supplier brings ${config.guild.supplierShakenStock} fewer of every limited material each morning for ${config.guild.supplierDays} days. Leaving the job on the board costs nothing.".takeIf { offer.lapse == GuildContent.LAPSE_SUPPLIER },
     )
 }
 
@@ -445,7 +449,7 @@ fun GameEngine.contractUi(state: GameState, offerId: String, picked: List<HeroId
             val why = memberUnavailable(state, h.id) ?: "is kept for the wall".takeIf { h.id in g.reserved }
             PickUi(h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), bladeLine(state, h.id), party.indexOf(h.id).takeIf { it >= 0 }?.plus(1), why?.let { "${h.fullName} $it." })
         },
-        partyMax = config.guild.partyMax,
+        partyMax = partyMax(state, offer.id),
         postures = Posture.entries.map { PostureUi(it, postureName(it), postureWords(it, config.guild.fight), it == posture) },
         together = setup?.let(::worksTogether).orEmpty(),
         watchOut = setup?.let(::watchOut).orEmpty(),
@@ -454,7 +458,7 @@ fun GameEngine.contractUi(state: GameState, offerId: String, picked: List<HeroId
         returns = returnMorning(state.day + offer.days).replaceFirstChar { it.uppercase() } + ".",
         sendBlocked = when {
             g.mission != null -> "The party is still out."
-            party.isEmpty() -> "Pick one to ${config.guild.partyMax} members."
+            party.isEmpty() -> partyMax(state, offer.id).let { if (it == 1) "Pick one member." else "Pick one to $it members." }
             purse < offer.fee -> "Needs ${offer.fee} gold. You have $purse."
             else -> null
         },

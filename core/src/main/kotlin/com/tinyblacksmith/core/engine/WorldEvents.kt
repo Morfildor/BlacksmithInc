@@ -110,7 +110,8 @@ object WorldEvents {
 
     // ---- helpers -------------------------------------------------------------------------------------------
 
-    private fun rareMaterials(ctx: ResolutionContext) = ctx.content.materials.filter { it.dailySupplierStock != null }
+    /** The limited stock an event can touch: what the supplier carries by now. A merchant on the road has no star metal the supplier cannot get. */
+    private fun rareMaterials(ctx: ResolutionContext) = ctx.content.materials.filter { it.dailySupplierStock != null && ctx.day >= com.tinyblacksmith.core.crafting.Legends.stockedFromDay(it, ctx.config) }
 
     private fun journalKeys(ctx: ResolutionContext): List<String> {
         val c = ctx.content
@@ -193,7 +194,7 @@ object WorldEvents {
         WorldEventDef(
             id = "abandoned_mine", name = "Abandoned Mine Rediscovered", weight = 2.0, eligibility = { true }, maxPerRun = 3, cooldownDays = 5,
             apply = { ctx ->
-                val m = ctx.rng(RngStream.EVENTS).pick(ctx.content.materials(MaterialCategory.CORE))
+                val m = ctx.rng(RngStream.EVENTS).pick(ctx.content.materials(MaterialCategory.CORE).filter { ctx.day >= com.tinyblacksmith.core.crafting.Legends.stockedFromDay(it, ctx.config) })
                 val n = ctx.config.abandonedMineMaterials
                 ctx.materials[m.id] = (ctx.materials[m.id] ?: 0) + n
                 WorldEventOutcome(mapOf("material" to m.name, "materialId" to m.id.value, "amount" to n.toString()))

@@ -1,6 +1,8 @@
 package com.example.blacksmithproject
 
 import com.example.blacksmithproject.ui.RecipeSlot
+import com.example.blacksmithproject.ui.contractUi
+import com.example.blacksmithproject.ui.supplyNotes
 import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.forgeWorkbench
 import com.example.blacksmithproject.ui.guildUi
@@ -8,7 +10,9 @@ import com.example.blacksmithproject.ui.openingChooser
 import com.example.blacksmithproject.ui.riskExplanation
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.supplierMood
+import com.tinyblacksmith.core.combat.Posture
 import com.tinyblacksmith.core.content.GuildContent
+import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.content.MissionArchetype
 import com.tinyblacksmith.core.engine.Command
@@ -127,7 +131,7 @@ class RunVarietyUiTest {
         assertFalse(none.command!!.heartfire)
         assertEquals("Forge · ${engine.config.advancedForgeEnergy} energy", none.action.label)
         assertTrue(h0.outlook.isEmpty())
-        assertTrue(h0.rule, h0.rule.startsWith("Quality alone stops at Epic."))
+        assertTrue(h0.rule, h0.rule.startsWith("Quality alone stops at Epic, and only Starsteel and Moonsteel hold Epic work. In any other metal it stops at Rare."))
         assertTrue(h0.source, listOf("a deep hall cleared", "a taken weapon won back", "a starfall site", "a warlord broken on the wall").all { it in h0.source })
 
         // One held, but Quick: the reason is the engine's own rule.
@@ -158,10 +162,11 @@ class RunVarietyUiTest {
         assertEquals("Uses 1 Heartfire and ${legend.heartfireEnergy} more energy, ${o.energy} in all. Both are spent whether or not it breaks through.", h.outlook[0])
         assertEquals("Quality lands between ${o.qualityLow} and ${o.qualityHigh}, before an exceptional result or a flaw. It can break through only at ${o.floor} or more.", h.outlook[1])
         assertEquals("If it does not break through, the weapon still gets one more property.", h.outlook[3])
-        // A cheap first-day recipe stays under the floor: the panel says so instead of promising a chance.
+        // A cheap first-day recipe is in a metal that does not hold Epic work: the panel says so instead of promising a chance.
         assertTrue("the first metals should not reach Epic", o.qualityHigh < o.floor)
-        assertEquals("Chance to break through: none at this quality.", h.outlook[2])
-        assertEquals("A plain result of this recipe stays under quality ${o.floor}. Only an exceptional result could break through.", h.warning)
+        assertFalse(o.fineMetal)
+        assertEquals("Chance to break through: none in this metal.", h.outlook[2])
+        assertEquals("Heartfire does not take in this metal. Only Starsteel and Moonsteel hold Epic work.", h.warning)
         // The forge is the one the panel described: the Heartfire and the energy are gone.
         val after = (engine.handle(held, b.command!!) as CommandOutcome.Accepted).state
         assertEquals(0, after.heartfire)
@@ -239,7 +244,7 @@ class RunVarietyUiTest {
         val g = engine.config.guild
         val stake = card(road!!.first, road.second.id)
         assertEquals("Opportunity", stake.tag)
-        assertEquals("If nobody takes it, the supplier brings ${g.supplierShakenStock} fewer of every limited material each morning for ${g.supplierDays} days.", stake.stake)
+        assertEquals("If the cart is lost, the supplier brings ${g.supplierShakenStock} fewer of every limited material each morning for ${g.supplierDays} days. Leaving the job on the board costs nothing.", stake.stake)
         assertTrue(stake.stages.toString(), stake.stages.any { "the supplier's thanks" in it.reward })
         // An ordinary contract carries none of the three.
         val plain = all.first().let { s -> card(s, s.guild!!.offers.first { it.modifierId == null && it.lapse == null && cat.mission(it.defId).archetype != MissionArchetype.OPPORTUNITY }.id) }
@@ -273,5 +278,36 @@ class RunVarietyUiTest {
         val earned = detail { it.copy(rarity = Rarity.LEGENDARY, legend = LegendOrigin.DEEDS, renown = legend.renownForLegend) }
         assertEquals("Legendary by its deeds", earned.legend)
         assertEquals("${legend.renownForLegend} of ${legend.renownForLegend}", earned.deeds)
+    }
+
+    @Test
+    fun theSuppliesSayWhenAFineMetalArrivesAndACardSaysWhoMayGoAndWhatWinningIs() {
+        // Day 1: star metal is not on the roads yet, and the row says from which day and where it comes from before that.
+        val first = engine.newRun(LegacyProfile(), 3)
+        val star = engine.content.material(LaunchContent.STARSTEEL)
+        val from = engine.stockedFromDay(star.id)
+        assertEquals(listOf("The supplier carries it from day $from. Before that it comes only from dangerous work."), engine.supplyNotes(first, star))
+        assertEquals(emptyList<String>(), engine.supplyNotes(first.copy(day = from), star))
+        assertEquals(emptyList<String>(), engine.supplyNotes(first, engine.content.material(LaunchContent.OBSIDIAN)))
+
+        // Contracts whose card changes the decision: the party size and the objective are the card's, not the guild's.
+        val all = mornings(GuildPolicy.SYNERGY, 1L..12L).toList()
+        fun find(id: String) = all.firstNotNullOfOrNull { s -> s.guild!!.offers.firstOrNull { it.modifierId == id }?.let { s to it } }
+        val narrow = find("narrow")
+        assertNotNull("no narrow way was posted", narrow)
+        val sheet = engine.contractUi(narrow!!.first, narrow.second.id, emptyList(), Posture.BALANCED)!!
+        assertEquals(2, sheet.partyMax)
+        if (narrow.first.guild!!.mission == null) assertEquals("Pick one to 2 members.", sheet.sendBlocked)
+        fun card(pair: Pair<GameState, com.tinyblacksmith.core.model.MissionOffer>) = engine.guildUi(pair.first)!!.offers.first { it.id == pair.second.id }
+        val ambush = find("ambush")
+        assertNotNull("no ford to hold was posted", ambush)
+        assertEquals("Last ${cat.modifier("ambush")!!.hold} rounds", card(ambush!!).stages.single().objective)
+        val hostage = find("hostage")
+        assertNotNull("no held guard was posted", hostage)
+        assertEquals("Defeat them all and keep the captive standing", card(hostage!!).stages.single().objective)
+        assertTrue(card(hostage).stages.single().reward, "strengthens the militia" in card(hostage).stages.single().reward)
+        val kind = find("in_kind")
+        assertNotNull("no contract paid in metal was posted", kind)
+        assertFalse(card(kind!!).stages.last().reward, "contract gold" in card(kind).stages.last().reward)
     }
 }

@@ -69,7 +69,7 @@ object GuildScenarios {
     /** Day 1: the opening relics declined, one quick iron sword forged by a real command and left in storage. */
     private fun dayOne(): GameState = fresh(DAY_ONE_SEED).run(TestSupport.quickSword(Risk.SAFE))
 
-    const val CHECKPOINT_SEED = 2L
+    const val CHECKPOINT_SEED = 1L
     const val CHECKPOINT_DAY = 10
 
     const val SIEGE_EVE_SEED = 1L
@@ -82,10 +82,10 @@ object GuildScenarios {
         return s.run(Command.ReserveDefender(s.member(LaunchContent.GUARDIAN).id, true))
     }
 
-    const val CAPTIVE_SEED = 1L
+    const val CAPTIVE_SEED = 2L
     const val CAPTIVE_DAY = 8
 
-    const val CHARTER_SEED = 2L
+    const val CHARTER_SEED = 1L
     const val CHARTER_LEVEL = 8
     const val CHARTER_QUALITY = 90
 
@@ -108,7 +108,7 @@ object GuildScenarios {
     }
 
     private fun strong(w: Weapon): Weapon = maxOf(w.quality, CHARTER_QUALITY).let { q ->
-        w.copy(quality = q, rarity = Forge.rarityAfter(w, q, config), power = maxOf(w.power, Forge.powerOf(content, config, w.familyId, w.coreId, q, w.affixes + w.flaws)), condition = 100)
+        w.copy(quality = q, rarity = Forge.rarityAfter(w, q, config, content.material(w.coreId).tier), power = maxOf(w.power, Forge.powerOf(content, config, w.familyId, w.coreId, q, w.affixes + w.flaws)), condition = 100)
     }
 
     const val STORMWELL_SEED = 3L

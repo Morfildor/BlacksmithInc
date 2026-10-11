@@ -134,6 +134,7 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
                 "Uses 1 Heartfire and ${legend.heartfireEnergy} more energy, ${o.energy} in all. Both are spent whether or not it breaks through.",
                 "Quality lands between ${o.qualityLow} and ${o.qualityHigh}, before an exceptional result or a flaw. It can break through only at ${o.floor} or more.",
                 when {
+                    !o.fineMetal -> "Chance to break through: none in this metal."
                     o.chanceHigh <= 0.0 -> "Chance to break through: none at this quality."
                     o.chanceLow <= 0.0 -> "Chance to break through: none under quality ${o.floor}, up to ${percent(o.chanceHigh)} at quality ${o.qualityHigh}."
                     o.chanceLow == o.chanceHigh -> "Chance to break through: ${percent(o.chanceLow)}."
@@ -142,8 +143,9 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
                 "If it does not break through, the weapon still gets ${if (o.missSlots == 1) "one more property" else "${o.missSlots} more properties"}.",
             )
         },
-        warning = o?.takeIf { it.qualityHigh < it.floor }?.let { "A plain result of this recipe stays under quality ${it.floor}. Only an exceptional result could break through." },
-        rule = "Quality alone stops at Epic. A weapon becomes Legendary by a Heartfire breakthrough or by its deeds.",
+        warning = o?.takeIf { !it.fineMetal }?.let { "Heartfire does not take in this metal. Only ${fineMetals()} hold Epic work." }
+            ?: o?.takeIf { it.qualityHigh < it.floor }?.let { "A plain result of this recipe stays under quality ${it.floor}. Only an exceptional result could break through." },
+        rule = "Quality alone stops at Epic, and only ${fineMetals()} hold Epic work. In any other metal it stops at Rare. A weapon becomes Legendary by a Heartfire breakthrough or by its deeds.",
         source = "Heartfire comes from dangerous work: a deep hall cleared, a taken weapon won back, a starfall site, a warlord broken on the wall.",
     )
 }
@@ -325,3 +327,6 @@ fun GameEngine.untriedPairing(state: GameState): Pair<MaterialId, MaterialId>? {
     }
     return null
 }
+
+/** The core metals that hold Epic work (`LegendConfig.fineCoreTier`), named for a sentence: "Starsteel and Moonsteel". */
+fun GameEngine.fineMetals(): String = content.materials(MaterialCategory.CORE).filter { it.tier >= config.depth.legend.fineCoreTier }.sortedBy { it.tier }.joinToString(" and ") { it.name }

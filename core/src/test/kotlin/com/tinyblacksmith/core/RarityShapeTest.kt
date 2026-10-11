@@ -1,5 +1,6 @@
 package com.tinyblacksmith.core
 
+import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.Risk
@@ -43,9 +44,23 @@ class RarityShapeTest {
     fun meanQualityRisesWithCoreTierAndRisk() {
         val byTier = rows.filter { it.risk == Risk.BALANCED }.groupBy { it.coreTier }.mapValues { (_, r) -> r.map { it.meanQuality }.average() }
         for (tier in 1..5) assertTrue(byTier.getValue(tier) < byTier.getValue(tier + 1), "tier $tier ${byTier[tier]} vs ${byTier[tier + 1]}")
-        // Rules 6: no temper forges a Legendary weapon from quality alone, and the bolder temper still reaches Epic more often.
+        // Rules 6: no temper forges a Legendary weapon from quality alone, and only a fine metal holds Epic work.
         assertTrue(rows.all { it.rarity.getValue(Rarity.LEGENDARY) == 0.0 })
-        val byRisk = rows.groupBy { it.risk }.mapValues { (_, r) -> r.sumOf { it.rarity.getValue(Rarity.EPIC) } / r.size }
-        assertTrue(byRisk.getValue(Risk.SAFE) < byRisk.getValue(Risk.BALANCED) && byRisk.getValue(Risk.BALANCED) < byRisk.getValue(Risk.RECKLESS), "$byRisk")
+        val fineTier = BalanceConfig.DEFAULT.depth.legend.fineCoreTier
+        val (fine, lesser) = rows.partition { it.coreTier >= fineTier }
+        assertTrue(lesser.isNotEmpty() && lesser.all { it.rarity.getValue(Rarity.EPIC) == 0.0 }, "a lesser metal stops at Rare")
+        assertEquals(setOf("starsteel", "moonsteel"), fine.map { it.coreId }.toSet())
+        assertTrue(fine.all { it.rarity.getValue(Rarity.EPIC) > 0.0 }, "every fine recipe reaches Epic at every temper")
+        // A bolder temper widens the roll. A fine recipe that sits under the Epic floor reaches Epic more often with it,
+        // and one that sits above the floor keeps Epic more often in a safe hand.
+        var under = 0
+        var above = 0
+        for ((recipe, r) in fine.groupBy { it.coreId to it.augmentId }) {
+            val safe = r.single { it.risk == Risk.SAFE }.rarity.getValue(Rarity.EPIC)
+            val reckless = r.single { it.risk == Risk.RECKLESS }.rarity.getValue(Rarity.EPIC)
+            if (safe < 0.5) { under++; assertTrue(reckless > safe, "$recipe under the floor: safe $safe, reckless $reckless") }
+            else { above++; assertTrue(safe > reckless, "$recipe above the floor: safe $safe, reckless $reckless") }
+        }
+        assertTrue(under >= 3 && above >= 3, "both kinds of fine recipe are in the table: $under under, $above above")
     }
 }

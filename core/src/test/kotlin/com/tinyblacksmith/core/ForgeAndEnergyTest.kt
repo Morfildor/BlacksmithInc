@@ -30,7 +30,8 @@ class ForgeAndEnergyTest {
                 assertTrue(w.quality in 1..100, "quality ${w.quality}")
                 assertTrue(w.power >= 1)
                 assertEquals(WeaponLocation.Storage, w.location)
-                assertEquals(w.rarity, com.tinyblacksmith.core.crafting.Forge.forgedRarity(w.quality, engine.config))
+                assertEquals(w.rarity, com.tinyblacksmith.core.crafting.Forge.forgedRarity(w.quality, engine.config, engine.content.material(w.coreId).tier))
+                assertTrue(w.rarity <= Rarity.RARE, "silver is not a fine metal: quality ${w.quality} stops at Rare (rules 6)")
                 if (w.rarity == Rarity.LEGENDARY) legendary++
                 s = out.state
             }

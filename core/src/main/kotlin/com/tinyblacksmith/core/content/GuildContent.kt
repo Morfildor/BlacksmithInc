@@ -85,9 +85,15 @@ data class SiegePrepDef(
     val partyStats: Map<Stat, Int> = emptyMap(),
 )
 
-/** Something different about one posted contract (rules 6): drawn when it is posted, shown on its card. */
+/**
+ * Something different about one posted contract (rules 6): drawn when it is posted, shown on its card. The first kind
+ * moves numbers ([enemyStats], [partyStats], [addUnit], [goldPercent]). The second changes what the smith has to decide:
+ * what winning is ([hold] rounds to stand instead of a foe to fell, [protectUnitId] somebody to bring out), who may go
+ * ([partyMax]), or what is paid ([payment] instead of gold, [militia] for the wall). [archetypes] empty = any drawn contract.
+ */
 data class MissionModifierDef(val id: String, val name: String, val description: String, val enemyStats: Map<Stat, Int> = emptyMap(), val partyStats: Map<Stat, Int> = emptyMap(),
-    val addUnit: Map<FactionId, String> = emptyMap(), val goldPercent: Int = 100)
+    val addUnit: Map<FactionId, String> = emptyMap(), val goldPercent: Int = 100,
+    val archetypes: Set<MissionArchetype> = emptySet(), val hold: Int = 0, val protectUnitId: String? = null, val partyMax: Int? = null, val payment: MaterialDraw? = null, val militia: Int = 0)
 
 data class MissionDef(
     val id: String,
@@ -106,6 +112,8 @@ data class MissionDef(
     val minDay: Int = 1,
     /** Mornings an offer of this contract stays on the board. */
     val lifeDays: Int = 3,
+    /** A unit of the town that fills every empty place of the party on this contract (a rescue), or null. */
+    val watchUnitId: String? = null,
 )
 
 /** The road a faction's contracts lie on. */
@@ -142,6 +150,8 @@ data class CharterDef(
     val play: String,
     val startClasses: List<HeroClassId>,
     val offeredClass: HeroClassId,
+    /** A second class that would sign on the first morning, at the usual fee, or null for whoever the town has. */
+    val alsoOffered: HeroClassId? = null,
     val goldDelta: Int = 0,
     val militiaDelta: Int = 0,
     val reputationDelta: Int = 0,
@@ -213,13 +223,14 @@ data class GuildCatalog(
                 if (s.goldMax < s.goldMin) problems += "Mission ${m.id} gold range"
             }
         }
+        missions.forEach { m -> m.watchUnitId?.let { if (it !in combat.unitById) problems += "Mission ${m.id} names unknown watch unit $it" } }
         if (missions.none { it.archetype == MissionArchetype.SUPPLY && it.fee == 0 }) problems += "No free supply contract"
         if (missions.none { it.archetype == MissionArchetype.EMERGENCY && it.fee == 0 }) problems += "No free emergency work"
         problems += EffectRules.problems(traits.flatMap { it.effects } + specialities.flatMap { it.effects } + bondEffects.values.flatten() + oathEffects, units = combat.unitById)
         ranks.forEachIndexed { i, r -> if (r.rank != i + 1) problems += "Guild ranks must be numbered from 1 without gaps" }
         laws.forEach { if (it.days <= 0) problems += "Law ${it.id} lasts no days" }
         for (c in charters) {
-            (c.startClasses + c.offeredClass).forEach { if (it !in content.classById) problems += "Charter ${c.id} names unknown class ${it.value}" }
+            (c.startClasses + c.offeredClass + listOfNotNull(c.alsoOffered)).forEach { if (it !in content.classById) problems += "Charter ${c.id} names unknown class ${it.value}" }
             c.materials.keys.forEach { if (it !in content.materialById) problems += "Charter ${c.id} gives unknown material ${it.value}" }
             if (c.startClasses.size != 2) problems += "Charter ${c.id} starts with ${c.startClasses.size} members"
         }
@@ -239,7 +250,13 @@ data class GuildCatalog(
             if (!p.sabotage.sabotage) problems += "Preparation ${p.id}: its sabotage spoils nothing"
         }
         if (preparations.isNotEmpty()) content.factions.forEach { f -> if (preparations.none { it.factionId == f.id }) problems += "No preparation for ${f.id.value}" }
-        modifiers.forEach { m -> m.addUnit.values.forEach { if (it !in combat.unitById) problems += "Modifier ${m.id} names unknown unit $it" } }
+        modifiers.forEach { m ->
+            (m.addUnit.values + listOfNotNull(m.protectUnitId)).forEach { if (it !in combat.unitById) problems += "Modifier ${m.id} names unknown unit $it" }
+            if (m.partyMax != null && m.partyMax < 1) problems += "Modifier ${m.id} lets nobody go"
+        }
+        if (modifiers.isNotEmpty()) missions.filter { it.weight > 0.0 && it.archetype != MissionArchetype.SUPPLY && it.archetype != MissionArchetype.SABOTAGE }.forEach { m ->
+            if (modifiers.none { it.archetypes.isEmpty() || m.archetype in it.archetypes }) problems += "No modifier fits ${m.id}"
+        }
         if (traits.count { !it.hook } < 1 || traits.count { it.hook } < 1) problems += "Guild traits need both kinds"
         content.factions.forEach { f ->
             if (routes.none { it.factionId == f.id }) problems += "No route for ${f.id.value}"
@@ -305,8 +322,8 @@ object GuildContent {
             description = "A named one of theirs has been seen with its guard. What it carries is worth having.",
             prep = "A weapon that bites their weakness, and a way through whatever protects the big one.",
             failure = "Wounds and no prize. If the whole party goes down, one of them is taken.",
-            stages = listOf(StageDef(roster(listOf("ashclaw_warchief", "ashclaw_scout"), listOf("pale_knight", "hollow_shambler"), listOf("ember_drake", "ember_whelp")), Danger.DANGEROUS, percent = 105,
-                goldMin = 55, goldMax = 85, materials = MaterialDraw(2, 3, 6, scarce = true), suppression = 6))),
+            stages = listOf(StageDef(roster(listOf("ashclaw_warchief", "ashclaw_scout"), listOf("pale_knight", "hollow_shambler"), listOf("ember_drake", "ember_whelp")), Danger.DANGEROUS, percent = 130,
+                goldMin = 55, goldMax = 85, materials = MaterialDraw(2, 3, 4, scarce = true), suppression = 4))),
         // Two days: in past the pickets, then the work itself. Its second day is the preparation's own (`SiegePrepDef.sabotage`); the one written here is for a siege without one.
         MissionDef(SABOTAGE, MissionArchetype.SABOTAGE, "Sabotage", days = 2, fee = 10, weight = 1.0, minDay = 1, lifeDays = 2,
             description = "Two days in their camp. Past the pickets on the first, and on the second you spoil what they are preparing for the siege.",
@@ -328,7 +345,7 @@ object GuildContent {
         MissionDef(SUPPLIER_ROAD, MissionArchetype.OPPORTUNITY, "The supplier's road", days = 2, fee = 0, weight = 0.0, lifeDays = 2,
             description = "Your supplier has to get a cart through before the siege closes the roads. Two days beside it.",
             prep = "A Guardian in front and something for whoever goes past the front. The cart has to stand both days.",
-            failure = "The supplier is shaken and brings less for a few days. Nobody is taken on this road.",
+            failure = "If the cart is lost the supplier is shaken and brings less for a few days. Nobody is taken on this road. Leaving the job on the board costs nothing.",
             stages = listOf(
                 StageDef(roster(listOf("ashclaw_scout", "ashclaw_scout", "ashclaw_thief"), listOf("hollow_shambler", "hollow_shambler", "hollow_shambler"), listOf("ember_whelp", "ember_whelp", "ember_whelp")), Danger.SAFE, percent = 80,
                     objective = ObjectiveKind.HOLD, rounds = 4, protectUnitId = "escort_cart", goldMin = 15, goldMax = 25),
@@ -353,13 +370,13 @@ object GuildContent {
                 StageDef(roster(listOf("ashclaw_warchief", "ashclaw_brute", "ashclaw_thief"), listOf("pale_knight", "gravecaller", "bone_warden"), listOf("ember_drake", "cinder_knight", "ember_whelp")), Danger.LETHAL, percent = 125,
                     goldMin = 60, goldMax = 90, materials = MaterialDraw(2, 4, 6, scarce = true), relicOffer = true, heartfire = 1))),
         // Posted only for a real captive or a real blade; never drawn for the board.
-        MissionDef(RESCUE, MissionArchetype.RESCUE, "Rescue", days = 2, fee = 0, weight = 0.0, lifeDays = 9,
-            description = "One of yours is held. Break in on the first day, bring them out on the second.",
-            prep = "Enough to beat the guards, then Guard and healing: on the way out the captive has to stay on their feet.",
-            failure = "The captive stays where they are and their time keeps running. If the whole party goes down, one more is taken.",
+        MissionDef(RESCUE, MissionArchetype.RESCUE, "Rescue", days = 2, fee = 0, weight = 0.0, lifeDays = 9, watchUnitId = "town_watch",
+            description = "One of yours is held. Break in on the first day, bring them out on the second. The watch sends a guard for every empty place in the party.",
+            prep = "Guard and healing. On the way out the captive has to stay on their feet. One member with two of the watch can do it.",
+            failure = "The captive stays where they are and their time keeps running. The party comes home hurt. Nobody else is taken.",
             stages = listOf(
-                StageDef(roster(listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_scout"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.DANGEROUS, percent = 60),
-                StageDef(roster(listOf("ashclaw_thief", "ashclaw_scout", "ashclaw_scout"), listOf("hollow_shambler", "hollow_shambler", "bone_warden"), listOf("ember_whelp", "ember_whelp", "cinder_knight")), Danger.DANGEROUS, percent = 55,
+                StageDef(roster(listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_scout"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.SAFE, percent = 60),
+                StageDef(roster(listOf("ashclaw_thief", "ashclaw_scout", "ashclaw_scout"), listOf("hollow_shambler", "hollow_shambler", "bone_warden"), listOf("ember_whelp", "ember_whelp", "cinder_knight")), Danger.SAFE, percent = 55,
                     objective = ObjectiveKind.HOLD, rounds = 3, protectUnitId = "captive"))),
         MissionDef(RECOVERY, MissionArchetype.RECOVERY, "Recovery", days = 1, fee = 10, weight = 0.0, lifeDays = 9,
             description = "A weapon of your forge is in one of their hands. The one who carries it has to fall.",
@@ -415,10 +432,10 @@ object GuildContent {
             play = "Protect, strike back, rebuild.",
             startClasses = listOf(LaunchContent.GUARDIAN, LaunchContent.WARDEN), offeredClass = LaunchContent.BATTLEMAGE, goldDelta = -40, militiaDelta = 3, materials = mapOf(LaunchContent.BINDING_SALT to 1)),
         CharterDef(LICENSED_BAD_IDEAS, "Licensed Bad Ideas", "A charter for experiments, signed by somebody who did not read it.",
-            advantage = "A Duelist and a Battlemage, a Runestone Shard and a measure of Void Ink.",
-            constraint = "80 gold less to start with, and dangerous contracts are posted from the first day.",
+            advantage = "A Duelist and a Battlemage, a Guardian and a Warden who would sign on the first morning, a Runestone Shard, a measure of Void Ink and two bars of Silver.",
+            constraint = "50 gold less to start with, and dangerous contracts are posted from the first day.",
             play = "Invent a build and take the risk it asks for.",
-            startClasses = listOf(LaunchContent.DUELIST, LaunchContent.BATTLEMAGE), offeredClass = LaunchContent.WARDEN, goldDelta = -80, materials = mapOf(LaunchContent.RUNESTONE_SHARD to 1, LaunchContent.VOID_INK to 1), earlyDanger = true),
+            startClasses = listOf(LaunchContent.DUELIST, LaunchContent.BATTLEMAGE), offeredClass = LaunchContent.GUARDIAN, alsoOffered = LaunchContent.WARDEN, goldDelta = -50, materials = mapOf(LaunchContent.RUNESTONE_SHARD to 1, LaunchContent.VOID_INK to 1, LaunchContent.SILVER to 2), earlyDanger = true),
         CharterDef(HONEST_BUSINESS, "Honest Business, Mostly", "A trading charter with a clause about adventurers that nobody mentions.",
             advantage = "A Ranger and a Warden, one more contract on the board every day, and a name that is already known.",
             constraint = "The backers take their part: the forge keeps four fifths of its contract gold.",
@@ -467,12 +484,16 @@ object GuildContent {
     private val B = LaunchContent.BATTLEMAGE
     private val R = LaunchContent.RANGER
 
-    /** Eight packages, seven build directions. Every enabler is in the package: no opening waits on a drop. Names and numbers PROPOSED. */
+    /**
+     * Eight packages, seven build directions. Every enabler is in the package: no opening waits on a drop. No drawback is
+     * militia: the watch thins by one a day, so militia taken on the first morning is gone before the first siege whatever
+     * the package (measured, docs/run_variety_evidence/REPORT.md). Names and numbers PROPOSED.
+     */
     val openings = listOf(
         OpeningDef("overflow", "The Overflowing Cup", "Overheal", "Healing that has nowhere to go becomes Guard and Regeneration.",
             plan = "Loan the Warden a staff for more healing. Keep the front topped up and let the Basin turn the rest into Guard. Verdant Sap on the front's weapon feeds it.",
-            drawback = "Two fewer militia on the wall.", charters = setOf(TOWNS_LAST_HOPE, HONEST_BUSINESS), traits = mapOf(W to "overhealer"), relicId = CombatContent.OVERFLOW_BASIN,
-            materials = mapOf(LaunchContent.VERDANT_SAP to 2), militiaDelta = -2),
+            drawback = "40 gold less to start with.", charters = setOf(TOWNS_LAST_HOPE, HONEST_BUSINESS), traits = mapOf(W to "overhealer"), relicId = CombatContent.OVERFLOW_BASIN,
+            materials = mapOf(LaunchContent.VERDANT_SAP to 2), goldDelta = -40),
         OpeningDef("salvage", "Break It on Purpose", "Breakage", "A weapon that cracks rings the Bell: Guard for everybody, and a strike from whoever was waiting for it.",
             plan = "Loan the Brittle sword to whoever stands in front. When their Guard breaks it cracks, the Bell answers, the Rust Savant strikes. Hone it after every fight. A Runestone Shard makes a second answer.",
             drawback = "The sword is Brittle and has to be mended after every fight. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS), traits = mapOf(W to "rust_savant", B to "rust_savant"),
@@ -483,15 +504,15 @@ object GuildContent {
             materials = mapOf(LaunchContent.STORMGLASS to 1, LaunchContent.BINDING_SALT to 1), goldDelta = -40),
         OpeningDef("furnace", "Borrowed Fire", "Burn into Guard", "Set them alight, then take the fire back off them as Guard for your own.",
             plan = "Forge fire weapons from Ember Resin. Put the Void Ink into an Advanced forge: that weapon takes Burn off the enemy and the Lung gives everybody Guard for it.",
-            drawback = "Three fewer militia on the wall.", charters = setOf(LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(B to "second_wind", W to "protective"), relicId = CombatContent.FURNACE_LUNG,
-            materials = mapOf(LaunchContent.VOID_INK to 1, LaunchContent.EMBER_RESIN to 2), militiaDelta = -3),
+            drawback = "40 gold less to start with.", charters = setOf(LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(B to "second_wind", W to "protective"), relicId = CombatContent.FURNACE_LUNG,
+            materials = mapOf(LaunchContent.VOID_INK to 1, LaunchContent.EMBER_RESIN to 2), goldDelta = -40),
         OpeningDef("marked", "The Marked Card", "Marks and burst", "Mark the one that matters and make every Mark pay twice.",
             plan = "The Methodical member wants marked targets: a Sun Ash weapon marks on its own hit, and the first enemy to fall rises to mark for you. Go for the leader first.",
-            drawback = "30 gold less to start with, and three fewer militia.", charters = setOf(HONEST_BUSINESS, LICENSED_BAD_IDEAS), traits = mapOf(R to "methodical", D to "methodical"), relicId = CombatContent.BONE_MUSIC_BOX,
-            materials = mapOf(LaunchContent.SUN_ASH to 1, LaunchContent.GRAVE_DUST to 1), goldDelta = -30, militiaDelta = -3),
+            drawback = "50 gold less to start with.", charters = setOf(HONEST_BUSINESS, LICENSED_BAD_IDEAS), traits = mapOf(R to "methodical", D to "methodical"), relicId = CombatContent.BONE_MUSIC_BOX,
+            materials = mapOf(LaunchContent.SUN_ASH to 1, LaunchContent.GRAVE_DUST to 1), goldDelta = -50),
         OpeningDef("blood_price", "Paid in Blood", "Blood price", "A weapon that drinks its wielder hits much harder. Healing them afterwards is also Guard.",
             plan = "Loan the Bloodbound axe to somebody sturdy and keep a healer behind them. The Receipt turns that healing into Guard. Never send it out without the healer.",
-            drawback = "The axe takes health from whoever carries it. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, HONEST_BUSINESS), traits = mapOf(G to "second_wind", R to "second_wind"), relicId = CombatContent.BLOOD_RECEIPT,
+            drawback = "The axe takes health from whoever carries it. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(G to "second_wind", R to "second_wind", D to "second_wind"), relicId = CombatContent.BLOOD_RECEIPT,
             weapon = StartWeaponDef(LaunchContent.AXE, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BLOODBOUND, 48), integrityDelta = -10),
         OpeningDef("plain_oath", "The Plain Oath", "Common steel", "Plain weapons, sworn to. Whoever carries a common or uncommon one strikes harder and raises Guard.",
             plan = "Forge iron and bronze for the party on purpose and keep the good metal for the shelf. A rare or finer weapon in a member's hands ends the oath for them.",
@@ -532,6 +553,13 @@ object GuildContent {
         MissionModifierDef("guarded", "Shields up", "They are expecting somebody. Every enemy starts with 4 Guard. It pays a fifth more.", enemyStats = mapOf(Stat.GUARD to 4), goldPercent = 120),
         MissionModifierDef("reinforced", "One more of them", "Another joined them on the way. It pays a quarter more.", addUnit = mapOf(A to "ashclaw_thief", H to "gravecaller", E to "ember_whelp"), goldPercent = 125),
         MissionModifierDef("tired", "Tired sentries", "They have been awake for days. Every enemy starts slowed. It pays less.", enemyStats = mapOf(Stat.CHILL to 1), goldPercent = 85),
+        // The four that change the decision, not the difficulty.
+        MissionModifierDef("ambush", "Hold the ford", "The watch closes the trap behind them. Nobody has to fall. Somebody of yours has to be standing after 5 rounds.", archetypes = setOf(MissionArchetype.HUNT), hold = 5),
+        MissionModifierDef("hostage", "One of the watch is held", "They hold a guard of the watch. He stands at the back of your line and has to come out alive. The wall gets him back: 2 more militia.",
+            archetypes = setOf(MissionArchetype.HUNT), protectUnitId = "captive", militia = 2),
+        MissionModifierDef("narrow", "A narrow way", "Two can pass, not three. It pays half again.", archetypes = setOf(MissionArchetype.HUNT, MissionArchetype.ESCORT, MissionArchetype.DELVE), partyMax = 2, goldPercent = 150),
+        MissionModifierDef("in_kind", "Paid in metal", "No gold for this one. The last day pays in one piece of fine stock instead, Starsteel or Sun Ash.", archetypes = setOf(MissionArchetype.HUNT, MissionArchetype.DELVE), goldPercent = 0,
+            payment = MaterialDraw(1, 5, 5)),
     )
 
     val catalog = GuildCatalog(

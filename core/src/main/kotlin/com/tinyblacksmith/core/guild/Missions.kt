@@ -51,8 +51,6 @@ object Missions {
             o.expiresDay >= ctx.day && cat.missionById[o.defId] != null &&
                 (o.subjectHeroId == null || g.captives.any { it.heroId == o.subjectHeroId }) && (o.subjectWeaponId == null || g.nemesis?.weaponId == o.subjectWeaponId)
         }
-        // A supplier nobody went with was left to the road: the answer was the smith's, and so is what follows.
-        if (g.offers.any { it.lapse == GuildContent.LAPSE_SUPPLIER && it.expiresDay < ctx.day }) supplier(ctx, false, "Nobody went with the supplier.")
         var serial = g.nextMissionSerial
         fun post(def: MissionDef, faction: FactionId, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = ctx.day + def.lifeDays - 1, modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null) {
             offers = offers + generate(ctx, def, faction, rng, "m${serial++}", hero, weapon, reason, expires, modifier, lapse)
@@ -96,7 +94,7 @@ object Missions {
             if (pool.isEmpty()) break
             val def = rng.pickWeighted(pool.map { it to it.weight })
             val faction = anyFaction()
-            post(def, faction, modifier = if (cat.modifiers.isNotEmpty() && rng.chance(cfg.modifierChance)) rng.pick(cat.modifiers) else null)
+            post(def, faction, modifier = if (cat.modifiers.isNotEmpty() && rng.chance(cfg.modifierChance)) rng.pick(cat.modifiers.filter { it.archetypes.isEmpty() || def.archetype in it.archetypes }) else null)
         }
         for (c in g.captives) if (offers.none { it.subjectHeroId == c.heroId }) cat.missionById[GuildContent.RESCUE]?.let { def ->
             val hero = ctx.heroes[c.heroId] ?: return@let
@@ -152,11 +150,15 @@ object Missions {
             val gold = if (supply) drawn * thin / 100 else (drawn * (1.0 + cfg.rewardPercentPerDay * ctx.day / 100.0)).toInt() * (modifier?.goldPercent ?: 100) / 100
             val last = i == def.stages.lastIndex
             val roster = s.rosters[faction].orEmpty().let { r -> if (r.isEmpty()) r else r + listOfNotNull(modifier?.addUnit?.get(faction)) }
+            // A modifier may change what winning is: rounds to stand instead of a foe to fell, or somebody to bring out alive.
+            val fought = roster.isNotEmpty()
+            val hold = modifier?.hold?.takeIf { it > 0 && fought && s.objective == com.tinyblacksmith.core.combat.ObjectiveKind.DEFEAT }
+            val protect = s.protectUnitId ?: modifier?.protectUnitId?.takeIf { fought }
             MissionStage(
                 enemies = roster.map { EnemySpec(it, percent) },
-                objective = Objective(s.objective, s.rounds, s.protectUnitId?.let { "protected" }), danger = s.danger, seed = rng.nextLong(),
-                reward = Reward(gold, drawMaterials(ctx, rng, s.materials), s.suppression, s.integrity, s.militia, s.sabotage, s.relicOffer, weapon.takeIf { last }, hero.takeIf { last }, s.heartfire, s.supplier),
-                protectUnitId = s.protectUnitId,
+                objective = if (hold != null) Objective(com.tinyblacksmith.core.combat.ObjectiveKind.HOLD, hold, protect?.let { "protected" }) else Objective(s.objective, s.rounds, protect?.let { "protected" }), danger = s.danger, seed = rng.nextLong(),
+                reward = Reward(gold, drawMaterials(ctx, rng, if (last && modifier?.payment != null) modifier.payment else s.materials), s.suppression, s.integrity, s.militia + (if (last) modifier?.militia ?: 0 else 0), s.sabotage, s.relicOffer, weapon.takeIf { last }, hero.takeIf { last }, s.heartfire, s.supplier),
+                protectUnitId = protect,
             )
         }
         return MissionOffer(id, def.id, faction, ctx.day, if (def.id == GuildContent.WALL_WORK) Int.MAX_VALUE else expires, def.days, def.fee, stages, def.optionalPush,
@@ -170,7 +172,8 @@ object Missions {
         if (g.mission != null) return GameError.PartyAway
         val offer = g.offers.firstOrNull { it.id == cmd.offerId } ?: return GameError.MissionNotOffered(cmd.offerId)
         val ids = cmd.heroIds
-        if (ids.isEmpty() || ids.size > ctx.config.guild.partyMax || ids.toSet().size != ids.size) return GameError.PartyInvalid("A party is one to ${ctx.config.guild.partyMax} members.")
+        val most = partyMax(ctx, offer)
+        if (ids.isEmpty() || ids.size > most || ids.toSet().size != ids.size) return GameError.PartyInvalid("A party for this contract is one to $most members.")
         for (id in ids) {
             val m = g.member(id) ?: return GameError.NotAMember(id)
             GuildOps.unavailable(ctx, m)?.let { return GameError.MemberUnavailable(id, it) }
@@ -183,6 +186,9 @@ object Missions {
         update(ctx) { it.copy(planned = PlannedDeployment(offer.id, ids, cmd.posture)) }
         return null
     }
+
+    /** How many may go on [offer]: the guild's party size, or fewer when its card says so. */
+    fun partyMax(ctx: ResolutionContext, offer: MissionOffer): Int = minOf(ctx.config.guild.partyMax, GuildOps.catalog(ctx).modifier(offer.modifierId)?.partyMax ?: Int.MAX_VALUE)
 
     fun cancelPlan(ctx: ResolutionContext): GameError? {
         val p = ctx.guild!!.planned ?: return GameError.NoDeploymentPlanned
@@ -243,6 +249,9 @@ object Missions {
         val party = m.party.mapNotNull { id -> ctx.heroes[id]?.takeIf { it.isAlive } }.map { h -> lawStats(lawStats(GuildOps.fighter(ctx, h, m.gear[h.id]?.let { ctx.weapons[it] }, Loadout.Field.ROAD, m.party), law?.partyStats.orEmpty()), modifier?.partyStats.orEmpty()) } +
             listOfNotNull(stage.protectUnitId?.let { Loadout.enemy(combat.unit(it), "protected").copy(side = Side.PARTY) })
         if (party.none { it.key != "protected" }) return null
+        // A rescue is never walked into alone: the watch sends a guard for every empty place, and they stand in front.
+        val def = GuildOps.catalog(ctx).mission(m.offer.defId)
+        val watch = def.watchUnitId?.let { id -> (m.party.size until ctx.config.guild.partyMax).map { i -> Loadout.enemy(combat.unit(id), "watch${i + 1}").copy(side = Side.PARTY) } }.orEmpty()
         val nemesis = ctx.guild?.nemesis?.takeIf { m.offer.subjectWeaponId == it.weaponId }
         val enemies = stage.enemies.mapIndexed { i, e ->
             val unit = combat.unit(e.unitId)
@@ -250,7 +259,7 @@ object Missions {
             // The one who carries the smith's blade carries what it does, too: the rules of that blade this side of the field can use.
             if (i == 0 && nemesis != null && stageIndex == m.offer.stages.lastIndex) Stories.armed(ctx, foe, nemesis) else foe
         }.map { lawStats(lawStats(it, law?.enemyStats.orEmpty()), modifier?.enemyStats.orEmpty()) }
-        return FightSetup(title(ctx, m.offer).replaceFirstChar { it.uppercase() }, party, enemies, GuildOps.relicRules(ctx, m.relics), stage.objective, m.posture, ctx.config.guild.fight, stage.seed, combat.unitById)
+        return FightSetup(title(ctx, m.offer).replaceFirstChar { it.uppercase() }, watch + party, enemies, GuildOps.relicRules(ctx, m.relics), stage.objective, m.posture, ctx.config.guild.fight, stage.seed, combat.unitById)
     }
 
     /** Step 4: the party's day. One stage, or the walk home. */

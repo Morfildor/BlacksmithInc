@@ -91,7 +91,7 @@ object Bench {
 
     private fun blade(id: String, name: String, family: WeaponFamilyId, core: MaterialId, augment: MaterialId, catalyst: MaterialId?, content: ContentCatalog, config: BalanceConfig, quality: Int = DEMO_QUALITY): Weapon = Weapon(
         id = WeaponId(id), name = name, familyId = family, coreId = core, augmentId = augment, catalystId = catalyst, mode = if (catalyst != null) ForgeMode.ADVANCED else ForgeMode.QUICK, risk = Risk.BALANCED,
-        quality = quality, rarity = Forge.forgedRarity(quality, config), power = Forge.powerOf(content, config, family, core, quality, emptyList()), element = content.material(augment).element,
+        quality = quality, rarity = Forge.forgedRarity(quality, config, content.material(core).tier), power = Forge.powerOf(content, config, family, core, quality, emptyList()), element = content.material(augment).element,
         affixes = emptyList(), flaws = emptyList(), location = WeaponLocation.Storage, forgedEra = 0, forgedDay = 0, craft = WeaponRules.CRAFT,
     )
 

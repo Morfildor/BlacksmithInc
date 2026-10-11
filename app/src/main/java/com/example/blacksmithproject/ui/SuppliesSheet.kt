@@ -50,6 +50,8 @@ fun GameEngine.supplyNotes(state: GameState, m: MaterialDef): List<String> {
     if (m.dailySupplierStock == null) return emptyList()
     val ties = upgradeTotal(state.legacy, UpgradeEffect.CATALOG_ACCESS) * config.legacyTracks.catalogStockPerLevel
     return listOfNotNull(
+        // A fine metal the roads do not bring yet (rules 6): the day it arrives, and where it comes from before that.
+        stockedFromDay(m.id).takeIf { it > state.day }?.let { "The supplier carries it from day $it. Before that it comes only from dangerous work." },
         "Caravan delayed. No delivery today.".takeIf { state.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == state.day },
         "Caravan Ties: $ties more each day".takeIf { ties > 0 },
         "Ore merchant in town: ${config.worldEvents.oreMerchantStock} more today".takeIf { state.worldFlags[WorldEvents.FLAG_ORE_MERCHANT + m.id.value] == state.day },
@@ -126,12 +128,14 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                         if (needed) Text("Needed on the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
                         Text(m.name, style = MaterialTheme.typography.titleSmall)
                         Secondary("Owned $have · $price gold" + (stock?.let { " · $it left today" } ?: ""))
+                        // What the metal can hold (rules 6): said here, where it is bought, so a fine roll in a plain metal is no surprise.
+                        if (m.category == MaterialCategory.CORE) Secondary(if (m.tier >= vm.engine.config.depth.legend.fineCoreTier) "Holds Epic work." else "Holds work up to Rare.")
                         vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
                         // A guild run: what an augment or a catalyst gives a blade in a fight, in the catalog's own words.
                         if (st.guild != null) materialRules(content, m.id).forEach { Secondary("In a fight · ${it.name}: ${it.description}") }
                     }
                     // A greyed Buy says why to a screen reader; on screen the row's own lines do (the price, "0 left today").
-                    val blocked = when { stock == 0 -> "none left today"; st.gold < price -> "it costs $price gold and you have ${st.gold}"; else -> null }
+                    val blocked = when { stock == 0 && vm.engine.stockedFromDay(m.id) > st.day -> "the supplier carries it from day ${vm.engine.stockedFromDay(m.id)}"; stock == 0 -> "none left today"; st.gold < price -> "it costs $price gold and you have ${st.gold}"; else -> null }
                     SecondaryActionButton(
                         "Buy", { vm.dispatch(Command.BuyMaterial(m.id, 1)) },
                         Modifier.testTag("buy_${m.id.value}").semantics { contentDescription = blocked?.let { "Buy ${m.name}, unavailable: $it" } ?: "Buy ${m.name} for $price gold" },

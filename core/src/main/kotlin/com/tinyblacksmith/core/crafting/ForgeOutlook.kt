@@ -85,9 +85,9 @@ object ForgeOutlook {
         // Places for a buff, as the forge counts them: the least and the most this recipe can come out with.
         fun places(r: Rarity) = when (r) { Rarity.COMMON, Rarity.UNCOMMON -> 0; Rarity.RARE -> 1; Rarity.EPIC -> 2; Rarity.LEGENDARY -> 3 }
         val fixed = (if (cmd.technique == Technique.ETCH) config.etchExtraAffixSlots else 0) + profile.extraSlots + (if (cmd.bellows) config.depth.bellowsExtraSlots else 0)
-        val heartfireLeast = if (cmd.heartfire) minOf(config.depth.legend.missExtraSlots + places(Forge.forgedRarity(worst, config)), places(Rarity.LEGENDARY)) else places(Forge.forgedRarity(worst, config))
+        val heartfireLeast = if (cmd.heartfire) minOf(config.depth.legend.missExtraSlots + places(Forge.forgedRarity(worst, config, core.tier)), places(Rarity.LEGENDARY)) else places(Forge.forgedRarity(worst, config, core.tier))
         val least = fixed + heartfireLeast
-        val most = fixed + (if (exceptional > 0.0) 1 else 0) + (if (cmd.heartfire) maxOf(places(Rarity.LEGENDARY), places(Forge.forgedRarity(best, config)) + config.depth.legend.missExtraSlots) else places(Forge.forgedRarity(best, config)))
+        val most = fixed + (if (exceptional > 0.0) 1 else 0) + (if (cmd.heartfire) maxOf(places(Rarity.LEGENDARY), places(Forge.forgedRarity(best, config, core.tier)) + config.depth.legend.missExtraSlots) else places(Forge.forgedRarity(best, config, core.tier)))
 
         val elementBuff = content.affixes.firstOrNull { it.kind == AffixKind.BENEFICIAL && it.element == augment.element }
         val elementBuffCertain = elementBuff != null && (least >= 1 || cmd.technique == Technique.QUENCH)

@@ -16,6 +16,7 @@ import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.engine.Invariants
 import com.tinyblacksmith.core.engine.ResolutionContext
+import com.tinyblacksmith.core.engine.WorldEvents
 import com.tinyblacksmith.core.engine.stateOrThrow
 import com.tinyblacksmith.core.guild.GuildOps
 import com.tinyblacksmith.core.guild.Missions
@@ -322,7 +323,11 @@ class RunVarietyTest {
         val trace = ArrayList<String>()
         repeat(config.guild.supplierDays) {
             plain = plain.endDay(); day = day.endDay()
-            assertTrue(stock(day) == stock(plain) + limited.size * config.guild.supplierGratefulStock || stock(plain) < limited.size, "day ${day.day}")
+            // Thanks deepen what the supplier carries. A metal that is not on the roads yet stays at none (rules 6).
+            val carried = limited.filter { day.day >= engine.stockedFromDay(it.id) }
+            val delayed = plain.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == plain.day
+            assertEquals(if (delayed) 0 else stock(plain) + carried.size * config.guild.supplierGratefulStock, stock(day), "day ${day.day}")
+            assertTrue((limited - carried.toSet()).all { day.supplierStock[it.id] == 0 }, "day ${day.day}: not carried yet")
             if (stock(day) > stock(plain)) richer++
             trace += "day ${day.day}: ${stock(plain)} and ${stock(day)}, mood ${day.consequences.map { it.kind to it.dueDay }}"
         }
@@ -332,11 +337,14 @@ class RunVarietyTest {
         assertTrue(day.consequences.none { it.kind == ConsequenceKind.SUPPLIER_GRATEFUL })
         val shaken = s.edit { Missions.supplier(it, false, "The supplier's cart was lost.") }.endDay()
         assertTrue(stock(shaken) < stock(s.endDay()))
-        // Nobody went: the card left the board unanswered, and that is an answer.
+        // Nobody went: the card leaves the board unanswered and that costs nothing. Only a lost cart frightens the supplier.
         val posted = s.edit { c -> c.guild = c.guild!!.copy(offers = c.guild!!.offers + Missions.generate(c, cat.mission(GuildContent.SUPPLIER_ROAD), c.factions.keys.first(), c.rng(RngStream.GUILD), "t1", expires = c.day, lapse = GuildContent.LAPSE_SUPPLIER)) }
+        assertTrue(posted.guild!!.offers.any { it.id == "t1" && it.lapse == GuildContent.LAPSE_SUPPLIER })
         val left = posted.endDay()
-        assertTrue(left.consequences.any { it.kind == ConsequenceKind.SUPPLIER_SHAKEN })
-        assertTrue(left.lastResolution == null || left.events.any { it.type == EventType.SUPPLIER_NEWS && "Nobody went" in it.text })
+        assertTrue(left.guild!!.offers.none { it.id == "t1" }, "the card is gone")
+        assertTrue(left.consequences.none { it.kind == ConsequenceKind.SUPPLIER_SHAKEN || it.kind == ConsequenceKind.SUPPLIER_GRATEFUL })
+        assertTrue(left.events.none { it.type == EventType.SUPPLIER_NEWS })
+        assertEquals(s.endDay().supplierStock, left.supplierStock, "the supplier brings what it would have")
     }
 
     @Test fun `a supply road worked often carries less, says so, and recovers`() {
