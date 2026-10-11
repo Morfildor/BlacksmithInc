@@ -10,6 +10,7 @@ import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.CombatCatalog
 import com.tinyblacksmith.core.content.CombatContent
 import com.tinyblacksmith.core.content.ContentCatalog
+import com.tinyblacksmith.core.crafting.WeaponRules
 import com.tinyblacksmith.core.model.Hero
 import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.Weapon
@@ -20,19 +21,9 @@ object Loadout {
     /** Where the fight is: some rules differ at home (a siege) and on the road (a mission). */
     enum class Field { ROAD, HOME }
 
-    /**
-     * Every rule [weapon] brings to a fight, in the order the fight asks them: family, element, affixes and flaws, catalyst,
-     * signature. A rule two sources share (the Charge burst) is listed once.
-     */
-    fun weaponEffects(weapon: Weapon?, combat: CombatCatalog, field: Field = Field.ROAD): List<EffectDef> {
-        if (weapon == null) return emptyList()
-        val situational = if (field == Field.HOME) combat.affixHomeEffects else combat.affixRoadEffects
-        return (combat.familyById[weapon.familyId]?.effects.orEmpty() +
-            weapon.element?.let { combat.elementEffects[it] }.orEmpty() +
-            (weapon.affixes + weapon.flaws).flatMap { combat.affixEffects[it].orEmpty() + situational[it].orEmpty() } +
-            weapon.catalystId?.let { combat.catalystEffects[it] }.orEmpty() +
-            weapon.signatureId?.let { combat.signatureEffects[it] }.orEmpty()).distinctBy { it.id }
-    }
+    /** Every rule [weapon] brings to a fight, in the order the fight asks them: `WeaponRules` composes it, here and for every screen. */
+    fun weaponEffects(weapon: Weapon?, content: ContentCatalog, field: Field = Field.ROAD): List<EffectDef> =
+        weapon?.let { WeaponRules.of(it, content).effects(field == Field.HOME) }.orEmpty()
 
     /** What the blade adds to a strike in [hero]'s hands: its worn power, the class's fit for the family, its affixes' edge and its fame. */
     fun weaponStrike(hero: Hero, weapon: Weapon?, content: ContentCatalog, config: BalanceConfig, combat: CombatCatalog): Int =
@@ -44,12 +35,12 @@ object Loadout {
     fun combatant(hero: Hero, weapon: Weapon?, content: ContentCatalog, config: BalanceConfig, field: Field = Field.ROAD, extraTags: Set<String> = emptySet()): Combatant {
         val combat = content.combat ?: error("This catalog has no combat content")
         val kit = combat.kitByClass.getValue(hero.classId)
-        val family = weapon?.let { combat.familyById[it.familyId] }
+        val composed = weapon?.let { WeaponRules.of(it, content) }
         val max = maxHealth(hero, combat)
         val base = kit.strike + kit.strikePerLevel * (hero.level - 1) + weaponStrike(hero, weapon, content, config, combat)
-        val strike = maxOf(1, (Fight.pct(base, family?.strikePercent ?: 100) * Power.traitModifier(hero, content, config)).roundToInt())
-        val support = Fight.pct(kit.support + kit.supportPerLevel * (hero.level - 1), family?.supportPercent ?: 100)
-        val effects = weaponEffects(weapon, combat, field)
+        val strike = maxOf(1, (Fight.pct(base, composed?.strikePercent ?: 100) * Power.traitModifier(hero, content, config)).roundToInt())
+        val support = Fight.pct(kit.support + kit.supportPerLevel * (hero.level - 1), composed?.supportPercent ?: 100)
+        val effects = composed?.effects(field == Field.HOME).orEmpty()
         val tags = buildSet {
             addAll(extraTags)
             if (weapon == null || weapon.rarity == Rarity.COMMON) add(CombatContent.TAG_COMMON_GEAR)

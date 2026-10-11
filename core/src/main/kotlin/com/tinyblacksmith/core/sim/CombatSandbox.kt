@@ -31,15 +31,18 @@ object CombatSandbox {
     fun hero(id: String, name: String, classId: HeroClassId, level: Int = 1, health: Int = 100): Hero =
         Hero(HeroId(id), name, "of Emberfall", classId, level, 0, 0, health, emptyList(), null)
 
-    /** A blade as the forge would have made it from these parts at [quality], with exactly these affixes and flaws. */
+    /**
+     * A blade as the forge would have made it from these parts at [quality], with exactly these affixes and flaws.
+     * [craft] 1 is a weapon from before metals had a rule in a fight: the fixtures of spec 8 are such weapons and read as they always did.
+     */
     fun blade(
         id: String, family: WeaponFamilyId, core: MaterialId, augment: MaterialId, catalyst: MaterialId? = null, quality: Int = 40,
-        affixes: List<AffixId> = emptyList(), flaws: List<AffixId> = emptyList(), signatureId: String? = null, name: String? = null,
+        affixes: List<AffixId> = emptyList(), flaws: List<AffixId> = emptyList(), signatureId: String? = null, name: String? = null, craft: Int = 1,
     ): Weapon = Weapon(
         id = WeaponId(id), name = name ?: Forge.weaponName(content, family, core, affixes, signatureId), familyId = family, coreId = core, augmentId = augment, catalystId = catalyst,
         mode = if (catalyst != null) ForgeMode.ADVANCED else ForgeMode.QUICK, risk = Risk.BALANCED, quality = quality, rarity = Forge.rarityFor(quality, config),
         power = Forge.powerOf(content, config, family, core, quality, affixes + flaws), element = content.material(augment).element, affixes = affixes, flaws = flaws,
-        location = WeaponLocation.Storage, forgedEra = 1, forgedDay = 1, signatureId = signatureId,
+        location = WeaponLocation.Storage, forgedEra = 1, forgedDay = 1, signatureId = signatureId, craft = craft,
     )
 
     fun fighter(hero: Hero, weapon: Weapon?, field: Loadout.Field = Loadout.Field.ROAD): Combatant = Loadout.combatant(hero, weapon, content, config, field)
@@ -131,5 +134,6 @@ object CombatSandbox {
 
 fun main(args: Array<String>) {
     val wanted = args.toSet()
+    if ("sweep" in wanted) return ForgeSweep.print()
     CombatSandbox.fixtures.filter { wanted.isEmpty() || it.id in wanted }.forEach { CombatSandbox.print(it) }
 }

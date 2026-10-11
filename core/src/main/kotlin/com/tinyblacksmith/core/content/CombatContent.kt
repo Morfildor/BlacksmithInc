@@ -36,6 +36,23 @@ data class ClassKitDef(
 data class FamilyCombatDef(val familyId: WeaponFamilyId, val strikePercent: Int, val supportPercent: Int, val effects: List<EffectDef>, val pattern: String)
 
 /**
+ * What a metal gives a weapon in a fight: a share of strike and support, and at most one rule of its own. [role] is its
+ * physical character in one line, [constraint] what choosing it costs. Read only for a weapon of `WeaponRules.CRAFT_CORES`
+ * or later: a weapon forged before metals had a rule keeps fighting as it did.
+ */
+data class CoreCombatDef(val coreId: MaterialId, val role: String, val constraint: String, val effects: List<EffectDef> = emptyList(), val strikePercent: Int = 100, val supportPercent: Int = 100)
+
+/** An augment or a catalyst in the smith's words: what it is chosen for ([role]) and what the choice costs ([constraint]). Its rules are the element's or the catalyst's own. */
+data class IngredientNote(val role: String, val constraint: String)
+
+/**
+ * A relationship between rules that a smith can learn and reuse, never one exact recipe. [pieces] are the weapon rules
+ * that take part: forging one of them is what lets the notebook suggest the path. [shown] lists the ways a real fight
+ * can show it: every rule of one set has to have fired for the party.
+ */
+data class InteractionDef(val id: String, val name: String, val description: String, val constraint: String, val pieces: Set<String>, val shown: List<Set<String>>)
+
+/**
  * Everything the interaction engine reads from content: kits, the rule each element, affix, catalyst, family and
  * signature gives a blade, the party rules of relics, and the units that can stand on a field. All numbers here are
  * catalog numbers, PROPOSED.
@@ -54,17 +71,22 @@ data class CombatCatalog(
     val units: List<UnitDef>,
     /** Weapon power per point of strike. */
     val powerPerStrike: Int = 5,
+    val cores: List<CoreCombatDef> = emptyList(),
+    val notes: Map<MaterialId, IngredientNote> = emptyMap(),
+    val interactions: List<InteractionDef> = emptyList(),
 ) {
+    val coreById: Map<MaterialId, CoreCombatDef> = cores.associateBy { it.coreId }
     val kitByClass: Map<HeroClassId, ClassKitDef> = kits.associateBy { it.classId }
     val familyById: Map<WeaponFamilyId, FamilyCombatDef> = families.associateBy { it.familyId }
     val unitById: Map<String, UnitDef> = units.associateBy { it.id }
     fun unit(id: String): UnitDef = unitById[id] ?: error("Unknown unit $id")
 
-    val allEffects: List<EffectDef> get() = families.flatMap { it.effects } + elementEffects.values.flatten() + affixEffects.values.flatten() + affixHomeEffects.values.flatten() +
+    val allEffects: List<EffectDef> get() = families.flatMap { it.effects } + cores.flatMap { it.effects } + elementEffects.values.flatten() + affixEffects.values.flatten() + affixHomeEffects.values.flatten() +
         affixRoadEffects.values.flatten() + catalystEffects.values.flatten() + signatureEffects.values.flatten() + relicEffects.values.flatten()
 
     fun problems(): List<String> = EffectRules.problems(allEffects, kits.map { it.kit }, unitById) +
-        relicEffects.values.flatten().filter { !it.party }.map { "Relic rule ${it.id} is not a party rule" }
+        relicEffects.values.flatten().filter { !it.party }.map { "Relic rule ${it.id} is not a party rule" } +
+        allEffects.map { it.id }.toSet().let { known -> interactions.flatMap { i -> (i.pieces + i.shown.flatten()).filter { it !in known }.map { "Interaction ${i.id} names unknown rule $it" } } }
 }
 
 /** IDs and definitions of the launch combat content. An ID is stable once a save can hold a timeline that names it. */
@@ -161,6 +183,65 @@ object CombatContent {
             e("dagger_flurry", "Off-hand cut", Trigger(EventKind.ACTED, Who.SELF_SOURCE), listOf(Damage(Aim.Foe, Strike(45))), Limit(perRound = 1),
                 "After the wielder acts, one more light cut. Once a round.", struck)), "Light strikes, one more of them."),
         FamilyCombatDef(LaunchContent.STAFF, 80, 130, emptyList(), "A lighter strike. Much more support."),
+    )
+
+    // ---- metals: the weapon's physical character. One reuse of an existing mechanic each, never a new one. ----
+    val cores = listOf(
+        CoreCombatDef(LaunchContent.IRON, "Plain and sturdy. The wielder starts every fight behind a little Guard.", "The weakest metal. It adds the least to a strike.", listOf(
+            e("core_iron", "Iron holds", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(3))), Limit(perFight = 1), "The wielder enters a fight with 3 Guard."))),
+        CoreCombatDef(LaunchContent.BRONZE, "Rings when struck. It answers the blow that breaks the wielder's Guard.", "Does nothing for a wielder who never has Guard.", listOf(
+            e("core_bronze", "Bronze rings back", Trigger(EventKind.GUARD_BROKEN, Who.SELF_TARGET), listOf(Damage(Aim.EventSource, Fixed(5))), Limit(perRound = 1),
+                "When an enemy breaks the wielder's Guard, the weapon strikes that enemy for 5. Once a round.", listOf(Condition.SourceIsFoe)))),
+        CoreCombatDef(LaunchContent.SILVER, "Holds a charge. The wielder starts every fight with 2 Charge stored, one short of a burst.", "Charge is worth nothing until something on the weapon spends it.", listOf(
+            e("core_silver", "Silver holds a charge", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Give(Stat.CHARGE, Aim.Self, Fixed(2))), Limit(perFight = 1), "The wielder enters a fight with 2 Charge."))),
+        CoreCombatDef(LaunchContent.OBSIDIAN, "A glass edge. It strikes a tenth harder.", "It cracks the first time an enemy breaks the wielder's Guard. Poor in the hands of whoever holds the line.", listOf(
+            e("core_obsidian", "Obsidian cracks", Trigger(EventKind.GUARD_BROKEN, Who.SELF_TARGET), listOf(Action.Fracture(2)), Limit(perFight = 1),
+                "The first time an enemy breaks the wielder's Guard, the weapon cracks. 2 Scrap now, a repair after the fight.", listOf(Condition.SourceIsFoe))), strikePercent = 110),
+        CoreCombatDef(LaunchContent.STARSTEEL, "Finds the marked place. It hits harder when it spends a Mark.", "Costly, and its rule sleeps until a Mark is there for the wielder's own action to spend.", listOf(
+            e("core_starsteel", "Starsteel finds the Mark", Trigger(EventKind.STAT_SPENT, Who.SELF_SOURCE, Stat.MARK), listOf(Damage(Aim.EventTarget, Fixed(3))), Limit(perRound = 1),
+                "When the wielder's own action spends a Mark, that hit lands for 3 more. Once a round.", struck))),
+        CoreCombatDef(LaunchContent.MOONSTEEL, "Cold metal. It bites deeper into an enemy that is already chilled.", "The costliest metal, and its rule needs Chill on the target before the hit lands.", listOf(
+            e("core_moonsteel", "Moonsteel bites the cold", onOwnHit, listOf(Damage(Aim.EventTarget, Fixed(3))), Limit(perRound = 1),
+                "Once a round, the wielder's hit on an enemy that is already chilled deals 3 more. The Chill stays.", struck + Condition.TargetHas(Stat.CHILL)))),
+    )
+
+    /** Augments and catalysts as a choice at the forge. Their rules are [elementEffects] and [catalystEffects]. */
+    val notes: Map<MaterialId, IngredientNote> = mapOf(
+        LaunchContent.EMBER_RESIN to IngredientNote("Fire. Each round the first hit leaves Burn, which hurts at the end of the round.", "Ashclaw and Embermaw resist fire, and Embermaw shrug off half of every Burn."),
+        LaunchContent.FROST_BLOOM to IngredientNote("Frost. Each round the first hit leaves Chill, which weakens that enemy's next strike.", "Chill is spent by the strike it weakens. It deals no damage by itself."),
+        LaunchContent.VERDANT_SAP to IngredientNote("Living sap. Each round the first hit gives the wielder Regeneration.", "It mends only the wielder, and only a wielder who has been hurt."),
+        LaunchContent.STORMGLASS to IngredientNote("Storm. Each round the first hit arcs to the last enemy in the line.", "The arc is small. Storm pays best with Charge or a wet target."),
+        LaunchContent.GRAVE_DUST to IngredientNote("Grave. Each round the first hit leaves Bleed, which hurts that enemy before it acts.", "The Hollowbound resist it and bleed half as much."),
+        LaunchContent.SUN_ASH to IngredientNote("Sun. Each round the first hit leaves a Mark. The next hit on a Mark is harder, and the party aims at it.", "The Mark helps whoever strikes next, which is not always the wielder."),
+        LaunchContent.BINDING_SALT to IngredientNote("Stores Charge when the wielder is healed. At 3 Charge it strikes for 8.", "It needs a healer, and healing a wielder at full health stores nothing."),
+        LaunchContent.RUNESTONE_SHARD to IngredientNote("Strikes back for the party when an enemy breaks an ally's Guard.", "It sleeps until a weapon of the party has cracked."),
+        LaunchContent.DRAGON_OIL to IngredientNote("Spreads fire. When the wielder's hit leaves Burn or Chill, every enemy gets Burn. It spends Steam as a lance.", "Burn on a chilled enemy boils both away into Steam."),
+        LaunchContent.VOID_INK to IngredientNote("Turns enemy Burn into Guard for your weakest ally. It spends Steam as Guard for all.", "That Burn no longer deals damage."),
+    )
+
+    // ---- interaction paths: what the notebook can suggest and a real fight can show ----
+    val interactions = listOf(
+        InteractionDef("charge", "Charge and burst", "Anything that stores Charge on a weapon builds toward one burst at 3 Charge. Healing, hits and silver all fill it.",
+            "Charge that nothing spends is wasted, and the burst waits for the third Charge.",
+            setOf("catalyst_capacitor", "affix_stormcharged", "core_silver", "sig_stormcaller"), listOf(setOf("charge_burst"))),
+        InteractionDef("steam", "Boiling point", "Burn on a chilled enemy, or Chill on a burning one, cancels both and gives Steam to whoever did it. Dragon Oil spends Steam as a lance. Void Ink spends it as Guard.",
+            "The Burn and the Chill are both gone. Nothing burns and nobody is slowed.",
+            setOf("catalyst_steam_lance", "catalyst_steam_shield"), listOf(setOf("catalyst_steam_lance"), setOf("catalyst_steam_shield"))),
+        InteractionDef("burn_guard", "Fire into Guard", "Burn taken off an enemy can become Guard. Void Ink takes it from the enemy that matters and gives it to your weakest ally.",
+            "That Burn no longer deals damage.",
+            setOf("catalyst_converting", "sig_dawnbrand"), listOf(setOf("catalyst_converted_guard"), setOf("sig_dawnbrand_guard"))),
+        InteractionDef("guard_answer", "A broken Guard answers", "Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns.",
+            "It needs Guard on the wielder and an enemy strong enough to break it.",
+            setOf("core_bronze", "sig_thornwall"), listOf(setOf("core_bronze"), setOf("sig_thornwall"))),
+        InteractionDef("salvage", "Salvage", "A weapon that cracks leaves Scrap and wakes the rules that wait for a crack. A Runestone answers for the whole party afterwards.",
+            "A cracked weapon needs a repair after the fight.",
+            setOf("core_obsidian", "affix_brittle", "catalyst_runed"), listOf(setOf("catalyst_runed"), setOf("relic_salvage_bell"))),
+        InteractionDef("marks", "Marked for the kill", "The party aims at a marked enemy, and the hit that spends the Mark lands harder. Starsteel adds to that hit.",
+            "One Mark at a time. Whoever strikes next spends it.",
+            setOf("element_sun", "core_starsteel", "sig_nightletter"), listOf(setOf("core_starsteel"), setOf("sig_nightletter"))),
+        InteractionDef("shatter", "Cold to break", "Chill on an enemy is something to use. Moonsteel bites into it and a heavy weapon shatters it.",
+            "The enemy's own strike spends Chill first. Put it on and use it in the same round.",
+            setOf("core_moonsteel", "affix_heavy_shatter", "sig_winterwake"), listOf(setOf("core_moonsteel"), setOf("affix_heavy_shatter"), setOf("sig_winterwake"))),
     )
 
     // ---- elements: what a blade does on a hit even with no affix on it ----
@@ -335,5 +416,5 @@ object CombatContent {
         UnitDef("captive", "The captive", kit("captive", "Captive", Move("stumble", "Keeps moving", Cadence.Always, emptyList())), health = 24, strikeMin = 0),
     )
 
-    val catalog = CombatCatalog(kits, families, elementEffects, affixEffects, affixHomeEffects, affixRoadEffects, catalystEffects, signatureEffects, relicEffects, units)
+    val catalog = CombatCatalog(kits, families, elementEffects, affixEffects, affixHomeEffects, affixRoadEffects, catalystEffects, signatureEffects, relicEffects, units, cores = cores, notes = notes, interactions = interactions)
 }

@@ -152,7 +152,7 @@ object GuildOps {
             val augment = ctx.content.material(w.augmentId)
             Weapon(id, com.tinyblacksmith.core.crafting.Forge.weaponName(ctx.content, w.familyId, w.coreId, emptyList()), w.familyId, w.coreId, w.augmentId, null, ForgeMode.QUICK, Risk.RECKLESS, w.quality,
                 com.tinyblacksmith.core.crafting.Forge.forgedRarity(w.quality, ctx.config), com.tinyblacksmith.core.crafting.Forge.powerOf(ctx.content, ctx.config, w.familyId, w.coreId, w.quality, listOf(w.flaw)), augment.element, emptyList(), listOf(w.flaw),
-                WeaponLocation.Storage, ctx.era, ctx.day, history = listOf(HistoryEntry(ctx.era, ctx.day, "FORGED", "Came with the guild's opening. ${core.name} and ${augment.name}, and a flaw somebody meant.")))
+                WeaponLocation.Storage, ctx.era, ctx.day, history = listOf(HistoryEntry(ctx.era, ctx.day, "FORGED", "Came with the guild's opening. ${core.name} and ${augment.name}, and a flaw somebody meant.")), craft = com.tinyblacksmith.core.crafting.WeaponRules.CRAFT)
                 .also { ctx.updateWeapon(it) }
         }
         announce(ctx, charter)

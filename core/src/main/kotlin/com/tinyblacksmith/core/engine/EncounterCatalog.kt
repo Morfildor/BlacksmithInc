@@ -130,7 +130,7 @@ internal object EncounterCatalog {
                     id = WeaponId("merchant"), name = Forge.weaponName(content, family.id, core.id, listOf(affix.id)), familyId = family.id, coreId = core.id, augmentId = augment.id,
                     mode = ForgeMode.QUICK, risk = Risk.BALANCED, quality = quality, rarity = Forge.forgedRarity(quality, config),
                     power = Forge.powerOf(content, config, family.id, core.id, quality, listOf(affix.id) + flaws), element = augment.element,
-                    affixes = listOf(affix.id), flaws = flaws, location = WeaponLocation.Storage, forgedEra = ctx.era, forgedDay = ctx.day,
+                    affixes = listOf(affix.id), flaws = flaws, location = WeaponLocation.Storage, forgedEra = ctx.era, forgedDay = ctx.day, craft = com.tinyblacksmith.core.crafting.WeaponRules.CRAFT,
                 )
                 base.copy(blade = blade(listOf(flaw.id)), familyId = family.id, materialId = core.id,
                     amounts = mapOf("price" to maxOf((Market.askingPrice(blade(emptyList()), config) * cfg.merchantPriceFactor).toInt(), unitPrice(ctx, core.id) + unitPrice(ctx, augment.id)), "fee" to cfg.inspectionGold))

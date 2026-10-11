@@ -89,7 +89,7 @@ object Legacy {
                     familyId = w.familyId, coreId = w.coreId, augmentId = w.augmentId, quality = w.quality, power = w.power, element = w.element,
                     affixes = w.affixes + w.dormantAffixes, flaws = w.flaws, catalystId = w.catalystId, signatureId = w.signatureId,
                     ownerLine = remembered(story(w)).map { it.copy(subjectIds = emptyList()) },
-                    weaponKey = w.legendKey ?: "era${w.forgedEra}-${w.id.value}",
+                    weaponKey = w.legendKey ?: "era${w.forgedEra}-${w.id.value}", craft = w.craft,
                 )
             }
         val anchorHero = state.heroes.values.filter { it.fame > 0 }.maxWithOrNull(compareBy<Hero> { it.fame }.thenBy(IdOrder.numeric) { it.id.value })
@@ -133,6 +133,7 @@ object Legacy {
         interactions = (a.interactions.keys + b.interactions.keys).associateWith { k -> maxOf(a.state(k), b.state(k)) },
         experiments = (a.experiments.keys + b.experiments.keys).associateWith { k -> maxOf(a.experiments[k] ?: 0, b.experiments[k] ?: 0) },
         signatureClues = (a.signatureClues.keys + b.signatureClues.keys).associateWith { k -> (a.signatureClues[k] ?: 0) or (b.signatureClues[k] ?: 0) },   // a rung earned in any era stays
+        learnedRules = a.learnedRules + b.learnedRules, witnessed = a.witnessed + b.witnessed,
     )
 
     fun purchaseUpgrade(current: LegacyProfile, upgradeId: UpgradeId, content: ContentCatalog): LegacyOutcome {

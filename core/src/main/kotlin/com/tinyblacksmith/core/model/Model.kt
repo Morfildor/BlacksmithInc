@@ -107,6 +107,8 @@ data class Weapon(
     /** Rules 6: why this weapon is Legendary, and the renown its deeds have earned it so far (`crafting.Legends`). */
     val legend: LegendOrigin? = null,
     val renown: Int = 0,
+    /** The composition this weapon was forged under (`crafting.WeaponRules`): 1 before metals had a rule in a fight, and for every weapon decoded without the field. It never changes afterwards. */
+    val craft: Int = 1,
 ) {
     val isListed: Boolean get() = location is WeaponLocation.Shelf
     /** Hone is allowed on an unhoned weapon or one worn below full condition. */
@@ -309,6 +311,10 @@ data class Journal(
     val experiments: Map<String, Int> = emptyMap(),
     /** The clue ladder (`crafting.ClueRung`): per signature key, the rungs earned so far as a bit set. Merged across eras; absent on a profile older than the ladder. */
     val signatureClues: Map<String, Int> = emptyMap(),
+    /** Fight rules the smith has had on a forged weapon, by rule ID (`crafting.Interactions`). Guild runs only. */
+    val learnedRules: Set<String> = emptySet(),
+    /** Interaction paths a real contract or siege has shown, by ID. A preview or the bench never writes here. */
+    val witnessed: Set<String> = emptySet(),
 ) {
     companion object {
         fun coreAugmentKey(core: MaterialId, augment: MaterialId) = "ca:${core.value}|${augment.value}"
@@ -336,6 +342,8 @@ data class LegendEntry(
     val ownerLine: List<HistoryEntry> = emptyList(),
     /** One blade, one entry: the era and ID it was forged under ("era2-w17"). Empty on an older entry; see [key]. */
     val weaponKey: String = "",
+    /** The composition the weapon was forged under (`Weapon.craft`): it comes back as what it was. */
+    val craft: Int = 1,
 ) {
     /** The identity the board keeps one entry for; an entry older than [weaponKey] is told apart by era, name and title. */
     val key: String get() = weaponKey.ifEmpty { "era$era:$weaponName:$title" }

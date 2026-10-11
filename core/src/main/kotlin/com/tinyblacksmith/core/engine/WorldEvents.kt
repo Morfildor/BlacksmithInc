@@ -386,7 +386,7 @@ object WorldEvents {
                     element = legend.element ?: augment.element, affixes = emptyList(), flaws = flaws, location = WeaponLocation.Storage,
                     forgedEra = legend.era, forgedDay = 1, kills = legend.kills, fame = legend.fame, title = legend.title,
                     history = legend.ownerLine + HistoryEntry(ctx.era, ctx.day, "RETURNED", "Returned to Emberfall in era ${ctx.era}, worn and dormant. Past owners include ${legend.owners.joinToString(", ").ifEmpty { "unknown heroes" }}."),
-                    signatureId = signature, dormantAffixes = dormant, legendKey = legend.key,
+                    signatureId = signature, dormantAffixes = dormant, legendKey = legend.key, craft = legend.craft,
                 )
                 ctx.updateWeapon(w)
                 ctx.emit(EventType.ARTIFACT_RETURNED, 6, "${w.name}, ${legend.title}, has returned to the forge.", listOf(w.id.value), mapOf("era" to legend.era.toString(), "legend" to legend.key, "power" to power.toString()))

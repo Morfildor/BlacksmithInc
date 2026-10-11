@@ -235,6 +235,8 @@ data class ContentCatalog(
             families.forEach { if (it.id !in c.familyById) problems += "Family ${it.id.value} has no combat pattern" }
             c.affixEffects.keys.forEach { if (it !in affixById) problems += "Combat rule for unknown affix ${it.value}" }
             c.catalystEffects.keys.forEach { if (materialById[it]?.category != MaterialCategory.CATALYST) problems += "Combat rule for ${it.value}, which is not a catalyst" }
+            c.cores.forEach { if (materialById[it.coreId]?.category != MaterialCategory.CORE) problems += "Combat rule for ${it.coreId.value}, which is not a metal" }
+            c.notes.keys.forEach { if (materialById[it]?.category.let { cat -> cat == null || cat == MaterialCategory.CORE }) problems += "Forge note for ${it.value}, which is not an augment or a catalyst" }
             if (relics.isNotEmpty()) c.relicEffects.keys.forEach { if (relic(it) == null) problems += "Combat rule for unknown relic $it" }
             relics.filter { it.effect == RelicEffect.COMBAT }.forEach { if (it.id !in c.relicEffects) problems += "Combat relic ${it.id} has no rule" }
         }
