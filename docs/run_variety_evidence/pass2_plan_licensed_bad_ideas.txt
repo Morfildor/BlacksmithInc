@@ -1,0 +1,16 @@
+Guild runs: 1000 seeds from 200001, charter licensed_bad_ideas, horizon day 30, new account, balance 13
+SYNERGY with its opening's plan: charter 61 % (58 to 64 %). Ignoring it: 53 % (50 to 56 %)
+                plan blood_price    n=139 charter with the plan  68% ignoring it  54% (only with 38, only without 19) | forge damage in four sieges 29.6 against 31.6 | chains a run 2.0 against 1.9 | first siege damage 3.8
+                plan careful_books  n=130 charter with the plan  55% ignoring it  55% (only with 29, only without 29) | forge damage in four sieges 30.8 against 31.4 | chains a run 1.6 against 2.3 | first siege damage 3.4
+                plan furnace        n=159 charter with the plan  61% ignoring it  53% (only with 33, only without 21) | forge damage in four sieges 35.6 against 35.5 | chains a run 3.8 against 2.6 | first siege damage 6.7
+                plan marked         n=151 charter with the plan  57% ignoring it  53% (only with 33, only without 27) | forge damage in four sieges 27.4 against 33.4 | chains a run 4.4 against 3.8 | first siege damage 3.5
+                plan plain_oath     n=142 charter with the plan  63% ignoring it  56% (only with 31, only without 20) | forge damage in four sieges 30.7 against 32.4 | chains a run 1.9 against 2.1 | first siege damage 3.8
+                plan salvage        n=134 charter with the plan  57% ignoring it  47% (only with 34, only without 20) | forge damage in four sieges 38.1 against 39.2 | chains a run 2.3 against 2.2 | first siege damage 6.7
+                plan stormwell      n=145 charter with the plan  63% ignoring it  54% (only with 33, only without 19) | forge damage in four sieges 30.4 against 37.5 | chains a run 2.7 against 2.4 | first siege damage 4.8
+                opening blood_price    n=139 charter  68% (59 to 75 %) defeated   3% first siege damage 3.8 loans on day 5: axe/frost=142 axe/fire=137 sword/frost=94 spear/fire=84
+                opening careful_books  n=130 charter  55% (47 to 64 %) defeated   0% first siege damage 3.4 loans on day 5: axe/frost=158 sword/frost=120 spear/frost=40 axe/fire=39
+                opening furnace        n=159 charter  61% (53 to 68 %) defeated   6% first siege damage 6.7 loans on day 5: sword/fire=154 axe/frost=116 spear/frost=93 sword/frost=64
+                opening marked         n=151 charter  57% (49 to 65 %) defeated   3% first siege damage 3.5 loans on day 5: sword/sun=183 axe/frost=132 sword/frost=80 spear/frost=55
+                opening plain_oath     n=142 charter  63% (55 to 71 %) defeated   8% first siege damage 3.8 loans on day 5: axe/frost=264 sword/frost=109 axe/fire=44 spear/frost=25
+                opening salvage        n=134 charter  57% (49 to 66 %) defeated   8% first siege damage 6.7 loans on day 5: axe/frost=142 spear/fire=106 sword/frost=97 sword/sun=38
+                opening stormwell      n=145 charter  63% (55 to 71 %) defeated   3% first siege damage 4.8 loans on day 5: axe/frost=150 sword/storm=147 sword/frost=81 spear/frost=43

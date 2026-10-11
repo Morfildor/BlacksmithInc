@@ -1,0 +1,12 @@
+Guild runs: 1000 seeds from 200001, charter towns_last_hope, horizon day 30, new account, balance 13
+SYNERGY with its opening's plan: charter 66 % (62 to 68 %). Ignoring it: 59 % (56 to 62 %)
+                plan blood_price    n=205 charter with the plan  76% ignoring it  60% (only with 59, only without 28) | forge damage in four sieges 23.0 against 32.3 | chains a run 1.9 against 2.0 | first siege damage 3.7
+                plan overflow       n=221 charter with the plan  79% ignoring it  65% (only with 57, only without 26) | forge damage in four sieges 21.1 against 29.1 | chains a run 2.2 against 3.0 | first siege damage 2.6
+                plan plain_oath     n=215 charter with the plan  59% ignoring it  52% (only with 54, only without 38) | forge damage in four sieges 34.7 against 33.9 | chains a run 2.0 against 2.8 | first siege damage 6.2
+                plan salvage        n=171 charter with the plan  56% ignoring it  58% (only with 33, only without 36) | forge damage in four sieges 33.8 against 36.6 | chains a run 2.0 against 2.3 | first siege damage 5.6
+                plan stormwell      n=188 charter with the plan  55% ignoring it  59% (only with 34, only without 41) | forge damage in four sieges 33.5 against 32.7 | chains a run 2.9 against 2.5 | first siege damage 4.4
+                opening blood_price    n=205 charter  76% (69 to 81 %) defeated   3% first siege damage 3.7 loans on day 5: axe/fire=232 axe/frost=231 sword/frost=115 spear/fire=53
+                opening overflow       n=221 charter  79% (73 to 84 %) defeated   1% first siege damage 2.6 loans on day 5: sword/frost=216 axe/frost=201 sword/verdant=201 sword/sun=63
+                opening plain_oath     n=215 charter  59% (52 to 65 %) defeated   7% first siege damage 6.2 loans on day 5: axe/frost=343 sword/frost=164 sword/storm=116 axe/fire=89
+                opening salvage        n=171 charter  56% (49 to 63 %) defeated   7% first siege damage 5.6 loans on day 5: axe/frost=177 sword/frost=151 spear/fire=56 sword/sun=53
+                opening stormwell      n=188 charter  55% (48 to 62 %) defeated   7% first siege damage 4.4 loans on day 5: sword/storm=197 sword/frost=181 axe/frost=175 sword/sun=63

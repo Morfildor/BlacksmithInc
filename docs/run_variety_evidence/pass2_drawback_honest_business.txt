@@ -1,0 +1,8 @@
+Guild runs: 1000 seeds from 200001, charter honest_business, horizon day 30, new account, balance 13
+ADAPTIVE: 'plan' below reads 'with the drawback', 'ignoring it' reads 'without the drawback'
+                plan blood_price    n=167 charter with the plan  63% ignoring it  64% (only with 15, only without 16) | forge damage in four sieges 23.2 against 22.5 | chains a run 1.7 against 1.7 | first siege damage 1.3
+                plan careful_books  n=159 charter with the plan  42% ignoring it  41% (only with 19, only without 17) | forge damage in four sieges 31.7 against 32.1 | chains a run 1.1 against 1.1 | first siege damage 3.6
+                plan furnace        n=173 charter with the plan  50% ignoring it  45% (only with 38, only without 29) | forge damage in four sieges 35.1 against 36.5 | chains a run 2.6 against 2.7 | first siege damage 4.6
+                plan marked         n=166 charter with the plan  51% ignoring it  51% (only with 35, only without 34) | forge damage in four sieges 22.7 against 22.9 | chains a run 4.6 against 4.8 | first siege damage 0.9
+                plan overflow       n=168 charter with the plan  67% ignoring it  65% (only with 33, only without 30) | forge damage in four sieges 16.8 against 18.9 | chains a run 1.4 against 1.2 | first siege damage 1.2
+                plan plain_oath     n=167 charter with the plan  41% ignoring it  44% (only with 26, only without 32) | forge damage in four sieges 31.0 against 30.1 | chains a run 1.0 against 1.0 | first siege damage 3.6

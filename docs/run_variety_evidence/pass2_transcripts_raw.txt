@@ -1,0 +1,228 @@
+Transcript: seed 200003, charter honest_business, policy ADAPTIVE, opening marked, balance 13. Ended on day 31: still standing at the horizon
+  day 1 | The guild begins with The Marked Card. Mark the one that matters and make every Mark pay twice. 50 gold less to start with.
+  day 1 | Pascoe Caldbeck the Guardian signed with the guild for 17 gold (Oathkeeper).
+  day 1 | Wren Hemlock the Battlemage signed with the guild for 35 gold (Impatient).
+  day 1 | Pascoe Caldbeck, Crispin Heronshaw, Wren Hemlock finished supply run at the Cinder Quarry. Round 1: Wren's Impatient hits Embermaw whelp for 4.
+  day 1 | Scouts report what the Ashclaw Raiders prepare for day 5: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line. 
+  day 2 | Pascoe Caldbeck, Crispin Heronshaw, Wren Hemlock won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Wren's Impatient hits Ashclaw scout for 4.
+  day 3 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 5.
+  day 3 | Pascoe Caldbeck, Crispin Heronshaw, Wren Hemlock finished sabotage on the Ashroad. Round 1: Crispin: Mark and loose. Crispin hits Ashclaw thief for 14. Ashclaw thief is down. Spectral helper joins the party (Bone Music Box).
+  day 4 | Crispin Heronshaw finished supply run at the Cinder Quarry. Round 1: Crispin: Mark and loose. Crispin's Second arrow strikes the Mark on Embermaw whelp. Crispin's Methodical hits Embermaw whelp for 3.
+  day 5 | carried: Crispin the Ranger (methodical) Undead Bane Silver Bow, rare, Rosalind the Warden (overhealer) Frostbound Silver Axe, rare, Pascoe the Guardian (oathkeeper) Frostbound Silver Axe, rare, flawed, Wren the Battlemage (impatient) Frostbound Moonsteel Staff, epic | gold 226, forge health 100, Heartfire 0
+  day 5 | Emberfall repelled the Ashclaw horde! On the wall: Pascoe Caldbeck, Rosalind Lovell, Wren Hemlock. Round 1: Wren's Impatient hits Ashclaw warchief for 13.
+  day 6 | Added Blood Receipt to the workshop.
+  day 6 | Pascoe Caldbeck, Crispin Heronshaw, Rosalind Lovell pulled back from hunt in the Flooded Crypt. Round 1: Crispin: Mark and loose. Crispin hits The Pale Knight for 18. Crispin's Undead Bane strikes the Mark on The Pale Knight. Cris
+  day 6 | Scouts report what the Hollowbound prepare for day 10: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third. Marks pull your strikes onto it
+  day 7 | Wren Hemlock, Rosalind Lovell won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Wren's Impatient hits Hollowbound shambler for 10.
+  day 8 | Wren Hemlock, Rosalind Lovell pulled back from sabotage in the Flooded Crypt. Round 1: Wren's Impatient hits Gravecaller for 10.
+  day 10 | carried: Crispin the Ranger (methodical) Undead Bane Moonsteel Bow, epic, Rosalind the Warden (overhealer) Flaming Obsidian Axe, rare, Pascoe the Guardian (oathkeeper) Frostbound Silver Axe, rare, flawed, Wren the Battlemage (impatient) Vampiric Obsidian Sword, rare | gold 109, forge health 100, Heartfire 0
+  day 10 | The forge took 16 damage in the siege.
+  day 10 | The Hollowbound procession broke through (Pascoe Caldbeck, Crispin Heronshaw, Rosalind Lovell). Round 1: Crispin: Mark and loose. Crispin hits The Pale Knight for 23. Crispin's Undead Bane strikes the Mark on The Pale Knight. Cris
+  day 11 | Added The Blunt Oath to the workshop.
+  day 11 | Wren Hemlock, Rosalind Lovell pulled back from hunt in the Flooded Crypt. Round 1: Wren's Impatient hits The Pale Knight for 8.
+  day 11 | Scouts report what the Hollowbound prepare for day 15: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons 
+  day 13 | Pascoe Caldbeck, Crispin Heronshaw, Rosalind Lovell won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Crispin: Mark and loose. Crispin hits Hollowbound shambler for 22. Hollowbound shambler is down
+  day 14 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: grave mist. It will not come on day 15.
+  day 14 | Pascoe Caldbeck, Crispin Heronshaw, Rosalind Lovell finished sabotage in the Flooded Crypt. Round 1: Rosalind: Mend. Rosalind hits Hollowbound shambler for 20. Rosalind's Undead Bane hits Hollowbound shambler for 8.
+  day 15 | The forge took 3 damage in the siege.
+  day 15 | Emberfall held against the Hollowbound procession, at a cost: the forge was hit and 1 of the defenders went down. On the wall: Wren Hemlock, Rosalind Lovell, Pascoe Caldbeck. Round 1: The Pale Knight: Grave weapon. Pascoe's Guard 
+  day 16 | Pascoe Caldbeck, Crispin Heronshaw, Rosalind Lovell finished hunt on the Ashroad. Round 1: Crispin: Mark and loose. Crispin hits Ashclaw warchief for 15. Crispin's Giant Slayer strikes the Mark on Ashclaw warchief. Crispin's Metho
+  day 16 | Scouts report what the Embermaw Brood prepare for day 20: a second drake. They bring a second drake. In the third round the whole wall is breathed on twice. Chill a drake and it breathes weaker. Guard for the whole line before the
+  day 17 | Pascoe Caldbeck, Crispin Heronshaw, Rosalind Lovell won the first day of sabotage at the Cinder Quarry and press on tomorrow. Round 1: Pascoe: Hold the line. Pascoe hits Embermaw whelp for 16. Pascoe's Ember boils off Wet on Ember
+  day 18 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: a second drake. It will not come on day 20.
+  day 18 | Pascoe Caldbeck, Crispin Heronshaw, Rosalind Lovell finished sabotage at the Cinder Quarry. Round 1: Pascoe: Hold the line. Pascoe hits Embermaw drake for 16. Pascoe's Ember boils off Wet on Embermaw drake. Pascoe's Ember stores S
+  day 19 | Wren Hemlock finished supply run on the Ashroad. Round 1: Wren's Impatient hits Ashclaw scout for 12.
+  day 20 | carried: Crispin the Ranger (methodical) Flaming Starsteel Axe, epic, Rosalind the Warden (overhealer) Undead Bane Moonsteel Axe, epic, Pascoe the Guardian (oathkeeper) Flaming Starsteel Sword, epic, Wren the Battlemage (impatient) Vampiric Obsidian Sword, rare | gold 99, forge health 100, Heartfire 0
+  day 20 | The forge took 30 damage in the siege.
+  day 20 | Broodmother Vyrash and the Embermaw Brood broke through (Pascoe Caldbeck, Rosalind Lovell, Crispin Heronshaw). Round 1: Crispin: Mark and loose. Crispin strikes the Mark on Broodmother Vyrash. Crispin's Methodical hits Broodmother
+  day 21 | Wren Hemlock were beaten at supply run on the Ashroad. Round 1: Wren: Opening sigil. Wren hits Ashclaw scout for 13. Wren's Ember boils off Wet on Ashclaw scout. Wren's Ember stores Steam (1). Wren's Steam lance spends 1 Steam. Wr
+  day 21 | Scouts report what the Hollowbound prepare for day 25: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third. Marks pull your strikes onto it
+  day 23 | Pascoe Caldbeck, Crispin Heronshaw, Rosalind Lovell won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Pascoe: Hold the line. Pascoe hits Hollowbound shambler for 13. Pascoe's Shatter hits Hollowbou
+  day 24 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: a gravecaller behind the line. It will not come on day 25.
+  day 24 | Pascoe Caldbeck, Crispin Heronshaw, Rosalind Lovell finished sabotage in the Flooded Crypt. Round 1: Pascoe: Hold the line. Pascoe hits Gravecaller for 13. Pascoe's Shatter hits Gravecaller for 6.
+  day 25 | The forge took 39 damage in the siege.
+  day 25 | The Hollow King and the Hollowbound procession broke through (Wren Hemlock, Crispin Heronshaw, Rosalind Lovell). Round 1: Wren's Impatient hits The Hollow King for 12.
+  day 26 | Kazimir Hazelrigg the Ranger signed with the guild for 80 gold (Storm-Touched).
+  day 26 | Pascoe Caldbeck finished work on the wall.
+  day 26 | Scouts report what the Hollowbound prepare for day 30: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third. Marks pull your strikes onto it
+  day 27 | Pascoe Caldbeck, Kazimir Hazelrigg, Rosalind Lovell won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Pascoe: Hold the line. Pascoe hits Hollowbound shambler for 13. Pascoe's Shatter hits Hollowbou
+  day 27 | Frostbound Silver Axe returned to the forge after Corvin Ravensworth died.
+  day 28 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: a gravecaller behind the line. It will not come on day 30.
+  day 28 | Pascoe Caldbeck, Kazimir Hazelrigg, Rosalind Lovell finished sabotage in the Flooded Crypt. Round 1: Rosalind: Mend. Rosalind hits Gravecaller for 17. Gravecaller is down. Spectral helper joins the party (Bone Music Box).
+  day 29 | Kazimir Hazelrigg finished supply run on the Ashroad. Round 1: Kazimir: Mark and loose. The Blunt Oath hits Ashclaw scout for 6.
+  day 30 | The forge took 28 damage in the siege.
+  day 30 | The Hollow King and the Hollowbound procession broke through (Rosalind Lovell, Pascoe Caldbeck, Crispin Heronshaw). Round 1: Crispin: Mark and loose. Crispin hits The Hollow King for 22. Crispin's Giant Slayer strikes the Mark on 
+
+Transcript: seed 200012, charter towns_last_hope, policy LEGEND_SEEKER, opening plain_oath, balance 13. Ended on day 31: still standing at the horizon
+  day 1 | The guild begins with The Plain Oath. Plain weapons, sworn to. Whoever carries a common or uncommon one strikes harder and raises Guard. 60 gold less to start with. Fine weapons are wasted on the party.
+  day 1 | Lysander Harper the Battlemage signed with the guild for 17 gold (Impatient).
+  day 1 | Arvo Harrowgate the Duelist signed with the guild for 35 gold (Protective).
+  day 1 | Radek Holmfirth, Arvo Harrowgate, Lysander Harper finished supply run on the Ashroad. Round 1: Lysander's Impatient hits Ashclaw scout for 8.
+  day 1 | Scouts report what the Hollowbound prepare for day 5: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons g
+  day 2 | Radek Holmfirth, Arvo Harrowgate, Lysander Harper won the first day of starfall site in the Flooded Crypt and press on tomorrow. Round 1: Lysander's Impatient hits Hollowbound shambler for 8.
+  day 3 | The party brought Heartfire back from starfall site in the Flooded Crypt. The forge now holds 1 Heartfire.
+  day 3 | Radek Holmfirth, Arvo Harrowgate, Lysander Harper finished starfall site in the Flooded Crypt. Round 1: Lysander's Impatient hits The Pale Knight for 8.
+  day 4 | Lysander Harper finished supply run at the Cinder Quarry. Round 1: Lysander's Impatient hits Embermaw whelp for 10.
+  day 5 | carried: Radek the Guardian (oathkeeper) Vampiric Moonsteel Sword, epic, Idris the Warden (loyal_guild) Iron Axe, uncommon, Lysander the Battlemage (impatient) Bronze Sword, uncommon, Arvo the Duelist (protective) Undead Bane Obsidian Sword, rare | gold 229, forge health 100, Heartfire 0
+  day 5 | Forged Vampiric Moonsteel Sword. Epic. Quality 86.
+  day 5 | The forge took 3 damage in the siege.
+  day 5 | Emberfall held against the Hollowbound procession, at a cost: the forge was hit and 1 of the defenders went down. On the wall: Radek Holmfirth, Idris Wainwright, Arvo Harrowgate. Round 1: Arvo: Double cut. Arvo hits The Pale Knigh
+  day 6 | Added Blood Receipt to the workshop.
+  day 6 | Arvo Harrowgate, Idris Wainwright finished hunt on the Ashroad. Round 1: Arvo's Reinforced gives Arvo 4 Guard.
+  day 6 | Scouts report what the Ashclaw Raiders prepare for day 10: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 7 | Lysander Harper, Idris Wainwright won the first day of starfall site on the Ashroad and press on tomorrow. Round 1: Lysander's Impatient hits Ashclaw scout for 10.
+  day 8 | The party brought Heartfire back from starfall site on the Ashroad. The forge now holds 1 Heartfire.
+  day 8 | Lysander Harper, Idris Wainwright finished starfall site on the Ashroad. Round 1: Lysander's Impatient hits Ashclaw warchief for 10.
+  day 9 | Forged Undead Bane Starsteel Sword. Epic. Quality 81.
+  day 10 | carried: Radek the Guardian (oathkeeper) Vampiric Moonsteel Sword, epic, Idris the Warden (loyal_guild) Iron Axe, uncommon, Lysander the Battlemage (impatient) Undead Bane Starsteel Sword, epic, Arvo the Duelist (protective) Undead Bane Obsidian Sword, rare | gold 40, forge health 100, Heartfire 0
+  day 10 | Emberfall repelled the Ashclaw horde! On the wall: Arvo Harrowgate, Idris Wainwright, Radek Holmfirth. Round 1: Radek: Hold the line. Radek's Swift hits Ashclaw warchief for 6.
+  day 11 | Added Bone Music Box to the workshop.
+  day 11 | Radek Holmfirth, Arvo Harrowgate, Idris Wainwright finished hunt in the Flooded Crypt. Round 1: Radek: Hold the line. Radek hits The Pale Knight for 13. Radek's Giant Slayer hits The Pale Knight for 4.
+  day 11 | Scouts report what the Embermaw Brood prepare for day 15: a second drake. They bring a second drake. In the third round the whole wall is breathed on twice. Chill a drake and it breathes weaker. Guard for the whole line before the
+  day 12 | Arvo Harrowgate, Lysander Harper, Idris Wainwright won the first day of the supplier's road at the Cinder Quarry and press on tomorrow. Round 1: Lysander's Impatient hits Embermaw whelp for 12.
+  day 13 | The supplier got through. Until day 18 the supplier brings 1 more of every limited material each morning.
+  day 13 | Arvo Harrowgate, Lysander Harper, Idris Wainwright finished the supplier's road at the Cinder Quarry. Round 1: Lysander's Impatient hits Cinder-knight for 12.
+  day 14 | Lysander Harper finished supply run on the Ashroad. Round 1: Lysander's Impatient hits Ashclaw scout for 13.
+  day 14 | Flaming Silver Axe returned to the forge after Odile Cooper died.
+  day 15 | The forge took 3 damage in the siege.
+  day 15 | Emberfall held against the Embermaw Brood, at a cost: the forge was hit and 1 of the defenders went down. On the wall: Radek Holmfirth, Idris Wainwright, Arvo Harrowgate. Round 2: Radek: Hold the line. Radek hits Embermaw drake fo
+  day 16 | Arvo Harrowgate, Lysander Harper, Idris Wainwright finished supply run on the Ashroad. Round 1: Lysander's Impatient hits Ashclaw scout for 16.
+  day 16 | Scouts report what the Hollowbound prepare for day 20: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons 
+  day 17 | Arvo Harrowgate, Lysander Harper won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Lysander's Impatient hits Hollowbound shambler for 20.
+  day 18 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: grave mist. It will not come on day 20.
+  day 18 | Arvo Harrowgate, Lysander Harper finished sabotage in the Flooded Crypt. Round 1: Lysander's Impatient hits Bone warden for 20.
+  day 20 | carried: Radek the Guardian (oathkeeper) Vampiric Moonsteel Sword, epic, Idris the Warden (loyal_guild) Undead Bane Bronze Axe, rare, Lysander the Battlemage (impatient) Undead Bane Starsteel Sword, epic, Arvo the Duelist (protective) Flaming Moonsteel Sword, epic | gold 36, forge health 100, Heartfire 0
+  day 20 | The forge took 18 damage in the siege.
+  day 20 | The Hollow King and the Hollowbound procession broke through (Radek Holmfirth, Idris Wainwright, Lysander Harper). Round 1: Lysander's Impatient hits The Hollow King for 21.
+  day 21 | Arvo Harrowgate, Lysander Harper finished hunt on the Ashroad. Round 1: Lysander's Impatient hits Ashclaw warchief for 13.
+  day 21 | Scouts report what the Hollowbound prepare for day 25: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons 
+  day 22 | Lysander Harper won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Lysander's Impatient hits Hollowbound shambler for 13.
+  day 23 | Lysander Harper was taken alive at sabotage in the Flooded Crypt. Iron Axe went with them.
+  day 23 | Lysander Harper were beaten at sabotage in the Flooded Crypt. Round 1: Lysander's Impatient hits Bone warden for 12.
+  day 25 | The forge took 28 damage in the siege.
+  day 25 | The Hollow King and the Hollowbound procession broke through (Radek Holmfirth, Arvo Harrowgate, Idris Wainwright). Round 1: The Hollow King: Crown of ash. Radek's Guard breaks. Radek's Riposte hits The Hollow King for 14.
+  day 26 | Idris Wainwright won the first day of rescue in the Flooded Crypt and press on tomorrow. Round 1: Idris: Mend. The Blunt Oath hits Bone warden for 3.
+  day 26 | Scouts report what the Ashclaw Raiders prepare for day 30: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 27 | Lysander Harper was brought out alive.
+  day 27 | Idris Wainwright finished rescue in the Flooded Crypt. Round 1: Idris: Mend. The Blunt Oath hits Hollowbound shambler for 3. Hollowbound shambler is down.
+  day 28 | Radek Holmfirth, Arvo Harrowgate, Idris Wainwright won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Arvo: Double cut. Arvo hits Ashclaw scout for 16. Ashclaw scout is down. Spectral helper joins the par
+  day 29 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 30.
+  day 29 | Radek Holmfirth, Arvo Harrowgate, Idris Wainwright finished sabotage on the Ashroad. Round 1: Arvo: Double cut. Arvo hits Ashclaw thief for 16. Ashclaw thief is down. Spectral helper joins the party (Bone Music Box).
+  day 30 | The forge took 23 damage in the siege.
+  day 30 | Warlord Krag and the Ashclaw horde broke through (Lysander Harper, Idris Wainwright, Radek Holmfirth). Round 1: Warlord Krag: Reave. Radek's Guard breaks. Radek's Riposte hits Warlord Krag for 14.
+
+Transcript: seed 200036, charter towns_last_hope, policy SYNERGY, opening plain_oath, balance 13. Ended on day 31: still standing at the horizon
+  day 1 | The guild begins with The Plain Oath. Plain weapons, sworn to. Whoever carries a common or uncommon one strikes harder and raises Guard. 60 gold less to start with. Fine weapons are wasted on the party.
+  day 1 | Yarrow Kettleby the Battlemage signed with the guild for 17 gold (Cowardly).
+  day 1 | Tansy Ferris the Ranger signed with the guild for 35 gold (Protective).
+  day 1 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby finished supply run in the Flooded Crypt. Round 1: Tansy: Mark and loose. The Blunt Oath hits Hollowbound shambler for 6.
+  day 1 | Scouts report what the Hollowbound prepare for day 5: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons g
+  day 2 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Gideon: Hold the line. The Blunt Oath hits Hollowbound shambler for 3.
+  day 3 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: grave mist. It will not come on day 5.
+  day 3 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby finished sabotage in the Flooded Crypt. Round 1: Tansy: Mark and loose. The Blunt Oath hits Hollowbound shambler for 6.
+  day 3 | The enemy took Iron Bow after Ixen Ingram died.
+  day 4 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby finished hunt at the Cinder Quarry. Round 1: Tansy: Mark and loose. The Blunt Oath hits Embermaw drake for 6.
+  day 5 | carried: Gideon the Guardian (oathkeeper) Iron Sword, common, Jorund the Warden (pain_collector) Iron Axe, uncommon, Yarrow the Battlemage (cowardly) Undead Bane Obsidian Sword, rare, Tansy the Ranger (protective) Silver Bow, uncommon | gold 258, forge health 100, Heartfire 0
+  day 5 | Emberfall repelled the Hollowbound procession! On the wall: Yarrow Kettleby, Onora Kestrel, Rook Draper. Round 1: Yarrow: Opening sigil. Yarrow hits The Pale Knight for 20. Yarrow's Undead Bane hits The Pale Knight for 8.
+  day 6 | Added Coward's Medal to the workshop.
+  day 6 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby won the first day of escort at the Cinder Quarry and press on tomorrow. Round 1: Tansy: Mark and loose. Tansy hits Embermaw whelp for 8. Embermaw whelp is down.
+  day 6 | Scouts report what the Ashclaw Raiders prepare for day 10: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 7 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby finished escort at the Cinder Quarry. Round 1: Cinder-knight: Ember guard. Gideon's Guard breaks. Gideon's Riposte hits Cinder-knight for 7. Cinder-knight is down.
+  day 8 | Tansy Ferris, Jorund Tremaine won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Tansy: Mark and loose. The Blunt Oath hits Ashclaw scout for 6.
+  day 9 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 10.
+  day 9 | Tansy Ferris, Jorund Tremaine finished sabotage on the Ashroad. Round 1: Tansy: Mark and loose. The Blunt Oath hits Ashclaw thief for 6.
+  day 10 | carried: Gideon the Guardian (oathkeeper) Flaming Starsteel Axe, epic, Jorund the Warden (pain_collector) Iron Axe, uncommon, Yarrow the Battlemage (cowardly) Undead Bane Obsidian Sword, rare, Tansy the Ranger (protective) Iron Axe, uncommon | gold 44, forge health 100, Heartfire 0
+  day 10 | The forge took 12 damage in the siege.
+  day 10 | The Ashclaw horde broke through (Alba Birchall, Rook Draper, Yarrow Kettleby). Round 1: Alba: Mend. Alba hits Ashclaw warchief for 14. Alba's Giant Slayer hits Ashclaw warchief for 4.
+  day 11 | Added Bone Music Box to the workshop.
+  day 11 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby finished hunt at the Cinder Quarry. Round 1: Tansy: Mark and loose. The Blunt Oath hits Embermaw drake for 6.
+  day 11 | Scouts report what the Hollowbound prepare for day 15: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third. Marks pull your strikes onto it
+  day 12 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Tansy: Mark and loose. Tansy hits Hollowbound shambler for 14. Hollowbound shambler is down. Spectral
+  day 13 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: a gravecaller behind the line. It will not come on day 15.
+  day 13 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby finished sabotage in the Flooded Crypt. Round 1: Tansy: Mark and loose. The Blunt Oath hits Gravecaller for 6. Gravecaller is down. Spectral helper joins the party (Bone Music Box).
+  day 14 | Tansy Ferris, Yarrow Kettleby, Jorund Tremaine finished supply run at the Cinder Quarry. Round 1: Tansy: Mark and loose. The Blunt Oath hits Embermaw whelp for 6.
+  day 15 | Emberfall repelled the Hollowbound procession! On the wall: Jorund Tremaine, Gideon Lorimer, Alba Birchall. Round 1: The Pale Knight: Grave weapon. Gideon's Guard breaks. Gideon's Riposte hits The Pale Knight for 12.
+  day 16 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby pulled back from hunt in the Flooded Crypt. Round 1: The Pale Knight: Grave weapon. Gideon's Guard breaks. Gideon's Riposte hits The Pale Knight for 12.
+  day 16 | Scouts report what the Embermaw Brood prepare for day 20: a second drake. They bring a second drake. In the third round the whole wall is breathed on twice. Chill a drake and it breathes weaker. Guard for the whole line before the
+  day 17 | Tansy Ferris, Yarrow Kettleby, Jorund Tremaine won the first day of sabotage at the Cinder Quarry and press on tomorrow. Round 1: Tansy: Mark and loose. The Blunt Oath hits Embermaw whelp for 6.
+  day 18 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: a second drake. It will not come on day 20.
+  day 18 | Tansy Ferris, Yarrow Kettleby, Jorund Tremaine finished sabotage at the Cinder Quarry. Round 1: Tansy: Mark and loose. The Blunt Oath hits Embermaw drake for 6.
+  day 19 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby finished hunt at the Cinder Quarry. Round 1: Tansy: Mark and loose. The Blunt Oath hits Embermaw drake for 6.
+  day 20 | carried: Gideon the Guardian (oathkeeper) Flaming Starsteel Axe, epic, Jorund the Warden (pain_collector) Undead Bane Obsidian Axe, rare, Yarrow the Battlemage (cowardly) Frostbound Moonsteel Axe, epic, Tansy the Ranger (protective) Iron Axe, uncommon | gold 78, forge health 100, Heartfire 0
+  day 20 | The forge took 42 damage in the siege.
+  day 20 | Broodmother Vyrash and the Embermaw Brood broke through (Alba Birchall, Yarrow Kettleby, Tobin Penhallow). Round 1: Embermaw whelp: Nip. Embermaw whelp hits Alba for 9. Alba is down.
+  day 21 | Gideon Lorimer finished work on the wall.
+  day 21 | Scouts report what the Ashclaw Raiders prepare for day 25: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 22 | Gideon Lorimer finished work on the wall.
+  day 23 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Tansy: Mark and loose. Tansy hits Ashclaw scout for 22. Ashclaw scout is down. Spectral helper joins the pa
+  day 24 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 25.
+  day 24 | Gideon Lorimer, Tansy Ferris, Yarrow Kettleby finished sabotage on the Ashroad. Round 1: Tansy: Mark and loose. Tansy hits Ashclaw thief for 22. Ashclaw thief is down. Spectral helper joins the party (Bone Music Box).
+  day 25 | The forge took 40 damage in the siege.
+  day 25 | Warlord Krag and the Ashclaw horde broke through (Ilka Harrowgate, Yarrow Kettleby, Jorund Tremaine). Round 1: Ashclaw brute: Club. Ashclaw brute hits Ilka for 20. Ilka is down.
+  day 25 | Frostbound Starsteel Spear returned to the forge after Ilka Harrowgate died.
+  day 26 | Gideon Lorimer finished work on the wall.
+  day 26 | Scouts report what the Ashclaw Raiders prepare for day 30: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 27 | Gideon Lorimer finished work on the wall.
+  day 28 | Gideon Lorimer finished work on the wall.
+  day 29 | Gideon Lorimer finished work on the wall.
+  day 30 | The forge took 24 damage in the siege.
+  day 30 | Warlord Krag and the Ashclaw horde broke through (Ulla Meadowsweet, Onora Kestrel, Yarrow Kettleby). Round 1: Ulla: Double cut. Ulla hits Warlord Krag for 16. Ulla's Giant Slayer hits Warlord Krag for 4.
+
+Transcript: seed 200021, charter licensed_bad_ideas, policy DEFENCE_FIRST, opening marked, balance 13. Ended on day 31: charter secured on day 30, chapter closed
+  day 1 | The guild begins with The Marked Card. Mark the one that matters and make every Mark pay twice. 50 gold less to start with.
+  day 1 | Brokk Jarvis the Guardian signed with the guild for 17 gold (Oathkeeper).
+  day 1 | Jovan Orchard the Warden signed with the guild for 35 gold (Overhealer).
+  day 1 | Brokk Jarvis, Saskia Deepdale, Evander Devlin finished supply run at the Cinder Quarry. Round 1: Brokk's Oathkeeper gives Brokk 2 Guard.
+  day 1 | Scouts report what the Ashclaw Raiders prepare for day 5: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line. 
+  day 2 | Brokk Jarvis, Saskia Deepdale, Evander Devlin won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Brokk's Oathkeeper gives Brokk 2 Guard.
+  day 3 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 5.
+  day 3 | Brokk Jarvis, Saskia Deepdale, Evander Devlin finished sabotage on the Ashroad. Round 1: Brokk's Oathkeeper gives Brokk 2 Guard.
+  day 4 | Evander Devlin finished supply run in the Flooded Crypt. Round 2: Evander: Bolt. Evander hits Hollowbound shambler for 14. Hollowbound shambler is down. Spectral helper joins the party (Bone Music Box).
+  day 5 | carried: Saskia the Duelist (methodical) Frostbound Bronze Sword, rare, Evander the Battlemage (storm_touched) Frostbound Bronze Sword, rare, Brokk the Guardian (oathkeeper) Silver Axe, uncommon, Jovan the Warden (overhealer) Frostbound Bronze Spear, rare | gold 273, forge health 100, Heartfire 0
+  day 5 | Emberfall repelled the Ashclaw horde! On the wall: Brokk Jarvis, Saskia Deepdale, Jovan Orchard. Round 1: Ashclaw warchief: Cleave. Brokk's Guard breaks. Brokk's Riposte hits Ashclaw warchief for 9.
+  day 6 | Added Overflow Basin to the workshop.
+  day 6 | Brokk Jarvis, Saskia Deepdale, Evander Devlin finished supply run on the Ashroad. Round 1: Brokk's Oathkeeper gives Brokk 2 Guard.
+  day 6 | Scouts report what the Embermaw Brood prepare for day 10: banked fires. They have fed the fires for days. Every defender starts with 2 Burn and every one of the brood with 2 Regeneration. A healer on the wall, or Verdant weapons. 
+  day 7 | Brokk Jarvis, Saskia Deepdale, Evander Devlin won the first day of sabotage at the Cinder Quarry and press on tomorrow. Round 1: Brokk's Oathkeeper gives Brokk 2 Guard.
+  day 8 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: banked fires. It will not come on day 10.
+  day 8 | Brokk Jarvis, Saskia Deepdale, Evander Devlin finished sabotage at the Cinder Quarry. Round 1: Saskia: Double cut. Saskia's Swift hits Cinder-knight for 7. Cinder-knight is down. Spectral helper joins the party (Bone Music Box).
+  day 10 | carried: Saskia the Duelist (methodical) Frostbound Bronze Sword, rare, Evander the Battlemage (storm_touched) Flaming Starsteel Axe, rare, Brokk the Guardian (oathkeeper) Silver Axe, uncommon, Jovan the Warden (overhealer) Resonant Obsidian Spear, rare | gold 42, forge health 100, Heartfire 0
+  day 10 | The forge took 3 damage in the siege.
+  day 10 | Emberfall held against the Embermaw Brood, at a cost: the forge was hit and 1 of the defenders went down. On the wall: Saskia Deepdale, Evander Devlin, Jovan Orchard. Round 1: Jovan: Mend. Jovan has nothing to heal on Saskia (7 ov
+  day 11 | Added Coward's Medal to the workshop.
+  day 11 | Brokk Jarvis, Evander Devlin, Jovan Orchard finished supply run on the Ashroad. Round 1: Brokk's Oathkeeper gives Brokk 2 Guard.
+  day 11 | Scouts report what the Hollowbound prepare for day 15: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons 
+  day 12 | Brokk Jarvis, Evander Devlin, Jovan Orchard won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Brokk: Hold the line. Brokk hits Hollowbound shambler for 28. Hollowbound shambler is down. Spectral he
+  day 13 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: grave mist. It will not come on day 15.
+  day 13 | Brokk Jarvis, Evander Devlin, Jovan Orchard finished sabotage in the Flooded Crypt. Round 1: Hollowbound shambler: Claw. Brokk's Guard breaks. Brokk's Riposte hits Hollowbound shambler for 13.
+  day 14 | Saskia Deepdale finished supply run at the Cinder Quarry. Round 1: Saskia: Double cut. Saskia hits Embermaw whelp for 13. Embermaw whelp is down. Spectral helper joins the party (Bone Music Box).
+  day 15 | The forge took 3 damage in the siege.
+  day 15 | Emberfall held against the Hollowbound procession, at a cost: the forge was hit and 1 of the defenders went down. On the wall: Brokk Jarvis, Evander Devlin, Jovan Orchard. Round 1: Brokk: Hold the line. Brokk hits Gravecaller for 
+  day 16 | Saskia Deepdale, Evander Devlin, Jovan Orchard finished supply run at the Cinder Quarry. Round 1: Saskia: Double cut. Saskia hits Embermaw whelp for 13. Embermaw whelp is down. Spectral helper joins the party (Bone Music Box).
+  day 16 | Scouts report what the Embermaw Brood prepare for day 20: banked fires. They have fed the fires for days. Every defender starts with 2 Burn and every one of the brood with 2 Regeneration. A healer on the wall, or Verdant weapons. 
+  day 17 | Saskia Deepdale, Evander Devlin, Jovan Orchard won the first day of sabotage at the Cinder Quarry and press on tomorrow. Round 1: Saskia: Double cut. Saskia hits Embermaw whelp for 14. Embermaw whelp is down. Spectral helper joins
+  day 18 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: banked fires. It will not come on day 20.
+  day 18 | Saskia Deepdale, Evander Devlin, Jovan Orchard finished sabotage at the Cinder Quarry. Round 1: Jovan: Mend. Jovan has nothing to heal on Saskia (8 over). Overflow Basin gives Saskia 4 Guard.
+  day 19 | Saskia Deepdale finished supply run at the Cinder Quarry. Round 1: Saskia: Double cut. Saskia hits Embermaw whelp for 14. Embermaw whelp is down. Spectral helper joins the party (Bone Music Box).
+  day 20 | carried: Saskia the Duelist (methodical) Frostbound Moonsteel Sword, rare, Evander the Battlemage (storm_touched) Frostbound Obsidian Axe, rare, Brokk the Guardian (oathkeeper) Undead Bane Obsidian Axe, rare, Jovan the Warden (overhealer) Flaming Starsteel Axe, rare | gold 65, forge health 100, Heartfire 0
+  day 20 | The forge took 30 damage in the siege.
+  day 20 | Broodmother Vyrash and the Embermaw Brood broke through (Brokk Jarvis, Evander Devlin, Jovan Orchard). Round 1: Jovan: Mend. Jovan has nothing to heal on Brokk (8 over). Overflow Basin gives Brokk 4 Guard.
+  day 21 | Saskia Deepdale, Jovan Orchard finished supply run at the Cinder Quarry. Round 1: Saskia: Double cut. Saskia hits Embermaw whelp for 14. Embermaw whelp is down. Spectral helper joins the party (Bone Music Box).
+  day 21 | Scouts report what the Embermaw Brood prepare for day 25: a second drake. They bring a second drake. In the third round the whole wall is breathed on twice. Chill a drake and it breathes weaker. Guard for the whole line before the
+  day 22 | Saskia Deepdale won the first day of sabotage at the Cinder Quarry and press on tomorrow. Round 1: Saskia: Double cut. Saskia hits Embermaw whelp for 17. Embermaw whelp is down. Spectral helper joins the party (Bone Music Box).
+  day 23 | Saskia Deepdale was taken alive at sabotage at the Cinder Quarry. Frostbound Moonsteel Sword went with them.
+  day 23 | Saskia Deepdale were beaten at sabotage at the Cinder Quarry. Round 1: Saskia: Double cut. Saskia strikes the Mark on Embermaw drake. Saskia's Methodical hits Embermaw drake for 3.
+  day 25 | The forge took 27 damage in the siege.
+  day 25 | Broodmother Vyrash and the Embermaw Brood broke through (Brokk Jarvis, Jovan Orchard, Evander Devlin). Round 1: Jovan: Mend. Jovan has nothing to heal on Brokk (9 over). Overflow Basin gives Brokk 4 Guard.
+  day 26 | Scouts report what the Hollowbound prepare for day 30: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons 
+  day 28 | Selka Wyndham the Ranger signed with the guild for 50 gold (Protective).
+  day 28 | Brokk Jarvis, Selka Wyndham, Evander Devlin won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Brokk: Hold the line. Brokk raises 6 Guard. Brokk's Guardian's gives Brokk 2 Guard.
+  day 29 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: grave mist. It will not come on day 30.
+  day 29 | Brokk Jarvis, Selka Wyndham, Evander Devlin finished sabotage in the Flooded Crypt. Round 1: Selka: Mark and loose. Selka's Second arrow hits Hollowbound shambler for 6.
+  day 30 | The forge took 3 damage in the siege.
+  day 30 | Emberfall held against The Hollow King and the Hollowbound procession, at a cost: the forge was hit and 1 of the defenders went down. On the wall: Jovan Orchard, Brokk Jarvis, Evander Devlin. Round 1: Jovan: Mend. Overflow Basin g
+  day 30 | Frostbound Obsidian Axe is a legend now. Brokk Jarvis felled The Hollow King with it on the wall of Emberfall.
+  day 30 | The Hollow King broke on the wall and left Heartfire behind. The forge now holds 1 Heartfire.
+  day 30 | Charter secured. The Hollow King broke on the walls of Emberfall on day 30, and the council paid 150 gold. The smith may close this chapter with honour, or go on.
+  day 31 | The smith closed the guild's chapter with its charter secured. The forge stands.
+

@@ -1,0 +1,5 @@
+Classic runs (no charter): 300 seeds from 200001 to day 40, new account, balance 13. Smiths spend Heartfire never.
+classic BALANCED_ACTIVE  days mean 33.7 | Legendary forged from quality 0 | Heartfire a run: earned 0.70, forgings 0.00, broke through 0.00, left at the end 0.70 | Legendary a run: mean 0.12 median 0 p90 1, runs with one 12% (by deeds 0.12, by Heartfire 0.00), first on day 21.6
+                         Epic: forged by day 5 in 21% of runs, by day 10 in 60%, by day 20 in 96%, median first day 9 | weapons with renown a run 6.6 | of what was forged: C=3% U=30% R=63% E=4% L=0%
+classic EXPERT           days mean 40.7 | Legendary forged from quality 0 | Heartfire a run: earned 2.48, forgings 0.00, broke through 0.00, left at the end 2.48 | Legendary a run: mean 0.21 median 0 p90 1, runs with one 18% (by deeds 0.21, by Heartfire 0.00), first on day 29.3
+                         Epic: forged by day 5 in 16% of runs, by day 10 in 99%, by day 20 in 100%, median first day 6 | weapons with renown a run 11.1 | of what was forged: C=1% U=19% R=54% E=26% L=0%
