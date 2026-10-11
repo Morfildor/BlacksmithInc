@@ -19,6 +19,8 @@ dump() {
 }
 has() { dump | grep -q "text=\"$1" ; }
 has_id() { dump | grep -q "resource-id=\"$1\""; }
+# a node whose resource-id starts with $1
+has_pre() { dump | grep -q "resource-id=\"$1"; }
 tap_id() {
   local x=$(dump | python -c "
 import sys,re
@@ -35,8 +37,9 @@ shot() { $ADB exec-out screencap -p > "$OUT/$1.png"; echo "screenshot $1"; }
 wait_text() { for i in $(seq 1 25); do if has "$1"; then return 0; fi; $ADB shell sleep 1; done; echo "TIMEOUT waiting for '$1'"; return 1; }
 wait_id() { for i in $(seq 1 25); do if has_id "$1"; then return 0; fi; $ADB shell sleep 1; done; echo "TIMEOUT waiting for id '$1'"; return 1; }
 check() { if "$@" >/dev/null 2>&1; then echo "CHECK $*: ok"; else echo "CHECK $*: FAIL"; fi; }
-swipe_up() { $ADB shell input swipe 540 1500 540 700 500; $ADB shell sleep 1; }
-scroll_to_id() { for i in 1 2 3 4 5 6 7 8 9 10; do if has_id "$1"; then return 0; fi; swipe_up; done; echo "SCROLL MISSING id: $1"; return 1; }
+# starts above the pinned Forge button, which does not scroll
+swipe_up() { $ADB shell input swipe 540 1300 540 600 500; $ADB shell sleep 1; }
+scroll_to_id() { for i in 1 2 3 4 5 6 7 8 9 10; do if has_pre "$1"; then return 0; fi; swipe_up; done; echo "SCROLL MISSING id: $1"; return 1; }
 texts() { dump | grep -o 'text="[^"]\+"' | head -n "${1:-60}"; }
 # Whatever the morning puts in front of the workshop (relic, blessing, an opening package) is put off or taken first.
 past_offers() {
@@ -76,11 +79,11 @@ swipe_up; shot 06_outlook_details_lower
 # 3. The bench for the recipe.
 scroll_to_id forge_bench_open && tap_id forge_bench_open
 wait_id bench_sheet; shot 07_bench_recipe
-check has_id bench_synthetic
+check has "The bench"
 tap_id bench_company_frost; shot 08_bench_recipe_frost
-tap_id bench_target_attrition; shot 09_bench_recipe_attrition
+scroll_to_id bench_target_attrition && tap_id bench_target_attrition; shot 09_bench_recipe_attrition
 swipe_up; shot 10_bench_recipe_what_happened
-check has_id bench_fired
+check has "What happened"
 swipe_up; shot 11_bench_recipe_silent
 echo "--- bench (recipe)"; texts 80
 # Process death with the bench open: the choices and the sheet should come back.
@@ -88,21 +91,32 @@ $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/n
 wait_text "Continue run" && tap_id menu_continue
 past_offers
 tap_id nav_forge; $ADB shell sleep 2; shot 12_after_kill_forge
-check has_id forge_outlook
+# The draft on the anvil is not part of the save: if it is gone, the recipe is chosen again.
+if has_id forge_option_sword; then echo "NOTE the draft did not survive the kill"; tap_id forge_option_sword; tap_id forge_option_iron; tap_id forge_option_frost_bloom; fi
 has_id bench_sheet && echo "NOTE bench came back open after the kill" || echo "NOTE bench was closed after the kill"
 has_id bench_close && { scroll_to_id bench_close; tap_id bench_close; }
 # 4. Forge it and open the weapon.
 tap_id forge_weapon || { scroll_to_id forge_weapon && tap_id forge_weapon; } || exit 1
 $ADB shell sleep 2; shot 13_forge_result
 echo "--- result"; texts 60
-swipe_up; shot 14_forge_result_lower
-scroll_to_id card_bench_open; shot 15_weapon_card
+tap_id reveal_list || exit 1
+# A second forge with bronze, whose rule opens a suggested interaction in the notebook.
+for i in 1 2 3; do $ADB shell input swipe 540 700 540 1300 300; done; $ADB shell sleep 1
+tap_id forge_slot_metal; tap_id forge_option_bronze; tap_id forge_slot_augment; tap_id forge_option_ember_resin
+scroll_to_id forge_outlook; shot 14_outlook_bronze
+tap_id forge_weapon && { $ADB shell sleep 2; tap_id reveal_store; }
+# The first weapon's sheet, from the shelf.
+tap_id nav_shop; $ADB shell sleep 1
+scroll_to_id stock_ && tap_id stock_
+wait_id item_sheet; shot 15_weapon_sheet
+scroll_to_id card_bench_open; shot 15b_weapon_card
 check has_id card_bench_open
 # 5. The bench for the owned weapon.
 tap_id card_bench_open
 wait_id bench_sheet; shot 16_bench_owned
-check has_id bench_synthetic
+check has "The bench"
 tap_id bench_company_fire; swipe_up; shot 17_bench_owned_fire
+swipe_up; shot 17b_bench_owned_lower
 echo "--- bench (owned)"; texts 80
 scroll_to_id bench_close && tap_id bench_close
 $ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 1

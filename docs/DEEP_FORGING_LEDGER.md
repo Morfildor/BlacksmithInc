@@ -64,9 +64,9 @@ Status words: done (tested), partial (what is missing is named), not done.
 | D3 | Capabilities and evaluator, checked against the fight | done |
 | D4 | Forge outlook, bench | done |
 | D5 | Journal evidence, interaction paths, fight hooks | done |
-| D6 | App: forge card, weapon sheet, bench sheet, notebook tab | see PROGRESS |
+| D6 | App: forge card, weapon sheet, bench sheet, notebook tab | done (12 screen model tests. The shop-day sheet has no bench button) |
 | D7 | Sweep, seven demonstrations, tests, guild simulator before and after | done |
-| D8 | Emulator: select, explain, forge, sheet, bench, journal, font scale, process death | see PROGRESS |
+| D8 | Emulator: select, explain, forge, sheet, bench, journal, font scale, process death | partial: all reached at 1.0 and 1.3. The anvil draft and an open bench do not survive a process kill. "Seen in a real fight" not shown on a device |
 
 ## Capability interface for future commissions
 `Capabilities.evaluate(query, subject, company)` in `crafting/Capabilities.kt`. `subject` is

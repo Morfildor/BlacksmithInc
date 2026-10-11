@@ -4263,3 +4263,52 @@ counts as a completed success.
 
 **Version fingerprints.** Content 5 and balance 11 are pinned in `VersionFingerprintTest`; they were re-pinned while
 the update was unreleased and are final when the version ships.
+
+## Deep forging foundation (2026-10-11; branch `deep-forging` on `run-variety` `99d3949`, not merged)
+Ledger with the decisions F1 to F8, the ingredient role table and the interfaces: `docs/DEEP_FORGING_LEDGER.md`.
+Evidence: `docs/deep_forging_evidence/`. No rules, schema, content or balance version number moved. The content
+fingerprint does change (metal rules, ingredient notes, interaction paths, one rewritten rule), and content 6 has no pin
+yet, so the pin is to be taken after this branch is merged.
+
+**Locked by this work (as far as a branch can lock).** A weapon's fight rules come from one resolver. A stored weapon
+keeps the composition it was forged under (`Weapon.craft`). A preview never counts as evidence: only a real contract
+or siege marks an interaction as seen.
+
+**Proposed, tunable.** Every number of the six metal rules (Iron 3 Guard, Bronze 5, Silver 2 Charge, Obsidian 110% and
+Fracture, Starsteel 3, Moonsteel 3) and the rewritten Void Ink rule (up to 3 Burn after the wielder acts).
+
+**Changed during the work because the sweep said so.** Starsteel first counted any ally's hit on a Mark: a Starsteel
+Sun Ash dagger was in the top tenth of 83% of scenarios, so it now counts only the wielder's own action. Bronze 3 to 5
+and Silver 1 to 2 Charge, because at the first values neither changed an outcome. Void Ink's old rule almost never fired
+in fights that carried it (Burn ticks before round end and the priority enemy is seldom the one burning), so new
+weapons get the rewritten rule and old ones keep theirs.
+
+**Sweep** (`./gradlew :core:combat --args="sweep"`, `sweep.txt`): 38,880 recipe fights (6 families, 6 metals, 6
+augments, none or one of 4 catalysts, by wielder, company and enemy line) and 17,100 fights for rolled properties.
+No fight threw. Most events in one round: 45 of a budget of 400.
+- No recipe is in the top tenth of every scenario it fought (0 of 1,080). The widest are Frost Bloom with Dragon Oil
+  on a staff or bow, 72%.
+- Metals, same everything else: mean enemy health removed 143 (Iron) to 159 (Moonsteel). The ladder is still there,
+  because quality centres rise with the metal and that belongs to the other agent. Alone the best choice: Iron 7%,
+  Bronze 1%, Silver 2%, Obsidian 1%, Starsteel 6%, Moonsteel 9%. Iron is best in long fights (13%) and beside a frost
+  mage (16%), Starsteel beside a spotter (22%), Moonsteel beside a frost mage (21%). Bronze, Silver and Obsidian have
+  a demonstrated use and are almost never the best pick. That is a weakness, stated and not tuned away.
+- Catalysts: none 150, Binding Salt 155, Runestone 151, Dragon Oil 157, Void Ink 152. Runestone equals no catalyst
+  unless a weapon in the party cracks.
+- Augments: Frost Bloom 160 and Sun Ash 162, Ember Resin 145 and Grave Dust 144. Older than this work. For the owner.
+- Dead or near-dead: Wet has no source in launch content. `affix_sentient_home` cannot be tested on the bench, which
+  stands on the road.
+- Evaluator against the fight: a rule the evaluator called missing fired 719 times
+  (mostly Runestone answering an ally's broken Guard, and a spotter's own frost). A rule called ready stayed silent
+  often (Bronze 2,019 of 7,866 ready). "Ready" means the pieces are present, not that the moment comes.
+
+**Guild simulator, 200 seeds, Town's Last Hope, before and after** (`guildsim_before_200.txt`, `guildsim_after_200.txt`).
+Charter won: Passive 0 to 0, Novice 13 to 13, Shop-focused 6 to 9, Highest-stat 8 to 13, Synergy 58 to 68,
+Defence-first 26 to 37, Greedy diver 11 to 14, Recovery-aware 16 to 27, Adaptive 35 to 48. Sieges held: Synergy 50 to
+57, Adaptive 49 to 56. Deaths per run fall a little everywhere. So the metal rules make a guild run easier by roughly
+ten points of charter success for the bots that field parties. Nothing was tuned back: difficulty is the other
+agent's, and the owner's rule is no automatic nerf. The base commit's own difficulty has since moved on `run-variety`
+(`068a39e`), so these numbers need a rerun after the merge.
+
+**Not built, on purpose.** Commissions do not ask for capabilities. Classic runs get nothing: their resolver never
+runs these rules, and no screen says otherwise. No new material, relic, enemy or currency.

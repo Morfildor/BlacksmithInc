@@ -215,3 +215,17 @@ Per-task status and evidence: `docs/GUILD_EVOLUTION_PLAN.md`. Ticked = built and
 - [ ] Secondary imprint, mastery stamp, risk that changes the quirk, tag-aware relic drafts, workshop specialisation
 - [ ] Event cadence scheduler; the other eight named choice scenes
 - [ ] Human playtest of the two gates; phone, large font and TalkBack pass of the new screens
+
+## Deep forging foundation (owner's prompt of 2026-10-11; `docs/DEEP_FORGING_LEDGER.md`, branch `deep-forging`, not merged)
+Ticked = built and JVM-tested. What was seen on a device is in PROGRESS.
+- [x] One resolver composes a weapon's fight rules; fight, weapon card, forge outlook, bench and capabilities read it
+- [x] A fight rule for each of the six metals, on weapons forged from now on (`Weapon.craft`); older weapons unchanged
+- [x] A stated role and limit for each of the 16 ingredients, in content
+- [x] Typed capabilities with a pure evaluator (satisfied, conditional with what is missing, unsatisfied with a reason)
+- [x] Seven interaction paths, each with two recipes, a limit, and a fight where it fires and one where it does not
+- [x] Forge outlook card: certain, needs, trade-off, not certain; details on request
+- [x] The bench: a rehearsal on the real fight engine, no save touched, made-up conditions named
+- [x] Notebook "Fight notes": learned rule, suggested interaction, interaction seen in a real fight
+- [ ] Commissions that ask for a capability (the evaluator is ready, nothing calls it)
+- [ ] Any of this in a classic run (its resolver does not run fight rules)
+- [ ] Human playtest: does forming a hypothesis and testing it feel good

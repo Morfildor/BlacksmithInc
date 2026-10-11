@@ -14,6 +14,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Guild runs: the notebook has a "Fight notes" tab. It lists the rules you have forged, the combinations those rules suggest, and the ones a real fight has shown, each marked apart.
 - A weapon's card lists a rule that two of its parts share once, names both parts, and notes where its rules feed or get in the way of each other.
 
+### Changed
+- Guild runs: Void Ink on a newly forged weapon takes Burn off the enemy its wielder faces straight after the wielder acts, up to 3 a round, and gives it to the weakest ally as Guard. Before, it waited for the end of the round and looked only at the enemy that matters most, and seldom found any. Weapons forged before this keep the old rule.
+
 ## [0.8.0] - 2026-10-11
 
 ### Added
