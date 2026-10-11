@@ -140,15 +140,18 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
             Column {
                 // End Day is the Shop's way forward. The Forge keeps it under "More", and beside its action when no forge is left today.
                 if (s.dest == Dest.SHOP) EndDayButton(s, vm, primary = true)
-                DestinationBar(s.dest, vm::selectDest, guild = s.guild != null)
+                DestinationBar(s.dest, vm::selectDest, guild = s.guild != null, marked = when (s.intro?.mark) { IntroMark.NAV_FORGE -> Dest.FORGE; IntroMark.NAV_SHOP -> Dest.SHOP; else -> null })
             }
         },
     ) { padding -> positions.SaveableStateProvider(s.dest) {
         Column(Modifier.padding(padding).fillMaxSize()) {
             TopBar(s, onSettings = { settingsOpen = true })
             HorizontalDivider(color = Bronze)
-            // Each tip belongs to one destination and shows one at a time; dismissal lives in settings.
-            val tip = Tips.forDest(s.dest).firstOrNull { it.id !in seenTips }
+            // The guided first day's one step, in the layout and never over it: nothing under it is covered or blocked.
+            s.intro?.let { IntroStrip(it, onSkip = { vm.skipIntro() }, onDone = { vm.finishIntro() }) }
+            // Each tip belongs to one destination and shows one at a time; dismissal lives in settings. The guided day says
+            // what the tips say, so they wait while it runs and count as seen when it ends.
+            val tip = Tips.forDest(s.dest).firstOrNull { it.id !in seenTips }.takeIf { s.intro == null }
             // The notice drops in over the head of the destination: the actions at its foot (Forge, End Day) stay free.
             Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
             when (s.dest) {
@@ -193,7 +196,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
         }
     } }
     val haptics by vm.settings.haptics.collectAsStateWithLifecycle(initialValue = false)
-    if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, haptics, vm::setHaptics, onDismiss = { settingsOpen = false }, onMainMenu = { settingsOpen = false; onMainMenu() })
+    val introRow by vm.introRow.collectAsStateWithLifecycle()
+    if (settingsOpen) SettingsSheet(reducedMotion, vm::setReducedMotion, haptics, vm::setHaptics, onDismiss = { settingsOpen = false }, onMainMenu = { settingsOpen = false; onMainMenu() }, intro = introRow, onIntro = { vm.introAction() })
     if (storageOpen) {
         StorageSheet(
             s.shop.storage, shelfFree = s.shop.slots - s.shop.shelf.size, busy = s.busy,
@@ -277,10 +281,10 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inS
 /**
  * The four destinations. Every label has the same fixed style and never shrinks to fit: a larger font scale makes the
  * label taller, not smaller, and the four names are short enough to stay on one line. [guild]: a guild run, where the
- * third destination is called Guild.
+ * third destination is called Guild. [marked]: the destination the guided first day points at.
  */
 @Composable
-fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier = Modifier, guild: Boolean = false) {
+fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier = Modifier, guild: Boolean = false, marked: Dest? = null) {
     // 72dp instead of the 80dp default: the workshop needs the vertical space more than the bar does.
     // A panel under a bronze rule; the chosen destination is a lit plate with a gold edge, not Material's pill.
     NavigationBar(
@@ -292,7 +296,7 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
                 selected = selected == d,
                 onClick = { onSelect(d) },
                 colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent, selectedTextColor = Gold, unselectedTextColor = CreamMuted),
-                modifier = Modifier.testTag("nav_${d.name.lowercase()}").drawBehind {
+                modifier = Modifier.testTag("nav_${d.name.lowercase()}").introMark(marked == d).drawBehind {
                     if (selected == d) {
                         drawRect(BronzeContainer)
                         drawRect(Gold, size = Size(size.width, 2.dp.toPx()))
@@ -372,7 +376,7 @@ private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean
     val haptics = LocalHaptics.current
     val note = endDayNote(s)
     // Clear of the destination bar under it: this is the one tap of the day that cannot be taken back.
-    val place = Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.xs, bottom = Space.md).testTag("end_day")
+    val place = Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.xs, bottom = Space.md).testTag("end_day").introMark(s.intro?.mark == IntroMark.END_DAY)
     val end = { haptics.play(Moment.END_DAY); vm.endDay() }
     if (primary) PrimaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)
     else SecondaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)

@@ -109,6 +109,8 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
             reveal = !reducedMotion,
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
             learning = s.learning,
+            // The guided first day: its step is said on the card, which covers the strip, and can be skipped from here too.
+            guide = s.intro?.result?.let { line -> { IntroCardLine(line, onSkip = { vm.skipIntro() }) } },
         )
     }
 }
@@ -132,6 +134,8 @@ private const val REVEAL_FADE_MS = 250
  * and live from the first frame, so the reveal never costs a tap or a wait. Without it (reduced motion) the card is
  * whole at once. A brand-new blade has no renown to show, so the zero is left out here; the blade's sheet keeps it.
  *
+ * [guide] is the guided first day's line, over the price.
+ *
  * With [onLoan] (a guild run) a third way on, "Loan", opens the members the blade could go to; nothing is lent until
  * one is chosen.
  */
@@ -148,6 +152,7 @@ fun ForgeResultCard(
     reveal: Boolean = false,
     overSprite: @Composable BoxScope.() -> Unit = {},
     learning: ForgeLearningUi? = null,
+    guide: (@Composable () -> Unit)? = null,
 ) {
     var revealed by rememberSaveable(detail.weaponId.value) { mutableStateOf(!reveal) }
     LaunchedEffect(detail.weaponId) { if (!revealed) { delay(REVEAL_HOLD_MS); revealed = true } }
@@ -177,6 +182,7 @@ fun ForgeResultCard(
             SecondaryActionButton("Close", onStore, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("reveal_store"))
             return@price
         }
+        guide?.invoke()
         var priceText by rememberSaveable(detail.weaponId.value) { mutableStateOf(stock.suggestedPrice.toString()) }
         PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "reveal") { chosen ->
             // The engine refuses a listing on a full shelf; say so here and leave Store as the way on.
