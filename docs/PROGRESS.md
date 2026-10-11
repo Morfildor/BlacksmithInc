@@ -1,5 +1,36 @@
 # Progress — 2026-10-11 (run variety and consequences, unreleased; before it: guild evolution, 0.8.0)
 
+## Guided first day (2026-10-11): built on branch `first-day-guidance`, not pushed
+Branched off `run-variety` at 719b685 (three local commits). `run-variety` has moved since (ff656ef, written by
+another session): rebase before merging. Design and rulings: `docs/DECISIONS.md`, last section.
+
+**What it is.** A new installation's first game is led through one real day: recipe, forge, list, a second forge
+without help, End Day, the day's outcome. One strip under the top bar (`ui/IntroStrip.kt`), the words and the step
+logic in `ui/Intro.kt`, the record in settings (`data/SettingsStore.kt`). Settings has a "Guided first day" row with
+Replay. A new account's picker starts on "No charter"; the charter picked is remembered.
+
+**Checks run on the final tree.** `:core:test` 581 tests, 0 failures (core untouched). `:app:testDebugUnitTest` 233
+tests, 0 failures (16 new in `IntroTest`). `:app:assembleDebug` built. Emulator, own instance on port 5556 (AVD
+carbscan, API 36, 1080x1920): `IntroStripTest` (3), `LayoutMatrixTest`, `SettingsSheetTest` pass.
+`tools/emulator/intro.sh`: every check ok (first game to "Done", killed midway, next game without it, Settings replay
+queued and cancelled, a second cleared install skipped at once and still off after a restart). `smoke.sh` passes on a
+cleared install again (it starts a classic run now). By hand through adb: an abandoned run leaves the invitation on
+the title and the next game is not guided; "Replay now" in a first morning; Tab reaches "Why?", "Skip guidance" and
+then the Shop's controls; the strip at font scale 1.3 and 2.0.
+
+**Failing on the device and not from this work** (each fails the same way on 719b685): `ShopPanelTest`
+`theLeadIsTheSameAsTheTomorrowCard` and `demandBlockCountsUnarmedWornAndPurseBands`, `NavigationFlowTest`
+`theShopKeepsItsPlaceAcrossTheForgeAndTheMenu`, `ShopDayScreenTest` `fightsWithNoCardAreSummedUpBeyondTheDoor`.
+
+**Not verified.** Nobody has played it: that the steps are understood is unknown (T7.2). No physical phone, no
+TalkBack pass, no hardware keyboard (Tab was sent through adb). The whole instrumented suite, `runend.sh`,
+`guild.sh` and `scenarios.sh` were not run. A guild first game was tested in the JVM only. At font scale 2.0 on a
+640 dp screen the strip takes about a third of the height.
+
+**Next actions.** 1. Play a cleared install once and read the six lines of copy. 2. Rebase onto `run-variety` and
+decide where it merges. 3. T7.2 with first-time players.
+
+
 ## Run variety and consequences (2026-10-11): built on branch `run-variety`, not pushed
 Ledger with rulings, slice status, gates and open questions: `docs/RUN_VARIETY_LEDGER.md`. Evidence:
 `docs/run_variety_evidence/REPORT.md`. Versions: rules 6, save schema 7, content 6, balance 12. App version name
