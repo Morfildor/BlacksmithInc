@@ -7,6 +7,13 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- Guild runs: the Forge shows a card for the recipe on the anvil. It says what the weapon will do in a fight, who it suits, what each ingredient adds, what its rules still need from a party, and what only the forge's luck decides. "Details" lists every rule the recipe is sure to carry.
+- Guild runs: every metal now gives a newly forged weapon a rule of its own in a fight, shown where the metal is chosen and on the weapon's card. Weapons forged before this keep the rules they had.
+- Guild runs: the bench. "Try this recipe on the bench" at the Forge and "Try it on the bench" on a weapon's sheet play a rehearsal fight with a made-up wielder, company and enemy line that you choose. It shows which rules came into play, which stayed silent and why. Nothing is paid, learned or recorded.
+- Guild runs: the notebook has a "Fight notes" tab. It lists the rules you have forged, the combinations those rules suggest, and the ones a real fight has shown, each marked apart.
+- A weapon's card lists a rule that two of its parts share once, names both parts, and notes where its rules feed or get in the way of each other.
+
 ## [0.8.0] - 2026-10-11
 
 ### Added

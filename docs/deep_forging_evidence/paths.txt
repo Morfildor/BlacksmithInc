@@ -1,0 +1,176 @@
+================================================================================================
+Healing into Charge into a burst  [charge]
+Relationship: Anything that stores Charge builds toward one burst at 3. Healing fills a salted weapon, hits fill a Stormcharged one, silver starts two ahead.
+Trade-off: The burst waits for the third Charge. A salted weapon stores nothing from healing its wielder does not need.
+Another approach: With no healer and no quench, a plain storm weapon arcs every round for less but never waits.
+
+  First recipe: Iron + Stormglass + Binding Salt sword, a Guardian, with a healer
+    Against a long fight. WON after 6 rounds, enemy health left 0/120, party health left 82/82.
+    FIRED Iron holds x1: Round 1. > Bench Guardian's Iron holds gives Bench Guardian 3 Guard.
+    FIRED Arc x7: Bench Guardian: Hold the line. > Bench Guardian hits Ashclaw brute for 12. > Bench Guardian's Arc hits Ashclaw warchief for 2.
+    FIRED Capacitor x3: Bench Warden: Mend. > Bench Warden heals Bench Guardian for 10. > Bench Guardian's Capacitor stores Charge (1).
+    FIRED Charge burst x2: Bench Warden: Mend. > Bench Warden heals Bench Guardian for 1. > Bench Guardian's Capacitor stores Charge (3). > Bench Guardian's Charge burst spends 3 Charge.
+
+  Second recipe: Silver + Stormglass sword, quenched for Stormcharged, a Duelist, alone
+    Against an armoured line. LOST after 5 rounds, enemy health left 5/94, party health left 0/34.
+    FIRED Silver holds a charge x1: Round 1. > Bench Duelist's Silver holds a charge stores Charge (2).
+    FIRED Arc x5: Bench Duelist: Double cut. > Bench Duelist hits Cinder-knight for 9. > Bench Duelist's Arc hits Bone warden for 2.
+    FIRED Stormcharged x5: Bench Duelist: Double cut. > Bench Duelist hits Cinder-knight for 9. > Bench Duelist's Stormcharged stores Charge (3).
+    FIRED Charge burst x4: Bench Duelist: Double cut. > Bench Duelist hits Cinder-knight for 9. > Bench Duelist's Stormcharged stores Charge (3). > Bench Duelist's Charge burst spends 3 Charge.
+
+  Without its enabler: The first recipe with nobody to heal
+    Against a long fight. TIMED_OUT after 8 rounds, enemy health left 10/120, party health left 16/46.
+    FIRED Iron holds x1: Round 1. > Bench Guardian's Iron holds gives Bench Guardian 3 Guard.
+    FIRED Arc x8: Bench Guardian: Hold the line. > Bench Guardian hits Ashclaw brute for 12. > Bench Guardian's Arc hits Ashclaw warchief for 2.
+    SILENT Capacitor: Nobody healed Bench Guardian.
+    SILENT Charge burst: Bench Guardian never got Charge.
+
+================================================================================================
+Heat on cold into Steam  [steam]
+Relationship: Burn on a chilled enemy, or Chill on a burning one, cancels both and gives Steam to whoever did it. Dragon Oil spends Steam as a lance through Guard. Void Ink spends it as Guard for all.
+Trade-off: The Burn and the Chill are both gone. Nothing burns and the enemy is not slowed.
+Another approach: Against a line with no Guard to pierce, leaving the Chill on to weaken their strikes can be worth more than the lance.
+
+  First recipe: Bronze + Frost Bloom + Dragon Oil sword, a Guardian, alone
+    Against an armoured line. WON after 4 rounds, enemy health left 0/94, party health left 41/46.
+    FIRED Bronze rings back x1: Cinder-knight: Ember guard. > Bench Guardian's Guard breaks. > Bench Guardian's Bronze rings back hits Cinder-knight for 5.
+    FIRED Rime x4: Bench Guardian: Hold the line. > Bench Guardian hits Cinder-knight for 16. > Bench Guardian's Rime puts Chill on Cinder-knight.
+    FIRED Dragon oil x8: Bench Guardian: Hold the line. > Bench Guardian hits Cinder-knight for 16. > Bench Guardian's Rime puts Chill on Cinder-knight. > Bench Guardian's Dragon oil boils off Chill on Cinder-knight.
+    FIRED Steam lance x10: Bench Guardian's Rime puts Chill on Cinder-knight. > Bench Guardian's Dragon oil boils off Chill on Cinder-knight. > Bench Guardian's Dragon oil stores Steam (1). > Bench Guardian's Steam lance spends 1 Steam.
+
+  Second recipe: Iron + Ember Resin + Void Ink sword, a Duelist, behind a frost mage
+    Against a long fight. WON after 6 rounds, enemy health left 0/120, party health left 34/64.
+    FIRED Iron holds x1: Round 1. > Bench Duelist's Iron holds gives Bench Duelist 3 Guard.
+    FIRED Ember x6: Bench Duelist: Double cut. > Bench Duelist hits Ashclaw brute for 6. > Bench Duelist's Ember puts Burn on Ashclaw brute.
+    FIRED Void ink x2: Bench Duelist: Double cut. > Bench Duelist's Void ink takes 1 Burn from Ashclaw brute.
+    FIRED Void ink (Guard) x2: Bench Duelist: Double cut. > Bench Duelist's Void ink takes 1 Burn from Ashclaw brute. > Bench Duelist's Void ink (Guard) gives Bench Battlemage 1 Guard.
+    FIRED Steam veil x4: Bench Duelist hits Ashclaw brute for 6. > Bench Duelist's Ember boils off Chill on Ashclaw brute. > Bench Duelist's Ember stores Steam (1). > Bench Duelist's Steam veil spends 1 Steam.
+
+  Without its enabler: Iron + Ember Resin + Dragon Oil sword, alone: fire with no cold to meet
+    Against an armoured line. TIMED_OUT after 8 rounds, enemy health left 15/94, party health left 24/46.
+    FIRED Iron holds x1: Round 1. > Bench Guardian's Iron holds gives Bench Guardian 3 Guard.
+    FIRED Ember x8: Bench Guardian: Hold the line. > Bench Guardian hits Cinder-knight for 8. > Bench Guardian's Ember puts Burn on Cinder-knight.
+    FIRED Dragon oil x8: Bench Guardian: Hold the line. > Bench Guardian hits Cinder-knight for 8. > Bench Guardian's Ember puts Burn on Cinder-knight. > Bench Guardian's Dragon oil puts Burn on Cinder-knight (2).
+    SILENT Steam lance: Bench Guardian never got Steam.
+
+================================================================================================
+Burn into Guard  [burn_guard]
+Relationship: After its wielder acts, Void Ink takes Burn off the enemy the wielder faces and gives it to your weakest ally as Guard.
+Trade-off: That Burn no longer deals damage. One Burn is one Guard, so it wants more fire than a single ember.
+Another approach: Against a line that does not hit hard, the same fire with Dragon Oil burns every enemy and ends the fight sooner.
+
+  First recipe: Iron + Ember Resin + Void Ink sword, a Guardian, alone: its own ember becomes its Guard
+    Against a long fight. LOST after 7 rounds, enemy health left 59/120, party health left 0/46.
+    FIRED Iron holds x1: Round 1. > Bench Guardian's Iron holds gives Bench Guardian 3 Guard.
+    FIRED Ember x6: Bench Guardian: Hold the line. > Bench Guardian hits Ashclaw brute for 8. > Bench Guardian's Ember puts Burn on Ashclaw brute.
+    FIRED Void ink x6: Bench Guardian: Hold the line. > Bench Guardian's Void ink takes 1 Burn from Ashclaw brute.
+    FIRED Void ink (Guard) x6: Bench Guardian: Hold the line. > Bench Guardian's Void ink takes 1 Burn from Ashclaw brute. > Bench Guardian's Void ink (Guard) gives Bench Guardian 1 Guard.
+    SILENT Steam veil: Bench Guardian never got Steam.
+
+  Second recipe: Bronze + Verdant Sap + Void Ink staff, a Warden, behind a fire mage whose Burn it takes
+    Against a long fight. TIMED_OUT after 8 rounds, enemy health left 38/120, party health left 58/66.
+    FIRED Sap x8: Bench Warden: Mend. > Bench Warden hits Ashclaw brute for 6. > Bench Warden's Sap stores Regeneration (1).
+    FIRED Void ink x4: Bench Warden: Mend. > Bench Warden's Void ink takes 2 Burn from Ashclaw brute.
+    FIRED Void ink (Guard) x4: Bench Warden: Mend. > Bench Warden's Void ink takes 2 Burn from Ashclaw brute. > Bench Warden's Void ink (Guard) gives Bench Battlemage 2 Guard.
+    SILENT Bronze rings back: Bench Warden never had Guard for an enemy to break.
+    SILENT Steam veil: Bench Warden never got Steam.
+
+  Without its enabler: The same staff alone: nobody Burns anything
+    Against a long fight. TIMED_OUT after 8 rounds, enemy health left 87/120, party health left 8/36.
+    FIRED Sap x7: Bench Warden: Mend. > Bench Warden hits Ashclaw brute for 6. > Bench Warden's Sap stores Regeneration (1).
+    SILENT Bronze rings back: Bench Warden never had Guard for an enemy to break.
+    SILENT Void ink: No enemy ever had Burn.
+    SILENT Void ink (Guard): Nobody spent Burn.
+    SILENT Steam veil: Bench Warden never got Steam.
+
+================================================================================================
+A broken Guard answers  [guard_answer]
+Relationship: Guard that an enemy breaks can be the start of something. Bronze strikes the breaker for 5.
+Trade-off: It needs Guard on the wielder and an enemy strong enough to break it. Bronze is a weak metal otherwise.
+Another approach: For a wielder who never has Guard, any other metal does more.
+
+  First recipe: Bronze + Ember Resin sword, a Guardian, alone
+    Against a long fight. TIMED_OUT after 8 rounds, enemy health left 37/120, party health left 13/46.
+    FIRED Bronze rings back x5: Ashclaw brute: Club. > Bench Guardian's Guard breaks. > Bench Guardian's Bronze rings back hits Ashclaw brute for 5.
+    FIRED Ember x6: Bench Guardian: Hold the line. > Bench Guardian hits Ashclaw brute for 8. > Bench Guardian's Ember puts Burn on Ashclaw brute.
+
+  Second recipe: Bronze + Frost Bloom dagger that came out Reinforced, a Duelist, alone
+    Against a long fight. WON after 6 rounds, enemy health left 0/120, party health left 3/34.
+    FIRED Off-hand cut x6: Bench Duelist: Double cut. > Bench Duelist's Off-hand cut hits Ashclaw brute for 7.
+    FIRED Bronze rings back x1: Ashclaw brute: Club. > Bench Duelist's Guard breaks. > Bench Duelist's Bronze rings back hits Ashclaw brute for 5.
+    FIRED Rime x4: Bench Duelist: Double cut. > Bench Duelist hits Ashclaw brute for 8. > Bench Duelist's Rime puts Chill on Ashclaw brute.
+    FIRED Reinforced x1: Round 1. > Bench Duelist's Reinforced gives Bench Duelist 4 Guard.
+
+  Without its enabler: Bronze + Ember Resin sword, a Duelist, alone: no Guard to break
+    Against a long fight. LOST after 3 rounds, enemy health left 87/120, party health left 0/34.
+    FIRED Ember x2: Bench Duelist: Double cut. > Bench Duelist hits Ashclaw brute for 6. > Bench Duelist's Ember puts Burn on Ashclaw brute.
+    SILENT Bronze rings back: Bench Duelist never had Guard for an enemy to break.
+
+================================================================================================
+A cracked weapon pays  [salvage]
+Relationship: A weapon that cracks leaves Scrap and wakes the rules that wait for a crack. Obsidian cracks by its nature, so the crack is a recipe and not luck.
+Trade-off: A cracked weapon needs a repair after the fight, and the crack itself does nothing unless something answers it.
+Another approach: With no Salvage Bell and no Runestone in the party, obsidian's crack is only a repair bill.
+
+  First recipe: Obsidian + Ember Resin sword, a Guardian, alone, the Salvage Bell with the party
+    Against a long fight. TIMED_OUT after 8 rounds, enemy health left 27/120, party health left 16/46.
+    FIRED Obsidian cracks x2: Ashclaw brute: Club. > Bench Guardian's Guard breaks. > Bench Guardian's Obsidian sword cracks.
+    FIRED Ember x7: Bench Guardian: Hold the line. > Bench Guardian hits Ashclaw brute for 11. > Bench Guardian's Ember puts Burn on Ashclaw brute.
+    FIRED (relic) relic_salvage_bell
+
+  Second recipe: Iron + Ember Resin + Runestone Shard staff, a Battlemage, behind a Guardian whose obsidian sword cracks
+    Against a long fight. WON after 6 rounds, enemy health left 0/120, party health left 55/76.
+    FIRED Iron holds x1: Round 1. > Bench Battlemage's Iron holds gives Bench Battlemage 3 Guard.
+    FIRED Ember x4: Bench Battlemage: Opening sigil. > Bench Battlemage hits Ashclaw warchief for 8. > Bench Battlemage's Ember puts Burn on Ashclaw warchief.
+    FIRED Rune of answer x3: Ashclaw brute: Club. > Bench Guardian's Guard breaks. > Bench Battlemage's Rune of answer hits Ashclaw brute for 5.
+
+  Without its enabler: The Runestone staff alone: no weapon cracks
+    Against a long fight. LOST after 3 rounds, enemy health left 98/120, party health left 0/30.
+    FIRED Iron holds x1: Round 1. > Bench Battlemage's Iron holds gives Bench Battlemage 3 Guard.
+    FIRED Ember x3: Bench Battlemage: Opening sigil. > Bench Battlemage hits Ashclaw warchief for 8. > Bench Battlemage's Ember puts Burn on Ashclaw warchief.
+    SILENT Rune of answer: No weapon in the party cracked.
+
+================================================================================================
+Marked for the kill  [marks]
+Relationship: The party aims at a marked enemy and the hit that spends the Mark lands 3 harder. Starsteel adds 3 more when the wielder's own action spends it.
+Trade-off: One Mark at a time, and whoever strikes next spends it. An ally, a riposte or a second arrow can take it first.
+Another approach: With no Mark in the party, starsteel is only a costly metal. Moonsteel or obsidian does more for the gold.
+
+  First recipe: Starsteel + Sun Ash sword, a Battlemage, alone: the opening sigil Marks, the bolt spends it, and noon light Marks again
+    Against an armoured line. LOST after 4 rounds, enemy health left 35/94, party health left 0/30.
+    FIRED Starsteel finds the Mark x2: Bench Battlemage: Opening sigil. > Bench Battlemage strikes the Mark on Cinder-knight. > Bench Battlemage's Starsteel finds the Mark hits Cinder-knight for 3.
+    FIRED Noon light x3: Bench Battlemage: Opening sigil. > Bench Battlemage hits Cinder-knight for 14. > Bench Battlemage's Noon light puts Mark on Cinder-knight.
+
+  Second recipe: Starsteel + Frost Bloom sword, a Duelist, with a spotter who Marks for it
+    Against an armoured line. WON after 3 rounds, enemy health left 0/94, party health left 54/66.
+    FIRED Starsteel finds the Mark x4: Bench Duelist: Double cut. > Bench Duelist strikes the Mark on Bone warden. > Bench Duelist's Starsteel finds the Mark hits Bone warden for 3.
+    FIRED Rime x2: Bench Duelist: Double cut. > Bench Duelist hits Bone warden for 12. > Bench Duelist's Rime puts Chill on Bone warden.
+
+  Without its enabler: Starsteel + Frost Bloom sword, a Duelist, alone: nobody Marks anything
+    Against an armoured line. WON after 6 rounds, enemy health left 0/94, party health left 5/34.
+    FIRED Rime x4: Bench Duelist: Double cut. > Bench Duelist hits Cinder-knight for 12. > Bench Duelist's Rime puts Chill on Cinder-knight.
+    SILENT Starsteel finds the Mark: No Mark was there for Bench Duelist's hit to spend.
+
+================================================================================================
+Cold to break  [shatter]
+Relationship: Chill on an enemy is something to use. Moonsteel hits a chilled enemy for 3 more. A heavy frost weapon shatters the Chill it has just laid for 6.
+Trade-off: The enemy's own strike spends Chill. Moonsteel needs it there before the hit, which takes a second cut or a second source.
+Another approach: Shattering removes the Chill, so the enemy strikes at full strength. Against one hard hitter, leaving it on can be better.
+
+  First recipe: Moonsteel + Frost Bloom sword, a Duelist, alone: the second cut finds the first cut's Chill
+    Against a long fight. LOST after 4 rounds, enemy health left 29/120, party health left 0/34.
+    FIRED Moonsteel bites the cold x2: Bench Duelist: Double cut. > Bench Duelist hits Ashclaw brute for 13. > Bench Duelist's Moonsteel bites the cold hits Ashclaw brute for 3.
+    FIRED Rime x2: Bench Duelist: Double cut. > Bench Duelist hits Ashclaw brute for 13. > Bench Duelist's Rime puts Chill on Ashclaw brute.
+
+  Second recipe: Bronze + Frost Bloom axe that came out Heavy, a Guardian, alone
+    Against a long fight. WON after 5 rounds, enemy health left 0/120, party health left 27/46.
+    FIRED Bronze rings back x4: Ashclaw brute: Club. > Bench Guardian's Guard breaks. > Bench Guardian's Bronze rings back hits Ashclaw brute for 5.
+    FIRED Rime x3: Bench Guardian: Hold the line. > Bench Guardian hits Ashclaw brute for 12. > Bench Guardian's Rime puts Chill on Ashclaw brute.
+    FIRED Heavy x1: Round 1. > Bench Guardian's Heavy stores Chill (1).
+    FIRED Shatter x4: Bench Guardian: Hold the line. > Bench Guardian hits Ashclaw brute for 12. > Bench Guardian's Shatter takes 1 Chill from Ashclaw brute.
+
+  Without its enabler: Moonsteel + Frost Bloom sword, a Guardian, alone: one hit a round, and the enemy spends the Chill
+    Against a long fight. WON after 6 rounds, enemy health left 0/120, party health left 34/46.
+    FIRED Rime x3: Bench Guardian: Hold the line. > Bench Guardian hits Ashclaw brute for 20. > Bench Guardian's Rime puts Chill on Ashclaw brute.
+    SILENT Moonsteel bites the cold: Its moment never came in this fight.
+

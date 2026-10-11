@@ -116,7 +116,13 @@ fun ForgePanel(
     val endDayNote = endDayNote(s)
     val engine = vm.engine
     val d = s.draft
-    val bench = remember(s.state, d, s.shop.requests) { engine.forgeWorkbench(s.state, d, s.shop.requests) }
+    // Asked for and still possible: a draft that has lost its bellows since forges without them, and the outlook says the same.
+    val bellows = d.bellows && bellowsBlocked(s, engine.config) == null
+    val bench = remember(s.state, d, s.shop.requests, bellows) { engine.forgeWorkbench(s.state, d, s.shop.requests, bellows) }
+    // The rehearsal of the recipe on the anvil, open over the Forge.
+    var rehearsing by rememberSaveable { mutableStateOf(false) }
+    // Restored open over a recipe that is no longer whole: closed, so it does not spring open when the recipe is completed again.
+    LaunchedEffect(bench.outlook == null) { if (bench.outlook == null) rehearsing = false }
 
     // null = the first empty place is open; NO_SLOT = no tray; otherwise the place the player opened.
     var opened by rememberSaveable { mutableStateOf<String?>(null) }
@@ -147,7 +153,7 @@ fun ForgePanel(
                 Tray(open, options, engine.content, follow, onOpenSupplies, onDone = { opened = NO_SLOT }) { option -> vm.updateDraft { engine.place(it, open, option) }; opened = null; follow = true }
             }
             if (bench.notes.isNotEmpty()) FieldNotes(bench.notes) { vm.selectRecords(RecordsPage.JOURNAL) }
-            if (bench.fight.isNotEmpty()) FightNotes(bench.fight)
+            bench.outlook?.let { ForgeOutlookCard(it) { rehearsing = true } }
             ForgingOptions(d) { change -> vm.updateDraft(change) }
             // The workshop's relics that bear on this forge: the bellows as a switch, the ledger's word on the family chosen.
             BellowsRow(s, vm)
@@ -155,9 +161,12 @@ fun ForgePanel(
             tip?.let { TipBanner(it, vm, Modifier.padding(top = Space.md)) }
         }
         ForgeAction(bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay) {
-            // Asked for and still possible: a draft that has lost its bellows since forges without them.
-            bench.command?.copy(bellows = d.bellows && bellowsBlocked(s, vm.engine.config) == null)?.let(vm::dispatch)
+            bench.command?.copy(bellows = bellows)?.let(vm::dispatch)
         }
+    }
+    if (rehearsing) bench.outlook?.let { o ->
+        val relics = remember(s.state.relics) { benchRelics(s.state, engine.content) }
+        BenchSheet(o.demonstration, demonstration = true, engine.content, engine.config, relics) { rehearsing = false }
     }
 }
 
@@ -402,19 +411,57 @@ fun FieldNotes(notes: List<NoteUi>, modifier: Modifier = Modifier, onOpenJournal
 }
 
 /**
- * What the recipe on the bench will do in a fight (guild runs): the rule of the augment's element and the rules of the
- * catalyst, each in the catalog's own words under the material that gives it. The forge still decides quality and buffs.
+ * What the recipe on the anvil will do in a fight (guild runs), as far as it can be said before the forge: its part in
+ * a party and who it suits, a line for each ingredient, what its rules still wait for, what the choice costs, and what
+ * only a roll decides. "Details" opens every rule the recipe is sure to carry and each ingredient's price. A rule is
+ * called certain only when every forge of this recipe has it. What a roll may add is listed apart, by name.
  */
 @Composable
-private fun FightNotes(rules: List<BladeRuleUi>) {
-    Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(SceneDeep).border(1.dp, BronzeDeep, Card).padding(12.dp).testTag("forge_fight_notes")) {
-        Text("In a fight", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Normal, color = CreamMuted, modifier = Modifier.semantics { heading() })
-        rules.forEach { r ->
-            Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
-                Text("${r.name} · ${r.source}", style = MaterialTheme.typography.titleSmall, color = Cream)
-                Text(r.description, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+private fun ForgeOutlookCard(o: ForgeOutlookUi, onBench: () -> Unit) {
+    var details by rememberSaveable { mutableStateOf(false) }
+    @Composable fun label(text: String) = Text(text, style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(SceneDeep).border(1.dp, BronzeDeep, Card).padding(12.dp).testTag("forge_outlook")) {
+        Text("In a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+        Text(o.role, style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.semantics { heading() }.testTag("forge_outlook_role"))
+        if (o.suits.isNotEmpty()) Text("Suits: ${o.suits.joinToString(", ")}", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+        o.parts.forEach { p -> Text("${p.name} · ${p.role}", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs)) }
+        if (o.needs.isNotEmpty()) Column(Modifier.testTag("forge_outlook_needs")) {
+            label("Needs")
+            o.needs.forEach { n -> n.needs.forEach { Text("${n.rule}: $it", style = MaterialTheme.typography.bodySmall, color = Gold) } }
+        }
+        o.tradeoff?.let {
+            label("Trade-off")
+            Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.testTag("forge_outlook_tradeoff"))
+        }
+        if (o.possible.isNotEmpty()) {
+            label("Not certain")
+            Text(o.possible.joinToString(", ") { it.name }, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.testTag("forge_outlook_possible"))
+        }
+        InlineActionButton(if (details) "Hide details" else "Details", { details = !details }, Modifier.testTag("forge_outlook_details"))
+        if (details) Column(Modifier.testTag("forge_outlook_expanded")) {
+            label("Certain in every forge of this recipe")
+            if (o.certain.isEmpty()) Text("No rule beyond the strike.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+            o.certain.forEach { r ->
+                Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
+                    Text(r.heading, style = MaterialTheme.typography.titleSmall, color = Cream)
+                    Text(r.description, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                }
+            }
+            val costs = o.parts.filter { it.constraint != null }
+            if (costs.isNotEmpty()) {
+                label("What each choice costs")
+                costs.forEach { Text("${it.name} · ${it.constraint}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
+            }
+            if (o.notes.isNotEmpty()) {
+                label("How its rules meet")
+                o.notes.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
+            }
+            if (o.possible.isNotEmpty()) {
+                label("What the forge may add")
+                o.possible.forEach { Text("${it.name} · ${it.text}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
             }
         }
+        SecondaryActionButton("Try this recipe on the bench", onBench, Modifier.fillMaxWidth().padding(top = Space.xs).testTag("forge_bench_open"))
     }
 }
 
