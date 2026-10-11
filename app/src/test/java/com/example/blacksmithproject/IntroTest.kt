@@ -270,6 +270,12 @@ class IntroTest : ShopDayTestBase() {
         val veteran = LegacyProfile(claimedRunIds = setOf("r1"))
         assertEquals("an account with an era behind it, as before", guild, open(repo(null, veteran), FakeSettings()).charter.value)
         assertNull("and its pick of the shop alone", open(repo(null, veteran), FakeSettings(charter = Settings.NO_CHARTER)).charter.value)
+        // A first game begun without touching the picker keeps the picker there once the account has an era behind it.
+        val settings = FakeSettings()
+        val first = open(repo(null), settings)
+        first.newRun(); advanceUntilIdle()
+        assertEquals(Settings.NO_CHARTER, settings.charter)
+        assertNull(open(repo(null, veteran), settings).charter.value)
     }
 
     @Test

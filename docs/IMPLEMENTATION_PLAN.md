@@ -67,6 +67,7 @@ Legend: [x] done and verified · [~] partial · [ ] not started. Verification ev
 - [~] ≥10,000-seed balance reviews per policy; target early median 15–25 days with viable longer paths (done for balance v5 in 0.6.0: all 14 policies and both maxed accounts at 10,000 seeds, session 8, DECISIONS "Balance v5 review at 10,000 seeds"; starting energy/gold upgrades are measured on second yardsticks, DECISIONS "Balance v5, part 5"; open: one more 10,000-seed review after the major update's last rule change, plan task T5.5)
 - [~] Room migration tests, instrumented save/restore tests, Compose screenshot/a11y tests (save/restore instrumented x2, event-log and weapon-history compaction done; session 8: weapons-map pruning, the day report restored after process death, an instrumented End Day budget test; a real mid-run v1 save fixture is checked in with a decode/End Day/compaction anchor test (`SaveFixtureTest`), so the first schema bump has a migration input; Room itself needs no migration because the envelope version is inside the JSON row; screenshot/a11y tests open)
 - [ ] Onboarding, font scaling, small screens, low-memory interruption checks, soak test without overflow
+  - Onboarding: the guided first day is built and tested (2026-10-11, branch `first-day-guidance`; `docs/DECISIONS.md`, last section). Open: watching first-time players use it (T7.2)
 
 ## P7b — Major update: shop day (in progress, M0)
 Plan: `docs/MAJOR_UPDATE_PLAN.md` (gates M0-M7 in its section 7). Task and evidence ledger: `docs/MAJOR_UPDATE_LEDGER.md`, which is the

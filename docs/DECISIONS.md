@@ -4313,7 +4313,9 @@ Source: the owner's brief of that day and its seven refinements. Built on `first
   Nothing else is locked.
 - **First run.** With no pick, an account without an era starts the picker on "No charter": the classic run is the
   whole shop loop, and the guild's opening chooser was the largest confusion point found. The pick is now kept in
-  settings (`charter_choice`) and always wins. An account with an era behind it keeps the old default.
+  settings (`charter_choice`) and always wins; beginning a game counts as picking what it began under, so the picker
+  does not move to a guild charter once the first era is claimed. An account from before this, with an era behind it
+  and no pick, keeps the old default.
 - **Input.** The strip is a row of the layout, not an overlay. It is a polite live region; focus is never moved.
   Targets are 48 dp; the actions stack above font scale 1.3. The mark on a control is an outline and a corner
   pointer, with a state description. No keyboard handling was added, as the app has none.

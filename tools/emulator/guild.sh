@@ -63,6 +63,10 @@ past_offers() {
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith"
+# A cleared install offers the guided first day and opens the picker on "No charter": this script is about the guild,
+# so the guidance is skipped and the picker is stepped on to the first charter.
+tap_id intro_menu_skip
+tap_id charter_next
 check has_id charter_picker
 shot 01_title_charter
 tap_id charter_about; shot 02_title_charter_about; tap_id charter_about

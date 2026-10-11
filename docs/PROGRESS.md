@@ -1,13 +1,13 @@
 # Progress — 2026-10-11 (run variety and consequences, unreleased; before it: guild evolution, 0.8.0)
 
 ## Guided first day (2026-10-11): built on branch `first-day-guidance`, not pushed
-Branched off `run-variety` at 719b685 (three local commits). `run-variety` has moved since (ff656ef, written by
+Branched off `run-variety` at 719b685 (local commits only). `run-variety` has moved since (ff656ef, written by
 another session): rebase before merging. Design and rulings: `docs/DECISIONS.md`, last section.
 
 **What it is.** A new installation's first game is led through one real day: recipe, forge, list, a second forge
 without help, End Day, the day's outcome. One strip under the top bar (`ui/IntroStrip.kt`), the words and the step
 logic in `ui/Intro.kt`, the record in settings (`data/SettingsStore.kt`). Settings has a "Guided first day" row with
-Replay. A new account's picker starts on "No charter"; the charter picked is remembered.
+Replay. A new account's picker starts on "No charter"; the charter picked, or last played under, is remembered.
 
 **Checks run on the final tree.** `:core:test` 581 tests, 0 failures (core untouched). `:app:testDebugUnitTest` 233
 tests, 0 failures (16 new in `IntroTest`). `:app:assembleDebug` built. Emulator, own instance on port 5556 (AVD
@@ -23,8 +23,12 @@ then the Shop's controls; the strip at font scale 1.3 and 2.0.
 `theShopKeepsItsPlaceAcrossTheForgeAndTheMenu`, `ShopDayScreenTest` `fightsWithNoCardAreSummedUpBeyondTheDoor`.
 
 **Not verified.** Nobody has played it: that the steps are understood is unknown (T7.2). No physical phone, no
-TalkBack pass, no hardware keyboard (Tab was sent through adb). The whole instrumented suite, `runend.sh`,
-`guild.sh` and `scenarios.sh` were not run. A guild first game was tested in the JVM only. At font scale 2.0 on a
+TalkBack pass, no hardware keyboard (Tab was sent through adb). `guild.sh` (now skips the guidance and steps the picker to the first charter) ran through the opening chooser to the
+guild screens; two later taps (`guild_member_`, `shopday_next`) were missing and were not compared with the base. The
+whole instrumented suite, `runend.sh`
+and `scenarios.sh` were not run. A guided guild first game was tested in the JVM only; its opening chooser shows
+no strip and no Skip (the title has Skip, the strip comes after the choice). The outcome line says "Their cards said
+why" and does not say where to read them again (the Gazette). At font scale 2.0 on a
 640 dp screen the strip takes about a third of the height.
 
 **Next actions.** 1. Play a cleared install once and read the six lines of copy. 2. Rebase onto `run-variety` and

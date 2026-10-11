@@ -388,7 +388,7 @@ class GameViewModel(
     }
 
     /**
-     * The charter the title's picker opens on. What the player picked last always wins. Without a pick, an account that
+     * The charter the title's picker opens on. What the player picked last, or last began a game under, always wins. Without either, an account that
      * has not finished an era starts on the shop alone: the guild is built on that loop and is one step away in the picker.
      */
     private suspend fun placeCharter() {
@@ -465,7 +465,12 @@ class GameViewModel(
     /** From the title (no run) or from the run-end screen (the session refuses it until the legacy is claimed). */
     private fun beginEra(seed: Long?) {
         val snap = session.snapshot.value ?: return
-        launch(Op.BeginEra(seed ?: (System.nanoTime() xor snap.legacy.eras.size.toLong()), snap.run?.runId, charter.value)) { edit { Local(loading = false, speed = it.speed) } }
+        val under = charter.value
+        launch(Op.BeginEra(seed ?: (System.nanoTime() xor snap.legacy.eras.size.toLong()), snap.run?.runId, under)) {
+            edit { Local(loading = false, speed = it.speed) }
+            // What a game was started under counts as picked: the picker opens there next time, whatever the account's default has become.
+            viewModelScope.launch { settings.setCharterChoice(under ?: Settings.NO_CHARTER) }
+        }
     }
 
     /** Main menu, "Abandon run": the run is discarded unclaimed and the menu offers a new game. */
