@@ -144,7 +144,7 @@ class GuildScenariosTest {
         assertEquals(LaunchContent.STAFF, s.loanOf(warden)!!.familyId)
         assertEquals(listOf(CombatContent.OVERFLOW_BASIN), s.relics.map { it.id })
         // The blade's rules on the road are the capacitor's: Charge from healing, a burst at three.
-        val rules = Loadout.weaponEffects(sword, engine.content.combat!!, Loadout.Field.ROAD).map { it.id }
+        val rules = Loadout.weaponEffects(sword, engine.content, Loadout.Field.ROAD).map { it.id }
         assertTrue(CombatContent.CHARGE_BURST.id in rules, "$rules")
         val hunt = g.offers.single { it.defId == GuildContent.HUNT }
         assertTrue(hunt.stages.first().enemies.isNotEmpty() && hunt.fee <= s.gold)

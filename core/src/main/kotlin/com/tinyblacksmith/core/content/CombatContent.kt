@@ -74,6 +74,11 @@ data class CombatCatalog(
     val cores: List<CoreCombatDef> = emptyList(),
     val notes: Map<MaterialId, IngredientNote> = emptyMap(),
     val interactions: List<InteractionDef> = emptyList(),
+    /**
+     * Rules rewritten for weapons of `WeaponRules.CRAFT_CORES` or later, by the ID of the rule each replaces. A weapon
+     * forged before keeps the old rule under the old ID. A rewritten rule has an ID of its own.
+     */
+    val revisions: Map<String, EffectDef> = emptyMap(),
 ) {
     val coreById: Map<MaterialId, CoreCombatDef> = cores.associateBy { it.coreId }
     val kitByClass: Map<HeroClassId, ClassKitDef> = kits.associateBy { it.classId }
@@ -81,11 +86,12 @@ data class CombatCatalog(
     val unitById: Map<String, UnitDef> = units.associateBy { it.id }
     fun unit(id: String): UnitDef = unitById[id] ?: error("Unknown unit $id")
 
-    val allEffects: List<EffectDef> get() = families.flatMap { it.effects } + cores.flatMap { it.effects } + elementEffects.values.flatten() + affixEffects.values.flatten() + affixHomeEffects.values.flatten() +
+    val allEffects: List<EffectDef> get() = families.flatMap { it.effects } + cores.flatMap { it.effects } + revisions.values + elementEffects.values.flatten() + affixEffects.values.flatten() + affixHomeEffects.values.flatten() +
         affixRoadEffects.values.flatten() + catalystEffects.values.flatten() + signatureEffects.values.flatten() + relicEffects.values.flatten()
 
     fun problems(): List<String> = EffectRules.problems(allEffects, kits.map { it.kit }, unitById) +
         relicEffects.values.flatten().filter { !it.party }.map { "Relic rule ${it.id} is not a party rule" } +
+        revisions.filter { (old, new) -> old == new.id || allEffects.none { it.id == old } }.keys.map { "Revision of $it needs a known rule and an ID of its own" } +
         allEffects.map { it.id }.toSet().let { known -> interactions.flatMap { i -> (i.pieces + i.shown.flatten()).filter { it !in known }.map { "Interaction ${i.id} names unknown rule $it" } } }
 }
 
@@ -216,7 +222,7 @@ object CombatContent {
         LaunchContent.BINDING_SALT to IngredientNote("Stores Charge when the wielder is healed. At 3 Charge it strikes for 8.", "It needs a healer, and healing a wielder at full health stores nothing."),
         LaunchContent.RUNESTONE_SHARD to IngredientNote("Strikes back for the party when an enemy breaks an ally's Guard.", "It sleeps until a weapon of the party has cracked."),
         LaunchContent.DRAGON_OIL to IngredientNote("Spreads fire. When the wielder's hit leaves Burn or Chill, every enemy gets Burn. It spends Steam as a lance.", "Burn on a chilled enemy boils both away into Steam."),
-        LaunchContent.VOID_INK to IngredientNote("Turns enemy Burn into Guard for your weakest ally. It spends Steam as Guard for all.", "That Burn no longer deals damage."),
+        LaunchContent.VOID_INK to IngredientNote("After the wielder acts, takes Burn off the enemy it faces and gives it to your weakest ally as Guard. It spends Steam as Guard for all.", "That Burn no longer deals damage."),
     )
 
     // ---- interaction paths: what the notebook can suggest and a real fight can show ----
@@ -227,9 +233,9 @@ object CombatContent {
         InteractionDef("steam", "Boiling point", "Burn on a chilled enemy, or Chill on a burning one, cancels both and gives Steam to whoever did it. Dragon Oil spends Steam as a lance. Void Ink spends it as Guard.",
             "The Burn and the Chill are both gone. Nothing burns and nobody is slowed.",
             setOf("catalyst_steam_lance", "catalyst_steam_shield"), listOf(setOf("catalyst_steam_lance"), setOf("catalyst_steam_shield"))),
-        InteractionDef("burn_guard", "Fire into Guard", "Burn taken off an enemy can become Guard. Void Ink takes it from the enemy that matters and gives it to your weakest ally.",
+        InteractionDef("burn_guard", "Fire into Guard", "Burn taken off an enemy can become Guard. Void Ink takes it from the enemy its wielder faces and gives it to your weakest ally.",
             "That Burn no longer deals damage.",
-            setOf("catalyst_converting", "sig_dawnbrand"), listOf(setOf("catalyst_converted_guard"), setOf("sig_dawnbrand_guard"))),
+            setOf("catalyst_converting", "catalyst_drinking", "sig_dawnbrand"), listOf(setOf("catalyst_converted_guard"), setOf("sig_dawnbrand_guard"))),
         InteractionDef("guard_answer", "A broken Guard answers", "Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns.",
             "It needs Guard on the wielder and an enemy strong enough to break it.",
             setOf("core_bronze", "sig_thornwall"), listOf(setOf("core_bronze"), setOf("sig_thornwall"))),
@@ -304,6 +310,14 @@ object CombatContent {
         "When the wielder gains Steam, spends 1: 5 damage through Guard to the foe in front and 5 to the last in the line. Once a round.", cost = Cost.Spend(Stat.STEAM, 1))
     val STEAM_SHIELD = e("catalyst_steam_shield", "Steam veil", Trigger(EventKind.STAT_GAINED, Who.SELF_TARGET, Stat.STEAM), listOf(Guard(Aim.AllAllies, Fixed(3))), Limit(perRound = 1),
         "When the wielder gains Steam, spends 1: every ally gains 3 Guard. Once a round.", cost = Cost.Spend(Stat.STEAM, 1))
+    /**
+     * Void Ink as it is forged from now on. The old rule took Burn at the end of a round, after that round's Burn had
+     * already ticked and faded, and only from the enemy that matters most, which the wielder is seldom striking. One
+     * Burn a round never reached it. This one drinks straight after the wielder's own action, from the enemy it faces.
+     */
+    val DRINKING = e("catalyst_drinking", "Void ink", Trigger(EventKind.ACTED, Who.SELF_SOURCE), listOf(Action.Take(Stat.BURN, Aim.Foe, Fixed(3))), Limit(perRound = 1),
+        "After the wielder acts, takes up to 3 Burn off the enemy it faces.")
+    val revisions: Map<String, EffectDef> = mapOf(CONVERTING.id to DRINKING)
     val catalystEffects: Map<MaterialId, List<EffectDef>> = mapOf(
         LaunchContent.BINDING_SALT to listOf(CAPACITOR, CHARGE_BURST),
         LaunchContent.RUNESTONE_SHARD to listOf(RUNED),
@@ -416,5 +430,5 @@ object CombatContent {
         UnitDef("captive", "The captive", kit("captive", "Captive", Move("stumble", "Keeps moving", Cadence.Always, emptyList())), health = 24, strikeMin = 0),
     )
 
-    val catalog = CombatCatalog(kits, families, elementEffects, affixEffects, affixHomeEffects, affixRoadEffects, catalystEffects, signatureEffects, relicEffects, units, cores = cores, notes = notes, interactions = interactions)
+    val catalog = CombatCatalog(kits, families, elementEffects, affixEffects, affixHomeEffects, affixRoadEffects, catalystEffects, signatureEffects, relicEffects, units, cores = cores, notes = notes, interactions = interactions, revisions = revisions)
 }

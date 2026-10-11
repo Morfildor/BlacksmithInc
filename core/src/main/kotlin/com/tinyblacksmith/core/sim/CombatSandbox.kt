@@ -135,5 +135,6 @@ object CombatSandbox {
 fun main(args: Array<String>) {
     val wanted = args.toSet()
     if ("sweep" in wanted) return ForgeSweep.print()
+    if ("paths" in wanted) return ForgePaths.print(wanted - "paths")
     CombatSandbox.fixtures.filter { wanted.isEmpty() || it.id in wanted }.forEach { CombatSandbox.print(it) }
 }

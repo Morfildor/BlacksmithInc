@@ -25,7 +25,7 @@ import com.tinyblacksmith.core.model.WeaponFamilyId
 object WeaponRules {
     /** The composition a forge writes on a new weapon today. */
     const val CRAFT = 2
-    /** From this composition on, the metal has a rule and a share of strike and support. */
+    /** From this composition on, the metal has a rule and a share of strike and support, and the catalog's rewritten rules (`CombatCatalog.revisions`) apply. */
     const val CRAFT_CORES = 2
 
     enum class Source(val word: String) { FAMILY("weapon"), CORE("metal"), ELEMENT("element"), AFFIX("buff"), FLAW("flaw"), CATALYST("catalyst"), SIGNATURE("signature") }
@@ -75,7 +75,9 @@ object WeaponRules {
 
         // One rule, one entry: the first part to bring it keeps it and the others are named beside it.
         val rules = LinkedHashMap<String, Rule>()
-        for (r in listed) {
+        for (old in listed) {
+            // A rule the catalog has rewritten is the rewritten one on a weapon forged since, and itself on an older weapon.
+            val r = combat.revisions[old.id]?.takeIf { parts.craft >= CRAFT_CORES }?.let { old.copy(effect = it) } ?: old
             val first = rules[r.id]
             rules[r.id] = if (first == null) r else if (r.sourceName == first.sourceName || r.sourceName in first.alsoFrom) first else first.copy(alsoFrom = first.alsoFrom + r.sourceName)
         }

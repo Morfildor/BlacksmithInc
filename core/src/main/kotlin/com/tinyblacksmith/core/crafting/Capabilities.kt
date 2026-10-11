@@ -189,8 +189,9 @@ object Capabilities {
     fun facets(e: EffectDef, where: WeaponRules.Where = WeaponRules.Where.ANYWHERE, sameHit: Boolean = true): List<Facet> = facets(e.id, e.actions, e, needs(e, sameHit), e.limit, where)
 
     /** The facts of a class's or an enemy's moves and passives. A move's cadence is not a need: it comes round. */
-    fun facets(kit: KitDef): List<Facet> = kit.moves.flatMap { facets("kit:${kit.id}:${it.id}", it.actions, null, emptyList(), if (it.cadence == Cadence.Opener) Limit(perFight = 1) else Limit(perRound = 1), WeaponRules.Where.ANYWHERE) } +
-        kit.passives.flatMap { facets(it) }
+    fun facets(kit: KitDef): List<Facet> = moves(kit) + kit.passives.flatMap { facets(it) }
+
+    private fun moves(kit: KitDef): List<Facet> = kit.moves.flatMap { facets("kit:${kit.id}:${it.id}", it.actions, null, emptyList(), if (it.cadence == Cadence.Opener) Limit(perFight = 1) else Limit(perRound = 1), WeaponRules.Where.ANYWHERE) }
 
     private fun facets(id: String, actions: List<Action>, e: EffectDef?, needs: List<Need>, limit: Limit, where: WeaponRules.Where): List<Facet> {
         val out = ArrayList<Facet>()
@@ -239,7 +240,8 @@ object Capabilities {
     private fun twice(kit: KitDef?) = kit?.moves?.any { m -> m.actions.count { it is Action.Damage && it.target == Aim.Foe } >= 2 } == true
 
     private fun pools(subject: WeaponRules.Composition, company: Company): Pools {
-        val foes = company.foes?.flatMap { facets(it) }
+        // Of an enemy only what its moves do round after round counts (a line that raises Guard). What it does to itself once, when its leader falls, is not something to build on.
+        val foes = company.foes?.flatMap { moves(it.kit) }
         val foeTags = company.foes?.flatMap { it.tags + it.kit.tags }?.toSet()
         // An ally's rule counts when the ally can bring it about where the ally stands: its own class and weapon are what "the wielder" means for it.
         val allies = company.allies.flatMap { a ->

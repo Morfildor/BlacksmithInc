@@ -37,7 +37,8 @@ object Bench {
     const val LEVEL = 3
     const val DEMO_QUALITY = 50
 
-    data class Target(val id: String, val name: String, val about: String, val units: List<String>, val percent: Int = 100)
+    /** [healthPercent]: the line is made to last, so a rule that needs a few rounds gets them. Its strikes are as the catalog writes them. */
+    data class Target(val id: String, val name: String, val about: String, val units: List<String>, val healthPercent: Int = 100)
 
     data class Ally(val classId: HeroClassId, val name: String, val familyId: WeaponFamilyId, val coreId: MaterialId, val augmentId: MaterialId, val weaponName: String)
 
@@ -45,9 +46,9 @@ object Bench {
     data class Companions(val id: String, val name: String, val about: String, val allies: List<Ally>, val ahead: Boolean = false)
 
     val targets: List<Target> = listOf(
-        Target("armoured", "An armoured line", "Two enemies that raise Guard every round. Shows what gets through Guard and what Guard stops.", listOf("cinder_knight", "bone_warden"), 120),
-        Target("backline", "A guarded caster", "A gravecaller mends its dead from behind a bone warden. Shows what reaches the back of the line.", listOf("bone_warden", "hollow_shambler", "gravecaller"), 110),
-        Target("attrition", "A long fight", "A warchief and two brutes that hit hard and keep hitting. Shows what Guard, healing and broken Guard are worth.", listOf("ashclaw_brute", "ashclaw_brute", "ashclaw_warchief"), 110),
+        Target("armoured", "An armoured line", "Two enemies that raise Guard every round. Shows what gets through Guard and what Guard stops.", listOf("cinder_knight", "bone_warden"), 180),
+        Target("backline", "A guarded caster", "A gravecaller mends its dead from behind a bone warden. Shows what reaches the back of the line.", listOf("bone_warden", "hollow_shambler", "gravecaller"), 170),
+        Target("attrition", "A long fight", "A warchief and two brutes that hit hard and keep hitting. Shows what Guard, healing and broken Guard are worth.", listOf("ashclaw_brute", "ashclaw_brute", "ashclaw_warchief"), 150),
     )
 
     val companions: List<Companions> = listOf(
@@ -58,8 +59,8 @@ object Bench {
             listOf(Ally(LaunchContent.BATTLEMAGE, "Bench Battlemage", LaunchContent.STAFF, LaunchContent.BRONZE, LaunchContent.FROST_BLOOM, "Frost staff")), ahead = true),
         Companions("fire", "With a fire mage", "A Battlemage with an ember staff acts first and Burns the front enemy twice over. Opens with a Charge and a Mark.",
             listOf(Ally(LaunchContent.BATTLEMAGE, "Bench Battlemage", LaunchContent.STAFF, LaunchContent.IRON, LaunchContent.EMBER_RESIN, "Ember staff")), ahead = true),
-        Companions("archer", "With a marking archer", "A Ranger with a plain storm bow acts first and Marks the enemy that matters every round.",
-            listOf(Ally(LaunchContent.RANGER, "Bench Ranger", LaunchContent.BOW, LaunchContent.BRONZE, LaunchContent.STORMGLASS, "Storm bow")), ahead = true),
+        Companions("spotter", "With a spotter", "A Ranger with a plain spear acts first and Marks the enemy that matters every round. Nothing else of theirs touches the Mark.",
+            listOf(Ally(LaunchContent.RANGER, "Bench Ranger", LaunchContent.SPEAR, LaunchContent.BRONZE, LaunchContent.VERDANT_SAP, "Sapwood spear")), ahead = true),
         Companions("front", "Behind a Guardian", "A Guardian with an obsidian sword holds the front. The sword cracks when the Guardian's Guard breaks.",
             listOf(Ally(LaunchContent.GUARDIAN, "Bench Guardian", LaunchContent.SWORD, LaunchContent.OBSIDIAN, LaunchContent.EMBER_RESIN, "Obsidian sword")), ahead = true),
     )
@@ -97,18 +98,19 @@ object Bench {
         content.classes.firstOrNull { (content.family(family).classFit[it.id] ?: 0.0) >= 1.0 }?.id ?: content.classes.first().id
 
     /** The same company as the capability evaluator sees it. */
-    fun company(wielder: HeroClassId, companionsId: String, targetId: String, content: ContentCatalog, config: BalanceConfig): Company {
+    fun company(wielder: HeroClassId, companionsId: String, targetId: String, content: ContentCatalog, config: BalanceConfig, relics: List<String> = emptyList()): Company {
         val combat = content.combat ?: error("This catalog has no combat content")
         val c = companions.first { it.id == companionsId }
         val t = targets.first { it.id == targetId }
         return Company(
             wielder = combat.kitByClass.getValue(wielder).kit,
             allies = c.allies.map { Fighter(combat.kitByClass.getValue(it.classId).kit, WeaponRules.of(blade("a", it.weaponName, it.familyId, it.coreId, it.augmentId, null, content, config), content)) },
-            foes = t.units.map { combat.unit(it) },
+            foes = t.units.map { combat.unit(it) }, relics = relics.flatMap { combat.relicEffects[it].orEmpty() },
         )
     }
 
-    fun run(weapon: Weapon, demonstration: Boolean, wielder: HeroClassId, companionsId: String, targetId: String, content: ContentCatalog, config: BalanceConfig): Report {
+    /** [relics] are party relics by ID, for a smith who wants to see the ones the guild holds at work. They are named in the report like everything else. */
+    fun run(weapon: Weapon, demonstration: Boolean, wielder: HeroClassId, companionsId: String, targetId: String, content: ContentCatalog, config: BalanceConfig, relics: List<String> = emptyList()): Report {
         val combat = content.combat ?: error("This catalog has no combat content")
         val c = companions.first { it.id == companionsId }
         val t = targets.first { it.id == targetId }
@@ -116,8 +118,13 @@ object Bench {
         val me = Loadout.combatant(hero("bench-wielder", "Bench $className", wielder), weapon, content, config)
         val allies = c.allies.mapIndexed { i, a -> Loadout.combatant(hero("bench-ally-$i", a.name, a.classId), blade("bench-ally-weapon-$i", a.weaponName, a.familyId, a.coreId, a.augmentId, null, content, config), content, config) }
         val party = if (c.ahead) allies + me else listOf(me) + allies
-        val foes = t.units.mapIndexed { i, id -> Loadout.enemy(combat.unit(id), "bench-foe-$i", t.percent) }.map { val mid = (it.strikeMin + it.strikeMax) / 2; it.copy(strikeMin = mid, strikeMax = mid) }
-        val setup = FightSetup("${weapon.name} on the bench", party, foes, emptyList(), Objective(), Posture.RECKLESS, config.guild.fight, SEED, combat.unitById)
+        val foes = t.units.mapIndexed { i, id -> Loadout.enemy(combat.unit(id), "bench-foe-$i") }.map {
+            val mid = (it.strikeMin + it.strikeMax) / 2
+            val health = Fight.pct(it.maxHealth, t.healthPercent)
+            it.copy(strikeMin = mid, strikeMax = mid, maxHealth = health, health = health)
+        }
+        val carried = relics.filter { it in combat.relicEffects }
+        val setup = FightSetup("${weapon.name} on the bench", party, foes, carried.flatMap { combat.relicEffects.getValue(it) }, Objective(), Posture.RECKLESS, config.guild.fight, SEED, combat.unitById)
         val result = Fight.resolve(setup)
 
         val composed = WeaponRules.of(weapon, content)
@@ -135,7 +142,8 @@ object Bench {
             synthetic = listOfNotNull(
                 "A made-up level $LEVEL $className carries it. Nobody from your town or guild is here.",
                 c.allies.takeIf { it.isNotEmpty() }?.let { a -> "The company is made up too: ${a.joinToString(", ") { "${it.name} with ${it.weaponName.lowercase().let { w -> if (w.first() in "aeiou") "an $w" else "a $w" }}" }}." },
-                "The enemies are a fixed line that strikes the same every time. No contract or siege will look like this.",
+                carried.takeIf { it.isNotEmpty() }?.let { r -> "The party's relics are in play: ${r.joinToString(", ") { content.relic(it)?.name ?: it }}." },
+                "The enemies are a fixed line with more health than usual, striking the same every time. No contract or siege will look like this.",
                 "The party fights to the end here. On a contract its posture decides when it leaves.",
                 "A recipe, not a weapon you own: shown at middling quality with no buff, flaw or signature, because those are rolled.".takeIf { demonstration },
                 "Nothing here is paid, learned or recorded.",
@@ -188,8 +196,11 @@ object Bench {
         // Everything it waits for was there: say which moment never came.
         val t = rule.effect.trigger
         fun mine(kind: EventKind, stat: Stat? = null) = events.any { it.kind == kind && (stat == null || it.stat == stat) && (it.target == me.key || it.source == me.key) }
+        val taken = rule.effect.actions.filterIsInstance<com.tinyblacksmith.core.combat.Action.Take>().firstOrNull()
         return when {
             rule.effect.conditions.any { it is Condition.HolderHealthAtMost } -> "${me.name} was never hurt badly enough."
+            taken != null && taken.target == com.tinyblacksmith.core.combat.Aim.PriorityFoe -> "The enemy that matters most never had ${Res.of(taken.stat).word} when the round ended. It takes from that one enemy only."
+            taken != null -> "The enemy ${me.name} faced never had ${Res.of(taken.stat).word} at that moment."
             t.kind == EventKind.GUARD_BROKEN && !mine(EventKind.GUARD_BROKEN) -> "No enemy broke ${me.name}'s Guard."
             t.kind == EventKind.GUARD_ABSORBED -> "No enemy Guard stopped ${me.name}'s hit."
             t.kind == EventKind.DOWNED -> "No enemy fell in the way it waits for."
