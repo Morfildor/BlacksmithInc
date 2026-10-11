@@ -58,6 +58,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     val consequences: MutableList<ScheduledConsequence> = base.consequences.toMutableList()
     var siege = base.siege
     var guild = base.guild
+    var heartfire = base.heartfire
 
     // Per-day scratch counters (not persisted).
     var patrolsToday = 0
@@ -195,6 +196,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
             consequences = consequences.toList(),
             siege = siege,
             guild = guild,
+            heartfire = heartfire,
         )
     }
 }

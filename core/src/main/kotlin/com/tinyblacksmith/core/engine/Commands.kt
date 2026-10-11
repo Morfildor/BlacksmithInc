@@ -21,6 +21,8 @@ sealed interface Command {
         val technique: Technique? = null,
         /** Ashen Bellows: one forge a day may take `depth.bellowsDebt` from tomorrow's energy for an extra affix slot. */
         val bellows: Boolean = false,
+        /** A Heartfire forging: Advanced only, one Heartfire and `depth.legend.heartfireEnergy` more energy for a chance at a Legendary weapon. */
+        val heartfire: Boolean = false,
     ) : Command
 
     data class ToggleShelf(val weaponId: WeaponId, val listed: Boolean, val price: Int? = null) : Command
@@ -66,6 +68,8 @@ sealed interface Command {
     data class RetireAfterMilestone(val milestoneId: String) : Command
     data class ChooseSpeciality(val heroId: HeroId, val specialityId: String) : Command
     data class SetGuildRank(val rank: Int) : Command
+    /** Takes one of the opening packages offered on the first morning. Once. */
+    data class ChooseOpening(val openingId: String) : Command
 }
 
 sealed interface GameError {
@@ -122,6 +126,12 @@ sealed interface GameError {
     data object NoDeploymentPlanned : GameError
     data object NoMissionCheckpoint : GameError
     data class MilestoneNotEarned(val milestoneId: String) : GameError
+    data object NoHeartfire : GameError
+    data object HeartfireRequiresAdvanced : GameError
+    /** A guild run waits for its opening to be chosen before the first End Day. */
+    data object OpeningPending : GameError
+    data object NoOpeningOffer : GameError
+    data class OpeningNotOffered(val openingId: String) : GameError
 }
 
 sealed interface CommandOutcome {

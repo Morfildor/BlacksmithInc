@@ -9,6 +9,8 @@ enum class Phase { PLANNING, ENDED }
 enum class Risk { SAFE, BALANCED, RECKLESS }
 enum class ForgeMode { QUICK, ADVANCED }
 enum class Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY }
+/** How a weapon came to be Legendary (rules 6): forged with Heartfire, or carried there by its own deeds. Null on every other weapon and on a Legendary from before rules 6. */
+enum class LegendOrigin { HEARTFIRE, DEEDS }
 enum class HeroActivity { REST, SHOP, EXPEDITION, PATROL, DEFEND, IDLE, GUILD, AMBITION }
 enum class HeroFate { ALIVE, DEAD, RETIRED }
 enum class CommissionStatus { OFFERED, ACCEPTED, COMPLETED, EXPIRED, DECLINED }
@@ -102,6 +104,9 @@ data class Weapon(
     val ownerIds: List<HeroId> = emptyList(),
     /** The open order this blade is kept for (an HEIRLOOM commission): until it closes the blade is not listed, melted, scrapped, given away or handed to another patron. */
     val promisedTo: CommissionId? = null,
+    /** Rules 6: why this weapon is Legendary, and the renown its deeds have earned it so far (`crafting.Legends`). */
+    val legend: LegendOrigin? = null,
+    val renown: Int = 0,
 ) {
     val isListed: Boolean get() = location is WeaponLocation.Shelf
     /** Hone is allowed on an unhoned weapon or one worn below full condition. */
@@ -239,6 +244,8 @@ enum class EventType {
     // Schema 6: the guild.
     GUILD_CHARTER, GUILD_RECRUITED, GUILD_DISMISSED, WEAPON_LOANED, MISSION_DEPARTED, MISSION_WON, MISSION_FAILED, MEMBER_CAPTURED, MEMBER_RESCUED,
     SABOTAGE_DONE, CHARTER_SECURED, GUILD_STORY, COMBO_NOTED, RUN_RETIRED,
+    // Schema 7: run variety.
+    HEARTFIRE_GAINED, WEAPON_DEED, LEGEND_EARNED, OPENING_CHOSEN, SIEGE_PREPARATION, SUPPLIER_NEWS,
 }
 
 /** Source of truth for the Gazette and replays (GDD Appendix B). Subjects are real entity IDs. */
@@ -423,6 +430,8 @@ data class GameState(
     val siege: SiegeScenario? = null,
     /** The player's own guild (rules 5). Null in a classic run, which plays as rules 4 did. */
     val guild: GuildRunState? = null,
+    /** Rules 6: Heartfire in the forge, the scarce ingredient of a Heartfire forging. Run-only. */
+    val heartfire: Int = 0,
 ) {
     val isGuildRun: Boolean get() = guild != null
     fun loanOf(heroId: HeroId): Weapon? = weapons.values.firstOrNull { it.loanedTo == heroId }

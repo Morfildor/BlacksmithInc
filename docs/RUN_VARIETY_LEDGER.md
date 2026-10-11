@@ -54,3 +54,30 @@ Status words: done (tested), partial (what is missing is named), not done.
 | G7 | Rescue and recovery | won at least as often as the hunt that caused them, for a competent policy | |
 | G8 | `:core:test`, `:app:testDebugUnitTest`, debug build | green | |
 | G9 | Emulator: new flows, font scale, process death | seen | |
+
+## Handoff note (session stopped on request, 2026-10-11)
+State of the branch `run-variety`:
+- S1 is done and committed (`8f577ee`): `GuildSim` reports rarity, Legendary count and source, recipes, overwork days
+  and the till by source. Before table: `run_variety_evidence/before_guildsim_300.txt`. Competent bots forged a median
+  of 5 to 8 Legendary weapons a run, the first near day 5, in 97 to 99 % of runs. Shelf sales are about 3,800 gold of
+  a run's till and contract gold 400 to 1,000, so Novice's 3,162 end gold is sales, not supply runs.
+- S2 is started and DOES NOT COMPILE yet. In the tree: `LegendConfig` (nested in `DepthConfig.legend`), `RiskProfile`
+  with `rollSpread` and `extraSlots` (Safe 6, Reckless one slot and 30 % defect), balance version 12,
+  `Weapon.legend` / `Weapon.renown`, `LegendOrigin`, `GameState.heartfire` (and in `ResolutionContext`), six new
+  `EventType`s, `Command.Forge.heartfire`, `Command.ChooseOpening`, five new `GameError`s.
+- Why it does not compile: `GameEngine.handle` has no branch for `Command.ChooseOpening` yet.
+
+Next steps, in order:
+1. `crafting/Legends.kt`: `gainHeartfire(ctx, amount, why)` (capped at `heartfireMax`, emits HEARTFIRE_GAINED) and
+   `deed(ctx, weaponId, renown, text)` (history DEED, at `renownForLegend` sets rarity LEGENDARY, `legend = DEEDS`,
+   `power + deedPower`, emits LEGEND_EARNED, once).
+2. `Forge.kt`: validate Heartfire (Advanced only, one held), `energyCost`, the roll scaled by the temper's spread
+   (same single draw), `forgedRarity` = quality rarity capped at Epic, breakthrough roll before the property slots,
+   `profile.extraSlots`, known signature at `knownSignatureChance`, `heartfireOutlook` for the workbench.
+3. Hone bypass: `GameEngine.hone` uses `Forge.rarityFor`; it must keep a Legendary and never make one
+   (`Forge.rarityAfter`). The crooked merchant's weapon (`EncounterCatalog`) takes the capped rarity. A legend
+   returning from the board (`WorldEvents` line 385) keeps the uncapped table.
+4. Keep DEED and LEGEND history lines out of `WeaponHistoryCompaction`. Add LEGEND_EARNED to the milestone points map.
+5. Rank scaling: `Missions.generate` and `SiegeFight.plan` add `rank.enemyPercent`; multiply through one helper.
+6. Then S3 to S6 as in the table above. Versions to raise at the end: rules 6, schema 7 (identity steps in both
+   migration tables), content 6. The classic golden state will change with the forge rules: review the diff, then record.

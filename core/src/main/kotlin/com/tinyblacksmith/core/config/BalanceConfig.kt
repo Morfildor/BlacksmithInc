@@ -7,7 +7,11 @@ import com.tinyblacksmith.core.model.Risk
  * LOCKED facts that are numbers (10 daily energy) also live here so tests can assert them,
  * but DECISIONS.md records which ones must not change without a design decision.
  */
-data class RiskProfile(val exceptionalChance: Double, val defectChance: Double)
+/**
+ * [rollSpread] narrows the quality roll (null = `qualityRollSpread`); [extraSlots] are property slots the temper adds.
+ * v12: Safe is the narrow, reliable temper, Reckless the one that opens a slot and flaws far more often.
+ */
+data class RiskProfile(val exceptionalChance: Double, val defectChance: Double, val rollSpread: Int? = null, val extraSlots: Int = 0)
 
 data class BalanceConfig(
     /**
@@ -21,7 +25,7 @@ data class BalanceConfig(
      * v10 (2026-10-10): morning visitors, workshop relics, siege traits and the committed besieger ([DepthConfig]); three automatic world events (the collector, the wandering master, the merchant festival) come as visitors instead. See docs/DECISIONS.md.
      * v11 (2026-10-11): the guild ([GuildConfig]): contracted members, loans, contracts, the interaction engine and the siege fought through it. A run without a guild reads none of it and plays as v10. See docs/DECISIONS.md.
      */
-    val version: Int = 11,
+    val version: Int = 12,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -29,9 +33,9 @@ data class BalanceConfig(
     val advancedForgeEnergy: Int = 4,
     // Risk (GDD 4.4 PROPOSED table).
     val risk: Map<Risk, RiskProfile> = mapOf(
-        Risk.SAFE to RiskProfile(0.06, 0.02),
+        Risk.SAFE to RiskProfile(0.06, 0.02, rollSpread = 6),
         Risk.BALANCED to RiskProfile(0.15, 0.08),
-        Risk.RECKLESS to RiskProfile(0.30, 0.20),
+        Risk.RECKLESS to RiskProfile(0.30, 0.30, extraSlots = 1),
     ),
     val maxRollChance: Double = 0.75,
     val catalystExceptionalBonus: Double = 0.05,
@@ -594,6 +598,8 @@ data class DepthConfig(
     val firstTraitSiege: Int = 2,
     /** The besieger is fixed at the first warning and no longer follows pressure (rules 4). False plays as rules 3 did. */
     val commitBesieger: Boolean = true,
+    /** v12: Heartfire forging, deeds and what a known recipe is worth (docs/RUN_VARIETY_LEDGER.md). */
+    val legend: LegendConfig = LegendConfig(),
     // The Last Crate
     val crateWindowDays: Int = 3,
     val crateUnits: Int = 3,
@@ -628,6 +634,39 @@ data class DepthConfig(
     val watchBounty: Int = 30,
     val watchBountyBlades: Int = 2,
     val watchBountyDays: Int = 2,
+)
+
+/**
+ * v12, PROPOSED: how a weapon becomes Legendary. Quality alone stops at Epic. A Heartfire forging can break through,
+ * and a weapon's own deeds can carry it there. One nested group of [DepthConfig].
+ */
+data class LegendConfig(
+    /** Heartfire the forge can hold. What is earned past it is lost, and the report says so. */
+    val heartfireMax: Int = 3,
+    /** Energy a Heartfire forging takes on top of an Advanced forge. */
+    val heartfireEnergy: Int = 2,
+    /** Breakthrough chance at the Epic floor, what each quality point above it adds, and the most it can be. */
+    val breakthroughBase: Double = 0.30,
+    val breakthroughPerQuality: Double = 0.02,
+    val breakthroughMax: Double = 0.75,
+    /** Added when the journal already holds the signature of this recipe. */
+    val knownRecipeBonus: Double = 0.10,
+    val safeBonus: Double = -0.10,
+    val recklessBonus: Double = 0.10,
+    /** Property slots a Heartfire forging adds when it does not break through. */
+    val missExtraSlots: Int = 1,
+    /** Chance that an exact recipe yields its signature once the journal knows it. */
+    val knownSignatureChance: Double = 0.75,
+    /** Renown at which a weapon is Legendary by its deeds, and what each deed is worth. */
+    val renownForLegend: Int = 3,
+    val renownCharter: Int = 3,
+    val renownWarlord: Int = 2,
+    val renownDangerous: Int = 2,
+    val renownElite: Int = 1,
+    /** Power a weapon gains when its deeds make it Legendary. */
+    val deedPower: Int = 4,
+    /** A classic run: a siege won from this number on leaves one Heartfire. */
+    val classicSiegeHeartfireFrom: Int = 2,
 )
 
 /**
