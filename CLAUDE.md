@@ -46,7 +46,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   (`ui/shopday/`). There is no Home or Market panel any more. The Forge is a workbench built from the pure model in
   `ui/ForgeUi.kt`; commissions and customer wants are one board (`ui/CommissionBoard.kt`) opened from Shop and Forge; the
   Journal is a notebook (`ui/Notebook.kt`).
-- Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt` (schema 6; rules 5 and content 5 are
+- Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt` (schema 7; rules 6 and content 6 are
   enforced on load by `engine/Compatibility.kt`); migrations go there.
 - Content names are PROPOSED; counts are LOCKED. Vertical slice content lives in `content/SliceContent.kt`.
 - Pixel art has several sources, never hand-edited PNGs, all imported by `tools/pixelart/import_assets.py` into
@@ -69,7 +69,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 #   legacy: --upgrades id=level[,id=level] plays the policy rows on that account, --yardsticks adds the first-siege and premium-sale table, --legends gives the maxed and impact runs a veteran Legend Board, --knownNameGold N
 ./gradlew :core:scenarios                              # rewrites the debug scenario saves in app/src/debug/assets/scenarios (played and constructed; run after a rules, content or balance change)
 ./gradlew :core:combat                                 # prints the fixture fights of the interaction engine (highlights and timeline); --args="stormwell" for one
-./gradlew :core:guildsim --args="--runs 300 --seed 1"  # nine guild policies over guild runs (--policy X[,Y], --charter ID, --horizon N, --maxed x, --set enemyPercentBase=180,..., --why x)
+./gradlew :core:guildsim --args="--runs 300 --seed 1"  # thirteen guild policies over guild runs (--policy X[,Y], --charter ID, --horizon N, --maxed x, --set enemyPercentBase=180,..., --why x, --byOpening x, --pair A,B, --playOn x, --opening ID, --classic x, --transcript x)
 ./gradlew :core:soak                                   # long-save soak, outside the default suite (about 70 s): 2,000 forced-survival days for two smiths; tables and the day-1,000 / 2,000 saves in core/build/soak/
 ./gradlew :app:testDebugUnitTest                       # app JVM tests (session, ViewModel, screen models; no device)
 ./gradlew :app:assembleDebug                           # APK (needs Android SDK at local.properties sdk.dir)
@@ -93,6 +93,9 @@ Compose BOM 2026.02.01, Room 2.8.5, DataStore 1.2.1, JDK 21 launcher / JDK 25 da
   and evidence live in `docs/MAJOR_UPDATE_LEDGER.md` (plan: `docs/MAJOR_UPDATE_PLAN.md`). Visitors, relics and siege
   traits: `docs/GAMEPLAY_DEPTH_PLAN.md` (tables of every option and number, task ledger).
   Guild evolution: plan and task ledger `docs/GUILD_EVOLUTION_PLAN.md`, spec `docs/GUILD_EVOLUTION_SPEC.md`.
+  Run variety (rules 6: Legendary by Heartfire or deeds in `crafting/Legends.kt`, opening packages, siege preparations,
+  the siege's two-day jobs): rulings, gates and open questions `docs/RUN_VARIETY_LEDGER.md`, evidence
+  `docs/run_variety_evidence/REPORT.md`.
 - Balance changes: run the simulator, record numbers in DECISIONS.md, bump `BalanceConfig.version` on semantic change.
 - New gameplay numbers go in `BalanceConfig`, never inline. New content goes through `ContentCatalog.validate()`.
 - Tests must pass before claiming a phase done; do not commit/push without being asked.

@@ -73,7 +73,8 @@ tap_id title_new_run || exit 1
 wait_id opening_chooser; shot 04_opening_chooser
 swipe_up; shot 04b_opening_chooser_lower
 for i in 1 2 3 4 5 6; do $ADB shell input swipe 540 700 540 1700 300; done; $ADB shell sleep 1
-scroll_to_id opening_choose_ && tap_id opening_choose_ || exit 1
+for i in 1 2 3 4 5 6 7 8; do dump | grep -q 'resource-id="opening_choose_' && break; swipe_up; done
+tap_id opening_choose_ || exit 1
 shot 04c_opening_confirm
 tap_id opening_confirm_yes || exit 1
 check has_id end_day

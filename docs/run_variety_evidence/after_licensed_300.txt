@@ -1,40 +1,40 @@
 Guild runs: 300 seeds from 100001, charter licensed_bad_ideas, horizon day 30, new account, balance 12
-SYNERGY         charter  49%  defeated   7%  neither by day 31  44% | days med 31 mean 27.4 | first siege leaves  96 | sieges held 37% cost 19% breached 44% | per run: contracts 14.0 captured 0.57 rescued 0.23 dead 0.40 chains 2.6 (first day 6.6) members 3.9 gold 635 rejected 0
-                contracts: ESCORT 12% (won 75%)  HUNT 39% (won 91%)  RESCUE 3% (won 49%)  SABOTAGE 36% (won 93%)  SUPPLY 9% (won 100%)
-                forge: 116.7 a run (56.3 recipes), C=9% U=34% R=41% E=16% L=0% | legendary a run: mean 0.56 median 1 p90 1, runs with one  54%, first on day 22.5, by source deed=0.55 heartfire=0.01 | overwork days 0.0
-                sieges: #1 held 51% cost 34% breached 15% damage 3.8 (n=300)  #2 held 51% cost 25% breached 24% damage 6.1 (n=300)  #3 held 63% cost 22% breached 15% damage 3.9 (n=300)  #4 held 18% cost 12% breached 71% damage 19.2 (n=300)
-                heartfire a run: earned 0.51, forgings 0.02 | deeds 6.20 | sabotage done 4.74 | days with nobody fit 0.16 | charter rate 95% interval 43 to 54 %
-                till a run: shelf_sale 4289, sale_bonus 72, stipend 29, tribute 134, contract 650, spent on stock and tools 4487
+SYNERGY         charter  48%  defeated   6%  neither by day 31  46% | days med 31 mean 27.5 | first siege leaves  96 | sieges held 37% cost 19% breached 44% | per run: contracts 14.1 captured 0.44 rescued 0.27 dead 0.31 chains 2.6 (first day 6.7) members 3.9 gold 630 rejected 0
+                contracts: ESCORT 12% (won 75%)  HUNT 40% (won 91%)  RESCUE 3% (won 69%)  SABOTAGE 37% (won 93%)  SUPPLY 9% (won 100%)
+                forge: 117.3 a run (56.6 recipes), C=9% U=34% R=41% E=16% L=0% | legendary a run: mean 0.56 median 1 p90 1, runs with one  54%, first on day 22.6, by source deed=0.55 heartfire=0.01 | overwork days 0.0
+                sieges: #1 held 51% cost 34% breached 15% damage 3.8 (n=300)  #2 held 51% cost 25% breached 24% damage 6.1 (n=300)  #3 held 64% cost 22% breached 14% damage 3.6 (n=300)  #4 held 17% cost 12% breached 71% damage 19.3 (n=300)
+                heartfire a run: earned 0.50, forgings 0.02 | deeds 6.30 | sabotage done 4.79 | days with nobody fit 0.12 | charter rate 95% interval 42 to 54 %
+                till a run: shelf_sale 4315, sale_bonus 71, stipend 29, tribute 132, contract 656, spent on stock and tools 4523
                 opening careful_books  n= 50 charter  52% (39 to 65 %) defeated   6% first siege damage 3.3 loans on day 5: axe/frost=44 sword/frost=41 staff/frost=20 sword/fire=15
-                opening furnace        n= 41 charter  46% (32 to 61 %) defeated   5% first siege damage 2.8 loans on day 5: axe/frost=29 sword/frost=24 sword/fire=16 axe/fire=12
-                opening marked         n= 53 charter  53% (40 to 66 %) defeated   6% first siege damage 4.5 loans on day 5: axe/frost=39 sword/frost=35 sword/storm=18 staff/frost=14
-                opening plain_oath     n= 43 charter  49% (35 to 63 %) defeated   9% first siege damage 3.2 loans on day 5: axe/frost=68 sword/frost=29 axe/fire=22 bow/fire=17
-                opening salvage        n= 56 charter  39% (28 to 52 %) defeated  11% first siege damage 4.1 loans on day 5: sword/frost=48 axe/frost=47 spear/fire=26 bow/frost=22
-                opening stormwell      n= 57 charter  53% (40 to 65 %) defeated   5% first siege damage 4.7 loans on day 5: sword/frost=47 axe/frost=38 staff/frost=21 sword/storm=20
-ADAPTIVE        charter  23%  defeated   9%  neither by day 31  68% | days med 31 mean 29.3 | first siege leaves  95 | sieges held 21% cost 20% breached 59% | per run: contracts 14.1 captured 1.05 rescued 0.54 dead 1.46 chains 2.0 (first day 6.9) members 3.6 gold 388 rejected 0
-                contracts: EMERGENCY 13% (won 100%)  ESCORT 6% (won 62%)  HUNT 16% (won 89%)  OPPORTUNITY 0% (won 100%)  RECOVERY 0% (won 75%)  RESCUE 7% (won 57%)  SABOTAGE 35% (won 81%)  SUPPLY 23% (won 95%)
-                forge: 123.0 a run (55.9 recipes), C=10% U=35% R=40% E=15% L=0% | legendary a run: mean 0.35 median 0 p90 1, runs with one  32%, first on day 22.2, by source deed=0.32 heartfire=0.03 | overwork days 0.0
-                sieges: #1 held 34% cost 47% breached 19% damage 5.2 (n=300)  #2 held 35% cost 28% breached 38% damage 9.2 (n=300)  #3 held 39% cost 27% breached 34% damage 9.4 (n=300)  #4 held 5% cost 6% breached 89% damage 26.6 (n=300)
-                heartfire a run: earned 0.31, forgings 0.09 | deeds 6.98 | sabotage done 3.97 | days with nobody fit 0.59 | charter rate 95% interval 18 to 28 %
-                till a run: shelf_sale 4476, sale_bonus 60, stipend 17, tribute 63, contract 388, spent on stock and tools 4574
+                opening furnace        n= 41 charter  46% (32 to 61 %) defeated   2% first siege damage 2.8 loans on day 5: axe/frost=29 sword/frost=24 sword/fire=16 axe/fire=12
+                opening marked         n= 53 charter  49% (36 to 62 %) defeated   4% first siege damage 4.5 loans on day 5: axe/frost=39 sword/frost=35 sword/storm=18 staff/frost=14
+                opening plain_oath     n= 43 charter  49% (35 to 63 %) defeated   7% first siege damage 3.2 loans on day 5: axe/frost=68 sword/frost=29 axe/fire=22 bow/fire=17
+                opening salvage        n= 56 charter  41% (29 to 54 %) defeated  11% first siege damage 4.1 loans on day 5: sword/frost=48 axe/frost=47 spear/fire=26 bow/frost=22
+                opening stormwell      n= 57 charter  51% (38 to 63 %) defeated   4% first siege damage 4.7 loans on day 5: sword/frost=47 axe/frost=38 staff/frost=21 sword/storm=20
+ADAPTIVE        charter  23%  defeated  10%  neither by day 31  67% | days med 31 mean 29.3 | first siege leaves  95 | sieges held 21% cost 20% breached 59% | per run: contracts 14.1 captured 0.97 rescued 0.61 dead 1.31 chains 2.0 (first day 7.1) members 3.7 gold 392 rejected 0
+                contracts: EMERGENCY 13% (won 100%)  ESCORT 6% (won 62%)  HUNT 16% (won 89%)  OPPORTUNITY 0% (won 100%)  RECOVERY 0% (won 73%)  RESCUE 6% (won 71%)  SABOTAGE 35% (won 81%)  SUPPLY 23% (won 95%)
+                forge: 123.2 a run (55.9 recipes), C=10% U=35% R=40% E=15% L=0% | legendary a run: mean 0.35 median 0 p90 1, runs with one  32%, first on day 22.0, by source deed=0.33 heartfire=0.03 | overwork days 0.0
+                sieges: #1 held 34% cost 47% breached 19% damage 5.2 (n=300)  #2 held 34% cost 28% breached 38% damage 9.3 (n=300)  #3 held 40% cost 27% breached 34% damage 9.1 (n=300)  #4 held 5% cost 6% breached 89% damage 26.6 (n=300)
+                heartfire a run: earned 0.30, forgings 0.07 | deeds 7.01 | sabotage done 3.99 | days with nobody fit 0.50 | charter rate 95% interval 19 to 28 %
+                till a run: shelf_sale 4489, sale_bonus 61, stipend 17, tribute 64, contract 389, spent on stock and tools 4592
                 opening careful_books  n= 50 charter  28% (17 to 42 %) defeated   6% first siege damage 4.4 loans on day 5: axe/frost=39 sword/frost=36 staff/frost=22 sword/fire=18
-                opening furnace        n= 41 charter  22% (12 to 37 %) defeated   2% first siege damage 5.6 loans on day 5: axe/frost=29 sword/frost=26 sword/fire=19 bow/fire=11
-                opening marked         n= 53 charter  25% (15 to 38 %) defeated  13% first siege damage 4.5 loans on day 5: axe/frost=39 sword/frost=32 staff/frost=17 sword/storm=16
-                opening plain_oath     n= 43 charter  21% (11 to 35 %) defeated   9% first siege damage 5.2 loans on day 5: axe/frost=67 sword/frost=25 axe/fire=22 bow/fire=18
-                opening salvage        n= 56 charter  20% (11 to 32 %) defeated   7% first siege damage 4.9 loans on day 5: sword/frost=46 axe/frost=43 spear/fire=30 bow/frost=22
-                opening stormwell      n= 57 charter  21% (12 to 33 %) defeated  14% first siege damage 6.9 loans on day 5: sword/frost=45 axe/frost=35 staff/frost=23 sword/storm=20
-DEFENCE_FIRST   charter  18%  defeated  20%  neither by day 31  62% | days med 31 mean 29.2 | first siege leaves  96 | sieges held 21% cost 21% breached 58% | per run: contracts 14.3 captured 0.79 rescued 0.27 dead 1.28 chains 1.0 (first day 10.9) members 3.6 gold 382 rejected 0
-                contracts: RESCUE 3% (won 58%)  SABOTAGE 40% (won 82%)  SUPPLY 57% (won 97%)
-                forge: 133.5 a run (56.6 recipes), C=11% U=37% R=39% E=13% L=0% | legendary a run: mean 0.25 median 0 p90 1, runs with one  24%, first on day 23.1, by source deed=0.25 | overwork days 0.0
-                sieges: #1 held 44% cost 39% breached 17% damage 4.1 (n=300)  #2 held 34% cost 35% breached 30% damage 7.8 (n=300)  #3 held 36% cost 32% breached 32% damage 8.0 (n=300)  #4 held 2% cost 7% breached 91% damage 26.6 (n=300)
-                heartfire a run: earned 0.19, forgings 0.01 | deeds 6.73 | sabotage done 4.69 | days with nobody fit 0.39 | charter rate 95% interval 14 to 23 %
-                till a run: shelf_sale 4621, sale_bonus 69, stipend 23, tribute 50, contract 297, spent on stock and tools 4671
-                opening careful_books  n= 50 charter  14% (7 to 26 %) defeated  22% first siege damage 3.5 loans on day 5: sword/frost=52 axe/frost=42 staff/frost=22 sword/fire=17
+                opening furnace        n= 41 charter  22% (12 to 37 %) defeated   7% first siege damage 5.6 loans on day 5: axe/frost=29 sword/frost=26 sword/fire=19 bow/fire=11
+                opening marked         n= 53 charter  25% (15 to 38 %) defeated  17% first siege damage 4.5 loans on day 5: axe/frost=39 sword/frost=32 staff/frost=17 sword/storm=16
+                opening plain_oath     n= 43 charter  21% (11 to 35 %) defeated  12% first siege damage 5.2 loans on day 5: axe/frost=67 sword/frost=25 axe/fire=22 bow/fire=18
+                opening salvage        n= 56 charter  23% (14 to 36 %) defeated   7% first siege damage 4.9 loans on day 5: sword/frost=46 axe/frost=43 spear/fire=30 bow/frost=22
+                opening stormwell      n= 57 charter  21% (12 to 33 %) defeated  11% first siege damage 6.9 loans on day 5: sword/frost=45 axe/frost=35 staff/frost=23 sword/storm=20
+DEFENCE_FIRST   charter  18%  defeated  20%  neither by day 31  62% | days med 31 mean 29.3 | first siege leaves  96 | sieges held 21% cost 21% breached 58% | per run: contracts 14.4 captured 0.78 rescued 0.30 dead 1.23 chains 0.9 (first day 10.7) members 3.6 gold 383 rejected 0
+                contracts: RESCUE 3% (won 65%)  SABOTAGE 40% (won 83%)  SUPPLY 57% (won 97%)
+                forge: 133.6 a run (56.7 recipes), C=11% U=37% R=39% E=13% L=0% | legendary a run: mean 0.26 median 0 p90 1, runs with one  25%, first on day 23.2, by source deed=0.26 | overwork days 0.0
+                sieges: #1 held 44% cost 39% breached 17% damage 4.1 (n=300)  #2 held 34% cost 35% breached 30% damage 7.8 (n=300)  #3 held 36% cost 33% breached 32% damage 8.0 (n=300)  #4 held 2% cost 7% breached 91% damage 26.6 (n=300)
+                heartfire a run: earned 0.19, forgings 0.01 | deeds 6.82 | sabotage done 4.70 | days with nobody fit 0.33 | charter rate 95% interval 14 to 23 %
+                till a run: shelf_sale 4619, sale_bonus 69, stipend 23, tribute 51, contract 298, spent on stock and tools 4672
+                opening careful_books  n= 50 charter  14% (7 to 26 %) defeated  20% first siege damage 3.5 loans on day 5: sword/frost=52 axe/frost=42 staff/frost=22 sword/fire=17
                 opening furnace        n= 41 charter  12% (5 to 26 %) defeated  24% first siege damage 6.1 loans on day 5: axe/frost=45 sword/frost=28 sword/fire=23 axe/fire=15
-                opening marked         n= 53 charter  25% (15 to 38 %) defeated  23% first siege damage 4.9 loans on day 5: axe/frost=52 sword/frost=36 staff/frost=21 sword/fire=20
-                opening plain_oath     n= 43 charter  28% (17 to 43 %) defeated  16% first siege damage 2.7 loans on day 5: axe/frost=51 sword/frost=38 axe/fire=13 staff/frost=12
-                opening salvage        n= 56 charter  13% (6 to 24 %) defeated  20% first siege damage 3.2 loans on day 5: axe/frost=57 sword/frost=52 staff/frost=22 dagger/frost=17
-                opening stormwell      n= 57 charter  18% (10 to 29 %) defeated  18% first siege damage 4.3 loans on day 5: axe/frost=54 sword/frost=49 staff/frost=23 sword/fire=20
+                opening marked         n= 53 charter  25% (15 to 38 %) defeated  25% first siege damage 4.9 loans on day 5: axe/frost=52 sword/frost=36 staff/frost=21 sword/fire=20
+                opening plain_oath     n= 43 charter  30% (19 to 45 %) defeated  14% first siege damage 2.7 loans on day 5: axe/frost=51 sword/frost=38 axe/fire=13 staff/frost=12
+                opening salvage        n= 56 charter  13% (6 to 24 %) defeated  18% first siege damage 3.2 loans on day 5: axe/frost=57 sword/frost=52 staff/frost=22 dagger/frost=17
+                opening stormwell      n= 57 charter  18% (10 to 29 %) defeated  19% first siege damage 4.3 loans on day 5: axe/frost=54 sword/frost=49 staff/frost=23 sword/fire=20
 NOVICE          charter   3%  defeated  79%  neither by day 31  18% | days med 25 mean 26.3 | first siege leaves  85 | sieges held 14% cost 11% breached 75% | per run: contracts 20.8 captured 0.00 rescued 0.00 dead 1.04 chains 0.5 (first day 11.1) members 2.6 gold 2337 rejected 0
                 contracts: SUPPLY 100% (won 98%)
                 forge: 131.3 a run (39.2 recipes), C=2% U=79% R=17% E=2% L=0% | legendary a run: mean 0.06 median 0 p90 0, runs with one   5%, first on day 18.8, by source deed=0.06 | overwork days 0.0
@@ -47,39 +47,39 @@ NOVICE          charter   3%  defeated  79%  neither by day 31  18% | days med 2
                 opening plain_oath     n= 43 charter   0% (0 to 8 %) defeated  86% first siege damage 13.3 loans on day 5: axe/fire=56 axe/storm=13 sword/fire=11 axe/frost=10
                 opening salvage        n= 56 charter   2% (0 to 9 %) defeated  75% first siege damage 17.1 loans on day 5: axe/fire=53 axe/storm=19 axe/verdant=18 spear/fire=15
                 opening stormwell      n= 57 charter   4% (1 to 12 %) defeated  75% first siege damage 12.1 loans on day 5: axe/fire=37 axe/storm=25 axe/verdant=21 sword/frost=20
-RECOMMENDED     charter  11%  defeated  47%  neither by day 31  42% | days med 30 mean 28.3 | first siege leaves  86 | sieges held 17% cost 13% breached 70% | per run: contracts 14.1 captured 0.61 rescued 0.07 dead 1.01 chains 1.4 (first day 8.4) members 3.8 gold 358 rejected 0
-                contracts: DELVE 3% (won 0%)  ESCORT 16% (won 63%)  HUNT 15% (won 82%)  RECOVERY 3% (won 54%)  RESCUE 1% (won 45%)  SABOTAGE 17% (won 89%)  SUPPLY 44% (won 98%)
-                forge: 134.7 a run (49.9 recipes), C=13% U=38% R=38% E=11% L=0% | legendary a run: mean 0.26 median 0 p90 1, runs with one  22%, first on day 21.2, by source deed=0.18 heartfire=0.08 | overwork days 0.0
+RECOMMENDED     charter  11%  defeated  47%  neither by day 31  42% | days med 30 mean 28.4 | first siege leaves  86 | sieges held 17% cost 13% breached 70% | per run: contracts 14.1 captured 0.59 rescued 0.08 dead 0.98 chains 1.4 (first day 8.3) members 3.8 gold 358 rejected 0
+                contracts: DELVE 3% (won 0%)  ESCORT 16% (won 63%)  HUNT 15% (won 82%)  RECOVERY 3% (won 57%)  RESCUE 1% (won 61%)  SABOTAGE 17% (won 89%)  SUPPLY 44% (won 98%)
+                forge: 134.9 a run (49.9 recipes), C=13% U=38% R=38% E=11% L=0% | legendary a run: mean 0.26 median 0 p90 1, runs with one  23%, first on day 21.1, by source deed=0.18 heartfire=0.08 | overwork days 0.0
                 sieges: #1 held 24% cost 28% breached 48% damage 13.9 (n=300)  #2 held 33% cost 19% breached 48% damage 11.6 (n=300)  #3 held 31% cost 19% breached 50% damage 13.9 (n=300)  #4 held 2% cost 3% breached 95% damage 32.6 (n=299)
-                heartfire a run: earned 0.34, forgings 0.20 | deeds 4.80 | sabotage done 2.19 | days with nobody fit 0.31 | charter rate 95% interval 8 to 15 %
-                till a run: shelf_sale 3923, sale_bonus 40, stipend 13, tribute 29, contract 517, spent on stock and tools 4126
+                heartfire a run: earned 0.35, forgings 0.20 | deeds 4.82 | sabotage done 2.20 | days with nobody fit 0.30 | charter rate 95% interval 8 to 15 %
+                till a run: shelf_sale 3926, sale_bonus 41, stipend 13, tribute 29, contract 518, spent on stock and tools 4132
                 opening careful_books  n= 50 charter  14% (7 to 26 %) defeated  42% first siege damage 14.1 loans on day 5: axe/fire=56 sword/fire=45 sword/frost=15 staff/fire=14
                 opening furnace        n= 41 charter  12% (5 to 26 %) defeated  34% first siege damage 12.0 loans on day 5: axe/fire=35 sword/fire=33 axe/frost=17 dagger/frost=12
                 opening marked         n= 53 charter   9% (4 to 20 %) defeated  49% first siege damage 15.7 loans on day 5: sword/fire=38 axe/fire=37 sword/frost=14 dagger/storm=12
                 opening plain_oath     n= 43 charter   5% (1 to 15 %) defeated  47% first siege damage 13.1 loans on day 5: axe/fire=46 sword/fire=35 axe/verdant=10 sword/frost=9
                 opening salvage        n= 56 charter  14% (7 to 26 %) defeated  48% first siege damage 13.7 loans on day 5: axe/fire=53 sword/fire=39 staff/fire=18 axe/verdant=12
                 opening stormwell      n= 57 charter   9% (4 to 19 %) defeated  58% first siege damage 14.0 loans on day 5: sword/fire=59 axe/fire=52 dagger/storm=15 axe/frost=12
-LEGEND_SEEKER   charter  18%  defeated  14%  neither by day 31  68% | days med 31 mean 29.5 | first siege leaves  91 | sieges held 16% cost 17% breached 67% | per run: contracts 12.9 captured 1.06 rescued 0.57 dead 1.70 chains 1.9 (first day 7.3) members 3.6 gold 295 rejected 0
-                contracts: DELVE 4% (won 28%)  EMERGENCY 20% (won 100%)  ESCORT 0% (won 20%)  HUNT 8% (won 87%)  OPPORTUNITY 22% (won 94%)  RECOVERY 2% (won 82%)  RESCUE 7% (won 61%)  SABOTAGE 14% (won 60%)  SUPPLY 22% (won 94%)
-                forge: 117.6 a run (59.0 recipes), C=12% U=34% R=37% E=16% L=1% | legendary a run: mean 1.02 median 1 p90 2, runs with one  67%, first on day 13.8, by source deed=0.34 heartfire=0.68 | overwork days 0.0
-                sieges: #1 held 28% cost 38% breached 34% damage 9.4 (n=300)  #2 held 26% cost 24% breached 50% damage 12.4 (n=300)  #3 held 32% cost 26% breached 42% damage 11.1 (n=300)  #4 held 3% cost 5% breached 92% damage 29.1 (n=300)
-                heartfire a run: earned 1.84, forgings 1.66 | deeds 7.62 | sabotage done 1.08 | days with nobody fit 0.71 | charter rate 95% interval 14 to 22 %
-                till a run: shelf_sale 4548, sale_bonus 54, stipend 19, tribute 49, contract 371, spent on stock and tools 4712
-                opening careful_books  n= 50 charter  12% (6 to 24 %) defeated   6% first siege damage 7.7 loans on day 5: sword/frost=43 axe/frost=42 sword/sun=25 staff/frost=14
-                opening furnace        n= 41 charter  27% (16 to 42 %) defeated  12% first siege damage 10.0 loans on day 5: sword/sun=24 axe/frost=24 sword/frost=24 sword/fire=16
-                opening marked         n= 53 charter  25% (15 to 38 %) defeated  17% first siege damage 10.2 loans on day 5: axe/frost=39 sword/frost=34 sword/sun=34 staff/frost=15
-                opening plain_oath     n= 43 charter  16% (8 to 30 %) defeated  12% first siege damage 9.8 loans on day 5: axe/frost=53 sword/frost=25 sword/sun=23 axe/fire=19
-                opening salvage        n= 56 charter  11% (5 to 21 %) defeated  20% first siege damage 9.2 loans on day 5: sword/frost=48 axe/frost=45 sword/sun=26 spear/fire=20
-                opening stormwell      n= 57 charter  18% (10 to 29 %) defeated  16% first siege damage 9.7 loans on day 5: sword/frost=44 axe/frost=39 sword/sun=32 staff/frost=17
-IGNORE_COUNTER  charter   1%  defeated  35%  neither by day 31  63% | days med 31 mean 29.9 | first siege leaves  84 | sieges held  8% cost 12% breached 80% | per run: contracts 20.7 captured 0.18 rescued 0.11 dead 2.41 chains 0.9 (first day 8.5) members 3.3 gold 289 rejected 0
-                contracts: EMERGENCY 27% (won 100%)  ESCORT 6% (won 62%)  HUNT 9% (won 83%)  RECOVERY 1% (won 75%)  RESCUE 1% (won 60%)  SUPPLY 56% (won 90%)
-                forge: 140.3 a run (51.9 recipes), C=13% U=39% R=38% E=11% L=0% | legendary a run: mean 0.19 median 0 p90 1, runs with one  17%, first on day 20.2, by source deed=0.12 heartfire=0.06 | overwork days 0.0
-                sieges: #1 held 14% cost 27% breached 58% damage 16.5 (n=300)  #2 held 14% cost 22% breached 64% damage 17.0 (n=300)  #3 held 18% cost 19% breached 63% damage 17.8 (n=300)  #4 held 0% cost 0% breached 99% damage 37.0 (n=300)
-                heartfire a run: earned 0.18, forgings 0.16 | deeds 5.53 | sabotage done 0.00 | days with nobody fit 0.36 | charter rate 95% interval 1 to 3 %
-                till a run: shelf_sale 4103, sale_bonus 30, stipend 12, tribute 4, contract 312, spent on stock and tools 4160
-                opening careful_books  n= 50 charter   0% (0 to 7 %) defeated  24% first siege damage 16.6 loans on day 5: axe/fire=57 sword/fire=40 sword/frost=18 staff/fire=11
-                opening furnace        n= 41 charter   0% (0 to 9 %) defeated  46% first siege damage 16.0 loans on day 5: axe/fire=32 sword/fire=31 sword/frost=12 staff/fire=12
-                opening marked         n= 53 charter   6% (2 to 15 %) defeated  32% first siege damage 15.2 loans on day 5: axe/fire=47 sword/fire=42 staff/fire=16 sword/frost=13
-                opening plain_oath     n= 43 charter   0% (0 to 8 %) defeated  35% first siege damage 17.3 loans on day 5: axe/fire=51 sword/fire=35 sword/frost=10 axe/verdant=9
-                opening salvage        n= 56 charter   0% (0 to 6 %) defeated  45% first siege damage 16.8 loans on day 5: axe/fire=58 sword/fire=39 bow/frost=17 staff/fire=14
+LEGEND_SEEKER   charter  16%  defeated  13%  neither by day 31  70% | days med 31 mean 29.7 | first siege leaves  91 | sieges held 16% cost 17% breached 67% | per run: contracts 12.9 captured 1.00 rescued 0.64 dead 1.58 chains 1.9 (first day 7.3) members 3.6 gold 298 rejected 0
+                contracts: DELVE 4% (won 28%)  EMERGENCY 20% (won 100%)  ESCORT 0% (won 20%)  HUNT 8% (won 87%)  OPPORTUNITY 22% (won 94%)  RECOVERY 2% (won 79%)  RESCUE 7% (won 74%)  SABOTAGE 14% (won 60%)  SUPPLY 22% (won 95%)
+                forge: 118.1 a run (59.1 recipes), C=12% U=34% R=37% E=16% L=1% | legendary a run: mean 1.02 median 1 p90 2, runs with one  67%, first on day 14.0, by source deed=0.34 heartfire=0.68 | overwork days 0.0
+                sieges: #1 held 28% cost 38% breached 34% damage 9.4 (n=300)  #2 held 25% cost 24% breached 50% damage 12.4 (n=300)  #3 held 30% cost 28% breached 42% damage 11.3 (n=300)  #4 held 3% cost 4% breached 94% damage 29.7 (n=300)
+                heartfire a run: earned 1.81, forgings 1.64 | deeds 7.77 | sabotage done 1.12 | days with nobody fit 0.66 | charter rate 95% interval 13 to 21 %
+                till a run: shelf_sale 4551, sale_bonus 55, stipend 19, tribute 45, contract 373, spent on stock and tools 4717
+                opening careful_books  n= 50 charter  10% (4 to 21 %) defeated   8% first siege damage 7.7 loans on day 5: sword/frost=43 axe/frost=42 sword/sun=25 staff/frost=14
+                opening furnace        n= 41 charter  27% (16 to 42 %) defeated  10% first siege damage 10.0 loans on day 5: sword/sun=24 axe/frost=24 sword/frost=24 sword/fire=16
+                opening marked         n= 53 charter  25% (15 to 38 %) defeated  13% first siege damage 10.2 loans on day 5: axe/frost=39 sword/frost=34 sword/sun=34 staff/frost=15
+                opening plain_oath     n= 43 charter  14% (7 to 27 %) defeated  14% first siege damage 9.8 loans on day 5: axe/frost=53 sword/frost=25 sword/sun=23 axe/fire=19
+                opening salvage        n= 56 charter  11% (5 to 21 %) defeated  21% first siege damage 9.2 loans on day 5: sword/frost=48 axe/frost=45 sword/sun=26 spear/fire=20
+                opening stormwell      n= 57 charter  14% (7 to 25 %) defeated  12% first siege damage 9.7 loans on day 5: sword/frost=44 axe/frost=39 sword/sun=32 staff/frost=17
+IGNORE_COUNTER  charter   1%  defeated  35%  neither by day 31  64% | days med 31 mean 30.0 | first siege leaves  84 | sieges held  8% cost 12% breached 80% | per run: contracts 20.7 captured 0.15 rescued 0.14 dead 2.38 chains 0.9 (first day 8.7) members 3.2 gold 293 rejected 0
+                contracts: EMERGENCY 26% (won 100%)  ESCORT 6% (won 62%)  HUNT 9% (won 83%)  RECOVERY 1% (won 74%)  RESCUE 1% (won 85%)  SUPPLY 56% (won 90%)
+                forge: 140.5 a run (51.9 recipes), C=12% U=39% R=38% E=11% L=0% | legendary a run: mean 0.19 median 0 p90 1, runs with one  16%, first on day 20.5, by source deed=0.13 heartfire=0.06 | overwork days 0.0
+                sieges: #1 held 14% cost 27% breached 58% damage 16.5 (n=300)  #2 held 14% cost 23% breached 63% damage 16.8 (n=300)  #3 held 17% cost 19% breached 64% damage 17.9 (n=300)  #4 held 0% cost 0% breached 99% damage 36.9 (n=300)
+                heartfire a run: earned 0.18, forgings 0.16 | deeds 5.53 | sabotage done 0.00 | days with nobody fit 0.35 | charter rate 95% interval 1 to 3 %
+                till a run: shelf_sale 4106, sale_bonus 30, stipend 13, tribute 4, contract 312, spent on stock and tools 4162
+                opening careful_books  n= 50 charter   0% (0 to 7 %) defeated  22% first siege damage 16.6 loans on day 5: axe/fire=57 sword/fire=40 sword/frost=18 staff/fire=11
+                opening furnace        n= 41 charter   0% (0 to 9 %) defeated  39% first siege damage 16.0 loans on day 5: axe/fire=32 sword/fire=31 sword/frost=12 staff/fire=12
+                opening marked         n= 53 charter   6% (2 to 15 %) defeated  36% first siege damage 15.2 loans on day 5: axe/fire=47 sword/fire=42 staff/fire=16 sword/frost=13
+                opening plain_oath     n= 43 charter   0% (0 to 8 %) defeated  33% first siege damage 17.3 loans on day 5: axe/fire=51 sword/fire=35 sword/frost=10 axe/verdant=9
+                opening salvage        n= 56 charter   0% (0 to 6 %) defeated  46% first siege damage 16.8 loans on day 5: axe/fire=58 sword/fire=39 bow/frost=17 staff/fire=14
                 opening stormwell      n= 57 charter   2% (0 to 9 %) defeated  32% first siege damage 17.0 loans on day 5: axe/fire=56 sword/fire=39 sword/frost=18 staff/fire=15

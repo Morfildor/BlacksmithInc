@@ -35,49 +35,36 @@ Status words: done (tested), partial (what is missing is named), not done.
 
 | Slice | Content | Status |
 |---|---|---|
-| S1 | Simulator instrumentation, "before" tables | |
-| S2 | Forge, rarity, Heartfire, deeds, hone bypass, rank scaling | |
-| S3 | Opening draft, build directions, pact relics | |
-| S4 | Preparations, opportunities, supply, consequence chains, recovery costs | |
-| S5 | App screens, migration (schema 7, rules 6, content 6, balance 12) | |
-| S6 | Bots, tuning sweep, 1,000-seed validation, tests, emulator, transcripts | |
+| S1 | Simulator instrumentation, "before" tables | done |
+| S2 | Forge, rarity, Heartfire, deeds, hone bypass, rank scaling | done. Heartfire forging in a classic run is tested but not simulated (classic bots do not spend it). |
+| S3 | Opening draft, build directions, pact relics | done: eight packages, seven directions, two pacts. Partial: only two packages have a bot that follows their plan. |
+| S4 | Preparations, opportunities, supply, consequence chains, recovery costs | done: six preparations, the siege's two-day jobs, supplier mood, supply thinning, the nemesis on the wall, siege cause lines. Partial: three contract modifiers, none changes an objective. Rescue is still harder than a hunt. |
+| S5 | App screens, migration (schema 7, rules 6, content 6, balance 12) | done in code and JVM tests. Partial on a device: see the report's "Not seen on a device". |
+| S6 | Bots, tuning sweep, 1,000-seed validation, tests, emulator, transcripts | done. Four new policies, unseen seeds, three transcripts. |
 
 ## Gates
 | Gate | Measure | Target | Result |
 |---|---|---|---|
-| G1 | Legendary forged without Heartfire, new rules | 0 | |
-| G2 | Legendary weapons per run to the first charter, competent new account | median 0 to 1, p90 reported | |
-| G3 | Charter secured, competent policies, new account, Town's Last Hope, 1,000 seeds | 40 to 65 % | |
-| G4 | Supply farming | falls behind adaptive play on charter rate and end wealth | |
-| G5 | Ignoring an announced preparation | worse siege result on paired seeds | |
-| G6 | Each opening package | no package under half or over one and a half times the mean charter rate | |
-| G7 | Rescue and recovery | won at least as often as the hunt that caused them, for a competent policy | |
-| G8 | `:core:test`, `:app:testDebugUnitTest`, debug build | green | |
-| G9 | Emulator: new flows, font scale, process death | seen | |
+| G1 | Legendary forged without Heartfire, new rules | 0 | met: 0 in 13,000 guild runs and 1,200 classic runs, and by test |
+| G2 | Legendary weapons per run to the first charter, competent new account | median 0 to 1, p90 reported | met: median 0 to 1, p90 1. Legend seeker median 1, p90 3 |
+| G3 | Charter secured, competent policies, new account, Town's Last Hope, 1,000 seeds | 40 to 65 % | mean 52 %. Synergy 68 (over by 3), Adaptive 50, Defence first 38 (under by 2) |
+| G4 | Supply farming | falls behind adaptive play on charter rate and end wealth | charter rate met (13 % against 50 %). End wealth not met: the supply farmer ends richer (2,465 gold against 529) because it sells much and spends little |
+| G5 | Ignoring an announced preparation | worse siege result on paired seeds | met: 475 seeds against 11, 41.0 more forge damage |
+| G6 | Each opening package | no package under half or over one and a half times the mean charter rate | met pooled (0.86 to 1.31). For Defence first alone, Paid in Blood is at 1.5 |
+| G7 | Rescue and recovery | won at least as often as the hunt that caused them, for a competent policy | not met: rescue 70 to 89 %, hunt 94 to 98 % (rescue was 57 to 79 % before) |
+| G8 | `:core:test`, `:app:testDebugUnitTest`, debug build | green | met: 581 and 217 tests, 0 failures, debug build |
+| G9 | Emulator: new flows, font scale, process death | seen | partial: opening chooser, process death, the siege's jobs, font 1.3, the Heartfire row. A Heartfire forging, the wall's preparation card and a siege night's cause lines were not seen |
 
-## Handoff note (session stopped on request, 2026-10-11)
-State of the branch `run-variety`:
-- S1 is done and committed (`8f577ee`): `GuildSim` reports rarity, Legendary count and source, recipes, overwork days
-  and the till by source. Before table: `run_variety_evidence/before_guildsim_300.txt`. Competent bots forged a median
-  of 5 to 8 Legendary weapons a run, the first near day 5, in 97 to 99 % of runs. Shelf sales are about 3,800 gold of
-  a run's till and contract gold 400 to 1,000, so Novice's 3,162 end gold is sales, not supply runs.
-- S2 is started and DOES NOT COMPILE yet. In the tree: `LegendConfig` (nested in `DepthConfig.legend`), `RiskProfile`
-  with `rollSpread` and `extraSlots` (Safe 6, Reckless one slot and 30 % defect), balance version 12,
-  `Weapon.legend` / `Weapon.renown`, `LegendOrigin`, `GameState.heartfire` (and in `ResolutionContext`), six new
-  `EventType`s, `Command.Forge.heartfire`, `Command.ChooseOpening`, five new `GameError`s.
-- Why it does not compile: `GameEngine.handle` has no branch for `Command.ChooseOpening` yet.
+## Final numbers (balance 12)
+Guild: `siegePercentBase` 190 (150), `siegePercentPerDay` 3.0 (5.0), `charterWarlordPercent` 110 (115), `nemesisPercent`
+100 (110), rescue stages 60 and 55 percent with a 3-round hold (85 and 80, 4 rounds), recovery 85 (95), captive health
+24 (16), sabotage two stages at 85 and 90. Forge: Safe roll spread 6, Reckless one slot and defect 0.30 (0.20),
+Heartfire as in D3, renown as in D4, classic Heartfire from the third siege fought, when won.
 
-Next steps, in order:
-1. `crafting/Legends.kt`: `gainHeartfire(ctx, amount, why)` (capped at `heartfireMax`, emits HEARTFIRE_GAINED) and
-   `deed(ctx, weaponId, renown, text)` (history DEED, at `renownForLegend` sets rarity LEGENDARY, `legend = DEEDS`,
-   `power + deedPower`, emits LEGEND_EARNED, once).
-2. `Forge.kt`: validate Heartfire (Advanced only, one held), `energyCost`, the roll scaled by the temper's spread
-   (same single draw), `forgedRarity` = quality rarity capped at Epic, breakthrough roll before the property slots,
-   `profile.extraSlots`, known signature at `knownSignatureChance`, `heartfireOutlook` for the workbench.
-3. Hone bypass: `GameEngine.hone` uses `Forge.rarityFor`; it must keep a Legendary and never make one
-   (`Forge.rarityAfter`). The crooked merchant's weapon (`EncounterCatalog`) takes the capped rarity. A legend
-   returning from the board (`WorldEvents` line 385) keeps the uncapped table.
-4. Keep DEED and LEGEND history lines out of `WeaponHistoryCompaction`. Add LEGEND_EARNED to the milestone points map.
-5. Rank scaling: `Missions.generate` and `SiegeFight.plan` add `rank.enemyPercent`; multiply through one helper.
-6. Then S3 to S6 as in the table above. Versions to raise at the end: rules 6, schema 7 (identity steps in both
-   migration tables), content 6. The classic golden state will change with the forge rules: review the diff, then record.
+## Open for the owner
+1. Is the supplier's "less stock when nobody goes" a consequence or a tax? Bots leave it in most runs.
+2. Rescue: ease it further, or accept that a weakened party makes it harder than the hunt?
+3. Licensed Bad Ideas is under the band (30 % average). Tune the charter or leave it as the hard one?
+4. The weapon sheet shows fame as "Renown" and deeds as "Deeds: 2 of 3". One of the two words could change.
+5. A Heartfire forging has no confirm step: the outlook is shown inline before the Forge button. Add one?
+6. Version: this is a 0.9.0-sized change. `versionName` is untouched and the changelog entry is under Unreleased.
