@@ -667,7 +667,7 @@ data class LegendConfig(
     /** Power a weapon gains when its deeds make it Legendary. */
     val deedPower: Int = 4,
     /** A classic run: a siege won from this number on leaves one Heartfire. */
-    val classicSiegeHeartfireFrom: Int = 2,
+    val classicSiegeHeartfireFrom: Int = 3,
 )
 
 /**

@@ -309,7 +309,8 @@ class RunVarietyTest {
     }
 
     @Test fun `the supplier answers what the guild did - thanks or fright for a few days, visible, then over`() {
-        val s = guild()
+        // No siege near: the board posts no supplier's road of its own while this one mood is followed.
+        val s = guild().let { it.copy(town = it.town.copy(nextSiegeDay = it.day + 30), siege = SiegeScenario(it.day + 30)) }
         val limited = content.materials.filter { it.dailySupplierStock != null }
         fun stock(st: GameState) = limited.sumOf { st.supplierStock[it.id] ?: 0 }
         val grateful = s.edit { Missions.supplier(it, true, "The supplier got through.") }
@@ -318,12 +319,14 @@ class RunVarietyTest {
         var plain = s
         var day = grateful
         var richer = 0
+        val trace = ArrayList<String>()
         repeat(config.guild.supplierDays) {
             plain = plain.endDay(); day = day.endDay()
             assertTrue(stock(day) == stock(plain) + limited.size * config.guild.supplierGratefulStock || stock(plain) < limited.size, "day ${day.day}")
             if (stock(day) > stock(plain)) richer++
+            trace += "day ${day.day}: ${stock(plain)} and ${stock(day)}, mood ${day.consequences.map { it.kind to it.dueDay }}"
         }
-        assertTrue(richer >= config.guild.supplierDays - 1)
+        assertTrue(richer >= config.guild.supplierDays - 1, trace.toString())
         plain = plain.endDay(); day = day.endDay()
         assertEquals(stock(plain), stock(day), "bounded")
         assertTrue(day.consequences.none { it.kind == ConsequenceKind.SUPPLIER_GRATEFUL })

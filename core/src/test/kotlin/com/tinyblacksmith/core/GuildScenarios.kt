@@ -69,21 +69,23 @@ object GuildScenarios {
     /** Day 1: the opening relics declined, one quick iron sword forged by a real command and left in storage. */
     private fun dayOne(): GameState = fresh(DAY_ONE_SEED).run(TestSupport.quickSword(Risk.SAFE))
 
-    const val CHECKPOINT_SEED = 1L
+    const val CHECKPOINT_SEED = 2L
     const val CHECKPOINT_DAY = 10
 
     const val SIEGE_EVE_SEED = 1L
 
     /** The morning of the first siege, with the Guardian reserved for the wall by a real command. */
     private fun siegeEve(): GameState {
-        val s = morning(SIEGE_EVE_SEED, GuildPolicy.SYNERGY, config.siegeInterval).settled()
+        // The Guardian came home spent from the two-day sabotage: rested by hand, so the case shows a reserved member on the wall.
+        val s = morning(SIEGE_EVE_SEED, GuildPolicy.SYNERGY, config.siegeInterval).settled().let { p -> p.member(LaunchContent.GUARDIAN).let { g ->
+            p.with(g.copy(health = 100)).copy(guild = p.guild!!.copy(members = p.guild!!.members.map { if (it.heroId == g.id) it.copy(wound = null) else it })) } }
         return s.run(Command.ReserveDefender(s.member(LaunchContent.GUARDIAN).id, true))
     }
 
     const val CAPTIVE_SEED = 1L
-    const val CAPTIVE_DAY = 18
+    const val CAPTIVE_DAY = 8
 
-    const val CHARTER_SEED = 4L
+    const val CHARTER_SEED = 2L
     const val CHARTER_LEVEL = 8
     const val CHARTER_QUALITY = 90
 
@@ -106,7 +108,7 @@ object GuildScenarios {
     }
 
     private fun strong(w: Weapon): Weapon = maxOf(w.quality, CHARTER_QUALITY).let { q ->
-        w.copy(quality = q, rarity = Forge.rarityFor(q, config), power = maxOf(w.power, Forge.powerOf(content, config, w.familyId, w.coreId, q, w.affixes + w.flaws)), condition = 100)
+        w.copy(quality = q, rarity = Forge.rarityAfter(w, q, config), power = maxOf(w.power, Forge.powerOf(content, config, w.familyId, w.coreId, q, w.affixes + w.flaws)), condition = 100)
     }
 
     const val STORMWELL_SEED = 3L
@@ -140,14 +142,14 @@ object GuildScenarios {
     val all: List<Scenario> = listOf(
         Scenario("guild_day_one", "Guild: day one, the first loan",
             "Day 1 with a Guardian and a Warden signed and one sword in storage. Open the Guardian and loan them the sword: it leaves storage and shows in their hand; recall it and it is back.",
-            "Constructed: $TLH on seed $DAY_ONE_SEED; the opening relic offer was declined and one quick iron sword forged, both by real commands.", endDay = false,
+            "Constructed: $TLH on seed $DAY_ONE_SEED; the first opening offered was taken and one quick iron sword forged, both by real commands.", endDay = false,
             blade = { it.storedWeapons().singleOrNull() }) { dayOne() },
         Scenario("guild_checkpoint", "Guild: a party at a relic delve's checkpoint",
             "The party won the first stage of a relic delve and waits. The Guild screen asks: push on (the deeper stage, at its own risk) or return with what is secured. Choose, then press End Day.",
             "Played: $TLH, GREEDY_DIVER, seed $CHECKPOINT_SEED, stopped on the morning of day $CHECKPOINT_DAY; a blessing on offer was taken.", endDay = false) { morning(CHECKPOINT_SEED, GuildPolicy.GREEDY_DIVER, CHECKPOINT_DAY).settled() },
         Scenario("guild_siege_eve", "Guild: the morning of a siege, one reserved",
             "A siege comes tonight and the Guardian is kept for the wall. A contract on the board would take the others away: plan it and the wall's forecast names who is left; press End Day and the siege card says who stood.",
-            "Played: $TLH, SYNERGY, seed $SIEGE_EVE_SEED, stopped on the morning of day ${config.siegeInterval} (the siege day); a blessing on offer was taken and the Guardian reserved by a real command.", endDay = false) { siegeEve() },
+            "Played: $TLH, SYNERGY, seed $SIEGE_EVE_SEED, stopped on the morning of day ${config.siegeInterval} (the siege day); a blessing on offer was taken, the Guardian rested by hand and reserved by a real command.", endDay = false) { siegeEve() },
         Scenario("guild_captive", "Guild: a member held, a rescue posted",
             "A member is in enemy hands with a deadline, and the Rescue contract for them is on the board. Send a party: a won rescue brings them home, a missed deadline does not.",
             "Played: $TLH, GREEDY_DIVER, seed $CAPTIVE_SEED, stopped on the morning of day $CAPTIVE_DAY; a blessing on offer was taken.", endDay = false) { morning(CAPTIVE_SEED, GuildPolicy.GREEDY_DIVER, CAPTIVE_DAY).settled() },
@@ -157,7 +159,7 @@ object GuildScenarios {
             endDay = false) { charterEve() },
         Scenario("guild_stormwell", "Guild: Stormwell",
             "The Guardian carries a Stormglass sword forged with Binding Salt, the Warden a staff, a Battlemage has signed, the Overflow Basin is held and a Hunt is on the board. Send the three on the Hunt and press End Day: the party's card tells the chain.",
-            "Constructed: $TLH on seed $STORMWELL_SEED, day 1. By real commands: the relic offer declined, the offered Battlemage signed, the sword (Advanced, Iron, Stormglass, Binding Salt) and the staff (Iron, Verdant Sap) forged and loaned. Set by hand: 300 gold, the materials and energy for the two forges, the Overflow Basin in the workshop, and a Hunt generated onto the board a day early (drawn from a copy of the run's guild stream: the saved stream is not advanced).",
+            "Constructed: $TLH on seed $STORMWELL_SEED, day 1. By real commands: the first opening taken, the offered Battlemage signed, the sword (Advanced, Iron, Stormglass, Binding Salt) and the staff (Iron, Verdant Sap) forged and loaned. Set by hand: 300 gold, the materials and energy for the two forges, the Overflow Basin in the workshop, and a Hunt generated onto the board a day early (drawn from a copy of the run's guild stream: the saved stream is not advanced).",
             endDay = false, blade = { s -> s.loanOf(s.member(LaunchContent.GUARDIAN).id) }) { stormwell() },
     )
 

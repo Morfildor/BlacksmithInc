@@ -95,7 +95,7 @@ object SiegeFight {
         val prep = GuildOps.catalog(ctx).preparation(s.prepId)
         val text = if (prep != null) {
             ctx.siege = s.copy(prepId = null, prepSpoiled = prep.id, sabotaged = 1)
-            "Their ${prep.name.lowercase()} is spoiled. It will not come on day ${s.siegeDay}."
+            "What they prepared is spoiled: ${prep.name.lowercase()}. It will not come on day ${s.siegeDay}."
         } else if (trait != null) {
             ctx.siege = s.copy(traitId = null, sabotaged = 1, plan = if (trait.id == Depth.MANY_BREACHES && s.plan.size > 2) s.plan.dropLast(1) else s.plan)
             "Their plan for a ${trait.name} is spoiled: the day ${s.siegeDay} siege will be a plain one."
@@ -292,8 +292,8 @@ object SiegeFight {
         }
         // What decided it, from the night's own record.
         val notes = ArrayList<String>()
-        cat.preparation(scenario.prepSpoiled)?.let { notes += "Your party had spoiled their ${it.name.lowercase()}. It did not come." }
-        prep?.let { notes += "They came with ${it.name.lowercase()}, as the scouts said. ${it.description}" }
+        cat.preparation(scenario.prepSpoiled)?.let { notes += "Your party had spoiled what they prepared: ${it.name.lowercase()}. It did not come." }
+        prep?.let { notes += "They came with what the scouts reported: ${it.name.lowercase()}. ${it.description}" }
         notes += absent
         if (wall.size < cfg.defenders) notes += "Only ${wall.size} of ${cfg.defenders} places on the wall were filled."
         fight?.actors?.filter { it.side == Side.ENEMY && !it.downed && !it.summoned }?.forEach { a ->

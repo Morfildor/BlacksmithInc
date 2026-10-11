@@ -65,7 +65,7 @@ object Gazette {
     private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)
     private val forgeTypes = setOf(
         EventType.WEAPON_FORGED, EventType.WEAPON_LISTED, EventType.WEAPON_HONED, EventType.WEAPON_DONATED, EventType.WEAPON_SALVAGED,
-        EventType.TOOL_BOUGHT, EventType.DISCOVERY, EventType.SIGNATURE_DISCOVERED, EventType.MATERIAL_BOUGHT, EventType.HEARTFIRE_GAINED,
+        EventType.TOOL_BOUGHT, EventType.DISCOVERY, EventType.SIGNATURE_DISCOVERED, EventType.MATERIAL_BOUGHT,
     )
 
     /** Why a visitor left without buying (`MarketVisit.reason`), as the paper puts it. */

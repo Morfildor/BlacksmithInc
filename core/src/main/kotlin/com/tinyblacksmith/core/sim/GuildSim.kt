@@ -482,6 +482,17 @@ fun main(args: Array<String>) {
         siegeGrunts = sets["siegeGrunts"]?.toInt() ?: g0.siegeGrunts, siegePercentPerPressure = sets["siegePercentPerPressure"]?.toDouble() ?: g0.siegePercentPerPressure,
         enemyPercentPerPressure = sets["enemyPercentPerPressure"]?.toDouble() ?: g0.enemyPercentPerPressure, outerMaxPercent = sets["outerMaxPercent"]?.toInt() ?: g0.outerMaxPercent,
         siegeGruntEvery = sets["siegeGruntEvery"]?.toInt() ?: g0.siegeGruntEvery, damageCostPercent = sets["damageCostPercent"]?.toInt() ?: g0.damageCostPercent))
+    // --classic: what rules 6 do to a run without a charter. Legendary weapons by origin, renown earned and Heartfire left in the forge at the end.
+    if ("--classic" in args) {
+        for (policy in listOf(Policy.BALANCED_ACTIVE, Policy.EXPERT)) {
+            val ends = IntStream.range(0, runs).parallel().mapToObj { i -> SimulationDriver(GameEngine(config = config), maxDays = horizon).playRun(if (maxed) Simulator.maxedLegacy(GameEngine()) else LegacyProfile(), seed + i, policy).second }.collect(Collectors.toList())
+            val legends = ends.map { e -> e.weapons.values.count { it.legend == LegendOrigin.DEEDS } }.sorted()
+            println("classic %-16s %d runs to day %d: days mean %.1f | Legendary forged from quality %d | by deeds a run mean %.2f median %d p90 %d, runs with one %.0f%% | weapons with renown a run %.1f | Heartfire in the forge at the end mean %.2f".format(
+                policy.name, runs, horizon, ends.map { it.day }.average(), ends.sumOf { e -> e.weapons.values.count { it.rarity == Rarity.LEGENDARY && it.legend == null && it.legendKey == null } }, legends.average(), legends[legends.size / 2],
+                legends[legends.size * 9 / 10], 100.0 * legends.count { it > 0 } / legends.size, ends.sumOf { e -> e.weapons.values.count { it.renown > 0 } } / runs.toDouble(), ends.map { it.heartfire }.average()))
+        }
+        return
+    }
     println("Guild runs: $runs seeds from $seed, charter $charter, horizon day $horizon, ${if (maxed) "maxed legacy" else "new account"}, balance ${BalanceConfig.DEFAULT.version}")
     if ("--why" in args) for (p in policies) { val bot = GuildBot(GameEngine(config = config), p, charter, horizon); bot.play(seed); println("${p.name}: ${bot.rejected} rejected"); bot.rejections.forEach { println("  $it") } }
     val reports = policies.map { p -> GuildSim.run(p, runs, seed, config, charterId = charter, horizon = horizon, legacy = { if (maxed) Simulator.maxedLegacy(it) else LegacyProfile() }, opening = a["--opening"], retire = "--playOn" !in args) }
