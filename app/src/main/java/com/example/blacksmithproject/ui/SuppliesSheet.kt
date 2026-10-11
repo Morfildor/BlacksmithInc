@@ -37,6 +37,7 @@ import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.WorldEvents
+import com.tinyblacksmith.core.model.ConsequenceKind
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.MaterialId
 
@@ -53,6 +54,16 @@ fun GameEngine.supplyNotes(state: GameState, m: MaterialDef): List<String> {
         "Caravan Ties: $ties more each day".takeIf { ties > 0 },
         "Ore merchant in town: ${config.worldEvents.oreMerchantStock} more today".takeIf { state.worldFlags[WorldEvents.FLAG_ORE_MERCHANT + m.id.value] == state.day },
     )
+}
+
+/**
+ * The supplier's mood after what the guild did for them or left undone, and the last morning it holds: limited materials
+ * restock by one more or one fewer each morning (`Missions.supplierStockDelta`). Null while the supplier has no mood.
+ */
+fun GameEngine.supplierMood(state: GameState): String? {
+    val mood = state.consequences.firstOrNull { (it.kind == ConsequenceKind.SUPPLIER_GRATEFUL || it.kind == ConsequenceKind.SUPPLIER_SHAKEN) && state.day <= it.dueDay } ?: return null
+    return if (mood.kind == ConsequenceKind.SUPPLIER_GRATEFUL) "The supplier is grateful. ${config.guild.supplierGratefulStock} more of every limited material each morning, until day ${mood.dueDay}."
+    else "The supplier is shaken. ${config.guild.supplierShakenStock} fewer of every limited material each morning, until day ${mood.dueDay}."
 }
 
 /** A tool's level and what the next one costs (`GameEngine.toolCost`; null once there is no next level). */
@@ -93,6 +104,7 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                     Text("${st.gold} gold", style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.semantics { contentDescription = "${st.gold} gold in the purse" })
                 }
                 Secondary("Buy one at a time. Basic metals are always in stock.")
+                vm.engine.supplierMood(st)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Gold, modifier = Modifier.padding(top = Space.xs).testTag("supplies_mood")) }
             }
         }
         groups.forEach { (category, group) ->

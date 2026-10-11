@@ -241,6 +241,10 @@ fun SiegeOutcomeCard(beat: Beat.Aftermath, siege: SiegeOutcomeUi, onOpenHero: (F
         // A guild run: what the watch did before the wall, then what decided the fight on it.
         siege.outerLine?.let { Body(it, Modifier.testTag("shopday_siege_outer")) }
         FightHighlights(siege.highlights, "shopday_siege_highlights")
+        if (siege.notes.isNotEmpty()) Column(Modifier.testTag("shopday_siege_notes")) {
+            Overline("Why it ended this way")
+            siege.notes.forEach { Text("· $it", style = MaterialTheme.typography.bodyMedium) }
+        }
         Body(card.text, Modifier.testTag("shopday_aftermath_text"))
         siege.fight?.let { FightReport(it, Modifier.padding(top = Space.xs), expanded = whole, onToggle = { whole = !whole }, highlights = 0) }
         // The wall's fight has its whole timeline above; the round list is for a siege that has none.
