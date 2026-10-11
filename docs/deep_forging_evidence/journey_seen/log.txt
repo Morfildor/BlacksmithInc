@@ -1,0 +1,53 @@
+tapped id 'menu_continue' at 540 1284
+screenshot 01_opening
+tapped id 'opening_choose_stormwell' at 540 1788
+tapped id 'opening_confirm_yes' at 809 1249
+tapped id 'nav_forge' at 403 1762
+tapped id 'forge_option_sword' at 222 1207
+tapped id 'forge_option_bronze' at 539 612
+tapped id 'forge_option_ember_resin' at 222 612
+screenshot 02_outlook
+--- outlook
+text="Bronze sword"
+text="Weapon"
+text="Sword"
+text="Metal"
+--
+text="Bronze"
+text="Augment"
+text="4"
+text="Ember Resin"
+--
+text="Bronze · Rings when struck. It answers the blow that breaks the wielder's Guard."
+text="Ember Resin · Fire. Each round the first hit leaves Burn, which hurts at the end of the round."
+text="Needs"
+text="Bronze rings back: Guard on the wielder for an enemy to break."
+text="Forge · 2 energy"
+text="Shop"
+text="Forge"
+tapped id 'forge_weapon' at 540 1578
+screenshot 03_forged
+tapped id 'reveal_store' at 178 1578
+tapped id 'nav_records' at 953 1762
+tapped id 'page_journal' at 540 350
+tapped id 'book_tab_fights' at 917 798
+screenshot 04_notes_before
+--- fight notes (04_notes_before)
+text="● Learned · The wielder's first hit each round puts 1 Burn on its target."
+text="A broken Guard answers"
+text="? Suggested by the rules · Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns."
+text="Trade-off: It needs Guard on the wielder and an enemy strong enough to break it."
+text="You have forged: Bronze rings back"
+text="6 more to find. They open when you forge something that takes part in them."
+COUNT rows of the path: 1
+STATE 04_notes_before: not seen
+STATE 04_notes_before: a path is suggested by the rules
+tapped id 'nav_town' at 678 1762
+tapped 'Urien' at 317 1215
+screenshot 05_member_sheet
+tapped id 'sheet_loan_' at 958 1840
+screenshot 06_member_loaned
+--- member sheet
+text="Carries"
+MISSING id: sheet_close
+MISSING: Choose a party below Supply run

@@ -107,7 +107,10 @@ object ForgeLab {
         out.appendLine("   prepared = the evaluator finds everything the rule waits for in that company. Score change is a mean. Wins: fights won with the rule that were lost without, minus the reverse, per 100 fights.")
         out.appendLine("%-10s %-6s %5s %9s | %8s %8s %7s | %8s %8s %7s".format("metal", "stage", "price", "prepared", "fires", "score", "wins", "fires", "score", "wins"))
         out.appendLine("%-10s %-6s %5s %9s | %25s | %25s".format("", "", "", "", "when prepared", "when not prepared"))
-        val pairs = fights.groupBy { it.copy(craft = 0, score = 0, won = false, fired = false, cracked = false) }.values.filter { it.size == 2 }.map { p -> p.first { it.craft == 1 } to p.first { it.craft == 2 } }
+        // Only recipes whose other rules are the same before and since: a catalyst the catalog has rewritten would be measured along with the metal.
+        val rewritten = content.combat!!.catalystEffects.filterValues { es -> es.any { it.id in content.combat.revisions } }.keys
+        out.appendLine("   Recipes with ${rewritten.joinToString(" or ") { name(it) }} are left out here: their own rules differ between the two.")
+        val pairs = fights.filter { it.catalyst !in rewritten }.groupBy { it.copy(craft = 0, score = 0, won = false, fired = false, cracked = false) }.values.filter { it.size == 2 }.map { p -> p.first { it.craft == 1 } to p.first { it.craft == 2 } }
         for (core in cores) for (stage in stages) {
             val mine = pairs.filter { it.second.core == core.id && it.second.stage == stage.id }
             fun cell(ps: List<Pair<Fought, Fought>>) = if (ps.isEmpty()) "%8s %8s %7s".format("-", "-", "-") else

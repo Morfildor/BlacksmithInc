@@ -40,6 +40,7 @@ check() { if "$@" >/dev/null 2>&1; then echo "CHECK $*: ok"; else echo "CHECK $*
 # starts above the pinned Forge button, which does not scroll
 swipe_up() { $ADB shell input swipe 540 1300 540 600 500; $ADB shell sleep 1; }
 scroll_to_id() { for i in 1 2 3 4 5 6 7 8 9 10; do if has_pre "$1"; then return 0; fi; swipe_up; done; echo "SCROLL MISSING id: $1"; return 1; }
+scroll_to_text() { for i in 1 2 3 4 5 6 7 8 9 10; do if has "$1"; then return 0; fi; $ADB shell input swipe 540 1300 540 900 500; $ADB shell sleep 1; done; echo "SCROLL MISSING text: $1"; return 1; }
 texts() { dump | grep -o 'text="[^"]\+"' | head -n "${1:-60}"; }
 # Whatever the morning puts in front of the workshop (relic, blessing, an opening package) is put off or taken first.
 past_offers() {
@@ -82,19 +83,30 @@ wait_id bench_sheet; shot 07_bench_recipe
 check has "The bench"
 tap_id bench_company_frost; shot 08_bench_recipe_frost
 scroll_to_id bench_target_attrition && tap_id bench_target_attrition; shot 09_bench_recipe_attrition
-swipe_up; shot 10_bench_recipe_what_happened
+# The town's wall: the labelled home-defence rehearsal.
+scroll_to_id bench_target_wall && tap_id bench_target_wall; shot 09b_bench_recipe_wall
+check has_id bench_synthetic
+scroll_to_text "What happened"; shot 10_bench_recipe_what_happened
 check has "What happened"
-swipe_up; shot 11_bench_recipe_silent
+scroll_to_text "Waiting for its moment"; shot 11_bench_recipe_waiting
+check has "Waiting for its moment"
 echo "--- bench (recipe)"; texts 80
-# Process death with the bench open: the choices and the sheet should come back.
-$ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
-wait_text "Continue run" && tap_id menu_continue
-past_offers
-tap_id nav_forge; $ADB shell sleep 2; shot 12_after_kill_forge
-# The draft on the anvil is not part of the save: if it is gone, the recipe is chosen again.
-if has_id forge_option_sword; then echo "NOTE the draft did not survive the kill"; tap_id forge_option_sword; tap_id forge_option_iron; tap_id forge_option_frost_bloom; fi
-has_id bench_sheet && echo "NOTE bench came back open after the kill" || echo "NOTE bench was closed after the kill"
+# Process recreation with the bench open: the app goes to the background, the system kills its process, the task is
+# brought back. The recipe on the anvil is saved instance state and comes back. (A force-stop is a different thing: it
+# throws the task's saved state away, as swiping the app out of recents does, and the anvil is empty afterwards.)
+$ADB shell input keyevent KEYCODE_HOME; $ADB shell sleep 2
+$ADB shell am kill $PKG; $ADB shell sleep 1
+check_dead() { [ -z "$($ADB shell pidof $PKG)" ]; }
+check check_dead
+$ADB shell am start -n $PKG/.MainActivity >/dev/null; $ADB shell sleep 4
+has "Continue run" && { tap_id menu_continue; past_offers; tap_id nav_forge; }
+shot 12_after_recreation_forge
+has_id bench_sheet && echo "NOTE bench came back open after recreation" || echo "NOTE bench was closed after recreation"
 has_id bench_close && { scroll_to_id bench_close; tap_id bench_close; }
+draft_kept() { dump | grep -q 'Iron sword'; }
+check draft_kept
+# If the anvil is empty all the same, the recipe is chosen again so that the rest of the pass can go on.
+if has_id forge_option_sword; then echo "NOTE the draft did not survive recreation"; tap_id forge_option_sword; tap_id forge_option_iron; tap_id forge_option_frost_bloom; fi
 # 4. Forge it and open the weapon.
 tap_id forge_weapon || { scroll_to_id forge_weapon && tap_id forge_weapon; } || exit 1
 $ADB shell sleep 2; shot 13_forge_result

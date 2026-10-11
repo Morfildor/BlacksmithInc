@@ -417,7 +417,7 @@ class DeepForgingTest {
         assertEquals(setOf("charge"), ctx.legacy.journal.witnessed)
         val told = ctx.newEvents.filter { it.type == EventType.DISCOVERY && it.data["interaction"] == "charge" }
         assertEquals(1, told.size)
-        assertTrue(told.single().text.startsWith("Seen in a fight. Charge and burst."))
+        assertTrue(told.single().text.startsWith("Seen in a real fight. Charge and burst."))
         Interactions.witness(ctx, rehearsal.result)
         assertEquals(1, ctx.newEvents.count { it.data["interaction"] == "charge" })
         state = state.copy(legacy = ctx.legacy)
@@ -477,6 +477,38 @@ class DeepForgingTest {
         val again = SaveCodec.decodeRun(SaveCodec.encodeRun(forged))
         assertEquals(forged.weapons, again.weapons)
         assertTrue(again.weapons.values.any { it.craft == WeaponRules.CRAFT && "core_iron" in rules(it) })
+    }
+
+    @Test fun `an older weapon is the same weapon after the hone, the shelf, a loan, a contract and a save`() {
+        var s = guildRun()
+        s.guild!!.openingOffer.firstOrNull()?.let { s = (engine.handle(s, Command.ChooseOpening(it.defId)) as CommandOutcome.Accepted).state }
+        // Two old weapons, one for each catalyst whose rule has been rewritten since, and silver, which holds a charge only when forged since.
+        val oil = made(L.SWORD, L.BRONZE, L.FROST_BLOOM, L.DRAGON_OIL, craft = 1).copy(id = WeaponId("old-oil"), name = "Old Bronze Sword", condition = 60)
+        val ink = made(L.SWORD, L.SILVER, L.EMBER_RESIN, L.VOID_INK, craft = 1).copy(id = WeaponId("old-ink"), name = "Old Silver Sword", condition = 60)
+        val expected = mapOf(oil.id to rules(oil), ink.id to rules(ink))
+        assertTrue("catalyst_spreading" in rules(oil) && "catalyst_converting" in rules(ink))
+        assertTrue(expected.values.flatten().none { it.startsWith("core_") || it == "catalyst_drinking" || it == "catalyst_spreading_fire" })
+        s = s.copy(weapons = s.weapons + (oil.id to oil) + (ink.id to ink))
+        fun same(step: String) = expected.forEach { (id, was) -> val w = s.weapons.getValue(id); assertEquals(1, w.craft, "$step ${w.name}"); assertEquals(was, rules(w), "$step ${w.name}") }
+        fun send(step: String, c: Command) { s = (engine.handle(s, c) as? CommandOutcome.Accepted)?.state ?: error("$step was refused: ${engine.handle(s, c)}"); same(step) }
+        send("honed", Command.Hone(oil.id))
+        assertTrue(s.weapons.getValue(oil.id).honed)
+        send("listed", Command.ToggleShelf(ink.id, true, 40))
+        send("priced", Command.SetPrice(ink.id, 55))
+        send("unlisted", Command.ToggleShelf(ink.id, false))
+        val members = s.guild!!.members.map { it.heroId }
+        send("loaned", Command.LoanWeapon(members[0], oil.id))
+        send("loaned", Command.LoanWeapon(members[1], ink.id))
+        send("recalled", Command.RecallLoan(ink.id))
+        send("loaned again", Command.LoanWeapon(members[1], ink.id))
+        s = SaveCodec.decodeRun(SaveCodec.encodeRun(s)); same("saved and loaded")
+        // A real contract (the supplier's road is fought too): the fight the old weapons are carried into runs their old rules and none of the new ones.
+        val offer = s.guild!!.offers.first { o -> content.guild!!.mission(o.defId).archetype == com.tinyblacksmith.core.content.MissionArchetype.SUPPLY }
+        send("planned", Command.PlanDeployment(offer.id, members.take(2), com.tinyblacksmith.core.combat.Posture.BALANCED))
+        send("fought", Command.EndDay(CommandId("old-weapons")))
+        val fight = assertNotNull(s.guild!!.lastMission?.fight, "the contract was fought")
+        assertTrue(fight.events.mapNotNull { it.effectId }.none { it.startsWith("core_") || it == "catalyst_drinking" || it == "catalyst_spreading_fire" }, "no rule from after their forging ran")
+        s = SaveCodec.decodeRun(SaveCodec.encodeRun(s)); same("saved after the fight")
     }
 
     @Test fun `a legend comes back as the composition it was forged under`() {

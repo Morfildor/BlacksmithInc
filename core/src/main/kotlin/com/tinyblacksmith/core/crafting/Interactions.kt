@@ -49,7 +49,7 @@ object Interactions {
         if (fresh.isEmpty()) return
         ctx.legacy = ctx.legacy.copy(journal = journal.copy(witnessed = journal.witnessed + fresh))
         for (def in combat.interactions.filter { it.id in fresh }) {
-            ctx.emit(EventType.DISCOVERY, 2, "Seen in a fight. ${def.name}. ${def.description}", data = mapOf("interaction" to def.id))
+            ctx.emit(EventType.DISCOVERY, 2, "Seen in a real fight. ${def.name}. ${def.description}", data = mapOf("interaction" to def.id))
         }
     }
 
