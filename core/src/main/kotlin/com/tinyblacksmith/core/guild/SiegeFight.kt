@@ -196,7 +196,7 @@ object SiegeFight {
         // The wall as the day's siege replay: the blows of the fight that landed, in order, then what reached the forge.
         val rounds = fight?.events.orEmpty().filter { it.kind == EventKind.DAMAGE && it.source != null && it.target != null }.take(14).map { e ->
             val src = fight!!.actor(e.source!!); val dst = fight.actor(e.target!!)
-            CombatRound(src?.name ?: "?", dst?.name ?: "?", e.amount, e.text.removePrefix("${src?.name} ").removeSuffix("."), e.source.takeIf { src?.side == Side.PARTY && src.summoned.not() })
+            CombatRound(src?.name ?: "?", dst?.name ?: "?", e.amount, e.text.removePrefix("${src?.name}'s ").removePrefix("${src?.name} ").removeSuffix("."), e.source.takeIf { src?.side == Side.PARTY && src.summoned.not() })
         } + CombatRound(faction.siegeName, "the forge", forgeDamage, if (won) "is driven off" else "breaks through")
         ctx.replays += CombatReplay("Siege of Emberfall, day ${ctx.day}", ctx.day, rounds, when (verdict) { SiegeVerdict.HELD -> "Town held"; SiegeVerdict.HELD_AT_A_COST -> "Held at a cost"; SiegeVerdict.BREACHED -> "Defenses broken" })
 

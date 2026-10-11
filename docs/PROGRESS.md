@@ -29,6 +29,12 @@ charter" is the 0.7.0 game, unchanged (the rules-4 golden state file passes as t
   - By hand: a member's sheet; the debug Combat sandbox with the Stormwell fixture; the `guild_siege_eve` scenario
     loaded from the debug menu, its wall (besieger's field, a reserved member), End Day, and the guild siege card
     ("The town held", the watch's line, who stood).
+  - `tools/emulator/runend.sh`: a passive guild run fell on day 15, the legacy was claimed, the run-end screen reopened
+    after process death and era 2 began. Its one failing check ("upgrades available after reopening") was the charter
+    picker pinned over the upgrade list, where the script's swipe (and a thumb) could not scroll it; the picker is now
+    the last item of the scroll. RUNEND_RERUN
+  - By hand: "No charter" chosen on the title starts a classic run: 250 gold, the tab reads Town, the classic siege card
+    with its defense and raid numbers.
   Screenshots: `docs/guild_evolution_evidence/screens/`.
 
 **Not verified. Read this before trusting a screen.**
@@ -40,12 +46,10 @@ charter" is the 0.7.0 game, unchanged (the rules-4 golden state file passes as t
   it; none was seen.
 - Never seen on a device: "held, at a cost" and "breached" on the siege card (JVM test only), a capture, a rescue, the
   charter siege, a law, the rival's news.
-- `connectedDebugAndroidTest` was not run. `NavigationFlowTest` (4 tests) and `ShopDayPersistenceTest` (3) start from
-  fixtures that still carry the opening relic offer; two of them press Back while that dialog is up and very likely
-  fail. This is older than the guild work (PROGRESS, section below) and still open. The fix is to store the fixture
-  run with `pendingRelicOffer = emptyList()`.
-- `tools/emulator/runend.sh` was edited for the opening offer and not run. `tools/emulator/scenarios.sh` was not run:
-  one scenario was loaded by hand.
+- `connectedDebugAndroidTest` as a whole was not run. `NavigationFlowTest` and `ShopDayPersistenceTest` were: their
+  fixtures now store the run with the opening relic offer answered, and all 7 pass on the emulator (the first attempt
+  died with "Process crashed" seconds after boot, with Chrome in the crash log; the second ran clean).
+- `tools/emulator/scenarios.sh` was not run: one scenario was loaded by hand.
 - The siege diorama ("Watch the siege") is hidden for a guild siege in favour of the timeline; the classic diorama
   was not rechecked on a device.
 - Nobody has played it. The spec's two stop gates (is the fight fun to watch; is the five-day opening fun) were not
@@ -58,6 +62,8 @@ charter" is the 0.7.0 game, unchanged (the rules-4 golden state file passes as t
 - A member's sheet shows the hero's old personality traits ("Cautious, Greedy") next to the one guild trait
   ("Protective"). Two lists called traits; the old ones do nothing in a fight.
 - The Combat sandbox draws under the status bar.
+- The day's fight is stored twice in a save (`lastResolution.mission` / `.siege` and `guild.lastMission` / `lastSiege`): a
+  constant, not growth, but one copy can go.
 - Highlights can be thin in a short fight (a supply run's three highlights are three ripostes' worth of one idea;
   repeats of the same rule are now folded into one).
 - `GuildUi`'s "Works together" knows four pairs of rules. A chain outside them is only found by watching it happen

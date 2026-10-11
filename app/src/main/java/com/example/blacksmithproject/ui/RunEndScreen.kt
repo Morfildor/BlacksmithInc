@@ -102,10 +102,11 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
                     }
                 }
             }
+            // What the next era begins under: the last thing in the scroll, so the pinned button below keeps the list its height.
+            // The button starts the era with what is chosen here (the first charter unless changed).
+            CharterPicker(vm, Modifier.padding(top = Space.md))
         }
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm)) {
-            // What the next era begins under, chosen here; the button starts it with what is shown.
-            CharterPicker(vm, Modifier.padding(bottom = Space.sm))
             if (s.claimed) {
                 PrimaryActionButton("Begin era $nextEra", vm::beginNextEra, Modifier.fillMaxWidth().testTag("run_begin_era"), enabled = !s.busy)
             } else {

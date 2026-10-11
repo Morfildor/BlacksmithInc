@@ -59,7 +59,7 @@ class NavigationFlowTest {
     private fun play(run: GameState): GameViewModel {
         store = SaveStore.create(context, DB)
         runBlocking {
-            store.commit(SaveCodec.encodeRun(run), SaveCodec.encodeLegacy(run.legacy))
+            store.commit(SaveCodec.encodeRun(run.copy(pendingRelicOffer = emptyList())), SaveCodec.encodeLegacy(run.legacy))   // the opening relic offer answered: its dialog is not what is under test
             run.lastResolution?.let { store.saveCursor(DayCursor(it.commandId.value, DayCursor.Stage.DONE).encode()) }
         }
         lateinit var vm: GameViewModel

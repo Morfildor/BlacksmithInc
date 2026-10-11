@@ -60,7 +60,7 @@ class ShopDayPersistenceTest {
     /** A store holding [run] on planning: its last day, if any, watched to the end. */
     private fun seed(run: GameState): SaveStore = SaveStore.create(context, DB).also { store ->
         runBlocking {
-            store.commit(SaveCodec.encodeRun(run), SaveCodec.encodeLegacy(run.legacy))
+            store.commit(SaveCodec.encodeRun(run.copy(pendingRelicOffer = emptyList())), SaveCodec.encodeLegacy(run.legacy))   // the opening relic offer answered: its dialog is not what is under test
             run.lastResolution?.let { store.saveCursor(DayCursor(it.commandId.value, DayCursor.Stage.DONE).encode()) }
         }
     }

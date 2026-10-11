@@ -151,7 +151,7 @@ a person playing.
 | ID | Task | Status | Evidence, and what is missing |
 |---|---|---|---|
 | A01 | Design revision in GDD addendum, CLAUDE.md, DECISIONS | built | `docs/GDD_REVISION_2026-10-10.md`, DECISIONS (two sections) |
-| A02 | New-run device scripts handle the opening offers | device | `smoke.sh` ran to `SMOKE_DONE` on a guild run. `runend.sh` was edited and not run. The instrumented tests (`connectedDebugAndroidTest`) were not run; seven of them meet the opening relic dialog (see PROGRESS) |
+| A02 | New-run device scripts handle the opening offers | device | `smoke.sh` and `runend.sh` ran on a guild run; `NavigationFlowTest` and `ShopDayPersistenceTest` (7 tests, fixtures fixed) pass on the emulator. The rest of `connectedDebugAndroidTest` was not run |
 | A03 | Combat vocabulary and validation rules | built | `combat/Effects.kt` (`EffectRules.problems`), `CombatEngineTest` |
 | A04 | Resolver and event timeline | built | `CombatEngineTest`: determinism, termination, parent/root links, loop guard |
 | A05 | Class kits and weapon mapping | built | all five kits; `guild/Loadout.kt`; the breadth test (every class, family, element, affix, catalyst, signature) |

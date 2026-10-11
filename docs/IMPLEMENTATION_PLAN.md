@@ -86,3 +86,8 @@ Plan and task ledger: `docs/GAMEPLAY_DEPTH_PLAN.md`. Rulings and the 10,000-seed
 
 ## P8 — Google Play premium launch
 - [ ] Release signing, AAB, store listing (€1.99, no ads/IAP), privacy/legal assets
+
+## Guild evolution (0.8.0, 2026-10-11)
+The guild (contracted members, loans, contracts, the interaction engine, the charter) was planned and tracked in its own
+file: `docs/GUILD_EVOLUTION_PLAN.md` (design decisions, task ledger with what was verified, open gates for the owner).
+Spec: `docs/GUILD_EVOLUTION_SPEC.md`. Its two gates (is the fight fun to watch; is the five-day opening fun) are open.
