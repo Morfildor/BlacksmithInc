@@ -304,7 +304,7 @@ object Capabilities {
     }
 
     private fun reason(q: Query): String = when (q) {
-        is Query.Generates -> "Nothing on it makes ${q.res.word}${when (q.place) { null -> ""; Place.WIELDER -> " for the wielder"; Place.PARTY -> " for the party"; Place.FOE -> " on an enemy" }}."
+        is Query.Generates -> "Nothing on it makes ${q.res.word}${mapOf(Place.WIELDER to " for the wielder", Place.PARTY to " for the party", Place.FOE to " on an enemy")[q.place].orEmpty()}."
         is Query.Spends -> "Nothing on it spends ${q.res.word}."
         Query.ProtectsAnother -> "Nothing on it shields or mends anybody but the wielder."
         is Query.Requires -> "Nothing on it waits for ${q.res.word}."
