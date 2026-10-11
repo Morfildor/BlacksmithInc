@@ -50,7 +50,7 @@ class GuildEveningTest {
 
         fun run(seed: Long, policy: GuildPolicy, days: Int = 24): List<Day> {
             val bot = GuildBot(engine, policy)
-            var s = engine.newRun(LegacyProfile(), seed, charterId = GuildContent.TOWNS_LAST_HOPE)
+            var s = engine.guildRun(seed)
             val out = ArrayList<Day>()
             while (!s.isEnded && s.day <= days) {
                 val planned = bot.planDay(s)
