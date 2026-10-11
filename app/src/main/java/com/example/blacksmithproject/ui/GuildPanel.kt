@@ -202,6 +202,19 @@ private fun WallCard(w: WallUi, enabled: Boolean, onOpenHero: (HeroId) -> Unit, 
             w.resists?.let { MatchMark(EffectKind.FLAW, "Resists $it") }
         }
         w.notes.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = Space.xs)) }
+        w.nemesis?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = Space.xs).testTag("guild_wall_nemesis")) }
+        w.spoiled?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = EffectKind.BUFF.color, modifier = Modifier.padding(top = Space.xs).testTag("guild_wall_spoiled")) }
+        // What they prepare is this siege's own rule: said whole, with every answer the smith has, before the field it changes.
+        w.prep?.let { p ->
+            Column(Modifier.fillMaxWidth().testTag("guild_wall_prep")) {
+                SectionHeader("They prepare")
+                Text(p.name, style = MaterialTheme.typography.titleSmall, color = Ember)
+                Text(p.description, style = MaterialTheme.typography.bodyMedium)
+                Secondary("Your answers", Modifier.padding(top = Space.xs))
+                p.answers.forEach { Secondary("· $it", Modifier.padding(start = Space.sm)) }
+                Secondary("· Or send a party to spoil it. ${p.sabotage}", Modifier.padding(start = Space.sm))
+            }
+        }
         if (w.field.isNotEmpty()) {
             SectionHeader("Their field")
             EnemyLines(w.field, Modifier.testTag("guild_wall_field"))
@@ -296,10 +309,13 @@ private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
             Text(o.title, style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.weight(1f))
+            o.tag?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = Gold) }
             if (o.planned) Text("Planned", style = MaterialTheme.typography.labelMedium, color = EffectKind.BUFF.color)
         }
         o.why?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
         Text(o.description, style = MaterialTheme.typography.bodyMedium)
+        o.modifier?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.testTag("guild_offer_modifier_${o.id}")) }
+        o.stake?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember, modifier = Modifier.testTag("guild_offer_stake_${o.id}")) }
         Text(o.time, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs))
         o.missesSiege?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
         Secondary(o.fee)

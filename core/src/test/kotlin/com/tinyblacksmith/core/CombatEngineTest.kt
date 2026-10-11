@@ -353,7 +353,8 @@ class CombatEngineTest {
                 val setup = FightSetup("sweep", party, enemies(*foes[n % foes.size].toTypedArray(), percent = 80 + (n * 17) % 200), relicSets[n % relicSets.size], Objective(), Posture.entries[n % 3], rules, n.toLong(), combat.unitById)
                 val r = Fight.resolve(setup)
                 assertTrue(r.rounds in 1..rules.maxRounds)
-                assertTrue(r.actors.count { it.side == Side.PARTY } <= rules.maxActorsPerSide && r.actors.count { it.side == Side.ENEMY && !it.downed } <= rules.maxActorsPerSide)
+                // Room in a line is counted in those still standing (`Fight`, Summon): a helper may take the place of a member who fell.
+                assertTrue(r.actors.count { it.side == Side.PARTY && !it.downed } <= rules.maxActorsPerSide && r.actors.count { it.side == Side.ENEMY && !it.downed } <= rules.maxActorsPerSide)
                 assertTrue(r.of(EventKind.FRACTURED).groupBy { it.source }.all { it.value.size == 1 })
                 assertTrue(r.of(EventKind.SUMMONED).count { e -> r.actors.first { it.key == e.target }.side == Side.PARTY } <= 2)
                 fired += r.events.mapNotNull { it.effectId }

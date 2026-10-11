@@ -2,6 +2,7 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.runtime.Immutable
 import com.example.blacksmithproject.ForgeDraft
+import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.crafting.Bench
 import com.tinyblacksmith.core.crafting.Capabilities
@@ -16,7 +17,9 @@ import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.Journal as JournalModel
 import com.tinyblacksmith.core.model.KnowledgeState
 import com.tinyblacksmith.core.model.MaterialId
+import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.model.Weapon
+import kotlin.math.roundToInt
 
 /** The places of a recipe on the workbench. The last two exist only in an Advanced forge. */
 enum class RecipeSlot(val label: String, val empty: String, val choose: String, val hint: String) {
@@ -84,7 +87,67 @@ data class ForgeOutlookUi(
 data class ForgeWorkbenchUi(
     val title: String, val slots: List<SlotUi>, val next: RecipeSlot?, val notes: List<NoteUi>, val brief: BriefUi?, val action: ForgeActionUi, val command: Command.Forge?,
     val outlook: ForgeOutlookUi? = null,
+    val heartfire: HeartfireUi? = null,
 )
+
+/**
+ * Heartfire on the workbench. [held] is always said. [blocked] is why the switch is not offered (Quick mode, none held),
+ * null when it is. With the switch [on], [outlook] is what this forging spends and what it can give, from the engine's
+ * own outlook, and [warning] says when a plain result cannot break through. [rule] and [source] are always shown: how a
+ * weapon becomes Legendary, and where Heartfire comes from.
+ */
+@Immutable
+data class HeartfireUi(val held: String, val on: Boolean, val blocked: String?, val outlook: List<String>, val warning: String?, val rule: String, val source: String)
+
+private fun percent(chance: Double) = "${(chance * 100).roundToInt()}%"
+
+/** What the temper does, with the numbers of the rules themselves. */
+fun riskExplanation(r: Risk, config: BalanceConfig): String {
+    val profile = config.risk.getValue(r)
+    val spread = profile.rollSpread ?: config.qualityRollSpread
+    val legend = config.depth.legend
+    fun breakthrough(bonus: Double) = when { bonus < 0 -> " A Heartfire breakthrough is less likely."; bonus > 0 -> " A Heartfire breakthrough is more likely."; else -> "" }
+    return when (r) {
+        Risk.SAFE -> "Quality stays within $spread of what the recipe gives. Few flaws and few exceptional results." + breakthrough(legend.safeBonus)
+        Risk.BALANCED -> "Quality moves up to $spread either way. A chance of exceptional work or flaws."
+        Risk.RECKLESS -> "Adds ${if (profile.extraSlots == 1) "one more property" else "${profile.extraSlots} more properties"}. About ${percent(profile.defectChance)} come out flawed, and a flawed weapon is still usable." + breakthrough(legend.recklessBonus)
+    }
+}
+
+/** The Heartfire panel for [command], the draft's forge with Heartfire asked for ([asked]); null command: the recipe is not whole yet. */
+fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, command: Command.Forge?): HeartfireUi {
+    val legend = config.depth.legend
+    val blocked = when {
+        state.heartfire < 1 -> "None held."
+        !advanced -> "Forging with Heartfire needs the Advanced forge."
+        else -> null
+    }
+    val on = asked && blocked == null
+    val o = if (on && command != null) heartfireOutlook(state, command) else null
+    return HeartfireUi(
+        held = "Heartfire ${state.heartfire} of ${legend.heartfireMax}",
+        on = on, blocked = blocked,
+        outlook = when {
+            !on -> emptyList()
+            o == null -> listOf("Choose a weapon, a metal and an augment to see what it would do.")
+            else -> listOf(
+                "Uses 1 Heartfire and ${legend.heartfireEnergy} more energy, ${o.energy} in all. Both are spent whether or not it breaks through.",
+                "Quality lands between ${o.qualityLow} and ${o.qualityHigh}, before an exceptional result or a flaw. It can break through only at ${o.floor} or more.",
+                when {
+                    o.chanceHigh <= 0.0 -> "Chance to break through: none at this quality."
+                    o.chanceLow <= 0.0 -> "Chance to break through: none under quality ${o.floor}, up to ${percent(o.chanceHigh)} at quality ${o.qualityHigh}."
+                    o.chanceLow == o.chanceHigh -> "Chance to break through: ${percent(o.chanceLow)}."
+                    else -> "Chance to break through: ${percent(o.chanceLow)} at quality ${o.qualityLow}, up to ${percent(o.chanceHigh)} at quality ${o.qualityHigh}."
+                },
+                "If it does not break through, the weapon still gets ${if (o.missSlots == 1) "one more property" else "${o.missSlots} more properties"}.",
+            )
+        },
+        warning = o?.takeIf { it.qualityHigh < it.floor }?.let { "A plain result of this recipe stays under quality ${it.floor}. Only an exceptional result could break through." },
+        rule = "Quality alone stops at Epic. A weapon becomes Legendary by a Heartfire breakthrough or by its deeds.",
+        source = "Heartfire comes from dangerous work: a deep hall cleared, a taken weapon won back, a starfall site, a warlord broken on the wall.",
+    )
+}
+
 
 /** Null in a classic run, where no fight reads a weapon's rules. [forge] is the command as it will be sent, bellows included. */
 fun GameEngine.forgeOutlook(state: GameState, forge: Command.Forge): ForgeOutlookUi? {
@@ -136,13 +199,16 @@ fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: Lis
         }
     }
     val next = when { family == null -> RecipeSlot.WEAPON; core == null -> RecipeSlot.METAL; augment == null -> RecipeSlot.AUGMENT; else -> null }
-    val command = if (family != null && core != null && augment != null) Command.Forge(draft.mode, family.id, core.id, augment.id, catalyst?.id, draft.risk, technique) else null
+    val plain = if (family != null && core != null && augment != null) Command.Forge(draft.mode, family.id, core.id, augment.id, catalyst?.id, draft.risk, technique) else null
+    // Asked for and still possible: a draft that has lost its Heartfire, or gone back to Quick, forges without it.
+    val heartfire = heartfireUi(state, advanced, draft.heartfire, plain)
+    val command = plain?.copy(heartfire = heartfire.on)
 
-    val cost = if (advanced) config.advancedForgeEnergy else config.quickForgeEnergy
+    val cost = (if (advanced) config.advancedForgeEnergy else config.quickForgeEnergy) + if (heartfire.on) config.depth.legend.heartfireEnergy else 0
     val overwork = (cost - state.energy).coerceAtLeast(0)
     val canAfford = overwork <= config.maxOverworkPerDay - state.overworkToday
     val missing = listOfNotNull(core, augment, catalyst).firstOrNull { (state.materials[it.id] ?: 0) == 0 }
-    val label = "Forge · $cost energy"
+    val label = if (heartfire.on) "Forge with Heartfire · $cost energy" else "Forge · $cost energy"
     val action = when {
         next == RecipeSlot.WEAPON -> ForgeActionUi(label, false, "Choose a weapon type")
         next == RecipeSlot.METAL -> ForgeActionUi(label, false, "Choose a metal")
@@ -175,6 +241,7 @@ fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: Lis
         title = when { family != null && core != null -> "${core.name} ${family.name.lowercase()}"; family != null -> family.name; else -> "Empty anvil" },
         slots = slots, next = next, notes = notes, brief = brief, action = action, command = command,
         outlook = command?.let { forgeOutlook(state, it.copy(bellows = bellows)) },
+        heartfire = heartfire,
     )
 }
 

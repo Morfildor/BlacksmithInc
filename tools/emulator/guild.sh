@@ -69,7 +69,15 @@ tap_id charter_about; shot 02_title_charter_about; tap_id charter_about
 tap_id charter_next; shot 03_title_charter_second
 tap_id charter_prev
 tap_id title_new_run || exit 1
-$ADB shell sleep 2; shot 04_opening_relic_offer
+# rules 6: a guild run opens on its three packages; the first is read top to bottom and taken
+wait_id opening_chooser; shot 04_opening_chooser
+swipe_up; shot 04b_opening_chooser_lower
+for i in 1 2 3 4 5 6; do $ADB shell input swipe 540 700 540 1700 300; done; $ADB shell sleep 1
+for i in 1 2 3 4 5 6 7 8; do dump | grep -q 'resource-id="opening_choose_' && break; swipe_up; done
+tap_id opening_choose_ || exit 1
+shot 04c_opening_confirm
+tap_id opening_confirm_yes || exit 1
+check has_id end_day
 past_offers || exit 1
 shot 05_shop_day1
 tap_id nav_town || exit 1

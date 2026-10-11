@@ -29,6 +29,11 @@ enum class GuildPolicy(val about: String) {
     GREEDY_DIVER("takes the deepest contract, reckless, and always pushes on"),
     RECOVERY_AWARE("cautious; rescues first, mends the wall when it is low, hones what cracked"),
     ADAPTIVE("changes between the others by what the board, the roster and the wall show today"),
+    // Rules 6: the players the run-variety gates are measured with (docs/RUN_VARIETY_LEDGER.md).
+    REPEAT_RECIPE("forges one recipe for everybody and everything, an iron sword with ember resin, and otherwise plays like the adaptive smith"),
+    IGNORE_COUNTER("plays like the adaptive smith but never reads the scouts: no sabotage, no weapon made against the besieger, no wall arranged for what comes"),
+    RECOMMENDED("takes the first of everything it is offered: opening, relic, contract, the suggested party, a balanced temper"),
+    LEGEND_SEEKER("plays like the adaptive smith and goes after Heartfire: the starfall site, the deep hall, a taken weapon, and a Heartfire forging as soon as one can break through"),
 }
 
 data class GuildRunStats(
@@ -38,9 +43,16 @@ data class GuildRunStats(
     /** Forged this run by rarity name, Legendary weapons by where they came from ("forged", "heartfire", "deed"), and the till by source. */
     val forged: Map<String, Int> = emptyMap(), val legends: Map<String, Int> = emptyMap(), val firstLegendDay: Int? = null,
     val income: Map<IncomeKind, Int> = emptyMap(), val spent: Int = 0, val overworkDays: Int = 0, val recipes: Int = 0,
+    /** Each siege in order: its verdict and the forge damage it did. Then Heartfire earned and spent, deeds, the opening taken, and days with nobody fit to send. */
+    val siegeLog: List<Pair<SiegeVerdict, Int>> = emptyList(), val heartfireGained: Int = 0, val heartfireForges: Int = 0, val deeds: Int = 0, val opening: String? = null, val stalledDays: Int = 0,
+    val sabotaged: Int = 0, val firstLoans: Map<String, Int> = emptyMap(),
 )
 
-class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: String = GuildContent.TOWNS_LAST_HOPE, val horizon: Int = 30, val opening: String? = null) {
+private val LaunchStaff = com.tinyblacksmith.core.content.LaunchContent.STAFF
+
+class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: String = GuildContent.TOWNS_LAST_HOPE, val horizon: Int = 30, val opening: String? = null,
+    /** False plays on after the charter is secured, to the horizon or to defeat: continued play is measured apart from retirement. */
+    val retire: Boolean = true) {
     private val content = engine.content
     private val cfg = engine.config
     private val guildCat = content.guild!!
@@ -58,6 +70,17 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
     private var spent = 0
     private var overworkDays = 0
     private val recipes = HashSet<String>()
+    private val siegeLog = ArrayList<Pair<SiegeVerdict, Int>>()
+    private var heartfireGained = 0
+    private var heartfireForges = 0
+    private var deeds = 0
+    private var stalled = 0
+    private var sabotaged = 0
+    private val firstLoans = HashMap<String, Int>()
+    /** The smiths that play the whole board. */
+    private val adaptive = policy in setOf(GuildPolicy.ADAPTIVE, GuildPolicy.REPEAT_RECIPE, GuildPolicy.IGNORE_COUNTER, GuildPolicy.LEGEND_SEEKER)
+    private val chains = policy == GuildPolicy.SYNERGY || policy == GuildPolicy.ADAPTIVE || policy == GuildPolicy.LEGEND_SEEKER
+    private val readsScouts = policy != GuildPolicy.IGNORE_COUNTER && policy != GuildPolicy.RECOMMENDED && policy != GuildPolicy.NOVICE && policy != GuildPolicy.PASSIVE && policy != GuildPolicy.REPEAT_RECIPE
 
     private fun GameState.send(cmd: Command): GameState = when (val o = engine.handle(this, cmd)) {
         is CommandOutcome.Accepted -> o.state
@@ -74,11 +97,12 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
             s = s.send(Command.EndDay(CommandId("${s.runId.value}:day${s.day}")))
             record(before, s)
             // A bot that has secured the charter closes the chapter: a completed success, not a missing defeat.
-            if (!s.isEnded && s.guild?.milestone(GuildContent.CHARTER_SECURED) != null && s.guild?.mission == null) s = s.send(Command.RetireAfterMilestone(GuildContent.CHARTER_SECURED))
+            if (retire && !s.isEnded && s.guild?.milestone(GuildContent.CHARTER_SECURED) != null && s.guild?.mission == null) s = s.send(Command.RetireAfterMilestone(GuildContent.CHARTER_SECURED))
         }
         val g = s.guild!!
         return GuildRunStats(seed, policy, s.day, g.milestone(GuildContent.CHARTER_SECURED)?.day, s.isEnded && !g.retired, g.retired, contracts.toMap(), captured, rescued, dead, sieges.toMap(), g.comboNotes.size, firstCombo,
-            s.gold, g.members.size, rejected, firstSiegeIntegrity, loans, forged.toMap(), legends.toMap(), firstLegend, income.toMap(), spent, overworkDays, recipes.size) to s
+            s.gold, g.members.size, rejected, firstSiegeIntegrity, loans, forged.toMap(), legends.toMap(), firstLegend, income.toMap(), spent, overworkDays, recipes.size,
+            siegeLog.toList(), heartfireGained, heartfireForges, deeds, g.openingId, stalled, sabotaged, firstLoans.toMap()) to s
     }
 
     private fun record(before: GameState, after: GameState) {
@@ -93,7 +117,15 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         for (e in r.events.filter { it.type.name == "LEGEND_EARNED" }) { legends.merge("deed", 1, Int::plus); if (firstLegend == null) firstLegend = r.day }
         r.ledger?.let { l -> l.income.forEach { (k, v) -> income.merge(k, v, Int::plus) }; spent += l.spentPreparing }
         r.mission?.let { m -> if (!m.continues) contracts.merge("${guildCat.mission(m.defId).archetype.name}:${m.outcome.name}", 1, Int::plus) }
-        r.siege?.let { sieges.merge(it.verdict, 1, Int::plus); if (firstSiegeIntegrity == null) firstSiegeIntegrity = after.town.integrity }
+        r.siege?.let { sieges.merge(it.verdict, 1, Int::plus); siegeLog += it.verdict to it.forgeDamage; if (firstSiegeIntegrity == null) firstSiegeIntegrity = after.town.integrity }
+        heartfireGained += r.events.filter { it.type == EventType.HEARTFIRE_GAINED }.sumOf { it.data["gained"]?.toIntOrNull() ?: 0 }
+        heartfireForges += r.events.count { it.type == EventType.WEAPON_FORGED && it.data["heartfire"] == "true" }
+        deeds += r.events.count { it.type == EventType.WEAPON_DEED || it.type == EventType.LEGEND_EARNED }
+        sabotaged += r.events.count { it.type == EventType.SABOTAGE_DONE }
+        val g = before.guild!!
+        if (g.mission == null && g.members.none { engine.memberUnavailable(before, it.heroId) == null }) stalled++
+        // What the members carried on the fifth morning: the opening recipes a run settled on, for the variety table.
+        if (before.day == 5) for (m in g.members) before.loanOf(m.heroId)?.let { w -> firstLoans.merge("${w.familyId.value}/${w.element?.name?.lowercase() ?: "plain"}", 1, Int::plus) }
         captured += r.events.count { it.type == EventType.MEMBER_CAPTURED }
         rescued += r.events.count { it.type == EventType.MEMBER_RESCUED }
         dead += before.guild!!.members.count { m -> after.heroes[m.heroId]?.isAlive != true }
@@ -119,14 +151,15 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
 
     private fun pushes(s: GameState): Boolean = when (policy) {
         GuildPolicy.GREEDY_DIVER, GuildPolicy.HIGHEST_STAT -> true
-        GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE -> s.guild!!.mission!!.party.all { (s.heroes[it]?.health ?: 0) >= 70 }
+        GuildPolicy.LEGEND_SEEKER -> s.guild!!.mission!!.party.all { (s.heroes[it]?.health ?: 0) >= 50 }
+        GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE, GuildPolicy.REPEAT_RECIPE, GuildPolicy.IGNORE_COUNTER -> s.guild!!.mission!!.party.all { (s.heroes[it]?.health ?: 0) >= 70 }
         else -> false
     }
 
     private fun relic(s: GameState): GameState {
         val offer = s.pendingRelicOffer
         val wanted = when (policy) {
-            GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE -> listOf("overflow_basin", "salvage_bell", "storm_ledger", "blood_receipt", "furnace_lung", "bone_music_box")
+            GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE, GuildPolicy.LEGEND_SEEKER, GuildPolicy.REPEAT_RECIPE, GuildPolicy.IGNORE_COUNTER -> listOf("overflow_basin", "salvage_bell", "storm_ledger", "blood_receipt", "furnace_lung", "bone_music_box")
             GuildPolicy.RECOVERY_AWARE -> listOf("cowards_medal", "overflow_basin")
             GuildPolicy.SHOP_FOCUSED -> listOf("collectors_seal", "tempering_ledger", "ashen_bellows")
             else -> emptyList()
@@ -150,7 +183,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
     private fun worth(s: GameState, heroId: HeroId, w: Weapon): Int {
         val f = engine.fighterView(s, heroId, w) ?: return 0
         val base = f.strikeMin * 3 + f.support
-        if (policy != GuildPolicy.SYNERGY && policy != GuildPolicy.ADAPTIVE) return base
+        if (!chains) return base
         val cls = s.heroes[heroId]?.classId?.value
         val rules = f.effects.map { it.id }.toSet()
         var bonus = 0
@@ -158,17 +191,50 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         if ("affix_brittle" in rules && cls == "guardian" && s.relics.any { it.id == "salvage_bell" }) bonus += 10
         if ("catalyst_runed" in rules && s.relics.any { it.id == "salvage_bell" }) bonus += 6
         if (w.element != null) bonus += 3
+        // The opening's plan, as its card states it.
+        if (s.relics.any { it.id == "blunt_oath" }) bonus += if (w.rarity <= Rarity.UNCOMMON) 8 else -6
+        if ("affix_bloodbound" in rules && s.relics.any { it.id == "blood_receipt" } && cls != "warden") bonus += 10
+        if (s.relics.any { it.id == "overflow_basin" } && cls == "warden" && w.familyId.value == "staff") bonus += 8
         return base + bonus
     }
 
-    private fun forge(s0: GameState): GameState {
+    /**
+     * A Heartfire forging, by a smith who holds Heartfire and can pay for a recipe whose plain roll cannot miss the floor:
+     * the best core it has or can buy, with the augment that suits it, for whoever in the guild fits the weapon.
+     */
+    private fun heartfireForge(s0: GameState): GameState {
         var s = s0
+        if (s.heartfire < 1 || policy == GuildPolicy.NOVICE || policy == GuildPolicy.PASSIVE || policy == GuildPolicy.REPEAT_RECIPE) return s
+        fun have(m: MaterialId) = (s.materials[m] ?: 0) > 0
+        fun price(m: MaterialId) = if (have(m)) 0 else if ((s.supplierStock[m] ?: 1) > 0) engine.materialPrice(s, m) else Int.MAX_VALUE / 4
+        val family = s.guild!!.members.firstNotNullOfOrNull { s.heroes[it.heroId] }?.let { content.heroClass(it.classId).preferredFamilies.first() } ?: content.families.first().id
+        // Every temper is weighed by what the workbench shows: the chance at both ends of the roll. A quarter on average is worth the Heartfire.
+        val best = Risk.entries.flatMap { risk -> content.materials(MaterialCategory.CORE).flatMap { c -> content.materials(MaterialCategory.AUGMENT).map { a -> Command.Forge(ForgeMode.ADVANCED, family, c.id, a.id, null, risk, heartfire = true) } } }
+            .map { it to engine.heartfireOutlook(s, it) }
+            .filter { (c, o) -> o.chanceLow + o.chanceHigh >= 0.5 && price(c.coreId) + price(c.augmentId) + 60 <= s.gold && s.energy + cfg.maxOverworkPerDay - s.overworkToday >= o.energy }
+            .maxByOrNull { it.second.chanceLow + it.second.chanceHigh }?.first ?: return s
+        for (m in listOf(best.coreId, best.augmentId)) if (!have(m)) s = s.send(Command.BuyMaterial(m))
+        if (!have(best.coreId) || !have(best.augmentId)) return s
+        return s.send(best)
+    }
+
+    /** The family that answers what the scouts say is coming, for a member who can use it, or null. */
+    private fun answerFamily(s: GameState, hero: Hero?): WeaponFamilyId? {
+        if (!readsScouts || hero == null) return null
+        val prep = engine.wallForecast(s)?.prep?.id ?: return null
+        val wanted = when (prep) { "shield_wall" -> "spear"; "gravecaller", "cutpurses" -> "bow"; else -> return null }
+        return content.heroClass(hero.classId).preferredFamilies.firstOrNull { it.value == wanted }
+    }
+
+    private fun forge(s0: GameState): GameState {
+        var s = heartfireForge(s0)
         var guard = 0
         while (guard++ < 6 && s.energy >= cfg.quickForgeEnergy) {
             val members = s.guild!!.members.mapNotNull { s.heroes[it.heroId] }
             // For whom: the member with nothing in hand, else the shelf.
             val bare = members.firstOrNull { s.loanOf(it.id) == null && s.equippedWeapon(it.id) == null && s.storedWeapons().none { w -> w.promisedTo == null } }
-            val familyId = bare?.let { content.heroClass(it.classId).preferredFamilies.first() } ?: content.families[(s.day + guard) % content.families.size].id
+            val familyId = if (policy == GuildPolicy.REPEAT_RECIPE) com.tinyblacksmith.core.content.LaunchContent.SWORD
+                else answerFamily(s, bare) ?: LaunchStaff.takeIf { chains && bare?.classId?.value == "warden" && s.relics.any { it.id == "overflow_basin" } } ?: bare?.let { content.heroClass(it.classId).preferredFamilies.first() } ?: content.families[(s.day + guard) % content.families.size].id
             val cores = content.materials(MaterialCategory.CORE).sortedBy { it.tier }
             val augments = content.materials(MaterialCategory.AUGMENT).sortedBy { it.tier }
             fun have(m: MaterialId) = (s.materials[m] ?: 0) > 0
@@ -176,15 +242,27 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
             val rich = policy == GuildPolicy.HIGHEST_STAT || policy == GuildPolicy.GREEDY_DIVER
             // The spendthrifts buy the best metal they can; the others the best they can while a reserve of 150 gold stays in the till.
             fun comfortable(m: com.tinyblacksmith.core.content.MaterialDef) = have(m.id) || (s.gold >= engine.materialPrice(s, m.id) + 150 && (s.supplierStock[m.id] ?: 1) > 0)
-            val core = (if (rich) cores.lastOrNull { afford(it) } else if (policy == GuildPolicy.NOVICE || policy == GuildPolicy.PASSIVE) cores.firstOrNull { have(it.id) } ?: cores.firstOrNull { afford(it) }
+            // The Plain Oath keeps the party in iron and bronze, and the Overflowing Cup gives its Warden a staff.
+            val oath = chains && s.relics.any { it.id == "blunt_oath" } && bare != null
+            val core = (if (oath) cores.firstOrNull { have(it.id) && it.tier <= 2 } ?: cores.firstOrNull { afford(it) } else if (rich) cores.lastOrNull { afford(it) } else if (policy == GuildPolicy.NOVICE || policy == GuildPolicy.PASSIVE) cores.firstOrNull { have(it.id) } ?: cores.firstOrNull { afford(it) }
                 else cores.lastOrNull { comfortable(it) } ?: cores.firstOrNull { afford(it) }) ?: break
-            val weak = s.siege?.factionId?.let { content.faction(it).weakTo }
+            val weak = s.siege?.factionId?.takeIf { readsScouts }?.let { content.faction(it).weakTo }
+            if (policy == GuildPolicy.REPEAT_RECIPE) {
+                // One recipe, whatever the day asks for.
+                val iron = content.material(com.tinyblacksmith.core.content.LaunchContent.IRON); val resin = content.material(com.tinyblacksmith.core.content.LaunchContent.EMBER_RESIN)
+                for (m in listOf(iron, resin)) if (!have(m.id) && s.gold >= engine.materialPrice(s, m.id)) s = s.send(Command.BuyMaterial(m.id))
+                if (!have(iron.id) || !have(resin.id)) break
+                val before = s
+                s = s.send(Command.Forge(ForgeMode.QUICK, familyId, iron.id, resin.id, null, Risk.BALANCED))
+                if (s === before) break
+                continue
+            }
             val augment = when (policy) {
-                GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE -> augments.firstOrNull { it.id == com.tinyblacksmith.core.content.LaunchContent.STORMGLASS && afford(it) && bare?.classId?.value == "guardian" } ?: augments.firstOrNull { it.element == weak && afford(it) }
+                GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE, GuildPolicy.LEGEND_SEEKER, GuildPolicy.IGNORE_COUNTER -> augments.firstOrNull { it.id == com.tinyblacksmith.core.content.LaunchContent.STORMGLASS && afford(it) && bare?.classId?.value == "guardian" } ?: augments.firstOrNull { it.element == weak && afford(it) }
                 GuildPolicy.DEFENCE_FIRST -> augments.firstOrNull { it.element == weak && afford(it) }
                 else -> null
             } ?: (if (rich) augments.lastOrNull { afford(it) } else augments.firstOrNull { have(it.id) } ?: augments.firstOrNull { afford(it) }) ?: break
-            val catalyst = if ((policy == GuildPolicy.SYNERGY || policy == GuildPolicy.ADAPTIVE) && s.energy >= cfg.advancedForgeEnergy)
+            val catalyst = if (chains && s.energy >= cfg.advancedForgeEnergy)
                 content.materials(MaterialCategory.CATALYST).firstOrNull { have(it.id) && (it.id == com.tinyblacksmith.core.content.LaunchContent.BINDING_SALT) == (bare?.classId?.value == "guardian" || bare == null) }
                     ?: content.materials(MaterialCategory.CATALYST).firstOrNull { have(it.id) } else null
             for (m in listOf(core, augment)) if (!have(m.id) && s.gold >= engine.materialPrice(s, m.id)) s = s.send(Command.BuyMaterial(m.id))
@@ -209,7 +287,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
             if (current == null || worth(s, m.heroId, best) > worth(s, m.heroId, current) + 2) { s = s.send(Command.LoanWeapon(m.heroId, best.id)); loans++ }
         }
         // A cracked or badly worn loan is mended by a smith who thinks about tomorrow.
-        if (policy == GuildPolicy.RECOVERY_AWARE || policy == GuildPolicy.ADAPTIVE || policy == GuildPolicy.SYNERGY) for (m in members) {
+        if (policy == GuildPolicy.RECOVERY_AWARE || adaptive || policy == GuildPolicy.SYNERGY) for (m in members) {
             val w = s.loanOf(m.heroId) ?: continue
             if (w.condition < 60 && s.energy >= cfg.honeEnergy && (s.materials[w.coreId] ?: 0) > 0) {
                 s = s.send(Command.RecallLoan(w.id)); s = s.send(Command.Hone(w.id)); s = s.send(Command.LoanWeapon(m.heroId, w.id))
@@ -230,12 +308,24 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
 
     private fun siegeTonight(s: GameState) = s.town.nextSiegeDay == s.day
 
+    /** A reading of the forecast any player can make: three fit defenders whose health together is well above the besieger's. */
+    private fun wallLooksStrong(s: GameState): Boolean {
+        val f = engine.wallForecast(s) ?: return false
+        if (f.defenders.size < cfg.guild.defenders || f.plan.isEmpty()) return false
+        val ours = f.defenders.sumOf { (h, w) -> engine.fighterView(s, h.id, w, home = true)?.let { it.maxHealth + it.strikeMin * 4 } ?: 0 }
+        val theirs = f.plan.sumOf { e -> content.combat!!.unit(e.unitId).let { u -> (u.health + u.strikeMax * 4) * e.percent / 100 } }
+        return ours * 10 >= theirs * 9
+    }
+
     private fun wall(s0: GameState): GameState {
         var s = s0
-        if (policy != GuildPolicy.DEFENCE_FIRST && policy != GuildPolicy.ADAPTIVE) return s
+        if (policy != GuildPolicy.DEFENCE_FIRST && !adaptive) return s
         if (s.town.nextSiegeDay - s.day > 1) return s
         val fit = s.guild!!.members.filter { engine.memberUnavailable(s, it.heroId) == null && it.heroId !in s.guild!!.reserved }
-        for (m in fit.sortedByDescending { engine.fighterView(s, it.heroId, home = true)?.let { f -> f.maxHealth + f.strikeMin * 3 } ?: 0 }.take(cfg.guild.defenders - s.guild!!.reserved.size)) s = s.send(Command.ReserveDefender(m.heroId, true))
+        val strongest = fit.sortedByDescending { engine.fighterView(s, it.heroId, home = true)?.let { f -> f.maxHealth + f.strikeMin * 3 } ?: 0 }.take(cfg.guild.defenders - s.guild!!.reserved.size)
+        // Against knives for the back, the sturdiest stands last in the line: the wall is reserved in the order it stands.
+        val order = if (readsScouts && engine.wallForecast(s)?.prep?.id == "cutpurses") strongest.sortedBy { engine.fighterView(s, it.heroId, home = true)?.maxHealth ?: 0 } else strongest
+        for (m in order) s = s.send(Command.ReserveDefender(m.heroId, true))
         return s
     }
 
@@ -245,11 +335,11 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         if (g.mission != null) return s
         val fit = g.members.filter { engine.memberUnavailable(s, it.heroId) == null && it.heroId !in g.reserved }.map { it.heroId }
         if (fit.isEmpty()) return s
-        val keepHome = siegeTonight(s) && policy in setOf(GuildPolicy.DEFENCE_FIRST, GuildPolicy.RECOVERY_AWARE, GuildPolicy.ADAPTIVE, GuildPolicy.NOVICE, GuildPolicy.SYNERGY)
+        val keepHome = siegeTonight(s) && (adaptive || policy in setOf(GuildPolicy.DEFENCE_FIRST, GuildPolicy.RECOVERY_AWARE, GuildPolicy.NOVICE, GuildPolicy.SYNERGY, GuildPolicy.RECOMMENDED))
         if (keepHome) return s
         fun arch(o: MissionOffer) = guildCat.mission(o.defId).archetype
         // A two-day contract that would keep the party away over the siege night is one the careful leave on the board.
-        val careful = policy in setOf(GuildPolicy.DEFENCE_FIRST, GuildPolicy.RECOVERY_AWARE, GuildPolicy.ADAPTIVE, GuildPolicy.SYNERGY, GuildPolicy.NOVICE)
+        val careful = adaptive || policy in setOf(GuildPolicy.DEFENCE_FIRST, GuildPolicy.RECOVERY_AWARE, GuildPolicy.SYNERGY, GuildPolicy.NOVICE, GuildPolicy.RECOMMENDED)
         val offers = g.offers.filter { o -> s.gold >= o.fee && !(careful && s.day + o.days - 1 >= s.town.nextSiegeDay) }
         val health = fit.sumOf { s.heroes[it]?.health ?: 0 } / fit.size
         val order: List<MissionArchetype> = when (policy) {
@@ -260,11 +350,23 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
             GuildPolicy.DEFENCE_FIRST -> listOf(MissionArchetype.SABOTAGE, MissionArchetype.RESCUE, MissionArchetype.SUPPLY, MissionArchetype.ESCORT) + (if (s.town.integrity < 70) listOf(MissionArchetype.EMERGENCY) else emptyList())
             GuildPolicy.RECOVERY_AWARE -> (if (s.town.integrity < 60) listOf(MissionArchetype.EMERGENCY) else emptyList()) + listOf(MissionArchetype.RESCUE, MissionArchetype.RECOVERY, MissionArchetype.SUPPLY, MissionArchetype.ESCORT, MissionArchetype.SABOTAGE)
             GuildPolicy.SYNERGY -> listOf(MissionArchetype.RESCUE, MissionArchetype.HUNT, MissionArchetype.SABOTAGE, MissionArchetype.ESCORT, MissionArchetype.SUPPLY)
-            GuildPolicy.ADAPTIVE -> listOf(MissionArchetype.RESCUE) + (if (s.town.integrity < 50) listOf(MissionArchetype.EMERGENCY) else emptyList()) + listOf(MissionArchetype.SABOTAGE) +
+            // With the wall in doubt the sabotage comes first; with a strong wall the siege's opportunity is worth more than spoiling what would not have got through.
+            GuildPolicy.ADAPTIVE -> listOf(MissionArchetype.RESCUE) + (if (s.town.integrity < 50) listOf(MissionArchetype.EMERGENCY) else emptyList()) +
+                (if (wallLooksStrong(s) && health >= 75) listOf(MissionArchetype.OPPORTUNITY, MissionArchetype.SABOTAGE) else listOf(MissionArchetype.SABOTAGE, MissionArchetype.OPPORTUNITY)) +
                 (if (health >= 75 && fit.size >= 2) listOf(MissionArchetype.RECOVERY, MissionArchetype.HUNT, MissionArchetype.ESCORT) else emptyList()) + listOf(MissionArchetype.SUPPLY)
             GuildPolicy.PASSIVE -> emptyList()
+            // The adaptive smith's order, with one thing changed in each.
+            GuildPolicy.REPEAT_RECIPE -> listOf(MissionArchetype.RESCUE) + (if (s.town.integrity < 50) listOf(MissionArchetype.EMERGENCY) else emptyList()) + listOf(MissionArchetype.SABOTAGE) +
+                (if (health >= 75 && fit.size >= 2) listOf(MissionArchetype.RECOVERY, MissionArchetype.HUNT, MissionArchetype.ESCORT) else emptyList()) + listOf(MissionArchetype.SUPPLY)
+            GuildPolicy.IGNORE_COUNTER -> listOf(MissionArchetype.RESCUE) + (if (s.town.integrity < 50) listOf(MissionArchetype.EMERGENCY) else emptyList()) +
+                (if (health >= 75 && fit.size >= 2) listOf(MissionArchetype.RECOVERY, MissionArchetype.HUNT, MissionArchetype.ESCORT) else emptyList()) + listOf(MissionArchetype.SUPPLY)
+            GuildPolicy.LEGEND_SEEKER -> listOf(MissionArchetype.RESCUE) + (if (s.town.integrity < 50) listOf(MissionArchetype.EMERGENCY) else emptyList()) +
+                (if (health >= 75 && fit.size >= 2) listOf(MissionArchetype.RECOVERY, MissionArchetype.OPPORTUNITY, MissionArchetype.DELVE) else emptyList()) + listOf(MissionArchetype.SABOTAGE) +
+                (if (health >= 75 && fit.size >= 2) listOf(MissionArchetype.HUNT, MissionArchetype.ESCORT) else emptyList()) + listOf(MissionArchetype.SUPPLY)
+            GuildPolicy.RECOMMENDED -> emptyList()
         }
-        val offer = order.firstNotNullOfOrNull { a -> offers.firstOrNull { arch(it) == a } } ?: return s
+        // The first card on the board that the till can pay for, whatever it is.
+        val offer = (if (policy == GuildPolicy.RECOMMENDED) offers.firstOrNull { arch(it) != MissionArchetype.EMERGENCY } else order.firstNotNullOfOrNull { a -> offers.firstOrNull { arch(it) == a } }) ?: return s
         val posture = when (policy) {
             GuildPolicy.GREEDY_DIVER -> Posture.RECKLESS
             GuildPolicy.NOVICE, GuildPolicy.RECOVERY_AWARE -> Posture.CAUTIOUS
@@ -307,16 +409,55 @@ data class GuildReport(val policy: GuildPolicy, val runs: List<GuildRunStats>) {
                 perRun.average(), perRun[perRun.size / 2], perRun[(perRun.size * 9 / 10).coerceAtMost(perRun.size - 1)], pct(perRun.count { it > 0 }),
                 runs.mapNotNull { it.firstLegendDay }.let { if (it.isEmpty()) "-" else "%.1f".format(it.average()) }, sources.entries.sortedBy { it.key }.joinToString(" ") { "${it.key}=%.2f".format(it.value / n) }.ifEmpty { "-" },
                 runs.sumOf { it.overworkDays } / n))
+            // Each siege in turn: how it ended and what it cost the forge, over the runs that reached it.
+            append("                sieges: " + (0 until 4).mapNotNull { i ->
+                val reached = runs.mapNotNull { it.siegeLog.getOrNull(i) }
+                if (reached.isEmpty()) null else "#${i + 1} held %.0f%% cost %.0f%% breached %.0f%% damage %.1f (n=%d)".format(100.0 * reached.count { it.first == SiegeVerdict.HELD } / reached.size,
+                    100.0 * reached.count { it.first == SiegeVerdict.HELD_AT_A_COST } / reached.size, 100.0 * reached.count { it.first == SiegeVerdict.BREACHED } / reached.size, reached.map { it.second }.average(), reached.size)
+            }.joinToString("  ") + "\n")
+            append("                heartfire a run: earned %.2f, forgings %.2f | deeds %.2f | sabotage done %.2f | days with nobody fit %.2f | charter rate 95%% interval %s\n".format(
+                runs.sumOf { it.heartfireGained } / n, runs.sumOf { it.heartfireForges } / n, runs.sumOf { it.deeds } / n, runs.sumOf { it.sabotaged } / n, runs.sumOf { it.stalledDays } / n, interval(secured, runs.size)))
             append("                till a run: " + IncomeKind.entries.mapNotNull { k -> runs.sumOf { it.income[k] ?: 0 }.takeIf { it > 0 }?.let { "${k.name.lowercase()} %.0f".format(it / n) } }.joinToString(", ") + ", spent on stock and tools %.0f\n".format(runs.sumOf { it.spent } / n))
         }
     }
 }
 
+/** The 95 % Wilson interval of [k] in [n], as "a to b %". */
+fun interval(k: Int, n: Int): String {
+    if (n == 0) return "-"
+    val z = 1.96; val p = k.toDouble() / n
+    val centre = (p + z * z / (2 * n)) / (1 + z * z / n)
+    val half = z * Math.sqrt(p * (1 - p) / n + z * z / (4.0 * n * n)) / (1 + z * z / n)
+    return "%.0f to %.0f %%".format(100 * (centre - half), 100 * (centre + half))
+}
+
 object GuildSim {
-    fun run(policy: GuildPolicy, runs: Int, seed: Long, config: BalanceConfig = BalanceConfig.DEFAULT, charterId: String = GuildContent.TOWNS_LAST_HOPE, horizon: Int = 30, legacy: (GameEngine) -> LegacyProfile = { LegacyProfile() }): GuildReport {
+    /** The same seeds played by two policies: how often each secured the charter where the other did not, and the first sieges side by side. */
+    fun paired(a: GuildReport, b: GuildReport): String {
+        val pairs = a.runs.zip(b.runs).filter { it.first.seed == it.second.seed }
+        val onlyA = pairs.count { it.first.charterDay != null && it.second.charterDay == null }
+        val onlyB = pairs.count { it.first.charterDay == null && it.second.charterDay != null }
+        fun damage(r: GuildRunStats) = r.siegeLog.take(4).sumOf { it.second }
+        val diff = pairs.map { damage(it.second) - damage(it.first) }
+        val mean = diff.average()
+        val sd = Math.sqrt(diff.sumOf { (it - mean) * (it - mean) } / maxOf(1, diff.size - 1))
+        return "paired %s against %s on %d seeds: charter only %s %d, only %s %d, both %d, neither %d | forge damage in the first four sieges: %s takes %.1f more a run (standard error %.1f)\n".format(
+            a.policy.name, b.policy.name, pairs.size, a.policy.name, onlyA, b.policy.name, onlyB, pairs.count { it.first.charterDay != null && it.second.charterDay != null },
+            pairs.count { it.first.charterDay == null && it.second.charterDay == null }, b.policy.name, mean, sd / Math.sqrt(diff.size.toDouble()))
+    }
+
+    /** Charter rate by the opening package the runs began with. */
+    fun byOpening(report: GuildReport): String = report.runs.groupBy { it.opening ?: "-" }.entries.sortedBy { it.key }.joinToString("") { (id, list) ->
+        "                opening %-14s n=%3d charter %3.0f%% (%s) defeated %3.0f%% first siege damage %.1f loans on day 5: %s\n".format(id, list.size, 100.0 * list.count { it.charterDay != null } / list.size, interval(list.count { it.charterDay != null }, list.size),
+            100.0 * list.count { it.defeated } / list.size, list.mapNotNull { it.siegeLog.firstOrNull()?.second }.average(),
+            list.flatMap { it.firstLoans.entries }.groupBy({ it.key }, { it.value }).mapValues { it.value.sum() }.entries.sortedByDescending { it.value }.take(4).joinToString(" ") { "${it.key}=${it.value}" })
+    }
+
+    fun run(policy: GuildPolicy, runs: Int, seed: Long, config: BalanceConfig = BalanceConfig.DEFAULT, charterId: String = GuildContent.TOWNS_LAST_HOPE, horizon: Int = 30, legacy: (GameEngine) -> LegacyProfile = { LegacyProfile() },
+        opening: String? = null, retire: Boolean = true): GuildReport {
         val list = IntStream.range(0, runs).parallel().mapToObj { i ->
             val engine = GameEngine(config = config)
-            GuildBot(engine, policy, charterId, horizon).play(seed + i, legacy(engine)).first
+            GuildBot(engine, policy, charterId, horizon, opening, retire).play(seed + i, legacy(engine)).first
         }.collect(Collectors.toList())
         return GuildReport(policy, list.sortedBy { it.seed })
     }
@@ -338,8 +479,46 @@ fun main(args: Array<String>) {
         enemyPercentBase = sets["enemyPercentBase"]?.toInt() ?: g0.enemyPercentBase, enemyPercentPerDay = sets["enemyPercentPerDay"]?.toDouble() ?: g0.enemyPercentPerDay,
         siegePercentBase = sets["siegePercentBase"]?.toInt() ?: g0.siegePercentBase, siegePercentPerDay = sets["siegePercentPerDay"]?.toDouble() ?: g0.siegePercentPerDay,
         charterWarlordPercent = sets["charterWarlordPercent"]?.toInt() ?: g0.charterWarlordPercent, outerHealthPerPoint = sets["outerHealthPerPoint"]?.toDouble() ?: g0.outerHealthPerPoint,
-        siegeGrunts = sets["siegeGrunts"]?.toInt() ?: g0.siegeGrunts))
+        siegeGrunts = sets["siegeGrunts"]?.toInt() ?: g0.siegeGrunts, siegePercentPerPressure = sets["siegePercentPerPressure"]?.toDouble() ?: g0.siegePercentPerPressure,
+        enemyPercentPerPressure = sets["enemyPercentPerPressure"]?.toDouble() ?: g0.enemyPercentPerPressure, outerMaxPercent = sets["outerMaxPercent"]?.toInt() ?: g0.outerMaxPercent,
+        siegeGruntEvery = sets["siegeGruntEvery"]?.toInt() ?: g0.siegeGruntEvery, damageCostPercent = sets["damageCostPercent"]?.toInt() ?: g0.damageCostPercent))
+    // --transcript: one run told from its own records, for the evidence report. Reproducible: seed, policy, charter and opening are all it needs.
+    if ("--transcript" in args) {
+        val told = setOf(EventType.OPENING_CHOSEN, EventType.GUILD_RECRUITED, EventType.SIEGE_PREPARATION, EventType.MISSION_WON, EventType.MISSION_FAILED, EventType.MEMBER_CAPTURED, EventType.MEMBER_RESCUED, EventType.SABOTAGE_DONE,
+            EventType.SIEGE_WON, EventType.SIEGE_LOST, EventType.FORGE_DAMAGED, EventType.HEARTFIRE_GAINED, EventType.LEGEND_EARNED, EventType.CHARTER_SECURED, EventType.SUPPLIER_NEWS, EventType.WEAPON_RECOVERED, EventType.WEAPON_STOLEN,
+            EventType.RELIC_CHOSEN, EventType.FORGE_DESTROYED, EventType.RUN_RETIRED)
+        for (p in policies) {
+            val engine = GameEngine(config = config)
+            val bot = GuildBot(engine, p, charter, horizon, a["--opening"])
+            val lines = ArrayList<String>()
+            val seen = HashSet<String>()
+            val (stats, end) = bot.play(seed) { s ->
+                // The morning's plan, once the bot has made it: what each member carries, and what the day's forging was.
+                if (s.day == 5 || s.day == 10 || s.day == 20) lines += "day ${s.day} | carried: " + s.guild!!.members.joinToString(", ") { m -> "${s.hero(m.heroId).name} the ${engine.content.heroClass(s.hero(m.heroId).classId).name} (${m.traitId}) " + (s.loanOf(m.heroId)?.let { w -> "${w.name}, ${w.rarity.name.lowercase()}" + (if (w.flaws.isNotEmpty()) ", flawed" else "") } ?: "nothing") } + " | gold ${s.gold}, forge health ${s.town.integrity}, Heartfire ${s.heartfire}"
+                for (e in s.events) if (e.id !in seen && (e.type in told || (e.type == EventType.WEAPON_FORGED && e.data["heartfire"] == "true"))) { seen += e.id; lines += "day ${e.day} | ${e.text.take(230)}" }
+            }
+            for (e in end.events) if (e.id !in seen && (e.type in told || (e.type == EventType.WEAPON_FORGED && e.data["heartfire"] == "true"))) lines += "day ${e.day} | ${e.text.take(230)}"
+            println("Transcript: seed $seed, charter $charter, policy ${p.name}, opening ${stats.opening}, balance ${config.version}. Ended on day ${stats.days}: " + (if (stats.retired) "charter secured on day ${stats.charterDay}, chapter closed" else if (stats.defeated) "the forge fell" else "still standing at the horizon"))
+            lines.sortedBy { it.substringAfter("day ").substringBefore(" ").toIntOrNull() ?: 0 }.forEach { println("  $it") }
+            println()
+        }
+        return
+    }
+    // --classic: what rules 6 do to a run without a charter. Legendary weapons by origin, renown earned and Heartfire left in the forge at the end.
+    if ("--classic" in args) {
+        for (policy in listOf(Policy.BALANCED_ACTIVE, Policy.EXPERT)) {
+            val ends = IntStream.range(0, runs).parallel().mapToObj { i -> SimulationDriver(GameEngine(config = config), maxDays = horizon).playRun(if (maxed) Simulator.maxedLegacy(GameEngine()) else LegacyProfile(), seed + i, policy).second }.collect(Collectors.toList())
+            val legends = ends.map { e -> e.weapons.values.count { it.legend == LegendOrigin.DEEDS } }.sorted()
+            println("classic %-16s %d runs to day %d: days mean %.1f | Legendary forged from quality %d | by deeds a run mean %.2f median %d p90 %d, runs with one %.0f%% | weapons with renown a run %.1f | Heartfire in the forge at the end mean %.2f".format(
+                policy.name, runs, horizon, ends.map { it.day }.average(), ends.sumOf { e -> e.weapons.values.count { it.rarity == Rarity.LEGENDARY && it.legend == null && it.legendKey == null } }, legends.average(), legends[legends.size / 2],
+                legends[legends.size * 9 / 10], 100.0 * legends.count { it > 0 } / legends.size, ends.sumOf { e -> e.weapons.values.count { it.renown > 0 } } / runs.toDouble(), ends.map { it.heartfire }.average()))
+        }
+        return
+    }
     println("Guild runs: $runs seeds from $seed, charter $charter, horizon day $horizon, ${if (maxed) "maxed legacy" else "new account"}, balance ${BalanceConfig.DEFAULT.version}")
     if ("--why" in args) for (p in policies) { val bot = GuildBot(GameEngine(config = config), p, charter, horizon); bot.play(seed); println("${p.name}: ${bot.rejected} rejected"); bot.rejections.forEach { println("  $it") } }
-    for (p in policies) print(GuildSim.run(p, runs, seed, config, charterId = charter, horizon = horizon, legacy = { if (maxed) Simulator.maxedLegacy(it) else LegacyProfile() }).render())
+    val reports = policies.map { p -> GuildSim.run(p, runs, seed, config, charterId = charter, horizon = horizon, legacy = { if (maxed) Simulator.maxedLegacy(it) else LegacyProfile() }, opening = a["--opening"], retire = "--playOn" !in args) }
+    for (r in reports) { print(r.render()); if ("--byOpening" in args) print(GuildSim.byOpening(r)) }
+    // --pair A,B: the two policies on the same seeds (both must be among --policy).
+    a["--pair"]?.split(",")?.map { GuildPolicy.valueOf(it.uppercase()) }?.let { (x, y) -> print(GuildSim.paired(reports.first { it.policy == x }, reports.first { it.policy == y })) }
 }

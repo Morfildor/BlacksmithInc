@@ -28,6 +28,8 @@ class VersionFingerprintTest {
         4 to "283e8d4d3737b81228c15adbbc3ce72468462623c8f303a67c5f640d55dc39fe",
         // 5: the guild (rules 5): combat kits, the rule every element, affix, catalyst, family and six signatures give a blade, enemy units, eight party relics, contracts, charters, member traits. Re-pinned while the update is unreleased.
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",  // morning visitors, workshop relics and siege traits join the catalog (gameplay depth, rules 4)
+        // 6: run variety (rules 6): opening packages, siege preparations, contract modifiers, the siege's jobs, two pacts
+        6 to "d047912e9c79605b00be1b76c042fa300370909c624c2b348f41083cc8fbc37a",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
@@ -43,6 +45,8 @@ class VersionFingerprintTest {
         10 to "1368584cbd01a48d96bfd382087d9692ff9efa19540cb57131c85215f9d0cf0d",
         // 11: the `guild` group. A classic run reads none of it (GoldenStateTest holds the rules-4 goldens under rules 5). Re-pinned while the update is unreleased.
         11 to "5439bf6812f0b4526b13fa937b2b3c56accae43135bd9c5d769266d0712072cd",
+        // rules 6: Legendary by Heartfire or deeds, risk profiles, the guild's openings, preparations and siege numbers (docs/RUN_VARIETY_LEDGER.md)
+        12 to "6f3ad6d6c7cb3aff77b7610a5c3c5964aaec16d97787f451bb4ab7263958a0c3",
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where")

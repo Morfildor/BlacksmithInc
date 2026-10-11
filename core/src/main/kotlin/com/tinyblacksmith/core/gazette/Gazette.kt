@@ -51,7 +51,7 @@ object Gazette {
     private val impliedMilestones = mapOf(
         "ELITE_SLAIN" to EventType.ELITE_SLAIN, "AMBITION_FULFILLED" to EventType.AMBITION_FULFILLED,
         "SIEGE_SURVIVED" to EventType.SIEGE_WON, "CHAMPION_ARMED" to EventType.SIEGE_WON,
-        "LEGENDARY_FORGED" to EventType.WEAPON_FORGED, "EPIC_FORGED" to EventType.WEAPON_FORGED,
+        "LEGENDARY_FORGED" to EventType.WEAPON_FORGED, "LEGEND_EARNED" to EventType.LEGEND_EARNED, "EPIC_FORGED" to EventType.WEAPON_FORGED,
         "FIRST_SALE" to EventType.WEAPON_SOLD, "HERO_LEVEL_5" to EventType.HERO_LEVELED,
     )
 
@@ -59,7 +59,7 @@ object Gazette {
         EventType.ELITE_SLAIN, EventType.EXPEDITION_WON, EventType.EXPEDITION_LOST, EventType.HERO_WOUNDED, EventType.HERO_LEVELED,
         EventType.HERO_DIED, EventType.WEAPON_BROKEN, EventType.WEAPON_RECOVERED, EventType.WEAPON_STOLEN, EventType.WEAPON_LOST,
         EventType.AMBITION_FULFILLED, EventType.HERO_RETIRED, EventType.GUILD_FOUNDED, EventType.HERO_MENTORED, EventType.WEAPON_INHERITED,
-        EventType.HERO_ARRIVED, EventType.GUILD_JOINED, EventType.GUILD_MENTORED, EventType.AMBITION_PURSUED, EventType.WEAPON_SURFACED, EventType.WEAPON_RESOLD,
+        EventType.HERO_ARRIVED, EventType.WEAPON_DEED, EventType.LEGEND_EARNED, EventType.GUILD_JOINED, EventType.GUILD_MENTORED, EventType.AMBITION_PURSUED, EventType.WEAPON_SURFACED, EventType.WEAPON_RESOLD,
     )
     private val quietTypes = setOf(EventType.HERO_PATROLLED, EventType.HERO_RESTED, EventType.GUILD_TRAINED)
     private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)

@@ -126,5 +126,6 @@ private fun milestoneLabel(key: String) = when (key) {
     "HERO_LEVEL_5" -> "A hero reached level 5"
     "WEAPON_FIVE_KILLS" -> "A weapon earned a title"
     "CHARTER_SECURED" -> "Charter secured"
+    "LEGEND_EARNED" -> "A weapon became a legend by its deeds"
     else -> key
 }

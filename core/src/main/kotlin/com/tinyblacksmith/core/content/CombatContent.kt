@@ -360,14 +360,11 @@ object CombatContent {
         BLOOD_RECEIPT to listOf(e("relic_blood_receipt", "Blood Receipt", Trigger(EventKind.HEALED, Who.ALLY_TARGET), listOf(Guard(Aim.EventTarget, Amount.OfEvent(cap = 4))), Limit(perRound = 1),
             "After an ally has paid health to a weapon, healing that ally also gives them that much Guard, up to 4 a round each.", listOf(Condition.Happened(EventKind.HEALTH_PAID)), party = true, perMember = true)),
         BLUNT_OATH to listOf(e("relic_blunt_oath", "The Blunt Oath", Trigger(EventKind.ACTED, Who.ALLY_SOURCE), listOf(Damage(Aim.Foe, Fixed(3)), Guard(Aim.Self, Fixed(2))), Limit(perRound = 1),
-            "A member carrying a common weapon (or none) strikes for 3 more and raises 2 Guard when they act. A finer weapon in their hands ends it for them.", struck + Condition.HolderTagged(TAG_COMMON_GEAR), party = true, perMember = true)),
+            "A member carrying a common or uncommon weapon (or none) strikes for 3 more and raises 2 Guard when they act. A finer weapon in their hands ends it for them.", struck + Condition.HolderTagged(TAG_COMMON_GEAR), party = true, perMember = true)),
         WIDOWS_WHETSTONE to listOf(e("relic_widows_whetstone", "Widow's Whetstone", Trigger(EventKind.ACTED, Who.ALLY_SOURCE), listOf(Damage(Aim.Foe, Amount.OfSpent(3))), Limit(perRound = 1),
             "A pact. When a member acts they pay 2 health (never below 6) and strike for 6 more. Paying is not damage.", struck, Cost.PayHealth(2, floor = 6), party = true, perMember = true)),
-        OATHBREAKERS_COIN to listOf(
-            e("relic_oathbreakers_coin", "Oathbreaker's Coin", Trigger(EventKind.DOWNED, Who.FOE_TARGET), listOf(Heal(Aim.AllAllies, Fixed(4))), Limit(perRound = 1),
-                "A pact. When an enemy falls, every ally heals 4. Once a round.", party = true),
-            e("relic_oathbreakers_due", "Oathbreaker's due", Trigger(EventKind.DOWNED, Who.ALLY_TARGET), listOf(Give(Stat.BLEED, Aim.OtherAllies, Fixed(2))), Limit(perFight = 2),
-                "When an ally falls, every other ally gains 2 Bleed. Twice a fight.", party = true)),
+        OATHBREAKERS_COIN to listOf(e("relic_oathbreakers_coin", "Oathbreaker's Coin", Trigger(EventKind.ACTED, Who.ALLY_SOURCE), listOf(Guard(Aim.Self, Fixed(3)), Give(Stat.BLEED, Aim.Self)), Limit(perRound = 1),
+            "A pact. When a member acts they raise 3 Guard and take 1 Bleed.", struck, party = true, perMember = true)),
         // The Coward's Medal changes what a retreat brings home, not the fight: `Missions` reads it.
         COWARDS_MEDAL to emptyList(),
     )

@@ -86,10 +86,12 @@ data class ForgeDraft(
     val commissionId: CommissionId? = null,
     /** Ashen Bellows asked for on the next forge; cleared by that forge. */
     val bellows: Boolean = false,
+    /** "Forge with Heartfire" asked for on the next forge (Advanced only); cleared by that forge. */
+    val heartfire: Boolean = false,
 ) {
     /** The forge command this draft stands for; null until a family, a core and an augment are chosen. */
     fun command(): Command.Forge? =
-        if (familyId == null || coreId == null || augmentId == null) null else Command.Forge(mode, familyId, coreId, augmentId, catalystId, risk, technique, bellows)
+        if (familyId == null || coreId == null || augmentId == null) null else Command.Forge(mode, familyId, coreId, augmentId, catalystId, risk, technique, bellows, heartfire && mode == ForgeMode.ADVANCED)
 }
 
 /** What is on screen. Game state in it is always the session's snapshot (what is saved); [op] is the session's status. */
@@ -330,7 +332,7 @@ class GameViewModel(
         saved[KEY_BLESSING_DAY] = l.blessingOfferDismissedDay
         saved[KEY_RELIC_DAY] = l.relicOfferDismissedDay
         saved[KEY_SHEET] = when (val sheet = l.sheet) { is Sheet.Hero -> "hero:${sheet.id.value}"; is Sheet.Item -> "item:${sheet.id.value}"; Sheet.Visitor -> "visitor:"; null -> null }
-        saved[KEY_DRAFT] = with(l.draft) { arrayListOf(mode.name, familyId?.value, coreId?.value, augmentId?.value, catalystId?.value, risk.name, technique?.name, commissionId?.value, bellows.toString()) }
+        saved[KEY_DRAFT] = with(l.draft) { arrayListOf(mode.name, familyId?.value, coreId?.value, augmentId?.value, catalystId?.value, risk.name, technique?.name, commissionId?.value, bellows.toString(), heartfire.toString()) }
     }
 
     private fun restored(): Local {
@@ -345,6 +347,7 @@ class GameViewModel(
                 technique = Technique.entries.firstOrNull { it.name == d[6] },
                 commissionId = d.getOrNull(7)?.let(::CommissionId),
                 bellows = d.getOrNull(8) == "true",
+                heartfire = d.getOrNull(9) == "true",
             ),
             revealWeaponId = saved.get<String>(KEY_REVEAL)?.let(::WeaponId),
             blessingOfferDismissedDay = saved.get<Int>(KEY_BLESSING_DAY),
@@ -364,8 +367,8 @@ class GameViewModel(
 
     private fun show(result: Result) {
         when (result) {
-            // A forge spends the bellows it was asked to use: the next draft starts without them.
-            is Result.Done -> edit { it.copy(lastError = null, revealWeaponId = result.accepted?.forgedWeaponId ?: it.revealWeaponId, draft = if (result.accepted?.forgedWeaponId != null) it.draft.copy(bellows = false) else it.draft) }
+            // A forge spends the bellows and the Heartfire it was asked to use: the next draft starts without them.
+            is Result.Done -> edit { it.copy(lastError = null, revealWeaponId = result.accepted?.forgedWeaponId ?: it.revealWeaponId, draft = if (result.accepted?.forgedWeaponId != null) it.draft.copy(bellows = false, heartfire = false) else it.draft) }
             is Result.Rejected -> edit { it.copy(lastError = describe(result.error)) }
             is Result.EngineFault -> edit { it.copy(lastError = "The forge cannot do that right now.") }
             // Stale and DayNotWatched: the screen already shows why. Failed: the session holds it and SaveFailureDialog shows it.
@@ -748,6 +751,11 @@ class GameViewModel(
         GameError.NoDeploymentPlanned -> "No party is planned for today."
         GameError.NoMissionCheckpoint -> "The party is not waiting for word."
         is GameError.MilestoneNotEarned -> "The charter is not secured yet."
+        GameError.NoHeartfire -> "The forge holds no Heartfire."
+        GameError.HeartfireRequiresAdvanced -> "Heartfire needs the Advanced Forge."
+        GameError.OpeningPending -> "Choose how the guild begins first. The day cannot end before that."
+        GameError.NoOpeningOffer -> "The guild has already begun."
+        is GameError.OpeningNotOffered -> "That opening is not on offer."
         // Core grows concurrently; unmapped errors still get a readable line instead of a build break.
         else -> "The forge cannot do that right now."
     }

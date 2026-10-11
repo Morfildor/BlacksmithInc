@@ -23,7 +23,7 @@ import kotlin.test.assertTrue
 
 /** A guild run through the engine's commands (plan B01 to B10, spec 19): roster, loans, contracts, the wall, the save. */
 class GuildRunTest {
-    private val engine = TestSupport.engine
+    private val engine = TestSupport.engineWithoutOpenings
     private val content = engine.content
     private val cfg = engine.config.guild
 
@@ -335,7 +335,15 @@ class GuildRunTest {
     }
 
     @Test fun `sabotage spoils the siege once - the trait if it has one, else one of their line`() {
-        val eve = siegeEve()
+        val prepared = siegeEve()
+        // Rules 6: what is spoiled first is the besieger's preparation, and the line it would have changed comes as planned.
+        val spoiling = com.tinyblacksmith.core.engine.ResolutionContext(prepared, content, engine.config)
+        val prep = assertNotNull(prepared.siege!!.prepId)
+        com.tinyblacksmith.core.guild.SiegeFight.sabotage(spoiling)
+        assertNull(spoiling.siege!!.prepId)
+        assertEquals(prep, spoiling.siege!!.prepSpoiled)
+        assertEquals(prepared.siege!!.plan, spoiling.siege!!.plan)
+        val eve = prepared.copy(siege = prepared.siege!!.copy(prepId = null))
         val plain = eve.siege!!
         val ctx = com.tinyblacksmith.core.engine.ResolutionContext(eve, content, engine.config)
         com.tinyblacksmith.core.guild.SiegeFight.sabotage(ctx)

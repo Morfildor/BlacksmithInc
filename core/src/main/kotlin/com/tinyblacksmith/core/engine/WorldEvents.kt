@@ -382,7 +382,7 @@ object WorldEvents {
                 val name = if (promisesTooMuch) Forge.weaponName(c, family.id, core.id, emptyList(), signature) else legend.weaponName
                 val w = Weapon(
                     id = ctx.newWeaponId(), name = name, familyId = family.id, coreId = core.id, augmentId = augment.id, catalystId = legend.catalystId?.takeIf { it in c.materialById },
-                    mode = ForgeMode.ADVANCED, risk = Risk.BALANCED, quality = quality, rarity = Forge.rarityFor(quality, ctx.config), power = power,
+                    mode = ForgeMode.ADVANCED, risk = Risk.BALANCED, quality = quality, rarity = Forge.forgedRarity(quality, ctx.config), power = power,
                     element = legend.element ?: augment.element, affixes = emptyList(), flaws = flaws, location = WeaponLocation.Storage,
                     forgedEra = legend.era, forgedDay = 1, kills = legend.kills, fame = legend.fame, title = legend.title,
                     history = legend.ownerLine + HistoryEntry(ctx.era, ctx.day, "RETURNED", "Returned to Emberfall in era ${ctx.era}, worn and dormant. Past owners include ${legend.owners.joinToString(", ").ifEmpty { "unknown heroes" }}."),

@@ -34,7 +34,7 @@ import org.junit.Test
 class BladeRulesUiTest {
     private val engine = GameEngine()
     private val combat = engine.content.combat!!
-    private val guild = engine.newRun(LegacyProfile(), 42, charterId = GuildContent.TOWNS_LAST_HOPE)
+    private val guild = engine.guildRun(42)
     private val classic = engine.newRun(LegacyProfile(), 42)
 
     private fun GameState.with(vararg blades: Weapon) = copy(weapons = weapons + blades.associateBy { it.id })

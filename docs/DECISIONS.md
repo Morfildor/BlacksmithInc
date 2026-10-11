@@ -4264,6 +4264,21 @@ counts as a completed success.
 **Version fingerprints.** Content 5 and balance 11 are pinned in `VersionFingerprintTest`; they were re-pinned while
 the update was unreleased and are final when the version ships.
 
+## Run variety and consequences: rules 6, balance 12 (2026-10-11)
+Source: the owner's prompt of that day, which also authorised rebalancing without asking. The twelve rulings (D1 to
+D12), the final numbers, the gates and what is still open: `docs/RUN_VARIETY_LEDGER.md`. Measurements, before and
+after, on seeds the tuning never saw: `docs/run_variety_evidence/REPORT.md`. Not repeated here.
+
+In one paragraph: quality alone stops at Epic. A weapon is Legendary by a Heartfire forging that breaks through or by
+its own recorded deeds. A guild run opens with a choice of three packages. Every guild siege has an announced
+preparation, and the sabotage that spoils it competes with one two-day opportunity. Supply runs thin out, the
+supplier remembers, a taken weapon marches back to the wall, a rank multiplies. Siege strength starts higher and
+climbs more slowly (190 and 3 a day, was 150 and 5) and the charter warlord is at 110 (was 115).
+
+This overrides two earlier notes in this file: "a number is not moved to hit a target without the owner" (the owner
+moved it, by that prompt) and the open question on the first siege (it now costs a neglected wall about 8 forge
+health and a prepared one about 1).
+
 ## Deep forging foundation (2026-10-11; branch `deep-forging` on `run-variety` `99d3949`, not merged)
 Ledger with the decisions F1 to F8, the ingredient role table and the interfaces: `docs/DEEP_FORGING_LEDGER.md`.
 Evidence: `docs/deep_forging_evidence/`. No rules, schema, content or balance version number moved. The content

@@ -1,4 +1,29 @@
-# Progress — 2026-10-11 (guild evolution, 0.8.0; before it: gameplay depth, 2026-10-10)
+# Progress — 2026-10-11 (run variety and consequences, unreleased; before it: guild evolution, 0.8.0)
+
+## Run variety and consequences (2026-10-11): built on branch `run-variety`, not pushed
+Ledger with rulings, slice status, gates and open questions: `docs/RUN_VARIETY_LEDGER.md`. Evidence:
+`docs/run_variety_evidence/REPORT.md`. Versions: rules 6, save schema 7, content 6, balance 12. App version name
+still 0.8.0 (changelog entry under Unreleased).
+
+**What it is.** Legendary only by a Heartfire forging or by deeds. Opening packages for a guild run. Siege
+preparations with their sabotage and one competing opportunity. Supplier mood, supply thinning, the nemesis on the
+wall, siege cause lines, rank scaling fixed, tempers that differ.
+
+**Checks run on the final tree.** `:core:test` 581 tests, 0 failures. `:app:testDebugUnitTest` 217 tests, 0 failures.
+`:app:assembleDebug` built. `:core:scenarios` rewrote 33 saves. Guild bots: 1,000 unseen seeds for 13 policies under
+Town's Last Hope, 300 each for the other charters, a maxed account, play past the charter, and classic runs.
+Emulator (own instance, port 5560): `guild.sh` through the opening chooser to the next morning, process death on the
+chooser, font scale 1.3 on the board.
+
+**Not verified.** See the report's "Not seen on a device" and "Not done or only partly done". In short: no Heartfire
+forging and no siege night seen on a device, no physical phone, instrumented tests and the other device scripts
+not run, nobody has played it.
+
+**Next actions.**
+1. The owner starts a new guild run (the opening needs one) and answers the six questions in the ledger.
+2. A device pass of a Heartfire forging and a siege night (a scenario save with Heartfire would make that easy).
+3. Decide the version number and merge.
+
 
 ## Deep forging foundation (2026-10-11): built on branch `deep-forging`, not merged, not pushed
 Base `run-variety` `99d3949`. Ledger, decisions F1 to F8, ingredient role table, capability interface:

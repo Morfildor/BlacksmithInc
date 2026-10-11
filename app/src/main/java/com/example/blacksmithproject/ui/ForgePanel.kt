@@ -154,7 +154,8 @@ fun ForgePanel(
             }
             if (bench.notes.isNotEmpty()) FieldNotes(bench.notes) { vm.selectRecords(RecordsPage.JOURNAL) }
             bench.outlook?.let { ForgeOutlookCard(it) { rehearsing = true } }
-            ForgingOptions(d) { change -> vm.updateDraft(change) }
+            ForgingOptions(d, engine.config) { change -> vm.updateDraft(change) }
+            bench.heartfire?.let { h -> HeartfireRow(h) { v -> vm.updateDraft { it.copy(heartfire = v) } } }
             // The workshop's relics that bear on this forge: the bellows as a switch, the ledger's word on the family chosen.
             BellowsRow(s, vm)
             LedgerLine(s, vm)
@@ -481,21 +482,21 @@ private fun FieldNote(i: Int, n: NoteUi, modifier: Modifier) {
 
 /** Quick or Advanced as a two-part toggle (its cost is on the Forge action), and risk as one compact choice whose menu says what each means. */
 @Composable
-private fun ForgingOptions(d: ForgeDraft, onChange: ((ForgeDraft) -> ForgeDraft) -> Unit) {
+private fun ForgingOptions(d: ForgeDraft, config: BalanceConfig, onChange: ((ForgeDraft) -> ForgeDraft) -> Unit) {
     Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
         Row(Modifier.clip(Card).border(1.dp, BronzeDeep, Card).padding(4.dp)) {
             ForgeMode.entries.forEach { mode ->
                 val on = d.mode == mode
                 Box(
                     Modifier.heightIn(min = 48.dp).clip(Chip).background(if (on) BronzeContainer else ForgeNight).then(if (on) Modifier.border(1.dp, Gold, Chip) else Modifier)
-                        .clickable(role = Role.RadioButton) { onChange { it.copy(mode = mode, catalystId = it.catalystId?.takeIf { mode == ForgeMode.ADVANCED }, technique = it.technique?.takeIf { mode == ForgeMode.ADVANCED }) } }
+                        .clickable(role = Role.RadioButton) { onChange { it.copy(mode = mode, catalystId = it.catalystId?.takeIf { mode == ForgeMode.ADVANCED }, technique = it.technique?.takeIf { mode == ForgeMode.ADVANCED }, heartfire = it.heartfire && mode == ForgeMode.ADVANCED) } }
                         .padding(horizontal = 12.dp).testTag("forge_mode_${mode.name.lowercase()}").semantics { selected = on },
                     contentAlignment = Alignment.Center,
                 ) { Text(if (mode == ForgeMode.QUICK) "Quick" else "Advanced", style = MaterialTheme.typography.labelLarge, color = if (on) Gold else CreamMuted) }
             }
         }
         Spacer(Modifier.weight(1f))
-        Choice("Risk", riskName(d.risk), "forge_risk", Modifier.width(132.dp), Risk.entries.map { Triple(riskName(it), riskExplanation(it), it) }) { risk -> onChange { it.copy(risk = risk) } }
+        Choice("Risk", riskName(d.risk), "forge_risk", Modifier.width(132.dp), Risk.entries.map { Triple(riskName(it), riskExplanation(it, config), it) }) { risk -> onChange { it.copy(risk = risk) } }
     }
 }
 
@@ -583,10 +584,31 @@ fun AffinityHint(journal: JournalModel, content: ContentCatalog, key: String) {
     }
 }
 
-private fun riskExplanation(r: Risk): String = when (r) {
-    Risk.SAFE -> "Fewer flaws and fewer exceptional results. A reliable choice for everyday orders."
-    Risk.BALANCED -> "A chance of exceptional work or flaws. Most results fall somewhere in between."
-    Risk.RECKLESS -> "More exceptional results and more flaws. Even a poor result is still usable."
+/**
+ * Heartfire on the workbench: how much the forge holds, always. In Advanced with some held, a switch to forge with it.
+ * While the switch is on, everything it spends and can give stands here before the Forge action is tapped.
+ */
+@Composable
+private fun HeartfireRow(h: HeartfireUi, onToggle: (Boolean) -> Unit) {
+    Column(
+        Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow()
+            .then(if (h.blocked == null) Modifier.toggleable(value = h.on, role = Role.Switch, onValueChange = onToggle) else Modifier)
+            .heightIn(min = 56.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag("forge_heartfire"),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+            Column(Modifier.weight(1f)) {
+                Text(h.held, style = MaterialTheme.typography.titleSmall, color = if (h.on) Gold else Cream, modifier = Modifier.testTag("forge_heartfire_held"))
+                Secondary(h.blocked ?: "Forge with Heartfire", Modifier.testTag("forge_heartfire_state"))
+            }
+            if (h.blocked == null) Switch(checked = h.on, onCheckedChange = null)
+        }
+        if (h.outlook.isNotEmpty()) Column(Modifier.padding(top = Space.xs).testTag("forge_heartfire_outlook")) {
+            h.outlook.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp)) }
+            h.warning?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = 2.dp).testTag("forge_heartfire_warning")) }
+        }
+        Secondary(h.rule, Modifier.padding(top = Space.xs))
+        Secondary(h.source)
+    }
 }
 
 /**

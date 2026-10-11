@@ -1,0 +1,4 @@
+classic BALANCED_ACTIVE  300 runs to day 40: days mean 35.0 | Legendary forged from quality 0 | by deeds a run mean 0.16 median 0 p90 1, runs with one 15% | weapons with renown a run 6.9 | Heartfire in the forge at the end mean 1.78
+classic EXPERT           300 runs to day 40: days mean 40.7 | Legendary forged from quality 0 | by deeds a run mean 0.21 median 0 p90 1, runs with one 18% | weapons with renown a run 10.7 | Heartfire in the forge at the end mean 2.94
+classic BALANCED_ACTIVE  300 runs to day 40: days mean 40.7 | Legendary forged from quality 0 | by deeds a run mean 0.33 median 0 p90 1, runs with one 28% | weapons with renown a run 9.5 | Heartfire in the forge at the end mean 2.46
+classic EXPERT           300 runs to day 40: days mean 41.0 | Legendary forged from quality 0 | by deeds a run mean 0.29 median 0 p90 1, runs with one 26% | weapons with renown a run 11.9 | Heartfire in the forge at the end mean 2.96

@@ -57,8 +57,9 @@ data class GuildConfig(
 
     // Siege through the interaction engine (spec 10.3)
     val defenders: Int = 3,
-    val siegePercentBase: Int = 150,
-    val siegePercentPerDay: Double = 5.0,
+    /** v12: a higher floor and a flatter climb (was 150 and 5.0): the first sieges ask something, the charter siege is less of a cliff. */
+    val siegePercentBase: Int = 190,
+    val siegePercentPerDay: Double = 3.0,
     val siegePercentPerPressure: Double = 0.5,
     /** Grunts beside the leader or elite: this many, one more every [siegeGruntEvery] sieges, up to the field's size. */
     val siegeGrunts: Int = 2,
@@ -80,7 +81,7 @@ data class GuildConfig(
 
     // Charter (spec 10.7)
     val charterDay: Int = 20,
-    val charterWarlordPercent: Int = 115,
+    val charterWarlordPercent: Int = 110,
     val charterLegacyPoints: Int = 6,
     val charterTribute: Int = 150,
 

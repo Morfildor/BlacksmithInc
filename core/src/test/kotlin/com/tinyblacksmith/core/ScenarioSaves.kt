@@ -150,9 +150,9 @@ object ScenarioSaves {
         Scenario(
             "returned_legend", "A returned legend, asleep",
             "Open Storage: a blade from the Legend Board has come back with its affixes dormant. Hone it and they wake.",
-            "Played: the Known Name account (era 1 on seed $ACCOUNT_SEED); era 2 on seed 33 (BALANCED_ACTIVE), stopped on the morning of day 5, the day after the blade returned.",
+            "Played: the Known Name account (era 1 on seed $ACCOUNT_SEED); era 2 on seed 31 (BALANCED_ACTIVE), stopped on the morning of day 38, the day after the blade returned.",
             endDay = false, ownLegacy = true, blade = ::dormant,
-        ) { morning(33, Policy.BALANCED_ACTIVE, 5, account) },
+        ) { morning(31, Policy.BALANCED_ACTIVE, 38, account) },
         Scenario(
             "storied_blade", "One blade through three owners",
             "Open Storage and the blade: its Story has three sales, its fights and a siege.",

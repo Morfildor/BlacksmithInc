@@ -226,7 +226,7 @@ data class GuildCatalog(
         if (charters.isEmpty()) problems += "No charter"
         dup("opening", openings.map { it.id }); dup("preparation", preparations.map { it.id }); dup("modifier", modifiers.map { it.id })
         for (o in openings) {
-            if (content.relic(o.relicId) == null) problems += "Opening ${o.id} names unknown relic ${o.relicId}"
+            if (content.relics.isNotEmpty() && content.relic(o.relicId) == null) problems += "Opening ${o.id} names unknown relic ${o.relicId}"
             o.traits.forEach { (c, t) -> if (c !in content.classById || t !in traitById) problems += "Opening ${o.id} names unknown class or trait" }
             o.materials.keys.forEach { if (it !in content.materialById) problems += "Opening ${o.id} gives unknown material ${it.value}" }
             o.charters.forEach { if (it !in charterById) problems += "Opening ${o.id} names unknown charter $it" }
@@ -358,9 +358,9 @@ object GuildContent {
             prep = "Enough to beat the guards, then Guard and healing: on the way out the captive has to stay on their feet.",
             failure = "The captive stays where they are and their time keeps running. If the whole party goes down, one more is taken.",
             stages = listOf(
-                StageDef(roster(listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_scout"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.DANGEROUS, percent = 75),
-                StageDef(roster(listOf("ashclaw_thief", "ashclaw_scout", "ashclaw_scout"), listOf("hollow_shambler", "hollow_shambler", "bone_warden"), listOf("ember_whelp", "ember_whelp", "cinder_knight")), Danger.DANGEROUS, percent = 70,
-                    objective = ObjectiveKind.HOLD, rounds = 4, protectUnitId = "captive"))),
+                StageDef(roster(listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_scout"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.DANGEROUS, percent = 60),
+                StageDef(roster(listOf("ashclaw_thief", "ashclaw_scout", "ashclaw_scout"), listOf("hollow_shambler", "hollow_shambler", "bone_warden"), listOf("ember_whelp", "ember_whelp", "cinder_knight")), Danger.DANGEROUS, percent = 55,
+                    objective = ObjectiveKind.HOLD, rounds = 3, protectUnitId = "captive"))),
         MissionDef(RECOVERY, MissionArchetype.RECOVERY, "Recovery", days = 1, fee = 10, weight = 0.0, lifeDays = 9,
             description = "A weapon of your forge is in one of their hands. The one who carries it has to fall.",
             prep = "The same as a hunt. What it took from you makes it harder. Winning it back leaves Heartfire.",
@@ -404,8 +404,8 @@ object GuildContent {
             listOf(t("overhealer", "Overhealer", Trigger(EventKind.OVERHEAL, Who.SELF_SOURCE), listOf(Give(Stat.REGEN, Aim.EventTarget)), Limit(perRound = 1), "When their healing is more than an ally can use, that ally gains 1 Regeneration. Once a round.", listOf(Condition.FromAction)))),
         GuildTraitDef("second_wind", "Second Wind", true, "The first time a blow leaves them at a third of their health or less, heals themselves for 10. Once a fight. It does not bring back the fallen.",
             listOf(t("second_wind", "Second Wind", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Heal(Aim.Self, Fixed(10))), Limit(perFight = 1), "The first time a blow leaves them at a third of their health or less, heals themselves for 10. Once a fight.", listOf(Condition.HolderHealthAtMost(34))))),
-        GuildTraitDef("oathkeeper", "Oathkeeper", true, "While carrying a common weapon or none, raises 2 Guard at the start of every round.",
-            listOf(t("oathkeeper", "Oathkeeper", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(2))), Limit(perRound = 1), "While carrying a common weapon or none, raises 2 Guard at the start of every round.", listOf(Condition.HolderTagged(CombatContent.TAG_COMMON_GEAR))))),
+        GuildTraitDef("oathkeeper", "Oathkeeper", true, "While carrying a common or uncommon weapon or none, raises 2 Guard at the start of every round.",
+            listOf(t("oathkeeper", "Oathkeeper", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(2))), Limit(perRound = 1), "While carrying a common or uncommon weapon or none, raises 2 Guard at the start of every round.", listOf(Condition.HolderTagged(CombatContent.TAG_COMMON_GEAR))))),
     )
 
     val charters = listOf(
@@ -475,7 +475,7 @@ object GuildContent {
             materials = mapOf(LaunchContent.VERDANT_SAP to 2), militiaDelta = -2),
         OpeningDef("salvage", "Break It on Purpose", "Breakage", "A weapon that cracks rings the Bell: Guard for everybody, and a strike from whoever was waiting for it.",
             plan = "Loan the Brittle sword to whoever stands in front. When their Guard breaks it cracks, the Bell answers, the Rust Savant strikes. Hone it after every fight. A Runestone Shard makes a second answer.",
-            drawback = "The sword is Brittle and has to be mended after every fight. The forge starts 10 integrity lower.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS), traits = mapOf(W to "rust_savant", B to "rust_savant"),
+            drawback = "The sword is Brittle and has to be mended after every fight. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS), traits = mapOf(W to "rust_savant", B to "rust_savant"),
             relicId = CombatContent.SALVAGE_BELL, materials = mapOf(LaunchContent.RUNESTONE_SHARD to 1, LaunchContent.IRON to 2), weapon = StartWeaponDef(SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BRITTLE, 45), integrityDelta = -10),
         OpeningDef("stormwell", "The Stormwell", "Storm and Charge", "One member stores Charge with any weapon and lets it go as a burst. The Ledger turns each burst into Regeneration.",
             plan = "Forge a Stormglass weapon for the Storm-Touched member. With Binding Salt in an Advanced forge, healing them stores Charge too. Three Charge is one burst.",
@@ -491,15 +491,15 @@ object GuildContent {
             materials = mapOf(LaunchContent.SUN_ASH to 1, LaunchContent.GRAVE_DUST to 1), goldDelta = -30, militiaDelta = -3),
         OpeningDef("blood_price", "Paid in Blood", "Blood price", "A weapon that drinks its wielder hits much harder. Healing them afterwards is also Guard.",
             plan = "Loan the Bloodbound axe to somebody sturdy and keep a healer behind them. The Receipt turns that healing into Guard. Never send it out without the healer.",
-            drawback = "The axe takes health from whoever carries it. The forge starts 10 integrity lower.", charters = setOf(TOWNS_LAST_HOPE, HONEST_BUSINESS), traits = mapOf(G to "second_wind", R to "second_wind"), relicId = CombatContent.BLOOD_RECEIPT,
+            drawback = "The axe takes health from whoever carries it. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, HONEST_BUSINESS), traits = mapOf(G to "second_wind", R to "second_wind"), relicId = CombatContent.BLOOD_RECEIPT,
             weapon = StartWeaponDef(LaunchContent.AXE, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BLOODBOUND, 48), integrityDelta = -10),
-        OpeningDef("plain_oath", "The Plain Oath", "Common steel", "Common weapons, sworn to. Whoever carries one strikes harder and raises Guard.",
-            plan = "Forge cheap, common weapons on purpose and keep the good metal for the shelf. A finer weapon in a member's hands ends the oath for them.",
+        OpeningDef("plain_oath", "The Plain Oath", "Common steel", "Plain weapons, sworn to. Whoever carries a common or uncommon one strikes harder and raises Guard.",
+            plan = "Forge iron and bronze for the party on purpose and keep the good metal for the shelf. A rare or finer weapon in a member's hands ends the oath for them.",
             drawback = "60 gold less to start with. Fine weapons are wasted on the party.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(G to "oathkeeper", D to "oathkeeper", R to "oathkeeper"),
             relicId = CombatContent.BLUNT_OATH, materials = mapOf(LaunchContent.IRON to 3), goldDelta = -60),
         OpeningDef("careful_books", "Careful Books", "Take it and run", "A party that knows when to leave, and still gets paid for the walk.",
             plan = "Take contracts a step above your strength with a cautious plan. Pulling back still pays. Spend what it brings on the wall.",
-            drawback = "The forge starts 15 integrity lower.", charters = setOf(HONEST_BUSINESS, LICENSED_BAD_IDEAS), traits = mapOf(R to "cowardly", D to "cowardly"), relicId = CombatContent.COWARDS_MEDAL,
+            drawback = "The forge starts with 15 less health.", charters = setOf(HONEST_BUSINESS, LICENSED_BAD_IDEAS), traits = mapOf(R to "cowardly", D to "cowardly"), relicId = CombatContent.COWARDS_MEDAL,
             materials = mapOf(LaunchContent.BRONZE to 2), integrityDelta = -15),
     )
 

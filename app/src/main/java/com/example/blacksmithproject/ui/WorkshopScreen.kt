@@ -117,6 +117,14 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     // Back returns to Shop from any other destination, and from Shop it opens the main menu. Sheets and dialogs are
     // their own windows and take Back first.
     BackHandler { if (!vm.back()) onMainMenu() }
+    // A guild run's first morning: the opening is chosen before anything else, because End Day waits for it. The offer is
+    // in the save, so this comes back after any restart; nothing dismisses it but the choice (Back opens the main menu).
+    val opening = remember(state.guild?.openingOffer, state.heroes) { vm.engine.openingChooser(state) }
+    if (opening != null) {
+        OpeningChooser(opening, enabled = !s.busy, onChoose = { vm.dispatch(Command.ChooseOpening(it)) })
+        s.lastError?.let { ErrorDialog(it, vm::dismissError) }
+        return
+    }
     // Each destination keeps its own scroll position and what is open in it while the player is somewhere else.
     val positions = rememberSaveableStateHolder()
     // What just happened to a blade (listed, stored, repriced, melted down): said once, over whichever destination is
@@ -383,6 +391,8 @@ internal fun endDayNote(s: UiState.Playing): String {
     // A guild run: what End Day sets in motion for the guild (the party that leaves, tonight's siege and who stands, a checkpoint without word), under whatever still waits.
     val guild = s.guild?.endDay.orEmpty()
     val note = when {
+        // The engine refuses End Day until the guild's opening is chosen (`GameError.OpeningPending`).
+        state.guild?.openingOffer?.isNotEmpty() == true -> "Choose how the guild begins first"
         state.pendingBlessingOffer.isNotEmpty() -> "Choose a blessing"
         // The run can end tonight: said before anything else that waits. In a guild run the guild's own line says it, with who stands.
         s.guild == null && s.shop.threat?.today == true -> "The siege starts after today's trading"

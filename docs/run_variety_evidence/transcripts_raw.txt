@@ -1,0 +1,287 @@
+Transcript: seed 100007, charter towns_last_hope, policy SYNERGY, opening overflow, balance 12. Ended on day 30: the forge fell
+  day 1 | The guild begins with The Overflowing Cup. Healing that has nowhere to go becomes Guard and Regeneration. Two fewer militia on the wall.
+  day 1 | Kivi Vance the Battlemage signed with the guild for 17 gold (Second Wind).
+  day 1 | Sorrel Umberlow the Duelist signed with the guild for 35 gold (Loyal).
+  day 1 | Frode Ostler, Sorrel Umberlow, Kivi Vance finished supply run in the Flooded Crypt. Round 1: Sorrel: Double cut. Sorrel hits Hollowbound shambler for 4. Hollowbound shambler is down.
+  day 1 | Scouts report what the Hollowbound prepare for day 5: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons g
+  day 2 | Frode Ostler, Sorrel Umberlow, Kivi Vance won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Frode: Hold the line. Frode hits Hollowbound shambler for 16. Frode's Arc hits Hollowbound shambler for 2
+  day 3 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: grave mist. It will not come on day 5.
+  day 3 | Frode Ostler, Sorrel Umberlow, Kivi Vance finished sabotage in the Flooded Crypt. Round 1: Kivi: Opening sigil. Kivi hits Hollowbound shambler for 17. Kivi's Undead Bane hits Hollowbound shambler for 8.
+  day 4 | Nobody went with the supplier. Until day 9 the supplier brings 1 fewer of every limited material each morning.
+  day 4 | Frode Ostler, Sorrel Umberlow, Kivi Vance finished hunt in the Flooded Crypt. Round 1: Sorrel: Double cut. Sorrel hits The Pale Knight for 10. Sorrel's Undead Bane hits The Pale Knight for 8.
+  day 5 | carried: Frode the Guardian (pain_collector) Stormcharged Silver Sword, epic, Pascoe the Warden (overhealer) Undead Bane Starsteel Staff, epic, Kivi the Battlemage (second_wind) Flaming Bronze Sword, epic, Sorrel the Duelist (loyal_guild) Flaming Bronze Axe, rare | gold 388, forge health 100, Heartfire 0
+  day 5 | The forge took 23 damage in the siege.
+  day 5 | The Hollowbound procession broke through (Pascoe Merrick, Kivi Vance, Cael Tallow). Round 1: Pascoe: Mend. Overflow Basin gives Cael 4 Guard.
+  day 6 | Added Blood Receipt to the workshop.
+  day 6 | Sorrel Umberlow were beaten at escort at the Cinder Quarry. Round 1: Sorrel's Reinforced gives Sorrel 4 Guard.
+  day 6 | Scouts report what the Hollowbound prepare for day 10: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third. Marks pull your strikes onto it
+  day 7 | Frode Ostler won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Frode: Hold the line. Frode hits Hollowbound shambler for 16. Frode's Arc hits Hollowbound shambler for 2.
+  day 8 | Frode Ostler was taken alive at sabotage in the Flooded Crypt. Stormcharged Silver Sword went with them.
+  day 8 | Frode Ostler were beaten at sabotage in the Flooded Crypt. Round 1: Frode: Hold the line. Frode hits Gravecaller for 16. Frode's Arc hits Hollowbound shambler for 2.
+  day 9 | Nobody went with the supplier. Until day 14 the supplier brings 1 fewer of every limited material each morning.
+  day 9 | Sorrel Umberlow, Kivi Vance, Pascoe Merrick finished hunt in the Flooded Crypt. Round 1: Sorrel: Double cut. Sorrel hits The Pale Knight for 13. Sorrel's Ember boils off Chill on The Pale Knight. Sorrel's Ember stores Steam (1). S
+  day 10 | carried: Frode the Guardian (pain_collector) nothing, Pascoe the Warden (overhealer) Vampiric Moonsteel Staff, epic, Kivi the Battlemage (second_wind) Flaming Bronze Sword, epic, Sorrel the Duelist (loyal_guild) Flaming Bronze Axe, rare | gold 706, forge health 87, Heartfire 0
+  day 10 | The forge took 27 damage in the siege.
+  day 10 | The Hollowbound procession broke through (Kivi Vance, Cael Tallow, Tessa Everard). Round 1: Tessa: Mark and loose. Tessa's Off-hand cut hits Gravecaller for 11. Gravecaller is down.
+  day 11 | Added The Blunt Oath to the workshop.
+  day 11 | Sorrel Umberlow, Pascoe Merrick won the first day of rescue in the Flooded Crypt and press on tomorrow. Round 1: Sorrel: Double cut. The Blunt Oath hits Hollowbound shambler for 6.
+  day 11 | Scouts report what the Hollowbound prepare for day 15: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons 
+  day 12 | Frode Ostler was brought out alive.
+  day 12 | Sorrel Umberlow, Pascoe Merrick finished rescue in the Flooded Crypt. Round 1: Sorrel: Double cut. The Blunt Oath hits Hollowbound shambler for 3.
+  day 13 | Frode Ostler, Sorrel Umberlow, Kivi Vance won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Frode: Hold the line. Frode hits Hollowbound shambler for 21. Frode's Arc hits Hollowbound shambler for 4
+  day 14 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: grave mist. It will not come on day 15.
+  day 14 | Frode Ostler, Sorrel Umberlow, Kivi Vance finished sabotage in the Flooded Crypt. Round 1: Frode: Hold the line. Frode hits Bone warden for 21. Frode's Arc hits Hollowbound shambler for 4.
+  day 15 | The forge took 12 damage in the siege.
+  day 15 | The Hollowbound procession broke through (Tessa Everard, Evander Quill, Selka Deepdale). Round 1: Tessa: Mark and loose. Tessa hits The Pale Knight for 22. Tessa's Undead Bane hits The Pale Knight for 8.
+  day 16 | Sorrel Umberlow, Kivi Vance, Pascoe Merrick finished hunt in the Flooded Crypt. Round 1: Kivi: Opening sigil. Kivi pays 4 health to Bloodbound. Kivi's Bloodbound hits The Pale Knight for 8.
+  day 16 | Scouts report what the Ashclaw Raiders prepare for day 20: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 17 | Frode Ostler, Kivi Vance, Pascoe Merrick won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Kivi: Opening sigil. Kivi pays 4 health to Bloodbound. Kivi's Bloodbound hits Ashclaw scout for 8. Ashclaw scout
+  day 17 | The enemy took Silver Sword after Evander Quill died.
+  day 18 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 20.
+  day 18 | Frode Ostler, Kivi Vance, Pascoe Merrick finished sabotage on the Ashroad. Round 1: Kivi: Opening sigil. Kivi pays 4 health to Bloodbound. Kivi's Bloodbound hits Ashclaw thief for 8.
+  day 19 | Nobody went with the supplier. Until day 24 the supplier brings 1 fewer of every limited material each morning.
+  day 19 | Frode Ostler, Sorrel Umberlow, Kivi Vance finished supply run in the Flooded Crypt. Round 1: Sorrel: Double cut. Sorrel hits Hollowbound shambler for 8. Hollowbound shambler is down.
+  day 20 | carried: Frode the Guardian (pain_collector) Flaming Starsteel Axe, epic, Pascoe the Warden (overhealer) Obsidian Axe, uncommon, Kivi the Battlemage (second_wind) Bronze Sword, uncommon, flawed, Sorrel the Duelist (loyal_guild) Silver Axe, uncommon | gold 121, forge health 67, Heartfire 0
+  day 20 | The forge took 33 damage in the siege.
+  day 20 | Warlord Krag and the Ashclaw horde broke through (Selka Deepdale, Pascoe Merrick, Tessa Everard). Round 1: Pascoe: Mend. The Blunt Oath hits Warlord Krag for 3.
+  day 21 | Frode Ostler, Sorrel Umberlow, Kivi Vance won the first day of escort on the Ashroad and press on tomorrow. Round 1: Kivi: Opening sigil. Kivi pays 4 health to Bloodbound. Kivi's Bloodbound hits Ashclaw scout for 8.
+  day 21 | Scouts report what the Ashclaw Raiders prepare for day 25: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 22 | Frode Ostler, Sorrel Umberlow, Kivi Vance were beaten at escort on the Ashroad. Round 1: Sorrel: Double cut. The Blunt Oath hits Ashclaw thief for 6.
+  day 23 | Frode Ostler, Sorrel Umberlow, Kivi Vance won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Sorrel: Double cut. The Blunt Oath hits Ashclaw scout for 3. Ashclaw scout is down.
+  day 24 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 25.
+  day 24 | Frode Ostler, Sorrel Umberlow, Kivi Vance finished sabotage on the Ashroad. Round 1: Kivi: Opening sigil. Kivi pays 2 health to Bloodbound. Kivi's Bloodbound hits Ashclaw thief for 4.
+  day 25 | The forge took 43 damage in the siege.
+  day 25 | Warlord Krag and the Ashclaw horde broke through (Selka Deepdale, Pascoe Merrick, Jessamy Millrace). Round 1: Pascoe: Mend. The Blunt Oath hits Warlord Krag for 3.
+  day 25 | Moonsteel Sword returned to the forge after Selka Deepdale died.
+  day 26 | Frode Ostler, Sorrel Umberlow, Pascoe Merrick finished supply run on the Ashroad. Round 1: Sorrel: Double cut. Sorrel hits Ashclaw scout for 7. Ashclaw scout is down.
+  day 26 | Scouts report what the Hollowbound prepare for day 30: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons 
+  day 27 | Frode Ostler, Sorrel Umberlow, Kivi Vance won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Frode: Hold the line. Frode pays 4 health to Bloodbound. Frode's Bloodbound hits Hollowbound shambler for
+  day 28 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: grave mist. It will not come on day 30.
+  day 28 | Frode Ostler, Sorrel Umberlow, Kivi Vance finished sabotage in the Flooded Crypt. Round 1: Frode: Hold the line. Frode pays 4 health to Bloodbound. Frode's Bloodbound hits Bone warden for 11.
+  day 29 | Nobody went with the supplier. Until day 34 the supplier brings 1 fewer of every limited material each morning.
+  day 29 | Sorrel Umberlow, Kivi Vance, Pascoe Merrick finished hunt in the Flooded Crypt. Round 1: Kivi: Opening sigil. Kivi pays 4 health to Bloodbound. Kivi's Bloodbound hits The Pale Knight for 8.
+  day 30 | The forge took 46 damage in the siege.
+  day 30 | The Hollow King and the Hollowbound procession broke through (Pascoe Merrick, Corvin Bracken, Arvo Longbarrow). Round 1: Pascoe: Mend. Pascoe hits The Hollow King for 17. Pascoe's Undead Bane hits The Hollow King for 8.
+  day 30 | The forge has fallen. Emberfall's smith is no more.
+
+Transcript: seed 100012, charter towns_last_hope, policy LEGEND_SEEKER, opening overflow, balance 12. Ended on day 31: still standing at the horizon
+  day 1 | The guild begins with The Overflowing Cup. Healing that has nowhere to go becomes Guard and Regeneration. Two fewer militia on the wall.
+  day 1 | Kazimir Varley the Battlemage signed with the guild for 17 gold (Oathkeeper).
+  day 1 | Norrik Oakhurst the Duelist signed with the guild for 35 gold (Greedy).
+  day 1 | Wren Wainwright, Norrik Oakhurst, Kazimir Varley finished supply run in the Flooded Crypt. Round 1: Norrik: Double cut. Norrik hits Hollowbound shambler for 4. Hollowbound shambler is down.
+  day 1 | Scouts report what the Embermaw Brood prepare for day 5: a second drake. They bring a second drake. In the third round the whole wall is breathed on twice. Chill a drake and it breathes weaker. Guard for the whole line before the 
+  day 2 | Wren Wainwright, Norrik Oakhurst, Kazimir Varley won the first day of the supplier's road at the Cinder Quarry and press on tomorrow. Round 1: Norrik: Double cut. Norrik hits Embermaw whelp for 9. Embermaw whelp is down.
+  day 3 | The supplier got through. Until day 8 the supplier brings 1 more of every limited material each morning.
+  day 3 | Wren Wainwright, Norrik Oakhurst, Kazimir Varley finished the supplier's road at the Cinder Quarry. Round 1: Cinder-knight: Ember guard. Wren's Guard breaks. Wren's Riposte hits Cinder-knight for 3.
+  day 4 | Norrik Oakhurst finished supply run in the Flooded Crypt. Round 2: Norrik: Double cut. Norrik hits Hollowbound shambler for 7. Hollowbound shambler is down.
+  day 5 | carried: Wren the Guardian (loyal_guild) Frostbound Bronze Axe, epic, Onora the Warden (overhealer) Frostbound Moonsteel Staff, epic, Kazimir the Battlemage (oathkeeper) Frostbound Moonsteel Sword, epic, Norrik the Duelist (greedy) Stormcharged Silver Sword, rare | gold 69, forge health 100, Heartfire 0
+  day 5 | The forge took 14 damage in the siege.
+  day 5 | The Embermaw Brood broke through (Kazimir Varley, Wren Wainwright, Onora Fairweather). Round 1: Onora: Mend. Onora has nothing to heal on Kazimir (8 over). Overflow Basin gives Kazimir 4 Guard.
+  day 6 | Added Storm Ledger to the workshop.
+  day 6 | Norrik Oakhurst, Onora Fairweather pulled back from hunt in the Flooded Crypt. Round 1: Onora's Reinforced gives Onora 4 Guard.
+  day 6 | Scouts report what the Ashclaw Raiders prepare for day 10: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 8 | Wren Wainwright, Kazimir Varley, Onora Fairweather won the first day of starfall site on the Ashroad and press on tomorrow. Round 1: Onora's Reinforced gives Onora 4 Guard.
+  day 9 | The party brought Heartfire back from starfall site on the Ashroad. The forge now holds 1 Heartfire.
+  day 9 | Wren Wainwright, Kazimir Varley, Onora Fairweather finished starfall site on the Ashroad. Round 1: Kazimir: Opening sigil. Kazimir's Swift hits Ashclaw warchief for 8.
+  day 10 | carried: Wren the Guardian (loyal_guild) Frostbound Bronze Axe, epic, Onora the Warden (overhealer) Frostbound Moonsteel Staff, epic, Kazimir the Battlemage (oathkeeper) Undead Bane Starsteel Sword, legendary, Norrik the Duelist (greedy) Frostbound Moonsteel Sword, epic | gold 119, forge health 96, Heartfire 0
+  day 10 | Forged Undead Bane Starsteel Sword. Legendary. Quality 82.
+  day 10 | The forge took 15 damage in the siege.
+  day 10 | Warlord Krag and the Ashclaw horde broke through (Norrik Oakhurst, Kazimir Varley, Wren Wainwright). Round 1: Warlord Krag: Reave. Wren's Guard breaks. Wren's Riposte hits Warlord Krag for 13.
+  day 11 | Added Bone Music Box to the workshop.
+  day 11 | Norrik Oakhurst, Onora Fairweather won the first stage of relic delve at the Cinder Quarry. Deeper lies more. The smith decides in the morning. Round 1: Norrik: Double cut. Norrik's Swift hits Cinder-knight for 7.
+  day 11 | Scouts report what the Ashclaw Raiders prepare for day 15: shield wall. The raiders come behind shields. Every one of them starts with 5 Guard. A spear reaches past Guard. Burn and Bleed tick under a shield. Frost hits them where 
+  day 12 | Frostbound Moonsteel Sword, on loan to Norrik Oakhurst, was taken by the enemy.
+  day 12 | Onora Fairweather was taken alive at relic delve at the Cinder Quarry. Frostbound Moonsteel Staff went with them.
+  day 12 | Norrik Oakhurst, Onora Fairweather were beaten at relic delve at the Cinder Quarry. Round 1: Onora's Reinforced gives Onora 4 Guard.
+  day 13 | Wren Wainwright, Kazimir Varley won the first day of rescue at the Cinder Quarry and press on tomorrow. Round 1: Wren: Hold the line. Wren raises 5 Guard. Wren's Guardian's gives Wren 2 Guard.
+  day 14 | Nobody went with the supplier. Until day 19 the supplier brings 1 fewer of every limited material each morning.
+  day 14 | Merle Ellery the Ranger signed with the guild for 35 gold (Storm-Touched).
+  day 14 | Onora Fairweather was brought out alive.
+  day 14 | Wren Wainwright, Kazimir Varley finished rescue at the Cinder Quarry. Round 1: Kazimir: Opening sigil. Kazimir hits Embermaw whelp for 17. Embermaw whelp is down. Spectral helper joins the party (Bone Music Box).
+  day 15 | The enemy took Iron Axe after Radek Quill died.
+  day 15 | The forge took 18 damage in the siege.
+  day 15 | Warlord Krag and the Ashclaw horde broke through (Merle Ellery, Wren Wainwright, Kazimir Varley). Round 1: Warlord Krag: Reave. Wren's Guard breaks. Wren's Riposte hits Warlord Krag for 14.
+  day 16 | Wren Wainwright, Onora Fairweather finished supply run in the Flooded Crypt. Round 1: Onora's Reinforced gives Onora 4 Guard.
+  day 16 | Scouts report what the Ashclaw Raiders prepare for day 20: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 17 | Wren Wainwright, Onora Fairweather won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Onora's Reinforced gives Onora 4 Guard.
+  day 18 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 20.
+  day 18 | Wren Wainwright, Onora Fairweather finished sabotage on the Ashroad. Round 1: Onora: Mend. Onora hits Ashclaw thief for 10. Ashclaw thief is down. Spectral helper joins the party (Bone Music Box).
+  day 18 | Iron Bow is a legend now. Crispin Selwyn slew the Cinder Matriarch with it.
+  day 19 | Nobody went with the supplier. Until day 24 the supplier brings 1 fewer of every limited material each morning.
+  day 19 | Merle Ellery finished supply run on the Ashroad. Round 2: Merle: Mark and loose. Merle hits Ashclaw scout for 24. Ashclaw scout is down. Spectral helper joins the party (Bone Music Box).
+  day 20 | carried: Wren the Guardian (loyal_guild) Frostbound Moonsteel Axe, epic, Onora the Warden (overhealer) Frostbound Obsidian Axe, rare, Kazimir the Battlemage (oathkeeper) Undead Bane Starsteel Sword, legendary, Merle the Ranger (storm_touched) Frostbound Bronze Axe, epic | gold 64, forge health 81, Heartfire 0
+  day 20 | The forge took 27 damage in the siege.
+  day 20 | Warlord Krag and the Ashclaw horde broke through (Wren Wainwright, Onora Fairweather, Kazimir Varley). Round 1: Onora: Mend. Onora has nothing to heal on Wren (7 over). Overflow Basin gives Wren 4 Guard.
+  day 21 | Onora Fairweather was taken alive at recovery at the Cinder Quarry. Frostbound Obsidian Axe went with them.
+  day 21 | Merle Ellery, Onora Fairweather were beaten at recovery at the Cinder Quarry. Round 1: Merle: Mark and loose. Merle hits Cinder Matriarch for 21. Merle's Giant Slayer hits Cinder Matriarch for 4.
+  day 21 | Scouts report what the Ashclaw Raiders prepare for day 25: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 23 | Wren Wainwright, Kazimir Varley won the first day of rescue at the Cinder Quarry and press on tomorrow. Round 1: Kazimir: Opening sigil. Kazimir's Swift hits Embermaw whelp for 9. Embermaw whelp is down. Spectral helper joins the 
+  day 24 | Nobody went with the supplier. Until day 29 the supplier brings 1 fewer of every limited material each morning.
+  day 24 | Onora Fairweather was brought out alive.
+  day 24 | Wren Wainwright, Kazimir Varley finished rescue at the Cinder Quarry. Round 1: Kazimir: Opening sigil. Kazimir's Swift hits Embermaw whelp for 9. Embermaw whelp is down. Spectral helper joins the party (Bone Music Box).
+  day 25 | The forge took 34 damage in the siege.
+  day 25 | Warlord Krag and the Ashclaw horde broke through (Merle Ellery, Onora Fairweather, Wren Wainwright). Round 1: Merle: Mark and loose. Merle hits Warlord Krag for 25. Merle's Giant Slayer hits Warlord Krag for 7.
+  day 26 | Merle Ellery finished work on the wall.
+  day 26 | Scouts report what the Hollowbound prepare for day 30: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons 
+  day 27 | Merle Ellery finished work on the wall.
+  day 28 | Wren Wainwright finished work on the wall.
+  day 29 | Nobody went with the supplier. Until day 34 the supplier brings 1 fewer of every limited material each morning.
+  day 29 | Merle Ellery were beaten at supply run on the Ashroad. Round 3: Merle: Mark and loose. Merle hits Ashclaw scout for 24. Ashclaw scout is down. Spectral helper joins the party (Bone Music Box).
+  day 30 | The forge took 31 damage in the siege.
+  day 30 | The Hollow King and the Hollowbound procession broke through (Wren Wainwright, Kazimir Varley, Onora Fairweather). Round 1: Kazimir: Opening sigil. Kazimir's Swift hits The Hollow King for 9.
+
+Transcript: seed 100003, charter honest_business, policy ADAPTIVE, opening plain_oath, balance 12. Ended on day 31: still standing at the horizon
+  day 1 | The guild begins with The Plain Oath. Plain weapons, sworn to. Whoever carries a common or uncommon one strikes harder and raises Guard. 60 gold less to start with. Fine weapons are wasted on the party.
+  day 1 | Ferelith Deepdale the Guardian signed with the guild for 17 gold (Greedy).
+  day 1 | Maren Meadowsweet the Duelist signed with the guild for 35 gold (Second Wind).
+  day 1 | Ferelith Deepdale, Maren Meadowsweet, Zephyr Hawkridge finished supply run at the Cinder Quarry. Round 1: Zephyr's Oathkeeper gives Zephyr 2 Guard.
+  day 1 | Scouts report what the Hollowbound prepare for day 5: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third. Marks pull your strikes onto it.
+  day 2 | Ferelith Deepdale, Maren Meadowsweet, Zephyr Hawkridge won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Zephyr's Oathkeeper gives Zephyr 2 Guard.
+  day 3 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: a gravecaller behind the line. It will not come on day 5.
+  day 3 | Ferelith Deepdale, Maren Meadowsweet, Zephyr Hawkridge finished sabotage in the Flooded Crypt. Round 1: Ferelith: Hold the line. The Blunt Oath hits Gravecaller for 3.
+  day 4 | Nobody went with the supplier. Until day 9 the supplier brings 1 fewer of every limited material each morning.
+  day 4 | Ferelith Deepdale finished supply run on the Ashroad. Round 1: Ferelith: Hold the line. The Blunt Oath hits Ashclaw scout for 3.
+  day 5 | carried: Zephyr the Ranger (oathkeeper) Iron Axe, common, Faolan the Warden (protective) Flaming Bronze Axe, rare, Ferelith the Guardian (greedy) Iron Axe, common, Maren the Duelist (second_wind) Bronze Sword, uncommon | gold 253, forge health 100, Heartfire 0
+  day 5 | The forge took 3 damage in the siege.
+  day 5 | Emberfall held against the Hollowbound procession, at a cost: the forge was hit and 1 of the defenders went down. On the wall: Maren Meadowsweet, Zephyr Hawkridge, Faolan Varley. Round 1: Zephyr: Mark and loose. The Blunt Oath hit
+  day 6 | Added Salvage Bell to the workshop.
+  day 6 | Ferelith Deepdale, Zephyr Hawkridge, Faolan Varley finished supply run at the Cinder Quarry. Round 1: Ferelith: Hold the line. The Blunt Oath hits Embermaw whelp for 3.
+  day 6 | Scouts report what the Ashclaw Raiders prepare for day 10: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 7 | Ferelith Deepdale, Zephyr Hawkridge, Faolan Varley won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Ferelith: Hold the line. The Blunt Oath hits Ashclaw scout for 3.
+  day 8 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 10.
+  day 8 | Ferelith Deepdale, Zephyr Hawkridge, Faolan Varley finished sabotage on the Ashroad. Round 1: Zephyr: Mark and loose. Zephyr's Off-hand cut hits Ashclaw thief for 11.
+  day 9 | Nobody went with the supplier. Until day 14 the supplier brings 1 fewer of every limited material each morning.
+  day 9 | Maren Meadowsweet finished supply run at the Cinder Quarry. Round 1: Maren: Double cut. The Blunt Oath hits Embermaw whelp for 3. Embermaw whelp is down.
+  day 10 | carried: Zephyr the Ranger (oathkeeper) Undead Bane Starsteel Dagger, epic, Faolan the Warden (protective) Frostbound Bronze Axe, rare, Ferelith the Guardian (greedy) Bronze Axe, common, flawed, Maren the Duelist (second_wind) Bronze Sword, uncommon | gold 613, forge health 100, Heartfire 0
+  day 10 | Emberfall repelled the Ashclaw horde! On the wall: Faolan Varley, Zephyr Hawkridge, Ferelith Deepdale. Round 1: Faolan: Mend. Faolan's Swift hits Ashclaw warchief for 7.
+  day 11 | Added Storm Ledger to the workshop.
+  day 11 | Ferelith Deepdale, Maren Meadowsweet, Zephyr Hawkridge finished hunt in the Flooded Crypt. Round 1: Zephyr: Mark and loose. Zephyr's Off-hand cut hits Hollowbound shambler for 13.
+  day 11 | Scouts report what the Hollowbound prepare for day 15: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third. Marks pull your strikes onto it
+  day 12 | Ferelith Deepdale, Maren Meadowsweet, Zephyr Hawkridge won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Ferelith: Hold the line. The Blunt Oath hits Hollowbound shambler for 3.
+  day 13 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: a gravecaller behind the line. It will not come on day 15.
+  day 13 | Ferelith Deepdale, Maren Meadowsweet, Zephyr Hawkridge finished sabotage in the Flooded Crypt. Round 1: Ferelith: Hold the line. The Blunt Oath hits Gravecaller for 3.
+  day 14 | Ferelith Deepdale finished supply run at the Cinder Quarry. Round 1: Ferelith: Hold the line. The Blunt Oath hits Embermaw whelp for 3.
+  day 15 | The forge took 3 damage in the siege.
+  day 15 | Emberfall held against the Hollowbound procession, at a cost: the forge was hit and 1 of the defenders went down. On the wall: Zephyr Hawkridge, Maren Meadowsweet, Faolan Varley. Round 1: Maren: Double cut. Maren hits The Pale Kni
+  day 16 | Ferelith Deepdale, Maren Meadowsweet, Faolan Varley finished hunt in the Flooded Crypt. Round 1: The Pale Knight: Grave weapon. Ferelith's Guard breaks. Ferelith's Bronze Axe cracks. Salvage Bell spends 2 Scrap. Salvage Bell gives
+  day 16 | Scouts report what the Embermaw Brood prepare for day 20: banked fires. They have fed the fires for days. Every defender starts with 2 Burn and every one of the brood with 2 Regeneration. A healer on the wall, or Verdant weapons. 
+  day 17 | Ferelith Deepdale, Maren Meadowsweet, Faolan Varley won the first day of sabotage at the Cinder Quarry and press on tomorrow. Round 1: Maren: Double cut. Maren hits Embermaw whelp for 17. Embermaw whelp is down.
+  day 18 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: banked fires. It will not come on day 20.
+  day 18 | Ferelith Deepdale, Maren Meadowsweet, Faolan Varley finished sabotage at the Cinder Quarry. Round 1: Faolan: Mend. Faolan hits Cinder-knight for 8. Cinder-knight is down.
+  day 19 | Maren Meadowsweet finished supply run in the Flooded Crypt. Round 2: Maren: Double cut. Maren hits Hollowbound shambler for 13. Hollowbound shambler is down.
+  day 20 | carried: Zephyr the Ranger (oathkeeper) Frostbound Starsteel Axe, epic, Faolan the Warden (protective) Frostbound Moonsteel Axe, epic, Ferelith the Guardian (greedy) Flaming Moonsteel Axe, rare, Maren the Duelist (second_wind) Frostbound Moonsteel Sword, epic | gold 791, forge health 100, Heartfire 0
+  day 20 | The forge took 21 damage in the siege.
+  day 20 | Broodmother Vyrash and the Embermaw Brood broke through (Ferelith Deepdale, Zephyr Hawkridge, Faolan Varley). Round 1: Zephyr's Reinforced gives Zephyr 4 Guard.
+  day 21 | Maren Meadowsweet finished supply run on the Ashroad. Round 2: Maren: Double cut. Maren hits Ashclaw scout for 17. Ashclaw scout is down.
+  day 21 | Scouts report what the Hollowbound prepare for day 25: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third. Marks pull your strikes onto it
+  day 22 | Maren Meadowsweet won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Hollowbound shambler: Claw. Hollowbound shambler hits Maren for 7. Maren's Second Wind heals for 10.
+  day 23 | Maren Meadowsweet was taken alive at sabotage in the Flooded Crypt. Frostbound Moonsteel Sword went with them.
+  day 23 | Maren Meadowsweet were beaten at sabotage in the Flooded Crypt. Round 1: Gravecaller: Knit bone. Gravecaller hits Maren for 4. Maren's Second Wind heals for 10.
+  day 24 | Nobody went with the supplier. Until day 29 the supplier brings 1 fewer of every limited material each morning.
+  day 25 | The forge took 16 damage in the siege.
+  day 25 | The Hollow King and the Hollowbound procession broke through (Ferelith Deepdale, Zephyr Hawkridge, Faolan Varley). Round 1: The Hollow King: Crown of ash. Ferelith's Guard breaks. Ferelith's Riposte hits The Hollow King for 13.
+  day 26 | Faolan Varley won the first day of rescue in the Flooded Crypt and press on tomorrow. Round 1: Hollowbound shambler: Claw. Hollowbound shambler hits Faolan for 7. Faolan's Protective gives Faolan 3 Guard.
+  day 26 | Scouts report what the Embermaw Brood prepare for day 30: banked fires. They have fed the fires for days. Every defender starts with 2 Burn and every one of the brood with 2 Regeneration. A healer on the wall, or Verdant weapons. 
+  day 27 | Maren Meadowsweet was brought out alive.
+  day 27 | Faolan Varley finished rescue in the Flooded Crypt. Round 1: Bone warden: Shield wall. Bone warden hits Faolan for 6. Faolan's Protective gives Faolan 3 Guard.
+  day 28 | Ferelith Deepdale, Maren Meadowsweet, Zephyr Hawkridge won the first day of sabotage at the Cinder Quarry and press on tomorrow. Round 1: Ferelith's Reinforced gives Ferelith 4 Guard.
+  day 29 | Nobody went with the supplier. Until day 34 the supplier brings 1 fewer of every limited material each morning.
+  day 29 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: banked fires. It will not come on day 30.
+  day 29 | Ferelith Deepdale, Maren Meadowsweet, Zephyr Hawkridge finished sabotage at the Cinder Quarry. Round 1: Maren: Double cut. Maren hits Cinder-knight for 17. Cinder-knight is down.
+  day 30 | The forge took 17 damage in the siege.
+  day 30 | Broodmother Vyrash and the Embermaw Brood broke through (Faolan Varley, Ferelith Deepdale, Zephyr Hawkridge). Round 1: Broodmother Vyrash: Rend. Ferelith's Guard breaks. Ferelith's Riposte hits Broodmother Vyrash for 16.
+
+Transcript: seed 100021, charter licensed_bad_ideas, policy GREEDY_DIVER, opening careful_books, balance 12. Ended on day 15: the forge fell
+  day 1 | The guild begins with Careful Books. A party that knows when to leave, and still gets paid for the walk. The forge starts with 15 less health.
+  day 1 | Durgan Stroud the Warden signed with the guild for 17 gold (Storm-Touched).
+  day 1 | Kazimir Orchard the Ranger signed with the guild for 35 gold (Methodical).
+  day 1 | Vesna Wainwright was taken alive at relic delve at the Cinder Quarry.
+  day 1 | Rosalind Ostler, Kazimir Orchard, Vesna Wainwright were beaten at relic delve at the Cinder Quarry. Round 2: Embermaw whelp: Nip. Embermaw whelp hits Rosalind for 7. Rosalind is down.
+  day 1 | Scouts report what the Embermaw Brood prepare for day 5: a second drake. They bring a second drake. In the third round the whole wall is breathed on twice. Chill a drake and it breathes weaker. Guard for the whole line before the 
+  day 2 | Durgan Stroud were beaten at escort on the Ashroad. Round 3: Ashclaw thief: Cut and run. Ashclaw thief hits The supply cart for 8. The supply cart is down.
+  day 4 | Rosalind Ostler, Kazimir Orchard, Durgan Stroud won the first stage of relic delve in the Flooded Crypt. Deeper lies more. The smith decides in the morning. Round 1: Rosalind: Double cut. Rosalind pays 4 health to Bloodbound. Rosa
+  day 5 | carried: Rosalind the Duelist (cowardly) Stormcharged Obsidian Sword, rare, flawed, Vesna the Battlemage (loyal_guild) nothing, Durgan the Warden (storm_touched) Frostbound Bronze Axe, rare, Kazimir the Ranger (methodical) Flaming Bronze Axe, uncommon | gold 41, forge health 93, Heartfire 0
+  day 5 | Stormcharged Obsidian Sword, on loan to Rosalind Ostler, was taken by the enemy.
+  day 5 | Durgan Stroud was taken alive at relic delve in the Flooded Crypt. Frostbound Bronze Axe went with them.
+  day 5 | Rosalind Ostler, Kazimir Orchard, Durgan Stroud were beaten at relic delve in the Flooded Crypt. Round 1: Rosalind's Reinforced gives Rosalind 4 Guard.
+  day 5 | The forge took 32 damage in the siege.
+  day 5 | The Embermaw Brood broke through (Hilde Hartwell, Nerys Mercer, Petra Ferris). Round 1: Hilde: Opening sigil. Hilde hits Embermaw drake for 14. Hilde's Giant Slayer hits Embermaw drake for 4.
+  day 6 | Added Salvage Bell to the workshop.
+  day 6 | Verity Pargeter the Guardian signed with the guild for 35 gold (Pain Collector).
+  day 6 | Idris Hayward the Duelist signed with the guild for 95 gold (Oathkeeper).
+  day 6 | Verity Pargeter, Idris Hayward won the first stage of relic delve at the Cinder Quarry. Deeper lies more. The smith decides in the morning. Round 1: Cinder-knight: Ember guard. Verity's Guard breaks. Verity's Riposte hits Cinder-k
+  day 6 | Scouts report what the Hollowbound prepare for day 10: grave mist. A mist comes in ahead of them. Every defender starts with 2 Bleed and every one of the dead with 1 Regeneration. A healer on the wall outlasts it. Verdant weapons 
+  day 7 | Resonant Bronze Axe, on loan to Verity Pargeter, was taken by the enemy.
+  day 7 | Idris Hayward was taken alive at relic delve at the Cinder Quarry. Flaming Bronze Axe went with them.
+  day 7 | Verity Pargeter, Idris Hayward were beaten at relic delve at the Cinder Quarry. Round 1: Verity's Reinforced gives Verity 4 Guard.
+  day 8 | Kazimir Orchard was taken alive at recovery in the Flooded Crypt. Undead Bane Moonsteel Sword went with them.
+  day 8 | Kazimir Orchard were beaten at recovery in the Flooded Crypt. Round 1: Pale Knight's Reinforced gives Pale Knight 4 Guard.
+  day 9 | Nobody went with the supplier. Until day 14 the supplier brings 1 fewer of every limited material each morning.
+  day 10 | carried: Kazimir the Ranger (methodical) nothing, Idris the Duelist (oathkeeper) nothing, Sigrun the Battlemage (cowardly) Resonant Bronze Sword, epic, Ilka the Warden (greedy) Undead Bane Moonsteel Spear, epic, flawed | gold 54, forge health 69, Heartfire 0
+  day 10 | Sigrun Crowhurst the Battlemage signed with the guild for 35 gold (Cowardly).
+  day 10 | Ilka Briarwood the Warden signed with the guild for 35 gold (Greedy).
+  day 10 | Ilka Briarwood was taken alive at recovery in the Flooded Crypt. Undead Bane Moonsteel Spear went with them.
+  day 10 | Sigrun Crowhurst, Ilka Briarwood were beaten at recovery in the Flooded Crypt. Round 1: Sigrun's Reinforced gives Sigrun 4 Guard.
+  day 10 | The forge took 46 damage in the siege.
+  day 10 | The Hollow King and the Hollowbound procession broke through (Nerys Mercer, Maud Kestrel, Hilde Hartwell). Round 1: Nerys: Mark and loose. Nerys's Swift hits The Hollow King for 9.
+  day 10 | Stormcharged Obsidian Bow returned to the forge after Nerys Mercer died.
+  day 11 | Added Furnace Lung to the workshop.
+  day 11 | Scouts report what the Ashclaw Raiders prepare for day 15: shield wall. The raiders come behind shields. Every one of them starts with 5 Guard. A spear reaches past Guard. Burn and Bleed tick under a shield. Frost hits them where 
+  day 13 | Elowen Arkwright the Battlemage signed with the guild for 35 gold (Rust Savant).
+  day 13 | Petra Ferris the Duelist signed with the guild for 50 gold (Impatient).
+  day 13 | Petra Ferris, Sigrun Crowhurst, Elowen Arkwright finished hunt on the Ashroad. Round 1: Petra's Impatient hits Ashclaw warchief for 10.
+  day 14 | Elowen Arkwright was taken alive at recovery in the Flooded Crypt. Resonant Starsteel Axe went with them.
+  day 14 | Sigrun Crowhurst, Elowen Arkwright were beaten at recovery in the Flooded Crypt. Round 1: Sigrun's Reinforced gives Sigrun 4 Guard.
+  day 15 | Petra Ferris was taken alive at relic delve at the Cinder Quarry. Resonant Starsteel Spear went with them.
+  day 15 | Petra Ferris were beaten at relic delve at the Cinder Quarry. Round 1: Petra's Impatient hits Cinder-knight for 6.
+  day 15 | The forge took 46 damage in the siege.
+  day 15 | Warlord Krag and the Ashclaw horde broke through (Bertram Yewdale, Maud Kestrel, Onora Varley). Round 1: Maud: Double cut. Maud's Swift hits Warlord Krag for 7.
+  day 15 | The forge has fallen. Emberfall's smith is no more.
+
+Transcript: seed 100036, charter towns_last_hope, policy SYNERGY, opening blood_price, balance 12. Ended on day 21: charter secured on day 20, chapter closed
+  day 1 | The guild begins with Paid in Blood. A weapon that drinks its wielder hits much harder. Healing them afterwards is also Guard. The axe takes health from whoever carries it. The forge starts with 10 less health.
+  day 1 | Runa Deepdale the Battlemage signed with the guild for 17 gold (Greedy).
+  day 1 | Tamsin Weaver the Duelist signed with the guild for 35 gold (Protective).
+  day 1 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished supply run in the Flooded Crypt. Round 1: Tamsin: Double cut. Tamsin hits Hollowbound shambler for 5. Hollowbound shambler is down.
+  day 1 | Scouts report what the Hollowbound prepare for day 5: a gravecaller behind the line. A gravecaller marches with them. It mends the weakest of the dead every round and raises a shambler every third. Marks pull your strikes onto it.
+  day 2 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of sabotage in the Flooded Crypt and press on tomorrow. Round 1: Runa: Opening sigil. Runa pays 4 health to Bloodbound. Runa's Bloodbound hits Hollowbound shambler for 8.
+  day 3 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: a gravecaller behind the line. It will not come on day 5.
+  day 3 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished sabotage in the Flooded Crypt. Round 1: Runa: Opening sigil. Runa pays 4 health to Bloodbound. Runa's Bloodbound hits Gravecaller for 8.
+  day 4 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished hunt in the Flooded Crypt. Round 1: Runa: Opening sigil. Runa pays 4 health to Bloodbound. Runa's Bloodbound hits The Pale Knight for 8.
+  day 4 | Iron Axe returned to the forge after Othmar Yewdale died.
+  day 5 | carried: Mira the Guardian (second_wind) Stormcharged Starsteel Axe, epic, Varek the Warden (storm_touched) Undead Bane Moonsteel Staff, epic, Runa the Battlemage (greedy) Undead Bane Moonsteel Sword, epic, Tamsin the Duelist (protective) Iron Axe, uncommon, flawed | gold 47, forge health 98, Heartfire 0
+  day 5 | Emberfall repelled the Hollowbound procession! On the wall: Varek Fairweather, Runa Deepdale, Mira Stroud. Round 1: Varek: Mend. Varek hits The Pale Knight for 15. Varek's Undead Bane hits The Pale Knight for 8.
+  day 6 | Added Bone Music Box to the workshop.
+  day 6 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of escort at the Cinder Quarry and press on tomorrow. Round 1: Mira: Hold the line. Mira hits Embermaw whelp for 25. Embermaw whelp is down.
+  day 6 | Scouts report what the Ashclaw Raiders prepare for day 10: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 7 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished escort at the Cinder Quarry. Round 1: Tamsin: Double cut. Tamsin pays 4 health to Bloodbound. Tamsin's Bloodbound hits Cinder-knight for 8.
+  day 8 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Mira: Hold the line. Mira hits Ashclaw scout for 26. Ashclaw scout is down. Spectral helper joins the party (Bo
+  day 9 | Nobody went with the supplier. Until day 14 the supplier brings 1 fewer of every limited material each morning.
+  day 9 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 10.
+  day 9 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished sabotage on the Ashroad. Round 1: Tamsin: Double cut. Tamsin pays 4 health to Bloodbound. Tamsin's Bloodbound hits Ashclaw thief for 11.
+  day 10 | carried: Mira the Guardian (second_wind) Stormcharged Starsteel Axe, epic, Varek the Warden (storm_touched) Flaming Moonsteel Axe, rare, Runa the Battlemage (greedy) Undead Bane Moonsteel Sword, epic, Tamsin the Duelist (protective) Iron Axe, uncommon, flawed | gold 207, forge health 100, Heartfire 0
+  day 10 | The forge took 3 damage in the siege.
+  day 10 | Emberfall held against the Ashclaw horde, at a cost: the forge was hit and 1 of the defenders went down. On the wall: Quenna Arkwright, Runa Deepdale, Mira Stroud. Round 1: Mira: Hold the line. Mira hits Ashclaw warchief for 25. M
+  day 11 | Added Salvage Bell to the workshop.
+  day 11 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of escort at the Cinder Quarry and press on tomorrow. Round 1: Mira: Hold the line. Mira hits Embermaw whelp for 26. Embermaw whelp is down.
+  day 11 | Scouts report what the Embermaw Brood prepare for day 15: banked fires. They have fed the fires for days. Every defender starts with 2 Burn and every one of the brood with 2 Regeneration. A healer on the wall, or Verdant weapons. 
+  day 12 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished escort at the Cinder Quarry. Round 1: Cinder-knight: Ember guard. Mira's Guard breaks. Mira's Riposte hits Cinder-knight for 8. Cinder-knight is down.
+  day 13 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of sabotage at the Cinder Quarry and press on tomorrow. Round 1: Mira: Hold the line. Mira hits Embermaw whelp for 26. Embermaw whelp is down. Spectral helper joins the p
+  day 14 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: banked fires. It will not come on day 15.
+  day 14 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished sabotage at the Cinder Quarry. Round 1: Cinder-knight: Ember guard. Mira's Guard breaks. Mira's Riposte hits Cinder-knight for 7. Cinder-knight is down. Spectral helper joins the 
+  day 15 | The forge took 12 damage in the siege.
+  day 15 | The Embermaw Brood broke through (Quenna Arkwright, Runa Deepdale, Prisca Varley). Round 1: Quenna: Opening sigil. Quenna hits Embermaw drake for 19. Quenna's Giant Slayer hits Embermaw drake for 4.
+  day 16 | Mira Stroud, Tamsin Weaver, Varek Fairweather won the first day of escort on the Ashroad and press on tomorrow. Round 1: Mira: Hold the line. Mira hits Ashclaw thief for 26. Mira's Arc hits Ashclaw thief for 2. Ashclaw thief is do
+  day 16 | Scouts report what the Ashclaw Raiders prepare for day 20: knives for the back. Their rank and file are thieves this time. Each strikes the last defender in the line, past the front. Stand your sturdiest defender last in the line.
+  day 17 | Mira Stroud, Tamsin Weaver, Varek Fairweather finished escort on the Ashroad. Round 1: Mira: Hold the line. Mira hits Ashclaw brute for 26. Mira's Arc hits Ashclaw thief for 2.
+  day 18 | Mira Stroud, Tamsin Weaver, Runa Deepdale won the first day of sabotage on the Ashroad and press on tomorrow. Round 1: Mira: Hold the line. Mira's Swift hits Ashclaw scout for 15.
+  day 19 | Nobody went with the supplier. Until day 24 the supplier brings 1 fewer of every limited material each morning.
+  day 19 | The guild's party spoiled the besiegers' preparations. What they prepared is spoiled: knives for the back. It will not come on day 20.
+  day 19 | Mira Stroud, Tamsin Weaver, Runa Deepdale finished sabotage on the Ashroad. Round 1: Mira: Hold the line. Mira's Swift hits Ashclaw thief for 15.
+  day 20 | carried: Mira the Guardian (second_wind) Frostbound Moonsteel Axe, epic, Varek the Warden (storm_touched) Flaming Moonsteel Axe, rare, Runa the Battlemage (greedy) Frostbound Moonsteel Sword, epic, Tamsin the Duelist (protective) Stormcharged Starsteel Axe, epic | gold 68, forge health 98, Heartfire 0
+  day 20 | Emberfall repelled Warlord Krag and the Ashclaw horde! On the wall: Mira Stroud, Runa Deepdale, Eska Applegarth. Round 1: Warlord Krag: Reave. Mira's Guard breaks. Mira's Riposte hits Warlord Krag for 21.
+  day 20 | Frostbound Moonsteel Sword is a legend now. Runa Deepdale felled Warlord Krag with it on the wall of Emberfall.
+  day 20 | Warlord Krag broke on the wall and left Heartfire behind. The forge now holds 1 Heartfire.
+  day 20 | Charter secured. Warlord Krag broke on the walls of Emberfall on day 20, and the council paid 150 gold. The smith may close this chapter with honour, or go on.
+  day 21 | The smith closed the guild's chapter with its charter secured. The forge stands.
+
