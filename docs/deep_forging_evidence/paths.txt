@@ -13,10 +13,10 @@ Another approach: With no healer and no quench, a plain storm weapon arcs every 
 
   Second recipe: Silver + Stormglass sword, quenched for Stormcharged, a Duelist, alone
     Against an armoured line. LOST after 5 rounds, enemy health left 5/94, party health left 0/34.
-    FIRED Silver holds a charge x1: Round 1. > Bench Duelist's Silver holds a charge stores Charge (2).
+    FIRED Silver holds a charge x1: Round 1. > Bench Duelist's Silver holds a charge stores Charge (3).
     FIRED Arc x5: Bench Duelist: Double cut. > Bench Duelist hits Cinder-knight for 9. > Bench Duelist's Arc hits Bone warden for 2.
-    FIRED Stormcharged x5: Bench Duelist: Double cut. > Bench Duelist hits Cinder-knight for 9. > Bench Duelist's Stormcharged stores Charge (3).
-    FIRED Charge burst x4: Bench Duelist: Double cut. > Bench Duelist hits Cinder-knight for 9. > Bench Duelist's Stormcharged stores Charge (3). > Bench Duelist's Charge burst spends 3 Charge.
+    FIRED Stormcharged x5: Bench Duelist: Double cut. > Bench Duelist hits Cinder-knight for 9. > Bench Duelist's Stormcharged stores Charge (1).
+    FIRED Charge burst x4: Round 1. > Bench Duelist's Silver holds a charge stores Charge (3). > Bench Duelist's Charge burst spends 3 Charge.
 
   Without its enabler: The first recipe with nobody to heal
     Against a long fight. TIMED_OUT after 8 rounds, enemy health left 10/120, party health left 16/46.
@@ -31,12 +31,12 @@ Relationship: Burn on a chilled enemy, or Chill on a burning one, cancels both a
 Trade-off: The Burn and the Chill are both gone. Nothing burns and the enemy is not slowed.
 Another approach: Against a line with no Guard to pierce, leaving the Chill on to weaken their strikes can be worth more than the lance.
 
-  First recipe: Bronze + Frost Bloom + Dragon Oil sword, a Guardian, alone
-    Against an armoured line. WON after 4 rounds, enemy health left 0/94, party health left 41/46.
+  First recipe: Bronze + Frost Bloom + Dragon Oil sword, a Guardian, behind a fire mage
+    Against an armoured line. WON after 4 rounds, enemy health left 0/94, party health left 74/76.
     FIRED Bronze rings back x1: Cinder-knight: Ember guard. > Bench Guardian's Guard breaks. > Bench Guardian's Bronze rings back hits Cinder-knight for 5.
-    FIRED Rime x4: Bench Guardian: Hold the line. > Bench Guardian hits Cinder-knight for 16. > Bench Guardian's Rime puts Chill on Cinder-knight.
-    FIRED Dragon oil x8: Bench Guardian: Hold the line. > Bench Guardian hits Cinder-knight for 16. > Bench Guardian's Rime puts Chill on Cinder-knight. > Bench Guardian's Dragon oil boils off Chill on Cinder-knight.
-    FIRED Steam lance x10: Bench Guardian's Rime puts Chill on Cinder-knight. > Bench Guardian's Dragon oil boils off Chill on Cinder-knight. > Bench Guardian's Dragon oil stores Steam (1). > Bench Guardian's Steam lance spends 1 Steam.
+    FIRED Rime x4: Bench Guardian: Hold the line. > Bench Guardian hits Cinder-knight for 16. > Bench Guardian's Rime boils off Burn on Cinder-knight.
+    FIRED Steam lance x4: Bench Guardian hits Cinder-knight for 16. > Bench Guardian's Rime boils off Burn on Cinder-knight. > Bench Guardian's Rime stores Steam (1). > Bench Guardian's Steam lance spends 1 Steam.
+    SILENT Dragon oil: Bench Guardian's own hit never left Burn on an enemy.
 
   Second recipe: Iron + Ember Resin + Void Ink sword, a Duelist, behind a frost mage
     Against a long fight. WON after 6 rounds, enemy health left 0/120, party health left 34/64.
@@ -51,6 +51,13 @@ Another approach: Against a line with no Guard to pierce, leaving the Chill on t
     FIRED Iron holds x1: Round 1. > Bench Guardian's Iron holds gives Bench Guardian 3 Guard.
     FIRED Ember x8: Bench Guardian: Hold the line. > Bench Guardian hits Cinder-knight for 8. > Bench Guardian's Ember puts Burn on Cinder-knight.
     FIRED Dragon oil x8: Bench Guardian: Hold the line. > Bench Guardian hits Cinder-knight for 8. > Bench Guardian's Ember puts Burn on Cinder-knight. > Bench Guardian's Dragon oil puts Burn on Cinder-knight (2).
+    SILENT Steam lance: Bench Guardian never got Steam.
+
+  Without its enabler: The first recipe alone: cold with no fire to meet, and nothing for the oil to spread
+    Against an armoured line. WON after 7 rounds, enemy health left 0/94, party health left 37/46.
+    FIRED Bronze rings back x3: Bone warden: Shield wall. > Bench Guardian's Guard breaks. > Bench Guardian's Bronze rings back hits Bone warden for 5.
+    FIRED Rime x5: Bench Guardian: Hold the line. > Bench Guardian hits Cinder-knight for 16. > Bench Guardian's Rime puts Chill on Cinder-knight.
+    SILENT Dragon oil: Bench Guardian's own hit never left Burn on an enemy.
     SILENT Steam lance: Bench Guardian never got Steam.
 
 ================================================================================================
@@ -158,8 +165,8 @@ Trade-off: The enemy's own strike spends Chill. Moonsteel needs it there before 
 Another approach: Shattering removes the Chill, so the enemy strikes at full strength. Against one hard hitter, leaving it on can be better.
 
   First recipe: Moonsteel + Frost Bloom sword, a Duelist, alone: the second cut finds the first cut's Chill
-    Against a long fight. LOST after 4 rounds, enemy health left 29/120, party health left 0/34.
-    FIRED Moonsteel bites the cold x2: Bench Duelist: Double cut. > Bench Duelist hits Ashclaw brute for 13. > Bench Duelist's Moonsteel bites the cold hits Ashclaw brute for 3.
+    Against a long fight. LOST after 4 rounds, enemy health left 30/120, party health left 0/34.
+    FIRED Moonsteel bites the cold x2: Bench Duelist: Double cut. > Bench Duelist hits Ashclaw brute for 13. > Bench Duelist's Moonsteel bites the cold hits Ashclaw brute for 2.
     FIRED Rime x2: Bench Duelist: Double cut. > Bench Duelist hits Ashclaw brute for 13. > Bench Duelist's Rime puts Chill on Ashclaw brute.
 
   Second recipe: Bronze + Frost Bloom axe that came out Heavy, a Guardian, alone

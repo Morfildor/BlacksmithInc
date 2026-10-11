@@ -4279,51 +4279,31 @@ This overrides two earlier notes in this file: "a number is not moved to hit a t
 moved it, by that prompt) and the open question on the first siege (it now costs a neglected wall about 8 forge
 health and a prepared one about 1).
 
-## Deep forging foundation (2026-10-11; branch `deep-forging` on `run-variety` `99d3949`, not merged)
-Ledger with the decisions F1 to F8, the ingredient role table and the interfaces: `docs/DEEP_FORGING_LEDGER.md`.
-Evidence: `docs/deep_forging_evidence/`. No rules, schema, content or balance version number moved. The content
-fingerprint does change (metal rules, ingredient notes, interaction paths, one rewritten rule), and content 6 has no pin
-yet, so the pin is to be taken after this branch is merged.
+## Deep forging foundation and its integration (2026-10-11, branch `deep-forging-integration`)
+Decisions F1 to F9, the ingredient table, versions and every table: `docs/DEEP_FORGING_LEDGER.md`. Not repeated here.
 
-**Locked by this work (as far as a branch can lock).** A weapon's fight rules come from one resolver. A stored weapon
-keeps the composition it was forged under (`Weapon.craft`). A preview never counts as evidence: only a real contract
-or siege marks an interaction as seen.
+**Locked by this work.** A weapon's fight rules come from one resolver. A stored weapon keeps the composition it was
+forged under (`Weapon.craft`). A preview or a bench fight never counts as evidence: only a real contract or siege
+marks an interaction as seen. A capability verdict of "available" never promises that the rule fires.
 
-**Proposed, tunable.** Every number of the six metal rules (Iron 3 Guard, Bronze 5, Silver 2 Charge, Obsidian 110% and
-Fracture, Starsteel 3, Moonsteel 3) and the rewritten Void Ink rule (up to 3 Burn after the wielder acts).
+**Proposed, tunable** (`CombatContent.CoreNumbers`): Iron 3 Guard, Bronze 5, Silver 3 Charge, Obsidian 110% and a
+crack, Starsteel 3, Moonsteel 2. Void Ink and Dragon Oil as rewritten for new weapons.
 
-**Changed during the work because the sweep said so.** Starsteel first counted any ally's hit on a Mark: a Starsteel
-Sun Ash dagger was in the top tenth of 83% of scenarios, so it now counts only the wielder's own action. Bronze 3 to 5
-and Silver 1 to 2 Charge, because at the first values neither changed an outcome. Void Ink's old rule almost never fired
-in fights that carried it (Burn ticks before round end and the priority enemy is seldom the one burning), so new
-weapons get the rewritten rule and old ones keep theirs.
+**Changed, each with its reason and its evidence file.**
+- Silver 2 to 3 Charge: its rule paid only with Binding Salt and a third Charge from somebody else, in 15% of lab
+  fights. At 3 the preparation is one thing (a Charge burst on the weapon) and pays +9.2 score, +5.8 wins per 100
+  (`lab/tune_seed11_*`, validated on seeds 21 to 23 and 31 to 33).
+- Dragon Oil spreads only fire on new weapons: Frost Bloom with Dragon Oil was in the top tenth of 60% of lab
+  scenarios against 39% for the next pair, because one weapon made Steam alone. Now 43% beside 41% and 38%.
+- Moonsteel 3 to 2 and the guild siege base 186 to 190 (balance 14): the metals' rules lifted the charter share of
+  Synergy, Adaptive and Defence first by 5 to 16 points over run-variety's balance 13. After the change eight of nine
+  policy and charter pairs are inside its 40 to 65% band on seeds 600001 to 600300 and one is a point over
+  (`guild_paired_500001_300.txt`, `guild_tune_400001_*.txt`, `guild_validate_500001_moon2_siege190.txt`,
+  `guild_final_600001_300.txt`).
+- Not changed: Iron, Bronze, Obsidian, Starsteel, every augment. Bronze, Silver and Obsidian are not weak: the first
+  report measured "alone the best", which a tie with a dearer metal always loses.
 
-**Sweep** (`./gradlew :core:combat --args="sweep"`, `sweep.txt`): 38,880 recipe fights (6 families, 6 metals, 6
-augments, none or one of 4 catalysts, by wielder, company and enemy line) and 17,100 fights for rolled properties.
-No fight threw. Most events in one round: 45 of a budget of 400.
-- No recipe is in the top tenth of every scenario it fought (0 of 1,080). The widest are Frost Bloom with Dragon Oil
-  on a staff or bow, 72%.
-- Metals, same everything else: mean enemy health removed 143 (Iron) to 159 (Moonsteel). The ladder is still there,
-  because quality centres rise with the metal and that belongs to the other agent. Alone the best choice: Iron 7%,
-  Bronze 1%, Silver 2%, Obsidian 1%, Starsteel 6%, Moonsteel 9%. Iron is best in long fights (13%) and beside a frost
-  mage (16%), Starsteel beside a spotter (22%), Moonsteel beside a frost mage (21%). Bronze, Silver and Obsidian have
-  a demonstrated use and are almost never the best pick. That is a weakness, stated and not tuned away.
-- Catalysts: none 150, Binding Salt 155, Runestone 151, Dragon Oil 157, Void Ink 152. Runestone equals no catalyst
-  unless a weapon in the party cracks.
-- Augments: Frost Bloom 160 and Sun Ash 162, Ember Resin 145 and Grave Dust 144. Older than this work. For the owner.
-- Dead or near-dead: Wet has no source in launch content. `affix_sentient_home` cannot be tested on the bench, which
-  stands on the road.
-- Evaluator against the fight: a rule the evaluator called missing fired 719 times
-  (mostly Runestone answering an ally's broken Guard, and a spotter's own frost). A rule called ready stayed silent
-  often (Bronze 2,019 of 7,866 ready). "Ready" means the pieces are present, not that the moment comes.
+**For the owner.** Two of three factions are weak to frost and resist fire, and none is weak to fire, storm, grave or
+sap. That, not an ingredient number, is why Frost Bloom is the widest augment and Ember Resin and Grave Dust have no
+niche. A what-if is in the ledger. Changing it touches classic runs and golden states.
 
-**Guild simulator, 200 seeds, Town's Last Hope, before and after** (`guildsim_before_200.txt`, `guildsim_after_200.txt`).
-Charter won: Passive 0 to 0, Novice 13 to 13, Shop-focused 6 to 9, Highest-stat 8 to 13, Synergy 58 to 68,
-Defence-first 26 to 37, Greedy diver 11 to 14, Recovery-aware 16 to 27, Adaptive 35 to 48. Sieges held: Synergy 50 to
-57, Adaptive 49 to 56. Deaths per run fall a little everywhere. So the metal rules make a guild run easier by roughly
-ten points of charter success for the bots that field parties. Nothing was tuned back: difficulty is the other
-agent's, and the owner's rule is no automatic nerf. The base commit's own difficulty has since moved on `run-variety`
-(`068a39e`), so these numbers need a rerun after the merge.
-
-**Not built, on purpose.** Commissions do not ask for capabilities. Classic runs get nothing: their resolver never
-runs these rules, and no screen says otherwise. No new material, relic, enemy or currency.

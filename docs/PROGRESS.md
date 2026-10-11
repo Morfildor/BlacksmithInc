@@ -25,58 +25,25 @@ not run, nobody has played it.
 3. Decide the version number and merge.
 
 
-## Deep forging foundation (2026-10-11): built on branch `deep-forging`, not merged, not pushed
-Base `run-variety` `99d3949`. Ledger, decisions F1 to F8, ingredient role table, capability interface:
-`docs/DEEP_FORGING_LEDGER.md`. Numbers and what the sweep changed: `docs/DECISIONS.md`, last section. Evidence:
-`docs/deep_forging_evidence/`. No rules, schema, content or balance version number moved.
+## Deep forging foundation, integrated (2026-10-11): branch `deep-forging-integration`, not pushed, not merged into `main`
+It holds `deep-forging` and `run-variety` (balance 13) merged. Rules 6, schema 7, content 6, balance 14. Everything
+about it is in one place: `docs/DEEP_FORGING_LEDGER.md` (decisions, ingredient table, integration, the failures
+classified, versions, balance tables, device evidence, what is open). Numbers behind it: `docs/deep_forging_evidence/`.
 
-**What it is.** A weapon's fight rules come from one resolver (`crafting/WeaponRules`). Each of the six metals has a
-fight rule (guild fights only, weapons forged from now on, `Weapon.craft` 2). Typed capabilities with a pure evaluator
-(`crafting/Capabilities`), not yet used by commissions. The Forge shows an outlook card before forging, the weapon
-sheet and the Forge open a bench that runs the real fight engine on made-up people, and the notebook has a Fight notes
-tab (learned, suggested, seen in a real fight). Classic runs get none of it and no screen says they do.
-
-**Checks actually run.**
-- `:core:test` (full run after the last code change): 585 tests, 57 failed, the same 57 that fail on the base commit
-  (`baseline_failures.txt`). `DeepForgingTest` 24 of 24.
-- `:app:testDebugUnitTest`: 220 tests, 15 failed, the same 15 that fail on the base commit (208 tests there).
-  `DeepForgingUiTest` 12 of 12. `:app:assembleDebug` and `:app:compileDebugAndroidTestKotlin` pass.
-- Instrumented tests (`connectedDebugAndroidTest`): not run.
-- Sweep (`./gradlew :core:combat --args="sweep"`): 38,880 recipe fights and 17,100 rolled-property fights, none threw,
-  45 events at most in a round of a budget of 400.
-- Paths (`./gradlew :core:combat --args="paths"`): seven demonstrations, each two recipes that fire and one case that
-  stays silent with its reason (`paths.txt`).
-- Guild simulator, 200 seeds, before and after: guild runs are about ten points easier for bots that field parties.
-  Not tuned. Needs a rerun after the merge.
-- Device (`tools/emulator/forge.sh`, read-only AVD, 1080x1920, font scale 1.0 and 1.3, `device_1.0/`, `device_1.3/`):
-  ingredient trays, outlook card and details, recipe bench, forge, weapon sheet, owned-weapon bench with "What
-  happened", notebook Fight notes with learned rules and one path marked "Suggested by the rules" (shot 20). All reached at both scales. Text wraps at 1.3 and nothing was
-  seen cut off in the shots looked at (not every shot was inspected by eye).
-
-**Device findings.**
-- After a process kill the save is intact. The draft on the anvil and an open bench do not come back: the draft is
-  not part of the save and was not before this work either.
-- The script's "What happened" check on the recipe bench fails at both scales because the script does not scroll far
-  enough. The section is on screen on the owned-weapon bench.
-- An interaction "seen in a real fight" was not shown on a device: the pass plays no contract. It is covered by a
-  core test only.
-
-**Known gaps.**
-- Bronze, Silver and Obsidian have a demonstrated use and are almost never alone the best metal (1 to 2%).
-- The evaluator looks one step. "Ready" means the pieces are present, not that the rule fires.
-- Wet has no source. `affix_sentient_home` cannot be tested on the bench. Runestone Shard is idle unless a weapon cracks.
-- The shop-day read-only weapon sheet has no bench button. The outlook assumes no particular company.
-- No human has played it. Coverage says the paths work, not that they are fun.
+**Checks run on the final tree.**
+- `./gradlew :core:test`: 622 tests, 0 failures. `./gradlew :app:testDebugUnitTest`: 230 tests, 0 failures.
+- `:app:assembleDebug` and `:app:compileDebugAndroidTestKotlin` build. `connectedDebugAndroidTest` not run.
+- `./gradlew :core:scenarios` rewrote the debug scenario saves. `ScenarioSavesTest` and `GuildScenariosTest` load them.
+- `./gradlew :core:combat --args="sweep"`: 51,840 recipe fights and 22,800 for rolled properties, none threw.
+- `--args="lab seeds=31..33"` and `--args="guild seed=600001 runs=300"`: the tables in the ledger.
+- Emulator: `tools/emulator/journey.sh` (a real contract, seen and not seen, font 1.0 and 1.3), `forge.sh` (1.0 and
+  1.3), `scenarios.sh`.
 
 **Next actions.**
-1. Merge `run-variety` (now `719b685` or later) into this branch or the other way round. Expected conflicts: a
-   neighbouring line in `Loadout.kt`, one line in `CombatContent.kt` and `GuildScenariosTest.kt`.
-2. After the merge: full `:core:test` and `:app:testDebugUnitTest`, take the content 6 fingerprint pin, rerun the guild
-   simulator, run `:core:scenarios`.
-3. Owner decisions: the ten-point shift in guild difficulty, the weak metals, Ember Resin and Grave Dust.
-4. A throwaway checkout of the base commit (used for the baseline) is half removed: the repository no longer lists
-   it, Windows refused to delete some long paths under `.claude/worktrees/deep-forging-base` in the main checkout.
-   The folder can be deleted by hand.
+1. Owner: play it. Then the open items at the end of the ledger (Synergy at the top of the band, what the factions
+   are weak to, Ember Resin and Grave Dust).
+2. Merge `deep-forging-integration` into the release line together with run-variety: the two share schema 7.
+3. Delete by hand the half-removed folder `.claude/worktrees/deep-forging-base` in the main checkout (Windows long paths).
 
 ## Guild evolution (2026-10-11, night): built in one run, 0.8.0
 The owner supplied `docs/GUILD_EVOLUTION_SPEC.md`, confirmed the revision of the LOCKED rules, and asked for the whole

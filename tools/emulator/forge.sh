@@ -92,6 +92,7 @@ tap_id bench_company_frost; shot 08_bench_recipe_frost
 scroll_to_id bench_target_attrition && tap_id bench_target_attrition; shot 09_bench_recipe_attrition
 # The town's wall: the labelled home-defence rehearsal.
 scroll_to_id bench_target_wall && tap_id bench_target_wall; shot 09b_bench_recipe_wall
+scroll_to_text "This is a rehearsal"
 check has_id bench_synthetic
 scroll_to_text "What happened"; shot 10_bench_recipe_what_happened
 check has "What happened"
@@ -128,7 +129,10 @@ tap_id forge_weapon && { $ADB shell sleep 2; tap_id reveal_store; }
 tap_id nav_shop; $ADB shell sleep 1
 scroll_to_id stock_ && tap_id stock_
 wait_id item_sheet; shot 15_weapon_sheet
-scroll_to_id card_bench_open; shot 15b_weapon_card
+scroll_to_id card_bench_open
+# the button first shows as a sliver at the bottom edge: bring it up before tapping
+$ADB shell input swipe 540 1300 540 1000 500; $ADB shell sleep 1
+shot 15b_weapon_card
 check has_id card_bench_open
 # 5. The bench for the owned weapon.
 tap_id card_bench_open

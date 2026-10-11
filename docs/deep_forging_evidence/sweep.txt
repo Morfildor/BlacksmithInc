@@ -1,197 +1,205 @@
-FORGE SWEEP: 38880 recipe fights (each recipe at the quality its materials centre on) and 17100 fights for rolled properties (quality 50). Bench level 3, seed 1.
+FORGE SWEEP: 51840 recipe fights (each recipe at the quality its materials centre on) and 22800 fights for rolled properties (quality 50). Bench level 3, seed 1.
 Most events in one round: 45 of a budget of 400. No fight threw.
 
 A. RULES: carried / fired, and the evaluator against the fight (ready = nothing missing in that company)
 rule                          carried    fired   rate | ready+fired ready+silent open+fired open+silent
-spear_reach                      9324     5312    56% |        5312         4012          0           0
-bow_volley                       4644     4644   100% |        4644            0          0           0
-dagger_flurry                    9324     9324   100% |        9324            0          0           0
-core_iron                        6570     6570   100% |        6570            0          0           0
-core_bronze                     23418     5847    24% |        5847         2019          0       15552
-core_silver                      6516     6516   100% |        6516            0          0           0
-core_obsidian                    6516     1535    23% |        1535         1057          0        3924
-core_starsteel                   6480     2098    32% |        2098         2582          0        1800
-core_moonsteel                   6480     1275    19% |        1151         1249        124        3956
-catalyst_drinking                7812     3065    39% |        3065         2029          0        2718
-element_fire                     9342     9342   100% |        9342            0          0           0
-element_frost                    9342     9310    99% |        9310           32          0           0
-element_storm                    9324     9324   100% |        9324            0          0           0
-element_grave                    9360     9360   100% |        9360            0          0           0
-element_verdant                  9324     9324   100% |        9324            0          0           0
-element_sun                      9288     9145    98% |        9145          143          0           0
-affix_flaming                     270      270   100% |         270            0          0           0
-affix_frostbound                  270      256    94% |         256           14          0           0
-affix_stormcharged                252      252   100% |         252            0          0           0
-charge_burst                     8118     2542    31% |        2542         1841          0        3735
-affix_vampiric                    288      196    68% |         196           92          0           0
-affix_swift                      1332     1332   100% |        1332            0          0           0
-affix_giant_slayer               1332      370    27% |         370           74          0         888
-affix_undead_bane                 216      138    63% |         138            6          0          72
-affix_guardians                  1386      360    25% |         360            0          0        1026
-affix_reinforced                 1296     1296   100% |        1296            0          0           0
-affix_resonant                    252       72    28% |          72            0          0         180
-affix_brittle                    1296      294    22% |         294           30          0         972
-affix_heavy_slow                 1296     1296   100% |        1296            0          0           0
-affix_heavy_shatter              1296      379    29% |         374          322          5         595
-affix_unstable                   1296      331    25% |         331          965          0           0
-affix_cursed                     1296     1296   100% |        1296            0          0           0
-affix_bloodbound                 1296     1296   100% |        1296            0          0           0
-affix_sentient_home          never carried
+spear_reach                     12432     7438    59% |        7438         4994          0           0
+bow_volley                       6192     6192   100% |        6192            0          0           0
+dagger_flurry                   12432    12432   100% |       12432            0          0           0
+core_iron                        8760     8760   100% |        8760            0          0           0
+core_bronze                     31224     8062    25% |        7958         1510        104       21652
+core_silver                      8688     8688   100% |        8688            0          0           0
+core_obsidian                    8688     2096    24% |        2002          158         94        6434
+core_starsteel                   8640     2788    32% |        2788         3452          0        2400
+core_moonsteel                   8640     1740    20% |        1424          216        316        6684
+catalyst_drinking               10416     4079    39% |        4079          545          0        5792
+catalyst_spreading_fire         10416     2154    20% |        1666           62        488        8200
+element_fire                    12456    12456   100% |       12456            0          0           0
+element_frost                   12456    12255    98% |       12255          201          0           0
+element_storm                   12432    12432   100% |       12432            0          0           0
+element_grave                   12480    12473    99% |       12473            7          0           0
+element_verdant                 12432    12432   100% |       12432            0          0           0
+element_sun                     12384    12144    98% |       12144          240          0           0
+affix_flaming                     360      360   100% |         360            0          0           0
+affix_frostbound                  360      342    95% |         342           18          0           0
+affix_stormcharged                336      336   100% |         336            0          0           0
+charge_burst                    10824     3964    36% |        3964         2300          0        4560
+affix_vampiric                    384      274    71% |         274          110          0           0
+affix_swift                      1776     1776   100% |        1776            0          0           0
+affix_giant_slayer               1776      770    43% |         770          118          0         888
+affix_undead_bane                 288      138    47% |         138            6          0         144
+affix_guardians                  1848      480    25% |         480            0          0        1368
+affix_reinforced                 1728     1728   100% |        1728            0          0           0
+affix_resonant                    336       96    28% |          96            0          0         240
+affix_brittle                    1728      402    23% |         402           30          0        1296
+affix_heavy_slow                 1728     1728   100% |        1728            0          0           0
+affix_heavy_shatter              1728      497    28% |         485           43         12        1188
+affix_unstable                   1728      424    24% |         424         1304          0           0
+affix_cursed                     1728     1728   100% |        1728            0          0           0
+affix_bloodbound                 1728     1728   100% |        1728            0          0           0
+affix_sentient_home               432      432   100% |         432            0          0           0
 affix_sentient_road              1296     1296   100% |        1296            0          0           0
-catalyst_capacitor               7866     2135    27% |        2135         1636          0        4095
-catalyst_runed                   7812     1179    15% |         602          154        577        6479
-catalyst_spreading               7812     2833    36% |        2833         4979          0           0
-catalyst_steam_lance             7812     1695    21% |        1689         2511          6        3606
+catalyst_capacitor              10488     2829    26% |        2829         2199          0        5460
+catalyst_runed                  10416     1561    14% |         815          193        746        8662
+catalyst_spreading           never carried
+catalyst_steam_lance            10416      849     8% |         835           29         14        9538
 catalyst_converting          never carried
-catalyst_converted_guard         7812     3247    41% |        3247         1847          0        2718
-catalyst_steam_shield            7812      632     8% |         625          707          7        6473
-sig_thornwall                      36       20    55% |          20           16          0           0
-sig_stormcaller                    36       36   100% |          36            0          0           0
-sig_mourning_rod                   36       30    83% |          30            6          0           0
-sig_winterwake                     54       53    98% |          53            1          0           0
-sig_dawnbrand                      54       47    87% |          47            7          0           0
-sig_dawnbrand_guard                54       47    87% |          47            7          0           0
-sig_nightletter                    36       21    58% |          21            6          0           9
+catalyst_converted_guard        10416     4309    41% |        4309          315          0        5792
+catalyst_steam_shield           10416      814     7% |         805           59          9        9543
+sig_thornwall                      48       27    56% |          27           21          0           0
+sig_stormcaller                    48       48   100% |          48            0          0           0
+sig_mourning_rod                   48       42    87% |          42            6          0           0
+sig_winterwake                     72       70    97% |          70            2          0           0
+sig_dawnbrand                      72       63    87% |          63            9          0           0
+sig_dawnbrand_guard                72       63    87% |          63            9          0           0
+sig_nightletter                    48       28    58% |          28            8          0          12
 
 B. METALS (same family, augment, catalyst, wielder, company and line)
                    mean   wins  alone best   best in  within 5 of   worst
-Iron                143    67%          7%       32%          48%     76%
-Bronze              149    72%          1%       37%          55%     56%
-Silver              151    73%          2%       42%          60%     47%
-Obsidian            157    78%          1%       64%          82%     35%
-Starsteel           157    79%          6%       67%          83%     33%
-Moonsteel           159    80%          9%       75%          89%     33%
+Iron                146    69%          7%       33%          48%     73%
+Bronze              151    74%          1%       36%          54%     57%
+Silver              153    76%          4%       43%          62%     46%
+Obsidian            159    80%          1%       63%          82%     35%
+Starsteel           159    80%          6%       66%          82%     33%
+Moonsteel           161    82%          8%       73%          88%     32%
 
 C. CATALYSTS (same family, metal, augment, wielder, company and line)
                    mean   wins  alone best   best in  within 5 of   worst
-No catalyst         150    73%          0%       50%          67%     85%
-Binding Salt        155    76%         11%       63%          79%     68%
-Runestone Shard     151    73%          0%       52%          70%     79%
-Dragon Oil          157    78%         14%       64%          82%     68%
-Void Ink            152    73%         18%       67%          76%     66%
+No catalyst         153    76%          0%       55%          71%     87%
+Binding Salt        158    79%         15%       72%          86%     69%
+Runestone Shard     154    76%          0%       58%          73%     82%
+Dragon Oil          156    78%          5%       64%          80%     76%
+Void Ink            154    76%         17%       72%          79%     69%
 
 D. AUGMENTS (same family, metal, catalyst, wielder, company and line)
                    mean   wins  alone best   best in  within 5 of   worst
-Ember Resin         145    70%          1%       20%          33%     57%
-Frost Bloom         160    79%         30%       57%          71%     16%
-Verdant Sap         152    74%         11%       34%          50%     24%
-Stormglass          153    76%          1%       24%          43%     26%
-Grave Dust          144    68%          0%       19%          35%     53%
-Sun Ash             162    83%         18%       46%          65%     22%
+Ember Resin         146    71%          2%       20%          34%     61%
+Frost Bloom         161    79%         29%       58%          72%     14%
+Verdant Sap         155    76%         12%       36%          52%     24%
+Stormglass          156    79%          1%       24%          44%     27%
+Grave Dust          148    72%          0%       20%          38%     47%
+Sun Ash             163    84%         17%       43%          65%     23%
 
 E. WHERE EACH METAL IS ALONE THE BEST CHOICE (share of groups, by company and by line)
 company          alone    healer     frost      fire   spotter     front
-Iron                1%        8%       16%        4%        5%        6%
-Bronze              2%        2%        0%        0%        2%        0%
-Silver              1%        4%        2%        3%        1%        1%
+Iron                2%        7%       15%        5%        5%        7%
+Bronze              2%        2%        0%        0%        1%        0%
+Silver              4%        3%        4%        4%        4%        4%
 Obsidian            2%        0%        0%        1%        1%        0%
-Starsteel          12%        1%        0%        4%       22%        0%
-Moonsteel          16%       10%       21%        8%        2%        0%
+Starsteel          12%        1%        0%        3%       20%        0%
+Moonsteel          16%        9%       15%        7%        1%        0%
 
-line          armoured  backline attrition
-Iron                4%        4%       13%
-Bronze              1%        1%        1%
-Silver              2%        1%        3%
-Obsidian            0%        1%        1%
-Starsteel           5%        7%        8%
-Moonsteel           7%       12%        9%
+line          armoured  backline attrition      wall
+Iron                3%        3%       13%        8%
+Bronze              1%        1%        1%        1%
+Silver              3%        1%        6%        6%
+Obsidian            0%        1%        1%        0%
+Starsteel           5%        7%        8%        4%
+Moonsteel           7%       12%        8%        5%
 
 G. WHERE THE EVALUATOR AND THE FIGHT DISAGREE
 spear_reach
-  ready but silent,  4004: No enemy Guard stopped The wielder's hit.
-  ready but silent,     8: No enemy ever had Guard.
+  ready but silent,  4984: No enemy Guard stopped The wielder's hit.
+  ready but silent,    10: No enemy ever had Guard.
 core_bronze
-  ready but silent,   874: The wielder never had Guard for an enemy to break.
-  ready but silent,   824: No enemy broke The wielder's Guard.
-  ready but silent,   321: Its moment never came in this fight.
+  ready but silent,   902: No enemy broke The wielder's Guard.
+  ready but silent,   579: Its moment never came in this fight.
+  ready but silent,    29: The wielder never had Guard for an enemy to break.
+  missing but fired: Bronze sword (recipe), Duelist, alone, armoured: Cinder-knight: Ember guard. > Bench Duelist's Guard breaks.
+  missing but fired: Bronze sword (recipe), Duelist, alone, backline: Bone warden: Shield wall. > Bench Duelist's Guard breaks.
 core_obsidian
-  ready but silent,   825: The wielder never had Guard for an enemy to break.
-  ready but silent,   197: No enemy broke The wielder's Guard.
-  ready but silent,    35: Its moment never came in this fight.
+  ready but silent,   154: No enemy broke The wielder's Guard.
+  ready but silent,     4: Its moment never came in this fight.
+  missing but fired: Obsidian sword (recipe), Duelist, alone, armoured: Cinder-knight: Ember guard. > Bench Duelist's Guard breaks. > Bench Duelist's Obsidian sword (recipe) cracks.
+  missing but fired: Obsidian sword (recipe), Duelist, alone, backline: Bone warden: Shield wall. > Bench Duelist's Guard breaks. > Bench Duelist's Obsidian sword (recipe) cracks.
 core_starsteel
-  ready but silent,  1543: No Mark was there for The wielder's hit to spend.
-  ready but silent,  1039: Its moment never came in this fight.
+  ready but silent,  2060: No Mark was there for The wielder's hit to spend.
+  ready but silent,  1392: Its moment never came in this fight.
 core_moonsteel
-  ready but silent,   962: No enemy ever had Chill.
-  ready but silent,   287: Its moment never came in this fight.
-  missing but fired: Moonsteel sword (recipe), Battlemage, spotter, attrition: Bench Battlemage: Bolt. > Bench Battlemage hits Ashclaw brute for 11. > Bench Battlemage's Moonsteel bites the cold hits Ashclaw brute for 3.
-  missing but fired: Moonsteel sword (recipe), Guardian, alone, backline: Bench Guardian: Hold the line. > Bench Guardian hits Gravecaller for 16. > Bench Guardian's Moonsteel bites the cold hits Gravecaller for 3.
+  ready but silent,   176: Its moment never came in this fight.
+  ready but silent,    40: No enemy ever had Chill.
+  missing but fired: Moonsteel sword (recipe), Battlemage, spotter, attrition: Bench Battlemage: Bolt. > Bench Battlemage hits Ashclaw brute for 11. > Bench Battlemage's Moonsteel bites the cold hits Ashclaw brute for 2.
+  missing but fired: Moonsteel sword (recipe), Guardian, alone, backline: Bench Guardian: Hold the line. > Bench Guardian hits Gravecaller for 16. > Bench Guardian's Moonsteel bites the cold hits Gravecaller for 2.
 catalyst_drinking
-  ready but silent,  1668: No enemy ever had Burn.
-  ready but silent,   361: The enemy The wielder faced never had Burn at that moment.
+  ready but silent,   504: The enemy The wielder faced never had Burn at that moment.
+  ready but silent,    41: No enemy ever had Burn.
+catalyst_spreading_fire
+  ready but silent,    62: The wielder's own hit never left Burn on an enemy.
+  missing but fired: Iron sword (recipe), Battlemage, fire, armoured: Bench Battlemage hits Cinder-knight for 8. > Bench Battlemage's Ember puts Burn on Cinder-knight. > Bench Battlemage's Echo puts Burn on Cinder-knight (3). > Bench Battlemage's Dragon oil puts Burn on Cinder-knight (4).
+  missing but fired: Iron sword (recipe), Battlemage, fire, backline: Bench Battlemage hits Gravecaller for 10. > Bench Battlemage's Ember puts Burn on Gravecaller. > Bench Battlemage's Echo puts Burn on Gravecaller (3). > Bench Battlemage's Dragon oil puts Burn on Bone warden.
 element_frost
-  ready but silent,    32: Its moment never came in this fight.
+  ready but silent,   201: Its moment never came in this fight.
+element_grave
+  ready but silent,     7: Its moment never came in this fight.
 element_sun
-  ready but silent,   143: Its moment never came in this fight.
+  ready but silent,   240: Its moment never came in this fight.
 affix_frostbound
-  ready but silent,    14: Its moment never came in this fight.
+  ready but silent,    18: Its moment never came in this fight.
 charge_burst
-  ready but silent,  1137: The wielder never held enough Charge at once.
-  ready but silent,   704: The wielder never got Charge.
+  ready but silent,  1370: The wielder never held enough Charge at once.
+  ready but silent,   930: The wielder never got Charge.
 affix_vampiric
-  ready but silent,    92: No enemy fell in the way it waits for.
+  ready but silent,   110: No enemy fell in the way it waits for.
 affix_giant_slayer
-  ready but silent,    74: Its moment never came in this fight.
+  ready but silent,   118: Its moment never came in this fight.
 affix_undead_bane
   ready but silent,     6: Its moment never came in this fight.
 affix_brittle
   ready but silent,    28: No enemy broke The wielder's Guard.
   ready but silent,     2: Its moment never came in this fight.
 affix_heavy_shatter
-  ready but silent,   319: No enemy ever had Chill.
-  ready but silent,     3: The enemy The wielder faced never had Chill at that moment.
+  ready but silent,    30: No enemy ever had Chill.
+  ready but silent,    13: The enemy The wielder faced never had Chill at that moment.
+  missing but fired: Bronze sword (recipe), Battlemage, spotter, wall: Bench Battlemage: Bolt. > Bench Battlemage hits Ashclaw brute for 10. > Bench Battlemage's Shatter takes 1 Chill from Ashclaw brute.
   missing but fired: Bronze sword (recipe), Guardian, spotter, attrition: Bench Guardian: Hold the line. > Bench Guardian hits Ashclaw brute for 8. > Bench Guardian's Shatter takes 2 Chill from Ashclaw brute.
-  missing but fired: Bronze axe (recipe), Guardian, spotter, attrition: Bench Guardian: Hold the line. > Bench Guardian hits Ashclaw brute for 10. > Bench Guardian's Shatter takes 2 Chill from Ashclaw brute.
 affix_unstable
-  ready but silent,   965: The wielder was never hurt badly enough.
+  ready but silent,  1304: The wielder was never hurt badly enough.
 catalyst_capacitor
-  ready but silent,  1636: Nobody healed The wielder.
+  ready but silent,  2199: Nobody healed The wielder.
 catalyst_runed
-  ready but silent,    95: No enemy broke The wielder's Guard.
-  ready but silent,    59: Its moment never came in this fight.
+  ready but silent,   111: No enemy broke The wielder's Guard.
+  ready but silent,    82: Its moment never came in this fight.
   missing but fired: Bronze sword (recipe), Duelist, front, backline: Gravecaller: Knit bone. > Bench Guardian's Guard breaks. > Bench Duelist's Rune of answer hits Gravecaller for 5.
   missing but fired: Bronze sword (recipe), Duelist, front, attrition: Ashclaw brute: Club. > Bench Guardian's Guard breaks. > Bench Duelist's Rune of answer hits Ashclaw brute for 5.
-catalyst_spreading
-  ready but silent,  4979: The wielder's own hit never left Burn or Chill on an enemy.
 catalyst_steam_lance
-  ready but silent,  2510: The wielder never got Steam.
-  ready but silent,     1: The wielder never held enough Steam at once.
-  missing but fired: Iron bow (recipe), Ranger, spotter, attrition: Bench Ranger hits Ashclaw brute for 6. > Bench Ranger's Ember boils off Chill on Ashclaw brute. > Bench Ranger's Ember stores Steam (1). > Bench Ranger's Steam lance spends 1 Steam.
-  missing but fired: Bronze bow (recipe), Ranger, spotter, attrition: Bench Ranger hits Ashclaw brute for 9. > Bench Ranger's Ember boils off Chill on Ashclaw brute. > Bench Ranger's Ember stores Steam (1). > Bench Ranger's Steam lance spends 1 Steam.
+  ready but silent,    20: The wielder never got Steam.
+  ready but silent,     9: The wielder never held enough Steam at once.
+  missing but fired: Silver sword (recipe), Battlemage, spotter, attrition: Bench Battlemage hits Ashclaw brute for 11. > Bench Battlemage's Ember boils off Chill on Ashclaw brute. > Bench Battlemage's Ember stores Steam (1). > Bench Battlemage's Steam lance spends 1 Steam.
+  missing but fired: Obsidian sword (recipe), Battlemage, spotter, attrition: Bench Battlemage hits Ashclaw brute for 11. > Bench Battlemage's Ember boils off Chill on Ashclaw brute. > Bench Battlemage's Ember stores Steam (1). > Bench Battlemage's Steam lance spends 1 Steam.
 catalyst_converted_guard
-  ready but silent,  1846: Nobody spent Burn.
-  ready but silent,     1: Its moment never came in this fight.
+  ready but silent,   306: Nobody spent Burn.
+  ready but silent,     9: Its moment never came in this fight.
 catalyst_steam_shield
-  ready but silent,   706: The wielder never got Steam.
-  ready but silent,     1: The wielder never held enough Steam at once.
-  missing but fired: Starsteel axe (recipe), Warden, spotter, attrition: Bench Warden hits Ashclaw brute for 8. > Bench Warden's Ember boils off Chill on Ashclaw brute. > Bench Warden's Ember stores Steam (1). > Bench Warden's Steam veil spends 1 Steam.
-  missing but fired: Starsteel spear (recipe), Warden, spotter, attrition: Bench Warden hits Ashclaw brute for 9. > Bench Warden's Ember boils off Chill on Ashclaw brute. > Bench Warden's Ember stores Steam (1). > Bench Warden's Steam veil spends 1 Steam.
+  ready but silent,    48: The wielder never got Steam.
+  ready but silent,    11: The wielder never held enough Steam at once.
+  missing but fired: Iron sword (recipe), Battlemage, spotter, wall: Bench Battlemage hits Ashclaw brute for 9. > Bench Battlemage's Ember boils off Chill on Ashclaw brute. > Bench Battlemage's Ember stores Steam (1). > Bench Battlemage's Steam veil spends 1 Steam.
+  missing but fired: Starsteel sword (recipe), Battlemage, spotter, attrition: Bench Battlemage hits Ashclaw brute for 8. > Bench Battlemage's Ember boils off Chill on Ashclaw brute. > Bench Battlemage's Ember stores Steam (1). > Bench Battlemage's Steam veil spends 1 Steam.
 sig_thornwall
-  ready but silent,     9: No enemy broke The wielder's Guard.
-  ready but silent,     7: Its moment never came in this fight.
+  ready but silent,    11: Its moment never came in this fight.
+  ready but silent,    10: No enemy broke The wielder's Guard.
 sig_mourning_rod
   ready but silent,     6: No enemy fell in the way it waits for.
 sig_winterwake
-  ready but silent,     1: No enemy ever had Chill.
+  ready but silent,     2: No enemy ever had Chill.
 sig_dawnbrand
-  ready but silent,     6: The enemy that matters most never had Burn when the round ended. It takes from that one enemy only.
+  ready but silent,     8: The enemy that matters most never had Burn when the round ended. It takes from that one enemy only.
   ready but silent,     1: No enemy ever had Burn.
 sig_dawnbrand_guard
-  ready but silent,     7: Nobody spent Burn.
+  ready but silent,     9: Nobody spent Burn.
 sig_nightletter
-  ready but silent,     6: No Mark was there for The wielder's hit to spend.
+  ready but silent,     8: No Mark was there for The wielder's hit to spend.
 
 F. ONE RECIPE EVERYWHERE? Recipes in the top tenth of their scenario (wielder, company, line), by how many of the scenarios they reach it in
 Recipes in the top tenth of every scenario they were fought in: 0 of 1080
-   72% of 36  Staff / Moonsteel / Frost Bloom / Dragon Oil
-   72% of 18  Bow / Moonsteel / Frost Bloom / Dragon Oil
-   72% of 18  Bow / Obsidian / Frost Bloom / Dragon Oil
-   72% of 18  Bow / Starsteel / Frost Bloom / Dragon Oil
-   69% of 36  Dagger / Starsteel / Sun Ash / Void Ink
-   69% of 36  Staff / Starsteel / Frost Bloom / Dragon Oil
-   69% of 36  Staff / Obsidian / Frost Bloom / Dragon Oil
-   66% of 36  Dagger / Moonsteel / Frost Bloom / Dragon Oil
-   66% of 18  Bow / Moonsteel / Frost Bloom / Void Ink
-   66% of 36  Dagger / Starsteel / Frost Bloom / Dragon Oil
-   64% of 54  Sword / Moonsteel / Frost Bloom / Void Ink
-   63% of 36  Dagger / Starsteel / Sun Ash / No catalyst
+   75% of 24  Bow / Obsidian / Frost Bloom / Void Ink
+   75% of 24  Bow / Moonsteel / Frost Bloom / Void Ink
+   75% of 24  Bow / Moonsteel / Frost Bloom / Dragon Oil
+   75% of 24  Bow / Obsidian / Frost Bloom / Dragon Oil
+   68% of 48  Dagger / Moonsteel / Frost Bloom / Void Ink
+   66% of 24  Bow / Silver / Frost Bloom / Binding Salt
+   66% of 24  Bow / Starsteel / Frost Bloom / Void Ink
+   65% of 72  Sword / Moonsteel / Frost Bloom / Void Ink
+   64% of 48  Dagger / Starsteel / Sun Ash / Void Ink
+   62% of 48  Dagger / Starsteel / Frost Bloom / Void Ink
+   62% of 72  Sword / Obsidian / Frost Bloom / Void Ink
+   62% of 24  Bow / Silver / Sun Ash / Binding Salt

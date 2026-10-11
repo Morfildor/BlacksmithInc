@@ -69,7 +69,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 #   legacy: --upgrades id=level[,id=level] plays the policy rows on that account, --yardsticks adds the first-siege and premium-sale table, --legends gives the maxed and impact runs a veteran Legend Board, --knownNameGold N
 ./gradlew :core:scenarios                              # rewrites the debug scenario saves in app/src/debug/assets/scenarios (played and constructed; run after a rules, content or balance change)
 ./gradlew :core:combat                                 # prints the fixture fights of the interaction engine (highlights and timeline); --args="stormwell" for one
-./gradlew :core:combat --args="sweep"                  # deep forging: every recipe by wielder, company and enemy line (about 56,000 fights). --args="paths [id] [timeline]" prints the interaction path demonstrations
+./gradlew :core:combat --args="sweep"                  # deep forging: every recipe by wielder, company and enemy line (about 56,000 fights). --args="paths [id] [timeline]" prints the interaction path demonstrations. --args="lab seeds=31..33 [bronze=7 oil=chill chill=25 ashclaw=GRAVE crafts=2]" measures each metal's rule, the choice of metal, augment and catalyst pairs. --args="guild seed=600001 runs=300 [try=moonsteel:3+siege:186]" plays guild runs with and without the metals' rules on the same seeds
 ./gradlew :core:guildsim --args="--runs 300 --seed 1"  # thirteen guild policies over guild runs (--policy X[,Y], --charter ID, --horizon N, --maxed x, --set enemyPercentBase=180,..., --why x, --byOpening x, --pair A,B, --playOn x, --opening ID, --classic x, --transcript x)
 ./gradlew :core:soak                                   # long-save soak, outside the default suite (about 70 s): 2,000 forced-survival days for two smiths; tables and the day-1,000 / 2,000 saves in core/build/soak/
 ./gradlew :app:testDebugUnitTest                       # app JVM tests (session, ViewModel, screen models; no device)
@@ -80,7 +80,8 @@ python tools/pixelart/import_assets.py                 # slice the source sheets
 python tools/pixelart/generate_assets.py               # placeholders for IDs without imported art + manifest
 ADB=<sdk>/platform-tools/adb bash tools/emulator/smoke.sh <dir>  # scripted device loop + screenshots (after installDebug)
 ADB=<sdk>/platform-tools/adb bash tools/emulator/scenarios.sh <dir> # loads every debug scenario save and checks what its title promises (about an hour on a slow emulator)
-ADB=<sdk>/platform-tools/adb bash tools/emulator/forge.sh <dir> # forge outlook, bench, weapon sheet, fight notes, process kill (set ANDROID_SERIAL)
+ADB=<sdk>/platform-tools/adb bash tools/emulator/forge.sh <dir> # forge outlook, bench (with the town's wall), weapon sheet, fight notes, process recreation (set ANDROID_SERIAL)
+ADB=<sdk>/platform-tools/adb bash tools/emulator/journey.sh <dir> 9 stormwell Urien seen # seeded guild run: forge, loan, a real contract, the fight report, "Seen in a real fight", process kill. `... Wren suggested` is the contrast
 ADB=<sdk>/platform-tools/adb bash tools/emulator/runend.sh <dir> # passive run to defeat, then claim + next era (about 2 min)
 ./gradlew :core:scenarios                              # rewrites the debug build's scenario saves (app/src/debug/assets/scenarios) from core test ScenarioSaves.kt
 ADB=<sdk>/platform-tools/adb bash tools/emulator/scenarios.sh <dir> # loads each scenario through the debug menu and screenshots its card (set ANDROID_SERIAL when several devices are attached)

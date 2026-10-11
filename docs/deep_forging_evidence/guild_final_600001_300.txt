@@ -1,0 +1,12 @@
+GUILD RUNS WITH AND WITHOUT THE METALS' FIGHT RULES: seeds 600001 to 600300, new account, horizon 30 days, balance 14
+Counts of 300 runs, then the share. Interval: 95% for the charter share. Paired: seeds where only one of the two secured the charter.
+charter                policy         | with: charter / fallen / neither   | without: charter / fallen / neither | paired
+towns_last_hope        SYNERGY        | 189   9 102  63%  3% 34% (57 to 68) | 187  14  99  62%  5% 33% (57 to 68) | only with 52, only without 50, both 137, neither 61
+towns_last_hope        ADAPTIVE       | 180   4 116  60%  1% 39% (54 to 65) | 151   3 146  50%  1% 49% (45 to 56) | only with 66, only without 37, both 114, neither 83
+towns_last_hope        DEFENCE_FIRST  | 151   3 146  50%  1% 49% (45 to 56) | 124  24 152  41%  8% 51% (36 to 47) | only with 72, only without 45, both 79, neither 104
+licensed_bad_ideas     SYNERGY        | 198   7  95  66%  2% 32% (60 to 71) | 168  19 113  56%  6% 38% (50 to 62) | only with 73, only without 43, both 125, neither 59
+licensed_bad_ideas     ADAPTIVE       | 160   2 138  53%  1% 46% (48 to 59) | 114  11 175  38%  4% 58% (33 to 44) | only with 81, only without 35, both 79, neither 105
+licensed_bad_ideas     DEFENCE_FIRST  | 134  15 151  45%  5% 50% (39 to 50) | 124  17 159  41%  6% 53% (36 to 47) | only with 66, only without 56, both 68, neither 110
+honest_business        SYNERGY        | 163  19 118  54%  6% 39% (49 to 60) | 156  21 123  52%  7% 41% (46 to 58) | only with 63, only without 56, both 100, neither 81
+honest_business        ADAPTIVE       | 170   2 128  57%  1% 43% (51 to 62) | 144   6 150  48%  2% 50% (42 to 54) | only with 72, only without 46, both 98, neither 84
+honest_business        DEFENCE_FIRST  | 156   9 135  52%  3% 45% (46 to 58) | 143  14 143  48%  5% 48% (42 to 53) | only with 66, only without 53, both 90, neither 91

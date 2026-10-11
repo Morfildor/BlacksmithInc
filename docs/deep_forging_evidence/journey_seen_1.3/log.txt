@@ -84,3 +84,34 @@ text="You have forged: Bronze rings back"
 text="6 more to find. They open when you forge something that takes part in them."
 COUNT rows of the path: 1
 STATE 20_notes_after: seen in a real fight
+pid after kill: ''
+Warning: Activity not started, its current task has been brought to the front
+tapped id 'nav_records' at 953 1762
+tapped id 'page_journal' at 540 350
+tapped id 'book_tab_fights' at 794 987
+screenshot 21_notes_after_recreation
+--- fight notes (21_notes_after_recreation)
+text="● Learned · The wielder's first hit each round puts 1 Burn on its target."
+text="A broken Guard answers"
+text="✓ Seen in a real fight · Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns."
+text="Trade-off: It needs Guard on the wielder and an enemy strong enough to break it."
+text="You have forged: Bronze rings back"
+text="6 more to find. They open when you forge something that takes part in them."
+COUNT rows of the path: 1
+STATE 21_notes_after_recreation: seen in a real fight
+tapped id 'menu_continue' at 540 1284
+tapped id 'nav_records' at 953 1762
+tapped id 'page_journal' at 540 350
+tapped id 'book_tab_fights' at 794 987
+screenshot 22_notes_after_force_stop
+--- fight notes (22_notes_after_force_stop)
+text="● Learned · The wielder's first hit each round puts 1 Burn on its target."
+text="A broken Guard answers"
+text="✓ Seen in a real fight · Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns."
+text="Trade-off: It needs Guard on the wielder and an enemy strong enough to break it."
+text="You have forged: Bronze rings back"
+text="6 more to find. They open when you forge something that takes part in them."
+COUNT rows of the path: 1
+STATE 22_notes_after_force_stop: seen in a real fight
+EXPECTED: seen
+done
