@@ -114,3 +114,82 @@ text="They may still pass. Price is only part of the decision."
 text="Store"
 text="List at 76"
 text="Loan to a member"
+tapped id 'reveal_list' at 645 1578
+tapped id 'forge_slot_metal' at 540 1094
+tapped id 'forge_option_bronze' at 539 612
+tapped id 'forge_slot_augment' at 879 1094
+tapped id 'forge_option_ember_resin' at 222 612
+screenshot 14_outlook_bronze
+tapped id 'forge_weapon' at 540 1578
+tapped id 'reveal_store' at 178 1578
+tapped id 'nav_shop' at 127 1762
+tapped id 'stock_' at 540 1446
+screenshot 15_weapon_sheet
+screenshot 15b_weapon_card
+CHECK has_id card_bench_open: ok
+tapped id 'card_bench_open' at 540 1389
+screenshot 16_bench_owned
+CHECK has The bench: ok
+tapped id 'bench_company_fire' at 227 983
+screenshot 17_bench_owned_fire
+screenshot 17b_bench_owned_lower
+--- bench (owned)
+text="Two enemies that raise Guard every round. Shows what gets through Guard and what Guard stops."
+text="This is a rehearsal"
+text="A made-up level 3 Guardian carries it. Nobody from your town or guild is here."
+text="The company is made up too: Bench Battlemage with an ember staff."
+text="The party's relics are in play: Salvage Bell."
+text="The enemies are a fixed line with more health than usual, striking the same every time. No contract or siege will look like this."
+text="The party fights to the end here. On a contract its posture decides when it leaves."
+text="Nothing here is paid, learned or recorded."
+text="What happened"
+text="Iron holds"
+text="x 1"
+text="Round 1."
+text="Bench Guardian's Iron holds gives Bench Guardian 3 Guard."
+text="Rime"
+text="x 6"
+text="Bench Guardian: Hold the line."
+text="Bench Guardian hits Cinder-knight for 14."
+text="Bench Guardian's Rime boils off Burn on Cinder-knight."
+text="Waiting for its moment"
+text="Every rule it has here came into play."
+text="The fight"
+text="Won in 5 rounds"
+text="The party"
+text="Bench Battlemage 28/30"
+text="Bench Guardian 44/46"
+tapped id 'bench_close' at 540 1850
+tapped id 'nav_records' at 953 1762
+tapped id 'page_journal' at 540 350
+screenshot 18_notebook
+CHECK has_id book_tab_fights: ok
+tapped id 'book_tab_fights' at 917 798
+screenshot 19_fight_notes
+CHECK has_id book_learned: ok
+screenshot 20_fight_notes_lower
+--- fight notes
+text="Day 1"
+text="210"
+text="6"
+text="Gazette"
+text="Legacy"
+text="Notebook"
+text="Iron holds"
+text="● Learned · The wielder enters a fight with 3 Guard."
+text="Bronze rings back"
+text="● Learned · When an enemy breaks the wielder's Guard, the weapon strikes that enemy for 5. Once a round."
+text="Ember"
+text="● Learned · The wielder's first hit each round puts 1 Burn on its target."
+text="Rime"
+text="● Learned · The wielder's first hit each round puts 1 Chill on its target."
+text="A broken Guard answers"
+text="? Suggested by the rules · Guard that an enemy breaks can be the start of something. Bronze strikes back and Thornwall grows thorns."
+text="Trade-off: It needs Guard on the wielder and an enemy strong enough to break it."
+text="You have forged: Bronze rings back"
+text="6 more to find. They open when you forge something that takes part in them."
+text="Shop"
+text="Forge"
+text="Guild"
+text="Records"
+done

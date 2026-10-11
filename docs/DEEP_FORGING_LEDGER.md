@@ -164,7 +164,11 @@ as "will fire": Starsteel is available in 72% of lab fights and fires in 44% of 
   moment" and the town's wall, the owned-weapon bench, fight notes. The recipe on the anvil comes back after the
   process is killed in the background (saved instance state, which was already there). An open bench closes. A
   force-stop empties the anvil, as it empties any app's saved state.
-- `scenarios/`: every regenerated scenario save loaded through the debug menu.
+- `scenarios/`: every regenerated scenario save loaded through the debug menu by `scenarios.sh`. 58 of 61 checks pass.
+  The three that fail are the script's, in two classic scenarios this work does not touch. `wall_death`: the script
+  looks for a card titled "The siege" and the card is headed "Siege · day 20". Stepped through by hand, the siege
+  card and the death card are there. `returned_legend`: the script's tap on the hone button lands on the bottom edge
+  and the sheet is not reopened. Not checked by hand on the device: `ScenarioSavesTest` covers that save.
 
 ## Still open
 - Nobody has played it. Bots and bench fights do not show whether the choices are interesting.
