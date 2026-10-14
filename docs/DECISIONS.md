@@ -4379,3 +4379,33 @@ and merged into `main` over the deep forging integration (749061b) on 2026-10-14
   game", so that button is where it was. On the forge result the step and "Skip guidance" come first.
 - **Not shown by this.** That the flow works is tested. That a new player understands the game from it is not: nobody
   has been watched playing it. T7.2 (five first-time players) is the check.
+
+## Owner decisions on the 2026-10-14 review (2026-10-14)
+
+Source: the owner's answers to `docs/REVIEW_2026-10-14.md` §4. This list supersedes the "Open owner decisions" lists
+scattered above for the items it names. Work lands on branch `review-2026-10-14`; status per item is in PROGRESS.
+
+| | Decision | How it is applied |
+|---|---|---|
+| A | Workbench odds: no percentages | The LOCKED rule (GDD revision 2026-10-10, line 26) keeps *hidden random odds* descriptive and shows deterministic rules, thresholds and costs exactly. A count such as "3 in 10 forges" states the exact odds, so it does not satisfy the rule. The Reckless flaw chance and the Heartfire breakthrough chance are hidden random odds: they get band words. Thresholds (quality needed, energy, cost) stay numbers. `Legacy.preview` words chance-like upgrade tracks as "forges in 10": that also reveals exact odds and is listed for the owner below, not changed silently. |
+| B | Guild wall work | Draws on the same daily recovery allowance as every other repair. Any extra for assigned heroes is a `BalanceConfig` number, never a bypass. |
+| C | Debug entries | Scenarios and Combat sandbox move under Settings in debug builds. The title shows only player entries. Scripts open Settings first. |
+| D | Large screens | `android:appCategory="game"`. Portrait stays the phone experience. Behaviour is checked on a 600 dp emulator, clipping fixed there. A landscape design is deferred. |
+| E | Screenshots in git | Bulky evidence moves to archives outside the tracked tree, with a small reference set and an index kept. Archive before removal. No history rewrite. |
+| F | Version | Target 0.9.0. Held until the phone pass and the open release gates (G3, G12, G13, G14) have evidence. None is waived. |
+| G | Backup | `allowBackup="false"` stays. The inert backup rules are removed. A legacy-only backup is deferred. |
+| H | Fonts | A licensed sans at 500/700 for body and labels, a bold serif for headings, bundled with their licences. No decorative body text. |
+| I | Opening confirmation | No confirm dialog. Select a compact card, then one primary action names the opening. The drawback is on the card before commitment. |
+| J | Members at home | Training and ambition stay automatic, no daily command. One concise line explains it to the player, and the spec says it plainly. |
+| K | Pricing on the result card | "List at suggested" is the primary action. "Set price" is the secondary and opens the manual pricing sheet. |
+| L | Commission reservation | One line on the result card says whether the weapon is reserved and for whose commission, from `Weapon.promisedTo`. |
+| M | Free listings | Giving a weapon away stays valid. It no longer earns full sale reputation and loyalty. A bounded generosity benefit replaces it (numbers in `BalanceConfig`, compared against fair pricing in the simulator). |
+
+Older ledger items, answered the same day:
+- Synergy band 40–67: a candidate for simulation, not an approved range. Kept only if the evidence shows build variety.
+- Standing drawbacks: approved where they make a different playstyle. Visible before selection and inspectable during the run. No unavoidable penalty without a response.
+- Militia as a paid wall unit: direction approved. Its cost and contribution are stated and compared against other defences.
+- Heartfire: an irreversible spend of a scarce resource asks for confirmation that states the cost and the consequence.
+- Renown: the name stays and is used consistently (review 08#9's "Fame" rename is dropped).
+
+Still for the owner: `Legacy.preview` shows chance-like upgrade tracks as "N forges in 10", which states exact odds. Words, or keep as the one place a purchase states its exact effect?
