@@ -5,8 +5,10 @@
 rules 6 / content 6 / balance 15 / schema 7, with the guild revision, run variety, deep forging and owner decisions A to M
 folded in. Built from six parallel code-first audits (forging, economy, world, guild, legacy/meta, UX/architecture), read
 against the code, not the ledgers alone. CLAUDE.md, `GDD_REVISION_2026-10-10.md` and `GDD_CHECKLIST.md` point at it; DECISIONS
-has an entry. No tests run (no code changed). Next: re-number `GDD_CHECKLIST.md` to v2.0 sections and refresh its stale header;
-keep §21.3 (decided, not built: A, K, L, J's line, Heartfire confirmation) in step as the review work lands.
+has an entry. No tests run (no code changed). Then the owner's rulings on the open questions were recorded (DECISIONS "Owner rulings on the GDD v2.0 open questions"),
+`GDD_CHECKLIST.md` was re-sectioned to v2.0 with a current header and the review's stale ticks corrected, and the empty root
+`GDD.md` removed. Next: the accepted but unbuilt decisions A (incl. previews), J's line, K, L and the Heartfire confirmation,
+in their own commits.
 
 ## Implementing the 2026-10-14 review (in progress, branch `review-2026-10-14`)
 
