@@ -1,5 +1,10 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.font.FontWeight
+import com.tinyblacksmith.core.model.Danger
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -88,7 +93,12 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
             }
         }
         items(ui.offers, key = { "offer_${it.id}" }) { o -> OfferCard(o) { contract = o.id } }
-        item(key = "roster_head") { SectionTitle(ui.rosterHead) }
+        item(key = "roster_head") {
+            Column {
+                SectionTitle(ui.rosterHead)
+                Secondary(ui.rosterNote, Modifier.testTag("guild_roster_note"))
+            }
+        }
         itemsIndexed(ui.roster, key = { _, m -> "member_${m.heroId.value}" }) { i, m ->
             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             MemberRow(m) { openHero(m.heroId) }
@@ -300,7 +310,11 @@ private fun ReportCard(r: ContractReportUi) {
     }
 }
 
-/** One contract on the board, whole: everything that decides whether to take it is on the card; the tap opens the party picker. */
+/**
+ * One contract on the board, short: the danger word first, then what the first day brings, then the days and the fee.
+ * Why it was posted, a posting's twist and a siege night missed are said too; the rest (stages, enemies, what to bring,
+ * what is lost) is on the sheet the tap opens, where the party is chosen.
+ */
 @Composable
 private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
     Column(
@@ -312,21 +326,17 @@ private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
             o.tag?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = Gold) }
             if (o.planned) Text("Planned", style = MaterialTheme.typography.labelMedium, color = EffectKind.BUFF.color)
         }
-        o.why?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
-        Text(o.description, style = MaterialTheme.typography.bodyMedium)
-        o.modifier?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.testTag("guild_offer_modifier_${o.id}")) }
-        o.stake?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember, modifier = Modifier.testTag("guild_offer_stake_${o.id}")) }
-        Text(o.time, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs))
+        Text(
+            buildAnnotatedString {
+                withStyle(SpanStyle(color = dangerColor(o.danger), fontWeight = FontWeight.SemiBold)) { append(dangerWord(o.danger)) }
+                append(" · "); append(o.reward)
+            },
+            style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.testTag("guild_offer_line_${o.id}"),
+        )
+        Secondary(o.terms)
         o.missesSiege?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
-        Secondary(o.fee)
-        o.stages.forEach { st ->
-            Text(st.label, style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.sm))
-            Text(st.reward, style = MaterialTheme.typography.bodyMedium)
-            Secondary("${st.objective} · ${st.danger}")
-            EnemyLines(st.enemies)
-        }
-        Secondary("Bring: ${o.prep}", Modifier.padding(top = Space.sm))
-        Secondary("If it fails: ${o.failure}")
+        o.why?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
+        o.modifierName?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.testTag("guild_offer_modifier_${o.id}")) }
         Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
             Secondary(o.expiry, Modifier.weight(1f))
             Text(if (o.planned) "Change the party  ›" else "Choose a party  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
@@ -334,6 +344,10 @@ private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
     }
 }
 
+/** Safe in the body colour, a taken member in ember, a death in the flaw red: the word is always there beside the colour. */
+private fun dangerColor(d: Danger) = when (d) { Danger.SAFE -> Cream; Danger.DANGEROUS -> Ember; Danger.LETHAL -> EffectKind.FLAW.color }
+
+/** A member in one line under the name, what is wrong in ember, and what they carry. Role and trait are on the sheet the tap opens. */
 @Composable
 private fun MemberRow(m: MemberUi, onOpen: () -> Unit) {
     Row(
@@ -343,11 +357,9 @@ private fun MemberRow(m: MemberUi, onOpen: () -> Unit) {
         Face(m.portrait)
         Column(Modifier.weight(1f)) {
             Text(m.name, style = MaterialTheme.typography.titleSmall)
-            Secondary("${m.sub} · ${m.health}" + if (m.reserved) " · kept for the wall" else "")
+            Secondary(m.line)
             m.status?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
             Text(m.blade, style = MaterialTheme.typography.bodySmall, color = Cream)
-            Secondary(m.role)
-            Secondary(m.trait)
             if (m.branchOpen) Text("A branch is open: choose it on their sheet  ›", style = MaterialTheme.typography.bodySmall, color = Gold)
         }
     }
@@ -360,9 +372,7 @@ private fun CandidateRow(c: CandidateUi, enabled: Boolean, onOpen: () -> Unit, o
             Face(c.portrait)
             Column(Modifier.weight(1f)) {
                 Text(c.name, style = MaterialTheme.typography.titleSmall)
-                Secondary(c.sub)
-                Secondary(c.role)
-                Secondary(c.trait)
+                Secondary(c.line)
                 Text(c.terms, style = MaterialTheme.typography.bodySmall, color = Cream)
             }
         }

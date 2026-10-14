@@ -75,9 +75,15 @@ fun ContractSheet(
     ) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
             Text(ui.offer.title, style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-            Text(ui.offer.time, style = MaterialTheme.typography.bodyMedium)
+            // Everything the board leaves out of its one line: why it was posted, what it is, its twist and what is lost.
+            ui.offer.why?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
+            Text(ui.offer.description, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs))
+            ui.offer.modifier?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.padding(top = Space.xs).testTag("contract_modifier")) }
+            ui.offer.stake?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember, modifier = Modifier.padding(top = Space.xs).testTag("contract_stake")) }
+            Text(ui.offer.time, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs))
             ui.offer.missesSiege?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
             Secondary(ui.offer.fee)
+            Secondary(ui.offer.expiry)
 
             SectionHeader("The party")
             Secondary("Up to ${ui.partyMax}. They act in the order you pick them.")

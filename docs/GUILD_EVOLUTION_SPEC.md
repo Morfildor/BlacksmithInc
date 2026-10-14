@@ -929,7 +929,7 @@ Proposed order for guild-enabled runs:
 2. Expire unanswered ordinary visitors using their displayed defaults. Resolve checkpoint defaults before a party advances.
 3. Fulfil commissions and resolve ordinary shop visits. Contracted members with managed loadouts do not autonomously replace their loaned weapons. Keep existing heirloom reservations intact.
 4. Advance one stage of each active mission. There is only one deployed party initially. Record returns for next morning; they do not teleport onto that night’s wall.
-5. Resolve autonomous activities for uncontracted residents; managed members at home take their selected home duty, recovery, or training action. Every hero has at most one non-shopping daily activity.
+5. Resolve autonomous activities for uncontracted residents. Managed members at home act on their own, with no daily command (owner decision J, 2026-10-14): a hurt member rests and heals, a fit one trains (`GuildOps.homeDay`). The smith decides who goes out and who is kept for the wall; the roster says this in one line. Every hero has at most one non-shopping daily activity.
 6. Advance factions, background events, and existing consequences; preserve the committed siege faction.
 7. Resolve the siege using available defenders, the persisted plan, and the authoritative combat engine.
 8. Apply aftermath: custody changes, injuries, capture/death, recovery, retirement, and earned milestones. Forge destruction takes precedence over later positive recovery.

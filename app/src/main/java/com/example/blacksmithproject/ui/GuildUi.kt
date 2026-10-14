@@ -90,18 +90,31 @@ data class OfferUi(
     val planned: Boolean,
     /** Rules 6: "Opportunity" for a chance that comes with a siege, what is different about this posting, and what is lost if nobody takes it. */
     val tag: String? = null, val modifier: String? = null, val stake: String? = null,
-)
+    /** The board's one line: the worst danger of its days, first, and what the first day brings. Details are on the sheet. */
+    val danger: Danger = Danger.SAFE, val reward: String = "",
+    /** The modifier's name alone, for the board; [modifier] has it whole. */
+    val modifierName: String? = null,
+) {
+    /** "2 days · Fee 20 gold": how long it takes and what it costs, for the board. */
+    val terms: String get() = listOf(time.substringBefore(':'), fee).joinToString(" · ")
+}
 
 @Immutable
 data class MemberUi(
     val heroId: HeroId, val portrait: Int, val name: String, val sub: String, val role: String, val trait: String,
     /** Wound, absence or captivity in one line; null for a member who is simply at home and well. */
     val status: String?, val blade: String, val health: String, val reserved: Boolean, val branchOpen: Boolean,
-)
+) {
+    /** The roster's one line under the name: class, health and the wall; role and trait are on the hero's sheet. */
+    val line: String get() = "$sub · $health" + if (reserved) " · kept for the wall" else ""
+}
 
 /** [blocked]: why Recruit cannot be tapped today, in a sentence; null when it can. */
 @Immutable
-data class CandidateUi(val heroId: HeroId, val portrait: Int, val name: String, val sub: String, val role: String, val trait: String, val terms: String, val blocked: String?)
+data class CandidateUi(val heroId: HeroId, val portrait: Int, val name: String, val sub: String, val role: String, val trait: String, val terms: String, val blocked: String?) {
+    /** Class and the trait's name in one line; what the trait does is on the hero's sheet. */
+    val line: String get() = "$sub · ${trait.substringBefore(':')}"
+}
 
 @Immutable data class RankUi(val rank: Int, val name: String, val description: String, val taken: Boolean, val canTake: Boolean)
 
@@ -119,6 +132,8 @@ data class GuildUi(
     /** "Planned for today: ..." when a party is planned. */
     val plan: String?, val boardNote: String?, val offers: List<OfferUi>,
     val rosterHead: String, val roster: List<MemberUi>,
+    /** Owner decision J: what members at home do without a command, in one line. */
+    val rosterNote: String = HOME_LINE,
     val candidates: List<CandidateUi>, val candidatesNote: String,
     val region: RegionUi, val factions: List<FactionRowUi>,
     /** What End Day sets in motion for the guild, at most three lines. */
@@ -126,6 +141,12 @@ data class GuildUi(
 )
 
 // ---- words shared by the board, the checkpoint and the contract sheet ----
+
+/** What members at home do each day on their own (`GuildOps.homeDay`): no daily command, owner decision J. */
+internal const val HOME_LINE = "At home, the hurt rest and the fit train on their own. You choose who goes out and who holds the wall."
+
+/** The danger alone, for the board's line: the sheet says what it means. */
+internal fun dangerWord(d: Danger): String = when (d) { Danger.SAFE -> "Safe"; Danger.DANGEROUS -> "Dangerous"; Danger.LETHAL -> "Lethal" }
 
 internal fun dangerWords(d: Danger): String = when (d) {
     Danger.SAFE -> "Safe: nobody dies or is taken."
@@ -211,6 +232,9 @@ private fun GameEngine.offerUi(state: GameState, g: GuildRunState, offer: Missio
         planned = g.planned?.offerId == offer.id,
         tag = "Opportunity".takeIf { def.archetype == MissionArchetype.OPPORTUNITY },
         modifier = content.guild!!.modifier(offer.modifierId)?.let { "${it.name}: ${it.description}" },
+        danger = offer.stages.maxOf { it.danger },
+        reward = stageUi(state, offer, 0).reward + if (offer.stages.size > 1) " · more if the first day is won" else "",
+        modifierName = content.guild!!.modifier(offer.modifierId)?.name,
         stake = "If the cart is lost, the supplier brings ${config.guild.supplierShakenStock} fewer of every limited material each morning for ${config.guild.supplierDays} days. Leaving the job on the board costs nothing.".takeIf { offer.lapse == GuildContent.LAPSE_SUPPLIER },
     )
 }

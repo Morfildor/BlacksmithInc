@@ -32,6 +32,10 @@ with stubs for the Android-only APIs, which runs the app's JVM unit tests and ty
   `EffectBullets`, marked then committed (`relic_take`, `relic_replace`, `loan_confirm`, `visitor_commit`). The debug
   preview activity's stand-in dialog is left as it is. App unit tests 250 / 0; instrumented sources type-check with no
   new errors. Not run on a device.
+- Item 4, Guild: board cards lead with `dangerWord` and the first day's reward (`OfferUi.danger`, `reward`, `terms`,
+  `modifierName`), the rest moved to the contract sheet (why, description, modifier, stake, expiry); roster and
+  candidate rows one line under the name (`MemberUi.line`, `CandidateUi.line`); J: `HOME_LINE` under the roster head,
+  CLAUDE.md and GUILD_EVOLUTION_SPEC step 5 say members at home rest or train on their own. App unit tests 251 / 0.
 
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay

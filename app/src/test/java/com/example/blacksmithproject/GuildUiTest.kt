@@ -1,5 +1,7 @@
 package com.example.blacksmithproject
 
+import com.tinyblacksmith.core.model.Danger
+import com.example.blacksmithproject.ui.dangerWord
 import com.example.blacksmithproject.ui.contractUi
 import com.example.blacksmithproject.ui.destName
 import com.example.blacksmithproject.ui.guildUi
@@ -184,6 +186,24 @@ class GuildUiTest {
         assertEquals(s.guild!!.lastMission!!.lines, ui.yesterday!!.lines)
     }
 
+    /** The board leads with the danger word and the reward, one line each; the roster is one line under a name; J's line is said once. */
+    @Test
+    fun theBoardAndTheRosterLeadWithWhatDecides() {
+        val fresh = guildRun()
+        val ui = engine.guildUi(fresh)!!
+        for (o in fresh.guild!!.offers) {
+            val row = ui.offers.first { it.id == o.id }
+            assertEquals(o.stages.maxOf { it.danger }, row.danger)
+            assertTrue(row.reward, row.reward.startsWith(row.stages.first().reward))
+            assertEquals(o.stages.size > 1, row.reward.endsWith("more if the first day is won"))
+            assertEquals(listOf(row.time.substringBefore(':'), row.fee).joinToString(" · "), row.terms)
+            assertEquals(engine.content.guild!!.modifier(o.modifierId)?.name, row.modifierName)
+        }
+        assertEquals(listOf("Safe", "Dangerous", "Lethal"), Danger.entries.map { dangerWord(it) })
+        for (m in ui.roster) assertEquals("${m.sub} · ${m.health}" + if (m.reserved) " · kept for the wall" else "", m.line)
+        assertEquals("At home, the hurt rest and the fit train on their own. You choose who goes out and who holds the wall.", ui.rosterNote)
+    }
+
     @Test
     fun aCandidateWhoCannotBeSignedSaysWhy() {
         val fresh = guildRun()
@@ -198,6 +218,8 @@ class GuildUiTest {
         assertEquals("${trait.name}: ${trait.description}", row.trait)
         assertEquals("Fee ${c.fee} gold · keeps ${c.sharePercent}% of contract gold", row.terms)
         assertEquals(engine.content.combat!!.kitByClass.getValue(fresh.heroes.getValue(c.heroId).classId).role, row.role)
+        // The row shows class and the trait's name in one line; what the trait does is on the sheet.
+        assertEquals("${row.sub} · ${trait.name}", row.line)
 
         // Gold short: the reason names both numbers, and the engine refuses for the same reason.
         val poor = fresh.copy(gold = c.fee - 1)

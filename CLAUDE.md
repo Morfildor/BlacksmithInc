@@ -36,7 +36,8 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   enemy units, party relics). `guild/` is the roster and loans (`GuildOps`), the contract board and deployments
   (`Missions`), the siege fought through the engine (`SiegeFight`), the charter, nemesis, rival, bonds, laws (`Stories`)
   and the guild's visitors (`GuildVisitors`); it draws only on the GUILD stream, its numbers are `BalanceConfig.guild`,
-  its definitions `content/GuildContent.kt`. Members are not `residents()`: nothing autonomous touches them.
+  its definitions `content/GuildContent.kt`. Members are not `residents()`: no customer logic touches them. At home they
+  rest when hurt and train when fit on their own (`GuildOps.homeDay`, owner decision J); there is no daily command.
 - `:app` — Compose UI is an observer: `GameViewModel` sends every operation (commands, legacy purchases, claim, Begin
   era, abandon, the shop-day position) through `GameSession`, the one serialized boundary, which saves accepted results
   atomically (Room, `data/SaveStore.kt` behind `data/GameRepository.kt`) before the screen renders them; load failures
