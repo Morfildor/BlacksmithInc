@@ -10,7 +10,8 @@ val Gold = Color(0xFFE8BC5A)           // headings, title plates, the primary ac
 val GoldBright = Color(0xFFFFE29A)
 val GoldDeep = Color(0xFF8A5E14)
 val Bronze = Color(0xFFA8803C)         // frames and outlines; 4.8:1 on ForgePanel
-val BronzeDeep = Color(0xFF4A3A1E)     // hairlines, dividers
+val BronzeLine = Color(0xFF6E5629)     // the edge of a tappable row or tile; 3.0:1 on ForgePanel
+val BronzeDeep = Color(0xFF4A3A1E)     // hairlines, dividers inside a frame
 val BronzeContainer = Color(0xFF45371A)
 
 val ForgeNight = Color(0xFF0C0F15)     // the ground behind every panel
@@ -18,7 +19,7 @@ val ForgePanel = Color(0xFF151A23)     // panels, sheets, dialogs
 val ForgePanelRaised = Color(0xFF1D2330)
 val ForgeSlot = Color(0xFF090B10)      // sprite slots, empty bar segments
 val Cream = Color(0xFFF2E8D0)          // body text; 14.3:1 on ForgePanel
-val CreamMuted = Color(0xFFC9BFA8)     // secondary text; 9.6:1 on ForgePanel
+val CreamMuted = Color(0xFFD3C9B2)     // secondary text; 10.6:1 on ForgePanel
 
 /** A buff and a flaw, light enough to read as text on a panel (10.6:1 and 8.6:1); always shown with "+" or "−" and words. */
 val BuffGreen = Color(0xFF8FDC8C)

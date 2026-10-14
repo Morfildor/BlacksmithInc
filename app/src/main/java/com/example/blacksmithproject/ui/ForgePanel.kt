@@ -74,6 +74,7 @@ import com.example.blacksmithproject.ui.shopday.Backdrop
 import com.example.blacksmithproject.ui.theme.Bronze
 import com.example.blacksmithproject.ui.theme.BronzeContainer
 import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.BronzeLine
 import com.example.blacksmithproject.ui.theme.BuffGreen
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
@@ -182,8 +183,11 @@ internal fun ThreatStrip(s: UiState.Playing, tag: String, note: String? = null, 
             PixelImage(R.drawable.icon_integrity, wholePixelDp(24, 22.dp), description = null)
             Text("Forge health ${s.state.town.integrity}", style = MaterialTheme.typography.labelMedium, color = Cream)
         }
-        listOfNotNull(threat?.matchup, threat?.outlook).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
-        note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+        // The second line is for a siege that is near (the warning is out, or it is today); far off, the strip is one line and the wall in Town says the rest.
+        if (threat?.warned == true || threat?.today == true) {
+            listOfNotNull(threat.matchup, threat.outlook).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+            note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+        }
     }
 }
 
@@ -231,7 +235,7 @@ private fun Workbench(title: String, d: ForgeDraft, content: ContentCatalog, com
         }
         // While a tray is open the name gives its line to the choices; it is still said for a screen reader, above.
         if (!compact) Text(
-            title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Normal, color = Cream, textAlign = TextAlign.Center,
+            title, style = MaterialTheme.typography.titleLarge, color = Cream, textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = 6.dp).testTag("forge_title"),
         )
     }
@@ -283,7 +287,7 @@ private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog,
         slots.forEach { slot ->
             val active = open == slot.slot
             Column(
-                Modifier.weight(1f).fillMaxHeight().heightIn(min = 84.dp).clip(Card).background(if (active) BronzeContainer else ForgePanelRaised).border(if (active) 1.5.dp else 1.dp, if (active) Gold else BronzeDeep, Card)
+                Modifier.weight(1f).fillMaxHeight().heightIn(min = 84.dp).clip(Card).background(if (active) BronzeContainer else ForgePanelRaised).border(if (active) 1.5.dp else 1.dp, if (active) Gold else BronzeLine, Card)
                     .clickable(role = Role.Button) { onToggle(slot.slot) }.padding(horizontal = Space.xs, vertical = 6.dp).testTag("forge_slot_${slot.slot.name.lowercase()}")
                     .semantics(mergeDescendants = true) { contentDescription = "${slot.slot.label}: ${slot.value ?: "not chosen"}${slot.stock?.let { n -> ", $n in stock" }.orEmpty()}, ${if (active) "choosing" else "tap to change"}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -322,9 +326,9 @@ private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCata
     LaunchedEffect(slot, follow) { if (follow) requester.bringIntoView() }
     val columns = if (LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340) 2 else 3
     var inspected by remember(slot) { mutableStateOf<String?>(null) }
-    Column(Modifier.fillMaxWidth().padding(top = Space.sm).bringIntoViewRequester(requester).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeDeep, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).bringIntoViewRequester(requester).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeLine, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(slot.choose, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Normal, color = CreamMuted, modifier = Modifier.weight(1f).semantics { heading() })
+            Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
             TextButton(onClick = onDone, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_done")) { Text("Done", color = CreamMuted) }
         }
         @Composable
@@ -399,8 +403,8 @@ fun FieldNotes(notes: List<NoteUi>, modifier: Modifier = Modifier, onOpenJournal
     val stacked = LocalDensity.current.fontScale > 1.3f
     Column(modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(SceneDeep).border(1.dp, BronzeDeep, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_notes")) {
         Row(Modifier.heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Field notes", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Normal, color = CreamMuted, modifier = Modifier.weight(1f).semantics { heading() })
-            if (onOpenJournal != null) Text("Open book ›", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Normal, color = CreamMuted, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).wrapContentHeight().padding(start = Space.sm).testTag("forge_notes_journal"))
+            Text("Field notes", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
+            if (onOpenJournal != null) Text("Open book ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).wrapContentHeight().padding(start = Space.sm).testTag("forge_notes_journal"))
         }
         if (stacked) notes.forEachIndexed { i, n -> FieldNote(i, n, Modifier.fillMaxWidth().padding(top = if (i > 0) Space.sm else 0.dp)) }
         else Row(Modifier.height(IntrinsicSize.Min)) {

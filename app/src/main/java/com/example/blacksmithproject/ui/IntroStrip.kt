@@ -52,7 +52,7 @@ fun IntroStrip(ui: IntroUi, onSkip: () -> Unit, onDone: () -> Unit, modifier: Mo
     Column(
         // Never more than a part of the screen, however large the text or however much "Why?" has opened: past that the
         // words scroll inside the strip, and its actions and the game's controls under it keep their places.
-        modifier.fillMaxWidth().heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.42f).dp).background(ForgePanel)
+        modifier.fillMaxWidth().heightIn(max = (LocalConfiguration.current.screenHeightDp * if (LocalDensity.current.fontScale > 1.3f) 0.3f else 0.42f).dp).background(ForgePanel)
             .drawBehind { drawRect(Gold, size = Size(3.dp.toPx(), size.height)) }
             .padding(start = Space.md, end = Space.xs, bottom = Space.sm).testTag("intro_strip"),
     ) {

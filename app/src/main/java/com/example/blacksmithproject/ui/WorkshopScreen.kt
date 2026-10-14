@@ -51,6 +51,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
@@ -298,9 +299,11 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inS
 fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier = Modifier, guild: Boolean = false, marked: Dest? = null) {
     // 72dp instead of the 80dp default: the workshop needs the vertical space more than the bar does.
     // A panel under a bronze rule; the chosen destination is a lit plate with a gold edge, not Material's pill.
+    // Large text: the label is taller, so the bar is; it never shrinks the label to fit.
+    val height = if (LocalDensity.current.fontScale > 1.3f) 96.dp else 72.dp
     NavigationBar(
         containerColor = ForgePanel, tonalElevation = 0.dp, windowInsets = WindowInsets(0, 0, 0, 0),
-        modifier = modifier.navigationBarsPadding().height(72.dp).drawWithContent { drawContent(); drawLine(Bronze, Offset.Zero, Offset(size.width, 0f), strokeWidth = 2.dp.toPx()) },
+        modifier = modifier.navigationBarsPadding().height(height).drawWithContent { drawContent(); drawLine(Bronze, Offset.Zero, Offset(size.width, 0f), strokeWidth = 2.dp.toPx()) },
     ) {
         Dest.entries.forEach { d ->
             NavigationBarItem(

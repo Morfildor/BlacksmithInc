@@ -103,7 +103,7 @@ fun ShopPanel(
             Column(Modifier.testTag("shop_counter")) {
                 CounterScene(
                     plate = shop.plate, detail = null, customer = null, customerKey = null,
-                    reducedMotion = reducedMotion, onOpenHero = {}, backdropHeight = if (short) 56.dp else 88.dp,
+                    reducedMotion = reducedMotion, onOpenHero = {}, backdropHeight = if (short || shop.shelf.isEmpty()) 56.dp else 88.dp,
                 )
                 // The shelf as a thing: the blades for sale and, beside them, the places still free.
                 ShelfBand(

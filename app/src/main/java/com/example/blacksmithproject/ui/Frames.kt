@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.theme.Bronze
 import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.BronzeLine
 import com.example.blacksmithproject.ui.theme.BuffGreen
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
@@ -133,7 +134,7 @@ fun Modifier.bottomFade(more: Boolean, color: Color = ForgeNight): Modifier = if
 }
 
 /** A row that is a thing of its own (a blade, a request, a door to a sheet): the panel ground inside a plain bronze line, without the corner work of [forgeFrame]. */
-fun Modifier.forgeRow(): Modifier = background(ForgePanel, RowShape).border(1.dp, BronzeDeep, RowShape)
+fun Modifier.forgeRow(): Modifier = background(ForgePanel, RowShape).border(1.dp, BronzeLine, RowShape)
 
 private val RowShape = RoundedCornerShape(4.dp)
 
