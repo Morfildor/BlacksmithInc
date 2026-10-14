@@ -45,8 +45,6 @@ class ConstantsTest {
         Allowed("battle/Battle.kt", "20", "restless", "the word for a pressure"),
         // Text handling.
         Allowed("engine/WorldEvents.kt", "3", "key.substring(3)", "the length of the journal key prefix"),
-        Allowed("legacy/Legacy.kt", "10", "prev % 10 == 0 && next % 10 == 0", "wording: forges in 10 or in 100"),
-        Allowed("legacy/Legacy.kt", "10", "val scale = if (tens) 10 else 1", "wording: forges in 10 or in 100"),
     )
 
     /** The world-event table is a catalogue (content): a row's weight, its limit a run and its cooldown are listed there, its effect sizes are in `WorldEventConfig`. */

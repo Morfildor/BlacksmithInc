@@ -19,7 +19,7 @@ import com.tinyblacksmith.core.model.KnowledgeState
 import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.model.Weapon
-import kotlin.math.roundToInt
+import com.tinyblacksmith.core.text.Odds
 
 /** The places of a recipe on the workbench. The last two exist only in an Advanced forge. */
 enum class RecipeSlot(val label: String, val empty: String, val choose: String, val hint: String) {
@@ -99,9 +99,10 @@ data class ForgeWorkbenchUi(
 @Immutable
 data class HeartfireUi(val held: String, val on: Boolean, val blocked: String?, val outlook: List<String>, val warning: String?, val rule: String, val source: String)
 
-private fun percent(chance: Double) = "${(chance * 100).roundToInt()}%"
-
-/** What the temper does, with the numbers of the rules themselves. */
+/**
+ * What the temper does: the numbers of its rules (spread, slots) exactly, its hidden odds in words (owner decision A,
+ * `Odds`), never as a percentage or a count.
+ */
 fun riskExplanation(r: Risk, config: BalanceConfig): String {
     val profile = config.risk.getValue(r)
     val spread = profile.rollSpread ?: config.qualityRollSpread
@@ -110,7 +111,7 @@ fun riskExplanation(r: Risk, config: BalanceConfig): String {
     return when (r) {
         Risk.SAFE -> "Quality stays within $spread of what the recipe gives. Few flaws and few exceptional results." + breakthrough(legend.safeBonus)
         Risk.BALANCED -> "Quality moves up to $spread either way. A chance of exceptional work or flaws."
-        Risk.RECKLESS -> "Adds ${if (profile.extraSlots == 1) "one more property" else "${profile.extraSlots} more properties"}. About ${percent(profile.defectChance)} come out flawed, and a flawed weapon is still usable." + breakthrough(legend.recklessBonus)
+        Risk.RECKLESS -> "Adds ${if (profile.extraSlots == 1) "one more property" else "${profile.extraSlots} more properties"}. Weapons ${Odds.often(profile.defectChance)} come out flawed, and a flawed weapon is still usable." + breakthrough(legend.recklessBonus)
     }
 }
 
@@ -136,9 +137,9 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
                 when {
                     !o.fineMetal -> "Chance to break through: none in this metal."
                     o.chanceHigh <= 0.0 -> "Chance to break through: none at this quality."
-                    o.chanceLow <= 0.0 -> "Chance to break through: none under quality ${o.floor}, up to ${percent(o.chanceHigh)} at quality ${o.qualityHigh}."
-                    o.chanceLow == o.chanceHigh -> "Chance to break through: ${percent(o.chanceLow)}."
-                    else -> "Chance to break through: ${percent(o.chanceLow)} at quality ${o.qualityLow}, up to ${percent(o.chanceHigh)} at quality ${o.qualityHigh}."
+                    o.chanceLow <= 0.0 -> "Chance to break through: none under quality ${o.floor}, ${Odds.chance(o.chanceHigh)} at quality ${o.qualityHigh}."
+                    Odds.chance(o.chanceLow) == Odds.chance(o.chanceHigh) -> "Chance to break through: ${Odds.chance(o.chanceLow)}. It is never certain."
+                    else -> "Chance to break through: ${Odds.chance(o.chanceLow)} at quality ${o.qualityLow}, ${Odds.chance(o.chanceHigh)} at quality ${o.qualityHigh}."
                 },
                 "If it does not break through, the weapon still gets ${if (o.missSlots == 1) "one more property" else "${o.missSlots} more properties"}.",
             )

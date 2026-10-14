@@ -8,9 +8,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
-- **A new title screen.** The owner's painting of the smithy at night fills the main menu; the name and "New game" stand in its dark lower third. A fresh account no longer shows an empty "Era 1 awaits" plate, and the guided first day is one plain line with "Skip it".
-- **Run setup.** "New game" opens its own screen for the charter: every charter's gains and costs are short "+" and "−" bullets read from its own numbers, visible without choosing it, with "Begin under …" pinned below.
-- **Opening cards that compare.** The two heroes who sign are shown once with their portraits; each card gives its playstyle, its benefit, the trait each signer gets, its relic (tap to read the effect) and its costs as bullets. Nothing is chosen until a card is tapped; the chosen card adds what it brings and the traits in full.
+- **A new title screen.** The owner's painting of the smithy at night fills the main menu; the name and "New game" stand in its dark lower third. A fresh account no longer shows an empty "Era 1 awaits" plate, and the guided first day is one plain line with "Skip it".
+
+- **Run setup.** "New game" opens its own screen for the charter: every charter's gains and costs are short "+" and "−" bullets read from its own numbers, visible without choosing it, with "Begin under …" pinned below.
+
+- **Opening cards that compare.** The two heroes who sign are shown once with their portraits; each card gives its playstyle, its benefit, the trait each signer gets, its relic (tap to read the effect) and its costs as bullets. Nothing is chosen until a card is tapped; the chosen card adds what it brings and the traits in full.
+
 - **A guided first day.** A new installation's first game is led through one real day in the real workshop: choose a recipe, forge it, list it, forge a second weapon your own way, end the day, and read what the day came to. One short step at a time sits under the top bar, with "Why?" for more and "Skip guidance" on every step and on the forge result. It is shown once per installation, never again in a later game, and never to someone who has already played.
 - Settings has a "Guided first day" row: where it stands, and "Replay". A replay starts at once in a game's first morning, otherwise it waits for the next new game, says so, and can be cancelled. It never changes a game in progress.
 - A new account's first game starts on "No charter", the shop alone. The charter you pick on the title, or last began a game under, is now remembered.
@@ -36,6 +39,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - A weapon's card lists a rule that two of its parts share once, names both parts, and notes where its rules feed or get in the way of each other.
 
 ### Changed
+- **Odds in words.** The Forge no longer prints hidden chances as numbers: Reckless says weapons "often" come out flawed, and a Heartfire forging says "a fair chance" or "a strong chance" to break through at each end of the quality it can reach. The upgrade preview words Thrifty Hands, Lucky Hammer and Anvil Lore the same way. Costs, energy, quality ranges and the quality a breakthrough needs are still exact numbers.
 - A weapon given away (listed for less than a quarter of its price) is a gift, not a sale. It earns no sale reputation. The town notices generosity once a day, and a gift warms a hero to the shop only so far, never into a regular.
 - A blessing offer nobody answers is withdrawn after three mornings, with a line in the day's records.
 - Guild runs: work on the wall now counts toward the day's repair. With the guild's extra for it, a day's repair from every source is at most 3 unless a blessing adds to it (the wall work alone gave 5, on top of the heroes' 2).
