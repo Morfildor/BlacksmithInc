@@ -52,6 +52,8 @@ object Fight {
         var roundEvents = 0
         var nextSummon = 1
         val enteringHealth = setup.party.sumOf { it.health.coerceAtLeast(0) }
+        /** The state ticking while its tick is recorded: stamped on the tick's own events (records only, no rule reads it). */
+        var ticking: Stat? = null
 
         init {
             require(setup.party.isNotEmpty()) { "A fight needs a party" }
@@ -65,10 +67,10 @@ object Fight {
         fun actor(key: String?) = key?.let { k -> actors.firstOrNull { it.key == k } }
         fun other(side: Side) = if (side == Side.PARTY) Side.ENEMY else Side.PARTY
 
-        fun emit(kind: EventKind, source: Actor?, target: Actor?, amount: Int = 0, stat: Stat? = null, via: Via = Via.ACTION, effect: EffectDef? = null, parent: FightEvent? = null, text: String): FightEvent {
+        fun emit(kind: EventKind, source: Actor?, target: Actor?, amount: Int = 0, stat: Stat? = null, via: Via = Via.ACTION, effect: EffectDef? = null, parent: FightEvent? = null, text: String, affinity: Affinity? = null): FightEvent {
             if (++roundEvents > rules.eventBudgetPerRound) throw FightLoopException(setup.seed, round, setup.title)
             val id = events.size + 1
-            val e = FightEvent(id, round, kind, source?.key, target?.key, amount, stat, via, effect?.id, parent?.id, parent?.rootId ?: id, text)
+            val e = FightEvent(id, round, kind, source?.key, target?.key, amount, stat, via, effect?.id, parent?.id, parent?.rootId ?: id, text, tick = ticking.takeIf { via == Via.TICK }, affinity = affinity)
             events += e
             queue += e
             return e
@@ -101,8 +103,13 @@ object Fight {
             emit(if (result == FightOutcome.RETREATED) EventKind.RETREATED else EventKind.OBJECTIVE, null, null, text = closing)
             queue.clear()
             // The whole record: a line without text (a tick's root, a partly absorbed blow) is still a link of somebody's chain. A screen shows the lines that have text.
-            return FightResult(setup.title, result, round, actors.map { ActorResult(it.key, it.name, it.side, it.health, it.def.maxHealth, it.downed, it.fractured, it.summoned) }, events.toList(),
-                Highlights.of(events, actors.associate { it.key to it.side }))
+            val named = events.mapNotNull { it.effectId }.toSet()
+            val rules = (actors.flatMap { it.effects } + setup.partyEffects + setup.units.values.flatMap { it.effects + it.kit.passives }).filter { it.id in named }.associate { it.id to it.name }
+            return FightResult(setup.title, result, round, actors.map { a ->
+                ActorResult(a.key, a.name, a.side, a.health, a.def.maxHealth, a.downed, a.fractured, a.summoned,
+                    start = a.def.health.coerceIn(0, a.def.maxHealth), startStats = a.def.stats.filterValues { it > 0 }, kit = a.def.kit.name, weapon = a.def.weaponName,
+                    weaponId = a.def.weaponId, element = a.def.element, weaponRules = a.def.weaponRules, unitId = a.def.unitId)
+            }, events.toList(), Highlights.of(events, actors.associate { it.key to it.side }), FightResult.RECORD, rules)
         }
 
         /** Decided the moment it is true, whoever's turn it is. */
@@ -131,8 +138,10 @@ object Fight {
         fun act(a: Actor) {
             val bleed = a.stat(Stat.BLEED)
             if (bleed > 0) {
+                ticking = Stat.BLEED
                 val tick = emit(EventKind.ACTION, a, a, via = Via.TICK, text = "")
                 damage(null, a, tickAmount(a, Stat.BLEED, bleed), null, pierce = true, via = Via.TICK, effect = null, parent = tick, what = "bleeds")
+                ticking = null
                 a.stats[Stat.BLEED] = bleed - 1
                 drain()
                 if (a.downed || finished() != null) return
@@ -166,14 +175,18 @@ object Fight {
                 if (a.downed) continue
                 val burn = a.stat(Stat.BURN)
                 if (burn > 0) {
+                    ticking = Stat.BURN
                     val tick = emit(EventKind.ACTION, a, a, via = Via.TICK, text = "")
                     damage(null, a, tickAmount(a, Stat.BURN, burn), null, pierce = false, via = Via.TICK, effect = null, parent = tick, what = "burns")
+                    ticking = null
                     a.stats[Stat.BURN] = burn - 1
                 }
                 val regen = a.stat(Stat.REGEN)
                 if (regen > 0 && a.alive) {
+                    ticking = Stat.REGEN
                     val tick = emit(EventKind.ACTION, a, a, via = Via.TICK, text = "")
                     heal(a, a, rules.regenHeal, Via.TICK, null, tick, "mends")
+                    ticking = null
                     a.stats[Stat.REGEN] = regen - 1
                 }
                 val wet = a.stat(Stat.WET)
@@ -346,7 +359,7 @@ object Fight {
                     if (side(holder.side).count { it.alive } >= rules.maxActorsPerSide) return
                     val key = "s${nextSummon++}"
                     val c = Combatant(key, unit.name, holder.side, unit.kit, unit.health, unit.health, unit.strikeMin, unit.strikeMax, unit.support, weakTo = unit.weakTo, resists = unit.resists,
-                        effects = unit.effects, tags = unit.tags + "summoned", tickResist = unit.tickResist)
+                        effects = unit.effects, tags = unit.tags + "summoned", tickResist = unit.tickResist, unitId = unit.id)
                     val s = Actor(c, side(holder.side).size, summoned = true)
                     actors.add(actors.indexOfLast { it.side == holder.side } + 1, s)
                     emit(EventKind.SUMMONED, holder, s, via = via, effect = effect, parent = parent, text = "${unit.name} joins ${if (holder.side == Side.PARTY) "the party" else "the enemy"}${effect?.let { " (${it.name})" } ?: ""}.")
@@ -403,8 +416,14 @@ object Fight {
             if (base <= 0 || t.downed) return
             var n = base
             val who = if (source == null) t.name else owner(source, effect)
+            // Recorded only: whether the element met a weakness or a resistance, or the target shrugged off part of a tick.
+            var affinity: Affinity? = if (via == Via.TICK && (ticking?.let { t.def.tickResist[it] } ?: 0) > 0) Affinity.RESISTED else null
             if (via != Via.TICK && source != null && source.side != t.side) {
-                if (element != null) n = when (element) { t.def.weakTo -> pct(n, rules.weakPercent); t.def.resists -> pct(n, rules.resistPercent); else -> n }
+                if (element != null) n = when (element) {
+                    t.def.weakTo -> { affinity = Affinity.WEAK; pct(n, rules.weakPercent) }
+                    t.def.resists -> { affinity = Affinity.RESISTED; pct(n, rules.resistPercent) }
+                    else -> n
+                }
                 if (element == Element.STORM && t.stat(Stat.WET) > 0) {
                     spend(t, Stat.WET, 1, effect, parent, "The storm runs through the wet on ${t.name}.", source)
                     n += rules.wetStormBonus
@@ -420,13 +439,13 @@ object Fight {
                 if (absorbed > 0) {
                     t.stats[Stat.GUARD] = guard - absorbed
                     n -= absorbed
-                    emit(EventKind.GUARD_ABSORBED, source, t, absorbed, Stat.GUARD, via, effect, parent, if (n == 0) "${t.name}'s Guard takes $who's blow ($absorbed)." else "")
+                    emit(EventKind.GUARD_ABSORBED, source, t, absorbed, Stat.GUARD, via, effect, parent, if (n == 0) "${t.name}'s Guard takes $who's blow ($absorbed)." else "", affinity)
                     if (guard - absorbed == 0) emit(EventKind.GUARD_BROKEN, source, t, absorbed, Stat.GUARD, via, effect, parent, "${t.name}'s Guard breaks.")
                 }
             }
             if (n > 0) {
                 t.health = maxOf(0, t.health - n)
-                val hit = emit(EventKind.DAMAGE, source, t, n, via = via, effect = effect, parent = parent, text = if (what != null) "${t.name} $what for $n." else "$who hits ${t.name} for $n.")
+                val hit = emit(EventKind.DAMAGE, source, t, n, via = via, effect = effect, parent = parent, text = if (what != null) "${t.name} $what for $n." else "$who hits ${t.name} for $n.", affinity = affinity)
                 if (t.health == 0) {
                     t.downed = true
                     emit(EventKind.DOWNED, source, t, via = via, effect = effect, parent = hit, text = "${t.name} is down.")

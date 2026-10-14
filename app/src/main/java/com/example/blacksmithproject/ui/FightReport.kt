@@ -49,7 +49,8 @@ fun fightTimeline(result: FightResult): List<FightLine> {
     return result.events.filter { it.text.isNotEmpty() }.map { e ->
         if (e.kind == EventKind.ROUND_START) FightLine(e.text, 0, header = true)
         // A chain is finite by the fight's own rules; the bound is for a record that is not.
-        else FightLine(e.text, generateSequence(e.parentId?.let(byId::get)) { it.parentId?.let(byId::get) }.take(MAX_DEPTH).count { it.kind != EventKind.ROUND_START })
+        // Silent links a save keeps for the replay (a blow Guard took in part, a tick's start) are not lines, so they add no indent.
+        else FightLine(e.text, generateSequence(e.parentId?.let(byId::get)) { it.parentId?.let(byId::get) }.filter { it.kind != EventKind.ROUND_START && it.text.isNotEmpty() }.take(MAX_DEPTH).count())
     }
 }
 

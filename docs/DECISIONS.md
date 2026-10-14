@@ -4532,3 +4532,41 @@ and the scenario saves are as they were at 885b406.
   tests among them; the rollback test runs on an in-memory DAO that plays a transaction). Not run, not type-checked: the
   three new real-Room tests in `SaveStoreTest` (Unicode through both splits, a broken split row, the quarantine
   rollback); the shim has no stubs for Room's test APIs. They are on the local checklist in HANDOFF_CLOUD.
+
+## Siege replay and battle report (2026-10-14)
+
+The guild siege can be watched from its record and read as a report. Nothing is rerun and nothing is drawn: the replay
+and the report are pure functions of the stored `FightResult` (`combat/Replay.kt`, `combat/ReplayTimeline.kt`,
+`combat/Account.kt`), and the screen (`ui/replay/`) dispatches no command, so opening, skipping, replaying or leaving it
+changes no outcome and gives nothing. No rule, number or RNG draw of the fight changed (balance 15, rules 6, content 6).
+
+- **What the record gained (LOCKED by "replays derive from real event records").** `FightResult.record` (1 from now),
+  `FightResult.rules` (the name of every rule an event names), per actor its entering health and states, kit, blade
+  name and ID, element, the rule IDs its blade brought and the catalog unit, and per event `tick` (the state whose tick
+  it is) and `affinity` (weak / resisted). All are records only: no trigger, condition or highlight reads them, and every
+  fixture fight's timeline is unchanged apart from these fields. They are written only when they say something
+  (`@EncodeDefault(NEVER)`), so an older save decodes as before and its fights have `record = 0`.
+- **What the save keeps of a fight.** `Missions.compact` now also keeps the silent lines that move a number (a blow Guard
+  took in part, healing past full, a state spent, a tick's start) for a record-1 fight; only the end-of-round and
+  has-acted markers go. Without them health and states could not be replayed exactly nor Guard counted. The text log
+  indents by its own lines only, so it reads as before.
+- **Consistency guard.** `FightReplay.of` applies every event to the entering state and refuses the record when the
+  result does not match the health and the downed state the fight recorded for every actor. A refused or older record
+  shows the existing text summary with one line saying it was recorded before replays.
+- **Wet drying is shown at the next round's start** for everybody standing: the fight does not record it as an event.
+  The only place this can differ from the engine is the state chips after the last round, which no number depends on.
+- **Counting once (PROPOSED wording, LOCKED principle).** Every point of enemy damage, of a defender's Guard taking a
+  blow ("blocked") and of effective healing on a defender lands in exactly one share: the defender and the rule that did
+  it (none: their own moves). A tick of Burn, Bleed or Regeneration, and Guard taking a blow, belong to whoever put the
+  stacks on while one defender put them all (the rule too, when one rule did); a pile more than one hand built, or one
+  held from the start, is "Shared". A helper's work counts for the rule that called it. Softening without a number in
+  the record (Chill) is not counted as prevented. JVM tests hold the sums equal to the record for every fixture fight.
+- **Observations, at most two.** The blade rule that did the most (with how often it fired), a defender with two or more
+  resisted hits, two or more hits on a weakness, the strongest foe felled and by whom. Each is a count from the record;
+  none says what would have happened otherwise.
+- **The short version.** Steps with a recorded highlight, someone going down, a helper called, a blade cracking, a blade
+  rule's first firing for its holder, or a single blow of 30% of the target's health or more; at most 10, in order, then
+  the end. A quiet fight is short; nothing is added to fill it.
+- **Timing (PROPOSED, playtest values).** At 1x: a round's banner 700 ms, a fighter stepping up 550 ms, each pop
+  900 ms, the end 1,400 ms; at 2x 400 / 320 / 520 / 900 ms (a floor, not half). A label stays on its portrait until its
+  step ends. Reduced motion keeps the timing and drops the lunge, the shake and the bar animation.

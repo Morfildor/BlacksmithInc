@@ -8,6 +8,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
+- **Watch the siege.** In a guild run the siege card has "Watch the siege" and "Battle report". The replay shows the defenders and the besiegers as portraits with health bars, numbers and their states (Guard, Burn, Chill, Mark...). Each action steps the fighter up, and what it does appears above the one it happened to, one at a time in the order it happened: "−18", "Burn applied", "Burn −3" on a later tick, "Heal +4", "Blocked 5", "Weak" or "Resisted" under a hit. The one whose weapon's rule fires is ringed in gold and the rule is named with its weapon. Pause, 1x or 2x, highlights or the full fight, replay and skip to result; a tap on a portrait pauses and shows its weapon, its rules and what each state on it does. Reduced motion keeps every label and drops the movement. Watching is optional and changes nothing.
+- **Battle report.** How the siege ended, the forge's damage and health, who fell and who went down, then each defender's damage dealt, damage their Guard took and health mended, each split by the rule that did it (a weapon's rules marked) with every point counted once. At most two observations from the record, the interactions the night showed for the first time, the defender's weapon record and hero, and the whole fight as text. A siege recorded before this update keeps its text summary.
+
 - **A new title screen.** The owner's painting of the smithy at night fills the main menu; the name and "New game" stand in its dark lower third. A fresh account no longer shows an empty "Era 1 awaits" plate, and the guided first day is one plain line with "Skip it".
 
 - **Run setup.** "New game" opens its own screen for the charter: every charter's gains and costs are short "+" and "−" bullets read from its own numbers, visible without choosing it, with "Begin under …" pinned below.

@@ -3,6 +3,8 @@ package com.tinyblacksmith.core.sim
 import com.tinyblacksmith.core.combat.Combatant
 import com.tinyblacksmith.core.combat.EffectDef
 import com.tinyblacksmith.core.combat.Fight
+import com.tinyblacksmith.core.combat.FightAccounting
+import com.tinyblacksmith.core.combat.FightReplay
 import com.tinyblacksmith.core.combat.FightResult
 import com.tinyblacksmith.core.combat.FightSetup
 import com.tinyblacksmith.core.combat.Objective
@@ -14,6 +16,7 @@ import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.guild.Loadout
+import com.tinyblacksmith.core.guild.Missions
 import com.tinyblacksmith.core.model.*
 
 /**
@@ -130,6 +133,28 @@ object CombatSandbox {
         r.events.filter { it.text.isNotEmpty() }.forEach { out.appendLine("  ${it.id.toString().padStart(3)}${it.parentId?.let { p -> " <${p.toString().padStart(3)}" } ?: "     "}  ${it.text}") }
         out.appendLine()
     }
+
+    /** The fixture as the siege replay shows it (`combat/Replay.kt`, `combat/Account.kt`): steps, pops in order, the short version and the report. */
+    fun printReplay(f: Fixture, out: Appendable = System.out) {
+        val r = Missions.compact(Fight.resolve(f.setup))
+        val replay = FightReplay.of(r) ?: return run { out.appendLine("${f.id}: no replay") }
+        out.appendLine("=".repeat(96))
+        out.appendLine("REPLAY ${f.title}  [${f.id}]  ${replay.steps.size} steps, short version ${replay.highlights.size}")
+        for (s in replay.steps) {
+            val star = if (s.index in replay.highlights) "*" else " "
+            val uses = s.uses.joinToString("") { " [${if (it.weapon) "blade" else "rule"}: ${it.name}]" }
+            out.appendLine("$star${s.index.toString().padStart(3)} r${s.round} ${s.kind.name.padEnd(5)} ${s.title}$uses${if (s.turns.isNotEmpty()) "  <${s.turns.joinToString(",")}>" else ""}")
+            for (p in s.shownPops) out.appendLine("          ${replay.actor(p.target)?.name}: ${p.text}${p.note?.let { " ($it)" } ?: ""}")
+        }
+        val account = FightAccounting.of(r)!!
+        out.appendLine("REPORT  enemy lost ${account.enemyDamage}; shared: ${account.shared.damage} damage, ${account.shared.prevented} blocked, ${account.shared.healed} healed")
+        for (m in account.members) {
+            out.appendLine("  ${m.name}${m.weapon?.let { " ($it)" } ?: ""}: ${m.damage} damage, ${m.prevented} blocked, ${m.healed} healed")
+            m.shares.forEach { out.appendLine("      ${if (it.weapon) "blade" else "     "} ${it.name}: ${it.damage}/${it.prevented}/${it.healed}${if (it.applied > 0) ", ${it.applied} stacks on foes" else ""}${if (it.times > 0) ", fired ${it.times}x" else ""}") }
+        }
+        account.observations.forEach { out.appendLine("  * $it") }
+        out.appendLine()
+    }
 }
 
 fun main(args: Array<String>) {
@@ -138,5 +163,6 @@ fun main(args: Array<String>) {
     if ("paths" in wanted) return ForgePaths.print(wanted - "paths")
     if ("lab" in wanted) return ForgeLab.print(wanted - "lab")
     if ("guild" in wanted) return ForgeLab.guild(wanted - "guild")
+    if ("replay" in wanted) return CombatSandbox.fixtures.filter { wanted.size == 1 || it.id in wanted }.forEach { CombatSandbox.printReplay(it) }
     CombatSandbox.fixtures.filter { wanted.isEmpty() || it.id in wanted }.forEach { CombatSandbox.print(it) }
 }

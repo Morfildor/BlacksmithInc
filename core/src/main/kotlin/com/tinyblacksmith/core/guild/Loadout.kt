@@ -51,6 +51,7 @@ object Loadout {
             key = hero.id.value, name = hero.name, side = Side.PARTY, kit = kit.kit, maxHealth = max,
             // A wounded hero enters with the same share of the fight's health; never with none.
             health = maxOf(1, (max * hero.health + 99) / 100), strikeMin = strike, support = support, element = weapon?.element, effects = effects, tags = tags, weaponName = weapon?.name,
+            weaponId = weapon?.id?.value, weaponRules = effects.map { it.id },
         )
     }
 
@@ -60,6 +61,6 @@ object Loadout {
     /** An enemy as it stands on the field: the unit's numbers scaled by [percent] (100 = as written). */
     fun enemy(unit: UnitDef, key: String, percent: Int = 100, name: String = unit.name): Combatant = Combatant(
         key = key, name = name, side = Side.ENEMY, kit = unit.kit, maxHealth = maxOf(1, Fight.pct(unit.health, percent)), strikeMin = Fight.pct(unit.strikeMin, percent),
-        strikeMax = Fight.pct(unit.strikeMax, percent), support = Fight.pct(unit.support, percent), weakTo = unit.weakTo, resists = unit.resists, effects = unit.effects, tags = unit.tags, tickResist = unit.tickResist,
+        strikeMax = Fight.pct(unit.strikeMax, percent), support = Fight.pct(unit.support, percent), weakTo = unit.weakTo, resists = unit.resists, effects = unit.effects, tags = unit.tags, tickResist = unit.tickResist, unitId = unit.id,
     )
 }

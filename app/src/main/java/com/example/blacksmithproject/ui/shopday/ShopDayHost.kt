@@ -28,6 +28,7 @@ import com.example.blacksmithproject.ui.detail.customerSnapshot
 import com.example.blacksmithproject.ui.detail.heroDetail
 import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.detail.weaponSnapshot
+import com.example.blacksmithproject.ui.replay.SiegeReplayDialog
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.ReplayKind
 import com.example.blacksmithproject.Beat as Card
@@ -55,10 +56,14 @@ fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel, onMainMenu: () -> Unit = 
     var coached by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(coaching, atFirstVisit) { if (coaching && atFirstVisit) coached = true else if (coaching && coached) vm.dismissTip(Tips.COUNTER.id) }
     val replay = watching?.let { id -> day?.replays?.firstOrNull { if (id.isEmpty()) it.kind == ReplayKind.SIEGE else it.eventId == id } }
+    // The wall's fight of a guild run, watched (false) or read as its report (true); null while closed. It reads the saved record only.
+    var wall by rememberSaveable(s.script.day) { mutableStateOf<Boolean?>(null) }
+    val wallFight = day?.siege?.fight
+    val wallUi = model.beats.firstNotNullOfOrNull { (it as? Beat.Aftermath)?.card?.siege }
 
     // Back closes what is open, else steps back one card. On the first card and on the Resume prompt it opens the main
     // menu: the day stays unwatched at the card it was left on, and "Continue run" comes back to it.
-    BackHandler { if (replay != null) watching = null else if (!vm.back()) onMainMenu() }
+    BackHandler { if (replay != null) watching = null else if (wall != null) wall = null else if (!vm.back()) onMainMenu() }
 
     if (s.resumed) {
         Box(Modifier.fillMaxSize().safeDrawingPadding(), contentAlignment = Alignment.Center) {
@@ -68,7 +73,7 @@ fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel, onMainMenu: () -> Unit = 
     }
     ShopDayScreen(
         model = model, position = s.position.at, speed = s.speed, reducedMotion = reducedMotion,
-        paused = s.sheet != null || s.gazetteOpen || replay != null || s.busy,
+        paused = s.sheet != null || s.gazetteOpen || replay != null || wall != null || s.busy,
         onNext = { if (s.position.beat == Card.Blessing) vm.decideLater() else vm.next() },
         onBack = { vm.back() },
         onSkipDay = vm::skipDay,
@@ -80,7 +85,16 @@ fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel, onMainMenu: () -> Unit = 
         onWatchFight = { watching = it ?: "" },
         onClose = vm::acknowledge,
         coach = Tips.COUNTER.body.takeIf { coaching && atFirstVisit },
+        onWatchSiege = { wall = it },
     )
+    // Opened before the sheets and the Gazette it links to, so those open over it and close back onto it.
+    if (wall != null && wallFight != null && wallUi != null) {
+        val settled = wall == true
+        SiegeReplayDialog(
+            wallFight, wallUi, s.state, engine.content, engine.config.guild.fight, reducedMotion, startOnReport = settled,
+            onOpenHero = { vm.openSheet(Sheet.Hero(it)) }, onOpenBlade = { vm.openSheet(Sheet.Item(it)) }, onOpenGazette = vm::openGazette, onClose = { wall = null },
+        )
+    }
     // Read-only here: the day is over and tomorrow's stock is planned on the Shop screen. The counter snapshot comes first.
     val openHero = { id: HeroId -> vm.openSheet(Sheet.Hero(id)) }
     when (val sheet = s.sheet) {

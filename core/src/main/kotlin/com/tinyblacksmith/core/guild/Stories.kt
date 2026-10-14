@@ -180,7 +180,8 @@ object Stories {
         val bonus = blade.power / combat.powerPerStrike
         val cfg = ctx.config.guild
         return foe.copy(name = nemesis.name, maxHealth = Fight.pct(foe.maxHealth, cfg.nemesisPercent), health = Fight.pct(foe.maxHealth, cfg.nemesisPercent), strikeMin = foe.strikeMin + bonus, strikeMax = foe.strikeMax + bonus,
-            element = blade.element, effects = (foe.effects + Loadout.weaponEffects(blade, ctx.content)).distinctBy { it.id }, weaponName = blade.name, tags = foe.tags + "nemesis")
+            element = blade.element, effects = (foe.effects + Loadout.weaponEffects(blade, ctx.content)).distinctBy { it.id }, weaponName = blade.name, tags = foe.tags + "nemesis",
+            weaponId = blade.id.value, weaponRules = Loadout.weaponEffects(blade, ctx.content).map { it.id })
     }
 
     // ---- the rival, the law of the season ----

@@ -218,13 +218,17 @@ class GuildEveningTest {
         var chained = 0
         for (f in fights) {
             val lines = fightTimeline(f)
-            assertEquals(f.events.map { it.text }, lines.map { it.text })
+            // The save also keeps silent links for the replay (a blow Guard took in part, a tick's start); the log is the lines with text.
+            val shown = f.events.filter { it.text.isNotEmpty() }
+            assertEquals(shown.map { it.text }, lines.map { it.text })
             assertEquals(f.events.count { it.kind == EventKind.ROUND_START }, lines.count { it.header })
             assertTrue(lines.filter { it.header }.all { it.depth == 0 && it.text.startsWith("Round ") })
-            f.events.zip(lines).forEach { (e, line) ->
+            val byId = f.events.associateBy { it.id }
+            shown.zip(lines).forEach { (e, line) ->
                 if (line.header) return@forEach
-                val parent = e.parentId?.let { id -> f.events.first { it.id == id } }
-                val parentLine = parent?.let { lines[f.events.indexOf(it)] }
+                // Indented under the nearest earlier line with text that caused it.
+                val parent = generateSequence(e.parentId?.let(byId::get)) { it.parentId?.let(byId::get) }.firstOrNull { it.text.isNotEmpty() }
+                val parentLine = parent?.let { lines[shown.indexOf(it)] }
                 assertEquals(e.text, if (parentLine == null || parentLine.header) 0 else parentLine.depth + 1, line.depth)
                 if (line.depth > 1) chained++
             }

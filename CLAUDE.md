@@ -33,7 +33,9 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   plays as rules 4 did but for the rules-6 forge: Legendary by Heartfire or deeds, Epic only in the fine metals, which the supplier carries from day 6 and 11 (so the rules-6 golden state is its own, not the rules-5 one). `combat/` is the automatic fight: typed events and
   effects (trigger, condition, cost, action, limit), pure, no `GameState`; what it runs on is content
   (`content/CombatContent.kt`: class kits, the rule each element, affix, catalyst, family and signature gives a blade,
-  enemy units, party relics). `guild/` is the roster and loans (`GuildOps`), the contract board and deployments
+  enemy units, party relics). `combat/Replay.kt`, `ReplayTimeline.kt` and `Account.kt` turn a stored `FightResult` (record 1:
+start health and states, blade rules, tick and weak/resist marks) into the siege replay and its per-rule report; they read
+the record only and refuse an older one, which keeps its text summary (`ui/replay/`). `guild/` is the roster and loans (`GuildOps`), the contract board and deployments
   (`Missions`), the siege fought through the engine (`SiegeFight`), the charter, nemesis, rival, bonds, laws (`Stories`)
   and the guild's visitors (`GuildVisitors`); it draws only on the GUILD stream, its numbers are `BalanceConfig.guild`,
   its definitions `content/GuildContent.kt`. Members are not `residents()`: no customer logic touches them. At home they
@@ -70,6 +72,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 #   legacy: --upgrades id=level[,id=level] plays the policy rows on that account, --yardsticks adds the first-siege and premium-sale table, --legends gives the maxed and impact runs a veteran Legend Board, --knownNameGold N
 ./gradlew :core:scenarios                              # rewrites the debug scenario saves in app/src/debug/assets/scenarios (played and constructed; run after a rules, content or balance change)
 ./gradlew :core:combat                                 # prints the fixture fights of the interaction engine (highlights and timeline); --args="stormwell" for one
+./gradlew :core:combat --args="replay [id]"                # the fixture fights as the siege replay shows them: steps, pops in order, the short version, the battle report
 ./gradlew :core:combat --args="sweep"                  # deep forging: every recipe by wielder, company and enemy line (about 56,000 fights). --args="paths [id] [timeline]" prints the interaction path demonstrations. --args="lab seeds=31..33 [bronze=7 oil=chill chill=25 ashclaw=GRAVE crafts=2]" measures each metal's rule, the choice of metal, augment and catalyst pairs. --args="guild seed=600001 runs=300 [try=moonsteel:3+siege:186]" plays guild runs with and without the metals' rules on the same seeds
 ./gradlew :core:guildsim --args="--runs 300 --seed 1"  # fifteen guild policies over guild runs (--policy X[,Y], --charter ID, --horizon N, --maxed x, --set enemyPercentBase=180,..., --why x, --byOpening x, --pair A,B[+C,D], --playOn x, --opening ID, --planPair POLICY, --drawbackPair POLICY, --transcript x; --classic x [--noSpend x] plays runs without a charter with a smith who spends Heartfire)
 ./gradlew :core:soak                                   # long-save soak, outside the default suite (about 70 s): 2,000 forced-survival days for two smiths; tables and the day-1,000 / 2,000 saves in core/build/soak/

@@ -307,6 +307,30 @@ class GuildRunTest {
         out.state.sound()
     }
 
+    @Test fun `the wall's fight is saved as a record the replay and the report are drawn from, and it survives the save`() {
+        val eve = siegeEve()
+        val out = engine.handle(eve, Command.EndDay(TestSupport.endDayId(eve))) as CommandOutcome.Accepted
+        val report = out.resolution!!.siege!!
+        val fight = assertNotNull(report.fight)
+        assertEquals(com.tinyblacksmith.core.combat.FightResult.RECORD, fight.record)
+        assertEquals(report.defenders.map { it.value }, fight.actors.filter { it.side == com.tinyblacksmith.core.combat.Side.PARTY && !it.summoned }.map { it.key })
+        // Each defender says what they carried, and an enemy what unit of the catalog it is.
+        fight.actors.filter { it.side == com.tinyblacksmith.core.combat.Side.PARTY && !it.summoned }.forEach { a ->
+            a.weaponId?.let { id -> assertEquals(out.state.weapons.getValue(WeaponId(id)).name, a.weapon, a.name) }
+        }
+        assertTrue(fight.actors.filter { it.side == com.tinyblacksmith.core.combat.Side.ENEMY }.all { it.unitId != null && it.start != null })
+        val replay = assertNotNull(com.tinyblacksmith.core.combat.FightReplay.of(fight), "the night's fight replays")
+        fight.actors.forEach { assertEquals(it.health, replay.final.getValue(it.key).health) }
+        val account = assertNotNull(com.tinyblacksmith.core.combat.FightAccounting.of(fight))
+        assertEquals(account.enemyDamage, account.members.sumOf { it.damage } + account.shared.damage)
+        // Watching changes nothing: the state is a value, and the same End Day gives the same night.
+        val again = engine.handle(eve, Command.EndDay(TestSupport.endDayId(eve))) as CommandOutcome.Accepted
+        assertEquals(out.state, again.state)
+        val back = SaveCodec.json.decodeFromString(GameState.serializer(), SaveCodec.json.encodeToString(GameState.serializer(), out.state))
+        assertEquals(out.state.guild!!.lastSiege, back.guild!!.lastSiege)
+        assertEquals(replay, com.tinyblacksmith.core.combat.FightReplay.of(back.lastResolution!!.siege!!.fight!!))
+    }
+
     @Test fun `a reserved member stands on the wall and a party that is away does not`() {
         val eve = siegeEve()
         val (a, b) = eve.members()

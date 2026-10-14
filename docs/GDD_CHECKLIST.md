@@ -108,6 +108,7 @@ Evidence: `docs/MAJOR_UPDATE_LEDGER.md` (one row per task) and `docs/PROGRESS.md
 - [x] Edition layout: lede, tally, Shop / Heroes / Town / Forge
 - [x] Siege replay: stepped text and an animated diorama fed by the CombatReplay only; skippable; reduced motion honoured
 - [x] Replays for significant expeditions: elite fights and deaths, folded text in the day report, at most three a day
+- [ ] Guild siege replay with portraits and a battle report (2026-10-14): `combat/Replay.kt`, `ReplayTimeline.kt`, `Account.kt` from the stored fight record (record 1), `ui/replay/`. JVM-tested in core (15 tests plus a guild-siege case: consistency with the record, every point counted once, ticks, heals, multi-target, defeat, resisted, highlights, save round trip, older records refused). Not built or seen on a device: this session had no Android SDK
 
 ## 12 Workshop UX and accessibility
 Lines ticked before 2026-10-10 describe the seven-panel layout of 0.6.0 (Home, Market and the rest); the major update replaced

@@ -56,6 +56,7 @@ import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.ForgePanelRaised
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
+import com.tinyblacksmith.core.combat.FightReplay
 import com.tinyblacksmith.core.model.BlessingId
 import com.tinyblacksmith.core.model.CombatReplay
 import com.tinyblacksmith.core.model.MissionOutcome
@@ -218,7 +219,11 @@ fun AftermathCard(
  * the forge as it stands now, two separate facts), who stood on the wall, the day's own words, and the stored replay.
  */
 @Composable
-fun SiegeOutcomeCard(beat: Beat.Aftermath, siege: SiegeOutcomeUi, onOpenHero: (FaceUi) -> Unit, onWatchFight: (CombatReplay) -> Unit, modifier: Modifier = Modifier) {
+fun SiegeOutcomeCard(
+    beat: Beat.Aftermath, siege: SiegeOutcomeUi, onOpenHero: (FaceUi) -> Unit, onWatchFight: (CombatReplay) -> Unit, modifier: Modifier = Modifier,
+    /** Opens the wall's fight: its replay (false) or straight its report (true). Only for a record a replay can be drawn from. */
+    onWatchSiege: (report: Boolean) -> Unit = {},
+) {
     val card = beat.card
     var whole by rememberSaveable { mutableStateOf(false) }
     val kind = when { siege.verdict == SiegeVerdict.HELD_AT_A_COST -> EffectKind.NEUTRAL; siege.held -> EffectKind.BUFF; else -> EffectKind.FLAW }
@@ -245,7 +250,14 @@ fun SiegeOutcomeCard(beat: Beat.Aftermath, siege: SiegeOutcomeUi, onOpenHero: (F
             siege.notes.forEach { Text("· $it", style = MaterialTheme.typography.bodyMedium) }
         }
         Body(card.text, Modifier.testTag("shopday_aftermath_text"))
-        siege.fight?.let { FightReport(it, Modifier.padding(top = Space.xs), expanded = whole, onToggle = { whole = !whole }, highlights = 0) }
+        siege.fight?.let { fight ->
+            // A record from which the replay can be drawn opens it; an older one keeps its summary here, as it always had.
+            if (FightReplay.supports(fight)) FlowRow(Modifier.padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+                SecondaryActionButton("Watch the siege", { onWatchSiege(false) }, Modifier.heightIn(min = 48.dp).testTag("shopday_watch_siege"))
+                SecondaryActionButton("Battle report", { onWatchSiege(true) }, Modifier.heightIn(min = 48.dp).testTag("shopday_siege_report"))
+            }
+            else FightReport(fight, Modifier.padding(top = Space.xs), expanded = whole, onToggle = { whole = !whole }, highlights = 0)
+        }
         // The wall's fight has its whole timeline above; the round list is for a siege that has none.
         card.replay?.takeIf { siege.fight == null }?.let { replay ->
             SecondaryActionButton("Watch the siege", { onWatchFight(replay) }, Modifier.heightIn(min = 48.dp).testTag("shopday_watch"))
