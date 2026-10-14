@@ -36,6 +36,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - **Text reads heavier.** Body and label text is medium weight on every screen, dialog titles share the serif of the panel headings, secondary text is a shade brighter, and every tappable row and tile has a visible edge.
 - **The opening chooser fits a screen per package**: the build and its pitch in one line, each signer on two lines, the relic in one, the drawback in body text, and the first days' plan behind a fold. "Begin with ..." on each card asks once more, as before.
 - **Less chrome over the Shop.** The siege strip is one line until the warning is out, the workshop picture is shorter while the shelf is empty, the destination bar grows with large text instead of clipping its labels, and the guided strip takes less of the screen at large text.
+- The forge result fades at the foot of its stats while there is more below, so a cut row reads as "more", not as a lost one.
+- The title's charter picker no longer counts "No charter" as a charter; each choice says in one line whether it is a guild run or the classic shop.
+- Debug builds: the Scenarios and Combat sandbox entries use the game's own outline button.
 - **Tempers.** Safe narrows the quality roll to six either way. Reckless adds a property slot and flaws three times in ten. Balanced is as it was.
 - A signature recipe the journal already knows yields its weapon three times in four when the recipe is exact.
 - Honing no longer changes whether a weapon is Legendary.

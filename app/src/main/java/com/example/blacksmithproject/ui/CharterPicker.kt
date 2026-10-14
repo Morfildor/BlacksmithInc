@@ -53,7 +53,7 @@ fun stepCharter(charters: List<CharterDef>, selected: String?, by: Int): String?
 
 /**
  * The charter the next era begins under, chosen in place: the arrows step through [charters] and, last, "No charter"
- * (the classic shop, a null id). Collapsed it is the name and how it plays; "About this charter" opens what it gives
+ * (the classic shop, a null id). Collapsed it is the name and, in one line, whether it is a guild run and how it plays; "About this charter" opens what it gives
  * and what it costs, in the charter's own words. A selector only: the button under it starts the era with what is shown.
  */
 @Composable
@@ -68,9 +68,8 @@ fun CharterPicker(charters: List<CharterDef>, selected: String?, onSelect: (Stri
                 Text("‹", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { contentDescription = "Previous charter" })
             }
             Column(Modifier.weight(1f).padding(vertical = Space.xs).semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }, horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Charter ${at + 1} of ${ids.size}", style = MaterialTheme.typography.labelSmall, color = CreamMuted)
                 Text(charter?.name ?: "No charter", style = MaterialTheme.typography.titleMedium, color = Cream, textAlign = TextAlign.Center, modifier = Modifier.testTag("charter_name"))
-                Text(charter?.let { "Plays as: ${it.play}" } ?: "The shop alone, as before.", style = MaterialTheme.typography.bodySmall, color = CreamMuted, textAlign = TextAlign.Center)
+                Text(charter?.let { "Guild run · ${it.play}" } ?: "Classic run · the shop alone, no guild.", style = MaterialTheme.typography.bodySmall, color = Cream, textAlign = TextAlign.Center)
             }
             TextButton(onClick = { onSelect(stepCharter(charters, selected, 1)) }, modifier = Modifier.size(48.dp).testTag("charter_next")) {
                 Text("›", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { contentDescription = "Next charter" })

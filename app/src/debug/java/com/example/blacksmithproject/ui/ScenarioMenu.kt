@@ -4,14 +4,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -52,14 +50,10 @@ fun ScenarioMenu(vm: GameViewModel, hasRun: Boolean, enabled: Boolean, onLoaded:
     val assets = LocalContext.current.assets
     var open by remember { mutableStateOf(false) }
     var chosen by remember { mutableStateOf<ScenarioEntry?>(null) }
-    OutlinedButton(onClick = { open = true }, enabled = enabled, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("menu_scenarios")) {
-        Text("Scenarios (debug)")
-    }
+    SecondaryActionButton("Scenarios (debug)", { open = true }, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("menu_scenarios"), enabled = enabled)
     // Beside it, and as far from a run: the fixture fights of the interaction engine (`CombatSandboxScreen`).
     var sandbox by remember { mutableStateOf(false) }
-    OutlinedButton(onClick = { sandbox = true }, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("sandbox_open")) {
-        Text("Combat sandbox (debug)")
-    }
+    SecondaryActionButton("Combat sandbox (debug)", { sandbox = true }, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("sandbox_open"))
     if (sandbox) CombatSandboxScreen(onClose = { sandbox = false })
     if (open) {
         val entries = remember {
@@ -82,7 +76,7 @@ fun ScenarioMenu(vm: GameViewModel, hasRun: Boolean, enabled: Boolean, onLoaded:
                             Secondary(e.description)
                         }
                     }
-                    OutlinedButton(onClick = { open = false }, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("scenario_close")) { Text("Close") }
+                    SecondaryActionButton("Close", { open = false }, Modifier.fillMaxWidth().padding(top = Space.md).testTag("scenario_close"))
                 }
             }
         }

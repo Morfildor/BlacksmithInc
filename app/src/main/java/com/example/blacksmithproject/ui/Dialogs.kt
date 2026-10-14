@@ -68,6 +68,7 @@ import com.example.blacksmithproject.ui.detail.WeaponStatBody
 import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.detail.shelfFullLine
 import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.ForgePanel
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.PaperInk
 import com.example.blacksmithproject.ui.theme.PaperInkMuted
@@ -212,7 +213,10 @@ fun ForgeResultCard(
         // Large text: the card is one long column, so the guided step and its way out come first, where they are seen without a scroll.
         if (large) Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); blade(); price() }
         else {
-            if (!typing) Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) { blade() }
+            if (!typing) {
+                val bladeScroll = rememberScrollState()
+                Column(Modifier.weight(1f, fill = false).verticalScroll(bladeScroll).bottomFade(bladeScroll.canScrollForward, ForgePanel)) { blade() }
+            }
             // Measured before the card above it, so it has the room it needs; it scrolls only when the keyboard leaves less.
             Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); price() }
         }
