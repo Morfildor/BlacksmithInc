@@ -37,7 +37,15 @@ Verified: `:core:test` and `:app:testDebugUnitTest` green at 99354a8 (before the
 run setup and opening chooser seen on an emulator at font scale 1.0 and 2.0. Not run on the branch: the instrumented
 suite and the emulator scripts.
 
-## Still to do, in order
+## Cloud session result (2026-10-14)
+
+Items 1 to 6 and 8 are done and pushed, one commit each (2a464e1, 6c3ced5, 35ac0f6, 0b5698d, d387888, 1d120af, d0b2900,
+47d0bd0). Item 7 is done as far as a machine without an emulator can: the stale tests are fixed and type-checked, nothing
+ran on a device. The three-column report is `docs/REVIEW_2026-10-14_REPORT.md`; the open owner decisions are one list
+at the top of DECISIONS. Next, on a machine with the Android SDK: `./gradlew :app:testDebugUnitTest :app:assembleDebug`,
+then the device batch below (item 7), then decision E's removal.
+
+## Still to do, in order (as handed over; see the result above)
 1. Shop: the next useful action first, less clutter and repeated coaching, siege urgency in proportion; the listed
    weapon shown once; End Day never covering the last row.
 2. Forge: K ("List at suggested" primary on the result card, "Set price" secondary opening the pricing sheet),

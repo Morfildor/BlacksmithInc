@@ -52,6 +52,11 @@ with stubs for the Android-only APIs, which runs the app's JVM unit tests and ty
   height; the two ForgeResultCard tests were rewritten in item 2), type-checked against desktop Compose's test library.
   Full `:core:test` 636 / 0 on this tree. **Not run (no Android SDK or emulator here): the instrumented suite, every
   script in `tools/emulator`, the 600 dp screen for D, before/after captures.** They are the owner's device batch.
+- Item 8: `tools/archive_evidence.py` and `docs/EVIDENCE_INDEX.md` (49 images kept, 581 to archive, the trial archive
+  verified against git, nothing removed here); one consolidated list of open owner decisions at the top of DECISIONS;
+  dated state on the runbook and the checklist. Final report: `docs/REVIEW_2026-10-14_REPORT.md`.
+  **Next actions:** on a machine with the SDK, `:app:testDebugUnitTest` and `:app:assembleDebug` for real, then the
+  instrumented suite and the `tools/emulator` scripts; then the owner's decisions; then E's removal and the merge.
 
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay
