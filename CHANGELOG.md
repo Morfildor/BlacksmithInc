@@ -57,6 +57,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Guild runs: Void Ink on a newly forged weapon takes Burn off the enemy its wielder faces straight after the wielder acts, up to 3 a round, and gives it to the weakest ally as Guard. Before, it waited for the end of the round and looked only at the enemy that matters most, and seldom found any. Weapons forged before this keep the old rule.
 - Guild runs: Dragon Oil on a newly forged weapon spreads only the fire its wielder lights. It no longer answers Chill with Burn, so a frost weapon does not boil its own Chill into Steam every round: Steam takes a fire and a cold from two different hands. Weapons forged before this keep the old rule.
 - Guild sieges are a little stronger from the first day (the base is 190, it was 186), because weapons forged with the metals' new rules make a party stronger.
+- After a run has ended, the main menu's first button says "See how the era ended" instead of "Continue run".
+- The guided first day says at End Day that heroes go out to fight with what they carry, and may not come back without a good weapon.
+- On the Forge, the chosen weapon type says which hero classes it suits. The forge result says how many properties each rarity holds.
+- One word for a hero's paid order: "commission" on the board, the Shop's lead, the day's receipt, the Gazette and the error lines.
 
 ## [0.8.0] - 2026-10-11
 

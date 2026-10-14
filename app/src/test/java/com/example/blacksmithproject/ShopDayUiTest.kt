@@ -192,7 +192,7 @@ class ShopDayUiTest {
                     if (v.kind == VisitKind.COMMISSION) {
                         requests++
                         assertEquals("Commission collected", beat.visit.banner)
-                        assertEquals(listOf("Request payment" to "${v.sale!!.cashPaid} gold", "Total received" to "$coin gold"), beat.visit.receipt.map { it.label to it.value })
+                        assertEquals(listOf("Commission payment" to "${v.sale!!.cashPaid} gold", "Total received" to "$coin gold"), beat.visit.receipt.map { it.label to it.value })
                     }
                     earned = beat.visit.earnedAfter
                 }
@@ -212,7 +212,7 @@ class ShopDayUiTest {
                     assertEquals(ReceiptRow("Earned today", "$total gold", total = true), beat.rows.last())
                     assertEquals("the rows by kind add up to the total", total, beat.rows.dropLast(1).sumOf { gold(it.value) })
                     assertEquals(ledger.income.filterValues { it != 0 }.size, beat.rows.size - 1)
-                    assertEquals(ledger.income[IncomeKind.COMMISSION]?.takeIf { it != 0 }?.let { "$it gold" }, beat.rows.firstOrNull { it.label == "Requests" }?.value)
+                    assertEquals(ledger.income[IncomeKind.COMMISSION]?.takeIf { it != 0 }?.let { "$it gold" }, beat.rows.firstOrNull { it.label == "Commissions" }?.value)
                     assertEquals(ledger.goldAtClose, beat.purse)
                 }
                 else -> {}

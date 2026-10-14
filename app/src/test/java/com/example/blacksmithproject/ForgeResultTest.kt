@@ -147,7 +147,7 @@ class ForgeResultTest : ShopDayTestBase() {
         assertEquals("For $buyer: ${Labels.request(accepted, engine.content, engine.config)}", ready.title)
         assertTrue(ready.terms.startsWith("80 gold · due "))
         assertTrue(ready.fits && ready.accepted)
-        assertEquals("This weapon meets the order", ready.fit)
+        assertEquals("This weapon meets the commission", ready.fit)
         assertEquals("Ready. ${blade.name} will be collected at End Day.", ready.handover)
 
         // A lesser blade that also fits is what the engine hands over: the card names that one, not the fresh blade.
@@ -163,7 +163,7 @@ class ForgeResultTest : ShopDayTestBase() {
         val demanding = request(CommissionStatus.ACCEPTED, minQuality = blade.quality + 5)
         engine.forgedFor(with(demanding), blade.id, demanding.id)!!.let {
             assertFalse(it.fits)
-            assertEquals("This weapon doesn't meet the order. Quality ${blade.quality}, needs ${blade.quality + 5}.", it.fit)
+            assertEquals("This weapon doesn't meet the commission. Quality ${blade.quality}, needs ${blade.quality + 5}.", it.fit)
             assertEquals(Labels.readiness(demanding, with(demanding).weapons.values, engine.content, engine.config), it.handover)
             assertTrue(it.handover.startsWith("No matching weapon yet."))
         }

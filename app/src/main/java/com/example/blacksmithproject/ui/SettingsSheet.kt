@@ -58,7 +58,7 @@ fun SettingsSheet(
     ) {
         FramedPanel("Settings", Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = Space.md).padding(bottom = Space.lg)) {
             SwitchRow("Reduced motion", "Stops animated embers, forge fades and step-by-step battle replays.", reducedMotion, onReducedMotion, "settings_reduced_motion")
-            SwitchRow("Haptics", "Short vibrations for forge results, day endings, refused requests and the end of an era.", haptics, onHaptics, "settings_haptics")
+            SwitchRow("Haptics", "Short vibrations for forge results, day endings, refused commissions and the end of an era.", haptics, onHaptics, "settings_haptics")
             if (onShopDaySpeed != null) SpeedRow(if (reducedMotion) ShopDaySpeed.TAP else shopDaySpeed, enabled = !reducedMotion, onShopDaySpeed)
             intro?.let { IntroRow(it, onIntro) }
             onMainMenu?.let { SecondaryActionButton("Main menu", it, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("settings_main_menu")) }

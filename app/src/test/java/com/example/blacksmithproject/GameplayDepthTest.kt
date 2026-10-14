@@ -299,14 +299,14 @@ class GameplayDepthTest : ShopDayTestBase() {
         val heir = run.aliveHeroes().first()
         val order = Commission(CommissionId("heirloom"), heir.id, fine.familyId, 1, 40, run.day, run.day + 3, CommissionStatus.ACCEPTED, kind = CommissionKind.HEIRLOOM, weaponId = fine.id)
         val kept = run.copy(weapons = mapOf(fine.id to fine.copy(promisedTo = order.id)), commissions = run.commissions + (order.id to order))
-        assertEquals("Reserved for ${heir.fullName}'s order", engine.shopUi(kept).storage.single().promised)
-        assertEquals("Reserved for ${heir.fullName}'s order", engine.itemDetail(kept, fine.id)!!.stock!!.promised)
+        assertEquals("Reserved for ${heir.fullName}'s commission", engine.shopUi(kept).storage.single().promised)
+        assertEquals("Reserved for ${heir.fullName}'s commission", engine.itemDetail(kept, fine.id)!!.stock!!.promised)
         val repo = repo(kept)
         val vm = open(repo)
         vm.dispatch(Command.ToggleShelf(fine.id, true, 10)); advanceUntilIdle()
-        assertEquals("That weapon is reserved for ${heir.fullName}'s order.", vm.playing().lastError)
+        assertEquals("That weapon is reserved for ${heir.fullName}'s commission.", vm.playing().lastError)
         vm.dispatch(Command.Salvage(fine.id)); advanceUntilIdle()
-        assertEquals("That weapon is reserved for ${heir.fullName}'s order.", vm.playing().lastError)
+        assertEquals("That weapon is reserved for ${heir.fullName}'s commission.", vm.playing().lastError)
         assertEquals(0, repo.commitCount)
     }
 }

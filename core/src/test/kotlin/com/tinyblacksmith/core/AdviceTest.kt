@@ -70,7 +70,7 @@ class AdviceTest {
     fun answerRequest() {
         val s = stocked.asked(CommissionStatus.OFFERED, LaunchContent.SWORD, dueIn = 1)
         assertEquals(Lead(LeadKind.ANSWER_REQUEST, heroId = buyer.id, commissionId = CommissionId("c900"), gold = 140, days = 1), lead(s))
-        assertEquals(LeadLine("Answer ${buyer.fullName}'s request", "A decent Sword (quality ${config.uncommonMin}+). It pays 140 gold. The offer expires tomorrow."), line(s))
+        assertEquals(LeadLine("Answer ${buyer.fullName}'s commission", "A decent Sword (quality ${config.uncommonMin}+). It pays 140 gold. The offer expires tomorrow."), line(s))
         assertEquals("The offer expires today.", line(stocked.asked(CommissionStatus.OFFERED, LaunchContent.SWORD, dueIn = 0)).reason!!.substringAfterLast(". "))
         assertNotEquals(LeadKind.ANSWER_REQUEST, lead(stocked.asked(CommissionStatus.OFFERED, LaunchContent.SWORD, dueIn = 2)).kind, "not yet urgent")
         assertNotEquals(LeadKind.ANSWER_REQUEST, lead(stocked.asked(CommissionStatus.DECLINED, LaunchContent.SWORD, dueIn = 1)).kind)
@@ -82,7 +82,7 @@ class AdviceTest {
     fun forgeForRequest() {
         val s = stocked.asked(CommissionStatus.ACCEPTED, LaunchContent.BOW, dueIn = 2)
         assertEquals(Lead(LeadKind.FORGE_FOR_REQUEST, heroId = buyer.id, commissionId = CommissionId("c900"), gold = 140, days = 2), lead(s))
-        assertEquals(LeadLine("Forge for ${buyer.fullName}'s request", "You don't have a decent Bow (quality ${config.uncommonMin}+) ready. Due in 2 days."), line(s))
+        assertEquals(LeadLine("Forge for ${buyer.fullName}'s commission", "You don't have a decent Bow (quality ${config.uncommonMin}+) ready. Due in 2 days."), line(s))
         assertNotEquals(LeadKind.FORGE_FOR_REQUEST, lead(stocked.asked(CommissionStatus.ACCEPTED, LaunchContent.BOW, dueIn = 3)).kind, "three days left: not yet")
         // The same rule End Day uses: a blade that fits means nothing is missing.
         val fits = stocked.copy(weapons = stocked.weapons.mapValues { it.value.copy(quality = 90) }).asked(CommissionStatus.ACCEPTED, LaunchContent.SWORD, dueIn = 1)

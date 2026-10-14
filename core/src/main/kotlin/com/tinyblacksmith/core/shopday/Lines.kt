@@ -239,11 +239,11 @@ object Lines {
             LeadKind.FIRST_BLADE -> LeadLine("Forge your first weapon", lead.count?.let { "${count(it, "hero")} in town. Your shelf is empty." })
             LeadKind.CHOOSE_BLESSING -> LeadLine("Choose a blessing", "The town has offered a blessing for the forge.")
             LeadKind.ANSWER_REQUEST -> LeadLine(
-                "Answer ${hero?.let { "$it's" } ?: "a"} request",
+                "Answer ${hero?.let { "$it's" } ?: "a"} commission",
                 listOfNotNull(asked?.let { "A $it" }, lead.gold?.let { "It pays $it gold" }, days?.let { "the offer expires $it" }).joinSentences().ifEmpty { null },
             )
             LeadKind.FORGE_FOR_REQUEST -> LeadLine(
-                "Forge for ${hero?.let { "$it's" } ?: "a"} request",
+                "Forge for ${hero?.let { "$it's" } ?: "a"} commission",
                 listOfNotNull(asked?.let { "You don't have a $it ready" }, days?.let { "due $it" }).joinSentences().ifEmpty { null },
             )
             LeadKind.LIST_STOCK -> LeadLine("Put a weapon on the shelf", lead.count?.let { "Your shelf is empty. ${count(it, "weapon")} in storage." })

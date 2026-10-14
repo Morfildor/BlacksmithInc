@@ -36,7 +36,7 @@ object Labels {
         val nearest = weapons.filter { it.isInStorage || it.isListed }.maxWithOrNull(compareBy<Weapon> { Commissions.fit(it, c).ordinal }.thenBy { it.quality })
         val lacks = nearest?.let { Commissions.fit(it, c) }
         return "No matching weapon yet. " + when {
-            nearest != null && lacks == Commissions.Fit.QUALITY -> "${nearest.name} has quality ${nearest.quality}. This order needs ${c.minQuality} or more."
+            nearest != null && lacks == Commissions.Fit.QUALITY -> "${nearest.name} has quality ${nearest.quality}. This commission needs ${c.minQuality} or more."
             lacks == Commissions.Fit.ELEMENT -> "You need a ${c.element?.name?.lowercase()} $family in storage or on the shelf."
             else -> "You need a $family in storage or on the shelf."
         }

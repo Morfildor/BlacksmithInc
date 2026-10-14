@@ -152,8 +152,8 @@ fun GameEngine.introUi(record: IntroRecord?, state: GameState, dest: Dest, draft
             step, overline,
             IntroLine(
                 "End the day.",
-                if (dest == Dest.SHOP) "The shop opens and heroes come in on their own. Each decides whether to buy." else "End Day is on the Shop.",
-                "A sale is never certain. The day's cards show what each hero did.",
+                if (dest == Dest.SHOP) "The shop opens and heroes come in on their own. Then they go out to fight with what they carry." else "End Day is on the Shop.",
+                "A sale is never certain. A hero without a good weapon may not come back. The day's cards show what each hero did.",
             ),
             mark = if (dest == Dest.SHOP) IntroMark.END_DAY else IntroMark.NAV_SHOP,
         )

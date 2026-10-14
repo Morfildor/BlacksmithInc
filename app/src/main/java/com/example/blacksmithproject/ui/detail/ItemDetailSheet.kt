@@ -404,7 +404,7 @@ private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onSt
     stock.promised?.let {
         Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
             PixelImage(R.drawable.icon_promised, wholePixelDp(48, 24.dp), description = null)
-            Text("$it. It stays in storage until the order is collected.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("item_promised"))
+            Text("$it. It stays in storage until the commission is collected.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("item_promised"))
         }
     }
     // Where the blade is now, in plain text: after "List at" or "Set price" this line is what changes.

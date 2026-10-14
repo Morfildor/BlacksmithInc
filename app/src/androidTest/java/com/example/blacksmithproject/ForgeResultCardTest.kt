@@ -168,7 +168,7 @@ class ForgeResultCardTest {
         show(engine.itemDetail(state, blade.id)!!, engine.forgedFor(state, blade.id, accepted.id))
         fun inRequest(text: String) = compose.onNode(hasText(text, substring = true) and hasAnyAncestor(hasTestTag("reveal_request"))).assertIsDisplayed()
         inRequest("For ${forged.aliveHeroes().first().fullName}")
-        inRequest("This weapon meets the order")
+        inRequest("This weapon meets the commission")
         inRequest("Ready. ${blade.name} will be collected at End Day.")
         inRequest("None is set aside.")
         compose.onNodeWithText("reserved", substring = true, ignoreCase = true).assertDoesNotExist()

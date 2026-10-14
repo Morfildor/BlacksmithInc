@@ -97,7 +97,7 @@ fun CommissionBoard(
         item(key = "commissions") {
             Column {
                 Text("Commissions", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() }.testTag("board_commissions"))
-                Secondary(if (board.commissions.isEmpty()) "No open commissions. Heroes may place orders at End Day. You can hold up to $slots at once." else "Accept an order, then have a matching weapon in storage or on the shelf at End Day.")
+                Secondary(if (board.commissions.isEmpty()) "No open commissions. Heroes may ask for one at End Day. You can hold up to $slots at once." else "Accept a commission, then have a matching weapon in storage or on the shelf at End Day.")
             }
         }
         items(board.commissions, key = { "c:${it.id.value}" }) { r ->
@@ -108,7 +108,7 @@ fun CommissionBoard(
         item(key = "wants") {
             Column {
                 Text("Customer wants", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.padding(top = Space.lg).semantics { heading() }.testTag("board_wants"))
-                Secondary(if (board.groups.isEmpty()) "No unmet requests yet." else "These heroes left without finding a weapon. Stock something suitable and they may buy it.")
+                Secondary(if (board.groups.isEmpty()) "No unmet wants yet." else "These heroes left without finding a weapon. Stock something suitable and they may buy it.")
             }
         }
         board.groups.forEach { g ->

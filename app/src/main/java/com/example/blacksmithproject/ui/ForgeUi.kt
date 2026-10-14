@@ -23,7 +23,7 @@ import kotlin.math.roundToInt
 
 /** The places of a recipe on the workbench. The last two exist only in an Advanced forge. */
 enum class RecipeSlot(val label: String, val empty: String, val choose: String, val hint: String) {
-    WEAPON("Weapon", "Choose", "Choose weapon", "What are you making?"),
+    WEAPON("Weapon", "Choose", "Choose weapon", "Each weapon type suits some hero classes. Choose one to see which."),
     METAL("Metal", "Choose", "Choose metal", "Choose the metal you'll forge with."),
     AUGMENT("Augment", "Choose", "Choose augment", "Add fire, frost or another element."),
     CATALYST("Catalyst", "None", "Choose catalyst", "Optional. Improves the result and is used up when you forge."),
@@ -258,7 +258,11 @@ fun GameEngine.forgeOptions(state: GameState, draft: ForgeDraft, slot: RecipeSlo
         )
     }.sortedBy { !it.usable }
     return when (slot) {
-        RecipeSlot.WEAPON -> content.families.map { OptionUi(it.id.value, it.name, null, draft.familyId == it.id) }
+        // Who will want it, said where the type is chosen: the same classes the Shop names on a stock row.
+        RecipeSlot.WEAPON -> content.families.map { f ->
+            val fans = fans(f.id)
+            OptionUi(f.id.value, f.name, null, draft.familyId == f.id, detail = when (fans.size) { 0 -> null; 1 -> "suits ${fans[0]}"; else -> "suits ${fans.dropLast(1).joinToString(", ")} and ${fans.last()}" })
+        }
         RecipeSlot.METAL -> materials(MaterialCategory.CORE, draft.coreId)
         RecipeSlot.AUGMENT -> materials(MaterialCategory.AUGMENT, draft.augmentId)
         RecipeSlot.CATALYST -> listOf(OptionUi(null, "None", null, draft.catalystId == null)) + materials(MaterialCategory.CATALYST, draft.catalystId)

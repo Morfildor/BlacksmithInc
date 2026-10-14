@@ -203,7 +203,7 @@ private fun incomeLabel(kind: IncomeKind): String = when (kind) {
     IncomeKind.SHELF_SALE -> "Shelf sales"
     IncomeKind.SALE_BONUS -> "Town's blessing"
     IncomeKind.STIPEND -> "Guild stipends"
-    IncomeKind.COMMISSION -> "Requests"
+    IncomeKind.COMMISSION -> "Commissions"
     IncomeKind.COLLECTOR -> "Collector"
     IncomeKind.TRIBUTE -> "Tribute from the town"
     IncomeKind.CONTRACT -> "Guild contracts"
@@ -251,7 +251,7 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
         val sale = v.sale ?: return emptyList()
         return buildList {
             // A request pays its agreed reward and a collector more than the tag: each gets its own row, so the rows add up to the total.
-            if (v.kind == VisitKind.COMMISSION) add(ReceiptRow("Request payment", "${sale.cashPaid} gold"))
+            if (v.kind == VisitKind.COMMISSION) add(ReceiptRow("Commission payment", "${sale.cashPaid} gold"))
             else sale.listedPrice?.let { listed ->
                 add(ReceiptRow("Listed price", "$listed gold"))
                 if (v.kind == VisitKind.COLLECTOR && sale.cashPaid > listed) add(ReceiptRow("Collector's premium", "+${sale.cashPaid - listed} gold"))
@@ -340,7 +340,7 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
                 rows = IncomeKind.entries.mapNotNull { k -> l.income[k]?.takeIf { it != 0 }?.let { ReceiptRow(incomeLabel(k), "$it gold") } } +
                     ReceiptRow("Earned today","${l.goldAtClose - l.goldAtOpen} gold", total = true),
                 counts = listOfNotNull(
-                    plural(sales, "sale", "sales"), plural(commissions, "request paid", "requests paid").takeIf { commissions > 0 },
+                    plural(sales, "sale", "sales"), plural(commissions, "commission paid", "commissions paid").takeIf { commissions > 0 },
                     plural(collectors, "collector", "collectors").takeIf { collectors > 0 }, "$left left without buying",
                     // Willing heroes with no seat left (`DayResolution.turnedAway`): the reason to buy the Signboard.
                     state.lastResolution?.takeIf { it.day == day }?.turnedAway?.size?.takeIf { it > 0 }?.let { "$it found the shop full" },

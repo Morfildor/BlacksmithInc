@@ -219,7 +219,7 @@ object GazetteDigest {
             EventType.COMMISSION_COMPLETED -> add(4, e, Story(Kind.COMMISSION_DONE, "Commission collected", LegacyProse.display(e.text), subjectIds = e.subjectIds))
             EventType.COMMISSION_EXPIRED -> {
                 val buyer = hero(e.subjectIds.firstOrNull())
-                add(4, e, Story(Kind.COMMISSION_EXPIRED, if (buyer != null) "$buyer's order expired" else "An order expired", LegacyProse.display(e.text), subjectIds = e.subjectIds))
+                add(4, e, Story(Kind.COMMISSION_EXPIRED, if (buyer != null) "$buyer's commission expired" else "A commission expired", LegacyProse.display(e.text), subjectIds = e.subjectIds))
             }
             EventType.PLEDGE_RESOLVED -> add(4, e, Story(Kind.CONSEQUENCE, "A debt was settled", LegacyProse.display(e.text), subjectIds = e.subjectIds))
             EventType.ENCOUNTER_RESOLVED -> if (e.priority >= 4) add(4, e, Story(Kind.CONSEQUENCE, "A visitor's offer was answered", LegacyProse.display(e.text), subjectIds = e.subjectIds))
@@ -362,7 +362,7 @@ object GazetteDigest {
             .sortedBy { it.id.value }.firstOrNull()?.let { c ->
                 val buyer = state.heroes.getValue(c.buyerId).fullName
                 val what = content.familyById[c.familyId]?.name?.lowercase() ?: "weapon"
-                val due = "$buyer's $what order is due on day ${c.deadlineDay}."
+                val due = "$buyer's $what commission is due on day ${c.deadlineDay}."
                 out += when {
                     c.status == CommissionStatus.OFFERED -> "$due You haven't accepted it yet."
                     Commissions.pick(state.weapons.values, c, config) == null -> "$due No matching weapon is ready."

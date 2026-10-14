@@ -114,7 +114,7 @@ data class StockUi(
 )
 
 /** "Kept for Wren Kestrel's order": a blade bound to an open order (`Weapon.promisedTo`); null for any other blade. */
-fun promisedLine(state: GameState, w: Weapon): String? = w.promisedTo?.let { "Reserved for ${GameViewModel.promisedBuyer(state, it) ?: "a customer"}'s order" }
+fun promisedLine(state: GameState, w: Weapon): String? = w.promisedTo?.let { "Reserved for ${GameViewModel.promisedBuyer(state, it) ?: "a customer"}'s commission" }
 
 /** One line of "Who is buying": a count from `Demand.summary` under a fixed label, with the names when they are few. */
 @Immutable data class DemandRow(val label: String, val value: String, val detail: String? = null)
@@ -163,7 +163,7 @@ fun GameEngine.forgedFor(state: GameState, weaponId: WeaponId, commissionId: Com
         title = "For ${state.heroes[c.buyerId]?.fullName ?: "Someone"}: ${Labels.request(c, content, config)}",
         terms = "${c.reward} gold · ${dueWords(c.deadlineDay - state.day, c.deadlineDay)}",
         fits = fits,
-        fit = if (fits) "This weapon meets the order" else "This weapon doesn't meet the order. ${Labels.fit(w, c, content).replaceFirstChar { it.uppercase() }}.",
+        fit = if (fits) "This weapon meets the commission" else "This weapon doesn't meet the commission. ${Labels.fit(w, c, content).replaceFirstChar { it.uppercase() }}.",
         accepted = accepted,
         handover = if (accepted) Labels.readiness(c, state.weapons.values, content, config) else "Accept this commission in the Shop before it can be collected.",
     )
@@ -174,9 +174,12 @@ private const val NAMES_SHOWN = 4
 
 private fun dueWords(left: Int, deadline: Int) = when { left <= 0 -> "due today"; left == 1 -> "due tomorrow"; else -> "due day $deadline, in $left days" }
 
+/** The hero classes that favour this family, plural, in catalog order. */
+internal fun GameEngine.fans(familyId: WeaponFamilyId): List<String> = content.classes.filter { familyId in it.preferredFamilies }.map { it.name + "s" }
+
 /** Which hero classes favour this family: a content read, never a sale prediction. */
 private fun GameEngine.favoured(familyId: WeaponFamilyId): String? {
-    val fans = content.classes.filter { familyId in it.preferredFamilies }.map { it.name + "s" }
+    val fans = fans(familyId)
     return if (fans.isEmpty()) null else "${fans.joinToString(" and ")} favour the ${content.family(familyId).name.lowercase()}"
 }
 
