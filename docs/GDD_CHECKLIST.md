@@ -5,6 +5,9 @@ One line per GDD feature, by GDD section. `[x]` = built and verified (evidence i
 IMPLEMENTATION_PLAN.md is the phase-gate view; this is the feature view. DEFERRED scope (GDD 16.2: multiplayer,
 manual equip/combat, walking, idle production, online, accounts, achievements, ads, IAP) is not listed and is not built.
 
+State on 2026-10-14: the review's work is on branch `review-2026-10-14`, not merged; what changed and how it was checked is
+in PROGRESS (cloud session lines). The counts below are as of their own dates.
+
 Last reviewed: 2026-10-09, app 0.6.0, balance config v5, 186 JVM tests (developer-run count, not an independent execution).
 Wording corrections C01-C09 and C12 of the external review (docs/Tiny_Blacksmith_Thorough_Review_2026-10-09.md, section 9) were applied
 by plan task T0.3: a ticked line states only what its evidence shows, and each narrowed claim has an open line next to it.

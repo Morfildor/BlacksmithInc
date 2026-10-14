@@ -3,6 +3,25 @@
 Tags: **LOCKED** (GDD requirement, implemented as stated) · **PROPOSED** (GDD starting value, configurable) ·
 **ENGINEERING** (reversible technical choice) · **SLICE** (deliberate vertical-slice reduction, restored by P6).
 
+
+## Open owner decisions, consolidated (2026-10-14)
+
+The one list of what waits for the owner (review 11 §2). Each line names where the evidence is. Everything else in this
+file is either decided or a record of how a decision was applied.
+
+| # | Decision | Recommendation | Evidence |
+|---|---|---|---|
+| 1 | Application ID, release keystore, Play App Signing, launcher icon and store art | Runbook §1 to §6 | `docs/RELEASE_RUNBOOK.md` |
+| 2 | Version 0.9.0 (decision F): held until the phone pass and gates G3, G12, G13, G14 have evidence | Keep held; G3 can close with row 5 below | `docs/RUN_VARIETY_LEDGER.md` gates |
+| 3 | Merge `review-2026-10-14` into `main` and push | After the device batch (instrumented suite, `tools/emulator`) passes | PROGRESS, cloud session lines |
+| 4 | Offers on a premium listing: listing high earns about 8 % more gold at the same run length, without the reputation of a full-price sale | Keep; tune with `customers.offerReputation` / `offerUpToPercent` if the edge feels large in play | "Review 2026-10-14 gameplay batch" below |
+| 5 | Synergy band 40 to 67 for G3 | Accept: six competent policies land 36 to 67 %, openings 57 to 80 % | same section |
+| 6 | Siege 4 above 15 % for a passive fair shop; IGNORE_COUNTER above 20 % | Do not chase: the active levers (watch, siege prep, counters) carry those sieges | same section |
+| 7 | Guild wall work extra: E=1 (strict) or E=3 (keeps the card's +5) | Owner's number; both measured | "Review 2026-10-14 core fixes, balance 15" |
+| 8 | `Legacy.preview` shows chance-like upgrade tracks as "N forges in 10" (exact odds) | Words, as decision A does on the workbench | "Owner decisions on the 2026-10-14 review" |
+| 9 | Remove the archived evidence images from the tree (decision E) | Run `python tools/archive_evidence.py --archive <dir> --remove` on the owner's machine, then commit | `docs/EVIDENCE_INDEX.md` |
+| 10 | The class-initialisation cycle Depth → CombatContent → LaunchContent | Fix in a small core task: give `LaunchContent` its relic list without reading `Depth` during its own init | "Review 2026-10-14 gameplay batch" last line |
+
 ## Technical (ENGINEERING)
 - Two Gradle modules (`:core`, `:app`) instead of the GDD's twelve; package boundaries inside `:core` mirror the
   proposed modules (`crafting`, `market`, `heroes`, `battle`, `legacy`, `gazette`, `persistence`, `content`).

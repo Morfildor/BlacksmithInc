@@ -1,5 +1,9 @@
 # Release runbook (T7.4)
 
+State on 2026-10-14: app `versionName` 0.8.0; 0.9.0 is the target (decision F) and is held for the phone pass and the
+open gates. Branch `review-2026-10-14` is not merged. The owner's inputs are in DECISIONS, "Open owner decisions,
+consolidated".
+
 Status: ready to run once the owner supplies the application ID. Nothing here has been run against the real ID; the
 rename script in section 2 was rehearsed on a throwaway copy with a dummy ID (section 2.5). The ID in the repository is
 still the Android Studio template value `com.example.blacksmithproject` (`app/build.gradle.kts:8` namespace, `:14`
