@@ -50,7 +50,9 @@ Checks run in this cloud session (no Android SDK; Google Maven blocked; `:core` 
   `GuildRunTest`, `CombatEngineTest`, `ScenarioSavesTest`, `VersionFingerprintTest`, `SaveFixtureTest` green.
 - `:core:combat` output (every fixture's outcome, highlights and timeline) byte-identical before and after.
 - `:core:scenarios` rewritten: the five guild scenario saves now hold record-1 fights.
-- The new Compose files: see the type-check line below. Not run: `:app` build and unit tests, the instrumented suite,
+- The new Compose files (`ui/replay/*`, `SiegeOutcomeCard`) type-check with no errors or warnings against desktop Compose
+  1.6.2 (the newest that resolves without Google Maven) with stubs for app symbols, the lifecycle library and the
+  Android-only `imageResource` / `testTagsAsResourceId`; core compiled from the working tree. Not run: `:app` build and unit tests, the instrumented suite,
   any emulator script; nothing of the replay has been seen on a screen. Small-screen layout, font scale 2.0 and the
   timing are argued in code (reserved lanes sized in sp, scrolling stage, wrapping controls), not observed.
 - Next: on a machine with the SDK, `:app:testDebugUnitTest` and `assembleDebug`; load `siege_preparation`, End Day,
