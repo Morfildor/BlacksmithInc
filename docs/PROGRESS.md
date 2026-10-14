@@ -1,4 +1,31 @@
-# Progress — 2026-10-11 (run variety and consequences, unreleased; before it: guild evolution, 0.8.0)
+# Progress — 2026-10-14 (deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
+
+## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
+Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay
+and content, compliance and performance, guidance and copy, tests and evidence, adversarial, docs and release, unused
+assets, a device capture). The merged document ranks 36 findings, lists 13 owner decisions (A to M) and ends with a
+three-phase plan with a verify line per item. Ground truth that day: `:core:test` 622 / 0, `:app:testDebugUnitTest`
+246 / 0, release APK and AAB build, instrumented 75 run / 8 fail (all stale assertions from the copy remaster ec0486b).
+
+**UI pass on branch `review-2026-10-14` (phase 1, items 1 to 5), each built, unit-tested and seen on the emulator:**
+- Tokens: body and label text Medium weight, `headlineSmall` for dialog titles, `BronzeLine` (3:1) on rows and tiles,
+  `CreamMuted` a step brighter, the four explicit Regular overrides on the Forge removed.
+- The opening chooser fits one package per screen; every test tag the device scripts use is unchanged.
+- Chrome: the siege strip is one line until the warning is out, the Shop picture is 56 dp on an empty shelf, the
+  destination bar is 96 dp at large text (labels no longer clip at font scale 2.0), the guided strip is at most 30%
+  of the screen at large text.
+- The forge result's stat column fades at its foot while there is more; the charter picker drops "Charter N of M"
+  and says guild run or classic run in one line; the debug entries use `SecondaryActionButton`.
+Checks on the branch: `:app:testDebugUnitTest` 246 / 0 after each step; screens before and after in
+`docs/review_2026-10-14/device/coordinator/` and the session scratchpad. Not run on the branch: the instrumented
+suite and the device scripts (`guild.sh` and `forge.sh` find the chooser by the same ids; `smoke.sh` and `runend.sh`
+still find "No charter").
+
+**Next actions.** Owner answers decisions A, F and I (odds on the workbench, the version, the opening confirm);
+phase 1 items 6 to 9 (`runend.sh` text, guidance lines, the 8 stale instrumented tests, CHANGELOG regrouped under the
+version); then phase 2 starting with the 2 MB save-row test. Merge the branch into `main` when the owner says; push
+only when told.
+
 
 ## Guided first day (2026-10-11): branch `first-day-guidance`, merged into `main` on 2026-10-14, not pushed
 Rebased onto `run-variety` at ff656ef (no conflicts), then merged into `main` over the deep forging integration
