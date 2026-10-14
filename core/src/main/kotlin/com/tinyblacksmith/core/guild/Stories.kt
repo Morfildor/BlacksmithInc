@@ -160,6 +160,11 @@ object Stories {
 
     fun recovered(ctx: ResolutionContext, weaponId: WeaponId) {
         val n = ctx.guild?.nemesis?.takeIf { it.weaponId == weaponId } ?: return
+        // A party planned for the contract that leaves with it stays home, and the fee paid for it comes back.
+        ctx.guild!!.planned?.let { p -> ctx.guild!!.offers.firstOrNull { it.id == p.offerId && it.subjectWeaponId == weaponId } }?.let { o ->
+            Missions.cancelPlan(ctx)
+            ctx.emit(EventType.GUILD_STORY, 4, "The party planned to win back ${ctx.weapons[weaponId]?.name ?: "the weapon"} stays home." + (if (o.fee > 0) " The ${o.fee} gold paid to send it came back." else ""), listOf(weaponId.value))
+        }
         update(ctx) { it.copy(nemesis = null, offers = it.offers.filter { o -> o.subjectWeaponId != weaponId }) }
         ctx.emit(EventType.GUILD_STORY, 6, "${n.name} is beaten and carries nothing of this forge any more.", listOf(weaponId.value))
     }

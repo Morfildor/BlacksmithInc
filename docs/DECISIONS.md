@@ -4409,3 +4409,10 @@ Older ledger items, answered the same day:
 - Renown: the name stays and is used consistently (review 08#9's "Fame" rename is dropped).
 
 Still for the owner: `Legacy.preview` shows chance-like upgrade tracks as "N forges in 10", which states exact odds. Words, or keep as the one place a purchase states its exact effect?
+
+## Review 2026-10-14 core fixes, balance 15 (2026-10-14)
+
+- **M, free listings.** A shelf sale below `customers.giftBelowPercent` (25) of the asking price is a gift: no sale reputation, at most `giftReputationPerDay` (1) reputation a day from gifts, and a gift raises a hero's loyalty only up to `giftLoyaltyCap` (2, below the regular threshold 3). Simulator, 1,000 runs, seed 1, `--customers --noImpact`: FREE_LISTINGS survival mean 24.6 -> 24.6, final reputation 62.0 -> 46.6, max loyalty 10.97 -> 8.00, sales a day 1.54 -> 1.53. BALANCED_FAIR unchanged (24.6 days, 1.68 sales a day). BROKE_START, a fair stand-in that prints reputation: 22.7 days, reputation 55.8, max loyalty 10.29. The review's "+2.5 days" gap is not present at balance 14 (both 24.6).
+- **B, wall work.** A contract's wall mending draws on the day's recovery allowance (cap 2 plus blessing) plus `guild.wallWorkExtraRecovery` (1). Patrol repair takes only what is left. Guildsim 300 runs, seed 1 (tuning block), defeated share before -> E=1 -> E=3: RECOVERY_AWARE 7 -> 23 -> 17 %, REPEAT_RECIPE 72 -> 91 -> 82 %, IGNORE_COUNTER 18 -> 45 -> 31 %, LEGEND_SEEKER 3 -> 12 -> 8 %, ADAPTIVE 0 -> 5 -> 3 %, SUPPLY_FARMER 3 -> 7 -> 5 %. Charter rates move at most 1 point. E=1 is the strict reading. E=3 keeps the card's +5 without patrol repair on top. Owner to confirm the number.
+- **Blessing offer.** Lapses after `combat.blessingOfferDays` (3) mornings with a line (a world flag, no schema change). GoldenStateTest re-recorded: 99 of 300 projection lines move, all on day 5 or later, RNG hashes unchanged.
+- **Dismissing a planned party member** is refused (`MemberUnavailable`, as a wall reservation is), not refunded: the state never holds half a plan and the existing message explains it.

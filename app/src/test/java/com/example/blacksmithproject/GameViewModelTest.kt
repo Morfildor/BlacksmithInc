@@ -154,6 +154,30 @@ class GameViewModelTest {
         assertTrue(open(repo).ui.value is UiState.Playing)
     }
 
+    /** Review 2026-10-14 row 21: the Shop's content is guarded as the script is, so one throw is not a crash at every launch. */
+    @Test
+    fun aShopViewThatThrowsStillOpensPlanningWithANotice() = vmTest {
+        val after = engine.newRun(LegacyProfile(), 42L)
+        val repo = repo(after)
+        var asked = 0
+        val vm = GameViewModel(
+            engine, GameSession(engine, repo, compute = StandardTestDispatcher(testScheduler)), FakeSettings(), SavedStateHandle(),
+            compute = StandardTestDispatcher(testScheduler), forecast = { asked++; error("a forecast the shop cannot build") },
+        )
+        advanceUntilIdle()
+        val playing = vm.ui.value
+        assertTrue("got $playing", playing is UiState.Playing)
+        playing as UiState.Playing
+        assertEquals(after.day, playing.state.day)
+        assertNull("the forecast is left out", playing.forecast)
+        assertNotNull("the player is told", playing.notice)
+        // Planning works on the minimal Shop: a command goes through.
+        val gold = playing.state.gold
+        vm.dispatch(Command.BuyMaterial(LaunchContent.IRON)); advanceUntilIdle()
+        assertTrue(vm.playing().state.gold < gold)
+        assertTrue("asked once per saved state, not in a loop", asked <= 3)
+    }
+
     @Test
     fun anUnreadableSaveOpensTheRecoveryScreenAndRetryLoadsItOnceRestored() = vmTest {
         val good = SaveCodec.encodeRun(afterOneDay())

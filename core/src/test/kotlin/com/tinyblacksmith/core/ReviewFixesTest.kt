@@ -1,0 +1,222 @@
+package com.tinyblacksmith.core
+
+import com.tinyblacksmith.core.combat.Posture
+import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.content.GuildContent
+import com.tinyblacksmith.core.content.LaunchContent
+import com.tinyblacksmith.core.content.MissionArchetype
+import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.engine.CommandOutcome
+import com.tinyblacksmith.core.engine.Encounters
+import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.engine.GameError
+import com.tinyblacksmith.core.engine.Invariants
+import com.tinyblacksmith.core.engine.ResolutionContext
+import com.tinyblacksmith.core.engine.stateOrThrow
+import com.tinyblacksmith.core.guild.GuildOps
+import com.tinyblacksmith.core.guild.Missions
+import com.tinyblacksmith.core.guild.Stories
+import com.tinyblacksmith.core.model.*
+import com.tinyblacksmith.core.sim.CombatSandbox
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+
+/** Regression tests for the confirmed `:core` defects of the 2026-10-14 review (docs/REVIEW_2026-10-14.md rows 22, 31 to 34, 36). */
+class ReviewFixesTest {
+    private val engine = TestSupport.engineWithoutOpenings
+    private val content = engine.content
+    private val cat = content.guild!!
+
+    private fun run(seed: Long = 7, e: GameEngine = engine): GameState = e.newRun(LegacyProfile(), seed, charterId = GuildContent.TOWNS_LAST_HOPE).let { e.handle(it, Command.DeclineRelicOffer).stateOrThrow() }
+    private fun GameState.send(cmd: Command, e: GameEngine = engine): GameState = e.handle(this, cmd).stateOrThrow()
+    private fun GameState.rejected(cmd: Command): GameError = (engine.handle(this, cmd) as CommandOutcome.Rejected).error
+    private fun GameState.sound(e: GameEngine = engine): GameState = also { assertEquals(emptyList(), Invariants.check(it, e.config, e.shelfSlots(it), content)) }
+    private fun GameState.members() = guild!!.members.map { it.heroId }
+    private fun GameState.edit(e: GameEngine = engine, f: (ResolutionContext) -> Unit): GameState = ResolutionContext(this, content, e.config).also(f).toState()
+    /** Puts a contract of [defId] on the board, generated the way the board generates it. */
+    private fun GameState.post(defId: String): Pair<GameState, MissionOffer> {
+        val id = "t${day}x${guild!!.nextMissionSerial}x${guild!!.offers.size}"
+        val s = edit { c -> c.guild = c.guild!!.copy(offers = c.guild!!.offers + Missions.generate(c, cat.mission(defId), c.factions.keys.minBy { it.value }, c.rng(com.tinyblacksmith.core.rng.RngStream.GUILD), id)) }
+        return s to s.guild!!.offers.single { it.id == id }
+    }
+    private fun GameState.farSiege(): GameState = copy(town = town.copy(nextSiegeDay = day + 30), siege = SiegeScenario(day + 30))
+
+    // ---- row 31: rank 3's shorter offer life ----
+
+    @Test fun `at rank 3 an ordinary contract leaves the board a day sooner`() {
+        val s0 = run().farSiege()
+        val life = { rank: Int ->
+            val s = s0.copy(guild = s0.guild!!.copy(rank = rank, offers = emptyList())).edit { Missions.refreshBoard(it) }
+            val o = s.guild!!.offers.first { cat.mission(it.defId).let { d -> d.weight > 0.0 && d.archetype != MissionArchetype.SABOTAGE } }
+            o.expiresDay - s.day + 1 to cat.mission(o.defId).lifeDays
+        }
+        val (plain, lifeDays) = life(0)
+        assertEquals(lifeDays, plain)
+        val delta = cat.rank(3)!!.offerLifeDelta
+        assertEquals(-1, delta)
+        val (ranked, rankedDays) = life(3)
+        assertEquals(maxOf(1, rankedDays + delta), ranked, "the rank's card says contracts stay a day less")
+    }
+
+    // ---- row 33: dismissing a member of today's planned party ----
+
+    @Test fun `a member of today's planned party cannot be dismissed, and the plan and its fee stand`() {
+        val (s0, paid) = run().farSiege().copy(gold = 500).post(GuildContent.HUNT)
+        assertTrue(paid.fee > 0)
+        val who = s0.members().first()
+        val planned = s0.send(Command.PlanDeployment(paid.id, listOf(who), Posture.BALANCED)).sound()
+        assertEquals(500 - paid.fee, planned.gold)
+        val error = planned.rejected(Command.DismissHero(who))
+        assertIs<GameError.MemberUnavailable>(error)
+        assertEquals("is in the party you planned for today", error.reason)
+        // Cancelling first is the way: the fee comes back, and then the member can go.
+        val cancelled = planned.send(Command.CancelPlannedDeployment).sound()
+        assertEquals(500, cancelled.gold)
+        assertTrue(who !in cancelled.send(Command.DismissHero(who)).sound().members())
+    }
+
+    // ---- row 32: a planned Recovery contract and the dealer's "Buy it back" ----
+
+    @Test fun `buying the weapon back drops a plan for its recovery contract and gives the fee back, with a line that says so`() {
+        val s0 = run().farSiege()
+        val carrier = s0.members().first()
+        val blade = CombatSandbox.blade("w900", LaunchContent.SWORD, LaunchContent.MOONSTEEL, LaunchContent.FROST_BLOOM, quality = 95).copy(location = WeaponLocation.Loaned(carrier))
+        val taken = s0.copy(weapons = s0.weapons + (blade.id to blade)).edit { c ->
+            c.updateWeapon(c.weapon(blade.id).copy(location = WeaponLocation.Lost(c.day, GuildOps.LOST_TAKEN)))
+            Stories.taken(c, blade.id, LaunchContent.ASHCLAW)
+            Missions.refreshBoard(c)
+        }.sound().copy(gold = 5000)
+        val recovery = taken.guild!!.offers.single { it.subjectWeaponId == blade.id }
+        assertTrue(recovery.fee > 0)
+        val party = taken.members().filter { taken.guild!!.member(it)!!.status == MemberStatus.HOME }.take(1)
+        val planned = taken.send(Command.PlanDeployment(recovery.id, party, Posture.BALANCED)).sound()
+        assertEquals(5000 - recovery.fee, planned.gold)
+        val s = Encounters.force(planned, content, engine.config, GuildContent.ACROSS_THE_COUNTER) ?: error("the dealer is not eligible")
+        val price = s.encounter!!.amounts.getValue("price")
+        val outcome = engine.handle(s, Command.ResolveEncounter(s.encounter!!.id, "buy", CommandId("answer:buy")))
+        val bought = assertIs<CommandOutcome.Accepted>(outcome).state.sound()
+        assertTrue(bought.weapon(blade.id).isInStorage)
+        assertNull(bought.guild!!.planned)
+        assertEquals(5000 - price, bought.gold, "the recovery contract's fee came back")
+        val line = outcome.events.single { it.text.contains("plan") }.text
+        assertTrue(line.contains("${recovery.fee} gold"), line)
+        assertTrue(!line.contains(";") && !line.contains(" - ") && !line.contains("blade"), line)
+    }
+
+    // ---- row 36b: a law's repair percent waits for the day it is in force ----
+
+    @Test fun `a law announced for tomorrow does not raise tonight's repair bill`() {
+        val s = run().farSiege()
+        val law = cat.laws.first { it.repairPercent != 100 }
+        val announced = s.copy(guild = s.guild!!.copy(law = WorldLaw(law.id, s.day + 1, s.day + 1 + law.days)))
+        val plain = engine.config.guild.fractureWear
+        assertEquals(plain, Missions.fractureWear(ResolutionContext(announced, content, engine.config)), "announced, not yet in force")
+        val inForce = announced.copy(day = s.day + 1)
+        assertEquals(com.tinyblacksmith.core.combat.Fight.pct(plain, law.repairPercent), Missions.fractureWear(ResolutionContext(inForce, content, engine.config)))
+        val over = announced.copy(day = s.day + 1 + law.days)
+        assertEquals(plain, Missions.fractureWear(ResolutionContext(over, content, engine.config)), "lapsed")
+    }
+
+    // ---- row 34: a lower cap in a new balance clamps a save instead of refusing it ----
+
+    @Test fun `a save written under higher caps loads under lower ones, brought in line with a line, and keeps its other progress`() {
+        val e = TestSupport.engine
+        val s0 = e.newRun(LegacyProfile(), 7)
+        val strong = s0.heroes.values.first()
+        val saved = s0.copy(gold = 777, overworkToday = 4, town = s0.town.copy(armory = 20), heroes = s0.heroes + (strong.id to strong.copy(level = 12)))
+        assertEquals(emptyList(), Invariants.check(saved, e.config, e.shelfSlots(saved), e.content), "sound under the caps it was written with")
+        val lower = e.config.copy(armoryMax = 10, maxOverworkPerDay = 2, heroMaxLevel = 8)
+        val admitted = assertIs<com.tinyblacksmith.core.engine.Compatibility.Result.Admitted>(com.tinyblacksmith.core.engine.Compatibility.admit(saved, e.content, lower)).state
+        assertEquals(10, admitted.town.armory)
+        assertEquals(2, admitted.overworkToday)
+        assertEquals(8, admitted.hero(strong.id).level)
+        assertEquals(777, admitted.gold)
+        assertEquals(saved.weapons, admitted.weapons)
+        assertEquals(saved.materials, admitted.materials)
+        assertEquals(saved.rng, admitted.rng)
+        assertEquals(emptyList(), Invariants.check(admitted, lower, lower.shelfSlots, e.content))
+        val line = admitted.events.last().text
+        assertTrue(line.contains("armory") && line.contains("level"), line)
+        assertTrue(!line.contains(";") && !line.contains(" - "), line)
+        // Nothing over a cap: the save is admitted exactly as it was, stamps aside.
+        val plain = assertIs<com.tinyblacksmith.core.engine.Compatibility.Result.Admitted>(com.tinyblacksmith.core.engine.Compatibility.admit(saved, e.content, e.config)).state
+        assertEquals(saved.events, plain.events)
+    }
+
+    @Test fun `a guild over a lower roster cap lets its newest members at home go, their loans back in storage, and keeps the rest`() {
+        val s0 = run()
+        val newest = s0.guild!!.members.maxBy { it.joinedDay * 1000 + s0.guild!!.members.indexOf(it) }.heroId
+        val blade = CombatSandbox.blade("w900", LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN).copy(location = WeaponLocation.Loaned(newest))
+        val saved = s0.copy(weapons = s0.weapons + (blade.id to blade)).sound()
+        val cap = saved.guild!!.members.size - 1
+        val lower = engine.config.copy(guild = engine.config.guild.copy(maxMembers = cap))
+        val admitted = assertIs<com.tinyblacksmith.core.engine.Compatibility.Result.Admitted>(com.tinyblacksmith.core.engine.Compatibility.admit(saved, content, lower)).state
+        assertEquals(cap, admitted.guild!!.members.size)
+        assertTrue(newest !in admitted.members())
+        assertTrue(admitted.weapon(blade.id).isInStorage)
+        assertEquals(emptyList(), Invariants.check(admitted, lower, lower.shelfSlots, content))
+    }
+
+    // ---- row 22, owner decision B: wall work draws on the daily recovery allowance ----
+
+    @Test fun `a day's work on the wall mends within the day's repair allowance and its extra, never past it`() {
+        val s0 = run().farSiege()
+        val cap = engine.config.maxIntegrityRecoveryPerDay
+        val extra = engine.config.guild.wallWorkExtraRecovery
+        val damaged = s0.copy(town = s0.town.copy(integrity = s0.town.integrity - 20))
+        val wall = damaged.guild!!.offers.single { it.defId == GuildContent.WALL_WORK }
+        val who = damaged.members().first()
+        val worked = damaged.send(Command.PlanDeployment(wall.id, listOf(who), Posture.BALANCED)).endDay().sound()
+        assertEquals(cap + extra, worked.town.integrity - damaged.town.integrity, "the wall work's +${cat.mission(GuildContent.WALL_WORK).stages.single().integrity} is held to the day's allowance and its extra")
+        assertTrue(worked.lastResolution!!.mission!!.lines.any { it.contains("+${cap + extra}") }, "${worked.lastResolution!!.mission!!.lines}")
+        // Without the wall work the same day mends no more than the allowance.
+        val idle = damaged.endDay().sound()
+        assertTrue(idle.town.integrity - damaged.town.integrity <= cap)
+    }
+
+    // ---- row 36c, owner decision M: a free transfer is a gift, not a sale ----
+
+    @Test fun `weapons given away earn a bounded generosity, not a sale's reputation and loyalty`() {
+        val e = TestSupport.engine
+        val c = e.config.customers
+        val s0 = e.newRun(LegacyProfile(), 7)
+        val blades = (1..4).map { CombatSandbox.blade("w90$it", LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN).copy(location = WeaponLocation.Shelf(0)) }
+        val heroes = s0.aliveHeroes().take(2)
+        val start = s0.copy(weapons = s0.weapons + blades.associateBy { it.id }, heroes = s0.heroes + heroes.associate { it.id to it.copy(loyalty = 0) })
+        val ctx = ResolutionContext(start, e.content, e.config)
+        // Four gifts in one day, two to each hero.
+        blades.forEachIndexed { i, w -> com.tinyblacksmith.core.market.Market.purchase(ctx, ctx.hero(heroes[i % 2].id), ctx.weapon(w.id), 0) }
+        assertEquals(start.reputation + c.giftReputationPerDay, ctx.reputation, "generosity is counted once a day, however much is given")
+        heroes.forEach { assertEquals(c.giftLoyaltyCap, ctx.hero(it.id).loyalty, "gifts warm a hero only so far") }
+        assertTrue(c.giftLoyaltyCap < e.config.regularLoyaltyThreshold)
+        // A sale at the asking price still earns the sale's reputation.
+        val fair = CombatSandbox.blade("w999", LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN)
+        val before = ctx.reputation
+        ctx.weapons[fair.id] = fair.copy(location = WeaponLocation.Shelf(com.tinyblacksmith.core.market.Market.askingPrice(fair, e.config)))
+        com.tinyblacksmith.core.market.Market.purchase(ctx, ctx.hero(heroes[0].id).copy(gold = 10_000), ctx.weapon(fair.id), com.tinyblacksmith.core.market.Market.askingPrice(fair, e.config))
+        assertEquals(before + c.saleReputation, ctx.reputation)
+    }
+
+    // ---- row 36a: an ignored blessing offer lapses ----
+
+    private fun GameState.endDay(e: GameEngine = engine): GameState = send(Command.EndDay(TestSupport.endDayId(this)), e)
+
+    @Test fun `an unanswered blessing offer stands for its days and then lapses with a line`() {
+        val days = engine.config.combat.blessingOfferDays
+        val s0 = TestSupport.engine.newRun(LegacyProfile(), 7).farSiege()
+        // Offered the way a won siege offers it, on the evening of this day.
+        var s = s0.edit(TestSupport.engine) { com.tinyblacksmith.core.battle.Battle.offerBlessing(it) }.endDay(TestSupport.engine)
+        assertTrue(s.pendingBlessingOffer.isNotEmpty())
+        repeat(days - 1) { s = s.endDay(TestSupport.engine); assertTrue(s.pendingBlessingOffer.isNotEmpty(), "still open on morning ${s.day}") }
+        val lapsed = engine.handle(s, Command.EndDay(TestSupport.endDayId(s))) as CommandOutcome.Accepted
+        assertTrue(lapsed.state.pendingBlessingOffer.isEmpty(), "unanswered for $days mornings, the offer lapses")
+        val line = lapsed.events.single { it.type == EventType.BLESSING_OFFERED && it.data["lapsed"] == "true" }.text
+        assertTrue(!line.contains(";") && !line.contains(" - "), line)
+        // Chosen in time, nothing lapses and the choice stands.
+        val chosen = s.send(Command.ChooseBlessing(s.pendingBlessingOffer.first())).endDay(TestSupport.engine)
+        assertTrue(chosen.blessings.any { it.id == s.pendingBlessingOffer.first() })
+    }
+}

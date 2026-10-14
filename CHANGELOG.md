@@ -36,6 +36,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - A weapon's card lists a rule that two of its parts share once, names both parts, and notes where its rules feed or get in the way of each other.
 
 ### Changed
+- A weapon given away (listed for less than a quarter of its price) is a gift, not a sale. It earns no sale reputation. The town notices generosity once a day, and a gift warms a hero to the shop only so far, never into a regular.
+- A blessing offer nobody answers is withdrawn after three mornings, with a line in the day's records.
+- Guild runs: work on the wall now counts toward the day's repair. With the guild's extra for it, a day's repair from every source is at most 3 unless a blessing adds to it (the wall work alone gave 5, on top of the heroes' 2).
+- Guild runs: a member who is in today's planned party cannot be dismissed. Cancel the plan first, which gives its fee back.
 - Text reads in Fira Sans Regular for sentences, Medium for labels and SemiBold for values and actions; headings stay in Alegreya Bold. Surfaces are warm charcoal instead of navy, section labels brass, and gold is kept for the primary action and the chosen mark.
 - A chosen row is raised, edged in gold and marked with a check, never by colour alone; the radio circles are gone.
 - Two opening descriptions say what actually happens: Paid in Blood (the axe spends health to strike twice as hard, healing then gives Guard) and The Overflowing Cup.
@@ -72,6 +76,13 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - The opening packages are cards you pick, each with its drawback in view, and one "Begin with …" button starts the run. The second question is gone.
 - Debug builds: Scenarios and the combat sandbox are under Settings, not on the title.
 - The app is declared a game. The unused template backup rule files are removed (backup stays off).
+
+### Fixed
+- Guild runs: at rank 3, contracts now leave the board a day sooner, as the rank's card says.
+- Guild runs: buying back a taken weapon across the counter while its recovery contract was planned was refused with "The forge cannot do that right now". The plan is now dropped and its fee comes back, with a line that says so.
+- Guild runs: a law announced for tomorrow no longer raises tonight's repair bill for a cracked weapon.
+- A save made before a balance change that lowers a limit (the armory, overwork, hero level, relic slots, the shelf, the guild's roster) now loads, brought within the new limits with a line in the day's records, instead of opening the recovery screen.
+- A part of the Shop that cannot be read from a save (a forecast, the guild's board, a visitor) no longer stops the game at every launch: the Shop opens without it and says so.
 
 ## [0.8.0] - 2026-10-11
 

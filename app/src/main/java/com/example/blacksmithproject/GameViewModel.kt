@@ -195,6 +195,7 @@ class GameViewModel(
     private val saved: SavedStateHandle,
     private val compute: CoroutineDispatcher = Dispatchers.Default,   // builds the shop day (script and screen model), the Shop's content and the siege forecast off the main thread
     private val buildScript: (DayResolution, GameState, ContentCatalog, BalanceConfig) -> ShopDayScript = ShopDay::script,
+    private val forecast: (GameState) -> Battle.SiegeOutlook? = engine::siegeForecast,
 ) : ViewModel() {
     private data class Local(
         val dest: Dest = Dest.SHOP,
@@ -326,12 +327,40 @@ class GameViewModel(
     private suspend fun shopFor(snap: GameSession.Snapshot?): Plan? {
         val run = snap?.run?.takeIf { plans(snap) } ?: return null
         shop?.takeIf { it.first === run }?.let { return it.second }
-        return withContext(compute) { planFor(run) }.also { shop = run to it }
+        return withContext(compute) { guardedPlan(run) }?.also { shop = run to it }
+    }
+
+    /** A save whose Shop could not be built even without its forecasts: the recovery screen says so instead of a crash. */
+    private var unplannable: Pair<GameState, String>? = null
+
+    /**
+     * Like [scriptFor], the Shop's content must not end the [ui] flow (one throw would be a crash at every launch): when a
+     * forecast, the guild's board, the visitor or the relics cannot be read, the Shop opens without them and says so. Only
+     * when the Shop itself cannot be built does the run open the recovery screen. Null then.
+     */
+    private fun guardedPlan(run: GameState): Plan? {
+        unplannable?.takeIf { it.first === run }?.let { return null }
+        return try {
+            planFor(run)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            try {
+                Plan(engine.shopUi(run), null, null, emptyList()).also {
+                    local.update { l -> l.copy(notice = "Part of the workshop could not be read from this save. The forecast, the visitor and the guild's board are left out for today.") }
+                }
+            } catch (inner: CancellationException) {
+                throw inner
+            } catch (inner: Exception) {
+                unplannable = run to (inner.message ?: inner.javaClass.simpleName)
+                null
+            }
+        }
     }
 
     private fun planFor(run: GameState): Plan {
         // A guild run: the siege is fought on the wall, so the classic forecast is not built and the Shop's siege strip says the besieger and the day only.
-        val guild = engine.guildUi(run) ?: return engine.siegeForecast(run).let { Plan(engine.shopUi(run, it), it, engine.encounterView(run), engine.relicViews(run)) }
+        val guild = engine.guildUi(run) ?: return forecast(run).let { Plan(engine.shopUi(run, it), it, engine.encounterView(run), engine.relicViews(run)) }
         return Plan(engine.shopUi(run).let { it.copy(threat = guild.threat(it.threat)) }, null, engine.encounterView(run), engine.relicViews(run), guild)
     }
 
@@ -351,7 +380,7 @@ class GameViewModel(
             return UiState.RunEnded(run, end, snap.legacy, claimed = run.runId.value in snap.legacy.claimedRunIds, lastError = l.lastError, op = op)
         }
         // Planning always arrives with the Shop's content: shopFor builds it before this is called, and now() checks.
-        val planned = plan ?: planFor(run)
+        val planned = plan ?: guardedPlan(run) ?: return UiState.LoadFailed(SaveFailure.Incompatible(listOf("The workshop could not be built from this save: ${unplannable?.second}")))
         val intro = engine.introUi(record, run, l.dest, l.draft)
         // While the first day is guided the relic offer does not open by itself ("Decide later"); the Shop's row still opens it.
         val relicDay = l.relicOfferDismissedDay ?: run.day.takeIf { intro != null && !l.relicAsked }

@@ -25,8 +25,9 @@ data class BalanceConfig(
      * v10 (2026-10-10): morning visitors, workshop relics, siege traits and the committed besieger ([DepthConfig]); three automatic world events (the collector, the wandering master, the merchant festival) come as visitors instead. See docs/DECISIONS.md.
      * v11 (2026-10-11): the guild ([GuildConfig]): contracted members, loans, contracts, the interaction engine and the siege fought through it. A run without a guild reads none of it and plays as v10. See docs/DECISIONS.md.
      * v14 (2026-10-11): the guild siege base 190 (was 186), with the metals' fight rules in the catalog. Paired runs in docs/DECISIONS.md.
+     * v15 (2026-10-14): review fixes. An unanswered blessing offer lapses ([CombatConfig.blessingOfferDays]); a weapon given away earns no sale reputation and only a bounded warmth ([CustomerConfig] gift numbers); a guild run's wall work draws on the daily recovery allowance ([GuildConfig.wallWorkExtraRecovery]). See docs/DECISIONS.md.
      */
-    val version: Int = 14,
+    val version: Int = 15,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -453,6 +454,13 @@ data class CustomerConfig(
     val commissionExpiredReputation: Int = 1,
     /** Loyalty the patron of a delivered commission gains. */
     val commissionLoyalty: Int = 2,
+    // v15: free listings (owner decision M, review 2026-10-14). Giving a weapon away stays valid; it is not a sale.
+    /** A shelf sale for less than this percent of the weapon's asking price is a gift: it earns no sale reputation. */
+    val giftBelowPercent: Int = 25,
+    /** The town notices generosity: gifts earn this much reputation a day, however many are given. */
+    val giftReputationPerDay: Int = 1,
+    /** A gift warms a hero to the shop up to this loyalty and no further (below [BalanceConfig.regularLoyaltyThreshold]: gifts never make a regular). */
+    val giftLoyaltyCap: Int = 2,
 )
 
 /** v5: replays and weapon fates. What is told of a fight, and what becomes of a fallen hero's blade (GDD 7, 11; all PROPOSED). */
@@ -548,6 +556,8 @@ data class CombatConfig(
     val unarmedDefensiveWeight: Double = 0.9,
     /** An elite, or a blade with scarce loot, brings back catalysts and materials of this tier or higher. */
     val scarceLootTier: Int = 3,
+    /** v15: a blessing offer nobody answers lapses after this many mornings (review 2026-10-14, row 36). */
+    val blessingOfferDays: Int = 3,
 )
 
 /** T5.4: effect sizes that were inline in engine.WorldEvents (all PROPOSED; values unchanged). Weights, limits and cooldowns stay in the event table. */

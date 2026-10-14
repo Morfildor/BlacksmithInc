@@ -52,7 +52,7 @@ object Missions {
                 (o.subjectHeroId == null || g.captives.any { it.heroId == o.subjectHeroId }) && (o.subjectWeaponId == null || g.nemesis?.weaponId == o.subjectWeaponId)
         }
         var serial = g.nextMissionSerial
-        fun post(def: MissionDef, faction: FactionId, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = ctx.day + def.lifeDays - 1, modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null) {
+        fun post(def: MissionDef, faction: FactionId, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = offerExpiry(ctx, def), modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null) {
             offers = offers + generate(ctx, def, faction, rng, "m${serial++}", hero, weapon, reason, expires, modifier, lapse)
         }
         val factions = ctx.factions.values.sortedBy { it.id.value }
@@ -135,7 +135,10 @@ object Missions {
         return got.toSortedMap(compareBy { it.value })
     }
 
-    fun generate(ctx: ResolutionContext, def: MissionDef, faction: FactionId, rng: Rng, id: String, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = ctx.day + maxOf(1, def.lifeDays + (GuildOps.catalog(ctx).rank(ctx.guild?.rank ?: 0)?.offerLifeDelta ?: 0)) - 1,
+    /** The last day an ordinary card of [def] posted today stands on the board: its life, shortened or lengthened by the guild's rank. */
+    private fun offerExpiry(ctx: ResolutionContext, def: MissionDef): Int = ctx.day + maxOf(1, def.lifeDays + (GuildOps.catalog(ctx).rank(ctx.guild?.rank ?: 0)?.offerLifeDelta ?: 0)) - 1
+
+    fun generate(ctx: ResolutionContext, def: MissionDef, faction: FactionId, rng: Rng, id: String, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = offerExpiry(ctx, def),
         modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null): MissionOffer {
         val cfg = ctx.config.guild
         val pressure = ctx.factions[faction]?.pressure ?: 0
@@ -243,7 +246,7 @@ object Missions {
         val stage = m.offer.stages[stageIndex]
         val combat = ctx.content.combat ?: return null
         if (stage.enemies.isEmpty()) return null
-        val law = GuildOps.catalog(ctx).law(ctx.guild?.law?.takeIf { ctx.day in it.fromDay until it.untilDay }?.id)
+        val law = lawInForce(ctx)
         fun lawStats(c: Combatant, add: Map<com.tinyblacksmith.core.combat.Stat, Int>) = if (add.isEmpty()) c else c.copy(stats = (c.stats.keys + add.keys).associateWith { (c.stats[it] ?: 0) + (add[it] ?: 0) })
         val modifier = GuildOps.catalog(ctx).modifier(m.offer.modifierId)
         val party = m.party.mapNotNull { id -> ctx.heroes[id]?.takeIf { it.isAlive } }.map { h -> lawStats(lawStats(GuildOps.fighter(ctx, h, m.gear[h.id]?.let { ctx.weapons[it] }, Loadout.Field.ROAD, m.party), law?.partyStats.orEmpty()), modifier?.partyStats.orEmpty()) } +
@@ -349,7 +352,7 @@ object Missions {
                 lines += "${hero.fullName} came through badly hurt: exhausted for ${cfg.exhaustedDays} day."
             }
             m.gear[id]?.let { ctx.weapons[it] }?.let { w ->
-                val wear = cfg.missionWear + (if (a.fractured) Fight.pct(cfg.fractureWear, GuildOps.catalog(ctx).law(ctx.guild?.law?.id)?.repairPercent ?: 100) else 0)
+                val wear = cfg.missionWear + (if (a.fractured) fractureWear(ctx) else 0)
                 ctx.updateWeapon(w.copy(condition = maxOf(0, w.condition - wear), victories = w.victories + (if (won) 1 else 0), fame = w.fame + (if (won) 1 else 0),
                     kills = w.kills + fight.events.count { it.kind == EventKind.DOWNED && it.source == id.value }))
                 if (a.fractured) {
@@ -360,6 +363,12 @@ object Missions {
         }
         if (setup.objective.protect != null && fight.actor("protected")?.downed == true) lines += "What the party was there to protect was lost."
     }
+
+    /** Condition a weapon cracked in a contract's fight loses on top of the wear: the repair bill, as the law in force sets it. */
+    internal fun fractureWear(ctx: ResolutionContext): Int = Fight.pct(ctx.config.guild.fractureWear, lawInForce(ctx)?.repairPercent ?: 100)
+
+    /** The law of the season on [ctx]'s day: announced a morning ahead, it is in force from `fromDay` until `untilDay`. */
+    private fun lawInForce(ctx: ResolutionContext) = GuildOps.catalog(ctx).law(ctx.guild?.law?.takeIf { ctx.day in it.fromDay until it.untilDay }?.id)
 
     private fun wound(ctx: ResolutionContext, id: HeroId, kind: WoundKind, days: Int, cause: String) {
         GuildOps.updateMember(ctx, id) { m -> if (m.wound != null && m.wound.untilDay >= ctx.day + 1 + days && m.wound.kind != WoundKind.SCARRED) m else m.copy(wound = Wound(kind, ctx.day + 1 + days, cause)) }
@@ -390,9 +399,16 @@ object Missions {
         if (r.suppression > 0) ctx.factions[m.offer.factionId]?.let { f -> ctx.factions[f.id] = f.copy(pressure = maxOf(0, f.pressure - r.suppression)); lines += "${ctx.content.faction(f.id).name} were set back." }
         if (r.integrity > 0) {
             val max = ctx.config.startingForgeIntegrity + ctx.upgradeTotal(com.tinyblacksmith.core.content.UpgradeEffect.STARTING_INTEGRITY)
-            val mended = minOf(r.integrity, max - ctx.town.integrity).coerceAtLeast(0)
+            // The day's recovery allowance, and the guild's extra for work on the wall, bound it like every other repair (owner decision B).
+            val allowance = ctx.recoveryAllowance() + ctx.config.guild.wallWorkExtraRecovery - ctx.contractMendedToday
+            val mended = minOf(r.integrity, allowance, max - ctx.town.integrity).coerceAtLeast(0)
             ctx.town = ctx.town.copy(integrity = ctx.town.integrity + mended)
-            lines += if (mended > 0) "The wall was mended (+$mended integrity)." else "The wall needed no mending."
+            ctx.contractMendedToday += mended
+            lines += when {
+                ctx.town.integrity >= max -> if (mended > 0) "The wall was mended (+$mended integrity)." else "The wall needed no mending."
+                mended > 0 -> "The wall was mended (+$mended integrity), as much as one day's repair allows."
+                else -> "The wall has had all the repair one day allows."
+            }
         }
         if (r.militia > 0) ctx.town = ctx.town.copy(militia = minOf(ctx.config.militiaMax, ctx.town.militia + r.militia))
         if (r.sabotage) lines += SiegeFight.sabotage(ctx)

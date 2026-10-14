@@ -63,6 +63,10 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     // Per-day scratch counters (not persisted).
     var patrolsToday = 0
     var expeditionWinsToday = 0
+    /** Integrity a guild contract mended today: it counts against the day's recovery allowance ([recoveryAllowance]). */
+    var contractMendedToday = 0
+    /** Reputation weapons given away earned today: bounded by `customers.giftReputationPerDay`. */
+    var giftReputationToday = 0
     val visits: MutableList<MarketVisit> = mutableListOf()
     val turnedAway: MutableList<HeroId> = mutableListOf()
     val replays: MutableList<CombatReplay> = mutableListOf()
@@ -115,6 +119,9 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
 
     /** The living heroes who are not contracted to the guild: who shops, wanders, retires and is named by the town's business. Everybody alive in a classic run. */
     fun residents(): List<Hero> = guild?.let { g -> aliveHeroes().filter { !g.isMember(it.id) } } ?: aliveHeroes()
+
+    /** Integrity the forge may regain in one day, from every source of repair together. */
+    fun recoveryAllowance(): Int = config.maxIntegrityRecoveryPerDay + blessingMagnitude(BlessingEffect.INTEGRITY_RECOVERY)
 
     fun blessingMagnitude(effect: BlessingEffect): Int =
         blessings.filter { it.expiresDay >= day }.sumOf { b -> content.blessing(b.id).let { if (it.effect == effect) it.magnitude else 0 } }
