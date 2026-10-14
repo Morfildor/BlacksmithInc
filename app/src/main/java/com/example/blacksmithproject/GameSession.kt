@@ -102,12 +102,29 @@ class GameSession(
      * a row under a backup key, a damaged file under a backup name. A run that loads is never set aside: when the
      * legacy row beside it is the unreadable one, that row is rebuilt from the copy the run carries (as of the last
      * saved action of the run, so an ended run comes back unclaimed and is claimed again for the same award).
-     * Then the store is read again.
+     * Then the store is read again. A split row whose parts do not add up is reported by the store as that row
+     * unreadable before anything decodes it: it is set aside by its key, and the rest is looked at again.
      */
     suspend fun startOverKeepingBackup(): Result = mutex.withLock {
         if (_snapshot.value != null) return Result.Done()      // only ever the way out of a failed load
+        startOverLocked(setAside = 0)
+    }
+
+    private suspend fun startOverLocked(setAside: Int): Result {
         try {
-            val rows = try { repo.load() } catch (_: SaveFailure.FileDamaged) { repo.quarantineFile(); return loadLocked() } catch (_: SaveFailure.Io) { return setAsideUnreadable() }
+            val rows = try {
+                repo.load()
+            } catch (_: SaveFailure.FileDamaged) {
+                repo.quarantineFile(); return loadLocked()
+            } catch (_: SaveFailure.Io) {
+                return setAsideUnreadable()
+            } catch (e: SaveFailure.Corrupt) {
+                // At most the two rows: a store that still reports one after both are set aside is a failure, not a loop.
+                if (setAside >= 2) return Result.Failed(e)
+                repo.quarantine(e.key)
+                if (e.key == "run") repo.saveCursor(null)
+                return startOverLocked(setAside + 1)
+            }
             val run = withContext(compute) { soundRun(rows) }
             if (rows.legacy != null && runCatching { withContext(compute) { decodeLegacy(rows.legacy) } }.isFailure) {
                 repo.quarantine("legacy")
@@ -120,7 +137,7 @@ class GameSession(
         } catch (e: SaveFailure) {
             return Result.Failed(e)
         }
-        loadLocked()
+        return loadLocked()
     }
 
     /**

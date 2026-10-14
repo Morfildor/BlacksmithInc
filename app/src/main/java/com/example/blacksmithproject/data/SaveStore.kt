@@ -21,6 +21,9 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 
+/** A split row whose head or parts do not add up. The store reports it as that row unreadable, never as a shorter save. */
+class BrokenSplitRow(message: String) : Exception(message)
+
 /** Authoritative saves live in Room; the payload is the versioned JSON envelope produced by the pure core. */
 @Entity(tableName = "saves")
 data class SaveEntity(
@@ -69,6 +72,13 @@ abstract class SaveDao {
     /** Quarantine of a split row: its parts follow the head to the backup key. */
     @Query("UPDATE saves SET `key` = :to || substr(`key`, length(:from) + 1) WHERE `key` LIKE :from || '#%'")
     abstract suspend fun renameParts(from: String, to: String)
+
+    /** A row and all its parts move to the backup key together, or none of them do. */
+    @Transaction
+    open suspend fun quarantine(from: String, to: String) {
+        renameParts(from, to)
+        rename(from, to)
+    }
 
     /**
      * A row too long for a cursor window, cut into parts inside SQLite: the parts are written, then the head says how
@@ -122,14 +132,22 @@ class SaveStore(@Volatile private var dao: SaveDao, private val setAside: (() ->
         dao.lengths(keys).filter { it.length > CHUNK }.forEach { dao.split(it.key, it.length, CHUNK) }
         val rows = dao.getAll(keys).associate { it.key to it.payload }
         suspend fun whole(key: String): String? = rows[key]?.let { head -> parts(head)?.let { n -> joined(key, n) } ?: head }
-        StoredRows(whole(KEY_RUN), whole(KEY_LEGACY), whole(KEY_CURSOR))
+        // A split row whose parts do not add up is reported as that row unreadable, the legacy first as the session reads
+        // them. A cursor that cannot be read is no cursor (GameSession.decode).
+        suspend fun row(key: String): String? = try { whole(key) } catch (e: BrokenSplitRow) { throw SaveFailure.Corrupt(key, e) }
+        val legacy = row(KEY_LEGACY)
+        val run = row(KEY_RUN)
+        val cursor = try { whole(KEY_CURSOR) } catch (_: BrokenSplitRow) { null }
+        StoredRows(run, legacy, cursor)
     }
 
+    /** Every part, in order, or [BrokenSplitRow]: a part that is missing or empty is never read as nothing. */
     private suspend fun joined(key: String, parts: Int): String {
         val keys = (1..parts).map { partKey(key, it) }
         val found = dao.getAll(keys).associate { it.key to it.payload }
-        // A part that is missing makes the row unreadable, as a cut-short payload would: the codec above says so.
-        return keys.joinToString("") { found[it] ?: "" }
+        val missing = keys.filter { found[it].isNullOrEmpty() }
+        if (missing.isNotEmpty()) throw BrokenSplitRow("'$key' counts $parts parts and ${missing.size} are missing or empty: ${missing.take(3)}")
+        return keys.joinToString("") { found.getValue(it) }
     }
 
     override suspend fun commit(run: String?, legacy: String) = io {
@@ -140,7 +158,7 @@ class SaveStore(@Volatile private var dao: SaveDao, private val setAside: (() ->
     /** [payload] as one row, or as a head that counts its parts and the parts of [CHUNK] characters each. */
     private fun rows(key: String, payload: String, now: Long): List<SaveEntity> {
         if (payload.length <= CHUNK) return listOf(SaveEntity(key, SaveCodec.SCHEMA_VERSION, payload, now))
-        val parts = payload.chunked(CHUNK)
+        val parts = chunks(payload)
         return parts.mapIndexed { i, part -> SaveEntity(partKey(key, i + 1), SaveCodec.SCHEMA_VERSION, part, now) } +
             SaveEntity(key, SaveCodec.SCHEMA_VERSION, PARTS + parts.size, now)
     }
@@ -150,11 +168,7 @@ class SaveStore(@Volatile private var dao: SaveDao, private val setAside: (() ->
     }
 
     /** By key alone: the row (and its parts) is renamed, never read, so even a row SQLite cannot hand over is set aside. */
-    override suspend fun quarantine(key: String) = io {
-        val to = "$key.bak.${System.currentTimeMillis()}"
-        dao.renameParts(key, to)
-        dao.rename(key, to)
-    }
+    override suspend fun quarantine(key: String) = io { dao.quarantine(key, "$key.bak.${System.currentTimeMillis()}") }
 
     override suspend fun quarantineFile() = io { setAside?.let { move -> dao = withContext(Dispatchers.IO) { move() } }; Unit }
 
@@ -165,6 +179,8 @@ class SaveStore(@Volatile private var dao: SaveDao, private val setAside: (() ->
     private inline fun <T> io(block: () -> T): T = try {
         block()
     } catch (e: CancellationException) {
+        throw e
+    } catch (e: SaveFailure) {
         throw e
     } catch (e: Exception) {
         throw if (generateSequence<Throwable>(e) { it.cause }.take(8).any { it is SQLiteDatabaseCorruptException }) SaveFailure.FileDamaged(e) else SaveFailure.Io(e)
@@ -182,8 +198,34 @@ class SaveStore(@Volatile private var dao: SaveDao, private val setAside: (() ->
         const val CHUNK = 256 * 1024
         /** The head of a split row: "parts:3" (an envelope always starts with "{", so the two cannot be mistaken). */
         const val PARTS = "parts:"
+        /** The most parts a head may count: one query reads them all, and SQLite binds at most 999 values. Far past any save. */
+        const val MAX_PARTS = 999
         fun partKey(key: String, n: Int) = "$key#$n"
-        fun parts(head: String): Int? = head.takeIf { it.startsWith(PARTS) }?.removePrefix(PARTS)?.toIntOrNull()
+
+        /** Null for a payload kept whole; the count of a head; [BrokenSplitRow] for a head that counts nothing ("parts:", "parts:0", "parts:x"). */
+        fun parts(head: String): Int? {
+            if (!head.startsWith(PARTS)) return null
+            val digits = head.substring(PARTS.length)
+            val n = digits.takeIf { it.length in 1..3 && it.all { c -> c in '0'..'9' } }?.toInt()
+            return n?.takeIf { it in 1..MAX_PARTS } ?: throw BrokenSplitRow("'${head.take(24)}' does not count 1 to $MAX_PARTS parts")
+        }
+
+        /**
+         * [payload] cut into parts of at most [size] UTF-16 units, never between the two halves of a surrogate pair: a
+         * lone half is not text, and SQLite would store it as something else. Joined in order, the parts are [payload].
+         */
+        fun chunks(payload: String, size: Int = CHUNK): List<String> {
+            require(size >= 2)
+            val out = ArrayList<String>(payload.length / size + 1)
+            var from = 0
+            while (from < payload.length) {
+                var to = minOf(from + size, payload.length)
+                if (to < payload.length && Character.isHighSurrogate(payload[to - 1]) && Character.isLowSurrogate(payload[to])) to--
+                out += payload.substring(from, to)
+                from = to
+            }
+            return out
+        }
 
         fun create(context: Context, name: String = "tiny_blacksmith.db"): SaveStore {
             val app = context.applicationContext

@@ -5,7 +5,7 @@ data class StoredRows(val run: String?, val legacy: String?, val cursor: String?
 
 /** Room implementation: SaveStore. Test implementation: FakeGameRepository. The repository owns its own dispatcher. */
 interface GameRepository {
-    suspend fun load(): StoredRows                         // one read; never writes or deletes; throws SaveFailure.Io or FileDamaged
+    suspend fun load(): StoredRows                         // one read; never deletes; throws SaveFailure.Io or FileDamaged, or Corrupt(key) for a stored row whose parts do not add up
     suspend fun commit(run: String?, legacy: String)       // one transaction; null run clears the run; throws SaveFailure.Io
     suspend fun saveCursor(cursor: String?)                // its own small row; never inside GameState
     suspend fun quarantine(key: String)                    // moves a row to "<key>.bak.<millis>"; never deletes

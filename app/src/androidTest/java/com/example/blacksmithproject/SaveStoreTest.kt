@@ -3,6 +3,8 @@ package com.example.blacksmithproject
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import android.database.sqlite.SQLiteConstraintException
+import com.example.blacksmithproject.data.BrokenSplitRow
 import com.example.blacksmithproject.data.SaveDatabase
 import com.example.blacksmithproject.data.SaveEntity
 import com.example.blacksmithproject.data.SaveFailure
@@ -19,6 +21,7 @@ import com.tinyblacksmith.core.persistence.SaveCodec
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -112,6 +115,82 @@ class SaveStoreTest {
 
         // Written fresh at that size: parts from the start, read back whole.
         store.commit(runText, SaveCodec.encodeLegacy(legacy))
+        assertEquals(runText, store.load().run)
+    }
+
+    private fun keys(db: SaveDatabase): List<String> =
+        db.openHelper.readableDatabase.query("SELECT `key` FROM saves ORDER BY `key`").use { c -> buildList { while (c.moveToNext()) add(c.getString(0)) } }
+
+    /**
+     * Review 2026-10-14 stabilisation: text that is not ASCII, through real SQLite, both ways a save is split. The app cuts
+     * a new save between characters (a pair that would straddle the boundary goes whole into the next part); SQLite cuts
+     * an old oversized row with substr, which counts characters. Both come back exactly, character for character.
+     */
+    @Test
+    fun unicodeComesBackExactlyFromPartsCutByTheAppAndBySqlite() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val db = Room.inMemoryDatabaseBuilder(context, SaveDatabase::class.java).build()
+        val dao = db.saveDao()
+        val store = SaveStore(dao)
+        val emoji = "\uD83D\uDD25"
+        val run = "{" + "é".repeat(SaveStore.CHUNK - 2) + emoji + "ß中\\n\"}".repeat(200_000) + emoji
+        assertTrue(Character.isHighSurrogate(run[SaveStore.CHUNK - 1]))
+        val legacy = "{\"legacy\":\"$emoji ünïcödé\"}"
+        store.commit(run, legacy)
+        assertEquals(run, store.load().run)
+        assertEquals(legacy, store.load().legacy)
+
+        // As a build before the split wrote it: one row, past the window by its bytes, with pairs all through it.
+        val old = buildString { append('{'); for (i in 1..1_200_000) append(if (i % 7 == 0) emoji else "ж"); append('}') }
+        store.commit(null, legacy)
+        dao.upsert(SaveEntity(SaveStore.KEY_RUN, SaveCodec.SCHEMA_VERSION, old, 1L))
+        assertEquals(old, store.load().run)
+        assertTrue(keys(db).any { it.startsWith(SaveStore.KEY_RUN + "#") })
+    }
+
+    /** A split row with a part gone, or a head that counts nothing, is reported as that row, never read as a shorter save; Start over keeps every row of it. */
+    @Test
+    fun aBrokenSplitRowIsReportedAndStartOverKeepsAllOfIt() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val db = Room.inMemoryDatabaseBuilder(context, SaveDatabase::class.java).build()
+        val dao = db.saveDao()
+        val store = SaveStore(dao)
+        val legacy = LegacyProfile(points = 4)
+        val base = engine.newRun(legacy, 42)
+        val runText = SaveCodec.encodeRun(base.copy(worldFlags = base.worldFlags + (1..3_000).associate { "pad_${it}_" + "x".repeat(250) to it }))
+        store.commit(runText, SaveCodec.encodeLegacy(legacy))
+        val parts = keys(db).count { it.startsWith(SaveStore.KEY_RUN + "#") }
+        assertTrue("the scenario: a split run ($parts parts)", parts >= 3)
+        db.openHelper.writableDatabase.execSQL("DELETE FROM saves WHERE `key` = 'run#2'")
+        try { store.load(); fail("a missing part must not load") } catch (e: SaveFailure.Corrupt) { assertEquals(SaveStore.KEY_RUN, e.key); assertTrue(e.cause is BrokenSplitRow) }
+
+        val session = GameSession(engine, store)
+        assertTrue((session.load() as GameSession.Result.Failed).failure.let { it is SaveFailure.Corrupt && it.key == SaveStore.KEY_RUN })
+        assertTrue(session.startOverKeepingBackup() is GameSession.Result.Done)
+        val backup = keys(db).single { it.startsWith("run.bak.") && '#' !in it }
+        assertEquals("the head and every part left are kept together", parts - 1, keys(db).count { it.startsWith("$backup#") })
+        assertEquals(legacy, session.snapshot.value?.legacy)
+
+        for (head in listOf("parts:", "parts:0", "parts:x", "parts:1000")) {
+            dao.upsert(SaveEntity(SaveStore.KEY_RUN, SaveCodec.SCHEMA_VERSION, head, 1L))
+            try { store.load(); fail("$head must not load") } catch (e: SaveFailure.Corrupt) { assertEquals(head, SaveStore.KEY_RUN, e.key) }
+        }
+    }
+
+    /** The head and its parts move in one Room transaction: when the head cannot move (its backup key is taken), no part has moved. */
+    @Test
+    fun aQuarantineThatFailsIsRolledBackWholeInRoom() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val db = Room.inMemoryDatabaseBuilder(context, SaveDatabase::class.java).build()
+        val dao = db.saveDao()
+        val store = SaveStore(dao)
+        val runText = "{" + "a".repeat(SaveStore.CHUNK * 2) + "}"
+        store.commit(runText, "{}")
+        dao.upsert(SaveEntity("run.bak.1", 7, "an older backup", 1L))
+        val before = keys(db)
+        val failure = runCatching { dao.quarantine(SaveStore.KEY_RUN, "run.bak.1") }.exceptionOrNull()
+        assertTrue("the head's backup key is taken: $failure", generateSequence(failure) { it.cause }.any { it is SQLiteConstraintException })
+        assertEquals(before, keys(db))
         assertEquals(runText, store.load().run)
     }
 

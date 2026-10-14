@@ -107,6 +107,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Guild runs: a law announced for tomorrow no longer raises tonight's repair bill for a cracked weapon.
 - A save made before a balance change that lowers a limit (the armory, overwork, hero level, relic slots, the shelf, the guild's roster) now loads, brought within the new limits with a line in the day's records, instead of opening the recovery screen.
 - A part of the Shop that cannot be read from a save (a forecast, the guild's board, a visitor) no longer stops the game at every launch: the Shop opens without it and says so.
+- A very long save stored in parts that has lost a part is now reported as unreadable instead of being read as a shorter save; "Start over" keeps all of it under a backup name. Setting a save aside moves all of its parts together or none of them.
+- A very long save no longer risks damaging an emoji or other character outside the basic range where the save is cut into parts.
 
 ## [0.8.0] - 2026-10-11
 

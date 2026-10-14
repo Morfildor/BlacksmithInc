@@ -20,7 +20,6 @@ file is either decided or a record of how a decision was applied.
 | 7 | Guild wall work extra: E=1 (strict) or E=3 (keeps the card's +5) | Owner's number; both measured | "Review 2026-10-14 core fixes, balance 15" |
 | 8 | `Legacy.preview` shows chance-like upgrade tracks as "N forges in 10" (exact odds) | Words, as decision A does on the workbench | "Owner decisions on the 2026-10-14 review" |
 | 9 | Remove the archived evidence images from the tree (decision E) | Run `python tools/archive_evidence.py --archive <dir> --remove` on the owner's machine, then commit | `docs/EVIDENCE_INDEX.md` |
-| 10 | The class-initialisation cycle Depth → CombatContent → LaunchContent | Fix in a small core task: give `LaunchContent` its relic list without reading `Depth` during its own init | "Review 2026-10-14 gameplay batch" last line |
 
 ## Technical (ENGINEERING)
 - Two Gradle modules (`:core`, `:app`) instead of the GDD's twelve; package boundaries inside `:core` mirror the
@@ -4486,9 +4485,8 @@ Handoff item 5. Targets were evaluation criteria, not goals to force. All number
   comparison against the other defences is on the same card: the defenders' fight follows the outer approach.
 - GoldenStateTest re-recorded: 66 of 300 projection lines move, all on day 6 or later (the first trait draw), RNG
   hashes included from there, because a different trait changes the siege and every draw after it.
-- Found on the way, not fixed: a class-initialisation cycle `Depth` → `CombatContent` → `LaunchContent` →
-  `Depth.relics` throws when a test touches `Depth` before `LaunchContent` (a filtered `:core:test` run shows it; the
-  full suite and the app always load `LaunchContent` first).
+- Found on the way: a class-initialisation cycle `Depth` → `CombatContent` → `LaunchContent` → `Depth.relics` threw
+  when a test touched `Depth` before `LaunchContent`. Fixed in the stabilisation pass below (no longer an owner decision).
 
 ## Review 2026-10-14 reliability: the oversized save row (2026-10-14)
 
@@ -4507,3 +4505,23 @@ over" made, threw. Applied, with no Room schema change (same table, same columns
   session path (`GameSessionFailureTest`), app unit tests 255 / 0. The SQL itself is exercised by the instrumented
   `SaveStoreTest.aRowPastTheCursorWindowIsSplitInsideSqliteAndLoads` (a 2.5 MB envelope through real Room), which could
   not be run on the cloud machine (no Android SDK): it is in the device batch.
+
+## Review 2026-10-14 stabilisation (2026-10-14, on 885b406)
+
+No balance, content or rules change: `BalanceConfig.version`, the content and rules versions, the golden projection
+and the scenario saves are as they were at 885b406.
+- **Class-initialisation cycle (was owner decision 10).** `Depth.relics` reads `CombatContent.relicEffects`;
+  `CombatContent` reads `LaunchContent`'s IDs; `LaunchContent` built its catalog eagerly, reading `Depth.relics`. Touched
+  first, `Depth` found `LaunchContent` half built and the catalog got a null relic list. The catalog now lives in a
+  private holder (`LaunchContent.Catalog`), so `LaunchContent`'s own initialiser holds only IDs and reads no other
+  object: the edge `LaunchContent` → `Depth` is gone, not ordered around. Same IDs, same lists in the same order, same
+  catalog object for every caller. `ContentInitOrderTest` touches each of the five content objects first in a class
+  loader of its own, then validates the whole launch catalog and compares it, as text, with the one built in the usual
+  order. It fails on 885b406 with the original NullPointerException and passes now.
+- **SaveStore.** A head and all its parts are set aside in one Room transaction (`SaveDao.quarantine`). A head that does
+  not count 1 to 999 parts ("parts:", "parts:0", "parts:x", "parts:1000"), or a part that is missing or empty, is
+  `BrokenSplitRow`: `load` reports it as `SaveFailure.Corrupt` for that row (legacy first), never as a shorter save; a
+  cursor that cannot be read is no cursor, as before. Start over sets such a row aside by key (at most the two rows,
+  then the usual path; a sound run is kept and carries the legacy back). New saves are cut between characters
+  (`SaveStore.chunks`): a supplementary character that would straddle a part boundary goes whole into the next part, so
+  no part holds half a surrogate pair. SQLite's own split of an old row already cuts by character (`substr`).

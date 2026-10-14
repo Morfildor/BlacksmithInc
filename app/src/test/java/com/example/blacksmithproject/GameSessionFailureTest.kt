@@ -314,6 +314,38 @@ class GameSessionFailureTest {
         assertEquals(GameSession.Snapshot(null, LegacyProfile(), null), lost.snapshot.value)
     }
 
+    /**
+     * A split row whose parts do not add up is reported as that row unreadable, never read as a shorter save. Start over
+     * sets it aside by key; a sound run beside a broken legacy is kept and carries the legacy back.
+     */
+    @Test
+    fun startOverSetsABrokenSplitRowAsideByItsKey() = sessionTest {
+        val legacyRow = SaveCodec.encodeLegacy(veteran)
+        val repo = repo("parts:3", legacyRow).also { it.brokenParts += "run"; it.cursor = "a cursor" }
+        val session = session(repo)
+        assertTrue(session.loadFailure().let { it is SaveFailure.Corrupt && it.key == "run" })
+        assertTrue(session.startOverKeepingBackup() is Result.Done)
+        assertEquals("parts:3", repo.quarantined["run.bak"])
+        assertNull(repo.cursor)
+        assertEquals("the legacy is kept", legacyRow, repo.legacy)
+        assertEquals(GameSession.Snapshot(null, veteran, null), session.snapshot.value)
+
+        val run = engine.newRun(veteran, 42L)
+        val legacyBroken = repo(SaveCodec.encodeRun(run), "parts:2").also { it.brokenParts += "legacy" }
+        val kept = session(legacyBroken)
+        assertTrue(kept.loadFailure().let { it is SaveFailure.Corrupt && it.key == "legacy" })
+        assertTrue(kept.startOverKeepingBackup() is Result.Done)
+        assertEquals("parts:2", legacyBroken.quarantined["legacy.bak"])
+        assertEquals("a run that loads is never set aside", SaveCodec.encodeRun(run), legacyBroken.run)
+        assertEquals(run.legacy, kept.snapshot.value?.legacy)
+
+        val both = repo("parts:4", "parts:5").also { it.brokenParts += setOf("run", "legacy") }
+        val lost = session(both)
+        assertTrue(lost.startOverKeepingBackup() is Result.Done)
+        assertEquals(setOf("run.bak", "legacy.bak"), both.quarantined.keys)
+        assertEquals(GameSession.Snapshot(null, LegacyProfile(), null), lost.snapshot.value)
+    }
+
     @Test
     fun startOverQuarantinesInsteadOfDeleting() = sessionTest {
         val garbage = "not a save"
