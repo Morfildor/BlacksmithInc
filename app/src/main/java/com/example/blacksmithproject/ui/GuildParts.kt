@@ -136,7 +136,7 @@ private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
         o.modifierName?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.testTag("guild_offer_modifier_${o.id}")) }
         Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
             Secondary(o.expiry, Modifier.weight(1f))
-            Text(if (o.planned) "Change party  ›" else "Plan party  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
+            Text(if (o.planned) "Change the party  ›" else "Choose a party  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
         }
     }
 }
