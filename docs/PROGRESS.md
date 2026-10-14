@@ -37,7 +37,21 @@ phone, no TalkBack pass, no hardware keyboard (Tab was sent through adb, before 
 instrumented suite was not run. At font scale 2.0 the Shop's lead card is under the fold on a 1080x1920 screen (the
 siege strip alone is four lines there; so it is without the guidance).
 
-**Next actions.** 1. Run the playtest script with five first-time players. 2. Decide where the branch merges.
+**Merged into main (2026-10-14, local, not pushed).** `main` (749061b: run variety and the deep forging integration)
+took `first-day-guidance` in a merge commit. Four textual conflicts: `ForgePanel.kt` (main's bellows, the guidance's
+mark on Forge), `runend.sh`, DECISIONS and PROGRESS (both sides kept). Found after it, and fixed: two guidance strings
+had a semicolon that main's `ProseGuardTest` forbids, and `smoke.sh` and `runend.sh` stepped the charter picker back
+from where a cleared install now opens ("No charter"), landing on a charter. The guidance's words were checked
+against deep forging: a classic first game has no metal fight rules, and the guild outlook names no quality or fit.
+Checks on the merged tree: `:core:test` 622 tests and `:app:testDebugUnitTest` 246 tests, 0 failures; APK and test
+APK built. Emulator (own, port 5556): `intro.sh` 29 checks ok, `smoke.sh` 9 ok, `runend.sh` 6 ok, `guild.sh` 5 ok
+(its two missing targets as before), `scenarios.sh` 59 ok and the same 3 failing as on ff656ef (`wall_death` twice,
+`returned_legend`). Instrumented suite, all 75: 66 pass, 9 fail, and the same 9 fail on 749061b
+without the guidance: the 4 listed above, `ConsistencyPassTest.townExplainsItsEmptyChampionPlaces`,
+`ForgeHintTest.understoodPairingShowsFilledDotAndDescription`, both `ForgeResultCardTest` request and price tests, and
+`StorageSheetTest.bulkSalvageAsksOnceAndIssuesOneCommandPerBlade` (wording and layout the tests were not updated for).
+
+**Next actions.** 1. Run the playtest script with five first-time players. 2. Push `main` when the owner says so.
 
 
 ## Run variety and consequences (2026-10-11): two passes on branch `run-variety`, on `main` through `deep-forging-integration`
