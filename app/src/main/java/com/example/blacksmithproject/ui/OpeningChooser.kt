@@ -1,6 +1,14 @@
 package com.example.blacksmithproject.ui
 
 import androidx.compose.foundation.background
+import com.example.blacksmithproject.ui.theme.Bronze
+import com.example.blacksmithproject.R
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,20 +43,21 @@ import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.ForgeSlot
-import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
 
 /** One who signs with a package: who they are and the defining trait it gives them, in the catalog's words. */
-@Immutable data class OpeningSignerUi(val heroId: HeroId, val portrait: Int, val name: String, val sub: String, val trait: String)
+@Immutable data class OpeningSignerUi(val heroId: HeroId, val portrait: Int, val name: String, val sub: String, val trait: String, val firstName: String = name, val className: String = sub, val traitName: String = trait)
 
 /** One opening package, whole: everything that decides the choice is on its card. [brings] is its stock and its weapon, a line each. */
 @Immutable
 data class OpeningUi(
     val id: String, val name: String, val build: String, val pitch: String, val signers: List<OpeningSignerUi>,
     val relic: String, val relicDescription: String, val brings: List<String>, val drawback: String, val plan: String,
+    /** The drawback as short bullets: its note, then the gold, health and militia it costs. */
+    val costs: List<String> = listOf(drawback),
 )
 
 /** The first choice of a guild run. Present only while the save still holds the offer (`GuildRunState.openingOffer`). */
@@ -69,18 +78,27 @@ fun GameEngine.openingChooser(state: GameState): OpeningChooserUi? {
                 signers = offer.heroIds.mapIndexedNotNull { i, id ->
                     val h = state.heroes[id] ?: return@mapIndexedNotNull null
                     val trait = offer.traitIds.getOrNull(i)?.let(cat::trait)
-                    OpeningSignerUi(h.id, Sprites.portrait(h, small = true), h.fullName, "${content.heroClass(h.classId).name} level ${h.level}", trait?.let { "${it.name}: ${it.description}" } ?: "No trait of note")
+                    OpeningSignerUi(
+                        h.id, Sprites.portrait(h, small = true), h.fullName, "${content.heroClass(h.classId).name} level ${h.level}", trait?.let { "${it.name}: ${it.description}" } ?: "No trait of note",
+                        firstName = h.name, className = content.heroClass(h.classId).name, traitName = trait?.name ?: "no trait",
+                    )
                 },
                 relic = relic?.name ?: def.relicId, relicDescription = relic?.description.orEmpty(),
                 brings = listOfNotNull(
                     def.materials.entries.joinToString(", ") { "${it.value} ${content.material(it.key).name}" }.ifEmpty { null },
                     def.weapon?.let { w ->
                         val flaw = content.affixById[w.flaw]
-                        "${content.material(w.coreId).name} ${content.family(w.familyId).name.lowercase()} with ${content.material(w.augmentId).name}, quality ${w.quality}. " +
-                            (flaw?.let { "Flaw, ${it.name}: ${it.description}" } ?: "It has a flaw.")
+                        "${content.material(w.coreId).name} ${content.family(w.familyId).name.lowercase()} with ${content.material(w.augmentId).name}, quality ${w.quality}" +
+                            (flaw?.let { ", ${it.name}" } ?: ", flawed")
                     },
                 ),
                 drawback = def.drawback, plan = def.plan,
+                costs = listOfNotNull(
+                    def.costNote,
+                    def.goldDelta.takeIf { it < 0 }?.let { "Start with ${-it} less gold" },
+                    def.integrityDelta.takeIf { it < 0 }?.let { "The forge starts ${-it} health down" },
+                    def.militiaDelta.takeIf { it < 0 }?.let { "${-it} fewer militia on the wall" },
+                ).ifEmpty { listOf(def.drawback) },
             )
         },
     )
@@ -88,69 +106,125 @@ fun GameEngine.openingChooser(state: GameState): OpeningChooserUi? {
 
 /**
  * The first morning of a guild run, in place of the workshop until one package is taken: End Day waits for this choice, so
- * nothing else is offered beside it. Three selectable cards, each short enough to compare with the next, every one
- * showing its cost before anything is committed. The chosen card opens to who signs, what it brings and the first days.
- * One pinned action, "Begin with X", sends the command: no second question. Only which card is marked is kept here; the
- * offer itself is in the save. [firstGame] is the note a player who has the guided first day ahead of them reads first.
+ * nothing else is offered beside it. Who signs is the same under every package (the charter's two classes, GuildOps.found),
+ * so they are shown once above the cards; a card says only what differs: its playstyle, its benefit, the trait each
+ * signer gets, its relic (tap to read it) and its cost. Nothing is chosen until a card is tapped; the chosen card opens to
+ * what it brings and the first days. One pinned action, "Begin with X", sends the command: no second question. Only which
+ * card is marked is kept here; the offer itself is in the save. [firstGame] is the note a first game reads first.
  */
 @Composable
 fun OpeningChooser(ui: OpeningChooserUi, enabled: Boolean, onChoose: (String) -> Unit, modifier: Modifier = Modifier, firstGame: (@Composable () -> Unit)? = null) {
     var marked by rememberSaveable { mutableStateOf<String?>(null) }
     val chosen = ui.openings.firstOrNull { it.id == marked }
+    val shared = ui.openings.map { o -> o.signers.map { it.heroId } }.distinct().singleOrNull()?.let { ui.openings.first().signers }
     Column(modifier.fillMaxSize().safeDrawingPadding().testTag("opening_chooser")) {
         val scroll = rememberScrollState()
-        Column(Modifier.weight(1f).verticalScroll(scroll).bottomFade(scroll.canScrollForward).padding(horizontal = Space.md, vertical = Space.md), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-            Text("How the guild begins", style = MaterialTheme.typography.headlineMedium, color = Gold, modifier = Modifier.semantics { heading() })
-            Text(
-                if (ui.charter.isNotEmpty()) "${ui.charter} · pick one of three starts. It stays for the whole run." else "Pick one of three starts. It stays for the whole run.",
-                style = MaterialTheme.typography.bodyMedium, color = Cream,
-            )
+        Column(
+            Modifier.weight(1f).verticalScroll(scroll).bottomFade(scroll.canScrollForward).padding(horizontal = Space.md).padding(top = Space.md, bottom = Space.lg),
+            verticalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            Column {
+                Text("How the guild begins", style = MaterialTheme.typography.headlineMedium, color = Cream, modifier = Modifier.semantics { heading() })
+                Text(
+                    listOfNotNull(ui.charter.ifEmpty { null }, "One start, kept for the whole run.").joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = Space.xs),
+                )
+            }
             firstGame?.invoke()
-            ui.openings.forEach { o -> OpeningCard(o, o.id == marked, enabled, onMark = { marked = o.id }) }
+            if (shared != null) Signers(shared)
+            ui.openings.forEach { o -> OpeningCard(o, o.id == marked, enabled, showSigners = shared == null, onMark = { marked = o.id }) }
         }
         PrimaryActionButton(
-            chosen?.let { "Begin with ${it.name}" } ?: "Pick a start above", { chosen?.let { onChoose(it.id) } },
+            chosen?.let { "Begin with ${it.name}" } ?: "Pick a start to begin", { chosen?.let { onChoose(it.id) } },
             Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm).testTag("opening_begin"), enabled = enabled && chosen != null,
         )
     }
 }
 
-/** One package as a selectable card: name, build, who signs and its cost always; the detail once it is the chosen card. */
+/** The two who sign whichever start is picked: a portrait, the first name and the class, side by side. */
 @Composable
-private fun OpeningCard(o: OpeningUi, chosen: Boolean, enabled: Boolean, onMark: () -> Unit) {
-    var plan by rememberSaveable(o.id) { mutableStateOf(false) }
-    ChoiceRow(chosen, onMark, Modifier.testTag("opening_choose_${o.id}"), enabled = enabled) {
-        Text(o.name, style = MaterialTheme.typography.titleMedium, color = if (chosen) Gold else Cream, modifier = Modifier.semantics { heading() })
-        Text("${o.build}: ${o.pitch}", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-        Text("Signs: ${o.signers.joinToString(", ") { "${it.name} (${it.sub})" }}", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs))
-        Text("Relic: ${o.relic}", style = MaterialTheme.typography.bodySmall, color = Cream)
-        // The cost of the choice is read before it is made, in body text as the gains are: never behind the selection.
-        Text("${EffectKind.FLAW.sign} ${o.drawback}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = EffectKind.FLAW.color, modifier = Modifier.padding(top = Space.xs).testTag("opening_drawback_${o.id}"))
-        if (chosen) {
-            Caps("Who signs", Modifier.padding(top = Space.sm))
-            o.signers.forEach { m ->
-                Row(Modifier.fillMaxWidth().padding(top = Space.xs).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                    Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { PixelImage(m.portrait, 36.dp, description = null) }
-                    Column(Modifier.weight(1f)) {
-                        Text("${m.name} · ${m.sub}", style = MaterialTheme.typography.titleSmall, color = Cream)
-                        Text(m.trait, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+private fun Signers(signers: List<OpeningSignerUi>) {
+    Column(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
+        Caps("Signing with every start")
+        Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+            signers.forEach { m ->
+                Row(Modifier.weight(1f).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    Portrait(m.portrait, 44.dp)
+                    Column {
+                        Text(m.firstName, style = MaterialTheme.typography.titleSmall, color = Cream)
+                        Text(m.className, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
                     }
                 }
             }
-            Caps("It brings", Modifier.padding(top = Space.sm))
-            Text("${o.relic}: ${o.relicDescription}", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs))
-            o.brings.forEach { Text("${EffectKind.BUFF.sign} $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.BUFF.color, modifier = Modifier.padding(top = Space.xs)) }
-            Text(
-                if (plan) "The first days ▴" else "The first days ▾", style = MaterialTheme.typography.labelLarge, color = Gold,
-                modifier = Modifier.fillMaxWidth().padding(top = Space.xs).clickable(role = Role.Button) { plan = !plan }.heightIn(min = 48.dp).wrapContentHeight().testTag("opening_plan_${o.id}"),
-            )
-            if (plan) Text(o.plan, style = MaterialTheme.typography.bodySmall, color = Cream)
         }
     }
 }
 
-/** A short heading inside a card: small capitals in gold, the one way a card's parts are named. */
+@Composable
+private fun Portrait(res: Int, size: Dp) {
+    Box(Modifier.size(size).background(ForgeSlot, MaterialTheme.shapes.small).border(1.dp, BronzeDeep, MaterialTheme.shapes.small).clip(MaterialTheme.shapes.small), contentAlignment = Alignment.Center) {
+        PixelImage(res, size, description = null)
+    }
+}
+
+/**
+ * One package as a selectable card, in the order a choice is read: its playstyle and name, the benefit, the trait each
+ * signer gets, the relic, the cost. The relic's effect opens in place on a tap without choosing the card. Chosen, the
+ * card adds what it brings and the first days.
+ */
+@Composable
+private fun OpeningCard(o: OpeningUi, chosen: Boolean, enabled: Boolean, showSigners: Boolean, onMark: () -> Unit) {
+    var plan by rememberSaveable(o.id) { mutableStateOf(false) }
+    var relic by rememberSaveable(o.id + "_relic") { mutableStateOf(false) }
+    ChoiceRow(chosen, onMark, Modifier.testTag("opening_choose_${o.id}"), enabled = enabled) {
+        Caps(o.build)
+        Text(o.name, style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.padding(top = 2.dp).semantics { heading() })
+        Text(o.pitch, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.padding(top = Space.xs))
+        // The trait each signer gets: one line, the same trait said once for both.
+        val traits = o.signers.groupBy { it.traitName }
+        Text(
+            buildAnnotatedString {
+                if (showSigners) append("Signs ${o.signers.joinToString(" and ") { "${it.firstName} (${it.className})" }}. ")
+                traits.entries.forEachIndexed { i, (trait, who) ->
+                    if (i > 0) append(" · ")
+                    append(if (who.size == o.signers.size && who.size > 1) "Both gain " else "${who.joinToString(" and ") { it.firstName }} gains ")
+                    withStyle(SpanStyle(color = Cream, fontWeight = FontWeight.Medium)) { append(trait) }
+                }
+            },
+            style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = Space.sm),
+        )
+        Row(
+            Modifier.fillMaxWidth().padding(top = Space.xs).heightIn(min = 40.dp).clickable(role = Role.Button, onClickLabel = if (relic) "Hide the relic's effect" else "Read the relic's effect") { relic = !relic }.testTag("opening_relic_${o.id}"),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            PixelImage(R.drawable.icon_relic, 24.dp, description = null)
+            Text(
+                buildAnnotatedString { append("Relic  "); withStyle(SpanStyle(color = Cream, fontWeight = FontWeight.Medium)) { append(o.relic) } },
+                style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f),
+            )
+            Text(if (relic || chosen) "▴" else "▾", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+        }
+        if (relic || chosen) Text(o.relicDescription, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(start = 32.dp, bottom = Space.xs))
+        // The cost of the choice is read before it is made, on every card, as plainly as the benefit.
+        // Chosen, what it brings stands over the costs, gains before costs as on the charters.
+        if (chosen) EffectBullets(EffectKind.BUFF, o.brings, Modifier.padding(top = Space.xs))
+        EffectBullets(EffectKind.FLAW, o.costs, Modifier.padding(top = Space.xs).testTag("opening_drawback_${o.id}"))
+        if (chosen) {
+            Caps("Traits", Modifier.padding(top = Space.md))
+            o.signers.forEach { m ->
+                Text(buildAnnotatedString { withStyle(SpanStyle(color = Cream, fontWeight = FontWeight.Medium)) { append(m.firstName) }; append("  "); append(m.trait) }, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = Space.xs))
+            }
+            Text(
+                if (plan) "The first days ▴" else "The first days ▾", style = MaterialTheme.typography.labelLarge, color = Cream,
+                modifier = Modifier.fillMaxWidth().padding(top = Space.xs).clickable(role = Role.Button) { plan = !plan }.heightIn(min = 48.dp).wrapContentHeight().testTag("opening_plan_${o.id}"),
+            )
+            if (plan) Text(o.plan, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+        }
+    }
+}
+
+/** A short heading inside a card: small capitals in brass, the one way a card's parts are named. */
 @Composable
 internal fun Caps(text: String, modifier: Modifier = Modifier) {
-    Text(text.uppercase(), style = MaterialTheme.typography.labelSmall, color = Gold, modifier = modifier.semantics { heading() })
+    Text(text.uppercase(), style = MaterialTheme.typography.labelSmall, color = Bronze, modifier = modifier.semantics { heading() })
 }

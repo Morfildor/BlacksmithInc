@@ -426,8 +426,10 @@ step_font() {
   wait_id menu_abandon && { shot font_menu_0_run; tap_id menu_abandon >/dev/null; shot font_menu_1_abandon_confirm; tap_id menu_abandon_confirm >/dev/null; }
   wait_id title_new_run
   shot font_menu_2_title_charter
-  echo "CHARTER: $(text_of charter_name)"
   scroll_to_id title_new_run >/dev/null; tap_id title_new_run >/dev/null
+  wait_id setup_begin; shot font_menu_3_setup
+  echo "CHARTER: $(text_of charter_name)"
+  tap_id setup_begin >/dev/null
   if wait_id opening_chooser; then
     ok "font 1.3: a new guild run opens on the opening chooser"
     echo "OPENINGS: $(dump | grep -o 'resource-id="opening_choose_[^"]*"' | sort -u | tr '\n' ' ')"

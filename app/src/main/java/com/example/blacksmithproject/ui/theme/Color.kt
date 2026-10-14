@@ -2,7 +2,7 @@ package com.example.blacksmithproject.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Dark forge palette: night-navy grounds, cream text, ember (primary), bronze outlines, gold accents.
+// Dark forge palette, taken from the workshop art: warm charcoal grounds, ivory text, ember (primary), brass outlines, gold kept for the primary action and the chosen mark.
 val Ember = Color(0xFFFF9A5C)          // 8.3:1 on ForgePanel
 val EmberContainer = Color(0xFF6E2C10)
 val Iron = Color(0xFFB8BEC8)
@@ -14,10 +14,10 @@ val BronzeLine = Color(0xFF6E5629)     // the edge of a tappable row or tile; 3.
 val BronzeDeep = Color(0xFF4A3A1E)     // hairlines, dividers inside a frame
 val BronzeContainer = Color(0xFF45371A)
 
-val ForgeNight = Color(0xFF0C0F15)     // the ground behind every panel
-val ForgePanel = Color(0xFF151A23)     // panels, sheets, dialogs
-val ForgePanelRaised = Color(0xFF1D2330)
-val ForgeSlot = Color(0xFF090B10)      // sprite slots, empty bar segments
+val ForgeNight = Color(0xFF110F0E)     // the ground behind every panel: charcoal with the forge's warmth in it
+val ForgePanel = Color(0xFF1B1816)     // panels, sheets, dialogs
+val ForgePanelRaised = Color(0xFF27221E)
+val ForgeSlot = Color(0xFF0B0908)      // sprite slots, empty bar segments
 val Cream = Color(0xFFF2E8D0)          // body text; 14.3:1 on ForgePanel
 val CreamMuted = Color(0xFFD3C9B2)     // secondary text; 10.6:1 on ForgePanel
 

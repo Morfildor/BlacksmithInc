@@ -64,13 +64,15 @@ $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith"
 # A cleared install offers the guided first day and marks "No charter": this script is about the guild, so the
-# guidance is skipped and the first charter's row is chosen (every charter is a row on the title).
+# guidance is skipped and the first charter's row is chosen on the run setup that "New game" opens.
 tap_id intro_menu_skip
+shot 01_title
+tap_id title_new_run || exit 1
 check has_id charter_picker
 tap_id charter_row_ || exit 1
 check has_id charter_details
 shot 01_title_charter
-tap_id title_new_run || exit 1
+tap_id setup_begin || exit 1
 # rules 6: a guild run opens on its three packages; the first is read top to bottom and taken
 wait_id opening_chooser; shot 04_opening_chooser
 swipe_up; shot 04b_opening_chooser_lower

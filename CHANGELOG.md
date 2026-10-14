@@ -8,6 +8,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
+- **A new title screen.** The owner's painting of the smithy at night fills the main menu; the name and "New game" stand in its dark lower third. A fresh account no longer shows an empty "Era 1 awaits" plate, and the guided first day is one plain line with "Skip it".
+- **Run setup.** "New game" opens its own screen for the charter: every charter's gains and costs are short "+" and "−" bullets read from its own numbers, visible without choosing it, with "Begin under …" pinned below.
+- **Opening cards that compare.** The two heroes who sign are shown once with their portraits; each card gives its playstyle, its benefit, the trait each signer gets, its relic (tap to read the effect) and its costs as bullets. Nothing is chosen until a card is tapped; the chosen card adds what it brings and the traits in full.
 - **A guided first day.** A new installation's first game is led through one real day in the real workshop: choose a recipe, forge it, list it, forge a second weapon your own way, end the day, and read what the day came to. One short step at a time sits under the top bar, with "Why?" for more and "Skip guidance" on every step and on the forge result. It is shown once per installation, never again in a later game, and never to someone who has already played.
 - Settings has a "Guided first day" row: where it stands, and "Replay". A replay starts at once in a game's first morning, otherwise it waits for the next new game, says so, and can be cancelled. It never changes a game in progress.
 - A new account's first game starts on "No charter", the shop alone. The charter you pick on the title, or last began a game under, is now remembered.
@@ -33,6 +36,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - A weapon's card lists a rule that two of its parts share once, names both parts, and notes where its rules feed or get in the way of each other.
 
 ### Changed
+- Text reads in Fira Sans Regular for sentences, Medium for labels and SemiBold for values and actions; headings stay in Alegreya Bold. Surfaces are warm charcoal instead of navy, section labels brass, and gold is kept for the primary action and the chosen mark.
+- A chosen row is raised, edged in gold and marked with a check, never by colour alone; the radio circles are gone.
+- Two opening descriptions say what actually happens: Paid in Blood (the axe spends health to strike twice as hard, healing then gives Guard) and The Overflowing Cup.
 - **Text reads heavier.** Body and label text is medium weight on every screen, dialog titles share the serif of the panel headings, secondary text is a shade brighter, and every tappable row and tile has a visible edge.
 - **The opening chooser fits a screen per package**: the build and its pitch in one line, each signer on two lines, the relic in one, the drawback in body text, and the first days' plan behind a fold. "Begin with ..." on each card asks once more, as before.
 - **Less chrome over the Shop.** The siege strip is one line until the warning is out, the workshop picture is shorter while the shelf is empty, the destination bar grows with large text instead of clipping its labels, and the guided strip takes less of the screen at large text.

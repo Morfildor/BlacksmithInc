@@ -63,6 +63,8 @@ data class OpeningDef(
     val goldDelta: Int = 0,
     val militiaDelta: Int = 0,
     val integrityDelta: Int = 0,
+    /** The cost a number cannot say, in a few words for the opening card; the gold and health it costs are said from the deltas. */
+    val costNote: String? = null,
 )
 
 /**
@@ -490,14 +492,15 @@ object GuildContent {
      * the package (measured, docs/run_variety_evidence/REPORT.md). Names and numbers PROPOSED.
      */
     val openings = listOf(
-        OpeningDef("overflow", "The Overflowing Cup", "Overheal", "Healing that has nowhere to go becomes Guard and Regeneration.",
+        OpeningDef("overflow", "The Overflowing Cup", "Overheal", "Healing past full health is not wasted. It becomes Guard, and the Overhealer's also gives Regeneration.",
             plan = "Loan the Warden a staff for more healing. Keep the front topped up and let the Basin turn the rest into Guard. Verdant Sap on the front's weapon feeds it.",
             drawback = "40 gold less to start with.", charters = setOf(TOWNS_LAST_HOPE, HONEST_BUSINESS), traits = mapOf(W to "overhealer"), relicId = CombatContent.OVERFLOW_BASIN,
             materials = mapOf(LaunchContent.VERDANT_SAP to 2), goldDelta = -40),
         OpeningDef("salvage", "Break It on Purpose", "Breakage", "A weapon that cracks rings the Bell: Guard for everybody, and a strike from whoever was waiting for it.",
             plan = "Loan the Brittle sword to whoever stands in front. When their Guard breaks it cracks, the Bell answers, the Rust Savant strikes. Hone it after every fight. A Runestone Shard makes a second answer.",
             drawback = "The sword is Brittle and has to be mended after every fight. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS), traits = mapOf(W to "rust_savant", B to "rust_savant"),
-            relicId = CombatContent.SALVAGE_BELL, materials = mapOf(LaunchContent.RUNESTONE_SHARD to 1, LaunchContent.IRON to 2), weapon = StartWeaponDef(SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BRITTLE, 45), integrityDelta = -10),
+            relicId = CombatContent.SALVAGE_BELL, materials = mapOf(LaunchContent.RUNESTONE_SHARD to 1, LaunchContent.IRON to 2), weapon = StartWeaponDef(SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BRITTLE, 45), integrityDelta = -10,
+            costNote = "The Brittle sword needs mending after every fight"),
         OpeningDef("stormwell", "The Stormwell", "Storm and Charge", "One member stores Charge with any weapon and lets it go as a burst. The Ledger turns each burst into Regeneration.",
             plan = "Forge a Stormglass weapon for the Storm-Touched member. With Binding Salt in an Advanced forge, healing them stores Charge too. Three Charge is one burst.",
             drawback = "40 gold less to start with.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS), traits = mapOf(G to "storm_touched", D to "storm_touched"), relicId = CombatContent.STORM_LEDGER,
@@ -510,14 +513,16 @@ object GuildContent {
             plan = "The Methodical member wants marked targets: a Sun Ash weapon marks on its own hit, and the first enemy to fall rises to mark for you. Go for the leader first.",
             drawback = "50 gold less to start with.", charters = setOf(HONEST_BUSINESS, LICENSED_BAD_IDEAS), traits = mapOf(R to "methodical", D to "methodical"), relicId = CombatContent.BONE_MUSIC_BOX,
             materials = mapOf(LaunchContent.SUN_ASH to 1, LaunchContent.GRAVE_DUST to 1), goldDelta = -50),
-        OpeningDef("blood_price", "Paid in Blood", "Blood price", "A weapon that drinks its wielder hits much harder. Healing them afterwards is also Guard.",
+        OpeningDef("blood_price", "Paid in Blood", "Blood price", "The Bloodbound axe spends its wielder's health to strike for twice as much. Heal them afterwards and they gain Guard too.",
             plan = "Loan the Bloodbound axe to somebody sturdy and keep a healer behind them. The Receipt turns that healing into Guard. Never send it out without the healer.",
             drawback = "The axe takes health from whoever carries it. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(G to "second_wind", R to "second_wind", D to "second_wind"), relicId = CombatContent.BLOOD_RECEIPT,
-            weapon = StartWeaponDef(LaunchContent.AXE, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BLOODBOUND, 48), integrityDelta = -10),
+            weapon = StartWeaponDef(LaunchContent.AXE, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BLOODBOUND, 48), integrityDelta = -10,
+            costNote = "The axe drains whoever carries it"),
         OpeningDef("plain_oath", "The Plain Oath", "Common steel", "Plain weapons, sworn to. Whoever carries a common or uncommon one strikes harder and raises Guard.",
             plan = "Forge iron and bronze for the party on purpose and keep the good metal for the shelf. A rare or finer weapon in a member's hands ends the oath for them.",
             drawback = "60 gold less to start with. Fine weapons are wasted on the party.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(G to "oathkeeper", D to "oathkeeper", R to "oathkeeper"),
-            relicId = CombatContent.BLUNT_OATH, materials = mapOf(LaunchContent.IRON to 3), goldDelta = -60),
+            relicId = CombatContent.BLUNT_OATH, materials = mapOf(LaunchContent.IRON to 3), goldDelta = -60,
+            costNote = "A rare or finer weapon ends a member's oath"),
         OpeningDef("careful_books", "Careful Books", "Take it and run", "A party that knows when to leave, and still gets paid for the walk.",
             plan = "Take contracts a step above your strength with a cautious plan. Pulling back still pays. Spend what it brings on the wall.",
             drawback = "The forge starts with 15 less health.", charters = setOf(HONEST_BUSINESS, LICENSED_BAD_IDEAS), traits = mapOf(R to "cowardly", D to "cowardly"), relicId = CombatContent.COWARDS_MEDAL,

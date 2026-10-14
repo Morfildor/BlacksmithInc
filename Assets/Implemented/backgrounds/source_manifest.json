@@ -1,7 +1,7 @@
 {
   "pack": "Tiny Blacksmith — Backgrounds Batch 01",
   "version": "1.0",
-  "asset_count": 6,
+  "asset_count": 7,
   "pixels": "Native dimensions, 2× crisp art grid for backgrounds; transparent 1× masonry tiles",
   "source": "Original generated game artwork with commissioned-style pixel treatment",
   "assets": [
@@ -70,6 +70,17 @@
       "kind": "seamless_texture",
       "alpha": true,
       "notes": "Irregular hand-laid flagstones with scratches and moss, native 64×32 textured floor tile with transparent grout."
+    },
+    {
+      "id": "bg_title_workshop_night",
+      "file": "bg_title_workshop_night.png",
+      "size": [
+        941,
+        1672
+      ],
+      "kind": "scene",
+      "alpha": false,
+      "notes": "Owner-delivered 2026-10-14: the smithy at night under a castle hill, forge lit, the lower third fading to near black for the title's text and buttons. Main menu background, full screen."
     }
   ]
 }

@@ -31,7 +31,8 @@ class VersionFingerprintTest {
         // 6: run variety (rules 6): opening packages, siege preparations, contract modifiers, the siege's jobs, two pacts
         // Re-pinned while rules 6 is unreleased (from d047912e...): four contract modifiers that change the decision and their fields, the watch on a rescue, a second class a charter offers, Licensed Bad Ideas, three opening drawbacks in gold, the Hunt's numbers.
         // 6, re-pinned while unreleased: with the deep forging catalog (a fight rule for each metal, ingredient notes, interaction paths, Void Ink and Dragon Oil rewritten for new weapons).
-        6 to "03d44c0f993da80cb6ee44e6501095d425a08f73a54f45c00794e7c5fc4ee87c",
+        // 6, re-pinned for the fingerprint only (from 03d44c0f...): an opening's `costNote` is display text, hashed by presence like `pitch`. No number moved.
+        6 to "d6a80e4ee6492445f38eda0b3cc79690578c0416323208e49b978c13f4b1cf9f",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
@@ -55,7 +56,7 @@ class VersionFingerprintTest {
         14 to "d2bbbd8006abe14140974b640e35f41c2221e346820700bc2aa57addde50271d",
     )
 
-    private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where")
+    private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where", "costNote")
 
     private fun canonical(value: Any?, field: String? = null): String = when (value) {
         null -> "null"

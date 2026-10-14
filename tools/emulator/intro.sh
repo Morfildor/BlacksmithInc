@@ -42,8 +42,10 @@ start() { $ADB shell am start -n $PKG/.MainActivity >/dev/null; wait_text "Tiny 
 $ADB shell pm clear $PKG >/dev/null
 start && shot 01_title
 check "title says the game is guided" has_id intro_menu_skip
-check "a new account starts on the shop alone" charter_is "No charter"
 tap_id title_new_run || exit 1
+check "a new account starts on the shop alone" charter_is "No charter"
+shot 01b_setup
+tap_id setup_begin || exit 1
 wait_id intro_strip && shot 02_step1_shop
 check "step 1 on the Shop" has "Choose a weapon, a metal and an augment."
 check "it points at the Forge" has "Open the Forge to do this."
@@ -109,7 +111,7 @@ $ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 1
 tap_id menu_abandon; tap_id menu_abandon_confirm
 wait_id title_new_run && shot 15_title_again
 check "no guidance line on the title" no_id intro_menu
-tap_id title_new_run
+tap_id title_new_run; tap_id setup_begin
 $ADB shell sleep 3
 has_id relic_later && tap_id relic_later
 has_id opening_chooser || wait_id end_day
@@ -118,7 +120,7 @@ check "the second game has no strip" no_id intro_strip
 
 # A second new installation: skipped on the first step, and still off after a restart and in the next game.
 $ADB shell pm clear $PKG >/dev/null
-start; tap_id title_new_run
+start; tap_id title_new_run; tap_id setup_begin
 wait_id intro_strip && tap_id intro_skip
 $ADB shell sleep 1; shot 17_skipped
 check "skipped at once" no_id intro_strip

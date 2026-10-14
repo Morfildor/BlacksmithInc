@@ -64,8 +64,9 @@ $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith" && shot 01_title
 # This loop is the classic shop: a guild run (rules 6) opens on its opening packages instead of the Shop. A cleared
 # install marks "No charter"; its row is tapped in any case, so the run is classic whatever the settings kept.
-tap_id charter_row_none || { echo "CHECK the title offers a run without a charter: FAIL"; exit 1; }
 tap_id title_new_run || exit 1
+tap_id charter_row_none || { echo "CHECK the run setup offers a run without a charter: FAIL"; exit 1; }
+tap_id setup_begin || exit 1
 past_offers || exit 1
 # A new run lands on the Shop destination, which leads with the day's one lead; the forge is one destination over.
 wait_text "Forge your first weapon" && shot 02_shop

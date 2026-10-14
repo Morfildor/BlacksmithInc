@@ -27,12 +27,13 @@ texts() { dump | grep -o 'text="[^"]\+"' | head -12; }
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 # A classic run: a guild run (rules 6) opens on its opening packages, which this loop does not answer. Every charter is a
-# row on the title; the chosen one carries the id charter_name, so "No charter" is the choice when that node reads it.
+# row on the run setup; the chosen one carries the id charter_name, so "No charter" is the choice when that node reads it.
 no_charter_chosen() { dump | grep -q 'text="No charter"[^>]*resource-id="charter_name"'; }
 wait_text "Tiny Blacksmith" || exit 1
 # A cleared install offers the guided first day, which keeps the relic offer closed on day 1: skipped, so the run opens as it always did.
-has "Skip guidance" && tap "Skip guidance"
-{ no_charter_chosen || tap "No charter"; } && tap "New game" || exit 1
+has "Skip it" && tap "Skip it"
+tap "New game" && wait_text "How era" || exit 1
+{ no_charter_chosen || tap "No charter"; } && tap "Begin a classic run" || exit 1
 # A new run opens on the relic offer, which hides the workshop from the dump: "Decide later" keeps the offer. The loop
 # below puts it off again each morning.
 wait_text "Decide later" && tap "Decide later"

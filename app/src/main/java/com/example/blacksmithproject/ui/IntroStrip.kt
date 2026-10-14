@@ -105,23 +105,18 @@ fun IntroMenuLine(vm: GameViewModel, modifier: Modifier = Modifier) {
     val record by vm.intro.collectAsStateWithLifecycle()
     val status = record?.status
     if (status != IntroStatus.QUEUED && status != IntroStatus.OFFERED) return
-    val words: @Composable (Modifier) -> Unit = {
+    // One plain line under the button, not a framed panel: what the first game holds, and the way out of it beside it.
+    Row(modifier.fillMaxWidth().testTag("intro_menu"), verticalAlignment = Alignment.CenterVertically) {
         Text(
-            if (status == IntroStatus.QUEUED) "This game starts with a short guided first day." else "The guided first day stopped before its end.",
-            style = MaterialTheme.typography.bodySmall, color = Cream, modifier = it.padding(vertical = Space.sm),
+            if (status == IntroStatus.QUEUED) "Starts with a guided first day." else "The guided first day stopped early.",
+            style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f),
         )
-    }
-    val actions: @Composable () -> Unit = {
-        if (status == IntroStatus.QUEUED) InlineActionButton("Skip guidance", { vm.skipIntro() }, Modifier.testTag("intro_menu_skip"))
+        if (status == IntroStatus.QUEUED) InlineActionButton("Skip it", { vm.skipIntro() }, Modifier.testTag("intro_menu_skip"))
         else {
             InlineActionButton("Resume", { vm.introAction() }, Modifier.testTag("intro_menu_resume"))
             InlineActionButton("Dismiss", { vm.skipIntro() }, Modifier.testTag("intro_menu_dismiss"))
         }
     }
-    val place = modifier.fillMaxWidth().forgeRow().padding(start = Space.md, end = Space.xs).testTag("intro_menu")
-    // Large text: the words get the whole width and the actions a row under them.
-    if (LocalDensity.current.fontScale > 1.3f) Column(place) { words(Modifier); Row { actions() } }
-    else Row(place, verticalAlignment = Alignment.CenterVertically) { words(Modifier.weight(1f)); actions() }
 }
 
 /**
@@ -144,11 +139,9 @@ fun Modifier.introMark(on: Boolean): Modifier = if (!on) this else this
  */
 @Composable
 fun OpeningIntroNote(onSkip: () -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().drawBehind { drawRect(Gold, size = Size(3.dp.toPx(), size.height)) }.padding(start = Space.md, end = Space.xs).testTag("opening_intro")) {
-        Text(
-            "First game? Each of these is a full start. The guided first day begins once you choose. The shop without a guild is \"No charter\" on the title.",
-            style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.sm),
-        )
-        InlineActionButton("Skip guidance", onSkip, Modifier.testTag("intro_skip"))
+    // One plain line, as on the title: no panel competing with the cards under it.
+    Row(modifier.fillMaxWidth().testTag("opening_intro"), verticalAlignment = Alignment.CenterVertically) {
+        Text("First game: the guided day begins once you choose.", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f))
+        InlineActionButton("Skip it", onSkip, Modifier.testTag("intro_skip"))
     }
 }

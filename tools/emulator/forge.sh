@@ -57,8 +57,10 @@ past_offers() {
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith"
-check has_id charter_picker
 tap_id title_new_run || exit 1
+# "New game" opens the run setup: the charter kept from settings is begun.
+check has_id charter_picker
+tap_id setup_begin || exit 1
 $ADB shell sleep 2
 # rules 6: a guild run opens on its three packages. The first one on screen is taken.
 if has_id opening_chooser; then

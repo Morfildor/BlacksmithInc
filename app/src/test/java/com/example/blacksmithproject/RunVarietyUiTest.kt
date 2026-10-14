@@ -107,7 +107,10 @@ class RunVarietyUiTest {
         val w = def.weapon!!
         val line = engine.openingChooser(s)!!.openings.first { it.id == def.id }.brings.last()
         val flaw = content.affixById.getValue(w.flaw)
-        assertEquals("${content.material(w.coreId).name} ${content.family(w.familyId).name.lowercase()} with ${content.material(w.augmentId).name}, quality ${w.quality}. Flaw, ${flaw.name}: ${flaw.description}", line)
+        assertEquals("${content.material(w.coreId).name} ${content.family(w.familyId).name.lowercase()} with ${content.material(w.augmentId).name}, quality ${w.quality}, ${flaw.name}", line)
+        // The card's costs say the flaw's price in words and the rest from the package's own numbers.
+        val card = engine.openingChooser(s)!!.openings.first { it.id == def.id }
+        assertEquals(listOfNotNull(def.costNote, def.goldDelta.takeIf { it < 0 }?.let { "Start with ${-it} less gold" }, def.integrityDelta.takeIf { it < 0 }?.let { "The forge starts ${-it} health down" }), card.costs)
     }
 
     // ---- the Heartfire panel ----

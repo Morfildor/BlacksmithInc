@@ -106,10 +106,10 @@
  },
  "bg_title_workshop_night": {
   "sheet": "pack:backgrounds",
-  "width": 270,
-  "height": 150,
+  "width": 941,
+  "height": 1672,
   "sourceKind": "script_drawn_pack",
-  "sha256": "d870757e1b6a34b90c9ef2c51206a5ab061358ca5bd85eb93db138777efe5487"
+  "sha256": "bfd817f11a9666f5aedfa5113302c27aa9f0f4dc7043d0103ae97bddda7bd103"
  },
  "blessing_forgefire": {
   "sheet": "pack:blessings",

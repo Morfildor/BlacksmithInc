@@ -108,10 +108,11 @@ class IntroStripTest {
         compose.runOnUiThread { vm = GameViewModel(engine, GameSession(engine, MemoryRepository(null, SaveCodec.encodeLegacy(LegacyProfile()))), settings, SavedStateHandle()) }
         compose.setContent { BlacksmithProjectTheme { TinyBlacksmithApp(vm) } }
         compose.waitUntil(15_000) { vm.ui.value is UiState.Title }
-        // The title says the game about to start is guided, with the way out beside it, and opens on the shop alone.
+        // The title says the game about to start is guided, with the way out beside it; the run setup opens on the shop alone.
         compose.onNodeWithTag("intro_menu_skip").assertIsDisplayed()
-        compose.onNodeWithTag("charter_name", useUnmergedTree = true).assertTextEquals("No charter")
         compose.onNodeWithTag("title_new_run").performClick()
+        compose.onNodeWithTag("charter_name", useUnmergedTree = true).assertTextEquals("No charter")
+        compose.onNodeWithTag("setup_begin").performClick()
         compose.waitUntil(15_000) { (vm.ui.value as? UiState.Playing)?.intro != null }
 
         compose.onNodeWithTag("intro_strip").assertIsDisplayed()

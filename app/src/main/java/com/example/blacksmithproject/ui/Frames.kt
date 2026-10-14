@@ -1,13 +1,17 @@
 package com.example.blacksmithproject.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.width
+import com.example.blacksmithproject.R
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import com.example.blacksmithproject.ui.theme.ForgePanelRaised
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.Dialog
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.RadioButton
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -152,7 +156,8 @@ fun Modifier.forgeRow(): Modifier = background(ForgePanel, RowShape).border(1.dp
 private val RowShape = RoundedCornerShape(4.dp)
 
 /**
- * One option of a pick-one choice: a framed row that is a radio button, raised and edged in gold once chosen. Every
+ * One option of a pick-one choice: a quiet plate with a hairline edge; once chosen it is raised, edged in gold and marked
+ * with a check, so the choice is never told by colour alone (it stays a radio button to a screen reader). Every
  * choice surface (charter, opening, visitor answer, relic, loan) is made of these, so a choice always looks the same.
  * Choosing does nothing but mark: the one action under the rows commits.
  */
@@ -161,17 +166,23 @@ fun ChoiceRow(
     selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true,
     leading: (@Composable () -> Unit)? = null, content: @Composable ColumnScope.() -> Unit,
 ) {
-    Row(
+    Box(
         modifier.fillMaxWidth()
             .background(if (selected) ForgePanelRaised else ForgePanel, RowShape)
-            .border(if (selected) 2.dp else 1.dp, if (selected) Gold else BronzeLine, RowShape)
-            .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
-            .heightIn(min = 56.dp).padding(horizontal = Space.sm, vertical = Space.sm),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+            .border(if (selected) 1.5.dp else 1.dp, if (selected) Gold else BronzeDeep, RowShape)
+            .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick),
     ) {
-        RadioButton(selected = selected, onClick = null, enabled = enabled, colors = RadioButtonDefaults.colors(selectedColor = Gold, unselectedColor = Bronze))
-        leading?.invoke()
-        Column(Modifier.weight(1f)) { CompositionLocalProvider(LocalContentColor provides if (enabled) Cream else CreamMuted) { content() } }
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(start = Space.md, end = Space.md + 24.dp, top = Space.sm + 2.dp, bottom = Space.sm + 2.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            leading?.invoke()
+            Column(Modifier.weight(1f)) { CompositionLocalProvider(LocalContentColor provides if (enabled) Cream else CreamMuted) { content() } }
+        }
+        // The chosen mark is a shape as well as the gold edge: a check in a gold disc at the corner.
+        if (selected) Box(Modifier.align(Alignment.TopEnd).padding(Space.sm).size(22.dp).background(Gold, CircleShape), contentAlignment = Alignment.Center) {
+            Icon(painterResource(R.drawable.ic_check), contentDescription = null, tint = ForgeNight, modifier = Modifier.size(16.dp))
+        }
     }
 }
 
@@ -300,7 +311,7 @@ fun PrimaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier = 
                 drawRect(GoldBright, size = Size(size.width, 1.5.dp.toPx()))
                 drawRect(GoldDeep, Offset(0f, size.height - bevel), Size(size.width, bevel))
             } else {
-                drawRect(Color(0xFF2A2E38))
+                drawRect(Color(0xFF2C2722))
                 drawRect(ForgeSlot, Offset(0f, size.height - bevel), Size(size.width, bevel))
             }
         }.border(1.dp, if (enabled) Color(0xFF5A3C0A) else BronzeDeep, MaterialTheme.shapes.small)
@@ -397,6 +408,22 @@ fun EffectRow(kind: EffectKind, title: String, detail: String, modifier: Modifie
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.titleSmall, color = if (kind == EffectKind.NEUTRAL) Cream else kind.color)
             if (detail.isNotEmpty()) Text(detail, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+        }
+    }
+}
+
+/**
+ * Gains or costs as short bullets: each line opens with the effect's sign in its colour ("+" a gain, "−" a cost), the
+ * words after it in ivory Regular. The sign is a shape as well as a colour, and a list reads faster than a sentence.
+ */
+@Composable
+fun EffectBullets(kind: EffectKind, items: List<String>, modifier: Modifier = Modifier) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        items.forEach { item ->
+            Row(Modifier.semantics(mergeDescendants = true) {}) {
+                Text(kind.sign, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = kind.color, modifier = Modifier.padding(end = Space.sm))
+                Text(item, style = MaterialTheme.typography.bodySmall, color = Cream)
+            }
         }
     }
 }

@@ -22,7 +22,7 @@ class TitleScreenTest {
     @Test
     fun titleOffersANewRun() {
         var started = false
-        compose.setContent { BlacksmithProjectTheme { MainMenu("Era 1 awaits", LegacyProfile(), "New game", "title_new_run", enabled = true, onPrimary = { started = true }, onSettings = {}) } }
+        compose.setContent { BlacksmithProjectTheme { MainMenu("Era 1", LegacyProfile(), "New game", "title_new_run", enabled = true, onPrimary = { started = true }, onSettings = {}) } }
         compose.onNodeWithText("Tiny Blacksmith").assertIsDisplayed()
         compose.onNodeWithTag("title_new_run").performClick()
         assertTrue(started)
