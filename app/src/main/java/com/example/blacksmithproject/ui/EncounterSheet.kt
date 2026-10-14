@@ -17,15 +17,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -125,19 +121,12 @@ fun EncounterContent(view: Encounters.View, state: GameState, busy: Boolean, onC
 
         view.options.forEach { o ->
             val open = o.blocked == null
-            Row(
-                Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow()
-                    .selectable(selected = selected?.id == o.id, enabled = open && !busy, role = Role.RadioButton) { marked = o.id }
-                    .heightIn(min = 56.dp).padding(horizontal = Space.sm, vertical = Space.sm).testTag("visitor_option_${o.id}"),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
-            ) {
-                RadioButton(selected = selected?.id == o.id, onClick = null, enabled = open)
-                Column(Modifier.weight(1f)) {
-                    Text(o.label, style = MaterialTheme.typography.titleSmall, color = if (open) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("Cost: ${o.cost}", style = MaterialTheme.typography.bodyMedium, color = if (open) Gold else MaterialTheme.colorScheme.onSurfaceVariant)
-                    if (o.effect.isNotEmpty()) Text(o.effect, style = MaterialTheme.typography.bodyMedium, color = if (open) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant)
-                    o.blocked?.let { Text("Not possible: $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.FLAW.color, modifier = Modifier.testTag("visitor_blocked_${o.id}")) }
-                }
+            // A choice row: a tap marks the answer, Commit sends it. What it costs and what it brings as bullets.
+            ChoiceRow(selected?.id == o.id, { marked = o.id }, Modifier.padding(top = Space.sm).testTag("visitor_option_${o.id}"), enabled = open && !busy) {
+                Text(o.label, style = MaterialTheme.typography.titleSmall)
+                if (o.effect.isNotEmpty()) EffectBullets(EffectKind.BUFF, listOf(o.effect))
+                if (o.cost == "Free") Secondary("Free") else EffectBullets(EffectKind.FLAW, listOf(o.cost))
+                o.blocked?.let { Text("Not possible: $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.FLAW.color, modifier = Modifier.testTag("visitor_blocked_${o.id}")) }
             }
         }
         if (view.options.none { it.id != Encounters.PASS && it.blocked == null }) Secondary("You can't take the other options today. The free option is still available.", Modifier.padding(top = Space.sm))
@@ -191,49 +180,53 @@ fun RelicRows(relics: List<Relics.View>, slots: Int, offerPending: Boolean, onOp
 }
 
 /**
- * The relic offer, after the blessing dialog's pattern. With every slot taken, the relic picked first asks which held
- * relic it replaces; nothing is sent before that second pick. "Take none" gives the offer up.
+ * The relic offer as choice rows: a tap marks a relic, and the one gold action takes it. With every slot taken, "Choose
+ * what to replace" goes on to the held relics, marked the same way; nothing is sent before "Replace …". "Take none"
+ * gives the offer up; "Decide later" keeps it for another day.
  */
 @Composable
 fun RelicDialog(
     offer: List<RelicDef>, held: List<Relics.View>, slots: Int, busy: Boolean,
     onChoose: (relicId: String, replaceId: String?) -> Unit, onDecline: () -> Unit, onLater: () -> Unit,
 ) {
-    var picked by rememberSaveable { mutableStateOf<String?>(null) }
-    val taking = offer.firstOrNull { it.id == picked }
-    AlertDialog(
-        modifier = Modifier.semantics { testTagsAsResourceId = true },
-        onDismissRequest = {},
-        title = { Text(if (taking == null) "A relic for the workshop" else "Which relic will you replace?") },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-                if (taking == null) {
-                    if (held.size >= slots) Text("Your relic slots are full. Choose a new relic, then pick one to replace.", style = MaterialTheme.typography.bodyMedium)
-                    offer.forEach { r ->
-                        RelicChoice(r.name, r.description, "relic_${r.id}", !busy, relicIcon(r.id)) { if (held.size >= slots) picked = r.id else onChoose(r.id, null) }
-                    }
-                } else {
-                    Text("${taking.name} replaces the relic you choose. You'll lose the old relic and its progress.", style = MaterialTheme.typography.bodyMedium)
-                    held.forEach { r -> RelicChoice(r.name, r.status, "relic_replace_${r.id}", !busy, relicIcon(r.id)) { onChoose(taking.id, r.id) } }
-                }
+    var marked by rememberSaveable { mutableStateOf<String?>(null) }
+    var replacing by rememberSaveable { mutableStateOf(false) }
+    var old by rememberSaveable { mutableStateOf<String?>(null) }
+    val taking = offer.firstOrNull { it.id == marked }
+    val full = held.size >= slots
+    val out = held.firstOrNull { it.id == old }
+    if (!replacing || taking == null) ForgeDialog(
+        "A relic for the workshop", onDismiss = {}, dismissOnClickOutside = false,
+        actions = {
+            InlineActionButton("Take none", onDecline, Modifier.heightIn(min = 48.dp).testTag("relic_none"), enabled = !busy)
+            InlineActionButton("Decide later", onLater, Modifier.heightIn(min = 48.dp).testTag("relic_later"))
+            PrimaryActionButton(
+                when { taking == null -> "Take"; full -> "Choose what to replace"; else -> "Take ${taking.name}" },
+                { if (taking != null) { if (full) replacing = true else onChoose(taking.id, null) } },
+                Modifier.testTag("relic_take"), enabled = taking != null && !busy,
+            )
+        },
+    ) {
+        if (full) Text("Your relic slots are full. A new relic replaces one you hold, and that one's progress is lost.", style = MaterialTheme.typography.bodyMedium)
+        offer.forEach { r ->
+            ChoiceRow(taking?.id == r.id, { marked = r.id }, Modifier.testTag("relic_${r.id}"), enabled = !busy, leading = { PixelImage(relicIcon(r.id), wholePixelDp(48, 44.dp), description = null) }) {
+                Text(r.name, style = MaterialTheme.typography.titleSmall)
+                EffectBullets(EffectKind.BUFF, listOf(r.description))
             }
+        }
+    }
+    else ForgeDialog(
+        "Which relic will ${taking.name} replace?", onDismiss = {}, dismissOnClickOutside = false,
+        actions = {
+            InlineActionButton("Back", { replacing = false; old = null }, Modifier.heightIn(min = 48.dp).testTag("relic_back"))
+            PrimaryActionButton(out?.let { "Replace ${it.name}" } ?: "Replace", { out?.let { onChoose(taking.id, it.id) } }, Modifier.testTag("relic_replace"), enabled = out != null && !busy)
         },
-        confirmButton = {
-            if (taking == null) InlineActionButton("Decide later", onLater, Modifier.heightIn(min = 48.dp).testTag("relic_later"))
-            else InlineActionButton("Back", { picked = null }, Modifier.heightIn(min = 48.dp).testTag("relic_back"))
-        },
-        dismissButton = { if (taking == null) InlineActionButton("Take none", onDecline, Modifier.heightIn(min = 48.dp).testTag("relic_none"), enabled = !busy) },
-    )
-}
-
-@Composable
-private fun RelicChoice(name: String, detail: String, tag: String, enabled: Boolean, icon: Int, onClick: () -> Unit) {
-    OutlinedButton(onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag(tag)) {
-        PixelImage(icon, wholePixelDp(48, 44.dp), description = null)
-        Spacer(Modifier.width(Space.sm))
-        Column(Modifier.weight(1f)) {
-            Text(name, style = MaterialTheme.typography.titleSmall)
-            Text(detail, style = MaterialTheme.typography.bodySmall)
+    ) {
+        held.forEach { r ->
+            ChoiceRow(out?.id == r.id, { old = r.id }, Modifier.testTag("relic_replace_${r.id}"), enabled = !busy, leading = { PixelImage(relicIcon(r.id), wholePixelDp(48, 44.dp), description = null) }) {
+                Text(r.name, style = MaterialTheme.typography.titleSmall)
+                EffectBullets(EffectKind.FLAW, listOf("Lost: ${r.status}"))
+            }
         }
     }
 }

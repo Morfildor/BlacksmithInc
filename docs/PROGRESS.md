@@ -27,6 +27,11 @@ with stubs for the Android-only APIs, which runs the app's JVM unit tests and ty
   together, the guided step at the head of the result card, a Heartfire confirmation (`HeartfireUi.confirm`,
   `forge_heartfire_go`). App unit tests 250 / 0 in the shim; `ForgeResultCardTest` rewritten and type-checked;
   `runvariety.sh` taps the confirmation. Not run: the instrumented suite and the scripts.
+- Item 3, dialogs: the 11 `AlertDialog`s of the game and the debug scenario confirm are on `ForgeDialog` (new
+  `dismissOnClickOutside`); the relic offer, the loan picker and the visitor's answers are `ChoiceRow`s with
+  `EffectBullets`, marked then committed (`relic_take`, `relic_replace`, `loan_confirm`, `visitor_commit`). The debug
+  preview activity's stand-in dialog is left as it is. App unit tests 250 / 0; instrumented sources type-check with no
+  new errors. Not run on a device.
 
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay

@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -212,26 +211,28 @@ fun StorageList(
             SecondaryActionButton("Arm the watch ${chosen.size}", { asking = StockAction.Donate }, Modifier.weight(1f).testTag("storage_bulk_donate"), enabled = !busy && chosen.isNotEmpty() && terms!!.armoryRoom > 0)
         }
     }
-    if (scrapping) AlertDialog(
-        modifier = Modifier.semantics { testTagsAsResourceId = true },
-        onDismissRequest = { scrapping = false },
-        title = { Text("Scrap ${blades(chosen.size)}?") },
-        text = { Text("Scraps these weapons permanently. Costs no energy. " + scrapBack(chosen)) },
-        confirmButton = { InlineActionButton("Scrap", { scrapping = false; onScrap(chosen); picked = emptySet() }, Modifier.testTag("storage_scrap_confirm")) },
-        dismissButton = { InlineActionButton("Keep them", { scrapping = false }) },
-    )
+    if (scrapping) ForgeDialog(
+        "Scrap ${blades(chosen.size)}?", onDismiss = { scrapping = false },
+        actions = {
+            InlineActionButton("Keep them", { scrapping = false })
+            InlineActionButton("Scrap", { scrapping = false; onScrap(chosen); picked = emptySet() }, Modifier.testTag("storage_scrap_confirm"))
+        },
+    ) {
+        Text("Scraps these weapons permanently. Costs no energy. " + scrapBack(chosen))
+    }
     val action = asking
     if (action != null && terms != null) {
         val salvage = action == StockAction.Salvage
         // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
-        AlertDialog(
-            modifier = Modifier.semantics { testTagsAsResourceId = true },
-            onDismissRequest = { asking = null },
-            title = { Text(if (salvage) "Salvage ${blades(chosen.size)}?" else "Give ${blades(chosen.size)} to the town watch?") },
-            text = { Text(if (salvage) salvageTerms(chosen.size, terms) else donateTerms(terms)) },
-            confirmButton = { InlineActionButton(if (salvage) "Salvage" else "Arm the watch", { asking = null; onBulk(action, chosen); picked = emptySet() }, Modifier.testTag("storage_bulk_confirm")) },
-            dismissButton = { InlineActionButton("Keep them", { asking = null }) },
-        )
+        ForgeDialog(
+            if (salvage) "Salvage ${blades(chosen.size)}?" else "Give ${blades(chosen.size)} to the town watch?", onDismiss = { asking = null },
+            actions = {
+                InlineActionButton("Keep them", { asking = null })
+                InlineActionButton(if (salvage) "Salvage" else "Arm the watch", { asking = null; onBulk(action, chosen); picked = emptySet() }, Modifier.testTag("storage_bulk_confirm"))
+            },
+        ) {
+            Text(if (salvage) salvageTerms(chosen.size, terms) else donateTerms(terms))
+        }
     }
 }
 

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -151,14 +150,15 @@ fun LoadFailedScreen(failure: SaveFailure, working: Boolean, onRetry: () -> Unit
     }
     val over = text.startOver
     if (confirming && over != null) {
-        AlertDialog(
-            modifier = Modifier.semantics { testTagsAsResourceId = true },
-            onDismissRequest = { confirming = false },
-            title = { Text(over.confirmTitle) },
-            text = { Text(over.confirm) },
-            confirmButton = { PrimaryActionButton(over.confirmButton, { confirming = false; onStartOver() }, Modifier.heightIn(min = 48.dp).testTag("load_start_over_confirm")) },
-            dismissButton = { InlineActionButton("Not now", { confirming = false }, Modifier.heightIn(min = 48.dp)) },
-        )
+        ForgeDialog(
+            over.confirmTitle, onDismiss = { confirming = false },
+            actions = {
+                InlineActionButton("Not now", { confirming = false }, Modifier.heightIn(min = 48.dp))
+                PrimaryActionButton(over.confirmButton, { confirming = false; onStartOver() }, Modifier.heightIn(min = 48.dp).testTag("load_start_over_confirm"))
+            },
+        ) {
+            Text(over.confirm)
+        }
     }
 }
 
@@ -169,22 +169,21 @@ fun LoadFailedScreen(failure: SaveFailure, working: Boolean, onRetry: () -> Unit
 @Composable
 fun SaveFailureDialog(op: GameSession.Op, unconfirmed: Boolean, onRetry: () -> Unit, onKeepWorking: () -> Unit) {
     val endDay = (op as? GameSession.Op.Dispatch)?.command is Command.EndDay
-    AlertDialog(
-        modifier = Modifier.semantics { testTagsAsResourceId = true },
-        onDismissRequest = onKeepWorking,
-        title = { Text(if (endDay) "Could not save the day" else "Could not save") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-                if (unconfirmed) {
-                    Text("Couldn't confirm whether " + (if (endDay) "the day" else "that last action") + "was saved. You're seeing the state from before that action.")
-                    Secondary("Try again safely retries the save without repeating the action. Keep working continues from the state shown. Check storage space if this continues.")
-                } else {
-                    Text("The game is still in the state from before " + (if (endDay) "you ended the day." else "that last action."))
-                    Secondary("Try again retries the action. Keep working returns without it. Check storage space if this continues.")
-                }
-            }
+    ForgeDialog(
+        if (endDay) "Could not save the day" else "Could not save", onDismiss = onKeepWorking,
+        actions = {
+            InlineActionButton("Keep working", onKeepWorking, Modifier.heightIn(min = 48.dp).testTag("save_keep_working"))
+            PrimaryActionButton("Try again", onRetry, Modifier.heightIn(min = 48.dp).testTag("save_retry"))
         },
-        confirmButton = { PrimaryActionButton("Try again", onRetry, Modifier.heightIn(min = 48.dp).testTag("save_retry")) },
-        dismissButton = { InlineActionButton("Keep working", onKeepWorking, Modifier.heightIn(min = 48.dp).testTag("save_keep_working")) },
-    )
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            if (unconfirmed) {
+                Text("Couldn't confirm whether " + (if (endDay) "the day" else "that last action") + " was saved. You're seeing the state from before that action.")
+                Secondary("Try again safely retries the save without repeating the action. Keep working continues from the state shown. Check storage space if this continues.")
+            } else {
+                Text("The game is still in the state from before " + (if (endDay) "you ended the day." else "that last action."))
+                Secondary("Try again retries the action. Keep working returns without it. Check storage space if this continues.")
+            }
+        }
+    }
 }

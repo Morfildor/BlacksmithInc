@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.CircularProgressIndicator
@@ -175,12 +174,13 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
         IconButton(onClick = onSettings, modifier = Modifier.align(Alignment.TopEnd).safeDrawingPadding().padding(Space.sm).size(48.dp).testTag("menu_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings") }
     }
     // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
-    if (confirmAbandon && onAbandon != null) AlertDialog(
-        modifier = Modifier.semantics { testTagsAsResourceId = true },
-        onDismissRequest = { confirmAbandon = false },
-        title = { Text("Abandon this run?") },
-        text = { Text("Ends this run permanently. You earn no legacy points, and its weapons and heroes won't be recorded. Your recipe notes stay.") },
-        confirmButton = { InlineActionButton("Abandon run", { confirmAbandon = false; onAbandon() }, Modifier.testTag("menu_abandon_confirm")) },
-        dismissButton = { InlineActionButton("Keep playing", { confirmAbandon = false }) },
-    )
+    if (confirmAbandon && onAbandon != null) ForgeDialog(
+        "Abandon this run?", onDismiss = { confirmAbandon = false },
+        actions = {
+            InlineActionButton("Keep playing", { confirmAbandon = false })
+            InlineActionButton("Abandon run", { confirmAbandon = false; onAbandon() }, Modifier.testTag("menu_abandon_confirm"))
+        },
+    ) {
+        Text("Ends this run permanently. You earn no legacy points, and its weapons and heroes won't be recorded. Your recipe notes stay.")
+    }
 }

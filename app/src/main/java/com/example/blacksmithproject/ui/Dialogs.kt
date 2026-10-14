@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
@@ -394,67 +393,62 @@ private fun PaperRuleLine(top: Dp, bottom: Dp) {
 @Composable
 fun BlessingDialog(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
-    AlertDialog(
-        modifier = Modifier.semantics { testTagsAsResourceId = true },
-        // Back means "Decide later"; a tap beside the offer does nothing.
-        onDismissRequest = vm::dismissBlessingOffer,
-        properties = DialogProperties(dismissOnClickOutside = false),
-        title = { Text("The town offers a blessing") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-                s.state.pendingBlessingOffer.forEach { id ->
-                    val b = content.blessing(id)
-                    BlessingOption(b.name, b.description, { vm.dispatch(Command.ChooseBlessing(id)) }, Modifier.testTag("blessing_${id.value}")) {
-                        Sprites.blessing(id)?.let { PixelImage(it, 32.dp, description = null); Spacer(Modifier.width(12.dp)) }
-                    }
+    ForgeDialog(
+        "The town offers a blessing", onDismiss = vm::dismissBlessingOffer, dismissOnClickOutside = false,
+        actions = {
+            InlineActionButton("Decide later", vm::dismissBlessingOffer, Modifier.testTag("blessing_later"))
+        },
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            s.state.pendingBlessingOffer.forEach { id ->
+                val b = content.blessing(id)
+                BlessingOption(b.name, b.description, { vm.dispatch(Command.ChooseBlessing(id)) }, Modifier.testTag("blessing_${id.value}")) {
+                    Sprites.blessing(id)?.let { PixelImage(it, 32.dp, description = null); Spacer(Modifier.width(12.dp)) }
                 }
             }
-        },
-        confirmButton = { InlineActionButton("Decide later", vm::dismissBlessingOffer, Modifier.testTag("blessing_later")) },
-    )
+        }
+    }
 }
 
 /**
- * Who [blade] is lent to: the guild's members, each with their class and what they carry now. A member who is away or
- * held cannot take it and says why; a wounded one in town can. Choosing is the loan; "Keep it" lends nothing.
+ * Who [blade] is lent to: the guild's members, each with their class and what they carry now, as choice rows. A member
+ * who is away or held cannot take it and says why; a wounded one in town can. A tap marks a member; "Loan to …" lends,
+ * "Keep it" lends nothing.
  */
 @Composable
 fun LoanPicker(blade: String, targets: List<LoanTargetUi>, onPick: (HeroId) -> Unit, onDismiss: () -> Unit) {
-    // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
-    AlertDialog(
-        modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("loan_picker"),
-        onDismissRequest = onDismiss,
-        title = { Text("Loan $blade to...") },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                if (targets.isEmpty()) Secondary("The guild has no members.")
-                targets.forEach { t ->
-                    Column(
-                        Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(enabled = t.enabled, onClickLabel = "Loan to ${t.name}", role = Role.Button) { onPick(t.heroId) }
-                            .padding(vertical = Space.xs).testTag("loan_member_${t.heroId.value}").semantics(mergeDescendants = true) {},
-                    ) {
-                        Text("${t.name} · ${t.role}", style = MaterialTheme.typography.titleSmall, color = if (t.enabled) Cream else LocalContentColor.current.copy(alpha = 0.5f))
-                        Secondary(t.carrying)
-                        t.reason?.let { Secondary(if (t.enabled) it else "$it: cannot take a loan today") }
-                    }
-                }
-            }
+    var marked by rememberSaveable { mutableStateOf<String?>(null) }
+    val chosen = targets.firstOrNull { it.heroId.value == marked && it.enabled }
+    ForgeDialog(
+        "Loan $blade to...", onDismiss = onDismiss, tag = "loan_picker",
+        actions = {
+            InlineActionButton("Keep it", onDismiss, Modifier.testTag("loan_cancel"))
+            PrimaryActionButton(chosen?.let { "Loan to ${it.name}" } ?: "Loan", { chosen?.let { onPick(it.heroId) } }, Modifier.testTag("loan_confirm"), enabled = chosen != null)
         },
-        confirmButton = { InlineActionButton("Keep it", onDismiss, Modifier.testTag("loan_cancel")) },
-    )
+    ) {
+        if (targets.isEmpty()) Secondary("The guild has no members.")
+        targets.forEach { t ->
+        ChoiceRow(chosen?.heroId == t.heroId, { marked = t.heroId.value }, Modifier.testTag("loan_member_${t.heroId.value}"), enabled = t.enabled) {
+            Text("${t.name} · ${t.role}", style = MaterialTheme.typography.titleSmall)
+            Secondary(t.carrying)
+            t.reason?.let { Secondary(if (t.enabled) it else "$it: cannot take a loan today") }
+        }
+        }
+    }
 }
 
 @Composable
 fun ErrorDialog(message: String, onDismiss: () -> Unit) {
     val haptics = LocalHaptics.current
     LaunchedEffect(message) { haptics.play(Moment.REJECTED) }
-    AlertDialog(
-        modifier = Modifier.semantics { testTagsAsResourceId = true },
-        onDismissRequest = onDismiss,
-        title = { Text("The forge says") },
-        text = { Text(message) },
-        confirmButton = { PrimaryActionButton("Alright", onDismiss, Modifier.testTag("error_ok")) },
-    )
+    ForgeDialog(
+        "The forge says", onDismiss = onDismiss,
+        actions = {
+            PrimaryActionButton("Alright", onDismiss, Modifier.testTag("error_ok"))
+        },
+    ) {
+        Text(message)
+    }
 }
 
 /** Poses for the siege diorama derive from the replay step being shown; the stage never changes outcomes. */

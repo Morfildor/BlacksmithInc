@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -83,20 +82,10 @@ fun ScenarioMenu(vm: GameViewModel, hasRun: Boolean, enabled: Boolean, onLoaded:
         }
     }
     chosen?.let { e ->
-        AlertDialog(
-            modifier = Modifier.semantics { testTagsAsResourceId = true },
-            onDismissRequest = { chosen = null },
-            title = { Text("Load this scenario?") },
-            text = {
-                Text(
-                    "${e.title}. A constructed save. ${e.built}\n\n" +
-                        (if (hasRun) "It replaces the current run, which cannot be recovered. " else "") +
-                        if (e.ownLegacy) "It also replaces your legacy (points, upgrades, journal, Legend Board and lineages) with the account this scenario was played on."
-                        else "Your legacy is kept: the run continues on it.",
-                    modifier = Modifier.testTag("scenario_confirm_text"),
-                )
-            },
-            confirmButton = {
+        ForgeDialog(
+            "Load this scenario?", onDismiss = { chosen = null },
+            actions = {
+                TextButton(onClick = { chosen = null }) { Text("Cancel") }
                 TextButton(
                     onClick = {
                         val run = assets.open("scenarios/${e.id}.json").bufferedReader().use { it.readText() }
@@ -106,7 +95,14 @@ fun ScenarioMenu(vm: GameViewModel, hasRun: Boolean, enabled: Boolean, onLoaded:
                     modifier = Modifier.testTag("scenario_confirm"),
                 ) { Text("Load scenario") }
             },
-            dismissButton = { TextButton(onClick = { chosen = null }) { Text("Cancel") } },
-        )
+        ) {
+            Text(
+                "${e.title}. A constructed save. ${e.built}\n\n" +
+                    (if (hasRun) "It replaces the current run, which cannot be recovered. " else "") +
+                    if (e.ownLegacy) "It also replaces your legacy (points, upgrades, journal, Legend Board and lineages) with the account this scenario was played on."
+                    else "Your legacy is kept: the run continues on it.",
+                modifier = Modifier.testTag("scenario_confirm_text"),
+            )
+        }
     }
 }

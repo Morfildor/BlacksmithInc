@@ -47,6 +47,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - Forging with Heartfire asks first, saying what it spends, how much is left after, the chance and what a miss still gives.
 - The places of the recipe stay in view while a tray of choices is open.
 - On the first day's forge result the guided step heads the card instead of sitting over the weapon's numbers.
+- **Every dialog looks the same.** The relic offer, the loan, the blessing, the confirmations (abandon, scrap, salvage, dismiss a member, guild plans, starting over) and the error and save messages use the game's framed dialog with its serif title, instead of the stock grey box.
+- **Choices mark, then commit.** Relics, loans and a visitor's answers are rows you tap to mark, with a check on the chosen one. What a choice brings and costs is a short "+" or "−" line. One gold button takes the relic, lends the weapon or commits the answer. With full relic slots, the relic being replaced shows what is lost.
+- A save failure message no longer runs two words together ("that last action was saved").
 - The shop day's first card no longer explains every morning that each visit will be shown. It speaks only when some visits are summed up after.
 - A weapon given away (listed for less than a quarter of its price) is a gift, not a sale. It earns no sale reputation. The town notices generosity once a day, and a gift warms a hero to the shop only so far, never into a regular.
 - A blessing offer nobody answers is withdrawn after three mornings, with a line in the day's records.

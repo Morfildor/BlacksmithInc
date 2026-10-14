@@ -195,9 +195,11 @@ fun ChoiceRow(
 @Composable
 fun ForgeDialog(
     title: String, onDismiss: () -> Unit, modifier: Modifier = Modifier, tag: String? = null,
+    /** False where a tap beside the dialog must not answer it (Back still calls [onDismiss]). */
+    dismissOnClickOutside: Boolean = true,
     actions: @Composable RowScope.() -> Unit, content: @Composable ColumnScope.() -> Unit,
 ) {
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnClickOutside = dismissOnClickOutside)) {
         FramedPanel(
             modifier = modifier.padding(horizontal = Space.md).widthIn(max = 560.dp).fillMaxWidth()
                 .semantics { testTagsAsResourceId = true }.let { if (tag != null) it.testTag(tag) else it },

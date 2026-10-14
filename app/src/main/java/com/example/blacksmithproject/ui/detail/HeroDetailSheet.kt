@@ -32,12 +32,12 @@ import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.EffectKind
 import com.example.blacksmithproject.ui.EffectRow
 import com.example.blacksmithproject.ui.FramedPanel
+import com.example.blacksmithproject.ui.ForgeDialog
 import com.example.blacksmithproject.ui.InlineActionButton
 import com.example.blacksmithproject.ui.MemberDetailUi
 import com.example.blacksmithproject.ui.StatRow
 import com.example.blacksmithproject.ui.memberDetail
 import androidx.compose.foundation.clickable
-import androidx.compose.material3.AlertDialog
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -290,12 +290,13 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
             SecondaryActionButton("Dismiss from the guild", { confirmDismiss = true }, Modifier.fillMaxWidth().padding(top = Space.md).testTag("sheet_dismiss_member"), enabled = actions.enabled && m.dismissBlocked == null)
         }
     }
-    if (confirmDismiss && actions != null) AlertDialog(
-        modifier = Modifier.semantics { testTagsAsResourceId = true },
-        onDismissRequest = { confirmDismiss = false },
-        title = { Text("Let ${m.name} go?") },
-        text = { Text("The signing fee is not returned. A weapon on loan returns to storage.") },
-        confirmButton = { InlineActionButton("Dismiss", { confirmDismiss = false; actions.onDismissMember() }, Modifier.testTag("sheet_dismiss_yes")) },
-        dismissButton = { InlineActionButton("Keep them", { confirmDismiss = false }, Modifier.testTag("sheet_dismiss_no")) },
-    )
+    if (confirmDismiss && actions != null) ForgeDialog(
+        "Let ${m.name} go?", onDismiss = { confirmDismiss = false },
+        actions = {
+            InlineActionButton("Keep them", { confirmDismiss = false }, Modifier.testTag("sheet_dismiss_no"))
+            InlineActionButton("Dismiss", { confirmDismiss = false; actions.onDismissMember() }, Modifier.testTag("sheet_dismiss_yes"))
+        },
+    ) {
+        Text("The signing fee is not returned. A weapon on loan returns to storage.")
+    }
 }

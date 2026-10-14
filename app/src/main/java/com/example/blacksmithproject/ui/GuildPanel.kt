@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -155,14 +154,15 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
         )
     }
     confirm?.let { c ->
-        AlertDialog(
-            modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("guild_confirm"),
-            onDismissRequest = { confirm = null },
-            title = { Text(c.title) },
-            text = { Text(c.body) },
-            confirmButton = { InlineActionButton(c.action, { confirm = null; vm.dispatch(c.command) }, Modifier.testTag("guild_confirm_yes")) },
-            dismissButton = { InlineActionButton("Not now", { confirm = null }, Modifier.testTag("guild_confirm_no")) },
-        )
+        ForgeDialog(
+            c.title, onDismiss = { confirm = null }, tag = "guild_confirm",
+            actions = {
+                InlineActionButton("Not now", { confirm = null }, Modifier.testTag("guild_confirm_no"))
+                InlineActionButton(c.action, { confirm = null; vm.dispatch(c.command) }, Modifier.testTag("guild_confirm_yes"))
+            },
+        ) {
+            Text(c.body)
+        }
     }
 }
 
