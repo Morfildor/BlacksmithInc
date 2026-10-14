@@ -39,6 +39,7 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - A weapon's card lists a rule that two of its parts share once, names both parts, and notes where its rules feed or get in the way of each other.
 
 ### Changed
+- Guild runs: the roster says in one line what members at home do without an order: rest when hurt, otherwise train, and pursue their ambitions.
 - **Listing a new weapon is one tap.** The forge result's main button is "List at suggested", with the price under it and how many heroes in town could pay it. "Set price" opens the price editor (−10, +10 or typed, with the count following your price), and "Back" there lists nothing.
 - When a weapon is forged for a commission, the result says in one line whether it is reserved and for whose commission. Only an heirloom sets a weapon aside; otherwise the buyer takes a matching weapon from storage first, then the shelf.
 - **Heartfire asks first.** Forging with Heartfire now opens a question before anything is spent: what it uses (1 Heartfire and the energy), how many you will hold after, that both are spent whether or not it breaks through, the chance in words and what a miss still gives. "Not now" spends nothing.

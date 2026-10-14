@@ -89,7 +89,12 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
             }
         }
         items(ui.offers, key = { "offer_${it.id}" }) { o -> OfferCard(o) { contract = o.id } }
-        item(key = "roster_head") { SectionTitle(ui.rosterHead) }
+        item(key = "roster_head") {
+            Column {
+                SectionTitle(ui.rosterHead)
+                ui.rosterNote?.let { Secondary(it, Modifier.testTag("guild_roster_note")) }
+            }
+        }
         itemsIndexed(ui.roster, key = { _, m -> "member_${m.heroId.value}" }) { i, m ->
             if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             MemberRow(m) { openHero(m.heroId) }

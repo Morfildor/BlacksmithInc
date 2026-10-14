@@ -119,6 +119,8 @@ data class GuildUi(
     /** "Planned for today: ..." when a party is planned. */
     val plan: String?, val boardNote: String?, val offers: List<OfferUi>,
     val rosterHead: String, val roster: List<MemberUi>,
+    /** What members at home do without an order (owner decision J), in one line; null with no members. */
+    val rosterNote: String?,
     val candidates: List<CandidateUi>, val candidatesNote: String,
     val region: RegionUi, val factions: List<FactionRowUi>,
     /** What End Day sets in motion for the guild, at most three lines. */
@@ -374,6 +376,8 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
         boardNote = "The party is out: the next contract can be planned once it is home.".takeIf { g.mission != null },
         offers = g.offers.sortedBy { wallWork(it) }.map { offerUi(state, g, it) },
         rosterHead = "Roster · ${g.members.size} of ${config.guild.maxMembers}",
+        rosterNote = "Members at home rest when hurt and otherwise train for ${config.guild.homeTrainingXp} experience a day, and pursue their ambitions, on their own. No daily order is needed."
+            .takeIf { g.members.isNotEmpty() },
         roster = g.members.mapNotNull { m ->
             val h = state.heroes[m.heroId] ?: return@mapNotNull null
             val fighter = fighterView(state, h.id)

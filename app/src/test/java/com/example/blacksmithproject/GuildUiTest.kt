@@ -64,6 +64,16 @@ class GuildUiTest {
         assertEquals(listOf("Shop", "Forge", "Guild", "Records"), Dest.entries.map { destName(it, guild = true) })
     }
 
+    /** Owner decision J: members at home train and pursue ambitions without an order, and the roster says so in one line. */
+    @Test
+    fun theRosterSaysInOneLineWhatMembersAtHomeDoUnasked() {
+        val s = mornings(GuildPolicy.NOVICE, 7).first { it.guild!!.members.isNotEmpty() }
+        assertEquals(
+            "Members at home rest when hurt and otherwise train for ${engine.config.guild.homeTrainingXp} experience a day, and pursue their ambitions, on their own. No daily order is needed.",
+            engine.guildUi(s)!!.rosterNote,
+        )
+    }
+
     @Test
     fun aOneDayContractIsHomeForTomorrowsSiegeAndATwoDayContractMissesIt() {
         // A morning with a one-day and a two-day contract on the board and nobody out.
