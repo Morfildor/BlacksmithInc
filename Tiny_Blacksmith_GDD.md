@@ -173,7 +173,7 @@ These stories come from deterministic systems, never from a script dressed up as
 
 | | Decision | Status |
 |---|---|---|
-| A | Hidden random odds (Reckless flaw chance, Heartfire breakthrough chance) are shown in band words, never as percentages or counts ("3 in 10" states exact odds). Thresholds, costs and energy stay numbers | NOT YET BUILT: the workbench still prints percentages |
+| A | Hidden random odds (Reckless flaw chance, Heartfire breakthrough chance) are shown in band words, never as percentages or counts ("3 in 10" states exact odds). Thresholds, costs and energy stay numbers. Applies to previews and tooltips too, including the upgrade preview (ruling of 2026-10-14, §21.4) | NOT YET BUILT: the workbench prints percentages, the upgrade preview prints "N forges in 10" |
 | B | Guild wall work draws on the daily recovery allowance; any extra for assigned heroes is a `BalanceConfig` number (`wallWorkExtraRecovery` = 1), never a bypass | Built (balance 15); the value 1 vs 3 is OPEN |
 | C | Debug entries (scenarios, combat sandbox) live under Settings in debug builds | Built |
 | D | `appCategory="game"`; portrait stays; checked on a 600 dp screen; landscape DEFERRED | Built |
@@ -281,8 +281,8 @@ command ID (the newest 30 are remembered); a retry returns the stored resolution
 may close the chapter (a successful end). Either way: a run summary, **claim legacy points once**, buy upgrades, choose
 the next era's charter (or none) and **Begin era N+1** with knowledge, upgrades, legends and the newest lineage.
 
-**Abandon** (main menu, confirmed): ends the run with no points, legends or lineage; recipe notes made in the run stay.
-Whether abandoning should also erase them is OPEN.
+**Abandon** (main menu, confirmed): ends the run with no points, legends or lineage; recipe notes made in the run stay
+(owner ruling 2026-10-14: abandoning resets the run's resources and progress, never the player's crafting knowledge).
 
 ## 4.5 Pacing
 
@@ -894,7 +894,7 @@ level 5 1, a weapon's fifth victory 2, elite slain 1, warlord defeated 3, ambiti
 
 Bounded on purpose: all tracks maxed add about +10 to +15 mean days. Most tracks move a run by a day or less; showing
 each track's own measure on the claim screen is OPEN. The upgrade preview words chance tracks as "N forges in 10",
-which states exact odds (OPEN under decision A).
+which states exact odds; decision A applies to it (NOT YET BUILT).
 
 ## 13.3 Persistence
 
@@ -1131,7 +1131,7 @@ sweeps); `:core:guildsim` (14 guild policies, paired comparisons); `:core:combat
 
 | Target | Now |
 |---|---|
-| New-player median first run 15–25 days | Plain smith median 25, mean ~24.6 (over the plan's 22.5 band top since visitors: OPEN) |
+| New-player median first run 15–25 days | Plain smith median 25, mean ~24.6 (over the plan's 22.5 band top since visitors). Kept by owner ruling; pacing is judged by minutes per run and how repetitive the last days feel, not by day count alone |
 | Viable paths beyond day 25 | Active play 30–36, expert bots 45–48 days |
 | Upgrades materially longer, never immortal | Maxed accounts +10 to +15 mean days; every simulated run ends |
 | Economy sustains experiments | Yes; expensive pricing ends runs earlier (median 15) |
@@ -1166,24 +1166,32 @@ seasons, challenge tiers.
 
 ## 21.3 NOT YET BUILT (decided)
 
-Decision A (odds in words on the workbench), K (pricing buttons), L (reservation line), J's explaining line, the
+Decision A (odds in words on the workbench, in the upgrade preview and in any tooltip), K (pricing buttons), L (reservation line), J's explaining line, the
 Heartfire confirmation, the classic Heartfire source line on the workbench, the remaining stock dialogs on the house
 dialog.
 
-## 21.4 OPEN (for the owner)
+## 21.4 Owner rulings and OPEN questions
 
-1. First-era band: accept a plain-smith median of 25, or retune.
-2. `wallWorkExtraRecovery` 1 or 3.
-3. The upgrade preview's "N forges in 10" wording.
-4. Abandon: keep or erase the run's discoveries.
-5. Two factions share Frost/Fire; no faction is weak to fire, storm, grave or verdant.
-6. Guild: charter band one cell over; drawbacks that cost little; militia nearly worthless at a guild wall; rescue
+Ruled on 2026-10-14 (DECISIONS "Owner rulings on the GDD v2.0 open questions"):
+- **First-era length:** keep the current balance (plain smith median 25). Reassess by run duration in minutes and how
+  repetitive the final days feel; day count alone does not establish a pacing problem.
+- **Wall work's extra repair:** this document states the implemented value (`wallWorkExtraRecovery` = 1). Whether it
+  should be 1 or 3 is a separate balance question, after repair costs, siege damage and survival are checked.
+- **Upgrade preview "N forges in 10":** exact odds; decision A applies to previews and tooltips (§21.3).
+- **Abandon:** keeps discovered recipe notes (what the code does).
+- **Two factions share Frost weakness and Fire resistance:** differentiate their tactical identities; change their
+  elemental affinities only if their other mechanics do not already lead to meaningfully different weapon choices.
+  Direction only; nothing changed yet.
+
+Still OPEN:
+1. Wall work's extra repair, 1 or 3 (above).
+2. Guild: charter band one cell over; drawbacks that cost little; militia nearly worthless at a guild wall; rescue
    almost always won; is the fight worth watching; is day 5 sharp enough.
-7. Guild Patronage meets no target; visitor answers no bot prefers; the wager is nearly always won.
-8. The travelling merchant can sell fine-metal work before day 6/11; a classic expert holds two Legendary by day 40.
-9. A held classic siege can cost 24 integrity yet reads "held".
-10. Save size past day ~350.
-11. Outside the repo: application ID, launcher icon, audio, more art, the art-provenance wording, the game's name.
+3. Guild Patronage meets no target; visitor answers no bot prefers; the wager is nearly always won.
+4. The travelling merchant can sell fine-metal work before day 6/11; a classic expert holds two Legendary by day 40.
+5. A held classic siege can cost 24 integrity yet reads "held".
+6. Save size past day ~350.
+7. Outside the repo: application ID, launcher icon, audio, more art, the art-provenance wording, the game's name.
 
 ---
 

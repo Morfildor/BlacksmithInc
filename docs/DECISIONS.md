@@ -4426,3 +4426,21 @@ balance 15, schema 7): forging, economy, world, guild, legacy and meta, UX and a
 now (§2.1); marks decided-but-unbuilt items as NOT YET BUILT (§21.3) and questions as OPEN (§21.4). No LOCKED rule moved:
 every LOCKED change it records was already an owner decision. Numbers in it are a snapshot; `BalanceConfig` stays authoritative.
 No code, balance, rules, content or schema change.
+
+## Owner rulings on the GDD v2.0 open questions (2026-10-14)
+
+Source: the owner's answers to GDD v2.0 §21.4. The GDD stays descriptive of the code; a proposed change is recorded here
+(or in its ledger) until it is built.
+
+| Question | Ruling | Effect now |
+|---|---|---|
+| First era: plain-smith median 25 vs the 22.5 band top | Keep the current balance. Reassess with run duration in minutes and how repetitive the final days feel; day count alone does not establish a pacing problem | No balance change. The day band stays a reading, not a gate, until a minutes measure exists |
+| Wall work's extra repair, 1 or 3 | Document the implemented value (1). Resolve the balance choice separately after checking repair costs, siege damage and survival | GDD states 1. The choice stays open |
+| Upgrade preview "N forges in 10" | Exact odds too. Decision A applies consistently to previews and tooltips: clear qualitative wording that never implies a guaranteed outcome | Part of decision A's implementation |
+| Abandon erases recipe notes? | No. Abandoning resets the run's resources and progress and keeps the player's crafting knowledge | Already the code's behaviour; the question is closed |
+| Two factions share Frost weakness / Fire resistance | Differentiate their tactical identities. Change elemental affinities only if their other mechanics do not already produce meaningfully different weapon choices | Direction only, PROPOSED; nothing changed |
+
+Next implementation pass, in the owner's order: finish the accepted but unbuilt decisions (A, J, K/L, the Heartfire
+confirmation); bring `GDD_CHECKLIST.md` up to v2.0; remove the empty root `GDD.md` if unused. Documentation cleanup and
+gameplay changes go in separate commits. Make existing decisions visible and understandable before another balance
+revision.
