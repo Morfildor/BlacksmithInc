@@ -2,9 +2,9 @@
 
 Premium (€1.99, offline, no ads/IAP/accounts) portrait Android game: a menu-only pixel-art blacksmith shop whose
 weapons are bought by autonomous heroes who fight, defend the town and die. Source of truth for design:
-`Tiny_Blacksmith_GDD_v1.0.md` (read it; do not copy it here). LOCKED = requirement, PROPOSED = tunable, DEFERRED = do not build.
+`Tiny_Blacksmith_GDD.md` (v2.0, the game as built at rules 6 / balance 15; read it; do not copy it here; §22 says how to keep it current). LOCKED = requirement, PROPOSED = tunable, DEFERRED = do not build.
 
-## Non-negotiables (LOCKED in the GDD, as revised by `docs/GDD_REVISION_2026-10-10.md`)
+## Non-negotiables (LOCKED in the GDD; v2.0 folds in the guild revision `docs/GDD_REVISION_2026-10-10.md`)
 - Player never moves a character or commands combat. Classic run (started without a charter): only shop actions (forge,
   price, list, commissions, End Day), no equipping. Guild run: the smith may also recruit, loan a blade to a contracted
   member, pick a party, a mission and a posture, and reserve defenders. Ordinary customers stay autonomous.

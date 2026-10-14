@@ -41,6 +41,21 @@ rendered screen: nothing was seen at narrow width or large text. **Next actions:
 the quest sheet (stage rows and retreat rules are longer now), a visitor, the Notebook, a busy shop day and the guided
 first day at font scale 1.0 and 2.0.
 
+## GDD v2.0 (2026-10-14, documentation only)
+`Tiny_Blacksmith_GDD.md` replaces `Tiny_Blacksmith_GDD_v1.0.md` (renamed with history) and describes the game as built at
+rules 6 / content 6 / balance 15 / schema 7, with the guild revision, run variety, deep forging and owner decisions A to M
+folded in. Built from six parallel code-first audits (forging, economy, world, guild, legacy/meta, UX/architecture), read
+against the code, not the ledgers alone. CLAUDE.md, `GDD_REVISION_2026-10-10.md` and `GDD_CHECKLIST.md` point at it; DECISIONS
+has an entry. No tests run (no code changed). Then the owner's rulings on the open questions were recorded (DECISIONS "Owner rulings on the GDD v2.0 open questions"),
+`GDD_CHECKLIST.md` was re-sectioned to v2.0 with a current header and the review's stale ticks corrected, and the empty root
+`GDD.md` removed. Then the accepted decisions were built, one commit each: A (`core/text/Odds`; workbench and upgrade preview in words),
+the Heartfire confirmation (`heartfireConfirm` in the house `ForgeDialog`), K and L on the forge result ("List at suggested",
+"Set price" in a dialog, the reservation line), J (the roster's line). `:core:test` 633 / 0 (core-only build in the cloud
+session: JDK 25 from the Ubuntu archive, Maven Central through Google's mirror). **Not run:** `:app:testDebugUnitTest`,
+the instrumented suite and the emulator scripts, because Google Maven is blocked in that environment, so `:app` was not even
+compiled there. Next: build `:app` and run its unit tests, `ForgeResultCardTest` and `runvariety.sh`, then tick the
+checklist lines; the classic Heartfire source line on the workbench is the one decided item left.
+
 ## Implementing the 2026-10-14 review (in progress, branch `review-2026-10-14`)
 
 Owner decisions A to M are in DECISIONS ("Owner decisions on the 2026-10-14 review"). Done and committed so far: plan items 6 and 7

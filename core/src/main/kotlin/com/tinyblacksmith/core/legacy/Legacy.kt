@@ -7,6 +7,7 @@ import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.model.*
+import com.tinyblacksmith.core.text.Odds
 
 /** Run end summary; carries the legacy profile as it stood when the forge fell (journal included). */
 data class RunEndResult(
@@ -33,7 +34,8 @@ sealed interface LegacyOutcome {
 
 /**
  * What buying [level] of an upgrade changes in the next era: the typed [before] and [after] values (in the unit [text] shows)
- * and the sentence rendered from them. Chances are worded as counts ("2 forges in 100"), never as percentages.
+ * and the sentence rendered from them. A chance-like track keeps its typed values (in points of chance) but its sentence
+ * words the chance (owner decision A): never a percentage or a count, never a promise.
  */
 data class UpgradePreview(val upgradeId: UpgradeId, val level: Int, val before: Int, val after: Int, val text: String)
 
@@ -157,20 +159,18 @@ object Legacy {
         val prev = m * (level - 1)
         val next = m * level
         fun make(before: Int, after: Int, text: String) = UpgradePreview(upgradeId, level, before, after, "Next era. $text")
-        // Chance-like tracks are worded as forges in 10 (or in 100 when the numbers do not fall on tens), never as a percentage.
-        fun forgesIn(what: (before: Int, after: Int, unit: Int) -> String): UpgradePreview {
-            val tens = prev % 10 == 0 && next % 10 == 0
-            val scale = if (tens) 10 else 1
-            return make(prev / scale, next / scale, what(prev / scale, next / scale, 100 / scale))
-        }
+        // Chance-like tracks: the typed values stay the engine's points of chance; the sentence compares with the level below in words.
+        val than = if (level == 1) "than without it" else "than at level ${level - 1}"
         return when (def.effect) {
             UpgradeEffect.STARTING_ENERGY -> (config.baseDailyEnergy + prev).let { b -> make(b, b + m, "Start with ${b + m} energy, up from $b.") }
             UpgradeEffect.STARTING_GOLD -> (config.startingGold + prev).let { b -> make(b, b + m, "Start with ${b + m} gold, up from $b.") }
             UpgradeEffect.STARTING_INTEGRITY -> (config.startingForgeIntegrity + prev).let { b -> make(b, b + m, "Start with ${b + m} forge health, up from $b.") }
             UpgradeEffect.QUALITY_BONUS -> make(prev, next, "Gain $next quality on each forge, up from $prev.")
             UpgradeEffect.STARTING_MATERIALS -> make(prev, next, "Start with $next extra of each starting material, up from $prev.")
-            UpgradeEffect.MATERIAL_EFFICIENCY -> forgesIn { b, a, u -> "The augment material is not used up in $a of $u forges, up from $b." }
-            UpgradeEffect.EXCEPTIONAL_CHANCE -> forgesIn { b, a, u -> "Adds $a in $u to the chance of an exceptional forge, up from $b." }
+            UpgradeEffect.MATERIAL_EFFICIENCY ->
+                make(prev, next, "The augment is kept ${Odds.often(next / 100.0)} after a forge, more often $than. It is never certain.")
+            UpgradeEffect.EXCEPTIONAL_CHANCE ->
+                make(prev, next, "Exceptional work comes more often $than, whatever the temper. It is never certain.")
             UpgradeEffect.STARTING_REPUTATION ->
                 make(prev, next, "Start with $next reputation and $level ${if (level == 1) "regular" else "regulars"}. Each has ${tracks.knownNameRegularGold} gold saved. Previously $prev reputation and ${level - 1} regulars.")
             UpgradeEffect.CATALOG_ACCESS -> {
@@ -181,7 +181,7 @@ object Legacy {
             UpgradeEffect.RECIPE_ODDS -> {
                 val before = Math.round(prev * tracks.recipeOddsPerLevel * 100).toInt()
                 val after = Math.round(next * tracks.recipeOddsPerLevel * 100).toInt()
-                make(before, after, "A matched signature recipe produces its weapon $after more times in 100, up from $before. It is never certain.")
+                make(before, after, "An exact signature recipe you have not yet discovered takes more often $than. It is never certain.")
             }
             UpgradeEffect.LEGACY_ARTIFACTS -> {
                 val base = config.returnedLegendQualityFactor

@@ -1,182 +1,237 @@
 # GDD checklist — built vs. left
 
-One line per GDD feature, by GDD section. `[x]` = built and verified (evidence in PROGRESS.md / DECISIONS.md);
-`[ ]` = open, with the missing piece named so ticking it means done. Tick items here when they ship.
-IMPLEMENTATION_PLAN.md is the phase-gate view; this is the feature view. DEFERRED scope (GDD 16.2: multiplayer,
-manual equip/combat, walking, idle production, online, accounts, achievements, ads, IAP) is not listed and is not built.
+One line per feature, under the section numbers of **GDD v2.0** (`Tiny_Blacksmith_GDD.md`, 2026-10-14). `[x]` = built and
+verified (evidence in PROGRESS.md, DECISIONS.md or the feature's ledger); `[ ]` = open, with the missing piece named so
+ticking it means done. Tick items here when they ship. IMPLEMENTATION_PLAN.md is the phase-gate view; this is the feature
+view. DEFERRED scope (GDD v2.0 §21.2) is not listed and is not built.
+
+**State this file describes:** branch tip after GDD v2.0 (2026-10-14): app 0.8.0 plus `[Unreleased]` (target 0.9.0, held by
+owner decision F), rules 6, save schema 7, content 6, balance 15. `:core:test` 633 / 0 failures (2026-10-14, cloud session,
+core-only build, after decisions A, J, K, L and the Heartfire confirmation). `:app:testDebugUnitTest` 246 / 0 at a2e0392 (review of 2026-10-14); not re-run since (the cloud session
+cannot reach Google Maven). Instrumented: 75 run, 8 to 10 failing at the review, all stale assertions from the copy remaster.
 
 State on 2026-10-14: the review's work is on branch `review-2026-10-14`, not merged; what changed and how it was checked is
 in PROGRESS (cloud session lines). The counts below are as of their own dates.
 
-Last reviewed: 2026-10-09, app 0.6.0, balance config v5, 186 JVM tests (developer-run count, not an independent execution).
-Wording corrections C01-C09 and C12 of the external review (docs/Tiny_Blacksmith_Thorough_Review_2026-10-09.md, section 9) were applied
-by plan task T0.3: a ticked line states only what its evidence shows, and each narrowed claim has an open line next to it.
+**How a line is ticked:** a rule that lives in `:core` is ticked when its JVM tests pass, and the line says "JVM tests";
+something the player sees is ticked when it was seen running on an emulator or a device test that draws it passes, and the
+line says which. A device test proves a screen draws and says the right thing at that size; it does not prove it looks right.
+Nothing in this file was checked on a physical phone, and TalkBack was never run.
 
-Reviewed again: 2026-10-10 (final state, about 13:00), for the major update: app 0.7.0, built on the integration branch
-`shop-day/m0` (pushed as `major-update`), not released; `main` is still 0.6.0. Rules 3, save schema 4, balance config 8,
-content 3; 393 core and 122 app JVM tests pass on the tip.
-How a line is ticked in this review: a rule that lives in `:core` is ticked when its JVM tests pass, and the line says "JVM tests";
-something the player sees is ticked when it was seen running on the emulator or when an automated device test that draws it
-passes there, and the line says which. "Final gate" means the last device run, on commit 2eca650 (later commits are documents
-only): 56 of 56 device tests, the smoke script, the run-to-defeat script and a main-menu walk-through, all on the Pixel_10_Pro
-emulator at 1080x1920, density 420, font scale 1.0. A device test proves a screen draws and says the right thing at that one size;
-it does not prove it looks right. No screenshots of the final build were taken (the owner tests by hand), nothing was run at font
-scale 1.3 or 2.0 on the newest screens, TalkBack was never run, and nothing in this file was checked on a physical phone.
-Evidence: `docs/MAJOR_UPDATE_LEDGER.md` (one row per task) and `docs/PROGRESS.md`.
+**History of this file.** Reviewed 2026-10-09 (app 0.6.0, balance 5, 186 JVM tests; wording corrections C01-C09 and C12 of
+`docs/Tiny_Blacksmith_Thorough_Review_2026-10-09.md` §9 applied: a ticked line states only what its evidence shows).
+Reviewed 2026-10-10 for the major update (app 0.7.0, rules 3, schema 4, balance 8, content 3; 393 core and 122 app JVM
+tests; "final gate" = the device run on 2eca650: 56 of 56 device tests, `smoke.sh`, `runend.sh` and a main-menu walk-through
+on the Pixel_10_Pro emulator at 1080x1920, density 420, font 1.0). Re-sectioned to GDD v2.0 on 2026-10-14, with the stale
+claims of review 2026-10-14 appendix 01 §3 corrected. Lines that cite "the final gate" refer to that 0.7.0 device run.
 
-## 3 Player loop
-- [x] Run creation: seed, era, random faction pressures and world modifiers, 100 integrity, hero pool, legacy unlocks
-- [x] Planning phase: yesterday's paper, shop, forecast, heroes, inventory, supplier, commissions; nothing advances without End Day
-- [x] End Day in the fixed GDD 3.2 order, idempotent per command ID; each accepted command through the ViewModel dispatch is saved atomically before the report
-- [x] Every authoritative operation (End Day, legacy purchase, claim, Begin era, abandon) goes through one serialized session, so a run transition cannot race a stale write (review F01; T1.1, T1.3: `GameSessionTest`, and on the emulator a force-stop after Claim and around End Day never left a half-written run)
+## 3 The two kinds of run
+- [x] A run begins under a charter (three) or without one (the classic game); the mode never changes; a pre-guild save stays classic (JVM tests: `GuildRunTest`)
+- [x] A classic run refuses every guild command and draws as before the guild update (JVM tests)
+- [x] Run setup screen: every charter and "No charter" with gains and costs as bullets, one primary action (commit 99354a8; emulator at font 1.0 and 2.0)
+
+## 4 Player loop and day flow
+- [x] Run creation: seed, era, random faction pressures and world condition, 100 integrity, 12 residents, legacy unlocks
+- [x] Planning: nothing advances without End Day; every command validated whole, invariants after each
+- [x] End Day in one fixed order (GDD v2.0 §4.3), idempotent per command ID (30 kept); the order is pinned by the golden state, not asserted step by step
+- [x] Every authoritative operation (End Day, legacy purchase, claim, Begin era, abandon) goes through one serialized session, so a run transition cannot race a stale write (review F01; T1.1, T1.3: `GameSessionTest`; on the emulator a force-stop after Claim and around End Day never left a half-written run)
 - [x] Run end at integrity 0: summary, claim-once legacy, next era
-- [x] Home dashboard (owner request, beyond the GDD)
-- [x] Day report shown again after process death until it is dismissed
-- [x] Resume on launch restores the committed world (the saved run) and the unread day report
+- [x] Abandon: no points, legends or lineage; recipe notes made in the run stay (owner ruling 2026-10-14: keep them). Main menu walk-through in the final gate
 - [x] The shop day has a saved position: closing or killing the game mid-day offers "Resume the day" or "Skip to tomorrow", and watching, skipping or killing never changes the day (T2.3: emulator, seed 42, including ten kills within 400 ms of End Day)
-- [x] Resume after the system closes the game: the day and its position over a real save file, the main menu staying closed, the open Storage sheet and its order (T6.4, `ShopDayPersistenceTest`, 3 device tests in the final gate; the smoke script resumes after a process kill on day 2). The forge draft, the forge result and the open destination are covered by JVM tests only (`SavedStateTest`, `LifecycleTest`). Not tested: "Select blades" mode in Storage after a restore
+- [x] Resume after the system closes the game: the day and its position over a real save file, the main menu staying closed, the open Storage sheet and its order (T6.4, `ShopDayPersistenceTest`, 3 device tests in the final gate; the smoke script resumes after a process kill on day 2). The forge draft, the forge result and the open destination are covered by JVM tests only (`SavedStateTest`, `LifecycleTest`). Not tested: "Select weapons" mode in Storage after a restore
+- [ ] (no longer applies) Home dashboard: replaced by the Shop page in the major update (T2.8b)
 
-## 4 Forging and discovery
-- [x] 6 families, 16 materials (6 core, 6 augment, 4 catalyst), data-driven with hidden affinities
-- [x] Quick Forge (2 energy) and Advanced Forge (4 energy, catalyst, Temper / Quench / Etch techniques)
+## 5 Forging, materials and discovery
+- [x] 6 families, 16 materials (6 metals, 6 augments, 4 catalysts), data-driven with hidden affinities
+- [x] Quick Forge (2 energy), Advanced Forge (4 energy, catalyst, Temper / Quench / Etch), Heartfire forging (+2 energy, +1 Heartfire)
 - [x] 10 energy, up to 4 overwork, next-day exhaustion
-- [x] Safe / Balanced / Reckless rolls, GDD quality and power formulas, always a usable weapon, defects attach a flaw
-- [x] Rarity tiers from quality plus earned fame and titles
-- [x] 12 beneficial affixes and 6 flaws, each with a gameplay effect (bane, heal, loot, shatter, self-harm, ...)
-- [x] 24 signature recipes (4 per family), transformation chance, discoverable through experiments and world clues
-- [x] Journal UNKNOWN -> OBSERVED -> UNDERSTOOD -> SIGNATURE_DISCOVERED, live hints, no farming, survives death
-- [x] Clue ladder (four clues a hidden recipe), rumours and recall (T4.3, JVM tests and simulator). The ladder and "Use this recipe" in Records: its device test passes in the final gate (emulator, 1080x1920, font 1.0); nobody looked at it at another size or font
+- [x] Safe / Balanced / Reckless rolls (Safe spread 6, Reckless flaws 30 % and +1 slot), GDD-shaped quality and power formulas retuned (DECISIONS "Balance v2"), always a usable weapon, a defect attaches a flaw
+- [x] Rarity ladder of rules 6: quality gives at most Epic, Epic only in Starsteel / Moonsteel, Legendary only by a Heartfire breakthrough or by deeds (renown 3); 0 Legendary from quality in every table (RUN_VARIETY G1; `RunVarietyTest`, JVM)
+- [x] Fine metals: the supplier carries Starsteel from day 6 and Moonsteel from day 11, in both run kinds; earlier only from dangerous work (G10 met: first Epic median day 7 in a guild run; classic Epic by day 5 in 16 to 22 % of runs)
+- [x] Heartfire: run-only, held at most 3; classic from the 4th siege won, guild from starfall, deep hall, recovery and a warlord on the wall (JVM tests; both forgings seen on the emulator, G14)
+- [x] 12 beneficial affixes and 6 flaws, each with a gameplay effect in both combat models
+- [x] 24 signature recipes (4 per family), discoverable through experiments and clues; a known signature transforms 75 % of the time
+- [x] Notebook UNKNOWN -> OBSERVED -> UNDERSTOOD -> SIGNATURE_DISCOVERED, live hints in words, no farming, survives death
+- [x] Clue ladder (four rungs), rumours and recall (T4.3, JVM tests and simulator). The ladder and "Use this recipe" in Records: device test in the final gate (1080x1920, font 1.0)
+- [x] Hone (never promotes past the metal's cap, never Legendary), salvage, bulk scrap, give to the watch
+- [x] Workshop tools: Great Bellows, Master Whetstone, Painted Signboard, Display Case
+- [x] Guild-run fight rules: one resolver composes a weapon's rules; metals have rules on weapons forged from rules 6 on (`Weapon.craft`); forge outlook; the bench (DEEP_FORGING F1-F9, JVM tests; see the deep-forging section below)
+- [ ] Heartfire spend asks for a confirmation stating cost and consequence (owner ruling 2026-10-14). Built 2026-10-14; app tests written, not yet run: tick after `:app:testDebugUnitTest` and the named device test or script pass (`RunVarietyUiTest`, `runvariety.sh`)
+- [ ] The workbench's Heartfire source line names the classic source (a siege won from the 4th) in a classic run. Today it lists guild sources only
 
-## 5 Economy, shelves, commissions
-- [x] 250 gold, 8 shelves (+2 with the Display Case), supplier with always-stocked basics; 0 hard-locks for the recorded simulator policies (no softlock for those bots, not shown for every player path)
-- [ ] Adversarial recovery: resting, drought and stuck days measured separately, and shock scenarios (no gold and no stock, empty shelves, a lost siege) shown to recover (review G10; plan T5.2). Measured at balance 6 only (stuck streaks of three days or more in 0.00-0.10 % of novice runs; an over-spending bot at 1.9-3.0 %); at balance 8 and 10,000 runs the stuck-day measure holds (worst bot 0.07-0.09 % of days, the plain smith 0) and no novice run has a stuck streak of three days; the shock arms without a simulator option (prices at 70 % and 180 %, a material-poor start, half the town) were not run
-- [x] List / unlist, manual price per weapon, suggested price, +/-10 buttons; since 2026-10-10 the price is also chosen on the forge result, with a count of the heroes who can afford it there and on the blade sheet (seen on a second emulator at 411x731 and 360x640 dp, font 1.0 and 1.3; uncommitted)
-- [x] GDD utility purchase (improvement, class fit, element taste, traits, loyalty, price), one purchase a visitor, reasons shown in words
-- [x] Commissions: patron, family, min quality, element, reward, deadline; accept / decline; small expiry penalty
-- [x] A commission asks for a named quality band, one rule decides delivery, the patron collects before the browsers and takes the least blade that fits (review F04, F06; T1.8, JVM tests). The request card was seen once on the emulator; the handed-over line was not
-- [x] Requests have reasons (replacement, a blade for the wall, collector, first blade for a newcomer) and two can be open at once (T4.6, JVM tests and simulator). The "why" line on the card: its device test passes in the final gate (emulator, 1080x1920, font 1.0); nobody looked at it at another size or font
-- [x] Fair customer selection: every living hero gets an equal turn at the counter (review F05; T3.1, simulator: served ratio by list position 0.39 to 0.97)
-- [x] Standing wants, the sidegrade gate and siege demand (T4.1, T4.2; JVM tests and simulator). Their screens (wants in "Who is buying", the besieger line on the Shop and Forge plates): their device tests pass in the final gate (emulator, 1080x1920, font 1.0); nobody looked at them at another size or font
-- [x] Reputation (sales, commissions, hero success) and per-hero loyalty; both reset per run except the Known Name perk
-- [x] Shop actions beyond the GDD: Salvage, Hone, Arm the watch, trade-ins, four workshop tools
-- [x] Signboard tool: +1 customer a day per level
-
-## 6 Heroes, champions, generations
-- [x] 5 classes, 9 traits each wired to a decision weight, element taste, wealth, ambition, deterministic names and portraits
-- [x] Daily choice rest / shop / expedition / patrol / defend by trait-weighted seeded utility; wounded rest, dead never act
-- [x] GDD effective-power formula; a suited weapon measurably helps
-- [x] Three dynamic champions chosen as the strongest available heroes (health gate), 0-2 handled
-- [x] Champion ranking in a warlord siege uses the same foe context as the outlook (review F08; T1.7, JVM tests; not looked at on a device)
-- [x] A town of 12 with room for 16, all five classes from day one, six counter seats; 120 first names and 96 surnames; a stored face per hero spread over the class (T3.2, T3.3, T3.4; JVM tests and simulator at three base seeds; not at 10,000 seeds)
-- [ ] Recognition lines at the counter (T3.5): the rule is tested on the JVM; one line was seen on the emulator on day 1; the regular's mark was not verified there
-- [ ] Guild Patronage as a willing guild and a 30-gold stipend (T3.6): built and tested on the JVM; its own target (+0.6 days or +0.3 sales a day) is met by no setting, an open owner decision
-- [x] Level-ups, fame, retirement, guild founding, mentoring, newcomers when the population thins
-- [x] Lineage anchors across eras; descendants reference stored ancestors
-- [x] Guild hall (training, lessons from a higher-level guildmate, founding and joining) and ambition as scored daily activities; money and yesterday as inputs
-
-## 7 Living weapons
-- [x] Lifecycle with one authoritative location, history entries, titles from real records
-- [x] On death: recovered by the shop, seized by the enemy, or lost; on retirement: inherited by the mentee
-- [x] Bounded Legend Board; a famous blade returns dormant (reduced quality) in a later era, keeping its fame
-- [x] Fame as a capped mechanical effect (power, desire, price); wear and condition
-- [x] Fates of a fallen hero's blade by where the hero fell: guild inheritance, merchant resale (fame raises the chance), seizure, loss
-- [x] A returned legend is the blade it was (signature, flaws, catalyst, title, story), its properties dormant until honed once; at most one property in a new blade's name (T4.5, `ArtifactFidelityTest`, JVM). The Story section and the dormant marker on the blade sheet: their device test passes in the final gate (emulator, 1080x1920, font 1.0); nobody looked at them at another size or font
+## 6 Living weapons
+- [x] Lifecycle with one authoritative location (storage, shelf, owned, loaned, lost, destroyed), history entries, titles from real records
+- [x] On death: recovered by the shop, seized by the enemy, inherited by a guildmate, resold by a merchant, or lost; on retirement: inherited by the mentee
+- [x] Bounded Legend Board; a famous weapon returns dormant in a later era, at most Epic and without its legend origin (rules 6 D13)
+- [x] Fame as a capped effect (power, desire, price); wear and condition
+- [x] A returned legend is the weapon it was (signature, flaws, catalyst, title, story), its properties dormant until honed once (T4.5, `ArtifactFidelityTest`, JVM). Story section and dormant marker: device test in the final gate
+- [x] Deeds and renown (rules 6): Legendary by deeds once at renown 3, with a line in its history; the sheet says which way (JVM tests; legend lines seen on the emulator, G14)
 - [x] A champion can fall on the walls when a siege is lost badly (the rout rule, T3.8; JVM tests and simulator: 17-19 % of plain first eras). A "fell at the wall" card was not seen on a device
 
-## 8 Town, factions, sieges
+## 7 Shop, economy and customers
+- [x] 250 gold, 8 shelves (+2 Display Case), supplier with always-stocked basics; 0 hard-locks for the recorded simulator policies (not shown for every player path)
+- [ ] Adversarial recovery: shock scenarios (no gold and no stock, empty shelves, a lost siege) shown to recover (review G10; plan T5.2). Measured at balance 6 (stuck streaks of three days or more in 0.00-0.10 % of novice runs; an over-spending bot 1.9-3.0 %) and at balance 8 over 10,000 runs (worst bot 0.07-0.09 % of days, the plain smith 0). Not run: prices at 70 % and 180 %, a material-poor start, half the town
+- [x] List / unlist, manual price per weapon, suggested price, ±10; the price is also chosen on the forge result with a count of the heroes who can afford it (seen on an emulator at 411x731 and 360x640 dp, font 1.0 and 1.3)
+- [ ] Forge result: "List at suggested" primary, "Set price" secondary opening the editor (owner decision K). Built 2026-10-14; app tests written, not yet run: tick after `:app:testDebugUnitTest` and the named device test or script pass (`ForgeResultCardTest`)
+- [ ] Forge result: one line saying whether the weapon is reserved and for whose commission, from `Weapon.promisedTo` (owner decision L). Built 2026-10-14; app tests written, not yet run: tick after `:app:testDebugUnitTest` and the named device test or script pass (`ForgeResultTest`, `ForgeResultCardTest`)
+- [x] Utility purchase (improvement, class fit, element taste, traits, loyalty, price), one purchase a visitor, reasons in words; trade-ins at 40 %
+- [x] Fair customer selection: every living hero gets a fair turn at the counter (review F05; T3.1, simulator: served ratio by list position 0.39 to 0.97); 6 seats
+- [x] Standing wants, the sidegrade gate and siege demand (T4.1, T4.2; JVM tests and simulator). Their screens: device tests in the final gate
+- [x] Reputation and per-hero loyalty; both reset per run except the Known Name perk
+- [x] Gifts (owner decision M, balance 15): below 25 % of asking is a gift, at most +1 reputation a day from gifts, gift loyalty capped at 2 (JVM tests; simulator, 1,000 runs)
+- [x] Commissions: reason, family, quality band, element, reward, deadline; accept / decline; up to two open; delivered before browsers with the least weapon that fits (T1.8, T4.6; JVM tests and simulator). The "why" line: device test in the final gate
+- [x] Signboard tool: +1 customer seat a day per level
+
+## 8 Heroes and the town
+- [x] 5 classes, 9 traits each wired to a decision weight, element taste, purse, ambition, deterministic names and stored faces
+- [x] Daily choice of expedition, patrol, rest, guild hall, ambition work by trait-weighted seeded utility; wounded rest, dead never act
+- [x] Scalar effective-power formula; a suited weapon measurably helps
+- [x] Three defenders chosen as the strongest available heroes (health gate), 0-2 handled
+- [x] Defender ranking in a warlord siege uses the same foe context as the outlook (review F08; T1.7, JVM tests)
+- [x] A town of 12 with room for 16, all five classes from day one; 120 first names and 96 surnames (T3.2-T3.4; JVM tests and simulator at three base seeds)
+- [ ] Recognition lines at the counter (T3.5): JVM-tested; one line was seen on the emulator on day 1; the regular's mark was not verified there
+- [x] Level-ups, fame, retirement, guild founding in life and at retirement, mentoring, newcomers when the population thins
+- [x] Lineage anchors across eras; descendants reference stored ancestors
+
+## 9 Factions, threat and sieges
 - [x] 3 factions with pressure 0-100, growth, suppression, weakness / resistance, elites, warlords
-- [x] Sieges on days 5 / 10 / 15 ..., warnings 1-2 days ahead with descriptive danger, siege forecast in Town
-- [x] GDD raid / defense / forge-damage scaffolds (retuned), militia from patrols, bounded hero-driven recovery, no gold repair
-- [x] Encounters and sieges from one deterministic event series; read-only CombatReplay
+- [x] Sieges on days 5 / 10 / 15 ..., warnings ahead in words, the besieger committed at the first warning, forecast in Town
+- [x] Raid / defence / forge-damage scaffolds (retuned), militia from patrols, bounded hero-driven recovery (2 a day), no gold repair
+- [x] Siege traits: Long Assault and Many Breaches, named when scheduled
+- [ ] Owner direction (2026-10-14): differentiate the two Frost-weak, Fire-resistant factions by tactical identity; change affinities only if needed. Not started
 
-## 9 Variation and legacy
-- [x] 8 blessings, three offered after a survived siege, temporary and seed-dependent
-- [x] Legacy points = base + days / 5 + discoveries + milestones, claimed once per run
+## 10 Combat
+- [x] Scalar resolver for every classic fight and residents' expeditions; one deterministic event series; read-only replays
+- [x] Interaction engine: typed events and limited effects; five class kits; enemy units per faction; three highlights from the real chain (guild evolution, JVM tests)
+- [ ] Residents' own expeditions through the interaction engine
+
+## 11 Run variety
+- [x] 25 events (23 pooled + 2 generational rules), each with eligibility, weight, limits, cooldown, story; history events ineligible without history; all reachable (`WorldEventReachabilityTest`)
+- [x] Morning visitors: 8 plus a follow-up, stored in the save, one explicit answer, a stated default at End Day; three old events converted without a second payout
+- [x] Workshop relics: 4, 3 slots, offers on day 1, after sieges 2 and 4 and for a won wager
+- [x] 8 blessings, three offered after a held siege; an unanswered offer lapses after 3 mornings (balance 15)
+- [x] 10,000-seed gate of the depth update against the matched baseline; exploit probes pass
+- [x] Owner ruling (2026-10-14) on the first-era band: keep the current balance (plain smith median 25); reassess by minutes per run and how repetitive the last days feel
+- [ ] Owner decision: options no bot prefers (the master's paid lesson, the crate's plain metal) and the wager won 94 to 98 % of the time
+- [ ] Owner decision: Guild Patronage meets no target (+0.6 days or +0.3 sales a day) at any setting
+- [ ] Visitor portraits and relic / trait icons (wanted lists in `Assets/`)
+
+## 12 The guild run
+Per-task status: `docs/GUILD_EVOLUTION_PLAN.md`, `docs/RUN_VARIETY_LEDGER.md`. Ticked = built and JVM-tested; the ledgers say what was seen on a device.
+- [x] Contracted members (up to six), recruiting with disclosed class, trait and fee; members are not residents
+- [x] Loans: one weapon, one place, one custodian
+- [x] Contract board, one party of one to three, posture; one- and two-day contracts with a checkpoint
+- [x] Contract modifiers (seven; G11 met) and laws of the season; the rival guild
+- [x] Opening packages: eight, three offered from the charter's list, End Day waits for one; no confirm dialog (decision I)
+- [ ] Opening drawbacks that bite: every package has a plan follower within 0.83 to 1.20 of its charter's mean, but no drawback costs more than 5 points and three plans do not clearly pay (G12 partly met)
+- [x] Siege preparations announced four days ahead; sabotage spoils them; the two-day siege jobs (sabotage and one opportunity)
+- [x] Siege fought by the three on the wall through the interaction engine; reserved defenders; "held, at a cost" in words; cause lines on the siege card
+- [x] Wall work draws on the daily recovery allowance plus `wallWorkExtraRecovery` 1 (owner decision B, balance 15). Whether 1 or 3: open, to be decided after repair costs, siege damage and survival are checked
+- [x] Wounds, capture and rescue (the watch fills empty places), death, a taken weapon, its nemesis and recovery
+- [x] Day-20 charter, retire or continue, legacy counted once; optional ranks
+- [ ] Charter secured in 40 to 65 % for each competent policy and charter (G3): one cell over (Synergy under Last Hope 66)
+- [x] Four guild visitors; bonds, specialities
+- [x] Party relics and pacts; drafts after sieges 1, 2 and 3
+- [x] Members at home rest or train automatically (owner decision J)
+- [ ] One line on the Guild screen explaining that members at home train and pursue ambitions on their own (decision J). Built 2026-10-14; app tests written, not yet run: tick after `:app:testDebugUnitTest` and the named device test or script pass (`GuildUiTest`)
+- [x] Schema 6 with 0.7.0 saves as fixtures; schema 7 for rules 6
+- [ ] Secondary imprint, mastery stamp, risk that changes the quirk, tag-aware relic drafts, workshop specialisation
+- [ ] Event cadence scheduler; the other eight named choice scenes
+- [ ] Human playtest of the two guild gates; phone, large font and TalkBack pass of the guild screens (G14 not met: emulator only)
+
+## 13 Legacy
+- [x] Legacy points = 6 + days / 5 + discoveries (cap 5) + milestones (+ charter 6, rank 2 / 4 / 6), claimed once per run
 - [x] 11 upgrade tracks at 8 / 20 / 45: energy, gold, mastery, walls, efficiency, stock, luck, reputation, supplier depth, signature odds, legend returns
-- [x] Persistence matrix: journal, signatures, upgrades, Legend Board, lineages, unspent points persist; the rest resets
-- [x] Upgrade tracks for catalog access (Caravan Ties), recipe odds (Anvil Lore) and legacy-artifact opportunities (Homing Steel)
-- [x] Starting gold / energy upgrades measured on second yardsticks (weapons forged and tool levels by the first siege); run length stays within +0.3 mean days
+- [x] Persistence matrix (GDD v2.0 §13.3): notebook, upgrades, Legend Board, lineages, unspent points persist; the rest resets; nothing of the guild persists but its points
+- [x] Starting gold / energy upgrades measured on second yardsticks (weapons forged and tool levels by the first siege)
+- [x] Upgrade preview words chance tracks without exact odds (decision A applies to previews, ruling 2026-10-14): `Legacy.preview` compares with the level below in words (`LegacyPreviewTest`, `OddsTest`, JVM)
 
-## 10 Content
-- [x] 16 materials, 6 families, 5 classes, 3 factions, 25 events (23 pooled + 2 generational rules), 24 signatures, 12 affixes, 6 flaws, 8 blessings
-- [x] Events with eligibility, weight, effects, story template, repetition limits; artifact / lineage events ineligible without one
-- [x] ContentCatalog.validate() over every ID
-
-## 11 Gazette and replays
-- [x] Daily paper from real event records, priority order, 3-5 headlines, archive
-- [ ] Paper complete and consistent: the report, the shop and the archive show the same day, and the tally accounts for every gold and hero event (review F03, F07). Built and merged (T1.4, T1.6, T2.1; JVM tests: a fixture day returns 20 of 20 records, typed money ledger); the three views were not compared on a device
-- [x] Edition layout: lede, tally, Shop / Heroes / Town / Forge
-- [x] Siege replay: stepped text and an animated diorama fed by the CombatReplay only; skippable; reduced motion honoured
-- [x] Replays for significant expeditions: elite fights and deaths, folded text in the day report, at most three a day
+## 14 Gazette, shop day and fight reports
+- [x] Daily paper from real event records, priority order, top 5 headlines, archive; edition layout lede, tally, Shop / Heroes / Town / Forge
+- [x] The briefing: at most 5 stories and 2 "before tomorrow" notices, mandatory stories never hidden (copy remaster, JVM tests)
+- [ ] Paper complete and consistent: the report, the shop and the archive show the same day, and the tally accounts for every gold and hero event (review F03, F07; T1.4, T1.6, T2.1; JVM tests: a fixture day returns 20 of 20 records). The three views were not compared on a device
+- [x] The shop day after End Day: customers card by card, receipts, the tally, aftermath and tomorrow's lead, with Next, Back, Skip day and 1x / 2x (T2.5, T2.6: emulator; a blessing day, a siege aftermath and the replay overlay seen in a preview only)
+- [x] Siege replay: stepped text and an animated diorama fed by the stored replay only; skippable; reduced motion honoured
 - [ ] Guild siege replay with portraits and a battle report (2026-10-14): `combat/Replay.kt`, `ReplayTimeline.kt`, `Account.kt` from the stored fight record (record 1), `ui/replay/`. JVM-tested in core (15 tests plus a guild-siege case: consistency with the record, every point counted once, ticks, heals, multi-target, defeat, resisted, highlights, save round trip, older records refused). Not built or seen on a device: this session had no Android SDK
+- [x] Replays for significant expeditions: elite fights and deaths, at most three a day
+- [x] Guild fight reports: outcome, both sides, three highlights, the whole timeline
 
-## 12 Workshop UX and accessibility
-Lines ticked before 2026-10-10 describe the seven-panel layout of 0.6.0 (Home, Market and the rest); the major update replaced
-it, and the lines dated T2.x below say what exists now.
-- [x] Main menu on launch: New game or Continue run, Settings, Abandon run (final gate, walk-through on the emulator: New game, Settings to Main menu and back, Continue run, a cold start showing the menu with Abandon, the confirmation returning to New game, the abandoned run still gone after a restart). Abandoning claims nothing but keeps journal discoveries made in that run; the dialog says so (open owner decision)
-- [x] Four destinations (Shop, Forge, Town, Records) with a settings sheet (T2.8a: emulator at font scale 1.0, 1.3 and 2.0; at 2.0 the bottom bar clips "Records")
-- [x] The shop day after End Day: customers at the counter card by card, receipts, the tally, aftermath and tomorrow's lead, with Next, Back, Skip day and 1x / 2x (T2.5, T2.6: emulator; a blessing day, a siege aftermath and the replay overlay were seen in a preview only)
-- [x] The Shop page (lead, requests, "Who is buying", yesterday, shelf, Storage sheet), the Forge header with "Forge this", and the Town list (T2.8b, T2.8c, T3.7): their device tests and the smoke script pass in the final gate. Seen by a person only on an agent's earlier tree and only in part. Never seen by anyone: the Supplies sheet, the "Fallen and retired" header, a Town row with a guild or mentor line
-- [x] Storage filters, four orders and multi-select Salvage / Arm the watch with one confirmation (T6.3c: JVM tests and device tests in the final gate). Not met: clearing 200 blades in under ten taps and a "never listed" filter, which need core rules that do not exist (owner decision). Bulk actions were not tried on a long save
-- [ ] The dark forge look (both polish passes): the restyled screens pass their device tests in the final gate, which proves they draw, not how they look. Pass 1 was seen in part by a person on an earlier tree (Shop, Forge, forge result card, half of a blade sheet); pass 2 (planning screens) has never been looked at, and there is no screenshot of the final build
-- [x] Portrait single workshop: top strip (day, gold, energy / debt; integrity and the next siege are on Home and Town), forge scene, panels, End Day with contextual sublabel
-- [x] Forge flow: mode -> family -> core -> augment -> catalyst -> hints -> risk -> cost -> reveal -> item card -> List / Store
-- [x] Market flow; Town flow (champions with equipment and condition, population, siege ETA and pressure in words)
-- [x] Descriptive labels only, rarity by icon and text, reduced-motion toggle, portrait lock
-- [x] Implemented in code: 48 dp minimum targets on controls, screen-reader descriptions on disabled actions
-- [x] Inspected on the emulator: Town at font scale 1.3 and 1.5 wraps without clipping, the other panels at 1.0 and 1.3 (navigation labels are tight at 1.5)
-- [ ] Accessibility validated on a real device: no accessibility suite, no completed 720x1280 or low-memory pass (review A05, A07; plan T6.1, T6.2). A width check exists and passes in the final gate (`LayoutMatrixTest`: Shop, Forge and the blade sheet at 360 and 320 dp, font 1.0 / 1.3 / 2.0); it checks that nothing reaches outside the screen width, not heights or clipping, and covers no other screen. TalkBack was never run
-- [x] Onboarding tip banners (per panel, once)
-- [x] Settings sheet with reduced motion and a Haptics switch (T2.8a, T6.7: seen on the emulator; the switch persists across a force-stop)
+## 15 Disclosure
+- [x] Deterministic rules, thresholds, costs, fees, timings and fight rules shown exactly; knowledge, pressure, odds of a siege, health and wear in words; rarity by icon and word
+- [ ] Hidden random odds in band words everywhere (owner decision A, extended to previews and tooltips on 2026-10-14). `core/text/Odds` and the upgrade preview pass on the JVM; the workbench's Reckless and Heartfire lines app tests written, not yet run: tick after `:app:testDebugUnitTest` and the named device test or script pass (`RunVarietyUiTest`, `runvariety.sh`)
+
+## 16 Content
+- [x] 16 materials, 6 families, 5 classes, 3 factions, 25 events, 24 signatures, 12 affixes, 6 flaws, 8 blessings, 11 upgrade tracks, 4 tools, 9 + 4 visitors, 14 relics, 2 siege traits, guild content (`LaunchContentTest`, `GuildContent` validation)
+- [x] `ContentCatalog.validate()` over every ID
+
+## 17 Portrait UX
+- [x] Title with the owner's painting; New game / Continue / See how the era ended; Abandon with its confirmation (commit 99354a8; emulator)
+- [x] Four destinations (Shop, Forge, Town or Guild, Records) with a settings sheet; the bar no longer clips "Records" at font 2.0 (96 dp)
+- [x] The Shop page (threat strip, lead, visitor, relics, shelf, doors, "Who is buying"), the Forge workbench and the Town list: device tests and the smoke script pass in the final gate. Never seen by anyone: the Supplies sheet, the "Fallen and retired" header, a Town row with a guild or mentor line
+- [x] Forge flow: weapon -> metal -> augment -> (catalyst, technique) -> notes -> risk -> cost -> Forge -> reveal -> result -> List / Store
+- [x] Commission board for commissions and customer wants, opened from Shop and Forge
+- [x] Storage filters, four orders and multi-select Salvage / Give to the watch / Scrap with one confirmation (T6.3c). Not met: a "never listed" filter (needs a core rule)
+- [ ] The dark forge look and the 2026-10-14 visual language (Alegreya headings, Fira Sans body, gold only for the primary action and the chosen mark): applied to the title, run setup and opening chooser (emulator at font 1.0 and 2.0); not yet applied to Shop, Forge, Guild, visitors, relics and loans; 12 stock dialogs not yet on the house `ForgeDialog`
+- [x] Implemented: 48 dp minimum targets, 52 dp primaries, screen-reader descriptions on disabled actions, rarity and buffs never by colour alone, reduced motion, portrait lock, `appCategory="game"`
+- [ ] Accessibility validated on a real device: no accessibility suite, no completed 720x1280 or low-memory pass (review A05, A07; plan T6.1, T6.2). `LayoutMatrixTest` checks widths at 360 and 320 dp, font 1.0 / 1.3 / 2.0, for Shop, Forge and the blade sheet only. TalkBack never run
+- [x] Settings: reduced motion, haptics, shop-day playback, guided first day; debug entries under Settings in debug builds (decision C)
 - [ ] Haptic feel on a real motor (needs hardware); audio and audio settings (no sound asset exists)
-- [x] Onboarding (T2.10): day 1 opens on the lead "Forge your first blade" with its reason, and the first customer card shows one hint about the controls, once (JVM test, two device tests and the smoke script in the final gate). The hint was not looked at by a person; a fresh-install recording was not made
-- [x] Guided first day (2026-10-11): five steps and the day's outcome on a strip under the top bar, from the first recipe through the first End Day; once per installation, skippable everywhere, replay from Settings (16 JVM tests, 3 device tests, `tools/emulator/intro.sh` on an API 36 emulator). It works as built; whether a new player understands the game from it has not been observed (the T7.2 playtest is still open)
-- [ ] 720x1280 small-screen pass; low-memory interruption check
-- [ ] Final UI design (owner will redesign)
+- [x] Guided first day (2026-10-11): five steps and the outcome on a strip under the top bar; once per installation, skippable everywhere, replay from Settings (16 JVM tests, 3 device tests, `tools/emulator/intro.sh`). Whether a new player understands the game from it has not been observed (playtest T7.2 open)
+- [x] Inspectable systems: hero and weapon sheets show taste, purse, regular status, guild and mentor, a weapon's history and each affix (review U04-U06, G08; T2.7: emulator at font 1.0 and 2.0)
+- [ ] 720x1280 small-screen pass; 600 dp pass (decision D); low-memory interruption check
 
-## 13 Architecture and persistence
-- [x] Pure JVM `:core` (rng, content, config, model, engine, crafting, market, heroes, battle, legacy, gazette, persistence, sim); `:app` observes
-- [x] Typed, phase-checked commands and errors; invariants after every command
-- [x] Versioned JSON envelope, Room atomic save (run + legacy + events in one transaction), DataStore for settings
-- [x] Event-log compaction (30-day window, milestones kept), weapon-history cap, pruning of blades gone for good (30 days)
-- [x] Four more bounds (T6.3a, `BalanceConfig.saveGrowth`, each 0 = off, each with a same-seed pair test): closed commissions leave 30 days after their deadline, the newest 30 End Day command IDs are kept, world events and arrivals are kept 30 days, a blade keeps its newest 24 everyday history lines (holders remembered in `Weapon.ownerIds`)
-- [x] Migration scaffold with a checked-in v1 save fixture
-- [x] Real migration steps and a save-compatibility policy: schema 4, rules 3 and content 3 are enforced on load, with checked-in fixtures for schemas 1 to 3 (review F09; T1.5a, T1.5b, T3.1, T3.2; JVM tests; an old-format day-1 save opened and accepted End Day on the emulator). Not run: an upgrade from the real 0.6.0 APK
-- [x] A save that cannot be opened shows a recovery screen instead of crashing; a damaged row or file is kept, never deleted silently (review F02; T1.2 and the M1 review fixes: emulator). Not seen on a device: the "newer version" and "incompatible" screens and the "could not confirm" dialog
-- [x] Two interactions between save pruning and newer rules are fixed (a replacement request after a blade shattered more than 30 days ago; the "held the wall" line after ten later fights): f2f8845, 44d69a0, JVM tests
-- [x] A run with no legacy record beside it reads the legacy the run carries, so a "Start over" cut short cannot leave an empty legacy (final review finding 1; 677876b, JVM test)
-- [ ] Known issues left open from the final review (DECISIONS, "Known issues left open from the final review"; findings 4 and 7 were closed after 0.7.0, see "After 0.7.0" there): a bulk Storage action stops silently when one save fails; a save with a newer kind of record under the same schema number would read as "damaged"; the blade sheet's "Worn" word uses its own thresholds; three rules restated in the app; unguarded screen-model building. A database file cut to 0 bytes still opens as a new game with no message (not tried on a device)
+## 18 Architecture and persistence
+- [x] Pure JVM `:core` (rng, content, config, model, engine, crafting, market, heroes, battle, combat, guild, legacy, gazette, shopday, persistence, sim); `:app` observes through one serialized `GameSession`
+- [x] Typed, phase-checked commands and errors; invariants after every command and on load
+- [x] Versioned JSON envelope, Room atomic save (run + legacy in one transaction, cursor beside them), DataStore for settings only
+- [x] Save schema 7 with migrations and checked-in fixtures from older schemas; rules 6 and content 6 enforced on load; an older save over a lowered cap is clamped with a record line (review row 34). Not run: an upgrade from a real 0.7.0 or 0.8.0 APK
+- [x] Bounds on save growth: events and closed commissions 30 days, 30 End Day IDs, weapon history caps, pruning of weapons gone for good (T6.3a)
+- [ ] Save size: a long save (about day 350-490) passes SQLite's 2 MB row window; unsold stock still grows by decision (review #2; schema 8 split or compression planned)
+- [x] A save that cannot be opened shows a recovery screen; a damaged row or file is kept, never deleted silently (review F02; emulator). Not seen on a device: the "newer version" and "incompatible" screens and the "could not confirm" dialog
+- [ ] Known issues from the 0.7.0 final review (DECISIONS "Known issues left open from the final review"): a bulk Storage action stops silently when one save fails; a newer record kind under the same schema reads as "damaged"; three rules restated in the app. A database file cut to 0 bytes still opens as a new game with no message
 
-## 14 Pixel art
-- [x] Import pipeline (concept sheets, weapon master sheet 336 sprites, artist pack), placeholders for the rest, 488 imported sprites on every screen (94 slices of AI-generated concept sheets, 336 from the AI-generated weapon master sheet, 58 script-drawn pack sprites; see ART_BRIEF, "Art sources and provenance")
+## 19 Art and audio
+- [x] Import pipeline (concept sheets, weapon master sheet 336 sprites, production packs, the owner's 20-hero portrait set and title painting), placeholders for the rest (ART_BRIEF "Art sources and provenance")
 - [x] Forge scene, furnace states, weapons by element row, class portraits, faction sprites, materials, blessings, siege diorama, milestone burst
-- [ ] Signature weapon variants and newspaper / journal panel frames (unused pack sprites)
-- [ ] Full custom art pass after the UI redesign
+- [ ] Signature weapon variants (a gold ring stands in); visitor portraits; launcher icon
+- [ ] Audio (11 effects and 1-2 loops wanted; none delivered)
+- [ ] Art-provenance wording for the store listing (owner)
 
-## 15 Testing and balance
-- [x] 186 JVM tests recorded passing for 0.6.0 (PROGRESS, session 8): determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip; the count says what exists, not coverage
-- [x] 5,000-day arithmetic stress check (no overflow, invariants hold) with simulator trimming of history; it is not a memory or save-size bound for a production-shaped save
-- [ ] Production-shaped soak (plan T6.3b). JVM half done: `./gradlew :core:soak` plays 2,000 forced-survival days for two smiths; End Day p95 1.7 to 3.9 ms over the first 1,000 days (budget 200 ms), save 3.7 to 4.7 MB at day 1,000 and 6.8 to 8.6 MB at day 2,000, not bounded. Device half (cold load, commit, frames, heap, memory pressure) pending
-- [x] Headless simulator with the GDD policy set, upgrade impact, catalog sweeps, JSON report
-- [x] Balance v2, v3 and v5 (with v4) reviewed at 10,000 seeds; first-era median 20 days at fair prices, 25-35 on the better paths, 35-45 with every upgrade, 0 hard-locks
-- [x] Instrumented tests: Room save / restore, title, forge hint, End Day budget (6)
-- [x] Instrumented (device) tests for the update: 56 of 56 pass in the final gate on 2eca650, including `M4ScreensTest`, `WeaponStatCardTest`, the main-menu test, `ShopDayPersistenceTest`, the storage and layout tests and `EndDayPerfTest`; `smoke.sh` and `runend.sh` pass. History: the first gate on d946c4f read 45 of 50, five faults in the new tests themselves; one real screen fault followed and was fixed (the Storage sheet lost its order on restoration). Emulator only, one size, font 1.0
-- [x] 393 core and 122 app JVM tests pass on the tip of `shop-day/m0` (2026-10-10, reported by the controller); the debug APK builds. CI on GitHub was green on the branch at the main-menu commit; no CI run or lint run is recorded for the tip
-- [x] Balance 8 reviewed at 10,000 seeds at three base seeds, 990,000 runs (T5.5; DECISIONS, "Balance v8 at 10,000 seeds"): every run ends, longest 65 days, no tripwire crossed, a maxed account leads a new one by at least 10 mean days
-- [ ] Both run-length bands hold at 10,000 seeds (the plan's M5 exit condition): NOT met. The plain smith's mean is 22.52 / 22.60 / 22.57 days against a band top of 22.5 at every seed, and nine other lines fail at all three seeds; no number was changed, all are open owner decisions. The per-upgrade gate table (T5.3) was not run
-- [x] Balance v4 (wear + fame) reviewed at 10,000 seeds as part of v5; affix magnitudes the v3 review flagged applied
-- [x] Artifact recovery as a simulator metric (51-53 % of fallen heroes' blades come back at 1,000 seeds)
+## 20 Testing and balance
+- [x] JVM suites: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, golden state (633 core tests pass, 2026-10-14)
+- [x] Headless simulator (classic policies and bots, multi-era, upgrade impact, customers, depth, probes, sweeps) and guild simulator (14 policies, paired comparisons)
+- [x] Balance 2, 3, 5 and 8 reviewed at 10,000 seeds; balance 8 at three base seeds, 990,000 runs: every run ends, longest 65 days, a maxed account leads a new one by at least 10 mean days
+- [ ] Balance 12 to 15 reviewed at 10,000 seeds (measured at 300 to 1,000 seeds only)
+- [ ] Both run-length bands hold at 10,000 seeds (the plan's M5 exit): not met at balance 8; the first-era part is now ruled (keep, judge by minutes), the maxed ceiling is still open
+- [ ] A minutes-per-run measure, so the first-era pacing can be judged as the owner ruled
+- [x] Artifact recovery as a simulator metric (51-53 % of fallen heroes' weapons come back at 1,000 seeds)
+- [x] `:core:soak`: 2,000 forced-survival days for two smiths; End Day p95 1.7 to 3.9 ms (budget 200 ms)
+- [ ] Device half of the soak (cold load, commit, frames, heap, memory pressure)
+- [ ] Instrumented suite green again: 75 run, 8 to 10 failing at the 2026-10-14 review (stale assertions from the copy remaster). `smoke.sh` and `runend.sh` ran green after the day-1 relic offer and the run-setup screen (PROGRESS)
 - [ ] Compose screenshot / accessibility tests
-- [ ] Day-sim p95 < 200 ms on real mid-range hardware (21 ms on the emulator Android runtime, 1.7 ms on a desktop JVM, balance v5)
+- [ ] Day-sim p95 < 200 ms on real mid-range hardware (21 ms on the emulator Android runtime)
 
-## 16-19 Release
-- [x] Vertical-slice acceptance on device: forge -> sell -> hero fights -> Gazette -> siege -> defeat -> legacy -> upgraded next run
-- [x] Every locked v1 system is reachable from some screen (a row, a line of text or a control)
-- [x] Every locked v1 system is inspectable: hero and blade sheets show taste, purse, regular status, guild and mentor, a weapon's history and each affix's description (review U04-U06, G08; T2.7: seen on the emulator at font scale 1.0 and 2.0). Since restyled as an item card (polish pass 1, lower half seen on the emulator) and extended with a Story section and the hero's want line (device tests pass in the final gate; not looked at by a person). List from the sheet was run on an emulator on 2026-10-10. Not exercised on a device: Set price / Salvage from the sheet, the holder and mentor links
+## 21 Release
+- [x] Vertical-slice acceptance on a device: forge -> sell -> hero fights -> Gazette -> siege -> defeat -> legacy -> upgraded next run
+- [x] Every locked system is reachable and inspectable from some screen
+- [ ] 0.9.0 gates (owner decision F): physical-phone pass; G3, G12, G13 (classic golden state changed by decision), G14
 - [ ] Package rename from `com.example.blacksmithproject` (awaiting the application ID)
 - [ ] Release signing, AAB
 - [ ] Store listing (1.99 EUR, no ads / IAP), privacy and legal assets
-- [ ] GDD 19 acceptance walk-through on a real device
+- [ ] GDD acceptance walk-through on a real device
+
+## Deep forging foundation (owner's prompt of 2026-10-11; `docs/DEEP_FORGING_LEDGER.md`)
+Ticked = built and JVM-tested. What was seen on a device is in the ledger.
+- [x] One resolver composes a weapon's fight rules; fight, weapon card, forge outlook, bench and capabilities read it
+- [x] A fight rule for each of the six metals, on weapons forged from now on (`Weapon.craft`); older weapons unchanged
+- [x] A stated role and limit for each of the 16 ingredients, in content
+- [x] Typed capabilities with a pure evaluator
+- [x] Seven interaction paths, each with two recipes, a limit, and a fight where it fires and one where it does not
+- [x] Forge outlook card and the bench (a rehearsal on the real engine, no save touched)
+- [x] Notebook "Fight notes": learned rule, suggested interaction, interaction seen in a real fight (shown on a device with a real contract, kept through a process kill)
+- [ ] Commissions that ask for a capability (the evaluator is ready, nothing calls it)
+- [ ] Any of this in a classic run (its resolver does not run fight rules)
+- [ ] Human playtest: does forming a hypothesis and testing it feel good
 
 ## Pipeline (owner requests and review findings, beyond the GDD)
 - [x] Signboard effect (+1 customer a day per level; +0.4 days, +3.5 sales a run for the active smith)
@@ -184,53 +239,5 @@ it, and the lines dated T2.x below say what exists now.
 - [x] Lucky affix: loot something scarce (a catalyst or tier 3+ material) instead of a common material
 - [ ] Decide the wear margin (active smith leads the plain one by 5 days, was 10): condition floor 0.8 or less siege wear
 - [x] Known Name: one starting regular with savings per level (+1.6 mean days; first siege held in 94 % of runs against 86 %)
-- [ ] (no longer applies) Home: Yesterday block repeats the Shelf line on days without a lede. Home was replaced by the Shop page (T2.8b)
-- [x] Weapons map pruning of terminal blades (salvaged, shattered, donated, collected) 30 days after they leave play
-- [ ] Bounded save growth (review F10): closed commissions, processed command IDs, routine kept-forever records and everyday history lines are bounded (T6.3a). **Still growing, by decision:** unsold stock (nothing the player owns is deleted; storage tools are T6.3c), blades seized or lost with a hero (an event can bring any of them home), dead and retired heroes, and history-grade records (deaths, retirements, sieges, milestones). Measured (T6.3b, JVM, 2,000 days): the save grows 3.3 to 4.2 KB a day; stock is 2.0 to 2.7 KB of it, returnable blades 0.3 to 0.4, records kept for the run 0.3 (half of them `WEAPON_INHERITED`), hero records 0.13 to 0.15; without stock 0.86 to 0.91 KB a day, not flat. The four rules take about 5 % off a day-1,000 save. Storage filters and bulk actions (T6.3c) are merged; clearing hundreds of blades in a few taps needs a core rule that does not exist (owner decision). The device half of the soak (loading and playing a 1,000-day save on a device) was not run
-
-## Gameplay depth (review of 2026-10-10, first coherent release; plan `GAMEPLAY_DEPTH_PLAN.md`)
-- [x] Morning visitors: 8 definitions plus the chain's second stage, stored in the save, one explicit answer, a stated default at End Day; three old automatic events converted without a second payout
-- [x] Run relics: 4 (Salvager's Crucible, Tempering Ledger, Collector's Seal, Ashen Bellows), 3 slots, offers on day 1, after sieges 2 and 4 and for a won wager
-- [x] Siege traits: 2 (Long Assault, Many Breaches), named in the first warning; the besieger is fixed from then on; forecast and fight share one outlook
-- [x] Follow-up chain: a blade on trust before the siege, the hero's return (or the record of why not) the morning after
-- [x] Save schema 5 with migration from 4; 19 constructed debug scenarios; simulator tastes (`--encounters`, `--relic`, `--noDepth`, `--probe`)
-- [x] 10,000-seed gate against the matched baseline; exploit probes pass
-- [ ] Owner decision: the first-era band (plain smith now median 25, mean 25.2) and the maxed ceiling (active expert median 60)
-- [ ] Owner decision: options no bot prefers (the master's paid lesson, the crate's plain metal) and the wager won 94 to 98% of the time
-- [ ] smoke.sh, runend.sh and the instrumented tests updated for the day-1 relic offer, then run
-- [ ] Visitor portraits and relic / trait icons (wanted lists in `Assets/`)
-- [ ] Seen on a physical phone; TalkBack
-
-## Guild evolution (revision of 2026-10-10; `docs/GDD_REVISION_2026-10-10.md`)
-Per-task status and evidence: `docs/GUILD_EVOLUTION_PLAN.md`. Ticked = built and JVM-tested; see the ledger for what was seen on a device.
-- [x] A run begins under a charter (three) or without one (the classic game, unchanged)
-- [x] Contracted members (up to six), recruiting with disclosed class, trait and fee
-- [x] Loans: one blade, one place, one custodian
-- [x] Contract board, one party of one to three, posture; one- and two-day contracts with a checkpoint
-- [x] Automatic fights as recorded events and limited effects; three highlights from the real chain
-- [x] Five class kits; a rule for every element, affix, flaw, catalyst and family; six signature rules
-- [x] Eight party relics in the existing three slots (twelve relics in all)
-- [x] Siege fought by the three on the wall; reserved defenders; "held, at a cost" in words
-- [x] Wounds, capture and rescue, death, a taken blade and its recovery
-- [x] Day-20 charter, retire or continue, legacy counted once; optional ranks
-- [x] Four guild visitors (twelve scenes); rival, nemesis, bonds, branches, laws
-- [x] Schema 6 with 0.7.0 saves as fixtures
-- [ ] Residents' own expeditions through the new engine
-- [ ] Secondary imprint, mastery stamp, risk that changes the quirk, tag-aware relic drafts, workshop specialisation
-- [ ] Event cadence scheduler; the other eight named choice scenes
-- [ ] Human playtest of the two gates; phone, large font and TalkBack pass of the new screens
-
-## Deep forging foundation (owner's prompt of 2026-10-11; `docs/DEEP_FORGING_LEDGER.md`, branch `deep-forging-integration` with run-variety merged in, on `main`)
-Ticked = built and JVM-tested. What was seen on a device is in the ledger.
-- [x] One resolver composes a weapon's fight rules; fight, weapon card, forge outlook, bench and capabilities read it
-- [x] A fight rule for each of the six metals, on weapons forged from now on (`Weapon.craft`); older weapons unchanged
-- [x] A stated role and limit for each of the 16 ingredients, in content
-- [x] Typed capabilities with a pure evaluator (available, needs with what is missing or unchecked, cannot provide with a reason)
-- [x] Seven interaction paths, each with two recipes, a limit, and a fight where it fires and one where it does not
-- [x] Forge outlook card: certain, needs, trade-off, not certain; details on request
-- [x] The bench: a rehearsal on the real fight engine, no save touched, made-up conditions named, the town's wall among its lines
-- [x] Notebook "Fight notes": learned rule, suggested interaction, interaction seen in a real fight (shown on a device with a real contract, kept through a process kill)
-- [x] Integrated with run-variety: both suites pass, content 6 and balance 14 pinned, metal numbers and siege base measured on paired seeds
-- [ ] Commissions that ask for a capability (the evaluator is ready, nothing calls it)
-- [ ] Any of this in a classic run (its resolver does not run fight rules)
-- [ ] Human playtest: does forming a hypothesis and testing it feel good
+- [x] Weapons map pruning of terminal weapons (salvaged, shattered, donated, collected) 30 days after they leave play
+- [x] The empty root `GDD.md` removed (unreferenced; review 2026-10-14 row 30)
