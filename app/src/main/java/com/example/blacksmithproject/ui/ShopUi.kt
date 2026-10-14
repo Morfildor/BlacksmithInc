@@ -151,7 +151,8 @@ data class ShopUi(
  * (`Commissions.fit`); [handover] is what End Day will do for the request as the shop stands (`Labels.readiness`), which
  * may name another blade: the engine hands over the least sufficient blade that fits and sets none aside.
  */
-@Immutable data class ForgedForUi(val title: String, val terms: String, val fits: Boolean, val fit: String, val accepted: Boolean, val handover: String)
+/** [reservation] says in one line whether this weapon is reserved and for whose commission (`Weapon.promisedTo`, decision L). */
+@Immutable data class ForgedForUi(val title: String, val terms: String, val fits: Boolean, val fit: String, val accepted: Boolean, val handover: String, val reservation: String)
 
 /** Null without a request, for one that is no longer open, or for a blade that has left the save. Pure: reads the save. */
 fun GameEngine.forgedFor(state: GameState, weaponId: WeaponId, commissionId: CommissionId?): ForgedForUi? {
@@ -166,6 +167,8 @@ fun GameEngine.forgedFor(state: GameState, weaponId: WeaponId, commissionId: Com
         fit = if (fits) "This weapon meets the commission" else "This weapon doesn't meet the commission. ${Labels.fit(w, c, content).replaceFirstChar { it.uppercase() }}.",
         accepted = accepted,
         handover = if (accepted) Labels.readiness(c, state.weapons.values, content, config) else "Accept this commission in the Shop before it can be collected.",
+        // Only an heirloom sets a weapon aside; for any other commission End Day picks from what the shop holds.
+        reservation = promisedLine(state, w)?.let { "$it." } ?: "Not reserved. At End Day the buyer takes a matching weapon from storage first, then the shelf.",
     )
 }
 

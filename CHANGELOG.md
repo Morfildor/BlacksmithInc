@@ -39,6 +39,8 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - A weapon's card lists a rule that two of its parts share once, names both parts, and notes where its rules feed or get in the way of each other.
 
 ### Changed
+- **Listing a new weapon is one tap.** The forge result's main button is "List at suggested", with the price under it and how many heroes in town could pay it. "Set price" opens the price editor (−10, +10 or typed, with the count following your price), and "Back" there lists nothing.
+- When a weapon is forged for a commission, the result says in one line whether it is reserved and for whose commission. Only an heirloom sets a weapon aside; otherwise the buyer takes a matching weapon from storage first, then the shelf.
 - **Heartfire asks first.** Forging with Heartfire now opens a question before anything is spent: what it uses (1 Heartfire and the energy), how many you will hold after, that both are spent whether or not it breaks through, the chance in words and what a miss still gives. "Not now" spends nothing.
 - **Odds in words.** The Forge no longer prints hidden chances as numbers: Reckless says weapons "often" come out flawed, and a Heartfire forging says "a fair chance" or "a strong chance" to break through at each end of the quality it can reach. The upgrade preview words Thrifty Hands, Lucky Hammer and Anvil Lore the same way. Costs, energy, quality ranges and the quality a breakthrough needs are still exact numbers.
 - A weapon given away (listed for less than a quarter of its price) is a gift, not a sale. It earns no sale reputation. The town notices generosity once a day, and a gift warms a hero to the shop only so far, never into a regular.

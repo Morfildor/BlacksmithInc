@@ -93,7 +93,7 @@ class ForgeResultCardTest {
 
     /**
      * The reveal never holds the actions back: on its very first frame, with the clock stopped before the details have
-     * faded in, the price is there and "List at" lists. A new blade's card has no "Renown" row.
+     * faded in, the suggested price is there and "List at suggested" lists at it (decision K). A new weapon's card has no "Renown" row.
      */
     @Test
     fun theRevealLeavesThePriceAndBothButtonsLiveFromTheFirstFrame() {
@@ -101,7 +101,7 @@ class ForgeResultCardTest {
         show(engine.itemDetail(forged, blade.id)!!, reveal = true)
         compose.mainClock.advanceTimeByFrame()
         compose.onNodeWithText(blade.name).assertIsDisplayed()
-        compose.onNodeWithTag("reveal_price").assertIsDisplayed().assertTextContains("$suggested")
+        compose.onNodeWithTag("reveal_suggested").assertIsDisplayed().assertTextEquals("Suggested price $suggested gold.")
         compose.onNodeWithTag("reveal_store").assertIsDisplayed().assertIsEnabled()
         compose.onNodeWithTag("reveal_list").assertIsDisplayed().assertIsEnabled().performClick()
         compose.mainClock.advanceTimeByFrame()
@@ -114,37 +114,48 @@ class ForgeResultCardTest {
         assertEquals(before, compose.onNodeWithTag("reveal_list").getUnclippedBoundsInRoot())
     }
 
+    /** Decision K: "List at suggested" is the way on; "Set price" opens the editor, where the count follows the chosen price. */
     @Test
-    fun thePriceIsChosenOnTheCardAndTheCountFollowsIt() {
+    fun theSuggestedPriceListsAtOnceAndSetPriceOpensTheEditor() {
         show(engine.itemDetail(forged, blade.id)!!)
-        // It opens on the suggested price, named apart from the player's own.
-        compose.onNodeWithTag("reveal_price").assertTextContains("$suggested")
-        compose.onNodeWithTag("reveal_suggested").assertTextEquals("Suggested price $suggested gold. You're asking the suggested price.")
+        // The card names the suggested price and how many could pay it, and lists at it in one tap.
+        compose.onNodeWithTag("reveal_suggested").assertTextEquals("Suggested price $suggested gold.")
         compose.onNodeWithTag("reveal_afford").assertTextEquals(afford(suggested))
-        compose.onNodeWithText("List at $suggested").assertIsDisplayed()
+        compose.onNodeWithText("List at suggested").assertIsDisplayed()
+        compose.onNodeWithTag("set_price").assertDoesNotExist()
+
+        // "Set price" opens the editor on the suggested price.
+        compose.onNodeWithTag("reveal_set_price").assertIsEnabled().performClick()
+        compose.onNodeWithTag("set_price").assertTextContains("$suggested")
+        compose.onNodeWithTag("set_suggested").assertTextEquals("Suggested price $suggested gold. You're asking the suggested price.")
+        compose.onNodeWithTag("set_afford").assertTextEquals(afford(suggested))
 
         // The minus button, twice: the field, the button and the count all move.
         repeat(2) { compose.onNodeWithContentDescription("Lower price by 10").performClick() }
         val lower = suggested - 20
-        compose.onNodeWithTag("reveal_price").assertTextContains("$lower")
-        compose.onNodeWithTag("reveal_suggested").assertTextEquals("Suggested price $suggested gold. Your price is 20 below it.")
-        compose.onNodeWithTag("reveal_afford").assertTextEquals(afford(lower))
+        compose.onNodeWithTag("set_price").assertTextContains("$lower")
+        compose.onNodeWithTag("set_suggested").assertTextEquals("Suggested price $suggested gold. Your price is 20 below it.")
+        compose.onNodeWithTag("set_afford").assertTextEquals(afford(lower))
         assertTrue("the scenario: the count moves between the two prices", afford(lower) != afford(suggested))
         compose.onNodeWithContentDescription("Raise price by 10").performClick()
         compose.onNodeWithText("List at ${lower + 10}").assertIsDisplayed()
 
         // A typed price nobody can pay says so before anything is listed.
-        compose.onNodeWithTag("reveal_price").performTextReplacement("5000")
-        compose.onNodeWithTag("reveal_afford").assertTextEquals("0 of ${funds.size} heroes in town can afford this price.")
-        compose.onNodeWithText("Able to pay is not a sale", substring = true).assertIsDisplayed()
+        compose.onNodeWithTag("set_price").performTextReplacement("5000")
+        compose.onNodeWithTag("set_afford").assertTextEquals("0 of ${funds.size} heroes in town can afford this price.")
 
-        // An empty field lists nothing; a typed price is the one that is listed.
-        compose.onNodeWithTag("reveal_price").performTextReplacement("")
-        compose.onNodeWithTag("reveal_list").assertIsNotEnabled()
-        compose.onNodeWithTag("reveal_afford").assertDoesNotExist()
-        compose.onNodeWithTag("reveal_price").performTextReplacement("45")
-        compose.onNodeWithTag("reveal_afford").assertTextEquals(afford(45))
-        compose.onNodeWithTag("reveal_list").assertIsEnabled().performClick()
+        // An empty field lists nothing; "Back" lists nothing either; a typed price is the one that is listed.
+        compose.onNodeWithTag("set_price").performTextReplacement("")
+        compose.onNodeWithTag("set_list").assertIsNotEnabled()
+        compose.onNodeWithTag("set_afford").assertDoesNotExist()
+        compose.onNodeWithTag("set_back").performClick()
+        compose.onNodeWithTag("set_price").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(emptyList<Int>(), listed.toList()) }
+        compose.onNodeWithTag("reveal_set_price").performClick()
+        compose.onNodeWithTag("set_price").performTextReplacement("45")
+        compose.onNodeWithTag("set_afford").assertTextEquals(afford(45))
+        compose.onNodeWithTag("set_list").assertIsEnabled().performClick()
+        compose.onNodeWithTag("set_price").assertDoesNotExist()
         compose.onNodeWithTag("reveal_store").performClick()
         compose.runOnIdle { assertEquals(listOf(45) to 1, listed.toList() to stored) }
     }
@@ -157,6 +168,7 @@ class ForgeResultCardTest {
         compose.onNodeWithTag("reveal_shelf_full").assertIsDisplayed().assertTextContains("The shelf is full ($slots of $slots).", substring = true)
         compose.onNodeWithTag("reveal_list").assertIsNotEnabled().assertContentDescriptionContains("unavailable: The shelf is full", substring = true)
         compose.onNodeWithTag("reveal_list").performClick()
+        compose.onNodeWithTag("reveal_set_price").assertIsNotEnabled()
         compose.onNodeWithTag("reveal_store").assertIsEnabled().performClick()
         compose.runOnIdle { assertEquals(emptyList<Int>() to 1, listed.toList() to stored) }
     }
@@ -170,8 +182,8 @@ class ForgeResultCardTest {
         inRequest("For ${forged.aliveHeroes().first().fullName}")
         inRequest("This weapon meets the commission")
         inRequest("Ready. ${blade.name} will be collected at End Day.")
-        inRequest("None is set aside.")
-        compose.onNodeWithText("reserved", substring = true, ignoreCase = true).assertDoesNotExist()
+        // Decision L: whether this weapon is reserved, and for whose commission, in one line.
+        compose.onNodeWithTag("reveal_reservation").assertTextEquals("Not reserved. At End Day the buyer takes a matching weapon from storage first, then the shelf.")
         // The request is told before the blade, and both ways on are still there.
         assertTrue(compose.onNodeWithTag("reveal_request").getUnclippedBoundsInRoot().top < compose.onNodeWithText(blade.name).getUnclippedBoundsInRoot().top)
         compose.onNodeWithTag("reveal_store").assertIsDisplayed()
@@ -191,7 +203,7 @@ class ForgeResultCardTest {
             compose.waitForIdle()
             val where = "${s.width} x ${s.height} at font $f"
             val root = compose.onRoot().fetchSemanticsNode().boundsInRoot
-            for (tag in listOf("reveal_price", "reveal_afford", "reveal_store", "reveal_list")) {
+            for (tag in listOf("reveal_suggested", "reveal_afford", "reveal_store", "reveal_list", "reveal_set_price")) {
                 val node = compose.onNodeWithTag(tag)
                 if (f > 1.3f) node.performScrollTo()
                 node.assertIsDisplayed()

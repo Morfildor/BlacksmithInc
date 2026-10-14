@@ -135,7 +135,7 @@ class ForgeResultTest : ShopDayTestBase() {
         assertEquals("Suggested price 120 gold. Enter your own price.", priceAgainstSuggested(null, 120))
     }
 
-    /** A blade forged for a request: whether this blade fits, and what End Day will really hand over. Never "reserved". */
+    /** A weapon forged for a request: whether it fits, what End Day will really hand over, and whether it is reserved (decision L). */
     @Test
     fun aBladeForgedForARequestSaysItsRealReadiness() {
         fun with(c: Commission, extra: List<Weapon> = emptyList()) = forged.copy(commissions = mapOf(c.id to c), weapons = forged.weapons + extra.associateBy { it.id })
@@ -149,6 +149,10 @@ class ForgeResultTest : ShopDayTestBase() {
         assertTrue(ready.fits && ready.accepted)
         assertEquals("This weapon meets the commission", ready.fit)
         assertEquals("Ready. ${blade.name} will be collected at End Day.", ready.handover)
+        // Decision L: one line on whether this weapon is reserved. Only an heirloom is (`Weapon.promisedTo`).
+        assertEquals("Not reserved. At End Day the buyer takes a matching weapon from storage first, then the shelf.", ready.reservation)
+        val promised = forged.copy(commissions = mapOf(accepted.id to accepted), weapons = forged.weapons + (blade.id to blade.copy(promisedTo = accepted.id)))
+        assertEquals("Reserved for $buyer's commission.", engine.forgedFor(promised, blade.id, accepted.id)!!.reservation)
 
         // A lesser blade that also fits is what the engine hands over: the card names that one, not the fresh blade.
         val lesser = blade.copy(id = WeaponId("lesser"), name = "Plain Old Sword", quality = blade.quality - 1)

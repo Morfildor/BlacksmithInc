@@ -12,10 +12,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
@@ -64,7 +62,9 @@ import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.detail.ItemDetail
 import com.example.blacksmithproject.ui.detail.PriceEditor
+import com.example.blacksmithproject.ui.detail.Stock
 import com.example.blacksmithproject.ui.detail.WeaponStatBody
+import com.example.blacksmithproject.ui.detail.affordLine
 import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.detail.shelfFullLine
 import com.example.blacksmithproject.ui.theme.BronzeDeep
@@ -88,7 +88,7 @@ import kotlinx.coroutines.delay
 
 /**
  * Item card after an atomic forge, with the price chosen on it. The reveal is decorative; the weapon already exists in
- * the saved state, in storage. Closing the card any way but "List at" leaves it there, and the workshop says so.
+ * the saved state, in storage. Closing the card any way but a listing leaves it there, and the workshop says so.
  */
 @Composable
 fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel, reducedMotion: Boolean) {
@@ -124,14 +124,15 @@ private const val REVEAL_HOLD_MS = 700L
 private const val REVEAL_FADE_MS = 250
 
 /**
- * The forge result without its window. The blade's card scrolls; the price and the two ways on are pinned under it, so
- * "List at" is on screen without a scroll and stays above the keyboard. With text larger than 1.3 the pinned part would
- * leave the blade no room, so the whole card is one scrolling column again. A blade forged for a request says so first.
- * [detail] carries the price facts (its `Stock`); [onList] is given the chosen price. [enabled] greys "List at" while a
- * command is being saved; Store issues no command and is never greyed.
+ * The forge result without its window. The blade's card scrolls; the suggested price and the ways on are pinned under
+ * it, so "List at suggested" is on screen without a scroll (decision K). "Set price" opens the price editor in a dialog
+ * over the card. With text larger than 1.3 the pinned part would leave the blade no room, so the whole card is one
+ * scrolling column again. A blade forged for a request says so first, with whether it is reserved (decision L).
+ * [detail] carries the price facts (its `Stock`); [onList] is given the price to list at. [enabled] greys the listing
+ * actions while a command is being saved; Store issues no command and is never greyed.
  *
  * With [reveal] the blade's sprite, name and rarity stand alone for a moment before its numbers, buffs and recipe fade
- * in under them; a tap anywhere on the card brings them at once. Nothing moves and the price and both buttons are there
+ * in under them; a tap anywhere on the card brings them at once. Nothing moves and the price and the buttons are there
  * and live from the first frame, so the reveal never costs a tap or a wait. Without it (reduced motion) the card is
  * whole at once. A brand-new blade has no renown to show, so the zero is left out here; the blade's sheet keeps it.
  *
@@ -165,8 +166,8 @@ fun ForgeResultCard(
                 Text(r.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 Secondary(r.terms)
                 EffectRow(if (r.fits) EffectKind.BUFF else EffectKind.FLAW, r.fit, r.handover)
-                // The engine sets no blade aside (`Commissions.pick`): say what End Day does instead of promising this one.
-                if (r.accepted) Secondary("At End Day, the buyer takes a matching weapon from storage first, then the shelf. No weapon is set aside for it.")
+                // Decision L: whether this weapon is reserved, and for whose commission (`Weapon.promisedTo`), in one line.
+                Secondary(r.reservation, Modifier.testTag("reveal_reservation"))
             }
         }
         WeaponStatBody(fresh, overSprite, detailAlpha = { shown })
@@ -185,20 +186,24 @@ fun ForgeResultCard(
             SecondaryActionButton("Close", onStore, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("reveal_store"))
             return@price
         }
-        var priceText by rememberSaveable(detail.weaponId.value) { mutableStateOf(stock.suggestedPrice.toString()) }
-        PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "reveal") { chosen ->
-            // The engine refuses a listing on a full shelf; say so here and leave Store as the way on.
-            val full = stock.shelfFree <= 0
-            if (full) Text("${shelfFullLine(stock.slots)} Store this weapon for now. Remove another from the shelf to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("reveal_shelf_full"))
-            Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-                SecondaryActionButton("Store", onStore, Modifier.heightIn(min = 52.dp).testTag("reveal_store"))
-                PrimaryActionButton(
-                    chosen?.let { "List at $it" } ?: "List", { chosen?.let(onList) },
-                    Modifier.weight(1f).testTag("reveal_list").semantics { if (full) contentDescription = "List, unavailable: ${shelfFullLine(stock.slots)}" },
-                    enabled = enabled && chosen != null && !full,
-                )
-            }
+        val suggested = stock.suggestedPrice
+        // The engine refuses a listing on a full shelf; say so here and leave Store as the way on.
+        val full = stock.shelfFree <= 0
+        // Decision K: listing at the suggested price is the way on; "Set price" opens the editor over the card.
+        Secondary("Suggested price $suggested gold.", Modifier.testTag("reveal_suggested"))
+        Text(affordLine(stock.funds, suggested), style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.padding(top = Space.xs).testTag("reveal_afford"))
+        if (full) Text("${shelfFullLine(stock.slots)} Store this weapon for now. Remove another from the shelf to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("reveal_shelf_full"))
+        Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+            SecondaryActionButton("Store", onStore, Modifier.heightIn(min = 52.dp).testTag("reveal_store"))
+            PrimaryActionButton(
+                "List at suggested", { onList(suggested) },
+                Modifier.weight(1f).testTag("reveal_list").semantics { if (full) contentDescription = "List at suggested, unavailable: ${shelfFullLine(stock.slots)}" },
+                enabled = enabled && !full, detail = "$suggested gold",
+            )
         }
+        var pricing by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
+        SecondaryActionButton("Set price", { pricing = true }, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("reveal_set_price"), enabled = enabled && !full)
+        if (pricing) PriceDialog(detail.name, stock, enabled, onDismiss = { pricing = false }) { chosen -> pricing = false; onList(chosen) }
         val loan = detail.loan
         if (onLoan != null && loan != null) {
             var picking by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
@@ -207,21 +212,33 @@ fun ForgeResultCard(
         }
     }
     val large = LocalDensity.current.fontScale > 1.3f
-    // While the keyboard is up the pinned card is only its price: on a short screen the title and the blade would
-    // otherwise leave the buttons under the keyboard.
-    val typing = !large && WindowInsets.ime.getBottom(LocalDensity.current) > 0
     // No semantics on the tap: it only ends a moment's fade, and the buttons under it keep their own taps.
-    FramedPanel("Fresh from the forge".takeIf { !typing }, modifier.fillMaxWidth().pointerInput(Unit) { detectTapGestures { revealed = true } }) {
+    FramedPanel("Fresh from the forge", modifier.fillMaxWidth().pointerInput(Unit) { detectTapGestures { revealed = true } }) {
         // Large text: the card is one long column, so the guided step and its way out come first, where they are seen without a scroll.
         if (large) Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); blade(); price() }
         else {
-            if (!typing) {
-                val bladeScroll = rememberScrollState()
-                Column(Modifier.weight(1f, fill = false).verticalScroll(bladeScroll).bottomFade(bladeScroll.canScrollForward, ForgePanel)) { blade() }
-            }
-            // Measured before the card above it, so it has the room it needs; it scrolls only when the keyboard leaves less.
+            val bladeScroll = rememberScrollState()
+            Column(Modifier.weight(1f, fill = false).verticalScroll(bladeScroll).bottomFade(bladeScroll.canScrollForward, ForgePanel)) { blade() }
+            // Measured before the card above it, so it has the room it needs.
             Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); price() }
         }
+    }
+}
+
+/**
+ * "Set price" on the forge result (decision K): the price editor in the house dialog, opening on the suggested price,
+ * with the count of heroes who could pay it. "List at" lists at the chosen price; "Back" returns to the card with
+ * nothing listed. Tags are "set_price", "set_afford", "set_suggested" and "set_list".
+ */
+@Composable
+private fun PriceDialog(name: String, stock: Stock, enabled: Boolean, onDismiss: () -> Unit, onList: (Int) -> Unit) {
+    var priceText by rememberSaveable(name) { mutableStateOf(stock.suggestedPrice.toString()) }
+    val chosen = priceText.toIntOrNull()
+    ForgeDialog("Set a price for $name", onDismiss, tag = "set_price_dialog", actions = {
+        SecondaryActionButton("Back", onDismiss, Modifier.testTag("set_back"))
+        PrimaryActionButton(chosen?.let { "List at $it" } ?: "List", { chosen?.let(onList) }, Modifier.testTag("set_list"), enabled = enabled && chosen != null)
+    }) {
+        PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "set") { }
     }
 }
 
