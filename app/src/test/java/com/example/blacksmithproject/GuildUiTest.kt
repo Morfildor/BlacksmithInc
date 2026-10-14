@@ -76,16 +76,16 @@ class GuildUiTest {
         // The siege falls tomorrow night.
         val before = engine.guildUi(s.siegeOn(s.day + 1))!!
         val oneUi = before.offers.first { it.id == one.id }
-        assertEquals("1 day: leaves at End Day, home on the morning of day ${s.day + 1}", oneUi.time)
+        assertEquals("1 day away: leaves at End Day today, home on the morning of day ${s.day + 1}.", oneUi.time)
         assertNull("home that morning, so on the wall that night", oneUi.missesSiege)
         val twoUi = before.offers.first { it.id == two.id }
-        assertEquals("2 days: leaves at End Day, home on the morning of day ${s.day + 2}", twoUi.time)
-        assertEquals("Misses the siege night of day ${s.day + 1}.", twoUi.missesSiege)
+        assertEquals("2 days away: leaves at End Day today, home on the morning of day ${s.day + 2}.", twoUi.time)
+        assertEquals("Misses the siege on day ${s.day + 1}: the party is away that night.", twoUi.missesSiege)
 
         // The siege falls tonight: a party sent today is away tonight, whatever the contract's length.
         val tonight = engine.guildUi(s.siegeOn(s.day))!!
-        assertEquals("Misses the siege night of day ${s.day}.", tonight.offers.first { it.id == one.id }.missesSiege)
-        assertEquals("Misses the siege night of day ${s.day}.", tonight.offers.first { it.id == two.id }.missesSiege)
+        assertEquals("Misses the siege on day ${s.day}: the party is away that night.", tonight.offers.first { it.id == one.id }.missesSiege)
+        assertEquals("Misses the siege on day ${s.day}: the party is away that night.", tonight.offers.first { it.id == two.id }.missesSiege)
         assertEquals("Siege tonight, after today's trading", tonight.wall.whenLine)
 
         // The siege falls the night after both are home.
@@ -101,7 +101,7 @@ class GuildUiTest {
         assertTrue(sheet.atHome, sheet.atHome.startsWith(if (home == 1) "1 fit member stays" else "$home fit members stay"))
         assertEquals(listOf(1), sheet.picks.mapNotNull { it.order })
         assertEquals(Posture.CAUTIOUS, sheet.postures.single { it.selected }.posture)
-        assertEquals("Leaves when a member is down or the party is under ${cfg.fight.cautiousHealthPercent}% of the health it came with.", sheet.postures.first().line)
+        assertEquals("Retreats when any member is down, or when the party's total health falls below ${cfg.fight.cautiousHealthPercent}% of what it started the fight with.", sheet.postures.first().line)
     }
 
     @Test
@@ -114,7 +114,7 @@ class GuildUiTest {
         val ui = engine.guildUi(planned)!!
         val names = party.map { planned.heroes.getValue(it).name }.joinToString(", ")
         val contract = engine.content.guild!!.mission(offer.defId).name
-        assertEquals("Planned for today: $names on $contract, balanced. Leaves at End Day.", ui.plan)
+        assertEquals("Planned for today: $names on $contract, retreat rule Balanced. The party leaves at End Day.", ui.plan)
         assertTrue(ui.offers.first { it.id == offer.id }.planned)
         assertTrue(ui.wall.notes.toString(), "The party you planned leaves today and is not on the wall tonight." in ui.wall.notes)
         // Nobody of the party is counted on the wall, and End Day says both things in plain lines.
@@ -169,18 +169,18 @@ class GuildUiTest {
         val ui = engine.guildUi(s)!!
         val cp = ui.party!!.checkpoint!!
         assertEquals(m.id, cp.instanceId)
-        assertTrue(cp.secured, cp.secured.startsWith("Secured: "))
-        if (m.secured.gold > 0) assertTrue(cp.secured, "${m.secured.gold} contract gold" in cp.secured)
-        assertTrue(cp.deeper, cp.deeper.startsWith("Deeper adds, only if won: "))
-        assertEquals("Lethal: if the whole party goes down, one dies and one is taken.", cp.danger)
+        assertTrue(cp.secured, cp.secured.startsWith("Already won and kept: "))
+        if (m.secured.gold > 0) assertTrue(cp.secured, "${m.secured.gold} gold" in cp.secured)
+        assertTrue(cp.deeper, cp.deeper.startsWith("Go deeper: one more fight at End Day today. If it is won, the party also brings home: "))
+        assertEquals("Lethal: if the whole party goes down, 1 member dies and another is captured.", cp.danger)
         assertTrue(cp.enemies.isNotEmpty())
         assertNull(cp.chosen)
-        assertEquals("If you choose nothing, End Day returns.", cp.note)
-        assertEquals("The party at ${engine.content.guild!!.route(m.offer.factionId)!!.name} returns unless you send word", ui.endDay.last())
+        assertEquals("If you choose nothing, the party returns home at End Day.", cp.note)
+        assertEquals("The party at ${engine.content.guild!!.route(m.offer.factionId)!!.name} returns home unless you choose to go deeper", ui.endDay.last())
         // Word sent: the card says which, and End Day no longer warns.
         val pushed = engine.guildUi(s.send(Command.ChooseMissionCheckpoint(m.id, CheckpointChoice.PUSH)))!!
         assertEquals(CheckpointChoice.PUSH, pushed.party!!.checkpoint!!.chosen)
-        assertTrue(pushed.endDay.none { "unless you send word" in it })
+        assertTrue(pushed.endDay.none { "unless you choose to go deeper" in it })
         // Yesterday's contract is the stage that was won.
         assertEquals("Won. The party is still out", ui.yesterday!!.outcome)
         assertEquals(s.guild!!.lastMission!!.lines, ui.yesterday!!.lines)
@@ -223,7 +223,7 @@ class GuildUiTest {
         val trait = engine.content.guild!!.trait(c.traitId)!!
         val row = rich.candidates.first { it.heroId == c.heroId }
         assertEquals("${trait.name}: ${trait.description}", row.trait)
-        assertEquals("Fee ${c.fee} gold · keeps ${c.sharePercent}% of contract gold", row.terms)
+        assertEquals("Signing fee: ${c.fee} gold. Keeps ${c.sharePercent}% of the gold from quests they go on.", row.terms)
         assertEquals(engine.content.combat!!.kitByClass.getValue(fresh.heroes.getValue(c.heroId).classId).role, row.role)
         // The row shows class and the trait's name in one line; what the trait does is on the sheet.
         assertEquals("${row.sub} · ${trait.name}", row.line)

@@ -45,7 +45,7 @@ fun RunSetup(vm: GameViewModel, era: Int, enabled: Boolean, onBack: () -> Unit, 
             InlineActionButton("Back", onBack, Modifier.testTag("setup_back"))
             Text("How era $era begins", style = MaterialTheme.typography.headlineMedium, color = Cream, modifier = Modifier.padding(top = Space.xs).semantics { heading() })
             Text(
-                "A charter adds a guild: heroes you hire, arm with loans and send on contracts. No charter keeps the shop alone.",
+                "A charter adds a guild: heroes you hire, arm with loaned weapons and send on quests. Without a charter, you run only the shop.",
                 style = MaterialTheme.typography.bodyMedium, color = CreamMuted, modifier = Modifier.padding(top = Space.xs, bottom = Space.md),
             )
             CharterPicker(charters, selected, vm::selectCharter, vm.engine.content, title = null)

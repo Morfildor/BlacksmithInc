@@ -131,11 +131,11 @@ class NavigationTest : ShopDayTestBase() {
         val honed = vm.playing().state.weapons.getValue(id)
         assertNull(vm.playing().lastError)
         assertTrue(honed.honed)
-        assertEquals(Sheet.Item(id) to "Honed $name. Quality ${before.quality} to ${honed.quality}.", vm.playing().sheet to vm.playing().notice)
+        assertEquals(Sheet.Item(id) to "Upgraded $name. Quality ${before.quality} to ${honed.quality}.", vm.playing().sheet to vm.playing().notice)
 
         // A refusal says why and claims nothing: the blade is honed already.
         vm.stock(id, StockAction.Hone); advanceUntilIdle()
-        if (vm.playing().lastError != null) { assertTrue(vm.playing().notice!!.contains("Honed")); vm.dismissError(); advanceUntilIdle() }
+        if (vm.playing().lastError != null) { assertTrue(vm.playing().notice!!.contains("Upgraded") || vm.playing().notice!!.contains("Repaired")); vm.dismissError(); advanceUntilIdle() }
 
         // Melted down: the blade is gone, and the sheet is closed on purpose with the reason left on screen.
         vm.stock(id, StockAction.Salvage); advanceUntilIdle()

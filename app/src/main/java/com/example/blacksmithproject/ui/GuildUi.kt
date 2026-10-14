@@ -161,18 +161,30 @@ internal const val HOME_LINE = "At home, the hurt rest and the fit train on thei
 internal fun dangerWord(d: Danger): String = when (d) { Danger.SAFE -> "Safe"; Danger.DANGEROUS -> "Dangerous"; Danger.LETHAL -> "Lethal" }
 
 internal fun dangerWords(d: Danger): String = when (d) {
-    Danger.SAFE -> "Safe: nobody dies or is taken."
-    Danger.DANGEROUS -> "Dangerous: if the whole party goes down, one is taken alive."
-    Danger.LETHAL -> "Lethal: if the whole party goes down, one dies and one is taken."
+    Danger.SAFE -> "Safe: nobody dies or is captured."
+    Danger.DANGEROUS -> "Dangerous: if the whole party goes down, 1 member is captured."
+    Danger.LETHAL -> "Lethal: if the whole party goes down, 1 member dies and another is captured."
 }
 
 internal fun postureName(p: Posture): String = p.name.lowercase().replaceFirstChar { it.uppercase() }
 
-/** When a party of this posture turns for home, with the numbers of the rules themselves. */
+/** When a party with this retreat rule (code: posture) retreats, with the numbers of the rules themselves (`Fight.retreat`). */
 internal fun postureWords(p: Posture, rules: FightRules): String = when (p) {
-    Posture.CAUTIOUS -> "Leaves when a member is down or the party is under ${rules.cautiousHealthPercent}% of the health it came with."
-    Posture.BALANCED -> "Leaves when ${rules.balancedDowned} are down, or when the last one standing is under ${rules.lastStandPercent}% health."
-    Posture.RECKLESS -> "Never leaves."
+    Posture.CAUTIOUS -> "Retreats when any member is down, or when the party's total health falls below ${rules.cautiousHealthPercent}% of what it started the fight with."
+    Posture.BALANCED -> "Retreats when ${rules.balancedDowned} members are down, or when only 1 member of a larger party is still standing and is below ${rules.lastStandPercent}% of their maximum health."
+    Posture.RECKLESS -> "Never retreats. The party fights until it wins or every member is down."
+}
+
+/** What every retreat rule shares: when it is checked, what a retreat costs, and the round limit (`Fight.play`, `Missions.advance`). */
+internal fun GameEngine.retreatNote(rules: FightRules): String {
+    // The two exceptions by their catalog names (`GuildTraitDef.retreatGoldPercent`, `CombatContent.COWARDS_MEDAL`).
+    val keepers = listOfNotNull(
+        content.guild?.traits?.firstOrNull { it.retreatGoldPercent > 0 }?.let { "a ${it.name} member" },
+        content.relic(CombatContent.COWARDS_MEDAL)?.let { "the ${it.name}" },
+    )
+    return "The rule is checked at the end of each round. A retreat keeps the members alive, but that stage wins no reward." +
+        (if (keepers.isEmpty()) "" else " Only ${keepers.joinToString(" or ")} still brings home part of its gold.") +
+        " If neither side has won after ${rules.maxRounds} rounds, the party breaks off, and that counts as a retreat."
 }
 
 internal fun returnMorning(day: Int): String = "home on the morning of day $day"
@@ -191,18 +203,18 @@ private fun GameEngine.enemies(specs: List<EnemySpec>): List<EnemyUi> {
 }
 
 private fun GameEngine.rewardWords(state: GameState, r: Reward, factionId: FactionId?): String = listOfNotNull(
-    "${r.gold} contract gold".takeIf { r.gold > 0 },
+    "${r.gold} gold".takeIf { r.gold > 0 },
     r.materials.entries.joinToString(", ") { "${it.value} ${content.material(it.key).name}" }.ifEmpty { null },
-    factionId?.takeIf { r.suppression > 0 }?.let { "sets ${content.faction(it).name} back" },
-    "mends the wall".takeIf { r.integrity > 0 },
+    factionId?.takeIf { r.suppression > 0 }?.let { "lowers the pressure of ${content.faction(it).name}" },
+    "repairs up to ${r.integrity} forge health".takeIf { r.integrity > 0 },
     "+${r.militia} militia".takeIf { r.militia > 0 },
     "spoils their preparations for the siege".takeIf { r.sabotage },
-    "a relic to choose".takeIf { r.relicOffer },
+    "a relic you may take for the workshop".takeIf { r.relicOffer },
     "${r.heartfire} Heartfire for the forge".takeIf { r.heartfire > 0 },
     "the supplier's thanks: ${config.guild.supplierGratefulStock} more of every limited material each morning for ${config.guild.supplierDays} days".takeIf { r.supplier },
     "the deep road opens: ${com.tinyblacksmith.core.engine.DeepRoad.names(content, config, 1)} on sale".takeIf { r.road },
-    r.weaponId?.let { state.weapons[it]?.name }?.let { "$it back at the forge" },
-    r.captiveId?.let { state.heroes[it]?.fullName }?.let { "$it brought home" },
+    r.weaponId?.let { state.weapons[it]?.name }?.let { "$it returned to the forge" },
+    r.captiveId?.let { state.heroes[it]?.fullName }?.let { "$it rescued and brought home" },
 ).joinToString(" · ").ifEmpty { "Nothing of its own" }
 
 /** Who has to be standing at the end besides the party, in a sentence: " and keep the supply cart standing". */
@@ -211,11 +223,11 @@ private fun GameEngine.protectedWords(stage: MissionStage): String =
 
 private fun GameEngine.objectiveWords(stage: MissionStage): String = when {
     stage.enemies.isEmpty() -> "No fight"
-    stage.objective.kind == ObjectiveKind.DEFEAT -> "Defeat them all" + protectedWords(stage)
-    else -> "Last ${stage.objective.rounds} rounds" + protectedWords(stage)
+    stage.objective.kind == ObjectiveKind.DEFEAT -> "Defeat every enemy" + protectedWords(stage)
+    else -> "Survive ${stage.objective.rounds} rounds" + protectedWords(stage)
 }
 
-/** "Hunt on the Ashroad": the contract's name and the road it lies on; work at home has no road. */
+/** "Hunt on the Ashroad": the quest's (code: contract's) name and the road it lies on; work at home has no road. */
 internal fun GameEngine.contractTitle(offer: MissionOffer): String {
     val cat = content.guild!!
     val def = cat.mission(offer.defId)
@@ -224,10 +236,13 @@ internal fun GameEngine.contractTitle(offer: MissionOffer): String {
 
 private fun GameEngine.stageUi(state: GameState, offer: MissionOffer, index: Int): StageUi {
     val stage = offer.stages[index]
+    // Stage i is fought at End Day of the i-th day away, the first on the day the party leaves (`Missions.commit`, `advance`).
+    val day = state.day + index
     val label = when {
-        index == 0 -> "Secured when won"
-        offer.optionalPush -> "Deeper (optional), only if won"
-        else -> "Day ${index + 1}, only if won"
+        offer.stages.size == 1 -> "Day $day: the reward is yours as soon as the party wins"
+        index == 0 -> "Stage 1, day $day: the reward is yours as soon as this stage is won"
+        offer.optionalPush -> "Stage ${index + 1}, day $day, optional: after stage 1 is won, you choose whether the party goes deeper. Its reward is added only if this stage is won too"
+        else -> "Stage ${index + 1}, day $day: fought only if stage $index is won. Its reward is added when this stage is won"
     }
     return StageUi(label, objectiveWords(stage), dangerWords(stage.danger), enemies(stage.enemies), rewardWords(state, stage.reward, offer.factionId))
 }
@@ -237,11 +252,11 @@ private fun GameEngine.offerUi(state: GameState, g: GuildRunState, offer: Missio
     val siegeDay = state.town.nextSiegeDay
     return OfferUi(
         id = offer.id, title = contractTitle(offer), why = offer.reason, description = def.description,
-        time = (if (offer.days == 1) "1 day" else "${offer.days} days") + ": leaves at End Day, ${returnMorning(state.day + offer.days)}",
-        missesSiege = "Misses the siege night of day $siegeDay.".takeIf { missesSiege(state.day, offer.days, siegeDay) },
-        fee = if (offer.fee > 0) "Fee ${offer.fee} gold, paid when planned" else "No fee",
+        time = (if (offer.days == 1) "1 day away" else "${offer.days} days away") + ": leaves at End Day today, ${returnMorning(state.day + offer.days)}.",
+        missesSiege = "Misses the siege on day $siegeDay: the party is away that night.".takeIf { missesSiege(state.day, offer.days, siegeDay) },
+        fee = if (offer.fee > 0) "Fee: ${offer.fee} gold, paid when you send the party. It comes back if you cancel the plan before End Day." else "No fee.",
         stages = offer.stages.indices.map { stageUi(state, offer, it) }, prep = def.prep, failure = def.failure,
-        expiry = if (offer.expiresDay == Int.MAX_VALUE) "Always on the board" else "On the board until day ${offer.expiresDay}",
+        expiry = when (offer.expiresDay) { Int.MAX_VALUE -> "Always on the board"; state.day -> "Last day to send a party: today"; else -> "Last day to send a party: day ${offer.expiresDay}" },
         planned = g.planned?.offerId == offer.id,
         tag = "Opportunity".takeIf { def.archetype == MissionArchetype.OPPORTUNITY },
         modifier = content.guild!!.modifier(offer.modifierId)?.let { "${it.name}: ${it.description}" },
@@ -256,13 +271,13 @@ private fun GameEngine.offerUi(state: GameState, g: GuildRunState, offer: Missio
 private fun bladeLine(state: GameState, heroId: HeroId): String =
     state.loanOf(heroId)?.let { "On loan: ${it.name}" } ?: state.equippedWeapon(heroId)?.let { "Own weapon: ${it.name}" } ?: "Unarmed"
 
-private fun memberStatus(state: GameState, g: GuildRunState, m: GuildMember): String? = when {
+private fun GameEngine.memberStatus(state: GameState, g: GuildRunState, m: GuildMember): String? = when {
     m.status == MemberStatus.CAPTURED -> g.captives.firstOrNull { it.heroId == m.heroId }?.let { c ->
-        (c.deadlineDay - state.day).let { left -> "Held by the enemy, " + if (left == 1) "1 day left" else "$left days left" }
-    } ?: "Held by the enemy"
+        (c.deadlineDay - state.day).let { left -> "Captured by the enemy: " + (if (left == 1) "1 day" else "$left days") + " left to rescue them" }
+    } ?: "Captured by the enemy"
     m.status == MemberStatus.AWAY -> g.mission?.let { "Away until the morning of day ${it.returnDay}" } ?: "Away with the party"
     m.wound != null && m.wound!!.untilDay > state.day -> m.wound!!.let { w ->
-        statWord(w.kind) + " until day ${w.untilDay}" + if (w.kind == WoundKind.SCARRED) ": serves with less health" else ""
+        statWord(w.kind) + " until day ${w.untilDay}" + if (w.kind == WoundKind.SCARRED) ": enters fights with at most ${config.guild.scarredHealthPercent}% of their health" else ""
     }
     else -> null
 }
@@ -279,15 +294,15 @@ private fun GameEngine.wallUi(state: GameState, g: GuildRunState): WallUi {
     val present = g.members.filter { memberUnavailable(state, it.heroId) == null }
     return WallUi(
         siegeDay = town.nextSiegeDay, daysLeft = left,
-        whenLine = when { left <= 0 -> "Siege tonight, after today's trading"; left == 1 -> "Siege tomorrow night · day ${town.nextSiegeDay}"; else -> "Siege in $left days · day ${town.nextSiegeDay}" },
+        whenLine = when { left <= 0 -> "Siege tonight, after today's trading"; left == 1 -> "Siege tomorrow night, day ${town.nextSiegeDay}"; else -> "Siege in $left days, on day ${town.nextSiegeDay}" },
         factionId = f.faction?.id?.takeIf { f.committed },
         besieger = if (f.committed) f.faction?.name ?: "Not yet known" else "Besieger not yet known",
         committed = f.committed,
-        leaning = f.faction?.takeIf { !f.committed }?.let { "${it.name} press hardest today." },
+        leaning = f.faction?.takeIf { !f.committed }?.let { "Most pressure today: ${it.name}." },
         weakTo = f.faction?.takeIf { f.committed }?.weakTo?.word(), resists = f.faction?.takeIf { f.committed }?.resists?.word(),
         field = enemies(f.plan),
         notes = listOfNotNull(
-            "The charter warlord leads this one.".takeIf { f.charter },
+            "The charter warlord leads this siege.".takeIf { f.charter },
             "Their preparations are spoiled.".takeIf { f.sabotaged && f.spoiled == null },
             plannedAway?.let { if (left <= 0) "The party you planned leaves today and is not on the wall tonight." else "The party you planned is away on the siege night of day ${town.nextSiegeDay}." },
         ),
@@ -328,19 +343,21 @@ private fun GameEngine.partyUi(state: GameState, m: MissionInstance): PartyUi {
     return PartyUi(
         title = contractTitle(m.offer), who = names(who), returns = returnMorning(m.returnDay).replaceFirstChar { it.uppercase() } + ".",
         status = when (m.outcome) {
-            MissionOutcome.WON -> "The work is done. They are on the way home."
-            MissionOutcome.RETREATED -> "They pulled back and are on the way home."
-            MissionOutcome.LOST -> "It went badly. Those who can are on the way home."
-            null -> if (at) "They wait at the door of the deeper stage for your word." else "Out since day ${m.departedDay}, ${postureName(m.posture).lowercase()}."
+            MissionOutcome.WON -> "The quest is won. They are on the way home."
+            MissionOutcome.RETREATED -> "They retreated and are on the way home."
+            MissionOutcome.LOST -> "The party was beaten. Those who can are on the way home."
+            null -> if (at) "Stage 1 is won. The party waits for your choice: go deeper or return home." else "Out since day ${m.departedDay}. Retreat rule: ${postureName(m.posture)}."
         },
         checkpoint = deeper?.takeIf { at }?.let { stage ->
             CheckpointUi(
-                m.id, secured = "Secured: " + rewardWords(state, m.secured, m.offer.factionId), deeper = "Deeper adds, only if won: " + rewardWords(state, stage.reward, m.offer.factionId),
+                m.id, secured = "Already won and kept: " + rewardWords(state, m.secured, m.offer.factionId) + ".",
+                // Either way the party is home tomorrow morning: the deeper stage is fought at End Day today (`Missions.advance`).
+                deeper = "Go deeper: one more fight at End Day today. If it is won, the party also brings home: " + rewardWords(state, stage.reward, m.offer.factionId) + ". Either way, the party is home tomorrow morning.",
                 danger = dangerWords(stage.danger), enemies = enemies(stage.enemies), chosen = m.choice,
                 note = when (m.choice) {
-                    CheckpointChoice.PUSH -> "Your word is sent: push deeper. You can still change it today."
-                    CheckpointChoice.RETURN -> "Your word is sent: return. You can still change it today."
-                    null -> "If you choose nothing, End Day returns."
+                    CheckpointChoice.PUSH -> "You chose: go deeper. You can change this until End Day."
+                    CheckpointChoice.RETURN -> "You chose: return home. You can change this until End Day."
+                    null -> "If you choose nothing, the party returns home at End Day."
                 },
             )
         },
@@ -360,16 +377,17 @@ private fun GameEngine.regionUi(state: GameState, g: GuildRunState): RegionUi {
     val secured = g.milestone(GuildContent.CHARTER_SECURED)
     return RegionUi(
         charter = charter?.name ?: "No charter", advantage = charter?.advantage.orEmpty(), constraint = charter?.constraint.orEmpty(),
-        progress = secured?.let { "Charter secured on day ${it.day}." } ?: "The charter warlord leads the first siege on or after day ${config.guild.charterDay}.",
+        // The warlord leads every siege from the charter day until beaten on one (`SiegeFight`, `Stories.charterSiege`).
+        progress = secured?.let { "Charter secured on day ${it.day}." } ?: "To secure the charter, defeat the charter warlord. The warlord leads the first siege on or after day ${config.guild.charterDay}, and every siege after it until defeated.",
         secured = secured != null,
-        retireBlocked = "The party must be home before the chapter can be closed.".takeIf { g.mission != null },
+        retireBlocked = "The party must be home before you can retire the chapter.".takeIf { g.mission != null },
         ranks = if (secured == null) emptyList() else cat.ranks.filter { it.rank > 0 }.sortedBy { it.rank }.map { RankUi(it.rank, it.name, it.description, taken = it.rank <= g.rank, canTake = it.rank > g.rank) },
         law = g.law?.let { l -> cat.law(l.id)?.let { def ->
             // The law holds on the days from..until-1 (`Missions.setup`); it is announced a morning ahead.
             listOf(def.name, def.description, if (state.day < l.fromDay) "From day ${l.fromDay} through day ${l.untilDay - 1}." else "In force through day ${l.untilDay - 1}.")
         } }.orEmpty(),
         rival = g.rival?.let { r ->
-            listOf("${r.name}, under ${r.leaderName}", "They want ${r.wants.lowercase()} contracts.", "They take a contract off the board on day ${r.nextMoveDay}.") +
+            listOf("${r.name}, led by ${r.leaderName}", "They prefer ${r.wants.lowercase()} quests.", "On day ${r.nextMoveDay} they take a quest off the board.") +
                 if (r.taken.isEmpty()) listOf("They have taken nothing yet.") else listOf("Taken so far:") + r.taken
         }.orEmpty(),
         nemesis = g.nemesis?.let { n ->
@@ -391,7 +409,7 @@ private fun GameEngine.guildEndDay(state: GameState, g: GuildRunState, wall: Wal
     else (if (wall.committed) "Siege tonight: ${wall.besieger}. " else "Siege tonight. ") +
         if (wall.defenders.isEmpty()) "Nobody stands on the wall tonight" else "On the wall: ${names(wall.defenders.map { it.name })}",
     g.mission?.takeIf { it.outcome == null && it.stage == 1 && it.offer.optionalPush && it.choice == null }?.let { m ->
-        "The party at ${content.guild!!.route(m.offer.factionId)?.name ?: "the door"} returns unless you send word"
+        "The party at ${content.guild!!.route(m.offer.factionId)?.name ?: "the checkpoint"} returns home unless you choose to go deeper"
     },
 )
 
@@ -409,16 +427,16 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
         yesterday = g.lastMission?.let { r ->
             ContractReportUi(
                 r.title.replaceFirstChar { it.uppercase() },
-                when (r.outcome) { MissionOutcome.WON -> if (r.continues) "Won. The party is still out" else "Won"; MissionOutcome.RETREATED -> "Pulled back"; MissionOutcome.LOST -> "Lost" },
+                when (r.outcome) { MissionOutcome.WON -> if (r.continues) "Won. The party is still out" else "Won"; MissionOutcome.RETREATED -> "Retreated"; MissionOutcome.LOST -> "Lost" },
                 r.fight?.highlights?.firstOrNull()?.text, r.lines,
             )
         },
         plan = g.planned?.let { p ->
             g.offers.firstOrNull { it.id == p.offerId }?.let { o ->
-                "Planned for today: ${names(p.heroIds.mapNotNull { state.heroes[it]?.name })} on ${cat.mission(o.defId).name}, ${postureName(p.posture).lowercase()}. Leaves at End Day."
+                "Planned for today: ${names(p.heroIds.mapNotNull { state.heroes[it]?.name })} on ${cat.mission(o.defId).name}, retreat rule ${postureName(p.posture)}. The party leaves at End Day."
             }
         },
-        boardNote = "The party is out: the next contract can be planned once it is home.".takeIf { g.mission != null },
+        boardNote = "The party is out. You can plan the next quest when it is home.".takeIf { g.mission != null },
         offers = g.offers.sortedBy { wallWork(it) }.map { offerUi(state, g, it) },
         rosterHead = "Roster · ${g.members.size} of ${config.guild.maxMembers}",
         roster = g.members.mapNotNull { m ->
@@ -434,7 +452,7 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
             val h = state.heroes[c.heroId] ?: return@mapNotNull null
             CandidateUi(
                 h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), combat?.kitByClass?.get(h.classId)?.role.orEmpty(), traitLine(c.traitId),
-                "Fee ${c.fee} gold · keeps ${c.sharePercent}% of contract gold", recruitBlocked(state, g, c.fee),
+                "Signing fee: ${c.fee} gold. Keeps ${c.sharePercent}% of the gold from quests they go on.", recruitBlocked(state, g, c.fee),
             )
         },
         candidatesNote = if (g.candidates.isEmpty()) "Nobody would sign today. The list is redrawn on the morning of day $refresh." else "The list is redrawn on the morning of day $refresh.",
@@ -463,7 +481,7 @@ internal fun GuildUi.threat(classic: ThreatUi?): ThreatUi? = classic?.copy(
     besieger = wall.besieger.takeIf { wall.committed },
 )
 
-// ---- the contract sheet ----
+// ---- the quest sheet (code: contract) ----
 
 @Immutable data class PickUi(val heroId: HeroId, val portrait: Int, val name: String, val sub: String, val blade: String, /** 1-based place in the order the party acts; null when not picked. */ val order: Int?, val blocked: String?)
 
@@ -477,6 +495,8 @@ data class ContractUi(
     val sendBlocked: String?,
     /** This contract is today's plan (Cancel plan is offered). */
     val planned: Boolean,
+    /** What every retreat rule shares (`retreatNote`), under the choices. */
+    val retreatNote: String = "",
 )
 
 /** The members who may still be picked for [offerId]: present, fit and not kept for the wall. */
@@ -500,15 +520,16 @@ fun GameEngine.contractUi(state: GameState, offerId: String, picked: List<HeroId
         offer = offerUi(state, g, offer),
         picks = g.members.mapNotNull { m ->
             val h = state.heroes[m.heroId] ?: return@mapNotNull null
-            val why = memberUnavailable(state, h.id) ?: "is kept for the wall".takeIf { h.id in g.reserved }
+            val why = memberUnavailable(state, h.id) ?: "is reserved for the wall".takeIf { h.id in g.reserved }
             PickUi(h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), bladeLine(state, h.id), party.indexOf(h.id).takeIf { it >= 0 }?.plus(1), why?.let { "${h.fullName} $it." })
         },
         partyMax = partyMax(state, offer.id),
         postures = Posture.entries.map { PostureUi(it, postureName(it), postureWords(it, config.guild.fight), it == posture) },
+        retreatNote = retreatNote(config.guild.fight),
         together = setup?.let(::worksTogether).orEmpty(),
         watchOut = setup?.let(::watchOut).orEmpty(),
         atHome = (when (home) { 0 -> "Nobody fit stays at home"; 1 -> "1 fit member stays at home"; else -> "$home fit members stay at home" }) +
-            if (missesSiege(state.day, offer.days, siegeDay)) " for the siege night of day $siegeDay." else ". The siege of day $siegeDay does not fall while they are away.",
+            if (missesSiege(state.day, offer.days, siegeDay)) " for the siege night of day $siegeDay." else ". The party is home before the siege on day $siegeDay.",
         returns = returnMorning(state.day + offer.days).replaceFirstChar { it.uppercase() } + ".",
         sendBlocked = when {
             g.mission != null -> "The party is still out."
@@ -537,27 +558,29 @@ internal fun worksTogether(setup: FightSetup): List<String> {
         // Somebody else's healing, answered by a rule of this member's blade.
         val healer = party.firstOrNull { it.key != x.key && it.kit.moves.any { m -> m.actions.any { a -> a is Action.Heal } } }
         if (healer != null) all.filter { it.trigger.kind == EventKind.HEALED && it.trigger.who == Who.SELF_TARGET }.forEach { e ->
-            out += if (e.actions.any { it is Action.Give && it.stat == Stat.CHARGE }) "${healer.name}'s healing charges ${x.name}'s weapon (${e.name})." else "${healer.name}'s healing sets off ${e.name} for ${x.name}."
+            out += if (e.actions.any { it is Action.Give && it.stat == Stat.CHARGE }) "${healer.name}'s healing charges ${x.name}'s weapon (${e.name})." else "When ${healer.name} heals ${x.name}, ${x.name}'s ${e.name} triggers."
         }
         // A blade that can crack, and a rule that answers a crack.
         if (all.any { e -> e.actions.any { it is Action.Fracture } }) {
             val blade = x.weaponName ?: "${x.name}'s weapon"
-            setup.partyEffects.filter { it.trigger.kind == EventKind.FRACTURED }.forEach { e -> out += if (e.id == "relic_${CombatContent.SALVAGE_BELL}") "$blade cracking rings the ${e.name}." else "$blade cracking sets off ${e.name}." }
-            party.filter { it.key != x.key }.forEach { y -> y.effects.filter { it.trigger.kind == EventKind.FRACTURED }.forEach { e -> out += "$blade cracking sets off ${y.name}'s ${e.name}." } }
+            setup.partyEffects.filter { it.trigger.kind == EventKind.FRACTURED }.forEach { e -> out += if (e.id == "relic_${CombatContent.SALVAGE_BELL}") "When $blade cracks, the ${e.name} triggers." else "When $blade cracks, ${e.name} triggers." }
+            party.filter { it.key != x.key }.forEach { y -> y.effects.filter { it.trigger.kind == EventKind.FRACTURED }.forEach { e -> out += "When $blade cracks, ${y.name}'s ${e.name} triggers." } }
         }
         // A Battlemage's echo, and a state another member's rule puts on a foe.
         all.filter { e -> e.actions.any { it is Action.Echo } }.forEach { echo ->
             val stats = echo.conditions.filterIsInstance<Condition.StatIn>().flatMap { it.stats }.toSet()
             for (y in party) {
                 val stat = (y.effects + y.kit.passives).flatMap { it.actions }.filterIsInstance<Action.Give>().firstOrNull { it.stat in stats && it.target in foeAims }?.stat ?: continue
-                out += if (y.key == x.key) "${x.name} echoes the ${statWord(stat)} of their own weapon." else "${x.name} echoes ${y.name}'s ${statWord(stat)}."
+                val extra = echo.actions.filterIsInstance<Action.Echo>().first().extra
+                out += if (y.key == x.key) "${x.name}'s ${echo.name} adds $extra more to the ${statWord(stat)} that ${x.name}'s own weapon puts on enemies."
+                else "${x.name}'s ${echo.name} adds $extra more to the ${statWord(stat)} that ${y.name} puts on enemies."
             }
         }
         // Charge that is spent, and a rule that answers its spending.
         if (all.any { (it.cost as? Cost.Spend)?.stat == Stat.CHARGE }) {
             fun answers(e: com.tinyblacksmith.core.combat.EffectDef) = e.trigger.kind == EventKind.STAT_SPENT && e.trigger.stat == Stat.CHARGE && e.trigger.who in setOf(Who.ALLY_SOURCE, Who.ANY)
-            setup.partyEffects.filter(::answers).forEach { e -> out += "When ${x.name} spends Charge, the ${e.name} answers." }
-            party.forEach { y -> y.effects.filter(::answers).forEach { e -> out += "When ${x.name} spends Charge, ${y.name}'s ${e.name} answers." } }
+            setup.partyEffects.filter(::answers).forEach { e -> out += "When ${x.name} spends Charge, the ${e.name} triggers." }
+            party.forEach { y -> y.effects.filter(::answers).forEach { e -> out += "When ${x.name} spends Charge, ${y.name}'s ${e.name} triggers." } }
         }
     }
     return out.distinct()
@@ -570,7 +593,7 @@ internal fun watchOut(setup: FightSetup): List<String> {
     val guards = party.any { CombatContent.TAG_INTERCEPT in it.kit.tags || it.actions().any { a -> a is Action.Guard } }
     return listOfNotNull(
         "Nobody in this party heals.".takeIf { party.none { it.actions().any { a -> a is Action.Heal } } },
-        known.firstOrNull()?.takeIf { !guards }?.let { "Nobody here raises Guard. Known of them: $it" },
+        known.firstOrNull()?.takeIf { !guards }?.let { "Nobody in this party gives Guard. A known enemy move: $it" },
     ) + party.filter { it.weaponName == null }.map { "${it.name} goes unarmed." }
 }
 
@@ -606,7 +629,7 @@ fun GameEngine.memberDetail(state: GameState, heroId: HeroId): MemberDetailUi? {
         trait = traitLine(m.traitId),
         speciality = cat.speciality(m.specialityId)?.let { "${it.name}: ${it.description}" },
         bonds = m.bonds.map { b -> "${b.kind.replaceFirstChar { it.uppercase() }} with ${state.heroes[b.withHeroId]?.fullName ?: "one who is gone"} since day ${b.sinceDay}. ${b.reason}" },
-        share = "Keeps ${m.sharePercent}% of a won contract's gold. " + if (m.fee > 0) "Signed on day ${m.joinedDay} for ${m.fee} gold." else "With the guild since day ${m.joinedDay}.",
+        share = "Keeps ${m.sharePercent}% of the gold from quests they go on. " + if (m.fee > 0) "Signed on day ${m.joinedDay} for ${m.fee} gold." else "With the guild since day ${m.joinedDay}.",
         numbers = fighter?.let { f ->
             listOf("Health" to "${f.health}/${f.maxHealth}", "Strike" to if (f.strikeMax > f.strikeMin) "${f.strikeMin} to ${f.strikeMax}" else "${f.strikeMin}", "Support" to "${f.support}")
         }.orEmpty(),

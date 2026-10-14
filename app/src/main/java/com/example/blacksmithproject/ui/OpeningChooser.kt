@@ -96,7 +96,7 @@ fun GameEngine.openingChooser(state: GameState): OpeningChooserUi? {
                 costs = listOfNotNull(
                     def.costNote,
                     def.goldDelta.takeIf { it < 0 }?.let { "Start with ${-it} less gold" },
-                    def.integrityDelta.takeIf { it < 0 }?.let { "The forge starts ${-it} health down" },
+                    def.integrityDelta.takeIf { it < 0 }?.let { "The forge starts with ${-it} less health" },
                     def.militiaDelta.takeIf { it < 0 }?.let { "${-it} fewer militia on the wall" },
                 ).ifEmpty { listOf(def.drawback) },
             )
@@ -145,7 +145,7 @@ fun OpeningChooser(ui: OpeningChooserUi, enabled: Boolean, onChoose: (String) ->
 @Composable
 private fun Signers(signers: List<OpeningSignerUi>) {
     Column(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
-        Caps("Signing with every start")
+        Caps("Joining with every start")
         Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
             signers.forEach { m ->
                 Row(Modifier.weight(1f).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {

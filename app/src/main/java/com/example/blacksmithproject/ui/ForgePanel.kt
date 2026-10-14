@@ -252,7 +252,7 @@ private fun Brief(b: BriefUi, onOpen: () -> Unit, onClear: () -> Unit) {
         Column(Modifier.weight(1f).padding(vertical = Space.sm)) {
             Text(b.title, style = MaterialTheme.typography.labelLarge, color = Cream)
             Text(
-                b.asks.joinToString(" · ") { if (it.matches == true) "✓ ${it.text}" else it.text } + if (b.accepted) " · Accepted" else " · Not accepted",
+                b.asks.joinToString(" · ") { if (it.matches == true) "✓ ${it.text}" else it.text } + if (b.accepted) " · Accepted" else " · Not accepted yet",
                 style = MaterialTheme.typography.bodySmall, color = CreamMuted,
             )
         }
@@ -355,7 +355,7 @@ private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCata
         // A guild run: what each choice of this tray does in a fight, so the choice can be made before it is placed.
         val rules = options.filter { it.fight.isNotEmpty() }
         if (rules.isNotEmpty()) Column(Modifier.fillMaxWidth().padding(bottom = Space.sm).testTag("forge_tray_fight")) {
-            Text("In a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+            Text("Effects in a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
             rules.forEach { o ->
                 Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
                     Text(o.name, style = MaterialTheme.typography.labelLarge, color = if (o.selected) Gold else Cream)
@@ -406,7 +406,7 @@ fun FieldNotes(notes: List<NoteUi>, modifier: Modifier = Modifier, onOpenJournal
     Column(modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(SceneDeep).border(1.dp, BronzeDeep, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_notes")) {
         Row(Modifier.heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("Field notes", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
-            if (onOpenJournal != null) Text("Open book ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).wrapContentHeight().padding(start = Space.sm).testTag("forge_notes_journal"))
+            if (onOpenJournal != null) Text("Open notebook ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).wrapContentHeight().padding(start = Space.sm).testTag("forge_notes_journal"))
         }
         if (stacked) notes.forEachIndexed { i, n -> FieldNote(i, n, Modifier.fillMaxWidth().padding(top = if (i > 0) Space.sm else 0.dp)) }
         else Row(Modifier.height(IntrinsicSize.Min)) {
@@ -429,12 +429,12 @@ private fun ForgeOutlookCard(o: ForgeOutlookUi, onBench: () -> Unit) {
     var details by rememberSaveable { mutableStateOf(false) }
     @Composable fun label(text: String) = Text(text, style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
     Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(SceneDeep).border(1.dp, BronzeDeep, Card).padding(12.dp).testTag("forge_outlook")) {
-        Text("In a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+        Text("This recipe in a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
         Text(o.role, style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.semantics { heading() }.testTag("forge_outlook_role"))
         if (o.suits.isNotEmpty()) Text("Suits: ${o.suits.joinToString(", ")}", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-        o.parts.forEach { p -> Text("${p.name} · ${p.role}", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs)) }
+        o.parts.forEach { p -> Text("${p.name}: ${p.role}", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs)) }
         if (o.needs.isNotEmpty()) Column(Modifier.testTag("forge_outlook_needs")) {
-            label("Needs")
+            label("Its effects need")
             o.needs.forEach { n -> n.needs.forEach { Text("${n.rule}: $it", style = MaterialTheme.typography.bodySmall, color = Gold) } }
         }
         o.tradeoff?.let {
@@ -442,13 +442,13 @@ private fun ForgeOutlookCard(o: ForgeOutlookUi, onBench: () -> Unit) {
             Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.testTag("forge_outlook_tradeoff"))
         }
         if (o.possible.isNotEmpty()) {
-            label("Not certain")
+            label("May also get, by chance")
             Text(o.possible.joinToString(", ") { it.name }, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.testTag("forge_outlook_possible"))
         }
         InlineActionButton(if (details) "Hide details" else "Details", { details = !details }, Modifier.testTag("forge_outlook_details"))
         if (details) Column(Modifier.testTag("forge_outlook_expanded")) {
-            label("Certain in every forge of this recipe")
-            if (o.certain.isEmpty()) Text("No rule beyond the strike.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+            label("Every weapon from this recipe has")
+            if (o.certain.isEmpty()) Text("No effect beyond its normal strike.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
             o.certain.forEach { r ->
                 Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
                     Text(r.heading, style = MaterialTheme.typography.titleSmall, color = Cream)
@@ -458,18 +458,18 @@ private fun ForgeOutlookCard(o: ForgeOutlookUi, onBench: () -> Unit) {
             val costs = o.parts.filter { it.constraint != null }
             if (costs.isNotEmpty()) {
                 label("What each choice costs")
-                costs.forEach { Text("${it.name} · ${it.constraint}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
+                costs.forEach { Text("${it.name}: ${it.constraint}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
             }
             if (o.notes.isNotEmpty()) {
-                label("How its rules meet")
+                label("How its effects work together")
                 o.notes.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
             }
             if (o.possible.isNotEmpty()) {
-                label("What the forge may add")
-                o.possible.forEach { Text("${it.name} · ${it.text}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
+                label("What the forge may add by chance")
+                o.possible.forEach { Text("${it.name}: ${it.text}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
             }
         }
-        SecondaryActionButton("Try this recipe on the bench", onBench, Modifier.fillMaxWidth().padding(top = Space.xs).testTag("forge_bench_open"))
+        SecondaryActionButton("Try this recipe in a practice fight", onBench, Modifier.fillMaxWidth().padding(top = Space.xs).testTag("forge_bench_open"))
     }
 }
 
@@ -628,7 +628,7 @@ internal fun bellowsBlocked(s: UiState.Playing, config: BalanceConfig): String? 
     val debt = config.depth.bellowsDebt
     return when {
         s.relics.firstOrNull { it.id == Depth.ASHEN_BELLOWS }?.ready == false -> "Used today."
-        (cost - st.energy).coerceAtLeast(0) + debt > config.maxOverworkPerDay - st.overworkToday -> "Not enough overwork left today. The bellows use $debt of it."
+        (cost - st.energy).coerceAtLeast(0) + debt > config.maxOverworkPerDay - st.overworkToday -> "Not enough overwork left today. The bellows borrow $debt energy from tomorrow, on top of this forge."
         else -> null
     }
 }
@@ -647,7 +647,7 @@ private fun BellowsRow(s: UiState.Playing, vm: GameViewModel) {
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
         Column(Modifier.weight(1f)) {
-            Text("Ashen Bellows adds one property and borrows ${config.depth.bellowsDebt} energy from tomorrow.", style = MaterialTheme.typography.titleSmall)
+            Text("Ashen Bellows: adds ${config.depth.bellowsExtraSlots.let { if (it == 1) "one more property" else "$it more properties" }} and borrows ${config.depth.bellowsDebt} energy from tomorrow.", style = MaterialTheme.typography.titleSmall)
             blocked?.let { Secondary(it, Modifier.testTag("forge_bellows_blocked")) }
         }
         Switch(checked = on, onCheckedChange = null, enabled = blocked == null)
@@ -662,7 +662,7 @@ private fun LedgerLine(s: UiState.Playing, vm: GameViewModel) {
     val bonus = remember(st, family) { vm.engine.ledgerBonus(st, family) }
     val line = when {
         bonus > 0 -> "Tempering Ledger: +$bonus quality"
-        st.relics.any { it.id == Depth.TEMPERING_LEDGER && family in it.families } -> "You've already forged this weapon type in the streak. Forging it again resets the streak."
+        st.relics.any { it.id == Depth.TEMPERING_LEDGER && family in it.families } -> "Tempering Ledger: you have already forged this weapon type in the current streak. Forging it again starts the streak over."
         else -> return
     }
     Text(line, style = MaterialTheme.typography.bodySmall, color = Gold, modifier = Modifier.padding(top = Space.xs).testTag("forge_ledger"))

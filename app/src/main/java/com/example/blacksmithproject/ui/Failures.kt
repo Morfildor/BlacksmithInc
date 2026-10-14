@@ -66,7 +66,7 @@ internal fun loadFailureText(f: SaveFailure): LoadFailureText = when (f) {
     )
     is SaveFailure.Io -> LoadFailureText(
         "The save could not be opened",
-        "Couldn't access the device's storage. Try again. Check for free space if this continues.",
+        "The game couldn't read the device's storage. Try again. If this keeps happening, check that the device has free space.",
         "Nothing has been deleted.",
         startOver = null,
     )
@@ -178,11 +178,11 @@ fun SaveFailureDialog(op: GameSession.Op, unconfirmed: Boolean, onRetry: () -> U
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
             if (unconfirmed) {
-                Text("Couldn't confirm whether " + (if (endDay) "the day" else "that last action") + " was saved. You're seeing the state from before that action.")
-                Secondary("Try again safely retries the save without repeating the action. Keep working continues from the state shown. Check storage space if this continues.")
+                Text("The game couldn't confirm whether " + (if (endDay) "the day" else "your last action") + " was saved. You're seeing the game as it was before that action.")
+                Secondary("\"Try again\" tries to save once more without repeating the action. \"Keep working\" continues from what you see now. If this keeps happening, check that the device has free space.")
             } else {
-                Text("The game is still in the state from before " + (if (endDay) "you ended the day." else "that last action."))
-                Secondary("Try again retries the action. Keep working returns without it. Check storage space if this continues.")
+                    Text("The game couldn't save, so it is still as it was before " + (if (endDay) "you ended the day." else "your last action."))
+                    Secondary("\"Try again\" tries the action again and saves it. \"Keep working\" continues without it. If this keeps happening, check that the device has free space.")
             }
         }
     }

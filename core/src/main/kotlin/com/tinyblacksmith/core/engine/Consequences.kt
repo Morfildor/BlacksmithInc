@@ -21,7 +21,7 @@ object Consequences {
                 if (made != null) {
                     ctx.consequences -= q
                     // The relic is the prize while the workshop lacks one; a workshop that holds them all is paid in coin.
-                    if (Relics.offer(ctx, "You won the wager with ${made.name}. Choose your relic reward.")) Unit
+                    if (Relics.offer(ctx, "You won the wager with ${made.name}. Choose a workshop relic as your reward.")) Unit
                     else {
                         val payout = (q.amounts["payout"] ?: 0)
                         ctx.gold += payout
@@ -29,7 +29,7 @@ object Consequences {
                     }
                 } else if (ctx.day >= q.dueDay) {
                     ctx.consequences -= q
-                    ctx.emit(EventType.ENCOUNTER_RESOLVED, 3, "You missed the $family wager's deadline. Lost the ${q.amounts["stake"] ?: 0} gold stake.", data = mapOf("encounter" to Depth.SMITHS_WAGER, "option" to "lost"))
+                    ctx.emit(EventType.ENCOUNTER_RESOLVED, 3, "You lost the $family wager and its ${q.amounts["stake"] ?: 0} gold stake. No $family of quality ${q.amounts["quality"] ?: 0} or better was forged by the end of day ${q.dueDay}.", data = mapOf("encounter" to Depth.SMITHS_WAGER, "option" to "lost"))
                 }
             }
             ConsequenceKind.WATCH_BOUNTY -> if (ctx.day >= q.dueDay) ctx.consequences -= q
@@ -49,7 +49,7 @@ object Consequences {
                     else -> {
                         ctx.consequences -= q
                         val hero = ctx.heroes[q.heroId]
-                        ctx.emit(EventType.PLEDGE_RESOLVED, 3, "The weapon promised to ${hero?.fullName ?: "a defender"} wasn't delivered. The order expired.", listOfNotNull(q.heroId?.value), mapOf("outcome" to "lapsed"))
+                        ctx.emit(EventType.PLEDGE_RESOLVED, 3, "The order on credit for ${hero?.fullName ?: "a defender"} expired. The weapon was not delivered.", listOfNotNull(q.heroId?.value), mapOf("outcome" to "lapsed"))
                     }
                 }
             }
@@ -69,7 +69,7 @@ object Consequences {
             val blade = ctx.weapons[q.weaponId]
             val subjects = listOfNotNull(q.heroId?.value, q.weaponId?.value)
             val where = when (val l = blade?.location) {
-                null -> "has no surviving record"
+                null -> "is unaccounted for"
                 is WeaponLocation.Storage, is WeaponLocation.Shelf -> "is back at the forge"
                 is WeaponLocation.Owned -> "is carried by ${ctx.heroes[l.heroId]?.fullName ?: "another"}"
                 is WeaponLocation.Lost -> "is gone (${l.reason})"
@@ -78,9 +78,9 @@ object Consequences {
             }
             when {
                 hero == null || hero.fate == HeroFate.DEAD ->
-                    ctx.emit(EventType.PLEDGE_RESOLVED, 5, "${hero?.fullName ?: "The defender"} died before repaying the weapon. ${blade?.name ?: "The weapon"} $where.", subjects, mapOf("outcome" to "dead"))
+                    ctx.emit(EventType.PLEDGE_RESOLVED, 5, "${hero?.fullName ?: "The defender"} died before paying off the weapon bought on credit. The debt is closed. ${blade?.name ?: "The weapon"} $where.", subjects, mapOf("outcome" to "dead"))
                 hero.fate == HeroFate.RETIRED ->
-                    ctx.emit(EventType.PLEDGE_RESOLVED, 4, "${hero.fullName} retired before repaying the weapon. The debt is closed. ${blade?.name ?: "The weapon"} $where.", subjects, mapOf("outcome" to "retired"))
+                    ctx.emit(EventType.PLEDGE_RESOLVED, 4, "${hero.fullName} retired before paying off the weapon bought on credit. The debt is closed. ${blade?.name ?: "The weapon"} $where.", subjects, mapOf("outcome" to "retired"))
                 blade == null || blade.ownerId != hero.id ->
                     ctx.emit(EventType.PLEDGE_RESOLVED, 3, "${hero.fullName} no longer owns the weapon bought on credit. ${blade?.name ?: "It"} $where. The debt is closed.", subjects, mapOf("outcome" to "parted"))
                 else -> {

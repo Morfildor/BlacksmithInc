@@ -4636,3 +4636,27 @@ Tests: GoldenStateTest has its own rules-7 file (recorded fresh). Played scenari
 (hall lesson seed 1 day 7, inherited blade seed 8 day 19, merchant resale seed 43 day 9, wall death seed 2 day 20,
 storied blade seed 1 day 15, guild captive seed 1 day 13, charter eve seed 1); the returned legend is given one unit of its
 core metal by hand, which the road does not carry yet. A new scenario, `visitor_deep_road`.
+
+## Clarity and writing pass (2026-10-14)
+
+The owner asked for a complete pass over the player-facing English (rules, quests, reports, onboarding) and, during it,
+for "upgrade or similar RPG language for Hone". Rulings, all wording only: no number, rule, reward, ID, enum, save key
+or RNG draw moved (`GoldenStateTest` unchanged, the 39 debug scenario saves differ only in text).
+- Style and glossary: `docs/WRITING_GUIDE.md`. Terms and the disclosure rule: `docs/GDD_REVISION_2026-10-14.md`.
+- **Hone becomes Upgrade, then Repair.** One command, two names, because the first hone adds `honeQualityBonus` and
+  every later one only restores condition. "Upgrade" alone would promise quality a second hone does not give. Legacy
+  purchases stay "legacy upgrades".
+- **Quest** for guild work, **commission** for shop orders, **retreat rule** for posture, **effect** for a weapon's rule,
+  **priority target** for `Aim.PriorityFoe`, **forge health** for integrity in player text (the bars already said so).
+- **Percentages for quantities, words for odds.** `LaunchContentTest.noPlayerFacingTextContainsAPercentChance` now flags
+  a percentage only beside chance wording; `LegacyPreviewTest` allows the returned-legend share. Odds stay band words.
+- **Fingerprint.** `SiegePrepDef.counters` and `OpeningDef.plan` were reworded, so they and the other display fields of
+  both classes (`sabotageBrief`, `build`, `drawback`) are hashed by presence. Content 6 re-pinned, version unchanged.
+- **Text corrected to match the code** (found while verifying): Bow 35% and Swift 30% of a strike (not "a third");
+  Battlemage Echo answers any Burn, Chill or Wet an enemy gains, whoever applied it; Blood Receipt checks whether anyone
+  in the party paid health; SLAYER counts expedition wins; Shield Wall counter (Burn is blocked by Guard, Bleed is not);
+  Starfall and the relic delve can capture on either stage; Wall work gives 1 militia; laws hold in quest fights only;
+  ranks scale enemy health, strike and support by 15/30/45%; Cowardly keeps 34% of a stage's gold on a retreat.
+- **Open for the owner:** legacy previews show odds as counts; the Heartfire panel still shows its chance as a
+  percentage (decision A's band words for it are handoff item 2); `Highlights.kt:47` never applies its five-sentence cap
+  (the call sits inside a comment); "Injured until day N" means fit again on day N.

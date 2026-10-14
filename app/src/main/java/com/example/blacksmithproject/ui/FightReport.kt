@@ -29,15 +29,15 @@ fun fightOutcomeLine(result: FightResult): String {
     val rounds = "${result.rounds} ${if (result.rounds == 1) "round" else "rounds"}"
     return when (result.outcome) {
         FightOutcome.WON -> "Won in $rounds"
-        FightOutcome.RETREATED -> "Pulled back after $rounds"
+        FightOutcome.RETREATED -> "Retreated after $rounds"
         FightOutcome.LOST -> "Lost after $rounds"
-        FightOutcome.TIMED_OUT -> "Undecided after $rounds"
+        FightOutcome.TIMED_OUT -> "No winner after $rounds"
     }
 }
 
-/** Everybody of [side] as the fight left them: "Brann 21/40", "Mira down", with "blade cracked" where one did. */
+/** Everybody of [side] as the fight left them: "Brann 21/40 health", "Mira down", with "weapon cracked" where one did. */
 fun fightSide(result: FightResult, side: Side): List<String> = result.actors.filter { it.side == side }.map { a ->
-    listOfNotNull("${a.name} ${if (a.downed) "down" else "${a.health}/${a.maxHealth}"}", "weapon cracked".takeIf { a.fractured }, "joined during the fight".takeIf { a.summoned }).joinToString(", ")
+    listOfNotNull("${a.name} ${if (a.downed) "down" else "${a.health}/${a.maxHealth} health"}", "weapon cracked".takeIf { a.fractured }, "joined during the fight".takeIf { a.summoned }).joinToString(", ")
 }
 
 /**
@@ -60,9 +60,9 @@ private const val MAX_DEPTH = 8
  * A resolved fight as text: how it ended, both sides with the health they ended on, the highlights, and the exact
  * timeline. It renders the record it is given and resolves nothing.
  *
- * The timeline is shown while [expanded]. With [onToggle] the report has its own "The whole fight" button and the
+ * The timeline is shown while [expanded]. With [onToggle] the report has its own "Show the full combat log" button and the
  * caller keeps the state; without it there is no button and the caller decides by [expanded] alone. [highlights] caps
- * how many are listed (the evening cards say them above the report and pass 0). Test tags: `fight_outcome`,
+ * how many are listed under "Key moments" (the evening cards say them above the report and pass 0). Test tags: `fight_outcome`,
  * `fight_party`, `fight_enemies`, `fight_highlights`, `fight_toggle`, `fight_timeline`.
  */
 @Composable
@@ -70,15 +70,15 @@ fun FightReport(result: FightResult, modifier: Modifier = Modifier, expanded: Bo
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         Text(fightOutcomeLine(result), style = MaterialTheme.typography.titleSmall, modifier = Modifier.testTag("fight_outcome"))
         FightSide("The party", fightSide(result, Side.PARTY), "fight_party")
-        FightSide("Against them", fightSide(result, Side.ENEMY), "fight_enemies")
+        FightSide("The enemies", fightSide(result, Side.ENEMY), "fight_enemies")
         val told = result.highlights.take(highlights)
         if (told.isNotEmpty()) {
             Column(Modifier.testTag("fight_highlights"), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-                FightLabel("What decided it")
+                FightLabel("Key moments")
                 told.forEach { Text(it.text, style = MaterialTheme.typography.bodyMedium) }
             }
         }
-        onToggle?.let { SecondaryActionButton(if (expanded) "Hide the whole fight" else "The whole fight", it, Modifier.heightIn(min = 48.dp).testTag("fight_toggle")) }
+        onToggle?.let { SecondaryActionButton(if (expanded) "Hide the full combat log" else "Show the full combat log", it, Modifier.heightIn(min = 48.dp).testTag("fight_toggle")) }
         if (expanded) {
             Column(Modifier.testTag("fight_timeline")) {
                 fightTimeline(result).forEach { line ->

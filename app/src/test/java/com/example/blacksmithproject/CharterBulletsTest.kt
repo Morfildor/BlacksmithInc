@@ -25,6 +25,6 @@ class CharterBulletsTest {
             assert(charterGains(c, content).isNotEmpty()) { c.id }
             assert(charterCosts(c).isNotEmpty()) { c.id }
         }
-        assertEquals(listOf("The forge keeps 80% of contract gold"), charterCosts(charters.getValue(GuildContent.HONEST_BUSINESS)))
+        assertEquals(listOf("The forge keeps only 80% of the quest gold left after the members take their shares"), charterCosts(charters.getValue(GuildContent.HONEST_BUSINESS)))
     }
 }

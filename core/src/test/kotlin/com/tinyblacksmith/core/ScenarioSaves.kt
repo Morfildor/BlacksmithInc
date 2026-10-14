@@ -149,8 +149,8 @@ object ScenarioSaves {
         ) { knownName(5) },
         Scenario(
             "returned_legend", "A returned legend, asleep",
-            "Open Storage: a blade from the Legend Board has come back with its affixes dormant. Hone it and they wake.",
-            "Played: the Known Name account (era 1 on seed $ACCOUNT_SEED); era 2 on seed 1 (BALANCED_ACTIVE), stopped on the morning of day 15, the day after the blade returned. Set by hand: one unit of its core metal, which the deep road does not carry yet, so it can be honed.",
+            "Open Storage: a weapon from the Legend Board has come back with its properties dormant. Upgrade it and they return.",
+            "Played: the Known Name account (era 1 on seed $ACCOUNT_SEED); era 2 on seed 1 (BALANCED_ACTIVE), stopped on the morning of day 15, the day after the blade returned. Set by hand: one unit of its core metal, which the deep road does not carry yet, so it can be upgraded.",
             endDay = false, ownLegacy = true, blade = ::dormant,
         ) { morning(1, Policy.BALANCED_ACTIVE, 15, account).let { s -> dormant(s)?.let { w -> s.copy(materials = s.materials + (w.coreId to (s.materials[w.coreId] ?: 0) + 1)) } ?: s } },
         Scenario(

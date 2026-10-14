@@ -447,12 +447,12 @@ class ShopDayScriptTest {
         assertEquals("5 heroes fought without weapons. All had to retreat.", Lines.field(FieldTally(0, 0, 5, 5, 0)))
         assertEquals("One hero fought without a weapon and had to retreat.", Lines.field(FieldTally(0, 0, 1, 1, 0)))
         assertEquals("3 heroes fought today. 3 won.", Lines.field(FieldTally(3, 0, 0, 0, 0)))
-        assertEquals("3 heroes fought today. 2 won, 1 was driven back. 1 of them fought without weapons and was driven back.", Lines.field(FieldTally(2, 0, 1, 1, 0)))
+        assertEquals("3 heroes fought today. 2 won, 1 retreated. 1 of them fought without a weapon and retreated.", Lines.field(FieldTally(2, 0, 1, 1, 0)))
         assertEquals(
-            "4 heroes fought today. 1 won, 2 were driven back, 1 died. 2 of them fought without weapons. 1 of those was driven back.",
+            "4 heroes fought today. 1 won, 2 retreated, 1 died. 2 of them fought without weapons. 1 of those retreated.",
             Lines.field(FieldTally(1, 1, 2, 1, 1)),
         )
-        assertEquals("2 heroes fought today. 2 won. 1 of them fought without weapons.", Lines.field(FieldTally(2, 1, 0, 0, 0)))
+        assertEquals("2 heroes fought today. 2 won. 1 of them fought without a weapon.", Lines.field(FieldTally(2, 1, 0, 0, 0)))
     }
 
     // ---- lines ----

@@ -85,7 +85,7 @@ object Missions {
                 post(if (prep != null) def.copy(stages = listOf(def.stages.first(), prep.sabotage)) else def, scenario.factionId!!, reason = (prep?.let { "${it.sabotageBrief} " } ?: "") + gone, expires = last)
                 val chances = cat.missions.filter { it.archetype == MissionArchetype.OPPORTUNITY && it.stages.none { s -> s.road } }
                 if (chances.isNotEmpty()) rng.pick(chances).let { chance ->
-                    post(chance, scenario.factionId, reason = "$gone One party cannot do this and the sabotage.", expires = last, lapse = GuildContent.LAPSE_SUPPLIER.takeIf { chance.stages.any { s -> s.supplier } })
+                    post(chance, scenario.factionId, reason = "$gone The guild has one party: taking this quest means the sabotage cannot be done.", expires = last, lapse = GuildContent.LAPSE_SUPPLIER.takeIf { chance.stages.any { s -> s.supplier } })
                 }
             }
         }
@@ -173,7 +173,7 @@ object Missions {
             )
         }
         return MissionOffer(id, def.id, faction, ctx.day, if (def.id == GuildContent.WALL_WORK) Int.MAX_VALUE else expires, def.days, def.fee, stages, def.optionalPush,
-            reason ?: "The road was worked $worked ${if (worked == 1) "time" else "times"} in the last ${cfg.supplyMemoryDays} days. This wagon is lighter.".takeIf { worked > 0 }, hero, weapon, modifier?.id, lapse)
+            reason ?: "Supply runs used this road $worked ${if (worked == 1) "time" else "times"} in the last ${cfg.supplyMemoryDays} days, so this wagon carries less.".takeIf { worked > 0 }, hero, weapon, modifier?.id, lapse)
     }
 
     // ---- planning ----
@@ -184,11 +184,11 @@ object Missions {
         val offer = g.offers.firstOrNull { it.id == cmd.offerId } ?: return GameError.MissionNotOffered(cmd.offerId)
         val ids = cmd.heroIds
         val most = partyMax(ctx, offer)
-        if (ids.isEmpty() || ids.size > most || ids.toSet().size != ids.size) return GameError.PartyInvalid("A party for this contract is one to $most members.")
+        if (ids.isEmpty() || ids.size > most || ids.toSet().size != ids.size) return GameError.PartyInvalid("A party for this quest has 1 to $most members.")
         for (id in ids) {
             val m = g.member(id) ?: return GameError.NotAMember(id)
             GuildOps.unavailable(ctx, m)?.let { return GameError.MemberUnavailable(id, it) }
-            if (id in g.reserved) return GameError.MemberUnavailable(id, "is kept for the wall")
+            if (id in g.reserved) return GameError.MemberUnavailable(id, "is reserved for the wall")
         }
         // The fee of a plan made earlier today comes back before this one's is taken: replacing a plan never costs twice.
         val back = g.planned?.let { p -> g.offers.firstOrNull { it.id == p.offerId }?.fee } ?: 0
@@ -239,7 +239,7 @@ object Missions {
         if (def.archetype == MissionArchetype.SUPPLY) update(ctx) { it.copy(supplyDays = (it.supplyDays + ctx.day).takeLast(ctx.config.guild.supplyMemoryDays * 2)) }
         update(ctx) { it.copy(mission = instance, offers = it.offers.filter { o -> o.id != offer.id }, members = it.members.map { m -> if (m.heroId in party) m.copy(status = MemberStatus.AWAY, missions = m.missions + 1) else m }) }
         val names = party.map { ctx.hero(it).fullName }
-        ctx.emit(EventType.MISSION_DEPARTED, 4, "${names.joinToString(", ")} left for ${title(ctx, offer)}." + (if (offer.fee > 0) " The forge had paid ${offer.fee} gold to send them." else ""), party.map { it.value },
+        ctx.emit(EventType.MISSION_DEPARTED, 4, "${names.joinToString(", ")} left for ${named(ctx, offer)}." + (if (offer.fee > 0) " The forge paid the ${offer.fee} gold fee." else ""), party.map { it.value },
             mapOf("mission" to offer.id, "def" to offer.defId))
     }
 
@@ -248,6 +248,9 @@ object Missions {
         val def = cat.mission(offer.defId)
         return if (def.archetype == MissionArchetype.EMERGENCY) def.name.lowercase() else "${def.name.lowercase()} ${cat.route(offer.factionId)?.where ?: "on the road"}"
     }
+
+    /** [title] with its article, for the middle of a sentence: "the hunt on the Ashroad". */
+    fun named(ctx: ResolutionContext, offer: MissionOffer): String = title(ctx, offer).let { if (it.startsWith("the ")) it else "the $it" }
 
     /** The fight of [stageIndex] as the party that left would meet it. Pure: builds the setup, resolves nothing. */
     fun setup(ctx: ResolutionContext, m: MissionInstance, stageIndex: Int): FightSetup? {
@@ -281,7 +284,7 @@ object Missions {
         if (atCheckpoint(m) && m.choice != CheckpointChoice.PUSH) {
             // The smith said "return", or said nothing: the party walks home today with what it secured.
             update(ctx) { it.copy(mission = m.copy(outcome = MissionOutcome.WON, choice = CheckpointChoice.RETURN, returnDay = ctx.day + 1)) }
-            ctx.emit(EventType.MISSION_WON, 4, "The party turned for home from ${title(ctx, m.offer)} with what it had secured.", m.party.map { it.value }, mapOf("mission" to m.id))
+            ctx.emit(EventType.MISSION_WON, 4, "The party came home from ${named(ctx, m.offer)} with the reward it had already won.", m.party.map { it.value }, mapOf("mission" to m.id))
             return
         }
         val stage = m.offer.stages[m.stage]
@@ -313,20 +316,21 @@ object Missions {
         if (outcome == MissionOutcome.WON && fight != null && m.stage == m.offer.stages.lastIndex && (def.archetype == MissionArchetype.RESCUE || def.archetype == MissionArchetype.RECOVERY || stage.danger == Danger.LETHAL)) {
             m.party.filter { ctx.heroes[it]?.isAlive == true && m.gear[it]?.let { w -> ctx.weapons[w]?.isLoaned } == true }
                 .maxByOrNull { id -> fight.events.count { e -> e.kind == EventKind.DOWNED && e.source == id.value } }?.let { id ->
-                    com.tinyblacksmith.core.crafting.Legends.deed(ctx, m.gear.getValue(id), ctx.config.depth.legend.renownDangerous, "${ctx.hero(id).fullName} carried it through ${title(ctx, m.offer)}.", listOf(id.value))
+                    com.tinyblacksmith.core.crafting.Legends.deed(ctx, m.gear.getValue(id), ctx.config.depth.legend.renownDangerous, "${ctx.hero(id).fullName} carried it through ${named(ctx, m.offer)}.", listOf(id.value))
                 }
         }
         val continues = outcome == MissionOutcome.WON && m.stage + 1 < m.offer.stages.size
         val after = m.copy(stage = m.stage + 1, secured = m.secured + gained, outcome = if (continues) null else outcome, returnDay = if (continues) m.returnDay else ctx.day + 1)
         update(ctx) { it.copy(mission = after) }
         val where = title(ctx, m.offer)
+        val the = named(ctx, m.offer)
         val names = alive.map { ctx.heroes[it]?.fullName ?: "?" }.joinToString(", ")
         val head = when {
-            continues && atCheckpoint(after) -> "$names won the first stage of $where. Deeper lies more. The smith decides in the morning."
-            continues -> "$names won the first day of $where and press on tomorrow."
-            outcome == MissionOutcome.WON -> "$names finished $where."
-            outcome == MissionOutcome.RETREATED -> "$names pulled back from $where."
-            else -> "$names were beaten at $where."
+            continues && atCheckpoint(after) -> "$names won the first stage of $the. Choose today: go deeper (the next stage is ${m.offer.stages[m.stage + 1].danger.name.lowercase()} and pays more) or come home. If you choose nothing, they come home."
+            continues -> "$names won the first stage of $the. They fight the next stage tomorrow."
+            outcome == MissionOutcome.WON -> "$names completed $the."
+            outcome == MissionOutcome.RETREATED -> "$names retreated from $the."
+            else -> "$names were beaten at $the."
         }
         val told = fight?.highlights?.firstOrNull()?.text?.let { " $it" }.orEmpty()
         ctx.emit(if (outcome == MissionOutcome.WON) EventType.MISSION_WON else EventType.MISSION_FAILED, if (outcome == MissionOutcome.LOST) 8 else 6, head + told, m.party.map { it.value } + m.gear.values.map { it.value },
@@ -352,24 +356,24 @@ object Missions {
                 drivenBackOnDay = if (won) hero.drivenBackOnDay else ctx.day))
             Heroes.grantXp(ctx, ctx.hero(id), if (won) cfg.missionXpWin else cfg.missionXpLoss)
             if (a.downed) {
-                wound(ctx, id, WoundKind.INJURED, cfg.injuredDays, "Went down at ${title(ctx, m.offer)}.")
+                wound(ctx, id, WoundKind.INJURED, cfg.injuredDays, "Went down at ${named(ctx, m.offer)}.")
                 GuildOps.updateMember(ctx, id) { it.copy(timesDowned = it.timesDowned + 1) }
-                lines += "${hero.fullName} went down and was carried out: injured for ${cfg.injuredDays} days."
+                lines += "${hero.fullName} went down and was carried home: injured for ${cfg.injuredDays} days."
             } else if (health < cfg.exhaustedBelowHealth) {
-                wound(ctx, id, WoundKind.EXHAUSTED, cfg.exhaustedDays, "Came back spent from ${title(ctx, m.offer)}.")
-                lines += "${hero.fullName} came through badly hurt: exhausted for ${cfg.exhaustedDays} day."
+                wound(ctx, id, WoundKind.EXHAUSTED, cfg.exhaustedDays, "Came back spent from ${named(ctx, m.offer)}.")
+                lines += "${hero.fullName} came home badly hurt: exhausted for ${cfg.exhaustedDays} ${if (cfg.exhaustedDays == 1) "day" else "days"}."
             }
             m.gear[id]?.let { ctx.weapons[it] }?.let { w ->
                 val wear = cfg.missionWear + (if (a.fractured) fractureWear(ctx) else 0)
                 ctx.updateWeapon(w.copy(condition = maxOf(0, w.condition - wear), victories = w.victories + (if (won) 1 else 0), fame = w.fame + (if (won) 1 else 0),
                     kills = w.kills + fight.events.count { it.kind == EventKind.DOWNED && it.source == id.value }))
                 if (a.fractured) {
-                    ctx.addWeaponHistory(w.id, "CRACKED", "Cracked in ${hero.fullName}'s hands at ${title(ctx, m.offer)} and was brought home to mend.", listOf(id.value))
-                    lines += "${w.name} cracked in the fight: it needs the hone (condition ${maxOf(0, w.condition - wear)})."
-                } else if (won) ctx.addWeaponHistory(w.id, "VICTORY", "${hero.fullName} carried it on loan through ${title(ctx, m.offer)}.", listOf(id.value))
+                    ctx.addWeaponHistory(w.id, "CRACKED", "Cracked in ${hero.fullName}'s hands at ${named(ctx, m.offer)} and was brought home for repair.", listOf(id.value))
+                    lines += "${w.name} cracked in the fight and needs repair (condition ${maxOf(0, w.condition - wear)})."
+                } else if (won) ctx.addWeaponHistory(w.id, "VICTORY", "${hero.fullName} carried it on loan through ${named(ctx, m.offer)}.", listOf(id.value))
             }
         }
-        if (setup.objective.protect != null && fight.actor("protected")?.downed == true) lines += "What the party was there to protect was lost."
+        if (setup.objective.protect != null && fight.actor("protected")?.downed == true) lines += "The one the party had to protect went down, so the fight was lost."
     }
 
     /** Condition a weapon cracked in a contract's fight loses on top of the wear: the repair bill, as the law in force sets it. */
@@ -398,13 +402,13 @@ object Missions {
             }
             val forge = left * (charter?.smithGoldPercent ?: 100) / 100
             ctx.earn(IncomeKind.CONTRACT, forge)
-            lines += "Contract gold: ${r.gold}. The forge's part: $forge."
+            lines += "Quest gold: ${r.gold}. The forge's share: $forge."
         }
         if (r.materials.isNotEmpty()) {
             r.materials.forEach { (id, n) -> ctx.materials[id] = (ctx.materials[id] ?: 0) + n }
             lines += "Brought back: " + r.materials.entries.joinToString(", ") { "${it.value} ${ctx.content.material(it.key).name}" } + "."
         }
-        if (r.suppression > 0) ctx.factions[m.offer.factionId]?.let { f -> ctx.factions[f.id] = f.copy(pressure = maxOf(0, f.pressure - r.suppression)); lines += "${ctx.content.faction(f.id).name} were set back." }
+        if (r.suppression > 0) ctx.factions[m.offer.factionId]?.let { f -> ctx.factions[f.id] = f.copy(pressure = maxOf(0, f.pressure - r.suppression)); val drop = f.pressure - maxOf(0, f.pressure - r.suppression); lines += if (drop > 0) "The ${ctx.content.faction(f.id).name} were set back (-$drop pressure)." else "The ${ctx.content.faction(f.id).name} were set back." }
         if (r.integrity > 0) {
             val max = ctx.config.startingForgeIntegrity + ctx.upgradeTotal(com.tinyblacksmith.core.content.UpgradeEffect.STARTING_INTEGRITY)
             // The day's recovery allowance, and the guild's extra for work on the wall, bound it like every other repair (owner decision B).
@@ -421,16 +425,16 @@ object Missions {
         if (r.militia > 0) ctx.town = ctx.town.copy(militia = minOf(ctx.config.militiaMax, ctx.town.militia + r.militia))
         if (r.sabotage) lines += SiegeFight.sabotage(ctx)
         if (r.heartfire > 0) {
-            com.tinyblacksmith.core.crafting.Legends.gainHeartfire(ctx, r.heartfire, "The party brought Heartfire back from ${title(ctx, m.offer)}.")
+            com.tinyblacksmith.core.crafting.Legends.gainHeartfire(ctx, r.heartfire, "The party brought Heartfire back from ${named(ctx, m.offer)}.")
             lines += "Heartfire came back with them. The forge holds ${ctx.heartfire}."
         }
         if (r.supplier) lines += supplier(ctx, true, "The supplier got through.")
         if (r.road) lines += DeepRoad.openTomorrow(ctx, "The caravan master's train got through.")
-        if (r.relicOffer && com.tinyblacksmith.core.engine.Relics.offer(ctx, "The party brought something out of the deep hall: the smith may take a relic.")) lines += "A relic came back with them."
+        if (r.relicOffer && com.tinyblacksmith.core.engine.Relics.offer(ctx, "The party brought something out of the deep hall: you may take a relic.")) lines += "A relic came back with them."
         r.weaponId?.let { id -> ctx.weapons[id]?.let { w ->
             ctx.updateWeapon(w.copy(location = WeaponLocation.Storage))
             ctx.addWeaponHistory(id, "RECOVERED", "Won back by the guild's party and returned to the forge.", m.party.map { it.value })
-            ctx.emit(EventType.WEAPON_RECOVERED, 6, "${w.name} is back at the forge: the guild's party took it from the one who carried it.", listOf(id.value) + m.party.map { it.value }, mapOf(WeaponFate.KEY to WeaponFate.RECOVERED.name))
+            ctx.emit(EventType.WEAPON_RECOVERED, 6, "${w.name} is back at the forge: the guild's party took it from the enemy who carried it.", listOf(id.value) + m.party.map { it.value }, mapOf(WeaponFate.KEY to WeaponFate.RECOVERED.name))
             lines += "${w.name} is back at the forge."
             Stories.recovered(ctx, id)
         } }
@@ -454,14 +458,14 @@ object Missions {
 
     /** The whole party went down. What that costs is what the contract said it would: nothing more on a safe one, a captive on a dangerous one, a death and a captive in a lethal hall. */
     private fun losses(ctx: ResolutionContext, m: MissionInstance, fight: FightResult, danger: Danger, lines: MutableList<String>) {
-        if (danger == Danger.SAFE) { lines += "The watch found them on the road and brought them all home."; return }
+        if (danger == Danger.SAFE) { lines += "The whole party went down. The watch found them on the road and brought them all home."; return }
         val order = fight.events.filter { it.kind == EventKind.DOWNED && it.target != null }.mapNotNull { e -> m.party.firstOrNull { it.value == e.target } }.distinct()
         val standing = order.filter { ctx.heroes[it]?.isAlive == true }
         var taken: HeroId? = standing.lastOrNull()
         if (danger == Danger.LETHAL) standing.firstOrNull()?.let { dead ->
             val hero = ctx.hero(dead)
             seize(ctx, m, dead, GuildOps.LOST_TAKEN)
-            Battle.kill(ctx, hero, "fell at ${title(ctx, m.offer)}", weaponRecovered = false, weaponSeized = false)
+            Battle.kill(ctx, hero, "fell at ${named(ctx, m.offer)}", weaponRecovered = false, weaponSeized = false)
             GuildOps.forget(ctx, dead)
             lines += "${hero.fullName} did not come back."
             if (taken == dead) taken = null
@@ -472,8 +476,8 @@ object Missions {
             val deadline = ctx.day + ctx.config.guild.captiveDays
             update(ctx) { it.copy(captives = it.captives + Captive(id, m.offer.factionId, ctx.day, deadline, blade, m.offer.defId), reserved = it.reserved - id,
                 members = it.members.map { x -> if (x.heroId == id) x.copy(status = MemberStatus.CAPTURED) else x }) }
-            ctx.emit(EventType.MEMBER_CAPTURED, 8, "${hero.fullName} was taken alive at ${title(ctx, m.offer)}." + (blade?.let { " ${ctx.weapon(it).name} went with them." } ?: ""), listOfNotNull(id.value, blade?.value), mapOf("deadline" to deadline.toString()))
-            lines += "${hero.fullName} was taken alive. They can be brought out until day ${deadline - 1}."
+            ctx.emit(EventType.MEMBER_CAPTURED, 8, "${hero.fullName} was captured at ${named(ctx, m.offer)}." + (blade?.let { " ${ctx.weapon(it).name} went with them." } ?: ""), listOfNotNull(id.value, blade?.value), mapOf("deadline" to deadline.toString()))
+            lines += "${hero.fullName} was captured. A rescue quest can bring them out until day ${deadline - 1}."
         }
         lines += "The rest dragged themselves home."
     }
@@ -482,7 +486,7 @@ object Missions {
     private fun seize(ctx: ResolutionContext, m: MissionInstance, id: HeroId, reason: String): WeaponId? {
         val w = GuildOps.loanOf(ctx, id) ?: return null
         ctx.updateWeapon(w.copy(location = WeaponLocation.Lost(ctx.day, reason)))
-        ctx.addWeaponHistory(w.id, if (reason == GuildOps.LOST_TAKEN) "SEIZED" else "HELD", if (reason == GuildOps.LOST_TAKEN) "Taken by the enemy when ${ctx.hero(id).fullName} fell at ${title(ctx, m.offer)}." else "Taken with ${ctx.hero(id).fullName}, who was captured.", listOf(id.value))
+        ctx.addWeaponHistory(w.id, if (reason == GuildOps.LOST_TAKEN) "SEIZED" else "HELD", if (reason == GuildOps.LOST_TAKEN) "Taken by the enemy when ${ctx.hero(id).fullName} fell at ${named(ctx, m.offer)}." else "Taken with ${ctx.hero(id).fullName}, who was captured.", listOf(id.value))
         if (reason == GuildOps.LOST_TAKEN) {
             ctx.emit(EventType.WEAPON_STOLEN, 6, "${w.name}, on loan to ${ctx.hero(id).fullName}, was taken by the enemy.", listOf(w.id.value, id.value), mapOf(WeaponFate.KEY to WeaponFate.SEIZED.name))
             Stories.taken(ctx, w.id, m.offer.factionId)

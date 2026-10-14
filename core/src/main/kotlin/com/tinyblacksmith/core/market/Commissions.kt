@@ -57,7 +57,7 @@ object Commissions {
         com.tinyblacksmith.core.model.CommissionKind.SIEGE_PREP -> "$buyer is preparing to defend the walls on day ${commission.deadlineDay}."
         com.tinyblacksmith.core.model.CommissionKind.AMBITION -> "$buyer wants a fine weapon for their collection."
         com.tinyblacksmith.core.model.CommissionKind.FIRST_BLADE -> "A first weapon for ${recipient ?: "a newcomer"}. $buyer pays for the order."
-        com.tinyblacksmith.core.model.CommissionKind.WALL_PLEDGE -> "$buyer pays half on collection and owes the rest."
+        com.tinyblacksmith.core.model.CommissionKind.WALL_PLEDGE -> "$buyer pays half on collection and means to settle the other half after the siege."
         com.tinyblacksmith.core.model.CommissionKind.HEIRLOOM -> "This restored weapon is reserved for $buyer."
     }
 

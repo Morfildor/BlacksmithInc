@@ -175,7 +175,7 @@ object Gazette {
                 if (commissions > 0) add("${count(commissions, "commission")} delivered")
             } else if (sold > 0) add("$sold sold")
             if (won + lost > 0) add("Expeditions: $won won, $lost lost")
-            if (fallen > 0) add(if (fallen == 1) "1 hero fell" else "$fallen heroes fell")
+            if (fallen > 0) add(if (fallen == 1) "1 hero died" else "$fallen heroes died")
         }
     }
 
@@ -220,7 +220,7 @@ object Gazette {
                 add("forged ${count(forged.size, "weapon")}" + if (detail.isEmpty()) "" else " (${detail.joinToString(", ")})")
             }
             events.count { it.type == EventType.WEAPON_LISTED }.takeIf { it > 0 }?.let { add("listed $it") }
-            events.count { it.type == EventType.WEAPON_HONED }.takeIf { it > 0 }?.let { add("honed $it") }
+            events.count { it.type == EventType.WEAPON_HONED }.takeIf { it > 0 }?.let { add("upgraded or repaired $it") }
             events.count { it.type == EventType.WEAPON_DONATED }.takeIf { it > 0 }?.let { add("donated ${count(it, "weapon")} to the watch") }
             events.filter { it.type == EventType.WEAPON_SALVAGED }.sumOf { it.data["count"]?.toIntOrNull() ?: 1 }.takeIf { it > 0 }?.let { add("salvaged $it") }
             events.filter { it.type == EventType.TOOL_BOUGHT }.forEach { add("bought ${it.data["name"] ?: it.text.substringAfter(": ").trimEnd('.')}") }

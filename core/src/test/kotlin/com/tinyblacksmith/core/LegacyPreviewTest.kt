@@ -31,7 +31,8 @@ class LegacyPreviewTest {
                 assertTrue("${p.before}" in p.text && "${p.after}" in p.text, "${def.name} level $level shows its before and after: ${p.text}")
                 assertNotEquals(p.before, p.after, p.text)
                 assertNotEquals(last, p.text, "${def.name} level $level differs from the level before")
-                assertTrue('%' !in p.text, p.text)
+                // Odds stay counts ("N in 100"); a share of an amount, like a returned legend's quality, is a percentage.
+                assertTrue('%' !in p.text || def.effect == UpgradeEffect.LEGACY_ARTIFACTS, p.text)
                 last = p.text
                 // The numbers are the engine's.
                 val (before, after) = when (def.effect) {

@@ -111,7 +111,7 @@ class RunVarietyUiTest {
         assertEquals("${content.material(w.coreId).name} ${content.family(w.familyId).name.lowercase()} with ${content.material(w.augmentId).name}, quality ${w.quality}, ${flaw.name}", line)
         // The card's costs say the flaw's price in words and the rest from the package's own numbers.
         val card = engine.openingChooser(s)!!.openings.first { it.id == def.id }
-        assertEquals(listOfNotNull(def.costNote, def.goldDelta.takeIf { it < 0 }?.let { "Start with ${-it} less gold" }, def.integrityDelta.takeIf { it < 0 }?.let { "The forge starts ${-it} health down" }), card.costs)
+        assertEquals(listOfNotNull(def.costNote, def.goldDelta.takeIf { it < 0 }?.let { "Start with ${-it} less gold" }, def.integrityDelta.takeIf { it < 0 }?.let { "The forge starts with ${-it} less health" }), card.costs)
     }
 
     // ---- the Heartfire panel ----
@@ -134,8 +134,8 @@ class RunVarietyUiTest {
         assertFalse(none.command!!.heartfire)
         assertEquals("Forge · ${engine.config.advancedForgeEnergy} energy", none.action.label)
         assertTrue(h0.outlook.isEmpty())
-        assertTrue(h0.rule, h0.rule.startsWith("Quality alone stops at Epic, and only Starsteel and Moonsteel hold Epic work. In any other metal it stops at Rare."))
-        assertTrue(h0.source, listOf("a deep hall cleared", "a taken weapon won back", "a starfall site", "a warlord broken on the wall").all { it in h0.source })
+        assertTrue(h0.rule, h0.rule.startsWith("Without Heartfire, quality can reach Epic at most, and only in Starsteel and Moonsteel. Weapons of other metals stop at Rare."))
+        assertTrue(h0.source, listOf("a deep hall cleared", "a taken weapon won back", "a starfall site", "a warlord defeated at the town wall").all { it in h0.source })
 
         // One held, but Quick: the reason is the engine's own rule.
         val held = classic.copy(heartfire = 1)
@@ -162,14 +162,14 @@ class RunVarietyUiTest {
         assertEquals(engine.config.advancedForgeEnergy + legend.heartfireEnergy, o.energy)
         assertEquals("Forge with Heartfire · ${o.energy} energy", b.action.label)
         assertEquals(4, h.outlook.size)
-        assertEquals("Uses 1 Heartfire and ${legend.heartfireEnergy} more energy, ${o.energy} in all. Both are spent whether or not it breaks through.", h.outlook[0])
-        assertEquals("Quality lands between ${o.qualityLow} and ${o.qualityHigh}, before an exceptional result or a flaw. It can break through only at ${o.floor} or more.", h.outlook[1])
-        assertEquals("If it does not break through, the weapon still gets one more property.", h.outlook[3])
+        assertEquals("Costs 1 Heartfire and ${legend.heartfireEnergy} extra energy, ${o.energy} energy in all. Both are spent even if the weapon does not become Legendary.", h.outlook[0])
+        assertEquals("Quality will be between ${o.qualityLow} and ${o.qualityHigh}, before any exceptional result or flaw. Only a weapon of quality ${o.floor} or more can become Legendary.", h.outlook[1])
+        assertEquals("If it does not become Legendary, the weapon still gets one more property.", h.outlook[3])
         // A cheap first-day recipe is in a metal that does not hold Epic work: the panel says so instead of promising a chance.
         assertTrue("the first metals should not reach Epic", o.qualityHigh < o.floor)
         assertFalse(o.fineMetal)
-        assertEquals("Chance to break through: none in this metal.", h.outlook[2])
-        assertEquals("Heartfire does not take in this metal. Only Starsteel and Moonsteel hold Epic work.", h.warning)
+        assertEquals("Chance of Legendary: none in this metal.", h.outlook[2])
+        assertEquals("Heartfire cannot make a weapon of this metal Legendary. Only Starsteel and Moonsteel can reach Epic.", h.warning)
         // The forge is the one the panel described: the Heartfire and the energy are gone.
         val after = (engine.handle(held, b.command!!) as CommandOutcome.Accepted).state
         assertEquals(0, after.heartfire)
@@ -185,11 +185,11 @@ class RunVarietyUiTest {
         val chance = top.heartfire!!.outlook[2]
         // Owner decision A: the hidden chance is a band word, never a number.
         val low = chanceWord(t.chanceLow); val high = chanceWord(t.chanceHigh)
-        assertEquals(if (low == high) "Chance to break through: $low." else "Chance to break through: $low at quality ${t.qualityLow}, $high at quality ${t.qualityHigh}.", chance)
+        assertEquals(if (low == high) "Chance of Legendary: $low." else "Chance of Legendary: $low at quality ${t.qualityLow}, $high at quality ${t.qualityHigh}.", chance)
         assertFalse(chance, chance.contains('%'))
         // The confirmation before it is sent: what it spends and what is left, the chance in words, what a miss gives.
         val confirm = top.heartfire!!.confirm
-        assertEquals("Spends 1 Heartfire and ${t.energy} energy, whether or not it breaks through. 0 of ${legend.heartfireMax} Heartfire left after.", confirm[0])
+        assertEquals("Spends 1 Heartfire and ${t.energy} energy, even if the weapon does not become Legendary. 0 of ${legend.heartfireMax} Heartfire left after.", confirm[0])
         assertEquals(listOf(chance, top.heartfire!!.outlook[3]), confirm.drop(1))
         assertTrue("nothing to confirm before the recipe is whole", bench(held, ForgeDraft(mode = ForgeMode.ADVANCED, heartfire = true)).heartfire!!.confirm.isEmpty())
         // A recipe that is not whole has no outlook to show yet.
@@ -314,13 +314,13 @@ class RunVarietyUiTest {
         fun card(pair: Pair<GameState, com.tinyblacksmith.core.model.MissionOffer>) = engine.guildUi(pair.first)!!.offers.first { it.id == pair.second.id }
         val ambush = find("ambush")
         assertNotNull("no ford to hold was posted", ambush)
-        assertEquals("Last ${cat.modifier("ambush")!!.hold} rounds", card(ambush!!).stages.single().objective)
+        assertEquals("Survive ${cat.modifier("ambush")!!.hold} rounds", card(ambush!!).stages.single().objective)
         val hostage = find("hostage")
         assertNotNull("no held guard was posted", hostage)
-        assertEquals("Defeat them all and keep the captive standing", card(hostage!!).stages.single().objective)
-        assertTrue(card(hostage).stages.single().reward, Regex("\\+\\d+ militia").containsMatchIn(card(hostage).stages.single().reward))
+        assertEquals("Defeat every enemy and keep the captive standing", card(hostage!!).stages.single().objective)
+        assertTrue(card(hostage).stages.single().reward, Regex("""\+\d+ militia""").containsMatchIn(card(hostage).stages.single().reward))
         val kind = find("in_kind")
         assertNotNull("no contract paid in metal was posted", kind)
-        assertFalse(card(kind!!).stages.last().reward, "contract gold" in card(kind).stages.last().reward)
+        assertFalse(card(kind!!).stages.last().reward, card(kind).stages.last().reward.split(", ").any { it.endsWith(" gold") })
     }
 }

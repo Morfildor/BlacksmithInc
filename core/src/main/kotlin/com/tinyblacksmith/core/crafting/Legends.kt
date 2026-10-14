@@ -41,8 +41,8 @@ object Legends {
             return
         }
         ctx.updateWeapon(ctx.weapon(weaponId).copy(rarity = Rarity.LEGENDARY, legend = LegendOrigin.DEEDS, power = w.power + cfg.deedPower))
-        ctx.addWeaponHistory(weaponId, HISTORY_LEGEND, "Became a legend by its deeds.", subjects)
-        ctx.emit(EventType.LEGEND_EARNED, 9, "${w.name} is a legend now. $text", listOf(weaponId.value) + subjects, mapOf("origin" to LegendOrigin.DEEDS.name, "from" to w.rarity.name))
-        ctx.milestone("LEGEND_EARNED", "A weapon of this forge became a legend by its deeds. ${w.name}.")
+        ctx.addWeaponHistory(weaponId, HISTORY_LEGEND, "Became Legendary through its deeds.", subjects)
+        ctx.emit(EventType.LEGEND_EARNED, 9, "${w.name} is now Legendary. $text", listOf(weaponId.value) + subjects, mapOf("origin" to LegendOrigin.DEEDS.name, "from" to w.rarity.name))
+        ctx.milestone("LEGEND_EARNED", "A weapon from this forge became Legendary through its deeds: ${w.name}.")
     }
 }

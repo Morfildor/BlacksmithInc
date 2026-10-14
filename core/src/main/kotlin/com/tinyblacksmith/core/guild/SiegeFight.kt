@@ -52,7 +52,7 @@ object SiegeFight {
         // What they prepare is drawn with the field (GUILD stream) and kept: the smith reads it for as long as there is to prepare.
         val prep = cat.preparations.filter { it.factionId == faction }.let { if (it.isEmpty()) null else ctx.rng(RngStream.GUILD).pick(it) }
         ctx.siege = scenario.copy(factionId = faction, plan = units, charter = charter, prepId = prep?.id)
-        if (prep != null) ctx.emit(EventType.SIEGE_PREPARATION, 7, "Scouts report what the ${ctx.content.faction(faction).name} prepare for day ${scenario.siegeDay}: ${prep.name.lowercase()}. ${prep.description} ${prep.counters.joinToString(" ")}",
+        if (prep != null) ctx.emit(EventType.SIEGE_PREPARATION, 7, "Scouts report what the ${ctx.content.faction(faction).name} prepare for day ${scenario.siegeDay}: ${prep.name.lowercase()}. ${prep.description} Ways to answer it: ${prep.counters.joinToString(" ")}",
             data = mapOf("prep" to prep.id, "day" to scenario.siegeDay.toString(), "faction" to faction.value))
     }
 
@@ -95,17 +95,17 @@ object SiegeFight {
         val prep = GuildOps.catalog(ctx).preparation(s.prepId)
         val text = if (prep != null) {
             ctx.siege = s.copy(prepId = null, prepSpoiled = prep.id, sabotaged = 1)
-            "What they prepared is spoiled: ${prep.name.lowercase()}. It will not come on day ${s.siegeDay}."
+            "Their preparation is spoiled: ${prep.name.lowercase()}. It will not be used in the siege on day ${s.siegeDay}."
         } else if (trait != null) {
             ctx.siege = s.copy(traitId = null, sabotaged = 1, plan = if (trait.id == Depth.MANY_BREACHES && s.plan.size > 2) s.plan.dropLast(1) else s.plan)
-            "Their plan for a ${trait.name} is spoiled: the day ${s.siegeDay} siege will be a plain one."
+            "Their plan for a ${trait.name} is spoiled: the siege on day ${s.siegeDay} will be an ordinary siege."
         } else if (s.plan.size > 1) {
             val gone = s.plan.last()
             ctx.siege = s.copy(plan = s.plan.dropLast(1), sabotaged = 1)
-            "One of their line will not come on day ${s.siegeDay}: ${ctx.content.combat!!.unit(gone.unitId).name.lowercase()}."
+            "One enemy will not come to the siege on day ${s.siegeDay}: ${ctx.content.combat!!.unit(gone.unitId).name.lowercase()}."
         } else {
             ctx.siege = s.copy(sabotaged = 1)
-            "Their camp was thrown into disorder."
+            "Their camp was thrown into disorder, but the siege on day ${s.siegeDay} is unchanged."
         }
         ctx.emit(EventType.SABOTAGE_DONE, 6, "The guild's party spoiled the besiegers' preparations. $text", data = mapOf("day" to s.siegeDay.toString()))
         return text
@@ -198,13 +198,13 @@ object SiegeFight {
         val nemesis = nemesisAtWall(ctx, scenario)
         val nemesisKey = line.indexOfFirst { it.tag == TAG_NEMESIS }.takeIf { it >= 0 && nemesis != null }?.let { "e${it + 1}" }
         // Who is not there, as the roster stands tonight: said in the report, because it is the smith's own doing.
-        val absent = ctx.guild!!.members.mapNotNull { m -> ctx.heroes[m.heroId]?.takeIf { it.isAlive }?.let { h -> when { m.status == MemberStatus.AWAY -> "${h.fullName} was away with the party."; m.status == MemberStatus.CAPTURED -> "${h.fullName} was in enemy hands."; GuildOps.laidUp(ctx, m) != null -> "${h.fullName} was laid up."; else -> null } } }
+        val absent = ctx.guild!!.members.mapNotNull { m -> ctx.heroes[m.heroId]?.takeIf { it.isAlive }?.let { h -> when { m.status == MemberStatus.AWAY -> "${h.fullName} was away with the party."; m.status == MemberStatus.CAPTURED -> "${h.fullName} was in enemy hands."; else -> GuildOps.laidUp(ctx, m)?.let { w -> "${h.fullName} was ${w.kind.name.lowercase()}." } } } }
         val warlord = leadUnit.id == GuildOps.catalog(ctx).siegeLeaders[factionId]
         val attacker = if (warlord) "${leadUnit.name} and the ${faction.siegeName}" else "the ${faction.siegeName}"
         val watch = (ctx.town.militia + ctx.town.armory) * (trait?.watchMultiplier ?: 1.0)
         val (enemies, enemyTotal) = field(ctx, scenario, watch)
         val outerTaken = enemyTotal - enemies.sumOf { it.health }
-        val outer = if (outerTaken > 0) "The watch and the militia bled them on the way in (${outerTaken * 100 / maxOf(1, enemyTotal)} parts in a hundred of their strength)." else "Nobody met them before the wall."
+        val outer = if (outerTaken > 0) "The watch and the militia wore them down on the way in (${outerTaken * 100 / maxOf(1, enemyTotal)}% of their health)." else "Nobody fought them before the wall."
         val standing = enemies.filter { it.health > 0 }
         val wall = defenders(ctx, faction)
         val party = wall.map { (h, w) -> withStats(GuildOps.fighter(ctx, h, w, Loadout.Field.HOME, wall.map { it.first.id }), prep?.partyStats.orEmpty()) }
@@ -293,15 +293,15 @@ object SiegeFight {
         }
         // What decided it, from the night's own record.
         val notes = ArrayList<String>()
-        cat.preparation(scenario.prepSpoiled)?.let { notes += "Your party had spoiled what they prepared: ${it.name.lowercase()}. It did not come." }
+        cat.preparation(scenario.prepSpoiled)?.let { notes += "Your party had spoiled their preparation: ${it.name.lowercase()}. It was not used." }
         prep?.let { notes += "They came with what the scouts reported: ${it.name.lowercase()}. ${it.description}" }
         notes += absent
         if (wall.size < cfg.defenders) notes += "Only ${wall.size} of ${cfg.defenders} places on the wall were filled."
         fight?.actors?.filter { it.side == Side.ENEMY && !it.downed && !it.summoned }?.forEach { a ->
             val mended = fight.events.count { it.kind == EventKind.HEALED && it.source == a.key && it.target != a.key }
-            if (mended > 0) notes += "${a.name} was still standing at the end and mended the others $mended ${if (mended == 1) "time" else "times"}."
+            if (mended > 0) notes += "${a.name} was still standing at the end and had healed the other enemies $mended ${if (mended == 1) "time" else "times"}."
         }
-        notes += if (forgeDamage > 0) "The forge lost $forgeDamage health." else "The forge was not touched."
+        notes += if (forgeDamage > 0) "The forge lost $forgeDamage health." else "The forge took no damage."
         // The lead felled by a defender's own hand is that weapon's deed, and a warlord broken on the wall leaves Heartfire.
         val beatenOutright = fight?.outcome == FightOutcome.WON
         if (beatenOutright && (scenario.charter || warlord)) {

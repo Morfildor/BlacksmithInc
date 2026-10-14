@@ -127,8 +127,12 @@ class LaunchContentTest {
             val all = mutableListOf<String>()
             strings(c, all)
             assertTrue(all.size > 300, "the scan reached the catalog's text (${all.size} strings)")
-            val offenders = all.filter { '%' in it || it.contains("percent", ignoreCase = true) }
-            assertEquals(emptyList(), offenders, "player-facing text states a percent")
+            // Owner decision A: odds are shown as band words, never as a number. A percentage of an amount ("+6% attack",
+            // "20% more gold") is a quantity and is stated as one (docs/WRITING_GUIDE.md), so only a percentage beside
+            // chance wording is an offender.
+            val odds = Regex("chance|odds|likel|probab", RegexOption.IGNORE_CASE)
+            val offenders = all.filter { ('%' in it || it.contains("percent", ignoreCase = true)) && odds.containsMatchIn(it) }
+            assertEquals(emptyList(), offenders, "player-facing text states a percent chance")
         }
     }
 

@@ -108,12 +108,12 @@ fun IntroMenuLine(vm: GameViewModel, modifier: Modifier = Modifier) {
     // One plain line under the button, not a framed panel: what the first game holds, and the way out of it beside it.
     Row(modifier.fillMaxWidth().testTag("intro_menu"), verticalAlignment = Alignment.CenterVertically) {
         Text(
-            if (status == IntroStatus.QUEUED) "Starts with a guided first day." else "The guided first day stopped early.",
+            if (status == IntroStatus.QUEUED) "Your next new game starts with a guided first day." else "The guided first day stopped before the end.",
             style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f),
         )
         if (status == IntroStatus.QUEUED) InlineActionButton("Skip it", { vm.skipIntro() }, Modifier.testTag("intro_menu_skip"))
         else {
-            InlineActionButton("Resume", { vm.introAction() }, Modifier.testTag("intro_menu_resume"))
+            InlineActionButton("Replay it", { vm.introAction() }, Modifier.testTag("intro_menu_resume"))
             InlineActionButton("Dismiss", { vm.skipIntro() }, Modifier.testTag("intro_menu_dismiss"))
         }
     }
@@ -141,7 +141,7 @@ fun Modifier.introMark(on: Boolean): Modifier = if (!on) this else this
 fun OpeningIntroNote(onSkip: () -> Unit, modifier: Modifier = Modifier) {
     // One plain line, as on the title: no panel competing with the cards under it.
     Row(modifier.fillMaxWidth().testTag("opening_intro"), verticalAlignment = Alignment.CenterVertically) {
-        Text("First game: the guided day begins once you choose.", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f))
+        Text("The guided first day starts after you choose how the guild begins.", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f))
         InlineActionButton("Skip it", onSkip, Modifier.testTag("intro_skip"))
     }
 }

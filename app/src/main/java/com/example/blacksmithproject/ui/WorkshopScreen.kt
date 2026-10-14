@@ -437,7 +437,7 @@ internal fun endDayNote(state: GameState, visitor: Encounters.View?): String = w
     visitor?.instance?.isOpen == true -> "The visitor leaves tonight. No answer means ${visitor.defaultLabel.lowercase()}."
     state.pendingRelicOffer.isNotEmpty() -> "Choose a workshop relic"
     state.commissions.values.any { it.status == CommissionStatus.OFFERED } -> "A new commission needs an answer"
-    state.overworkToday > 0 -> "Tomorrow starts ${state.overworkToday} energy short"
+    state.overworkToday > 0 -> "You'll have ${state.overworkToday} less energy tomorrow"
     state.energy > 0 -> "${state.energy} energy unused"
     else -> "Rest until dawn"
 }

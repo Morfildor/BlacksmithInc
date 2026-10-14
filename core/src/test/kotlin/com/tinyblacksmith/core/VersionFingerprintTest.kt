@@ -32,9 +32,10 @@ class VersionFingerprintTest {
         // Re-pinned while rules 6 is unreleased (from d047912e...): four contract modifiers that change the decision and their fields, the watch on a rescue, a second class a charter offers, Licensed Bad Ideas, three opening drawbacks in gold, the Hunt's numbers.
         // 6, re-pinned while unreleased: with the deep forging catalog (a fight rule for each metal, ingredient notes, interaction paths, Void Ink and Dragon Oil rewritten for new weapons).
         // 6, re-pinned for the fingerprint only (from 03d44c0f...): an opening's `costNote` is display text, hashed by presence like `pitch`. No number moved.
-        // 6, re-pinned while unreleased (from d6a80e4e...): review 2026-10-14 gameplay batch, two classic siege traits (Hungry Horde, Night Assault) and the `guild` flag on a trait.
+        // 6, re-pinned for the fingerprint only (from d6a80e4e...): the clarity pass (docs/WRITING_GUIDE.md) reworded a siege preparation's
+        // `counters` and an opening's `plan`, so those and the other display fields of both (`sabotageBrief`, `build`, `drawback`) are hashed by presence. No number moved.
         // 6, re-pinned while unreleased (from e921ee0c...): owner playtest, the tier-3-and-up materials priced about 2.5 times higher, the caravan master and the deep road contract (rules 7).
-        6 to "55dd5cb314a190c82f30875942fe12fa176f5fa1f38f7591196083569f7b7c72",
+        6 to "dbe74401669d50a063a1886900eb767ab2557f472b2e69547870542398f239e7",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
@@ -63,7 +64,7 @@ class VersionFingerprintTest {
         16 to "e8ad9fc5eff7628e31a2c77a140e8470bb5f2172f087828b83b03eaa391dea3f",
     )
 
-    private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where", "costNote")
+    private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where", "costNote", "counters", "sabotageBrief", "plan", "build", "drawback")
 
     private fun canonical(value: Any?, field: String? = null): String = when (value) {
         null -> "null"

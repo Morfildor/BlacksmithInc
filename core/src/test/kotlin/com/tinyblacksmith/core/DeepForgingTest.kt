@@ -355,7 +355,7 @@ class DeepForgingTest {
         for (r in reports) {
             assertEquals(r.result.events, Fight.resolve(r.setup).events)
             assertEquals(Bench.SEED, r.setup.seed)
-            assertTrue(r.synthetic.any { "made-up" in it } && r.synthetic.any { "Nothing here is paid, learned or recorded." == it })
+            assertTrue(r.synthetic.any { "made-up" in it } && r.synthetic.any { "Nothing here costs or earns gold, adds to your notebook or goes into the records." == it })
             // Every rule the weapon has on the road is accounted for: it fired, or the report says why not.
             assertEquals(rules(weapon).toSet(), (r.fired.map { it.rule.id } + r.silent.map { it.rule.id }).toSet())
             r.silent.forEach { assertTrue(it.why.endsWith(".") && it.why.length > 10) }
@@ -375,7 +375,7 @@ class DeepForgingTest {
         assertEquals("Nobody healed Bench Guardian.", why(made(L.SWORD, L.IRON, L.STORMGLASS, L.BINDING_SALT), L.GUARDIAN, "catalyst_capacitor"))
         assertEquals("Bench Duelist never had Guard for an enemy to break.", why(made(L.SWORD, L.BRONZE, L.EMBER_RESIN), L.DUELIST, "core_bronze"))
         assertEquals("No weapon in the party cracked.", why(made(L.STAFF, L.IRON, L.EMBER_RESIN, L.RUNESTONE_SHARD), L.BATTLEMAGE, "catalyst_runed"))
-        assertEquals("No Mark was there for Bench Duelist's hit to spend.", why(made(L.SWORD, L.STARSTEEL, L.FROST_BLOOM), L.DUELIST, "core_starsteel", target = "armoured"))
+        assertEquals("There was no Mark for Bench Duelist's hit to consume.", why(made(L.SWORD, L.STARSTEEL, L.FROST_BLOOM), L.DUELIST, "core_starsteel", target = "armoured"))
         assertEquals("Bench Guardian never got Steam.", why(made(L.SWORD, L.IRON, L.EMBER_RESIN, L.DRAGON_OIL), L.GUARDIAN, "catalyst_steam_lance", target = "armoured"))
         assertEquals("None of these enemies is an elite or a leader.", why(made(L.SWORD, L.IRON, L.EMBER_RESIN, buffs = listOf(L.GIANT_SLAYER)), L.GUARDIAN, "affix_giant_slayer", target = "armoured"))
     }
@@ -572,7 +572,7 @@ class DeepForgingTest {
         val salted = made(L.SWORD, L.IRON, L.STORMGLASS, L.BINDING_SALT)
         val c = WeaponRules.of(salted, content)
         fun say(q: Query, companions: String) = Capabilities.text(Capabilities.evaluate(q, c, Bench.company(L.GUARDIAN, companions, "attrition", content, config)), c)
-        assertTrue(say(Query.Generates(Res.CHARGE), "healer").startsWith("Available when its moment comes: "))
+        assertTrue(say(Query.Generates(Res.CHARGE), "healer").startsWith("Available when its trigger happens: "))
         assertTrue(say(Query.Generates(Res.CHARGE), "alone").startsWith("Needs: "))
         assertTrue(say(Query.Generates(Res.HEALING), "healer").startsWith("Cannot provide. "))
     }

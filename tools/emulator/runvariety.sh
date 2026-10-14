@@ -186,17 +186,17 @@ step_supplies() {
   load heartfire_breakthrough || return
   open_supplies || { bad "Supplies opens"; return; }
   shot supplies_0_top
-  scroll_to_text "Holds work up to Rare." >/dev/null
+  scroll_to_text "Rarity stops at Rare in this metal." >/dev/null
   shot supplies_1_plain_metals
-  for m in Iron Bronze Silver Obsidian; do local r=$(supply_row $m); echo "ROW $m: $r"; [ -n "$r" ] && expect "$m says what it holds" "$r" "Holds work up to Rare."; done
+  for m in Iron Bronze Silver Obsidian; do local r=$(supply_row $m); echo "ROW $m: $r"; [ -n "$r" ] && expect "$m says what it holds" "$r" "Rarity stops at Rare in this metal."; done
   echo "BUY Iron: $(buy_state Iron)"
   scroll_to_text "Starsteel" >/dev/null; scroll_to_text "Moonsteel" >/dev/null; $ADB shell input swipe 540 1300 540 1100 600; $ADB shell sleep 1
   shot supplies_2_starsteel_moonsteel
   local st=$(supply_row Starsteel) mo=$(supply_row Moonsteel)
   echo "ROW Starsteel: $st"; echo "ROW Moonsteel: $mo"
-  expect "Starsteel says what it holds" "$st" "Holds Epic work."
+  expect "Starsteel says what it holds" "$st" "Can reach Epic rarity."
   expect "Starsteel says the supplier's day" "$st" "day 6"
-  expect "Moonsteel says what it holds" "$mo" "Holds Epic work."
+  expect "Moonsteel says what it holds" "$mo" "Can reach Epic rarity."
   expect "Moonsteel says the supplier's day" "$mo" "day 11"
   echo "BUY Starsteel: $(buy_state Starsteel)"; echo "BUY Moonsteel: $(buy_state Moonsteel)"
 }
@@ -216,15 +216,15 @@ heart() {
   expect "$id holds two Heartfire before the forging" "$held" "Heartfire 2 of 3"
   expect "$id says what is spent" "$out" "Uses 1 Heartfire and"
   expect "$id says the quality range" "$out" "Quality lands between"
-  expect "$id says the chance to break through" "$out" "Chance to break through:"
-  expect "$id says what a miss gives" "$out" "If it does not break through"
+  expect "$id says the chance to break through" "$out" "Chance of Legendary:"
+  expect "$id says what a miss gives" "$out" "If it does not become Legendary"
   expect "$id names the action" "$(texts | grep -m1 'Forge with Heartfire ·')" "Forge with Heartfire · 6 energy"
   # Item 3: a lesser metal with Heartfire on. Nothing is forged.
   top; pick metal iron; has_id forge_tray_done && tap_id forge_tray_done >/dev/null; top
   shot ${id}_3a_lesser_metal_iron_recipe; local lesser="$(slots)"; heartfire_on
   shot ${id}_3_lesser_metal_iron
   echo "LESSER METAL: $lesser | $(lines_of forge_heartfire_outlook | tr '\n' ' ')"
-  expect "$id warns that Heartfire does not take in iron" "$(text_of forge_heartfire_warning)" "Heartfire does not take in this metal"
+  expect "$id warns that Heartfire does not take in iron" "$(text_of forge_heartfire_warning)" "Heartfire cannot make a weapon of this metal Legendary"
   expect "$id still holds two Heartfire" "$(text_of forge_heartfire_held)" "Heartfire 2 of 3"
   top; pick metal starsteel; has_id forge_tray_done && tap_id forge_tray_done >/dev/null; top
   local recipe="$(slots)"; heartfire_on

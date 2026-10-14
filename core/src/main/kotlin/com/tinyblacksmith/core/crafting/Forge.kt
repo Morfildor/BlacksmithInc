@@ -210,7 +210,7 @@ object Forge {
             affixes = affixes, flaws = flaws, location = WeaponLocation.Storage, forgedEra = ctx.era, forgedDay = ctx.day,
             history = listOfNotNull(
                 HistoryEntry(ctx.era, ctx.day, "FORGED", "Forged from ${core.name} and ${augment.name} (${cmd.risk.name.lowercase()} risk$techniqueNote)." + (if (cmd.heartfire) " Heartfire went into it." else "")),
-                HistoryEntry(ctx.era, ctx.day, Legends.HISTORY_LEGEND, "The Heartfire took. It left the anvil a legend.").takeIf { breakthrough },
+                HistoryEntry(ctx.era, ctx.day, Legends.HISTORY_LEGEND, "The Heartfire worked. The weapon left the anvil Legendary.").takeIf { breakthrough },
                 signature?.let { HistoryEntry(ctx.era, ctx.day, "SIGNATURE", "${it.name}: ${it.flavor}") },
             ),
             signatureId = signature?.id, legend = LegendOrigin.HEARTFIRE.takeIf { breakthrough }, craft = WeaponRules.CRAFT,

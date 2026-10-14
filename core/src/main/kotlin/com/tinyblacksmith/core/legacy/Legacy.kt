@@ -169,8 +169,8 @@ object Legacy {
             UpgradeEffect.STARTING_INTEGRITY -> (config.startingForgeIntegrity + prev).let { b -> make(b, b + m, "Start with ${b + m} forge health, up from $b.") }
             UpgradeEffect.QUALITY_BONUS -> make(prev, next, "Gain $next quality on each forge, up from $prev.")
             UpgradeEffect.STARTING_MATERIALS -> make(prev, next, "Start with $next extra of each starting material, up from $prev.")
-            UpgradeEffect.MATERIAL_EFFICIENCY -> forgesIn { b, a, u -> "The augment is kept in $a of $u forges, up from $b." }
-            UpgradeEffect.EXCEPTIONAL_CHANCE -> forgesIn { b, a, u -> "$a in $u forges are exceptional on top of the usual odds, up from $b." }
+            UpgradeEffect.MATERIAL_EFFICIENCY -> forgesIn { b, a, u -> "The augment material is not used up in $a of $u forges, up from $b." }
+            UpgradeEffect.EXCEPTIONAL_CHANCE -> forgesIn { b, a, u -> "Adds $a in $u to the chance of an exceptional forge, up from $b." }
             UpgradeEffect.STARTING_REPUTATION ->
                 make(prev, next, "Start with $next reputation and $level ${if (level == 1) "regular" else "regulars"}. Each has ${tracks.knownNameRegularGold} gold saved. Previously $prev reputation and ${level - 1} regulars.")
             UpgradeEffect.CATALOG_ACCESS -> {
@@ -181,12 +181,12 @@ object Legacy {
             UpgradeEffect.RECIPE_ODDS -> {
                 val before = Math.round(prev * tracks.recipeOddsPerLevel * 100).toInt()
                 val after = Math.round(next * tracks.recipeOddsPerLevel * 100).toInt()
-                make(before, after, "Signature recipes land $after more times in 100, up from $before. It is never certain.")
+                make(before, after, "A matched signature recipe produces its weapon $after more times in 100, up from $before. It is never certain.")
             }
             UpgradeEffect.LEGACY_ARTIFACTS -> {
                 val base = config.returnedLegendQualityFactor
                 fun strength(steps: Int) = Math.round(100 * maxOf(base, minOf(tracks.returnedLegendQualityFactorMax, base + steps * tracks.legendQualityFactorPerLevel))).toInt()
-                make(strength(prev), strength(next), "Returning legends retain ${strength(next)} quality per 100 original quality, up from ${strength(prev)}. They also return sooner.")
+                make(strength(prev), strength(next), "Returning legends keep ${strength(next)}% of their original quality and power, up from ${strength(prev)}%. They also return sooner.")
             }
         }
     }

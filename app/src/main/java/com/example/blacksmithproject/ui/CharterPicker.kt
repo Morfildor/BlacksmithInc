@@ -51,7 +51,7 @@ fun CharterPicker(charters: List<CharterDef>, selected: String?, onSelect: (Stri
             val chosen = id == at
             ChoiceRow(chosen, { onSelect(id) }, Modifier.testTag("charter_row_${id ?: "none"}")) {
                 Text(charter?.name ?: "No charter", style = MaterialTheme.typography.titleMedium, modifier = if (chosen) Modifier.testTag("charter_name") else Modifier)
-                Text(charter?.let { "Guild run · ${it.play}" } ?: "Classic run · The shop alone: forge, price and sell. No guild to run.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                Text(charter?.let { "Guild run · ${it.play}" } ?: "Classic run · Only the shop: forge, price and sell weapons. No guild.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
                 if (charter != null) Column(Modifier.padding(top = Space.sm).let { if (chosen) it.testTag("charter_details") else it }, verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                     EffectBullets(EffectKind.BUFF, charterGains(charter, content))
                     EffectBullets(EffectKind.FLAW, charterCosts(charter))
@@ -67,7 +67,7 @@ fun charterGains(c: CharterDef, content: ContentCatalog): List<String> = listOfN
     "${listOfNotNull(c.offeredClass, c.alsoOffered).joinToString(" and ") { content.heroClass(it).name }} ready to hire on day 1",
     c.militiaDelta.takeIf { it > 0 }?.let { "$it extra militia on the wall" },
     c.reputationDelta.takeIf { it > 0 }?.let { "A known name: $it more reputation" },
-    c.extraOffers.takeIf { it > 0 }?.let { "$it more contract on the board each day" },
+    c.extraOffers.takeIf { it > 0 }?.let { if (it == 1) "1 more quest on the board each day" else "$it more quests on the board each day" },
     c.materials.takeIf { it.isNotEmpty() }?.entries?.joinToString(", ") { "${it.value} ${content.material(it.key).name}" },
 )
 
@@ -75,6 +75,6 @@ fun charterGains(c: CharterDef, content: ContentCatalog): List<String> = listOfN
 fun charterCosts(c: CharterDef): List<String> = listOfNotNull(
     c.goldDelta.takeIf { it < 0 }?.let { "Start with ${-it} less gold" },
     c.militiaDelta.takeIf { it < 0 }?.let { "${-it} fewer militia on the wall" },
-    c.earlyDanger.takeIf { it }?.let { "Dangerous contracts from day 1" },
-    c.smithGoldPercent.takeIf { it < 100 }?.let { "The forge keeps $it% of contract gold" },
+    c.earlyDanger.takeIf { it }?.let { "Dangerous quests from day 1" },
+    c.smithGoldPercent.takeIf { it < 100 }?.let { "The forge keeps only $it% of the quest gold left after the members take their shares" },
 )

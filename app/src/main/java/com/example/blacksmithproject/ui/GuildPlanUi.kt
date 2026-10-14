@@ -131,7 +131,7 @@ internal fun GameEngine.upcomingContracts(state: GameState, g: GuildRunState): L
         ?.takeIf { def -> g.offers.none { cat.mission(it.defId).archetype == MissionArchetype.SABOTAGE } && def.id !in onBoard }
         ?.let { UpcomingUi("${it.name} and an opportunity", "Posted together once a siege's besieger is known, while a party can still be home for it") }
     val rescue = cat.missionById[GuildContent.RESCUE]?.takeIf { GuildContent.RESCUE !in onBoard }?.let { UpcomingUi(it.name, "Posted while a member is held by the enemy") }
-    val recovery = cat.missionById[GuildContent.RECOVERY]?.takeIf { GuildContent.RECOVERY !in onBoard }?.let { UpcomingUi(it.name, "Posted while an enemy carries a blade of this forge") }
+    val recovery = cat.missionById[GuildContent.RECOVERY]?.takeIf { GuildContent.RECOVERY !in onBoard }?.let { UpcomingUi(it.name, "Posted while an enemy carries a weapon of this forge") }
     return drawn + listOfNotNull(sabotage, rescue, recovery)
 }
 
@@ -165,7 +165,7 @@ internal fun GameEngine.charterSteps(state: GameState, g: GuildRunState): List<S
         StepUi(
             "charter", "Secure the charter", if (secured != null) StepState.DONE else StepState.LOCKED,
             secured?.let { "Secured on day ${it.day}." }
-                ?: "Break the charter warlord at the wall. He leads the first siege on or after day ${config.guild.charterDay}; held off, he leads the next one too.",
+                ?: "Break the charter warlord at the wall. He leads the first siege on or after day ${config.guild.charterDay}. If he is held off, he leads the next one too.",
             "Opens retiring the chapter as a success, and the ranks.",
         ),
     ) + cat.ranks.filter { it.rank > 0 }.sortedBy { it.rank }.map { r ->

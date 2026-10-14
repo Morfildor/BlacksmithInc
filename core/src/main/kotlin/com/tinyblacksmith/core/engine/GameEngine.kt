@@ -95,7 +95,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // Known Name: the shop is known before its doors open. One starting hero per level is already a regular with coin saved for a blade.
         val regulars = ctx.aliveHeroes().take(content.upgrades.filter { it.effect == UpgradeEffect.STARTING_REPUTATION }.sumOf { legacy.upgradeLevel(it.id) })
         for (h in regulars) ctx.updateHero(h.copy(loyalty = config.regularLoyaltyThreshold, gold = h.gold + config.legacyTracks.knownNameRegularGold))
-        ctx.emit(EventType.RUN_STARTED, 5, "Era $era begins. World conditions are ${ctx.world.name.lowercase()}. The first siege is expected on day ${config.siegeInterval}.")
+        ctx.emit(EventType.RUN_STARTED, 5, "Era $era begins. This era's conditions: ${ctx.world.name}. The first siege is expected on day ${config.siegeInterval}.")
         descendant?.let { d ->
             val h = ctx.heroes.values.first { it.lineageId == d.id }
             ctx.emit(EventType.HERO_ARRIVED, 4, "${h.fullName} arrived in Emberfall. Their ancestor ${d.heroName} ${d.deed}.", listOf(h.id.value))
@@ -345,9 +345,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         // A blade already at what its metal holds gains only the repair; the record says so rather than "55 to 55".
         val atCap = !weapon.honed && quality == weapon.quality
         val note = if (weapon.honed) "Condition ${weapon.condition} to 100" else if (atCap) "Quality ${weapon.quality}, the most ${content.material(weapon.coreId).name} holds" else "Quality ${weapon.quality} to $quality"
-        ctx.addWeaponHistory(weapon.id, "HONED", "Honed. $note.")
-        if (woken.isNotEmpty()) ctx.addWeaponHistory(weapon.id, "AWAKENED", "Honing restored dormant properties. ${woken.joinToString(", ") { content.affix(it).name }}.")
-        val text = (if (weapon.honed) "Restored ${weapon.name} to full condition." else if (atCap) "Honed ${weapon.name}. Quality $quality is the most ${content.material(weapon.coreId).name} holds." else "Honed ${weapon.name} to quality $quality.") +
+        ctx.addWeaponHistory(weapon.id, "HONED", (if (weapon.honed) "Repaired. " else "Upgraded. ") + "$note.")
+        if (woken.isNotEmpty()) ctx.addWeaponHistory(weapon.id, "AWAKENED", "The work restored dormant properties. ${woken.joinToString(", ") { content.affix(it).name }}.")
+        val text = (if (weapon.honed) "Restored ${weapon.name} to full condition." else if (atCap) "Upgraded ${weapon.name}: condition back to 100. Quality $quality is the most ${content.material(weapon.coreId).name} holds." else "Upgraded ${weapon.name}: quality ${weapon.quality} to $quality, and condition back to 100.") +
             (if (woken.isNotEmpty()) " Dormant properties restored. ${woken.joinToString(", ") { content.affix(it).name }}." else "")
         ctx.emit(EventType.WEAPON_HONED, 2, text, listOf(weapon.id.value), mapOf("quality" to quality.toString(), "condition" to "100") + (if (woken.isNotEmpty()) mapOf("woke" to woken.joinToString(",") { it.value }) else emptyMap()))
         return accept(ctx)
@@ -495,7 +495,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val applied = minOf(earned, maxIntegrity - ctx.town.integrity)
         if (applied > 0) {
             ctx.town = ctx.town.copy(integrity = ctx.town.integrity + applied)
-            ctx.emit(EventType.TOWN_RECOVERED, 1, "Heroes repaired the forge. Restored $applied health.", data = mapOf("amount" to applied.toString()))
+            ctx.emit(EventType.TOWN_RECOVERED, 1, "Heroes repaired the forge: +$applied forge health.", data = mapOf("amount" to applied.toString()))
         }
         ctx.town = ctx.town.copy(militia = maxOf(0, ctx.town.militia - config.militiaDecayPerDay))
         // The forecast's own champions: the same faction, warlord flag and ranking the siege will use.

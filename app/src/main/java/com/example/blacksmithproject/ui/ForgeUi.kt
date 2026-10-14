@@ -149,14 +149,14 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
     val o = if (on && command != null) heartfireOutlook(state, command) else null
     val chance = o?.let {
         when {
-            !it.fineMetal -> "Chance to break through: none in this metal."
-            it.chanceHigh <= 0.0 -> "Chance to break through: none at this quality."
-            it.chanceLow <= 0.0 -> "Chance to break through: none under quality ${it.floor}, ${chanceWord(it.chanceHigh)} at quality ${it.qualityHigh}."
-            chanceWord(it.chanceLow) == chanceWord(it.chanceHigh) -> "Chance to break through: ${chanceWord(it.chanceLow)}."
-            else -> "Chance to break through: ${chanceWord(it.chanceLow)} at quality ${it.qualityLow}, ${chanceWord(it.chanceHigh)} at quality ${it.qualityHigh}."
+            !it.fineMetal -> "Chance of Legendary: none in this metal."
+            it.chanceHigh <= 0.0 -> "Chance of Legendary: none at this quality."
+            it.chanceLow <= 0.0 -> "Chance of Legendary: none under quality ${it.floor}, ${chanceWord(it.chanceHigh)} at quality ${it.qualityHigh}."
+            chanceWord(it.chanceLow) == chanceWord(it.chanceHigh) -> "Chance of Legendary: ${chanceWord(it.chanceLow)}."
+            else -> "Chance of Legendary: ${chanceWord(it.chanceLow)} at quality ${it.qualityLow}, ${chanceWord(it.chanceHigh)} at quality ${it.qualityHigh}."
         }
     }
-    val miss = o?.let { "If it does not break through, the weapon still gets ${if (it.missSlots == 1) "one more property" else "${it.missSlots} more properties"}." }
+    val miss = o?.let { "If it does not become Legendary, the weapon still gets ${if (it.missSlots == 1) "one more property" else "${it.missSlots} more properties"}." }
     return HeartfireUi(
         held = "Heartfire ${state.heartfire} of ${legend.heartfireMax}",
         on = on, blocked = blocked,
@@ -164,21 +164,21 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
             !on -> emptyList()
             o == null -> listOf("Choose a weapon, a metal and an augment to see what it would do.")
             else -> listOfNotNull(
-                "Uses 1 Heartfire and ${legend.heartfireEnergy} more energy, ${o.energy} in all. Both are spent whether or not it breaks through.",
-                "Quality lands between ${o.qualityLow} and ${o.qualityHigh}, before an exceptional result or a flaw. It can break through only at ${o.floor} or more.",
+                "Costs 1 Heartfire and ${legend.heartfireEnergy} extra energy, ${o.energy} energy in all. Both are spent even if the weapon does not become Legendary.",
+                "Quality will be between ${o.qualityLow} and ${o.qualityHigh}, before any exceptional result or flaw. Only a weapon of quality ${o.floor} or more can become Legendary.",
                 chance,
                 miss,
             )
         },
         confirm = if (o == null) emptyList() else listOfNotNull(
-            "Spends 1 Heartfire and ${o.energy} energy, whether or not it breaks through. ${state.heartfire - 1} of ${legend.heartfireMax} Heartfire left after.",
+            "Spends 1 Heartfire and ${o.energy} energy, even if the weapon does not become Legendary. ${state.heartfire - 1} of ${legend.heartfireMax} Heartfire left after.",
             chance,
             miss,
         ),
-        warning = o?.takeIf { !it.fineMetal }?.let { "Heartfire does not take in this metal. Only ${fineMetals()} hold Epic work." }
-            ?: o?.takeIf { it.qualityHigh < it.floor }?.let { "A plain result of this recipe stays under quality ${it.floor}. Only an exceptional result could break through." },
-        rule = "Quality alone stops at Epic, and only ${fineMetals()} hold Epic work. In any other metal it stops at Rare. A weapon becomes Legendary by a Heartfire breakthrough or by its deeds.",
-        source = "Heartfire comes from dangerous work: a deep hall cleared, a taken weapon won back, a starfall site, a warlord broken on the wall.",
+        warning = o?.takeIf { !it.fineMetal }?.let { "Heartfire cannot make a weapon of this metal Legendary. Only ${fineMetals()} can reach Epic." }
+            ?: o?.takeIf { it.qualityHigh < it.floor }?.let { "Without an exceptional result, this recipe stays under quality ${it.floor}, so it cannot become Legendary." },
+        rule = "Without Heartfire, quality can reach Epic at most, and only in ${fineMetals()}. Weapons of other metals stop at Rare. Only Heartfire or great deeds make a weapon Legendary.",
+        source = "Heartfire comes from dangerous work: a deep hall cleared, a taken weapon won back, a starfall site, a warlord defeated at the town wall.",
     )
 }
 
@@ -330,12 +330,12 @@ internal fun com.tinyblacksmith.core.content.Element.word() = name.lowercase().r
 fun GameEngine.forgeLearning(before: JournalModel, after: JournalModel, forged: Command.Forge): ForgeLearningUi {
     val pairings = listOf(JournalModel.coreAugmentKey(forged.coreId, forged.augmentId), JournalModel.augmentFamilyKey(forged.augmentId, forged.familyId))
     val learned = pairings.filter { after.state(it).ordinal > before.state(it).ordinal }.map { key ->
-        LearnedUi(if (after.state(key) == KnowledgeState.OBSERVED) "First notes" else "Pairing learned", "${Journal.subjectName(content, key)} · ${Journal.hint(after, content, key)}")
+        LearnedUi(if (after.state(key) == KnowledgeState.OBSERVED) "First notes" else "Pairing learned", "${Journal.subjectName(content, key)}: ${Journal.hint(after, content, key)}")
     }
     val recipes = after.interactions.keys.filter { it.startsWith("sig:") }.sorted().mapNotNull { key ->
         when {
             after.state(key) == KnowledgeState.SIGNATURE_DISCOVERED && before.state(key) != KnowledgeState.SIGNATURE_DISCOVERED -> LearnedUi("Signature discovered", Journal.hint(after, content, key))
-            after.state(key) != KnowledgeState.SIGNATURE_DISCOVERED && (after.state(key) != before.state(key) || after.signatureClues[key] != before.signatureClues[key]) -> LearnedUi("Recipe clue found", "${Journal.subjectName(content, key)} · ${Journal.hint(after, content, key)}")
+            after.state(key) != KnowledgeState.SIGNATURE_DISCOVERED && (after.state(key) != before.state(key) || after.signatureClues[key] != before.signatureClues[key]) -> LearnedUi("Recipe clue found", "${Journal.subjectName(content, key)}: ${Journal.hint(after, content, key)}")
             else -> null
         }
     }

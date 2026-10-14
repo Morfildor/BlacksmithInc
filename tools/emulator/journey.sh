@@ -98,7 +98,7 @@ notes() {
   echo "--- fight notes ($1)"; printf '%s' "$x" | grep -o 'text="[^"]\+"' | grep -i -B1 -A4 "broken Guard answers" | head -12
   echo "COUNT rows of the path: $(printf '%s' "$x" | grep -o 'resource-id="book_interaction_guard_answer"' | wc -l)"
   if printf '%s' "$x" | grep -q 'Seen in a real fight'; then echo "STATE $1: seen in a real fight"; else echo "STATE $1: not seen"; fi
-  if printf '%s' "$x" | grep -q 'Suggested by the rules'; then echo "STATE $1: a path is suggested by the rules"; fi
+  if printf '%s' "$x" | grep -q 'Possible, not seen yet'; then echo "STATE $1: a path is possible, not seen yet"; fi
 }
 
 $ADB shell pm clear $PKG >/dev/null

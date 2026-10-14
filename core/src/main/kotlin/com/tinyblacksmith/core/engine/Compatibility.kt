@@ -108,7 +108,7 @@ object Compatibility {
             }
         }
         if (notes.isEmpty()) return state
-        ctx.emit(EventType.WORLD_EVENT, 5, "This version of the game sets new limits, and the forge was brought in line. " + notes.joinToString(" "), data = mapOf("event" to "balance_limits"))
+        ctx.emit(EventType.WORLD_EVENT, 5, "This version of the game has new limits, so your run was adjusted to fit them. " + notes.joinToString(" "), data = mapOf("event" to "balance_limits"))
         return ctx.toState()
     }
 }

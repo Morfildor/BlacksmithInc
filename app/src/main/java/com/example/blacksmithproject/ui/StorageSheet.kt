@@ -75,7 +75,7 @@ private fun blades(n: Int) = if (n == 1) "1 weapon" else "$n weapons"
 internal fun salvageTerms(n: Int, t: BulkTerms): String {
     val cost = n * t.salvageEnergy
     return "Destroys each weapon and returns one unit of its metal. Costs $cost energy. You have ${t.energy}." +
-        if (cost > t.energy) "Extra energy is borrowed from tomorrow. You can borrow ${t.overworkLeft} more today. Salvaging stops when energy and overwork run out." else ""
+        if (cost > t.energy) " Extra energy is borrowed from tomorrow. You can borrow ${t.overworkLeft} more today. Salvaging stops when energy and overwork run out." else ""
 }
 
 /** The body of "Give n blades to the town watch?". */
@@ -167,7 +167,7 @@ fun StorageList(
                         when {
                             storage.isEmpty() -> "Storage is empty. Keep forged weapons here until you're ready to sell them."
                             select -> "Tap weapons to select them. ${blades(chosen.size)} selected."
-                            shelfFree <= 0 -> "The shelf is full. Tap a weapon to hone, salvage or donate it."
+                            shelfFree <= 0 -> "The shelf is full. Tap a weapon to upgrade, repair, salvage or donate it."
                             else -> "$shelfFree shelf spaces free. Tap a weapon to see its details and set a price."
                         },
                     )

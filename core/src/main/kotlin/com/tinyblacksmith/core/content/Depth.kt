@@ -67,41 +67,41 @@ object Depth {
 
     // Weights, limits and cooldowns are PROPOSED.
     val encounters = listOf(
-        EncounterDef(LAST_CRATE, "The Last Crate", 3.0, maxPerRun = 6, cooldownDays = 3, description = "One crate left before the siege closes the roads."),
-        EncounterDef(BLADE_FOR_THE_WALL, "A Weapon for the Wall", 2.5, maxPerRun = 4, cooldownDays = 4, description = "A defender needs a weapon on credit. A wealthier customer is next in line."),
-        EncounterDef(MASTERS_AFTERNOON, "The Master's Afternoon", 2.0, maxPerRun = 2, cooldownDays = 5, description = "A visiting master smith offers a lesson for time or gold.", replacesEvent = "wandering_master"),
+        EncounterDef(LAST_CRATE, "The Last Crate", 3.0, maxPerRun = 6, cooldownDays = 3, description = "A carter has one last crate before the siege closes the roads."),
+        EncounterDef(BLADE_FOR_THE_WALL, "A Weapon for the Wall", 2.5, maxPerRun = 4, cooldownDays = 4, description = "A defender asks for a weapon on credit. A richer customer wants an order too."),
+        EncounterDef(MASTERS_AFTERNOON, "The Master's Afternoon", 2.0, maxPerRun = 2, cooldownDays = 5, description = "A visiting master smith offers a lesson for energy or a recipe clue for gold.", replacesEvent = "wandering_master"),
         EncounterDef(COLLECTORS_OFFER, "The Collector's Offer", 2.0, maxPerRun = 2, cooldownDays = 5, description = "A collector wants one of your weapons and has made an offer.", replacesEvent = "collector"),
-        EncounterDef(CRACKED_FAMILY_BLADE, "A Cracked Heirloom", 4.0, maxPerRun = 3, cooldownDays = 3, description = "Someone close to a fallen hero wants their weapon restored."),
-        EncounterDef(CROOKED_MERCHANT, "The Crooked Merchant", 1.5, maxPerRun = 3, cooldownDays = 5, description = "A merchant offers a cheap weapon. There's a catch.", minDay = 4),
-        EncounterDef(SMITHS_WAGER, "The Smith's Wager", 1.5, maxPerRun = 3, cooldownDays = 6, description = "A visiting smith bets you can't meet his challenge in time.", minDay = 3),
+        EncounterDef(CRACKED_FAMILY_BLADE, "A Cracked Heirloom", 4.0, maxPerRun = 3, cooldownDays = 3, description = "Someone close to a fallen hero wants the hero's weapon restored."),
+        EncounterDef(CROOKED_MERCHANT, "The Crooked Merchant", 1.5, maxPerRun = 3, cooldownDays = 5, description = "A merchant offers a cheap weapon with one hidden flaw.", minDay = 4),
+        EncounterDef(SMITHS_WAGER, "The Smith's Wager", 1.5, maxPerRun = 3, cooldownDays = 6, description = "A visiting smith bets you can't forge a superb weapon of a given type in time.", minDay = 3),
         EncounterDef(FESTIVAL_CONTRACT, "The Festival Contract", 2.0, maxPerRun = 4, cooldownDays = 4, description = "The council wants your help with the festival or the town watch.", replacesEvent = "merchant_festival"),
-        EncounterDef(DEBT_REPAID, "The Debt Repaid", 0.0, maxPerRun = Int.MAX_VALUE, cooldownDays = 0, description = "The defender you armed on credit has returned.", followUp = true),
+        EncounterDef(DEBT_REPAID, "The Debt Repaid", 0.0, maxPerRun = Int.MAX_VALUE, cooldownDays = 0, description = "The defender you armed on credit has come back to settle the debt.", followUp = true),
         EncounterDef(DEEP_ROAD, "The Deep Road", 0.0, maxPerRun = 1, cooldownDays = 0, description = "After the siege, the caravan master can bring rare stock down the deep road.", followUp = true),
     )
 
     val relics = listOf(
-        RelicDef(SALVAGERS_CRUCIBLE, "Salvager's Crucible", RelicEffect.SALVAGE_AUGMENT, "Once daily, salvage a fine weapon to recover its augment as well as its metal."),
-        RelicDef(TEMPERING_LEDGER, "Tempering Ledger", RelicEffect.FAMILY_STREAK, "Forge different weapon types in a row to gain quality. Repeating a type resets the streak."),
-        RelicDef(COLLECTORS_SEAL, "Collector's Seal", RelicEffect.PREMIUM_SEAL, "Your first qualifying shelf sale each day earns a seal. Collect three for a rare material."),
-        RelicDef(ASHEN_BELLOWS, "Ashen Bellows", RelicEffect.BELLOWS, "Once daily, borrow energy from tomorrow to add a property to one forge."),
+        RelicDef(SALVAGERS_CRUCIBLE, "Salvager's Crucible", RelicEffect.SALVAGE_AUGMENT, "Once per day, salvaging a weapon of fine quality or better also gives back its augment, not only its metal."),
+        RelicDef(TEMPERING_LEDGER, "Tempering Ledger", RelicEffect.FAMILY_STREAK, "Forge a different weapon type each time to build a streak. The longer the streak, the more quality the next new type gains. Forging a type already in the streak starts a new streak with it."),
+        RelicDef(COLLECTORS_SEAL, "Collector's Seal", RelicEffect.PREMIUM_SEAL, "Once per day, your first shelf sale at the going rate or higher earns a seal, if the buyer pays enough in coin (trade-ins don't count). Every three seals give the forge one rare material."),
+        RelicDef(ASHEN_BELLOWS, "Ashen Bellows", RelicEffect.BELLOWS, "Once per day, one forge can borrow energy from tomorrow to give the weapon one more property. You start tomorrow with that much less energy."),
     ) + CombatContent.relicEffects.keys.map { id ->
         // A guild relic is a rule of the party in a fight; its text is the rule's own, so the card and the resolver cannot disagree.
         val rules = CombatContent.relicEffects.getValue(id)
         RelicDef(id, rules.firstOrNull()?.name ?: "Coward's Medal", RelicEffect.COMBAT,
-            rules.joinToString(" ") { it.description }.ifEmpty { "A party that pulls back from a fight still brings home half of the bonus it was promised. A retreat is never counted as a victory." })
+            rules.joinToString(" ") { it.description }.ifEmpty { "When your party retreats from a quest fight, it still brings home half of that stage's gold. A retreat never counts as a win." })
     } + listOf<RelicDef>(
     )
 
-    // Catalog numbers, PROPOSED.
+    // Catalog numbers, PROPOSED. A description states its trait's numbers: change both together.
     val siegeTraits = listOf(
-        SiegeTraitDef(LONG_ASSAULT, "Long Assault", "A long fight favors fresh weapons. Worn weapons contribute less, and defenders' weapons wear twice as fast.",
-            "Stock fresh weapons for the defenders or arm the watch. Watch weapons don't wear out.", conditionFloorFactor = 0.6, wearMultiplier = 2.0),
-        SiegeTraitDef(MANY_BREACHES, "Many Breaches", "Multiple gates are under attack. The watch and militia contribute much more, but the raid is stronger too.",
-            "Donate weapons to the watch or improve the champions' gear. Plain weapons help too.", watchMultiplier = 1.75, raidMultiplier = 1.05),
+        SiegeTraitDef(LONG_ASSAULT, "Long Assault", "In a long fight, worn weapons count for less than usual, and the defenders' weapons lose twice as much condition.",
+            "Get weapons in good condition into the likely defenders' hands, or give weapons to the town watch. The watch's strength does not depend on condition.", conditionFloorFactor = 0.6, wearMultiplier = 2.0),
+        SiegeTraitDef(MANY_BREACHES, "Many Breaches", "With several gates under attack, the militia and the armory count 75% more, but the attackers are 5% stronger.",
+            "Give weapons to the town watch, or get better weapons into the likely defenders' hands. Even plain weapons help the watch.", watchMultiplier = 1.75, raidMultiplier = 1.05),
         // Review 2026-10-14 (proposals P9, P10): two traits that change what counts instead of only making the siege harder.
-        SiegeTraitDef(HUNGRY_HORDE, "Hungry Horde", "A ragged horde, hungrier than it is strong. The raid is weaker, but worn weapons count for little against it.",
-            "Hone or replace the champions' worn weapons. A fresh weapon counts for more than a strong worn one.", conditionFloorFactor = 0.4, raidMultiplier = 0.85, guild = false),
-        SiegeTraitDef(NIGHT_ASSAULT, "Night Assault", "They come over the wall at night. The watch and militia are not at their posts, and only the champions fight. The raid is smaller.",
-            "Arm the champions with your best weapons. Weapons given to the watch won't help this time.", watchMultiplier = 0.0, raidMultiplier = 0.9, guild = false),
+        SiegeTraitDef(HUNGRY_HORDE, "Hungry Horde", "A ragged horde, hungrier than it is strong. The attackers are weaker, but worn weapons count for little against them.",
+            "Repair or replace the likely defenders' worn weapons. A weapon in good condition counts for more than a strong worn one.", conditionFloorFactor = 0.4, raidMultiplier = 0.85, guild = false),
+        SiegeTraitDef(NIGHT_ASSAULT, "Night Assault", "They come over the wall at night. The town watch and the militia are not at their posts, so only the defenders fight. The attackers are fewer.",
+            "Get your best weapons into the likely defenders' hands. Weapons given to the town watch won't help this time.", watchMultiplier = 0.0, raidMultiplier = 0.9, guild = false),
     )
 }

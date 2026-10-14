@@ -278,7 +278,7 @@ object Heroes {
         ctx.reputation += config.ambitionReputation
         val weapon = ctx.equippedWeapon(heroId)
         val text = when (ambition) {
-            Ambition.SLAYER -> "${hero.fullName} fulfilled their vow by defeating ${config.ambitionSlayerWins} foes."
+            Ambition.SLAYER -> "${hero.fullName} fulfilled their vow by winning ${config.ambitionSlayerWins} expeditions."
             Ambition.DEFENDER -> "${hero.fullName} kept their promise to defend Emberfall."
             Ambition.COLLECTOR -> "${hero.fullName} finally found a prized weapon. ${weapon?.name ?: "A fine piece of work"}."
             Ambition.FORTUNE -> "${hero.fullName} reached their savings goal."
@@ -298,7 +298,7 @@ object Heroes {
             Ambition.FORTUNE -> "Made a fortune"
         }
         return when (a) {
-            Ambition.SLAYER -> "Defeat ${config.ambitionSlayerWins} foes. ${minOf(hero.expeditionWins, config.ambitionSlayerWins)} defeated so far."
+            Ambition.SLAYER -> "Win ${config.ambitionSlayerWins} expeditions. ${minOf(hero.expeditionWins, config.ambitionSlayerWins)} won so far."
             Ambition.DEFENDER -> "Wants to defend the walls during a siege"
             Ambition.COLLECTOR -> "Wants quality ${config.ambitionCollectorQuality} or better. Current weapon quality ${weapon?.quality ?: 0}."
             Ambition.FORTUNE -> "Save ${config.ambitionFortuneGold} gold. Currently ${minOf(hero.gold, config.ambitionFortuneGold)}."

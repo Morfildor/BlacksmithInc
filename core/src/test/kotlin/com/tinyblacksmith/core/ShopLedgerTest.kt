@@ -172,7 +172,7 @@ class ShopLedgerTest {
         assertEquals(listOf(ctx.newEvents.single { it.type == EventType.HERO_DIED }.id), result.eventIds)
         assertTrue(ctx.newEvents.none { it.type == EventType.EXPEDITION_LOST }, "the records alone still show no lost expedition")
         val ledger = ShopLedger(s.gold, s.gold, emptyMap(), 0, 0)
-        assertEquals(listOf("Expeditions: 0 won, 1 lost", "1 hero fell"), Gazette.edition(ctx.newEvents, names(s), ledger = ledger, field = ctx.field).tally)
+        assertEquals(listOf("Expeditions: 0 won, 1 lost", "1 hero died"), Gazette.edition(ctx.newEvents, names(s), ledger = ledger, field = ctx.field).tally)
     }
 
     /** M1 review I3: a day is tallied from the archive as its report tallied it, a fatal expedition included. */
