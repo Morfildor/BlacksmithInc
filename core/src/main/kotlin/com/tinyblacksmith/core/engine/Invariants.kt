@@ -66,6 +66,7 @@ object Invariants {
         state.eventCounters.forEach { (id, n) ->
             if (id.startsWith(Encounters.COUNTER_PREFIX)) return@forEach   // a morning visitor without a world event behind it
             if (id == WorldEvents.RUMOUR) return@forEach   // not a pooled event: the run's rumours, capped by `customers.maxRumoursPerRun` where they are told
+            if (id == DeepRoad.OPENED || id == DeepRoad.SECOND) return@forEach   // the deep road's stages, each said once (rules 7)
             val def = WorldEvents.all.firstOrNull { it.id == id }
             if (def == null) problems += "Unknown world event counter $id" else if (n > def.maxPerRun) problems += "World event $id fired $n times (max ${def.maxPerRun})"
         }

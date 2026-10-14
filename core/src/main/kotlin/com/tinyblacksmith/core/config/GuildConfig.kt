@@ -30,6 +30,8 @@ data class GuildConfig(
     val enemyPercentPerPressure: Double = 0.4,
     /** Contract gold grows with the day by this percent a day. */
     val rewardPercentPerDay: Double = 2.0,
+    /** Every contract's stage gold, as a percent of what its card was written with: the board pays like a good sale. */
+    val contractGoldPercent: Int = 300,
     /** A sabotage contract is posted while the siege is at most this many days away. */
     val sabotageWindowDays: Int = 4,
 

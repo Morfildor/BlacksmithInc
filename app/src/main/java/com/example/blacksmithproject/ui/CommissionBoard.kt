@@ -63,6 +63,8 @@ data class BoardUi(val commissions: List<RequestUi>, val groups: List<WantGroupU
         ).joinToString(" · ").replaceFirstChar { it.uppercase() }
     /** The offers still waiting for Accept or Decline, as a count; null when none wait. */
     val pending: String? get() = commissions.count { it.offered }.takeIf { it > 0 }?.let { if (it == 1) "1 awaits your answer" else "$it await your answer" }
+    /** The Shop's commissions card: the offers that wait for an answer first, then the accepted ones, each kind in the board's order. */
+    val onShop: List<RequestUi> get() = commissions.filter { it.offered } + commissions.filterNot { it.offered }
 }
 
 fun ShopUi.board(): BoardUi = BoardUi(

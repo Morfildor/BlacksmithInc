@@ -12,7 +12,11 @@ import com.tinyblacksmith.core.shopday.Demand
 import com.tinyblacksmith.core.shopday.LeadKind
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
+import com.tinyblacksmith.core.model.HistoryEntry
+import com.tinyblacksmith.core.model.WeaponLocation
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -98,5 +102,43 @@ class ShopModelTest : ShopDayTestBase() {
         assertEquals(vm.playing().state.let { engine.shopUi(it, engine.siegeForecast(it)) }, shop)
         assertEquals(Demand.summary(vm.playing().state, engine.content, engine.config).living.toString(), shop.demand.first().value)
         assertEquals(engine.config.customers.shopCapacity, shop.seats)
+    }
+
+    /**
+     * A blade traded in at yesterday's counter is on the Shop's "Back at the forge" card the next morning, with the line it
+     * came back by; on the shelf, a day later or in another era it is not. Played on the real engine, then varied.
+     */
+    @Test
+    fun aTradeInIsBackAtTheForgeForOneMorning() {
+        val day = (42L..53L).asSequence().flatMap { ShopDayFixtures.run(it, 40) }.firstOrNull { d ->
+            d.resolution.visits.any { v -> v.sale?.tradeInWeaponId?.let { d.state.weapons[it]?.isInStorage } == true }
+        }
+        assertNotNull("no morning after a trade-in that is still in storage", day)
+        val state = day!!.state
+        val id = day.resolution.visits.firstNotNullOf { v -> v.sale?.tradeInWeaponId?.takeIf { state.weapons[it]?.isInStorage == true } }
+        val back = engine.shopUi(state).returned.single { it.stock.weapon.id == id }
+        assertEquals(state.day - 1, back.day)
+        assertTrue(back.how, back.how.startsWith("Traded in by"))
+        assertEquals(engine.suggestedPrice(state.weapons[id]!!), back.stock.suggested)
+        assertTrue(back.salvage, back.salvage.startsWith("Salvage (${engine.config.salvageEnergy} energy"))
+        // Every blade on the card is in storage, and each is there once.
+        assertTrue(engine.shopUi(state).returned.all { r -> state.weapons[r.stock.weapon.id]!!.isInStorage })
+        val w = state.weapons[id]!!
+        fun returnedIn(s: com.tinyblacksmith.core.model.GameState) = engine.shopUi(s).returned.any { it.stock.weapon.id == id }
+        assertFalse("listed, it leaves the card", returnedIn(state.copy(weapons = state.weapons + (id to w.copy(location = WeaponLocation.Shelf(w.power))))))
+        assertFalse("a morning later it is ordinary stock", returnedIn(state.copy(day = state.day + 1)))
+        assertFalse("another era's return is not this one's", returnedIn(state.copy(weapons = state.weapons + (id to w.copy(history = w.history.map { it.copy(era = it.era + 1) })))))
+    }
+
+    /** Each way back to the forge is on the card: a fallen hero's blade recovered, a loan handed back, a legend come home. A forged blade is not. */
+    @Test
+    fun everyWayBackIsOnTheCard() {
+        val blade = stocked.listedWeapons().first()
+        for (kind in listOf("RECOVERED", "LOAN_RETURNED", "RETURNED")) {
+            val came = blade.copy(location = WeaponLocation.Storage, history = blade.history + HistoryEntry(stocked.era, stocked.day, kind, "Came back by $kind."))
+            val shop = engine.shopUi(stocked.copy(weapons = stocked.weapons + (blade.id to came)))
+            assertEquals(kind, "Came back by $kind.", shop.returned.single().how)
+        }
+        assertTrue("a blade only forged and stored is not back from anyone", engine.shopUi(stocked.copy(weapons = stocked.weapons + (blade.id to blade.copy(location = WeaponLocation.Storage)))).returned.isEmpty())
     }
 }

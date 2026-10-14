@@ -245,7 +245,10 @@ class SignatureAndTechniqueTest {
             val quenched = s.forgeAccepted(base.copy(technique = Technique.QUENCH)).let { it.state.weapon(it.forgedWeaponId!!) }
             val etched = s.forgeAccepted(base.copy(technique = Technique.ETCH)).let { it.state.weapon(it.forgedWeaponId!!) }
             assertTrue(SliceContent.FLAMING in quenched.affixes, "quench guarantees the element affix")
-            assertEquals(plain.quality - engine.config.quenchQualityPenalty, quenched.quality)
+            // Iron holds 55 (`Forge.qualityCap`): a plain blade stopped there may have been more before the quench took its share.
+            val cap = com.tinyblacksmith.core.crafting.Forge.qualityCap(1, engine.config)
+            if (plain.quality < cap) assertEquals(plain.quality - engine.config.quenchQualityPenalty, quenched.quality)
+            else assertTrue(quenched.quality in cap - engine.config.quenchQualityPenalty..cap)
             if (SliceContent.FLAMING !in plain.affixes) plainWithoutElement++
             if (etched.affixes.size > plain.affixes.size) etchGained++
         }

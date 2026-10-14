@@ -124,23 +124,23 @@ object ScenarioSaves {
         Scenario(
             "hall_lesson", "A lesson at the guild hall",
             "Press End Day: the aftermath opens with \"At the guild hall\", a hero taught by a guildmate.",
-            "Played: BALANCED_FAIR, seed 8, stopped on the morning of day 12.", endDay = true, card = AftermathKind.GUILD_LESSON,
-        ) { morning(8, Policy.BALANCED_FAIR, 12) },
+            "Played: BALANCED_FAIR, seed 1, stopped on the morning of day 7.", endDay = true, card = AftermathKind.GUILD_LESSON,
+        ) { morning(1, Policy.BALANCED_FAIR, 7) },
         Scenario(
             "inherited_blade", "A fallen hero's blade passes to a guildmate",
             "Press End Day: \"A death\", then \"A blade passed on\" to a living guildmate.",
-            "Played: BALANCED_FAIR, seed 8, stopped on the morning of day 18.", endDay = true, card = AftermathKind.INHERITED,
-        ) { morning(8, Policy.BALANCED_FAIR, 18) },
+            "Played: BALANCED_FAIR, seed 8, stopped on the morning of day 19.", endDay = true, card = AftermathKind.INHERITED,
+        ) { morning(8, Policy.BALANCED_FAIR, 19) },
         Scenario(
             "merchant_resale", "A merchant sells a fallen hero's blade",
             "A travelling merchant holds a blade and a hero can pay for it. Press End Day: \"Sold on by a merchant\".",
-            "Played: BALANCED_FAIR, seed 16, stopped on the morning of day 11.", endDay = true, card = AftermathKind.RESOLD,
-        ) { morning(16, Policy.BALANCED_FAIR, 11) },
+            "Played: BALANCED_FAIR, seed 43, stopped on the morning of day 9.", endDay = true, card = AftermathKind.RESOLD,
+        ) { morning(43, Policy.BALANCED_FAIR, 9) },
         Scenario(
             "wall_death", "A champion falls at the wall",
             "A siege day. Press End Day: \"The siege\" is lost as a rout, then \"A death\" at the wall. The forge survives.",
-            "Played: BALANCED_FAIR, seed 18, stopped on the morning of day 20 (the siege day).", endDay = true, card = AftermathKind.DEATH,
-        ) { morning(18, Policy.BALANCED_FAIR, 20) },
+            "Played: BALANCED_FAIR, seed 2, stopped on the morning of day 20 (the siege day).", endDay = true, card = AftermathKind.DEATH,
+        ) { morning(2, Policy.BALANCED_FAIR, 20) },
         Scenario(
             "known_name", "Known Name: a regular on day 1",
             "Day 1 of era 2 with Known Name level 1: Town shows a regular already. Press End Day: the regular buys from the shelf.",
@@ -150,14 +150,14 @@ object ScenarioSaves {
         Scenario(
             "returned_legend", "A returned legend, asleep",
             "Open Storage: a blade from the Legend Board has come back with its affixes dormant. Hone it and they wake.",
-            "Played: the Known Name account (era 1 on seed $ACCOUNT_SEED); era 2 on seed 1 (BALANCED_ACTIVE), stopped on the morning of day 15, the day after the blade returned.",
+            "Played: the Known Name account (era 1 on seed $ACCOUNT_SEED); era 2 on seed 1 (BALANCED_ACTIVE), stopped on the morning of day 15, the day after the blade returned. Set by hand: one unit of its core metal, which the deep road does not carry yet, so it can be honed.",
             endDay = false, ownLegacy = true, blade = ::dormant,
-        ) { morning(1, Policy.BALANCED_ACTIVE, 15, account) },
+        ) { morning(1, Policy.BALANCED_ACTIVE, 15, account).let { s -> dormant(s)?.let { w -> s.copy(materials = s.materials + (w.coreId to (s.materials[w.coreId] ?: 0) + 1)) } ?: s } },
         Scenario(
             "storied_blade", "One blade through three owners",
             "Open Storage and the blade: its Story has three sales, its fights and a siege.",
-            "Played: BALANCED_FAIR, seed 2, stopped on the morning of day 17.", endDay = false, blade = ::storied,
-        ) { morning(2, Policy.BALANCED_FAIR, 17) },
+            "Played: BALANCED_FAIR, seed 1, stopped on the morning of day 15.", endDay = false, blade = ::storied,
+        ) { morning(1, Policy.BALANCED_FAIR, 15) },
         Scenario(
             "long_storage", "A long storage: $STORAGE_FORGES blades",
             "Open Storage: about $STORAGE_FORGES unsold blades to filter, sort, select and salvage.",

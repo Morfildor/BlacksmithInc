@@ -150,7 +150,7 @@ fun ForgePanel(
         // The last choice closes the tray: the finished blade over the anvil comes back into view.
         LaunchedEffect(open) { if (open == null && follow) scroll.animateScrollTo(0) }
         Column(Modifier.weight(1f).bottomFade(scroll.canScrollForward).verticalScroll(scroll).padding(horizontal = Space.md).padding(bottom = Space.md)) {
-            ForgeHeading(s.shop.requests.size, endDayNote, onOpenBoard, { onOpenSupplies(null) }, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
+            ForgeHeading(s.shop.requests.size, s.shop.requests.count { it.offered }, endDayNote, onOpenBoard, { onOpenSupplies(null) }, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
             Workbench(bench.title, d, vm.engine.content, compact = open != null, reducedMotion)
             bench.brief?.let { Brief(it, onOpenBoard) { vm.updateDraft { draft -> draft.copy(commissionId = null) } } }
             // The places and the open tray come into view together. A tray taller than the screen keeps its head in view,
@@ -226,19 +226,20 @@ internal fun ThreatStrip(s: UiState.Playing, tag: String, note: String? = null, 
     }
 }
 
-/** The destination's name, the way to the commission board, and the rarer actions behind "More". */
+/** The destination's name, the ways to the commission board and the supplier, and the rarer actions behind "More". */
 @Composable
-private fun ForgeHeading(commissions: Int, endDayNote: String, onOpenBoard: () -> Unit, onOpenSupplies: () -> Unit, onOpenJournal: () -> Unit, onEndDay: () -> Unit, busy: Boolean) {
+private fun ForgeHeading(commissions: Int, offers: Int, endDayNote: String, onOpenBoard: () -> Unit, onOpenSupplies: () -> Unit, onOpenJournal: () -> Unit, onEndDay: () -> Unit, busy: Boolean) {
     Row(Modifier.fillMaxWidth().padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically) {
         Text("Forge", style = MaterialTheme.typography.headlineMedium, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
         TextButton(onClick = onOpenBoard, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_commissions")) {
-            Text(if (commissions == 0) "Commissions" else "Commissions · $commissions", color = CreamMuted)
+            // An offer waiting for an answer is said in gold, as on the Shop's card.
+            Text(if (offers > 0) "Commissions · $offers new" else if (commissions == 0) "Commissions" else "Commissions · $commissions", color = if (offers > 0) Gold else CreamMuted)
         }
+        TextButton(onClick = onOpenSupplies, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_supplies")) { Text("Supplies", color = Gold) }
         Box {
             var more by remember { mutableStateOf(false) }
             TextButton(onClick = { more = true }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_more")) { Text("⋯", style = MaterialTheme.typography.titleLarge, color = CreamMuted, modifier = Modifier.semantics { contentDescription = "More" }) }
             DropdownMenu(expanded = more, onDismissRequest = { more = false }, containerColor = ForgePanel) {
-                DropdownMenuItem(text = { Text("Supplies") }, onClick = { more = false; onOpenSupplies() }, modifier = Modifier.testTag("forge_supplies"))
                 DropdownMenuItem(text = { Text("Notebook") }, onClick = { more = false; onOpenJournal() }, modifier = Modifier.testTag("forge_journal"))
                 DropdownMenuItem(text = { Column { Text("End day"); Text(endDayNote, style = MaterialTheme.typography.bodySmall, color = CreamMuted) } }, enabled = !busy, onClick = { more = false; onEndDay() }, modifier = Modifier.testTag("forge_end_day"))
             }
@@ -361,6 +362,7 @@ private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCata
     Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeLine, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
+            TextButton(onClick = { onRestock(null) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_buy")) { Text("Buy more", color = Gold) }
             TextButton(onClick = onDone, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_done")) { Text("Done", color = CreamMuted) }
         }
         @Composable

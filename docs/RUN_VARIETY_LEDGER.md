@@ -107,7 +107,7 @@ siege is fought with Epic in hand (E3).
 | # | Decision |
 |---|---|
 | D14 | Only the fine metals hold Epic work (core tier 5 and 6: Starsteel, Moonsteel). In any other metal quality stops at Rare and Heartfire does not take. One ladder: Rare by quality, Epic by quality in fine metal, Legendary by Heartfire or deeds. It is a rule of the forge, so it holds in a classic run too. |
-| D15 | The supplier carries Starsteel from day 6 and Moonsteel from day 11. Hunts, ordinary loot, the mine, the ore merchant and the seal bring only what the supplier carries by now. The deep hall, the starfall site, an elite slain and a contract paid in metal bring fine metal early. |
+| D15 | ~~The supplier carries Starsteel from day 6 and Moonsteel from day 11.~~ Superseded 2026-10-14 by the deep road (rules 7, balance 16, owner playtest; DECISIONS "Owner playtest 2026-10-14"): the tier 4 and 5 materials after the first siege's caravan master or guild contract, Moonsteel after the second siege. Hunts, ordinary loot, the mine, the ore merchant and the seal bring only what the supplier carries by now. The deep hall, the starfall site, an elite slain and a contract paid in metal bring fine metal early. |
 | D16 | The exceptional result keeps its 20 quality. Lowering it to 12 was tried and did not hold the target (58 to 68 % still carried an Epic on day 5). |
 | D17 | The hone never lowers a rarity (an older Epic in silver stays Epic) and never promotes a lesser metal. |
 | D18 | A rescue's stages are Safe, and a guard of the watch fills every empty place of the party and stands in front. Reason: every full party already won the rescue. It was lost by the one or two members left after the capture. |

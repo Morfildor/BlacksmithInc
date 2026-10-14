@@ -323,8 +323,8 @@ class RunVarietyTest {
         val trace = ArrayList<String>()
         repeat(config.guild.supplierDays) {
             plain = plain.endDay(); day = day.endDay()
-            // Thanks deepen what the supplier carries. A metal that is not on the roads yet stays at none (rules 6).
-            val carried = limited.filter { day.day >= engine.stockedFromDay(it.id) }
+            // Thanks deepen what the supplier carries. What the deep road does not bring yet stays at none (rules 7).
+            val carried = limited.filter { engine.onTheRoad(day, it.id) }
             val delayed = plain.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == plain.day
             assertEquals(if (delayed) 0 else stock(plain) + carried.size * config.guild.supplierGratefulStock, stock(day), "day ${day.day}")
             assertTrue((limited - carried.toSet()).all { day.supplierStock[it.id] == 0 }, "day ${day.day}: not carried yet")

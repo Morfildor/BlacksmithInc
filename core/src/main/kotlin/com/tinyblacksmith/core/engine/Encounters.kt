@@ -109,7 +109,8 @@ object Encounters {
         if (ctx.content.encounters.isEmpty()) return
         val cfg = ctx.config.depth
         val followUp = Consequences.dueFollowUp(ctx)
-        val inst = followUp ?: run {
+        // The caravan master after the first siege (rules 7) is a visit of her own: drawn by nothing, she waits for a free morning.
+        val inst = followUp ?: DeepRoad.visitor(ctx) ?: run {
             if (ctx.day < cfg.encounterFirstDay) return
             val rng = ctx.rng(RngStream.ENCOUNTERS)
             if (!rng.chance(cfg.encounterChance)) return

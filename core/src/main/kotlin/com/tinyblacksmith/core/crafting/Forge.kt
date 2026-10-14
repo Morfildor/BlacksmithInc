@@ -86,11 +86,15 @@ object Forge {
     fun heartfireOutlook(ctx: ResolutionContext, cmd: Command.Forge): HeartfireOutlook {
         val centre = centreQuality(ctx, cmd)
         val spread = rollSpread(ctx.config, cmd.risk)
-        val low = (centre - spread).coerceIn(1, 100)
-        val high = (centre + spread).coerceIn(1, 100)
+        val cap = qualityCap(ctx.content.material(cmd.coreId).tier, ctx.config)
+        val low = (centre - spread).coerceIn(1, cap)
+        val high = (centre + spread).coerceIn(1, cap)
         return HeartfireOutlook(ctx.heartfire, energyCost(ctx.config, cmd.copy(mode = ForgeMode.ADVANCED, heartfire = true)), ctx.config.epicMin, low, high,
             breakthroughChance(ctx, cmd, low), breakthroughChance(ctx, cmd, high), ctx.config.depth.legend.missExtraSlots, holdsEpic(ctx.content.material(cmd.coreId).tier, ctx.config))
     }
+
+    /** The most quality a core of [coreTier] holds (`LegendConfig.qualityCapByCoreTier`). */
+    fun qualityCap(coreTier: Int, config: com.tinyblacksmith.core.config.BalanceConfig): Int = config.depth.legend.qualityCapByCoreTier[coreTier] ?: 100
 
     /** Only the fine metals (`LegendConfig.fineCoreTier` and above) hold Epic work. In any other core, quality stops at Rare. */
     fun holdsEpic(coreTier: Int, config: com.tinyblacksmith.core.config.BalanceConfig): Boolean = coreTier >= config.depth.legend.fineCoreTier
@@ -160,7 +164,7 @@ object Forge {
         val quality = (config.qualityBase + config.qualityPerCoreTier * core.tier + config.qualityPerAugmentTier * augment.tier +
             affinity + mastery + ledger + roll + (if (exceptional) config.qualityExceptionalBonus else 0) -
             (if (defect) config.qualityDefectPenalty else 0) -
-            (if (cmd.technique == Technique.QUENCH) config.quenchQualityPenalty else 0)).coerceIn(1, 100)
+            (if (cmd.technique == Technique.QUENCH) config.quenchQualityPenalty else 0)).coerceIn(1, qualityCap(core.tier, config))
         // Quality alone stops at Epic. A Heartfire forging at the Epic floor or above may break through.
         val breakthrough = cmd.heartfire && rng.chance(breakthroughChance(ctx, cmd, quality))
         val rarity = if (breakthrough) Rarity.LEGENDARY else forgedRarity(quality, config, core.tier)

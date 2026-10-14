@@ -296,7 +296,7 @@ class WorldEventsAndGenerationsTest {
             }
             // Morning visitors count under their own keys, or under the event they took over; neither leaves a WORLD_EVENT record.
             val visitors = state.eventCounters.keys.filter { it.startsWith(Encounters.COUNTER_PREFIX) || Encounters.replaces(engine.content, it) }
-            val counters = state.eventCounters - WorldEvents.RUMOUR - visitors.toSet()
+            val counters = state.eventCounters - WorldEvents.RUMOUR - com.tinyblacksmith.core.engine.DeepRoad.OPENED - com.tinyblacksmith.core.engine.DeepRoad.SECOND - visitors.toSet()
             // A run that outlives the record window (routine records are kept `routineEventRetentionDays`) has counted events whose records are gone.
             if (state.day <= engine.config.saveGrowth.routineEventRetentionDays) assertEquals(counts, counters, "seed $seed counters mismatch")
             else counts.forEach { (id, n) -> assertTrue(n <= (counters[id] ?: 0), "seed $seed: $id has $n records for a count of ${counters[id]}") }

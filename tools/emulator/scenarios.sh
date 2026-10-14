@@ -156,7 +156,7 @@ print(m.group(1) if m else 0)
 }
 
 # Gameplay depth: every morning visitor (card on the Shop, then its sheet), the relic saves, the two siege traits, the chain.
-for v in visitor_collector visitor_crate_no_gold visitor_pledge visitor_master visitor_heirloom visitor_merchant visitor_wager visitor_festival chain_debt_repaid; do
+for v in visitor_collector visitor_crate_no_gold visitor_pledge visitor_master visitor_heirloom visitor_merchant visitor_wager visitor_festival visitor_deep_road chain_debt_repaid; do
   load $v && {
     wait_id visitor_card && { shot ${v}_1_shop; tap_id visitor_open; wait_id visitor_sheet && { shot ${v}_2_sheet; echo "CHECK $v opens its visitor: ok"; } || echo "CHECK $v opens its visitor: FAIL"; } || echo "CHECK $v shows a visitor card: FAIL"
   }

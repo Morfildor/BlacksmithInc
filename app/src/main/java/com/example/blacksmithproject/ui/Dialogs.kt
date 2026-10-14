@@ -106,6 +106,7 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
             enabled = !s.busy, onStore = vm::storeForged, onList = { vm.listForged(w.id, it) }, onSetPrice = { vm.priceForged(w.id) },
             // Only a guild has members to lend to; the blade goes nowhere until one is chosen.
             onLoan = if (s.state.guild != null) { heroId -> vm.loanForged(w.id, heroId) } else null,
+            onAccept = { request?.let { vm.dispatch(Command.AcceptCommission(it.id)) } },
             modifier = Modifier.safeDrawingPadding().padding(horizontal = Space.md, vertical = Space.sm).semantics { testTagsAsResourceId = true }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp),
             reveal = !reducedMotion,
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
@@ -140,6 +141,9 @@ private const val REVEAL_FADE_MS = 250
  *
  * With [onLoan] (a guild run) a third way on, "Loan", opens the members the blade could go to; nothing is lent until
  * one is chosen.
+ *
+ * The blade End Day would hand over to an accepted request leads with "Store for commission": the buyer collects it at End Day, and a
+ * shelf price would only invite another customer to want it. A request still only offered can be accepted here ([onAccept]).
  */
 @Composable
 fun ForgeResultCard(
@@ -152,6 +156,7 @@ fun ForgeResultCard(
     modifier: Modifier = Modifier,
     onSetPrice: () -> Unit = {},
     onLoan: ((HeroId) -> Unit)? = null,
+    onAccept: () -> Unit = {},
     reveal: Boolean = false,
     overSprite: @Composable BoxScope.() -> Unit = {},
     learning: ForgeLearningUi? = null,
@@ -167,6 +172,7 @@ fun ForgeResultCard(
                 Text(r.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 Secondary(r.terms)
                 EffectRow(if (r.fits) EffectKind.BUFF else EffectKind.FLAW, r.fit, r.handover)
+                if (!r.accepted) SecondaryActionButton("Accept commission", onAccept, Modifier.padding(top = Space.xs).heightIn(min = 48.dp).testTag("reveal_accept"), enabled = enabled)
                 // Whether this blade is reserved, from the save (`Weapon.promisedTo`, owner decision L).
                 Secondary(r.reserved, Modifier.testTag("reveal_reserved"))
             }
@@ -194,13 +200,16 @@ fun ForgeResultCard(
         // The engine refuses a listing on a full shelf; say so here and leave Store as the way on.
         val full = stock.shelfFree <= 0
         if (full) Text("${shelfFullLine(stock.slots)} Store this weapon for now. Remove another from the shelf to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("reveal_shelf_full"))
+        val forOrder = request?.handsOver == true
+        val listSemantics = Modifier.testTag("reveal_list").semantics { if (full) contentDescription = "List, unavailable: ${shelfFullLine(stock.slots)}" }
         Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-            SecondaryActionButton("Store", onStore, Modifier.heightIn(min = 52.dp).testTag("reveal_store"))
-            PrimaryActionButton(
-                "List at $suggested", { onList(suggested) },
-                Modifier.weight(1f).testTag("reveal_list").semantics { if (full) contentDescription = "List, unavailable: ${shelfFullLine(stock.slots)}" },
-                enabled = enabled && !full,
-            )
+            if (forOrder) {
+                PrimaryActionButton("Store for commission", onStore, Modifier.weight(1f).testTag("reveal_store"))
+                SecondaryActionButton("List at $suggested", { onList(suggested) }, listSemantics.heightIn(min = 52.dp), enabled = enabled && !full)
+            } else {
+                SecondaryActionButton("Store", onStore, Modifier.heightIn(min = 52.dp).testTag("reveal_store"))
+                PrimaryActionButton("List at $suggested", { onList(suggested) }, Modifier.weight(1f).then(listSemantics), enabled = enabled && !full)
+            }
         }
         val loan = detail.loan?.takeIf { onLoan != null }
         var picking by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }

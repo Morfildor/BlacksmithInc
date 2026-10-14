@@ -155,7 +155,7 @@ object Relics {
         }
         update(ctx, seal.copy(progress = 0))
         // The limited material the forge holds least of; ties by ID. Never a catalyst: those have their own sources.
-        val reward = ctx.content.materials.filter { it.dailySupplierStock != null && it.category != MaterialCategory.CATALYST && it.tier >= cfg.sealMaterialTier && ctx.day >= com.tinyblacksmith.core.crafting.Legends.stockedFromDay(it, ctx.config) }
+        val reward = ctx.content.materials.filter { it.dailySupplierStock != null && it.category != MaterialCategory.CATALYST && it.tier >= cfg.sealMaterialTier && DeepRoad.carried(ctx, it) }
             .minWithOrNull(compareBy({ ctx.materials[it.id] ?: 0 }, { it.id.value })) ?: return
         ctx.materials[reward.id] = (ctx.materials[reward.id] ?: 0) + 1
         ctx.emit(EventType.RELIC_TRIGGERED, 3, "Collector's seals earned one ${reward.name} for the forge.", listOf(weapon.id.value), mapOf("relic" to seal.id, "material" to reward.id.value))

@@ -271,6 +271,13 @@ private fun GameEngine.recipe(shown: WeaponSnapshot, w: Weapon?): List<Fact> {
     )
 }
 
+/** "Salvage (1 energy, returns 1 Iron)": the sheet's button and the Shop's for a blade that came back. */
+internal fun GameEngine.salvageLabel(state: GameState, w: Weapon): String {
+    val core = content.materialById[w.coreId]?.name ?: w.coreId.value
+    // With the Salvager's Crucible ready and a blade fine enough, the engine also gives the augment back.
+    return "Salvage (${config.salvageEnergy} energy, returns 1 $core" + (if (salvageKeepsAugment(state, w)) ", also returns ${content.materialById[w.augmentId]?.name ?: w.augmentId.value}" else "") + ")"
+}
+
 private fun GameEngine.stock(state: GameState, w: Weapon): Stock {
     val core = content.materialById[w.coreId]?.name ?: w.coreId.value
     val room = config.armoryMax - state.town.armory
@@ -280,9 +287,10 @@ private fun GameEngine.stock(state: GameState, w: Weapon): Stock {
         funds = Demand.funds(state, content, config),
         shelfFree = shelfSlots(state) - state.listedWeapons().size,
         slots = shelfSlots(state),
-        // With the Salvager's Crucible ready and a blade fine enough, the engine also gives the augment back.
-        salvage = "Salvage (${config.salvageEnergy} energy, returns 1 $core" + (if (salvageKeepsAugment(state, w)) ", also returns ${content.materialById[w.augmentId]?.name ?: w.augmentId.value}" else "") + ")",
-        hone = if (!w.canBeHoned) "Honed" else "${if (w.honed) "Re-hone" else "Hone"} (${config.honeEnergy} energy, 1 $core)",
+        salvage = salvageLabel(state, w),
+        // A first hone of a blade already at what its metal holds (`Forge.qualityCap`) only repairs it: the button says so.
+        hone = if (!w.canBeHoned) "Honed" else "${if (w.honed) "Re-hone" else "Hone"} (${config.honeEnergy} energy, 1 $core)" +
+            (if (!w.honed && w.quality >= com.tinyblacksmith.core.crafting.Forge.qualityCap(content.material(w.coreId).tier, config)) " · repair only, $core holds no more quality" else ""),
         canHone = w.canBeHoned,
         donate = if (room > 0) "Arm the watch (+${minOf(armoryValue(w), room)} defense)" else "Arm the watch (armory full)",
         canDonate = room > 0,

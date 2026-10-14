@@ -83,6 +83,7 @@ internal object EncounterCatalog {
         Depth.CROOKED_MERCHANT -> true
         Depth.SMITHS_WAGER -> ctx.consequences.none { it.kind == ConsequenceKind.WAGER }
         Depth.FESTIVAL_CONTRACT -> ctx.consequences.none { it.kind == ConsequenceKind.WATCH_BOUNTY }
+        Depth.DEEP_ROAD -> false   // offered by `DeepRoad.visitor` after the first siege, never drawn
         else -> com.tinyblacksmith.core.guild.GuildVisitors.eligible(ctx, def)
     }
 
@@ -180,6 +181,8 @@ internal object EncounterCatalog {
             Depth.SMITHS_WAGER -> "A visiting smith puts ${a["stake"]} gold on a challenge. Forge a ${QualityBand.of(a["quality"] ?: 0, ctx.config).word} ${family(ctx, i.familyId)} " +
                 "with quality ${a["quality"]} or better by the end of day ${a["due"]}. The reward is shown below."
             Depth.FESTIVAL_CONTRACT -> "The council offers two jobs. Pay for a festival stall to bring shoppers in today, or earn gold by arming the watch."
+            Depth.DEEP_ROAD -> "The siege is over and the caravan master has come up the deep road. Her train can bring ${DeepRoad.names(ctx.content, ctx.config, 1)}. " +
+                "It reaches Emberfall on day ${a["arrives"]}. Pay for the first crate and the supplier sells them today."
             Depth.DEBT_REPAID -> "${name(ctx, i.heroId)} returned with ${blade(ctx, i)}, the weapon you made on credit" +
                 (if (ctx.weapons[i.weaponId]?.isEquipped == true) ". " else ". They're keeping it as a spare. ") +
                 (if (a["stood"] == 1) "They defended the walls with it" + (if (a["held"] == 1) ". Emberfall held. " else ". The defenses still fell. ") else "They weren't among the siege champions. ") +
@@ -329,6 +332,13 @@ internal object EncounterCatalog {
                     "The council will pay ${n("bounty")} gold per weapon donated to the watch. Up to ${n("blades")} weapons, through day ${n("until")}."
                 },
                 pass("Stay out of it", "The forge kept out of the festival."),
+            )
+            Depth.DEEP_ROAD -> listOf(
+                Opt("crate", "Pay for the first crate", "${DeepRoad.names(ctx.content, ctx.config, 1)} on sale today, not on day ${n("arrives")}.", gold = n("gold")) { c ->
+                    DeepRoad.openNow(c)
+                    "Paid the caravan master ${n("gold")} gold for the first crate."
+                },
+                pass("Wait for the train", "The caravan master's train reaches Emberfall on day ${n("arrives")}."),
             )
             Depth.DEBT_REPAID -> {
                 val hero = ctx.heroes[i.heroId]?.takeIf { it.isAlive }

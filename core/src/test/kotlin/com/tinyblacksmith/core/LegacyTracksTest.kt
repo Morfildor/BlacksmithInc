@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.crafting.SignatureCatalog
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
+import com.tinyblacksmith.core.engine.DeepRoad
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.engine.Invariants
@@ -87,26 +88,23 @@ class LegacyTracksTest {
             val start = engine.newRun(legacy(LaunchContent.UPG_CATALOG to level), 5)
             // The always-stocked basics stay unlimited (absent from the map); every limited material gains one unit a level.
             val full = limited.associate { it.id to it.dailySupplierStock!! + level * tracks.catalogStockPerLevel }
-            // A metal the supplier does not carry yet (rules 6: Starsteel from day 6, Moonsteel from day 11) is on the list with none, whatever the level.
-            fun carried(day: Int) = full.mapValues { (id, n) -> if (day < engine.stockedFromDay(id)) 0 else n }
-            val expected = carried(1)
-            assertEquals(0, expected[LaunchContent.STARSTEEL], "level $level")
-            assertEquals(0, expected[LaunchContent.MOONSTEEL], "level $level")
+            // What the deep road does not bring yet (rules 7: the big ingredients after the first siege, Moonsteel after the second) is on the list with none, whatever the level.
+            fun carried(stage: Int) = full.mapValues { (id, n) -> if (DeepRoad.carried(content.material(id), stage, engine.config)) n else 0 }
+            val expected = carried(0)
+            for (shut in listOf(LaunchContent.OBSIDIAN, LaunchContent.STARSTEEL, LaunchContent.MOONSTEEL)) assertEquals(0, expected[shut], "$shut, level $level")
             assertEquals(expected, start.supplierStock, "day 1, level $level")
             assertEquals(GameError.SupplierOutOfStock(LaunchContent.STARSTEEL), assertIs<CommandOutcome.Rejected>(engine.handle(start.copy(gold = 10_000), Command.BuyMaterial(LaunchContent.STARSTEEL, 1))).error, "not carried yet, level $level")
-            // The morning each arrives it has the whole deepened shelf, and not a morning sooner.
-            for (metal in listOf(LaunchContent.STARSTEEL, LaunchContent.MOONSTEEL)) {
-                val from = engine.stockedFromDay(metal)
-                assertTrue(from > 2, "$metal comes later in a run")
-                for (day in listOf(from - 1, from)) {
-                    val morning = engine.handle(start.copy(day = day - 1), Command.EndDay(CommandId("t:${day - 1}"))).stateOrThrow()
-                    assertEquals(day, morning.day)
-                    val held = morning.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == morning.day
-                    assertEquals(if (held) full.mapValues { 0 } else carried(day), morning.supplierStock, "day $day, level $level")
-                    if (!held) assertEquals(if (day < from) 0 else full.getValue(metal), morning.supplierStock[metal], "$metal on day $day, level $level")
-                }
+            // The morning the road opens it has the whole deepened shelf, and not a morning sooner; two sieges open it all.
+            val opening = start.copy(deepRoadOpenDay = 4)
+            val bothSieges = start.copy(town = start.town.copy(siegesSurvived = 1, siegesLost = 1))
+            for ((road, day, stage) in listOf(Triple(opening, 3, 0), Triple(opening, 4, 1), Triple(bothSieges, 3, 2))) {
+                val morning = engine.handle(road.copy(day = day - 1), Command.EndDay(CommandId("t:${day - 1}"))).stateOrThrow()
+                assertEquals(day, morning.day)
+                val held = morning.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == morning.day
+                if (!held) assertEquals(carried(stage).filterValues { it == 0 }.keys, morning.supplierStock.filterValues { it == 0 }.keys, "day $day, stage $stage, level $level")
+                if (!held) assertEquals(carried(stage).filterKeys { content.material(it).tier >= 4 }, morning.supplierStock.filterKeys { content.material(it).tier >= 4 }, "day $day, stage $stage, level $level")
             }
-            assertEquals(full, carried(engine.stockedFromDay(LaunchContent.MOONSTEEL)), "from then on every limited material is carried")
+            assertEquals(full, carried(2), "from then on every limited material is carried")
             val bought = engine.handle(start.copy(gold = 10_000), Command.BuyMaterial(LaunchContent.SILVER, 1 + level)).stateOrThrow()
             assertEquals(0, bought.supplierStock[LaunchContent.SILVER])
             assertEquals(GameError.SupplierOutOfStock(LaunchContent.SILVER), assertIs<CommandOutcome.Rejected>(engine.handle(bought, Command.BuyMaterial(LaunchContent.SILVER, 1))).error, "bounded at level $level")

@@ -31,12 +31,9 @@ class SimulatorPolicyTest {
 
     @Test
     fun investBuysTheBestTierWithinGoldMinusReserve() {
-        // Day 1 (rules 6): the supplier has no Starsteel or Moonsteel yet, so the best core on the shelf is obsidian.
-        // 250 starting gold: obsidian (75) then sun ash (85) fit in 250.
-        assertEquals(4 to 5, firstForgeTiers(reserve = 0))
-        // Budget 130: obsidian (75) fits; the 55 gold left buy grave dust (55), not sun ash (85).
-        assertEquals(4 to 4, firstForgeTiers(reserve = 120))
-        // Budget 10: nothing premium fits, so the best owned pair from the starting kit (silver + stormglass) is forged.
+        // Day 1 (rules 7): the deep road is shut, so nothing above tier 3 is for sale; the starting kit's silver and
+        // stormglass are already the best pair, and no budget buys a better one.
+        assertEquals(3 to 3, firstForgeTiers(reserve = 0))
         assertEquals(3 to 3, firstForgeTiers(reserve = 240))
     }
 
@@ -44,11 +41,12 @@ class SimulatorPolicyTest {
     fun investBuysTheFineMetalsOnceTheSupplierCarriesThem() {
         // The same rule with every core on the shelf from day 1, as the supplier is from day 11 on.
         val config = BalanceConfig.DEFAULT
-        val stocked = GameEngine(content, config.copy(depth = config.depth.copy(legend = config.depth.legend.copy(coreTierFromDay = emptyMap()))))
-        // 250 starting gold: moonsteel (180) then grave dust (55) fit in 250; sun ash (85) does not.
-        assertEquals(6 to 4, firstForgeTiers(reserve = 0, engine = stocked))
-        // Budget 130: starsteel (120) fits; the 10 gold left cannot beat the owned stormglass (tier 3, cost 0).
-        assertEquals(5 to 3, firstForgeTiers(reserve = 120, engine = stocked))
+        val stocked = GameEngine(content, config.copy(depth = config.depth.copy(legend = config.depth.legend.copy(roadStageByTier = emptyMap()))))
+        // 250 starting gold (balance 16 prices): moonsteel (450) and starsteel (300) do not fit; obsidian (190) does, and the
+        // 60 left cannot beat the owned stormglass (tier 3, cost 0).
+        assertEquals(4 to 3, firstForgeTiers(reserve = 0, engine = stocked))
+        // Budget 130: no premium core fits, so the owned silver and stormglass are forged.
+        assertEquals(3 to 3, firstForgeTiers(reserve = 120, engine = stocked))
         assertEquals(3 to 3, firstForgeTiers(reserve = 240, engine = stocked))
     }
 

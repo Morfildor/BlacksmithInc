@@ -125,22 +125,22 @@ object LaunchContent {
                 // Cores, tiers 1-6. Prices and rare-stock limits above Silver are PROPOSED extrapolations of the slice curve.
                 MaterialDef(IRON, "Iron", MaterialCategory.CORE, tier = 1, price = 10, flavor = "Cheap, dependable iron. There's a reason every forge keeps some."),
                 MaterialDef(BRONZE, "Bronze", MaterialCategory.CORE, tier = 2, price = 22, flavor = "A warm alloy with a good edge. Reliable work starts here."),
-                MaterialDef(SILVER, "Silver", MaterialCategory.CORE, tier = 3, price = 45, dailySupplierStock = 1, flavor = "Bright metal, limited stock. Save it for an idea worth testing."),
-                MaterialDef(OBSIDIAN, "Obsidian", MaterialCategory.CORE, tier = 4, price = 75, dailySupplierStock = 1, flavor = "Black volcanic glass with a wicked edge."),
-                MaterialDef(STARSTEEL, "Starsteel", MaterialCategory.CORE, tier = 5, price = 120, dailySupplierStock = 1, flavor = "Metal from a fallen star. Still warm in your palm."),
-                MaterialDef(MOONSTEEL, "Moonsteel", MaterialCategory.CORE, tier = 6, price = 180, dailySupplierStock = 1, flavor = "Pale metal that stays cold beside the furnace."),
+                MaterialDef(SILVER, "Silver", MaterialCategory.CORE, tier = 3, price = 100, dailySupplierStock = 1, flavor = "Bright metal, limited stock. Save it for an idea worth testing."),
+                MaterialDef(OBSIDIAN, "Obsidian", MaterialCategory.CORE, tier = 4, price = 190, dailySupplierStock = 1, flavor = "Black volcanic glass with a wicked edge."),
+                MaterialDef(STARSTEEL, "Starsteel", MaterialCategory.CORE, tier = 5, price = 300, dailySupplierStock = 1, flavor = "Metal from a fallen star. Still warm in your palm."),
+                MaterialDef(MOONSTEEL, "Moonsteel", MaterialCategory.CORE, tier = 6, price = 450, dailySupplierStock = 1, flavor = "Pale metal that stays cold beside the furnace."),
                 // Augments. Tiers for Grave Dust, Verdant Sap and Sun Ash are PROPOSED (Verdant common, Sun Ash the rarest).
                 MaterialDef(EMBER_RESIN, "Ember Resin", MaterialCategory.AUGMENT, tier = 1, price = 8, element = Element.FIRE, flavor = "A spark with every hammer blow. Keep it away from the receipts."),
                 MaterialDef(FROST_BLOOM, "Frost Bloom", MaterialCategory.AUGMENT, tier = 2, price = 18, element = Element.FROST, flavor = "Frozen petals that survive even the furnace."),
                 MaterialDef(VERDANT_SAP, "Verdant Sap", MaterialCategory.AUGMENT, tier = 2, price = 16, element = Element.VERDANT, flavor = "Thick green sap, stubbornly alive."),
-                MaterialDef(STORMGLASS, "Stormglass", MaterialCategory.AUGMENT, tier = 3, price = 40, element = Element.STORM, dailySupplierStock = 1, flavor = "Glass with thunder trapped inside. It hums before rain."),
-                MaterialDef(GRAVE_DUST, "Grave Dust", MaterialCategory.AUGMENT, tier = 4, price = 55, element = Element.GRAVE, dailySupplierStock = 1, flavor = "Dust from old tombs. The jar is always cold."),
-                MaterialDef(SUN_ASH, "Sun Ash", MaterialCategory.AUGMENT, tier = 5, price = 85, element = Element.SUN, dailySupplierStock = 1, flavor = "Sun-warmed ash. Best stored well away from Grave Dust."),
+                MaterialDef(STORMGLASS, "Stormglass", MaterialCategory.AUGMENT, tier = 3, price = 90, element = Element.STORM, dailySupplierStock = 1, flavor = "Glass with thunder trapped inside. It hums before rain."),
+                MaterialDef(GRAVE_DUST, "Grave Dust", MaterialCategory.AUGMENT, tier = 4, price = 140, element = Element.GRAVE, dailySupplierStock = 1, flavor = "Dust from old tombs. The jar is always cold."),
+                MaterialDef(SUN_ASH, "Sun Ash", MaterialCategory.AUGMENT, tier = 5, price = 210, element = Element.SUN, dailySupplierStock = 1, flavor = "Sun-warmed ash. Best stored well away from Grave Dust."),
                 // Catalysts. The engine currently treats every catalyst alike (Forge.kt); identities are for Advanced Forge techniques.
                 MaterialDef(BINDING_SALT, "Binding Salt", MaterialCategory.CATALYST, tier = 1, price = 15, dailySupplierStock = 2, flavor = "Helps the forge along. A clue about binding may point here."),
                 MaterialDef(RUNESTONE_SHARD, "Runestone Shard", MaterialCategory.CATALYST, tier = 2, price = 30, dailySupplierStock = 1, flavor = "Helps the forge along. A clue about runes may point here."),
-                MaterialDef(DRAGON_OIL, "Dragon Oil", MaterialCategory.CATALYST, tier = 3, price = 55, dailySupplierStock = 1, flavor = "Helps the forge along. A clue about dragon fire may point here."),
-                MaterialDef(VOID_INK, "Void Ink", MaterialCategory.CATALYST, tier = 4, price = 90, dailySupplierStock = 1, flavor = "Helps the forge along. A clue about changing the rules may point here."),
+                MaterialDef(DRAGON_OIL, "Dragon Oil", MaterialCategory.CATALYST, tier = 3, price = 120, dailySupplierStock = 1, flavor = "Helps the forge along. A clue about dragon fire may point here."),
+                MaterialDef(VOID_INK, "Void Ink", MaterialCategory.CATALYST, tier = 4, price = 220, dailySupplierStock = 1, flavor = "Helps the forge along. A clue about changing the rules may point here."),
             ),
             affixes = listOf(
                 // Beneficial (12). Exactly one per element: Forge.kt picks the first beneficial affix matching the augment element.

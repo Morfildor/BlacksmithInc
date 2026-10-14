@@ -38,6 +38,8 @@ data class StageDef(
     val relicOffer: Boolean = false,
     val heartfire: Int = 0,
     val supplier: Boolean = false,
+    /** Winning this stage opens the deep road (rules 7). */
+    val road: Boolean = false,
 )
 
 /** A weapon a package puts in storage on the first morning: plain metal with one flaw that is the point of it. */
@@ -285,6 +287,8 @@ object GuildContent {
     const val WALL_WORK = "wall_work"
     const val STARFALL = "starfall"
     const val SUPPLIER_ROAD = "supplier_road"
+    /** Rules 7: the guild's way to open the deep road after the first siege (`engine.DeepRoad`). Posted, never drawn. */
+    const val DEEP_ROAD = "deep_road"
     const val LAPSE_SUPPLIER = "supplier"
 
     const val TOWNS_LAST_HOPE = "towns_last_hope"
@@ -353,6 +357,16 @@ object GuildContent {
                     objective = ObjectiveKind.HOLD, rounds = 4, protectUnitId = "escort_cart", goldMin = 15, goldMax = 25),
                 StageDef(roster(listOf("ashclaw_brute", "ashclaw_thief", "ashclaw_scout"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.SAFE, percent = 90,
                     objective = ObjectiveKind.HOLD, rounds = 4, protectUnitId = "escort_cart", goldMin = 30, goldMax = 45, materials = MaterialDraw(3, 2, 4), supplier = true))),
+        // Posted after the first siege while the road is shut (`DeepRoad.contractDue`), never drawn and never one of the siege's jobs.
+        MissionDef(DEEP_ROAD, MissionArchetype.OPPORTUNITY, "The deep road", days = 2, fee = 0, weight = 0.0, lifeDays = 4,
+            description = "The caravan master will bring rare stock down the deep road if her first train gets through. Two days beside it.",
+            prep = "A Guardian in front and something for whoever goes past the front. The train has to stand both days.",
+            failure = "The train turns back and the road stays shut. The job goes back on the board, and the road opens anyway after the second siege. Nobody is taken on this road.",
+            stages = listOf(
+                StageDef(roster(listOf("ashclaw_scout", "ashclaw_scout", "ashclaw_thief"), listOf("hollow_shambler", "hollow_shambler", "hollow_shambler"), listOf("ember_whelp", "ember_whelp", "ember_whelp")), Danger.SAFE, percent = 85,
+                    objective = ObjectiveKind.HOLD, rounds = 4, protectUnitId = "escort_cart", goldMin = 15, goldMax = 25),
+                StageDef(roster(listOf("ashclaw_brute", "ashclaw_thief", "ashclaw_scout"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.SAFE, percent = 95,
+                    objective = ObjectiveKind.HOLD, rounds = 4, protectUnitId = "escort_cart", goldMin = 25, goldMax = 40, road = true))),
         MissionDef(ESCORT, MissionArchetype.ESCORT, "Escort", days = 2, fee = 0, weight = 0.9, minDay = 3,
             description = "A supplier's cart, two days on the road. They will come for the cart, not for you.",
             prep = "A Guardian in front and something for the one who goes past the front. The cart has to stand.",

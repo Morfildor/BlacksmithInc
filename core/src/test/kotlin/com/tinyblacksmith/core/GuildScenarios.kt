@@ -82,10 +82,10 @@ object GuildScenarios {
         return s.run(Command.ReserveDefender(s.member(LaunchContent.GUARDIAN).id, true))
     }
 
-    const val CAPTIVE_SEED = 2L
-    const val CAPTIVE_DAY = 8
+    const val CAPTIVE_SEED = 1L
+    const val CAPTIVE_DAY = 13
 
-    const val CHARTER_SEED = 5L
+    const val CHARTER_SEED = 1L
     const val CHARTER_LEVEL = 8
     const val CHARTER_QUALITY = 90
 

@@ -4570,3 +4570,69 @@ changes no outcome and gives nothing. No rule, number or RNG draw of the fight c
 - **Timing (PROPOSED, playtest values).** At 1x: a round's banner 700 ms, a fighter stepping up 550 ms, each pop
   900 ms, the end 1,400 ms; at 2x 400 / 320 / 520 / 900 ms (a floor, not half). A label stays on its portrait until its
   step ends. Reduced motion keeps the timing and drops the lunge, the shake and the bar animation.
+
+## Owner playtest 2026-10-14: rules 7, balance 16, content 6 re-pinned (2026-10-14)
+
+The owner played the debug APK and asked for: no masterwork on a first forge, rare ingredients that are expensive and
+out of reach early, the big ingredients unlocked after the first siege through a story beat (a guild quest or the
+like), and guild contracts worth taking. Owner choices (asked in the session): a quality cap per metal; prices of the
+tier-3-and-up materials raised and the big ones locked; a visitor in a classic run and a contract in a guild run,
+falling back to the second siege; Moonsteel after the second siege; contract gold raised and shown before committing.
+
+- **Quality cap per metal** (`LegendConfig.qualityCapByCoreTier`, `Forge.qualityCap`): Iron 55, Bronze 65, Silver 75,
+  Obsidian 84, Starsteel and Moonsteel 100. Applied to the forge roll, the Forge outlook (best and worst), the
+  Heartfire outlook, the hone (never lowers what a blade has) and the bench's demonstration. Why: the free starting kit
+  (Silver, Stormglass, Binding Salt) centred a bow at quality 69, and a Reckless forge (30 % exceptional, +20) reached
+  masterwork (85) on day 1 about one time in three with nothing bought. Prices alone could not stop that.
+- **Prices** (content, re-pinned as 6 while unreleased): Silver 45 → 100, Stormglass 40 → 90, Dragon Oil 55 → 120,
+  Obsidian 75 → 190, Grave Dust 55 → 140, Sun Ash 85 → 210, Void Ink 90 → 220, Starsteel 120 → 300, Moonsteel
+  180 → 450. Tier 1 and 2 unchanged. Material prices do not feed weapon prices (`Market.fairPrice` reads power).
+- **The deep road** (rules 7, `engine/DeepRoad.kt`, `LegendConfig.roadStageByTier` {4: 1, 5: 1, 6: 2}) replaces the
+  supplier's days (`coreTierFromDay`, D15 in RUN_VARIETY_LEDGER). Stage 1 (Obsidian, Starsteel, Grave Dust, Sun Ash,
+  Void Ink) opens on `GameState.deepRoadOpenDay`: in a classic run the caravan master (`Depth.DEEP_ROAD`, a follow-up
+  visitor that takes the first free morning after the first siege, draws no RNG) offers the first crate for
+  `deepRoadCrateGold` 60 (on sale that morning) or her train in `deepRoadWaitDays` 2 (the default when unanswered); in a
+  guild run the contract `GuildContent.DEEP_ROAD` (two Safe escort stages, kept out of the siege's opportunity draw and
+  of the ordinary slots) is posted until it is won or the second siege; won, the road opens next morning. Stage 2
+  (Moonsteel), and stage 1 for a road nobody opened, from the morning after the second siege (day 11, as before). A
+  rules-6 run that has fought a siege is admitted with the road open from its load day (`Compatibility.roadOpened`).
+  Bots: the classic adaptive bot pays while it keeps its reserve; every guild bot that does more than the safe road
+  takes the contract after a rescue. `--noRoad` (simulate and guildsim) puts every limited material on sale from day 1.
+- **Contract gold ×3** (`GuildConfig.contractGoldPercent` 300, applied to every stage's gold, `--set
+  contractGoldPercent=N` in guildsim). Before it a won Hunt left the smith 30 to 50 gold against 120 to 240 for a sale.
+
+Classic, `:core:simulate --runs 1000 --seed 1 --policy gdd --noImpact`, mean survival days and Epic share, balance 15 →
+16 (16 with `--noRoad`): RANDOM 30.6 → 28.9 (30.0), Epic 17 → 9 %; SAFE_FAIR 24.2 → 23.9 (24.5); RECKLESS_FAIR 28.1 →
+27.3 (28.1); BALANCED_CHEAP 26.3 → 25.7 (26.7); BALANCED_EXPENSIVE 24.6 → 24.2 (24.8); SYNERGY 31.5 → 30.0 (31.9), Epic
+12 → 5 % (7); OVERWORK 25.0 → 24.7 (25.3); BALANCED_FAIR 24.9 → 24.4 (25.0). Medians unchanged but RECKLESS_FAIR p10
+25 → 20. Final gold falls by half or more for every policy (the dearer stock is bought).
+
+Guild, `:core:guildsim --runs 300 --seed 1` (tuning block), charter rate and contract gold a run (the till's
+`contract`), balance 15 → 16 at 100 / 300 / 400 % and 300 % with `--noRoad`:
+
+| policy | 15 | 16 at 100 % | 16 at 300 % | 16 at 400 % | 300 %, no road | contract gold 15 → 300 % |
+|---|---|---|---|---|---|---|
+| SYNERGY | 67 | 46 | 53 | 59 | 57 | 579 → 1,555 |
+| ADAPTIVE | 60 | 48 | 54 | 52 | 54 | 376 → 1,035 |
+| SUPPLY_FARMER | 52 | 31 | 39 | 39 | 40 | 267 → 825 |
+| DEFENCE_FIRST | 49 | 32 | 32 | 35 | 38 | 292 → 919 |
+| NO_SABOTAGE | 42 | 34 | 37 | 38 | 35 | 430 → 1,163 |
+| LEGEND_SEEKER | 36 | 30 | 34 | 35 | 28 | 382 → 1,092 |
+| RECOVERY_AWARE | 29 | 14 | 11 | 12 | 21 | 174 → 589 |
+| RECOMMENDED | 21 | 8 | 12 | 14 | 17 | 495 → 1,398 |
+| GREEDY_DIVER | 19 | 11 | 9 | 12 | 9 | 582 → 1,458 |
+| HIGHEST_STAT | 14 | 4 | 10 | 6 | 5 | 575 → 1,548 |
+
+The first Epic moves from about day 7 to day 9 to 12 (fine metal costs 300 and waits for the road); Epic carried on day
+20 falls by 10 to 25 points for most policies. Reading: the cap and the prices make the guild run harder (SYNERGY 67 →
+46 at the old gold); three times the gold gives back about a third of that; the road itself costs a few points against
+`--noRoad`, and less for the bots that take its contract early. Six competent policies land 32 to 54 % (SYNERGY 53,
+ADAPTIVE 54, SUPPLY_FARMER 39, NO_SABOTAGE 37, LEGEND_SEEKER 34, DEFENCE_FIRST 32), below the 40 to 67 band accepted for
+G3 at balance 15. Not compensated, by the "no automatic nerf" rule read the other way: the owner asked for a harder
+start. Validation on a block nothing was tuned on (`--runs 300 --seed 700001`, balance 16 at 300 %): SYNERGY 51, ADAPTIVE 55, SUPPLY_FARMER 42, DEFENCE_FIRST 36, NO_SABOTAGE 35, LEGEND_SEEKER 32 %. Levers if the owner wants the band back: `contractGoldPercent` (400 lifts SYNERGY to 59), the guild siege's
+`siegePercentBase`, the Silver and Obsidian caps (75 and 84), the Starsteel price.
+
+Tests: GoldenStateTest has its own rules-7 file (recorded fresh). Played scenario saves re-pinned from `-Dscenarios.search=true`
+(hall lesson seed 1 day 7, inherited blade seed 8 day 19, merchant resale seed 43 day 9, wall death seed 2 day 20,
+storied blade seed 1 day 15, guild captive seed 1 day 13, charter eve seed 1); the returned legend is given one unit of its
+core metal by hand, which the road does not carry yet. A new scenario, `visitor_deep_road`.

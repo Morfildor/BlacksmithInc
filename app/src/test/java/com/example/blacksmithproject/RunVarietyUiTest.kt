@@ -294,13 +294,14 @@ class RunVarietyUiTest {
 
     @Test
     fun theSuppliesSayWhenAFineMetalArrivesAndACardSaysWhoMayGoAndWhatWinningIs() {
-        // Day 1: star metal is not on the roads yet, and the row says from which day and where it comes from before that.
+        // Day 1: the deep road is shut (rules 7), and the row says when it opens and where the metal comes from before that.
         val first = engine.newRun(LegacyProfile(), 3)
         val star = engine.content.material(LaunchContent.STARSTEEL)
-        val from = engine.stockedFromDay(star.id)
-        assertEquals(listOf("The supplier carries it from day $from. Before that it comes only from dangerous work."), engine.supplyNotes(first, star))
-        assertEquals(emptyList<String>(), engine.supplyNotes(first.copy(day = from), star))
-        assertEquals(emptyList<String>(), engine.supplyNotes(first, engine.content.material(LaunchContent.OBSIDIAN)))
+        assertEquals(listOf("The supplier carries it once the deep road opens, after the first siege. Before that it comes only from dangerous work."), engine.supplyNotes(first, star))
+        assertEquals(listOf("The caravan master's train brings it on day 3. Before that it comes only from dangerous work."), engine.supplyNotes(first.copy(deepRoadOpenDay = 3), star))
+        assertEquals(emptyList<String>(), engine.supplyNotes(first.copy(day = 3, deepRoadOpenDay = 3), star))
+        assertEquals(listOf("The supplier carries it after the second siege. Before that it comes only from dangerous work."), engine.supplyNotes(first.copy(deepRoadOpenDay = 1), engine.content.material(LaunchContent.MOONSTEEL)))
+        assertEquals(emptyList<String>(), engine.supplyNotes(first, engine.content.material(LaunchContent.SILVER)))
 
         // Contracts whose card changes the decision: the party size and the objective are the card's, not the guild's.
         val all = mornings(GuildPolicy.SYNERGY, 1L..12L).toList()

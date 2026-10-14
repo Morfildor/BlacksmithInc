@@ -430,8 +430,12 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
                 (if (wallLooksStrong(s) && health >= 75) listOf(MissionArchetype.OPPORTUNITY, MissionArchetype.SABOTAGE) else listOf(MissionArchetype.SABOTAGE, MissionArchetype.OPPORTUNITY)) +
                 (if (health >= 75 && fit.size >= 2) listOf(MissionArchetype.RECOVERY, MissionArchetype.HUNT, MissionArchetype.ESCORT) else emptyList()) + listOf(MissionArchetype.SUPPLY)
         }.let { o -> if (plan(s, "cowards_medal") && s.town.integrity < 70 && MissionArchetype.EMERGENCY !in o) listOf(MissionArchetype.EMERGENCY) + o else o }
+        // The deep road (rules 7) opens the big ingredients: every bot that does more than the safe road goes for it once it is posted, after a rescue.
+        val road = offers.firstOrNull { it.defId == GuildContent.DEEP_ROAD }?.takeIf {
+            policy !in setOf(GuildPolicy.PASSIVE, GuildPolicy.NOVICE, GuildPolicy.SHOP_FOCUSED, GuildPolicy.RECOMMENDED) && (MissionArchetype.RESCUE !in order || offers.none { o -> arch(o) == MissionArchetype.RESCUE })
+        }
         // The first card on the board that the till can pay for, whatever it is.
-        val offer = (if (policy == GuildPolicy.RECOMMENDED) offers.firstOrNull { arch(it) != MissionArchetype.EMERGENCY } else order.firstNotNullOfOrNull { a -> offers.firstOrNull { arch(it) == a } }) ?: return s
+        val offer = road ?: (if (policy == GuildPolicy.RECOMMENDED) offers.firstOrNull { arch(it) != MissionArchetype.EMERGENCY } else order.firstNotNullOfOrNull { a -> offers.firstOrNull { arch(it) == a } }) ?: return s
         val posture = when (policy) {
             GuildPolicy.GREEDY_DIVER -> Posture.RECKLESS
             GuildPolicy.NOVICE, GuildPolicy.RECOVERY_AWARE -> Posture.CAUTIOUS
@@ -576,7 +580,8 @@ fun main(args: Array<String>) {
     val sets = a["--set"]?.split(",")?.associate { it.substringBefore('=') to it.substringAfter('=') }.orEmpty()
     val d0 = BalanceConfig.DEFAULT.depth
     val config = BalanceConfig.DEFAULT.copy(qualityExceptionalBonus = sets["qualityExceptionalBonus"]?.toInt() ?: BalanceConfig.DEFAULT.qualityExceptionalBonus, epicMin = sets["epicMin"]?.toInt() ?: BalanceConfig.DEFAULT.epicMin,
-        depth = d0.copy(legend = d0.legend.copy(coreTierFromDay = sets["coreDays"]?.split("/")?.let { (a, b, c) -> mapOf(4 to a.toInt(), 5 to b.toInt(), 6 to c.toInt()) } ?: d0.legend.coreTierFromDay, fineCoreTier = sets["fineCoreTier"]?.toInt() ?: d0.legend.fineCoreTier)), guild = g0.copy(
+        // --noRoad: every limited material on sale from day 1, the deep road (rules 7) left out, for a paired comparison.
+        depth = d0.copy(legend = d0.legend.copy(roadStageByTier = if ("--noRoad" in args) emptyMap() else d0.legend.roadStageByTier, fineCoreTier = sets["fineCoreTier"]?.toInt() ?: d0.legend.fineCoreTier)), guild = g0.copy(
         enemyPercentBase = sets["enemyPercentBase"]?.toInt() ?: g0.enemyPercentBase, enemyPercentPerDay = sets["enemyPercentPerDay"]?.toDouble() ?: g0.enemyPercentPerDay,
         siegePercentBase = sets["siegePercentBase"]?.toInt() ?: g0.siegePercentBase, siegePercentPerDay = sets["siegePercentPerDay"]?.toDouble() ?: g0.siegePercentPerDay,
         charterWarlordPercent = sets["charterWarlordPercent"]?.toInt() ?: g0.charterWarlordPercent, outerHealthPerPoint = sets["outerHealthPerPoint"]?.toDouble() ?: g0.outerHealthPerPoint,
@@ -585,7 +590,7 @@ fun main(args: Array<String>) {
         supplyThinPercent = sets["supplyThin"]?.split("/")?.map { it.toInt() } ?: g0.supplyThinPercent, nemesisPercent = sets["nemesisPercent"]?.toInt() ?: g0.nemesisPercent,
         damageHeldPerDowned = sets["damageHeldPerDowned"]?.toInt() ?: g0.damageHeldPerDowned, rewardPercentPerDay = sets["rewardPercentPerDay"]?.toDouble() ?: g0.rewardPercentPerDay,
         siegeGruntEvery = sets["siegeGruntEvery"]?.toInt() ?: g0.siegeGruntEvery, damageCostPercent = sets["damageCostPercent"]?.toInt() ?: g0.damageCostPercent,
-        wallWorkExtraRecovery = sets["wallWorkExtraRecovery"]?.toInt() ?: g0.wallWorkExtraRecovery))
+        wallWorkExtraRecovery = sets["wallWorkExtraRecovery"]?.toInt() ?: g0.wallWorkExtraRecovery, contractGoldPercent = sets["contractGoldPercent"]?.toInt() ?: g0.contractGoldPercent))
     // --transcript: one run told from its own records, for the evidence report. Reproducible: seed, policy, charter and opening are all it needs.
     if ("--transcript" in args) {
         val told = setOf(EventType.OPENING_CHOSEN, EventType.GUILD_RECRUITED, EventType.SIEGE_PREPARATION, EventType.MISSION_WON, EventType.MISSION_FAILED, EventType.MEMBER_CAPTURED, EventType.MEMBER_RESCUED, EventType.SABOTAGE_DONE,

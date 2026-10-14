@@ -13,10 +13,6 @@ import com.tinyblacksmith.core.model.WeaponLocation
  * One ladder: a Legendary weapon is `Rarity.LEGENDARY` whichever way it came, and `Weapon.legend` says which.
  */
 object Legends {
-    /** The first day the supplier carries [material]: the finest core metals come later in a run (`LegendConfig.coreTierFromDay`). */
-    fun stockedFromDay(material: com.tinyblacksmith.core.content.MaterialDef, config: com.tinyblacksmith.core.config.BalanceConfig): Int =
-        if (material.category == com.tinyblacksmith.core.content.MaterialCategory.CORE) config.depth.legend.coreTierFromDay[material.tier] ?: 1 else 1
-
     const val HISTORY_DEED = "DEED"
     const val HISTORY_LEGEND = "LEGEND"
 

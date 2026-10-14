@@ -18,6 +18,7 @@ import com.tinyblacksmith.core.content.MaterialDraw
 import com.tinyblacksmith.core.content.MissionArchetype
 import com.tinyblacksmith.core.content.MissionDef
 import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.engine.DeepRoad
 import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.heroes.Heroes
@@ -40,7 +41,7 @@ object Missions {
 
     /** A contract the board draws for a free slot, as opposed to one posted for a real captive or blade, or the standing work. */
     private fun drawn(def: MissionDef): Boolean = def.weight > 0.0
-    private fun special(defId: String): Boolean = defId == GuildContent.RESCUE || defId == GuildContent.RECOVERY
+    private fun special(defId: String): Boolean = defId == GuildContent.RESCUE || defId == GuildContent.RECOVERY || defId == GuildContent.DEEP_ROAD
 
     /** Every morning: what has lapsed leaves, the standing work is there, free slots are filled, a captive or a taken blade has its contract. */
     fun refreshBoard(ctx: ResolutionContext) {
@@ -49,7 +50,7 @@ object Missions {
         val cfg = ctx.config.guild
         val rng = ctx.rng(RngStream.GUILD)
         var offers = g.offers.filter { o ->
-            o.expiresDay >= ctx.day && cat.missionById[o.defId] != null &&
+            o.expiresDay >= ctx.day && cat.missionById[o.defId] != null && (o.defId != GuildContent.DEEP_ROAD || DeepRoad.contractDue(ctx)) &&
                 (o.subjectHeroId == null || g.captives.any { it.heroId == o.subjectHeroId }) && (o.subjectWeaponId == null || g.nemesis?.weaponId == o.subjectWeaponId)
         }
         var serial = g.nextMissionSerial
@@ -82,11 +83,17 @@ object Missions {
                 val prep = cat.preparation(scenario.prepId)
                 val gone = "Leaves the board after day $last."
                 post(if (prep != null) def.copy(stages = listOf(def.stages.first(), prep.sabotage)) else def, scenario.factionId!!, reason = (prep?.let { "${it.sabotageBrief} " } ?: "") + gone, expires = last)
-                val chances = cat.missions.filter { it.archetype == MissionArchetype.OPPORTUNITY }
+                val chances = cat.missions.filter { it.archetype == MissionArchetype.OPPORTUNITY && it.stages.none { s -> s.road } }
                 if (chances.isNotEmpty()) rng.pick(chances).let { chance ->
                     post(chance, scenario.factionId, reason = "$gone One party cannot do this and the sabotage.", expires = last, lapse = GuildContent.LAPSE_SUPPLIER.takeIf { chance.stages.any { s -> s.supplier } })
                 }
             }
+        }
+        // The deep road (rules 7): after the first siege, until it is won or the second siege opens the road. A party out on it keeps it off the board.
+        cat.missionById[GuildContent.DEEP_ROAD]?.let { def ->
+            val last = ctx.town.nextSiegeDay - def.days
+            if (DeepRoad.contractDue(ctx) && last >= ctx.day && offers.none { it.defId == def.id } && g.mission?.offer?.defId != def.id)
+                post(def, factions.maxBy { it.pressure }.id, reason = "Leaves the board after day $last.", expires = last)
         }
         val slots = cfg.offersOnBoard + (charter?.extraOffers ?: 0)
         fun ordinary() = offers.count { !special(it.defId) && it.defId != GuildContent.WALL_WORK }
@@ -151,7 +158,7 @@ object Missions {
         val stages = def.stages.mapIndexed { i, s ->
             val percent = Fight.pct(base, s.percent)
             val drawn = if (s.goldMax > 0) rng.nextInt(s.goldMin, s.goldMax) else 0
-            val gold = if (supply) drawn * thin / 100 else (drawn * (1.0 + cfg.rewardPercentPerDay * ctx.day / 100.0)).toInt() * (modifier?.goldPercent ?: 100) / 100
+            val gold = (if (supply) drawn * thin / 100 else (drawn * (1.0 + cfg.rewardPercentPerDay * ctx.day / 100.0)).toInt() * (modifier?.goldPercent ?: 100) / 100) * cfg.contractGoldPercent / 100
             val last = i == def.stages.lastIndex
             val roster = s.rosters[faction].orEmpty().let { r -> if (r.isEmpty()) r else r + listOfNotNull(modifier?.addUnit?.get(faction)) }
             // A modifier may change what winning is: rounds to stand instead of a foe to fell, or somebody to bring out alive.
@@ -161,7 +168,7 @@ object Missions {
             MissionStage(
                 enemies = roster.map { EnemySpec(it, percent) },
                 objective = if (hold != null) Objective(com.tinyblacksmith.core.combat.ObjectiveKind.HOLD, hold, protect?.let { "protected" }) else Objective(s.objective, s.rounds, protect?.let { "protected" }), danger = s.danger, seed = rng.nextLong(),
-                reward = Reward(gold, drawMaterials(ctx, rng, if (last && modifier?.payment != null) modifier.payment else s.materials), s.suppression, s.integrity, s.militia + (if (last) modifier?.militia ?: 0 else 0), s.sabotage, s.relicOffer, weapon.takeIf { last }, hero.takeIf { last }, s.heartfire, s.supplier),
+                reward = Reward(gold, drawMaterials(ctx, rng, if (last && modifier?.payment != null) modifier.payment else s.materials), s.suppression, s.integrity, s.militia + (if (last) modifier?.militia ?: 0 else 0), s.sabotage, s.relicOffer, weapon.takeIf { last }, hero.takeIf { last }, s.heartfire, s.supplier, s.road && last),
                 protectUnitId = protect,
             )
         }
@@ -418,6 +425,7 @@ object Missions {
             lines += "Heartfire came back with them. The forge holds ${ctx.heartfire}."
         }
         if (r.supplier) lines += supplier(ctx, true, "The supplier got through.")
+        if (r.road) lines += DeepRoad.openTomorrow(ctx, "The caravan master's train got through.")
         if (r.relicOffer && com.tinyblacksmith.core.engine.Relics.offer(ctx, "The party brought something out of the deep hall: the smith may take a relic.")) lines += "A relic came back with them."
         r.weaponId?.let { id -> ctx.weapons[id]?.let { w ->
             ctx.updateWeapon(w.copy(location = WeaponLocation.Storage))

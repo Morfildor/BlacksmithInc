@@ -162,6 +162,7 @@ class ForgeResultTest : ShopDayTestBase() {
         assertTrue(ready.fits && ready.accepted)
         assertEquals("This weapon meets the commission", ready.fit)
         assertEquals("Ready. ${blade.name} will be collected at End Day.", ready.handover)
+        assertTrue("the card leads with Store for commission", ready.handsOver)
         // Owner decision L: one line from the save on whether this blade is reserved. A fresh blade never is.
         assertEquals("Not reserved. At End Day the buyer takes a matching weapon from storage first, then the shelf.", ready.reserved)
         val kept = with(accepted).let { st -> st.copy(weapons = st.weapons + (blade.id to blade.copy(promisedTo = accepted.id))) }
@@ -174,6 +175,7 @@ class ForgeResultTest : ShopDayTestBase() {
         engine.forgedFor(two, blade.id, accepted.id)!!.let {
             assertTrue("the fresh blade fits", it.fits)
             assertEquals("Ready. Plain Old Sword will be collected at End Day.", it.handover)
+            assertFalse("another blade is the one handed over", it.handsOver)
         }
 
         // Too poor for the request: said of this blade, with what the shop still lacks.
@@ -183,6 +185,7 @@ class ForgeResultTest : ShopDayTestBase() {
             assertEquals("This weapon doesn't meet the commission. Quality ${blade.quality}, needs ${blade.quality + 5}.", it.fit)
             assertEquals(Labels.readiness(demanding, with(demanding).weapons.values, engine.content, engine.config), it.handover)
             assertTrue(it.handover.startsWith("No matching weapon yet."))
+            assertFalse(it.handsOver)
         }
 
         // Offered but not accepted: End Day hands nothing over, and the card says so.
@@ -191,6 +194,7 @@ class ForgeResultTest : ShopDayTestBase() {
             assertTrue(it.fits)
             assertFalse(it.accepted)
             assertEquals("Accept this commission in the Shop before it can be collected.", it.handover)
+            assertFalse("an offer hands nothing over", it.handsOver)
         }
 
         // No request, or one that is closed: nothing is shown.

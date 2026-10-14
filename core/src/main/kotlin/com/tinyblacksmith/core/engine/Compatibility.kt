@@ -37,11 +37,18 @@ object Compatibility {
         // The shelf the engine allows (GameEngine.shelfSlots): a tool can add slots to the configured ones.
         problems += Invariants.check(clamped, config, shelfSlots(clamped, content, config), content)
         if (problems.isNotEmpty()) return Result.Unsupported(problems)
-        return Result.Admitted(clamped.copy(rulesVersion = GameEngine.RULES_VERSION, contentVersion = content.version, balanceVersion = config.version))
+        return Result.Admitted(roadOpened(clamped).copy(rulesVersion = GameEngine.RULES_VERSION, contentVersion = content.version, balanceVersion = config.version))
     }
 
     private fun shelfSlots(state: GameState, content: ContentCatalog, config: BalanceConfig): Int =
         config.shelfSlots + content.tools.filter { it.effect == ToolEffect.SHELF_SLOTS }.sumOf { it.magnitudePerLevel * (state.tools[it.id] ?: 0) }
+
+    /**
+     * Rules 7: a run from before the deep road that has fought a siege had the big ingredients on sale; it keeps them,
+     * the road open from the day it is loaded. One that has not keeps its road shut until its first siege's story.
+     */
+    private fun roadOpened(state: GameState): GameState =
+        if (state.rulesVersion < 7 && state.deepRoadOpenDay == null && DeepRoad.fought(state.town) >= 1) state.copy(deepRoadOpenDay = state.day) else state
 
     /** Every count the installed balance caps, brought within it. Returns [state] itself when nothing is over. */
     private fun clampToCaps(state: GameState, content: ContentCatalog, config: BalanceConfig): GameState {

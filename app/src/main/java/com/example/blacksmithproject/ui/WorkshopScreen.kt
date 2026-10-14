@@ -189,6 +189,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     visitor = s.encounter, onOpenVisitor = { vm.openSheet(Sheet.Visitor) },
                     relics = s.relics, relicSlots = if (vm.engine.content.relics.isEmpty()) 0 else vm.engine.config.depth.relicSlots,
                     relicOffer = state.pendingRelicOffer.isNotEmpty(), onOpenRelicOffer = vm::reopenRelicOffer,
+                    onAnswer = { id, accept -> vm.dispatch(if (accept) Command.AcceptCommission(id) else Command.DeclineCommission(id)) },
+                    onList = { id, price -> vm.stock(id, StockAction.ListAt(price)) }, onSalvage = { vm.stock(it, StockAction.Salvage) },
                 )
                 Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesFocus = it?.value; suppliesOpen = true }, onOpenBoard = { boardOpen = true }, onEndDay = { workshopHaptics.play(Moment.END_DAY); vm.endDay() })
                 Dest.RECORDS -> RecordsPanel(s, vm)

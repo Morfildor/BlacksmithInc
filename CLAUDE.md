@@ -30,7 +30,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
   (`Consequences.kt`), workshop relics (`Relics.kt`) and siege traits (`Battle.scheduleNext` / `outlook`) draw only on the
   ENCOUNTERS stream; their definitions are content (`content/Depth.kt`), their numbers `BalanceConfig.depth`.
   A run started with a charter is a guild run (`GameState.guild`, `model/Guild.kt`); without one it is a classic run and
-  plays as rules 4 did but for the rules-6 forge: Legendary by Heartfire or deeds, Epic only in the fine metals, which the supplier carries from day 6 and 11 (so the rules-6 golden state is its own, not the rules-5 one). `combat/` is the automatic fight: typed events and
+  plays as rules 4 did but for the rules-6 forge: Legendary by Heartfire or deeds, Epic only in the fine metals, and since rules 7 the deep road (`engine/DeepRoad.kt`: the big ingredients after the first siege's caravan master or guild contract, Moonsteel after the second siege; each golden state is its own). `combat/` is the automatic fight: typed events and
   effects (trigger, condition, cost, action, limit), pure, no `GameState`; what it runs on is content
   (`content/CombatContent.kt`: class kits, the rule each element, affix, catalyst, family and signature gives a blade,
   enemy units, party relics). `combat/Replay.kt`, `ReplayTimeline.kt` and `Account.kt` turn a stored `FightResult` (record 1:
@@ -49,7 +49,7 @@ the record only and refuse an older one, which keeps its text summary (`ui/repla
   (`ui/shopday/`). There is no Home or Market panel any more. The Forge is a workbench built from the pure model in
   `ui/ForgeUi.kt`; commissions and customer wants are one board (`ui/CommissionBoard.kt`) opened from Shop and Forge; the
   Journal is a notebook (`ui/Notebook.kt`).
-- Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt` (schema 7; rules 6 and content 6 are
+- Save format: versioned JSON envelope from `core/persistence/SaveCodec.kt` (schema 7; rules 7 and content 6 are
   enforced on load by `engine/Compatibility.kt`); migrations go there.
 - Content names are PROPOSED; counts are LOCKED. Vertical slice content lives in `content/SliceContent.kt`.
 - Pixel art has several sources, never hand-edited PNGs, all imported by `tools/pixelart/import_assets.py` into
@@ -68,7 +68,7 @@ the record only and refuse an older one, which keeps its text summary (`ui/repla
 ```
 ./gradlew :core:test                                   # JVM tests (determinism, bounds, idempotence, e2e)
 ./gradlew :core:simulate --args="--runs 1000 --seed 1"  # headless balance harness (add --policy X[,Y]|all|gdd|bots|every (`all` = the 14 classic policies, `bots` = the T0.7 bots), --blessing first|energy|quality|sales|patronage|defense, --eras N --buy cheapest|walls|track=ID for several eras on one account, --impactPolicy X, --reserve N, --content launch|slice, --rarityTable N, --siegeModifier, --forgeDamageBase/Slope, --recoveryCap, --customers for the customer/identity metrics, --set key=value[,key=value] for allowlisted BalanceConfig overrides, --depth for the visitor / relic / siege-trait table, --encounters decline|first|cash|defense|adaptive and --relic first|adaptive|none|<id> to override how bots answer, --noDepth for the rules-3 baseline without them, --probe N for the exploit probes)
-#   catalog sweeps: --noTool id[,id], --toolCost id=mult[,id=mult], --noAffixEffect id[,id]|all (keeps the affix, neutralises its v3 effect); --noFates turns the v5 weapon fates off (v4 odds, no guild heir, no merchant); --noImpact skips the maxed-legacy and per-upgrade runs
+#   catalog sweeps: --noTool id[,id], --toolCost id=mult[,id=mult], --noAffixEffect id[,id]|all (keeps the affix, neutralises its v3 effect); --noFates turns the v5 weapon fates off (v4 odds, no guild heir, no merchant); --noRoad puts every limited material on sale from day 1 (rules 7 deep road off, also in guildsim); --noImpact skips the maxed-legacy and per-upgrade runs
 #   legacy: --upgrades id=level[,id=level] plays the policy rows on that account, --yardsticks adds the first-siege and premium-sale table, --legends gives the maxed and impact runs a veteran Legend Board, --knownNameGold N
 ./gradlew :core:scenarios                              # rewrites the debug scenario saves in app/src/debug/assets/scenarios (played and constructed; run after a rules, content or balance change)
 ./gradlew :core:combat                                 # prints the fixture fights of the interaction engine (highlights and timeline); --args="stormwell" for one

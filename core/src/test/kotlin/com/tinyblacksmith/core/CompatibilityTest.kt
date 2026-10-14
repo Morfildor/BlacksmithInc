@@ -40,7 +40,9 @@ class CompatibilityTest {
         assertEquals(GameEngine.RULES_VERSION, admitted.rulesVersion)
         assertEquals(engine.content.version, admitted.contentVersion)
         assertEquals(engine.config.version, admitted.balanceVersion)
-        assertEquals(saved, admitted.copy(rulesVersion = saved.rulesVersion, contentVersion = saved.contentVersion, balanceVersion = saved.balanceVersion), "only the three version stamps differ")
+        // Rules 7: a run that has fought a siege comes in with the deep road open from the day it is loaded.
+        assertEquals(saved.day, admitted.deepRoadOpenDay)
+        assertEquals(saved, admitted.copy(rulesVersion = saved.rulesVersion, contentVersion = saved.contentVersion, balanceVersion = saved.balanceVersion, deepRoadOpenDay = null), "only the three version stamps and the road differ")
         assertEquals(saved.events, admitted.events)
         assertEquals(saved.weapons.mapValues { it.value.history }, admitted.weapons.mapValues { it.value.history })
         assertEquals(saved.rng, admitted.rng)

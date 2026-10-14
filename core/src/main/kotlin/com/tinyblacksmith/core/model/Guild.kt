@@ -73,9 +73,11 @@ data class Reward(
     /** Rules 6: Heartfire for the forge, and the supplier's thanks (more limited stock for a few days). */
     val heartfire: Int = 0,
     val supplier: Boolean = false,
+    /** Rules 7: winning it opens the deep road (`engine.DeepRoad`). */
+    val road: Boolean = false,
 ) {
     operator fun plus(o: Reward) = Reward(gold + o.gold, (materials.keys + o.materials.keys).associateWith { (materials[it] ?: 0) + (o.materials[it] ?: 0) }, suppression + o.suppression, integrity + o.integrity,
-        militia + o.militia, sabotage || o.sabotage, relicOffer || o.relicOffer, weaponId ?: o.weaponId, captiveId ?: o.captiveId, heartfire + o.heartfire, supplier || o.supplier)
+        militia + o.militia, sabotage || o.sabotage, relicOffer || o.relicOffer, weaponId ?: o.weaponId, captiveId ?: o.captiveId, heartfire + o.heartfire, supplier || o.supplier, road || o.road)
     val isEmpty: Boolean get() = this == Reward()
 }
 

@@ -36,7 +36,7 @@ import com.tinyblacksmith.core.shopday.Recognitions
 class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.LaunchContent.catalog, val config: BalanceConfig = BalanceConfig.DEFAULT) {
 
     companion object {
-        const val RULES_VERSION = 6
+        const val RULES_VERSION = 7
 
         /**
          * The rules version that salts every stream seed ([RngState.seeded]). Rules 2 is a number only (a run now has to be
@@ -68,7 +68,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             runId = runId, seed = seed, rulesVersion = rulesVersion, contentVersion = content.version, balanceVersion = config.version, era = era, day = 1,
             phase = Phase.PLANNING, gold = startingGold, energy = startingEnergy, overworkToday = 0, reputation = startingReputation,
             rng = RngState.seeded(seed, STREAM_SEED_VERSION), world = WorldModifiers(), materials = materials,
-            supplierStock = restockedSupplier(legacy, 1), weapons = emptyMap(), heroes = emptyMap(),
+            supplierStock = restockedSupplier(legacy, 0), weapons = emptyMap(), heroes = emptyMap(),
             town = Town(integrity = startingIntegrity, militia = 5, championIds = emptyList(), nextSiegeDay = config.siegeInterval),
             factions = emptyMap(), commissions = emptyMap(), events = emptyList(), blessings = emptyList(), pendingBlessingOffer = emptyList(),
             milestones = emptySet(), legacy = legacy, discoveriesThisRun = 0, processedEndDayIds = emptySet(), lastResolution = null,
@@ -336,15 +336,18 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         spendEnergy(ctx, config.honeEnergy)?.let { return CommandOutcome.Rejected(it) }
         ctx.materials[weapon.coreId] = ctx.materials.getValue(weapon.coreId) - 1
         // Hone always restores condition; the quality bonus is granted the first time only.
-        val quality = if (weapon.honed) weapon.quality else minOf(100, weapon.quality + config.honeQualityBonus)
+        // A hone stops at what the metal holds (`Forge.qualityCap`), and never takes away quality a blade already has.
+        val quality = if (weapon.honed) weapon.quality else minOf(maxOf(weapon.quality, Forge.qualityCap(content.material(weapon.coreId).tier, config)), weapon.quality + config.honeQualityBonus)
         // A returned legend's affixes wake under the first hone (GDD 7 "dormant"), and the power they carry with them.
         val woken = weapon.dormantAffixes
         val power = weapon.power + quality / config.powerPerQualityDivisor - weapon.quality / config.powerPerQualityDivisor + woken.sumOf { content.affix(it).power }
         ctx.updateWeapon(weapon.copy(quality = quality, power = power, rarity = Forge.rarityAfter(weapon, quality, config, content.material(weapon.coreId).tier), honed = true, condition = 100, affixes = weapon.affixes + woken, dormantAffixes = emptyList()))
-        val note = if (weapon.honed) "Condition ${weapon.condition} to 100" else "Quality ${weapon.quality} to $quality"
+        // A blade already at what its metal holds gains only the repair; the record says so rather than "55 to 55".
+        val atCap = !weapon.honed && quality == weapon.quality
+        val note = if (weapon.honed) "Condition ${weapon.condition} to 100" else if (atCap) "Quality ${weapon.quality}, the most ${content.material(weapon.coreId).name} holds" else "Quality ${weapon.quality} to $quality"
         ctx.addWeaponHistory(weapon.id, "HONED", "Honed. $note.")
         if (woken.isNotEmpty()) ctx.addWeaponHistory(weapon.id, "AWAKENED", "Honing restored dormant properties. ${woken.joinToString(", ") { content.affix(it).name }}.")
-        val text = (if (weapon.honed) "Restored ${weapon.name} to full condition." else "Honed ${weapon.name} to quality $quality.") +
+        val text = (if (weapon.honed) "Restored ${weapon.name} to full condition." else if (atCap) "Honed ${weapon.name}. Quality $quality is the most ${content.material(weapon.coreId).name} holds." else "Honed ${weapon.name} to quality $quality.") +
             (if (woken.isNotEmpty()) " Dormant properties restored. ${woken.joinToString(", ") { content.affix(it).name }}." else "")
         ctx.emit(EventType.WEAPON_HONED, 2, text, listOf(weapon.id.value), mapOf("quality" to quality.toString(), "condition" to "100") + (if (woken.isNotEmpty()) mapOf("woke" to woken.joinToString(",") { it.value }) else emptyMap()))
         return accept(ctx)
@@ -508,7 +511,9 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val caravanDelayed = ctx.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == ctx.day
         // The supplier's mood (a guild run's answer to the supplier's road) moves every limited material's stock for a few days.
         val mood = Missions.supplierStockDelta(ctx)
-        for ((m, s) in restockedSupplier(ctx.legacy, ctx.day)) ctx.supplierStock[m] = if (caravanDelayed || s == 0) 0 else maxOf(0, s + mood)
+        // The deep road first (rules 7): a stage that opens today is in this morning's stock.
+        DeepRoad.morning(ctx)
+        for ((m, s) in restockedSupplier(ctx.legacy, DeepRoad.stage(ctx))) ctx.supplierStock[m] = if (caravanDelayed || s == 0) 0 else maxOf(0, s + mood)
         // The ore merchant announced last night sells this morning, on top of the restock.
         for ((flag, flagDay) in ctx.worldFlags) if (flagDay == ctx.day && flag.startsWith(WorldEvents.FLAG_ORE_MERCHANT)) {
             val m = MaterialId(flag.removePrefix(WorldEvents.FLAG_ORE_MERCHANT))
@@ -525,17 +530,20 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         Encounters.offerMorning(ctx)
     }
 
-    /** The day's stock of the limited materials; Caravan Ties (CATALOG_ACCESS) deepens every one of them. */
-    private fun restockedSupplier(legacy: LegacyProfile, day: Int): Map<MaterialId, Int> {
+    /** The day's stock of the limited materials with the deep road open to [roadStage]; Caravan Ties (CATALOG_ACCESS) deepens every one of them. */
+    private fun restockedSupplier(legacy: LegacyProfile, roadStage: Int): Map<MaterialId, Int> {
         val extra = upgradeTotal(legacy, UpgradeEffect.CATALOG_ACCESS) * config.legacyTracks.catalogStockPerLevel
-        return content.materials.mapNotNull { m -> m.dailySupplierStock?.let { m.id to if (day < stockedFromDay(m.id)) 0 else it + extra } }.toMap()
+        return content.materials.mapNotNull { m -> m.dailySupplierStock?.let { m.id to if (!DeepRoad.carried(m, roadStage, config)) 0 else it + extra } }.toMap()
     }
 
     /** How many members may go on the posted contract [offerId]: fewer than the guild's party when its card says so. */
     fun partyMax(state: GameState, offerId: String): Int = state.guild?.offers?.firstOrNull { it.id == offerId }?.let { Missions.partyMax(ResolutionContext(state, content, config), it) } ?: config.guild.partyMax
 
-    /** The first day the supplier carries [materialId]: the finest core metals come later in a run (`LegendConfig.coreTierFromDay`). */
-    fun stockedFromDay(materialId: MaterialId): Int = com.tinyblacksmith.core.crafting.Legends.stockedFromDay(content.material(materialId), config)
+    /** The deep road stage [materialId] waits for (`DeepRoad.needs`): 0 for what the supplier always carries, 1 after the first siege's story, 2 after the second siege. */
+    fun roadNeeds(materialId: MaterialId): Int = DeepRoad.needs(content.material(materialId), config)
+
+    /** Whether the supplier carries [materialId] in [state] as the deep road stands. */
+    fun onTheRoad(state: GameState, materialId: MaterialId): Boolean = DeepRoad.carried(content.material(materialId), DeepRoad.stage(state), config)
 
     fun upgradeTotal(legacy: LegacyProfile, effect: UpgradeEffect): Int =
         content.upgrades.filter { it.effect == effect }.sumOf { it.magnitudePerLevel * legacy.upgradeLevel(it.id) }

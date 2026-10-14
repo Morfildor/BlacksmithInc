@@ -12,6 +12,7 @@ import com.tinyblacksmith.core.content.MissionArchetype
 import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
+import com.tinyblacksmith.core.engine.DeepRoad
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.engine.ResolutionContext
@@ -98,24 +99,30 @@ class RunVarietySecondPassTest {
         }
     }
 
-    @Test fun `the supplier carries Starsteel from day 6 and Moonsteel from day 11, in a classic run and a guild run`() {
-        val star = legend.coreTierFromDay.getValue(content.material(LaunchContent.STARSTEEL).tier)
-        val moon = legend.coreTierFromDay.getValue(content.material(LaunchContent.MOONSTEEL).tier)
-        assertEquals(star, engine.stockedFromDay(LaunchContent.STARSTEEL))
-        assertEquals(1, engine.stockedFromDay(LaunchContent.OBSIDIAN))
-        assertEquals(1, engine.stockedFromDay(LaunchContent.SUN_ASH))
+    @Test fun `the deep road brings the big ingredients after the first siege and Moonsteel after the second, in a classic run and a guild run`() {
+        // Rules 7: what each limited material waits for. Silver, Stormglass and the lesser catalysts are carried from day 1.
+        for (id in listOf(LaunchContent.OBSIDIAN, LaunchContent.STARSTEEL, LaunchContent.GRAVE_DUST, LaunchContent.SUN_ASH, LaunchContent.VOID_INK)) assertEquals(1, engine.roadNeeds(id), "$id")
+        assertEquals(2, engine.roadNeeds(LaunchContent.MOONSTEEL))
+        for (id in listOf(LaunchContent.SILVER, LaunchContent.STORMGLASS, LaunchContent.DRAGON_OIL, LaunchContent.IRON)) assertEquals(0, engine.roadNeeds(id), "$id")
         for (start in listOf(classic(3), guild(3).let { g -> g.guild!!.openingOffer.firstOrNull()?.let { g.send(Command.ChooseOpening(it.defId)) } ?: g })) {
             var s = start.copy(gold = 5000)
             assertEquals(GameError.SupplierOutOfStock(LaunchContent.STARSTEEL), s.rejected(Command.BuyMaterial(LaunchContent.STARSTEEL)))
-            while (!s.isEnded && s.day < moon) {
+            while (!s.isEnded && s.day <= 2 * config.siegeInterval + 1) {
                 val delayed = s.worldFlags[com.tinyblacksmith.core.engine.WorldEvents.FLAG_CARAVAN_DELAYED] == s.day
-                if (s.day < star) assertEquals(0, s.supplierStock[LaunchContent.STARSTEEL], "day ${s.day}")
-                else if (!delayed) assertTrue((s.supplierStock[LaunchContent.STARSTEEL] ?: 0) >= 1, "day ${s.day}")
+                val stage = DeepRoad.stage(s)
+                if (DeepRoad.fought(s.town) == 0) assertEquals(0, stage, "day ${s.day}: shut before the first siege")
                 // An ore merchant may bring a metal the supplier already carries, never one it does not.
-                assertEquals(0, s.supplierStock[LaunchContent.MOONSTEEL], "day ${s.day}")
-                assertTrue((s.supplierStock[LaunchContent.OBSIDIAN] ?: 0) >= 1 || delayed, "obsidian on day ${s.day}")
+                if (stage < 1) for (id in listOf(LaunchContent.STARSTEEL, LaunchContent.OBSIDIAN)) assertEquals(0, s.supplierStock[id], "$id on day ${s.day}")
+                else if (!delayed) assertTrue((s.supplierStock[LaunchContent.STARSTEEL] ?: 0) >= 1, "day ${s.day}")
+                if (stage < 2) assertEquals(0, s.supplierStock[LaunchContent.MOONSTEEL], "day ${s.day}")
+                // The first morning after the first siege the story is there: the caravan master, or the guild's contract.
+                if (s.day == config.siegeInterval + 1) {
+                    if (s.guild == null) assertEquals(com.tinyblacksmith.core.content.Depth.DEEP_ROAD, s.encounter?.defId, "the caravan master")
+                    else assertTrue(s.guild!!.offers.any { it.defId == GuildContent.DEEP_ROAD }, "the deep road on the board")
+                }
                 s = s.endDay()
             }
+            if (!s.isEnded) assertEquals(2, DeepRoad.stage(s), "after the second siege everything is carried")
         }
     }
 
@@ -246,7 +253,8 @@ class RunVarietySecondPassTest {
         repeat(12) {
             assertNull(s.guild)
             assertNull(s.siege?.prepId)
-            assertTrue(s.events.none { it.type == EventType.OPENING_CHOSEN || it.type == EventType.SIEGE_PREPARATION || it.type == EventType.SUPPLIER_NEWS })
+            // The deep road's news (rules 7) is a classic run's too; the guild's supplier moods are not.
+            assertTrue(s.events.none { it.type == EventType.OPENING_CHOSEN || it.type == EventType.SIEGE_PREPARATION || (it.type == EventType.SUPPLIER_NEWS && it.data["road"] == null) })
             assertTrue(engine.handle(s, Command.ChooseOpening("overflow")) is CommandOutcome.Rejected)
             if (!s.isEnded) s = s.endDay()
         }

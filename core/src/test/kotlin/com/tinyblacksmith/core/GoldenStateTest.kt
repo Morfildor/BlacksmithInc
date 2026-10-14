@@ -26,6 +26,7 @@ class GoldenStateTest {
     // Re-recorded again for the review's gameplay batch: a classic run draws its siege trait from four (Hungry Horde and
     // Night Assault joined), so 66 of 300 lines move, all on day 6 or later, where a different trait changes the siege and
     // the draws after it. No line before the first trait draw moved.
+    // Rules 7 (owner playtest: the deep road, balance 16) has its own file, recorded fresh; the rules-6 one is kept as it was.
     private val resource = "golden/state_rules${GameEngine.RULES_VERSION}.txt"
 
     /** Records that describe a day without being gameplay. A task that adds such a type names it here on purpose. */

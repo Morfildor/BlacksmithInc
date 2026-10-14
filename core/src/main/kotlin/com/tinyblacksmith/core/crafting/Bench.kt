@@ -100,7 +100,7 @@ object Bench {
      * no buff, no flaw and no signature, because those are rolled and the bench will not pretend one.
      */
     fun demonstration(family: WeaponFamilyId, core: MaterialId, augment: MaterialId, catalyst: MaterialId?, content: ContentCatalog, config: BalanceConfig, quality: Int = DEMO_QUALITY): Weapon =
-        blade("bench-demo", "${content.material(core).name} ${content.family(family).name.lowercase()} (recipe)", family, core, augment, catalyst, content, config, quality.coerceIn(1, 100))
+        blade("bench-demo", "${content.material(core).name} ${content.family(family).name.lowercase()} (recipe)", family, core, augment, catalyst, content, config, quality.coerceIn(1, Forge.qualityCap(content.material(core).tier, config)))
 
     /** The class the bench hands a weapon to when the smith has not chosen: the first the family suits. */
     fun defaultWielder(family: WeaponFamilyId, content: ContentCatalog): HeroClassId =

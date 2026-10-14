@@ -102,6 +102,10 @@ object DepthScenarios {
             "the passing smith was made this morning's visitor.") { workshop().visitor(Depth.SMITHS_WAGER) },
         visitorCase("visitor_festival", "Visitor: the festival contract", "A stall brings the crowd today; arming the watch pays a bounty for two days.",
             "the council was made this morning's visitor.") { workshop().visitor(Depth.FESTIVAL_CONTRACT) },
+        visitorCase("visitor_deep_road", "Visitor: the caravan master", "The first siege is over. Pay her for the first crate and Supplies sells Obsidian, Starsteel and the rest today; wait, and her train brings them in two days.",
+            "the first siege was marked fought and the next moved five days out; End Day brought the caravan master.") {
+            workshop().let { s -> s.copy(town = s.town.copy(siegesSurvived = 1, nextSiegeDay = s.day + 5)) }.endDay().also { check(it.encounter?.defId == Depth.DEEP_ROAD) { "no caravan master" } }
+        },
         visitorCase("visitor_unanswered", "Visitor: left unanswered", "Do not answer. The End Day button says what the visitor will be told; press it and Records shows that he left.",
             "the merchant was made this morning's visitor (seed 4).") { workshop(4).visitor(Depth.CROOKED_MERCHANT) },
         Scenario("relic_offer", "Relics: the opening draft", "Day 1: three relics are offered, one may be taken. Decide later and reopen it from Workshop relics in the Shop.",

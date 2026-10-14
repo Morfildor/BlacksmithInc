@@ -1016,6 +1016,7 @@ private fun parseArgs(args: Array<String>): Map<String, String> {
  *      --noAffixEffect id[,id]|all: keeps the affix but neutralises its v3 effect (bane, elite, heal, loot, wound, shatter, self-harm).
  *      --noImpact: skips the maxed-legacy and per-upgrade runs (sweeps that only need the policy rows).
  *      --noFates: the v4 rules for a fallen hero's blade (road odds everywhere, no guild claim, no merchant); the same draws as v4.
+ *      --noRoad: every limited material on sale from day 1 (the deep road of rules 7 left out), for a paired comparison.
  *      --upgrades id=level[,id=level]: the policy rows play that legacy account instead of a new one.
  *      --yardsticks: also prints the second yardsticks (first siege, premium sales, ...) for the policy rows.
  *      --legends: the maxed and impact runs carry a veteran's Legend Board, so famous blades can return.
@@ -1086,6 +1087,10 @@ fun main(args: Array<String>) {
             guildInheritanceChance = 0.0, merchantBaseChance = 0.0, merchantChancePerFame = 0.0,
         ))
         overrides["noFates"] = "true"
+    }
+    if (argMap["--noRoad"] == "true") {
+        config = config.copy(depth = config.depth.copy(legend = config.depth.legend.copy(roadStageByTier = emptyMap())))
+        overrides["noRoad"] = "true"
     }
     argMap["--knownNameGold"]?.let { config = config.copy(legacyTracks = config.legacyTracks.copy(knownNameRegularGold = it.toInt())); overrides["knownNameGold"] = it }
     argMap["--set"]?.let { arg ->

@@ -46,12 +46,23 @@ import com.tinyblacksmith.core.model.MaterialId
  * ore merchant in town this morning, or a caravan that did not arrive. Read from the save and the config; empty for a
  * material that is always in stock.
  */
+/** When the deep road brings [id] (`DeepRoad`), for a material it does not bring yet; null once it is carried. */
+fun GameEngine.roadLine(state: GameState, id: MaterialId): String? {
+    if (onTheRoad(state, id)) return null
+    val opens = state.deepRoadOpenDay?.takeIf { it > state.day && roadNeeds(id) == 1 }
+    return when {
+        opens != null -> "The caravan master's train brings it on day $opens."
+        roadNeeds(id) == 1 -> "The supplier carries it once the deep road opens, after the first siege."
+        else -> "The supplier carries it after the second siege."
+    } + " Before that it comes only from dangerous work."
+}
+
 fun GameEngine.supplyNotes(state: GameState, m: MaterialDef): List<String> {
     if (m.dailySupplierStock == null) return emptyList()
     val ties = upgradeTotal(state.legacy, UpgradeEffect.CATALOG_ACCESS) * config.legacyTracks.catalogStockPerLevel
     return listOfNotNull(
-        // A fine metal the roads do not bring yet (rules 6): the day it arrives, and where it comes from before that.
-        stockedFromDay(m.id).takeIf { it > state.day }?.let { "The supplier carries it from day $it. Before that it comes only from dangerous work." },
+        // What the deep road does not bring yet (rules 7): when it will, and where it comes from before that.
+        roadLine(state, m.id),
         "Caravan delayed. No delivery today.".takeIf { state.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == state.day },
         "Caravan Ties: $ties more each day".takeIf { ties > 0 },
         "Ore merchant in town: ${config.worldEvents.oreMerchantStock} more today".takeIf { state.worldFlags[WorldEvents.FLAG_ORE_MERCHANT + m.id.value] == state.day },
@@ -135,7 +146,7 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                         if (st.guild != null) materialRules(content, m.id).forEach { Secondary("In a fight · ${it.name}: ${it.description}") }
                     }
                     // A greyed Buy says why to a screen reader; on screen the row's own lines do (the price, "0 left today").
-                    val blocked = when { stock == 0 && vm.engine.stockedFromDay(m.id) > st.day -> "the supplier carries it from day ${vm.engine.stockedFromDay(m.id)}"; stock == 0 -> "none left today"; st.gold < price -> "it costs $price gold and you have ${st.gold}"; else -> null }
+                    val blocked = when { stock == 0 && !vm.engine.onTheRoad(st, m.id) -> "it comes down the deep road later in the run"; stock == 0 -> "none left today"; st.gold < price -> "it costs $price gold and you have ${st.gold}"; else -> null }
                     SecondaryActionButton(
                         "Buy", { vm.dispatch(Command.BuyMaterial(m.id, 1)) },
                         Modifier.testTag("buy_${m.id.value}").semantics { contentDescription = blocked?.let { "Buy ${m.name}, unavailable: $it" } ?: "Buy ${m.name} for $price gold" },

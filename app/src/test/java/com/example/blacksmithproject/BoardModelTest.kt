@@ -53,6 +53,22 @@ class BoardModelTest : ShopDayTestBase() {
         assertEquals(setOf("Offer", "Accepted", "Due today").intersect(board.commissions.map { it.status }.toSet()), board.commissions.map { it.status }.toSet())
     }
 
+    /** The Shop's card leads with the offers that wait for an answer, then the accepted ones; an accepted one carries `Labels.readiness`, an offer none. */
+    @Test
+    fun theShopCardPutsNewOffersFirst() {
+        val heroes = fresh.aliveHeroes()
+        val family = engine.content.families.first().id
+        val accepted = Commission(CommissionId("c1"), heroes[0].id, family, 30, 120, fresh.day, fresh.day + 2, CommissionStatus.ACCEPTED)
+        val offered = Commission(CommissionId("c2"), heroes[1 % heroes.size].id, family, 30, 90, fresh.day, fresh.day + 5, CommissionStatus.OFFERED)
+        val state = fresh.copy(commissions = listOf(accepted, offered).associateBy { it.id })
+        val board = engine.shopUi(state).board()
+        assertEquals("the board keeps accepted first", listOf("c1", "c2"), board.commissions.map { it.id.value })
+        assertEquals("the Shop asks for the answer first", listOf("c2", "c1"), board.onShop.map { it.id.value })
+        assertEquals(com.example.blacksmithproject.ui.Labels.readiness(accepted, state.weapons.values, engine.content, engine.config), board.onShop.last().readiness)
+        assertEquals(null, board.onShop.first().readiness)
+        assertEquals(setOf("c1", "c2"), board.onShop.map { it.id.value }.toSet())
+    }
+
     @Test
     fun theSummaryCountsBothKindsAndAnEmptyBoardSaysSo() {
         assertEquals("No commissions · no customer wants", engine.shopUi(fresh).board().summary)

@@ -52,6 +52,8 @@ object Depth {
     const val SMITHS_WAGER = "smiths_wager"
     const val FESTIVAL_CONTRACT = "festival_contract"
     const val DEBT_REPAID = "debt_repaid"
+    /** Rules 7: the caravan master after the first siege (`engine.DeepRoad`). */
+    const val DEEP_ROAD = "deep_road"
 
     const val SALVAGERS_CRUCIBLE = "salvagers_crucible"
     const val TEMPERING_LEDGER = "tempering_ledger"
@@ -74,6 +76,7 @@ object Depth {
         EncounterDef(SMITHS_WAGER, "The Smith's Wager", 1.5, maxPerRun = 3, cooldownDays = 6, description = "A visiting smith bets you can't meet his challenge in time.", minDay = 3),
         EncounterDef(FESTIVAL_CONTRACT, "The Festival Contract", 2.0, maxPerRun = 4, cooldownDays = 4, description = "The council wants your help with the festival or the town watch.", replacesEvent = "merchant_festival"),
         EncounterDef(DEBT_REPAID, "The Debt Repaid", 0.0, maxPerRun = Int.MAX_VALUE, cooldownDays = 0, description = "The defender you armed on credit has returned.", followUp = true),
+        EncounterDef(DEEP_ROAD, "The Deep Road", 0.0, maxPerRun = 1, cooldownDays = 0, description = "After the siege, the caravan master can bring rare stock down the deep road.", followUp = true),
     )
 
     val relics = listOf(

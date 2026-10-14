@@ -59,6 +59,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     var siege = base.siege
     var guild = base.guild
     var heartfire = base.heartfire
+    var deepRoadOpenDay = base.deepRoadOpenDay
 
     // Per-day scratch counters (not persisted).
     var patrolsToday = 0
@@ -204,6 +205,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
             siege = siege,
             guild = guild,
             heartfire = heartfire,
+            deepRoadOpenDay = deepRoadOpenDay,
         )
     }
 }

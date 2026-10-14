@@ -110,6 +110,8 @@ enum class EncounterPref {
         fun keeps(spend: Int) = state.gold - spend >= LOW_GOLD
         return when (inst.defId) {
             Depth.LAST_CRATE -> if (keeps(n("cratePrice"))) take("crate") else Encounters.PASS
+            // Two days sooner on the big ingredients, while the purse can spare it.
+            Depth.DEEP_ROAD -> if (keeps(n("gold"))) take("crate") else Encounters.PASS
             Depth.BLADE_FOR_THE_WALL -> if (threatened && !poor) take("pledge", "patron") else take("patron", "pledge")
             Depth.MASTERS_AFTERNOON -> {
                 val busy = threatened || state.consequences.any { it.kind == ConsequenceKind.WAGER }

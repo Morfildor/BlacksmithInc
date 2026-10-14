@@ -26,8 +26,9 @@ data class BalanceConfig(
      * v11 (2026-10-11): the guild ([GuildConfig]): contracted members, loans, contracts, the interaction engine and the siege fought through it. A run without a guild reads none of it and plays as v10. See docs/DECISIONS.md.
      * v14 (2026-10-11): the guild siege base 190 (was 186), with the metals' fight rules in the catalog. Paired runs in docs/DECISIONS.md.
      * v15 (2026-10-14): review fixes. An unanswered blessing offer lapses ([CombatConfig.blessingOfferDays]); a weapon given away earns no sale reputation and only a bounded warmth ([CustomerConfig] gift numbers); a guild run's wall work draws on the daily recovery allowance ([GuildConfig.wallWorkExtraRecovery]). See docs/DECISIONS.md.
+     * v16 (2026-10-14): owner playtest. Each core metal holds a most quality ([LegendConfig.qualityCapByCoreTier]: masterwork needs a fine metal); the deep road ([LegendConfig.roadStageByTier], rules 7) replaces the supplier's days; contract gold ×3 ([GuildConfig.contractGoldPercent]). Prices of the tier-3-and-up materials are content. See docs/DECISIONS.md.
      */
-    val version: Int = 15,
+    val version: Int = 16,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -689,8 +690,18 @@ data class LegendConfig(
     val deedPower: Int = 4,
     /** A core of this tier or above holds Epic work. In a lesser metal quality stops at Rare, and Heartfire does not take. */
     val fineCoreTier: Int = 5,
-    /** The supplier carries a core metal of this tier from this day on. Before it, that metal comes only from dangerous work or an event. */
-    val coreTierFromDay: Map<Int, Int> = mapOf(5 to 6, 6 to 11),
+    /**
+     * v16: the deep road (`engine.DeepRoad`) replaces the supplier's days. A limited material of this tier is carried once
+     * the road is open this far: 1 after the first siege's story (the caravan master, or the guild's contract), 2 from the
+     * morning after the second siege. Before it the material comes only from dangerous work or an event. Empty = all from day 1.
+     */
+    val roadStageByTier: Map<Int, Int> = mapOf(4 to 1, 5 to 1, 6 to 2),
+    /** The caravan master's train arrives this many days after her visit when the smith does not pay for the first crate. */
+    val deepRoadWaitDays: Int = 2,
+    /** What the first crate costs: the road opens the morning she visits, with that morning's stock. */
+    val deepRoadCrateGold: Int = 60,
+    /** The most quality a core of this tier can hold, whatever the roll; a tier not named holds up to 100. Masterwork needs a fine metal. */
+    val qualityCapByCoreTier: Map<Int, Int> = mapOf(1 to 55, 2 to 65, 3 to 75, 4 to 84),
     /** A classic run: a siege won from this number on leaves one Heartfire. */
     val classicSiegeHeartfireFrom: Int = 4,
     /** Review 2026-10-14 (P13): a warlord held at the wall leaves Heartfire whatever the siege's number, so a new classic account can reach Legendary before its fourth siege. */

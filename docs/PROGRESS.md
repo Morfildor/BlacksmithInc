@@ -1,5 +1,26 @@
 # Progress — 2026-10-14 (deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Owner playtest of the debug APK (2026-10-14, branch `review-2026-10-14`, uncommitted after 117a3a2)
+
+- The animated siege replay existed only on `origin/claude/siege-replay-animated-portraits-phyv6c`; merged (117a3a2).
+  It is a guild-run feature; a classic run keeps the round list.
+- Commissions: the forge result leads with "Store for commission" when the blade is the one End Day hands over
+  (`ForgedForUi.handsOver`), and offers "Accept commission" for an offered one. Listing a fitting blade always worked
+  (`Commissions.pick` takes storage, then the shelf); the owner's case was most likely an unaccepted order.
+  The Shop has a Commissions card above the counter (accept/decline in place, due and readiness) and a "Back at the
+  forge" card for returned blades (List, Salvage, Keep in storage); the Forge's Commissions turns gold with "N new".
+- Forge: a visible Supplies button in the heading and "Buy more" in every tray.
+- Balance 16, rules 7 (DECISIONS "Owner playtest 2026-10-14"): quality cap per metal, tier-3-and-up prices about
+  2.5 times, the deep road (caravan master / guild contract after the first siege, Moonsteel after the second), contract
+  gold ×3. The guild charter rates fall (SYNERGY 67 → 53 %, six competent policies 32 to 54 %): left for the owner.
+- Fixed on the way: a sale receipt with the guild's share now says "Of that, paid by the guild".
+- Checks run: `:core:test` and `:app:testDebugUnitTest` green; `:app:assembleDebug` built. Known gap: no test plays a
+  real deep road contract through `Missions` to a win (`DeepRoadTest` calls `DeepRoad.openTomorrow`); guildsim shows the
+  road's bots reaching Epic sooner than the siege-2 fallback would.
+- Next: owner looks at the guild numbers and chooses the levers; a phone pass of the new Shop cards, the forge result
+  and the caravan master (`visitor_deep_road` scenario); the instrumented suite and `smoke.sh`, `intro.sh`, `forge.sh`
+  on an emulator (not run this session).
+
 ## Implementing the 2026-10-14 review (in progress, branch `review-2026-10-14`)
 
 Owner decisions A to M are in DECISIONS ("Owner decisions on the 2026-10-14 review"). Done and committed so far: plan items 6 and 7

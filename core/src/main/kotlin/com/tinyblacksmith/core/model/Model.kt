@@ -440,6 +440,8 @@ data class GameState(
     val guild: GuildRunState? = null,
     /** Rules 6: Heartfire in the forge, the scarce ingredient of a Heartfire forging. Run-only. */
     val heartfire: Int = 0,
+    /** Rules 7: the day the deep road opens (`engine.DeepRoad`), set after the first siege by the caravan master or the guild's contract; null while it is shut. */
+    val deepRoadOpenDay: Int? = null,
 ) {
     val isGuildRun: Boolean get() = guild != null
     fun loanOf(heroId: HeroId): Weapon? = weapons.values.firstOrNull { it.loanedTo == heroId }

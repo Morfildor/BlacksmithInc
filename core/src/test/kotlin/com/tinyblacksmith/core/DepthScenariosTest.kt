@@ -21,7 +21,7 @@ class DepthScenariosTest {
     private val visitors = mapOf(
         "visitor_collector" to Depth.COLLECTORS_OFFER, "visitor_crate_no_gold" to Depth.LAST_CRATE, "visitor_pledge" to Depth.BLADE_FOR_THE_WALL,
         "visitor_master" to Depth.MASTERS_AFTERNOON, "visitor_heirloom" to Depth.CRACKED_FAMILY_BLADE, "visitor_merchant" to Depth.CROOKED_MERCHANT,
-        "visitor_wager" to Depth.SMITHS_WAGER, "visitor_festival" to Depth.FESTIVAL_CONTRACT, "visitor_unanswered" to Depth.CROOKED_MERCHANT, "chain_debt_repaid" to Depth.DEBT_REPAID,
+        "visitor_wager" to Depth.SMITHS_WAGER, "visitor_festival" to Depth.FESTIVAL_CONTRACT, "visitor_unanswered" to Depth.CROOKED_MERCHANT, "chain_debt_repaid" to Depth.DEBT_REPAID, "visitor_deep_road" to Depth.DEEP_ROAD,
     )
 
     @Test

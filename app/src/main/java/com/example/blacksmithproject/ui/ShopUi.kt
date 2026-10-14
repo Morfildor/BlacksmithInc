@@ -3,6 +3,7 @@ package com.example.blacksmithproject.ui
 import androidx.compose.runtime.Immutable
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.ui.detail.Stat
+import com.example.blacksmithproject.ui.detail.salvageLabel
 import com.example.blacksmithproject.ui.detail.weaponStats
 import com.example.blacksmithproject.ui.shopday.Beat
 import com.example.blacksmithproject.ui.shopday.FaceUi
@@ -122,6 +123,20 @@ data class StockUi(
     val promised: String? = null,
 )
 
+/**
+ * A blade that came back to the smith at the last End Day or since (traded in, recovered from a fallen hero or by the
+ * party, handed back from a loan, a legend come home) and is in storage. [how] is its own history line, [day] that
+ * line's day (what a "Keep" on the Shop is remembered by), [salvage] the blade sheet's salvage label.
+ */
+@Immutable data class ReturnedUi(val stock: StockUi, val how: String, val day: Int, val salvage: String)
+
+/** The history kinds a blade comes back to the forge by. */
+private val RETURN_KINDS = setOf("TRADED_IN", "RECOVERED", "LOAN_RETURNED", "RETURNED")
+
+/** The line a blade came back by, from the last End Day on: read from the newest end of its history only. */
+private fun returnedBy(w: Weapon, state: GameState) =
+    w.history.asReversed().asSequence().takeWhile { it.era == state.era && it.day >= state.day - 1 }.firstOrNull { it.kind in RETURN_KINDS }
+
 /** "Kept for Wren Kestrel's order": a blade bound to an open order (`Weapon.promisedTo`); null for any other blade. */
 fun promisedLine(state: GameState, w: Weapon): String? = w.promisedTo?.let { "Reserved for ${GameViewModel.promisedBuyer(state, it) ?: "a customer"}'s commission" }
 
@@ -150,6 +165,8 @@ data class ShopUi(
     val requestSlots: Int = 1,
     /** What each living hero can pay at the counter today (`Demand.funds`): the count under a price being chosen. */
     val funds: List<Int> = emptyList(),
+    /** The stored blades that came back since yesterday, in storage's order: the Shop offers to list, salvage or keep each. */
+    val returned: List<ReturnedUi> = emptyList(),
 ) {
     /** The counter's plate: the shelf first, then how many customers the shop serves in a day. */
     val plate: String get() = "Shelf ${shelf.size} of $slots · $seats customers a day"
@@ -161,9 +178,12 @@ data class ShopUi(
  * may name another blade: the engine hands over the least sufficient blade that fits and sets none aside.
  */
 @Immutable data class ForgedForUi(
+    val id: CommissionId,
     val title: String, val terms: String, val fits: Boolean, val fit: String, val accepted: Boolean, val handover: String,
     /** Whether this blade is reserved, and for whose commission (`Weapon.promisedTo`); the engine reserves none for an ordinary one. */
     val reserved: String = NOT_RESERVED,
+    /** Accepted, and this is the blade End Day would hand over as the shop stands (`Commissions.pick`). */
+    val handsOver: Boolean = false,
 )
 
 internal const val NOT_RESERVED = "Not reserved. At End Day the buyer takes a matching weapon from storage first, then the shelf."
@@ -175,6 +195,7 @@ fun GameEngine.forgedFor(state: GameState, weaponId: WeaponId, commissionId: Com
     val fits = Commissions.fit(w, c) == Commissions.Fit.OK
     val accepted = c.status == CommissionStatus.ACCEPTED
     return ForgedForUi(
+        id = c.id,
         title = "For ${state.heroes[c.buyerId]?.fullName ?: "Someone"}: ${Labels.request(c, content, config)}",
         terms = "${c.reward} gold · ${dueWords(c.deadlineDay - state.day, c.deadlineDay)}",
         fits = fits,
@@ -182,6 +203,7 @@ fun GameEngine.forgedFor(state: GameState, weaponId: WeaponId, commissionId: Com
         accepted = accepted,
         handover = if (accepted) Labels.readiness(c, state.weapons.values, content, config) else "Accept this commission in the Shop before it can be collected.",
         reserved = promisedLine(state, w)?.let { "$it." } ?: NOT_RESERVED,
+        handsOver = accepted && Commissions.pick(state.weapons.values, c, config)?.id == w.id,
     )
 }
 
@@ -280,8 +302,10 @@ fun GameEngine.shopUi(state: GameState, forecast: Battle.SiegeOutlook? = null): 
         d.unservedClasses.takeIf { it.isNotEmpty() && d.cheapestPrice != null }?.let { ids -> DemandRow("No suitable weapon for", ids.joinToString { content.heroClass(it).name + "s" }) },
     )
 
+    val storage = state.storedWeapons().map { stock(it, threat, state.era, promisedLine(state, it)) }
+
     return ShopUi(
-        seats = config.customers.shopCapacity + toolTotal(state, ToolEffect.EXTRA_CUSTOMERS) + if (festival) config.customers.festivalExtraSeats else 0,
+        seats =config.customers.shopCapacity + toolTotal(state, ToolEffect.EXTRA_CUSTOMERS) + if (festival) config.customers.festivalExtraSeats else 0,
         slots = shelfSlots(state),
         lead = LeadUi(lead.kind, line.action, line.reason, lead.weaponId, lead.familyId),
         requests = requests,
@@ -289,7 +313,8 @@ fun GameEngine.shopUi(state: GameState, forecast: Battle.SiegeOutlook? = null): 
         // A day that cannot be laid out is left out here; the Gazette still has it.
         yesterday = state.lastResolution?.takeIf { it.day == state.day - 1 }?.let { runCatching { yesterday(state, it) }.getOrNull() },
         shelf = state.listedWeapons().map { stock(it, threat, state.era) },
-        storage = state.storedWeapons().map { stock(it, threat, state.era, promisedLine(state, it)) },
+        storage = storage,
+        returned = storage.mapNotNull { s -> returnedBy(s.weapon, state)?.let { e -> ReturnedUi(s, e.text, e.day, salvageLabel(state, s.weapon)) } },
         threat = threat,
         requestSlots = config.customers.maxOpenCommissions,
         funds = Demand.funds(state, content, config),

@@ -191,6 +191,7 @@ private fun GameEngine.rewardWords(state: GameState, r: Reward, factionId: Facti
     "a relic to choose".takeIf { r.relicOffer },
     "${r.heartfire} Heartfire for the forge".takeIf { r.heartfire > 0 },
     "the supplier's thanks: ${config.guild.supplierGratefulStock} more of every limited material each morning for ${config.guild.supplierDays} days".takeIf { r.supplier },
+    "the deep road opens: ${com.tinyblacksmith.core.engine.DeepRoad.names(content, config, 1)} on sale".takeIf { r.road },
     r.weaponId?.let { state.weapons[it]?.name }?.let { "$it back at the forge" },
     r.captiveId?.let { state.heroes[it]?.fullName }?.let { "$it brought home" },
 ).joinToString(" · ").ifEmpty { "Nothing of its own" }

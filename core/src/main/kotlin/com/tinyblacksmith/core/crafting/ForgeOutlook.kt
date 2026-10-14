@@ -77,10 +77,11 @@ object ForgeOutlook {
 
         val centre = Forge.centreQuality(ctx, cmd)
         val spread = Forge.rollSpread(config, cmd.risk)
-        val low = (centre - spread).coerceIn(1, 100)
-        val high = (centre + spread).coerceIn(1, 100)
-        val worst = (centre - spread - (if (defect > 0.0) config.qualityDefectPenalty else 0)).coerceIn(1, 100)
-        val best = (centre + spread + (if (exceptional > 0.0) config.qualityExceptionalBonus else 0)).coerceIn(1, 100)
+        val cap = Forge.qualityCap(core.tier, config)
+        val low = (centre - spread).coerceIn(1, cap)
+        val high = (centre + spread).coerceIn(1, cap)
+        val worst = (centre - spread - (if (defect > 0.0) config.qualityDefectPenalty else 0)).coerceIn(1, cap)
+        val best = (centre + spread + (if (exceptional > 0.0) config.qualityExceptionalBonus else 0)).coerceIn(1, cap)
 
         // Places for a buff, as the forge counts them: the least and the most this recipe can come out with.
         fun places(r: Rarity) = when (r) { Rarity.COMMON, Rarity.UNCOMMON -> 0; Rarity.RARE -> 1; Rarity.EPIC -> 2; Rarity.LEGENDARY -> 3 }

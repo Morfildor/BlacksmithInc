@@ -272,7 +272,7 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
             }
             if (sale.saleBonus != 0) add(ReceiptRow("Town's blessing", "+${sale.saleBonus} gold"))
             // Part of the price, not on top of it: the guild's share reaches the till with the customer's.
-            if (sale.stipend != 0) add(ReceiptRow("Paid by the guild", "${sale.stipend} gold"))
+            if (sale.stipend != 0) add(ReceiptRow("Of that, paid by the guild", "${sale.stipend} gold"))
             // What the shop's gold rose by, as the Sale record defines it.
             add(ReceiptRow("Total received", "${sale.cashPaid + sale.saleBonus + sale.stipend} gold", total = true))
         }

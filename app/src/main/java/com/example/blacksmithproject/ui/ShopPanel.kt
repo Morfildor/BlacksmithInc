@@ -40,6 +40,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.detail.WeaponStatLine
@@ -53,6 +54,7 @@ import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.Ember
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
+import com.example.blacksmithproject.ui.theme.SceneInk
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.Encounters
 import com.tinyblacksmith.core.engine.Relics
@@ -63,8 +65,10 @@ import com.tinyblacksmith.core.model.WeaponId
 
 /**
  * The Shop destination: where the day is planned. From the top: [strip] (the siege and the forge's health, as on the
- * Forge; on the day of a siege a row of its own says so instead), the one lead of the day, a visitor who waits, then the
- * counter: the scene and its plate head the shelf, whose blades are listed once, as rows. Then the ways into the board,
+ * Forge; on the day of a siege a row of its own says so instead), the one lead of the day, a visitor who waits, the open
+ * commissions (answered here, [onAnswer]) and the blades that came back since yesterday (listed, salvaged or kept here,
+ * [onList], [onSalvage]), each only while there is one, then the counter: the scene and its plate head the shelf,
+ * whose blades are listed once, as rows. Then the ways into the board,
  * storage and supplies, then the reports: who is buying and yesterday at the counter, folded. The next thing to do
  * before merchandise, merchandise before reports. One lazy list of keyed rows; data in, events out. [tip] is the
  * first-run banner about listing, shown until a blade is listed; [showLead] false while the guided first day speaks
@@ -93,12 +97,17 @@ fun ShopPanel(
     onOpenRelicOffer: () -> Unit = {},
     strip: (@Composable () -> Unit)? = null,
     showLead: Boolean = true,
+    onAnswer: (CommissionId, Boolean) -> Unit = { _, _ -> },
+    onList: (WeaponId, Int) -> Unit = { _, _ -> },
+    onSalvage: (WeaponId) -> Unit = {},
     more: LazyListScope.() -> Unit = {},
 ) {
     val side = Modifier.padding(horizontal = Space.md)
     // A low screen or large text: the scene gives its height to the shelf rows under it.
     val short = LocalConfiguration.current.screenHeightDp < 700 || LocalDensity.current.fontScale > 1.15f
     val list = rememberLazyListState()
+    // "Keep" on a returned blade only lets the card go: the blade stays in storage. Remembered by blade and the day it came back.
+    var kept by rememberSaveable { mutableStateOf(emptyList<String>()) }
     LazyColumn(modifier.fillMaxSize().bottomFade(list.canScrollForward).testTag("shop_list"), state = list, contentPadding = PaddingValues(bottom = Space.lg)) {
         strip?.let { item(key = "strip") { it() } }
         // The day of a siege says so first, in words, louder than the strip ever is; the lead keeps its place under it.
@@ -117,6 +126,17 @@ fun ShopPanel(
         if (showLead) item(key = "lead") { LeadCard(shop.lead, onAct = { onLead(shop.lead) }, modifier = side.padding(top = Space.md)) }
         if (visitor?.instance?.isOpen == true) item(key = "visitor") { VisitorCard(visitor, onOpenVisitor, side.padding(top = Space.sm)) }
         visitorNote(visitor)?.let { note -> item(key = "visitor_note") { Secondary(note, side.padding(top = Space.sm).testTag("visitor_note")) } }
+        if (shop.requests.isNotEmpty()) item(key = "commissions") {
+            val board = remember(shop.requests, shop.wants) { shop.board() }
+            CommissionsCard(board.onShop, busy, onOpenBoard, onAnswer, side.padding(top = Space.md))
+        }
+        val returned = shop.returned.filter { "${it.stock.weapon.id.value}@${it.day}" !in kept }
+        if (returned.isNotEmpty()) item(key = "returned") {
+            ReturnedCard(
+                returned, shelfFree = shop.slots - shop.shelf.size, busy, onOpenBlade, onList, onSalvage,
+                onKeep = { r -> kept = kept + "${r.stock.weapon.id.value}@${r.day}" }, modifier = side.padding(top = Space.md),
+            )
+        }
 
         // The counter heads the shelf: its plate counts the blades and the free places, and each blade is one row under it.
         item(key = "counter") {
@@ -191,6 +211,80 @@ private fun DoorRow(icon: Int, title: String, action: String, tag: String, onOpe
             detail?.let { Secondary(it, Modifier.testTag("${tag}_detail")) }
         }
         Text("Open  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
+    }
+}
+
+/**
+ * The open commissions as one card above the counter: its head counts them, marks the new offers and opens the board;
+ * under it each commission in two lines, an offer with Accept and Decline, an accepted one with whether a blade in the
+ * shop answers it (`Labels.readiness`). The board keeps the rest: the terms in full, the fits, "Forge this".
+ */
+@Composable
+private fun CommissionsCard(rows: List<RequestUi>, busy: Boolean, onOpenBoard: () -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, modifier: Modifier = Modifier) {
+    val new = rows.count { it.offered }
+    Column(modifier.fillMaxWidth().forgeRow().testTag("shop_commissions")) {
+        Row(
+            Modifier.fillMaxWidth().clickable(onClickLabel = "Open the board", role = Role.Button, onClick = onOpenBoard).heightIn(min = 56.dp).padding(horizontal = Space.md).testTag("shop_commissions_open"),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            PixelImage(R.drawable.icon_action_commission, 32.dp, description = null)
+            Text("Commissions · ${rows.size}", style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.weight(1f))
+            // The count of offers that wait, in the gold of the day's outcome chips: the thing on the Shop that needs an answer.
+            if (new > 0) Text(
+                "$new new", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = SceneInk,
+                modifier = Modifier.background(Gold, MaterialTheme.shapes.extraSmall).padding(horizontal = Space.sm, vertical = 2.dp).testTag("shop_commissions_new"),
+            )
+            Text("Open  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
+        }
+        rows.forEach { r ->
+            Column(Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, bottom = Space.sm).testTag("shop_commission_${r.id.value}")) {
+                Text("${r.asks} · ${r.reward} gold", style = MaterialTheme.typography.titleSmall, color = Cream)
+                Secondary("${r.buyer.name} · ${if (r.offered) "New offer" else r.due}")
+                if (r.offered) FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs), modifier = Modifier.padding(top = Space.xs)) {
+                    PrimaryActionButton("Accept", { onAnswer(r.id, true) }, Modifier.testTag("shop_accept_${r.id.value}"), enabled = !busy)
+                    SecondaryActionButton("Decline", { onAnswer(r.id, false) }, Modifier.heightIn(min = 52.dp).testTag("shop_decline_${r.id.value}"), enabled = !busy)
+                }
+                else r.readiness?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = if (r.ready) BuffGreen else CreamMuted, modifier = Modifier.testTag("shop_commission_ready_${r.id.value}")) }
+            }
+        }
+    }
+}
+
+/**
+ * The blades that came back since yesterday, as one card above the counter: each says how ([ReturnedUi.how]), then
+ * List at its suggested price, Salvage, or Keep in storage (it stays in storage; the card lets it go). The name opens the blade's
+ * sheet, where any price can be set. A blade kept for an order can be neither listed nor salvaged, as the engine has it.
+ */
+@Composable
+private fun ReturnedCard(
+    rows: List<ReturnedUi>, shelfFree: Int, busy: Boolean, onOpen: (WeaponId) -> Unit, onList: (WeaponId, Int) -> Unit, onSalvage: (WeaponId) -> Unit,
+    onKeep: (ReturnedUi) -> Unit, modifier: Modifier = Modifier,
+) {
+    Column(modifier.fillMaxWidth().forgeRow().padding(horizontal = Space.md, vertical = Space.sm).testTag("shop_returned")) {
+        Text("Back at the forge · ${rows.size}", style = MaterialTheme.typography.titleMedium, color = Gold)
+        Secondary(if (shelfFree > 0) "In storage now. List, salvage or keep each one." else "In storage now. The shelf is full: salvage or keep, or make room to list.")
+        rows.forEach { r ->
+            val w = r.stock.weapon
+            val free = r.stock.promised == null
+            Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("returned_${w.id.value}")) {
+                Row(
+                    Modifier.fillMaxWidth().clickable(onClickLabel = "Open ${w.name}", role = Role.Button) { onOpen(w.id) }.heightIn(min = 48.dp),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(2.dp)) { WeaponSprite(w, size = 36.dp) }
+                    Column(Modifier.weight(1f)) {
+                        Text(w.name + (w.title?.let { " · \"$it\"" } ?: ""), style = MaterialTheme.typography.titleSmall, color = rarityColor(w.rarity))
+                        Secondary(r.how)
+                        r.stock.promised?.let { Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold) }
+                    }
+                }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs), modifier = Modifier.padding(top = Space.xs)) {
+                    SecondaryActionButton("List at ${r.stock.suggested}", { onList(w.id, r.stock.suggested) }, Modifier.testTag("returned_list_${w.id.value}"), enabled = !busy && free && shelfFree > 0)
+                    SecondaryActionButton(r.salvage, { onSalvage(w.id) }, Modifier.testTag("returned_salvage_${w.id.value}"), enabled = !busy && free)
+                    InlineActionButton("Keep in storage", { onKeep(r) }, Modifier.testTag("returned_keep_${w.id.value}"))
+                }
+            }
+        }
     }
 }
 

@@ -5,6 +5,7 @@ import com.tinyblacksmith.core.TestSupport.engine
 import com.tinyblacksmith.core.TestSupport.forgeAccepted
 import com.tinyblacksmith.core.TestSupport.quickSword
 import com.tinyblacksmith.core.TestSupport.withMaterials
+import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.content.SliceContent
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
@@ -140,8 +141,9 @@ class ForgeAndEnergyTest {
     fun forgeMasteryUpgradeRaisesQuality() {
         val plain = engine.newRun(LegacyProfile(), 11).withMaterials()
         val mastered = engine.newRun(LegacyProfile(upgrades = mapOf(SliceContent.UPG_MASTERY to 3)), 11).withMaterials()
-        val a = plain.forgeAccepted(quickSword(Risk.SAFE)).let { it.state.weapon(it.forgedWeaponId!!) }
-        val b = mastered.forgeAccepted(quickSword(Risk.SAFE)).let { it.state.weapon(it.forgedWeaponId!!) }
+        // In a fine metal, so the most quality the metal holds (`Forge.qualityCap`) is not what stops it.
+        val a = plain.forgeAccepted(quickSword(Risk.SAFE, core = LaunchContent.STARSTEEL)).let { it.state.weapon(it.forgedWeaponId!!) }
+        val b = mastered.forgeAccepted(quickSword(Risk.SAFE, core = LaunchContent.STARSTEEL)).let { it.state.weapon(it.forgedWeaponId!!) }
         assertEquals(a.quality + 12, b.quality)
     }
 }
