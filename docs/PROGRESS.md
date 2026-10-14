@@ -10,12 +10,7 @@ Scripts updated for the new ids (`opening_begin`, `charter_row_<id|none>`, Setti
 Baseline before these changes, emulator-5556 (carbscan, API 36): instrumented 75 tests, 10 failed (the review's 8 stale plus the two known AVD failures).
 A core-correctness agent works in its own worktree (rows 21, 22/B, 31-34, 36 incl. M); merge its branch when it reports.
 
-Next, in order: the owner judged the screens amateur. Advisor's fix list: `ChoiceRow` without the radio circle and with no border
-when unselected (chosen = raised, 2 dp gold edge, 4 dp gold left rule); unselected charter rows one line; no era frame on a fresh
-account (caps label "ERA 1 · HOW IT BEGINS"); intro line as a plain line, not a box; left-align below the art; opening cards with
-signer portraits, pitch 2 lines until chosen, drawback bodySmall SemiBold with a red left rule, `EffectRow` for gains, first package
-preselected; heading titleLarge. Then captures at 1.0 and 2.0 sent to the owner, then the Shop, Forge (K, L, A, slot labels),
-dialogs onto `ForgeDialog`, J, gameplay batch, device batch (2 MB save, stale tests, scripts, 600 dp), E, docs, 0.9.0 held.
+UI round 2 is done (commit 99354a8): the owner's title painting, a run-setup screen, opening cards with gains and costs as bullets, Regular body text, charcoal palette, checked choice rows; title, setup and chooser seen at font 1.0 and 2.0 on emulator-5556. The work moves to a cloud session: **`docs/HANDOFF_CLOUD.md` is the plan and the state**.
 
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay
