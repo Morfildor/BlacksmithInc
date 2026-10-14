@@ -88,7 +88,7 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
     val leaveMenu = { menuOpen = false }
     // Debug builds only: the release source set's ScenarioMenu is empty.
-    val scenarios: @Composable () -> Unit = { ScenarioMenu(vm, hasRun = ui !is UiState.Title, enabled = ui.op !is GameSession.Status.Working, onLoaded = leaveMenu) }
+    val scenarios: @Composable () -> Unit = { ScenarioMenu(vm, hasRun = ui !is UiState.Title, enabled = ui.op !is GameSession.Status.Working, onLoaded = { menuSettings = false; leaveMenu() }) }
     // What the workshop and the shop day remember on screen (scroll positions, the open forge step, an open sheet)
     // outlives a visit to the menu. It is kept per day: a new day opens each destination at its top.
     val screens = rememberSaveableStateHolder()
@@ -109,13 +109,13 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
             when (val s = ui) {
                 UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
                 is UiState.LoadFailed -> LoadFailedScreen(s.failure, s.working, onRetry = vm::retry, onStartOver = vm::startOver)
-                is UiState.Title -> MainMenu("Era ${s.legacy.nextEra} awaits", s.legacy, "New game", "title_new_run", s.op !is GameSession.Status.Working, onPrimary = { leaveMenu(); vm.newRun() }, onSettings = { menuSettings = true }, extra = { IntroMenuLine(vm, Modifier.padding(top = Space.sm)); scenarios() }, picker = { CharterPicker(vm, Modifier.padding(bottom = Space.sm)) })
-                is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", !s.busy, leaveMenu, { menuSettings = true }, onAbandon = vm::abandonRun, extra = scenarios) else screens.SaveableStateProvider(play!!) { WorkshopScreen(s, vm, onMainMenu = { menuOpen = true }) }
-                is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }, extra = scenarios) else screens.SaveableStateProvider(play!!) { ShopDayHost(s, vm, onMainMenu = { menuOpen = true }) }
-                is UiState.RunEnded -> if (menuOpen) MainMenu("Era ${s.run.era} has ended", s.legacy, "See how the era ended", "menu_continue", true, leaveMenu, { menuSettings = true }, extra = scenarios) else RunEndScreen(s, vm)
+                is UiState.Title -> MainMenu("Era ${s.legacy.nextEra} awaits", s.legacy, "New game", "title_new_run", s.op !is GameSession.Status.Working, onPrimary = { leaveMenu(); vm.newRun() }, onSettings = { menuSettings = true }, extra = { IntroMenuLine(vm, Modifier.padding(top = Space.sm)) }, picker = { CharterPicker(vm, Modifier.padding(bottom = Space.sm)) })
+                is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", !s.busy, leaveMenu, { menuSettings = true }, onAbandon = vm::abandonRun) else screens.SaveableStateProvider(play!!) { WorkshopScreen(s, vm, onMainMenu = { menuOpen = true }) }
+                is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }) else screens.SaveableStateProvider(play!!) { ShopDayHost(s, vm, onMainMenu = { menuOpen = true }) }
+                is UiState.RunEnded -> if (menuOpen) MainMenu("Era ${s.run.era} has ended", s.legacy, "See how the era ended", "menu_continue", true, leaveMenu, { menuSettings = true }) else RunEndScreen(s, vm)
             }
             val introRow by vm.introRow.collectAsStateWithLifecycle()
-            if (menuSettings) SettingsSheet(reducedMotion, vm::setReducedMotion, hapticsOn, vm::setHaptics, onDismiss = { menuSettings = false }, intro = introRow, onIntro = { vm.introAction() })
+            if (menuSettings) SettingsSheet(reducedMotion, vm::setReducedMotion, hapticsOn, vm::setHaptics, onDismiss = { menuSettings = false }, intro = introRow, onIntro = { vm.introAction() }, debug = scenarios)
             // A save that failed leaves the last saved state on screen under this dialog; nothing is lost by dismissing it.
             (ui.op as? GameSession.Status.Failed)?.let { SaveFailureDialog(it.op, it.unconfirmed, onRetry = vm::retry, onKeepWorking = vm::dismissSaveFailure) }
         }
@@ -155,41 +155,50 @@ private fun LegacyCount(value: Int, label: String, modifier: Modifier = Modifier
  * charter a new game begins under, chosen in place so one tap on the button still starts it.
  */
 @Composable
-fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag: String, enabled: Boolean, onPrimary: () -> Unit, onSettings: () -> Unit, onAbandon: (() -> Unit)? = null, extra: @Composable () -> Unit = {}, picker: @Composable () -> Unit = {}) {
+fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag: String, enabled: Boolean, onPrimary: () -> Unit, onSettings: () -> Unit, onAbandon: (() -> Unit)? = null, extra: @Composable () -> Unit = {}, picker: (@Composable () -> Unit)? = null) {
     var confirmAbandon by remember { mutableStateOf(false) }
     BoxWithConstraints(Modifier.fillMaxSize().testTag("main_menu")) {
         // One whole step past the scale that covers the width, more on a tall screen: the picture carries over a third of the height and loses little at the sides.
         val art = ImageBitmap.imageResource(R.drawable.bg_title_workshop_night)
         val scale = maxOf(ceil(constraints.maxWidth / art.width.toFloat()).toInt() + 1, ceil(constraints.maxHeight * 0.36f / art.height).toInt())
-        val artHeight = with(LocalDensity.current) { minOf(art.height * scale, (constraints.maxHeight * 0.46f).toInt()).toDp() }
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).heightIn(min = maxHeight).navigationBarsPadding(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Box(Modifier.fillMaxWidth().height(artHeight)) {
-                TitleArt(art, scale, Modifier.matchParentSize())
-                Text(
-                    "Tiny Blacksmith", style = MaterialTheme.typography.headlineLarge.copy(shadow = Shadow(Color.Black, Offset(0f, 2f), 6f)), color = Gold, textAlign = TextAlign.Center,
-                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = Space.md).semantics { heading() }.drawBehind {
-                        // A bronze rule under the name, fading out at both ends.
-                        drawRect(Brush.horizontalGradient(listOf(Color.Transparent, Bronze, Color.Transparent), size.width * 0.15f, size.width * 0.85f), Offset(size.width * 0.15f, size.height - 1.dp.toPx()), Size(size.width * 0.7f, 1.dp.toPx()))
-                    }.padding(bottom = Space.sm),
-                )
-            }
-            Spacer(Modifier.weight(2f).heightIn(min = Space.md))
-            Column(Modifier.padding(horizontal = Space.lg).widthIn(max = 420.dp).fillMaxWidth().forgeFrame().padding(Space.md), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(status, style = MaterialTheme.typography.titleLarge, color = Cream, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
-                legacy?.let {
-                    HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
-                    Row(Modifier.fillMaxWidth()) {
-                        LegacyCount(it.points, "Legacy points", Modifier.weight(1f))
-                        LegacyCount(it.eras.size, "Eras survived", Modifier.weight(1f))
+        // With the charter rows under it the picture gives up height, so the way forward is on the first screen.
+        val artHeight = with(LocalDensity.current) { minOf(art.height * scale, (constraints.maxHeight * if (picker != null) 0.27f else 0.46f).toInt()).toDp() }
+        // The way forward is pinned at the foot: the picture, the era and the charter rows scroll above it, so a long
+        // choice never pushes "New game" off the first screen.
+        Column(Modifier.fillMaxSize().navigationBarsPadding(), horizontalAlignment = Alignment.CenterHorizontally) {
+            val scroll = rememberScrollState()
+            BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+                Column(
+                    Modifier.fillMaxSize().verticalScroll(scroll).heightIn(min = maxHeight).bottomFade(scroll.canScrollForward),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Box(Modifier.fillMaxWidth().height(artHeight)) {
+                        TitleArt(art, scale, Modifier.matchParentSize())
+                        Text(
+                            "Tiny Blacksmith", style = MaterialTheme.typography.headlineLarge.copy(shadow = Shadow(Color.Black, Offset(0f, 2f), 6f)), color = Gold, textAlign = TextAlign.Center,
+                            modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = Space.md).semantics { heading() }.drawBehind {
+                                // A bronze rule under the name, fading out at both ends.
+                                drawRect(Brush.horizontalGradient(listOf(Color.Transparent, Bronze, Color.Transparent), size.width * 0.15f, size.width * 0.85f), Offset(size.width * 0.15f, size.height - 1.dp.toPx()), Size(size.width * 0.7f, 1.dp.toPx()))
+                            }.padding(bottom = Space.sm),
+                        )
                     }
+                    Spacer(Modifier.weight(2f).heightIn(min = Space.md))
+                    Column(Modifier.padding(horizontal = Space.lg).widthIn(max = 420.dp).fillMaxWidth().forgeFrame().padding(Space.md), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(status, style = MaterialTheme.typography.titleLarge, color = Cream, textAlign = TextAlign.Center, modifier = Modifier.semantics { heading() })
+                        // A new account has nothing to count yet: the two zeros would only take room from the choice under them.
+                        legacy?.takeIf { it.points > 0 || it.eras.isNotEmpty() }?.let {
+                            HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
+                            Row(Modifier.fillMaxWidth()) {
+                                LegacyCount(it.points, "Legacy points", Modifier.weight(1f))
+                                LegacyCount(it.eras.size, "Eras survived", Modifier.weight(1f))
+                            }
+                        }
+                    }
+                    Spacer(Modifier.weight(3f).heightIn(min = Space.md))
+                    picker?.let { Column(Modifier.padding(horizontal = Space.lg).padding(bottom = Space.sm).widthIn(max = 420.dp).fillMaxWidth()) { it() } }
                 }
             }
-            Spacer(Modifier.weight(3f).heightIn(min = Space.md))
-            Column(Modifier.padding(horizontal = Space.lg).padding(bottom = Space.lg).widthIn(max = 420.dp).fillMaxWidth()) {
-                picker()
+            Column(Modifier.padding(horizontal = Space.lg).padding(top = Space.sm, bottom = Space.md).widthIn(max = 420.dp).fillMaxWidth()) {
                 PrimaryActionButton(primary, onPrimary, Modifier.fillMaxWidth().testTag(primaryTag), enabled)
                 if (onAbandon != null) SecondaryActionButton("Abandon run", { confirmAbandon = true }, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("menu_abandon"), enabled = enabled)
                 extra()

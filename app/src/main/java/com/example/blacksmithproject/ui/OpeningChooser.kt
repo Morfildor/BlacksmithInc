@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +29,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.theme.BronzeDeep
@@ -90,64 +88,64 @@ fun GameEngine.openingChooser(state: GameState): OpeningChooserUi? {
 
 /**
  * The first morning of a guild run, in place of the workshop until one package is taken: End Day waits for this choice, so
- * nothing else is offered beside it. Three cards in one scrolling column, each short enough to be compared with the next:
- * the name and the build, who signs (a line each), what it brings and what it costs, and the first days behind a fold.
- * A tap asks once more, then sends the command. Nothing here is kept but which card is being asked about and which
- * folds are open: the offer itself is in the save. [firstGame] is the note a player who has the guided first day ahead of
- * them reads before choosing.
+ * nothing else is offered beside it. Three selectable cards, each short enough to compare with the next, every one
+ * showing its cost before anything is committed. The chosen card opens to who signs, what it brings and the first days.
+ * One pinned action, "Begin with X", sends the command: no second question. Only which card is marked is kept here; the
+ * offer itself is in the save. [firstGame] is the note a player who has the guided first day ahead of them reads first.
  */
 @Composable
 fun OpeningChooser(ui: OpeningChooserUi, enabled: Boolean, onChoose: (String) -> Unit, modifier: Modifier = Modifier, firstGame: (@Composable () -> Unit)? = null) {
-    var asking by rememberSaveable { mutableStateOf<String?>(null) }
-    Column(modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = Space.md, vertical = Space.md).testTag("opening_chooser")) {
-        Text("How the guild begins", style = MaterialTheme.typography.headlineMedium, color = Gold, modifier = Modifier.semantics { heading() })
-        Text(
-            if (ui.charter.isNotEmpty()) "${ui.charter} · choose one of three starts. It stays for the whole run." else "Choose one of three starts. It stays for the whole run.",
-            style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.padding(top = Space.xs),
-        )
-        firstGame?.invoke()
-        ui.openings.forEach { o -> OpeningCard(o, enabled, onChoose = { asking = o.id }) }
-    }
-    ui.openings.firstOrNull { it.id == asking }?.let { o ->
-        AlertDialog(
-            modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("opening_confirm"),
-            onDismissRequest = { asking = null },
-            title = { Text("Begin with ${o.name}?") },
-            text = { Text("${o.signers.joinToString(" and ") { it.name }} sign today and ${o.relic} goes up in the workshop. ${o.drawback} This cannot be taken back.") },
-            confirmButton = { InlineActionButton("Begin", { asking = null; onChoose(o.id) }, Modifier.testTag("opening_confirm_yes"), enabled = enabled) },
-            dismissButton = { InlineActionButton("Not yet", { asking = null }, Modifier.testTag("opening_confirm_no")) },
+    var marked by rememberSaveable { mutableStateOf<String?>(null) }
+    val chosen = ui.openings.firstOrNull { it.id == marked }
+    Column(modifier.fillMaxSize().safeDrawingPadding().testTag("opening_chooser")) {
+        val scroll = rememberScrollState()
+        Column(Modifier.weight(1f).verticalScroll(scroll).bottomFade(scroll.canScrollForward).padding(horizontal = Space.md, vertical = Space.md), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            Text("How the guild begins", style = MaterialTheme.typography.headlineMedium, color = Gold, modifier = Modifier.semantics { heading() })
+            Text(
+                if (ui.charter.isNotEmpty()) "${ui.charter} · pick one of three starts. It stays for the whole run." else "Pick one of three starts. It stays for the whole run.",
+                style = MaterialTheme.typography.bodyMedium, color = Cream,
+            )
+            firstGame?.invoke()
+            ui.openings.forEach { o -> OpeningCard(o, o.id == marked, enabled, onMark = { marked = o.id }) }
+        }
+        PrimaryActionButton(
+            chosen?.let { "Begin with ${it.name}" } ?: "Pick a start above", { chosen?.let { onChoose(it.id) } },
+            Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm).testTag("opening_begin"), enabled = enabled && chosen != null,
         )
     }
 }
 
-/** One package as a card that fits a screen: every line that decides the choice in body text, the plan for the first days behind a fold. */
+/** One package as a selectable card: name, build, who signs and its cost always; the detail once it is the chosen card. */
 @Composable
-private fun OpeningCard(o: OpeningUi, enabled: Boolean, onChoose: () -> Unit) {
+private fun OpeningCard(o: OpeningUi, chosen: Boolean, enabled: Boolean, onMark: () -> Unit) {
     var plan by rememberSaveable(o.id) { mutableStateOf(false) }
-    FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.md).testTag("opening_${o.id}")) {
-        Text(o.name, style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-        Text("${o.build}: ${o.pitch}", style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.padding(top = 2.dp))
-        Caps("Who signs", Modifier.padding(top = Space.sm))
-        o.signers.forEach { m ->
-            Row(Modifier.fillMaxWidth().padding(top = Space.xs).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { PixelImage(m.portrait, 36.dp, description = null) }
-                Column(Modifier.weight(1f)) {
-                    Text("${m.name} · ${m.sub}", style = MaterialTheme.typography.titleSmall, color = Cream)
-                    Text(m.trait, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+    ChoiceRow(chosen, onMark, Modifier.testTag("opening_choose_${o.id}"), enabled = enabled) {
+        Text(o.name, style = MaterialTheme.typography.titleMedium, color = if (chosen) Gold else Cream, modifier = Modifier.semantics { heading() })
+        Text("${o.build}: ${o.pitch}", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+        Text("Signs: ${o.signers.joinToString(", ") { "${it.name} (${it.sub})" }}", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs))
+        Text("Relic: ${o.relic}", style = MaterialTheme.typography.bodySmall, color = Cream)
+        // The cost of the choice is read before it is made, in body text as the gains are: never behind the selection.
+        Text("${EffectKind.FLAW.sign} ${o.drawback}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = EffectKind.FLAW.color, modifier = Modifier.padding(top = Space.xs).testTag("opening_drawback_${o.id}"))
+        if (chosen) {
+            Caps("Who signs", Modifier.padding(top = Space.sm))
+            o.signers.forEach { m ->
+                Row(Modifier.fillMaxWidth().padding(top = Space.xs).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { PixelImage(m.portrait, 36.dp, description = null) }
+                    Column(Modifier.weight(1f)) {
+                        Text("${m.name} · ${m.sub}", style = MaterialTheme.typography.titleSmall, color = Cream)
+                        Text(m.trait, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                    }
                 }
             }
+            Caps("It brings", Modifier.padding(top = Space.sm))
+            Text("${o.relic}: ${o.relicDescription}", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs))
+            o.brings.forEach { Text("${EffectKind.BUFF.sign} $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.BUFF.color, modifier = Modifier.padding(top = Space.xs)) }
+            Text(
+                if (plan) "The first days ▴" else "The first days ▾", style = MaterialTheme.typography.labelLarge, color = Gold,
+                modifier = Modifier.fillMaxWidth().padding(top = Space.xs).clickable(role = Role.Button) { plan = !plan }.heightIn(min = 48.dp).wrapContentHeight().testTag("opening_plan_${o.id}"),
+            )
+            if (plan) Text(o.plan, style = MaterialTheme.typography.bodySmall, color = Cream)
         }
-        Caps("It brings", Modifier.padding(top = Space.sm))
-        Text("Relic · ${o.relic}: ${o.relicDescription}", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs))
-        o.brings.forEach { Text("${EffectKind.BUFF.sign} $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.BUFF.color, modifier = Modifier.padding(top = Space.xs)) }
-        // The cost of the choice is read in body text, as the gains above it are: never a muted line under them.
-        Text("${EffectKind.FLAW.sign} ${o.drawback}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = EffectKind.FLAW.color, modifier = Modifier.padding(top = Space.xs).testTag("opening_drawback_${o.id}"))
-        Text(
-            if (plan) "The first days ▴" else "The first days ▾", style = MaterialTheme.typography.labelLarge, color = Gold,
-            modifier = Modifier.fillMaxWidth().padding(top = Space.xs).clickable(role = Role.Button) { plan = !plan }.heightIn(min = 40.dp).wrapContentHeight().testTag("opening_plan_${o.id}"),
-        )
-        if (plan) Text(o.plan, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(bottom = Space.xs))
-        SecondaryActionButton("Begin with ${o.name}", onChoose, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("opening_choose_${o.id}"), enabled = enabled)
     }
 }
 

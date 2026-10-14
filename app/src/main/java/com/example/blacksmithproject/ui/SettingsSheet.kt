@@ -46,6 +46,8 @@ fun SettingsSheet(
     reducedMotion: Boolean, onReducedMotion: (Boolean) -> Unit, haptics: Boolean, onHaptics: (Boolean) -> Unit, onDismiss: () -> Unit,
     shopDaySpeed: ShopDaySpeed = ShopDaySpeed.TAP, onShopDaySpeed: ((ShopDaySpeed) -> Unit)? = null, onMainMenu: (() -> Unit)? = null,
     intro: IntroRowUi? = null, onIntro: () -> Unit = {},
+    /** Debug builds: the scenario saves and the combat sandbox, kept off the title. Draws nothing in a release build. */
+    debug: (@Composable () -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "unknown" }
@@ -62,6 +64,7 @@ fun SettingsSheet(
             if (onShopDaySpeed != null) SpeedRow(if (reducedMotion) ShopDaySpeed.TAP else shopDaySpeed, enabled = !reducedMotion, onShopDaySpeed)
             intro?.let { IntroRow(it, onIntro) }
             onMainMenu?.let { SecondaryActionButton("Main menu", it, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("settings_main_menu")) }
+            debug?.invoke()
             Secondary("Version $version", Modifier.padding(top = Space.md).testTag("settings_version"))
         }
     }

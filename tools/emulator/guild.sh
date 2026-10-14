@@ -63,15 +63,13 @@ past_offers() {
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith"
-# A cleared install offers the guided first day and opens the picker on "No charter": this script is about the guild,
-# so the guidance is skipped and the picker is stepped on to the first charter.
+# A cleared install offers the guided first day and marks "No charter": this script is about the guild, so the
+# guidance is skipped and the first charter's row is chosen (every charter is a row on the title).
 tap_id intro_menu_skip
-tap_id charter_next
 check has_id charter_picker
+tap_id charter_row_ || exit 1
+check has_id charter_details
 shot 01_title_charter
-tap_id charter_about; shot 02_title_charter_about; tap_id charter_about
-tap_id charter_next; shot 03_title_charter_second
-tap_id charter_prev
 tap_id title_new_run || exit 1
 # rules 6: a guild run opens on its three packages; the first is read top to bottom and taken
 wait_id opening_chooser; shot 04_opening_chooser
@@ -79,8 +77,8 @@ swipe_up; shot 04b_opening_chooser_lower
 for i in 1 2 3 4 5 6; do $ADB shell input swipe 540 700 540 1700 300; done; $ADB shell sleep 1
 for i in 1 2 3 4 5 6 7 8; do dump | grep -q 'resource-id="opening_choose_' && break; swipe_up; done
 tap_id opening_choose_ || exit 1
-shot 04c_opening_confirm
-tap_id opening_confirm_yes || exit 1
+shot 04c_opening_chosen
+tap_id opening_begin || exit 1
 check has_id end_day
 past_offers || exit 1
 shot 05_shop_day1

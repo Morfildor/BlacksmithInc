@@ -61,6 +61,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - The guided first day says at End Day that heroes go out to fight with what they carry, and may not come back without a good weapon.
 - On the Forge, the chosen weapon type says which hero classes it suits. The forge result says how many properties each rarity holds.
 - One word for a hero's paid order: "commission" on the board, the Shop's lead, the day's receipt, the Gazette and the error lines.
+- New type: Fira Sans (Medium and Bold) for text and labels, Alegreya Bold for headings, bundled with their licences.
+- The title shows every charter as a row, "No charter" last. The chosen row says what it gives and what it costs. "New game" stays at the foot of the screen.
+- The opening packages are cards you pick, each with its drawback in view, and one "Begin with …" button starts the run. The second question is gone.
+- Debug builds: Scenarios and the combat sandbox are under Settings, not on the title.
+- The app is declared a game. The unused template backup rule files are removed (backup stays off).
 
 ## [0.8.0] - 2026-10-11
 

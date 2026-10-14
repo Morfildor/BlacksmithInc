@@ -1,6 +1,19 @@
 package com.example.blacksmithproject.ui
 
 import androidx.compose.foundation.BorderStroke
+import com.example.blacksmithproject.ui.theme.ForgePanelRaised
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.Dialog
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.RadioButton
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -137,6 +150,53 @@ fun Modifier.bottomFade(more: Boolean, color: Color = ForgeNight): Modifier = if
 fun Modifier.forgeRow(): Modifier = background(ForgePanel, RowShape).border(1.dp, BronzeLine, RowShape)
 
 private val RowShape = RoundedCornerShape(4.dp)
+
+/**
+ * One option of a pick-one choice: a framed row that is a radio button, raised and edged in gold once chosen. Every
+ * choice surface (charter, opening, visitor answer, relic, loan) is made of these, so a choice always looks the same.
+ * Choosing does nothing but mark: the one action under the rows commits.
+ */
+@Composable
+fun ChoiceRow(
+    selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true,
+    leading: (@Composable () -> Unit)? = null, content: @Composable ColumnScope.() -> Unit,
+) {
+    Row(
+        modifier.fillMaxWidth()
+            .background(if (selected) ForgePanelRaised else ForgePanel, RowShape)
+            .border(if (selected) 2.dp else 1.dp, if (selected) Gold else BronzeLine, RowShape)
+            .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick)
+            .heightIn(min = 56.dp).padding(horizontal = Space.sm, vertical = Space.sm),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+    ) {
+        RadioButton(selected = selected, onClick = null, enabled = enabled, colors = RadioButtonDefaults.colors(selectedColor = Gold, unselectedColor = Bronze))
+        leading?.invoke()
+        Column(Modifier.weight(1f)) { CompositionLocalProvider(LocalContentColor provides if (enabled) Cream else CreamMuted) { content() } }
+    }
+}
+
+/**
+ * The game's dialog: the framed plate with a serif title in gold, a body that scrolls when it is long, and the house
+ * buttons at its foot, right-aligned and wrapping at large text. Every question the workshop asks uses it.
+ * [tag] is the dialog's test tag (a dialog is its own window, so its ids are exported here).
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ForgeDialog(
+    title: String, onDismiss: () -> Unit, modifier: Modifier = Modifier, tag: String? = null,
+    actions: @Composable RowScope.() -> Unit, content: @Composable ColumnScope.() -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        FramedPanel(
+            modifier = modifier.padding(horizontal = Space.md).widthIn(max = 560.dp).fillMaxWidth()
+                .semantics { testTagsAsResourceId = true }.let { if (tag != null) it.testTag(tag) else it },
+        ) {
+            Text(title, style = MaterialTheme.typography.headlineSmall, color = Gold, modifier = Modifier.semantics { heading() })
+            Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(top = Space.sm), verticalArrangement = Arrangement.spacedBy(Space.sm), content = content)
+            FlowRow(Modifier.fillMaxWidth().padding(top = Space.md), horizontalArrangement = Arrangement.spacedBy(Space.sm, Alignment.End), verticalArrangement = Arrangement.spacedBy(Space.xs)) { actions() }
+        }
+    }
+}
 
 /**
  * Any action that is not the way forward: the same cut as the gold plate, as a bronze outline with gold lettering. At least 48 dp tall.

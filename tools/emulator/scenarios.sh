@@ -54,6 +54,8 @@ print(row.get(sys.argv[3],''))
 # confirmation is the one that says the current run is replaced.
 load() {
   $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
+  wait_id menu_settings || return 1
+  tap_id menu_settings || return 1
   wait_id menu_scenarios || return 1
   tap_id menu_scenarios || return 1
   wait_id scenario_list || return 1
@@ -101,7 +103,7 @@ open_storage() { scroll_to_id shop_storage && tap_id shop_storage && wait_id sto
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_id title_new_run
-wait_id menu_scenarios && echo "CHECK the debug menu has a Scenarios entry: ok" || { echo "CHECK the debug menu has a Scenarios entry: FAIL"; exit 1; }
+tap_id menu_settings; wait_id menu_scenarios && echo "CHECK the debug menu has a Scenarios entry: ok" || { echo "CHECK the debug menu has a Scenarios entry: FAIL"; exit 1; }
 tap_id menu_scenarios; wait_id scenario_list && shot 00_scenario_list
 has "Constructed saves for testing" && echo "CHECK the list is labelled as constructed: ok" || echo "CHECK the list is labelled as constructed: FAIL"
 

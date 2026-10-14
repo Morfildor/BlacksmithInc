@@ -34,13 +34,15 @@ shot() { $ADB exec-out screencap -p > "$OUT/$1.png"; echo "screenshot $1"; }
 wait_text() { for i in $(seq 1 20); do if has "$1"; then return 0; fi; $ADB shell sleep 1; done; echo "TIMEOUT waiting for '$1'"; return 1; }
 wait_id() { for i in $(seq 1 20); do if has_id "$1"; then return 0; fi; $ADB shell sleep 1; done; echo "TIMEOUT waiting for id '$1'"; return 1; }
 check() { if "${@:2}"; then echo "CHECK $1: ok"; else echo "CHECK $1: FAIL"; fi; }
+# the chosen charter row carries the id charter_name
+charter_is() { dump | grep -q "text=\"$1\"[^>]*resource-id=\"charter_name\""; }
 no_id() { ! has_id "$1"; }
 start() { $ADB shell am start -n $PKG/.MainActivity >/dev/null; wait_text "Tiny Blacksmith"; }
 
 $ADB shell pm clear $PKG >/dev/null
 start && shot 01_title
 check "title says the game is guided" has_id intro_menu_skip
-check "a new account starts on the shop alone" has "No charter"
+check "a new account starts on the shop alone" charter_is "No charter"
 tap_id title_new_run || exit 1
 wait_id intro_strip && shot 02_step1_shop
 check "step 1 on the Shop" has "Choose a weapon, a metal and an augment."

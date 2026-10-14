@@ -1,5 +1,22 @@
 # Progress — 2026-10-14 (deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Implementing the 2026-10-14 review (in progress, branch `review-2026-10-14`)
+
+Owner decisions A to M are in DECISIONS ("Owner decisions on the 2026-10-14 review"). Done and committed so far: plan items 6 and 7
+(ended-run menu text, End Day says heroes fight, class fit and rarity at the forge, "commission" as the one word), H (fonts),
+D (`appCategory="game"`), G (template backup rules removed), I (opening: select a card, one "Begin with" action, no dialog),
+charter rows on the title with the primary pinned, C (debug entries under Settings), shared `ChoiceRow` and `ForgeDialog` in `Frames.kt`.
+Scripts updated for the new ids (`opening_begin`, `charter_row_<id|none>`, Settings before `menu_scenarios`), not yet run.
+Baseline before these changes, emulator-5556 (carbscan, API 36): instrumented 75 tests, 10 failed (the review's 8 stale plus the two known AVD failures).
+A core-correctness agent works in its own worktree (rows 21, 22/B, 31-34, 36 incl. M); merge its branch when it reports.
+
+Next, in order: the owner judged the screens amateur. Advisor's fix list: `ChoiceRow` without the radio circle and with no border
+when unselected (chosen = raised, 2 dp gold edge, 4 dp gold left rule); unselected charter rows one line; no era frame on a fresh
+account (caps label "ERA 1 · HOW IT BEGINS"); intro line as a plain line, not a box; left-align below the art; opening cards with
+signer portraits, pitch 2 lines until chosen, drawback bodySmall SemiBold with a red left rule, `EffectRow` for gains, first package
+preselected; heading titleLarge. Then captures at 1.0 and 2.0 sent to the owner, then the Shop, Forge (K, L, A, slot labels),
+dialogs onto `ForgeDialog`, J, gameplay batch, device batch (2 MB save, stale tests, scripts, 600 dp), E, docs, 0.9.0 held.
+
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay
 and content, compliance and performance, guidance and copy, tests and evidence, adversarial, docs and release, unused

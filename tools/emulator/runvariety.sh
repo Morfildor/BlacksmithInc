@@ -91,6 +91,8 @@ past_offers() {
 # Opens the main menu from a cold start and loads scenario $1 (the confirmation says the current run is replaced).
 load() {
   $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/null
+  wait_id menu_settings || return 1
+  tap_id menu_settings >/dev/null || return 1
   wait_id menu_scenarios || return 1
   tap_id menu_scenarios >/dev/null || return 1
   wait_id scenario_list || return 1
@@ -430,8 +432,8 @@ step_font() {
     ok "font 1.3: a new guild run opens on the opening chooser"
     echo "OPENINGS: $(dump | grep -o 'resource-id="opening_choose_[^"]*"' | sort -u | tr '\n' ' ')"
     shot font_opening_1
-    # a package is the node opening_<id>; its Choose button can be scrolled past between two screenshots
-    local pk='resource-id="opening_[a-z_]*"' own='opening_chooser\|opening_choose_\|opening_drawback_\|opening_confirm'
+    # a package is the selectable card opening_choose_<id>; it can be scrolled past between two screenshots
+    local pk='resource-id="opening_choose_[a-z_]*"' own='opening_chooser'
     local all=$(dump | grep -o "$pk")
     for n in 2 3 4 5 6 7 8 9; do $ADB shell input swipe 540 1300 540 700 600; $ADB shell sleep 1; shot font_opening_$n; all="$all $(dump | grep -o "$pk")"; done
     echo "PACKAGES: $(printf '%s\n' $all | sort -u | grep -v "$own" | tr '\n' ' ')"

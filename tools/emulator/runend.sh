@@ -26,23 +26,13 @@ texts() { dump | grep -o 'text="[^"]\+"' | head -12; }
 
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
-# A classic run: a guild run (rules 6) opens on its opening packages, which this loop does not answer. A cleared install
-# opens on "No charter"; should the picker stand on a charter, one step back from the first is "No charter".
-# the arrow is found by its resource-id (charter_prev): its text is not ASCII
-no_charter() {
-  local x=$(dump | python -c "
-import sys,re
-m=re.search(r'resource-id=\"charter_prev\"[^>]*?bounds=\"\[(\d+),(\d+)\]\[(\d+),(\d+)\]', sys.stdin.buffer.read().decode('utf-8','replace'))
-if m:
-  x1,y1,x2,y2=map(int,m.groups()); print((x1+x2)//2,(y1+y2)//2)
-")
-  if [ -z "$x" ]; then echo "MISSING id: charter_prev"; return 1; fi
-  $ADB shell input tap $x; $ADB shell sleep 1.2; has "No charter"
-}
+# A classic run: a guild run (rules 6) opens on its opening packages, which this loop does not answer. Every charter is a
+# row on the title; the chosen one carries the id charter_name, so "No charter" is the choice when that node reads it.
+no_charter_chosen() { dump | grep -q 'text="No charter"[^>]*resource-id="charter_name"'; }
 wait_text "Tiny Blacksmith" || exit 1
 # A cleared install offers the guided first day, which keeps the relic offer closed on day 1: skipped, so the run opens as it always did.
 has "Skip guidance" && tap "Skip guidance"
-{ has "No charter" || no_charter; } && tap "New game" || exit 1
+{ no_charter_chosen || tap "No charter"; } && tap "New game" || exit 1
 # A new run opens on the relic offer, which hides the workshop from the dump: "Decide later" keeps the offer. The loop
 # below puts it off again each morning.
 wait_text "Decide later" && tap "Decide later"
@@ -80,8 +70,8 @@ for i in 1 2 3 4 5 6; do has "Begin era" && break; $ADB shell input swipe 540 15
 shot 03_runend_bottom
 # The next era is classic too. The picker at the foot of this screen keeps the charter the run began under ("No
 # charter", kept in settings over the process death above); should it stand on a charter, one step back is "No charter".
-for i in 1 2 3 4 5 6 7 8 9 10 11 12; do dump | grep -q 'resource-id="charter_prev"' && break; $ADB shell input swipe 540 1500 540 500 400; $ADB shell sleep 1; done
-{ has "No charter" || no_charter; } && echo "CHECK next era without a charter chosen: ok" || echo "CHECK next era without a charter chosen: FAIL"
+for i in 1 2 3 4 5 6 7 8 9 10 11 12; do dump | grep -q 'resource-id="charter_row_none"' && break; $ADB shell input swipe 540 1500 540 500 400; $ADB shell sleep 1; done
+no_charter_chosen && echo "CHECK next era without a charter chosen: ok" || echo "CHECK next era without a charter chosen: FAIL"
 shot 03b_runend_no_charter
 tap "Begin era" || exit 1
 wait_text "Decide later" && tap "Decide later"

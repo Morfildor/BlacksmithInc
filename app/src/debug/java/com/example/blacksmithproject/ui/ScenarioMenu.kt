@@ -50,6 +50,7 @@ fun ScenarioMenu(vm: GameViewModel, hasRun: Boolean, enabled: Boolean, onLoaded:
     val assets = LocalContext.current.assets
     var open by remember { mutableStateOf(false) }
     var chosen by remember { mutableStateOf<ScenarioEntry?>(null) }
+    Caps("Testing (debug build)", Modifier.padding(top = Space.md))
     SecondaryActionButton("Scenarios (debug)", { open = true }, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("menu_scenarios"), enabled = enabled)
     // Beside it, and as far from a run: the fixture fights of the interaction engine (`CombatSandboxScreen`).
     var sandbox by remember { mutableStateOf(false) }

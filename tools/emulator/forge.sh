@@ -65,7 +65,7 @@ if has_id opening_chooser; then
   for i in 1 2 3 4 5 6 7 8 9 10 11 12; do has_pre opening_choose_ && break; swipe_up; done
   $ADB shell input swipe 540 1300 540 1000 500; $ADB shell sleep 1
   tap_id opening_choose_ || exit 1
-  tap_id opening_confirm_yes || exit 1
+  tap_id opening_begin || exit 1
 fi
 past_offers || { shot 00_stuck_after_new_run; texts; exit 1; }
 

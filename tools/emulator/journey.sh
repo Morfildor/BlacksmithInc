@@ -111,7 +111,7 @@ for i in 1 2 3 4 5 6 7 8 9 10 11 12; do has_id "opening_choose_$OPENING" && brea
 $ADB shell input swipe 540 1300 540 1000 500; $ADB shell sleep 1
 shot 01_opening
 tap_id "opening_choose_$OPENING" || exit 1
-tap_id opening_confirm_yes || exit 1
+tap_id opening_begin || exit 1
 past_offers || { shot 00_stuck; texts; exit 1; }
 
 # 1. Forge the weapon whose interaction is known: bronze answers the blow that breaks its wielder's Guard.
