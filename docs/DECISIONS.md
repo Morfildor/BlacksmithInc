@@ -4470,3 +4470,21 @@ Handoff item 5. Targets were evaluation criteria, not goals to force. All number
 - Found on the way, not fixed: a class-initialisation cycle `Depth` → `CombatContent` → `LaunchContent` →
   `Depth.relics` throws when a test touches `Depth` before `LaunchContent` (a filtered `:core:test` run shows it; the
   full suite and the app always load `LaunchContent` first).
+
+## Review 2026-10-14 reliability: the oversized save row (2026-10-14)
+
+Handoff item 6 (review finding 2, phase 2 item 1). SQLite hands a row to the app through a 2 MB cursor window; a save
+grows about 3 to 4 KB a day, so a long run passed it around day 400 to 500 and every load, including the one "Start
+over" made, threw. Applied, with no Room schema change (same table, same columns, no new version):
+- **Parts.** `SaveStore.commit` writes a payload longer than `SaveStore.CHUNK` (256K characters) as part rows
+  (`run#1`, `run#2`, ...) and a head row `parts:N`, in the same transaction as before; a shorter save removes stale parts.
+- **Migration of a row written too big before.** `load` first asks SQLite for each row's length only
+  (`SaveDao.lengths`), and a row longer than `CHUNK` is cut into parts inside SQLite with `substr` (`SaveDao.split`):
+  the payload never crosses into a cursor, so the row is rescued whole, not lost.
+- **Recovery that never reads the broken row.** `quarantine` renames by key (head and parts); `GameSession.startOverKeepingBackup`
+  answers a storage failure on load by setting the run aside by key, then the legacy only if the store still cannot be
+  read. Rows are renamed, never deleted, as the store's rule has always been.
+- Evidence: JVM tests with an in-memory DAO that refuses rows past the window (`SaveStoreSizeTest`, 3 tests) and the
+  session path (`GameSessionFailureTest`), app unit tests 255 / 0. The SQL itself is exercised by the instrumented
+  `SaveStoreTest.aRowPastTheCursorWindowIsSplitInsideSqliteAndLoads` (a 2.5 MB envelope through real Room), which could
+  not be run on the cloud machine (no Android SDK): it is in the device batch.

@@ -44,6 +44,9 @@ with stubs for the Android-only APIs, which runs the app's JVM unit tests and ty
   `:core:test` 636: every class that failed on the way passes in the targeted reruns after the fixes; app unit tests
   251 / 0. Targets met: EXPENSIVE within 5 days of FAIR (equal median), signatures above 1.0 for the pursuing bot.
   Not met by choice, for the owner: siege 4 above 15 % for the passive fair bot, IGNORE_COUNTER above 20 %.
+- Item 6, oversized save (DECISIONS "the oversized save row"): payloads over 256K characters are stored in parts; a row
+  written too big before is split inside SQLite before it is read; Start over sets an unreadable row aside by key.
+  No Room schema change. App unit tests 255 / 0 (`SaveStoreSizeTest` new). Not run: the instrumented 2.5 MB test.
 
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay

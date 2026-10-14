@@ -19,6 +19,11 @@ class SaveStoreFailureTest {
         override suspend fun upsert(entity: SaveEntity) = throw error
         override suspend fun delete(key: String) = throw error
         override suspend fun rename(from: String, to: String) = throw error
+        override suspend fun lengths(keys: List<String>): List<com.example.blacksmithproject.data.RowLength> = throw error
+        override suspend fun copyPart(key: String, part: String, from: Int, count: Int) = throw error
+        override suspend fun setPayload(key: String, payload: String) = throw error
+        override suspend fun deleteParts(key: String) = throw error
+        override suspend fun renameParts(from: String, to: String) = throw error
     }
 
     private suspend fun everyCall(store: SaveStore): List<Throwable?> = listOf<suspend () -> Unit>(

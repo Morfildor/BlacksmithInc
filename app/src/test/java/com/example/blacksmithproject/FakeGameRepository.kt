@@ -25,6 +25,8 @@ class FakeGameRepository(var run: String? = null, var legacy: String? = null) : 
     /** The whole store is unreadable until it is moved aside. */
     var fileDamaged = false
     var fileQuarantines = 0
+    /** Rows SQLite cannot hand over (too big for a cursor window): any load that would read one fails until it is set aside. */
+    val unreadable = mutableSetOf<String>()
 
     /** Stops holding and lets everything held through. A failing test must call it: the session commits under NonCancellable. */
     fun releaseAll() {
@@ -37,6 +39,7 @@ class FakeGameRepository(var run: String? = null, var legacy: String? = null) : 
         loadCount++
         failNextLoad?.let { failNextLoad = null; throw SaveFailure.Io(it) }
         if (fileDamaged) throw SaveFailure.FileDamaged(IllegalStateException("file is not a database"))
+        if (unreadable.isNotEmpty()) throw SaveFailure.Io(IllegalStateException("Row too big to fit into CursorWindow: ${unreadable.sorted()}"))
         val rows = StoredRows(run, legacy, cursor)
         if (holdLoad) CompletableDeferred<Unit>().also { loadGates += it }.await()
         return rows
@@ -56,6 +59,7 @@ class FakeGameRepository(var run: String? = null, var legacy: String? = null) : 
     }
 
     override suspend fun quarantine(key: String) {
+        unreadable -= key
         if (key == "run") { run?.let { quarantined["run.bak"] = it }; run = null }
         if (key == "legacy") { legacy?.let { quarantined["legacy.bak"] = it }; legacy = null }
     }

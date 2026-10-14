@@ -107,7 +107,7 @@ class GameSession(
     suspend fun startOverKeepingBackup(): Result = mutex.withLock {
         if (_snapshot.value != null) return Result.Done()      // only ever the way out of a failed load
         try {
-            val rows = try { repo.load() } catch (_: SaveFailure.FileDamaged) { repo.quarantineFile(); return loadLocked() }
+            val rows = try { repo.load() } catch (_: SaveFailure.FileDamaged) { repo.quarantineFile(); return loadLocked() } catch (_: SaveFailure.Io) { return setAsideUnreadable() }
             val run = withContext(compute) { soundRun(rows) }
             if (rows.legacy != null && runCatching { withContext(compute) { decodeLegacy(rows.legacy) } }.isFailure) {
                 repo.quarantine("legacy")
@@ -121,6 +121,18 @@ class GameSession(
             return Result.Failed(e)
         }
         loadLocked()
+    }
+
+    /**
+     * The store answers but a row cannot be read at all (SQLite cannot hand it over, whatever its content): the rows are
+     * set aside by key, never read, the run first and the legacy only if the store still cannot be read without it.
+     */
+    private suspend fun setAsideUnreadable(): Result {
+        repo.quarantine("run")
+        repo.saveCursor(null)
+        val stillFailing = try { repo.load(); false } catch (_: SaveFailure.Io) { true }
+        if (stillFailing) repo.quarantine("legacy")
+        return loadLocked()
     }
 
     private suspend fun loadLocked(): Result {

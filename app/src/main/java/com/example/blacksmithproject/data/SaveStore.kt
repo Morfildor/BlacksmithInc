@@ -30,6 +30,9 @@ data class SaveEntity(
     val savedAt: Long,
 )
 
+/** A row's key and the length of its payload in characters, as SQLite counts it: read without reading the payload. */
+data class RowLength(val key: String, val length: Int)
+
 @Dao
 abstract class SaveDao {
     @Query("SELECT * FROM saves WHERE `key` = :key")
@@ -48,11 +51,44 @@ abstract class SaveDao {
     @Query("UPDATE saves SET `key` = :to WHERE `key` = :from")
     abstract suspend fun rename(from: String, to: String)
 
-    /** Run + legacy are written in one transaction so a process death can never split them. */
+    /** The length of each row's payload, computed by SQLite. A row too big for a cursor window is measured, never read. */
+    @Query("SELECT `key` AS `key`, length(payload) AS length FROM saves WHERE `key` IN (:keys)")
+    abstract suspend fun lengths(keys: List<String>): List<RowLength>
+
+    /** Copies characters [from] (1-based) to [from] + [count] - 1 of [key]'s payload into the row [part], inside SQLite. */
+    @Query("INSERT OR REPLACE INTO saves (`key`, schemaVersion, payload, savedAt) SELECT :part, schemaVersion, substr(payload, :from, :count), savedAt FROM saves WHERE `key` = :key")
+    abstract suspend fun copyPart(key: String, part: String, from: Int, count: Int)
+
+    @Query("UPDATE saves SET payload = :payload WHERE `key` = :key")
+    abstract suspend fun setPayload(key: String, payload: String)
+
+    /** The part rows of [key] ("key#1", "key#2", ...). */
+    @Query("DELETE FROM saves WHERE `key` LIKE :key || '#%'")
+    abstract suspend fun deleteParts(key: String)
+
+    /** Quarantine of a split row: its parts follow the head to the backup key. */
+    @Query("UPDATE saves SET `key` = :to || substr(`key`, length(:from) + 1) WHERE `key` LIKE :from || '#%'")
+    abstract suspend fun renameParts(from: String, to: String)
+
+    /**
+     * A row too long for a cursor window, cut into parts inside SQLite: the parts are written, then the head says how
+     * many. Nothing of the payload crosses into the app, so a row that cannot be read can still be saved.
+     */
     @Transaction
-    open suspend fun saveBoth(run: SaveEntity?, legacy: SaveEntity) {
-        if (run == null) delete(SaveStore.KEY_RUN) else upsert(run)
-        upsert(legacy)
+    open suspend fun split(key: String, length: Int, chunk: Int) {
+        deleteParts(key)
+        val parts = (length + chunk - 1) / chunk
+        for (i in 0 until parts) copyPart(key, SaveStore.partKey(key, i + 1), i * chunk + 1, chunk)
+        setPayload(key, SaveStore.PARTS + parts)
+    }
+
+    /** Run + legacy are written in one transaction so a process death can never split them; each with its parts, if it has any. */
+    @Transaction
+    open suspend fun saveBoth(run: List<SaveEntity>?, legacy: List<SaveEntity>) {
+        deleteParts(SaveStore.KEY_RUN)
+        if (run == null) delete(SaveStore.KEY_RUN) else run.forEach { upsert(it) }
+        deleteParts(SaveStore.KEY_LEGACY)
+        legacy.forEach { upsert(it) }
     }
 }
 
@@ -77,21 +113,48 @@ private class KeepDamagedFile(private val inner: SupportSQLiteOpenHelper.Callbac
 
 /** [setAside] moves the damaged database file away and answers the DAO of a new, empty one; null for a store without a file. */
 class SaveStore(@Volatile private var dao: SaveDao, private val setAside: (() -> SaveDao)? = null) : GameRepository {
+    /**
+     * A row longer than [CHUNK] (one written before saves were split, so too big for SQLite's cursor window) is cut into
+     * parts inside SQLite first; then each row is read, and a split one is put back together from its parts.
+     */
     override suspend fun load(): StoredRows = io {
-        val rows = dao.getAll(listOf(KEY_RUN, KEY_LEGACY, KEY_CURSOR)).associate { it.key to it.payload }
-        StoredRows(rows[KEY_RUN], rows[KEY_LEGACY], rows[KEY_CURSOR])
+        val keys = listOf(KEY_RUN, KEY_LEGACY, KEY_CURSOR)
+        dao.lengths(keys).filter { it.length > CHUNK }.forEach { dao.split(it.key, it.length, CHUNK) }
+        val rows = dao.getAll(keys).associate { it.key to it.payload }
+        suspend fun whole(key: String): String? = rows[key]?.let { head -> parts(head)?.let { n -> joined(key, n) } ?: head }
+        StoredRows(whole(KEY_RUN), whole(KEY_LEGACY), whole(KEY_CURSOR))
+    }
+
+    private suspend fun joined(key: String, parts: Int): String {
+        val keys = (1..parts).map { partKey(key, it) }
+        val found = dao.getAll(keys).associate { it.key to it.payload }
+        // A part that is missing makes the row unreadable, as a cut-short payload would: the codec above says so.
+        return keys.joinToString("") { found[it] ?: "" }
     }
 
     override suspend fun commit(run: String?, legacy: String) = io {
         val now = System.currentTimeMillis()
-        dao.saveBoth(run?.let { SaveEntity(KEY_RUN, SaveCodec.SCHEMA_VERSION, it, now) }, SaveEntity(KEY_LEGACY, SaveCodec.SCHEMA_VERSION, legacy, now))
+        dao.saveBoth(run?.let { rows(KEY_RUN, it, now) }, rows(KEY_LEGACY, legacy, now))
+    }
+
+    /** [payload] as one row, or as a head that counts its parts and the parts of [CHUNK] characters each. */
+    private fun rows(key: String, payload: String, now: Long): List<SaveEntity> {
+        if (payload.length <= CHUNK) return listOf(SaveEntity(key, SaveCodec.SCHEMA_VERSION, payload, now))
+        val parts = payload.chunked(CHUNK)
+        return parts.mapIndexed { i, part -> SaveEntity(partKey(key, i + 1), SaveCodec.SCHEMA_VERSION, part, now) } +
+            SaveEntity(key, SaveCodec.SCHEMA_VERSION, PARTS + parts.size, now)
     }
 
     override suspend fun saveCursor(cursor: String?) = io {
         if (cursor == null) dao.delete(KEY_CURSOR) else dao.upsert(SaveEntity(KEY_CURSOR, SaveCodec.SCHEMA_VERSION, cursor, System.currentTimeMillis()))
     }
 
-    override suspend fun quarantine(key: String) = io { dao.rename(key, "$key.bak.${System.currentTimeMillis()}") }
+    /** By key alone: the row (and its parts) is renamed, never read, so even a row SQLite cannot hand over is set aside. */
+    override suspend fun quarantine(key: String) = io {
+        val to = "$key.bak.${System.currentTimeMillis()}"
+        dao.renameParts(key, to)
+        dao.rename(key, to)
+    }
 
     override suspend fun quarantineFile() = io { setAside?.let { move -> dao = withContext(Dispatchers.IO) { move() } }; Unit }
 
@@ -111,6 +174,16 @@ class SaveStore(@Volatile private var dao: SaveDao, private val setAside: (() ->
         const val KEY_RUN = "run"
         const val KEY_LEGACY = "legacy"
         const val KEY_CURSOR = "cursor"
+
+        /**
+         * The longest payload kept in one row, in characters. SQLite hands a row to the app through a cursor window of
+         * 2 MB; a JSON envelope is mostly one byte a character, so a quarter of that leaves room for any text.
+         */
+        const val CHUNK = 256 * 1024
+        /** The head of a split row: "parts:3" (an envelope always starts with "{", so the two cannot be mistaken). */
+        const val PARTS = "parts:"
+        fun partKey(key: String, n: Int) = "$key#$n"
+        fun parts(head: String): Int? = head.takeIf { it.startsWith(PARTS) }?.removePrefix(PARTS)?.toIntOrNull()
 
         fun create(context: Context, name: String = "tiny_blacksmith.db"): SaveStore {
             val app = context.applicationContext

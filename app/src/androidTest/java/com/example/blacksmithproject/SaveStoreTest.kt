@@ -86,6 +86,35 @@ class SaveStoreTest {
         assertEquals(StoredRows(SaveCodec.encodeRun(next), SaveCodec.encodeLegacy(next.legacy), null), store.load())
     }
 
+    /**
+     * Review 2026-10-14, phase 2 item 1: a row past SQLite's 2 MB cursor window. One written by a build before saves were
+     * split (raw, through the DAO) is cut into parts inside SQLite on the next load and comes back whole; a new save of
+     * that size is written in parts from the start; and a session loads it.
+     */
+    @Test
+    fun aRowPastTheCursorWindowIsSplitInsideSqliteAndLoads() = runBlocking {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val db = Room.inMemoryDatabaseBuilder(context, SaveDatabase::class.java).build()
+        val dao = db.saveDao()
+        val store = SaveStore(dao)
+        // A real envelope made long, 2.5 MB, by world flags no rule reads: a load of it as one row throws "Row too big".
+        val legacy = LegacyProfile(points = 3)
+        val base = engine.newRun(legacy, 42)
+        val padded = base.copy(worldFlags = base.worldFlags + (1..10_000).associate { "pad_${it}_" + "x".repeat(250) to it })
+        val runText = SaveCodec.encodeRun(padded)
+        assertTrue("the scenario: the row is past the window (${runText.length})", runText.length > 2_500_000)
+        dao.upsert(SaveEntity(SaveStore.KEY_RUN, SaveCodec.SCHEMA_VERSION, runText, 1L))
+        dao.upsert(SaveEntity(SaveStore.KEY_LEGACY, SaveCodec.SCHEMA_VERSION, SaveCodec.encodeLegacy(legacy), 1L))
+
+        assertEquals(runText, store.load().run)
+        db.openHelper.readableDatabase.query("SELECT max(length(payload)) FROM saves").use { c -> c.moveToFirst(); assertTrue(c.getInt(0) <= SaveStore.CHUNK) }
+        assertTrue(GameSession(engine, store).load() is GameSession.Result.Done)
+
+        // Written fresh at that size: parts from the start, read back whole.
+        store.commit(runText, SaveCodec.encodeLegacy(legacy))
+        assertEquals(runText, store.load().run)
+    }
+
     /** A row that does not decode is reported by the session and left exactly as stored; starting over renames it, never deletes it. */
     @Test
     fun corruptPayloadIsReportedAndTheRowIsUntouched() = runBlocking {

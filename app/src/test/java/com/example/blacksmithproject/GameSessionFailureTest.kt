@@ -284,6 +284,36 @@ class GameSessionFailureTest {
 
     }
 
+    /**
+     * A row SQLite cannot hand over (past the 2 MB cursor window) fails every load as storage, whatever its content.
+     * "Start over" sets it aside by key without reading it; the legacy beside it is kept when the store reads without the run.
+     */
+    @Test
+    fun startOverSetsAnUnreadableRowAsideWithoutReadingIt() = sessionTest {
+        val legacyRow = SaveCodec.encodeLegacy(veteran)
+        val repo = repo("{\"too\":\"big\"}", legacyRow)
+        repo.cursor = "a cursor"
+        repo.unreadable += "run"
+        val session = session(repo)
+        assertTrue(session.loadFailure() is SaveFailure.Io)
+        assertTrue("retrying reads it again and fails the same way", (session.retry() as Result.Failed).failure is SaveFailure.Io)
+
+        assertTrue(session.startOverKeepingBackup() is Result.Done)
+        assertEquals("the row is kept under a backup key", "{\"too\":\"big\"}", repo.quarantined["run.bak"])
+        assertNull(repo.run)
+        assertNull("the cursor of the run that was set aside goes with it", repo.cursor)
+        assertEquals("the legacy is kept", legacyRow, repo.legacy)
+        assertEquals(GameSession.Snapshot(null, veteran, null), session.snapshot.value)
+
+        // Both rows unreadable: the legacy is set aside too, the only way forward, and kept just the same.
+        val both = repo("{}", legacyRow).also { it.unreadable += setOf("run", "legacy") }
+        val lost = session(both)
+        assertTrue(lost.loadFailure() is SaveFailure.Io)
+        assertTrue(lost.startOverKeepingBackup() is Result.Done)
+        assertEquals(legacyRow, both.quarantined["legacy.bak"])
+        assertEquals(GameSession.Snapshot(null, LegacyProfile(), null), lost.snapshot.value)
+    }
+
     @Test
     fun startOverQuarantinesInsteadOfDeleting() = sessionTest {
         val garbage = "not a save"
