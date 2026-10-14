@@ -20,6 +20,9 @@ import kotlin.test.assertEquals
  */
 class GoldenStateTest {
     private val engine = TestSupport.engine
+    // Re-recorded for balance 15 (review 2026-10-14, row 36): the script never answers a blessing offer, so from the first
+    // won siege the projection now shows the offer's last day as a world flag and, three mornings on, the offer withdrawn.
+    // 99 of 300 lines moved, all on day 5 or later; every RNG hash is unchanged.
     private val resource = "golden/state_rules${GameEngine.RULES_VERSION}.txt"
 
     /** Records that describe a day without being gameplay. A task that adds such a type names it here on purpose. */

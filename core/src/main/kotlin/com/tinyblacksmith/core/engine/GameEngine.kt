@@ -394,6 +394,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val ctx = ResolutionContext(state, content, config)
         ctx.blessings = ctx.blessings.filter { it.id != def.id } + ActiveBlessing(def.id, state.day + def.durationDays - 1)
         ctx.pendingBlessingOffer = emptyList()
+        ctx.worldFlags.remove(Battle.FLAG_BLESSING_OFFER)
         ctx.emit(EventType.BLESSING_CHOSEN, 3, "Chose the ${def.name} blessing.", data = mapOf("blessing" to def.id.value))
         return accept(ctx)
     }
@@ -442,6 +443,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         recover(ctx)
         // 9. Histories and blessings expiry.
         ctx.blessings = ctx.blessings.filter { it.expiresDay > day }
+        Battle.lapseBlessingOffer(ctx)  // an offer nobody answered in time is withdrawn
         // 10. Gazette and new morning. The edition is the whole day, preparation included (taken before compaction).
         val spent = ctx.events.filter { it.era == ctx.era && it.day == day && (it.type == EventType.MATERIAL_BOUGHT || it.type == EventType.TOOL_BOUGHT) }.sumOf { it.data["cost"]?.toIntOrNull() ?: 0 }
         val ledger = ShopLedger(state.gold, ctx.gold, ctx.income.toMap(), ctx.tradeInCreditToday, spent)

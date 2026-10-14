@@ -377,7 +377,25 @@ object Battle {
         val offer = mutableListOf<BlessingId>()
         repeat(minOf(ctx.config.blessingOfferSize, pool.size)) { val b = rng.pick(pool); offer += b; pool.remove(b) }
         ctx.pendingBlessingOffer = offer
+        ctx.worldFlags[FLAG_BLESSING_OFFER] = ctx.day + ctx.config.combat.blessingOfferDays
         ctx.emit(EventType.BLESSING_OFFERED, 3, "The town offers a blessing for the forge.", data = mapOf("offer" to offer.joinToString(",") { it.value }))
+    }
+
+    /** The last day the pending blessing offer can be taken, as a world flag (pruned the morning after it). */
+    const val FLAG_BLESSING_OFFER = "blessing_offer"
+
+    /**
+     * End Day: an offer nobody answered lapses after `combat.blessingOfferDays` mornings, with a line. An offer from a
+     * save older than the flag starts counting tonight.
+     */
+    fun lapseBlessingOffer(ctx: ResolutionContext) {
+        if (ctx.pendingBlessingOffer.isEmpty()) return
+        val last = ctx.worldFlags[FLAG_BLESSING_OFFER]
+        if (last == null) { ctx.worldFlags[FLAG_BLESSING_OFFER] = ctx.day + ctx.config.combat.blessingOfferDays; return }
+        if (ctx.day < last) return
+        ctx.pendingBlessingOffer = emptyList()
+        ctx.worldFlags.remove(FLAG_BLESSING_OFFER)
+        ctx.emit(EventType.BLESSING_OFFERED, 2, "Nobody answered the town's offer of a blessing, so it was withdrawn.", data = mapOf("lapsed" to "true"))
     }
 
     /**

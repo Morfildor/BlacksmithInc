@@ -119,4 +119,24 @@ class ReviewFixesTest {
         val over = announced.copy(day = s.day + 1 + law.days)
         assertEquals(plain, Missions.fractureWear(ResolutionContext(over, content, engine.config)), "lapsed")
     }
+
+    // ---- row 36a: an ignored blessing offer lapses ----
+
+    private fun GameState.endDay(e: GameEngine = engine): GameState = send(Command.EndDay(TestSupport.endDayId(this)), e)
+
+    @Test fun `an unanswered blessing offer stands for its days and then lapses with a line`() {
+        val days = engine.config.combat.blessingOfferDays
+        val s0 = TestSupport.engine.newRun(LegacyProfile(), 7).farSiege()
+        // Offered the way a won siege offers it, on the evening of this day.
+        var s = s0.edit(TestSupport.engine) { com.tinyblacksmith.core.battle.Battle.offerBlessing(it) }.endDay(TestSupport.engine)
+        assertTrue(s.pendingBlessingOffer.isNotEmpty())
+        repeat(days - 1) { s = s.endDay(TestSupport.engine); assertTrue(s.pendingBlessingOffer.isNotEmpty(), "still open on morning ${s.day}") }
+        val lapsed = engine.handle(s, Command.EndDay(TestSupport.endDayId(s))) as CommandOutcome.Accepted
+        assertTrue(lapsed.state.pendingBlessingOffer.isEmpty(), "unanswered for $days mornings, the offer lapses")
+        val line = lapsed.events.single { it.type == EventType.BLESSING_OFFERED && it.data["lapsed"] == "true" }.text
+        assertTrue(!line.contains(";") && !line.contains(" - "), line)
+        // Chosen in time, nothing lapses and the choice stands.
+        val chosen = s.send(Command.ChooseBlessing(s.pendingBlessingOffer.first())).endDay(TestSupport.engine)
+        assertTrue(chosen.blessings.any { it.id == s.pendingBlessingOffer.first() })
+    }
 }
