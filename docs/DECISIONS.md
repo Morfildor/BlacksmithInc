@@ -4416,3 +4416,13 @@ Still for the owner: `Legacy.preview` shows chance-like upgrade tracks as "N for
 - **B, wall work.** A contract's wall mending draws on the day's recovery allowance (cap 2 plus blessing) plus `guild.wallWorkExtraRecovery` (1). Patrol repair takes only what is left. Guildsim 300 runs, seed 1 (tuning block), defeated share before -> E=1 -> E=3: RECOVERY_AWARE 7 -> 23 -> 17 %, REPEAT_RECIPE 72 -> 91 -> 82 %, IGNORE_COUNTER 18 -> 45 -> 31 %, LEGEND_SEEKER 3 -> 12 -> 8 %, ADAPTIVE 0 -> 5 -> 3 %, SUPPLY_FARMER 3 -> 7 -> 5 %. Charter rates move at most 1 point. E=1 is the strict reading. E=3 keeps the card's +5 without patrol repair on top. Owner to confirm the number.
 - **Blessing offer.** Lapses after `combat.blessingOfferDays` (3) mornings with a line (a world flag, no schema change). GoldenStateTest re-recorded: 99 of 300 projection lines move, all on day 5 or later, RNG hashes unchanged.
 - **Dismissing a planned party member** is refused (`MemberUnavailable`, as a wall reservation is), not refunded: the state never holds half a plan and the existing message explains it.
+
+## GDD v2.0: the design document describes the game as built (2026-10-14, documentation only)
+
+The owner asked for the GDD to reflect the current game and the decisions taken over it. `Tiny_Blacksmith_GDD_v1.0.md` is
+renamed `Tiny_Blacksmith_GDD.md` and rewritten as v2.0 from a code-first audit of branch state 134d064 (rules 6, content 6,
+balance 15, schema 7): forging, economy, world, guild, legacy and meta, UX and architecture. It folds in the guild revision
+(2026-10-10), run variety (rules 6), deep forging and owner decisions A to M; keeps the nine original rounds with their status
+now (§2.1); marks decided-but-unbuilt items as NOT YET BUILT (§21.3) and questions as OPEN (§21.4). No LOCKED rule moved:
+every LOCKED change it records was already an owner decision. Numbers in it are a snapshot; `BalanceConfig` stays authoritative.
+No code, balance, rules, content or schema change.

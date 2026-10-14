@@ -1,5 +1,8 @@
 # GDD revision, 2026-10-10: the forge of an adventurers' guild
 
+> **Folded into GDD v2.0** (`Tiny_Blacksmith_GDD.md`, 2026-10-14: §2, §3, §12.13). Kept as the record of the owner's
+> decision; the GDD is now the single design source.
+
 Addendum to `Tiny_Blacksmith_GDD_v1.0.md`. The GDD itself is not edited; where this file and the GDD disagree about a
 guild run, this file holds. Source: `docs/GUILD_EVOLUTION_SPEC.md`, section 2.2 (the owner's plan of 2026-10-10). How it
 is built and what is done: `docs/GUILD_EVOLUTION_PLAN.md`.

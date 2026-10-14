@@ -1,5 +1,8 @@
 # GDD checklist — built vs. left
 
+> The GDD is now v2.0 (`Tiny_Blacksmith_GDD.md`, 2026-10-14), which describes the game as built and renumbers its sections.
+> The section numbers below follow v1.0 (in git history as `Tiny_Blacksmith_GDD_v1.0.md`); its §21.3 lists decided items not yet built.
+
 One line per GDD feature, by GDD section. `[x]` = built and verified (evidence in PROGRESS.md / DECISIONS.md);
 `[ ]` = open, with the missing piece named so ticking it means done. Tick items here when they ship.
 IMPLEMENTATION_PLAN.md is the phase-gate view; this is the feature view. DEFERRED scope (GDD 16.2: multiplayer,

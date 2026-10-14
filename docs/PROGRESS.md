@@ -1,5 +1,13 @@
 # Progress — 2026-10-14 (deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## GDD v2.0 (2026-10-14, documentation only)
+`Tiny_Blacksmith_GDD.md` replaces `Tiny_Blacksmith_GDD_v1.0.md` (renamed with history) and describes the game as built at
+rules 6 / content 6 / balance 15 / schema 7, with the guild revision, run variety, deep forging and owner decisions A to M
+folded in. Built from six parallel code-first audits (forging, economy, world, guild, legacy/meta, UX/architecture), read
+against the code, not the ledgers alone. CLAUDE.md, `GDD_REVISION_2026-10-10.md` and `GDD_CHECKLIST.md` point at it; DECISIONS
+has an entry. No tests run (no code changed). Next: re-number `GDD_CHECKLIST.md` to v2.0 sections and refresh its stale header;
+keep §21.3 (decided, not built: A, K, L, J's line, Heartfire confirmation) in step as the review work lands.
+
 ## Implementing the 2026-10-14 review (in progress, branch `review-2026-10-14`)
 
 Owner decisions A to M are in DECISIONS ("Owner decisions on the 2026-10-14 review"). Done and committed so far: plan items 6 and 7
