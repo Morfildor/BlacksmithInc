@@ -154,7 +154,7 @@ private fun ContributionCard(m: Contribution, face: ReplayFace?, state: GameStat
             face?.res?.let { PixelImage(it, 40.dp, description = null) }
             Column(Modifier.weight(1f)) {
                 Text(m.name + if (m.downed) " · went down" else "", style = MaterialTheme.typography.titleSmall, color = Gold)
-                Text(m.weapon ?: "No blade", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                Text(m.weapon ?: "No weapon", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
             }
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.md), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -165,7 +165,7 @@ private fun ContributionCard(m: Contribution, face: ReplayFace?, state: GameStat
                 if (m.shares.isEmpty()) Text("Nothing the record can give to ${m.name}.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
                 m.shares.forEach { s ->
                     Column(Modifier.fillMaxWidth().border(1.dp, BronzeDeep, shape).padding(horizontal = Space.sm, vertical = Space.xs).testTag("replay_share_${m.key}_${s.ruleId ?: "own"}")) {
-                        Text((if (s.weapon) "Blade · " else "") + s.name, style = MaterialTheme.typography.labelLarge, color = if (s.weapon) Gold else Cream)
+                        Text((if (s.weapon) "Weapon · " else "") + s.name, style = MaterialTheme.typography.labelLarge, color = if (s.weapon) Gold else Cream)
                         val line = parts(s) + listOfNotNull(
                             "${s.applied} ${if (s.applied == 1) "stack" else "stacks"} on foes".takeIf { s.applied > 0 },
                             "fired ${s.times} ${if (s.times == 1) "time" else "times"}".takeIf { s.times > 0 },

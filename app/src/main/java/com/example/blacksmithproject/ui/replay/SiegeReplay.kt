@@ -277,7 +277,7 @@ private fun ActorTile(
         append(if (s.downed) "down" else "${s.health} of ${a.maxHealth} health")
         stats.forEach { (st, n) -> append(", ${FightReplay.word(st)} $n") }
         if (acting) append(", acting")
-        if (bladeSource) append(", their blade's rule fires") else if (ruleSource) append(", their rule fires")
+        if (bladeSource) append(", their weapon's rule fires") else if (ruleSource) append(", their rule fires")
         label?.let { append(". ${it.text}${shortNote(it.note)?.let { n -> " $n" }.orEmpty()}") }
     }
     Column(
@@ -355,9 +355,9 @@ private fun NowBanner(replay: Replay, frame: Frame, modifier: Modifier = Modifie
         frame.kind == FrameKind.END -> null
         pop?.rule != null -> {
             val holder = replay.actor(pop.source)
-            if (pop.weapon) "Blade · ${holder?.weapon ?: "weapon"}: ${pop.rule}" else listOfNotNull(holder?.name, pop.rule).joinToString(": ")
+            if (pop.weapon) "Weapon · ${holder?.weapon ?: "weapon"}: ${pop.rule}" else listOfNotNull(holder?.name, pop.rule).joinToString(": ")
         }
-        frame.kind == FrameKind.INTRO && step.uses.isNotEmpty() -> step.uses.joinToString(", ") { u -> if (u.weapon) "Blade: ${u.name}" else u.name }
+        frame.kind == FrameKind.INTRO && step.uses.isNotEmpty() -> step.uses.joinToString(", ") { u -> if (u.weapon) "Weapon: ${u.name}" else u.name }
         step.kind == StepKind.TICK -> "A state ticks"
         else -> null
     }
@@ -403,9 +403,9 @@ private fun Inspector(
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
             Text(listOfNotNull(a.name, a.kit).joinToString(" · "), style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.semantics { heading() })
             s?.let { Text(if (it.downed) "Down" else "Health ${it.health} of ${a.maxHealth}", style = MaterialTheme.typography.bodyMedium) }
-            a.weapon?.let { Text("Blade: $it", style = MaterialTheme.typography.bodyMedium) }
+            a.weapon?.let { Text("Weapon: $it", style = MaterialTheme.typography.bodyMedium) }
             a.weaponRules.forEach { id ->
-                Text("${replay.rules[id] ?: id}: ${descriptions[id] ?: "a rule of this blade."}", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                Text("${replay.rules[id] ?: id}: ${descriptions[id] ?: "a rule of this weapon."}", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
             }
             val stats = STAT_ORDER.mapNotNull { st -> s?.stats?.get(st)?.takeIf { it > 0 }?.let { st to it } }
             if (stats.isNotEmpty()) {
