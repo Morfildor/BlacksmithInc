@@ -17,9 +17,12 @@ content, balance, siege scheduling or combat. Worktree `.claude/worktrees/guild-
   siege card (no header, the shown day), the next morning (countdown advanced), strip → Wall, Today → Decide /
   See rescue, the assign sheet, a classic run (strip → Town, three Records pages, the eve's gold tone), font 1.3,
   720x1280 at 320 dpi, force-stop and Continue. Pinned area on the Guild: about 206 to 211 dp.
-- Not run: `:core:test` (no core change), the instrumented suite (`ShopPanelTest.theSiegeDayLeavesTheLeadFirst`
-  was rewritten and only compiled), the updated device scripts (`guild.sh`, `journey.sh`, `runvariety.sh`,
-  `smoke.sh`, `runend.sh`), TalkBack and reduced motion on device.
+- Not run: `:core:test` (no core change), the instrumented suite (its sources compile,
+  `:app:compileDebugAndroidTestKotlin`; `ShopPanelTest.theSiegeDayLeavesTheLeadFirst` rewritten), the updated
+  device scripts (`guild.sh`, `journey.sh`, `runvariety.sh`, `smoke.sh`, `runend.sh`), TalkBack and reduced motion on
+  device. The Assign button on an empty wall place was not seen on a device: no scenario has an empty place (the
+  rule is covered by `GuildPlanUiTest`; the assign sheet was reached through "Keep a member for the wall").
+- Rough edge: the assign sheet closes while its "Keep home" confirmation is up and reopens after, without animation.
 - Pending: the deep road (rules 7, another agent's work in the main checkout) as an entry of What comes next and a
   special-reward chip once `Reward.road` lands. Merge conflicts expected in `WorkshopScreen.kt` (the `ShopPanel(...)`
   call), `ShopPanel.kt`, `ForgePanel.kt`, `GuildUi.kt`, CHANGELOG and PROGRESS: keep both sides. The earlier

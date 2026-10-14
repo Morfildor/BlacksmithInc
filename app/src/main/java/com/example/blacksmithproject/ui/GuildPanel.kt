@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -106,6 +107,7 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
         confirm = { confirm = it }, assign = { assigning = true }, send = vm::dispatch,
     )
     val dots = ui.today.mapNotNull { it.tab }.toSet() + listOfNotNull(GuildTab.COMPANY.takeIf { ui.companyNeeds })
+    val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
     Column(modifier.fillMaxSize()) {
         TodayRows(ui.today) { row ->
             when (val t = row.target) {
@@ -122,7 +124,7 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
             GuildTab.WALL -> wallRows(ui, actions)
             GuildTab.CHARTER -> charterRows(ui, actions)
         }
-        GuildList(tab, rows, anchor) { anchor = null }
+        GuildList(tab, rows, anchor, reducedMotion) { anchor = null }
     }
     // Under a hero's sheet the contract waits, as the commission board does.
     contract?.let { id ->
@@ -208,13 +210,13 @@ private fun GuildTabs(selected: GuildTab, dots: Set<GuildTab>, onSelect: (GuildT
 
 /** One part's rows as one lazy list; a row Today pointed at is scrolled to once. Each part keeps its own scroll. */
 @Composable
-private fun GuildList(tab: GuildTab, rows: List<GuildRow>, anchor: Pair<GuildTab, String>?, onAnchored: () -> Unit) {
+private fun GuildList(tab: GuildTab, rows: List<GuildRow>, anchor: Pair<GuildTab, String>?, reducedMotion: Boolean, onAnchored: () -> Unit) {
     val list = key(tab) { rememberLazyListState() }
     // Once the part Today pointed at is the one shown: the save that switches it may land a frame later.
     LaunchedEffect(anchor, tab) {
         val (t, k) = anchor ?: return@LaunchedEffect
         if (t != tab) return@LaunchedEffect
-        rows.indexOfFirst { it.key == k }.takeIf { it >= 0 }?.let { list.animateScrollToItem(it) }
+        rows.indexOfFirst { it.key == k }.takeIf { it >= 0 }?.let { if (reducedMotion) list.scrollToItem(it) else list.animateScrollToItem(it) }
         onAnchored()
     }
     LazyColumn(
