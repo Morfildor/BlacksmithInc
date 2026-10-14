@@ -68,9 +68,10 @@ tap_id title_new_run || exit 1
 tap_id charter_row_none || { echo "CHECK the run setup offers a run without a charter: FAIL"; exit 1; }
 tap_id setup_begin || exit 1
 past_offers || exit 1
-# A new run lands on the Shop destination, which leads with the day's one lead; the forge is one destination over.
-wait_text "Forge your first weapon" && shot 02_shop
-has_id shop_lead && echo "CHECK shop leads with a lead: ok" || echo "CHECK shop leads with a lead: FAIL"
+# A new run lands on the Shop destination; the forge is one destination over. A cleared install plays the guided first
+# day, whose strip is the Shop's one voice that day: the day's lead ("Worth doing first") comes back with its outcome.
+wait_text "Choose a weapon, a metal and an augment." && shot 02_shop
+has_id intro_strip && ! has_id shop_lead && echo "CHECK the guided strip is the Shop's one voice: ok" || echo "CHECK the guided strip is the Shop's one voice: FAIL"
 tap_id nav_forge || exit 1
 wait_text "Forge · " && shot 02_workshop
 # The workbench: each tap fills the open slot and the tray moves on to the next one.
@@ -97,6 +98,7 @@ tap_id report_close || exit 1
 has_id shopday_close && echo "CHECK gazette closes onto the day: ok" || echo "CHECK gazette closes onto the day: FAIL"
 tap_id shopday_close || exit 1
 past_offers || exit 1
+has_id shop_lead && echo "CHECK the lead comes back with the first day's outcome: ok" || echo "CHECK the lead comes back with the first day's outcome: FAIL"
 tap_id nav_town; $ADB shell sleep 1; shot 07_town
 has "Champions" && echo "CHECK town panel: ok"
 # Records: three segments; the gear opens the settings sheet; Back closes it, then returns from a destination to Shop.

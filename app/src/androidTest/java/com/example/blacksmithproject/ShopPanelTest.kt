@@ -65,12 +65,12 @@ class ShopPanelTest {
     private var shop by mutableStateOf<ShopUi?>(null)
 
     /** The whole list in a box taller than any screen, so every row is composed and has a place. */
-    private fun show(state: GameState) {
+    private fun show(state: GameState, showLead: Boolean = true) {
         shop = engine.shopUi(state)
         compose.setContent {
             BlacksmithProjectTheme {
                 Box(Modifier.width(360.dp).requiredHeight(6000.dp)) {
-                    shop?.let { ShopPanel(it, busy = false, reducedMotion = true, onLead = {}, onOpenBlade = {}, onOpenBoard = {}, onOpenStorage = {}, onOpenNews = {}) }
+                    shop?.let { ShopPanel(it, busy = false, reducedMotion = true, onLead = {}, onOpenBlade = {}, onOpenBoard = {}, onOpenStorage = {}, onOpenNews = {}, showLead = showLead) }
                 }
             }
         }
@@ -79,7 +79,7 @@ class ShopPanelTest {
 
     private fun top(tag: String) = compose.onNodeWithTag(tag, useUnmergedTree = true).getUnclippedBoundsInRoot().top
 
-    /** A new game (A01): the Shop opens on "Forge your first weapon", its reason and the button to the forge, above everything else to do. */
+    /** A new game (A01): the Shop opens on "Forge your first weapon", its reason and the way to the forge, above the counter and everything else. */
     @Test
     fun dayOneLeadsWithForgeYourFirstBlade() {
         val fresh = engine.newRun(LegacyProfile(), 42L)
@@ -88,7 +88,7 @@ class ShopPanelTest {
         compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals("${fresh.aliveHeroes().size} heroes in town. Your shelf is empty.")
         compose.onNodeWithTag("shop_lead_action", useUnmergedTree = true).assertTextEquals("Go to the forge  ›")
         compose.onNodeWithTag("shop_siege", useUnmergedTree = true).assertDoesNotExist()
-        assertTrue("the lead is the first thing under the counter", top("shop_counter") < top("shop_lead") && top("shop_lead") < top("shop_demand"))
+        assertTrue("the lead comes first, then the counter", top("shop_lead") < top("shop_counter") && top("shop_counter") < top("shop_demand"))
         compose.onNodeWithTag("shop_board_detail", useUnmergedTree = true).assertTextEquals("No commissions · no customer wants")
         compose.onNodeWithTag("shop_yesterday", useUnmergedTree = true).assertDoesNotExist()
     }
@@ -101,8 +101,11 @@ class ShopPanelTest {
         assertNotNull("no morning with a request, a stocked shelf and yesterday's customers", day)
         show(day!!.state)
         val blades = compose.onAllNodes(stockRow, useUnmergedTree = true).fetchSemanticsNodes().map { it.boundsInRoot.top }
-        val order = listOf("shop_counter", "shop_lead", "shop_shelf", "shop_board", "shop_storage", "shop_demand", "shop_yesterday").map { top(it).value }
-        assertEquals("counter, lead, shelf, the board, storage, who is buying, yesterday", order.sorted(), order)
+        val order = listOf("shop_lead", "shop_counter", "shop_shelf", "shop_board", "shop_storage", "shop_demand", "shop_yesterday").map { top(it).value }
+        assertEquals("lead, counter, shelf, the board, storage, who is buying, yesterday", order.sorted(), order)
+        // Each listed blade is shown once, as its row: the Shop draws no second shelf of slots.
+        assertEquals(day.state.listedWeapons().size, blades.size)
+        compose.onNodeWithTag("shopday_shelf", useUnmergedTree = true).assertDoesNotExist()
         assertTrue("the shelf rows sit between their heading and the board", with(compose.density) { top("shop_shelf").toPx() < blades.min() && blades.max() < top("shop_board").toPx() })
         // A shelf row still names the blade and its price for TalkBack, though it shows less.
         val blade = day.state.listedWeapons().first()
@@ -117,7 +120,7 @@ class ShopPanelTest {
         compose.onNodeWithTag("shop_news").assertDoesNotExist()
     }
 
-    /** The day of a siege: one row says so above the lead, with the line every destination shows. */
+    /** The day of a siege: one row says so first, above the lead, with who comes and how it looks. */
     @Test
     fun theSiegeDayIsSaidAboveTheLead() {
         val fresh = engine.newRun(LegacyProfile(), 42L)
@@ -127,7 +130,15 @@ class ShopPanelTest {
         compose.runOnUiThread { shop = ui.copy(threat = ui.threat!!.copy(today = true)) }
         compose.waitForIdle()
         compose.onNodeWithTag("shop_siege").assertTextContains("Siege today, after today's trading")
-        assertTrue("the siege row is above the lead", top("shop_counter") < top("shop_siege") && top("shop_siege") < top("shop_lead"))
+        assertTrue("the siege row is above the lead", top("shop_siege") < top("shop_lead") && top("shop_lead") < top("shop_counter"))
+    }
+
+    /** While the guided first day runs its strip is the one voice: the Shop leaves the lead out and keeps the rest in order. */
+    @Test
+    fun theLeadStepsAsideWhileTheGuidedDaySpeaks() {
+        show(engine.newRun(LegacyProfile(), 42L), showLead = false)
+        compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertDoesNotExist()
+        assertTrue("the counter still heads the shelf", top("shop_counter") < top("shop_shelf") && top("shop_shelf") < top("shop_board"))
     }
 
     @Test

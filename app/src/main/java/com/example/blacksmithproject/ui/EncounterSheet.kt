@@ -59,19 +59,26 @@ fun visitorNote(view: Encounters.View?): String? = view?.instance?.takeIf { it.s
     "${view.name}: " + (view.options.firstOrNull { it.id == inst.chosen }?.label?.let { "you answered \"$it\"." } ?: "answered.")
 }
 
-/** The visitor on the Shop: who is at the forge and until when. Opens the sheet; nothing is answered from here. */
+/**
+ * The visitor on the Shop: who is at the forge and until when, as one row like the Shop's other doors. The whole row
+ * opens the sheet ("Hear them out"); nothing is answered from here, and the gold plate stays End Day's.
+ */
 @Composable
 fun VisitorCard(view: Encounters.View, onOpen: () -> Unit, modifier: Modifier = Modifier) {
-    FramedPanel(modifier = modifier.fillMaxWidth().testTag("visitor_card")) {
-        Row(horizontalArrangement = Arrangement.spacedBy(Space.md), verticalAlignment = Alignment.CenterVertically) {
+    Column(modifier.fillMaxWidth().testTag("visitor_card")) {
+        Row(
+            Modifier.fillMaxWidth().forgeRow().clickable(onClickLabel = "Hear them out", role = Role.Button, onClick = onOpen)
+                .heightIn(min = 56.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag("visitor_open"),
+            horizontalArrangement = Arrangement.spacedBy(Space.md), verticalAlignment = Alignment.CenterVertically,
+        ) {
             PixelImage(R.drawable.icon_visitor, wholePixelDp(80, 48.dp), description = null)
             Column(Modifier.weight(1f)) {
                 Text("A VISITOR AT THE FORGE", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = Gold)
-                Text(view.name, style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = Space.xs).semantics { heading() })
+                Text(view.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+                Secondary("Leaves at End Day")
+                Text("Hear them out  ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.xs))
             }
         }
-        Secondary("Leaves at End Day.", Modifier.padding(top = Space.xs))
-        PrimaryActionButton("Hear them out", onOpen, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("visitor_open"))
     }
 }
 

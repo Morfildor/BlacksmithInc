@@ -81,14 +81,23 @@ data class ThreatUi(
     /** How the siege looks as things stand (`Labels.outlook`); null without a forecast. */
     val outlook: String? = null,
     val today: Boolean = false,
+    /** Inside the warning window (`combat.siegeWarningDays`): the siege is days away no more. */
+    val near: Boolean = false,
+    /** The first morning of that window, the one day the Shop says what the warning changes. */
+    val warningFresh: Boolean = false,
 ) {
     /** When, who and what tells against them, and how the town stands: the one siege line every destination shows. */
     val summary: String get() = listOfNotNull(if (today) "$siege, after today's trading" else siege, matchup, outlook).joinToString(" · ")
     /** Siege and matchup on one line, for a plate. */
     val plate: String get() = listOfNotNull(siege, line).joinToString(" · ")
-    /** Said on the Shop on the days `Threat.warned` holds and the besieger cares about an element. */
-    val note: String? get() = "The siege warning is out. Buyers now consider the attackers' strengths and weaknesses.".takeIf { warned && marks.isNotEmpty() }
+    /** Said on the Shop on the first warned day when the besieger cares about an element; the matchup line says the rest after it. */
+    val note: String? get() = "The siege warning is out. Buyers now consider the attackers' strengths and weaknesses.".takeIf { warned && warningFresh && marks.isNotEmpty() }
+    /** How loudly the strip speaks of the siege: one quiet line while it is days away, ember once it is near, a row of its own on the day. */
+    val urgency: SiegeUrgency get() = when { today -> SiegeUrgency.TODAY; near -> SiegeUrgency.NEAR; else -> SiegeUrgency.FAR }
 }
+
+/** The siege's weight on the Shop and the Forge, in proportion to how close it is. */
+enum class SiegeUrgency { FAR, NEAR, TODAY }
 
 /** The sign and colour of a mark: what bites the besieger helps ("+"), what it resists hurts ("−"). */
 val MarkUi.kind: EffectKind get() = if (counters) EffectKind.BUFF else EffectKind.FLAW
@@ -201,6 +210,8 @@ fun GameEngine.threatUi(state: GameState): ThreatUi? = Threats.of(state, content
         siege = when { t.daysToSiege <= 0 -> "Siege today"; t.daysToSiege == 1 -> "Siege tomorrow"; else -> "Siege in ${t.daysToSiege} days" },
         line = Lines.threat(t, content),
         warned = t.warned, today = t.daysToSiege <= 0,
+        near = t.daysToSiege in 0 until config.combat.siegeWarningDays,
+        warningFresh = t.daysToSiege == config.combat.siegeWarningDays - 1,
         marks = Element.entries.mapNotNull { e -> Threats.mark(e, t)?.let { e to MarkUi(Lines.threatMark(it, t, content), it == ThreatMark.COUNTERS) } }.toMap(),
         matchup = content.factionById[t.factionId]?.name?.let { name -> listOfNotNull(name, t.weakTo?.let { "Weak to ${it.word()}" }, t.resists?.let { "Resists ${it.word()}" }).joinToString(" · ") },
     )

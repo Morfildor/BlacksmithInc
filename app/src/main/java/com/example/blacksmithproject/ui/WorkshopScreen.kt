@@ -144,8 +144,11 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     Scaffold(
         bottomBar = {
             Column {
-                // End Day is the Shop's way forward. The Forge keeps it under "More", and beside its action when no forge is left today.
-                if (s.dest == Dest.SHOP) EndDayButton(s, vm, primary = true)
+                // End Day is the Shop's way forward, on a footer of its own under a rule: the list ends above it, so it never
+                // sits on a cut row. The Forge keeps it under "More", and beside its action when no forge is left today.
+                if (s.dest == Dest.SHOP) Box(Modifier.fillMaxWidth().background(ForgePanel).drawBehind { drawLine(BronzeDeep, Offset.Zero, Offset(size.width, 0f), strokeWidth = 1.dp.toPx()) }) {
+                    EndDayButton(s, vm, primary = true)
+                }
                 DestinationBar(s.dest, vm::selectDest, guild = s.guild != null, marked = when (s.intro?.mark) { IntroMark.NAV_FORGE -> Dest.FORGE; IntroMark.NAV_SHOP -> Dest.SHOP; else -> null })
             }
         },
@@ -180,6 +183,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     tip = tip?.let { { TipBanner(it, vm) } },
                     // On the day itself the siege has its own row under the counter, so the strip does not say it twice.
                     strip = if (s.shop.threat?.today == true) null else ({ ThreatStrip(s, "shop_threat", s.shop.threat?.note) { vm.selectDest(Dest.TOWN) } }),
+                    // One voice: while the guided first day runs, its strip says what to do next; the lead comes back with the day's outcome.
+                    showLead = s.intro?.last ?: true,
                     onOpenSupplies = { suppliesOpen = true },
                     visitor = s.encounter, onOpenVisitor = { vm.openSheet(Sheet.Visitor) },
                     relics = s.relics, relicSlots = if (vm.engine.content.relics.isEmpty()) 0 else vm.engine.config.depth.relicSlots,
@@ -390,7 +395,7 @@ private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean
     val haptics = LocalHaptics.current
     val note = endDayNote(s)
     // Clear of the destination bar under it: this is the one tap of the day that cannot be taken back.
-    val place = Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.xs, bottom = Space.md).testTag("end_day").introMark(s.intro?.mark == IntroMark.END_DAY)
+    val place = Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.md).testTag("end_day").introMark(s.intro?.mark == IntroMark.END_DAY)
     val end = { haptics.play(Moment.END_DAY); vm.endDay() }
     if (primary) PrimaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)
     else SecondaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)

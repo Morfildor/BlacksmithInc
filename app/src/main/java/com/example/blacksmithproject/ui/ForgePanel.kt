@@ -52,6 +52,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -173,19 +174,32 @@ fun ForgePanel(
     }
 }
 
-/** When the siege comes, who brings it and what it is weak to, and how the forge stands: above the work, in two short lines. */
+/**
+ * When the siege comes, who brings it and what it is weak to, and how the forge stands: above the work, in proportion to
+ * how near it is. Days away it is one quiet line; once the warning is out it is said in ember, edged in ember, with who
+ * comes and how it looks; on the day itself as loud as the strip gets (the Shop gives it a row of its own instead).
+ */
 @Composable
 internal fun ThreatStrip(s: UiState.Playing, tag: String, note: String? = null, onOpenTown: () -> Unit) {
     val threat = s.shop.threat
-    Column(Modifier.fillMaxWidth().background(SceneDeep).heightIn(min = 48.dp).clickable(onClickLabel = "Siege details", role = Role.Button, onClick = onOpenTown).padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag(tag)) {
+    val near = threat != null && threat.urgency != SiegeUrgency.FAR
+    Column(
+        Modifier.fillMaxWidth().background(SceneDeep).then(if (near) Modifier.drawBehind { drawRect(Ember, size = Size(3.dp.toPx(), size.height)) } else Modifier)
+            .heightIn(min = 48.dp).clickable(onClickLabel = "Siege details", role = Role.Button, onClick = onOpenTown)
+            .padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag(tag),
+        verticalArrangement = Arrangement.Center,
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(threat?.let { if (it.warned && !it.today) "Siege approaching · ${it.siege.removePrefix("Siege ")}" else it.siege } ?: "No siege in sight", style = MaterialTheme.typography.titleSmall, color = if (threat?.warned == true) Ember else Cream, modifier = Modifier.weight(1f))
+            Text(
+                threat?.let { if (it.warned && !it.today) "Siege approaching · ${it.siege.removePrefix("Siege ")}" else it.siege } ?: "No siege in sight",
+                style = if (near) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelLarge, color = if (near) Ember else CreamMuted, modifier = Modifier.weight(1f),
+            )
             PixelImage(R.drawable.icon_integrity, wholePixelDp(24, 22.dp), description = null)
-            Text("Forge health ${s.state.town.integrity}", style = MaterialTheme.typography.labelMedium, color = Cream)
+            Text("Forge health ${s.state.town.integrity}", style = MaterialTheme.typography.labelMedium, color = if (near) Cream else CreamMuted)
         }
-        // The second line is for a siege that is near (the warning is out, or it is today); far off, the strip is one line and the wall in Town says the rest.
-        if (threat?.warned == true || threat?.today == true) {
-            listOfNotNull(threat.matchup, threat.outlook).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+        // Far off the strip is one line and the wall in Town says the rest; near, who comes and how it looks, and once what the warning changes.
+        if (near && threat != null) {
+            listOfNotNull(threat.matchup, threat.outlook).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = Cream) }
             note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
         }
     }

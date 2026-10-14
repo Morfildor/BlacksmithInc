@@ -12,6 +12,16 @@ A core-correctness agent works in its own worktree (rows 21, 22/B, 31-34, 36 inc
 
 UI round 2 is done (commit 99354a8): the owner's title painting, a run-setup screen, opening cards with gains and costs as bullets, Regular body text, charcoal palette, checked choice rows; title, setup and chooser seen at font 1.0 and 2.0 on emulator-5556. The work moves to a cloud session: **`docs/HANDOFF_CLOUD.md` is the plan and the state**.
 
+**Cloud session (2026-10-14), handoff "Still to do" in order.** This machine has no Android SDK and its network policy
+blocks Google's Maven (`dl.google.com`), so no `:app` Gradle task runs here. Checks used instead, in a scratch shim
+outside the repo: `:core:test` alone (JDK 25 from Ubuntu), and the app's Kotlin compiled against desktop Compose 1.6.11
+with stubs for the Android-only APIs, which runs the app's JVM unit tests and type-checks the instrumented tests touched.
+- Item 1, Shop: lead first, visitor as a row, each listed blade shown once (no slot strip), siege in proportion
+  (`ThreatUi.urgency`, the warning note on its first day only), End Day on its own footer, the guided strip as the one
+  voice on day 1, the shop day's first card without its daily line. `:core:test` 631 / 0; app unit tests 249 / 0 in the
+  shim; `ShopPanelTest` and `ShopDayScreenTest` type-check. Not run: the instrumented suite, `smoke.sh` (updated for the
+  guided strip), any screen on a device.
+
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay
 and content, compliance and performance, guidance and copy, tests and evidence, adversarial, docs and release, unused

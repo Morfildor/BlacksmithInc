@@ -197,7 +197,7 @@ class ShopDayScreenTest {
         compose.onNodeWithTag("shopday_progress").assertTextEquals("The shop opens")
         compose.onAllNodesWithText("The shop opens", useUnmergedTree = true).assertCountEquals(1)
         compose.onNodeWithTag("shopday_open_title", useUnmergedTree = true).assertTextEquals("${day.resolution.visits.size} visitors today")
-        compose.onNodeWithTag("shopday_open_shown", useUnmergedTree = true).assertTextEquals("You'll see 3 at the counter. The remaining ${open.visitors - 3} are summarized afterward.")
+        compose.onNodeWithTag("shopday_open_shown", useUnmergedTree = true).assertTextEquals("3 at the counter. The other ${open.visitors - 3} are summed up after.")
         compose.onNodeWithTag("shopday_plate", useUnmergedTree = true).assertTextEquals("${m.shelf.size} weapons on the shelf")
         compose.onNodeWithTag("shopday_next").performClick()
         compose.waitForIdle()

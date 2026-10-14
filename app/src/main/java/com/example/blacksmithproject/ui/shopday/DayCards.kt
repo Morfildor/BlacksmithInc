@@ -81,21 +81,19 @@ private fun count(n: Int, one: String, many: String) = "$n ${if (n == 1) one els
 
 /**
  * How many came today, and how many of them get a card of their own. The day and "the shop opens" are on the strip
- * above and the shelf on the plate, so neither is said again here.
+ * above and the shelf on the plate, so neither is said again here. When every visit has its card the cards say so
+ * themselves: no line explains it every morning.
  */
 @Composable
 fun ShopOpenCard(open: Beat.Open, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         CardTitle("${count(open.visitors, "visitor", "visitors")} today", Modifier.testTag("shopday_open_title"))
         val rest = open.visitors - open.shown
-        Body(
-            when {
-                open.shown == 0 -> "The next card sums up ${if (open.visitors == 1) "this visit" else "these visits"}."
-                rest == 0 -> if (open.shown == 1) "You'll see this visit at the counter." else "You'll see each visit at the counter."
-                else -> "You'll see ${open.shown} at the counter. The remaining $rest ${if (rest == 1) "is" else "are"} summarized afterward."
-            },
-            Modifier.testTag("shopday_open_shown"),
-        )
+        when {
+            open.shown == 0 -> "The next card sums up ${if (open.visitors == 1) "this visit" else "these visits"}."
+            rest == 0 -> null
+            else -> "${open.shown} at the counter. The other $rest ${if (rest == 1) "is" else "are"} summed up after."
+        }?.let { Body(it, Modifier.testTag("shopday_open_shown")) }
     }
 }
 

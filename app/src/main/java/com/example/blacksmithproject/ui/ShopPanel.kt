@@ -6,6 +6,8 @@ import com.example.blacksmithproject.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,12 +44,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.detail.WeaponStatLine
 import com.example.blacksmithproject.ui.detail.rarityColor
-import com.example.blacksmithproject.ui.shopday.BladeUi
 import com.example.blacksmithproject.ui.shopday.CounterScene
 import com.example.blacksmithproject.ui.shopday.PersonChip
-import com.example.blacksmithproject.ui.shopday.ShelfBand
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.BuffGreen
+import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.Ember
 import com.example.blacksmithproject.ui.theme.ForgeSlot
@@ -59,14 +60,15 @@ import com.tinyblacksmith.core.model.CommissionId
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.WeaponFamilyId
 import com.tinyblacksmith.core.model.WeaponId
-import com.tinyblacksmith.core.model.WeaponSnapshot
 
 /**
  * The Shop destination: where the day is planned. From the top: [strip] (the siege and the forge's health, as on the
- * Forge), the counter with the shelf and its free places, the one lead of the day (under "Siege today" on that day),
- * the shelf rows, the ways into the board, storage and supplies, then the reports: who is buying and yesterday at the
- * counter, folded. Merchandise before reports. One lazy list of keyed rows; data in, events out. [tip] is the first-run
- * banner about listing, shown until a blade is listed; [more] appends rows.
+ * Forge; on the day of a siege a row of its own says so instead), the one lead of the day, a visitor who waits, then the
+ * counter: the scene and its plate head the shelf, whose blades are listed once, as rows. Then the ways into the board,
+ * storage and supplies, then the reports: who is buying and yesterday at the counter, folded. The next thing to do
+ * before merchandise, merchandise before reports. One lazy list of keyed rows; data in, events out. [tip] is the
+ * first-run banner about listing, shown until a blade is listed; [showLead] false while the guided first day speaks
+ * for it (one voice); [more] appends rows.
  */
 @Composable
 fun ShopPanel(
@@ -90,45 +92,44 @@ fun ShopPanel(
     relicOffer: Boolean = false,
     onOpenRelicOffer: () -> Unit = {},
     strip: (@Composable () -> Unit)? = null,
+    showLead: Boolean = true,
     more: LazyListScope.() -> Unit = {},
 ) {
     val side = Modifier.padding(horizontal = Space.md)
-    // A low screen or large text: the scene gives height to the lead, which must be readable without scrolling.
+    // A low screen or large text: the scene gives its height to the shelf rows under it.
     val short = LocalConfiguration.current.screenHeightDp < 700 || LocalDensity.current.fontScale > 1.15f
     val list = rememberLazyListState()
     LazyColumn(modifier.fillMaxSize().bottomFade(list.canScrollForward).testTag("shop_list"), state = list, contentPadding = PaddingValues(bottom = Space.lg)) {
         strip?.let { item(key = "strip") { it() } }
-        if (visitor?.instance?.isOpen == true) item(key = "visitor") { VisitorCard(visitor, onOpenVisitor, side.padding(top = Space.sm, bottom = Space.sm)) }
-        item(key = "counter") {
-            Column(Modifier.testTag("shop_counter")) {
-                CounterScene(
-                    plate = shop.plate, detail = null, customer = null, customerKey = null,
-                    reducedMotion = reducedMotion, onOpenHero = {}, backdropHeight = if (short || shop.shelf.isEmpty()) 56.dp else 88.dp,
-                )
-                // The shelf as a thing: the blades for sale and, beside them, the places still free.
-                ShelfBand(
-                    shop.shelf.map { BladeUi(WeaponSnapshot.of(it.weapon), it.price ?: 0) }, gone = emptySet(), looking = emptySet(), sold = null,
-                    reducedMotion = reducedMotion, onOpenBlade = { onOpenBlade(it.blade.weaponId) }, slots = shop.slots,
-                )
-            }
-        }
-        // The day of a siege says so first, in words; the lead keeps its place under it.
+        // The day of a siege says so first, in words, louder than the strip ever is; the lead keeps its place under it.
         shop.threat?.takeIf { it.today }?.let { threat ->
             item(key = "siege") {
-                Column(side.padding(top = Space.md).fillMaxWidth().forgeRow().heightIn(min = 56.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag("shop_siege").semantics(mergeDescendants = true) {}, verticalArrangement = Arrangement.Center) {
+                Column(
+                    side.padding(top = Space.md).fillMaxWidth().forgeRow().drawBehind { drawRect(Ember, size = Size(3.dp.toPx(), size.height)) }
+                        .heightIn(min = 56.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag("shop_siege").semantics(mergeDescendants = true) {},
+                    verticalArrangement = Arrangement.Center,
+                ) {
                     Text("Siege today, after today's trading", style = MaterialTheme.typography.titleMedium, color = Ember)
-                    Secondary(listOfNotNull(threat.matchup, threat.outlook, threat.note).joinToString(" · "))
+                    listOfNotNull(threat.matchup, threat.outlook).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Cream) }
                 }
             }
         }
+        if (showLead) item(key = "lead") { LeadCard(shop.lead, onAct = { onLead(shop.lead) }, modifier = side.padding(top = Space.md)) }
+        if (visitor?.instance?.isOpen == true) item(key = "visitor") { VisitorCard(visitor, onOpenVisitor, side.padding(top = Space.sm)) }
         visitorNote(visitor)?.let { note -> item(key = "visitor_note") { Secondary(note, side.padding(top = Space.sm).testTag("visitor_note")) } }
-        item(key = "lead") { LeadCard(shop.lead, onAct = { onLead(shop.lead) }, modifier = side.padding(top = Space.md)) }
 
+        // The counter heads the shelf: its plate counts the blades and the free places, and each blade is one row under it.
+        item(key = "counter") {
+            CounterScene(
+                plate = shop.plate, detail = null, customer = null, customerKey = null,
+                reducedMotion = reducedMotion, onOpenHero = {}, backdropHeight = if (short || shop.shelf.isEmpty()) 56.dp else 88.dp,
+                modifier = Modifier.padding(top = Space.md).testTag("shop_counter"),
+            )
+        }
         item(key = "shelf") {
+            // An empty shelf is said by the plate; the first-run tip is the only thing under it until a blade is listed.
             Column(side.testTag("shop_shelf")) {
-                // The count is on the counter's plate and the free places are on the shelf: an empty shelf needs no heading here.
                 if (shop.shelf.isEmpty()) tip?.let { Box(Modifier.padding(top = Space.md)) { it() } }
-                else SectionTitle("On the shelf")
             }
         }
         items(shop.shelf, key = { "stock_${it.weapon.id.value}" }) { ShelfRow(it, onOpen = { onOpenBlade(it.weapon.id) }, modifier = side) }

@@ -1,5 +1,6 @@
 package com.example.blacksmithproject
 
+import com.example.blacksmithproject.ui.SiegeUrgency
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.threatUi
 import com.tinyblacksmith.core.content.Element
@@ -25,6 +26,7 @@ class ThreatAndRequestsModelTest : ShopDayTestBase() {
     fun theThreatIsCoresOwnOnEveryMorning() {
         var warned = 0
         var marked = 0
+        var noted = 0
         for (state in mornings().take(120)) {
             val t = Threats.of(state, engine.content, engine.config)!!
             val ui = engine.threatUi(state)!!
@@ -39,7 +41,11 @@ class ThreatAndRequestsModelTest : ShopDayTestBase() {
             val days = state.town.nextSiegeDay - state.day
             assertEquals(when { days <= 0 -> "Siege today"; days == 1 -> "Siege tomorrow"; else -> "Siege in $days days" }, ui.siege)
             assertTrue(ui.plate.startsWith(ui.siege))
-            assertEquals("the note is said only on a warned day", t.warned && ui.marks.isNotEmpty(), ui.note != null)
+            // In proportion: the strip is quiet while the siege is days away, near inside the warning window, loudest on the day.
+            val window = engine.config.combat.siegeWarningDays
+            assertEquals(when { days <= 0 -> SiegeUrgency.TODAY; days < window -> SiegeUrgency.NEAR; else -> SiegeUrgency.FAR }, ui.urgency)
+            assertEquals("what the warning changes is said once, on its first day", t.warned && days == window - 1 && ui.marks.isNotEmpty(), ui.note != null)
+            if (ui.note != null) noted++
             // The Shop carries the same object, and each stock row the mark of its own element.
             val shop = engine.shopUi(state)
             assertEquals(ui, shop.threat)
@@ -50,6 +56,7 @@ class ThreatAndRequestsModelTest : ShopDayTestBase() {
             if (t.warned) warned++
         }
         assertTrue("the fixtures reach a warned day", warned > 0)
+        assertTrue("the fixtures reach the first warned day of a besieger with an element", noted > 0)
         assertTrue("the fixtures reach a blade the besieger cares about", marked > 0)
     }
 
