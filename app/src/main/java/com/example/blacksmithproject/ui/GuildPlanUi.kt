@@ -146,7 +146,8 @@ internal fun GameEngine.assignRows(state: GameState, g: GuildRunState, places: I
     val away = memberUnavailable(state, h.id)
     val (reason, action) = when {
         h.id in g.reserved -> "Kept for the wall" to AssignAction.RELEASE
-        away != null -> away.removePrefix("is ").replaceFirstChar { it.uppercase() } to AssignAction.NONE
+        // The roster's own words where they say when (home on day N, wounded until day N, days left to a rescue).
+        away != null -> (memberStatus(state, g, m) ?: away.removePrefix("is ").replaceFirstChar { it.uppercase() }) to AssignAction.NONE
         g.planned?.heroIds?.contains(h.id) == true -> "In today's planned party" to AssignAction.KEEP_HOME
         g.reserved.size >= places -> "All $places places are already kept" to AssignAction.NONE
         else -> null to AssignAction.RESERVE

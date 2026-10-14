@@ -78,8 +78,8 @@ Today rows, in priority order, first three kept. Each button names its action an
 | Charter secured today or yesterday | "Charter secured" | Retire or rank → Charter |
 
 A siege row that would only repeat the header's countdown is never added. With nothing actionable, Today is one short
-line ("Nothing needs you in the guild today"). On a short screen or at font scale ≥ 1.3, Today shows its first row and
-"N more" which expands in place.
+line ("Nothing needs you in the guild today"). On a screen under 760 dp tall or at font scale ≥ 1.3, Today shows its first row with a small
+"+N" on it that opens the rest in place; the parts' dots still say where the others are. Pinned budget: about 220 dp.
 
 Sub-tab memory: the chosen sub-tab is remembered with the day it was chosen (saved-state, survives process death).
 On the first Guild visit of a new day the default applies (Wall when the siege is today or tomorrow, else Contracts).
@@ -123,29 +123,32 @@ keep their confirmation. Then collapsible Law of the season, The other guild, Ne
 - `ui/SiegeHeader.kt` (new): the header's model (pure, tested) and composables.
 - `ui/ShopPanel.kt`, `ui/ForgePanel.kt`: drop the countdown strip and the siege-day card; the slim matchup line.
 - `ui/ShopUi.kt`: `ThreatUi.besieger` (the known name alone).
-- `ui/GuildUi.kt`: additive (Today rows, upcoming contracts, opens list, assign rows, special-reward chips, statuses).
-- `ui/GuildPanel.kt` (frame, Today, sub-tabs) and `ui/guild/` (one file per sub-tab, the assign sheet).
-- `ui/RecordsPanel.kt`, `GameViewModel.kt`: the Townsfolk page; the Guild sub-tab memory and `openWall()`.
-- `ui/Frames.kt`: a chip and a collapsible header, from the existing theme.
+- `ui/GuildPlanUi.kt` (new): Today rows, upcoming contracts, the charter's steps, assign rows, chips, `guildTabFor`;
+  `ui/GuildUi.kt` only gains fields and their wiring.
+- `ui/GuildPanel.kt` (frame, Today, sub-tabs, the assign sheet, `Chip`, `Collapsible`) and `ui/GuildParts.kt` (the four parts).
+- `ui/RecordsPanel.kt`, `ui/InfoPanels.kt` (`townsfolkItems`), `GameViewModel.kt`: the Town page of Records; the Guild
+  part memory and `openGuildWall()`.
 - `tools/emulator/guild.sh`, `journey.sh`, `runvariety.sh`: tap the sub-tab first.
 
 ## Checklist
 
-- [ ] 1. Spec written and committed
-- [ ] 2. Header model + tests (countdown words, cycle markers from timing, defender line, besieger reveal)
-- [ ] 3. Header composable in WorkshopScreen; strips and Shop siege card replaced; End Day line on siege day
-- [ ] 4. Guild model additions + tests (Today priority and cap, upcoming contracts, opens list, assign reasons, tab default)
-- [ ] 5. Guild frame: Today, sub-tabs with dots, tab memory in the ViewModel (saved-state)
-- [ ] 6. Contracts, Company, Wall (with assign sheet), Charter sub-tabs
-- [ ] 7. Townsfolk page in Records (guild runs)
-- [ ] 8. Device scripts updated for sub-tabs
-- [ ] 9. `:app:testDebugUnitTest` and `:core:test` pass; `assembleDebug` builds
-- [ ] 10. Device pass on a read-only AVD: day 1, siege eve, siege day before End Day, trading/replay, next morning,
-      strip → Wall, save/reload, small screen, large text; screenshots sent
-- [ ] 11. CHANGELOG `[Unreleased]`, PROGRESS, GUILD_EVOLUTION_PLAN ledger line
+- [x] 1. Spec written and committed
+- [x] 2. Header model + tests (countdown words, cycle markers from timing, defender line, besieger reveal)
+- [x] 3. Header composable in WorkshopScreen; strips and Shop siege card replaced; End Day line on siege day
+- [x] 4. Guild model additions + tests (Today priority and cap, upcoming contracts, opens list, assign reasons, tab default)
+- [x] 5. Guild frame: Today, sub-tabs with dots, tab memory in the ViewModel (saved-state)
+- [x] 6. Contracts, Company, Wall (with assign sheet), Charter sub-tabs
+- [x] 7. Townsfolk page in Records (guild runs)
+- [x] 8. Device scripts updated for sub-tabs
+- [x] 9. `:app:testDebugUnitTest` passes (269 / 0) and `assembleDebug` builds; `:core:test` not run (no core change)
+- [x] 10. Device pass on a read-only AVD: day 1, siege eve, siege day before End Day, trading/replay, next morning,
+      strip → Wall, save/reload, small screen, large text; screenshots sent (TalkBack and reduced motion: pending)
+- [x] 11. CHANGELOG `[Unreleased]`, PROGRESS, GUILD_EVOLUTION_PLAN ledger line
 
 ## Pending (recorded, not done here)
 
 - The deep road as an entry of "What comes next" and a special-reward chip, once the other agent's `Reward.road` and
   `DeepRoad` land.
-- Anything the environment cannot run is marked pending in PROGRESS with the reason.
+- Anything the environment cannot run is marked pending in PROGRESS with the reason: the instrumented suite, the
+  updated device scripts, TalkBack and reduced motion on device.
+- `:core:test` was not run: this branch changes nothing in `:core`.

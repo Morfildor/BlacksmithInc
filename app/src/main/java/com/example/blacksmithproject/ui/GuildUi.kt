@@ -271,7 +271,7 @@ private fun GameEngine.offerUi(state: GameState, g: GuildRunState, offer: Missio
 private fun bladeLine(state: GameState, heroId: HeroId): String =
     state.loanOf(heroId)?.let { "On loan: ${it.name}" } ?: state.equippedWeapon(heroId)?.let { "Own weapon: ${it.name}" } ?: "Unarmed"
 
-private fun GameEngine.memberStatus(state: GameState, g: GuildRunState, m: GuildMember): String? = when {
+internal fun GameEngine.memberStatus(state: GameState, g: GuildRunState, m: GuildMember): String? = when {
     m.status == MemberStatus.CAPTURED -> g.captives.firstOrNull { it.heroId == m.heroId }?.let { c ->
         (c.deadlineDay - state.day).let { left -> "Captured by the enemy: " + (if (left == 1) "1 day" else "$left days") + " left to rescue them" }
     } ?: "Captured by the enemy"

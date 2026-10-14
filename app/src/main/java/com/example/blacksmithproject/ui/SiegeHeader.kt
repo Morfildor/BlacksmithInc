@@ -110,7 +110,7 @@ fun UiState.Playing.siegeHeader(interval: Int, championCount: Int): SiegeHeaderU
 fun WorkshopHeader(ui: SiegeHeaderUi, gold: Int, energy: Int, onSettings: () -> Unit, onOpenSiege: () -> Unit, openLabel: String) {
     val large = LocalDensity.current.fontScale >= 1.3f
     // The markers are the first thing to go: on a short screen or with large text the countdown says it alone.
-    val markers = ui.marks.isNotEmpty() && !large && LocalConfiguration.current.screenHeightDp >= 600
+    val markers = ui.marks.isNotEmpty() && !large && LocalConfiguration.current.screenHeightDp >= 700
     Column(Modifier.fillMaxWidth().background(ForgePanel).testTag("workshop_header")) {
         FlowRow(
             Modifier.fillMaxWidth().padding(start = Space.md, end = Space.xs),
@@ -154,20 +154,23 @@ private fun SiegeStrip(ui: SiegeHeaderUi, markers: Boolean, onOpen: () -> Unit, 
         Modifier.fillMaxWidth().padding(start = Space.sm, end = Space.sm, bottom = Space.sm)
             .background(ground, MaterialTheme.shapes.small).border(if (ui.tone == SiegeTone.TONIGHT) 2.dp else 1.dp, edge, MaterialTheme.shapes.small)
             .clickable(onClickLabel = openLabel, role = Role.Button, onClick = onOpen).heightIn(min = 48.dp)
-            .padding(horizontal = 12.dp, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag("siege_strip"),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+            .padding(horizontal = 12.dp, vertical = 4.dp).semantics(mergeDescendants = true) {}.testTag("siege_strip"),
+        verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
+        // The countdown and who comes on one line, the cycle's days and the wall's places on the next; each wraps before it is cut.
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
+            FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp), itemVerticalAlignment = Alignment.CenterVertically) {
                 Text(ui.countdown, style = MaterialTheme.typography.titleSmall, color = ink, modifier = Modifier.testTag("siege_countdown"))
-                ui.besieger?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = if (ui.tone == SiegeTone.TONIGHT) Cream else CreamMuted, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.testTag("siege_besieger")) }
+                ui.besieger?.let { Text("· $it", style = MaterialTheme.typography.bodySmall, color = if (ui.tone == SiegeTone.TONIGHT) Cream else CreamMuted, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.testTag("siege_besieger")) }
             }
             Text("›", style = MaterialTheme.typography.titleMedium, color = if (ui.tone == SiegeTone.CALM) CreamMuted else ink)
         }
-        if (markers) FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.testTag("siege_marks")) {
-            ui.marks.forEach { DayMark(it, ui.tone) }
+        if (markers || ui.defenders != null) FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (markers) Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.testTag("siege_marks")) { ui.marks.forEach { DayMark(it, ui.tone) } }
+            ui.defenders?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = ink, modifier = Modifier.padding(start = 4.dp).testTag("siege_defenders")) }
         }
-        ui.defenders?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = ink, modifier = Modifier.testTag("siege_defenders")) }
     }
 }
 
@@ -181,14 +184,14 @@ private fun DayMark(m: DayMarkUi, tone: SiegeTone) {
     }
     Row(
         Modifier.background(if (m.siege) ForgeSlot else Color.Transparent, MaterialTheme.shapes.extraSmall)
-            .border(if (m.today) 2.dp else 1.dp, edge, MaterialTheme.shapes.extraSmall).widthIn(min = 32.dp).padding(horizontal = 6.dp, vertical = 2.dp),
+            .border(if (m.today) 2.dp else 1.dp, edge, MaterialTheme.shapes.extraSmall).widthIn(min = 32.dp).padding(horizontal = 6.dp, vertical = 1.dp),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterHorizontally),
     ) {
         Text(
             "${m.day}", style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center,
             color = when { m.past -> CreamMuted.copy(alpha = 0.55f); m.today -> Cream; else -> CreamMuted },
         )
-        if (m.siege) Box { PixelImage(Sprites.siegeWall(damaged = false), 14.dp, description = null) }
+        if (m.siege) Box { PixelImage(Sprites.siegeWall(damaged = false), 18.dp, description = null) }
     }
 }
 
@@ -199,10 +202,13 @@ private fun DayMark(m: DayMarkUi, tone: SiegeTone) {
  */
 @Composable
 fun SiegeMatchup(threat: ThreatUi, tag: String, note: String? = null) {
+    // The besieger's name is the header's; what tells against them (and a classic run's outlook) is this line's own.
+    val facts = listOfNotNull(threat.matchup?.let { m -> threat.besieger?.let { m.removePrefix(it).removePrefix(" · ") } ?: m }?.takeIf { it.isNotBlank() }, threat.outlook)
+    if (facts.isEmpty() && note == null) return
     Column(
         Modifier.fillMaxWidth().background(ForgePanel).padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag(tag),
     ) {
-        Text(listOfNotNull(threat.matchup, threat.outlook).joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = if (threat.today) Ember else Cream)
+        if (facts.isNotEmpty()) Text(facts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = if (threat.today) Ember else Cream)
         note?.let { Secondary(it) }
     }
 }
