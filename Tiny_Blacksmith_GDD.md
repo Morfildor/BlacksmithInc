@@ -895,8 +895,9 @@ level 5 1, a weapon's fifth victory 2, elite slain 1, warlord defeated 3, ambiti
 | Homing Steel | Legends return more often and stronger |
 
 Bounded on purpose: all tracks maxed add about +10 to +15 mean days. Most tracks move a run by a day or less; showing
-each track's own measure on the claim screen is OPEN. Its chance tracks (Thrifty Hands, Lucky Hammer, Anvil Lore) once read "N forges in 10", which states exact odds; they are
-worded instead: "kept now and then … more often than at level 1. It is never certain." (decision A).
+each track's own measure on the claim screen is OPEN. The upgrade preview words the chance tracks (Thrifty Hands, Lucky
+Hammer, Anvil Lore) against the level below, never as a count (decision A): "The augment is kept now and then after a
+forge, more often than without it. It is never certain."
 
 ## 13.3 Persistence
 
