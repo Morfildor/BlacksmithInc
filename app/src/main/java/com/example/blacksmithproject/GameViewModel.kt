@@ -574,6 +574,9 @@ class GameViewModel(
         }
     }
 
+    /** "Set price" on the forge result: the blade stays in storage and its sheet opens, where the price is chosen by hand and it is listed. */
+    fun priceForged(id: WeaponId) = edit { it.copy(revealWeaponId = null, learning = null, sheet = Sheet.Item(id), notice = null) }
+
     /** "Store" on the forge result, and closing it any other way: the blade stays in storage, and the workshop says so. */
     fun storeForged() {
         val name = local.value.revealWeaponId?.let { session.snapshot.value?.run?.weapons?.get(it) }?.takeIf { it.isInStorage }?.name

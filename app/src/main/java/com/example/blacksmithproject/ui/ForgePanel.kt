@@ -136,6 +136,10 @@ fun ForgePanel(
         revealed = s.forgeReveal
     }
 
+    // A Heartfire forging is asked about once before it is sent: it spends something scarce whatever comes of it.
+    var confirming by rememberSaveable { mutableStateOf(false) }
+    val send = { bench.command?.copy(bellows = bellows)?.let(vm::dispatch); Unit }
+
     // Not saved: coming back to the Forge starts with it off, so nothing moves until the player acts. The guided first
     // day's first step is to choose: there the open tray comes into view by itself, under the step that asks for it.
     var follow by remember { mutableStateOf(s.intro?.step == IntroStep.RECIPE) }
@@ -149,11 +153,17 @@ fun ForgePanel(
             ForgeHeading(s.shop.requests.size, endDayNote, onOpenBoard, { onOpenSupplies(null) }, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
             Workbench(bench.title, d, vm.engine.content, compact = open != null, reducedMotion)
             bench.brief?.let { Brief(it, onOpenBoard) { vm.updateDraft { draft -> draft.copy(commissionId = null) } } }
-            SlotRow(bench.slots.take(3), d, engine.content, open, reducedMotion) { opened = if (open == it) NO_SLOT else it.name; follow = true }
-            if (bench.slots.size > 3) SlotRow(bench.slots.drop(3), d, engine.content, open, reducedMotion) { opened = if (open == it) NO_SLOT else it.name; follow = true }
-            if (open != null) {
-                val options = remember(s.state, d, open, s.shop.threat) { engine.forgeOptions(s.state, d, open, s.shop.threat) }
-                Tray(open, options, engine.content, follow, onOpenSupplies, onDone = { opened = NO_SLOT }) { option -> vm.updateDraft { engine.place(it, open, option) }; opened = null; follow = true }
+            // The places and the open tray come into view together. A tray taller than the screen keeps its head in view,
+            // so the labels of the places (Weapon, Metal, Augment) stay on screen while a choice is made.
+            val recipe = remember { BringIntoViewRequester() }
+            LaunchedEffect(open, follow) { if (open != null && follow) recipe.bringIntoView() }
+            Column(Modifier.bringIntoViewRequester(recipe)) {
+                SlotRow(bench.slots.take(3), d, engine.content, open, reducedMotion) { opened = if (open == it) NO_SLOT else it.name; follow = true }
+                if (bench.slots.size > 3) SlotRow(bench.slots.drop(3), d, engine.content, open, reducedMotion) { opened = if (open == it) NO_SLOT else it.name; follow = true }
+                if (open != null) {
+                    val options = remember(s.state, d, open, s.shop.threat) { engine.forgeOptions(s.state, d, open, s.shop.threat) }
+                    Tray(open, options, engine.content, onOpenSupplies, onDone = { opened = NO_SLOT }) { option -> vm.updateDraft { engine.place(it, open, option) }; opened = null; follow = true }
+                }
             }
             if (bench.notes.isNotEmpty()) FieldNotes(bench.notes) { vm.selectRecords(RecordsPage.JOURNAL) }
             bench.outlook?.let { ForgeOutlookCard(it) { rehearsing = true } }
@@ -165,8 +175,19 @@ fun ForgePanel(
             tip?.let { TipBanner(it, vm, Modifier.padding(top = Space.md)) }
         }
         ForgeAction(bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay, marked = s.intro?.mark == IntroMark.FORGE) {
-            bench.command?.copy(bellows = bellows)?.let(vm::dispatch)
+            if (bench.command?.heartfire == true) confirming = true else send()
         }
+    }
+    val confirm = bench.heartfire?.confirm.orEmpty()
+    if (confirming && bench.command?.heartfire == true && confirm.isNotEmpty()) ForgeDialog(
+        "Forge with Heartfire?", onDismiss = { confirming = false }, tag = "forge_heartfire_confirm",
+        actions = {
+            SecondaryActionButton("Not now", { confirming = false }, Modifier.testTag("forge_heartfire_cancel"))
+            PrimaryActionButton("Spend 1 Heartfire", { confirming = false; send() }, Modifier.testTag("forge_heartfire_go"), enabled = !s.busy)
+        },
+    ) {
+        confirm.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Cream) }
+        bench.heartfire?.warning?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
     }
     if (rehearsing) bench.outlook?.let { o ->
         val relics = remember(s.state.relics) { benchRelics(s.state, engine.content) }
@@ -198,7 +219,7 @@ internal fun ThreatStrip(s: UiState.Playing, tag: String, note: String? = null, 
             Text("Forge health ${s.state.town.integrity}", style = MaterialTheme.typography.labelMedium, color = if (near) Cream else CreamMuted)
         }
         // Far off the strip is one line and the wall in Town says the rest; near, who comes and how it looks, and once what the warning changes.
-        if (near && threat != null) {
+        if (near) {
             listOfNotNull(threat.matchup, threat.outlook).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = Cream) }
             note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
         }
@@ -334,13 +355,10 @@ private fun optionArt(slot: RecipeSlot, option: OptionUi, content: ContentCatalo
  * what is missing and offers the way to buy it. What the chosen tile does is said once, under the grid.
  */
 @Composable
-private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, follow: Boolean, onRestock: (MaterialId?) -> Unit, onDone: () -> Unit, onPick: (OptionUi) -> Unit) {
-    // A tray the player just opened (or was moved on to by a choice) comes into view; arriving at the Forge moves nothing.
-    val requester = remember { BringIntoViewRequester() }
-    LaunchedEffect(slot, follow) { if (follow) requester.bringIntoView() }
+private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, onRestock: (MaterialId?) -> Unit, onDone: () -> Unit, onPick: (OptionUi) -> Unit) {
     val columns = if (LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340) 2 else 3
     var inspected by remember(slot) { mutableStateOf<String?>(null) }
-    Column(Modifier.fillMaxWidth().padding(top = Space.sm).bringIntoViewRequester(requester).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeLine, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeLine, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
             TextButton(onClick = onDone, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_done")) { Text("Done", color = CreamMuted) }

@@ -41,6 +41,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ### Changed
 - **The Shop leads with what to do.** "Worth doing first" comes first, under the siege strip and above the counter, and a waiting visitor is a row under it with "Hear them out" instead of a second gold button. Each listed weapon is shown once, as its row under the counter's plate: the strip of shelf slots is gone. End Day sits on a footer of its own, so the list never runs under it. While the guided first day runs, its strip is the only coaching on the Shop and the lead comes back with the day's outcome.
 - **The siege in proportion.** Days away it is one quiet line. Once the warning is out the strip turns ember with who comes and how it looks, and on the day itself a row at the top of the Shop says so. What the warning changes for buyers is said on its first day only.
+- **Pricing on the forge result.** "List at" the suggested price is the one gold action, with how many heroes could pay it. "Set price" opens the weapon's sheet to choose a price of your own. Loan sits beside it in a guild run.
+- A weapon forged for a commission says whether it is reserved, and for whose commission.
+- Hidden chances are said in words, never as numbers: Reckless says how common flaws are, and Heartfire gives the chance to break through as slim, low, fair, good or high.
+- Forging with Heartfire asks first, saying what it spends, how much is left after, the chance and what a miss still gives.
+- The places of the recipe stay in view while a tray of choices is open.
+- On the first day's forge result the guided step heads the card instead of sitting over the weapon's numbers.
 - The shop day's first card no longer explains every morning that each visit will be shown. It speaks only when some visits are summed up after.
 - A weapon given away (listed for less than a quarter of its price) is a gift, not a sale. It earns no sale reputation. The town notices generosity once a day, and a gift warms a hero to the shop only so far, never into a regular.
 - A blessing offer nobody answers is withdrawn after three mornings, with a line in the day's records.

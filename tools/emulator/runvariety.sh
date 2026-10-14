@@ -230,6 +230,10 @@ heart() {
   local recipe="$(slots)"; heartfire_on
   echo "RECIPE forged: $recipe $(dump | grep -o 'content-desc="Risk: [^"]*"') | $(text_of forge_heartfire_held) | $(texts | grep -m1 'Forge with Heartfire ·')"
   tap_id forge_weapon >/dev/null || { bad "$id forges"; return; }
+  # A Heartfire forging asks once, with what it spends and what a miss still gives.
+  shot ${id}_3c_heartfire_confirm
+  expect "$id asks before spending Heartfire" "$(texts | tr '\n' ' ')" "Heartfire left after"
+  tap_id forge_heartfire_go >/dev/null || { bad "$id confirms the Heartfire forging"; return; }
   wait_text "Suggested price" || { bad "$id shows the result"; shot ${id}_4_stuck; return; }
   shot ${id}_4_result
   local rar=$(rarity_line) leg=$(text_of card_legend)

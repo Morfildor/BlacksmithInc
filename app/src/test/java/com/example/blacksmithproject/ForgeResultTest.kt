@@ -86,6 +86,19 @@ class ForgeResultTest : ShopDayTestBase() {
         assertEquals("Stored ${blade.name}. It isn't for sale. Ready to forge another.", s.notice)
     }
 
+    /** "Set price" (owner decision K): nothing is listed, the card closes and the blade's sheet opens, where a price of one's own is chosen. */
+    @Test
+    fun setPriceOpensTheBladesSheetAndListsNothing() = vmTest {
+        val vm = open(repo(fresh))
+        vm.dispatch(forgeSword); advanceUntilIdle()
+        val id = vm.playing().revealWeaponId!!
+        vm.priceForged(id); advanceUntilIdle()
+        val s = vm.playing()
+        assertNull("the card closes", s.revealWeaponId)
+        assertEquals(Sheet.Item(id), s.sheet)
+        assertTrue("nothing was listed", s.state.weapons.getValue(id).isInStorage && s.state.listedWeapons().isEmpty())
+    }
+
     /** The screen is told the shelf is full before the tap; if a listing is refused all the same, the card stays open under the engine's reason. */
     @Test
     fun aFullShelfIsKnownBeforeTheTapAndARefusalKeepsTheCardOpen() = vmTest {
@@ -135,7 +148,7 @@ class ForgeResultTest : ShopDayTestBase() {
         assertEquals("Suggested price 120 gold. Enter your own price.", priceAgainstSuggested(null, 120))
     }
 
-    /** A blade forged for a request: whether this blade fits, and what End Day will really hand over. Never "reserved". */
+    /** A blade forged for a request: whether this blade fits, what End Day will really hand over, and whether it is reserved. */
     @Test
     fun aBladeForgedForARequestSaysItsRealReadiness() {
         fun with(c: Commission, extra: List<Weapon> = emptyList()) = forged.copy(commissions = mapOf(c.id to c), weapons = forged.weapons + extra.associateBy { it.id })
@@ -149,6 +162,10 @@ class ForgeResultTest : ShopDayTestBase() {
         assertTrue(ready.fits && ready.accepted)
         assertEquals("This weapon meets the commission", ready.fit)
         assertEquals("Ready. ${blade.name} will be collected at End Day.", ready.handover)
+        // Owner decision L: one line from the save on whether this blade is reserved. A fresh blade never is.
+        assertEquals("Not reserved. At End Day the buyer takes a matching weapon from storage first, then the shelf.", ready.reserved)
+        val kept = with(accepted).let { st -> st.copy(weapons = st.weapons + (blade.id to blade.copy(promisedTo = accepted.id))) }
+        assertEquals("Reserved for $buyer's commission.", engine.forgedFor(kept, blade.id, accepted.id)!!.reserved)
 
         // A lesser blade that also fits is what the engine hands over: the card names that one, not the fresh blade.
         val lesser = blade.copy(id = WeaponId("lesser"), name = "Plain Old Sword", quality = blade.quality - 1)

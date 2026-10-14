@@ -7,6 +7,8 @@ import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.forgeWorkbench
 import com.example.blacksmithproject.ui.guildUi
 import com.example.blacksmithproject.ui.openingChooser
+import com.example.blacksmithproject.ui.chanceWord
+import com.example.blacksmithproject.ui.frequencyWord
 import com.example.blacksmithproject.ui.riskExplanation
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.supplierMood
@@ -36,7 +38,6 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import kotlin.math.roundToInt
 
 /**
  * The screen models of rules 6 against real engine states: the opening chooser, the Heartfire panel of the workbench, the
@@ -121,7 +122,6 @@ class RunVarietyUiTest {
     private val augment = content.materials(MaterialCategory.AUGMENT).first { (classic.materials[it.id] ?: 0) > 0 }
     private val ready = ForgeDraft(mode = ForgeMode.ADVANCED, familyId = family.id, coreId = core.id, augmentId = augment.id)
     private fun bench(state: GameState, draft: ForgeDraft) = engine.forgeWorkbench(state, draft, engine.shopUi(state).requests)
-    private fun pct(chance: Double) = "${(chance * 100).roundToInt()}%"
 
     @Test
     fun heartfireIsShownHeldAndCanOnlyBeAskedForInAdvancedWithSomeHeld() {
@@ -183,7 +183,15 @@ class RunVarietyUiTest {
         assertTrue("some recipe reaches Epic before luck", t.chanceLow > 0.0)
         assertNull(top.heartfire!!.warning)
         val chance = top.heartfire!!.outlook[2]
-        assertEquals(if (t.chanceLow == t.chanceHigh) "Chance to break through: ${pct(t.chanceLow)}." else "Chance to break through: ${pct(t.chanceLow)} at quality ${t.qualityLow}, up to ${pct(t.chanceHigh)} at quality ${t.qualityHigh}.", chance)
+        // Owner decision A: the hidden chance is a band word, never a number.
+        val low = chanceWord(t.chanceLow); val high = chanceWord(t.chanceHigh)
+        assertEquals(if (low == high) "Chance to break through: $low." else "Chance to break through: $low at quality ${t.qualityLow}, $high at quality ${t.qualityHigh}.", chance)
+        assertFalse(chance, chance.contains('%'))
+        // The confirmation before it is sent: what it spends and what is left, the chance in words, what a miss gives.
+        val confirm = top.heartfire!!.confirm
+        assertEquals("Spends 1 Heartfire and ${t.energy} energy, whether or not it breaks through. 0 of ${legend.heartfireMax} Heartfire left after.", confirm[0])
+        assertEquals(listOf(chance, top.heartfire!!.outlook[3]), confirm.drop(1))
+        assertTrue("nothing to confirm before the recipe is whole", bench(held, ForgeDraft(mode = ForgeMode.ADVANCED, heartfire = true)).heartfire!!.confirm.isEmpty())
         // A recipe that is not whole has no outlook to show yet.
         assertEquals(listOf("Choose a weapon, a metal and an augment to see what it would do."), bench(held, ForgeDraft(mode = ForgeMode.ADVANCED, heartfire = true)).heartfire!!.outlook)
         assertEquals(RecipeSlot.WEAPON, bench(held, ForgeDraft(mode = ForgeMode.ADVANCED, heartfire = true)).next)
@@ -196,7 +204,8 @@ class RunVarietyUiTest {
         assertTrue(safe, safe.startsWith("Quality stays within ${cfg.risk.getValue(Risk.SAFE).rollSpread} of what the recipe gives."))
         assertTrue(riskExplanation(Risk.BALANCED, cfg).startsWith("Quality moves up to ${cfg.qualityRollSpread} either way."))
         val reckless = riskExplanation(Risk.RECKLESS, cfg)
-        assertTrue(reckless, reckless.startsWith("Adds one more property. About ${pct(cfg.risk.getValue(Risk.RECKLESS).defectChance)} come out flawed"))
+        assertTrue(reckless, reckless.startsWith("Adds one more property. Flaws are ${frequencyWord(cfg.risk.getValue(Risk.RECKLESS).defectChance)}, and a flawed weapon is still usable."))
+        assertFalse("hidden odds are words, never a percentage", reckless.contains('%'))
     }
 
     // ---- the wall, the board, the supplier, the weapon sheet ----

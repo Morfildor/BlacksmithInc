@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -63,7 +64,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.detail.ItemDetail
-import com.example.blacksmithproject.ui.detail.PriceEditor
+import com.example.blacksmithproject.ui.detail.affordLine
 import com.example.blacksmithproject.ui.detail.WeaponStatBody
 import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.detail.shelfFullLine
@@ -103,14 +104,14 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
     Dialog(onDismissRequest = vm::storeForged, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
         ForgeResultCard(
             detail, "${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}.", request,
-            enabled = !s.busy, onStore = vm::storeForged, onList = { vm.listForged(w.id, it) },
+            enabled = !s.busy, onStore = vm::storeForged, onList = { vm.listForged(w.id, it) }, onSetPrice = { vm.priceForged(w.id) },
             // Only a guild has members to lend to; the blade goes nowhere until one is chosen.
             onLoan = if (s.state.guild != null) { heroId -> vm.loanForged(w.id, heroId) } else null,
             modifier = Modifier.safeDrawingPadding().padding(horizontal = Space.md, vertical = Space.sm).semantics { testTagsAsResourceId = true }.heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp),
             reveal = !reducedMotion,
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
             learning = s.learning,
-            // The guided first day: its step is said on the card, which covers the strip, and can be skipped from here too.
+            // The guided first day: its step is said at the head of the card, which covers the strip, and can be skipped from here too.
             guide = s.intro?.result?.let { line -> { IntroCardLine(line, onSkip = { vm.skipIntro() }) } },
         )
     }
@@ -124,18 +125,19 @@ private const val REVEAL_HOLD_MS = 700L
 private const val REVEAL_FADE_MS = 250
 
 /**
- * The forge result without its window. The blade's card scrolls; the price and the two ways on are pinned under it, so
- * "List at" is on screen without a scroll and stays above the keyboard. With text larger than 1.3 the pinned part would
- * leave the blade no room, so the whole card is one scrolling column again. A blade forged for a request says so first.
- * [detail] carries the price facts (its `Stock`); [onList] is given the chosen price. [enabled] greys "List at" while a
- * command is being saved; Store issues no command and is never greyed.
+ * The forge result without its window. The blade's card scrolls; the price and the ways on are pinned under it, so
+ * "List at" is on screen without a scroll. With text larger than 1.3 the pinned part would leave the blade no room, so
+ * the whole card is one scrolling column again. A blade forged for a request says so first, with whether it is reserved.
+ * Pricing (owner decision K): "List at" the suggested price is the one gold action, with who could pay it; "Set price"
+ * ([onSetPrice]) opens the blade's sheet, where the price is chosen by hand. [onList] is given the suggested price.
+ * [enabled] greys "List at" while a command is being saved; Store issues no command and is never greyed.
  *
  * With [reveal] the blade's sprite, name and rarity stand alone for a moment before its numbers, buffs and recipe fade
  * in under them; a tap anywhere on the card brings them at once. Nothing moves and the price and both buttons are there
  * and live from the first frame, so the reveal never costs a tap or a wait. Without it (reduced motion) the card is
  * whole at once. A brand-new blade has no renown to show, so the zero is left out here; the blade's sheet keeps it.
  *
- * [guide] is the guided first day's line: over the price, or at the head of the card when the text is large.
+ * [guide] is the guided first day's line, at the head of the card's scrolling part: never pinned over the blade's numbers.
  *
  * With [onLoan] (a guild run) a third way on, "Loan", opens the members the blade could go to; nothing is lent until
  * one is chosen.
@@ -149,6 +151,7 @@ fun ForgeResultCard(
     onStore: () -> Unit,
     onList: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onSetPrice: () -> Unit = {},
     onLoan: ((HeroId) -> Unit)? = null,
     reveal: Boolean = false,
     overSprite: @Composable BoxScope.() -> Unit = {},
@@ -165,8 +168,8 @@ fun ForgeResultCard(
                 Text(r.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 Secondary(r.terms)
                 EffectRow(if (r.fits) EffectKind.BUFF else EffectKind.FLAW, r.fit, r.handover)
-                // The engine sets no blade aside (`Commissions.pick`): say what End Day does instead of promising this one.
-                if (r.accepted) Secondary("At End Day, the buyer takes a matching weapon from storage first, then the shelf. No weapon is set aside for it.")
+                // Whether this blade is reserved, from the save (`Weapon.promisedTo`, owner decision L).
+                Secondary(r.reserved, Modifier.testTag("reveal_reserved"))
             }
         }
         WeaponStatBody(fresh, overSprite, detailAlpha = { shown })
@@ -185,42 +188,41 @@ fun ForgeResultCard(
             SecondaryActionButton("Close", onStore, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 52.dp).testTag("reveal_store"))
             return@price
         }
-        var priceText by rememberSaveable(detail.weaponId.value) { mutableStateOf(stock.suggestedPrice.toString()) }
-        PriceEditor(priceText, { priceText = it }, stock.suggestedPrice, stock.funds, "reveal") { chosen ->
-            // The engine refuses a listing on a full shelf; say so here and leave Store as the way on.
-            val full = stock.shelfFree <= 0
-            if (full) Text("${shelfFullLine(stock.slots)} Store this weapon for now. Remove another from the shelf to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("reveal_shelf_full"))
-            Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-                SecondaryActionButton("Store", onStore, Modifier.heightIn(min = 52.dp).testTag("reveal_store"))
-                PrimaryActionButton(
-                    chosen?.let { "List at $it" } ?: "List", { chosen?.let(onList) },
-                    Modifier.weight(1f).testTag("reveal_list").semantics { if (full) contentDescription = "List, unavailable: ${shelfFullLine(stock.slots)}" },
-                    enabled = enabled && chosen != null && !full,
-                )
-            }
+        val suggested = stock.suggestedPrice
+        // The going rate and who could pay it, in two short lines: the decision "List at" makes.
+        Text("Suggested price $suggested gold", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.testTag("reveal_suggested"))
+        Secondary(affordLine(stock.funds, suggested), Modifier.testTag("reveal_afford"))
+        // The engine refuses a listing on a full shelf; say so here and leave Store as the way on.
+        val full = stock.shelfFree <= 0
+        if (full) Text("${shelfFullLine(stock.slots)} Store this weapon for now. Remove another from the shelf to make room.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("reveal_shelf_full"))
+        Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+            SecondaryActionButton("Store", onStore, Modifier.heightIn(min = 52.dp).testTag("reveal_store"))
+            PrimaryActionButton(
+                "List at $suggested", { onList(suggested) },
+                Modifier.weight(1f).testTag("reveal_list").semantics { if (full) contentDescription = "List, unavailable: ${shelfFullLine(stock.slots)}" },
+                enabled = enabled && !full,
+            )
         }
-        val loan = detail.loan
-        if (onLoan != null && loan != null) {
-            var picking by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
-            SecondaryActionButton("Loan to a member", { picking = true }, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("reveal_loan"), enabled = enabled && loan.blocked == null && loan.targets.any { it.enabled })
-            if (picking) LoanPicker(detail.name, loan.targets, onPick = { picking = false; onLoan(it) }, onDismiss = { picking = false })
+        val loan = detail.loan?.takeIf { onLoan != null }
+        var picking by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
+        // The rarer ways on, quiet and side by side: a price of your own on the blade's sheet, a loan in a guild run.
+        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+            InlineActionButton("Set price", onSetPrice, Modifier.testTag("reveal_set_price"), enabled = enabled)
+            if (loan != null) InlineActionButton("Loan to a member", { picking = true }, Modifier.testTag("reveal_loan"), enabled = enabled && loan.blocked == null && loan.targets.any { it.enabled })
         }
+        if (picking && loan != null && onLoan != null) LoanPicker(detail.name, loan.targets, onPick = { picking = false; onLoan(it) }, onDismiss = { picking = false })
     }
     val large = LocalDensity.current.fontScale > 1.3f
-    // While the keyboard is up the pinned card is only its price: on a short screen the title and the blade would
-    // otherwise leave the buttons under the keyboard.
-    val typing = !large && WindowInsets.ime.getBottom(LocalDensity.current) > 0
     // No semantics on the tap: it only ends a moment's fade, and the buttons under it keep their own taps.
-    FramedPanel("Fresh from the forge".takeIf { !typing }, modifier.fillMaxWidth().pointerInput(Unit) { detectTapGestures { revealed = true } }) {
+    FramedPanel("Fresh from the forge", modifier.fillMaxWidth().pointerInput(Unit) { detectTapGestures { revealed = true } }) {
         // Large text: the card is one long column, so the guided step and its way out come first, where they are seen without a scroll.
         if (large) Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); blade(); price() }
         else {
-            if (!typing) {
-                val bladeScroll = rememberScrollState()
-                Column(Modifier.weight(1f, fill = false).verticalScroll(bladeScroll).bottomFade(bladeScroll.canScrollForward, ForgePanel)) { blade() }
-            }
-            // Measured before the card above it, so it has the room it needs; it scrolls only when the keyboard leaves less.
-            Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); price() }
+            // The guided step heads the blade's scrolling part, so it is read first and never covers the blade's numbers.
+            val bladeScroll = rememberScrollState()
+            Column(Modifier.weight(1f, fill = false).verticalScroll(bladeScroll).bottomFade(bladeScroll.canScrollForward, ForgePanel)) { guide?.invoke(); blade() }
+            // Measured before the card above it, so it has the room it needs.
+            Column(Modifier.verticalScroll(rememberScrollState())) { price() }
         }
     }
 }

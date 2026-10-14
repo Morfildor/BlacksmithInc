@@ -59,7 +59,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** The forge result as a player meets it: a price chosen on the card, who could pay it, a full shelf, and a blade forged for a request. */
+/** The forge result as a player meets it: the suggested price and who could pay it, a full shelf, and a blade forged for a request. */
 @RunWith(AndroidJUnit4::class)
 class ForgeResultCardTest {
     @get:Rule
@@ -76,6 +76,7 @@ class ForgeResultCardTest {
 
     private val listed = mutableListOf<Int>()
     private var stored = 0
+    private var priced = 0
     private var size by mutableStateOf(DpSize(411.dp, 731.dp))
     private var font by mutableStateOf(1f)
 
@@ -85,7 +86,7 @@ class ForgeResultCardTest {
         BlacksmithProjectTheme {
             DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(size) then DeviceConfigurationOverride.FontScale(font)) {
                 Box(Modifier.fillMaxSize()) {
-                    ForgeResultCard(detail, "Sword of Iron and Ember Resin.", request, enabled = true, onStore = { stored++ }, onList = { listed += it }, modifier = Modifier.heightIn(max = size.height * 0.92f), reveal = reveal)
+                    ForgeResultCard(detail, "Sword of Iron and Ember Resin.", request, enabled = true, onStore = { stored++ }, onList = { listed += it }, onSetPrice = { priced++ }, modifier = Modifier.heightIn(max = size.height * 0.92f), reveal = reveal)
                 }
             }
         }
@@ -101,7 +102,7 @@ class ForgeResultCardTest {
         show(engine.itemDetail(forged, blade.id)!!, reveal = true)
         compose.mainClock.advanceTimeByFrame()
         compose.onNodeWithText(blade.name).assertIsDisplayed()
-        compose.onNodeWithTag("reveal_price").assertIsDisplayed().assertTextContains("$suggested")
+        compose.onNodeWithTag("reveal_suggested").assertIsDisplayed().assertTextContains("$suggested", substring = true)
         compose.onNodeWithTag("reveal_store").assertIsDisplayed().assertIsEnabled()
         compose.onNodeWithTag("reveal_list").assertIsDisplayed().assertIsEnabled().performClick()
         compose.mainClock.advanceTimeByFrame()
@@ -114,39 +115,17 @@ class ForgeResultCardTest {
         assertEquals(before, compose.onNodeWithTag("reveal_list").getUnclippedBoundsInRoot())
     }
 
+    /** Owner decision K: "List at" the suggested price is the one gold action, with who could pay it; "Set price" opens the blade's sheet. */
     @Test
-    fun thePriceIsChosenOnTheCardAndTheCountFollowsIt() {
+    fun listAtSuggestedIsTheGoldActionAndSetPriceIsTheOtherWay() {
         show(engine.itemDetail(forged, blade.id)!!)
-        // It opens on the suggested price, named apart from the player's own.
-        compose.onNodeWithTag("reveal_price").assertTextContains("$suggested")
-        compose.onNodeWithTag("reveal_suggested").assertTextEquals("Suggested price $suggested gold. You're asking the suggested price.")
+        compose.onNodeWithTag("reveal_suggested").assertTextEquals("Suggested price $suggested gold")
         compose.onNodeWithTag("reveal_afford").assertTextEquals(afford(suggested))
-        compose.onNodeWithText("List at $suggested").assertIsDisplayed()
-
-        // The minus button, twice: the field, the button and the count all move.
-        repeat(2) { compose.onNodeWithContentDescription("Lower price by 10").performClick() }
-        val lower = suggested - 20
-        compose.onNodeWithTag("reveal_price").assertTextContains("$lower")
-        compose.onNodeWithTag("reveal_suggested").assertTextEquals("Suggested price $suggested gold. Your price is 20 below it.")
-        compose.onNodeWithTag("reveal_afford").assertTextEquals(afford(lower))
-        assertTrue("the scenario: the count moves between the two prices", afford(lower) != afford(suggested))
-        compose.onNodeWithContentDescription("Raise price by 10").performClick()
-        compose.onNodeWithText("List at ${lower + 10}").assertIsDisplayed()
-
-        // A typed price nobody can pay says so before anything is listed.
-        compose.onNodeWithTag("reveal_price").performTextReplacement("5000")
-        compose.onNodeWithTag("reveal_afford").assertTextEquals("0 of ${funds.size} heroes in town can afford this price.")
-        compose.onNodeWithText("Able to pay is not a sale", substring = true).assertIsDisplayed()
-
-        // An empty field lists nothing; a typed price is the one that is listed.
-        compose.onNodeWithTag("reveal_price").performTextReplacement("")
-        compose.onNodeWithTag("reveal_list").assertIsNotEnabled()
-        compose.onNodeWithTag("reveal_afford").assertDoesNotExist()
-        compose.onNodeWithTag("reveal_price").performTextReplacement("45")
-        compose.onNodeWithTag("reveal_afford").assertTextEquals(afford(45))
-        compose.onNodeWithTag("reveal_list").assertIsEnabled().performClick()
-        compose.onNodeWithTag("reveal_store").performClick()
-        compose.runOnIdle { assertEquals(listOf(45) to 1, listed.toList() to stored) }
+        // No price field on the card: a price of one's own is chosen on the blade's sheet.
+        compose.onNodeWithTag("reveal_price").assertDoesNotExist()
+        compose.onNodeWithTag("reveal_set_price").assertIsDisplayed().performClick()
+        compose.onNodeWithTag("reveal_list").assertTextContains("List at $suggested").performClick()
+        compose.runOnIdle { assertEquals(listOf(suggested) to 1, listed.toList() to priced) }
     }
 
     @Test
@@ -170,8 +149,8 @@ class ForgeResultCardTest {
         inRequest("For ${forged.aliveHeroes().first().fullName}")
         inRequest("This weapon meets the commission")
         inRequest("Ready. ${blade.name} will be collected at End Day.")
-        inRequest("None is set aside.")
-        compose.onNodeWithText("reserved", substring = true, ignoreCase = true).assertDoesNotExist()
+        // Owner decision L: whether this blade is reserved, from the save. A fresh blade never is.
+        compose.onNodeWithTag("reveal_reserved", useUnmergedTree = true).assertTextEquals("Not reserved. At End Day the buyer takes a matching weapon from storage first, then the shelf.")
         // The request is told before the blade, and both ways on are still there.
         assertTrue(compose.onNodeWithTag("reveal_request").getUnclippedBoundsInRoot().top < compose.onNodeWithText(blade.name).getUnclippedBoundsInRoot().top)
         compose.onNodeWithTag("reveal_store").assertIsDisplayed()
@@ -180,7 +159,7 @@ class ForgeResultCardTest {
 
     /**
      * The layout floor of the card: on a normal phone, at 360 x 640 dp and at 320 dp wide, with text at 1.0, 1.3 and 2.0,
-     * nothing reaches outside the screen, and the price, the count and both buttons are on screen without a
+     * nothing reaches outside the screen, and the price, the count and the buttons are on screen without a
      * scroll up to 1.3 (at twice the size they are reached by scrolling the footer).
      */
     @Test
@@ -191,7 +170,7 @@ class ForgeResultCardTest {
             compose.waitForIdle()
             val where = "${s.width} x ${s.height} at font $f"
             val root = compose.onRoot().fetchSemanticsNode().boundsInRoot
-            for (tag in listOf("reveal_price", "reveal_afford", "reveal_store", "reveal_list")) {
+            for (tag in listOf("reveal_suggested", "reveal_afford", "reveal_store", "reveal_list", "reveal_set_price")) {
                 val node = compose.onNodeWithTag(tag)
                 if (f > 1.3f) node.performScrollTo()
                 node.assertIsDisplayed()

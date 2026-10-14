@@ -19,7 +19,6 @@ import com.tinyblacksmith.core.model.KnowledgeState
 import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.model.Weapon
-import kotlin.math.roundToInt
 
 /** The places of a recipe on the workbench. The last two exist only in an Advanced forge. */
 enum class RecipeSlot(val label: String, val empty: String, val choose: String, val hint: String) {
@@ -97,9 +96,33 @@ data class ForgeWorkbenchUi(
  * weapon becomes Legendary, and where Heartfire comes from.
  */
 @Immutable
-data class HeartfireUi(val held: String, val on: Boolean, val blocked: String?, val outlook: List<String>, val warning: String?, val rule: String, val source: String)
+data class HeartfireUi(
+    val held: String, val on: Boolean, val blocked: String?, val outlook: List<String>, val warning: String?, val rule: String, val source: String,
+    /** What the confirmation says before a Heartfire forging is sent: the cost, what is left, the chance in words and what a miss gives. Empty while there is nothing to confirm. */
+    val confirm: List<String> = emptyList(),
+)
 
-private fun percent(chance: Double) = "${(chance * 100).roundToInt()}%"
+/**
+ * A hidden random chance in words (owner decision A: hidden odds are banded, never counted). The bands are the screen's
+ * wording, not rules of the game; the chance itself is the engine's.
+ */
+internal fun chanceWord(chance: Double): String = when {
+    chance <= 0.0 -> "none"
+    chance < 0.10 -> "slim"
+    chance < 0.30 -> "low"
+    chance < 0.60 -> "fair"
+    chance < 0.85 -> "good"
+    else -> "high"
+}
+
+/** How often a hidden chance comes up, in words, for "Flaws are …". */
+internal fun frequencyWord(chance: Double): String = when {
+    chance <= 0.0 -> "never seen"
+    chance < 0.10 -> "rare"
+    chance < 0.25 -> "occasional"
+    chance < 0.50 -> "common"
+    else -> "the usual result"
+}
 
 /** What the temper does, with the numbers of the rules themselves. */
 fun riskExplanation(r: Risk, config: BalanceConfig): String {
@@ -110,7 +133,7 @@ fun riskExplanation(r: Risk, config: BalanceConfig): String {
     return when (r) {
         Risk.SAFE -> "Quality stays within $spread of what the recipe gives. Few flaws and few exceptional results." + breakthrough(legend.safeBonus)
         Risk.BALANCED -> "Quality moves up to $spread either way. A chance of exceptional work or flaws."
-        Risk.RECKLESS -> "Adds ${if (profile.extraSlots == 1) "one more property" else "${profile.extraSlots} more properties"}. About ${percent(profile.defectChance)} come out flawed, and a flawed weapon is still usable." + breakthrough(legend.recklessBonus)
+        Risk.RECKLESS -> "Adds ${if (profile.extraSlots == 1) "one more property" else "${profile.extraSlots} more properties"}. Flaws are ${frequencyWord(profile.defectChance)}, and a flawed weapon is still usable." + breakthrough(legend.recklessBonus)
     }
 }
 
@@ -124,25 +147,34 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
     }
     val on = asked && blocked == null
     val o = if (on && command != null) heartfireOutlook(state, command) else null
+    val chance = o?.let {
+        when {
+            !it.fineMetal -> "Chance to break through: none in this metal."
+            it.chanceHigh <= 0.0 -> "Chance to break through: none at this quality."
+            it.chanceLow <= 0.0 -> "Chance to break through: none under quality ${it.floor}, ${chanceWord(it.chanceHigh)} at quality ${it.qualityHigh}."
+            chanceWord(it.chanceLow) == chanceWord(it.chanceHigh) -> "Chance to break through: ${chanceWord(it.chanceLow)}."
+            else -> "Chance to break through: ${chanceWord(it.chanceLow)} at quality ${it.qualityLow}, ${chanceWord(it.chanceHigh)} at quality ${it.qualityHigh}."
+        }
+    }
+    val miss = o?.let { "If it does not break through, the weapon still gets ${if (it.missSlots == 1) "one more property" else "${it.missSlots} more properties"}." }
     return HeartfireUi(
         held = "Heartfire ${state.heartfire} of ${legend.heartfireMax}",
         on = on, blocked = blocked,
         outlook = when {
             !on -> emptyList()
             o == null -> listOf("Choose a weapon, a metal and an augment to see what it would do.")
-            else -> listOf(
+            else -> listOfNotNull(
                 "Uses 1 Heartfire and ${legend.heartfireEnergy} more energy, ${o.energy} in all. Both are spent whether or not it breaks through.",
                 "Quality lands between ${o.qualityLow} and ${o.qualityHigh}, before an exceptional result or a flaw. It can break through only at ${o.floor} or more.",
-                when {
-                    !o.fineMetal -> "Chance to break through: none in this metal."
-                    o.chanceHigh <= 0.0 -> "Chance to break through: none at this quality."
-                    o.chanceLow <= 0.0 -> "Chance to break through: none under quality ${o.floor}, up to ${percent(o.chanceHigh)} at quality ${o.qualityHigh}."
-                    o.chanceLow == o.chanceHigh -> "Chance to break through: ${percent(o.chanceLow)}."
-                    else -> "Chance to break through: ${percent(o.chanceLow)} at quality ${o.qualityLow}, up to ${percent(o.chanceHigh)} at quality ${o.qualityHigh}."
-                },
-                "If it does not break through, the weapon still gets ${if (o.missSlots == 1) "one more property" else "${o.missSlots} more properties"}.",
+                chance,
+                miss,
             )
         },
+        confirm = if (o == null) emptyList() else listOfNotNull(
+            "Spends 1 Heartfire and ${o.energy} energy, whether or not it breaks through. ${state.heartfire - 1} of ${legend.heartfireMax} Heartfire left after.",
+            chance,
+            miss,
+        ),
         warning = o?.takeIf { !it.fineMetal }?.let { "Heartfire does not take in this metal. Only ${fineMetals()} hold Epic work." }
             ?: o?.takeIf { it.qualityHigh < it.floor }?.let { "A plain result of this recipe stays under quality ${it.floor}. Only an exceptional result could break through." },
         rule = "Quality alone stops at Epic, and only ${fineMetals()} hold Epic work. In any other metal it stops at Rare. A weapon becomes Legendary by a Heartfire breakthrough or by its deeds.",

@@ -21,6 +21,12 @@ with stubs for the Android-only APIs, which runs the app's JVM unit tests and ty
   voice on day 1, the shop day's first card without its daily line. `:core:test` 631 / 0; app unit tests 249 / 0 in the
   shim; `ShopPanelTest` and `ShopDayScreenTest` type-check. Not run: the instrumented suite, `smoke.sh` (updated for the
   guided strip), any screen on a device.
+- Item 2, Forge: K ("List at" the suggested price as the one gold action, "Set price" opens the blade's sheet,
+  `GameViewModel.priceForged`), L (`ForgedForUi.reserved` from `Weapon.promisedTo`), A (`chanceWord`, `frequencyWord`:
+  Reckless flaws and the Heartfire chance in band words), the recipe's places and the open tray brought into view
+  together, the guided step at the head of the result card, a Heartfire confirmation (`HeartfireUi.confirm`,
+  `forge_heartfire_go`). App unit tests 250 / 0 in the shim; `ForgeResultCardTest` rewritten and type-checked;
+  `runvariety.sh` taps the confirmation. Not run: the instrumented suite and the scripts.
 
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay
