@@ -97,6 +97,8 @@ data class OfferUi(
     val danger: Danger = Danger.SAFE, val reward: String = "",
     /** The modifier's name alone, for the board; [modifier] has it whole. */
     val modifierName: String? = null,
+    /** How many days it takes and what it costs, as numbers for the board's chips; and what it brings besides gold and stock. */
+    val days: Int = 1, val feeGold: Int = 0, val specials: List<String> = emptyList(),
 ) {
     /** "2 days · Fee 20 gold": how long it takes and what it costs, for the board. */
     val terms: String get() = listOf(time.substringBefore(':'), fee).joinToString(" · ")
@@ -107,6 +109,8 @@ data class MemberUi(
     val heroId: HeroId, val portrait: Int, val name: String, val sub: String, val role: String, val trait: String,
     /** Wound, absence or captivity in one line; null for a member who is simply at home and well. */
     val status: String?, val blade: String, val health: String, val reserved: Boolean, val branchOpen: Boolean,
+    /** The roster's one chip: fit, kept for the wall, laid up, away or held. */
+    val chip: String = "Fit", val chipTone: ChipTone = ChipTone.OK,
 ) {
     /** The roster's one line under the name: class, health and the wall; role and trait are on the hero's sheet. */
     val line: String get() = "$sub · $health" + if (reserved) " · kept for the wall" else ""
@@ -141,6 +145,11 @@ data class GuildUi(
     val region: RegionUi, val factions: List<FactionRowUi>,
     /** What End Day sets in motion for the guild, at most three lines. */
     val endDay: List<String>,
+    /** What needs the smith today, at most [TODAY_ROWS]; the contracts still to come; the assign sheet; what the charter opens. */
+    val today: List<TodayUi> = emptyList(), val upcoming: List<UpcomingUi> = emptyList(),
+    val assign: List<AssignUi> = emptyList(), val steps: List<StepUi> = emptyList(),
+    /** The Company part has something to choose (a branch open), even when Today has no room for it. */
+    val companyNeeds: Boolean = false,
 )
 
 // ---- words shared by the board, the checkpoint and the contract sheet ----
@@ -238,6 +247,7 @@ private fun GameEngine.offerUi(state: GameState, g: GuildRunState, offer: Missio
         danger = offer.stages.maxOf { it.danger },
         reward = stageUi(state, offer, 0).reward + if (offer.stages.size > 1) " · more if the first day is won" else "",
         modifierName = content.guild!!.modifier(offer.modifierId)?.name,
+        days = offer.days, feeGold = offer.fee, specials = specialRewards(state, offer),
         stake = "If the cart is lost, the supplier brings ${config.guild.supplierShakenStock} fewer of every limited material each morning for ${config.guild.supplierDays} days. Leaving the job on the board costs nothing.".takeIf { offer.lapse == GuildContent.LAPSE_SUPPLIER },
     )
 }
@@ -417,7 +427,7 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
                 h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), combat?.kitByClass?.get(h.classId)?.role.orEmpty(), traitLine(m.traitId),
                 memberStatus(state, g, m), bladeLine(state, h.id), fighter?.let { "Health ${it.health}/${it.maxHealth}" } ?: Labels.health(h).replaceFirstChar { it.uppercase() },
                 reserved = h.id in g.reserved, branchOpen = openBranches(state, h.id).isNotEmpty(),
-            )
+            ).let { ui -> memberChip(state, g, m).let { (chip, tone) -> ui.copy(chip = chip, chipTone = tone) } }
         },
         candidates = g.candidates.mapNotNull { c ->
             val h = state.heroes[c.heroId] ?: return@mapNotNull null
@@ -433,6 +443,11 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
             content.faction(f.id).let { d -> FactionRowUi(f.id, d.name, f.pressure, Battle.describePressure(f.pressure).replaceFirstChar { it.uppercase() }, d.weakTo?.word()) }
         },
         endDay = guildEndDay(state, g, wall),
+        today = guildToday(state, g, wall),
+        upcoming = upcomingContracts(state, g),
+        assign = assignRows(state, g, config.guild.defenders),
+        steps = charterSteps(state, g),
+        companyNeeds = g.members.any { openBranches(state, it.heroId).isNotEmpty() },
     )
 }
 
