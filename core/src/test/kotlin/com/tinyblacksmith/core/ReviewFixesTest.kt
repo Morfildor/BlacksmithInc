@@ -160,6 +160,23 @@ class ReviewFixesTest {
         assertEquals(emptyList(), Invariants.check(admitted, lower, lower.shelfSlots, content))
     }
 
+    // ---- row 22, owner decision B: wall work draws on the daily recovery allowance ----
+
+    @Test fun `a day's work on the wall mends within the day's repair allowance and its extra, never past it`() {
+        val s0 = run().farSiege()
+        val cap = engine.config.maxIntegrityRecoveryPerDay
+        val extra = engine.config.guild.wallWorkExtraRecovery
+        val damaged = s0.copy(town = s0.town.copy(integrity = s0.town.integrity - 20))
+        val wall = damaged.guild!!.offers.single { it.defId == GuildContent.WALL_WORK }
+        val who = damaged.members().first()
+        val worked = damaged.send(Command.PlanDeployment(wall.id, listOf(who), Posture.BALANCED)).endDay().sound()
+        assertEquals(cap + extra, worked.town.integrity - damaged.town.integrity, "the wall work's +${cat.mission(GuildContent.WALL_WORK).stages.single().integrity} is held to the day's allowance and its extra")
+        assertTrue(worked.lastResolution!!.mission!!.lines.any { it.contains("+${cap + extra}") }, "${worked.lastResolution!!.mission!!.lines}")
+        // Without the wall work the same day mends no more than the allowance.
+        val idle = damaged.endDay().sound()
+        assertTrue(idle.town.integrity - damaged.town.integrity <= cap)
+    }
+
     // ---- row 36a: an ignored blessing offer lapses ----
 
     private fun GameState.endDay(e: GameEngine = engine): GameState = send(Command.EndDay(TestSupport.endDayId(this)), e)

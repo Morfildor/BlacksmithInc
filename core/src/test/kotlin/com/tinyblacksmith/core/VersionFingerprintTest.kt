@@ -53,8 +53,8 @@ class VersionFingerprintTest {
         13 to "77f40409eeff8e5ec4ec8595d33c3170bf6f60c466dfb1158740325dc122e85e",
         // 14: the guild siege base 190, measured with the metals' fight rules in the catalog.
         14 to "d2bbbd8006abe14140974b640e35f41c2221e346820700bc2aa57addde50271d",
-        // 15: review 2026-10-14 fixes, one unreleased step: the blessing offer's days.
-        15 to "0ef78325290daf46309d468f319c1bf0f3b8a2cdcec1eae23365296a60a97b0d",
+        // 15: review 2026-10-14 fixes, one unreleased step, re-pinned inside it: the blessing offer's days (0ef78325...), the guild's wall work extra.
+        15 to "dd71858778caa01cfd48110cf4ae51b8ee0367108a2f74401599713b60a2da84",
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where")

@@ -486,7 +486,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
     private fun recover(ctx: ResolutionContext) {
         if (ctx.phase == Phase.ENDED) return
         val maxIntegrity = config.startingForgeIntegrity + upgradeTotal(ctx.legacy, UpgradeEffect.STARTING_INTEGRITY)
-        val cap = config.maxIntegrityRecoveryPerDay + ctx.blessingMagnitude(BlessingEffect.INTEGRITY_RECOVERY)
+        // What a guild contract mended today came out of the same allowance.
+        val cap = maxOf(0, ctx.recoveryAllowance() - ctx.contractMendedToday)
         val earned = minOf(cap, ctx.patrolsToday * config.recoveryPerPatrol + ctx.expeditionWinsToday * config.recoveryPerExpeditionWin)
         val applied = minOf(earned, maxIntegrity - ctx.town.integrity)
         if (applied > 0) {

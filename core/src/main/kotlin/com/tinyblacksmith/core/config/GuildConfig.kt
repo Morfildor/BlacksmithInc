@@ -127,4 +127,11 @@ data class GuildConfig(
     val supplierDays: Int = 5,
     val supplierGratefulStock: Int = 1,
     val supplierShakenStock: Int = 1,
+
+    // v15: review 2026-10-14, owner decision B
+    /**
+     * A contract's wall mending draws on the same daily recovery allowance as every other repair
+     * ([BalanceConfig.maxIntegrityRecoveryPerDay] and the blessing), plus this much more on a day members work on the wall.
+     */
+    val wallWorkExtraRecovery: Int = 1,
 )

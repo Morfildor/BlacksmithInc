@@ -399,9 +399,16 @@ object Missions {
         if (r.suppression > 0) ctx.factions[m.offer.factionId]?.let { f -> ctx.factions[f.id] = f.copy(pressure = maxOf(0, f.pressure - r.suppression)); lines += "${ctx.content.faction(f.id).name} were set back." }
         if (r.integrity > 0) {
             val max = ctx.config.startingForgeIntegrity + ctx.upgradeTotal(com.tinyblacksmith.core.content.UpgradeEffect.STARTING_INTEGRITY)
-            val mended = minOf(r.integrity, max - ctx.town.integrity).coerceAtLeast(0)
+            // The day's recovery allowance, and the guild's extra for work on the wall, bound it like every other repair (owner decision B).
+            val allowance = ctx.recoveryAllowance() + ctx.config.guild.wallWorkExtraRecovery - ctx.contractMendedToday
+            val mended = minOf(r.integrity, allowance, max - ctx.town.integrity).coerceAtLeast(0)
             ctx.town = ctx.town.copy(integrity = ctx.town.integrity + mended)
-            lines += if (mended > 0) "The wall was mended (+$mended integrity)." else "The wall needed no mending."
+            ctx.contractMendedToday += mended
+            lines += when {
+                ctx.town.integrity >= max -> if (mended > 0) "The wall was mended (+$mended integrity)." else "The wall needed no mending."
+                mended > 0 -> "The wall was mended (+$mended integrity), as much as one day's repair allows."
+                else -> "The wall has had all the repair one day allows."
+            }
         }
         if (r.militia > 0) ctx.town = ctx.town.copy(militia = minOf(ctx.config.militiaMax, ctx.town.militia + r.militia))
         if (r.sabotage) lines += SiegeFight.sabotage(ctx)
