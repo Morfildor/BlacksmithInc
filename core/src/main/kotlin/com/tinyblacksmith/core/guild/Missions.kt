@@ -52,7 +52,7 @@ object Missions {
                 (o.subjectHeroId == null || g.captives.any { it.heroId == o.subjectHeroId }) && (o.subjectWeaponId == null || g.nemesis?.weaponId == o.subjectWeaponId)
         }
         var serial = g.nextMissionSerial
-        fun post(def: MissionDef, faction: FactionId, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = ctx.day + def.lifeDays - 1, modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null) {
+        fun post(def: MissionDef, faction: FactionId, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = offerExpiry(ctx, def), modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null) {
             offers = offers + generate(ctx, def, faction, rng, "m${serial++}", hero, weapon, reason, expires, modifier, lapse)
         }
         val factions = ctx.factions.values.sortedBy { it.id.value }
@@ -135,7 +135,10 @@ object Missions {
         return got.toSortedMap(compareBy { it.value })
     }
 
-    fun generate(ctx: ResolutionContext, def: MissionDef, faction: FactionId, rng: Rng, id: String, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = ctx.day + maxOf(1, def.lifeDays + (GuildOps.catalog(ctx).rank(ctx.guild?.rank ?: 0)?.offerLifeDelta ?: 0)) - 1,
+    /** The last day an ordinary card of [def] posted today stands on the board: its life, shortened or lengthened by the guild's rank. */
+    private fun offerExpiry(ctx: ResolutionContext, def: MissionDef): Int = ctx.day + maxOf(1, def.lifeDays + (GuildOps.catalog(ctx).rank(ctx.guild?.rank ?: 0)?.offerLifeDelta ?: 0)) - 1
+
+    fun generate(ctx: ResolutionContext, def: MissionDef, faction: FactionId, rng: Rng, id: String, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = offerExpiry(ctx, def),
         modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null): MissionOffer {
         val cfg = ctx.config.guild
         val pressure = ctx.factions[faction]?.pressure ?: 0
