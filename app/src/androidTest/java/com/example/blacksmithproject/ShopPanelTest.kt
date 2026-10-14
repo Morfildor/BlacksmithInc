@@ -120,17 +120,17 @@ class ShopPanelTest {
         compose.onNodeWithTag("shop_news").assertDoesNotExist()
     }
 
-    /** The day of a siege: one row says so first, above the lead, with who comes and how it looks. */
+    /** The day of a siege: the workshop header says it; the Shop adds no card of its own and its lead stays first. */
     @Test
-    fun theSiegeDayIsSaidAboveTheLead() {
+    fun theSiegeDayLeavesTheLeadFirst() {
         val fresh = engine.newRun(LegacyProfile(), 42L)
         val ui = engine.shopUi(fresh)
         assertNotNull("a new game has a besieger", ui.threat)
         show(fresh)
         compose.runOnUiThread { shop = ui.copy(threat = ui.threat!!.copy(today = true)) }
         compose.waitForIdle()
-        compose.onNodeWithTag("shop_siege").assertTextContains("Siege today, after today's trading")
-        assertTrue("the siege row is above the lead", top("shop_siege") < top("shop_lead") && top("shop_lead") < top("shop_counter"))
+        compose.onNodeWithTag("shop_siege").assertDoesNotExist()
+        assertTrue("the lead heads the Shop", top("shop_lead") < top("shop_counter"))
     }
 
     /** While the guided first day runs its strip is the one voice: the Shop leaves the lead out and keeps the rest in order. */

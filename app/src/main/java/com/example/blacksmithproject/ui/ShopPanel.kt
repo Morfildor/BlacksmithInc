@@ -6,8 +6,6 @@ import com.example.blacksmithproject.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Size
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,7 +48,6 @@ import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.BuffGreen
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
-import com.example.blacksmithproject.ui.theme.Ember
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
@@ -101,19 +98,6 @@ fun ShopPanel(
     val list = rememberLazyListState()
     LazyColumn(modifier.fillMaxSize().bottomFade(list.canScrollForward).testTag("shop_list"), state = list, contentPadding = PaddingValues(bottom = Space.lg)) {
         strip?.let { item(key = "strip") { it() } }
-        // The day of a siege says so first, in words, louder than the strip ever is; the lead keeps its place under it.
-        shop.threat?.takeIf { it.today }?.let { threat ->
-            item(key = "siege") {
-                Column(
-                    side.padding(top = Space.md).fillMaxWidth().forgeRow().drawBehind { drawRect(Ember, size = Size(3.dp.toPx(), size.height)) }
-                        .heightIn(min = 56.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag("shop_siege").semantics(mergeDescendants = true) {},
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text("Siege today, after today's trading", style = MaterialTheme.typography.titleMedium, color = Ember)
-                    listOfNotNull(threat.matchup, threat.outlook).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodyMedium, color = Cream) }
-                }
-            }
-        }
         if (showLead) item(key = "lead") { LeadCard(shop.lead, onAct = { onLead(shop.lead) }, modifier = side.padding(top = Space.md)) }
         if (visitor?.instance?.isOpen == true) item(key = "visitor") { VisitorCard(visitor, onOpenVisitor, side.padding(top = Space.sm)) }
         visitorNote(visitor)?.let { note -> item(key = "visitor_note") { Secondary(note, side.padding(top = Space.sm).testTag("visitor_note")) } }

@@ -437,12 +437,14 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
 }
 
 /**
- * The Shop's and the Forge's siege strip in a guild run: the besieger once it is known and the day, never the classic
+ * The Shop's and the Forge's matchup line in a guild run: the besieger once it is known, never the classic
  * defense-against-raid outlook (a guild siege is fought on the wall, not weighed).
  */
 internal fun GuildUi.threat(classic: ThreatUi?): ThreatUi? = classic?.copy(
-    matchup = if (wall.committed) listOfNotNull(wall.besieger, wall.weakTo?.let { "Weak to $it" }, wall.resists?.let { "Resists $it" }).joinToString(" · ") else wall.besieger,
-    outlook = "Day ${wall.siegeDay} · see the wall in Guild",
+    // Who comes only once committed; the day and the way to the wall are the workshop header's.
+    matchup = if (wall.committed) listOfNotNull(wall.besieger, wall.weakTo?.let { "Weak to $it" }, wall.resists?.let { "Resists $it" }).joinToString(" · ") else null,
+    outlook = null,
+    besieger = wall.besieger.takeIf { wall.committed },
 )
 
 // ---- the contract sheet ----

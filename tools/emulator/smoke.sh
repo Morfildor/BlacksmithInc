@@ -115,6 +115,6 @@ $ADB shell am force-stop $PKG; $ADB shell am start -n $PKG/.MainActivity >/dev/n
 # A saved run opens on the main menu; Continue returns to the workshop.
 wait_text "Continue run" && shot 07_menu && tap_id menu_continue
 past_offers
-wait_text "Day 2" && echo "CHECK resume after process death on day 2: ok" || echo "CHECK resume: FAIL"
+wait_text "DAY 2" && echo "CHECK resume after process death on day 2: ok" || echo "CHECK resume: FAIL"
 shot 08_resumed
 echo SMOKE_DONE

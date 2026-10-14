@@ -52,7 +52,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -65,7 +64,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.blacksmithproject.Dest
 import com.example.blacksmithproject.ForgeDraft
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.R
@@ -145,7 +143,8 @@ fun ForgePanel(
     var follow by remember { mutableStateOf(s.intro?.step == IntroStep.RECIPE) }
 
     Column(Modifier.fillMaxSize()) {
-        ThreatStrip(s, "forge_threat") { vm.selectDest(Dest.TOWN) }
+        // The header owns the day and the countdown; once the siege is warned the Forge keeps who comes and what bites.
+        s.shop.threat?.takeIf { it.warned && it.matchup != null }?.let { SiegeMatchup(it, "forge_threat") }
         val scroll = rememberScrollState()
         // The last choice closes the tray: the finished blade over the anvil comes back into view.
         LaunchedEffect(open) { if (open == null && follow) scroll.animateScrollTo(0) }
@@ -192,37 +191,6 @@ fun ForgePanel(
     if (rehearsing) bench.outlook?.let { o ->
         val relics = remember(s.state.relics) { benchRelics(s.state, engine.content) }
         BenchSheet(o.demonstration, demonstration = true, engine.content, engine.config, relics) { rehearsing = false }
-    }
-}
-
-/**
- * When the siege comes, who brings it and what it is weak to, and how the forge stands: above the work, in proportion to
- * how near it is. Days away it is one quiet line; once the warning is out it is said in ember, edged in ember, with who
- * comes and how it looks; on the day itself as loud as the strip gets (the Shop gives it a row of its own instead).
- */
-@Composable
-internal fun ThreatStrip(s: UiState.Playing, tag: String, note: String? = null, onOpenTown: () -> Unit) {
-    val threat = s.shop.threat
-    val near = threat != null && threat.urgency != SiegeUrgency.FAR
-    Column(
-        Modifier.fillMaxWidth().background(SceneDeep).then(if (near) Modifier.drawBehind { drawRect(Ember, size = Size(3.dp.toPx(), size.height)) } else Modifier)
-            .heightIn(min = 48.dp).clickable(onClickLabel = "Siege details", role = Role.Button, onClick = onOpenTown)
-            .padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag(tag),
-        verticalArrangement = Arrangement.Center,
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(
-                threat?.let { if (it.warned && !it.today) "Siege approaching · ${it.siege.removePrefix("Siege ")}" else it.siege } ?: "No siege in sight",
-                style = if (near) MaterialTheme.typography.titleSmall else MaterialTheme.typography.labelLarge, color = if (near) Ember else CreamMuted, modifier = Modifier.weight(1f),
-            )
-            PixelImage(R.drawable.icon_integrity, wholePixelDp(24, 22.dp), description = null)
-            Text("Forge health ${s.state.town.integrity}", style = MaterialTheme.typography.labelMedium, color = if (near) Cream else CreamMuted)
-        }
-        // Far off the strip is one line and the wall in Town says the rest; near, who comes and how it looks, and once what the warning changes.
-        if (near) {
-            listOfNotNull(threat.matchup, threat.outlook).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = Cream) }
-            note?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
-        }
     }
 }
 

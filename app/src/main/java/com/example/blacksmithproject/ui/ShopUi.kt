@@ -85,6 +85,8 @@ data class ThreatUi(
     val near: Boolean = false,
     /** The first morning of that window, the one day the Shop says what the warning changes. */
     val warningFresh: Boolean = false,
+    /** The besieger's name alone, for the workshop header (said there only once [warned]). */
+    val besieger: String? = null,
 ) {
     /** When, who and what tells against them, and how the town stands: the one siege line every destination shows. */
     val summary: String get() = listOfNotNull(if (today) "$siege, after today's trading" else siege, matchup, outlook).joinToString(" · ")
@@ -221,6 +223,7 @@ fun GameEngine.threatUi(state: GameState): ThreatUi? = Threats.of(state, content
         warningFresh = t.daysToSiege == config.combat.siegeWarningDays - 1,
         marks = Element.entries.mapNotNull { e -> Threats.mark(e, t)?.let { e to MarkUi(Lines.threatMark(it, t, content), it == ThreatMark.COUNTERS) } }.toMap(),
         matchup = content.factionById[t.factionId]?.name?.let { name -> listOfNotNull(name, t.weakTo?.let { "Weak to ${it.word()}" }, t.resists?.let { "Resists ${it.word()}" }).joinToString(" · ") },
+        besieger = content.factionById[t.factionId]?.name,
     )
 }
 
