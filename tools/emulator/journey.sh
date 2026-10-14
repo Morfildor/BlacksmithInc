@@ -129,6 +129,8 @@ notes 04_notes_before
 # 2. Loan it through the member's sheet.
 tap_id nav_town || exit 1
 wait_id guild_list
+# members are on the Company part of the Guild
+tap_id guild_tab_company; $ADB shell sleep 1
 for i in 1 2 3 4 5 6 7 8 9 10; do has "$WHO" && break; swipe_up; done
 tap "$WHO" || exit 1
 wait_id sheet_member; shot 05_member_sheet
@@ -138,6 +140,7 @@ echo "--- member sheet"; texts 60 | grep -i "sword\|carries\|loan" | head -8
 tap_id sheet_close || $ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 1
 
 # 3. A real contract: the supplier's road, both members.
+tap_id guild_tab_contracts; $ADB shell sleep 1
 to_top
 for i in 1 2 3 4 5 6 7 8 9 10; do has "Bring a wagon" && has "Choose a party" && break; $ADB shell input swipe 540 1300 540 1000 500; $ADB shell sleep 1; done
 tap "Choose a party" "Bring a wagon" || tap_has "Supply run" || { shot 00_no_offer; texts 120; exit 1; }

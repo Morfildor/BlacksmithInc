@@ -87,6 +87,8 @@ shot 05_shop_day1
 tap_id nav_town || exit 1
 check has "Guild"
 wait_id guild_list; shot 06_guild_top
+# the Guild opens on Contracts (or on the Wall on a siege eve): the board is its own part
+tap_id guild_tab_contracts; $ADB shell sleep 1
 swipe_up; shot 07_guild_scroll1
 swipe_up; shot 08_guild_scroll2
 swipe_up; shot 09_guild_scroll3
@@ -104,6 +106,7 @@ scroll_to_id contract_send && tap_id contract_send
 $ADB shell sleep 1; shot 15_guild_planned
 check has_id guild_plan
 # a member's sheet
+tap_id guild_tab_company; $ADB shell sleep 1
 for i in 1 2 3 4 5 6 7 8 9 10; do has_id guild_member_ && break; swipe_up; done
 shot 15b_roster
 tap_id guild_member_
@@ -129,6 +132,8 @@ has_id shopday_skip && tap_id shopday_skip
 $ADB shell sleep 2; shot 30_after_evening
 past_offers
 tap_id nav_town; wait_id guild_list; shot 31_guild_day2
+tap_id guild_tab_wall; $ADB shell sleep 1; shot 34_guild_day2_wall
+tap_id guild_tab_contracts; $ADB shell sleep 1
 swipe_up; shot 32_guild_day2_scroll1
 swipe_up; shot 33_guild_day2_scroll2
 echo "done"

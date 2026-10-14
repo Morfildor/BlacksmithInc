@@ -73,8 +73,14 @@ import kotlinx.coroutines.withContext
 /** The four places the player goes (plan 1.2); the bar shows these and nothing else. */
 enum class Dest { SHOP, FORGE, TOWN, RECORDS }
 
-/** The three segments of Records; GAZETTE is the one labelled "News". */
-enum class RecordsPage { GAZETTE, JOURNAL, LEGACY }
+/** The four parts of a guild run's Guild destination, each a short page under its pinned Today rows. */
+enum class GuildTab { CONTRACTS, COMPANY, WALL, CHARTER }
+
+/** The Guild part the smith last chose and the day they chose it on: it holds for that day only (see `guildTabFor`). */
+data class GuildTabMemory(val tab: GuildTab, val day: Int)
+
+/** The segments of Records; GAZETTE is the one labelled "News". TOWNSFOLK only in a guild run, where the Guild has no room for them. */
+enum class RecordsPage { GAZETTE, JOURNAL, LEGACY, TOWNSFOLK }
 
 /** The detail sheet that is open over the workshop: only who or what it shows; its content is read from the save on every render. */
 sealed interface Sheet {
@@ -143,6 +149,8 @@ sealed interface UiState {
         val guild: GuildUi? = null,
         /** The guided first day's step in this run; null where it is not running. Built from the save and the record in settings. */
         val intro: IntroUi? = null,
+        /** The Guild part last chosen, and on which day; UI-only. */
+        val guildTab: GuildTabMemory? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
     }
@@ -199,6 +207,7 @@ class GameViewModel(
 ) : ViewModel() {
     private data class Local(
         val dest: Dest = Dest.SHOP,
+        val guildTab: GuildTabMemory? = null,
         val records: RecordsPage = RecordsPage.GAZETTE,
         val draft: ForgeDraft = ForgeDraft(),
         val revealWeaponId: WeaponId? = null,
@@ -384,7 +393,7 @@ class GameViewModel(
         val intro = engine.introUi(record, run, l.dest, l.draft)
         // While the first day is guided the relic offer does not open by itself ("Decide later"); the Shop's row still opens it.
         val relicDay = l.relicOfferDismissedDay ?: run.day.takeIf { intro != null && !l.relicAsked }
-        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, relicDay, planned.guild, intro)
+        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, relicDay, planned.guild, intro, guildTab = l.guildTab)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -434,6 +443,7 @@ class GameViewModel(
         val l = local.updateAndGet(transform)
         saved[KEY_DEST] = l.dest.name
         saved[KEY_RECORDS] = l.records.name
+        saved[KEY_GUILD_TAB] = l.guildTab?.let { "${it.tab.name}@${it.day}" }
         saved[KEY_REVEAL] = l.revealWeaponId?.value
         saved[KEY_BLESSING_DAY] = l.blessingOfferDismissedDay
         saved[KEY_RELIC_DAY] = l.relicOfferDismissedDay
@@ -446,6 +456,9 @@ class GameViewModel(
         return Local(
             dest = saved.get<String>(KEY_DEST)?.let { name -> Dest.entries.firstOrNull { it.name == name } } ?: Dest.SHOP,
             records = saved.get<String>(KEY_RECORDS)?.let { name -> RecordsPage.entries.firstOrNull { it.name == name } } ?: RecordsPage.GAZETTE,
+            guildTab = saved.get<String>(KEY_GUILD_TAB)?.let { v ->
+                GuildTab.entries.firstOrNull { it.name == v.substringBefore('@') }?.let { t -> v.substringAfter('@').toIntOrNull()?.let { GuildTabMemory(t, it) } }
+            },
             draft = if (d == null) ForgeDraft() else ForgeDraft(
                 mode = ForgeMode.entries.firstOrNull { it.name == d[0] } ?: ForgeMode.QUICK,
                 familyId = d[1]?.let(::WeaponFamilyId), coreId = d[2]?.let(::MaterialId), augmentId = d[3]?.let(::MaterialId), catalystId = d[4]?.let(::MaterialId),
@@ -518,6 +531,12 @@ class GameViewModel(
     fun selectDest(dest: Dest) = edit { it.copy(dest = dest) }
     /** A segment of Records, from its own row or from a link elsewhere (yesterday's news on the Shop). */
     fun selectRecords(page: RecordsPage) = edit { it.copy(dest = Dest.RECORDS, records = page) }
+
+    /** The smith chose a Guild part: it is remembered for today. */
+    fun selectGuildTab(tab: GuildTab) = edit { l -> session.snapshot.value?.run?.day?.let { l.copy(guildTab = GuildTabMemory(tab, it)) } ?: l }
+
+    /** The siege strip of a guild run: straight to the wall, over whatever part was remembered (an explicit way there). */
+    fun openGuildWall() = edit { l -> l.copy(dest = Dest.TOWN, guildTab = session.snapshot.value?.run?.day?.let { GuildTabMemory(GuildTab.WALL, it) } ?: l.guildTab) }
     fun updateDraft(transform: (ForgeDraft) -> ForgeDraft) = edit { it.copy(draft = transform(it.draft)) }
     /**
      * "Forge this" on a request: the forge opens with the family asked for and, for an element, an augment of it (one
@@ -892,6 +911,7 @@ class GameViewModel(
         private const val KEY_RELIC_DAY = "relic_day"
         private const val KEY_DEST = "dest"
         private const val KEY_RECORDS = "records"
+        private const val KEY_GUILD_TAB = "guild_tab"
         private const val KEY_DRAFT = "draft"
         private const val KEY_REVEAL = "reveal"
         private const val KEY_BLESSING_DAY = "blessing_day"

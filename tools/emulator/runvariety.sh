@@ -263,7 +263,7 @@ step_miss() { heart heartfire_miss "Epic" ""; }
 # Item 5: the wall card's preparation, then the siege card.
 step_siege() {
   load siege_preparation || return
-  tap_id nav_town >/dev/null; wait_id guild_list
+  tap_id nav_town >/dev/null; wait_id guild_list; tap_id guild_tab_wall >/dev/null; $ADB shell sleep 1
   scroll_to_id guild_wall_prep >/dev/null || { bad "the wall card names a preparation"; shot siege_0_no_prep; }
   $ADB shell input swipe 540 1300 540 1050 600; $ADB shell sleep 1
   shot siege_1_wall_prep
@@ -272,6 +272,7 @@ step_siege() {
   [ "$(lines_of guild_wall_prep | wc -l)" -ge 2 ] && ok "the wall card names the preparation and its answers" || bad "the wall card names the preparation and its answers"
   swipe_up; shot siege_1b_wall_lower
   for i in 1 2 3 4 5 6; do $ADB shell input swipe 540 700 540 1700 300; done; $ADB shell sleep 1
+  tap_id guild_tab_contracts >/dev/null; $ADB shell sleep 1
   echo "BOARD siege_preparation:"; board siege_preparation
   tap_id nav_shop >/dev/null; tap_id end_day >/dev/null || return
   $ADB shell sleep 2; has_id end_day_confirm && { shot siege_2_end_day_confirm; tap_id end_day_confirm >/dev/null; }
@@ -415,11 +416,12 @@ step_font() {
     }
   }
   load siege_preparation && {
-    tap_id nav_town >/dev/null; wait_id guild_list; shot font_guild_0_top
+    tap_id nav_town >/dev/null; wait_id guild_list; shot font_guild_0_top; tap_id guild_tab_wall >/dev/null; $ADB shell sleep 1
     scroll_to_id guild_wall_prep >/dev/null; $ADB shell input swipe 540 1300 540 1050 600; $ADB shell sleep 1
     shot font_wall_1_prep
     swipe_up; shot font_wall_2_lower; swipe_up; shot font_wall_3_lower
     for i in 1 2 3 4 5 6; do $ADB shell input swipe 540 700 540 1700 300; done; $ADB shell sleep 1
+    tap_id guild_tab_contracts >/dev/null; $ADB shell sleep 1
     for i in 1 2 3 4 5 6 7 8 9 10 11 12; do dump | grep -q 'resource-id="guild_offer_' && break; swipe_up; done
     $ADB shell input swipe 540 1300 540 1000 600; $ADB shell sleep 1
     shot font_contract_1_card

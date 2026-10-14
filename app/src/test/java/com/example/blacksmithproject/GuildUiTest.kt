@@ -281,9 +281,9 @@ class GuildUiTest {
             val classic = engine.shopUi(s, engine.siegeForecast(s)).threat ?: continue
             val ui = engine.guildUi(s)!!
             val strip = ui.threat(classic)!!
-            assertEquals("Day ${s.town.nextSiegeDay} · see the wall in Guild", strip.outlook)
+            assertNull(strip.outlook)
             assertEquals(classic.siege, strip.siege)
-            if (ui.wall.committed) assertTrue(strip.matchup, strip.matchup!!.startsWith(ui.wall.besieger)) else assertEquals("Besieger not yet known", strip.matchup)
+            if (ui.wall.committed) assertTrue(strip.matchup, strip.matchup!!.startsWith(ui.wall.besieger)) else assertNull(strip.matchup)
             // The wall never shows a field before the besieger is committed, and always three places at most.
             if (!ui.wall.committed) assertTrue(ui.wall.field.isEmpty())
             assertTrue(ui.wall.defenders.size <= ui.wall.places)

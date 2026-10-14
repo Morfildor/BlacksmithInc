@@ -1,157 +1,128 @@
 package com.example.blacksmithproject.ui
 
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.text.font.FontWeight
-import com.tinyblacksmith.core.model.Danger
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
+import com.example.blacksmithproject.GuildTab
 import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
+import com.example.blacksmithproject.ui.theme.BronzeContainer
 import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.BronzeLine
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.Ember
+import com.example.blacksmithproject.ui.theme.ForgePanel
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
-import com.tinyblacksmith.core.content.GuildContent
 import com.tinyblacksmith.core.engine.Command
-import com.tinyblacksmith.core.model.CheckpointChoice
 import com.tinyblacksmith.core.model.HeroId
 
 /** A choice that cannot be taken back, asked once more before it is sent. */
-private data class Confirm(val title: String, val body: String, val action: String, val command: Command)
+internal data class Confirm(val title: String, val body: String, val action: String, val command: Command)
+
+/** One row of a Guild part's list: its key (what Today scrolls to) and what it shows. */
+internal class GuildRow(val key: String, val content: @Composable () -> Unit)
+
+/** What a part needs from the frame: open a hero's sheet or a contract, ask before a step that cannot be undone, open the assign sheet. */
+internal class GuildActions(
+    val enabled: Boolean,
+    val openHero: (HeroId) -> Unit,
+    val openContract: (String) -> Unit,
+    val confirm: (Confirm) -> Unit,
+    val assign: () -> Unit,
+    val send: (Command) -> Unit,
+)
+
+internal fun guildTabName(t: GuildTab) = when (t) { GuildTab.CONTRACTS -> "Contracts"; GuildTab.COMPANY -> "Company"; GuildTab.WALL -> "Wall"; GuildTab.CHARTER -> "Charter" }
 
 /**
- * The Guild destination of a guild run, in the place Town has in a classic run: the party that is out, the board, the
- * roster, the wall (first when the siege is today or tomorrow), who would sign, the region, then the town's own people. One lazy list; every row that changes
- * something sends a command and waits for the save.
+ * The Guild destination of a guild run, in the place Town has in a classic run. Pinned at its head: Today (at most three
+ * rows, each one thing that needs the smith with the button that goes to it) and the four parts, Contracts, Company,
+ * Wall and Charter, each a short list of its own. The part shown is the one chosen today, else the Wall on the eve and
+ * the day of a siege, else Contracts (`guildTabFor`). Every row that changes something sends a command and waits for the save.
  */
 @Composable
 fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Modifier = Modifier) {
     val st = s.state
-    val (living, gone) = remember(st.heroes, st.guild?.members) {
-        st.residents().sortedByDescending { it.fame } to st.heroes.values.filter { !it.isAlive }.sortedByDescending { it.fame }
-    }
-    var showGone by rememberSaveable { mutableStateOf(false) }
-    // The contract whose sheet is open, by its ID on the board.
+    val tab = guildTabFor(s.guildTab, st.day, ui.wall.daysLeft)
+    // The contract whose sheet is open, by its ID on the board; the assign sheet; a confirmation; the row Today asked for.
     var contract by rememberSaveable { mutableStateOf<String?>(null) }
+    var assigning by rememberSaveable { mutableStateOf(false) }
     var confirm by remember { mutableStateOf<Confirm?>(null) }
-    val openHero = { id: HeroId -> vm.openSheet(Sheet.Hero(id)) }
-    val enabled = !s.busy
-    LazyColumn(modifier.fillMaxSize().testTag("guild_list"), contentPadding = PaddingValues(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.lg)) {
-        // What asks for a decision comes first: a party waiting for word always; the wall on the siege day and the day before it.
-        // On any other morning the wall stands after the board and the roster, where it is one scroll away, not in the way.
-        val wallFirst = st.town.nextSiegeDay - st.day <= 1
-        val wall = { item(key = "wall") { WallCard(ui.wall, enabled, openHero) { id, keep -> vm.dispatch(Command.ReserveDefender(id, keep)) } } }
-        ui.party?.let { p -> item(key = "party") { PartyCard(p, enabled) { id, choice -> vm.dispatch(Command.ChooseMissionCheckpoint(id, choice)) } } }
-        if (wallFirst) wall()
-        ui.yesterday?.let { y -> item(key = "yesterday") { ReportCard(y) } }
-        item(key = "board_head") {
-            Column {
-                SectionTitle("The board")
-                ui.plan?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Gold, modifier = Modifier.testTag("guild_plan")) }
-                ui.boardNote?.let { Secondary(it, Modifier.testTag("guild_board_note")) }
+    var anchor by remember { mutableStateOf<Pair<GuildTab, String>?>(null) }
+    val actions = GuildActions(
+        enabled = !s.busy, openHero = { vm.openSheet(Sheet.Hero(it)) }, openContract = { contract = it },
+        confirm = { confirm = it }, assign = { assigning = true }, send = vm::dispatch,
+    )
+    val dots = ui.today.mapNotNull { it.tab }.toSet() + listOfNotNull(GuildTab.COMPANY.takeIf { ui.companyNeeds })
+    Column(modifier.fillMaxSize()) {
+        TodayRows(ui.today) { row ->
+            when (val t = row.target) {
+                is TodayTarget.Tab -> { vm.selectGuildTab(t.tab); anchor = t.tab to t.anchor }
+                is TodayTarget.Hero -> vm.openSheet(Sheet.Hero(t.heroId))
+                TodayTarget.AssignWall -> { vm.selectGuildTab(GuildTab.WALL); assigning = true }
             }
         }
-        items(ui.offers, key = { "offer_${it.id}" }) { o -> OfferCard(o) { contract = o.id } }
-        item(key = "roster_head") {
-            Column {
-                SectionTitle(ui.rosterHead)
-                Secondary(ui.rosterNote, Modifier.testTag("guild_roster_note"))
-            }
+        GuildTabs(tab, dots, onSelect = { vm.selectGuildTab(it); anchor = null })
+        HorizontalDivider(color = BronzeDeep)
+        val rows = when (tab) {
+            GuildTab.CONTRACTS -> contractRows(ui, actions)
+            GuildTab.COMPANY -> companyRows(ui, actions)
+            GuildTab.WALL -> wallRows(ui, actions)
+            GuildTab.CHARTER -> charterRows(ui, actions)
         }
-        itemsIndexed(ui.roster, key = { _, m -> "member_${m.heroId.value}" }) { i, m ->
-            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            MemberRow(m) { openHero(m.heroId) }
-        }
-        if (!wallFirst) wall()
-        item(key = "candidates_head") {
-            Column {
-                SectionTitle("Would sign today")
-                Secondary(ui.candidatesNote, Modifier.testTag("guild_candidates_note"))
-            }
-        }
-        itemsIndexed(ui.candidates, key = { _, c -> "candidate_${c.heroId.value}" }) { i, c ->
-            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            CandidateRow(c, enabled, onOpen = { openHero(c.heroId) }) { vm.dispatch(Command.RecruitHero(c.heroId)) }
-        }
-        item(key = "region") {
-            RegionCard(
-                ui.region, enabled,
-                onRetire = {
-                    confirm = Confirm(
-                        "Retire the chapter?", "The run ends here as a success: the forge stands, the charter is secured, and its legacy can be claimed. This cannot be taken back.",
-                        "Retire the chapter", Command.RetireAfterMilestone(GuildContent.CHARTER_SECURED),
-                    )
-                },
-                onRank = { r -> confirm = Confirm("Take the rank of ${r.name}?", "${r.description} A rank is kept once taken.", "Take rank", Command.SetGuildRank(r.rank)) },
-            )
-        }
-        if (ui.factions.isNotEmpty()) item(key = "factions") {
-            Column {
-                SectionHeader("Pressing on the town")
-                FactionRows(ui.factions)
-            }
-        }
-        item(key = "heroes_head") { SectionTitle("Townsfolk · ${living.size} in town") }
-        itemsIndexed(living, key = { _, h -> "hero_${h.id.value}" }) { i, h ->
-            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            HeroRow(h, s, vm)
-        }
-        if (gone.isNotEmpty()) {
-            item(key = "gone_head") {
-                Row(
-                    Modifier.fillMaxWidth().padding(top = Space.md).clickable(onClickLabel = if (showGone) "Hide" else "Show", role = Role.Button) { showGone = !showGone }.heightIn(min = 48.dp).testTag("town_fallen"),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("Fallen and retired (${gone.size})", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                    Text(if (showGone) "Hide  ▴" else "Show  ▾", style = MaterialTheme.typography.labelLarge, color = Gold)
-                }
-            }
-            if (showGone) itemsIndexed(gone, key = { _, h -> "hero_${h.id.value}" }) { i, h ->
-                if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                HeroRow(h, s, vm)
-            }
-        }
+        GuildList(tab, rows, anchor) { anchor = null }
     }
     // Under a hero's sheet the contract waits, as the commission board does.
     contract?.let { id ->
@@ -163,6 +134,7 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
             onDismiss = { contract = null },
         )
     }
+    if (assigning && s.sheet == null && confirm == null) AssignSheet(ui, actions, onDismiss = { assigning = false })
     confirm?.let { c ->
         ForgeDialog(
             c.title, onDismiss = { confirm = null }, tag = "guild_confirm",
@@ -176,10 +148,106 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
     }
 }
 
+/**
+ * What needs the smith today. On a short screen or with large text only the first row shows, with how many more wait
+ * under one tap: the part's own list keeps the room. With nothing to do it is one quiet line.
+ */
+@Composable
+private fun TodayRows(rows: List<TodayUi>, onAct: (TodayUi) -> Unit) {
+    val compact = LocalDensity.current.fontScale >= 1.3f || LocalConfiguration.current.screenHeightDp < 700
+    var more by rememberSaveable { mutableStateOf(false) }
+    val shown = if (compact && !more) rows.take(1) else rows
+    Column(Modifier.fillMaxWidth().background(ForgePanel).padding(horizontal = Space.md, vertical = Space.xs).testTag("guild_today")) {
+        if (rows.isEmpty()) Secondary("Nothing in the guild needs you today.", Modifier.heightIn(min = 32.dp).padding(vertical = 6.dp))
+        shown.forEach { r ->
+            Row(Modifier.fillMaxWidth().heightIn(min = 40.dp).testTag("guild_today_${r.key}"), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.padding(end = Space.sm).size(6.dp).background(Gold, CircleShape))
+                Text(r.text, style = MaterialTheme.typography.bodyMedium, color = Cream, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                InlineActionButton("${r.action}  ›", { onAct(r) }, Modifier.heightIn(min = 40.dp).testTag("guild_today_go_${r.key}"))
+            }
+        }
+        if (compact && rows.size > 1) InlineActionButton(if (more) "Fewer" else "${rows.size - 1} more today", { more = !more }, Modifier.testTag("guild_today_more"))
+    }
+}
+
+/** The four parts as one row of plates: the chosen one lit, a gold dot where something waits. Scrolls sideways before a name would shrink. */
+@Composable
+private fun GuildTabs(selected: GuildTab, dots: Set<GuildTab>, onSelect: (GuildTab) -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().background(ForgePanel).horizontalScroll(rememberScrollState()).padding(horizontal = Space.sm, vertical = Space.xs),
+        horizontalArrangement = Arrangement.spacedBy(Space.xs),
+    ) {
+        GuildTab.entries.forEach { t ->
+            val on = t == selected
+            Row(
+                Modifier.widthIn(min = 80.dp).heightIn(min = 44.dp)
+                    .background(if (on) BronzeContainer else Color.Transparent, MaterialTheme.shapes.small)
+                    .border(1.dp, if (on) Gold else BronzeDeep, MaterialTheme.shapes.small)
+                    .clickable(role = Role.Tab, onClick = { onSelect(t) })
+                    .semantics { this.selected = on; if (t in dots) stateDescription = "Needs you" }
+                    .padding(horizontal = 12.dp).testTag("guild_tab_${t.name.lowercase()}"),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
+            ) {
+                Text(guildTabName(t), style = MaterialTheme.typography.labelLarge, color = if (on) Gold else CreamMuted, maxLines = 1, softWrap = false)
+                if (t in dots) Box(Modifier.padding(start = 6.dp).size(7.dp).background(if (on) Gold else Ember, CircleShape))
+            }
+        }
+    }
+}
+
+/** One part's rows as one lazy list; a row Today pointed at is scrolled to once. Each part keeps its own scroll. */
+@Composable
+private fun GuildList(tab: GuildTab, rows: List<GuildRow>, anchor: Pair<GuildTab, String>?, onAnchored: () -> Unit) {
+    val list = key(tab) { rememberLazyListState() }
+    // Once the part Today pointed at is the one shown: the save that switches it may land a frame later.
+    LaunchedEffect(anchor, tab) {
+        val (t, k) = anchor ?: return@LaunchedEffect
+        if (t != tab) return@LaunchedEffect
+        rows.indexOfFirst { it.key == k }.takeIf { it >= 0 }?.let { list.animateScrollToItem(it) }
+        onAnchored()
+    }
+    LazyColumn(
+        Modifier.fillMaxSize().bottomFade(list.canScrollForward).testTag("guild_list"), state = list,
+        contentPadding = PaddingValues(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.lg),
+    ) {
+        items(rows, key = { it.key }) { it.content() }
+    }
+}
+
 /** A face in its dark slot, as every row of Town has it. */
 @Composable
-private fun Face(portrait: Int, size: Int = 44) {
+internal fun Face(portrait: Int, size: Int = 44) {
     Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { PixelImage(portrait, size.dp, description = null) }
+}
+
+/** A short fact on a plate: the word is always there beside the colour. */
+@Composable
+internal fun Chip(text: String, color: Color = CreamMuted, modifier: Modifier = Modifier) {
+    Text(
+        text, style = MaterialTheme.typography.labelMedium, color = color, maxLines = 1,
+        modifier = modifier.border(1.dp, color.copy(alpha = 0.6f), MaterialTheme.shapes.extraSmall).padding(horizontal = 6.dp, vertical = 2.dp),
+    )
+}
+
+/** A section that opens and closes under its heading: the count and one line say what is inside while it is closed. */
+@Composable
+internal fun Collapsible(key: String, title: String, summary: String?, openAtFirst: Boolean, tag: String, content: @Composable () -> Unit) {
+    var open by rememberSaveable(key) { mutableStateOf(openAtFirst) }
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm)) {
+        Row(
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClickLabel = if (open) "Close" else "Open", role = Role.Button) { open = !open }
+                .semantics { heading(); stateDescription = if (open) "Open" else "Closed" }.testTag("${tag}_head"),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleMedium, color = Gold)
+                if (!open) summary?.let { Secondary(it) }
+            }
+            Text(if (open) "▴" else "▾", style = MaterialTheme.typography.titleMedium, color = Gold)
+        }
+        HorizontalDivider(color = BronzeDeep)
+        if (open) Column(Modifier.fillMaxWidth().padding(top = Space.xs).testTag(tag)) { content() }
+    }
 }
 
 /** What is known of the units on a field: each kind once, with how many of it and its known moves under it. */
@@ -193,228 +261,52 @@ internal fun EnemyLines(enemies: List<EnemyUi>, modifier: Modifier = Modifier) {
     }
 }
 
-/** The coming siege as a guild run meets it: who comes, who stands in the three places, who is missing and why. */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun WallCard(w: WallUi, enabled: Boolean, onOpenHero: (HeroId) -> Unit, onReserve: (HeroId, Boolean) -> Unit) {
-    FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm).testTag("guild_wall")) {
-        Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            w.factionId?.let { id -> Sprites.faction(id)?.let { Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { PixelImage(it, 56.dp, description = null) } } }
-            Column(Modifier.weight(1f)) {
-                Text("The wall", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-                Text(w.whenLine, style = MaterialTheme.typography.titleSmall, color = if (w.daysLeft <= 1) Ember else Cream, modifier = Modifier.testTag("guild_wall_when"))
-                Text(w.besieger, style = MaterialTheme.typography.titleSmall, modifier = Modifier.testTag("guild_wall_besieger"))
-                w.leaning?.let { Secondary(it) }
-            }
-        }
-        if (w.weakTo != null || w.resists != null) FlowRow(Modifier.padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-            w.weakTo?.let { MatchMark(EffectKind.BUFF, "Weak to $it") }
-            w.resists?.let { MatchMark(EffectKind.FLAW, "Resists $it") }
-        }
-        w.notes.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = Space.xs)) }
-        w.nemesis?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = Space.xs).testTag("guild_wall_nemesis")) }
-        w.spoiled?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = EffectKind.BUFF.color, modifier = Modifier.padding(top = Space.xs).testTag("guild_wall_spoiled")) }
-        // What they prepare is this siege's own rule: said whole, with every answer the smith has, before the field it changes.
-        w.prep?.let { p ->
-            Column(Modifier.fillMaxWidth().testTag("guild_wall_prep")) {
-                SectionHeader("They prepare")
-                Text(p.name, style = MaterialTheme.typography.titleSmall, color = Ember)
-                Text(p.description, style = MaterialTheme.typography.bodyMedium)
-                Secondary("Your answers", Modifier.padding(top = Space.xs))
-                p.answers.forEach { Secondary("· $it", Modifier.padding(start = Space.sm)) }
-                Secondary("· Or send a party to spoil it. ${p.sabotage}", Modifier.padding(start = Space.sm))
-            }
-        }
-        if (w.field.isNotEmpty()) {
-            SectionHeader("Their field")
-            EnemyLines(w.field, Modifier.testTag("guild_wall_field"))
-        }
-        HorizontalDivider(Modifier.padding(top = 12.dp, bottom = Space.sm), color = MaterialTheme.colorScheme.outlineVariant)
-        StatRow("Watch", "${w.watch}")
-        Secondary(w.watchLine, Modifier.testTag("guild_wall_watch_line"))
-        StatBar("Forge health", w.forgeHealth, w.forgeHealthMax)
-
-        SectionHeader("Who stands")
-        (0 until w.places).forEach { i ->
-            val d = w.defenders.getOrNull(i)
-            Row(
-                Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().then(if (d == null) Modifier else Modifier.clickable(onClickLabel = "Open details") { onOpenHero(d.heroId) })
-                    .heightIn(min = 64.dp).padding(horizontal = 12.dp, vertical = Space.sm).testTag("guild_place_$i"),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Text("${i + 1}", style = MaterialTheme.typography.titleLarge, color = if (d == null) CreamMuted else Gold, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 20.dp))
-                if (d == null) Secondary("Empty: nobody else in town is fit to stand.", Modifier.weight(1f))
-                else {
-                    Face(d.portrait, 48)
-                    Column(Modifier.weight(1f)) {
-                        Text(d.name, style = MaterialTheme.typography.titleSmall)
-                        Text(d.blade, style = MaterialTheme.typography.bodySmall, color = Cream)
-                        Secondary(d.sub + when { d.reserved -> " · kept for the wall"; d.member -> " · of the guild"; else -> " · of the town" })
-                    }
-                }
-            }
-        }
-        // Keeping a member for the wall puts them in a place first and out of any party; it can be taken back any morning.
-        if (w.reserve.isNotEmpty()) {
-            Secondary("Keep a member for the wall: they stand first, and no party takes them.", Modifier.padding(top = Space.sm))
-            w.reserve.forEach { r ->
-                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                    Column(Modifier.weight(1f)) {
-                        Text(r.name + if (r.reserved) " · kept" else "", style = MaterialTheme.typography.bodyMedium, color = if (r.reserved) Gold else Cream)
-                        r.blocked?.let { Secondary(it) }
-                    }
-                    InlineActionButton(
-                        if (r.reserved) "Release" else "Reserve", { onReserve(r.heroId, !r.reserved) },
-                        Modifier.testTag("guild_reserve_${r.heroId.value}"), enabled = enabled && r.blocked == null,
-                    )
-                }
-            }
-        }
-        if (w.missing.isNotEmpty()) {
-            SectionHeader("Missing")
-            Column(Modifier.testTag("guild_wall_missing")) { w.missing.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) } }
-        }
-    }
-}
-
-/** The party that is out: where, who, when they are home; at a checkpoint, the choice. */
-@Composable
-private fun PartyCard(p: PartyUi, enabled: Boolean, onChoose: (String, CheckpointChoice) -> Unit) {
-    FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.md).testTag("guild_party")) {
-        Text("The party · ${p.title}", style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.semantics { heading() })
-        Text(p.who, style = MaterialTheme.typography.bodyMedium)
-        Text(p.returns, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("guild_party_returns"))
-        p.status?.let { Secondary(it) }
-        p.checkpoint?.let { c ->
-            HorizontalDivider(Modifier.padding(vertical = Space.sm), color = MaterialTheme.colorScheme.outlineVariant)
-            Text(c.secured, style = MaterialTheme.typography.bodyMedium, color = EffectKind.BUFF.color)
-            Text(c.deeper, style = MaterialTheme.typography.bodyMedium)
-            Text(c.danger, style = MaterialTheme.typography.bodyMedium, color = Ember)
-            EnemyLines(c.enemies, Modifier.padding(top = Space.xs))
-            Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                SecondaryActionButton("Push deeper", { onChoose(c.instanceId, CheckpointChoice.PUSH) }, Modifier.weight(1f).testTag("guild_push"), enabled = enabled && c.chosen != CheckpointChoice.PUSH)
-                SecondaryActionButton("Return", { onChoose(c.instanceId, CheckpointChoice.RETURN) }, Modifier.weight(1f).testTag("guild_return"), enabled = enabled && c.chosen != CheckpointChoice.RETURN)
-            }
-            Secondary(c.note, Modifier.padding(top = Space.xs).testTag("guild_checkpoint_note"))
-        }
-    }
-}
-
-@Composable
-private fun ReportCard(r: ContractReportUi) {
-    Column(Modifier.fillMaxWidth().padding(top = Space.md).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm).testTag("guild_yesterday")) {
-        Text("Yesterday's contract · ${r.title}", style = MaterialTheme.typography.titleSmall, color = Gold)
-        Text(r.outcome, style = MaterialTheme.typography.bodyMedium)
-        r.highlight?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream) }
-        r.lines.forEach { Secondary(it) }
-    }
-}
-
 /**
- * One contract on the board, short: the danger word first, then what the first day brings, then the days and the fee.
- * Why it was posted, a posting's twist and a siege night missed are said too; the rest (stages, enemies, what to bring,
- * what is lost) is on the sheet the tap opens, where the party is chosen.
+ * Who can be kept for the wall: every member with the rules' own answer. Keep or Release where the rule allows; Keep home
+ * for one in today's planned party (it cancels the plan, asked first); a reason without a button for one away, held or
+ * laid up. A place empty on the eve is filled this way or not at all.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
-    Column(
-        Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().clickable(onClickLabel = "Choose a party", role = Role.Button, onClick = onOpen)
-            .padding(horizontal = 12.dp, vertical = Space.sm).testTag("guild_offer_${o.id}"),
+private fun AssignSheet(ui: GuildUi, a: GuildActions, onDismiss: () -> Unit) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
+        modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("guild_assign_sheet"),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-            Text(o.title, style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.weight(1f))
-            o.tag?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = Gold) }
-            if (o.planned) Text("Planned", style = MaterialTheme.typography.labelMedium, color = EffectKind.BUFF.color)
-        }
-        Text(
-            buildAnnotatedString {
-                withStyle(SpanStyle(color = dangerColor(o.danger), fontWeight = FontWeight.SemiBold)) { append(dangerWord(o.danger)) }
-                append(" · "); append(o.reward)
-            },
-            style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.testTag("guild_offer_line_${o.id}"),
-        )
-        Secondary(o.terms)
-        o.missesSiege?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
-        o.why?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
-        o.modifierName?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.testTag("guild_offer_modifier_${o.id}")) }
-        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-            Secondary(o.expiry, Modifier.weight(1f))
-            Text(if (o.planned) "Change the party  ›" else "Choose a party  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
-        }
-    }
-}
-
-/** Safe in the body colour, a taken member in ember, a death in the flaw red: the word is always there beside the colour. */
-private fun dangerColor(d: Danger) = when (d) { Danger.SAFE -> Cream; Danger.DANGEROUS -> Ember; Danger.LETHAL -> EffectKind.FLAW.color }
-
-/** A member in one line under the name, what is wrong in ember, and what they carry. Role and trait are on the sheet the tap opens. */
-@Composable
-private fun MemberRow(m: MemberUi, onOpen: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().clickable(onClickLabel = "Open details", onClick = onOpen).testTag("guild_member_${m.heroId.value}").heightIn(min = 48.dp).padding(vertical = 6.dp),
-        verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Face(m.portrait)
-        Column(Modifier.weight(1f)) {
-            Text(m.name, style = MaterialTheme.typography.titleSmall)
-            Secondary(m.line)
-            m.status?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
-            Text(m.blade, style = MaterialTheme.typography.bodySmall, color = Cream)
-            if (m.branchOpen) Text("A branch is open: choose it on their sheet  ›", style = MaterialTheme.typography.bodySmall, color = Gold)
-        }
-    }
-}
-
-@Composable
-private fun CandidateRow(c: CandidateUi, enabled: Boolean, onOpen: () -> Unit, onRecruit: () -> Unit) {
-    Column(Modifier.fillMaxWidth().padding(vertical = 6.dp).testTag("guild_candidate_${c.heroId.value}")) {
-        Row(Modifier.fillMaxWidth().clickable(onClickLabel = "Open details", onClick = onOpen).heightIn(min = 48.dp), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Face(c.portrait)
-            Column(Modifier.weight(1f)) {
-                Text(c.name, style = MaterialTheme.typography.titleSmall)
-                Secondary(c.line)
-                Text(c.terms, style = MaterialTheme.typography.bodySmall, color = Cream)
-            }
-        }
-        c.blocked?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.testTag("guild_recruit_blocked_${c.heroId.value}")) }
-        SecondaryActionButton("Recruit", onRecruit, Modifier.fillMaxWidth().padding(top = Space.xs).testTag("guild_recruit_${c.heroId.value}"), enabled = enabled && c.blocked == null)
-    }
-}
-
-/** The charter and what it asks, the law of the season, the other guild, the one who carries a blade of the forge, the chains seen so far. */
-@Composable
-private fun RegionCard(r: RegionUi, enabled: Boolean, onRetire: () -> Unit, onRank: (RankUi) -> Unit) {
-    Column(Modifier.fillMaxWidth().testTag("guild_region")) {
-        SectionTitle("The region")
-        Text(r.charter, style = MaterialTheme.typography.titleMedium, color = Gold)
-        if (r.advantage.isNotEmpty()) Text("${EffectKind.BUFF.sign} ${r.advantage}", style = MaterialTheme.typography.bodySmall, color = EffectKind.BUFF.color)
-        if (r.constraint.isNotEmpty()) Text("${EffectKind.FLAW.sign} ${r.constraint}", style = MaterialTheme.typography.bodySmall, color = EffectKind.FLAW.color)
-        Text(r.progress, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs).testTag("guild_charter"))
-        if (r.secured) {
-            r.retireBlocked?.let { Secondary(it) }
-            SecondaryActionButton("Retire the chapter", onRetire, Modifier.fillMaxWidth().padding(top = Space.xs).testTag("guild_retire"), enabled = enabled && r.retireBlocked == null)
-            if (r.ranks.isNotEmpty()) SectionHeader("Ranks")
-            r.ranks.forEach { rank ->
-                Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
+            Text("Keep for the wall", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
+            Secondary("A kept member stands first and no party takes them. The other places go to the strongest fit, members or townsfolk.")
+            Text("${ui.wall.defenders.size} of ${ui.wall.places} places filled", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm))
+            ui.assign.forEach { r ->
+                Row(
+                    Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().heightIn(min = 64.dp).padding(horizontal = 12.dp, vertical = Space.sm).testTag("guild_assign_row_${r.heroId.value}"),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Face(r.portrait, 40)
                     Column(Modifier.weight(1f)) {
-                        Text(rank.name + if (rank.taken) " · taken" else "", style = MaterialTheme.typography.titleSmall, color = if (rank.taken) Gold else Cream)
-                        Secondary(rank.description)
+                        Text(r.name, style = MaterialTheme.typography.titleSmall)
+                        Secondary(r.sub)
+                        r.reason?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = if (r.action == AssignAction.NONE) Ember else Cream) }
                     }
-                    if (rank.canTake) InlineActionButton("Take rank", { onRank(rank) }, Modifier.testTag("guild_rank_${rank.rank}"), enabled = enabled)
+                    when (r.action) {
+                        AssignAction.RESERVE -> SecondaryActionButton("Keep", { a.send(Command.ReserveDefender(r.heroId, true)) }, Modifier.testTag("guild_reserve_${r.heroId.value}"), enabled = a.enabled)
+                        AssignAction.RELEASE -> InlineActionButton("Release", { a.send(Command.ReserveDefender(r.heroId, false)) }, Modifier.testTag("guild_reserve_${r.heroId.value}"), enabled = a.enabled)
+                        AssignAction.KEEP_HOME -> InlineActionButton("Keep home", {
+                            a.confirm(Confirm("Keep the party home?", "Today's planned contract is cancelled and its fee comes back. You can plan another this morning.", "Keep home", Command.CancelPlannedDeployment))
+                        }, Modifier.testTag("guild_keep_home_${r.heroId.value}"), enabled = a.enabled)
+                        AssignAction.NONE -> Unit
+                    }
                 }
             }
+            InlineActionButton("Done", onDismiss, Modifier.align(Alignment.End).testTag("guild_assign_done"))
         }
-        Block("Law of the season", r.law)
-        Block("The other guild", r.rival)
-        Block("Nemesis", r.nemesis)
-        Block("Chains you have seen", r.combos)
     }
 }
 
-/** A headed block of lines, the first of them the name; nothing when there is nothing to say. */
+/** A row's plate: the panel ground in a bronze line, as every tappable thing in the guild has it. */
+internal fun Modifier.guildCard(): Modifier = fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm)
+
+/** The hairline between rows of a list inside a part. */
 @Composable
-private fun Block(title: String, lines: List<String>) {
-    if (lines.isEmpty()) return
-    SectionHeader(title)
-    lines.forEachIndexed { i, line -> if (i == 0) Text(line, style = MaterialTheme.typography.bodyMedium) else Secondary(line) }
-}
+internal fun RowRule() = HorizontalDivider(color = BronzeLine.copy(alpha = 0.5f))

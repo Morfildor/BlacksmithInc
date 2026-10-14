@@ -25,10 +25,13 @@ import com.example.blacksmithproject.ui.theme.Space
  */
 @Composable
 fun RecordsPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifier) {
-    val page = s.records
+    // A classic run has Town for its people; a page kept from a guild run falls back to the Gazette.
+    val pages = if (s.guild != null) RecordsPage.entries else RecordsPage.entries - RecordsPage.TOWNSFOLK
+    val page = s.records.takeIf { it in pages } ?: RecordsPage.GAZETTE
     var bookTab by rememberSaveable { mutableStateOf(BookTab.METAL) }
+    var showGone by rememberSaveable { mutableStateOf(false) }
     Column(modifier.fillMaxSize().padding(horizontal = Space.md).padding(top = Space.sm)) {
-        SegmentRow(page, vm::selectRecords)
+        SegmentRow(page, vm::selectRecords, pages = pages)
         LazyColumn(
             Modifier.fillMaxSize().testTag("records_list"),
             state = rememberSaveable(page, bookTab, saver = LazyListState.Saver) { LazyListState() },
@@ -39,6 +42,7 @@ fun RecordsPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                 RecordsPage.GAZETTE -> item(key = "news") { Column { GazettePanel(s, vm) } }
                 RecordsPage.JOURNAL -> notebookItems(s, vm, bookTab) { bookTab = it }
                 RecordsPage.LEGACY -> legacyItems(s, vm)
+                RecordsPage.TOWNSFOLK -> townsfolkItems(s, vm, showGone) { showGone = !showGone }
             }
         }
     }

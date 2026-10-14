@@ -8,11 +8,9 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -23,8 +21,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -53,8 +49,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -80,7 +74,6 @@ import com.example.blacksmithproject.ui.detail.weaponSnapshot
 import com.example.blacksmithproject.ui.theme.Bronze
 import com.example.blacksmithproject.ui.theme.BronzeContainer
 import com.example.blacksmithproject.ui.theme.BronzeDeep
-import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.ForgePanel
 import com.example.blacksmithproject.ui.theme.Gold
@@ -154,7 +147,13 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
         },
     ) { padding -> positions.SaveableStateProvider(s.dest) {
         Column(Modifier.padding(padding).fillMaxSize()) {
-            TopBar(s, onSettings = { settingsOpen = true })
+            // The day and the siege, pinned over every destination in planning: the strip opens where the siege is prepared.
+            val header = remember(s.state, s.guild, s.shop.threat, s.forecast) { s.siegeHeader(vm.engine.config.siegeInterval, vm.engine.config.championCount) }
+            WorkshopHeader(
+                header, state.gold, state.energy, onSettings = { settingsOpen = true },
+                onOpenSiege = { if (s.guild != null) vm.openGuildWall() else vm.selectDest(Dest.TOWN) },
+                openLabel = if (s.guild != null) "Open the wall" else "Open Town",
+            )
             HorizontalDivider(color = Bronze)
             // The guided first day's one step, in the layout and never over it: nothing under it is covered or blocked.
             s.intro?.let { IntroStrip(it, onSkip = { vm.skipIntro() }, onDone = { vm.finishIntro() }) }
@@ -181,8 +180,8 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     onOpenStorage = { storageOpen = true },
                     onOpenNews = { vm.selectRecords(RecordsPage.GAZETTE) },
                     tip = tip?.let { { TipBanner(it, vm) } },
-                    // On the day itself the siege has its own row under the counter, so the strip does not say it twice.
-                    strip = if (s.shop.threat?.today == true) null else ({ ThreatStrip(s, "shop_threat", s.shop.threat?.note) { vm.selectDest(Dest.TOWN) } }),
+                    // The header owns the day and the countdown; once the siege is warned the Shop keeps who comes and what buyers now weigh.
+                    strip = s.shop.threat?.takeIf { it.warned && it.matchup != null }?.let { t -> { SiegeMatchup(t, "shop_threat", t.note) } },
                     // One voice: while the guided first day runs, its strip says what to do next; the lead comes back with the day's outcome.
                     showLead = s.intro?.last ?: true,
                     onOpenSupplies = { suppliesOpen = true },
@@ -330,10 +329,9 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
     }
 }
 
-/** The three segments of Records (News, Notebook, Legacy) as one row of exclusive buttons. */
+/** The segments of Records (News, Notebook, Legacy, and Town in a guild run) as one row of exclusive buttons. */
 @Composable
-fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier: Modifier = Modifier) {
-    val pages = RecordsPage.entries
+fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier: Modifier = Modifier, pages: List<RecordsPage> = RecordsPage.entries - RecordsPage.TOWNSFOLK) {
     SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth().padding(bottom = Space.sm)) {
         pages.forEachIndexed { i, p ->
             // These are pages, not a setting: no check mark. The chosen page is the lit bronze plate with gold lettering,
@@ -409,23 +407,28 @@ internal fun endDayNote(s: UiState.Playing): String {
     val offers = state.commissions.values.count { it.status == CommissionStatus.OFFERED }
     // A guild run: what End Day sets in motion for the guild (the party that leaves, tonight's siege and who stands, a checkpoint without word), under whatever still waits.
     val guild = s.guild?.endDay.orEmpty()
-    val note = when {
+    // What must be done before End Day does anything: said before the siege line, as the engine refuses End Day for it.
+    val blocker = when {
         // The engine refuses End Day until the guild's opening is chosen (`GameError.OpeningPending`).
         state.guild?.openingOffer?.isNotEmpty() == true -> "Choose how the guild begins first"
         state.pendingBlessingOffer.isNotEmpty() -> "Choose a blessing"
-        // The run can end tonight: said before anything else that waits. In a guild run the guild's own line says it, with who stands.
-        s.guild == null && s.shop.threat?.today == true -> "The siege starts after today's trading"
+        else -> null
+    }
+    // The siege is fought after the day's trading, never instead of it: said on the day, in every run, before what else waits.
+    val siege = "Trading first. The siege follows tonight.".takeIf { state.town.nextSiegeDay <= state.day }
+    val note = when {
+        blocker != null -> null
         // A visitor who waits, then a relic on offer: the words of the rule below. The guided first day keeps the relic
         // for later (it waits as long as it takes), so it is not put beside the step that says to end the day.
         s.encounter?.instance?.isOpen == true || (state.pendingRelicOffer.isNotEmpty() && s.intro == null) -> endDayNote(state, s.encounter)
         offers > 0 -> if (offers == 1) "1 unaccepted commission" else "$offers unaccepted commissions"
         state.overworkToday > 0 -> "You'll have ${state.overworkToday} less energy tomorrow"
         // What is merely left over is not said beside what the guild sets in motion.
-        guild.isNotEmpty() -> null
+        guild.isNotEmpty() || siege != null -> null
         state.energy > 0 -> "${state.energy} energy unused"
         else -> "Rest until dawn"
     }
-    return (listOfNotNull(note) + guild).joinToString("\n")
+    return (listOfNotNull(blocker, siege, note) + guild).joinToString("\n")
 }
 
 /** What End Day will leave behind, most pressing first. An unanswered visitor is told the free answer; an offer waits for another day. */
@@ -439,33 +442,8 @@ internal fun endDayNote(state: GameState, visitor: Encounters.View?): String = w
     else -> "Rest until dawn"
 }
 
-@Composable
-private fun TopBar(s: UiState.Playing, onSettings: () -> Unit) {
-    val st = s.state
-    Row(
-        Modifier.fillMaxWidth().background(ForgePanel).padding(start = Space.md, end = Space.xs),
-        horizontalArrangement = Arrangement.spacedBy(Space.lg),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Stat(R.drawable.icon_day, "Day", "Day ${st.day}")
-        Stat(R.drawable.icon_gold, "Gold", "${st.gold}", Gold)
-        Stat(R.drawable.icon_energy, "Energy", "${st.energy}")
-        Spacer(Modifier.weight(1f))
-        IconButton(onClick = onSettings, modifier = Modifier.size(48.dp).testTag("nav_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings", tint = Gold) }
-    }
-}
-
-@Composable
-private fun Stat(icon: Int, label: String, value: String, color: Color = Cream) {
-    Row(Modifier.semantics(mergeDescendants = true) { contentDescription = "$label $value" }, verticalAlignment = Alignment.CenterVertically) {
-        PixelImage(icon, wholePixelDp(24, 30.dp), description = null)
-        Spacer(Modifier.width(6.dp))
-        Text(value, style = MaterialTheme.typography.titleMedium, color = color, maxLines = 1)
-    }
-}
-
 /** The paper has one name everywhere: every link to this page says "Read the Gazette". */
-fun recordsPageName(p: RecordsPage) = when (p) { RecordsPage.GAZETTE -> "Gazette"; RecordsPage.JOURNAL -> "Notebook"; RecordsPage.LEGACY -> "Legacy" }
+fun recordsPageName(p: RecordsPage) = when (p) { RecordsPage.GAZETTE -> "Gazette"; RecordsPage.JOURNAL -> "Notebook"; RecordsPage.LEGACY -> "Legacy"; RecordsPage.TOWNSFOLK -> "Town" }
 
 fun destName(d: Dest) = when (d) { Dest.SHOP -> "Shop"; Dest.FORGE -> "Forge"; Dest.TOWN -> "Town"; Dest.RECORDS -> "Records" }
 

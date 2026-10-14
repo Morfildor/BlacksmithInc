@@ -76,6 +76,6 @@ no_charter_chosen && echo "CHECK next era without a charter chosen: ok" || echo 
 shot 03b_runend_no_charter
 tap "Begin era" || exit 1
 wait_text "Decide later" && tap "Decide later"
-wait_text "Day 1" && echo "CHECK next era started: ok" || echo "CHECK next era: FAIL"
+wait_text "DAY 1" && echo "CHECK next era started: ok" || echo "CHECK next era: FAIL"
 shot 04_next_era
 echo RUNEND_DONE
