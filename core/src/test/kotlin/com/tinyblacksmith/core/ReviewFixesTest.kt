@@ -120,6 +120,46 @@ class ReviewFixesTest {
         assertEquals(plain, Missions.fractureWear(ResolutionContext(over, content, engine.config)), "lapsed")
     }
 
+    // ---- row 34: a lower cap in a new balance clamps a save instead of refusing it ----
+
+    @Test fun `a save written under higher caps loads under lower ones, brought in line with a line, and keeps its other progress`() {
+        val e = TestSupport.engine
+        val s0 = e.newRun(LegacyProfile(), 7)
+        val strong = s0.heroes.values.first()
+        val saved = s0.copy(gold = 777, overworkToday = 4, town = s0.town.copy(armory = 20), heroes = s0.heroes + (strong.id to strong.copy(level = 12)))
+        assertEquals(emptyList(), Invariants.check(saved, e.config, e.shelfSlots(saved), e.content), "sound under the caps it was written with")
+        val lower = e.config.copy(armoryMax = 10, maxOverworkPerDay = 2, heroMaxLevel = 8)
+        val admitted = assertIs<com.tinyblacksmith.core.engine.Compatibility.Result.Admitted>(com.tinyblacksmith.core.engine.Compatibility.admit(saved, e.content, lower)).state
+        assertEquals(10, admitted.town.armory)
+        assertEquals(2, admitted.overworkToday)
+        assertEquals(8, admitted.hero(strong.id).level)
+        assertEquals(777, admitted.gold)
+        assertEquals(saved.weapons, admitted.weapons)
+        assertEquals(saved.materials, admitted.materials)
+        assertEquals(saved.rng, admitted.rng)
+        assertEquals(emptyList(), Invariants.check(admitted, lower, lower.shelfSlots, e.content))
+        val line = admitted.events.last().text
+        assertTrue(line.contains("armory") && line.contains("level"), line)
+        assertTrue(!line.contains(";") && !line.contains(" - "), line)
+        // Nothing over a cap: the save is admitted exactly as it was, stamps aside.
+        val plain = assertIs<com.tinyblacksmith.core.engine.Compatibility.Result.Admitted>(com.tinyblacksmith.core.engine.Compatibility.admit(saved, e.content, e.config)).state
+        assertEquals(saved.events, plain.events)
+    }
+
+    @Test fun `a guild over a lower roster cap lets its newest members at home go, their loans back in storage, and keeps the rest`() {
+        val s0 = run()
+        val newest = s0.guild!!.members.maxBy { it.joinedDay * 1000 + s0.guild!!.members.indexOf(it) }.heroId
+        val blade = CombatSandbox.blade("w900", LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN).copy(location = WeaponLocation.Loaned(newest))
+        val saved = s0.copy(weapons = s0.weapons + (blade.id to blade)).sound()
+        val cap = saved.guild!!.members.size - 1
+        val lower = engine.config.copy(guild = engine.config.guild.copy(maxMembers = cap))
+        val admitted = assertIs<com.tinyblacksmith.core.engine.Compatibility.Result.Admitted>(com.tinyblacksmith.core.engine.Compatibility.admit(saved, content, lower)).state
+        assertEquals(cap, admitted.guild!!.members.size)
+        assertTrue(newest !in admitted.members())
+        assertTrue(admitted.weapon(blade.id).isInStorage)
+        assertEquals(emptyList(), Invariants.check(admitted, lower, lower.shelfSlots, content))
+    }
+
     // ---- row 36a: an ignored blessing offer lapses ----
 
     private fun GameState.endDay(e: GameEngine = engine): GameState = send(Command.EndDay(TestSupport.endDayId(this)), e)
