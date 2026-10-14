@@ -134,7 +134,7 @@ fun EncounterContent(view: Encounters.View, state: GameState, busy: Boolean, onC
             }
         }
         if (view.options.none { it.id != Encounters.PASS && it.blocked == null }) Secondary("You can't take the other options today. The free option is still available.", Modifier.padding(top = Space.sm))
-        Secondary("No answer by End Day means ${view.defaultLabel.lowercase()}.", Modifier.padding(top = Space.sm).testTag("visitor_default"))
+        Secondary("If you don't answer by End Day: ${view.defaultLabel}.", Modifier.padding(top = Space.sm).testTag("visitor_default"))
 
         FlowRow(Modifier.fillMaxWidth().padding(top = Space.md), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
             PrimaryActionButton("Commit", { selected?.let { onCommit(it.id) } }, Modifier.weight(1f).testTag("visitor_commit"), enabled = selected != null && !busy)

@@ -242,8 +242,8 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
         m.bonds.forEach { Secondary(it) }
 
         if (m.branches.isNotEmpty()) {
-            SheetSection("A branch is open")
-            Secondary("Their deeds opened these. Choose one, or neither. A choice is kept.")
+            SheetSection("Choose a speciality")
+            Secondary("Their deeds have earned a speciality. Choose one of these, or leave it for later. The choice is permanent.")
             m.branches.forEach { b ->
                 Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                     Column(Modifier.weight(1f)) {
@@ -257,7 +257,7 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
 
         SheetSection("In a fight")
         m.numbers.forEach { (label, value) -> StatRow(label, value) }
-        if (m.rules.isEmpty()) Secondary("No rule of their own with this weapon.")
+        if (m.rules.isEmpty()) Secondary("No fight effects of their own with this weapon.")
         m.rules.forEach { (name, description) -> EffectRow(EffectKind.NEUTRAL, name, description) }
 
         SheetSection("Weapon")
@@ -270,7 +270,7 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
                 }
                 if (actions != null) InlineActionButton("Recall", { actions.onRecall(loan.weaponId) }, Modifier.testTag("sheet_recall"), enabled = actions.enabled && m.loanBlocked == null)
             }
-        } else Secondary(m.ownBlade?.let { "Carries their own $it. A loan takes its place while it lasts." } ?: "Unarmed. Loan them a weapon from storage.")
+        } else Secondary(m.ownBlade?.let { "Carries their own $it. A loaned weapon replaces it while the loan lasts." } ?: "Unarmed. Loan them a weapon from storage.")
         m.loanBlocked?.let { Secondary(it) }
         if (actions != null && m.loanBlocked == null) {
             if (m.loanable.isEmpty()) Secondary("Nothing in storage to loan.")

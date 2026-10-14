@@ -43,7 +43,7 @@ class BladeRulesUiTest {
     @Test
     fun aCapacitorSwordListsItsElementAndCatalystRulesInTheCatalogsWords() {
         val rules = bladeRules(CombatSandbox.capacitor, engine.content)
-        assertEquals("One clean strike.", rules.pattern)
+        assertEquals("One clean strike. 100% strike and support.", rules.pattern)
         assertEquals(listOf("Arc" to "element", "Capacitor" to "catalyst", "Charge burst" to "catalyst"), rules.road.map { it.name to it.source })
         assertEquals(CombatContent.CAPACITOR.description, rules.road.first { it.name == "Capacitor" }.description)
         assertTrue(rules.homeOnly.isEmpty())

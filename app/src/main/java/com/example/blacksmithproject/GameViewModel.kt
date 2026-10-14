@@ -347,7 +347,7 @@ class GameViewModel(
         } catch (e: Exception) {
             try {
                 Plan(engine.shopUi(run), null, null, emptyList()).also {
-                    local.update { l -> l.copy(notice = "Part of the workshop could not be read from this save. The forecast, the visitor and the guild's board are left out for today.") }
+                    local.update { l -> l.copy(notice = "Part of the workshop could not be read from this save. The siege forecast, the visitor, the relics and the quest board are hidden for today.") }
                 }
             } catch (inner: CancellationException) {
                 throw inner
@@ -604,7 +604,7 @@ class GameViewModel(
                 StockAction.Unlist -> "Moved $name to storage. It isn't for sale."
                 // Only what the hone changed: a first hone raises quality, any hone restores condition.
                 StockAction.Hone -> listOfNotNull(
-                    "Honed $name",
+                    (if (was?.honed == true) "Repaired $name" else "Upgraded $name"),
                     "Quality ${was?.quality} to ${blade.quality}".takeIf { was?.quality != blade.quality },
                     "Condition ${was?.condition} to ${blade.condition}".takeIf { was?.condition != blade.condition },
                 ).joinSentences()
@@ -818,10 +818,10 @@ class GameViewModel(
     /** Player-facing text for an engine error; the UI also uses it to explain disabled choices. */
     fun describe(e: GameError): String = when (e) {
         GameError.RunEnded -> "The forge has fallen. This era is over."
-        is GameError.NotEnoughEnergy -> "This needs ${e.needed} energy. You have ${e.available}, with ${e.overworkAvailable} overwork left."
+        is GameError.NotEnoughEnergy -> "This needs ${e.needed} energy. You have ${e.available}, and you can overwork by ${e.overworkAvailable} more today."
         is GameError.MissingMaterial -> "You're out of ${engine.content.material(e.materialId).name}."
         is GameError.UnknownContent -> "Unknown item ${e.id}."
-        is GameError.WrongMaterialCategory -> "${engine.content.material(e.materialId).name} is not a ${e.expected.lowercase()}."
+        is GameError.WrongMaterialCategory -> "${engine.content.material(e.materialId).name} is not " + when (e.expected) { "CORE" -> "a metal."; "AUGMENT" -> "an augment."; "CATALYST" -> "a catalyst."; else -> "the right kind of material." }
         is GameError.CatalystRequiresAdvanced -> "Catalysts need the Advanced Forge."
         is GameError.TechniqueRequiresAdvanced -> "Techniques need the Advanced Forge."
         is GameError.WeaponNotFound -> "That weapon is gone."
@@ -837,7 +837,7 @@ class GameViewModel(
         is GameError.AlreadyClaimed -> "You've already claimed this era's legacy."
         is GameError.NotEnoughLegacyPoints -> "This costs ${e.needed} legacy points. You have ${e.available}."
         is GameError.UpgradeMaxed -> "This upgrade is at maximum level."
-        is GameError.AlreadyHoned -> "That weapon has already been honed."
+        is GameError.AlreadyHoned -> "That weapon is already upgraded and in full condition."
         is GameError.ToolMaxed -> "This tool is at maximum level."
         GameError.ArmoryFull -> "The town watch armory is full."
         GameError.NoEncounter, is GameError.EncounterNotOpen -> "You've already answered this visitor."
@@ -854,11 +854,11 @@ class GameViewModel(
         is GameError.MemberUnavailable -> "${heroName(e.heroId)} ${e.reason}."
         is GameError.WeaponOnLoan -> "That weapon is on loan to ${heroName(e.heroId)}. Recall it first."
         is GameError.NotOnLoan -> "That weapon is not on loan."
-        is GameError.MissionNotOffered -> "That contract is no longer on the board."
+        is GameError.MissionNotOffered -> "That quest is no longer on the quest board."
         is GameError.PartyInvalid -> e.reason
         GameError.PartyAway -> "The party is still out."
         GameError.NoDeploymentPlanned -> "No party is planned for today."
-        GameError.NoMissionCheckpoint -> "The party is not waiting for word."
+        GameError.NoMissionCheckpoint -> "The party is not waiting for your choice."
         is GameError.MilestoneNotEarned -> "The charter is not secured yet."
         GameError.NoHeartfire -> "The forge holds no Heartfire."
         GameError.HeartfireRequiresAdvanced -> "Heartfire needs the Advanced Forge."

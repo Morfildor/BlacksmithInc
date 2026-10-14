@@ -76,8 +76,8 @@ fun benchUi(report: Bench.Report): BenchUi = BenchUi(
     report.fired.map { BenchFiredUi(it.rule.id, it.rule.effect.name, it.times, it.chain) },
     report.silent.map { BenchSilentUi(it.rule.id, it.rule.effect.name, it.why) },
     report.notTested.map { it.effect.name }, report.result,
-    elsewhere = if (report.home) "Only on a contract" else "Only on the town's wall",
-    elsewhereNote = if (report.home) "This rehearsal stands on the town's wall. Choose another line under Against to try these." else "This rehearsal stands on the road. Choose The town's wall under Against to try these.",
+    elsewhere = if (report.home) "Only on a quest" else "Only on the town's wall",
+    elsewhereNote = if (report.home) "This practice fight is on the town's wall. To try these effects, choose another enemy line under Against." else "This practice fight is on a quest. To try these effects, choose The town's wall under Against.",
 )
 
 /** The party relics the workshop holds, by ID: what a party leaving today would take along. The bench names them in its report. */
@@ -105,7 +105,7 @@ fun BenchSheet(weapon: Weapon, demonstration: Boolean, content: ContentCatalog, 
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }, color = MaterialTheme.colorScheme.background) {
             Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(Space.md).testTag("bench_sheet")) {
-                Text("The bench", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
+                Text("Practice fight", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
                 Text(ui.title, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.testTag("bench_title"))
 
                 BenchChoice("Carried by", "bench_wielder", content.classes.filter { it.id in combat.kitByClass }.map { Triple(it.id.value, it.name, null) }, wielder) { wielder = it }
@@ -114,13 +114,13 @@ fun BenchSheet(weapon: Weapon, demonstration: Boolean, content: ContentCatalog, 
 
                 // Everything made up is said before anything it produced.
                 Column(Modifier.fillMaxWidth().padding(top = Space.md).clip(Card).background(BronzeContainer).border(1.dp, Gold, Card).padding(12.dp).testTag("bench_synthetic")) {
-                    Text("This is a rehearsal", style = MaterialTheme.typography.titleSmall, color = Gold, modifier = Modifier.semantics { heading() })
+                    Text("This is a practice fight", style = MaterialTheme.typography.titleSmall, color = Gold, modifier = Modifier.semantics { heading() })
                     ui.synthetic.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs)) }
                 }
 
-                SectionHeader("What happened")
+                SectionHeader("Effects that triggered")
                 Column(Modifier.fillMaxWidth().testTag("bench_fired")) {
-                    if (ui.fired.isEmpty()) Secondary("None of its rules came into play.")
+                    if (ui.fired.isEmpty()) Secondary("None of its effects triggered.")
                     ui.fired.forEach { f ->
                         Column(Modifier.padding(top = Space.sm).semantics(mergeDescendants = true) {}) {
                             Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
@@ -133,9 +133,9 @@ fun BenchSheet(weapon: Weapon, demonstration: Boolean, content: ContentCatalog, 
                     }
                 }
 
-                SectionHeader("Waiting for its moment")
+                SectionHeader("Effects that did not trigger")
                 Column(Modifier.fillMaxWidth().testTag("bench_silent")) {
-                    if (ui.silent.isEmpty()) Secondary("Every rule it has here came into play.")
+                    if (ui.silent.isEmpty()) Secondary("Every effect it has here triggered.")
                     ui.silent.forEach { q ->
                         Column(Modifier.padding(top = Space.sm).semantics(mergeDescendants = true) {}) {
                             Text(q.name, style = MaterialTheme.typography.titleSmall, color = CreamMuted)

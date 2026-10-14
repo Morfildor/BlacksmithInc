@@ -56,7 +56,7 @@ enum class BookTab(val label: String, val empty: String) {
     METAL("Metal pairings", "Your first forge will add a metal pairing here."),
     WEAPON("Weapon pairings", "Your first forge will add a weapon pairing here."),
     CLUES("Recipe clues", "No recipe clues yet. Experiments and visitors can reveal them."),
-    FIGHTS("Fight notes", "No fight notes yet. Forge a weapon to learn the rules it follows in a fight."),
+    FIGHTS("Fight notes", "No fight notes yet. Forge a weapon to discover its effects in a fight."),
 }
 
 private val Tab = RoundedCornerShape(7.dp)
@@ -131,7 +131,7 @@ fun LazyListScope.notebookItems(s: UiState.Playing, vm: GameViewModel, chosen: B
         }
     }
     item(key = "book_try") {
-        SecondaryActionButton("Try a new pairing", vm::tryUntried, Modifier.fillMaxWidth().padding(top = Space.md).testTag("book_try"), detail = "Selects ingredients without spending anything.")
+        SecondaryActionButton("Try a new pairing", vm::tryUntried, Modifier.fillMaxWidth().padding(top = Space.md).testTag("book_try"), detail = "Puts a metal and an augment from your stock that you have never forged together on the workbench. Nothing is spent.")
     }
 }
 
@@ -148,7 +148,7 @@ private fun LazyListScope.fightNoteItems(notes: FightNotesUi) {
     }
     if (notes.learned.isNotEmpty()) item(key = "book_learned") {
         Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm).testTag("book_learned")) {
-            Text("Rules you have forged", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.semantics { heading() })
+            Text("Discovered weapon effects", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.semantics { heading() })
             notes.learned.forEach { r ->
                 Column(Modifier.padding(top = Space.sm).semantics(mergeDescendants = true) {}) {
                     Text(r.name, style = MaterialTheme.typography.titleSmall, color = Cream)
@@ -161,8 +161,8 @@ private fun LazyListScope.fightNoteItems(notes: FightNotesUi) {
         Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm).testTag("book_interaction_${p.id}").semantics(mergeDescendants = true) {}) {
             Text(p.name, style = MaterialTheme.typography.titleSmall, color = Cream)
             FightNoteKindLine(p.kind, p.description)
-            Text("Trade-off: ${p.tradeoff}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp))
-            if (p.known.isNotEmpty()) Text("You have forged: ${p.known.joinToString(", ")}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp))
+            Text("Drawback: ${p.tradeoff}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp))
+            if (p.known.isNotEmpty()) Text("Effects you have discovered: ${p.known.joinToString(", ")}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp))
         }
     }
     notes.hiddenLine?.let { line -> item(key = "book_hidden") { Secondary(line, Modifier.padding(top = Space.md).testTag("book_hidden")) } }
@@ -174,7 +174,7 @@ private fun FightNoteKindLine(kind: FightNoteKind, text: String) {
     Text(
         buildAnnotatedString {
             withStyle(SpanStyle(color = kind.color(), fontWeight = FontWeight.SemiBold)) { append("${kind.sign} ${kind.word}") }
-            append(" · $text")
+            append(": $text")
         },
         style = MaterialTheme.typography.bodySmall, color = CreamMuted,
     )
@@ -201,7 +201,7 @@ private fun PairingRow(p: PairingUi, onBench: Boolean, art: List<Int>, onUse: ()
             Text(
                 buildAnnotatedString {
                     withStyle(SpanStyle(color = p.state.color(), fontWeight = FontWeight.SemiBold)) { append(p.stage) }
-                    append(" · ${p.hint}")
+                    append(": ${p.hint}")
                 },
                 style = MaterialTheme.typography.bodySmall, color = CreamMuted,
             )

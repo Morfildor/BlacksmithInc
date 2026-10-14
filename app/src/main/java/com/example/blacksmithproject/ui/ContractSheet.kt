@@ -52,9 +52,9 @@ import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
 
 /**
- * One contract and the party for it: who goes (in the order they act), how they hold themselves, and what the kits and
- * blades of that party say before anybody leaves. Nothing is sent until "Send"; the plan can be changed or cancelled
- * all morning, and the fee comes back with it.
+ * One quest (code: contract) and the party for it: the situation, its timing and fee, who goes (in the order they act),
+ * the retreat rule (code: posture), and what the kits and weapons of that party say before anybody leaves. Nothing is
+ * sent until "Send the party"; the plan can be changed or cancelled until End Day, and the fee comes back with it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +62,7 @@ fun ContractSheet(
     state: GameState, engine: GameEngine, offerId: String, busy: Boolean,
     onSend: (List<HeroId>, Posture) -> Unit, onCancelPlan: () -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier,
 ) {
-    // Opened on today's plan when this contract is the one planned; otherwise on an empty party.
+    // Opened on today's plan when this quest is the one planned; otherwise on an empty party.
     val planned = state.guild?.planned?.takeIf { it.offerId == offerId }
     var picked by rememberSaveable(offerId) { mutableStateOf(planned?.heroIds.orEmpty().map { it.value }) }
     var posture by rememberSaveable(offerId) { mutableStateOf((planned?.posture ?: Posture.BALANCED).name) }
@@ -75,12 +75,16 @@ fun ContractSheet(
     ) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
             Text(ui.offer.title, style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-            Text(ui.offer.time, style = MaterialTheme.typography.bodyMedium)
+            ui.offer.why?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
+            Text(ui.offer.description, style = MaterialTheme.typography.bodyMedium)
+            ui.offer.modifier?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Cream) }
+            ui.offer.stake?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
+            Text(ui.offer.time, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs))
             ui.offer.missesSiege?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
             Secondary(ui.offer.fee)
 
             SectionHeader("The party")
-            Secondary("Up to ${ui.partyMax}. They act in the order you pick them.")
+            Secondary(if (ui.partyMax == 1) "1 member only." else "Up to ${ui.partyMax} members. They act in the order you pick them.")
             ui.picks.forEach { p ->
                 val full = p.order == null && ui.picks.count { it.order != null } >= ui.partyMax
                 val can = p.blocked == null && !full && !busy
@@ -101,7 +105,7 @@ fun ContractSheet(
                 }
             }
 
-            SectionHeader("Posture")
+            SectionHeader("Retreat rule")
             ui.postures.forEach { o ->
                 Column(
                     Modifier.fillMaxWidth().padding(top = Space.xs).background(if (o.selected) BronzeContainer else androidx.compose.ui.graphics.Color.Transparent, MaterialTheme.shapes.extraSmall)
@@ -114,30 +118,25 @@ fun ContractSheet(
                     Secondary(o.line)
                 }
             }
+            if (ui.retreatNote.isNotEmpty()) Secondary(ui.retreatNote, Modifier.padding(top = Space.xs))
 
             Statements("Works together", ui.together, EffectKind.BUFF, "contract_together")
             Statements("Watch out", ui.watchOut, EffectKind.FLAW, "contract_watch")
             SectionHeader("At home")
             Text(ui.atHome, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("contract_home"))
-            SectionHeader("Returns")
-            Text(ui.returns, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("contract_returns"))
-
-            SectionHeader("The contract")
-            ui.offer.stages.forEach { st ->
-                Text(st.label, style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.xs))
-                Text(st.reward, style = MaterialTheme.typography.bodyMedium)
-                Secondary("${st.objective} · ${st.danger}")
-                EnemyLines(st.enemies)
-            }
+            SectionHeader("The quest")
+            ui.offer.stages.forEach { st -> StageLines(st, Modifier.padding(top = Space.xs)) }
             Secondary("Bring: ${ui.offer.prep}", Modifier.padding(top = Space.sm))
             Secondary("If it fails: ${ui.offer.failure}")
 
+            // The missed siege is said again where the plan is confirmed.
+            ui.offer.missesSiege?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember, modifier = Modifier.padding(top = Space.md)) }
             ui.sendBlocked?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = Space.md).testTag("contract_blocked")) }
             PrimaryActionButton(
-                if (ui.planned) "Change the plan" else "Send", { onSend(ui.picks.filter { it.order != null }.sortedBy { it.order }.map { it.heroId }, Posture.valueOf(posture)) },
-                Modifier.fillMaxWidth().padding(top = Space.sm).testTag("contract_send"), enabled = !busy && ui.sendBlocked == null, detail = "Leaves at End Day",
+                if (ui.planned) "Change the plan" else "Send the party", { onSend(ui.picks.filter { it.order != null }.sortedBy { it.order }.map { it.heroId }, Posture.valueOf(posture)) },
+                Modifier.fillMaxWidth().padding(top = Space.sm).testTag("contract_send"), enabled = !busy && ui.sendBlocked == null, detail = "The party leaves at End Day",
             )
-            if (ui.planned) SecondaryActionButton("Cancel plan", onCancelPlan, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("contract_cancel"), enabled = !busy, detail = "The fee comes back")
+            if (ui.planned) SecondaryActionButton("Cancel the plan", onCancelPlan, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("contract_cancel"), enabled = !busy, detail = "The fee comes back")
             SecondaryActionButton("Close", onDismiss, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("sheet_close"))
         }
     }

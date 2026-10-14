@@ -115,8 +115,8 @@ fun GameEngine.introUi(record: IntroRecord?, state: GameState, dest: Dest, draft
             step, overline,
             IntroLine(
                 "Choose a weapon, a metal and an augment.",
-                if (onForge) "The metal sets its strength and the augment its element. How well they pair is learned by forging." else toForge,
-                "A costlier metal raises quality and power. Every pairing has a fit you cannot see yet. Your field notes fill in as you forge.",
+                if (onForge) "The metal sets its strength and the augment sets its element. You learn how well the two work together by forging them." else toForge,
+                "A more expensive metal gives more quality and power. Each metal and augment pair also has a hidden fit. Your Notebook records what you learn each time you forge.",
             ),
             mark = IntroMark.NAV_FORGE.takeIf { !onForge },
         )
@@ -127,24 +127,24 @@ fun GameEngine.introUi(record: IntroRecord?, state: GameState, dest: Dest, draft
                 step, overline,
                 IntroLine(
                     "Forge it.",
-                    if (onForge) "It costs $spends and one of each ingredient. Quality lands near what the recipe gives, sometimes above and sometimes below." else toForge,
-                    "Risk, below, sets how wide that swing is. Every forge gives a usable weapon, even a flawed one.",
+                    if (onForge) "It costs $spends and one of each ingredient. The quality lands close to what the recipe promises, sometimes a little higher and sometimes a little lower." else toForge,
+                    "The Risk choice on the workbench sets how far the quality can move. Every forge gives a usable weapon, even one with a flaw.",
                 ),
                 mark = if (onForge) IntroMark.FORGE else IntroMark.NAV_FORGE,
             )
         }
         IntroStep.LIST -> IntroUi(
             step, overline,
-            IntroLine("Put it on the shelf.", "Only listed weapons can sell. It is in Storage, on the Shop.", LIST_WHY),
+            IntroLine("Put it on the shelf.", "Your new weapon is in Storage, on the Shop. Open Storage and list it for sale.", LIST_WHY),
             mark = IntroMark.NAV_SHOP.takeIf { dest != Dest.SHOP },
-            result = IntroLine("List it for sale.", "Quality is your recipe plus this forge's roll. It sets power and the suggested price.", LIST_WHY),
+            result = IntroLine("List it for sale.", "Its quality comes from your recipe plus a random roll at the forge. Quality sets the weapon's power and its suggested price.", LIST_WHY),
         )
         IntroStep.SECOND -> IntroUi(
             step, overline,
             IntroLine(
                 "Forge one more, your way.",
                 if (onForge) "Change the metal or the augment, then compare the two results." else if (dest == Dest.SHOP) "Open the Forge to do this, or end the day here." else toForge,
-                "Optional. End the day whenever you are ready.",
+                "This step is optional. You can end the day whenever you are ready.",
             ),
             mark = IntroMark.NAV_FORGE.takeIf { !onForge },
         )
@@ -152,8 +152,8 @@ fun GameEngine.introUi(record: IntroRecord?, state: GameState, dest: Dest, draft
             step, overline,
             IntroLine(
                 "End the day.",
-                if (dest == Dest.SHOP) "The shop opens and heroes come in on their own. Then they go out to fight with what they carry." else "End Day is on the Shop.",
-                "A sale is never certain. A hero without a good weapon may not come back. The day's cards show what each hero did.",
+                if (dest == Dest.SHOP) "The shop opens and heroes come in to buy on their own. Then they go out to fight with the weapons they carry." else "The End Day button is on the Shop.",
+                "A sale is never certain. A hero without a good weapon may not come back from a fight. After End Day, the day's cards show what each hero did.",
             ),
             mark = if (dest == Dest.SHOP) IntroMark.END_DAY else IntroMark.NAV_SHOP,
         )
@@ -161,7 +161,7 @@ fun GameEngine.introUi(record: IntroRecord?, state: GameState, dest: Dest, draft
     }
 }
 
-private const val LIST_WHY = "Only listed weapons can sell. Heroes decide at End Day, and none can pay more than they carry."
+private const val LIST_WHY = "Only weapons on the shelf can sell. Heroes choose what to buy at End Day, and no hero can pay more gold than they carry."
 
 private const val NEXT_STEP = "Each morning, \"Worth doing first\" on the Shop names a useful next step."
 
@@ -178,14 +178,14 @@ internal fun dayOutcome(day: DayResolution): IntroLine {
     return when {
         sales.size == 1 -> IntroLine(head + "${day.shopWeapons.firstOrNull { it.weaponId == sales[0].purchasedWeaponId }?.name ?: "your weapon"} sold for $gold gold.", NEXT_STEP)
         sales.size > 1 -> IntroLine(head + "${sales.size} weapons sold for $gold gold.", NEXT_STEP)
-        day.shelfPrices.isEmpty() -> IntroLine(head + "nothing was on the shelf, so nothing could sell.", "List a weapon before the next End Day: Storage is on the Shop.")
+        day.shelfPrices.isEmpty() -> IntroLine(head + "nothing was on the shelf, so nothing could sell.", "List a weapon before the next End Day. Storage is on the Shop.")
         left.isEmpty() -> IntroLine(head + "no hero came in.", NEXT_STEP)
         else -> {
             val reasons = left.groupingBy { it.reason }.eachCount().entries.sortedWith(compareByDescending<Map.Entry<VisitReason, Int>> { it.value }.thenBy { it.key.ordinal })
                 .joinToString(", ") { "${it.value} ${Gazette.visitReason(it.key)}" }
             IntroLine(
                 head + if (left.size == 1) "one hero looked and did not buy." else "${left.size} heroes looked and none bought.",
-                "Why they left: $reasons. The Gazette, in Records, names each under \"All details\".",
+                "Why they left: $reasons. To see each hero by name, open the Gazette in Records and tap \"All details\".",
                 NEXT_STEP,
             )
         }
@@ -198,7 +198,7 @@ fun introRow(record: IntroRecord, startsNow: Boolean): IntroRowUi {
     return when (record.status) {
         IntroStatus.ACTIVE -> IntroRowUi("In progress in this run.", "Skip guidance")
         IntroStatus.QUEUED -> IntroRowUi("Starts with your next new game.", "Cancel")
-        IntroStatus.OFFERED -> IntroRowUi("Stopped before its end.", replay)
+        IntroStatus.OFFERED -> IntroRowUi("Stopped before the end.", replay)
         IntroStatus.COMPLETED -> IntroRowUi("Completed.", replay)
         IntroStatus.SKIPPED, IntroStatus.UNSET -> IntroRowUi("Off.", replay)
     }

@@ -188,7 +188,7 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     // The engine's rule (`Battle.selectChampions`): alive, not wounded, the three strongest against the besieger. Shown is
     // the engine's own pick as things stand today; the stored list is only filled by the first End Day.
     val fit = vm.engine.config.heroWoundedThreshold
-    Secondary("Your three strongest eligible heroes defend the walls. Each needs at least $fit health. The lineup may change before the siege.")
+    Secondary("The three heroes with the most power against these attackers defend the wall. Each needs at least $fit health. The choice can change before the siege.")
     val champions = forecast?.champions?.map { it.first } ?: st.town.championIds.mapNotNull { st.heroes[it] }
     val empty = "No other hero has enough health. This slot needs at least $fit."
     (0 until 3).forEach { i ->

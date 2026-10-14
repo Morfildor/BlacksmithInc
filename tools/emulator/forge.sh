@@ -89,17 +89,17 @@ swipe_up; shot 06_outlook_details_lower
 # 3. The bench for the recipe.
 scroll_to_id forge_bench_open && tap_id forge_bench_open
 wait_id bench_sheet; shot 07_bench_recipe
-check has "The bench"
+check has "Practice fight"
 tap_id bench_company_frost; shot 08_bench_recipe_frost
 scroll_to_id bench_target_attrition && tap_id bench_target_attrition; shot 09_bench_recipe_attrition
 # The town's wall: the labelled home-defence rehearsal.
 scroll_to_id bench_target_wall && tap_id bench_target_wall; shot 09b_bench_recipe_wall
-scroll_to_text "This is a rehearsal"
+scroll_to_text "This is a practice fight"
 check has_id bench_synthetic
-scroll_to_text "What happened"; shot 10_bench_recipe_what_happened
-check has "What happened"
-scroll_to_text "Waiting for its moment"; shot 11_bench_recipe_waiting
-check has "Waiting for its moment"
+scroll_to_text "Effects that triggered"; shot 10_bench_recipe_what_happened
+check has "Effects that triggered"
+scroll_to_text "Effects that did not trigger"; shot 11_bench_recipe_waiting
+check has "Effects that did not trigger"
 echo "--- bench (recipe)"; texts 80
 # Process recreation with the bench open: the app goes to the background, the system kills its process, the task is
 # brought back. The recipe on the anvil is saved instance state and comes back. (A force-stop is a different thing: it
@@ -139,7 +139,7 @@ check has_id card_bench_open
 # 5. The bench for the owned weapon.
 tap_id card_bench_open
 wait_id bench_sheet; shot 16_bench_owned
-check has "The bench"
+check has "Practice fight"
 tap_id bench_company_fire; swipe_up; shot 17_bench_owned_fire
 swipe_up; shot 17b_bench_owned_lower
 echo "--- bench (owned)"; texts 80

@@ -176,13 +176,13 @@ object WorldEvents {
                 ctx.worldFlags[FLAG_ORE_MERCHANT + m.id.value] = ctx.day + 1  // the morning's restock would overwrite stock added tonight
                 WorldEventOutcome(mapOf("material" to m.name, "materialId" to m.id.value))
             },
-            story = "An ore merchant arrived with {material} for sale.",
+            story = "An ore merchant passed through and left you some {material}. The supplier will have extra {material} for sale tomorrow.",
         ),
         // 2
         WorldEventDef(
             id = "caravan_delayed", name = "Trade Caravan Delayed", weight = 2.0, eligibility = { rareMaterials(it).isNotEmpty() }, maxPerRun = 4, cooldownDays = 3,
             apply = { ctx -> ctx.worldFlags[FLAG_CARAVAN_DELAYED] = ctx.day + 1; WorldEventOutcome() },
-            story = "The caravan is delayed in the mountains. The supplier gets no rare-material delivery tomorrow.",
+            story = "The trade caravan is stuck in the mountains. The supplier gets no rare materials tomorrow.",
         ),
         // 3
         WorldEventDef(
@@ -218,7 +218,7 @@ object WorldEvents {
                 ctx.commissions[id] = c
                 WorldEventOutcome(mapOf("hero" to buyer.fullName, "family" to ctx.content.family(family).name, "request" to Commissions.describe(c, ctx.content, config), "reward" to reward.toString(), "day" to c.deadlineDay.toString()), listOf(buyer.id.value, id.value))
             },
-            story = "{hero} brings a noble's order. A {request} by day {day}, for {reward} gold.",
+            story = "{hero} brings an order from a noble: a {request} by day {day}, for {reward} gold.",
         ),
         // 6
         WorldEventDef(
@@ -278,7 +278,7 @@ object WorldEvents {
                 ctx.town = ctx.town.copy(militia = minOf(ctx.config.militiaMax, ctx.town.militia + ctx.config.successfulPatrolMilitia))
                 WorldEventOutcome(mapOf("hero" to hero.fullName, "faction" to ctx.content.faction(f.id).name), listOf(hero.id.value))
             },
-            story = "{hero}'s patrol scattered {faction} scouts. Pressure on the town eased.",
+            story = "{hero}'s patrol scattered {faction} scouts. Their pressure on the town dropped, and the militia grew.",
         ),
         // 15
         WorldEventDef(
@@ -303,7 +303,7 @@ object WorldEvents {
                 ctx.emit(EventType.DISCOVERY, 1, "New notes on $subject. ${Journal.describeAffinity(Journal.affinityFor(ctx.content, key)).replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 WorldEventOutcome(mapOf("subject" to subject, "key" to key))
             },
-            story = "Old smithing notes turned up at the market. They describe {subject}.",
+            story = "Old smithing notes turned up at the market. They describe the pairing {subject}.",
         ),
         // 17
         WorldEventDef(
@@ -316,7 +316,7 @@ object WorldEvents {
                 ctx.emit(EventType.DISCOVERY, 1, "New notes on $subject. ${Journal.describeAffinity(Journal.affinityFor(ctx.content, key)).replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 WorldEventOutcome(mapOf("subject" to subject, "key" to key))
             },
-            story = "A traded alloy revealed something about {subject}.",
+            story = "A trader's alloy revealed something about the pairing {subject}. You also received some of both materials.",
         ),
         // 18
         WorldEventDef(
@@ -341,7 +341,7 @@ object WorldEvents {
                 ctx.emit(EventType.DISCOVERY, 3, "Pairing learned. $subject. ${label.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 WorldEventOutcome(mapOf("subject" to subject, "label" to label, "key" to key))
             },
-            story = "A master smith shared notes on {subject}. The pairing has {label}.",
+            story = "A master smith taught you the pairing {subject}: {label}.",
         ),
         // 20
         WorldEventDef(
@@ -393,7 +393,7 @@ object WorldEvents {
                 ctx.emit(EventType.ARTIFACT_RETURNED, 6, "${w.name}, ${legend.title}, has returned to the forge.", listOf(w.id.value), mapOf("era" to legend.era.toString(), "legend" to legend.key, "power" to power.toString()))
                 WorldEventOutcome(mapOf("weapon" to w.name, "title" to legend.title, "era" to legend.era.toString()), listOf(w.id.value))
             },
-            story = "{weapon}, known as {title} in era {era}, returned to the forge. Worn, with some properties dormant.",
+            story = "{weapon}, known as {title} in era {era}, returned to the forge. It is worn, and some of its properties stay dormant until you upgrade or repair it.",
         ),
         // 22
         WorldEventDef(
@@ -419,7 +419,7 @@ object WorldEvents {
                 val era = ctx.legacy.eras.lastOrNull()?.era ?: ctx.era
                 WorldEventOutcome(mapOf("era" to era.toString()))
             },
-            story = "A guild banner from era {era} flies over the walls again. The militia's morale improved.",
+            story = "A guild banner from era {era} flies over the walls again. The militia grew, and your reputation rose.",
         ),
         // 24
         WorldEventDef(
@@ -448,7 +448,7 @@ object WorldEvents {
         WorldEventDef(
             id = "ballad", name = "Ballad of the Blacksmith", weight = 1.5, eligibility = { "FIRST_SALE" in it.milestones }, maxPerRun = 3, cooldownDays = 5,
             apply = { ctx -> ctx.reputation += ctx.config.balladReputation; WorldEventOutcome() },
-            story = "A bard is singing about your forge in the taverns. Word is getting around.",
+            story = "A bard is singing about your forge in the taverns. Your reputation rose.",
         ),
     )
 }

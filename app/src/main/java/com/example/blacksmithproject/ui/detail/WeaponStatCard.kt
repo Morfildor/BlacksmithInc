@@ -134,7 +134,7 @@ fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxSc
             if (detail.signature) Text("Signature work", style = MaterialTheme.typography.labelMedium, color = Gold)
             // Why it is Legendary, and what its deeds have earned so far: said under the name, where the rarity is.
             detail.legend?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = rarityColor(Rarity.LEGENDARY), modifier = Modifier.testTag("card_legend")) }
-            detail.deeds?.let { Text("Deeds: $it", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.testTag("card_deeds")) }
+            detail.deeds?.let { Text("Deeds toward Legendary: $it", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.testTag("card_deeds")) }
         }
     }
     Column(Modifier.graphicsLayer { alpha = detailAlpha() }) { WeaponStatDetails(detail) }
@@ -179,18 +179,18 @@ private fun ColumnScope.WeaponStatDetails(detail: ItemDetail) {
 @Composable
 private fun ColumnScope.FightRules(rules: BladeRulesUi) {
     Column(Modifier.fillMaxWidth().testTag("card_fight")) {
-        SectionHeader("In a fight")
+        SectionHeader("Effects in a fight")
         // Where these rules are resolved: a townsperson's own outing is still settled by the blade's power alone.
-        Secondary("On a guild contract, and for whoever stands on the wall.")
+        Secondary("These work on guild quests, and for any hero who defends the town wall.")
         rules.pattern?.let { Secondary(it) }
-        if (rules.road.isEmpty() && rules.homeOnly.isEmpty()) Secondary("No rule of its own beyond the strike.")
+        if (rules.road.isEmpty() && rules.homeOnly.isEmpty()) Secondary("No effect of its own beyond its normal strike.")
         rules.road.forEach { EffectRow(EffectKind.NEUTRAL, it.heading, it.description) }
         if (rules.homeOnly.isNotEmpty()) {
             Text("Only when defending the town", style = MaterialTheme.typography.labelLarge, color = CreamMuted, modifier = Modifier.padding(top = Space.xs))
             rules.homeOnly.forEach { EffectRow(EffectKind.NEUTRAL, it.heading, it.description) }
         }
         if (rules.notes.isNotEmpty()) Column(Modifier.testTag("card_fight_notes")) {
-            Text("How its rules meet", style = MaterialTheme.typography.labelLarge, color = CreamMuted, modifier = Modifier.padding(top = Space.xs))
+            Text("How its effects work together", style = MaterialTheme.typography.labelLarge, color = CreamMuted, modifier = Modifier.padding(top = Space.xs))
             rules.notes.forEach { Secondary(it, Modifier.padding(top = 2.dp)) }
         }
     }

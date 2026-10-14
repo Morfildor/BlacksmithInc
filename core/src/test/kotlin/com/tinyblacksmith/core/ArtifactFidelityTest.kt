@@ -270,7 +270,7 @@ class ArtifactFidelityTest {
         val (s0, asleep) = returned(remembered)
         val hero = s0.aliveHeroes().first()
         assertEquals(1.0, Power.affixAttackMultiplier(asleep.copy(flaws = emptyList()), content), 1e-12, "asleep, they add nothing to a strike")
-        assertEquals("Dormant: ${entry.affixes.joinToString(", ") { content.affix(it).name }}. Hone it once to wake them.", Lines.dormant(asleep.dormantAffixes, content))
+        assertEquals("Dormant: ${entry.affixes.joinToString(", ") { content.affix(it).name }}. Upgrade or repair the weapon to restore them.", Lines.dormant(asleep.dormantAffixes, content))
         assertEquals(asleep.dormantAffixes, WeaponSnapshot.of(asleep).dormantAffixes, "the counter's snapshot carries the marker")
         assertTrue(Power.attackPower(hero, asleep, content.factions.first(), content, config) > 0)
 
@@ -287,7 +287,7 @@ class ArtifactFidelityTest {
         assertEquals(entry.affixes.joinToString(",") { it.value }, honed.data["woke"])
         assertTrue("Dormant properties restored" in honed.text)
         assertNull(Lines.dormant(awake.dormantAffixes, content))
-        assertTrue(Lines.story(awake, out.state.era).last().endsWith("Honing restored dormant properties. ${entry.affixes.joinToString(", ") { content.affix(it).name }}."))
+        assertTrue(Lines.story(awake, out.state.era).last().endsWith("The work restored dormant properties. ${entry.affixes.joinToString(", ") { content.affix(it).name }}."))
         // Waking happens once: a later hone of the worn blade restores its edge and nothing else.
         val worn = out.state.copy(weapons = mapOf(awake.id to awake.copy(condition = 40)), materials = out.state.materials + (awake.coreId to 1), energy = 10)
         val again = worn.accepted(Command.Hone(awake.id))

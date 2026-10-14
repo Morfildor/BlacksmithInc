@@ -260,7 +260,7 @@ object Battle {
         val number = ctx.town.siegesSurvived + ctx.town.siegesLost + 1
         val drawn = if (ctx.content.siegeTraits.isEmpty() || number < cfg.firstTraitSiege) null else ctx.rng(RngStream.ENCOUNTERS).let { if (it.chance(cfg.traitChance)) it.pick(ctx.content.siegeTraits) else null }
         ctx.siege = SiegeScenario(ctx.town.nextSiegeDay, drawn?.id)
-        if (drawn != null) ctx.emit(EventType.SIEGE_TRAIT, 6, "Scouts expect ${drawn.name.lowercase()} on day ${ctx.town.nextSiegeDay}. ${drawn.description}", data = mapOf("trait" to drawn.id, "day" to ctx.town.nextSiegeDay.toString()))
+        if (drawn != null) ctx.emit(EventType.SIEGE_TRAIT, 6, "Scouts report a siege trait for day ${ctx.town.nextSiegeDay}: ${drawn.name}. ${drawn.description}", data = mapOf("trait" to drawn.id, "day" to ctx.town.nextSiegeDay.toString()))
     }
 
     fun outlook(ctx: ResolutionContext, siegeDay: Int): SiegeOutlook? {
@@ -306,7 +306,7 @@ object Battle {
         if (ctx.town.militia > 0) rounds += CombatRound("Town militia", faction.siegeName, o.militia.roundToInt(), "holds the gate")
         if (ctx.town.armory > 0) rounds += CombatRound("Town watch", faction.siegeName, o.armory.roundToInt(), "fights with weapons donated by the forge")
         rounds += CombatRound(faction.siegeName, "the forge", forgeDamage, if (won) "is driven off" else "breaks through")
-        val championNames = champions.joinToString(", ") { it.first.fullName }.ifEmpty { "no champion" }
+        val championNames = champions.joinToString(", ") { it.first.fullName }.ifEmpty { "no hero" }
         ctx.replays += CombatReplay("Siege of Emberfall, day ${ctx.day}", ctx.day, rounds, if (won) "Town held" else "Defenses broken")
 
         ctx.town = ctx.town.copy(integrity = ctx.town.integrity - forgeDamage, championIds = champions.map { it.first.id }, nextSiegeDay = ctx.town.nextSiegeDay + config.siegeInterval,
@@ -317,7 +317,7 @@ object Battle {
         if (won) {
             ctx.town = ctx.town.copy(siegesSurvived = ctx.town.siegesSurvived + 1)
             ctx.factions[factionState.id] = factionState.copy(pressure = maxOf(0, factionState.pressure - config.siegeWinPressureDrop - (if (o.warlord) config.warlordPressureDrop else 0)))
-            val held = ctx.emit(EventType.SIEGE_WON, 9, "Emberfall held against $attacker. $championNames defended the walls.", champions.map { it.first.id.value },
+            val held = ctx.emit(EventType.SIEGE_WON, 9, "Emberfall held against $attacker. ${championNames.replaceFirstChar { it.uppercase() }} defended the walls.", champions.map { it.first.id.value },
                 mapOf("raidPower" to raidPower.roundToInt().toString(), "townDefense" to townDefense.roundToInt().toString(), "attacker" to attacker) + traitData(o))
             for ((h, w) in champions) {
                 val hero = ctx.hero(h.id)
@@ -395,7 +395,7 @@ object Battle {
         if (ctx.day < last) return
         ctx.pendingBlessingOffer = emptyList()
         ctx.worldFlags.remove(FLAG_BLESSING_OFFER)
-        ctx.emit(EventType.BLESSING_OFFERED, 2, "Nobody answered the town's offer of a blessing, so it was withdrawn.", data = mapOf("lapsed" to "true"))
+        ctx.emit(EventType.BLESSING_OFFERED, 2, "The town withdrew its offer of a blessing because nobody chose one.", data = mapOf("lapsed" to "true"))
     }
 
     /**
@@ -421,8 +421,8 @@ object Battle {
             val f = besieger(ctx) ?: return
             val def = ctx.content.faction(f.id)
             val led = if (def.warlordName != null && f.pressure >= ctx.config.warlordPressure) " ${def.warlordName} leads them." else ""
-            val weak = def.weakTo?.let { " ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }} weapons are especially effective against them." } ?: ""
-            ctx.emit(EventType.SIEGE_WARNING, 6, "${def.name} will attack on day ${ctx.town.nextSiegeDay}. Current pressure is ${describePressure(f.pressure)}.$led$weak${trait(ctx)?.let { " Expect ${it.name.lowercase()}." }.orEmpty()}", data = mapOf("day" to ctx.town.nextSiegeDay.toString(), "faction" to def.name) +
+            val weak = def.weakTo?.let { " They are weak to ${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }} weapons." } ?: ""
+            ctx.emit(EventType.SIEGE_WARNING, 6, "${def.name} will attack on day ${ctx.town.nextSiegeDay}. Their pressure: ${describePressure(f.pressure)}.$led$weak${trait(ctx)?.let { " Siege trait: ${it.name}." }.orEmpty()}", data = mapOf("day" to ctx.town.nextSiegeDay.toString(), "faction" to def.name) +
                 (def.weakTo?.let { mapOf("weak" to it.name.lowercase()) } ?: emptyMap()) + (trait(ctx)?.let { mapOf("trait" to it.id) } ?: emptyMap()))
         }
     }

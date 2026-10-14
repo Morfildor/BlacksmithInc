@@ -1,5 +1,25 @@
 # Progress — 2026-10-14 (deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Clarity and writing pass (2026-10-14, cloud session, branch `ccr-c5322aa6-aziw2s`, not committed)
+
+Every player-facing string in `:core` and `:app` was reviewed and rewritten where it was unclear, in eight file groups
+(combat, guild content, guild screens, visitors and world, crafting, forge screens, reports, onboarding). Guide and
+glossary: `docs/WRITING_GUIDE.md` (section 4 is the coverage checklist and the open items). Terms and the disclosure
+rule: `docs/GDD_REVISION_2026-10-14.md`. Rulings: DECISIONS, "Clarity and writing pass". CHANGELOG `[Unreleased]`.
+
+**Checks run.** `:core:test` 631 tests, 0 failures (before and after; 13 assertions of old wording updated, content 6
+fingerprint re-pinned for two display fields). `:core:scenarios` rewrote the 39 debug saves; a JSON comparison shows
+they differ from HEAD only in text. A parse check (ktlint) of every `app/src/main` and `app/src/test` Kotlin file.
+
+**Not run here (no Android SDK in the cloud container, Google's Maven blocked):** `:app:assembleDebug`,
+`:app:testDebugUnitTest` (assertions of changed wording were updated by hand in GuildUiTest, RunVarietyUiTest,
+CharterBulletsTest, GuildEveningTest, ForgeLearningTest, DeepForgingUiTest, NavigationTest, BladeRulesUiTest), the
+instrumented suite, the emulator scripts (`forge.sh`, `runvariety.sh`, `journey.sh` updated for new text), and every
+rendered screen: nothing was seen at narrow width or large text. **Next actions:** on the owner's machine run
+`:app:testDebugUnitTest` and `:app:assembleDebug` first (the app was not compiled), then look at a complex weapon sheet,
+the quest sheet (stage rows and retreat rules are longer now), a visitor, the Notebook, a busy shop day and the guided
+first day at font scale 1.0 and 2.0.
+
 ## Implementing the 2026-10-14 review (in progress, branch `review-2026-10-14`)
 
 Owner decisions A to M are in DECISIONS ("Owner decisions on the 2026-10-14 review"). Done and committed so far: plan items 6 and 7

@@ -171,7 +171,7 @@ fun ForgeResultCard(
         }
         WeaponStatBody(fresh, overSprite, detailAlpha = { shown })
         // What the rarity word buys, said once where a weapon is first seen (`Forge.kt`: the base slots per rarity).
-        Secondary("Rarity sets how many properties it holds: none below Rare, Rare one, Epic two, Legendary three. Some forges add more.", Modifier.padding(top = Space.xs).graphicsLayer { alpha = shown })
+        Secondary("Rarity sets how many properties it holds: none below Rare, Rare one, Epic two, Legendary three. Some forging choices add more.", Modifier.padding(top = Space.xs).graphicsLayer { alpha = shown })
         // What this forge added to the notebook; absent on a result reopened later, where "new" could no longer be told.
         learning?.let { LearningCard(it, Modifier.padding(top = Space.sm)) }
         Secondary(recipe, Modifier.padding(top = Space.md).graphicsLayer { alpha = shown })

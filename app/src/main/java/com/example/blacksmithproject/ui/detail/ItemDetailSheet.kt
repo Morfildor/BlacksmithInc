@@ -261,11 +261,11 @@ private fun whereabouts(state: GameState, w: Weapon): Fact = when (val l = w.loc
 private fun GameEngine.recipe(shown: WeaponSnapshot, w: Weapon?): List<Fact> {
     fun material(id: com.tinyblacksmith.core.model.MaterialId) = content.materialById[id]?.name ?: id.value
     return listOfNotNull(
-        Fact("Family", content.familyById[shown.familyId]?.name ?: shown.familyId.value),
-        Fact("Core", material(shown.coreId)),
+        Fact("Weapon type", content.familyById[shown.familyId]?.name ?: shown.familyId.value),
+        Fact("Metal", material(shown.coreId)),
         Fact("Augment", material(shown.augmentId)),
         w?.catalystId?.let { Fact("Catalyst", material(it)) },
-        w?.let { Fact("Method", "${it.mode.name.lowercase().replaceFirstChar { c -> c.uppercase() }} forge, ${it.risk.name.lowercase()} risk" + if (it.honed) ", honed" else "") },
+        w?.let { Fact("Method", "${it.mode.name.lowercase().replaceFirstChar { c -> c.uppercase() }} forge, ${it.risk.name.lowercase()} risk" + if (it.honed) ", upgraded" else "") },
         w?.let { Fact("Forged", "Era ${it.forgedEra}, day ${it.forgedDay}") },
         shown.signatureId?.let { Fact("Signature", w?.history?.firstOrNull { it.kind == "SIGNATURE" }?.text ?: "A signature work") },
     )
@@ -282,7 +282,8 @@ private fun GameEngine.stock(state: GameState, w: Weapon): Stock {
         slots = shelfSlots(state),
         // With the Salvager's Crucible ready and a blade fine enough, the engine also gives the augment back.
         salvage = "Salvage (${config.salvageEnergy} energy, returns 1 $core" + (if (salvageKeepsAugment(state, w)) ", also returns ${content.materialById[w.augmentId]?.name ?: w.augmentId.value}" else "") + ")",
-        hone = if (!w.canBeHoned) "Honed" else "${if (w.honed) "Re-hone" else "Hone"} (${config.honeEnergy} energy, 1 $core)",
+        // The first hone is the upgrade (quality and condition), every later one a repair (condition only): `GameEngine.hone`.
+        hone = if (!w.canBeHoned) "Upgraded" else if (w.honed) "Repair (${config.honeEnergy} energy, 1 $core)" else "Upgrade (${config.honeEnergy} energy, 1 $core" + minOf(config.honeQualityBonus, 100 - w.quality).let { if (it > 0) ", +$it quality)" else ")" },
         canHone = w.canBeHoned,
         donate = if (room > 0) "Arm the watch (+${minOf(armoryValue(w), room)} defense)" else "Arm the watch (armory full)",
         canDonate = room > 0,
@@ -339,7 +340,7 @@ fun ItemDetailContent(
     Column(modifier.fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
         WeaponStatCard(detail)
         // Right under the card's "In a fight": the rules above, tried in a rehearsal that changes nothing.
-        if (detail.rules != null && onBench != null) SecondaryActionButton("Try it on the bench", onBench, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("card_bench_open"))
+        if (detail.rules != null && onBench != null) SecondaryActionButton("Try it in a practice fight", onBench, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("card_bench_open"))
         FactBlock(AT_THE_COUNTER.takeIf { detail.counter.isNotEmpty() }, detail.counter, "sheet_counter", onOpenHero, onOpenItem = {})
         // The card already says the whole blade; "then and now" in words stays only for a blade that has changed since.
         val onCard = setOf("Rarity", "Title") + detail.stats.map { it.label }
@@ -379,8 +380,8 @@ private fun LoanSection(blade: String, loan: LoanUi, enabled: Boolean, onStock: 
     var picking by rememberSaveable { mutableStateOf(false) }
     SheetSection("Guild")
     if (loan.holder != null) {
-        Text("On loan to ${loan.holder}: recall it first to list, hone, salvage or give it away.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("item_on_loan"))
-        loan.recallBlocked?.let { Secondary("$it: it cannot be recalled today.", Modifier.testTag("item_recall_blocked")) }
+        Text("On loan to ${loan.holder}. Recall it first to list, upgrade, repair, salvage or give it away.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("item_on_loan"))
+        loan.recallBlocked?.let { Secondary("$it, so it cannot be recalled today.", Modifier.testTag("item_recall_blocked")) }
         SecondaryActionButton(
             "Recall to storage", { onStock(StockAction.Recall) },
             Modifier.padding(top = Space.sm).heightIn(min = 48.dp).testTag("item_recall").semantics { loan.recallBlocked?.let { contentDescription = "Recall to storage, unavailable: $it" } },

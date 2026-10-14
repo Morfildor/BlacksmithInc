@@ -152,7 +152,7 @@ object GuildOps {
             val augment = ctx.content.material(w.augmentId)
             Weapon(id, com.tinyblacksmith.core.crafting.Forge.weaponName(ctx.content, w.familyId, w.coreId, emptyList()), w.familyId, w.coreId, w.augmentId, null, ForgeMode.QUICK, Risk.RECKLESS, w.quality,
                 com.tinyblacksmith.core.crafting.Forge.forgedRarity(w.quality, ctx.config, core.tier), com.tinyblacksmith.core.crafting.Forge.powerOf(ctx.content, ctx.config, w.familyId, w.coreId, w.quality, listOf(w.flaw)), augment.element, emptyList(), listOf(w.flaw),
-                WeaponLocation.Storage, ctx.era, ctx.day, history = listOf(HistoryEntry(ctx.era, ctx.day, "FORGED", "Came with the guild's opening. ${core.name} and ${augment.name}, and a flaw somebody meant.")), craft = com.tinyblacksmith.core.crafting.WeaponRules.CRAFT)
+                WeaponLocation.Storage, ctx.era, ctx.day, history = listOf(HistoryEntry(ctx.era, ctx.day, "FORGED", "Came with the guild's opening: ${core.name} and ${augment.name}, with a flaw put there on purpose.")), craft = com.tinyblacksmith.core.crafting.WeaponRules.CRAFT)
                 .also { ctx.updateWeapon(it) }
         }
         announce(ctx, charter)
@@ -268,7 +268,7 @@ object GuildOps {
         if (heroId in g.reserved) return null
         if (m.status != MemberStatus.HOME) return GameError.MemberUnavailable(heroId, "is not in town")
         if (g.planned?.heroIds?.contains(heroId) == true) return GameError.MemberUnavailable(heroId, "is in the party you planned for today")
-        if (g.reserved.size >= ctx.config.guild.defenders) return GameError.PartyInvalid("Only ${ctx.config.guild.defenders} places on the wall.")
+        if (g.reserved.size >= ctx.config.guild.defenders) return GameError.PartyInvalid("The wall has only ${ctx.config.guild.defenders} places.")
         update(ctx) { it.copy(reserved = it.reserved + heroId) }
         return null
     }

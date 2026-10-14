@@ -148,7 +148,7 @@ sealed interface Beat {
         override val gone: Set<WeaponId> get() = emptySet()
     }
     /** The party's day: it waits for the player at any speed, like the siege. */
-    @Immutable data class Contract(val contract: ContractUi, override val progress: String = "The guild's contract") : Beat {
+    @Immutable data class Contract(val contract: ContractUi, override val progress: String = "The guild's quest") : Beat {
         override val millis get() = 0
         override val gone: Set<WeaponId> get() = emptySet()
     }
@@ -206,7 +206,7 @@ private fun incomeLabel(kind: IncomeKind): String = when (kind) {
     IncomeKind.COMMISSION -> "Commissions"
     IncomeKind.COLLECTOR -> "Collector"
     IncomeKind.TRIBUTE -> "Tribute from the town"
-    IncomeKind.CONTRACT -> "Guild contracts"
+    IncomeKind.CONTRACT -> "Guild quests"
     IncomeKind.INSURANCE -> "Insurance"
 }
 
@@ -223,7 +223,7 @@ private fun aftermathLabel(kind: AftermathKind): String = when (kind) {
     AftermathKind.GUILD_LESSON -> "At the guild hall"
     AftermathKind.SCARCE_LOOT -> "Brought back"
     AftermathKind.BLADE_GONE -> "A weapon lost"
-    AftermathKind.LOSS -> "Driven back"
+    AftermathKind.LOSS -> "Retreated"
     AftermathKind.FIELD_SUMMARY -> "Out in the field"
 }
 
@@ -300,11 +300,11 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
             ContractUi(
                 title = m.title, party = m.party.map { face(it) },
                 outcome = when {
-                    m.outcome == MissionOutcome.RETREATED -> "Pulled back"
-                    m.outcome == MissionOutcome.LOST -> "Beaten"
-                    !m.continues -> "Finished"
-                    checkpoint -> "Won the first stage. The smith decides in the morning"
-                    else -> "Won the first day. The party presses on tomorrow"
+                    m.outcome == MissionOutcome.RETREATED -> "Retreated"
+                    m.outcome == MissionOutcome.LOST -> "Defeated"
+                    !m.continues -> "Quest won"
+                    checkpoint -> "Won the first stage. In the morning, choose: go deeper or return"
+                    else -> "Won today's stage. The party continues tomorrow"
                 },
                 result = m.outcome, continues = m.continues,
                 highlights = m.fight?.highlights.orEmpty().take(HIGHLIGHTS_SHOWN).map { it.text }, lines = m.lines, fight = m.fight,

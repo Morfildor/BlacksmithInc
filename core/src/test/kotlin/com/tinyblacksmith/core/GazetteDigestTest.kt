@@ -153,7 +153,7 @@ class GazetteDigestTest {
         val fresh = digest(listOf(warning))
         val story = fresh.stories.single()
         assertEquals("Siege on day 9", story.heading)
-        assertEquals("Ashclaw Raiders, weak to frost. ${trait.description.substringBefore(". ")}.", story.body)
+        assertEquals("Attackers: Ashclaw Raiders. They are weak to frost. ${trait.description.substringBefore(". ").removeSuffix(".")}.", story.body)
         assertTrue(digest(listOf(warning), warnedBefore = setOf("9")).isQuiet, "the same siege again is a reminder")
         assertEquals(1, digest(listOf(warning), warnedBefore = setOf("5")).stories.size, "a warning for another siege is news")
     }

@@ -357,7 +357,7 @@ class RunVarietyTest {
         val (once, said) = gold(s, listOf(s.day))
         val (thrice, _) = gold(s, listOf(s.day, s.day, s.day))
         assertNull(noReason)
-        assertTrue(said!!.contains("lighter"))
+        assertTrue(said!!.contains("carries less"))
         assertTrue(fresh > once && once > thrice && thrice > 0, "$fresh $once $thrice")
         assertEquals(fresh, gold(s.copy(day = s.day + config.guild.supplyMemoryDays), listOf(s.day)).first, "the road recovers")
         // It does not grow with the day either: a supply run on day 20 pays what one on day 1 pays.

@@ -32,7 +32,9 @@ class VersionFingerprintTest {
         // Re-pinned while rules 6 is unreleased (from d047912e...): four contract modifiers that change the decision and their fields, the watch on a rescue, a second class a charter offers, Licensed Bad Ideas, three opening drawbacks in gold, the Hunt's numbers.
         // 6, re-pinned while unreleased: with the deep forging catalog (a fight rule for each metal, ingredient notes, interaction paths, Void Ink and Dragon Oil rewritten for new weapons).
         // 6, re-pinned for the fingerprint only (from 03d44c0f...): an opening's `costNote` is display text, hashed by presence like `pitch`. No number moved.
-        6 to "d6a80e4ee6492445f38eda0b3cc79690578c0416323208e49b978c13f4b1cf9f",
+        // 6, re-pinned for the fingerprint only (from d6a80e4e...): the clarity pass (docs/WRITING_GUIDE.md) reworded a siege preparation's
+        // `counters` and an opening's `plan`, so those and the other display fields of both (`sabotageBrief`, `build`, `drawback`) are hashed by presence. No number moved.
+        6 to "e7b92b4c8e53f4487e3ec993171bff0389e8bfdf2c59b554519d6c19c836135a",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
@@ -58,7 +60,7 @@ class VersionFingerprintTest {
         15 to "bbbca78a45d05a0dfaf682e4acee49cf37964560d036ce7503f3cd6bf05746fa",
     )
 
-    private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where", "costNote")
+    private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where", "costNote", "counters", "sabotageBrief", "plan", "build", "drawback")
 
     private fun canonical(value: Any?, field: String? = null): String = when (value) {
         null -> "null"

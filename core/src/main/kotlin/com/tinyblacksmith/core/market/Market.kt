@@ -446,7 +446,7 @@ object Market {
                 release(ctx, c)
                 ctx.commissions[c.id] = c.copy(status = CommissionStatus.EXPIRED)
                 ctx.reputation = maxOf(0, ctx.reputation - ctx.config.customers.commissionExpiredReputation)
-                ctx.emit(EventType.COMMISSION_EXPIRED, 2, "${buyer.fullName}'s ${ctx.content.family(c.familyId).name} order expired without a delivery.", listOf(buyer.id.value, c.id.value))
+                ctx.emit(EventType.COMMISSION_EXPIRED, 2, "${buyer.fullName}'s ${ctx.content.family(c.familyId).name} commission expired without a delivery.", listOf(buyer.id.value, c.id.value))
             }
         }
         // Offered-but-unaccepted commissions quietly lapse at their deadline.

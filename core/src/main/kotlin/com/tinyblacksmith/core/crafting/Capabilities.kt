@@ -221,8 +221,8 @@ object Capabilities {
                 fact(Verb.PROVIDES, Res.of(a.stat), at, amount = a.amount)
                 // The fight's own rules, which no effect states.
                 when {
-                    a.stat == Stat.REGEN -> fact(Verb.PROVIDES, Res.HEALING, at, source = Res.REGEN, more = listOf(Need.Circumstance("Regeneration mends only somebody who has been hurt.")), engine = true)
-                    a.stat == Stat.THORNS -> fact(Verb.PROVIDES, Res.DAMAGE, On.FOE, source = Res.THORNS, more = listOf(Need.Circumstance("Thorns answer the next enemy that strikes their holder.")), engine = true)
+                    a.stat == Stat.REGEN -> fact(Verb.PROVIDES, Res.HEALING, at, source = Res.REGEN, more = listOf(Need.Circumstance("Regeneration heals only a fighter who has lost health.")), engine = true)
+                    a.stat == Stat.THORNS -> fact(Verb.PROVIDES, Res.DAMAGE, On.FOE, source = Res.THORNS, more = listOf(Need.Circumstance("Thorns damage the next enemy whose attack hits their holder.")), engine = true)
                     a.stat == Stat.BURN && !at.party -> fact(Verb.PROVIDES, Res.STEAM, On.SELF, source = Res.BURN, more = listOf(Need.Present(setOf(Res.CHILL, Res.WET), Place.FOE)), engine = true)
                     a.stat == Stat.CHILL && !at.party -> fact(Verb.PROVIDES, Res.STEAM, On.SELF, source = Res.CHILL, more = listOf(Need.Present(setOf(Res.BURN), Place.FOE)), engine = true)
                 }
@@ -324,11 +324,11 @@ object Capabilities {
 
     private fun reason(q: Query): String = when (q) {
         is Query.Generates -> "Nothing on it makes ${q.res.word}${mapOf(Place.WIELDER to " for the wielder", Place.PARTY to " for the party", Place.FOE to " on an enemy")[q.place].orEmpty()}."
-        is Query.Spends -> "Nothing on it spends ${q.res.word}."
-        Query.ProtectsAnother -> "Nothing on it shields or mends anybody but the wielder."
+        is Query.Spends -> "Nothing on it consumes ${q.res.word}."
+        Query.ProtectsAnother -> "Nothing on it gives Guard or healing to anybody but the wielder."
         is Query.Requires -> "Nothing on it waits for ${q.res.word}."
         is Query.Converts -> "Nothing on it turns ${q.from.word} into ${q.to.word}."
-        Query.ReachesBackline -> "Nothing on it strikes past the enemy in front. A Mark on the enemy at the back would draw the party's hits there."
+        Query.ReachesBackline -> "Nothing on it hits past the front enemy. A Mark on the back enemy would make the party attack that enemy first."
     }
 
     /**
@@ -389,7 +389,7 @@ object Capabilities {
             Res.FRACTURE in need.any -> "A weapon in the party that cracks."
             Res.HEALTH_PAID in need.any -> "A weapon in the party that takes health from its wielder."
             need.place == Place.FOE && Res.GUARD in need.any -> "An enemy that raises Guard."
-            need.place == Place.FOE && need.beforeHit -> "${list(need.any).cap()} on the enemy before the hit lands. An ally can put it there, or a wielder who strikes twice a round."
+            need.place == Place.FOE && need.beforeHit -> "${list(need.any).cap()} on the enemy before the hit lands. An ally can put it there, or a wielder who strikes twice per round."
             need.place == Place.FOE && need.byWielder -> "The wielder's own hit has to leave ${list(need.any)} on an enemy."
             need.place == Place.FOE -> "${list(need.any).cap()} on an enemy."
             need.ownAction -> "A wielder whose own action raises ${list(need.any)}."
@@ -398,16 +398,16 @@ object Capabilities {
             need.place == Place.WIELDER -> "A way for the wielder to get ${list(need.any)}."
             else -> "${list(need.any).cap()} on somebody in the party."
         }
-        is Need.Spent -> if (need.res == Res.MARK) "A Mark on an enemy for the wielder's hit to spend." else if (need.byWielder) "A rule on this weapon that spends ${need.res.word}." else "Somebody in the party who spends ${need.res.word}."
+        is Need.Spent -> if (need.res == Res.MARK) "A Mark on an enemy for the wielder's hit to consume." else if (need.byWielder) "An effect on this weapon that consumes ${need.res.word}." else "Somebody in the party who consumes ${need.res.word}."
         is Need.FoeIs -> when (need.tag) { "elite" -> "An elite or a leader among the enemies."; "undead" -> "One of the Hollowbound among the enemies."; else -> "An enemy of the right kind." }
         is Need.HolderIs -> "A wielder of the right kind."
         is Need.Circumstance -> need.text
-        is Need.Unverified -> "${text(need.need)} The company can bring it, but only after a step of its own. That is not checked here: the bench shows it."
+        is Need.Unverified -> "${text(need.need)} The company can bring it, but only through another effect first. That is not checked here. Try it on the bench to see it."
     }
 
     /** A verdict as a smith reads it. "Available" never promises that the moment comes. */
     fun text(v: Verdict, c: WeaponRules.Composition): String = when (v) {
-        is Verdict.Available -> "Available when its moment comes: ${v.by.map { c.rule(it.ruleId)?.effect?.name ?: it.ruleId }.distinct().joinToString(", ")}."
+        is Verdict.Available -> "Available when its trigger happens: ${v.by.map { c.rule(it.ruleId)?.effect?.name ?: it.ruleId }.distinct().joinToString(", ")}."
         is Verdict.Needs -> "Needs: ${v.missing.joinToString(" ") { text(it) }}"
         is Verdict.CannotProvide -> "Cannot provide. ${v.reason}"
     }
@@ -418,10 +418,10 @@ object Capabilities {
         fun name(id: String) = c.rule(id)?.effect?.name ?: id
         return when (note) {
             is CompositionNote.Shared -> "${name(note.ruleId)} comes with both ${note.sources.joinToString(" and ")}. It counts once."
-            is CompositionNote.Contest -> "${note.ruleIds.joinToString(" and ") { name(it) }} both take ${note.res.word}. ${name(note.ruleIds.first())} is asked first and the other gets what is left."
-            is CompositionNote.Feeds -> "${name(note.takerId)} takes the ${note.res.word} that ${name(note.giverId)} leaves. It stops working as ${note.res.word}."
-            CompositionNote.BoilsItself -> "It puts both Burn and Chill on enemies. Where they meet they boil away into Steam."
-            is CompositionNote.CracksOnce -> "${note.ruleIds.joinToString(" and ") { name(it) }} would both crack it. It cracks once a fight."
+            is CompositionNote.Contest -> "${note.ruleIds.joinToString(" and ") { name(it) }} both consume ${note.res.word}. ${name(note.ruleIds.first())} goes first and the other gets what is left."
+            is CompositionNote.Feeds -> "${name(note.takerId)} consumes the ${note.res.word} that ${name(note.giverId)} puts on enemies. That ${note.res.word} is used up and no longer works as ${note.res.word}."
+            CompositionNote.BoilsItself -> "This weapon applies both Burn and Chill to enemies. When they meet on one enemy, they cancel each other one for one and the attacker gains that much Steam."
+            is CompositionNote.CracksOnce -> "${note.ruleIds.joinToString(" and ") { name(it) }} would both crack this weapon. It cracks at most once per fight."
         }
     }
 }

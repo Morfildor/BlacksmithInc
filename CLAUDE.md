@@ -101,6 +101,8 @@ Compose BOM 2026.02.01, Room 2.8.5, DataStore 1.2.1, JDK 21 launcher / JDK 25 da
   supplier's days for it, opening packages, siege preparations, the siege's two-day jobs, contract modifiers, the watch
   on a rescue): rulings, gates and open questions `docs/RUN_VARIETY_LEDGER.md`, evidence
   `docs/run_variety_evidence/REPORT.md`.
+- Player-facing text follows `docs/WRITING_GUIDE.md` (style, glossary, verified mechanics) and the terms of
+  `docs/GDD_REVISION_2026-10-14.md` (quest, retreat rule, Upgrade/Repair, effect, priority target).
 - Balance changes: run the simulator, record numbers in DECISIONS.md, bump `BalanceConfig.version` on semantic change.
 - New gameplay numbers go in `BalanceConfig`, never inline. New content goes through `ContentCatalog.validate()`.
 - Tests must pass before claiming a phase done; do not commit/push without being asked.

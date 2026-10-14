@@ -105,11 +105,11 @@ class GuildEveningTest {
             assertEquals(m.fight, c.fight)
             val still = d.state.guild!!.mission?.takeIf { it.id == m.missionId }
             val expected = when {
-                m.outcome == MissionOutcome.RETREATED -> "Pulled back".also { pulledBack++ }
-                m.outcome == MissionOutcome.LOST -> "Beaten".also { beaten++ }
-                !m.continues -> "Finished".also { finished++ }
-                still!!.offer.optionalPush -> "Won the first stage. The smith decides in the morning".also { checkpoints++ }
-                else -> "Won the first day. The party presses on tomorrow"
+                m.outcome == MissionOutcome.RETREATED -> "Retreated".also { pulledBack++ }
+                m.outcome == MissionOutcome.LOST -> "Defeated".also { beaten++ }
+                !m.continues -> "Quest won".also { finished++ }
+                still!!.offer.optionalPush -> "Won the first stage. In the morning, choose: go deeper or return".also { checkpoints++ }
+                else -> "Won today's stage. The party continues tomorrow"
             }
             assertEquals("$d", expected, c.outcome)
             if (m.fight != null) fights++
@@ -126,7 +126,7 @@ class GuildEveningTest {
         val d = contractDays().first { it.resolution.mission!!.let { m -> m.outcome == MissionOutcome.WON && !m.continues && m.gained.gold > 0 } && it.script.ledger != null && it.script.quiet == null }
         val close = d.ui().beats.filterIsInstance<Beat.Close>().single()
         val ledger = d.script.ledger!!
-        val contract = close.rows.single { it.label == "Guild contracts" }
+        val contract = close.rows.single { it.label == "Guild quests" }
         assertEquals("${ledger.income.getValue(IncomeKind.CONTRACT)} gold", contract.value)
         val total = close.rows.single { it.total }
         assertEquals("Earned today", total.label)

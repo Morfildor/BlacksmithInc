@@ -129,10 +129,10 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                         Text(m.name, style = MaterialTheme.typography.titleSmall)
                         Secondary("Owned $have · $price gold" + (stock?.let { " · $it left today" } ?: ""))
                         // What the metal can hold (rules 6): said here, where it is bought, so a fine roll in a plain metal is no surprise.
-                        if (m.category == MaterialCategory.CORE) Secondary(if (m.tier >= vm.engine.config.depth.legend.fineCoreTier) "Holds Epic work." else "Holds work up to Rare.")
+                        if (m.category == MaterialCategory.CORE) Secondary(if (m.tier >= vm.engine.config.depth.legend.fineCoreTier) "Can reach Epic rarity." else "Rarity stops at Rare in this metal.")
                         vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
                         // A guild run: what an augment or a catalyst gives a blade in a fight, in the catalog's own words.
-                        if (st.guild != null) materialRules(content, m.id).forEach { Secondary("In a fight · ${it.name}: ${it.description}") }
+                        if (st.guild != null) materialRules(content, m.id).forEach { Secondary("Effect in a fight: ${it.name}. ${it.description}") }
                     }
                     // A greyed Buy says why to a screen reader; on screen the row's own lines do (the price, "0 left today").
                     val blocked = when { stock == 0 && vm.engine.stockedFromDay(m.id) > st.day -> "the supplier carries it from day ${vm.engine.stockedFromDay(m.id)}"; stock == 0 -> "none left today"; st.gold < price -> "it costs $price gold and you have ${st.gold}"; else -> null }

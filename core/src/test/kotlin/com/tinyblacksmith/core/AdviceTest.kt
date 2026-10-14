@@ -108,7 +108,7 @@ class AdviceTest {
     fun pricesTooHigh() {
         val s = stocked.refusedYesterday(VisitReason.TOO_EXPENSIVE, VisitReason.NOT_BETTER, VisitReason.OVERPRICED)
         assertEquals(Lead(LeadKind.PRICES_TOO_HIGH, weaponId = sword.id, gold = 60, count = 2), lead(s))
-        assertEquals(LeadLine("Review your prices", "2 customers left without buying on price yesterday. The cheapest weapon costs 60 gold."), line(s))
+        assertEquals(LeadLine("Review your prices", "Yesterday, 2 customers left without buying because of the price. The cheapest weapon costs 60 gold."), line(s))
         assertNotEquals(LeadKind.PRICES_TOO_HIGH, lead(stocked.refusedYesterday(VisitReason.TOO_EXPENSIVE, VisitReason.NOT_BETTER)).kind, "one is not a pattern")
         assertNotEquals(LeadKind.PRICES_TOO_HIGH, lead(s.copy(day = 3)).kind, "yesterday only")
     }
@@ -120,7 +120,7 @@ class AdviceTest {
         assertTrue(forecast.odds == Battle.SiegeOdds.OUTMATCHED || forecast.odds == Battle.SiegeOdds.DIRE, "the scenario: ${forecast.odds}")
         assertEquals(Lead(LeadKind.ARM_DEFENDERS, factionId = forecast.faction.id, days = 2, element = forecast.faction.weakTo), lead(s))
         val weak = forecast.faction.weakTo?.let { " Weak to ${it.name.lowercase()}." }.orEmpty()
-        assertEquals(LeadLine("Arm the defenders", "${forecast.faction.name} expected in 2 days.$weak"), line(s))
+        assertEquals(LeadLine("Arm the defenders", "Siege by the ${forecast.faction.name} in 2 days.$weak"), line(s))
         assertNotEquals(LeadKind.ARM_DEFENDERS, lead(stocked.besiegedIn(3)).kind, "three days off: not yet")
         val safe = stocked.besiegedIn(2, pressure = 0, militia = 100_000)
         assertEquals(Battle.SiegeOdds.STRONG, engine.siegeForecast(safe)!!.odds)

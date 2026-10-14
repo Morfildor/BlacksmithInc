@@ -120,7 +120,7 @@ object DepthScenarios {
             for (w in s.storedWeapons()) s = s.run(Command.ToggleShelf(w.id, listed = true))
             s
         },
-        Scenario("relic_bellows", "Relic: Ashen Bellows", "Forge: switch the bellows on for one blade. It gains a property; tomorrow starts ${config.depth.bellowsDebt} energy short, as End Day warns.",
+        Scenario("relic_bellows", "Relic: Ashen Bellows", "Forge: switch the bellows on for one blade. It gains a property, and End Day warns that you will have ${config.depth.bellowsDebt} less energy tomorrow.",
             "$SET_UP the bellows were put in the workshop.", endDay = false) { workshop().holding(ActiveRelic(Depth.ASHEN_BELLOWS)) },
         Scenario("relic_full_workshop", "Relics: a fourth for a full workshop", "Three relics are held and the fourth is offered: taking it means choosing which one to put away.",
             "$SET_UP three relics were put in the workshop (two seals earned) and the bellows were offered.", endDay = false,

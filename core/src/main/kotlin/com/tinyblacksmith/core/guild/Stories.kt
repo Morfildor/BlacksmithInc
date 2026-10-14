@@ -61,9 +61,9 @@ object Stories {
             val n = (ctx.guild!!.completed[key] ?: 0) + 1
             update(ctx) { it.copy(completed = it.completed + (key to n)) }
             if (n == ctx.config.guild.bondMissions) {
-                val reason = "Won ${n} contracts side by side."
+                val reason = "Won ${n} quests side by side."
                 val made = bond(ctx, party[i], party[j], BOND_COMRADES, reason) or bond(ctx, party[j], party[i], BOND_COMRADES, reason)
-                if (made) ctx.emit(EventType.GUILD_STORY, 4, "${ctx.hero(party[i]).fullName} and ${ctx.hero(party[j]).fullName} have fought side by side long enough to move as one.", listOf(party[i].value, party[j].value), mapOf("bond" to BOND_COMRADES))
+                if (made) ctx.emit(EventType.GUILD_STORY, 4, "${ctx.hero(party[i]).fullName} and ${ctx.hero(party[j]).fullName} have fought side by side long enough to move as one. They are now comrades.", listOf(party[i].value, party[j].value), mapOf("bond" to BOND_COMRADES))
             }
         }
     }
@@ -73,7 +73,7 @@ object Stories {
         val party = ctx.guild!!.mission?.party.orEmpty().filter { it != rescued }
         val rescuer = party.firstOrNull { (ctx.guild!!.member(it)?.bonds?.size ?: MAX_BONDS) < MAX_BONDS } ?: return
         if (bond(ctx, rescuer, rescued, BOND_PROTECTOR, "Brought them out on day ${ctx.day}."))
-            ctx.emit(EventType.GUILD_STORY, 4, "${ctx.hero(rescuer).fullName} brought ${ctx.hero(rescued).fullName} out, and means to keep them out.", listOf(rescuer.value, rescued.value), mapOf("bond" to BOND_PROTECTOR))
+            ctx.emit(EventType.GUILD_STORY, 4, "${ctx.hero(rescuer).fullName} brought ${ctx.hero(rescued).fullName} out, and means to keep them out. ${ctx.hero(rescuer).name} is now their protector.", listOf(rescuer.value, rescued.value), mapOf("bond" to BOND_PROTECTOR))
     }
 
     /** The branches [m]'s own record has opened and the smith has not yet answered. */
@@ -93,7 +93,7 @@ object Stories {
         if (m.specialityId == specialityId) return null
         val def = openBranches(ctx, m).firstOrNull { it.id == specialityId } ?: return GameError.UnknownContent(specialityId)
         GuildOps.updateMember(ctx, heroId) { it.copy(specialityId = def.id) }
-        ctx.emit(EventType.GUILD_STORY, 5, "${ctx.hero(heroId).fullName} is now known as a ${def.name}.", listOf(heroId.value), mapOf("speciality" to def.id))
+        ctx.emit(EventType.GUILD_STORY, 5, "${ctx.hero(heroId).fullName} has a new speciality: ${def.name}.", listOf(heroId.value), mapOf("speciality" to def.id))
         return null
     }
 
@@ -145,7 +145,7 @@ object Stories {
             ctx.consequences -= q
             val payout = q.amounts["payout"] ?: 0
             ctx.earn(IncomeKind.INSURANCE, payout)
-            ctx.emit(EventType.GUILD_STORY, 5, "The adjuster paid $payout gold for ${ctx.weapons[weaponId]?.name ?: "the blade"}, taken by the enemy.", listOf(weaponId.value), mapOf("insurance" to payout.toString()))
+            ctx.emit(EventType.GUILD_STORY, 5, "The adjuster paid $payout gold for ${ctx.weapons[weaponId]?.name ?: "the weapon"}, taken by the enemy.", listOf(weaponId.value), mapOf("insurance" to payout.toString()))
         }
         val g = ctx.guild ?: return
         if (g.nemesis != null) return
@@ -163,7 +163,7 @@ object Stories {
         // A party planned for the contract that leaves with it stays home, and the fee paid for it comes back.
         ctx.guild!!.planned?.let { p -> ctx.guild!!.offers.firstOrNull { it.id == p.offerId && it.subjectWeaponId == weaponId } }?.let { o ->
             Missions.cancelPlan(ctx)
-            ctx.emit(EventType.GUILD_STORY, 4, "The party planned to win back ${ctx.weapons[weaponId]?.name ?: "the weapon"} stays home." + (if (o.fee > 0) " The ${o.fee} gold paid to send it came back." else ""), listOf(weaponId.value))
+            ctx.emit(EventType.GUILD_STORY, 4, "${ctx.weapons[weaponId]?.name ?: "The weapon"} is already back, so the party you planned to send for it stays home." + (if (o.fee > 0) " The ${o.fee} gold fee was returned." else ""), listOf(weaponId.value))
         }
         update(ctx) { it.copy(nemesis = null, offers = it.offers.filter { o -> o.subjectWeaponId != weaponId }) }
         ctx.emit(EventType.GUILD_STORY, 6, "${n.name} is beaten and carries nothing of this forge any more.", listOf(weaponId.value))
@@ -195,7 +195,7 @@ object Stories {
             val (name, leader) = rng.pick(cat.rivalNames)
             val wants = rng.pick(listOf(MissionArchetype.HUNT, MissionArchetype.DELVE, MissionArchetype.ESCORT)).name
             update(ctx) { it.copy(rival = RivalGuild(name, leader, wants, nextMoveDay = ctx.day + cfg.rivalMoveEveryDays)) }
-            ctx.emit(EventType.GUILD_STORY, 5, "Another guild has taken rooms in Emberfall: $name, under $leader. They will take a contract off the board on day ${ctx.day + cfg.rivalMoveEveryDays}, a ${wants.lowercase()} if there is one.", data = mapOf("rival" to name))
+            ctx.emit(EventType.GUILD_STORY, 5, "Another guild has taken rooms in Emberfall: $name, under $leader. On day ${ctx.day + cfg.rivalMoveEveryDays} they will take a quest off the board, a ${wants.lowercase()} if there is one.", data = mapOf("rival" to name))
         }
         ctx.guild!!.rival?.let { r ->
             if (ctx.day >= r.nextMoveDay) {
@@ -204,8 +204,9 @@ object Stories {
                 val open = ctx.guild!!.offers.filter { o -> o.id != planned && o.subjectHeroId == null && o.subjectWeaponId == null && cat.mission(o.defId).let { it.weight > 0.0 && it.archetype != MissionArchetype.SUPPLY && it.archetype != MissionArchetype.SABOTAGE } }
                 val pick = open.firstOrNull { cat.mission(it.defId).archetype.name == r.wants } ?: open.minByOrNull { it.postedDay }
                 val line = pick?.let { Missions.title(ctx, it) }
+                val named = pick?.let { Missions.named(ctx, it) }
                 update(ctx) { it.copy(offers = it.offers.filter { o -> o.id != pick?.id }, rival = r.copy(nextMoveDay = ctx.day + cfg.rivalMoveEveryDays, taken = (r.taken + listOfNotNull(line?.let { l -> "Day ${ctx.day}: $l" })).takeLast(5))) }
-                ctx.emit(EventType.GUILD_STORY, 4, if (line != null) "${r.name} took the contract for $line. They move again on day ${ctx.day + cfg.rivalMoveEveryDays}." else "${r.name} found nothing on the board worth their while. They look again on day ${ctx.day + cfg.rivalMoveEveryDays}.", data = mapOf("rival" to r.name))
+                ctx.emit(EventType.GUILD_STORY, 4, if (named != null) "${r.name} took $named off the board. They move again on day ${ctx.day + cfg.rivalMoveEveryDays}." else "${r.name} found nothing on the board worth their while. They look again on day ${ctx.day + cfg.rivalMoveEveryDays}.", data = mapOf("rival" to r.name))
             }
         }
         val law = ctx.guild!!.law

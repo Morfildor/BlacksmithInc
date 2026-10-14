@@ -158,7 +158,7 @@ object Lines {
             RecognitionCue.BLADE_WORN -> blade?.let { "$hero brought back $it. It's looking worn." }
             RecognitionCue.HELD_THE_WALL -> blade?.let { b -> r.day?.let { "$hero defended the walls with $b on day $it." } }
             RecognitionCue.SLEW_AN_ELITE -> blade?.let { b -> carried?.title?.let { "$hero defeated an elite with $b. It earned the name '$it'." } }
-            RecognitionCue.KEPT_THE_VOW -> r.count?.let { "$hero kept their vow by defeating $it foes. Now they're back for a weapon." }
+            RecognitionCue.KEPT_THE_VOW -> r.count?.let { "$hero kept their vow by winning $it expeditions. Now they're back for a weapon." }
             RecognitionCue.MENTORS_BLADE -> blade?.let { b -> visit.customer?.mentorName?.let { "$hero trained with $it and now carries their old $b." } }
             RecognitionCue.OF_THE_LINE -> visit.heroId?.let { state.heroes[it]?.lineageId }?.let { id -> state.legacy.lineages.firstOrNull { it.id == id } }?.let { "$hero is descended from ${it.heroName}, who ${it.deed}." }
             RecognitionCue.WAITED_YESTERDAY -> "The shop was full when $hero came yesterday. Today they're first in."
@@ -189,22 +189,22 @@ object Lines {
     }
 
     /**
-     * The day's fights in one or two sentences of counts: "5 heroes went out unarmed and all were driven back." Says who
+     * The day's fights in one or two sentences of counts: "5 heroes fought without weapons. All had to retreat." Says who
      * carried no blade because the fight's record names none; says nothing of what a blade would have changed.
      */
     fun field(t: FieldTally): String {
         val unarmed = t.wonUnarmed + t.drivenBackUnarmed
-        fun was(n: Int) = if (n == 1) "was" else "were"
+        fun weapons(n: Int) = if (n == 1) "a weapon" else "weapons"
         if (t.died == 0 && t.won == 0 && unarmed == t.fought)
             return if (t.fought == 1) "One hero fought without a weapon and had to retreat." else "${t.fought} heroes fought without weapons. All had to retreat."
         val outcomes = listOfNotNull(
-            "${t.won} won".takeIf { t.won > 0 }, "${t.drivenBack} ${was(t.drivenBack)} driven back".takeIf { t.drivenBack > 0 }, "${t.died} died".takeIf { t.died > 0 },
+            "${t.won} won".takeIf { t.won > 0 }, "${t.drivenBack} retreated".takeIf { t.drivenBack > 0 }, "${t.died} died".takeIf { t.died > 0 },
         ).joinToString(", ")
         val bare = when {
             unarmed == 0 -> null
-            t.drivenBackUnarmed == 0 -> "$unarmed of them fought without weapons."
-            t.drivenBackUnarmed == unarmed -> "$unarmed of them fought without weapons and ${was(unarmed)} driven back."
-            else -> "$unarmed of them fought without weapons. ${t.drivenBackUnarmed} of those ${was(t.drivenBackUnarmed)} driven back."
+            t.drivenBackUnarmed == 0 -> "$unarmed of them fought without ${weapons(unarmed)}."
+            t.drivenBackUnarmed == unarmed -> "$unarmed of them fought without ${weapons(unarmed)} and retreated."
+            else -> "$unarmed of them fought without weapons. ${t.drivenBackUnarmed} of those retreated."
         }
         return listOfNotNull("${count(t.fought, "hero")} fought today. $outcomes.", bare).joinToString(" ")
     }
@@ -250,11 +250,11 @@ object Lines {
             LeadKind.FORGE_STOCK -> LeadLine("Forge something to sell", "You have no weapons in storage or on the shelf.")
             LeadKind.PRICES_TOO_HIGH -> LeadLine(
                 "Review your prices",
-                listOfNotNull(lead.count?.let { "${count(it, "customer")} left without buying on price ${if (evening) "today" else "yesterday"}" }, lead.gold?.let { "the cheapest weapon costs $it gold" }).joinSentences().ifEmpty { null },
+                listOfNotNull(lead.count?.let { "${if (evening) "Today" else "Yesterday"}, ${count(it, "customer")} left without buying because of the price" }, lead.gold?.let { "the cheapest weapon costs $it gold" }).joinSentences().ifEmpty { null },
             )
             LeadKind.ARM_DEFENDERS -> LeadLine(
                 "Arm the defenders",
-                listOfNotNull(faction?.let { f -> "$f expected${days?.let { d -> " $d" }.orEmpty()}" }, lead.element?.let { "weak to ${it.name.lowercase()}" }).joinSentences().ifEmpty { null },
+                listOfNotNull(faction?.let { f -> "Siege by the $f${days?.let { d -> " $d" }.orEmpty()}" }, lead.element?.let { "weak to ${it.name.lowercase()}" }).joinSentences().ifEmpty { null },
             )
             LeadKind.ANSWER_WANT -> LeadLine(
                 "Forge ${lead.familyId?.let { content.familyById[it] }?.let { withArticle(it.name.lowercase()) } ?: "a weapon"}${hero?.let { " for $it" }.orEmpty()}",
@@ -287,7 +287,7 @@ object Lines {
     /** The dormant marker of a returned legend: what sleeps in it and what wakes it; null when nothing does. Works for a blade or its counter snapshot. */
     fun dormant(dormantAffixes: List<AffixId>, content: ContentCatalog): String? {
         val names = dormantAffixes.mapNotNull { content.affixById[it]?.name }
-        return if (names.isEmpty()) null else "Dormant: ${names.joinToString(", ")}. Hone it once to wake ${if (names.size == 1) "it" else "them"}."
+        return if (names.isEmpty()) null else "Dormant: ${names.joinToString(", ")}. Upgrade or repair the weapon to restore ${if (names.size == 1) "it" else "them"}."
     }
 
     /**

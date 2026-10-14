@@ -45,8 +45,8 @@ class ForgeLearningTest : ShopDayTestBase() {
             moved.zip(pairings).forEach { (key, change) ->
                 assertEquals(if (now.state(key) == KnowledgeState.OBSERVED) "First notes" else "Pairing learned", change.title)
                 // The words are the journal's own for the stage reached: an observed pairing stays tentative.
-                assertEquals("${JournalRules.subjectName(engine.content, key)} · ${JournalRules.hint(now, engine.content, key)}", change.line)
-                if (now.state(key) == KnowledgeState.OBSERVED) assertTrue(change.line, change.line.contains("· Seems "))
+                assertEquals("${JournalRules.subjectName(engine.content, key)}: ${JournalRules.hint(now, engine.content, key)}", change.line)
+                if (now.state(key) == KnowledgeState.OBSERVED) assertTrue(change.line, change.line.contains(": Seems "))
             }
             if (learned.changes.isEmpty()) assertNotNull(learned.note) else assertNull(learned.note)
             if (learned.changes.isEmpty() && listOf(ca, af).any { now.state(it) == KnowledgeState.OBSERVED }) assertEquals("Experiment recorded. Try this pairing again to learn more.", learned.note)

@@ -121,7 +121,7 @@ class GazetteEditionTest {
         val e = Gazette.edition(events, names)
         assertEquals(
             listOf(
-                "Forged 3 weapons (1 legendary, 1 epic). Listed 2. Honed 1. Donated 1 weapon to the watch. Salvaged 1. Bought Display Case.",
+                "Forged 3 weapons (1 legendary, 1 epic). Listed 2. Upgraded or repaired 1. Donated 1 weapon to the watch. Salvaged 1. Bought Display Case.",
                 "First notes on Ember Resin on Spears. Faint harmony.",
             ),
             section(e, Gazette.FORGE),

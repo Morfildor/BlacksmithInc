@@ -84,7 +84,7 @@ data class NotebookUi(val metal: List<PairingUi>, val weapon: List<PairingUi>, v
  * The three kinds of fight note, which the page never mixes: a rule the smith has forged, a path the rules say could
  * happen, and a path a real fight has shown. Each has its own [word] and [sign], and its own colour beside them.
  */
-enum class FightNoteKind(val word: String, val sign: String) { LEARNED("Learned", "●"), SUGGESTED("Suggested by the rules", "?"), WITNESSED("Seen in a real fight", "✓") }
+enum class FightNoteKind(val word: String, val sign: String) { LEARNED("Learned", "●"), SUGGESTED("Possible, not seen yet", "?"), WITNESSED("Seen in a real fight", "✓") }
 
 /** A fight rule the smith has forged on a weapon, in the catalog's own words. */
 @Immutable data class LearnedRuleUi(val id: String, val name: String, val description: String)
@@ -97,8 +97,8 @@ enum class FightNoteKind(val word: String, val sign: String) { LEARNED("Learned"
 data class FightNotesUi(val learned: List<LearnedRuleUi>, val paths: List<InteractionUi>, val hidden: Int) {
     val hiddenLine: String? get() = when {
         hidden <= 0 -> null
-        hidden == 1 -> "1 more to find. It opens when you forge something that takes part in it."
-        else -> "$hidden more to find. They open when you forge something that takes part in them."
+        hidden == 1 -> "1 more to find. It appears when you forge a weapon with one of its effects."
+        else -> "$hidden more to find. Each appears when you forge a weapon with one of its effects."
     }
 }
 

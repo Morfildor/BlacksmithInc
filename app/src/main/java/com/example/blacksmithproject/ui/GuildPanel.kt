@@ -83,7 +83,7 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
         ui.yesterday?.let { y -> item(key = "yesterday") { ReportCard(y) } }
         item(key = "board_head") {
             Column {
-                SectionTitle("The board")
+                SectionTitle("The quest board")
                 ui.plan?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Gold, modifier = Modifier.testTag("guild_plan")) }
                 ui.boardNote?.let { Secondary(it, Modifier.testTag("guild_board_note")) }
             }
@@ -110,7 +110,7 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
                 ui.region, enabled,
                 onRetire = {
                     confirm = Confirm(
-                        "Retire the chapter?", "The run ends here as a success: the forge stands, the charter is secured, and its legacy can be claimed. This cannot be taken back.",
+                        "Retire the chapter?", "The run ends here as a success: the forge stands, the charter is secured, and you can claim its legacy. This cannot be undone.",
                         "Retire the chapter", Command.RetireAfterMilestone(GuildContent.CHARTER_SECURED),
                     )
                 },
@@ -119,7 +119,7 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
         }
         if (ui.factions.isNotEmpty()) item(key = "factions") {
             Column {
-                SectionHeader("Pressing on the town")
+                SectionHeader("Other factions")
                 FactionRows(ui.factions)
             }
         }
@@ -207,24 +207,24 @@ private fun WallCard(w: WallUi, enabled: Boolean, onOpenHero: (HeroId) -> Unit, 
         // What they prepare is this siege's own rule: said whole, with every answer the smith has, before the field it changes.
         w.prep?.let { p ->
             Column(Modifier.fillMaxWidth().testTag("guild_wall_prep")) {
-                SectionHeader("They prepare")
+                SectionHeader("Their preparation")
                 Text(p.name, style = MaterialTheme.typography.titleSmall, color = Ember)
                 Text(p.description, style = MaterialTheme.typography.bodyMedium)
-                Secondary("Your answers", Modifier.padding(top = Space.xs))
+                Secondary("Ways to counter it", Modifier.padding(top = Space.xs))
                 p.answers.forEach { Secondary("· $it", Modifier.padding(start = Space.sm)) }
-                Secondary("· Or send a party to spoil it. ${p.sabotage}", Modifier.padding(start = Space.sm))
+                Secondary("· Or spoil it with a sabotage quest. Its second day: ${p.sabotage}", Modifier.padding(start = Space.sm))
             }
         }
         if (w.field.isNotEmpty()) {
-            SectionHeader("Their field")
+            SectionHeader("Expected enemies")
             EnemyLines(w.field, Modifier.testTag("guild_wall_field"))
         }
         HorizontalDivider(Modifier.padding(top = 12.dp, bottom = Space.sm), color = MaterialTheme.colorScheme.outlineVariant)
         StatRow("Watch", "${w.watch}")
-        Secondary("Militia and the watch armory thin the enemy before the wall.")
+        Secondary("Before the defenders fight, the militia and the watch weaken the attackers.")
         StatBar("Forge health", w.forgeHealth, w.forgeHealthMax)
 
-        SectionHeader("Who stands")
+        SectionHeader("Defenders")
         (0 until w.places).forEach { i ->
             val d = w.defenders.getOrNull(i)
             Row(
@@ -233,24 +233,24 @@ private fun WallCard(w: WallUi, enabled: Boolean, onOpenHero: (HeroId) -> Unit, 
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text("${i + 1}", style = MaterialTheme.typography.titleLarge, color = if (d == null) CreamMuted else Gold, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 20.dp))
-                if (d == null) Secondary("Empty: nobody else in town is fit to stand.", Modifier.weight(1f))
+                if (d == null) Secondary("Empty: nobody else in town is fit to defend.", Modifier.weight(1f))
                 else {
                     Face(d.portrait, 48)
                     Column(Modifier.weight(1f)) {
                         Text(d.name, style = MaterialTheme.typography.titleSmall)
                         Text(d.blade, style = MaterialTheme.typography.bodySmall, color = Cream)
-                        Secondary(d.sub + when { d.reserved -> " · kept for the wall"; d.member -> " · of the guild"; else -> " · of the town" })
+                        Secondary(d.sub + when { d.reserved -> " · reserved for the wall"; d.member -> " · guild member"; else -> " · townsperson" })
                     }
                 }
             }
         }
         // Keeping a member for the wall puts them in a place first and out of any party; it can be taken back any morning.
         if (w.reserve.isNotEmpty()) {
-            Secondary("Keep a member for the wall: they stand first, and no party takes them.", Modifier.padding(top = Space.sm))
+            Secondary("Reserve a member for the wall: they take a place first and cannot be sent on a quest. You can release them on any day.", Modifier.padding(top = Space.sm))
             w.reserve.forEach { r ->
                 Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                     Column(Modifier.weight(1f)) {
-                        Text(r.name + if (r.reserved) " · kept" else "", style = MaterialTheme.typography.bodyMedium, color = if (r.reserved) Gold else Cream)
+                        Text(r.name + if (r.reserved) " · reserved" else "", style = MaterialTheme.typography.bodyMedium, color = if (r.reserved) Gold else Cream)
                         r.blocked?.let { Secondary(it) }
                     }
                     InlineActionButton(
@@ -282,8 +282,8 @@ private fun PartyCard(p: PartyUi, enabled: Boolean, onChoose: (String, Checkpoin
             Text(c.danger, style = MaterialTheme.typography.bodyMedium, color = Ember)
             EnemyLines(c.enemies, Modifier.padding(top = Space.xs))
             Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                SecondaryActionButton("Push deeper", { onChoose(c.instanceId, CheckpointChoice.PUSH) }, Modifier.weight(1f).testTag("guild_push"), enabled = enabled && c.chosen != CheckpointChoice.PUSH)
-                SecondaryActionButton("Return", { onChoose(c.instanceId, CheckpointChoice.RETURN) }, Modifier.weight(1f).testTag("guild_return"), enabled = enabled && c.chosen != CheckpointChoice.RETURN)
+                SecondaryActionButton("Go deeper", { onChoose(c.instanceId, CheckpointChoice.PUSH) }, Modifier.weight(1f).testTag("guild_push"), enabled = enabled && c.chosen != CheckpointChoice.PUSH)
+                SecondaryActionButton("Return home", { onChoose(c.instanceId, CheckpointChoice.RETURN) }, Modifier.weight(1f).testTag("guild_return"), enabled = enabled && c.chosen != CheckpointChoice.RETURN)
             }
             Secondary(c.note, Modifier.padding(top = Space.xs).testTag("guild_checkpoint_note"))
         }
@@ -293,7 +293,7 @@ private fun PartyCard(p: PartyUi, enabled: Boolean, onChoose: (String, Checkpoin
 @Composable
 private fun ReportCard(r: ContractReportUi) {
     Column(Modifier.fillMaxWidth().padding(top = Space.md).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm).testTag("guild_yesterday")) {
-        Text("Yesterday's contract · ${r.title}", style = MaterialTheme.typography.titleSmall, color = Gold)
+        Text("Yesterday's quest · ${r.title}", style = MaterialTheme.typography.titleSmall, color = Gold)
         Text(r.outcome, style = MaterialTheme.typography.bodyMedium)
         r.highlight?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream) }
         r.lines.forEach { Secondary(it) }
@@ -319,18 +319,25 @@ private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
         Text(o.time, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs))
         o.missesSiege?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
         Secondary(o.fee)
-        o.stages.forEach { st ->
-            Text(st.label, style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.sm))
-            Text(st.reward, style = MaterialTheme.typography.bodyMedium)
-            Secondary("${st.objective} · ${st.danger}")
-            EnemyLines(st.enemies)
-        }
+        o.stages.forEach { st -> StageLines(st, Modifier.padding(top = Space.sm)) }
         Secondary("Bring: ${o.prep}", Modifier.padding(top = Space.sm))
         Secondary("If it fails: ${o.failure}")
         Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
             Secondary(o.expiry, Modifier.weight(1f))
             Text(if (o.planned) "Change the party  ›" else "Choose a party  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
         }
+    }
+}
+
+/** One stage of a quest as separate rows: when and what it secures, then the objective, the reward and the risk. */
+@Composable
+internal fun StageLines(st: StageUi, modifier: Modifier = Modifier) {
+    Column(modifier) {
+        Text(st.label, style = MaterialTheme.typography.labelLarge, color = Gold)
+        Text("Objective: ${st.objective}.", style = MaterialTheme.typography.bodyMedium)
+        Text("Reward: ${st.reward}.", style = MaterialTheme.typography.bodyMedium)
+        Secondary(st.danger)
+        EnemyLines(st.enemies)
     }
 }
 
@@ -343,12 +350,12 @@ private fun MemberRow(m: MemberUi, onOpen: () -> Unit) {
         Face(m.portrait)
         Column(Modifier.weight(1f)) {
             Text(m.name, style = MaterialTheme.typography.titleSmall)
-            Secondary("${m.sub} · ${m.health}" + if (m.reserved) " · kept for the wall" else "")
+            Secondary("${m.sub} · ${m.health}" + if (m.reserved) " · reserved for the wall" else "")
             m.status?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
             Text(m.blade, style = MaterialTheme.typography.bodySmall, color = Cream)
             Secondary(m.role)
             Secondary(m.trait)
-            if (m.branchOpen) Text("A branch is open: choose it on their sheet  ›", style = MaterialTheme.typography.bodySmall, color = Gold)
+            if (m.branchOpen) Text("A speciality is ready to choose: open their details  ›", style = MaterialTheme.typography.bodySmall, color = Gold)
         }
     }
 }
@@ -397,7 +404,7 @@ private fun RegionCard(r: RegionUi, enabled: Boolean, onRetire: () -> Unit, onRa
         Block("Law of the season", r.law)
         Block("The other guild", r.rival)
         Block("Nemesis", r.nemesis)
-        Block("Chains you have seen", r.combos)
+        Block("Effect chains seen in your fights", r.combos)
     }
 }
 

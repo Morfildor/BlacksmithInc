@@ -8,9 +8,12 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
-- **A new title screen.** The owner's painting of the smithy at night fills the main menu; the name and "New game" stand in its dark lower third. A fresh account no longer shows an empty "Era 1 awaits" plate, and the guided first day is one plain line with "Skip it".
-- **Run setup.** "New game" opens its own screen for the charter: every charter's gains and costs are short "+" and "−" bullets read from its own numbers, visible without choosing it, with "Begin under …" pinned below.
-- **Opening cards that compare.** The two heroes who sign are shown once with their portraits; each card gives its playstyle, its benefit, the trait each signer gets, its relic (tap to read the effect) and its costs as bullets. Nothing is chosen until a card is tapped; the chosen card adds what it brings and the traits in full.
+- **A new title screen.** The owner's painting of the smithy at night fills the main menu; the name and "New game" stand in its dark lower third. A fresh account no longer shows an empty "Era 1 awaits" plate, and the guided first day is one plain line with "Skip it".
+
+- **Run setup.** "New game" opens its own screen for the charter: every charter's gains and costs are short "+" and "−" bullets read from its own numbers, visible without choosing it, with "Begin under …" pinned below.
+
+- **Opening cards that compare.** The two heroes who sign are shown once with their portraits; each card gives its playstyle, its benefit, the trait each signer gets, its relic (tap to read the effect) and its costs as bullets. Nothing is chosen until a card is tapped; the chosen card adds what it brings and the traits in full.
+
 - **A guided first day.** A new installation's first game is led through one real day in the real workshop: choose a recipe, forge it, list it, forge a second weapon your own way, end the day, and read what the day came to. One short step at a time sits under the top bar, with "Why?" for more and "Skip guidance" on every step and on the forge result. It is shown once per installation, never again in a later game, and never to someone who has already played.
 - Settings has a "Guided first day" row: where it stands, and "Replay". A replay starts at once in a game's first morning, otherwise it waits for the next new game, says so, and can be cancelled. It never changes a game in progress.
 - A new account's first game starts on "No charter", the shop alone. The charter you pick on the title, or last began a game under, is now remembered.
@@ -36,6 +39,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - A weapon's card lists a rule that two of its parts share once, names both parts, and notes where its rules feed or get in the way of each other.
 
 ### Changed
+- **Clearer English everywhere.** Every description, report and choice was rewritten to be understood on the first read: complete sentences, numbers instead of fractions ("+10% strike damage", not "a tenth harder"), explicit triggers, targets, limits and durations, and no compressed fragments. Weapon effects, classes, traits, quests, visitors, the Notebook, the Gazette, the shop day, fight reports and the guided first day are all covered. The style guide and glossary are in `docs/WRITING_GUIDE.md`.
+- **Familiar names.** Guild contracts are now **quests** on a **quest board**. A party's posture is its **retreat rule**, and a party that pulls back now **retreats**. Weapon "rules" are **effects**, and "the foe that matters" is the **priority target**: the enemy summoner, then the leader, then the enemy with the most health. The forge's test fight is a **practice fight**. Shop orders stay **commissions**.
+- **Upgrade and Repair.** The Hone action is now **Upgrade** the first time (+6 quality and full condition, shown on the button) and **Repair** after that (full condition only).
+- **Quests read as rows.** Each stage shows its day, objective, reward and danger on separate lines. The quest sheet starts with the situation, says when the fee is paid and that it comes back if the plan is cancelled, and repeats a missed siege just above "Send the party". Each retreat rule says exactly when the party retreats, and that a retreat wins no reward.
+- Corrected text that did not match the game: the Bow's second arrow is 35% of a strike and Swift's cut 30% (both said "a third"); the Slayer ambition counts won expeditions, not kills; Burn is blocked by Guard (a preparation's counter said it was not); a relic delve's first hall can capture a member; the escort cart is not targeted on purpose; Many Breaches gives its numbers (+75% militia and armory, attackers +5%).
 - A weapon given away (listed for less than a quarter of its price) is a gift, not a sale. It earns no sale reputation. The town notices generosity once a day, and a gift warms a hero to the shop only so far, never into a regular.
 - A blessing offer nobody answers is withdrawn after three mornings, with a line in the day's records.
 - Guild runs: work on the wall now counts toward the day's repair. With the guild's extra for it, a day's repair from every source is at most 3 unless a blessing adds to it (the wall work alone gave 5, on top of the heroes' 2).

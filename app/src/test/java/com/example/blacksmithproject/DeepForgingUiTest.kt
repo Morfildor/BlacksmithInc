@@ -149,7 +149,7 @@ class DeepForgingUiTest {
         // On the wall it is the other way round: the home rule is fought and the road rule is the one named.
         val wall = benchUi(Bench.run(sentient, false, Bench.defaultWielder(sentient.familyId, content), "alone", "wall", content, engine.config))
         assertEquals(listOf("Sentient (on the road)"), wall.notTested)
-        assertEquals("Only on a contract", wall.elsewhere)
+        assertEquals("Only on a quest", wall.elsewhere)
         assertTrue("Sentient (at home)" in wall.fired.map { it.name } + wall.silent.map { it.name })
         assertTrue(wall.synthetic.any { "wall here is made up" in it })
     }

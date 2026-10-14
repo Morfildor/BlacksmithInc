@@ -95,8 +95,8 @@ object Fight {
             val closing = when (result) {
                 FightOutcome.WON -> "The party has won."
                 FightOutcome.LOST -> "The party is beaten."
-                FightOutcome.RETREATED -> "The party pulls back."
-                FightOutcome.TIMED_OUT -> "Neither side can finish it. The party breaks off."
+                FightOutcome.RETREATED -> "The party retreats."
+                FightOutcome.TIMED_OUT -> "Neither side has won after $round rounds. The fight ends here."
             }
             emit(if (result == FightOutcome.RETREATED) EventKind.RETREATED else EventKind.OBJECTIVE, null, null, text = closing)
             queue.clear()
@@ -132,7 +132,7 @@ object Fight {
             val bleed = a.stat(Stat.BLEED)
             if (bleed > 0) {
                 val tick = emit(EventKind.ACTION, a, a, via = Via.TICK, text = "")
-                damage(null, a, tickAmount(a, Stat.BLEED, bleed), null, pierce = true, via = Via.TICK, effect = null, parent = tick, what = "bleeds")
+                damage(null, a, tickAmount(a, Stat.BLEED, bleed), null, pierce = true, via = Via.TICK, effect = null, parent = tick, what = "Bleed")
                 a.stats[Stat.BLEED] = bleed - 1
                 drain()
                 if (a.downed || finished() != null) return
@@ -147,7 +147,7 @@ object Fight {
                 if (a.downed) break
                 // Chill bites the first strike of the action and is spent by it.
                 val cold = step is Action.Damage && !chilled && a.stat(Stat.CHILL) > 0
-                if (cold) { chilled = true; spend(a, Stat.CHILL, 1, null, action, "${a.name} is slowed by the cold.") }
+                if (cold) { chilled = true; spend(a, Stat.CHILL, 1, null, action, "${a.name} loses 1 Chill: this attack deals ${rules.chillPercent}% less damage.") }
                 perform(step, a, action, null, 0, if (cold) 100 - rules.chillPercent else 100)
             }
             if (a.alive) emit(EventKind.ACTED, a, null, parent = action, text = "")
@@ -167,13 +167,13 @@ object Fight {
                 val burn = a.stat(Stat.BURN)
                 if (burn > 0) {
                     val tick = emit(EventKind.ACTION, a, a, via = Via.TICK, text = "")
-                    damage(null, a, tickAmount(a, Stat.BURN, burn), null, pierce = false, via = Via.TICK, effect = null, parent = tick, what = "burns")
+                    damage(null, a, tickAmount(a, Stat.BURN, burn), null, pierce = false, via = Via.TICK, effect = null, parent = tick, what = "Burn")
                     a.stats[Stat.BURN] = burn - 1
                 }
                 val regen = a.stat(Stat.REGEN)
                 if (regen > 0 && a.alive) {
                     val tick = emit(EventKind.ACTION, a, a, via = Via.TICK, text = "")
-                    heal(a, a, rules.regenHeal, Via.TICK, null, tick, "mends")
+                    heal(a, a, rules.regenHeal, Via.TICK, null, tick, "Regeneration")
                     a.stats[Stat.REGEN] = regen - 1
                 }
                 val wet = a.stat(Stat.WET)
@@ -329,7 +329,7 @@ object Fight {
                 is Action.Give -> for (t in targets(step.target, holder, e)) give(holder, t, step.stat, amount(step.amount, holder, e, spent), via, effect, parent)
                 is Action.Take -> for (t in targets(step.target, holder, e)) {
                     val n = minOf(t.stat(step.stat), amount(step.amount, holder, e, spent))
-                    if (n > 0) spend(t, step.stat, n, effect, parent, "${owner(holder, effect)} takes $n ${word(step.stat)} from ${t.name}.", holder)
+                    if (n > 0) spend(t, step.stat, n, effect, parent, "${owner(holder, effect)} removes $n ${word(step.stat)} from ${t.name}.", holder)
                 }
                 is Action.Echo -> {
                     val t = actor(e.target)
@@ -372,7 +372,7 @@ object Fight {
             val meets = when (stat) { Stat.BURN -> listOf(Stat.CHILL, Stat.WET); Stat.CHILL -> listOf(Stat.BURN); else -> emptyList() }.firstOrNull { t.stat(it) > 0 }
             if (meets != null && source.side != t.side) {
                 val boiled = minOf(n, t.stat(meets))
-                val spent = spend(t, meets, boiled, effect, parent, "${owner(source, effect)} boils off ${word(meets)} on ${t.name}.", source)
+                val spent = spend(t, meets, boiled, effect, parent, "${owner(source, effect)} cancels $boiled ${word(meets)} on ${t.name} into Steam.", source)
                 give(source, source, Stat.STEAM, boiled, via, effect, spent)
                 if (n - boiled > 0) give(source, t, stat, n - boiled, via, effect, parent)
                 return
@@ -381,9 +381,11 @@ object Fight {
             if (gained <= 0) return
             t.stats[stat] = t.stat(stat) + gained
             val who = owner(source, effect)
-            if (stat == Stat.GUARD) emit(EventKind.GUARD_GAINED, source, t, gained, stat, via, effect, parent, if (source === t && effect == null) "${t.name} raises $gained Guard." else "$who gives ${t.name} $gained Guard.")
+            val now = if (t.stat(stat) > gained) " (now ${t.stat(stat)})" else ""
+            val from = effect?.let { " from ${it.name}" }.orEmpty()
+            if (stat == Stat.GUARD) emit(EventKind.GUARD_GAINED, source, t, gained, stat, via, effect, parent, if (source === t) "${t.name} gains $gained Guard$from$now." else "$who gives ${t.name} $gained Guard$now.")
             else emit(EventKind.STAT_GAINED, source, t, gained, stat, via, effect, parent,
-                if (source === t) "$who stores ${word(stat)} (${t.stat(stat)})." else "$who puts ${word(stat)} on ${t.name}${if (t.stat(stat) > 1) " (${t.stat(stat)})" else ""}.")
+                if (source === t) "${t.name} gains $gained ${word(stat)}$from$now." else if (source.side == t.side) "$who gives ${t.name} $gained ${word(stat)}$now." else "$who puts $gained ${word(stat)} on ${t.name}$now.")
         }
 
         fun heal(source: Actor, t: Actor, n: Int, via: Via, effect: EffectDef?, parent: FightEvent, tick: String?) {
@@ -392,10 +394,10 @@ object Fight {
             val who = owner(source, effect)
             if (effective > 0) {
                 t.health += effective
-                emit(EventKind.HEALED, source, t, effective, via = via, effect = effect, parent = parent, text = if (tick != null) "${t.name} $tick for $effective." else if (source === t) "$who heals for $effective." else "$who heals ${t.name} for $effective.")
+                emit(EventKind.HEALED, source, t, effective, via = via, effect = effect, parent = parent, text = if (tick != null) "${t.name} heals $effective from $tick." else if (source === t) "${t.name} heals $effective${effect?.let { " from ${it.name}" }.orEmpty()}." else "$who heals ${t.name} for $effective.")
             }
             val over = n - effective
-            if (over > 0) emit(EventKind.OVERHEAL, source, t, over, via = via, effect = effect, parent = parent, text = if (effective > 0) "" else if (tick != null) "" else "$who has nothing to heal on ${t.name} ($over over).")
+            if (over > 0) emit(EventKind.OVERHEAL, source, t, over, via = via, effect = effect, parent = parent, text = if (effective > 0) "" else if (tick != null) "" else if (source === t) "${t.name} is already at full health." else "$who heals ${t.name}, who is already at full health.")
         }
 
         /** [source] is null for a tick. A direct hit (not a tick) spends a Mark for the bonus and meets Thorns. */
@@ -406,11 +408,11 @@ object Fight {
             if (via != Via.TICK && source != null && source.side != t.side) {
                 if (element != null) n = when (element) { t.def.weakTo -> pct(n, rules.weakPercent); t.def.resists -> pct(n, rules.resistPercent); else -> n }
                 if (element == Element.STORM && t.stat(Stat.WET) > 0) {
-                    spend(t, Stat.WET, 1, effect, parent, "The storm runs through the wet on ${t.name}.", source)
+                    spend(t, Stat.WET, 1, effect, parent, "${t.name} is Wet, so the storm deals ${rules.wetStormBonus} extra damage.", source)
                     n += rules.wetStormBonus
                 }
                 if (t.stat(Stat.MARK) > 0) {
-                    spend(t, Stat.MARK, 1, effect, parent, "$who strikes the Mark on ${t.name}.", source)
+                    spend(t, Stat.MARK, 1, effect, parent, "$who hits the Mark on ${t.name} for ${rules.markBonus} extra damage.", source)
                     n += rules.markBonus
                 }
             }
@@ -420,13 +422,13 @@ object Fight {
                 if (absorbed > 0) {
                     t.stats[Stat.GUARD] = guard - absorbed
                     n -= absorbed
-                    emit(EventKind.GUARD_ABSORBED, source, t, absorbed, Stat.GUARD, via, effect, parent, if (n == 0) "${t.name}'s Guard takes $who's blow ($absorbed)." else "")
+                    emit(EventKind.GUARD_ABSORBED, source, t, absorbed, Stat.GUARD, via, effect, parent, if (n > 0) "" else if (what != null) "${t.name}'s Guard blocks $absorbed damage from $what." else "${t.name}'s Guard blocks all $absorbed damage from $who.")
                     if (guard - absorbed == 0) emit(EventKind.GUARD_BROKEN, source, t, absorbed, Stat.GUARD, via, effect, parent, "${t.name}'s Guard breaks.")
                 }
             }
             if (n > 0) {
                 t.health = maxOf(0, t.health - n)
-                val hit = emit(EventKind.DAMAGE, source, t, n, via = via, effect = effect, parent = parent, text = if (what != null) "${t.name} $what for $n." else "$who hits ${t.name} for $n.")
+                val hit = emit(EventKind.DAMAGE, source, t, n, via = via, effect = effect, parent = parent, text = if (what != null) "${t.name} takes $n damage from $what." else "$who hits ${t.name} for $n.")
                 if (t.health == 0) {
                     t.downed = true
                     emit(EventKind.DOWNED, source, t, via = via, effect = effect, parent = hit, text = "${t.name} is down.")
@@ -437,7 +439,7 @@ object Fight {
                 val thorns = t.stat(Stat.THORNS)
                 t.stats[Stat.THORNS] = 0
                 val spent = emit(EventKind.STAT_SPENT, t, t, thorns, Stat.THORNS, Via.EFFECT, null, parent, "")
-                damage(t, source, thorns, null, pierce = false, via = Via.EFFECT, effect = null, parent = spent, what = "takes the thorns")
+                damage(t, source, thorns, null, pierce = false, via = Via.EFFECT, effect = null, parent = spent, what = "${t.name}'s Thorns")
             }
         }
     }

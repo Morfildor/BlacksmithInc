@@ -60,8 +60,8 @@ object Encounters {
         ).joinToString(", ").ifEmpty { "Free" }
 
     private fun reason(ctx: ResolutionContext, o: Opt): String? = o.blocked
-        ?: (if (ctx.gold < o.gold) "Costs ${o.gold} gold. You have ${ctx.gold}." else null)
-        ?: (if (o.energy > 0 && !ctx.canSpendEnergy(o.energy)) "Needs ${o.energy} energy." else null)
+        ?: (if (ctx.gold < o.gold) "Costs ${o.gold} gold. You have ${ctx.gold} gold." else null)
+        ?: (if (o.energy > 0 && !ctx.canSpendEnergy(o.energy)) "Needs ${o.energy} energy. You don't have enough today." else null)
         ?: o.material?.takeIf { (ctx.materials[it] ?: 0) < 1 }?.let { "Needs 1 ${ctx.content.material(it).name}." }
 
     /** Null when accepted. A repeat of the command that already answered is accepted by the engine before it gets here. */
@@ -96,7 +96,7 @@ object Encounters {
         ctx.encounter = inst.copy(status = EncounterStatus.EXPIRED, chosen = PASS)
         log(ctx, inst, PASS, expired = true)
         val label = EncounterCatalog.options(ctx, inst).first { it.id == PASS }.label
-        ctx.emit(EventType.ENCOUNTER_EXPIRED, 1, "No answer was given to ${def?.name ?: "the visitor"}. Default choice taken. $label.", subjects(inst), mapOf("encounter" to inst.defId, "instance" to inst.id))
+        ctx.emit(EventType.ENCOUNTER_EXPIRED, 1, "${def?.name ?: "The visitor"}: nobody answered, so the free choice was taken: $label.", subjects(inst), mapOf("encounter" to inst.defId, "instance" to inst.id))
     }
 
     /**
@@ -123,7 +123,7 @@ object Encounters {
         val key = counterKey(def)
         ctx.eventCounters[key] = (ctx.eventCounters[key] ?: 0) + 1
         ctx.eventLastDay[key] = ctx.day
-        ctx.emit(EventType.ENCOUNTER_OFFERED, 3, "A visitor arrived this morning. ${def.name}.", subjects(inst), mapOf("encounter" to def.id, "instance" to inst.id))
+        ctx.emit(EventType.ENCOUNTER_OFFERED, 3, "A visitor came to the forge this morning: ${def.name}.", subjects(inst), mapOf("encounter" to def.id, "instance" to inst.id))
     }
 
     fun newId(ctx: ResolutionContext): String = "n${ctx.nextEncounterSerial++}"

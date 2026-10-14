@@ -102,10 +102,10 @@ The player forges an unusual Stormglass sword. A particular ranger buys it becau
 | 9 | Recovery | Hero-driven (not gold-funded direct repair loop) |
 | 9 | Generations | Hybrid: within-run mentorship/retirement + across-run lineages |
 | 9 | Legacy | Strong permanent upgrades |
-| 9 | Disclosure | Descriptive indicators, not explicit probabilities/formulas in UI |
+| 9 | Disclosure | Deterministic effects, costs, thresholds, durations and limits shown exactly with numerals and percentages; hidden random odds descriptive; formulas not shown (revised 2026-10-14) |
 | 9 | Death rewards | Baseline legacy rewards plus achievements/milestones |
 
-**Conflict resolutions:** Three champions are *dynamic* rather than fixed roster slots. Mystery discovery is supported by hints/journal. A *living* faction system determines *which/how strong* attacks are, while major siege timing stays predictable. Short runs coexist with generational impact through cross-run lineages. Affixes and risk are represented descriptively to players even though exact calculations exist internally.
+**Conflict resolutions:** Three champions are *dynamic* rather than fixed roster slots. Mystery discovery is supported by hints/journal. A *living* faction system determines *which/how strong* attacks are, while major siege timing stays predictable. Short runs coexist with generational impact through cross-run lineages. Risk and other random odds are represented descriptively to players even though exact calculations exist internally. An affix's deterministic effect is stated exactly (revised 2026-10-14).
 
 # 3. Player Loop, Game Phases and End Conditions
 
@@ -353,7 +353,7 @@ Combat animation input = an already-calculated `CombatReplay` DTO; renderer prod
 
 # 12. Portrait Workshop UX, Navigation and Accessibility
 
-**LOCKED:** One portrait workshop, detailed close-up forge, menu-driven with panels/drawers/overlays, no movable character; Quick Forge instant result animation; manual market pricing; descriptive probabilities.
+**LOCKED:** One portrait workshop, detailed close-up forge, menu-driven with panels/drawers/overlays, no movable character; Quick Forge instant result animation; manual market pricing; descriptive probabilities, exact deterministic effects.
 
 **PROPOSED top strip:** Day, gold, energy/debt, forge integrity and next invasion. **Center:** Forge environment (furnace/anvil/weapons) with selection/reveal area. **Primary actions:** Quick Forge, Advanced Forge, Materials, Risk, Forge. **Panels:** Market (shelves/pricing/commissions), Town (heroes/champions/threat), Journal (affinities/signatures), Gazette (daily report/archive), Legacy (records/upgrades), Settings. **Bottom:** End Day with contextual warning if unclaimed choices.
 
@@ -362,6 +362,8 @@ Combat animation input = an already-calculated `CombatReplay` DTO; renderer prod
 **Market flow:** Enter shop panel -> inspect items -> select shelf slot -> type price -> list -> review customers/commissions -> return to forge. No manual hero equip actions, bidding controls or negotiation minigames.
 
 **Town flow:** Three current champions prominently shown with equipment and condition; reveal larger population summaries; invasion ETA and pressure descriptors; major battles optionally playable as replays after day resolution.
+
+**Player-facing language (revised 2026-10-14):** Every description, report and choice is understood on the first read by an adult who reads English as a second language: complete sentences in familiar words, explicit triggers, targets, timing, costs and limits, numerals and percentages for quantities, and personality in dialogue and flavour rather than in rules. Reports lead with the outcome. Familiar RPG terms are used where accurate: guild work is a **quest** on a **quest board**, a party has a **retreat rule** (Cautious, Balanced, Reckless), a weapon's fight behaviour is an **effect**, the forge's improvement action is **Upgrade** the first time (quality and condition) and **Repair** afterwards (condition), and a shop order is a **commission**. Original mechanics (Guard, Charge, Mark and the other status effects, Heartfire) keep their names and are explained where they appear. Style guide and glossary: `docs/WRITING_GUIDE.md`.
 
 **Accessibility:** Large tap targets, scalable text, contrast behind art, distinguish rarity with icon/text not color alone, reduced-motion option, haptics/audio toggles, readable numbers, no time-pressure actions. Restore state after rotation/process loss (orientation remains portrait). No essential outcome depends on watching an animation.
 

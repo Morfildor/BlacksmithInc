@@ -168,8 +168,8 @@ object GazetteDigest {
             val weak = w.data["weak"]
             val trait = f.content.siegeTrait(w.data["trait"])
             val first = when {
-                faction != null && weak != null -> "$faction, weak to $weak."
-                faction != null -> "$faction."
+                faction != null && weak != null -> "Attackers: $faction. They are weak to $weak."
+                faction != null -> "Attackers: $faction."
                 else -> null
             }
             val effect = trait?.description?.substringBefore(". ")?.asSentence()
@@ -200,7 +200,7 @@ object GazetteDigest {
             EventType.ARTIFACT_RETURNED -> {
                 val w = weapon(e.subjectIds.firstOrNull())
                 val era = e.data["era"]
-                val body = listOfNotNull(era?.let { "Last recorded in era $it." }, "Hone it to restore its dormant properties.".takeIf { era != null }).joinToString(" ")
+                val body = listOfNotNull(era?.let { "Last recorded in era $it." }, "Upgrade or repair it to restore its dormant properties.".takeIf { era != null }).joinToString(" ")
                     .ifEmpty { LegacyProse.display(e.text) }
                 add(3, e, Story(Kind.LEGEND_RETURNED, if (w != null) "$w returned" else "A legend returned", body, subjectIds = e.subjectIds))
             }
@@ -241,10 +241,10 @@ object GazetteDigest {
             val loot = ev.firstOrNull { it.type == EventType.EXPEDITION_WON && it.data["material"] != null && id != null && id in it.subjectIds && it.id !in used }
             val lootName = loot?.data?.get("material")?.let { m -> f.content.materials.firstOrNull { it.id.value == m } }?.takeIf { it.dailySupplierStock != null }?.name
             val story = if (h != null && foe != null && gold != null) {
-                val used1 = if (w != null) "Used $w and brought back $gold gold." else "Fought without a weapon and brought back $gold gold."
+                val used1 = if (w != null) "Fought with $w and brought back $gold gold." else "Fought without a weapon and brought back $gold gold."
                 val extra = listOfNotNull(lootName?.let { "Also brought back $it." }, title?.let { "The weapon earned a title." })
                 Story(Kind.ELITE, "$h defeated $foe", (listOf(used1) + extra).take(2).joinSentences(), subjectIds = e.subjectIds)
-            } else Story(Kind.ELITE, "An elite foe fell", LegacyProse.display(e.text), subjectIds = e.subjectIds)
+            } else Story(Kind.ELITE, "An elite enemy was defeated", LegacyProse.display(e.text), subjectIds = e.subjectIds)
             add(5, e, story, milestone, title, loot.takeIf { lootName != null })
         }
         for (e in ev.filter { it.type == EventType.EXPEDITION_WON && it.data["material"] != null && it.id !in used }) {

@@ -4416,3 +4416,27 @@ Still for the owner: `Legacy.preview` shows chance-like upgrade tracks as "N for
 - **B, wall work.** A contract's wall mending draws on the day's recovery allowance (cap 2 plus blessing) plus `guild.wallWorkExtraRecovery` (1). Patrol repair takes only what is left. Guildsim 300 runs, seed 1 (tuning block), defeated share before -> E=1 -> E=3: RECOVERY_AWARE 7 -> 23 -> 17 %, REPEAT_RECIPE 72 -> 91 -> 82 %, IGNORE_COUNTER 18 -> 45 -> 31 %, LEGEND_SEEKER 3 -> 12 -> 8 %, ADAPTIVE 0 -> 5 -> 3 %, SUPPLY_FARMER 3 -> 7 -> 5 %. Charter rates move at most 1 point. E=1 is the strict reading. E=3 keeps the card's +5 without patrol repair on top. Owner to confirm the number.
 - **Blessing offer.** Lapses after `combat.blessingOfferDays` (3) mornings with a line (a world flag, no schema change). GoldenStateTest re-recorded: 99 of 300 projection lines move, all on day 5 or later, RNG hashes unchanged.
 - **Dismissing a planned party member** is refused (`MemberUnavailable`, as a wall reservation is), not refunded: the state never holds half a plan and the existing message explains it.
+
+## Clarity and writing pass (2026-10-14)
+
+The owner asked for a complete pass over the player-facing English (rules, quests, reports, onboarding) and, during it,
+for "upgrade or similar RPG language for Hone". Rulings, all wording only: no number, rule, reward, ID, enum, save key
+or RNG draw moved (`GoldenStateTest` unchanged, the 39 debug scenario saves differ only in text).
+- Style and glossary: `docs/WRITING_GUIDE.md`. Terms and the disclosure rule: `docs/GDD_REVISION_2026-10-14.md`.
+- **Hone becomes Upgrade, then Repair.** One command, two names, because the first hone adds `honeQualityBonus` and
+  every later one only restores condition. "Upgrade" alone would promise quality a second hone does not give. Legacy
+  purchases stay "legacy upgrades".
+- **Quest** for guild work, **commission** for shop orders, **retreat rule** for posture, **effect** for a weapon's rule,
+  **priority target** for `Aim.PriorityFoe`, **forge health** for integrity in player text (the bars already said so).
+- **Percentages for quantities, words for odds.** `LaunchContentTest.noPlayerFacingTextContainsAPercentChance` now flags
+  a percentage only beside chance wording; `LegacyPreviewTest` allows the returned-legend share. Odds stay band words.
+- **Fingerprint.** `SiegePrepDef.counters` and `OpeningDef.plan` were reworded, so they and the other display fields of
+  both classes (`sabotageBrief`, `build`, `drawback`) are hashed by presence. Content 6 re-pinned, version unchanged.
+- **Text corrected to match the code** (found while verifying): Bow 35% and Swift 30% of a strike (not "a third");
+  Battlemage Echo answers any Burn, Chill or Wet an enemy gains, whoever applied it; Blood Receipt checks whether anyone
+  in the party paid health; SLAYER counts expedition wins; Shield Wall counter (Burn is blocked by Guard, Bleed is not);
+  Starfall and the relic delve can capture on either stage; Wall work gives 1 militia; laws hold in quest fights only;
+  ranks scale enemy health, strike and support by 15/30/45%; Cowardly keeps 34% of a stage's gold on a retreat.
+- **Open for the owner:** legacy previews show odds as counts; the Heartfire panel still shows its chance as a
+  percentage (decision A's band words for it are handoff item 2); `Highlights.kt:47` never applies its five-sentence cap
+  (the call sits inside a comment); "Injured until day N" means fit again on day N.

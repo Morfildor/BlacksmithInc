@@ -117,7 +117,7 @@ fun ContractCard(contract: ContractUi, onOpenHero: (FaceUi) -> Unit, modifier: M
         FightHighlights(contract.highlights, "shopday_contract_highlights")
         if (contract.lines.isNotEmpty()) {
             Column(Modifier.padding(top = Space.xs).testTag("shopday_contract_lines"), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-                Overline("What it came to")
+                Overline("Gains and losses")
                 contract.lines.forEach { Body(it) }
             }
         }
@@ -131,7 +131,7 @@ fun ContractCard(contract: ContractUi, onOpenHero: (FaceUi) -> Unit, modifier: M
 private fun FightHighlights(highlights: List<String>, tag: String) {
     if (highlights.isEmpty()) return
     Column(Modifier.padding(top = Space.xs).testTag(tag), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-        Overline("What decided it")
+        Overline("Key moments")
         highlights.forEach { Body(it) }
     }
 }
@@ -243,7 +243,7 @@ fun SiegeOutcomeCard(beat: Beat.Aftermath, siege: SiegeOutcomeUi, onOpenHero: (F
         FightHighlights(siege.highlights, "shopday_siege_highlights")
         if (siege.notes.isNotEmpty()) Column(Modifier.testTag("shopday_siege_notes")) {
             // Under the fight's highlights these lines go on under the same heading.
-            if (siege.highlights.isEmpty()) Overline("What decided it")
+            if (siege.highlights.isEmpty()) Overline("Key moments")
             siege.notes.forEach { Text("· $it", style = MaterialTheme.typography.bodyMedium) }
         }
         Body(card.text, Modifier.testTag("shopday_aftermath_text"))
@@ -323,8 +323,8 @@ fun TomorrowCard(tomorrow: Beat.Tomorrow, onOpenGazette: () -> Unit, modifier: M
         Column(Modifier.padding(vertical = Space.sm), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
             Row(Modifier.height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                 FactTile(R.drawable.icon_gold, "${tomorrow.gold}", "Purse", "Purse: ${tomorrow.gold} gold", Modifier.weight(1f).fillMaxHeight())
-                FactTile(R.drawable.icon_nav_market, "${tomorrow.shelf}", "On the shelf", "On the shelf: ${count(tomorrow.shelf, "blade", "blades")}", Modifier.weight(1f).fillMaxHeight())
-                FactTile(R.drawable.icon_action_storage, "${tomorrow.storage}", "In storage", "In storage: ${count(tomorrow.storage, "blade", "blades")}", Modifier.weight(1f).fillMaxHeight())
+                FactTile(R.drawable.icon_nav_market, "${tomorrow.shelf}", "On the shelf", "On the shelf: ${count(tomorrow.shelf, "weapon", "weapons")}", Modifier.weight(1f).fillMaxHeight())
+                FactTile(R.drawable.icon_action_storage, "${tomorrow.storage}", "In storage", "In storage: ${count(tomorrow.storage, "weapon", "weapons")}", Modifier.weight(1f).fillMaxHeight())
             }
             Row(
                 Modifier.fillMaxWidth().background(ForgePanelRaised, MaterialTheme.shapes.extraSmall).border(1.dp, BronzeDeep, MaterialTheme.shapes.extraSmall).padding(Space.sm),
