@@ -309,11 +309,11 @@ private fun Places(ui: GuildUi, a: GuildActions) {
 internal fun charterRows(ui: GuildUi, a: GuildActions): List<GuildRow> = buildList {
     val r = ui.region
     add(GuildRow("charter") {
+        // How the charter is secured is the first step under it; here only what the charter is.
         Column(Modifier.fillMaxWidth().testTag("guild_region")) {
-            SectionTitle(r.charter)
+            SectionTitle(r.charter, Modifier.testTag("guild_charter"))
             if (r.advantage.isNotEmpty()) Text("${EffectKind.BUFF.sign} ${r.advantage}", style = MaterialTheme.typography.bodySmall, color = EffectKind.BUFF.color)
             if (r.constraint.isNotEmpty()) Text("${EffectKind.FLAW.sign} ${r.constraint}", style = MaterialTheme.typography.bodySmall, color = EffectKind.FLAW.color)
-            Text(r.progress, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs).testTag("guild_charter"))
         }
     })
     add(GuildRow("opens") {

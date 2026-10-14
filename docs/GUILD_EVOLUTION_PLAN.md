@@ -175,7 +175,7 @@ a person playing.
 | C06 | Charter victory, retire or continue, claim once | built | `GuildStoriesTest`. The charter siege was not played on a device |
 | C07 | Schema transition and legacy mapping fixtures | built | `GuildMigrationTest` on seven saves written by 0.7.0 |
 | C08 | Guild bots and balance report | sim | DECISIONS, `docs/guild_evolution_evidence/guildsim_balance11.txt`. No human playtest |
-| C09 | Readability pass and Android verification | partly | one emulator pass at one size. No large font, TalkBack, reduced motion, small-screen or phone check of the new screens |
+| C09 | Readability pass and Android verification | partly | one emulator pass at one size. 2026-10-14 (`guild-tab-remaster`): the Guild destination rebuilt as Today plus four parts, seen at 1080x1920, 720x1280 and font 1.3 on a read-only Pixel_10_Pro AVD. No TalkBack, reduced motion or phone check |
 | D01 | One rival, one nemesis | built | nemesis: `GuildStoriesTest`. The rival's test only checks its schedule and that its list is bounded |
 | D02 | Bonds and deed-driven branches | built | `GuildStoriesTest` |
 | D03 | World laws and Guild Ranks | built | `GuildStoriesTest`; no law or rank was seen on a device |

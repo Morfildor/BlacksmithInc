@@ -24,6 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -341,7 +342,7 @@ fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier:
                 colors = SegmentedButtonDefaults.colors(activeContainerColor = BronzeContainer, activeContentColor = Gold, activeBorderColor = Bronze, inactiveContentColor = CreamMuted, inactiveBorderColor = BronzeDeep),
                 icon = {},
                 modifier = Modifier.heightIn(min = 48.dp).testTag("page_${p.name.lowercase()}"),
-            ) { Text(recordsPageName(p), maxLines = 1) }
+            ) { Text(recordsPageName(p), style = if (pages.size > 3) MaterialTheme.typography.labelMedium else LocalTextStyle.current, maxLines = 1, softWrap = false) }
         }
     }
 }

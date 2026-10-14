@@ -149,46 +149,57 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
 }
 
 /**
- * What needs the smith today. On a short screen or with large text only the first row shows, with how many more wait
- * under one tap: the part's own list keeps the room. With nothing to do it is one quiet line.
+ * What needs the smith today. On a short screen or with large text only the first row shows, and a small "+N" on it
+ * opens the rest in place: the part's own list keeps the room, and the parts' dots still say where the others are.
+ * With nothing to do it is one quiet line.
  */
 @Composable
 private fun TodayRows(rows: List<TodayUi>, onAct: (TodayUi) -> Unit) {
-    val compact = LocalDensity.current.fontScale >= 1.3f || LocalConfiguration.current.screenHeightDp < 700
+    val compact = LocalDensity.current.fontScale >= 1.3f || LocalConfiguration.current.screenHeightDp < 760
     var more by rememberSaveable { mutableStateOf(false) }
     val shown = if (compact && !more) rows.take(1) else rows
-    Column(Modifier.fillMaxWidth().background(ForgePanel).padding(horizontal = Space.md, vertical = Space.xs).testTag("guild_today")) {
+    Column(Modifier.fillMaxWidth().background(ForgePanel).padding(horizontal = Space.md).testTag("guild_today")) {
         if (rows.isEmpty()) Secondary("Nothing in the guild needs you today.", Modifier.heightIn(min = 32.dp).padding(vertical = 6.dp))
-        shown.forEach { r ->
-            Row(Modifier.fillMaxWidth().heightIn(min = 40.dp).testTag("guild_today_${r.key}"), verticalAlignment = Alignment.CenterVertically) {
+        shown.forEachIndexed { i, r ->
+            Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).testTag("guild_today_${r.key}"), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.padding(end = Space.sm).size(6.dp).background(Gold, CircleShape))
                 Text(r.text, style = MaterialTheme.typography.bodyMedium, color = Cream, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                InlineActionButton("${r.action}  ›", { onAct(r) }, Modifier.heightIn(min = 40.dp).testTag("guild_today_go_${r.key}"))
+                if (i == 0 && compact && rows.size > 1) Text(
+                    if (more) "Less" else "+${rows.size - 1}", style = MaterialTheme.typography.labelMedium, color = Gold,
+                    modifier = Modifier.border(1.dp, BronzeLine, MaterialTheme.shapes.extraSmall)
+                        .clickable(onClickLabel = if (more) "Show one" else "Show ${rows.size - 1} more", role = Role.Button) { more = !more }
+                        .heightIn(min = 32.dp).widthIn(min = 40.dp).padding(horizontal = 8.dp, vertical = 6.dp).testTag("guild_today_more"),
+                )
+                InlineActionButton("${r.action}  ›", { onAct(r) }, Modifier.testTag("guild_today_go_${r.key}"))
             }
         }
-        if (compact && rows.size > 1) InlineActionButton(if (more) "Fewer" else "${rows.size - 1} more today", { more = !more }, Modifier.testTag("guild_today_more"))
     }
 }
 
-/** The four parts as one row of plates: the chosen one lit, a gold dot where something waits. Scrolls sideways before a name would shrink. */
+/**
+ * The four parts as one row of plates of equal width: the chosen one lit, a dot where something waits. A narrow screen
+ * takes the smaller label; with large text the row scrolls sideways rather than cut a name.
+ */
 @Composable
 private fun GuildTabs(selected: GuildTab, dots: Set<GuildTab>, onSelect: (GuildTab) -> Unit) {
+    val scroll = LocalDensity.current.fontScale >= 1.3f
+    val label = if (LocalConfiguration.current.screenWidthDp < 400) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge
     Row(
-        Modifier.fillMaxWidth().background(ForgePanel).horizontalScroll(rememberScrollState()).padding(horizontal = Space.sm, vertical = Space.xs),
+        Modifier.fillMaxWidth().background(ForgePanel).then(if (scroll) Modifier.horizontalScroll(rememberScrollState()) else Modifier).padding(horizontal = Space.sm, vertical = Space.xs),
         horizontalArrangement = Arrangement.spacedBy(Space.xs),
     ) {
         GuildTab.entries.forEach { t ->
             val on = t == selected
             Row(
-                Modifier.widthIn(min = 80.dp).heightIn(min = 44.dp)
+                (if (scroll) Modifier.widthIn(min = 80.dp) else Modifier.weight(1f)).heightIn(min = 44.dp)
                     .background(if (on) BronzeContainer else Color.Transparent, MaterialTheme.shapes.small)
                     .border(1.dp, if (on) Gold else BronzeDeep, MaterialTheme.shapes.small)
                     .clickable(role = Role.Tab, onClick = { onSelect(t) })
                     .semantics { this.selected = on; if (t in dots) stateDescription = "Needs you" }
-                    .padding(horizontal = 12.dp).testTag("guild_tab_${t.name.lowercase()}"),
+                    .padding(horizontal = 6.dp).testTag("guild_tab_${t.name.lowercase()}"),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
             ) {
-                Text(guildTabName(t), style = MaterialTheme.typography.labelLarge, color = if (on) Gold else CreamMuted, maxLines = 1, softWrap = false)
+                Text(guildTabName(t), style = label, color = if (on) Gold else CreamMuted, maxLines = 1, softWrap = false)
                 if (t in dots) Box(Modifier.padding(start = 6.dp).size(7.dp).background(if (on) Gold else Ember, CircleShape))
             }
         }

@@ -1,5 +1,30 @@
 # Progress — 2026-10-14 (deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Guild tab remaster and siege header (2026-10-14, branch `guild-tab-remaster`, not merged)
+
+Spec and checklist: `docs/superpowers/specs/2026-10-14-guild-tab-remaster-design.md`. UI layer only: no change to `:core`,
+content, balance, siege scheduling or combat. Worktree `.claude/worktrees/guild-remaster` from `117a3a2`.
+- Workshop header (`ui/SiegeHeader.kt`): the day in Alegreya, the siege strip from `town.nextSiegeDay` and
+  `siegeInterval`, the cycle's markers, the defender slots on the eve and the day; the strip opens Guild → Wall
+  (`GameViewModel.openGuildWall`) or Town. The countdown `ThreatStrip` and the Shop's siege card are removed; the
+  matchup and buyers note stay as `SiegeMatchup`. End Day on the siege's day: "Trading first. The siege follows tonight."
+- Guild (`ui/GuildPanel.kt`, `ui/GuildParts.kt`, `ui/GuildPlanUi.kt`): Today rows, four parts with dots, the part
+  remembered per day in saved state (`GuildTabMemory`, `guildTabFor`), What comes next, the assign sheet, the
+  charter's steps. Townsfolk on a Town page of Records in guild runs only.
+- Ran: `:app:testDebugUnitTest` 269 / 0 (new: `SiegeHeaderTest`, `GuildPlanUiTest`, a `SavedStateTest` case);
+  `:app:assembleDebug`. Device pass on a private read-only AVD (Pixel_10_Pro, emulator-5562, 1080x1920 at 420 dpi):
+  guild day 1 (all four parts, Records Town), siege day before End Day (`guild_siege_eve`), the evening and the
+  siege card (no header, the shown day), the next morning (countdown advanced), strip → Wall, Today → Decide /
+  See rescue, the assign sheet, a classic run (strip → Town, three Records pages, the eve's gold tone), font 1.3,
+  720x1280 at 320 dpi, force-stop and Continue. Pinned area on the Guild: about 206 to 211 dp.
+- Not run: `:core:test` (no core change), the instrumented suite (`ShopPanelTest.theSiegeDayLeavesTheLeadFirst`
+  was rewritten and only compiled), the updated device scripts (`guild.sh`, `journey.sh`, `runvariety.sh`,
+  `smoke.sh`, `runend.sh`), TalkBack and reduced motion on device.
+- Pending: the deep road (rules 7, another agent's work in the main checkout) as an entry of What comes next and a
+  special-reward chip once `Reward.road` lands. Merge conflicts expected in `WorkshopScreen.kt` (the `ShopPanel(...)`
+  call), `ShopPanel.kt`, `ForgePanel.kt`, `GuildUi.kt`, CHANGELOG and PROGRESS: keep both sides. The earlier
+  `[Unreleased]` line "The siege in proportion" describes the strip this branch removes.
+
 ## Implementing the 2026-10-14 review (in progress, branch `review-2026-10-14`)
 
 Owner decisions A to M are in DECISIONS ("Owner decisions on the 2026-10-14 review"). Done and committed so far: plan items 6 and 7
