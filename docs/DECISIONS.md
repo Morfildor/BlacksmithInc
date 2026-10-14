@@ -4416,3 +4416,57 @@ Still for the owner: `Legacy.preview` shows chance-like upgrade tracks as "N for
 - **B, wall work.** A contract's wall mending draws on the day's recovery allowance (cap 2 plus blessing) plus `guild.wallWorkExtraRecovery` (1). Patrol repair takes only what is left. Guildsim 300 runs, seed 1 (tuning block), defeated share before -> E=1 -> E=3: RECOVERY_AWARE 7 -> 23 -> 17 %, REPEAT_RECIPE 72 -> 91 -> 82 %, IGNORE_COUNTER 18 -> 45 -> 31 %, LEGEND_SEEKER 3 -> 12 -> 8 %, ADAPTIVE 0 -> 5 -> 3 %, SUPPLY_FARMER 3 -> 7 -> 5 %. Charter rates move at most 1 point. E=1 is the strict reading. E=3 keeps the card's +5 without patrol repair on top. Owner to confirm the number.
 - **Blessing offer.** Lapses after `combat.blessingOfferDays` (3) mornings with a line (a world flag, no schema change). GoldenStateTest re-recorded: 99 of 300 projection lines move, all on day 5 or later, RNG hashes unchanged.
 - **Dismissing a planned party member** is refused (`MemberUnavailable`, as a wall reservation is), not refunded: the state never holds half a plan and the existing message explains it.
+
+## Review 2026-10-14 gameplay batch, balance 15 and content 6 re-pinned (2026-10-14)
+
+Handoff item 5. Targets were evaluation criteria, not goals to force. All numbers from this cloud machine: classic
+`:core:simulate --runs 1000 --seed 1` (new account, 400-day horizon), guild `:core:guildsim --runs 300 --seed 1`
+(Town's Last Hope, horizon 30). Everything below is PROPOSED; the owner may turn any of it off by its config switch.
+
+- **Premium pricing: offers on a premium listing.** A hero who wants a blade listed above what they can pay, or above
+  their own price ceiling (reputation and loyalty), offers what they would pay instead: `min(listed, purse, ceiling)`,
+  never under the asking price, and only for a listing up to `customers.offerUpToPercent` (200) of the asking price.
+  A sale on an offer earns `customers.offerReputation` (0) instead of the sale reputation (1); the record keeps what was
+  asked (`Sale.asked`, a defaulted field, no schema change) and the day's receipt and lines say "an offer under the N
+  asked". Manual pricing is untouched: the smith still sets every price. `--policy gdd --customers --noImpact`, before
+  then after: BALANCED_EXPENSIVE (1.8 times the suggested price) median survival 15 → 25 days (mean 15.7 → 24.4), sold
+  12.1 → 39.3 a run, gold 1,824 → 3,920; BALANCED_FAIR 25 days, 3,628 gold, unchanged; CHEAP, SAFE, RECKLESS, SYNERGY,
+  OVERWORK unchanged to the digit (no listing of theirs is above the asking price); RANDOM 25 → 30 days (random
+  prices). The review's target (EXPENSIVE within 5 days of FAIR) is met. The trade-off: listing high earns about 8 %
+  more gold at the same run length and gives up the reputation of every sale made on an offer. Owner: is that edge the
+  size you want? The levers are `offerReputation` and `offerUpToPercent`.
+- **A decision after day 10.** Measured first: the levers already exist. Arming the watch (BALANCED_ACTIVE) takes the
+  median run from 25 to 35 days and holds siege 4 at 55 %; forging against the besieger (SIEGE_PREP) holds siege 4 at
+  96.5 % (median 45 days); EXPERT 99.4 %. What was missing was variety in what counts: both siege traits only made a
+  siege harder. Two classic traits (review P9, P10) change the answer instead: **Hungry Horde** (raid 0.85, worn weapons
+  count for little: condition floor 0.4; hone or replace) and **Night Assault** (watch and militia 0, raid 0.9; only
+  the champions' weapons count). They are classic only (`SiegeTraitDef.guild = false`): a guild run draws from the old
+  two in the same order, so every guild draw is unchanged. BALANCED_FAIR siege 3 held 22.4 → 25.7 %, siege 4 1.9 → 2.8 %;
+  SYNERGY siege 4 24.3 → 31.2 %. The review's target (siege 4 above 15 % for BALANCED_FAIR) is not met, by choice: that
+  bot never arms the watch or prepares, and making sieges easier for passive play would flatten the decision the active
+  bots show exists. Also P13: a classic warlord siege held leaves Heartfire whatever its number
+  (`legend.classicWarlordHeartfire`); warlord sieges are 0.0 to 0.2 a run, so its effect is small by design.
+- **Accessible advanced forging.** The harness already plays it: SIGNATURE_PURSUIT finds 3.19 signatures a run (91 % of
+  runs), above the review's 1.0; ADVANCED_SMITH 0.39, because it never reads a clue. The gap for a player is
+  information, so the master's lesson now names the catalyst with the recipe (two rungs for one payment, words only).
+- **Alternatives to sabotage.** A new guild bot, NO_SABOTAGE, plays like ADAPTIVE and reads the scouts (weapons and wall
+  against the preparation) but never takes the sabotage: charter 42 % against ADAPTIVE 60 % and IGNORE_COUNTER 3 %.
+  Paired on the same seeds: only ADAPTIVE 91, only NO_SABOTAGE 36, both 90, neither 83; NO_SABOTAGE takes 16.4 more forge
+  damage a run in the first four sieges (s.e. 1.8). So sabotage is not the one necessary action: reading the scouts is,
+  and sabotage adds about 18 points on top. The review's target (IGNORE_COUNTER above 20 %) is not met, by choice: that
+  bot ignores every answer, and lifting it would make the preparation optional. No preparation numbers moved.
+- **Synergy band 40 to 67.** SYNERGY 67 % (61 to 72); by opening 57 to 80 % (blood price 77, overflow 80, plain oath
+  57, salvage 62, stormwell 58) with day-5 loans spread over four or more recipes in each; ADAPTIVE by opening 38 to 80.
+  Six competent policies land 36 to 67 % (SYNERGY 67, ADAPTIVE 60, SUPPLY_FARMER 52, DEFENCE_FIRST 49, NO_SABOTAGE 42,
+  LEGEND_SEEKER 36). No build dominates, so the evidence supports build variety. Recommendation: accept 40 to 67 for
+  G3 and watch the per-opening spread (two openings near 80 under SYNERGY). Owner to confirm.
+- **Militia made clear.** The guild wall says what militia and the armory are worth on the night, in the fight's own
+  numbers: "Militia N and the armory M take up to X health from the enemy before the wall" (`guild.outerHealthPerPoint`
+  0.5 a point, at most `outerMaxPercent` of each foe), and what keeping it costs ("falls by 1 a day; a contract that
+  pays in militia adds to it"). A contract's reward says "+N militia" instead of "strengthens the militia". The
+  comparison against the other defences is on the same card: the defenders' fight follows the outer approach.
+- GoldenStateTest re-recorded: 66 of 300 projection lines move, all on day 6 or later (the first trait draw), RNG
+  hashes included from there, because a different trait changes the siege and every draw after it.
+- Found on the way, not fixed: a class-initialisation cycle `Depth` → `CombatContent` → `LaunchContent` →
+  `Depth.relics` throws when a test touches `Depth` before `LaunchContent` (a filtered `:core:test` run shows it; the
+  full suite and the app always load `LaunchContent` first).

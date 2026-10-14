@@ -1,13 +1,13 @@
 package com.tinyblacksmith.core
 
-import com.tinyblacksmith.core.TestSupport.endDay
-import com.tinyblacksmith.core.TestSupport.engine
+import com.tinyblacksmith.core.TestSupport.endDayId
 import com.tinyblacksmith.core.TestSupport.forgeAccepted
 import com.tinyblacksmith.core.TestSupport.quickSword
 import com.tinyblacksmith.core.TestSupport.run
 import com.tinyblacksmith.core.TestSupport.withMaterials
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.ResolutionContext
+import com.tinyblacksmith.core.engine.stateOrThrow
 import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.persistence.SaveCodec
@@ -17,7 +17,10 @@ import kotlin.test.assertTrue
 
 /** GDD 5 "Reputation": willingness to pay follows shop reputation; loyalty drives repeat customers (docs/DECISIONS.md session 4). */
 class ReputationAndLoyaltyTest {
+    // The price ceiling on its own: a premium listing is not bargained over here (offers are `OffersTest`'s).
+    private val engine = TestSupport.engineWithoutOffers
     private val config = engine.config
+    private fun GameState.endDay(): GameState = engine.handle(this, Command.EndDay(endDayId(this))).stateOrThrow()
 
     /** A fresh run with one safe sword listed at [factor] x the fair price; every hero gets [loyalty] and [gold]. */
     private fun listed(seed: Long, factor: Double, loyalty: Int = 0, reputation: Int = 0, gold: Int = 10_000): Pair<GameState, WeaponId> {

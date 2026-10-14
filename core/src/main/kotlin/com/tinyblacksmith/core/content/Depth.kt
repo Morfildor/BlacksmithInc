@@ -38,6 +38,8 @@ data class SiegeTraitDef(
     val wearMultiplier: Double = 1.0,
     val watchMultiplier: Double = 1.0,
     val raidMultiplier: Double = 1.0,
+    /** Drawn in a guild run too. A trait whose numbers only the classic, scalar siege reads (`Battle.outlook`) is false. */
+    val guild: Boolean = true,
 )
 
 object Depth {
@@ -58,6 +60,8 @@ object Depth {
 
     const val LONG_ASSAULT = "long_assault"
     const val MANY_BREACHES = "many_breaches"
+    const val HUNGRY_HORDE = "hungry_horde"
+    const val NIGHT_ASSAULT = "night_assault"
 
     // Weights, limits and cooldowns are PROPOSED.
     val encounters = listOf(
@@ -91,5 +95,10 @@ object Depth {
             "Stock fresh weapons for the defenders or arm the watch. Watch weapons don't wear out.", conditionFloorFactor = 0.6, wearMultiplier = 2.0),
         SiegeTraitDef(MANY_BREACHES, "Many Breaches", "Multiple gates are under attack. The watch and militia contribute much more, but the raid is stronger too.",
             "Donate weapons to the watch or improve the champions' gear. Plain weapons help too.", watchMultiplier = 1.75, raidMultiplier = 1.05),
+        // Review 2026-10-14 (proposals P9, P10): two traits that change what counts instead of only making the siege harder.
+        SiegeTraitDef(HUNGRY_HORDE, "Hungry Horde", "A ragged horde, hungrier than it is strong. The raid is weaker, but worn weapons count for little against it.",
+            "Hone or replace the champions' worn weapons. A fresh weapon counts for more than a strong worn one.", conditionFloorFactor = 0.4, raidMultiplier = 0.85, guild = false),
+        SiegeTraitDef(NIGHT_ASSAULT, "Night Assault", "They come over the wall at night. The watch and militia are not at their posts, and only the champions fight. The raid is smaller.",
+            "Arm the champions with your best weapons. Weapons given to the watch won't help this time.", watchMultiplier = 0.0, raidMultiplier = 0.9, guild = false),
     )
 }

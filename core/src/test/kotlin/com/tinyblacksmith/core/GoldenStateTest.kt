@@ -23,6 +23,9 @@ class GoldenStateTest {
     // Re-recorded for balance 15 (review 2026-10-14, row 36): the script never answers a blessing offer, so from the first
     // won siege the projection now shows the offer's last day as a world flag and, three mornings on, the offer withdrawn.
     // 99 of 300 lines moved, all on day 5 or later; every RNG hash is unchanged.
+    // Re-recorded again for the review's gameplay batch: a classic run draws its siege trait from four (Hungry Horde and
+    // Night Assault joined), so 66 of 300 lines move, all on day 6 or later, where a different trait changes the siege and
+    // the draws after it. No line before the first trait draw moved.
     private val resource = "golden/state_rules${GameEngine.RULES_VERSION}.txt"
 
     /** Records that describe a day without being gameplay. A task that adds such a type names it here on purpose. */

@@ -62,6 +62,7 @@ enum class VisitFactor {
     @EncodeDefault(NEVER) val tradeInCredit: Int = 0, @EncodeDefault(NEVER) val tradeInWeaponId: WeaponId? = null,
     val cashPaid: Int,                                // coin the customer paid; for a commission, the reward
     @EncodeDefault(NEVER) val saleBonus: Int = 0, @EncodeDefault(NEVER) val stipend: Int = 0, @EncodeDefault(NEVER) val commissionId: CommissionId? = null,
+    @EncodeDefault(NEVER) val asked: Int? = null,     // bought on an offer: the price the blade was listed at; [listedPrice] is what was paid
 )   // the shop's gold rises by cashPaid + saleBonus + stipend
 
 enum class RecognitionCue { FIRST_VISIT, FIRST_BLADE, BECAME_REGULAR, REGULAR_RETURNS, STILL_CARRIES, BLADE_WORN, HELD_THE_WALL,

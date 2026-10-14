@@ -1,5 +1,6 @@
 package com.tinyblacksmith.core.engine
 
+import com.tinyblacksmith.core.crafting.ClueRung
 import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.content.AffixKind
 import com.tinyblacksmith.core.content.Depth
@@ -241,13 +242,16 @@ internal object EncounterCatalog {
                     c.emit(EventType.DISCOVERY, 3, "Pairing learned. $subject. ${Journal.describeAffinity(Journal.affinityFor(c.content, i.key)).replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to i.key))
                     "Spent the afternoon learning $subject with the master smith."
                 },
-                Opt("lesson", "Buy a recipe clue", i.otherKey?.let { "Adds a recipe clue for ${Journal.subjectName(ctx.content, it)}." } ?: "Nothing to tell.", gold = n("gold"),
+                Opt("lesson", "Buy a recipe clue", i.otherKey?.let { "Adds a recipe clue for ${Journal.subjectName(ctx.content, it)}, and the catalyst it wants." } ?: "Nothing to tell.", gold = n("gold"),
                     blocked = openSignatures(ctx).firstOrNull { it.journalKey == i.otherKey }.let { if (it == null) "You've already learned all the clues she can offer." else null }) { c ->
                     val sig = openSignatures(c).first { it.journalKey == i.otherKey }
-                    val rung = Journal.nextRung(c.legacy.journal, sig)!!
-                    Journal.earn(c, sig, rung)
-                    val clue = Journal.clue(sig, rung, c.config)
-                    c.emit(EventType.DISCOVERY, 3, "The master smith shared a clue about ${Journal.subjectName(c.content, sig.journalKey)}. ${clue.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to sig.journalKey, "rung" to rung.name))
+                    // Review 2026-10-14: the lesson is the door to Advanced forging, so the master names the catalyst too
+                    // (the rung a Quick forge never earns), whatever rung the journal stood at. Words only, never odds.
+                    val rungs = listOfNotNull(Journal.nextRung(c.legacy.journal, sig), ClueRung.CATALYST).distinct()
+                        .filter { it !in Journal.rungs(c.legacy.journal, sig) }
+                    rungs.forEach { Journal.earn(c, sig, it) }
+                    val clue = rungs.joinToString(". ") { Journal.clue(sig, it, c.config).replaceFirstChar { ch -> ch.uppercase() } }
+                    c.emit(EventType.DISCOVERY, 3, "The master smith shared a clue about ${Journal.subjectName(c.content, sig.journalKey)}. $clue.", data = mapOf("key" to sig.journalKey, "rung" to rungs.joinToString(",") { it.name }))
                     "Paid ${n("gold")} gold for a recipe clue."
                 },
                 pass("Keep working", "The master smith moved on. You kept working."),

@@ -257,9 +257,9 @@ class RelicsAndSiegeTraitsTest {
         assertNull(fresh().siege!!.traitId)
         assertEquals(scenario.traitId, after.resolution!!.events.singleOrNull { it.type == EventType.SIEGE_TRAIT }?.data?.get("trait"))
         assertEquals(scenario.traitId, engine.siegeForecast(after.state)!!.trait?.id)
-        // Over many seeds both traits and the plain siege all occur.
+        // Over many seeds every trait of a classic run and the plain siege all occur.
         val drawn = (1L..40L).mapNotNull { seed -> siegeEve(null, seed).endDay().takeIf { !it.isEnded }?.siege?.traitId ?: "plain" }.toSet()
-        assertEquals(setOf("plain", Depth.LONG_ASSAULT, Depth.MANY_BREACHES), drawn)
+        assertEquals(setOf("plain") + Depth.siegeTraits.map { it.id }, drawn)
     }
 
     @Test

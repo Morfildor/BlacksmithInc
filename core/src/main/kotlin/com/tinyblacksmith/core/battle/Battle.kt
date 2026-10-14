@@ -258,7 +258,9 @@ object Battle {
     fun scheduleNext(ctx: ResolutionContext) {
         val cfg = ctx.config.depth
         val number = ctx.town.siegesSurvived + ctx.town.siegesLost + 1
-        val drawn = if (ctx.content.siegeTraits.isEmpty() || number < cfg.firstTraitSiege) null else ctx.rng(RngStream.ENCOUNTERS).let { if (it.chance(cfg.traitChance)) it.pick(ctx.content.siegeTraits) else null }
+        // A guild run draws only the traits its fight reads; the list keeps its order, so the draw is the one it always was.
+        val traits = ctx.content.siegeTraits.filter { ctx.guild == null || it.guild }
+        val drawn = if (traits.isEmpty() || number < cfg.firstTraitSiege) null else ctx.rng(RngStream.ENCOUNTERS).let { if (it.chance(cfg.traitChance)) it.pick(traits) else null }
         ctx.siege = SiegeScenario(ctx.town.nextSiegeDay, drawn?.id)
         if (drawn != null) ctx.emit(EventType.SIEGE_TRAIT, 6, "Scouts expect ${drawn.name.lowercase()} on day ${ctx.town.nextSiegeDay}. ${drawn.description}", data = mapOf("trait" to drawn.id, "day" to ctx.town.nextSiegeDay.toString()))
     }
@@ -338,8 +340,11 @@ object Battle {
                 ctx.milestone("WARLORD_DEFEATED", "Emberfall defeated a warlord at the walls.")
                 for ((h, w) in champions) if (w != null) com.tinyblacksmith.core.crafting.Legends.deed(ctx, w.id, config.depth.legend.renownWarlord, "${h.fullName} held the wall with it against ${faction.warlordName}.", listOf(h.id.value))
             }
-            // What a held wall leaves in the coals: the classic run's source of Heartfire, from the siege named in the config on.
-            if (ctx.town.siegesSurvived + ctx.town.siegesLost >= config.depth.legend.classicSiegeHeartfireFrom) com.tinyblacksmith.core.crafting.Legends.gainHeartfire(ctx, 1, "The wall held and something of the siege stayed in the coals.")
+            // What a held wall leaves in the coals: the classic run's source of Heartfire, from the siege named in the config on,
+            // and from any siege a warlord led.
+            val legend = config.depth.legend
+            if (ctx.town.siegesSurvived + ctx.town.siegesLost >= legend.classicSiegeHeartfireFrom || (o.warlord && legend.classicWarlordHeartfire))
+                com.tinyblacksmith.core.crafting.Legends.gainHeartfire(ctx, 1, "The wall held and something of the siege stayed in the coals.")
             ctx.milestone("SIEGE_SURVIVED", "Emberfall survived its first siege.")
             offerBlessing(ctx)
         } else {

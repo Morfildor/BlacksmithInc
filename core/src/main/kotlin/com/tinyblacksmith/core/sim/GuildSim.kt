@@ -36,6 +36,8 @@ enum class GuildPolicy(val about: String) {
     RECOMMENDED("takes the first of everything it is offered: opening, relic, contract, the suggested party, a balanced temper"),
     LEGEND_SEEKER("plays like the adaptive smith and goes after Heartfire: the starfall site, the deep hall, a taken weapon, and a Heartfire forging as soon as one can break through"),
     SUPPLY_FARMER("takes only supply runs until day 10 and sells what it forges, then plays like the adaptive smith with the gold it saved"),
+    // Review 2026-10-14: is spoiling the preparation the only answer? This smith answers it every other way.
+    NO_SABOTAGE("plays like the adaptive smith and reads the scouts, weapons and wall against what comes, but never takes the sabotage"),
 }
 
 data class GuildRunStats(
@@ -95,8 +97,8 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
     private var leaving: Pair<Int, Int>? = null
     private val modifiers = HashMap<String, Int>()
     /** The smiths that play the whole board. */
-    private val adaptive = policy in setOf(GuildPolicy.ADAPTIVE, GuildPolicy.REPEAT_RECIPE, GuildPolicy.IGNORE_COUNTER, GuildPolicy.LEGEND_SEEKER, GuildPolicy.SUPPLY_FARMER)
-    private val chains = policy == GuildPolicy.SYNERGY || policy == GuildPolicy.ADAPTIVE || policy == GuildPolicy.LEGEND_SEEKER || policy == GuildPolicy.SUPPLY_FARMER
+    private val adaptive = policy in setOf(GuildPolicy.ADAPTIVE, GuildPolicy.NO_SABOTAGE, GuildPolicy.REPEAT_RECIPE, GuildPolicy.IGNORE_COUNTER, GuildPolicy.LEGEND_SEEKER, GuildPolicy.SUPPLY_FARMER)
+    private val chains = policy == GuildPolicy.SYNERGY || policy == GuildPolicy.ADAPTIVE || policy == GuildPolicy.NO_SABOTAGE || policy == GuildPolicy.LEGEND_SEEKER || policy == GuildPolicy.SUPPLY_FARMER
     /** Day the supply farmer stops farming. */
     private val farmUntil = 10
     private fun farming(s: GameState) = policy == GuildPolicy.SUPPLY_FARMER && s.day <= farmUntil
@@ -190,14 +192,14 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
     private fun pushes(s: GameState): Boolean = when (policy) {
         GuildPolicy.GREEDY_DIVER, GuildPolicy.HIGHEST_STAT -> true
         GuildPolicy.LEGEND_SEEKER -> s.guild!!.mission!!.party.all { (s.heroes[it]?.health ?: 0) >= 50 }
-        GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE, GuildPolicy.REPEAT_RECIPE, GuildPolicy.IGNORE_COUNTER, GuildPolicy.SUPPLY_FARMER -> s.guild!!.mission!!.party.all { (s.heroes[it]?.health ?: 0) >= 70 }
+        GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE, GuildPolicy.NO_SABOTAGE, GuildPolicy.REPEAT_RECIPE, GuildPolicy.IGNORE_COUNTER, GuildPolicy.SUPPLY_FARMER -> s.guild!!.mission!!.party.all { (s.heroes[it]?.health ?: 0) >= 70 }
         else -> false
     }
 
     private fun relic(s: GameState): GameState {
         val offer = s.pendingRelicOffer
         val wanted = when (policy) {
-            GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE, GuildPolicy.LEGEND_SEEKER, GuildPolicy.REPEAT_RECIPE, GuildPolicy.IGNORE_COUNTER, GuildPolicy.SUPPLY_FARMER -> listOf("overflow_basin", "salvage_bell", "storm_ledger", "blood_receipt", "furnace_lung", "bone_music_box")
+            GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE, GuildPolicy.NO_SABOTAGE, GuildPolicy.LEGEND_SEEKER, GuildPolicy.REPEAT_RECIPE, GuildPolicy.IGNORE_COUNTER, GuildPolicy.SUPPLY_FARMER -> listOf("overflow_basin", "salvage_bell", "storm_ledger", "blood_receipt", "furnace_lung", "bone_music_box")
             GuildPolicy.RECOVERY_AWARE -> listOf("cowards_medal", "overflow_basin")
             GuildPolicy.SHOP_FOCUSED -> listOf("collectors_seal", "tempering_ledger", "ashen_bellows")
             else -> emptyList()
@@ -311,7 +313,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
                 else -> null
             }
             val augment = augments.firstOrNull { it.id == planned && afford(it) } ?: when (policy) {
-                GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE, GuildPolicy.LEGEND_SEEKER, GuildPolicy.IGNORE_COUNTER, GuildPolicy.SUPPLY_FARMER -> augments.firstOrNull { it.id == com.tinyblacksmith.core.content.LaunchContent.STORMGLASS && afford(it) && bare?.classId?.value == "guardian" } ?: augments.firstOrNull { it.element == weak && afford(it) }
+                GuildPolicy.SYNERGY, GuildPolicy.ADAPTIVE, GuildPolicy.NO_SABOTAGE, GuildPolicy.LEGEND_SEEKER, GuildPolicy.IGNORE_COUNTER, GuildPolicy.SUPPLY_FARMER -> augments.firstOrNull { it.id == com.tinyblacksmith.core.content.LaunchContent.STORMGLASS && afford(it) && bare?.classId?.value == "guardian" } ?: augments.firstOrNull { it.element == weak && afford(it) }
                 GuildPolicy.DEFENCE_FIRST -> augments.firstOrNull { it.element == weak && afford(it) }
                 else -> null
             } ?: (if (rich) augments.lastOrNull { afford(it) } else augments.firstOrNull { have(it.id) } ?: augments.firstOrNull { afford(it) }) ?: break
@@ -409,6 +411,9 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
             // With the wall in doubt the sabotage comes first; with a strong wall the siege's opportunity is worth more than spoiling what would not have got through.
             GuildPolicy.ADAPTIVE -> listOf(MissionArchetype.RESCUE) + (if (s.town.integrity < 50) listOf(MissionArchetype.EMERGENCY) else emptyList()) +
                 (if (wallLooksStrong(s) && health >= 75) listOf(MissionArchetype.OPPORTUNITY, MissionArchetype.SABOTAGE) else listOf(MissionArchetype.SABOTAGE, MissionArchetype.OPPORTUNITY)) +
+                (if (health >= 75 && fit.size >= 2) listOf(MissionArchetype.RECOVERY, MissionArchetype.HUNT, MissionArchetype.ESCORT) else emptyList()) + listOf(MissionArchetype.SUPPLY)
+            GuildPolicy.NO_SABOTAGE -> listOf(MissionArchetype.RESCUE) + (if (s.town.integrity < 50) listOf(MissionArchetype.EMERGENCY) else emptyList()) +
+                (if (health >= 75) listOf(MissionArchetype.OPPORTUNITY) else emptyList()) +
                 (if (health >= 75 && fit.size >= 2) listOf(MissionArchetype.RECOVERY, MissionArchetype.HUNT, MissionArchetype.ESCORT) else emptyList()) + listOf(MissionArchetype.SUPPLY)
             GuildPolicy.PASSIVE -> emptyList()
             // The adaptive smith's order, with one thing changed in each.

@@ -1,5 +1,6 @@
 package com.example.blacksmithproject.ui
 
+import kotlin.math.roundToInt
 import androidx.compose.runtime.Immutable
 import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.combat.Action
@@ -71,6 +72,8 @@ data class WallUi(
     val reserve: List<ReserveUi>, val missing: List<String>,
     /** Rules 6: the preparation still standing, the one a party spoiled, and the bearer of a weapon of this forge who marches with them. */
     val prep: PrepUi? = null, val spoiled: String? = null, val nemesis: String? = null,
+    /** What the militia and the armory are worth on the night, and what militia costs to keep: the rule's own numbers. */
+    val watchLine: String = "",
 )
 
 /** The choice at the door of a deeper stage. [chosen] is what the smith has already sent word of today. */
@@ -183,7 +186,7 @@ private fun GameEngine.rewardWords(state: GameState, r: Reward, factionId: Facti
     r.materials.entries.joinToString(", ") { "${it.value} ${content.material(it.key).name}" }.ifEmpty { null },
     factionId?.takeIf { r.suppression > 0 }?.let { "sets ${content.faction(it).name} back" },
     "mends the wall".takeIf { r.integrity > 0 },
-    "strengthens the militia".takeIf { r.militia > 0 },
+    "+${r.militia} militia".takeIf { r.militia > 0 },
     "spoils their preparations for the siege".takeIf { r.sabotage },
     "a relic to choose".takeIf { r.relicOffer },
     "${r.heartfire} Heartfire for the forge".takeIf { r.heartfire > 0 },
@@ -278,6 +281,7 @@ private fun GameEngine.wallUi(state: GameState, g: GuildRunState): WallUi {
             plannedAway?.let { if (left <= 0) "The party you planned leaves today and is not on the wall tonight." else "The party you planned is away on the siege night of day ${town.nextSiegeDay}." },
         ),
         watch = f.watch, forgeHealth = town.integrity,
+        watchLine = watchLine(town.militia, town.armory, f.watch),
         forgeHealthMax = maxOf(town.integrity, config.startingForgeIntegrity + upgradeTotal(state.legacy, UpgradeEffect.STARTING_INTEGRITY)),
         defenders = f.defenders.map { (h, w) -> DefenderUi(h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), w?.name ?: "Unarmed", g.isMember(h.id), h.id in g.reserved) },
         places = config.guild.defenders,
@@ -297,6 +301,14 @@ private fun GameEngine.wallUi(state: GameState, g: GuildRunState): WallUi {
         nemesis = f.nemesis?.let { n -> "${n.name} marches with them" + (state.weapons[n.weaponId]?.let { ", carrying ${it.name}, a weapon of this forge." } ?: ".") },
     )
 }
+
+/**
+ * Militia and the armory on the wall, as `SiegeFight.field` uses them: [watch] (both, times a trait) takes up to this much
+ * enemy health on the way in, before the defenders fight. Militia is earned by contracts and falls by a point a day.
+ */
+internal fun GameEngine.watchLine(militia: Int, armory: Int, watch: Int): String =
+    "Militia $militia and the armory $armory take up to ${(watch * config.guild.outerHealthPerPoint).roundToInt()} health from the enemy before the wall. " +
+        "Militia falls by ${config.militiaDecayPerDay} a day. A contract that pays in militia adds to it."
 
 private fun GameEngine.partyUi(state: GameState, m: MissionInstance): PartyUi {
     val who = m.party.mapNotNull { state.heroes[it]?.fullName }

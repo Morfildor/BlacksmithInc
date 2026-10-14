@@ -53,6 +53,11 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 - **The guild board reads at a glance.** Each contract leads with its danger (Safe, Dangerous or Lethal) and what the first day brings, then the days and the fee, with why it was posted and its twist when it has one. The stages, enemies, what to bring and what is lost are on the contract's sheet.
 - The roster is one line per member under the name (class, health, kept for the wall), with what is wrong and what they carry. Role and trait are on the hero's sheet. Candidates show class and trait name in one line.
 - The roster says once what members at home do: the hurt rest and the fit train on their own, and you choose who goes out and who holds the wall.
+- **Premium prices are a choice, not a cliff.** A hero who wants a weapon listed above what they can or would pay makes an offer instead, never under the suggested price, for a listing up to twice it. You keep the gold of the offer but not the reputation of a full-price sale. The day's receipt says "an offer under the N asked".
+- **Two new siege traits in runs without a charter.** Hungry Horde: a weaker raid, but worn weapons count for little. Night Assault: the watch and militia stay home and only the champions fight.
+- In a run without a charter, a siege led by a warlord and held leaves Heartfire, whatever its number.
+- The master smith's lesson names the catalyst a signature recipe wants, along with the recipe.
+- The guild wall says what militia and the armory take from the enemy before the wall and that militia falls by one a day. A contract that pays in militia says how much.
 - The shop day's first card no longer explains every morning that each visit will be shown. It speaks only when some visits are summed up after.
 - A weapon given away (listed for less than a quarter of its price) is a gift, not a sale. It earns no sale reputation. The town notices generosity once a day, and a gift warms a hero to the shop only so far, never into a regular.
 - A blessing offer nobody answers is withdrawn after three mornings, with a line in the day's records.

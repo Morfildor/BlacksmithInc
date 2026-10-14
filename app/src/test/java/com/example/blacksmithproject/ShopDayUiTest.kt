@@ -141,7 +141,9 @@ class ShopDayUiTest {
                 assertEquals("${sale.cashPaid + sale.saleBonus + sale.stipend} gold", ui.receipt.last().value)
                 assertTrue(ui.receipt.last().total)
                 // A request is paid its reward, whatever tag the blade wore: its receipt has no listed price to add up from.
-                assertEquals(sale.listedPrice?.takeIf { v.kind != VisitKind.COMMISSION }?.let { "$it gold" }, ui.receipt.firstOrNull { it.label == "Listed price" }?.value)
+                assertEquals((sale.asked ?: sale.listedPrice)?.takeIf { v.kind != VisitKind.COMMISSION }?.let { "$it gold" }, ui.receipt.firstOrNull { it.label == "Listed price" }?.value)
+                // An offer under a premium listing is its own row, so the rows still add up to what was paid.
+                assertEquals(sale.asked?.let { "−${it - sale.listedPrice!!} gold" }, ui.receipt.firstOrNull { it.label == "Their offer, accepted" }?.value)
                 assertEquals(sale.tradeInWeaponId != null, ui.receipt.any { it.label.startsWith("Trade-in") })
                 if (sale.tradeInWeaponId != null) assertEquals("−${sale.tradeInCredit} gold", ui.receipt.first { it.label.startsWith("Trade-in") }.value)
                 assertEquals("label and value rows only: no row is a sentence", 0, ui.receipt.count { "." in it.label || "." in it.value })

@@ -32,7 +32,8 @@ class VersionFingerprintTest {
         // Re-pinned while rules 6 is unreleased (from d047912e...): four contract modifiers that change the decision and their fields, the watch on a rescue, a second class a charter offers, Licensed Bad Ideas, three opening drawbacks in gold, the Hunt's numbers.
         // 6, re-pinned while unreleased: with the deep forging catalog (a fight rule for each metal, ingredient notes, interaction paths, Void Ink and Dragon Oil rewritten for new weapons).
         // 6, re-pinned for the fingerprint only (from 03d44c0f...): an opening's `costNote` is display text, hashed by presence like `pitch`. No number moved.
-        6 to "d6a80e4ee6492445f38eda0b3cc79690578c0416323208e49b978c13f4b1cf9f",
+        // 6, re-pinned while unreleased (from d6a80e4e...): review 2026-10-14 gameplay batch, two classic siege traits (Hungry Horde, Night Assault) and the `guild` flag on a trait.
+        6 to "e921ee0ca7e4d17bf802bd13fd3e5482428a319ff6c14bd9199eff91b94fdf36",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
@@ -55,7 +56,8 @@ class VersionFingerprintTest {
         // 14: the guild siege base 190, measured with the metals' fight rules in the catalog.
         14 to "d2bbbd8006abe14140974b640e35f41c2221e346820700bc2aa57addde50271d",
         // 15: review 2026-10-14 fixes, one unreleased step, re-pinned inside it: the blessing offer's days (0ef78325...), the guild's wall work extra (dd718587...), the three gift numbers.
-        15 to "bbbca78a45d05a0dfaf682e4acee49cf37964560d036ce7503f3cd6bf05746fa",
+        // 15, re-pinned again inside the unreleased step (from bbbca78a...): offers on a premium listing (`customers.offers`, `offerReputation`, `offerUpToPercent`) and Heartfire from a classic warlord siege (`legend.classicWarlordHeartfire`).
+        15 to "11959662224a023af282cb8a4942b96fdf887b16150f76f01908bbe1f80fe1bc",
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where", "costNote")

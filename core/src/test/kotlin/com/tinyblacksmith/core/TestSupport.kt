@@ -18,6 +18,9 @@ object TestSupport {
      */
     val engineWithoutOpenings = GameEngine(LaunchContent.catalog.copy(guild = LaunchContent.catalog.guild!!.copy(openings = emptyList())))
 
+    /** The default balance with offers on a premium listing turned off: for tests of the price ceiling itself (`OffersTest` has the offers). */
+    val engineWithoutOffers = GameEngine(config = engine.config.copy(customers = engine.config.customers.copy(offers = false)))
+
     /** A guild run with the first offered opening taken. */
     fun GameEngine.guildRun(legacy: LegacyProfile, seed: Long, charterId: String, openingId: String? = null): GameState =
         newRun(legacy, seed, charterId = charterId).let { s -> handle(s, Command.ChooseOpening(openingId ?: s.guild!!.openingOffer.first().defId)).stateOrThrow() }

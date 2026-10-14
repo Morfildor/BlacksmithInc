@@ -36,6 +36,14 @@ with stubs for the Android-only APIs, which runs the app's JVM unit tests and ty
   `modifierName`), the rest moved to the contract sheet (why, description, modifier, stake, expiry); roster and
   candidate rows one line under the name (`MemberUi.line`, `CandidateUi.line`); J: `HOME_LINE` under the roster head,
   CLAUDE.md and GUILD_EVOLUTION_SPEC step 5 say members at home rest or train on their own. App unit tests 251 / 0.
+- Item 5, gameplay batch (DECISIONS "Review 2026-10-14 gameplay batch"): offers on a premium listing
+  (`customers.offers`, `offerReputation`, `offerUpToPercent`, `Sale.asked`), two classic siege traits (Hungry Horde,
+  Night Assault, `SiegeTraitDef.guild`), Heartfire from a classic warlord siege, the lesson names the catalyst, a
+  NO_SABOTAGE guild bot, the synergy band evidence, militia's worth on the wall. Balance 15 and content 6 re-pinned
+  inside their unreleased steps; GoldenStateTest re-recorded (66 of 300 lines, day 6 on); 39 scenario saves rewritten.
+  `:core:test` 636: every class that failed on the way passes in the targeted reruns after the fixes; app unit tests
+  251 / 0. Targets met: EXPENSIVE within 5 days of FAIR (equal median), signatures above 1.0 for the pursuing bot.
+  Not met by choice, for the owner: siege 4 above 15 % for the passive fair bot, IGNORE_COUNTER above 20 %.
 
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay

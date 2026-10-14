@@ -461,6 +461,16 @@ data class CustomerConfig(
     val giftReputationPerDay: Int = 1,
     /** A gift warms a hero to the shop up to this loyalty and no further (below [BalanceConfig.regularLoyaltyThreshold]: gifts never make a regular). */
     val giftLoyaltyCap: Int = 2,
+    // Review 2026-10-14 gameplay batch (PROPOSED): an offer on a premium listing, so a price above the going rate is a trade-off, not a cliff.
+    /**
+     * A hero who wants a blade listed above what they can pay, or above what they think it is worth (their price ceiling),
+     * offers what they would pay instead, never less than its asking price. Off: they refuse, as before.
+     */
+    val offers: Boolean = true,
+    /** Only a listing up to this percent of the asking price is met with an offer; dearer than that, the hero walks away as before. */
+    val offerUpToPercent: Int = 200,
+    /** Reputation a sale bought on an offer earns: a bargain is not talked about as a full-price sale is ([saleReputation]). */
+    val offerReputation: Int = 0,
 )
 
 /** v5: replays and weapon fates. What is told of a fight, and what becomes of a fallen hero's blade (GDD 7, 11; all PROPOSED). */
@@ -683,6 +693,8 @@ data class LegendConfig(
     val coreTierFromDay: Map<Int, Int> = mapOf(5 to 6, 6 to 11),
     /** A classic run: a siege won from this number on leaves one Heartfire. */
     val classicSiegeHeartfireFrom: Int = 4,
+    /** Review 2026-10-14 (P13): a warlord held at the wall leaves Heartfire whatever the siege's number, so a new classic account can reach Legendary before its fourth siege. */
+    val classicWarlordHeartfire: Boolean = true,
 )
 
 /**

@@ -253,7 +253,9 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
             // A request pays its agreed reward and a collector more than the tag: each gets its own row, so the rows add up to the total.
             if (v.kind == VisitKind.COMMISSION) add(ReceiptRow("Commission payment", "${sale.cashPaid} gold"))
             else sale.listedPrice?.let { listed ->
-                add(ReceiptRow("Listed price", "$listed gold"))
+                add(ReceiptRow("Listed price", "${sale.asked ?: listed} gold"))
+                // Bought on an offer: what the hero would pay for a premium listing, never under the asking price.
+                sale.asked?.let { asked -> add(ReceiptRow("Their offer, accepted", "−${asked - listed} gold")) }
                 if (v.kind == VisitKind.COLLECTOR && sale.cashPaid > listed) add(ReceiptRow("Collector's premium", "+${sale.cashPaid - listed} gold"))
                 if (v.kind == VisitKind.COLLECTOR && sale.cashPaid < listed) add(ReceiptRow("Collector's discount", "−${listed - sale.cashPaid} gold"))
             }

@@ -202,6 +202,13 @@ class GuildUiTest {
         assertEquals(listOf("Safe", "Dangerous", "Lethal"), Danger.entries.map { dangerWord(it) })
         for (m in ui.roster) assertEquals("${m.sub} · ${m.health}" + if (m.reserved) " · kept for the wall" else "", m.line)
         assertEquals("At home, the hurt rest and the fit train on their own. You choose who goes out and who holds the wall.", ui.rosterNote)
+        // Militia's worth on the wall in the fight's own numbers, and what keeping it costs.
+        val t = fresh.town
+        assertEquals(
+            "Militia ${t.militia} and the armory ${t.armory} take up to ${Math.round(ui.wall.watch * engine.config.guild.outerHealthPerPoint)} health from the enemy before the wall. " +
+                "Militia falls by ${engine.config.militiaDecayPerDay} a day. A contract that pays in militia adds to it.",
+            ui.wall.watchLine,
+        )
     }
 
     @Test

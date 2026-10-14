@@ -317,7 +317,7 @@ class RunVarietyUiTest {
         val hostage = find("hostage")
         assertNotNull("no held guard was posted", hostage)
         assertEquals("Defeat them all and keep the captive standing", card(hostage!!).stages.single().objective)
-        assertTrue(card(hostage).stages.single().reward, "strengthens the militia" in card(hostage).stages.single().reward)
+        assertTrue(card(hostage).stages.single().reward, Regex("\\+\\d+ militia").containsMatchIn(card(hostage).stages.single().reward))
         val kind = find("in_kind")
         assertNotNull("no contract paid in metal was posted", kind)
         assertFalse(card(kind!!).stages.last().reward, "contract gold" in card(kind).stages.last().reward)

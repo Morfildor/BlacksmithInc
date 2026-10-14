@@ -138,7 +138,7 @@ object Lines {
 
     private fun sidegrade(blade: String?, own: String?, why: String): String? = blade?.let { b -> own?.let { "$b is no stronger than their $it, but $why." } }
 
-    private fun bought(blade: String?, sale: Sale?): String? = sale?.listedPrice?.let { "Bought ${blade ?: "a weapon"} for $it gold." }
+    private fun bought(blade: String?, sale: Sale?): String? = sale?.listedPrice?.let { "Bought ${blade ?: "a weapon"} for $it gold" + (sale.asked?.let { a -> ", an offer under the $a asked." } ?: ".") }
 
     /**
      * What the counter knows this customer by: the visit's stored cue ([Recognitions]) in words, or null when the visit

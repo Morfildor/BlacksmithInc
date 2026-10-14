@@ -231,7 +231,7 @@ private fun WallCard(w: WallUi, enabled: Boolean, onOpenHero: (HeroId) -> Unit, 
         }
         HorizontalDivider(Modifier.padding(top = 12.dp, bottom = Space.sm), color = MaterialTheme.colorScheme.outlineVariant)
         StatRow("Watch", "${w.watch}")
-        Secondary("Militia and the watch armory thin the enemy before the wall.")
+        Secondary(w.watchLine, Modifier.testTag("guild_wall_watch_line"))
         StatBar("Forge health", w.forgeHealth, w.forgeHealthMax)
 
         SectionHeader("Who stands")

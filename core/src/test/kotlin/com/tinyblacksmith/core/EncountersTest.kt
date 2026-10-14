@@ -171,6 +171,20 @@ class EncountersTest {
         assertEquals(s.gold, s.run(s.answer(Encounters.PASS)).gold)
     }
 
+    /** The master's lesson is the door to Advanced forging: it names the catalyst with the recipe, so one lesson is enough to try. */
+    @Test
+    fun theMastersLessonNamesTheCatalystWithTheRecipe() {
+        val s = fixture(Depth.MASTERS_AFTERNOON).copy(gold = 1000)
+        val key = s.encounter!!.otherKey ?: return
+        val sig = com.tinyblacksmith.core.crafting.SignatureCatalog.all.first { it.journalKey == key }
+        val before = com.tinyblacksmith.core.crafting.Journal.rungs(s.legacy.journal, sig)
+        val after = s.run(s.answer("lesson"))
+        val rungs = com.tinyblacksmith.core.crafting.Journal.rungs(after.legacy.journal, sig)
+        assertTrue(com.tinyblacksmith.core.crafting.ClueRung.CATALYST in rungs, "the catalyst is named: $rungs")
+        assertTrue((rungs - before).size >= 1)
+        if (com.tinyblacksmith.core.crafting.ClueRung.RECIPE !in before) assertTrue(com.tinyblacksmith.core.crafting.ClueRung.RECIPE in rungs)
+    }
+
     @Test
     fun anAnswerTheForgeCannotPayForIsRefusedByTheEngineToo() {
         val s = fixture(Depth.LAST_CRATE).copy(gold = 0)

@@ -31,9 +31,11 @@ object Market {
         val countersThreat: Boolean = false, val resisted: Boolean = false,
         /** A resisted blade this hero would have bought on a day without a warning, and will not today. */
         val refusedAsResisted: Boolean = false,
+        /** What the hero would pay: the listed price, or their offer on a premium listing ([offered]). */
+        val pays: Int = weapon.listedPrice ?: Int.MAX_VALUE, val offered: Boolean = false,
     ) {
-        /** May be bought if its utility allows: affordable, and a gain or a sidegrade with a reason. */
-        val eligible: Boolean get() = affordable && (gain > 0 || sideReason != null)
+        /** May be bought if its utility allows: affordable or met with an offer, and a gain or a sidegrade with a reason. */
+        val eligible: Boolean get() = (affordable || offered) && (gain > 0 || sideReason != null)
     }
 
     /**
@@ -84,7 +86,7 @@ object Market {
             val best = evaluations.filter { it.eligible }.maxByOrNull { it.utility }
             if (best != null && best.utility >= config.purchaseUtilityThreshold) {
                 val mark = ctx.newEvents.size
-                val sale = purchase(ctx, hero, best.weapon, best.weapon.listedPrice ?: 0)
+                val sale = purchase(ctx, hero, best.weapon, best.pays, asked = best.weapon.listedPrice.takeIf { best.offered })
                 Relics.onShelfSale(ctx, ctx.weapon(best.weapon.id), sale.listedPrice ?: 0, sale.cashPaid)
                 val reason = when {
                     best.gain <= 0 -> best.sideReason!!
@@ -99,7 +101,7 @@ object Market {
                 )
             } else {
                 val reason = when {
-                    evaluations.none { it.affordable } -> VisitReason.TOO_EXPENSIVE
+                    evaluations.none { it.affordable || it.offered } -> VisitReason.TOO_EXPENSIVE
                     evaluations.any { it.refusedAsResisted } -> VisitReason.RESISTED
                     evaluations.none { it.eligible } -> VisitReason.NOT_BETTER
                     best != null && best.pricePenalty > cfg.overpricedPenalty -> VisitReason.OVERPRICED
@@ -237,7 +239,7 @@ object Market {
         val config = ctx.config
         val content = ctx.content
         val cfg = config.customers
-        val price = weapon.listedPrice ?: Int.MAX_VALUE
+        val listed = weapon.listedPrice ?: Int.MAX_VALUE
         val fit = Power.classFit(hero, weapon, content, config)
         // The same value on both sides, worn power included: a battered blade is worth less in the hand and on the shelf.
         val threat = threat(ctx)
@@ -255,6 +257,12 @@ object Market {
         // GDD 7: a storied blade is wanted for its name. Counted fame is capped like its power; a COLLECTOR wants it more.
         val fame = weapon.fame.coerceIn(0, config.weaponFameCap) * config.weaponFameUtilityPerPoint * (if (drive == Ambition.COLLECTOR) config.collectorFameMultiplier else 1.0)
         val ceiling = maxOf(1, fairPrice(weapon, config)) * priceCeilingMultiplier(ctx.reputation, hero.loyalty, config)
+        val funds = funds(ctx, hero, current)
+        // A premium listing is met with an offer: what the hero can and would pay, and never under the asking price.
+        val asking = askingPrice(weapon, config)
+        val offer = if (cfg.offers && weapon.listedPrice != null && listed.toLong() * 100 <= asking.toLong() * cfg.offerUpToPercent)
+            minOf(listed, funds, ceiling.toInt()).takeIf { it < listed && it >= asking } else null
+        val price = offer ?: listed
         val pricePenalty = maxOf(0.0, price.toDouble() / ceiling - 1.0) * sensitivity
         val noise = (noiseRoll - 0.5) * 2 * config.utilityNoise
         val side = if (current != null && cfg.sidegradeTolerance > 0 && gain <= 0 && gain >= -cfg.sidegradeTolerance * held) sideReason(hero, drive, current, weapon, config) else null
@@ -268,16 +276,18 @@ object Market {
             (if (countersThreat) cfg.threatUtility else 0.0) +
             noise -
             pricePenalty * config.utilityPricePenaltyWeight
-        val affordable = price <= funds(ctx, hero, current)
+        // "Can pay" is the listed price, as `Demand.canAfford` counts it; a hero who offers is [offered], not affordable.
+        val affordable = listed <= funds
         // "Refused for it": the same roll buys this blade on a calm day and not under the warning.
         val calm = if (resisted) valueInHand(ctx, hero, weapon, null) - valueInHand(ctx, hero, current, null) else gain
-        val refusedAsResisted = resisted && affordable && calm > 0 && utility + (calm - gain) * config.utilityImprovementWeight >= config.purchaseUtilityThreshold &&
+        val refusedAsResisted = resisted && (affordable || offer != null) && calm > 0 && utility + (calm - gain) * config.utilityImprovementWeight >= config.purchaseUtilityThreshold &&
             !(gain > 0 && utility >= config.purchaseUtilityThreshold)
         return Evaluation(
             weapon, utility, affordable = affordable, gain = gain, fit = fit, pricePenalty = pricePenalty, worn = worn,
             tasteMatch = weapon.element != null && weapon.element == hero.elementTaste, novelty = weapon.element != null && hero.traits.sumOf { content.trait(it).noveltyTaste } > 0,
             collectorPrize = collector > 0, storied = fame > 0,
             sideReason = side, countersThreat = countersThreat, resisted = resisted, refusedAsResisted = refusedAsResisted,
+            pays = price, offered = offer != null,
         )
     }
 
@@ -315,7 +325,8 @@ object Market {
         return if (hero.guildId != null && hero.stipendSpentFor != patronage.expiresDay) ctx.config.customers.patronageStipend else 0
     }
 
-    fun purchase(ctx: ResolutionContext, hero: Hero, weapon: Weapon, price: Int): Sale {
+    /** [asked]: the listed price when the hero bought on an offer ([price] under it); null for a sale at the listed price. */
+    fun purchase(ctx: ResolutionContext, hero: Hero, weapon: Weapon, price: Int, asked: Int? = null): Sale {
         val bonus = price * ctx.blessingMagnitude(BlessingEffect.SALE_GOLD_BONUS) / 100
         // Trade-in: the weapon being replaced comes back to the shop as part payment (GDD 7: weapons change hands).
         val old = ctx.equippedWeapon(hero.id)
@@ -336,7 +347,11 @@ object Market {
         val gift = price * 100 < askingPrice(weapon, ctx.config) * customers.giftBelowPercent
         val loyaltyGain = hero.traits.fold(1.0) { acc, t -> acc * ctx.content.trait(t).loyaltyGain }.toInt().coerceAtLeast(1)
             .let { if (gift) minOf(it, maxOf(0, customers.giftLoyaltyCap - hero.loyalty)) else it }
-        val reputation = if (!gift) customers.saleReputation else minOf(customers.saleReputation, customers.giftReputationPerDay - ctx.giftReputationToday).coerceAtLeast(0)
+        val reputation = when {
+            gift -> minOf(customers.saleReputation, customers.giftReputationPerDay - ctx.giftReputationToday).coerceAtLeast(0)
+            asked != null -> customers.offerReputation
+            else -> customers.saleReputation
+        }
         if (gift) ctx.giftReputationToday += reputation
         ctx.reputation += reputation
         ctx.updateHero(hero.copy(
@@ -346,16 +361,17 @@ object Market {
         // Gazette-visible consequences: a regular is named as one; gold paid above the base fair price is recorded as a premium.
         val premium = price - askingPrice(weapon, ctx.config)
         val who = if (isRegular(hero, ctx.config)) "${hero.fullName}, a regular of the shop," else hero.fullName
-        val text = "$who bought ${weapon.name} for $price gold" + (if (premium > 0) ". Your reputation earned $premium gold above the usual price." else ".") +
+        val text = "$who bought ${weapon.name} for $price gold" + (asked?.let { ", an offer under the $it asked" } ?: "") +
+            (if (premium > 0) ". Your reputation earned $premium gold above the usual price." else ".") +
             (if (old != null) " They traded in ${old.name} for $credit gold of credit." else "") +
             (if (stipend > 0) " Their guild covered $stipend gold." else "")
-        val data = mapOf("price" to price.toString()) + (if (premium > 0) mapOf("premium" to premium.toString()) else emptyMap()) + (if (bonus > 0) mapOf("bonus" to bonus.toString()) else emptyMap()) +
+        val data = mapOf("price" to price.toString()) + (asked?.let { mapOf("asked" to it.toString()) } ?: emptyMap()) + (if (premium > 0) mapOf("premium" to premium.toString()) else emptyMap()) + (if (bonus > 0) mapOf("bonus" to bonus.toString()) else emptyMap()) +
             (if (old != null) mapOf("tradeIn" to credit.toString(), "tradedWeapon" to old.id.value) else emptyMap()) + (if (stipend > 0) mapOf("stipend" to stipend.toString()) else emptyMap())
         ctx.emit(EventType.WEAPON_SOLD, 4, text, listOf(hero.id.value, weapon.id.value), data)
         ctx.addWeaponHistory(weapon.id, "SOLD", "Sold to ${hero.fullName} for $price gold.", listOf(hero.id.value))
         giveAndEquip(ctx, ctx.hero(hero.id), ctx.weapon(weapon.id))
         ctx.milestone("FIRST_SALE", "Your first sale. ${hero.fullName} bought ${weapon.name}.")
-        return Sale(listedPrice = price, tradeInCredit = credit, tradeInWeaponId = old?.id, cashPaid = paid, saleBonus = bonus, stipend = stipend)
+        return Sale(listedPrice = price, tradeInCredit = credit, tradeInWeaponId = old?.id, cashPaid = paid, saleBonus = bonus, stipend = stipend, asked = asked)
     }
 
     /** Transfers ownership and equips when the weapon is better for this hero than the current one; against [against] (a siege-prep order) by what each is worth in that fight. */
