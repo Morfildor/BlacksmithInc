@@ -122,6 +122,8 @@ fun ForgePanel(
     val bench = remember(s.state, d, s.shop.requests, bellows) { engine.forgeWorkbench(s.state, d, s.shop.requests, bellows) }
     // The rehearsal of the recipe on the anvil, open over the Forge.
     var rehearsing by rememberSaveable { mutableStateOf(false) }
+    // A Heartfire forging asks first: the spend cannot be taken back (owner ruling of 2026-10-14).
+    var confirmingHeartfire by rememberSaveable { mutableStateOf(false) }
     // Restored open over a recipe that is no longer whole: closed, so it does not spring open when the recipe is completed again.
     LaunchedEffect(bench.outlook == null) { if (bench.outlook == null) rehearsing = false }
 
@@ -164,7 +166,23 @@ fun ForgePanel(
             tip?.let { TipBanner(it, vm, Modifier.padding(top = Space.md)) }
         }
         ForgeAction(bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay, marked = s.intro?.mark == IntroMark.FORGE) {
-            bench.command?.copy(bellows = bellows)?.let(vm::dispatch)
+            val cmd = bench.command?.copy(bellows = bellows)
+            if (cmd != null) {
+                if (cmd.heartfire) confirmingHeartfire = true else vm.dispatch(cmd)
+            }
+        }
+    }
+    if (confirmingHeartfire) {
+        val cmd = bench.command?.copy(bellows = bellows)
+        val q = cmd?.let { engine.heartfireConfirm(s.state, it) }
+        // The recipe changed under the question (or no longer spends Heartfire): nothing to confirm.
+        if (cmd == null || q == null) LaunchedEffect(Unit) { confirmingHeartfire = false }
+        else ForgeDialog(q.title, onDismiss = { confirmingHeartfire = false }, tag = "heartfire_confirm", actions = {
+            SecondaryActionButton(q.cancel, { confirmingHeartfire = false }, Modifier.testTag("heartfire_confirm_cancel"))
+            PrimaryActionButton(q.confirm, { confirmingHeartfire = false; vm.dispatch(cmd) }, Modifier.testTag("heartfire_confirm_forge"), enabled = !s.busy)
+        }) {
+            Text(q.cost, style = MaterialTheme.typography.bodyLarge, color = Cream, modifier = Modifier.testTag("heartfire_confirm_cost"))
+            q.consequence.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = CreamMuted) }
         }
     }
     if (rehearsing) bench.outlook?.let { o ->

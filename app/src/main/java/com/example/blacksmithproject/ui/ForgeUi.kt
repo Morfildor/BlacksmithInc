@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.crafting.Bench
 import com.tinyblacksmith.core.crafting.Capabilities
+import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.crafting.ForgeOutlook
 import com.tinyblacksmith.core.crafting.Journal
 import com.tinyblacksmith.core.engine.Command
@@ -134,14 +135,8 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
             else -> listOf(
                 "Uses 1 Heartfire and ${legend.heartfireEnergy} more energy, ${o.energy} in all. Both are spent whether or not it breaks through.",
                 "Quality lands between ${o.qualityLow} and ${o.qualityHigh}, before an exceptional result or a flaw. It can break through only at ${o.floor} or more.",
-                when {
-                    !o.fineMetal -> "Chance to break through: none in this metal."
-                    o.chanceHigh <= 0.0 -> "Chance to break through: none at this quality."
-                    o.chanceLow <= 0.0 -> "Chance to break through: none under quality ${o.floor}, ${Odds.chance(o.chanceHigh)} at quality ${o.qualityHigh}."
-                    Odds.chance(o.chanceLow) == Odds.chance(o.chanceHigh) -> "Chance to break through: ${Odds.chance(o.chanceLow)}. It is never certain."
-                    else -> "Chance to break through: ${Odds.chance(o.chanceLow)} at quality ${o.qualityLow}, ${Odds.chance(o.chanceHigh)} at quality ${o.qualityHigh}."
-                },
-                "If it does not break through, the weapon still gets ${if (o.missSlots == 1) "one more property" else "${o.missSlots} more properties"}.",
+                breakthroughLine(o),
+                missLine(o),
             )
         },
         warning = o?.takeIf { !it.fineMetal }?.let { "Heartfire does not take in this metal. Only ${fineMetals()} hold Epic work." }
@@ -151,6 +146,38 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
     )
 }
 
+
+/** The chance to break through at both ends of the quality the forge can reach, in words (decision A). Zero is a rule and said plainly. */
+private fun breakthroughLine(o: Forge.HeartfireOutlook): String = when {
+    !o.fineMetal -> "Chance to break through: none in this metal."
+    o.chanceHigh <= 0.0 -> "Chance to break through: none at this quality."
+    o.chanceLow <= 0.0 -> "Chance to break through: none under quality ${o.floor}, ${Odds.chance(o.chanceHigh)} at quality ${o.qualityHigh}."
+    Odds.chance(o.chanceLow) == Odds.chance(o.chanceHigh) -> "Chance to break through: ${Odds.chance(o.chanceLow)}. It is never certain."
+    else -> "Chance to break through: ${Odds.chance(o.chanceLow)} at quality ${o.qualityLow}, ${Odds.chance(o.chanceHigh)} at quality ${o.qualityHigh}."
+}
+
+private fun missLine(o: Forge.HeartfireOutlook) =
+    "If it does not break through, the weapon still gets ${if (o.missSlots == 1) "one more property" else "${o.missSlots} more properties"}."
+
+/**
+ * The question asked before a Heartfire forging is sent (owner ruling of 2026-10-14: an irreversible spend of a scarce
+ * resource asks first and states its cost and its consequence). [cost] is exact; the chance is in words, as on the panel.
+ */
+@Immutable
+data class HeartfireConfirmUi(val title: String, val cost: String, val consequence: List<String>, val confirm: String, val cancel: String)
+
+/** Null when [command] spends no Heartfire: an ordinary forge is sent at once. Read-only. */
+fun GameEngine.heartfireConfirm(state: GameState, command: Command.Forge): HeartfireConfirmUi? {
+    if (!command.heartfire) return null
+    val o = heartfireOutlook(state, command)
+    return HeartfireConfirmUi(
+        title = "Spend Heartfire?",
+        cost = "Uses 1 Heartfire and ${o.energy} energy. You will hold ${(state.heartfire - 1).coerceAtLeast(0)} of ${config.depth.legend.heartfireMax} Heartfire.",
+        consequence = listOf("Both are spent whether or not it breaks through. Heartfire cannot be taken back.", breakthroughLine(o), missLine(o)),
+        confirm = "Forge with Heartfire",
+        cancel = "Not now",
+    )
+}
 
 /** Null in a classic run, where no fight reads a weapon's rules. [forge] is the command as it will be sent, bellows included. */
 fun GameEngine.forgeOutlook(state: GameState, forge: Command.Forge): ForgeOutlookUi? {

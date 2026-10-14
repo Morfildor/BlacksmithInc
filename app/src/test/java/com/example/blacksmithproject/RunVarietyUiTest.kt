@@ -6,6 +6,7 @@ import com.example.blacksmithproject.ui.supplyNotes
 import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.forgeWorkbench
 import com.example.blacksmithproject.ui.guildUi
+import com.example.blacksmithproject.ui.heartfireConfirm
 import com.example.blacksmithproject.ui.openingChooser
 import com.example.blacksmithproject.ui.riskExplanation
 import com.example.blacksmithproject.ui.shopUi
@@ -190,6 +191,23 @@ class RunVarietyUiTest {
         // A recipe that is not whole has no outlook to show yet.
         assertEquals(listOf("Choose a weapon, a metal and an augment to see what it would do."), bench(held, ForgeDraft(mode = ForgeMode.ADVANCED, heartfire = true)).heartfire!!.outlook)
         assertEquals(RecipeSlot.WEAPON, bench(held, ForgeDraft(mode = ForgeMode.ADVANCED, heartfire = true)).next)
+    }
+
+    @Test
+    fun aHeartfireForgingAsksFirstWithItsCostAndItsConsequence() {
+        val held = classic.copy(heartfire = 2)
+        val b = bench(held, ready.copy(heartfire = true))
+        val o = engine.heartfireOutlook(held, b.command!!)
+        val q = engine.heartfireConfirm(held, b.command!!)!!
+        assertEquals("Spend Heartfire?", q.title)
+        assertEquals("Uses 1 Heartfire and ${o.energy} energy. You will hold 1 of ${legend.heartfireMax} Heartfire.", q.cost)
+        assertEquals("Both are spent whether or not it breaks through. Heartfire cannot be taken back.", q.consequence[0])
+        // The chance and what a miss gives are the panel's own lines, in words.
+        assertEquals(b.heartfire!!.outlook.drop(2), q.consequence.drop(1))
+        assertTrue(q.consequence.none { '%' in it })
+        assertEquals("Forge with Heartfire", q.confirm)
+        // An ordinary forge asks nothing: it is sent at once.
+        assertNull(engine.heartfireConfirm(held, bench(held, ready).command!!))
     }
 
     @Test
