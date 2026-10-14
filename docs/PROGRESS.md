@@ -16,7 +16,7 @@ title's line stands under "New game", the forge result shows the step first.
 
 **Checks run on the integrated tree.** `:core:test` 581 tests, 0 failures. `:app:testDebugUnitTest` 233 tests, 0
 failures (16 in `IntroTest`). `:app:assembleDebug` built. Emulator, own instance on port 5556 (AVD carbscan, API 36,
-1080x1920): `IntroStripTest` (3), `LayoutMatrixTest`, `SettingsSheetTest` pass. `intro.sh`: all 31 checks ok.
+1080x1920): `IntroStripTest` (3), `LayoutMatrixTest`, `SettingsSheetTest` pass. `intro.sh`: all 29 checks ok.
 `smoke.sh`: all 9 ok. `runend.sh`: all 5 ok (it now skips the guidance on the title; before that it waited 20 s for a
 relic dialog the guidance keeps closed). `guild.sh`: its 5 checks ok. `scenarios.sh`: 59 checks ok, 3 fail (below).
 By hand through adb: a guild first game (note and Skip on the opening, strip after the choice, result line); a day
