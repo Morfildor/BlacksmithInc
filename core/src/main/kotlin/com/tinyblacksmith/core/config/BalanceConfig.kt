@@ -454,6 +454,13 @@ data class CustomerConfig(
     val commissionExpiredReputation: Int = 1,
     /** Loyalty the patron of a delivered commission gains. */
     val commissionLoyalty: Int = 2,
+    // v15: free listings (owner decision M, review 2026-10-14). Giving a weapon away stays valid; it is not a sale.
+    /** A shelf sale for less than this percent of the weapon's asking price is a gift: it earns no sale reputation. */
+    val giftBelowPercent: Int = 25,
+    /** The town notices generosity: gifts earn this much reputation a day, however many are given. */
+    val giftReputationPerDay: Int = 1,
+    /** A gift warms a hero to the shop up to this loyalty and no further (below [BalanceConfig.regularLoyaltyThreshold]: gifts never make a regular). */
+    val giftLoyaltyCap: Int = 2,
 )
 
 /** v5: replays and weapon fates. What is told of a fight, and what becomes of a fallen hero's blade (GDD 7, 11; all PROPOSED). */

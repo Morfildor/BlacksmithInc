@@ -65,6 +65,8 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     var expeditionWinsToday = 0
     /** Integrity a guild contract mended today: it counts against the day's recovery allowance ([recoveryAllowance]). */
     var contractMendedToday = 0
+    /** Reputation weapons given away earned today: bounded by `customers.giftReputationPerDay`. */
+    var giftReputationToday = 0
     val visits: MutableList<MarketVisit> = mutableListOf()
     val turnedAway: MutableList<HeroId> = mutableListOf()
     val replays: MutableList<CombatReplay> = mutableListOf()

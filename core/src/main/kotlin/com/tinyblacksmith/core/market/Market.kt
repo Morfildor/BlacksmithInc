@@ -331,8 +331,14 @@ object Market {
         if (stipend > 0) ctx.earn(IncomeKind.STIPEND, stipend)
         if (bonus > 0) ctx.earn(IncomeKind.SALE_BONUS, bonus)
         ctx.tradeInCreditToday += credit
-        ctx.reputation += ctx.config.customers.saleReputation
+        // A weapon given away (owner decision M) is not a sale: the town notices generosity once a day, and a gift warms a hero only so far.
+        val customers = ctx.config.customers
+        val gift = price * 100 < askingPrice(weapon, ctx.config) * customers.giftBelowPercent
         val loyaltyGain = hero.traits.fold(1.0) { acc, t -> acc * ctx.content.trait(t).loyaltyGain }.toInt().coerceAtLeast(1)
+            .let { if (gift) minOf(it, maxOf(0, customers.giftLoyaltyCap - hero.loyalty)) else it }
+        val reputation = if (!gift) customers.saleReputation else minOf(customers.saleReputation, customers.giftReputationPerDay - ctx.giftReputationToday).coerceAtLeast(0)
+        if (gift) ctx.giftReputationToday += reputation
+        ctx.reputation += reputation
         ctx.updateHero(hero.copy(
             gold = hero.gold - paid, loyalty = hero.loyalty + loyaltyGain, lastActivity = HeroActivity.SHOP, want = null,
             stipendSpentFor = if (stipend > 0) ctx.activeBlessing(BlessingEffect.GUILD_PATRONAGE)?.expiresDay else hero.stipendSpentFor,

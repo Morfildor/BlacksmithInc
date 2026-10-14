@@ -177,6 +177,29 @@ class ReviewFixesTest {
         assertTrue(idle.town.integrity - damaged.town.integrity <= cap)
     }
 
+    // ---- row 36c, owner decision M: a free transfer is a gift, not a sale ----
+
+    @Test fun `weapons given away earn a bounded generosity, not a sale's reputation and loyalty`() {
+        val e = TestSupport.engine
+        val c = e.config.customers
+        val s0 = e.newRun(LegacyProfile(), 7)
+        val blades = (1..4).map { CombatSandbox.blade("w90$it", LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN).copy(location = WeaponLocation.Shelf(0)) }
+        val heroes = s0.aliveHeroes().take(2)
+        val start = s0.copy(weapons = s0.weapons + blades.associateBy { it.id }, heroes = s0.heroes + heroes.associate { it.id to it.copy(loyalty = 0) })
+        val ctx = ResolutionContext(start, e.content, e.config)
+        // Four gifts in one day, two to each hero.
+        blades.forEachIndexed { i, w -> com.tinyblacksmith.core.market.Market.purchase(ctx, ctx.hero(heroes[i % 2].id), ctx.weapon(w.id), 0) }
+        assertEquals(start.reputation + c.giftReputationPerDay, ctx.reputation, "generosity is counted once a day, however much is given")
+        heroes.forEach { assertEquals(c.giftLoyaltyCap, ctx.hero(it.id).loyalty, "gifts warm a hero only so far") }
+        assertTrue(c.giftLoyaltyCap < e.config.regularLoyaltyThreshold)
+        // A sale at the asking price still earns the sale's reputation.
+        val fair = CombatSandbox.blade("w999", LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN)
+        val before = ctx.reputation
+        ctx.weapons[fair.id] = fair.copy(location = WeaponLocation.Shelf(com.tinyblacksmith.core.market.Market.askingPrice(fair, e.config)))
+        com.tinyblacksmith.core.market.Market.purchase(ctx, ctx.hero(heroes[0].id).copy(gold = 10_000), ctx.weapon(fair.id), com.tinyblacksmith.core.market.Market.askingPrice(fair, e.config))
+        assertEquals(before + c.saleReputation, ctx.reputation)
+    }
+
     // ---- row 36a: an ignored blessing offer lapses ----
 
     private fun GameState.endDay(e: GameEngine = engine): GameState = send(Command.EndDay(TestSupport.endDayId(this)), e)
