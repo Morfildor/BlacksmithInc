@@ -36,6 +36,12 @@ class ReviewFixesTest {
     private fun GameState.sound(e: GameEngine = engine): GameState = also { assertEquals(emptyList(), Invariants.check(it, e.config, e.shelfSlots(it), content)) }
     private fun GameState.members() = guild!!.members.map { it.heroId }
     private fun GameState.edit(e: GameEngine = engine, f: (ResolutionContext) -> Unit): GameState = ResolutionContext(this, content, e.config).also(f).toState()
+    /** Puts a contract of [defId] on the board, generated the way the board generates it. */
+    private fun GameState.post(defId: String): Pair<GameState, MissionOffer> {
+        val id = "t${day}x${guild!!.nextMissionSerial}x${guild!!.offers.size}"
+        val s = edit { c -> c.guild = c.guild!!.copy(offers = c.guild!!.offers + Missions.generate(c, cat.mission(defId), c.factions.keys.minBy { it.value }, c.rng(com.tinyblacksmith.core.rng.RngStream.GUILD), id)) }
+        return s to s.guild!!.offers.single { it.id == id }
+    }
     private fun GameState.farSiege(): GameState = copy(town = town.copy(nextSiegeDay = day + 30), siege = SiegeScenario(day + 30))
 
     // ---- row 31: rank 3's shorter offer life ----
@@ -53,5 +59,22 @@ class ReviewFixesTest {
         assertEquals(-1, delta)
         val (ranked, rankedDays) = life(3)
         assertEquals(maxOf(1, rankedDays + delta), ranked, "the rank's card says contracts stay a day less")
+    }
+
+    // ---- row 33: dismissing a member of today's planned party ----
+
+    @Test fun `a member of today's planned party cannot be dismissed, and the plan and its fee stand`() {
+        val (s0, paid) = run().farSiege().copy(gold = 500).post(GuildContent.HUNT)
+        assertTrue(paid.fee > 0)
+        val who = s0.members().first()
+        val planned = s0.send(Command.PlanDeployment(paid.id, listOf(who), Posture.BALANCED)).sound()
+        assertEquals(500 - paid.fee, planned.gold)
+        val error = planned.rejected(Command.DismissHero(who))
+        assertIs<GameError.MemberUnavailable>(error)
+        assertEquals("is in the party you planned for today", error.reason)
+        // Cancelling first is the way: the fee comes back, and then the member can go.
+        val cancelled = planned.send(Command.CancelPlannedDeployment).sound()
+        assertEquals(500, cancelled.gold)
+        assertTrue(who !in cancelled.send(Command.DismissHero(who)).sound().members())
     }
 }

@@ -224,6 +224,8 @@ object GuildOps {
     fun dismiss(ctx: ResolutionContext, heroId: HeroId): GameError? {
         val m = ctx.guild!!.member(heroId) ?: return GameError.NotAMember(heroId)
         if (m.status != MemberStatus.HOME) return GameError.MemberUnavailable(heroId, if (m.status == MemberStatus.AWAY) "is away with the party" else "is held by the enemy")
+        // As for the wall: a member of today's plan stays until the plan is cancelled, which gives its fee back.
+        if (ctx.guild!!.planned?.heroIds?.contains(heroId) == true) return GameError.MemberUnavailable(heroId, "is in the party you planned for today")
         val hero = ctx.hero(heroId)
         release(ctx, heroId, "Returned to the forge when ${hero.fullName} left the guild.")
         ctx.emit(EventType.GUILD_DISMISSED, 3, "${hero.fullName} left the guild.", listOf(heroId.value))
