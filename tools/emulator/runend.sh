@@ -26,8 +26,8 @@ texts() { dump | grep -o 'text="[^"]\+"' | head -12; }
 
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
-# A classic run: a new install offers the first charter, and a guild run (rules 6) opens on its opening packages, which
-# this loop does not answer. One step back from the first charter is "No charter".
+# A classic run: a guild run (rules 6) opens on its opening packages, which this loop does not answer. A cleared install
+# opens on "No charter"; should the picker stand on a charter, one step back from the first is "No charter".
 # the arrow is found by its resource-id (charter_prev): its text is not ASCII
 no_charter() {
   local x=$(dump | python -c "
@@ -39,7 +39,10 @@ if m:
   if [ -z "$x" ]; then echo "MISSING id: charter_prev"; return 1; fi
   $ADB shell input tap $x; $ADB shell sleep 1.2; has "No charter"
 }
-wait_text "Tiny Blacksmith" && no_charter && tap "New game" || exit 1
+wait_text "Tiny Blacksmith" || exit 1
+# A cleared install offers the guided first day, which keeps the relic offer closed on day 1: skipped, so the run opens as it always did.
+has "Skip guidance" && tap "Skip guidance"
+{ has "No charter" || no_charter; } && tap "New game" || exit 1
 # A new run opens on the relic offer, which hides the workshop from the dump: "Decide later" keeps the offer. The loop
 # below puts it off again each morning.
 wait_text "Decide later" && tap "Decide later"

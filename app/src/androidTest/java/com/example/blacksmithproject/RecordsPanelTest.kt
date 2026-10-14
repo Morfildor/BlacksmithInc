@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.blacksmithproject.data.GameRepository
+import com.example.blacksmithproject.data.IntroRecord
+import com.example.blacksmithproject.data.IntroStatus
 import com.example.blacksmithproject.data.Settings
 import com.example.blacksmithproject.data.ShopDaySpeed
 import com.example.blacksmithproject.data.StoredRows
@@ -38,7 +40,11 @@ internal class MemoryRepository(private var run: String?, private var legacy: St
     override suspend fun quarantine(key: String) = Unit
 }
 
-internal class QuietSettings : Settings {
+internal class QuietSettings(var introRecord: IntroRecord = IntroRecord(IntroStatus.COMPLETED)) : Settings {
+    override suspend fun intro() = introRecord
+    override suspend fun setIntro(value: IntroRecord) { introRecord = value }
+    override suspend fun charterChoice(): String? = null
+    override suspend fun setCharterChoice(value: String) = Unit
     override val reducedMotion = MutableStateFlow(false)
     override val haptics = MutableStateFlow(true)
     override val seenTips = MutableStateFlow(emptySet<String>())

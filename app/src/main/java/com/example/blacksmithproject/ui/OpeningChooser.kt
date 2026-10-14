@@ -85,15 +85,17 @@ fun GameEngine.openingChooser(state: GameState): OpeningChooserUi? {
 /**
  * The first morning of a guild run, in place of the workshop until one package is taken: End Day waits for this choice, so
  * nothing else is offered beside it. Three cards in one scrolling column. A tap asks once more, then sends the command.
- * Nothing here is kept but which card is being asked about: the offer itself is in the save.
+ * Nothing here is kept but which card is being asked about: the offer itself is in the save. [firstGame] is the note a
+ * player who has the guided first day ahead of them reads before choosing.
  */
 @Composable
-fun OpeningChooser(ui: OpeningChooserUi, enabled: Boolean, onChoose: (String) -> Unit, modifier: Modifier = Modifier) {
+fun OpeningChooser(ui: OpeningChooserUi, enabled: Boolean, onChoose: (String) -> Unit, modifier: Modifier = Modifier, firstGame: (@Composable () -> Unit)? = null) {
     var asking by rememberSaveable { mutableStateOf<String?>(null) }
     Column(modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(horizontal = Space.md, vertical = Space.md).testTag("opening_chooser")) {
         Text("How the guild begins", style = MaterialTheme.typography.headlineMedium, color = Gold, modifier = Modifier.semantics { heading() })
         if (ui.charter.isNotEmpty()) Text(ui.charter, style = MaterialTheme.typography.titleSmall, color = Cream)
         Secondary("Choose one of these. It stays for the whole run, and the day cannot end before you choose.", Modifier.padding(top = Space.xs))
+        firstGame?.invoke()
         ui.openings.forEach { o ->
             FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.md).testTag("opening_${o.id}")) {
                 Text(o.name, style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })

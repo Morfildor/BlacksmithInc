@@ -37,14 +37,15 @@ import com.example.blacksmithproject.data.ShopDaySpeed
 import com.example.blacksmithproject.ui.theme.Space
 
 /**
- * The settings behind the gear. Only what the game reads today: reduced motion, haptics, the shop-day speed and the
- * version; there is no sound, so there is no sound setting (plan 10.3). The speed row shows once [onShopDaySpeed] is given.
+ * The settings behind the gear. Only what the game reads today: reduced motion, haptics, the shop-day speed, the guided
+ * first day ([intro]) and the version; there is no sound, so there is no sound setting (plan 10.3). The speed row shows once [onShopDaySpeed] is given.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsSheet(
     reducedMotion: Boolean, onReducedMotion: (Boolean) -> Unit, haptics: Boolean, onHaptics: (Boolean) -> Unit, onDismiss: () -> Unit,
     shopDaySpeed: ShopDaySpeed = ShopDaySpeed.TAP, onShopDaySpeed: ((ShopDaySpeed) -> Unit)? = null, onMainMenu: (() -> Unit)? = null,
+    intro: IntroRowUi? = null, onIntro: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val version = remember { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull() ?: "unknown" }
@@ -59,6 +60,7 @@ fun SettingsSheet(
             SwitchRow("Reduced motion", "Stops animated embers, forge fades and step-by-step battle replays.", reducedMotion, onReducedMotion, "settings_reduced_motion")
             SwitchRow("Haptics", "Short vibrations for forge results, day endings, refused requests and the end of an era.", haptics, onHaptics, "settings_haptics")
             if (onShopDaySpeed != null) SpeedRow(if (reducedMotion) ShopDaySpeed.TAP else shopDaySpeed, enabled = !reducedMotion, onShopDaySpeed)
+            intro?.let { IntroRow(it, onIntro) }
             onMainMenu?.let { SecondaryActionButton("Main menu", it, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("settings_main_menu")) }
             Secondary("Version $version", Modifier.padding(top = Space.md).testTag("settings_version"))
         }
@@ -77,6 +79,18 @@ private fun SwitchRow(title: String, detail: String, checked: Boolean, onChange:
         }
         // Gold when on, as every chosen thing in the workshop is; the thumb's place still says which way it is set.
         Switch(checked = checked, onCheckedChange = null, colors = SwitchDefaults.colors(checkedTrackColor = Gold, checkedThumbColor = ForgeSlot, uncheckedTrackColor = ForgeSlot, uncheckedThumbColor = Bronze, uncheckedBorderColor = Bronze))
+    }
+}
+
+/** The guided first day: where it stands, and the one action on it (replay, cancel a queued replay, or skip it while it runs). */
+@Composable
+private fun IntroRow(row: IntroRowUi, onAction: () -> Unit) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(top = Space.sm).testTag("settings_intro"), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f).padding(vertical = Space.sm).padding(end = Space.sm)) {
+            Text("Guided first day", style = MaterialTheme.typography.titleSmall)
+            Secondary(row.detail, Modifier.testTag("settings_intro_status"))
+        }
+        InlineActionButton(row.action, onAction, Modifier.testTag("settings_intro_action"))
     }
 }
 

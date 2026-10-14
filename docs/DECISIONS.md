@@ -4325,3 +4325,57 @@ crack, Starsteel 3, Moonsteel 2. Void Ink and Dragon Oil as rewritten for new we
 sap. That, not an ingredient number, is why Frost Bloom is the widest augment and Ember Resin and Grave Dust have no
 niche. A what-if is in the ledger. Changing it touches classic runs and golden states.
 
+## Guided first day (2026-10-11)
+Source: the owner's brief of that day and its seven refinements. Built on `first-day-guidance`, branched off
+`run-variety` at 719b685 (the forge and the opening chooser it teaches around exist only there), rebased onto ff656ef
+and merged into `main` over the deep forging integration (749061b) on 2026-10-14.
+
+- **What it is.** An integrated guided objective, not a training mode and not more tips: one real day of a real run.
+  A training mode would need a second set of resources and rules; tips have no order. Forging is the first action
+  because nothing else starts the loop (forge, list, End Day, heroes decide), and the day-1 lead already said so.
+- **Steps.** Recipe, forge, list, a second forge without help, End Day, then the day's outcome. The words are in
+  `ui/Intro.kt` and nowhere else. Costs in them are read from `BalanceConfig` and the save. They say that quality
+  varies and that pairings are learned by forging; they give no percentage and name no good pairing (GDD 4, mystery
+  first). The outcome line is built from the day's record alone and never gives a hero's reason: the day's cards do.
+  Completion never needs a sale.
+- **Where the step comes from.** `introStep` reads the save and the forge draft. Before the first forge the step
+  follows the workbench (an emptied recipe is asked for again). From the first forge on, the furthest step reached is
+  kept in settings and a step never comes back: unlisting, salvaging, lending or leaving the screen changes nothing.
+  Forges are counted by the run's weapon serial since the guidance began, so an opening package's weapon is not one.
+- **Where it is kept.** DataStore settings (`intro_status`, `intro_run`, `intro_reached`, `intro_serial`,
+  `intro_completed_once`), never the save: a new game, an abandoned run, a new era or a scenario load does not touch
+  it. Statuses: unset, queued, active, offered, completed, skipped. An unknown status reads as skipped.
+- **Who sees it.** No record yet: an account with a journal entry, an era, a claim, legacy points or a run past day 1
+  is marked skipped silently; one that only dismissed a tip is asked (an invitation on the title and in Settings);
+  everyone else is new. Completed and skipped are final until "Replay".
+- **Interrupted.** The same run still there: it goes on. The run gone: it stops and becomes the invitation. It is
+  never bound to another run by itself. It ends by itself with the second End Day.
+- **Replay.** Settings only. At once in a run's first morning, else queued for the next new game, shown, cancellable.
+  It issues no command and writes nothing to the save.
+- **One home per fact** (see "Onboarding tips are per-panel slim banners" above). The Shop and Forge tip banners say
+  what steps 3 and 5 say: they wait while the guidance runs and count as seen when it ends or is skipped. The shop
+  day's coach line stays; the strip is not drawn over the shop day. `Tips.FORGE` was never shown and still is not.
+- **The one thing held back.** The day-1 relic offer does not open by itself while the guidance runs, and End Day's
+  note does not ask for it. The Shop's row opens it at any time, and it opens as before once the guidance ends.
+  Nothing else is locked.
+- **First run.** With no pick, an account without an era starts the picker on "No charter": the classic run is the
+  whole shop loop, and the guild's opening chooser was the largest confusion point found. The pick is now kept in
+  settings (`charter_choice`) and always wins; beginning a game counts as picking what it began under, so the picker
+  does not move to a guild charter once the first era is claimed. An account from before this, with an era behind it
+  and no pick, keeps the old default.
+- **Input.** The strip is a row of the layout, not an overlay. It is a polite live region; focus is never moved.
+  Targets are 48 dp; the actions stack above font scale 1.3. The mark on a control is an outline and a corner
+  pointer, with a state description. No keyboard handling was added, as the app has none.
+- **A day without a sale** (cleanup pass, same day). The outcome counts the heroes who looked by the reason the engine
+  recorded for each (`MarketVisit.reason`, in the Gazette's wording: "6 couldn't afford anything") and says where each
+  is named: the Gazette's "All details", which was checked on a device to list them by name. An empty shelf says to
+  list from Storage. The earlier line promised that "their cards said why"; a card of an undecided hero says no more
+  than that, so the promise went.
+- **A first game under a charter.** The opening chooser shows one note while the guidance is still ahead: each package
+  is a full start, the guided day follows the choice, the shop alone is "No charter" on the title; with "Skip
+  guidance". No more than that: the chooser is the guild's, and the guild is not what the first day teaches.
+- **Large text.** Above font scale 1.3 the strip shows the step and its two actions; the sentence opens with "Why?".
+  The strip is never taller than 42% of the screen (its words scroll inside it). The title's line stands under "New
+  game", so that button is where it was. On the forge result the step and "Skip guidance" come first.
+- **Not shown by this.** That the flow works is tested. That a new player understands the game from it is not: nobody
+  has been watched playing it. T7.2 (five first-time players) is the check.

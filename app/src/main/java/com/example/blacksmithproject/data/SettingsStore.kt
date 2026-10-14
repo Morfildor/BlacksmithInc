@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -22,6 +23,21 @@ enum class ShopDaySpeed(val label: String, val divisor: Int) {
     val next: ShopDaySpeed get() = entries[(ordinal + 1) % entries.size]
 }
 
+/**
+ * Where the guided first day stands for this installation. UNSET: never decided (a new installation, or one from before
+ * the guidance existed). QUEUED: it starts with the next new game. ACTIVE: it runs in the run [IntroRecord.runId].
+ * OFFERED: it was interrupted, or the player may never have seen it, and a small invitation asks. COMPLETED and SKIPPED
+ * are final until the player asks for a replay.
+ */
+enum class IntroStatus { UNSET, QUEUED, ACTIVE, OFFERED, COMPLETED, SKIPPED }
+
+/**
+ * The guided first day, kept beside the settings and never in the save: a new game, an abandoned run or a new era does
+ * not touch it. [reached] is the furthest step shown so far (a step never comes back); [startSerial] is the run's
+ * weapon serial when the guidance began, so only weapons forged since then count. [completedOnce] survives a replay.
+ */
+data class IntroRecord(val status: IntroStatus = IntroStatus.UNSET, val runId: String? = null, val reached: Int = 0, val startSerial: Int = 0, val completedOnce: Boolean = false)
+
 /** What the ViewModel and the screens need from settings; the seam that lets the ViewModel run in a JVM test. */
 interface Settings {
     val reducedMotion: Flow<Boolean>
@@ -33,6 +49,13 @@ interface Settings {
     suspend fun markTipSeen(id: String)
     suspend fun setShopDaySpeed(value: ShopDaySpeed)
     suspend fun dismissedReport(): String?
+    suspend fun intro(): IntroRecord
+    suspend fun setIntro(value: IntroRecord)
+    /** The charter the player last picked for a new game: null when they never picked, [NO_CHARTER] for the shop alone. */
+    suspend fun charterChoice(): String?
+    suspend fun setCharterChoice(value: String)
+
+    companion object { const val NO_CHARTER = "" }
 }
 
 /** Non-authoritative player settings (GDD 13.3): never gameplay state. */
@@ -75,4 +98,33 @@ class SettingsStore(private val context: Context) : Settings {
      * day cursor, which now lives beside the save; the key is no longer written.
      */
     override suspend fun dismissedReport(): String? = context.settingsDataStore.data.first()[dismissedReportKey]
+
+    private val introStatusKey = stringPreferencesKey("intro_status")
+    private val introRunKey = stringPreferencesKey("intro_run")
+    private val introReachedKey = intPreferencesKey("intro_reached")
+    private val introSerialKey = intPreferencesKey("intro_serial")
+    private val introCompletedKey = booleanPreferencesKey("intro_completed_once")
+    private val charterKey = stringPreferencesKey("charter_choice")
+
+    /** A status this version does not know (written by a later one) reads as SKIPPED: the guidance never restarts by mistake. */
+    override suspend fun intro(): IntroRecord = context.settingsDataStore.data.first().let { prefs ->
+        val status = prefs[introStatusKey]?.let { name -> IntroStatus.entries.firstOrNull { it.name == name } ?: IntroStatus.SKIPPED } ?: IntroStatus.UNSET
+        IntroRecord(status, prefs[introRunKey], prefs[introReachedKey] ?: 0, prefs[introSerialKey] ?: 0, prefs[introCompletedKey] ?: false)
+    }
+
+    override suspend fun setIntro(value: IntroRecord) {
+        context.settingsDataStore.edit {
+            it[introStatusKey] = value.status.name
+            if (value.runId == null) it.remove(introRunKey) else it[introRunKey] = value.runId
+            it[introReachedKey] = value.reached
+            it[introSerialKey] = value.startSerial
+            it[introCompletedKey] = value.completedOnce
+        }
+    }
+
+    override suspend fun charterChoice(): String? = context.settingsDataStore.data.first()[charterKey]
+
+    override suspend fun setCharterChoice(value: String) {
+        context.settingsDataStore.edit { it[charterKey] = value }
+    }
 }

@@ -3,6 +3,8 @@ package com.example.blacksmithproject
 import androidx.lifecycle.SavedStateHandle
 import com.example.blacksmithproject.GameSession.Status
 import com.example.blacksmithproject.data.SaveFailure
+import com.example.blacksmithproject.data.IntroRecord
+import com.example.blacksmithproject.data.IntroStatus
 import com.example.blacksmithproject.data.Settings
 import com.example.blacksmithproject.data.ShopDaySpeed
 import com.tinyblacksmith.core.content.LaunchContent
@@ -31,7 +33,12 @@ import org.junit.Assert.assertTrue
 import java.io.IOException
 import org.junit.Test
 
-class FakeSettings(var dismissed: String? = null) : Settings {
+/** [introRecord] defaults to a finished guidance, so every test that is not about it sees the workshop without the strip. */
+class FakeSettings(var dismissed: String? = null, var introRecord: IntroRecord = IntroRecord(IntroStatus.COMPLETED), var charter: String? = null) : Settings {
+    override suspend fun intro() = introRecord
+    override suspend fun setIntro(value: IntroRecord) { introRecord = value }
+    override suspend fun charterChoice() = charter
+    override suspend fun setCharterChoice(value: String) { charter = value }
     override val reducedMotion = MutableStateFlow(false)
     override val haptics = MutableStateFlow(true)
     override val seenTips = MutableStateFlow(emptySet<String>())

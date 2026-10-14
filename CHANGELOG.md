@@ -8,6 +8,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 ## [Unreleased]
 
 ### Added
+- **A guided first day.** A new installation's first game is led through one real day in the real workshop: choose a recipe, forge it, list it, forge a second weapon your own way, end the day, and read what the day came to. One short step at a time sits under the top bar, with "Why?" for more and "Skip guidance" on every step and on the forge result. It is shown once per installation, never again in a later game, and never to someone who has already played.
+- Settings has a "Guided first day" row: where it stands, and "Replay". A replay starts at once in a game's first morning, otherwise it waits for the next new game, says so, and can be cancelled. It never changes a game in progress.
+- A new account's first game starts on "No charter", the shop alone. The charter you pick on the title, or last began a game under, is now remembered.
 - **Legendary weapons are earned.** Quality alone now stops at Epic. A weapon becomes Legendary in two ways: a Heartfire forging that breaks through, or its own deeds.
 - **Heartfire.** A scarce ingredient the forge holds at most three of. It comes from dangerous work: a deep hall cleared, a taken weapon won back, a starfall site, a warlord broken on the wall (in a run without a charter, a siege won from the fourth on). A Heartfire forging is an Advanced forge that spends one Heartfire and two more energy. The workbench shows the quality it needs, the chance at both ends of the roll and what a miss still gives before anything is spent.
 - **Deeds.** A weapon collects renown from what it really did: a rescue, a recovery, a deep hall, a warlord or the charter leader felled with it, an elite slain in a run without a charter. At three it is Legendary by its deeds, once, with a line in its history. Its sheet says which way it became one.

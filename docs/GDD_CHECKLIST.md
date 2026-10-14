@@ -126,7 +126,7 @@ it, and the lines dated T2.x below say what exists now.
 - [x] Settings sheet with reduced motion and a Haptics switch (T2.8a, T6.7: seen on the emulator; the switch persists across a force-stop)
 - [ ] Haptic feel on a real motor (needs hardware); audio and audio settings (no sound asset exists)
 - [x] Onboarding (T2.10): day 1 opens on the lead "Forge your first blade" with its reason, and the first customer card shows one hint about the controls, once (JVM test, two device tests and the smoke script in the final gate). The hint was not looked at by a person; a fresh-install recording was not made
-- [ ] Tutorial beyond that
+- [x] Guided first day (2026-10-11): five steps and the day's outcome on a strip under the top bar, from the first recipe through the first End Day; once per installation, skippable everywhere, replay from Settings (16 JVM tests, 3 device tests, `tools/emulator/intro.sh` on an API 36 emulator). It works as built; whether a new player understands the game from it has not been observed (the T7.2 playtest is still open)
 - [ ] 720x1280 small-screen pass; low-memory interruption check
 - [ ] Final UI design (owner will redesign)
 

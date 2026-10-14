@@ -79,6 +79,7 @@ weapons are bought by autonomous heroes who fight, defend the town and die. Sour
 python tools/pixelart/import_assets.py                 # slice the source sheets from 'Pixel art assets/' into drawables (Pillow, numpy)
 python tools/pixelart/generate_assets.py               # placeholders for IDs without imported art + manifest
 ADB=<sdk>/platform-tools/adb bash tools/emulator/smoke.sh <dir>  # scripted device loop + screenshots (after installDebug)
+ADB=<sdk>/platform-tools/adb bash tools/emulator/intro.sh <dir>  # the guided first day on a cleared install: to "Done", killed midway, the next game, Settings replay, skip (about 5 min)
 ADB=<sdk>/platform-tools/adb bash tools/emulator/scenarios.sh <dir> # loads every debug scenario save and checks what its title promises (about an hour on a slow emulator)
 ADB=<sdk>/platform-tools/adb bash tools/emulator/forge.sh <dir> # forge outlook, bench (with the town's wall), weapon sheet, fight notes, process recreation (set ANDROID_SERIAL)
 ADB=<sdk>/platform-tools/adb bash tools/emulator/journey.sh <dir> 9 stormwell Urien seen # seeded guild run: forge, loan, a real contract, the fight report, "Seen in a real fight", process kill. `... Wren suggested` is the contrast

@@ -134,8 +134,9 @@ fun ForgePanel(
         revealed = s.forgeReveal
     }
 
-    // Not saved: coming back to the Forge starts with it off, so nothing moves until the player acts.
-    var follow by remember { mutableStateOf(false) }
+    // Not saved: coming back to the Forge starts with it off, so nothing moves until the player acts. The guided first
+    // day's first step is to choose: there the open tray comes into view by itself, under the step that asks for it.
+    var follow by remember { mutableStateOf(s.intro?.step == IntroStep.RECIPE) }
 
     Column(Modifier.fillMaxSize()) {
         ThreatStrip(s, "forge_threat") { vm.selectDest(Dest.TOWN) }
@@ -161,7 +162,7 @@ fun ForgePanel(
             LedgerLine(s, vm)
             tip?.let { TipBanner(it, vm, Modifier.padding(top = Space.md)) }
         }
-        ForgeAction(bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay) {
+        ForgeAction(bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay, marked = s.intro?.mark == IntroMark.FORGE) {
             bench.command?.copy(bellows = bellows)?.let(vm::dispatch)
         }
     }
@@ -531,7 +532,7 @@ private fun <T> Choice(label: String, value: String, tag: String, modifier: Modi
  * one gold action with its energy cost in its own label. When no forge is possible today, End day stands beside it.
  */
 @Composable
-private fun ForgeAction(bench: ForgeWorkbenchUi, busy: Boolean, endDayNote: String, onRestock: () -> Unit, onEndDay: () -> Unit, onForge: () -> Unit) {
+private fun ForgeAction(bench: ForgeWorkbenchUi, busy: Boolean, endDayNote: String, onRestock: () -> Unit, onEndDay: () -> Unit, marked: Boolean = false, onForge: () -> Unit) {
     val a = bench.action
     Column(
         Modifier.fillMaxWidth().background(ForgePanel).drawBehind { drawLine(BronzeDeep, Offset.Zero, Offset(size.width, 0f), strokeWidth = 1.dp.toPx()) }
@@ -546,7 +547,7 @@ private fun ForgeAction(bench: ForgeWorkbenchUi, busy: Boolean, endDayNote: Stri
             PrimaryActionButton(
                 a.label, onForge,
                 // A disabled button says why, so a screen reader is not left with a dead action.
-                Modifier.weight(1f).testTag("forge_weapon").semantics { if (!enabled && a.note != null) contentDescription = "${a.label}, unavailable: ${a.note}" },
+                Modifier.weight(1f).testTag("forge_weapon").introMark(marked).semantics { if (!enabled && a.note != null) contentDescription = "${a.label}, unavailable: ${a.note}" },
                 enabled = enabled,
             )
             if (a.endDay) SecondaryActionButton("End day", onEndDay, Modifier.weight(1f).testTag("end_day"), enabled = !busy, detail = endDayNote)

@@ -11,6 +11,8 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.blacksmithproject.GameSession.Op
 import com.example.blacksmithproject.GameSession.Result
 import com.example.blacksmithproject.GameSession.Status
+import com.example.blacksmithproject.data.IntroRecord
+import com.example.blacksmithproject.data.IntroStatus
 import com.example.blacksmithproject.data.SaveFailure
 import com.example.blacksmithproject.data.SaveStore
 import com.example.blacksmithproject.data.Settings
@@ -18,6 +20,14 @@ import com.example.blacksmithproject.data.SettingsStore
 import com.example.blacksmithproject.data.ShopDaySpeed
 import com.example.blacksmithproject.ui.ForgeLearningUi
 import com.example.blacksmithproject.ui.GuildUi
+import com.example.blacksmithproject.ui.IntroRowUi
+import com.example.blacksmithproject.ui.IntroUi
+import com.example.blacksmithproject.ui.Tips
+import com.example.blacksmithproject.ui.introCanBegin
+import com.example.blacksmithproject.ui.introFor
+import com.example.blacksmithproject.ui.introRow
+import com.example.blacksmithproject.ui.introSynced
+import com.example.blacksmithproject.ui.introUi
 import com.example.blacksmithproject.ui.guildUi
 import com.example.blacksmithproject.ui.threat
 import com.example.blacksmithproject.ui.ShopUi
@@ -131,6 +141,8 @@ sealed interface UiState {
         val relicOfferDismissedDay: Int? = null,
         /** The Guild destination's content, built with [shop]; null on a classic run. */
         val guild: GuildUi? = null,
+        /** The guided first day's step in this run; null where it is not running. Built from the save and the record in settings. */
+        val intro: IntroUi? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
     }
@@ -191,6 +203,8 @@ class GameViewModel(
         val revealWeaponId: WeaponId? = null,
         val blessingOfferDismissedDay: Int? = null,
         val relicOfferDismissedDay: Int? = null,
+        /** The player opened the relic offer themselves: the guided first day no longer keeps it closed. */
+        val relicAsked: Boolean = false,
         val sheet: Sheet? = null,
         val lastError: String? = null,
         val notice: String? = null,
@@ -208,6 +222,12 @@ class GameViewModel(
     )
 
     private val local = MutableStateFlow(restored())
+    /** The guided first day as settings hold it; null until it has been read, so nothing of it flashes before then. */
+    private val introRecord = MutableStateFlow<IntroRecord?>(null)
+    val intro: StateFlow<IntroRecord?> get() = introRecord
+    /** The charter a new era begins under unless the player picks another on the title or the run-end screen; null is the classic shop. UI-only until the era begins. */
+    val charter = MutableStateFlow<String?>(engine.content.guild?.charters?.firstOrNull()?.id)
+    private data class Frame(val snap: GameSession.Snapshot?, val op: Status, val local: Local, val intro: IntroRecord?)
     /** closeRun of the ended run, computed once per run instead of on every emission. */
     private var closed: Pair<GameState, RunEndResult>? = null
 
@@ -227,13 +247,53 @@ class GameViewModel(
      * While a script is being built nothing is emitted, so the screen stays on what it showed (planning with its
      * controls locked, or the loading spinner) until the day can be shown whole.
      */
-    val ui: StateFlow<UiState> = combine(session.snapshot, session.status, local, ::Triple)
-        .mapLatest { (snap, op, l) -> val script = scriptFor(snap); render(snap, op, l, script, shopFor(snap)) }
+    val ui: StateFlow<UiState> = combine(session.snapshot, session.status, local, introRecord) { snap, op, l, intro -> Frame(snap, op, l, intro) }
+        .mapLatest { (snap, op, l, intro) -> val script = scriptFor(snap); render(snap, op, l, script, shopFor(snap), intro) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, UiState.Loading)
+
+    /** The guidance row of Settings; null until the record has been read. */
+    val introRow: StateFlow<IntroRowUi?> = combine(introRecord, session.snapshot) { record, snap -> record?.let { introRow(it, introCanBegin(snap?.run)) } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     init {
         viewModelScope.launch { open { session.load() } }
         viewModelScope.launch { settings.shopDaySpeed.collect { speed -> local.update { it.copy(speed = speed) } } }
+        viewModelScope.launch {
+            introRecord.value = settings.intro()
+            // The record follows the save: every change of the run, the draft or the record itself is one more look.
+            combine(session.snapshot, local, introRecord) { snap, l, record -> Triple(snap, l, record) }.collect { (snap, l, record) ->
+                if (snap == null || l.loading || record == null) return@collect
+                val known = if (record.status == IntroStatus.UNSET) introFor(snap.legacy, snap.run, settings.seenTips.first()) else record
+                val next = engine.introSynced(known, snap.run, l.draft)
+                if (next != record) setIntro(next, taught = next.status == IntroStatus.COMPLETED)
+            }
+        }
+    }
+
+    /** The one place the guidance record changes: the screen first, then settings. [taught]: the two tips it stands for are not shown again. */
+    private suspend fun setIntro(next: IntroRecord, taught: Boolean = false) {
+        introRecord.value = next
+        settings.setIntro(next)
+        if (taught) for (tip in listOf(Tips.MARKET, Tips.END_DAY)) settings.markTipSeen(tip.id)
+    }
+
+    /** "Skip guidance", wherever it is offered, and "Dismiss" on the invitation: it ends now and stays off for every later run. */
+    fun skipIntro() = viewModelScope.launch { introRecord.value?.let { setIntro(IntroRecord(IntroStatus.SKIPPED, completedOnce = it.completedOnce), taught = true) } }
+
+    /** "Done" under the first day's outcome. */
+    fun finishIntro() = viewModelScope.launch { setIntro(IntroRecord(IntroStatus.COMPLETED, completedOnce = true), taught = true) }
+
+    /**
+     * The button of the Settings row and of the main menu's line. Running: skip. Queued: cancel, back to where it stood.
+     * Otherwise a replay or a resume: at once in a run's first morning, else with the next new game. It never touches a run.
+     */
+    fun introAction() = viewModelScope.launch {
+        val record = introRecord.value ?: return@launch
+        when (record.status) {
+            IntroStatus.ACTIVE -> setIntro(IntroRecord(IntroStatus.SKIPPED, completedOnce = record.completedOnce), taught = true)
+            IntroStatus.QUEUED -> setIntro(IntroRecord(if (record.completedOnce) IntroStatus.COMPLETED else IntroStatus.SKIPPED, completedOnce = record.completedOnce))
+            else -> setIntro(IntroRecord(IntroStatus.QUEUED, completedOnce = record.completedOnce))
+        }
     }
 
     /** The last resolved day while it has not been watched to its end. */
@@ -275,7 +335,7 @@ class GameViewModel(
         return Plan(engine.shopUi(run).let { it.copy(threat = guild.threat(it.threat)) }, null, engine.encounterView(run), engine.relicViews(run), guild)
     }
 
-    private fun render(snap: GameSession.Snapshot?, op: Status, l: Local, day: Day?, plan: Plan?): UiState {
+    private fun render(snap: GameSession.Snapshot?, op: Status, l: Local, day: Day?, plan: Plan?, record: IntroRecord?): UiState {
         if (snap == null || l.loading) return l.loadFailure?.let { UiState.LoadFailed(it, working = l.loading) } ?: UiState.Loading
         val run = snap.run ?: return UiState.Title(snap.legacy, op)
         val last = unwatched(snap)
@@ -292,7 +352,10 @@ class GameViewModel(
         }
         // Planning always arrives with the Shop's content: shopFor builds it before this is called, and now() checks.
         val planned = plan ?: planFor(run)
-        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, l.relicOfferDismissedDay, planned.guild)
+        val intro = engine.introUi(record, run, l.dest, l.draft)
+        // While the first day is guided the relic offer does not open by itself ("Decide later"); the Shop's row still opens it.
+        val relicDay = l.relicOfferDismissedDay ?: run.day.takeIf { intro != null && !l.relicAsked }
+        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, relicDay, planned.guild, intro)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -302,14 +365,14 @@ class GameViewModel(
         if (unwatched(snap) != null && built == null) return ui.value
         val stocked = shop?.takeIf { it.first === snap?.run }?.second
         if (plans(snap) && stocked == null) return ui.value
-        return render(snap, session.status.value, local.value, built, stocked)
+        return render(snap, session.status.value, local.value, built, stocked, introRecord.value)
     }
 
     /** A load, a retried load or a start over: the screen leaves Loading / LoadFailed only when it has finished. */
     private suspend fun open(read: suspend () -> Result) {
         local.update { it.copy(loading = true) }
         val result = read()
-        if (result is Result.Done) handOverDismissedReport()
+        if (result is Result.Done) { handOverDismissedReport(); placeCharter() }
         // Opened onto a day that was resolved and saved but not watched to its end: the Resume prompt.
         local.update { it.copy(loading = false, loadFailure = (result as? Result.Failed)?.failure, resumed = unwatched(session.snapshot.value) != null) }
     }
@@ -322,6 +385,20 @@ class GameViewModel(
         val snap = session.snapshot.value ?: return
         val last = snap.run?.lastResolution ?: return
         if (snap.cursor == null && settings.dismissedReport() == last.commandId.value) session.run(Op.MoveCursor(DayCursor(last.commandId.value, DayCursor.Stage.DONE)))
+    }
+
+    /**
+     * The charter the title's picker opens on. What the player picked last, or last began a game under, always wins. Without either, an account that
+     * has not finished an era starts on the shop alone: the guild is built on that loop and is one step away in the picker.
+     */
+    private suspend fun placeCharter() {
+        val legacy = session.snapshot.value?.legacy ?: return
+        val charters = engine.content.guild?.charters.orEmpty()
+        when (val picked = settings.charterChoice()) {
+            null -> if (legacy.eras.isEmpty() && legacy.claimedRunIds.isEmpty()) charter.value = null
+            Settings.NO_CHARTER -> charter.value = null
+            else -> if (charters.any { it.id == picked }) charter.value = picked
+        }
     }
 
     private fun edit(transform: (Local) -> Local) {
@@ -376,9 +453,7 @@ class GameViewModel(
         }
     }
 
-    /** The charter a new era begins under unless the player picks another on the title or the run-end screen; null is the classic shop. UI-only until the era begins. */
-    val charter = MutableStateFlow<String?>(engine.content.guild?.charters?.firstOrNull()?.id)
-    fun selectCharter(id: String?) { charter.value = id }
+    fun selectCharter(id: String?) { charter.value = id; viewModelScope.launch { settings.setCharterChoice(id ?: Settings.NO_CHARTER) } }
 
     fun newRun() = beginEra(null)
 
@@ -390,7 +465,12 @@ class GameViewModel(
     /** From the title (no run) or from the run-end screen (the session refuses it until the legacy is claimed). */
     private fun beginEra(seed: Long?) {
         val snap = session.snapshot.value ?: return
-        launch(Op.BeginEra(seed ?: (System.nanoTime() xor snap.legacy.eras.size.toLong()), snap.run?.runId, charter.value)) { edit { Local(loading = false, speed = it.speed) } }
+        val under = charter.value
+        launch(Op.BeginEra(seed ?: (System.nanoTime() xor snap.legacy.eras.size.toLong()), snap.run?.runId, under)) {
+            edit { Local(loading = false, speed = it.speed) }
+            // What a game was started under counts as picked: the picker opens there next time, whatever the account's default has become.
+            viewModelScope.launch { settings.setCharterChoice(under ?: Settings.NO_CHARTER) }
+        }
     }
 
     /** Main menu, "Abandon run": the run is discarded unclaimed and the menu offers a new game. */
@@ -513,7 +593,7 @@ class GameViewModel(
     fun dismissBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = session.snapshot.value?.run?.day) }
     fun reopenBlessingOffer() = edit { it.copy(blessingOfferDismissedDay = null) }
     fun dismissRelicOffer() = edit { it.copy(relicOfferDismissedDay = session.snapshot.value?.run?.day, dest = Dest.SHOP) }
-    fun reopenRelicOffer() = edit { it.copy(relicOfferDismissedDay = null) }
+    fun reopenRelicOffer() = edit { it.copy(relicOfferDismissedDay = null, relicAsked = true) }
 
     /**
      * An answer to this morning's visitor. The command ID is made of the run, the visitor and the answer, so a second

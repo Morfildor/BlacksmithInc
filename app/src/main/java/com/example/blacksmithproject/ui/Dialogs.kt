@@ -109,6 +109,8 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
             reveal = !reducedMotion,
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
             learning = s.learning,
+            // The guided first day: its step is said on the card, which covers the strip, and can be skipped from here too.
+            guide = s.intro?.result?.let { line -> { IntroCardLine(line, onSkip = { vm.skipIntro() }) } },
         )
     }
 }
@@ -132,6 +134,8 @@ private const val REVEAL_FADE_MS = 250
  * and live from the first frame, so the reveal never costs a tap or a wait. Without it (reduced motion) the card is
  * whole at once. A brand-new blade has no renown to show, so the zero is left out here; the blade's sheet keeps it.
  *
+ * [guide] is the guided first day's line: over the price, or at the head of the card when the text is large.
+ *
  * With [onLoan] (a guild run) a third way on, "Loan", opens the members the blade could go to; nothing is lent until
  * one is chosen.
  */
@@ -148,6 +152,7 @@ fun ForgeResultCard(
     reveal: Boolean = false,
     overSprite: @Composable BoxScope.() -> Unit = {},
     learning: ForgeLearningUi? = null,
+    guide: (@Composable () -> Unit)? = null,
 ) {
     var revealed by rememberSaveable(detail.weaponId.value) { mutableStateOf(!reveal) }
     LaunchedEffect(detail.weaponId) { if (!revealed) { delay(REVEAL_HOLD_MS); revealed = true } }
@@ -204,11 +209,12 @@ fun ForgeResultCard(
     val typing = !large && WindowInsets.ime.getBottom(LocalDensity.current) > 0
     // No semantics on the tap: it only ends a moment's fade, and the buttons under it keep their own taps.
     FramedPanel("Fresh from the forge".takeIf { !typing }, modifier.fillMaxWidth().pointerInput(Unit) { detectTapGestures { revealed = true } }) {
-        if (large) Column(Modifier.verticalScroll(rememberScrollState())) { blade(); price() }
+        // Large text: the card is one long column, so the guided step and its way out come first, where they are seen without a scroll.
+        if (large) Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); blade(); price() }
         else {
             if (!typing) Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState())) { blade() }
             // Measured before the card above it, so it has the room it needs; it scrolls only when the keyboard leaves less.
-            Column(Modifier.verticalScroll(rememberScrollState())) { price() }
+            Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); price() }
         }
     }
 }
