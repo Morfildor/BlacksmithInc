@@ -78,10 +78,10 @@ done
 shot 02b_runend_reopened
 for i in 1 2 3 4 5 6; do has "Begin era" && break; $ADB shell input swipe 540 1500 540 500 400; $ADB shell sleep 1; done
 shot 03_runend_bottom
-# The next era is classic too. The charter choice is not kept over the process death above, so the picker at the foot
-# of this screen is back on the first charter: one step back is "No charter".
+# The next era is classic too. The picker at the foot of this screen keeps the charter the run began under ("No
+# charter", kept in settings over the process death above); should it stand on a charter, one step back is "No charter".
 for i in 1 2 3 4 5 6 7 8 9 10 11 12; do dump | grep -q 'resource-id="charter_prev"' && break; $ADB shell input swipe 540 1500 540 500 400; $ADB shell sleep 1; done
-no_charter && echo "CHECK next era without a charter chosen: ok" || echo "CHECK next era without a charter chosen: FAIL"
+{ has "No charter" || no_charter; } && echo "CHECK next era without a charter chosen: ok" || echo "CHECK next era without a charter chosen: FAIL"
 shot 03b_runend_no_charter
 tap "Begin era" || exit 1
 wait_text "Decide later" && tap "Decide later"
