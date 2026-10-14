@@ -327,10 +327,9 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
     }
 }
 
-/** The three segments of Records (News, Notebook, Legacy) as one row of exclusive buttons. */
+/** The segments of Records (News, Notebook, Legacy, and Town in a guild run) as one row of exclusive buttons. */
 @Composable
-fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier: Modifier = Modifier) {
-    val pages = RecordsPage.entries
+fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier: Modifier = Modifier, pages: List<RecordsPage> = RecordsPage.entries - RecordsPage.TOWNSFOLK) {
     SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth().padding(bottom = Space.sm)) {
         pages.forEachIndexed { i, p ->
             // These are pages, not a setting: no check mark. The chosen page is the lit bronze plate with gold lettering,
@@ -442,7 +441,7 @@ internal fun endDayNote(state: GameState, visitor: Encounters.View?): String = w
 }
 
 /** The paper has one name everywhere: every link to this page says "Read the Gazette". */
-fun recordsPageName(p: RecordsPage) = when (p) { RecordsPage.GAZETTE -> "Gazette"; RecordsPage.JOURNAL -> "Notebook"; RecordsPage.LEGACY -> "Legacy" }
+fun recordsPageName(p: RecordsPage) = when (p) { RecordsPage.GAZETTE -> "Gazette"; RecordsPage.JOURNAL -> "Notebook"; RecordsPage.LEGACY -> "Legacy"; RecordsPage.TOWNSFOLK -> "Town" }
 
 fun destName(d: Dest) = when (d) { Dest.SHOP -> "Shop"; Dest.FORGE -> "Forge"; Dest.TOWN -> "Town"; Dest.RECORDS -> "Records" }
 

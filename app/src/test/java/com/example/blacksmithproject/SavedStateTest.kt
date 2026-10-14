@@ -71,4 +71,26 @@ class SavedStateTest {
             Dispatchers.resetMain()
         }
     }
+
+    /** The Guild part chosen today comes back with the process; the siege strip goes to the Wall over it, as an explicit way there. */
+    @Test
+    fun theGuildPartChosenTodaySurvivesRecreation() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+            val start = engine.guildRun(7)
+            val repo = FakeGameRepository(SaveCodec.encodeRun(start), SaveCodec.encodeLegacy(start.legacy))
+            fun open(saved: SavedStateHandle) = GameViewModel(engine, GameSession(engine, repo, compute = StandardTestDispatcher(testScheduler)), FakeSettings(), saved, compute = StandardTestDispatcher(testScheduler))
+            val handle = SavedStateHandle()
+            val vm = open(handle); advanceUntilIdle()
+            vm.selectDest(Dest.TOWN); vm.selectGuildTab(GuildTab.CHARTER); advanceUntilIdle()
+            assertEquals(GuildTabMemory(GuildTab.CHARTER, start.day), (vm.ui.value as UiState.Playing).guildTab)
+            val reopened = open(SavedStateHandle(handle.keys().associateWith { handle.get<Any?>(it) })).also { advanceUntilIdle() }
+            val after = reopened.ui.value as UiState.Playing
+            assertEquals(Dest.TOWN to GuildTabMemory(GuildTab.CHARTER, start.day), after.dest to after.guildTab)
+            reopened.selectDest(Dest.SHOP); reopened.openGuildWall(); advanceUntilIdle()
+            assertEquals(Dest.TOWN to GuildTab.WALL, (reopened.ui.value as UiState.Playing).let { it.dest to it.guildTab?.tab })
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
 }

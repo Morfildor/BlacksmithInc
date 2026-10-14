@@ -482,3 +482,32 @@ fun LevelDots(level: Int, max: Int) {
         modifier = Modifier.semantics { contentDescription = "level $level of $max" },
     )
 }
+
+/**
+ * A guild run's townsfolk on Records: the living who are not of the guild, by fame, then the fallen and retired behind
+ * one heading. The guild's own members are on the Guild's Company part; the wall still takes townsfolk as defenders.
+ */
+internal fun LazyListScope.townsfolkItems(s: UiState.Playing, vm: GameViewModel, showGone: Boolean, onToggleGone: () -> Unit) {
+    val living = s.state.residents().sortedByDescending { it.fame }
+    val gone = s.state.heroes.values.filter { !it.isAlive }.sortedByDescending { it.fame }
+    item(key = "townsfolk_head") { SectionTitle("Townsfolk · ${living.size} in town", Modifier.testTag("records_townsfolk")) }
+    itemsIndexed(living, key = { _, h -> "hero_${h.id.value}" }) { i, h ->
+        if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        HeroRow(h, s, vm)
+    }
+    if (gone.isNotEmpty()) {
+        item(key = "gone_head") {
+            Row(
+                Modifier.fillMaxWidth().padding(top = Space.md).clickable(onClickLabel = if (showGone) "Hide" else "Show", role = Role.Button, onClick = onToggleGone).heightIn(min = 48.dp).testTag("town_fallen"),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Fallen and retired (${gone.size})", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                Text(if (showGone) "Hide  ▴" else "Show  ▾", style = MaterialTheme.typography.labelLarge, color = Gold)
+            }
+        }
+        if (showGone) itemsIndexed(gone, key = { _, h -> "hero_${h.id.value}" }) { i, h ->
+            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            HeroRow(h, s, vm)
+        }
+    }
+}

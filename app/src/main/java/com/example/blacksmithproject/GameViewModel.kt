@@ -79,8 +79,8 @@ enum class GuildTab { CONTRACTS, COMPANY, WALL, CHARTER }
 /** The Guild part the smith last chose and the day they chose it on: it holds for that day only (see `guildTabFor`). */
 data class GuildTabMemory(val tab: GuildTab, val day: Int)
 
-/** The three segments of Records; GAZETTE is the one labelled "News". */
-enum class RecordsPage { GAZETTE, JOURNAL, LEGACY }
+/** The segments of Records; GAZETTE is the one labelled "News". TOWNSFOLK only in a guild run, where the Guild has no room for them. */
+enum class RecordsPage { GAZETTE, JOURNAL, LEGACY, TOWNSFOLK }
 
 /** The detail sheet that is open over the workshop: only who or what it shows; its content is read from the save on every render. */
 sealed interface Sheet {
