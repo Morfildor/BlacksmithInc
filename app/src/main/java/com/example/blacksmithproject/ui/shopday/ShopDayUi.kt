@@ -5,9 +5,12 @@ import com.example.blacksmithproject.data.ShopDaySpeed
 import com.tinyblacksmith.core.combat.FightResult
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
+import com.tinyblacksmith.core.crafting.Interactions
 import com.tinyblacksmith.core.model.BlessingId
 import com.tinyblacksmith.core.model.CombatReplay
 import com.tinyblacksmith.core.model.CustomerSnapshot
+import com.tinyblacksmith.core.model.EventType
+import com.tinyblacksmith.core.model.FieldOutcome
 import com.tinyblacksmith.core.model.FactionId
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.Hero
@@ -107,6 +110,10 @@ data class SiegeOutcomeUi(
     val fight: FightResult? = null,
     /** What decided the night, each line from the siege's own record (`SiegeReport.notes`). */
     val notes: List<String> = emptyList(),
+    /** Defenders who died on the wall (`FieldOutcome.FELL_AT_THE_WALL`); the others who went down were hurt, not killed. */
+    val fell: Set<HeroId> = emptySet(),
+    /** Interaction paths this night showed for the first time, by name (the day's "Seen in a real fight" records). */
+    val discoveries: List<String> = emptyList(),
 ) {
     val outcome: String get() = when (verdict) {
         SiegeVerdict.HELD -> "The town held"
@@ -358,6 +365,13 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
                 verdict = wall?.verdict, outerLine = wall?.outerLine?.takeIf { it.isNotEmpty() },
                 highlights = wall?.fight?.highlights.orEmpty().take(HIGHLIGHTS_SHOWN).map { it.text }, fight = wall?.fight,
                 notes = wall?.notes.orEmpty(),
+                fell = resolution?.field.orEmpty().filter { it.outcome == FieldOutcome.FELL_AT_THE_WALL }.map { it.heroId }.toSet(),
+                // Today's first sightings that this fight shows: a contract fought the same day may have shown others.
+                discoveries = content.combat?.let { combat ->
+                    val shown = wall?.fight?.let { Interactions.shownIn(it, combat) }.orEmpty()
+                    resolution?.events.orEmpty().filter { it.type == EventType.DISCOVERY }.mapNotNull { it.data["interaction"] }.filter { it in shown }
+                        .mapNotNull { id -> combat.interactions.firstOrNull { it.id == id }?.name }
+                }.orEmpty(),
             )
         }
     aftermath.forEachIndexed { i, card ->

@@ -5,6 +5,7 @@ import com.tinyblacksmith.core.combat.Combatant
 import com.tinyblacksmith.core.combat.EventKind
 import com.tinyblacksmith.core.combat.Fight
 import com.tinyblacksmith.core.combat.FightOutcome
+import com.tinyblacksmith.core.combat.FightEvent
 import com.tinyblacksmith.core.combat.FightResult
 import com.tinyblacksmith.core.combat.FightSetup
 import com.tinyblacksmith.core.combat.Objective
@@ -481,11 +482,17 @@ object Missions {
         return w.id
     }
 
-    /** The record a save keeps of a fight: every line that says something, re-linked past the silent ones. */
+    /**
+     * The record a save keeps of a fight: every line that says something, re-linked past the silent ones. From
+     * [FightResult.RECORD] on, a silent line that moves a number is kept too (a blow Guard took in part, healing past
+     * full, a state spent, the start of a tick), so the replay and the report can account for every point; only the
+     * markers of a round's end and of an actor having acted go.
+     */
     fun compact(r: FightResult): FightResult {
         val byId = r.events.associateBy { it.id }
-        fun shownParent(id: Int?): Int? = generateSequence(id?.let(byId::get)) { it.parentId?.let(byId::get) }.firstOrNull { it.text.isNotEmpty() }?.id
-        return r.copy(events = r.events.filter { it.text.isNotEmpty() }.map { it.copy(parentId = shownParent(it.parentId)) })
+        fun kept(e: FightEvent): Boolean = e.text.isNotEmpty() || (r.record >= FightResult.RECORD && e.kind != EventKind.ROUND_END && e.kind != EventKind.ACTED)
+        fun keptParent(id: Int?): Int? = generateSequence(id?.let(byId::get)) { it.parentId?.let(byId::get) }.firstOrNull(::kept)?.id
+        return r.copy(events = r.events.filter(::kept).map { it.copy(parentId = keptParent(it.parentId)) })
     }
 
     // ---- morning ----

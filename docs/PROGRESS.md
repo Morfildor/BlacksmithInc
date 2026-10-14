@@ -33,6 +33,30 @@ with stubs for the Android-only APIs, which runs the app's JVM unit tests and ty
   preview activity's stand-in dialog is left as it is. App unit tests 250 / 0; instrumented sources type-check with no
   new errors. Not run on a device.
 
+## Siege replay with portraits and a battle report (2026-10-14, branch `claude/siege-replay-animated-portraits-phyv6c`)
+
+A guild run's siege can be watched from its record and read as a report (rulings and numbers: DECISIONS "Siege replay
+and battle report"). Core: the fight record gained start state, blade identity and rules, tick and weak/resist marks
+(`FightResult.record` 1, all optional, older saves decode as before); `Missions.compact` keeps the silent lines that
+move a number; `combat/Replay.kt` (steps and pops with the state after each), `ReplayTimeline.kt` (frame order, read
+floors, labels, the recent-action strip), `Account.kt` (per-defender, per-rule damage / blocked / healed, each point
+once, at most two observations). App: `ui/replay/SiegeReplay.kt` (portraits, bars, state chips, a reserved pop lane per
+fighter, lunge and shake off under reduced motion, pause / 1x-2x / highlights-full / replay / skip, tap to inspect),
+`SiegeReport.kt`, the siege card's "Watch the siege" and "Battle report" (an older record keeps its text summary).
+`./gradlew :core:combat --args="replay [id]"` prints the fixtures as the replay shows them.
+
+Checks run in this cloud session (no Android SDK; Google Maven blocked; `:core` built out of tree with Temurin 25):
+- `:core:test` whole suite green (10 m 36 s) before the last two test additions; then `FightReplayTest` (15) and the new `GuildRunTest` case,
+  `GuildRunTest`, `CombatEngineTest`, `ScenarioSavesTest`, `VersionFingerprintTest`, `SaveFixtureTest` green.
+- `:core:combat` output (every fixture's outcome, highlights and timeline) byte-identical before and after.
+- `:core:scenarios` rewritten: the five guild scenario saves now hold record-1 fights.
+- The new Compose files: see the type-check line below. Not run: `:app` build and unit tests, the instrumented suite,
+  any emulator script; nothing of the replay has been seen on a screen. Small-screen layout, font scale 2.0 and the
+  timing are argued in code (reserved lanes sized in sp, scrolling stage, wrapping controls), not observed.
+- Next: on a machine with the SDK, `:app:testDebugUnitTest` and `assembleDebug`; load `siege_preparation`, End Day,
+  open "Watch the siege" at font 1.0 and 2.0 on a 360 dp screen, with reduced motion, and compare the report's totals
+  with the text log.
+
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay
 and content, compliance and performance, guidance and copy, tests and evidence, adversarial, docs and release, unused

@@ -68,6 +68,7 @@ import kotlinx.coroutines.delay
  * replay is open), with TalkBack exploring, or while the activity is not resumed. A tap anywhere is Next, except on
  * the cards that end the day, where only the wide button acts (Begin day, See the legacy, Decide later); Back steps
  * one beat and never closes the day; Skip day is one tap. [onWatchFight] passes the replay's event ID, null for the siege.
+ * [onWatchSiege] opens the wall's fight of a guild run: its replay, or (true) its report.
  * [coach] is the first-run line that says so, shown above the controls while the caller passes it.
  */
 @Composable
@@ -89,6 +90,7 @@ fun ShopDayScreen(
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
     coach: String? = null,
+    onWatchSiege: (report: Boolean) -> Unit = {},
 ) {
     val at = position.coerceIn(0, model.beats.lastIndex)
     val beat = model.beats[at]
@@ -164,7 +166,7 @@ fun ShopDayScreen(
                                 is Beat.Close -> ShopCloseCard(beat)
                                 is Beat.Quiet -> QuietDayCard(beat, openHero)
                                 is Beat.Aftermath ->
-                                    if (beat.card.siege != null) SiegeOutcomeCard(beat, beat.card.siege, openHero, onWatchFight = { onWatchFight(it.eventId) })
+                                    if (beat.card.siege != null) SiegeOutcomeCard(beat, beat.card.siege, openHero, onWatchFight = { onWatchFight(it.eventId) }, onWatchSiege = onWatchSiege)
                                     else AftermathCard(beat, openHero, openBlade, onWatchFight = { onWatchFight(it.eventId) }, onOpenGazette = onOpenGazette)
                                 is Beat.Blessing -> BlessingChoices(beat.choices, onChooseBlessing, siege = beat.siege)
                                 is Beat.Tomorrow -> TomorrowCard(beat, onOpenGazette = onOpenGazette, modifier = Modifier.heightIn(min = room))

@@ -1,6 +1,9 @@
 package com.tinyblacksmith.core.combat
 
 import com.tinyblacksmith.core.content.Element
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.EncodeDefault.Mode.NEVER
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 
 enum class Side { PARTY, ENEMY }
@@ -26,10 +29,16 @@ enum class EventKind {
 /** How an event came about: an actor's own action, a triggered effect, or a tick of a state at its scheduled moment. */
 enum class Via { ACTION, EFFECT, TICK }
 
+/** A hit the target's element changed: it struck a weakness, or the target resisted it (an element, or part of a tick). */
+enum class Affinity { WEAK, RESISTED }
+
 /**
  * One line of the timeline. [parentId] is the event that caused this one, [rootId] the action (or tick) the whole chain
  * began with. [effectId] names the effect that produced it, null for what an action or a rule did directly.
+ * [tick] is the state whose tick this event is part of (Burn, Bleed, Regeneration); [affinity] says a hit met a weakness
+ * or a resistance. Both are records only: no rule reads them, and a fight recorded before them has neither.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class FightEvent(
     val id: Int,
@@ -44,6 +53,8 @@ data class FightEvent(
     val parentId: Int? = null,
     val rootId: Int = id,
     val text: String = "",
+    @EncodeDefault(NEVER) val tick: Stat? = null,
+    @EncodeDefault(NEVER) val affinity: Affinity? = null,
 )
 
 enum class Posture { CAUTIOUS, BALANCED, RECKLESS }
@@ -109,6 +120,10 @@ data class Combatant(
     /** Share (percent) of a tick of this state the actor ignores: a boss halves Burn, it is never immune. */
     val tickResist: Map<Stat, Int> = emptyMap(),
     val weaponName: String? = null,
+    /** Records only, for the replay and the report: the blade's ID, which of [effects] it brought, and the catalog unit an enemy is. */
+    val weaponId: String? = null,
+    val weaponRules: List<String> = emptyList(),
+    val unitId: String? = null,
 )
 
 /** Something an effect can call onto the field: one helper, with numbers of its own. */
@@ -140,13 +155,30 @@ data class FightSetup(
     val units: Map<String, UnitDef> = emptyMap(),
 )
 
+/**
+ * An actor as the fight left it. From [FightResult.RECORD] on it also says how it came in ([start], [startStats]) and
+ * what it carried, so a replay can be drawn from the record alone; a fight recorded before has the defaults.
+ */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
-data class ActorResult(val key: String, val name: String, val side: Side, val health: Int, val maxHealth: Int, val downed: Boolean, val fractured: Boolean = false, val summoned: Boolean = false)
+data class ActorResult(
+    val key: String, val name: String, val side: Side, val health: Int, val maxHealth: Int, val downed: Boolean, val fractured: Boolean = false, val summoned: Boolean = false,
+    @EncodeDefault(NEVER) val start: Int? = null,
+    @EncodeDefault(NEVER) val startStats: Map<Stat, Int> = emptyMap(),
+    @EncodeDefault(NEVER) val kit: String? = null,
+    @EncodeDefault(NEVER) val weapon: String? = null,
+    @EncodeDefault(NEVER) val weaponId: String? = null,
+    @EncodeDefault(NEVER) val element: Element? = null,
+    /** The rule IDs the actor's blade brought to this fight, in the order the fight asked them. */
+    @EncodeDefault(NEVER) val weaponRules: List<String> = emptyList(),
+    @EncodeDefault(NEVER) val unitId: String? = null,
+)
 
 /** A chain worth telling: the events it is made of, root first, and the sentence built from their own texts. */
 @Serializable
 data class Highlight(val eventIds: List<Int>, val text: String, val weight: Int)
 
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class FightResult(
     val title: String,
@@ -155,9 +187,18 @@ data class FightResult(
     val actors: List<ActorResult>,
     val events: List<FightEvent>,
     val highlights: List<Highlight> = emptyList(),
+    /** 0 for a fight recorded before replays; [RECORD] when the actors, ticks and affinities above are filled in. */
+    @EncodeDefault(NEVER) val record: Int = 0,
+    /** The name of every rule an event of this fight names, by ID: the record says what fired without the catalog. */
+    @EncodeDefault(NEVER) val rules: Map<String, String> = emptyMap(),
 ) {
     fun actor(key: String): ActorResult? = actors.firstOrNull { it.key == key }
     val won: Boolean get() = outcome == FightOutcome.WON
+
+    companion object {
+        /** The first record a replay can be drawn from. */
+        const val RECORD = 1
+    }
 }
 
 /** The defect guard of spec 6.4: valid content never reaches it. The seed and round are what a report needs to reproduce it. */
