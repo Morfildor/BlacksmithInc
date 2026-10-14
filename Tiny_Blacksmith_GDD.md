@@ -173,7 +173,7 @@ These stories come from deterministic systems, never from a script dressed up as
 
 | | Decision | Status |
 |---|---|---|
-| A | Hidden random odds (Reckless flaw chance, Heartfire breakthrough chance) are shown in band words, never as percentages or counts ("3 in 10" states exact odds). Thresholds, costs and energy stay numbers. Applies to previews and tooltips too, including the upgrade preview (ruling of 2026-10-14, §21.4) | NOT YET BUILT: the workbench prints percentages, the upgrade preview prints "N forges in 10" |
+| A | Hidden random odds (Reckless flaw chance, Heartfire breakthrough chance) are shown in band words, never as percentages or counts ("3 in 10" states exact odds). Thresholds, costs and energy stay numbers. Applies to previews and tooltips too, including the upgrade preview (ruling of 2026-10-14, §21.4) | Built 2026-10-14; app tests written, not yet run (§21.3) |
 | B | Guild wall work draws on the daily recovery allowance; any extra for assigned heroes is a `BalanceConfig` number (`wallWorkExtraRecovery` = 1), never a bypass | Built (balance 15); the value 1 vs 3 is OPEN |
 | C | Debug entries (scenarios, combat sandbox) live under Settings in debug builds | Built |
 | D | `appCategory="game"`; portrait stays; checked on a 600 dp screen; landscape DEFERRED | Built |
@@ -182,14 +182,14 @@ These stories come from deterministic systems, never from a script dressed up as
 | G | `allowBackup="false"`; legacy-only backup DEFERRED | Built |
 | H | Bundled licensed fonts: bold serif headings, sans body and labels | Built (Alegreya, Fira Sans) |
 | I | Opening: tap a card, one primary action names it, no confirm dialog; the drawback is on the card | Built |
-| J | Guild members at home train and pursue ambitions automatically; one line explains it | Rule built; the explaining line NOT YET BUILT |
-| K | Forge result: "List at suggested" primary, "Set price" secondary | NOT YET BUILT |
-| L | Forge result: one line saying whether the weapon is reserved and for whose commission | NOT YET BUILT |
+| J | Guild members at home train and pursue ambitions automatically; one line explains it | Built 2026-10-14; app tests written, not yet run (§21.3) |
+| K | Forge result: "List at suggested" primary, "Set price" secondary | Built 2026-10-14; app tests written, not yet run (§21.3) |
+| L | Forge result: one line saying whether the weapon is reserved and for whose commission | Built 2026-10-14; app tests written, not yet run (§21.3) |
 | M | Giving a weapon away stays valid but earns a bounded generosity benefit instead of full sale reputation and loyalty | Built (balance 15, §7.4) |
 
 Also ruled that day: standing drawbacks are approved where they make a playstyle (visible before choosing, inspectable
 during the run); militia as a paid wall unit is approved in direction (not built); an irreversible Heartfire spend asks
-for a confirmation stating cost and consequence (NOT YET BUILT); "Renown" stays the word for deeds.
+for a confirmation stating cost and consequence (built 2026-10-14); "Renown" stays the word for deeds.
 
 ---
 
@@ -352,7 +352,8 @@ material (never bypassing the fine-metal days).
 A run-only count, held at most 3 (excess is lost and reported). It is not a material (the 16 count is LOCKED).
 Sources: classic, each siege **won** from the 4th siege on; guild, the starfall site, a delve's deep hall, a recovery
 contract and a warlord broken on the wall. Spent by **Heartfire forging** (§5.4). An irreversible spend asks for
-confirmation stating cost and consequence (owner ruling; NOT YET BUILT).
+confirmation stating cost and consequence (owner ruling): a question before anything is spent says what it uses, what
+is held after, that both are spent either way, the chance in words and what a miss gives; "Not now" spends nothing.
 
 ## 5.4 Forge modes, energy and overwork
 
@@ -518,8 +519,9 @@ lost weapons pruned 30 days later unless they are Legend Board candidates or sig
 
 8 shelf slots (+2 Display Case). The player lists and unlists and sets any price ≥ 0 per weapon (LOCKED manual
 pricing). The **suggested price** is `power × condition factor × 4`, plus up to 5 % for fame. The forge result's
-primary action lists at the suggested price; "Set price" opens the editor (decision K, NOT YET BUILT; today: Store and
-"List at N"). The price editor shows how many living heroes could pay that price, with "Able to pay is not a sale".
+primary action is "List at suggested", with the price and how many living heroes could pay it shown above it; "Set
+price" opens the price editor (−10, +10 or typed, the count following the chosen price) and "Back" there lists nothing;
+Store keeps it (decision K).
 
 ## 7.2 Who comes to the counter (fair selection)
 
@@ -783,7 +785,7 @@ missing class, each fully disclosed (class, level, defining trait, fee, share). 
 once; **no wages**: each member in a winning party takes 10 % of the stage's gold (Greedy 15 %). **Defining traits
 (12):** Protective, Impatient, Cowardly, Greedy, Methodical, Loyal, Storm-Touched, Pain Collector, Rust Savant,
 Overhealer, Second Wind, Oathkeeper. Dismissal is free for a member at home who is not in today's planned party.
-Members at home rest or train automatically (decision J). **Wounds:** Exhausted (1 day), Injured (2 days), Scarred
+Members at home rest or train automatically (decision J); the roster says so in one line. **Wounds:** Exhausted (1 day), Injured (2 days), Scarred
 (5 days, enters fights at 75 % health). **Specialities:** deeds open a choice between two branches (Vanguard/Striker,
 Unbroken/Careful hand, Wallwarden/Rallier).
 
@@ -893,8 +895,8 @@ level 5 1, a weapon's fifth victory 2, elite slain 1, warlord defeated 3, ambiti
 | Homing Steel | Legends return more often and stronger |
 
 Bounded on purpose: all tracks maxed add about +10 to +15 mean days. Most tracks move a run by a day or less; showing
-each track's own measure on the claim screen is OPEN. The upgrade preview words chance tracks as "N forges in 10",
-which states exact odds; decision A applies to it (NOT YET BUILT).
+each track's own measure on the claim screen is OPEN. Its chance tracks (Thrifty Hands, Lucky Hammer, Anvil Lore) once read "N forges in 10", which states exact odds; they are
+worded instead: "kept now and then … more often than at level 1. It is never certain." (decision A).
 
 ## 13.3 Persistence
 
@@ -952,8 +954,10 @@ not happen; animations are optional and change nothing.
 | Siege forecast numbers (defence vs raid) | Pressure, siege odds ("dire", "even"), health and wear bands |
 | How many heroes can afford a price | Why a customer did or did not buy (reasons, never weights) |
 
-No utility, weight or probability leaves the simulation. NOT YET BUILT: the workbench still prints the Reckless flaw
-percentage and the Heartfire breakthrough percentage.
+No utility, weight or probability leaves the simulation. Hidden odds are worded by one helper (`core/text/Odds`) on two
+scales: how often ("never", "rarely", "now and then", "often", "more often than not") and the chance of one attempt ("no
+chance", "a slim chance", "a fair chance", "a good chance", "a strong chance"). No word promises an outcome; a chance of
+zero is a rule and is said plainly.
 
 ---
 
@@ -1005,7 +1009,7 @@ tiles show what works against the coming siege). Field notes from the Notebook i
 explanation; Heartfire row; relic lines; in a guild run the forge outlook and "Try this recipe on the bench". One gold
 **Forge** action with its energy cost. Choosing is free; only Forge commits. The result card: the weapon (already
 saved), stats fading in after a short hold (skippable, none with reduced motion), commission fit, what the Notebook
-learned, price editor, Store / List (decision K pending), Lend (guild).
+learned, a commission's reservation line (decision L), "List at suggested", "Set price", Store, Lend (guild).
 
 ## 17.4 Town / Guild
 
@@ -1166,9 +1170,14 @@ seasons, challenge tiers.
 
 ## 21.3 NOT YET BUILT (decided)
 
-Decision A (odds in words on the workbench, in the upgrade preview and in any tooltip), K (pricing buttons), L (reservation line), J's explaining line, the
-Heartfire confirmation, the classic Heartfire source line on the workbench, the remaining stock dialogs on the house
-dialog.
+Decided and not built: the workbench's Heartfire source line names only guild sources, also in a classic run (where a
+siege won from the 4th gives it); the remaining stock dialogs on the house dialog.
+
+Built on 2026-10-14 but not yet verified in the app: decisions A (odds in words on the workbench and in the upgrade
+preview), J (the roster's line), K (list at suggested, set price), L (the reservation line) and the Heartfire
+confirmation. Their core parts pass on the JVM; their app unit and device tests are written but were not run (the
+session that built them could not build `:app`). Run `:app:testDebugUnitTest`, `ForgeResultCardTest` and
+`tools/emulator/runvariety.sh` before relying on them.
 
 ## 21.4 Owner rulings and OPEN questions
 

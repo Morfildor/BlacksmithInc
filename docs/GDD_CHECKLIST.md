@@ -6,8 +6,8 @@ ticking it means done. Tick items here when they ship. IMPLEMENTATION_PLAN.md is
 view. DEFERRED scope (GDD v2.0 §21.2) is not listed and is not built.
 
 **State this file describes:** branch tip after GDD v2.0 (2026-10-14): app 0.8.0 plus `[Unreleased]` (target 0.9.0, held by
-owner decision F), rules 6, save schema 7, content 6, balance 15. `:core:test` 631 / 0 failures (2026-10-14, cloud session,
-core-only build). `:app:testDebugUnitTest` 246 / 0 at a2e0392 (review of 2026-10-14); not re-run since (the cloud session
+owner decision F), rules 6, save schema 7, content 6, balance 15. `:core:test` 633 / 0 failures (2026-10-14, cloud session,
+core-only build, after decisions A, J, K, L and the Heartfire confirmation). `:app:testDebugUnitTest` 246 / 0 at a2e0392 (review of 2026-10-14); not re-run since (the cloud session
 cannot reach Google Maven). Instrumented: 75 run, 8 to 10 failing at the review, all stale assertions from the copy remaster.
 
 **How a line is ticked:** a rule that lives in `:core` is ticked when its JVM tests pass, and the line says "JVM tests";
@@ -53,7 +53,7 @@ claims of review 2026-10-14 appendix 01 §3 corrected. Lines that cite "the fina
 - [x] Hone (never promotes past the metal's cap, never Legendary), salvage, bulk scrap, give to the watch
 - [x] Workshop tools: Great Bellows, Master Whetstone, Painted Signboard, Display Case
 - [x] Guild-run fight rules: one resolver composes a weapon's rules; metals have rules on weapons forged from rules 6 on (`Weapon.craft`); forge outlook; the bench (DEEP_FORGING F1-F9, JVM tests; see the deep-forging section below)
-- [ ] Heartfire spend asks for a confirmation stating cost and consequence (owner ruling 2026-10-14). Not built
+- [ ] Heartfire spend asks for a confirmation stating cost and consequence (owner ruling 2026-10-14). Built 2026-10-14; app tests written, not yet run: tick after `:app:testDebugUnitTest` and the named device test or script pass (`RunVarietyUiTest`, `runvariety.sh`)
 - [ ] The workbench's Heartfire source line names the classic source (a siege won from the 4th) in a classic run. Today it lists guild sources only
 
 ## 6 Living weapons
@@ -69,8 +69,8 @@ claims of review 2026-10-14 appendix 01 §3 corrected. Lines that cite "the fina
 - [x] 250 gold, 8 shelves (+2 Display Case), supplier with always-stocked basics; 0 hard-locks for the recorded simulator policies (not shown for every player path)
 - [ ] Adversarial recovery: shock scenarios (no gold and no stock, empty shelves, a lost siege) shown to recover (review G10; plan T5.2). Measured at balance 6 (stuck streaks of three days or more in 0.00-0.10 % of novice runs; an over-spending bot 1.9-3.0 %) and at balance 8 over 10,000 runs (worst bot 0.07-0.09 % of days, the plain smith 0). Not run: prices at 70 % and 180 %, a material-poor start, half the town
 - [x] List / unlist, manual price per weapon, suggested price, ±10; the price is also chosen on the forge result with a count of the heroes who can afford it (seen on an emulator at 411x731 and 360x640 dp, font 1.0 and 1.3)
-- [ ] Forge result: "List at suggested" primary, "Set price" secondary (owner decision K). Not built: the card shows Store and "List at N"
-- [ ] Forge result: one line saying whether the weapon is reserved and for whose commission, from `Weapon.promisedTo` (owner decision L). Not built: the card says "No weapon is set aside for it."
+- [ ] Forge result: "List at suggested" primary, "Set price" secondary opening the editor (owner decision K). Built 2026-10-14; app tests written, not yet run: tick after `:app:testDebugUnitTest` and the named device test or script pass (`ForgeResultCardTest`)
+- [ ] Forge result: one line saying whether the weapon is reserved and for whose commission, from `Weapon.promisedTo` (owner decision L). Built 2026-10-14; app tests written, not yet run: tick after `:app:testDebugUnitTest` and the named device test or script pass (`ForgeResultTest`, `ForgeResultCardTest`)
 - [x] Utility purchase (improvement, class fit, element taste, traits, loyalty, price), one purchase a visitor, reasons in words; trade-ins at 40 %
 - [x] Fair customer selection: every living hero gets a fair turn at the counter (review F05; T3.1, simulator: served ratio by list position 0.39 to 0.97); 6 seats
 - [x] Standing wants, the sidegrade gate and siege demand (T4.1, T4.2; JVM tests and simulator). Their screens: device tests in the final gate
@@ -130,7 +130,7 @@ Per-task status: `docs/GUILD_EVOLUTION_PLAN.md`, `docs/RUN_VARIETY_LEDGER.md`. T
 - [x] Four guild visitors; bonds, specialities
 - [x] Party relics and pacts; drafts after sieges 1, 2 and 3
 - [x] Members at home rest or train automatically (owner decision J)
-- [ ] One line on the Guild screen explaining that members at home train and pursue ambitions on their own (decision J). Not built
+- [ ] One line on the Guild screen explaining that members at home train and pursue ambitions on their own (decision J). Built 2026-10-14; app tests written, not yet run: tick after `:app:testDebugUnitTest` and the named device test or script pass (`GuildUiTest`)
 - [x] Schema 6 with 0.7.0 saves as fixtures; schema 7 for rules 6
 - [ ] Secondary imprint, mastery stamp, risk that changes the quirk, tag-aware relic drafts, workshop specialisation
 - [ ] Event cadence scheduler; the other eight named choice scenes
@@ -141,7 +141,7 @@ Per-task status: `docs/GUILD_EVOLUTION_PLAN.md`, `docs/RUN_VARIETY_LEDGER.md`. T
 - [x] 11 upgrade tracks at 8 / 20 / 45: energy, gold, mastery, walls, efficiency, stock, luck, reputation, supplier depth, signature odds, legend returns
 - [x] Persistence matrix (GDD v2.0 §13.3): notebook, upgrades, Legend Board, lineages, unspent points persist; the rest resets; nothing of the guild persists but its points
 - [x] Starting gold / energy upgrades measured on second yardsticks (weapons forged and tool levels by the first siege)
-- [ ] Upgrade preview words chance tracks without exact odds (decision A applies to previews, ruling 2026-10-14). Not built: it says "N forges in 10"
+- [x] Upgrade preview words chance tracks without exact odds (decision A applies to previews, ruling 2026-10-14): `Legacy.preview` compares with the level below in words (`LegacyPreviewTest`, `OddsTest`, JVM)
 
 ## 14 Gazette, shop day and fight reports
 - [x] Daily paper from real event records, priority order, top 5 headlines, archive; edition layout lede, tally, Shop / Heroes / Town / Forge
@@ -154,7 +154,7 @@ Per-task status: `docs/GUILD_EVOLUTION_PLAN.md`, `docs/RUN_VARIETY_LEDGER.md`. T
 
 ## 15 Disclosure
 - [x] Deterministic rules, thresholds, costs, fees, timings and fight rules shown exactly; knowledge, pressure, odds of a siege, health and wear in words; rarity by icon and word
-- [ ] Hidden random odds in band words everywhere (owner decision A, extended to previews and tooltips on 2026-10-14). Not met: the workbench prints the Reckless flaw percentage and the Heartfire breakthrough percentage (`ForgeUi.kt`), and `Legacy.preview` prints "N forges in 10"
+- [ ] Hidden random odds in band words everywhere (owner decision A, extended to previews and tooltips on 2026-10-14). `core/text/Odds` and the upgrade preview pass on the JVM; the workbench's Reckless and Heartfire lines app tests written, not yet run: tick after `:app:testDebugUnitTest` and the named device test or script pass (`RunVarietyUiTest`, `runvariety.sh`)
 
 ## 16 Content
 - [x] 16 materials, 6 families, 5 classes, 3 factions, 25 events, 24 signatures, 12 affixes, 6 flaws, 8 blessings, 11 upgrade tracks, 4 tools, 9 + 4 visitors, 14 relics, 2 siege traits, guild content (`LaunchContentTest`, `GuildContent` validation)
@@ -194,7 +194,7 @@ Per-task status: `docs/GUILD_EVOLUTION_PLAN.md`, `docs/RUN_VARIETY_LEDGER.md`. T
 - [ ] Art-provenance wording for the store listing (owner)
 
 ## 20 Testing and balance
-- [x] JVM suites: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, golden state (631 core tests pass, 2026-10-14)
+- [x] JVM suites: determinism, UI never draws RNG, ownership, bounds, idempotence, siege forecast, Gazette truth, legacy reset, content validation, save round-trip, golden state (633 core tests pass, 2026-10-14)
 - [x] Headless simulator (classic policies and bots, multi-era, upgrade impact, customers, depth, probes, sweeps) and guild simulator (14 policies, paired comparisons)
 - [x] Balance 2, 3, 5 and 8 reviewed at 10,000 seeds; balance 8 at three base seeds, 990,000 runs: every run ends, longest 65 days, a maxed account leads a new one by at least 10 mean days
 - [ ] Balance 12 to 15 reviewed at 10,000 seeds (measured at 300 to 1,000 seeds only)
