@@ -4,7 +4,8 @@ Three columns per item: what was seen working on an emulator, what only the JVM 
 session (handoff items 1 to 8) had no Android SDK: its network policy blocks Google's Maven host, so no `:app` Gradle
 task ran there. It compiled the app's Kotlin against desktop Compose 1.6.11 with stubs for the Android-only APIs, ran the
 app's JVM unit tests that way, and type-checked the instrumented tests it touched. Final counts on the branch head:
-`:core:test` 636 / 0, app unit tests 255 / 0 (through that shim), core simulators as recorded in DECISIONS.
+`:core:test` 636 / 0, app unit tests 255 / 0 (through that shim), core simulators as recorded in DECISIONS. After the
+stabilisation pass: 637 / 0 and 260 / 0.
 
 | Item | Emulator-verified | Unit-tested only | Not run |
 |---|---|---|---|
@@ -18,5 +19,12 @@ app's JVM unit tests that way, and type-checked the instrumented tests it touche
 | 6. Oversized save | | `SaveStoreSizeTest` (in-memory DAO with the 2 MB window), `GameSessionFailureTest`; app 255 / 0 | `SaveStoreTest.aRowPastTheCursorWindowIsSplitInsideSqliteAndLoads` (real Room, 2.5 MB); a day-1,000 soak save loaded on a device |
 | 7. Device batch | | The eight stale instrumented assertions updated and type-checked | The whole instrumented suite, every `tools/emulator` script, the 600 dp screen (D), before/after captures |
 | 8. Evidence archive (E), docs | | `tools/archive_evidence.py` trial: 581 images archived and verified against git, nothing removed | The removal itself (owner's machine) |
+
+| Stabilisation: init cycle (was decision 10) | | `ContentInitOrderTest` (each content object first, own class loader); `:core:test` 637 / 0, golden unchanged | |
+| Stabilisation: SaveStore (one-transaction quarantine, broken split rows reported, parts cut between characters) | | `SaveStoreSizeTest` +4, `GameSessionFailureTest` +1; app 260 / 0 through the shim | Three new real-Room tests in `SaveStoreTest` (not run, not type-checked here); a day-1,000 save on a device |
+
+The stabilisation pass on 885b406 (commits aa152ad, edd6dc7) changed no balance, content, rules or golden output. The
+Android gates stay open: none of `:app:testDebugUnitTest`, `:app:assembleDebug`, the instrumented suite or the device
+batch ran; the shim results above do not close them. The local checklist is in `docs/HANDOFF_CLOUD.md`.
 
 What the owner decides next is in DECISIONS, "Open owner decisions, consolidated".

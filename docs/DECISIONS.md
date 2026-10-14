@@ -4525,3 +4525,10 @@ and the scenario saves are as they were at 885b406.
   then the usual path; a sound run is kept and carries the legacy back). New saves are cut between characters
   (`SaveStore.chunks`): a supplementary character that would straddle a part boundary goes whole into the next part, so
   no part holds half a surrogate pair. SQLite's own split of an old row already cuts by character (`substr`).
+- Evidence on this cloud machine. JVM, real: `:core:test` 637 / 0 (79 classes, 10 min 51 s; the golden projection
+  passes unchanged). `ContentInitOrderTest` fails on 885b406 with the original NullPointerException and passes now; so
+  does the filtered run that showed the cycle (`--tests '*DepthScenariosTest.everyVisitorOfTheCatalogueHasASaveWithItWaitingAfterAReload'`).
+  Stand-in, not an Android gate: the app's JVM tests through the desktop-Compose shim, 260 / 0 (the five new
+  tests among them; the rollback test runs on an in-memory DAO that plays a transaction). Not run, not type-checked: the
+  three new real-Room tests in `SaveStoreTest` (Unicode through both splits, a broken split row, the quarantine
+  rollback); the shim has no stubs for Room's test APIs. They are on the local checklist in HANDOFF_CLOUD.

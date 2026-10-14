@@ -12,6 +12,12 @@ A core-correctness agent works in its own worktree (rows 21, 22/B, 31-34, 36 inc
 
 UI round 2 is done (commit 99354a8): the owner's title painting, a run-setup screen, opening cards with gains and costs as bullets, Regular body text, charcoal palette, checked choice rows; title, setup and chooser seen at font 1.0 and 2.0 on emulator-5556. The work moves to a cloud session: **`docs/HANDOFF_CLOUD.md` is the plan and the state**.
 
+**Stabilisation pass (2026-10-14, on 885b406, cloud).** aa152ad: the class-initialisation cycle Depth →
+CombatContent → LaunchContent removed (the catalog in its own holder), `ContentInitOrderTest`; edd6dc7: SaveStore
+quarantine in one transaction, broken split rows reported as unreadable and set aside by Start over, parts cut between
+characters. Ran: `:core:test` 637 / 0 (golden unchanged); app JVM tests 260 / 0 through the desktop stand-in only. Not
+run: every Android gate; the local checklist is in `docs/HANDOFF_CLOUD.md`. Decision 10 left the open list.
+
 **Cloud session (2026-10-14), handoff "Still to do" in order.** This machine has no Android SDK and its network policy
 blocks Google's Maven (`dl.google.com`), so no `:app` Gradle task runs here. Checks used instead, in a scratch shim
 outside the repo: `:core:test` alone (JDK 25 from Ubuntu), and the app's Kotlin compiled against desktop Compose 1.6.11

@@ -45,6 +45,24 @@ ran on a device. The three-column report is `docs/REVIEW_2026-10-14_REPORT.md`; 
 at the top of DECISIONS. Next, on a machine with the Android SDK: `./gradlew :app:testDebugUnitTest :app:assembleDebug`,
 then the device batch below (item 7), then decision E's removal.
 
+## Stabilisation pass (2026-10-14, on 885b406)
+
+Commits aa152ad (the init cycle: the launch catalog in its own holder, `ContentInitOrderTest`) and edd6dc7 (SaveStore:
+one-transaction quarantine, broken split rows reported as unreadable, parts cut between characters). Ran here, JVM:
+`:core:test` 637 / 0 with the golden unchanged. Through the desktop-Compose stand-in only: app JVM tests 260 / 0. No
+balance, content or golden change. Details in DECISIONS, "Review 2026-10-14 stabilisation".
+
+### Local verification checklist (Android SDK machine; none of this has run)
+1. `./gradlew :core:test :app:testDebugUnitTest :app:assembleDebug`
+2. `./gradlew :app:connectedDebugAndroidTest`: the whole suite, and first `SaveStoreTest` (its three new real-Room tests
+   have not even been type-checked: Unicode through both splits, a broken split row with Start over, the quarantine
+   rollback; and the 2.5 MB old-row recovery).
+3. `tools/emulator`: `smoke.sh`, `intro.sh`, `forge.sh`, `runvariety.sh`, `guild.sh`, `journey.sh`, `scenarios.sh`, `runend.sh`.
+4. Shop, Forge result, dialogs and Guild board at font scale 1.0 and 2.0, and a 600 dp wide screen (decision D):
+   screenshots checked for clipping, overlap, scrolling and reachable actions.
+5. The day-1,000 soak save (`./gradlew :core:soak`, `core/build/soak/`) loaded on a device: it opens, and a day ends.
+6. Then decision 9 (the evidence removal) and decision 3 (the merge).
+
 ## Still to do, in order (as handed over; see the result above)
 1. Shop: the next useful action first, less clutter and repeated coaching, siege urgency in proportion; the listed
    weapon shown once; End Day never covering the last row.
