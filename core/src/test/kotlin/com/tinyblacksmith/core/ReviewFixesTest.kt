@@ -105,4 +105,18 @@ class ReviewFixesTest {
         assertTrue(line.contains("${recovery.fee} gold"), line)
         assertTrue(!line.contains(";") && !line.contains(" - ") && !line.contains("blade"), line)
     }
+
+    // ---- row 36b: a law's repair percent waits for the day it is in force ----
+
+    @Test fun `a law announced for tomorrow does not raise tonight's repair bill`() {
+        val s = run().farSiege()
+        val law = cat.laws.first { it.repairPercent != 100 }
+        val announced = s.copy(guild = s.guild!!.copy(law = WorldLaw(law.id, s.day + 1, s.day + 1 + law.days)))
+        val plain = engine.config.guild.fractureWear
+        assertEquals(plain, Missions.fractureWear(ResolutionContext(announced, content, engine.config)), "announced, not yet in force")
+        val inForce = announced.copy(day = s.day + 1)
+        assertEquals(com.tinyblacksmith.core.combat.Fight.pct(plain, law.repairPercent), Missions.fractureWear(ResolutionContext(inForce, content, engine.config)))
+        val over = announced.copy(day = s.day + 1 + law.days)
+        assertEquals(plain, Missions.fractureWear(ResolutionContext(over, content, engine.config)), "lapsed")
+    }
 }

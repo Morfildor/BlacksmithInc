@@ -246,7 +246,7 @@ object Missions {
         val stage = m.offer.stages[stageIndex]
         val combat = ctx.content.combat ?: return null
         if (stage.enemies.isEmpty()) return null
-        val law = GuildOps.catalog(ctx).law(ctx.guild?.law?.takeIf { ctx.day in it.fromDay until it.untilDay }?.id)
+        val law = lawInForce(ctx)
         fun lawStats(c: Combatant, add: Map<com.tinyblacksmith.core.combat.Stat, Int>) = if (add.isEmpty()) c else c.copy(stats = (c.stats.keys + add.keys).associateWith { (c.stats[it] ?: 0) + (add[it] ?: 0) })
         val modifier = GuildOps.catalog(ctx).modifier(m.offer.modifierId)
         val party = m.party.mapNotNull { id -> ctx.heroes[id]?.takeIf { it.isAlive } }.map { h -> lawStats(lawStats(GuildOps.fighter(ctx, h, m.gear[h.id]?.let { ctx.weapons[it] }, Loadout.Field.ROAD, m.party), law?.partyStats.orEmpty()), modifier?.partyStats.orEmpty()) } +
@@ -352,7 +352,7 @@ object Missions {
                 lines += "${hero.fullName} came through badly hurt: exhausted for ${cfg.exhaustedDays} day."
             }
             m.gear[id]?.let { ctx.weapons[it] }?.let { w ->
-                val wear = cfg.missionWear + (if (a.fractured) Fight.pct(cfg.fractureWear, GuildOps.catalog(ctx).law(ctx.guild?.law?.id)?.repairPercent ?: 100) else 0)
+                val wear = cfg.missionWear + (if (a.fractured) fractureWear(ctx) else 0)
                 ctx.updateWeapon(w.copy(condition = maxOf(0, w.condition - wear), victories = w.victories + (if (won) 1 else 0), fame = w.fame + (if (won) 1 else 0),
                     kills = w.kills + fight.events.count { it.kind == EventKind.DOWNED && it.source == id.value }))
                 if (a.fractured) {
@@ -363,6 +363,12 @@ object Missions {
         }
         if (setup.objective.protect != null && fight.actor("protected")?.downed == true) lines += "What the party was there to protect was lost."
     }
+
+    /** Condition a weapon cracked in a contract's fight loses on top of the wear: the repair bill, as the law in force sets it. */
+    internal fun fractureWear(ctx: ResolutionContext): Int = Fight.pct(ctx.config.guild.fractureWear, lawInForce(ctx)?.repairPercent ?: 100)
+
+    /** The law of the season on [ctx]'s day: announced a morning ahead, it is in force from `fromDay` until `untilDay`. */
+    private fun lawInForce(ctx: ResolutionContext) = GuildOps.catalog(ctx).law(ctx.guild?.law?.takeIf { ctx.day in it.fromDay until it.untilDay }?.id)
 
     private fun wound(ctx: ResolutionContext, id: HeroId, kind: WoundKind, days: Int, cause: String) {
         GuildOps.updateMember(ctx, id) { m -> if (m.wound != null && m.wound.untilDay >= ctx.day + 1 + days && m.wound.kind != WoundKind.SCARRED) m else m.copy(wound = Wound(kind, ctx.day + 1 + days, cause)) }
