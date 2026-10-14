@@ -77,4 +77,32 @@ class ReviewFixesTest {
         assertEquals(500, cancelled.gold)
         assertTrue(who !in cancelled.send(Command.DismissHero(who)).sound().members())
     }
+
+    // ---- row 32: a planned Recovery contract and the dealer's "Buy it back" ----
+
+    @Test fun `buying the weapon back drops a plan for its recovery contract and gives the fee back, with a line that says so`() {
+        val s0 = run().farSiege()
+        val carrier = s0.members().first()
+        val blade = CombatSandbox.blade("w900", LaunchContent.SWORD, LaunchContent.MOONSTEEL, LaunchContent.FROST_BLOOM, quality = 95).copy(location = WeaponLocation.Loaned(carrier))
+        val taken = s0.copy(weapons = s0.weapons + (blade.id to blade)).edit { c ->
+            c.updateWeapon(c.weapon(blade.id).copy(location = WeaponLocation.Lost(c.day, GuildOps.LOST_TAKEN)))
+            Stories.taken(c, blade.id, LaunchContent.ASHCLAW)
+            Missions.refreshBoard(c)
+        }.sound().copy(gold = 5000)
+        val recovery = taken.guild!!.offers.single { it.subjectWeaponId == blade.id }
+        assertTrue(recovery.fee > 0)
+        val party = taken.members().filter { taken.guild!!.member(it)!!.status == MemberStatus.HOME }.take(1)
+        val planned = taken.send(Command.PlanDeployment(recovery.id, party, Posture.BALANCED)).sound()
+        assertEquals(5000 - recovery.fee, planned.gold)
+        val s = Encounters.force(planned, content, engine.config, GuildContent.ACROSS_THE_COUNTER) ?: error("the dealer is not eligible")
+        val price = s.encounter!!.amounts.getValue("price")
+        val outcome = engine.handle(s, Command.ResolveEncounter(s.encounter!!.id, "buy", CommandId("answer:buy")))
+        val bought = assertIs<CommandOutcome.Accepted>(outcome).state.sound()
+        assertTrue(bought.weapon(blade.id).isInStorage)
+        assertNull(bought.guild!!.planned)
+        assertEquals(5000 - price, bought.gold, "the recovery contract's fee came back")
+        val line = outcome.events.single { it.text.contains("plan") }.text
+        assertTrue(line.contains("${recovery.fee} gold"), line)
+        assertTrue(!line.contains(";") && !line.contains(" - ") && !line.contains("blade"), line)
+    }
 }
