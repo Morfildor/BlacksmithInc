@@ -74,8 +74,8 @@ class ConsistencyPassTest {
         show(Dest.TOWN) { s, vm -> TownPanel(s, vm) }
         // The threat, the outlook and the champions are one item of the list, so the slots are composed with the header.
         val fit = engine.config.heroWoundedThreshold
-        compose.onNodeWithText("health $fit or more", substring = true).assertExists()
-        (0..2).forEach { compose.onNodeWithTag("town_champion_empty_$it", useUnmergedTree = true).assertTextEquals("Not named yet: champions are chosen at the first End Day.") }
+        compose.onNodeWithText("Each needs at least $fit health.", substring = true).assertExists()
+        (0..2).forEach { compose.onNodeWithTag("town_champion_empty_$it", useUnmergedTree = true).assertTextEquals("No other hero has enough health. This slot needs at least $fit.") }
         assertEquals("day 1 has no champions in the save", 0, engine.newRun(LegacyProfile(), 42L).town.championIds.size)
     }
 }

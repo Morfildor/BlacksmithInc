@@ -47,6 +47,11 @@ with stubs for the Android-only APIs, which runs the app's JVM unit tests and ty
 - Item 6, oversized save (DECISIONS "the oversized save row"): payloads over 256K characters are stored in parts; a row
   written too big before is split inside SQLite before it is read; Start over sets an unreadable row aside by key.
   No Room schema change. App unit tests 255 / 0 (`SaveStoreSizeTest` new). Not run: the instrumented 2.5 MB test.
+- Item 7, device batch, the part a cloud machine can do: the eight stale instrumented assertions of review 09 §1 are
+  updated to the screens as they are (ConsistencyPass, ForgeHint, ShopDayScreen, ShopPanel x2, StorageSheet box
+  height; the two ForgeResultCard tests were rewritten in item 2), type-checked against desktop Compose's test library.
+  Full `:core:test` 636 / 0 on this tree. **Not run (no Android SDK or emulator here): the instrumented suite, every
+  script in `tools/emulator`, the 600 dp screen for D, before/after captures.** They are the owner's device batch.
 
 ## Deep review (2026-10-14): `docs/REVIEW_2026-10-14.md`, appendices `docs/review_2026-10-14/`
 Thirteen lenses over `main` at a2e0392 (GDD alignment, core code, architecture, Compose and Android, UI design, gameplay

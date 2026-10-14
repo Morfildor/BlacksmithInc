@@ -34,6 +34,6 @@ class ForgeHintTest {
         val journal = Journal(interactions = mapOf(key to KnowledgeState.UNDERSTOOD))
         compose.setContent { AffinityHint(journal, SliceContent.catalog, key) }
         compose.onNodeWithText("●").assertIsDisplayed()
-        compose.onNodeWithText("understood").assertIsDisplayed()
+        compose.onNodeWithText("learned").assertIsDisplayed()
     }
 }

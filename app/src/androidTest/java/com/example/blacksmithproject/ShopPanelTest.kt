@@ -153,7 +153,7 @@ class ShopPanelTest {
             compose.waitForIdle()
             compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertTextEquals(tomorrow.action)
             // The same sentence a morning later: the day the card called "today" is the Shop's "yesterday" (`Lines.lead`).
-            if (tomorrow.reason != null) compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals(tomorrow.reason!!.replace("the price today", "the price yesterday"))
+            if (tomorrow.reason != null) compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals(tomorrow.reason!!.replace("on price today", "on price yesterday"))
             else compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertDoesNotExist()
         }
     }
@@ -181,7 +181,7 @@ class ShopPanelTest {
         row("Need a weapon", "${heroes.count { s.equippedWeapon(it.id) == null }}")
         row("Need to replace a worn weapon", "${heroes.count { h -> s.equippedWeapon(h.id)?.let { it.condition < engine.config.wornConditionThreshold } == true }}")
         row("Can afford the cheapest weapon ($cheapest gold)", "${afford(cheapest)} of ${heroes.size}")
-        if (middle != cheapest) row("Can afford the middle blade ($middle gold)", "${afford(middle)} of ${heroes.size}")
+        if (middle != cheapest) row("Can afford the middle-priced weapon ($middle gold)", "${afford(middle)} of ${heroes.size}")
     }
 }
 
@@ -211,7 +211,7 @@ class StorageSheetTest {
         assertTrue(compose.onAllNodes(stockRow, useUnmergedTree = true).fetchSemanticsNodes().size <= 20)
     }
 
-    /** Select three blades, Salvage: one question, and only its answer hands over the three, as one Salvage command each. */
+    /** Select three blades, Salvage: one question, and only its answer hands over the three, as one Salvage command each. Tall enough that the filter chips leave all five rows on screen. */
     @Test
     fun bulkSalvageAsksOnceAndIssuesOneCommandPerBlade() {
         val forged = ShopDayFixtures.run(42, 3).last().state
@@ -223,7 +223,7 @@ class StorageSheetTest {
         val opened = mutableListOf<WeaponId>()
         compose.setContent {
             BlacksmithProjectTheme {
-                Box(Modifier.size(360.dp, 640.dp)) {
+                Box(Modifier.size(360.dp, 960.dp)) {
                     StorageList(
                         storage, shelfFree = 8, busy = false, onOpenBlade = { opened += it }, onList = { _, _ -> },
                         terms = BulkTerms(salvageEnergy = 1, energy = 10, overworkLeft = 4, armoryRoom = 30),

@@ -176,7 +176,7 @@ class ShopDayScreenTest {
         show(m, at)
         compose.onNodeWithTag("shopday_aftermath_kind", useUnmergedTree = true).assertTextEquals("Out in the field").assertIsDisplayed()
         compose.onNodeWithTag("shopday_aftermath_text", useUnmergedTree = true).assertTextEquals(card.text).assertIsDisplayed()
-        assertTrue(card.text, Regex("^\\d+ hero(es)? went out").containsMatchIn(card.text))
+        assertTrue(card.text, Regex("^(One hero|\\d+ heroes?) fought").containsMatchIn(card.text))
         compose.onNodeWithTag("shopday_gazette").assertIsDisplayed()
         compose.onNodeWithTag("shopday_watch").assertDoesNotExist()
         // The evening card names the day just watched on the strip and tomorrow once on the banner and once on its button.
