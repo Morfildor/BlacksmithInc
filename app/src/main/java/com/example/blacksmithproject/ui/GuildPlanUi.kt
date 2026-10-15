@@ -7,6 +7,8 @@ import com.tinyblacksmith.core.content.GuildContent
 import com.tinyblacksmith.core.content.MissionArchetype
 import com.tinyblacksmith.core.engine.DeepRoad
 import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.model.Captive
+import com.tinyblacksmith.core.shopday.ReadinessGap
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.GuildMember
 import com.tinyblacksmith.core.model.GuildRunState
@@ -28,7 +30,7 @@ sealed interface TodayTarget {
 }
 
 /** One thing that needs the smith today: what it is, and the button that goes to where it is done. */
-@Immutable data class TodayUi(val key: String, val text: String, val action: String, val target: TodayTarget) {
+@Immutable data class TodayUi(val key: String, val text: String, val action: String, val target: TodayTarget, val optional: Boolean = false) {
     val tab: GuildTab? get() = when (target) { is TodayTarget.Tab -> target.tab; TodayTarget.AssignWall -> GuildTab.WALL; is TodayTarget.Hero -> GuildTab.COMPANY }
 }
 
@@ -85,35 +87,38 @@ internal fun GameEngine.specialRewards(state: GameState, offer: MissionOffer): L
     )
 }.distinct()
 
-/**
- * Today's rows, most pressing first, at most [TODAY_ROWS]: a checkpoint without word, an empty place on the wall on the
- * eve or the day, a member held with a rescue on the board, no contract planned, a branch to choose, a charter just
- * secured. The siege's own countdown is never a row (the header says it).
- */
+/** Deadlines and decisions precede readiness, then explicitly optional opportunities. No countdown row. */
 internal fun GameEngine.guildToday(state: GameState, g: GuildRunState, wall: WallUi): List<TodayUi> {
-    val m = g.mission
-    val rows = listOfNotNull(
-        m?.takeIf { it.outcome == null && it.stage == 1 && it.offer.optionalPush && it.choice == null }?.let {
-            TodayUi("checkpoint", "The party waits at the deeper door", "Decide", TodayTarget.Tab(GuildTab.CONTRACTS, "party"))
-        },
-        TodayUi(
-            "wall", if (wall.daysLeft <= 0) "A place on the wall is empty tonight" else "A place on the wall is empty tomorrow", "Assign defender", TodayTarget.AssignWall,
-        ).takeIf { wall.daysLeft <= 1 && wall.defenders.size < wall.places },
-    ) + g.captives.mapNotNull { c ->
-        val offer = g.offers.firstOrNull { it.subjectHeroId == c.heroId } ?: return@mapNotNull null
+    val rescues = g.captives.sortedWith(compareBy<Captive> { it.deadlineDay }.thenBy { it.heroId.value }).mapNotNull { c ->
+        val offer = g.offers.firstOrNull { it.subjectHeroId == c.heroId && it.expiresDay >= state.day } ?: return@mapNotNull null
+        if (g.planned?.offerId == offer.id || g.mission?.offer?.subjectHeroId == c.heroId) return@mapNotNull null
         val name = state.heroes[c.heroId]?.name ?: return@mapNotNull null
-        val left = c.deadlineDay - state.day
-        TodayUi("rescue_${c.heroId.value}", "$name is held · ${if (left == 1) "1 day" else "$left days"} left", "See rescue", TodayTarget.Tab(GuildTab.CONTRACTS, "offer_${offer.id}"))
-    } + listOfNotNull(
-        TodayUi("plan", "No contract planned today", "Choose contract", TodayTarget.Tab(GuildTab.CONTRACTS, "board")).takeIf { m == null && g.planned == null && g.offers.isNotEmpty() },
-    ) + g.members.firstOrNull { openBranches(state, it.heroId).isNotEmpty() }?.let { b ->
-        listOf(TodayUi("branch", "${state.heroes[b.heroId]?.name ?: "A member"} can choose a branch", "Choose branch", TodayTarget.Hero(b.heroId)))
-    }.orEmpty() + listOfNotNull(
-        g.milestone(GuildContent.CHARTER_SECURED)?.takeIf { it.day >= state.day - 1 && !g.retired }?.let {
-            TodayUi("charter", "Charter secured", "Open charter", TodayTarget.Tab(GuildTab.CHARTER, "opens"))
-        },
-    )
-    return rows.take(TODAY_ROWS)
+        TodayUi("rescue_${c.heroId.value}",
+            if (offer.expiresDay == state.day) "$name is held. Last day to send the rescue party."
+            else "$name is held. Send a rescue by day ${offer.expiresDay}.",
+            "See rescue", TodayTarget.Tab(GuildTab.CONTRACTS, "offer_${offer.id}")) to (offer.expiresDay == state.day)
+    }
+    val checkpoint = g.mission?.takeIf { it.outcome == null && it.stage == 1 && it.offer.optionalPush && it.choice == null }?.let {
+        TodayUi("checkpoint", "The party waits at the deeper door. Without word, they return home with the rewards already won.", "Decide", TodayTarget.Tab(GuildTab.CONTRACTS, "party"))
+    }
+    val readiness = wall.readiness?.let { lead ->
+        val reason = wall.readinessReason!!
+        val empty = lead.readiness == ReadinessGap.EMPTY_PLACE
+        TodayUi(if (empty) "wall" else "readiness", reason, if (empty) "Assign defender" else "Review wall",
+            if (empty) TodayTarget.AssignWall else TodayTarget.Tab(GuildTab.WALL, "readiness"))
+    }
+    return (rescues.filter { it.second }.map { it.first } + listOfNotNull(checkpoint, readiness) +
+        rescues.filterNot { it.second }.map { it.first } + listOfNotNull(
+            wall.prep?.let { TodayUi("prep", "Known preparation: ${it.name}. You can review the available answers.", "See answers", TodayTarget.Tab(GuildTab.WALL, "prep"), optional = true) },
+            TodayUi("plan", "Quests are available. Keeping members home is also a plan.", "Browse contracts", TodayTarget.Tab(GuildTab.CONTRACTS, "board"), optional = true)
+                .takeIf { wall.daysLeft > 1 && g.mission == null && g.planned == null && g.offers.isNotEmpty() },
+            g.members.firstOrNull { openBranches(state, it.heroId).isNotEmpty() }?.let { b ->
+                TodayUi("branch", "${state.heroes[b.heroId]?.name ?: "A member"} can choose a branch", "Choose branch", TodayTarget.Hero(b.heroId), optional = true)
+            },
+            g.milestone(GuildContent.CHARTER_SECURED)?.takeIf { it.day >= state.day - 1 && !g.retired }?.let {
+                TodayUi("charter", "Charter secured", "Open charter", TodayTarget.Tab(GuildTab.CHARTER, "opens"), optional = true)
+            },
+        )).take(TODAY_ROWS)
 }
 
 /**

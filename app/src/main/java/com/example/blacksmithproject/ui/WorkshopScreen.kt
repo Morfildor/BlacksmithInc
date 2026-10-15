@@ -54,6 +54,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.blacksmithproject.Dest
+import com.example.blacksmithproject.GuildTab
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.RecordsPage
 import com.example.blacksmithproject.R
@@ -172,6 +173,9 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                             LeadKind.ANSWER_REQUEST -> boardOpen = true
                             LeadKind.PRICES_TOO_HIGH -> lead.weaponId?.let { vm.openSheet(Sheet.Item(it)) }
                             LeadKind.ANSWER_WANT -> lead.familyId?.let(vm::forgeFamily) ?: vm.selectDest(Dest.FORGE)
+                            LeadKind.REVIEW_WALL -> { vm.selectGuildTab(GuildTab.WALL); vm.selectDest(Dest.TOWN) }
+                            LeadKind.GUILD_RESCUE, LeadKind.GUILD_CHECKPOINT -> { vm.selectGuildTab(GuildTab.CONTRACTS); vm.selectDest(Dest.TOWN) }
+                            LeadKind.DAY_SETTLED -> Unit
                             else -> vm.selectDest(Dest.FORGE)
                         }
                     },

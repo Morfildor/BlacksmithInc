@@ -146,6 +146,7 @@ private fun Stat(icon: Int, label: String, value: String, color: Color = Cream) 
  */
 @Composable
 private fun SiegeStrip(ui: SiegeHeaderUi, markers: Boolean, onOpen: () -> Unit, openLabel: String) {
+    val stacked = LocalDensity.current.fontScale >= 1.3f
     val ink = when (ui.tone) { SiegeTone.CALM -> Cream; SiegeTone.TOMORROW -> Gold; SiegeTone.TONIGHT -> Ember }
     Column(
         Modifier.fillMaxWidth().clickable(onClickLabel = openLabel, role = Role.Button, onClick = onOpen).heightIn(min = 48.dp)
@@ -162,9 +163,10 @@ private fun SiegeStrip(ui: SiegeHeaderUi, markers: Boolean, onOpen: () -> Unit, 
                 },
                 style = MaterialTheme.typography.titleSmall, color = ink, modifier = Modifier.weight(1f).testTag("siege_countdown"),
             )
-            ui.defenders?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, maxLines = 1, modifier = Modifier.padding(start = Space.sm).testTag("siege_defenders")) }
+            ui.defenders?.takeUnless { stacked }?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, maxLines = 1, modifier = Modifier.padding(start = Space.sm).testTag("siege_defenders")) }
             Text("›", style = MaterialTheme.typography.titleMedium, color = CreamMuted, modifier = Modifier.padding(start = Space.sm, end = Space.xs))
         }
+        if (stacked) ui.defenders?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.testTag("siege_defenders")) }
         // The days so far filled, today lit, the siege's day dark ember, the wall at the end; its day once it is not today.
         if (markers) Row(Modifier.padding(end = Space.xs).testTag("siege_marks"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
             ui.marks.forEach { DaySegment(it, ui.tone, Modifier.weight(1f)) }

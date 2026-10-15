@@ -59,6 +59,24 @@ class ShopModelTest : ShopDayTestBase() {
         }
     }
 
+    @Test
+    fun acceptedWorkDueTodayKeepsACompetingSiegeActionVisible() {
+        val buyer = stocked.aliveHeroes().first()
+        val id = com.tinyblacksmith.core.model.CommissionId("today")
+        val due = com.tinyblacksmith.core.model.Commission(id, buyer.id, com.tinyblacksmith.core.content.LaunchContent.BOW,
+            100, 140, stocked.day, stocked.day, com.tinyblacksmith.core.model.CommissionStatus.ACCEPTED)
+        val state = stocked.copy(town = stocked.town.copy(nextSiegeDay = stocked.day, militia = 0),
+            factions = stocked.factions.mapValues { it.value.copy(pressure = 100) }, commissions = mapOf(id to due))
+        val ui = engine.shopUi(state)
+        assertEquals(LeadKind.FORGE_FOR_REQUEST, ui.lead.kind)
+        assertEquals(LeadKind.ARM_DEFENDERS, ui.siegeLead!!.kind)
+        assertTrue(ui.requests.any { it.id == id && it.daysLeft == 0 && !it.ready })
+        assertEquals("Go to the forge", leadActionLabel(ui.siegeLead!!.kind))
+        val offered = engine.shopUi(state.copy(commissions = mapOf(id to due.copy(status = com.tinyblacksmith.core.model.CommissionStatus.OFFERED))))
+        assertEquals(LeadKind.ARM_DEFENDERS, offered.lead.kind)
+        assertNull(offered.siegeLead)
+    }
+
     /** A shelf row and the blade's sheet read one function: a number on the row is the number on the card. */
     @Test
     fun aStockRowSaysTheNumbersOfTheItemCard() {

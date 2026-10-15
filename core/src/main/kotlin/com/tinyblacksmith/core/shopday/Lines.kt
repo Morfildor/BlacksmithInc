@@ -253,9 +253,21 @@ object Lines {
                 listOfNotNull(lead.count?.let { "${if (evening) "Today" else "Yesterday"}, ${count(it, "customer")} left without buying because of the price" }, lead.gold?.let { "the cheapest weapon costs $it gold" }).joinSentences().ifEmpty { null },
             )
             LeadKind.ARM_DEFENDERS -> LeadLine(
-                "Arm the defenders",
-                listOfNotNull(faction?.let { f -> "Siege by the $f${days?.let { d -> " $d" }.orEmpty()}" }, lead.element?.let { "weak to ${it.name.lowercase()}" }).joinSentences().ifEmpty { null },
+                "Offer weapons for the defence",
+                listOfNotNull("The town looks outmatched for the siege $days", faction?.let { "The $it are coming" }, lead.element?.let { "weak to ${it.name.lowercase()}" }, "Heroes choose what to buy. More weapons do not guarantee a hold").joinSentences(),
             )
+            LeadKind.REVIEW_WALL -> LeadLine("Review the wall", when (lead.readiness) {
+                ReadinessGap.EMPTY_PLACE -> "Unfilled defender places: ${lead.count ?: 1}. Review who can stay home for the siege $days."
+                ReadinessGap.UNARMED -> "${hero ?: "A defender"} is unarmed. Review their equipment or who stands for the siege $days."
+                ReadinessGap.WORN -> "${hero ?: "A defender"} has a worn weapon. Review their equipment before the siege $days."
+                ReadinessGap.UNAVAILABLE -> "${hero ?: "A member"} cannot stand for the siege $days. Review the available defenders."
+                null -> "Review available defenders and the revealed preparation. Preparation does not guarantee victory."
+            })
+            LeadKind.GUILD_RESCUE -> LeadLine("Review ${hero?.let { "$it's" } ?: "the"} rescue", "Today is the last day to send the posted rescue party. A rescue is not guaranteed to succeed.")
+            LeadKind.GUILD_CHECKPOINT -> LeadLine("Decide at the checkpoint", "The party returns home unless you choose to go deeper. The rewards already won are kept.")
+            LeadKind.DAY_SETTLED -> LeadLine("Keep your plan", if (state.guild != null)
+                "The available defenders have weapons in good condition. Keeping members home is a valid plan. Preparation does not guarantee victory."
+                else "The current outlook calls for no urgent weapon advice. Customers still choose for themselves.")
             LeadKind.ANSWER_WANT -> LeadLine(
                 "Forge ${lead.familyId?.let { content.familyById[it] }?.let { withArticle(it.name.lowercase()) } ?: "a weapon"}${hero?.let { " for $it" }.orEmpty()}",
                 listOfNotNull(

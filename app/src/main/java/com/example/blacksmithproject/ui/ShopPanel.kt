@@ -108,6 +108,9 @@ fun ShopPanel(
     LazyColumn(modifier.fillMaxSize().bottomFade(list.canScrollForward).testTag("shop_list"), state = list, contentPadding = PaddingValues(bottom = Space.lg)) {
         strip?.let { item(key = "strip") { it() } }
         if (showLead) item(key = "lead") { LeadCard(shop.lead, onAct = { onLead(shop.lead) }, modifier = side.padding(top = Space.md)) }
+        if (showLead) shop.siegeLead?.let { lead -> item(key = "siege_lead") {
+            LeadCard(lead, onAct = { onLead(lead) }, modifier = side.padding(top = Space.sm), tag = "shop_siege_lead")
+        } }
         if (visitor?.instance?.isOpen == true) item(key = "visitor") { VisitorCard(visitor, onOpenVisitor, side.padding(top = Space.sm)) }
         visitorNote(visitor)?.let { note -> item(key = "visitor_note") { Secondary(note, side.padding(top = Space.sm).testTag("visitor_note")) } }
         if (shop.requests.isNotEmpty()) item(key = "commissions") {

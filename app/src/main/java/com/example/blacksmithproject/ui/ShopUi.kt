@@ -169,6 +169,8 @@ data class ShopUi(
     val funds: List<Int> = emptyList(),
     /** The stored blades that came back since yesterday, in storage's order: the Shop offers to list, salvage or keep each. */
     val returned: List<ReturnedUi> = emptyList(),
+    /** A competing siege action stays beside accepted work due today. */
+    val siegeLead: LeadUi? = null,
 ) {
     /** The counter's plate: the shelf first, then how many customers the shop serves in a day. */
     val plate: String get() = "Shelf ${shelf.size} of $slots · $seats customers a day"
@@ -311,6 +313,9 @@ fun GameEngine.shopUi(state: GameState, forecast: Battle.SiegeOutlook? = null): 
         seats =config.customers.shopCapacity + toolTotal(state, ToolEffect.EXTRA_CUSTOMERS) + if (festival) config.customers.festivalExtraSeats else 0,
         slots = shelfSlots(state),
         lead = LeadUi(lead.kind, line.action, line.reason, lead.weaponId, lead.familyId),
+        siegeLead = Advice.siegeReadiness(state, content, config)?.takeIf {
+            lead.kind == LeadKind.FORGE_FOR_REQUEST && lead.days == 0
+        }?.let { gap -> Lines.lead(gap, state, content, config).let { LeadUi(gap.kind, it.action, it.reason) } },
         requests = requests,
         demand = demand,
         // A day that cannot be laid out is left out here; the Gazette still has it.

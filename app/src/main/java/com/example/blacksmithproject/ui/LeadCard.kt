@@ -29,6 +29,9 @@ fun leadActionLabel(kind: LeadKind): String? = when (kind) {
     LeadKind.PRICES_TOO_HIGH -> "Review the cheapest weapon"
     LeadKind.ANSWER_WANT -> "Forge this"
     LeadKind.ANSWER_REQUEST -> "Open the board"
+    LeadKind.REVIEW_WALL -> "Open the wall"
+    LeadKind.GUILD_RESCUE, LeadKind.GUILD_CHECKPOINT -> "Open guild contracts"
+    LeadKind.DAY_SETTLED -> null
 }
 
 /**
@@ -37,7 +40,7 @@ fun leadActionLabel(kind: LeadKind): String? = when (kind) {
  * the gold plate is kept for the thing that is done (Accept, Forge weapon, End Day).
  */
 @Composable
-fun LeadCard(lead: LeadUi, onAct: () -> Unit, modifier: Modifier = Modifier) {
+fun LeadCard(lead: LeadUi, onAct: () -> Unit, modifier: Modifier = Modifier, tag: String = "shop_lead") {
     val label = leadActionLabel(lead.kind)
     Row(
         modifier.fillMaxWidth().forgeRow().drawBehind { drawRect(Gold, size = Size(3.dp.toPx(), size.height)) }
@@ -47,11 +50,16 @@ fun LeadCard(lead: LeadUi, onAct: () -> Unit, modifier: Modifier = Modifier) {
     ) {
         Column(Modifier.weight(1f).padding(vertical = Space.sm)) {
             // The same words over it as on the Tomorrow card of the evening before: it is that card's advice, a day later.
-            Overline("Worth doing first", strong = true)
-            Text(lead.action, style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag("shop_lead"))
-            lead.reason?.let { Secondary(it, Modifier.testTag("shop_lead_reason")) }
+            Overline(when (lead.kind) {
+                LeadKind.DAY_SETTLED -> "Today"
+                LeadKind.ANSWER_REQUEST, LeadKind.LIST_STOCK, LeadKind.FORGE_STOCK, LeadKind.PRICES_TOO_HIGH,
+                LeadKind.ANSWER_WANT, LeadKind.FORGE_FOR_BUYERS -> "Optional today"
+                else -> "Worth doing first"
+            }, strong = true)
+            Text(lead.action, style = MaterialTheme.typography.titleMedium, modifier = Modifier.testTag(tag))
+            lead.reason?.let { Secondary(it, Modifier.testTag("${tag}_reason")) }
             // Under the reason, not beside it: "Open the cheapest blade" would leave the lead a few dp.
-            if (label != null) Text("$label  ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.xs).testTag("shop_lead_action"))
+            if (label != null) Text("$label  ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.xs).testTag("${tag}_action"))
         }
     }
 }

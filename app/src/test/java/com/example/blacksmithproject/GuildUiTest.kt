@@ -56,6 +56,41 @@ class GuildUiTest {
     private fun GameState.offerOf(days: Int): MissionOffer? = guild!!.offers.firstOrNull { it.days == days && it.defId != GuildContent.WALL_WORK }
 
     @Test
+    fun uncommittedAndStalePreparationIsNotExposed() {
+        val fresh = guildRun()
+        val prep = engine.content.guild!!.preparations.first()
+        val hidden = fresh.copy(siege = com.tinyblacksmith.core.model.SiegeScenario(
+            siegeDay = fresh.town.nextSiegeDay, factionId = null, prepId = prep.id,
+            plan = listOf(com.tinyblacksmith.core.model.EnemySpec(engine.content.guild!!.siegeGrunts.values.first().first(), 100)),
+        ))
+        val ui = engine.guildUi(hidden)!!
+        assertNull(ui.wall.prep)
+        assertTrue(ui.wall.field.isEmpty())
+        assertTrue(ui.today.none { it.key == "prep" || prep.name in it.text })
+        val revealed = hidden.copy(siege = hidden.siege!!.copy(factionId = prep.factionId))
+        val known = engine.guildUi(revealed)!!
+        assertEquals(prep.name, known.wall.prep!!.name)
+        assertTrue(known.today.first { it.key == "prep" }.optional)
+        val stale = revealed.copy(town = revealed.town.copy(nextSiegeDay = revealed.town.nextSiegeDay + 5))
+        assertNull(engine.guildUi(stale)!!.wall.prep)
+    }
+
+    @Test
+    fun wallRowsPutReadinessAndAnswersBeforeSupportAndFullDetails() {
+        val state = guildRun().let { s ->
+            val prep = engine.content.guild!!.preparations.first()
+            s.copy(siege = com.tinyblacksmith.core.model.SiegeScenario(s.town.nextSiegeDay, factionId = prep.factionId, prepId = prep.id))
+        }
+        val ui = engine.guildUi(state)!!
+        val actions = com.example.blacksmithproject.ui.GuildActions(true, {}, {}, {}, {}, {})
+        val keys = com.example.blacksmithproject.ui.wallRows(ui, actions).map { it.key }
+        assertTrue(keys.toString(), keys.indexOf("wall") < keys.indexOf("readiness"))
+        assertTrue(keys.toString(), keys.indexOf("readiness") < keys.indexOf("prep"))
+        assertTrue(keys.toString(), keys.indexOf("prep") < keys.indexOf("watch"))
+        assertTrue(keys.toString(), keys.indexOf("watch") < keys.indexOf("places"))
+    }
+
+    @Test
     fun aClassicRunHasNoGuildAndItsThirdDestinationIsStillTown() {
         val classic = engine.newRun(LegacyProfile(), 7)
         assertNull(engine.guildUi(classic))

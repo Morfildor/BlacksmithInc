@@ -3,10 +3,12 @@ package com.tinyblacksmith.core
 import com.tinyblacksmith.core.TestSupport.endDay
 import com.tinyblacksmith.core.TestSupport.engine
 import com.tinyblacksmith.core.TestSupport.forgeAccepted
+import com.tinyblacksmith.core.TestSupport.guildRun
 import com.tinyblacksmith.core.TestSupport.quickSword
 import com.tinyblacksmith.core.TestSupport.run
 import com.tinyblacksmith.core.TestSupport.withMaterials
 import com.tinyblacksmith.core.battle.Battle
+import com.tinyblacksmith.core.content.GuildContent
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.CommandOutcome
@@ -14,6 +16,7 @@ import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.shopday.Advice
 import com.tinyblacksmith.core.shopday.Demand
 import com.tinyblacksmith.core.shopday.Lead
+import com.tinyblacksmith.core.shopday.ReadinessGap
 import com.tinyblacksmith.core.shopday.LeadKind
 import com.tinyblacksmith.core.shopday.LeadLine
 import com.tinyblacksmith.core.shopday.Lines
@@ -115,12 +118,12 @@ class AdviceTest {
 
     @Test
     fun armDefenders() {
-        val s = stocked.besiegedIn(2)
+        val s = stocked.besiegedIn(1)
         val forecast = engine.siegeForecast(s)!!
         assertTrue(forecast.odds == Battle.SiegeOdds.OUTMATCHED || forecast.odds == Battle.SiegeOdds.DIRE, "the scenario: ${forecast.odds}")
-        assertEquals(Lead(LeadKind.ARM_DEFENDERS, factionId = forecast.faction.id, days = 2, element = forecast.faction.weakTo), lead(s))
+        assertEquals(Lead(LeadKind.ARM_DEFENDERS, factionId = forecast.faction.id, days = 1, element = forecast.faction.weakTo), lead(s))
         val weak = forecast.faction.weakTo?.let { " Weak to ${it.name.lowercase()}." }.orEmpty()
-        assertEquals(LeadLine("Arm the defenders", "Siege by the ${forecast.faction.name} in 2 days.$weak"), line(s))
+        assertEquals(LeadLine("Offer weapons for the defence", "The town looks outmatched for the siege tomorrow. The ${forecast.faction.name} are coming.$weak Heroes choose what to buy. More weapons do not guarantee a hold."), line(s))
         assertNotEquals(LeadKind.ARM_DEFENDERS, lead(stocked.besiegedIn(3)).kind, "three days off: not yet")
         val safe = stocked.besiegedIn(2, pressure = 0, militia = 100_000)
         assertEquals(Battle.SiegeOdds.STRONG, engine.siegeForecast(safe)!!.odds)
@@ -182,30 +185,92 @@ class AdviceTest {
     }
 
     @Test
-    fun firstMatchWins() {
-        // Every condition at once, then one removed at a time: the lead walks down the fixed order.
-        val offer = content.blessings.take(1).map { it.id }
-        val offered = Commission(CommissionId("c1"), buyer.id, LaunchContent.SWORD, config.uncommonMin, 100, 1, 2, CommissionStatus.OFFERED)
-        val accepted = Commission(CommissionId("c2"), buyer.id, LaunchContent.BOW, config.uncommonMin, 100, 1, 2, CommissionStatus.ACCEPTED)
-        val all = fresh.besiegedIn(1).copy(pendingBlessingOffer = offer, commissions = mapOf(offered.id to offered, accepted.id to accepted))
-        assertEquals(LeadKind.FIRST_BLADE, lead(all).kind)
+    fun dangerPrecedesOffersStockAndPricesButNotAcceptedWorkDueToday() {
+        val danger = stocked.copy(day = 5).besiegedIn(0)
+        assertEquals(Battle.SiegeOdds.DIRE, engine.siegeForecast(danger)!!.odds)
+        assertEquals(LeadKind.ARM_DEFENDERS, lead(danger.asked(CommissionStatus.OFFERED, LaunchContent.BOW, 0)).kind)
+        assertEquals(LeadKind.ARM_DEFENDERS, lead(danger.copy(weapons = emptyMap())).kind)
+        assertEquals(LeadKind.ARM_DEFENDERS, lead(danger.asked(CommissionStatus.ACCEPTED, LaunchContent.BOW, 1)).kind)
+        val due = danger.asked(CommissionStatus.ACCEPTED, LaunchContent.BOW, 0)
+        assertEquals(LeadKind.FORGE_FOR_REQUEST, lead(due).kind)
+        assertEquals(LeadKind.ARM_DEFENDERS, Advice.siegeReadiness(due, content, config)!!.kind)
+        // Finished work does not create another chore.
+        val ready = danger.asked(CommissionStatus.ACCEPTED, LaunchContent.SWORD, 0).let { state ->
+            state.copy(weapons = state.weapons.mapValues { it.value.copy(quality = 100) })
+        }
+        assertEquals(LeadKind.ARM_DEFENDERS, lead(ready).kind)
+        val refusals = stocked.refusedYesterday(VisitReason.TOO_EXPENSIVE, VisitReason.OVERPRICED).besiegedIn(0)
+        assertEquals(LeadKind.ARM_DEFENDERS, lead(refusals).kind)
+    }
 
-        val later = all.copy(day = 2, town = all.town.copy(nextSiegeDay = 3), commissions = all.commissions.mapValues { it.value.copy(deadlineDay = 3) })
-            .refusedYesterday(VisitReason.TOO_EXPENSIVE, VisitReason.TOO_EXPENSIVE)
-        val expected = listOf(
-            LeadKind.CHOOSE_BLESSING to later,
-            LeadKind.ANSWER_REQUEST to later.copy(pendingBlessingOffer = emptyList()),
-            LeadKind.FORGE_FOR_REQUEST to later.copy(pendingBlessingOffer = emptyList(), commissions = mapOf(accepted.id to accepted.copy(deadlineDay = 3))),
-            LeadKind.FORGE_STOCK to later.copy(pendingBlessingOffer = emptyList(), commissions = emptyMap()),
+    @Test
+    fun classicAdviceDoesNotNameAnUnrevealedBesieger() {
+        val s = stocked.besiegedIn(2)
+        assertEquals(LeadKind.ARM_DEFENDERS, lead(s).kind)
+        assertEquals(null, lead(s).factionId)
+        assertEquals(null, lead(s).element)
+        assertTrue(content.factions.none { it.name in line(s).reason.orEmpty() })
+    }
+
+    private fun guildSiege(): GameState = engine.guildRun(LegacyProfile(), 7, GuildContent.TOWNS_LAST_HOPE).let {
+        it.copy(day = 5, town = it.town.copy(nextSiegeDay = 5), pendingBlessingOffer = emptyList())
+    }
+
+    @Test
+    fun guildUsesEquipmentAndAvailabilityNeverClassicOdds() {
+        val fresh = guildSiege()
+        val unarmed = fresh.copy(weapons = emptyMap())
+        val gap = Advice.siegeReadiness(unarmed, content, config)!!
+        assertEquals(LeadKind.REVIEW_WALL, gap.kind)
+        assertEquals(ReadinessGap.UNARMED, gap.readiness)
+        assertTrue(line(unarmed).reason!!.contains("unarmed"))
+        val g = fresh.guild!!
+        val hurt = fresh.copy(
+            weapons = fresh.weapons + fresh.aliveHeroes().associate { h ->
+                val id = WeaponId("fit-${h.id.value}")
+                id to sword.copy(id = id, condition = 100, location = WeaponLocation.Owned(h.id, equipped = true))
+            },
+            guild = g.copy(reserved = g.members.map { it.heroId }, members = g.members.map { it.copy(wound = Wound(WoundKind.INJURED, fresh.day + 2, "Test")) }),
         )
-        for ((kind, state) in expected) assertEquals(kind, lead(state).kind)
+        assertTrue(Advice.siegeReadiness(hurt, content, config)!!.readiness in setOf(ReadinessGap.UNAVAILABLE, ReadinessGap.EMPTY_PLACE))
+    }
 
-        val withStock = later.copy(pendingBlessingOffer = emptyList(), commissions = emptyMap(), weapons = forged.weapons)
-        assertEquals(LeadKind.LIST_STOCK, lead(withStock).kind)
-        val listed = withStock.copy(weapons = stocked.weapons)
-        assertEquals(LeadKind.PRICES_TOO_HIGH, lead(listed).kind)
-        val noRefusals = listed.copy(lastResolution = null)
-        assertEquals(LeadKind.ARM_DEFENDERS, lead(noRefusals).kind)
-        assertEquals(LeadKind.FORGE_FOR_BUYERS, lead(noRefusals.copy(town = noRefusals.town.copy(nextSiegeDay = 9))).kind)
+    @Test
+    fun aSettledSiegeDoesNotDemandStockOrAQuest() {
+        val fresh = guildSiege()
+        // Give the selected defenders sound weapons without changing the selection rules.
+        val armed = fresh.copy(weapons = fresh.weapons + fresh.aliveHeroes().associate { h ->
+            val id = WeaponId("ready-${h.id.value}")
+            id to sword.copy(id = id, condition = 100, location = WeaponLocation.Owned(h.id, equipped = true))
+        })
+        assertEquals(null, Advice.siegeReadiness(armed, content, config))
+        val resting = armed.copy(guild = armed.guild!!.copy(members = armed.guild!!.members.map {
+            it.copy(wound = Wound(WoundKind.INJURED, armed.day + 2, "Resting"))
+        }))
+        assertEquals(null, Advice.siegeReadiness(resting, content, config))
+        assertEquals(LeadKind.DAY_SETTLED, lead(resting).kind)
+        assertEquals(LeadKind.DAY_SETTLED, lead(armed).kind)
+        assertTrue(line(armed).reason!!.contains("does not guarantee victory"))
+        val safeClassic = stocked.copy(day = 5).besiegedIn(0, pressure = 0, militia = 100_000)
+        assertEquals(LeadKind.DAY_SETTLED, lead(safeClassic).kind)
+    }
+
+    @Test
+    fun adviceReadsDoNotChangeCommandOutcomesOrSavedRandomStreams() {
+        for (initial in listOf(stocked.copy(day = 4).besiegedIn(1), guildSiege())) {
+            var viewed = initial
+            var control = initial
+            repeat(2) {
+                repeat(3) { lead(viewed); line(viewed); Advice.siegeReadiness(viewed, content, config) }
+                val cmd = Command.EndDay(CommandId("advice:${viewed.day}"))
+                val left = engine.handle(viewed, cmd)
+                val right = engine.handle(control, cmd)
+                assertEquals(right, left)
+                if (left is CommandOutcome.Accepted && right is CommandOutcome.Accepted) {
+                    viewed = left.state
+                    control = right.state
+                }
+            }
+        }
     }
 }

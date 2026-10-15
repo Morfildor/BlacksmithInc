@@ -53,7 +53,6 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.GuildTab
@@ -90,9 +89,9 @@ internal class GuildActions(
 internal fun guildTabName(t: GuildTab) = when (t) { GuildTab.CONTRACTS -> "Contracts"; GuildTab.COMPANY -> "Company"; GuildTab.WALL -> "Wall"; GuildTab.CHARTER -> "Charter" }
 
 /**
- * The Guild destination of a guild run, in the place Town has in a classic run. Pinned at its head: Today (at most three
- * rows, each one thing that needs the smith with the button that goes to it) and the four parts, Contracts, Company,
- * Wall and Charter, each a short list of its own. The part shown is the one chosen today, else the Wall on the eve and
+ * The Guild destination of a guild run, in the place Town has in a classic run. Today (at most three
+ * rows, each with a direct action) and the four parts, Contracts, Company,
+ * Wall and Charter, each a short list with Today in its scrolling content. The part shown is the one chosen today, else the Wall on the eve and
  * the day of a siege, else Contracts (`guildTabFor`). Every row that changes something sends a command and waits for the save.
  */
 @Composable
@@ -108,10 +107,10 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
         enabled = !s.busy, openHero = { vm.openSheet(Sheet.Hero(it)) }, openContract = { contract = it },
         confirm = { confirm = it }, assign = { assigning = true }, send = vm::dispatch,
     )
-    val dots = ui.today.mapNotNull { it.tab }.toSet() + listOfNotNull(GuildTab.COMPANY.takeIf { ui.companyNeeds })
+    val dots = ui.today.filterNot { it.optional }.mapNotNull { it.tab }.toSet() + listOfNotNull(GuildTab.COMPANY.takeIf { ui.companyNeeds })
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
     Column(modifier.fillMaxSize()) {
-        TodayRows(ui.today) { row ->
+        val onToday: (TodayUi) -> Unit = { row ->
             when (val t = row.target) {
                 is TodayTarget.Tab -> { vm.selectGuildTab(t.tab); anchor = t.tab to t.anchor }
                 is TodayTarget.Hero -> vm.openSheet(Sheet.Hero(t.heroId))
@@ -126,7 +125,7 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
             GuildTab.WALL -> wallRows(ui, actions)
             GuildTab.CHARTER -> charterRows(ui, actions)
         }
-        GuildList(tab, rows, anchor, reducedMotion) { anchor = null }
+        GuildList(tab, rows, anchor, reducedMotion, ui.today, onToday) { anchor = null }
     }
     // Under a hero's sheet the contract waits, as the commission board does.
     contract?.let { id ->
@@ -152,31 +151,18 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
     }
 }
 
-/**
- * What needs the smith today. On a short screen or with large text only the first row shows, and a small "N more" under
- * it opens the rest in place: the part's own list keeps the room, and the parts' dots still say where the others are.
- * With nothing to do it is one quiet line.
- */
+/** Today scrolls with the part, so full reminders and actions fit even at large font scales. */
 @Composable
-private fun TodayRows(rows: List<TodayUi>, onAct: (TodayUi) -> Unit) {
-    val compact = LocalDensity.current.fontScale >= 1.3f || LocalConfiguration.current.screenHeightDp < 760
-    var more by rememberSaveable { mutableStateOf(false) }
-    val shown = if (compact && !more) rows.take(1) else rows
-    Column(Modifier.fillMaxWidth().background(ForgePanel).padding(horizontal = Space.md).testTag("guild_today")) {
-        if (rows.isEmpty()) Secondary("Nothing in the guild needs you today.", Modifier.heightIn(min = 32.dp).padding(vertical = 6.dp))
-        shown.forEach { r ->
-            Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).testTag("guild_today_${r.key}"), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.padding(end = Space.sm).size(6.dp).background(Gold, CircleShape))
-                Text(r.text, style = MaterialTheme.typography.bodyMedium, color = Cream, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                InlineActionButton("${r.action}  ›", { onAct(r) }, Modifier.testTag("guild_today_go_${r.key}"))
+internal fun TodayRows(rows: List<TodayUi>, onAct: (TodayUi) -> Unit) {
+    Column(Modifier.fillMaxWidth().background(ForgePanel).testTag("guild_today")) {
+        if (rows.none { !it.optional }) Secondary("No urgent guild decisions. You can keep today's plan.", Modifier.padding(vertical = Space.sm))
+        rows.forEach { r ->
+            Column(Modifier.fillMaxWidth().padding(vertical = Space.xs).testTag("guild_today_${r.key}")) {
+                if (r.optional) Secondary("Optional", Modifier.testTag("guild_today_optional_${r.key}"))
+                Text(r.text, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.testTag("guild_today_text_${r.key}"))
+                InlineActionButton("${r.action}  ›", { onAct(r) }, Modifier.heightIn(min = 48.dp).testTag("guild_today_go_${r.key}"))
             }
         }
-        // Under the rows, not inside the first: beside the action it squeezed the sentence onto two lines.
-        if (compact && rows.size > 1) Text(
-            if (more) "Show less" else "${rows.size - 1} more", style = MaterialTheme.typography.labelMedium, color = Gold,
-            modifier = Modifier.clickable(onClickLabel = if (more) "Show one" else "Show ${rows.size - 1} more", role = Role.Button) { more = !more }
-                .heightIn(min = 32.dp).widthIn(min = 40.dp).padding(start = 14.dp, end = 8.dp, bottom = 6.dp).testTag("guild_today_more"),
-        )
     }
 }
 
@@ -212,19 +198,20 @@ private fun GuildTabs(selected: GuildTab, dots: Set<GuildTab>, onSelect: (GuildT
 
 /** One part's rows as one lazy list; a row Today pointed at is scrolled to once. Each part keeps its own scroll. */
 @Composable
-private fun GuildList(tab: GuildTab, rows: List<GuildRow>, anchor: Pair<GuildTab, String>?, reducedMotion: Boolean, onAnchored: () -> Unit) {
+private fun GuildList(tab: GuildTab, rows: List<GuildRow>, anchor: Pair<GuildTab, String>?, reducedMotion: Boolean, today: List<TodayUi>, onToday: (TodayUi) -> Unit, onAnchored: () -> Unit) {
     val list = key(tab) { rememberLazyListState() }
     // Once the part Today pointed at is the one shown: the save that switches it may land a frame later.
     LaunchedEffect(anchor, tab) {
         val (t, k) = anchor ?: return@LaunchedEffect
         if (t != tab) return@LaunchedEffect
-        rows.indexOfFirst { it.key == k }.takeIf { it >= 0 }?.let { if (reducedMotion) list.scrollToItem(it) else list.animateScrollToItem(it) }
+        rows.indexOfFirst { it.key == k }.takeIf { it >= 0 }?.let { if (reducedMotion) list.scrollToItem(it + 1) else list.animateScrollToItem(it + 1) }
         onAnchored()
     }
     LazyColumn(
         Modifier.fillMaxSize().bottomFade(list.canScrollForward).testTag("guild_list"), state = list,
         contentPadding = PaddingValues(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.lg),
     ) {
+        item(key = "today") { TodayRows(today, onToday) }
         items(rows, key = { it.key }) { it.content() }
     }
 }
@@ -294,22 +281,22 @@ private fun AssignSheet(ui: GuildUi, a: GuildActions, onDismiss: () -> Unit) {
             Secondary("A kept member stands first and no party takes them. The other places go to the strongest fit, members or townsfolk.")
             Text("${ui.wall.defenders.size} of ${ui.wall.places} places filled", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm))
             ui.assign.forEach { r ->
-                Row(
-                    Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().heightIn(min = 64.dp).padding(horizontal = 12.dp, vertical = Space.sm).testTag("guild_assign_row_${r.heroId.value}"),
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Face(r.portrait, 40)
-                    Column(Modifier.weight(1f)) {
-                        Text(r.name, style = MaterialTheme.typography.titleSmall)
-                        Secondary(r.sub)
-                        r.reason?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = if (r.action == AssignAction.NONE) Ember else Cream) }
+                Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm).testTag("guild_assign_row_${r.heroId.value}")) {
+                    Row(Modifier.fillMaxWidth().clickable(onClickLabel = "Open member equipment") { a.openHero(r.heroId) }.heightIn(min = 48.dp),
+                        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Face(r.portrait, 40)
+                        Column(Modifier.weight(1f)) {
+                            Text(r.name, style = MaterialTheme.typography.titleSmall)
+                            Secondary(r.sub)
+                            r.reason?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = if (r.action == AssignAction.NONE) Ember else Cream) }
+                        }
                     }
                     when (r.action) {
-                        AssignAction.RESERVE -> SecondaryActionButton("Keep", { a.send(Command.ReserveDefender(r.heroId, true)) }, Modifier.testTag("guild_reserve_${r.heroId.value}"), enabled = a.enabled)
-                        AssignAction.RELEASE -> InlineActionButton("Release", { a.send(Command.ReserveDefender(r.heroId, false)) }, Modifier.testTag("guild_reserve_${r.heroId.value}"), enabled = a.enabled)
+                        AssignAction.RESERVE -> SecondaryActionButton("Keep", { a.send(Command.ReserveDefender(r.heroId, true)) }, Modifier.heightIn(min = 48.dp).testTag("guild_reserve_${r.heroId.value}"), enabled = a.enabled)
+                        AssignAction.RELEASE -> InlineActionButton("Release", { a.send(Command.ReserveDefender(r.heroId, false)) }, Modifier.heightIn(min = 48.dp).testTag("guild_reserve_${r.heroId.value}"), enabled = a.enabled)
                         AssignAction.KEEP_HOME -> InlineActionButton("Keep home", {
                             a.confirm(Confirm("Keep the party home?", "Today's planned contract is cancelled and its fee comes back. You can plan another this morning.", "Keep home", Command.CancelPlannedDeployment))
-                        }, Modifier.testTag("guild_keep_home_${r.heroId.value}"), enabled = a.enabled)
+                        }, Modifier.heightIn(min = 48.dp).testTag("guild_keep_home_${r.heroId.value}"), enabled = a.enabled)
                         AssignAction.NONE -> Unit
                     }
                 }

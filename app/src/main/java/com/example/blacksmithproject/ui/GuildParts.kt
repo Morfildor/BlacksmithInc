@@ -86,6 +86,7 @@ internal fun contractRows(ui: GuildUi, a: GuildActions): List<GuildRow> = buildL
 }
 
 /** The party that is out: where, who, when they are home; at a checkpoint, the choice. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun PartyCard(p: PartyUi, enabled: Boolean, onChoose: (String, CheckpointChoice) -> Unit) {
     FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm).testTag("guild_party")) {
@@ -99,9 +100,9 @@ private fun PartyCard(p: PartyUi, enabled: Boolean, onChoose: (String, Checkpoin
             Text(c.deeper, style = MaterialTheme.typography.bodyMedium)
             Text(c.danger, style = MaterialTheme.typography.bodyMedium, color = Ember)
             EnemyLines(c.enemies, Modifier.padding(top = Space.xs))
-            Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                SecondaryActionButton("Push deeper", { onChoose(c.instanceId, CheckpointChoice.PUSH) }, Modifier.weight(1f).testTag("guild_push"), enabled = enabled && c.chosen != CheckpointChoice.PUSH)
-                SecondaryActionButton("Return", { onChoose(c.instanceId, CheckpointChoice.RETURN) }, Modifier.weight(1f).testTag("guild_return"), enabled = enabled && c.chosen != CheckpointChoice.RETURN)
+            FlowRow(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+                SecondaryActionButton("Push deeper", { onChoose(c.instanceId, CheckpointChoice.PUSH) }, Modifier.testTag("guild_push"), enabled = enabled && c.chosen != CheckpointChoice.PUSH)
+                SecondaryActionButton("Return", { onChoose(c.instanceId, CheckpointChoice.RETURN) }, Modifier.testTag("guild_return"), enabled = enabled && c.chosen != CheckpointChoice.RETURN)
             }
             Secondary(c.note, Modifier.padding(top = Space.xs).testTag("guild_checkpoint_note"))
         }
@@ -218,54 +219,65 @@ internal fun wallRows(ui: GuildUi, a: GuildActions): List<GuildRow> = buildList 
     val w = ui.wall
     val eve = w.daysLeft <= 1
     add(GuildRow("wall") { WallHead(w) })
-    add(GuildRow("places") { Places(ui, a) })
-    w.prep?.let { p ->
-        add(GuildRow("prep") {
-            // What they prepare is this siege's own rule, with every answer the smith has: open, since it is decided before the night.
-            Collapsible("prep", "Siege preparations", p.name, openAtFirst = true, tag = "guild_wall_prep") {
-                Text(p.name, style = MaterialTheme.typography.titleSmall, color = Ember)
-                Text(p.description, style = MaterialTheme.typography.bodyMedium)
-                Secondary("Your answers", Modifier.padding(top = Space.xs))
-                p.answers.forEach { Secondary("· $it", Modifier.padding(start = Space.sm)) }
-                Secondary("· Or send a party to spoil it. ${p.sabotage}", Modifier.padding(start = Space.sm))
-            }
-        })
-    }
-    if (w.field.isNotEmpty()) add(GuildRow("field") {
-        Collapsible("field", "Battlefield", w.field.joinToString(", ") { it.label }, openAtFirst = eve, tag = "guild_wall_field") { EnemyLines(w.field) }
+    add(GuildRow("readiness") {
+        Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("guild_wall_readiness")) {
+            SectionTitle("Defender readiness")
+            w.readinessReason?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
+                ?: Secondary(if (w.daysLeft in 0..2) "The available defenders have weapons in good condition. This does not guarantee victory."
+                    else "Review the defenders and any known enemy preparation. Keeping members home is a valid plan.")
+            w.notes.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
+            SecondaryActionButton("Review defenders", a.assign, Modifier.fillMaxWidth().testTag("guild_wall_assign"), enabled = a.enabled)
+        }
     })
     if (w.missing.isNotEmpty()) add(GuildRow("missing") {
         Collapsible("missing", "Unavailable defenders", if (w.missing.size == 1) "1 member cannot stand" else "${w.missing.size} members cannot stand", openAtFirst = eve, tag = "guild_wall_missing") {
             w.missing.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
         }
     })
+    w.prep?.let { p ->
+        add(GuildRow("prep") {
+            Collapsible("prep", "Your preparation answers", "Equipment and quest options", openAtFirst = true, tag = "guild_wall_prep") {
+                InlineActionButton("Review member equipment", a.assign, Modifier.heightIn(min = 48.dp).testTag("guild_prep_equipment"), enabled = a.enabled)
+                p.answers.forEach { Secondary("· $it", Modifier.padding(start = Space.sm)) }
+                Secondary("· Or send a party to spoil it. ${p.sabotage}", Modifier.padding(start = Space.sm))
+                ui.offers.firstOrNull { offer -> offer.specials.contains("Spoils their preparation") }?.let { offer ->
+                    InlineActionButton("Review sabotage quest", { a.openContract(offer.id) }, Modifier.heightIn(min = 48.dp).testTag("guild_prep_quest"), enabled = a.enabled)
+                }
+            }
+        })
+    }
+    add(GuildRow("watch") {
+        Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("guild_wall_watch")) {
+            StatBar("Forge health", w.forgeHealth, w.forgeHealthMax)
+            StatRow("Watch", "${w.watch}", Modifier.padding(top = Space.xs))
+            Secondary(w.watchLine.substringBefore(". ").let { if (it.endsWith(".")) it else "$it." }, Modifier.testTag("guild_wall_watch_line"))
+        }
+    })
+    add(GuildRow("places") {
+        Collapsible("places", "Defenders", "${w.defenders.size} of ${w.places} places filled", openAtFirst = false, tag = "guild_wall_places") { Places(ui, a) }
+    })
+    if (w.field.isNotEmpty()) add(GuildRow("field") {
+        Collapsible("field", "Battlefield", w.field.joinToString(", ") { it.label }, openAtFirst = eve, tag = "guild_wall_field") { EnemyLines(w.field) }
+    })
 }
 
-/** Who comes and when, what tells against them, the forge's health and the watch: the head of the Wall. */
+/** The revealed preparation and matchup. The shared header owns the besieger and countdown. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun WallHead(w: WallUi) {
-    FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm).testTag("guild_wall")) {
-        Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            w.factionId?.let { id -> Sprites.faction(id)?.let { Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { PixelImage(it, 56.dp, description = null) } } }
-            Column(Modifier.weight(1f)) {
-                Text(w.besieger, style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() }.testTag("guild_wall_besieger"))
-                Text(w.whenLine, style = MaterialTheme.typography.titleSmall, color = if (w.daysLeft <= 1) Ember else Cream, modifier = Modifier.testTag("guild_wall_when"))
-                w.leaning?.let { Secondary(it) }
-            }
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("guild_wall")) {
+        w.prep?.let { p ->
+            Text(p.name, style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.semantics { heading() })
+            Text(p.description, style = MaterialTheme.typography.bodyMedium)
         }
+        if (w.prep == null && !w.committed) Secondary("Enemy preparation is not yet known.")
+        w.leaning?.let { Secondary(it) }
         if (w.weakTo != null || w.resists != null) FlowRow(Modifier.padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
             w.weakTo?.let { MatchMark(EffectKind.BUFF, "Weak to $it") }
             w.resists?.let { MatchMark(EffectKind.FLAW, "Resists $it") }
         }
-        w.notes.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = Space.xs)) }
         w.nemesis?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = Space.xs).testTag("guild_wall_nemesis")) }
         w.spoiled?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = EffectKind.BUFF.color, modifier = Modifier.padding(top = Space.xs).testTag("guild_wall_spoiled")) }
-        HorizontalDivider(Modifier.padding(top = 12.dp, bottom = Space.sm), color = MaterialTheme.colorScheme.outlineVariant)
-        StatBar("Forge health", w.forgeHealth, w.forgeHealthMax)
-        StatRow("Watch", "${w.watch}", Modifier.padding(top = Space.xs))
-        // The rule's first sentence (what the watch takes before the wall); how militia rises and falls is the Gazette's.
-        Secondary(w.watchLine.substringBefore(". ").let { if (it.endsWith(".")) it else "$it." }, Modifier.testTag("guild_wall_watch_line"))
     }
 }
 

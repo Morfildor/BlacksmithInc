@@ -38,6 +38,9 @@ import com.tinyblacksmith.core.model.MissionStage
 import com.tinyblacksmith.core.model.Reward
 import com.tinyblacksmith.core.model.Weapon
 import com.tinyblacksmith.core.model.WeaponId
+import com.tinyblacksmith.core.shopday.Advice
+import com.tinyblacksmith.core.shopday.Lead
+import com.tinyblacksmith.core.shopday.Lines
 import com.tinyblacksmith.core.model.WoundKind
 
 /*
@@ -74,6 +77,7 @@ data class WallUi(
     val prep: PrepUi? = null, val spoiled: String? = null, val nemesis: String? = null,
     /** What the militia and the armory are worth on the night, and what militia costs to keep: the rule's own numbers. */
     val watchLine: String = "",
+    val readiness: Lead? = null, val readinessReason: String? = null,
 )
 
 /** The choice at the door of a deeper stage. [chosen] is what the smith has already sent word of today. */
@@ -288,6 +292,7 @@ private fun GameEngine.traitLine(traitId: String): String = content.guild!!.trai
 
 private fun GameEngine.wallUi(state: GameState, g: GuildRunState): WallUi {
     val f = wallForecast(state)!!
+    val readiness = Advice.siegeReadiness(state, content, config)
     val town = state.town
     val left = town.nextSiegeDay - state.day
     val plannedAway = g.planned?.let { p -> g.offers.firstOrNull { it.id == p.offerId } }?.takeIf { missesSiege(state.day, it.days, town.nextSiegeDay) }
@@ -300,13 +305,14 @@ private fun GameEngine.wallUi(state: GameState, g: GuildRunState): WallUi {
         committed = f.committed,
         leaning = f.faction?.takeIf { !f.committed }?.let { "Most pressure today: ${it.name}." },
         weakTo = f.faction?.takeIf { f.committed }?.weakTo?.word(), resists = f.faction?.takeIf { f.committed }?.resists?.word(),
-        field = enemies(f.plan),
+        field = if (f.committed) enemies(f.plan) else emptyList(),
         notes = listOfNotNull(
             "The charter warlord leads this siege.".takeIf { f.charter },
             "Their preparations are spoiled.".takeIf { f.sabotaged && f.spoiled == null },
             plannedAway?.let { if (left <= 0) "The party you planned leaves today and is not on the wall tonight." else "The party you planned is away on the siege night of day ${town.nextSiegeDay}." },
         ),
         watch = f.watch, forgeHealth = town.integrity,
+        readiness = readiness, readinessReason = readiness?.let { Lines.lead(it, state, content, config).reason },
         watchLine = watchLine(town.militia, town.armory, f.watch),
         forgeHealthMax = maxOf(town.integrity, config.startingForgeIntegrity + upgradeTotal(state.legacy, UpgradeEffect.STARTING_INTEGRITY)),
         defenders = f.defenders.map { (h, w) -> DefenderUi(h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), w?.name ?: "Unarmed", g.isMember(h.id), h.id in g.reserved) },
@@ -322,7 +328,7 @@ private fun GameEngine.wallUi(state: GameState, g: GuildRunState): WallUi {
             })
         },
         missing = f.missing.map { (h, why) -> "${h.fullName}: $why" },
-        prep = f.prep?.let { PrepUi(it.name, it.description, it.counters, it.sabotageBrief) },
+        prep = f.prep?.takeIf { f.committed }?.let { PrepUi(it.name, it.description, it.counters, it.sabotageBrief) },
         spoiled = f.spoiled?.let { "Your party spoiled their preparation: ${it.name}. It will not come." },
         nemesis = f.nemesis?.let { n -> "${n.name} marches with them" + (state.weapons[n.weaponId]?.let { ", carrying ${it.name}, a weapon of this forge." } ?: ".") },
     )

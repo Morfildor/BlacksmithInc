@@ -53,26 +53,57 @@ class GuildPlanUiTest {
 
     @Test
     fun todayIsAtMostThreeRowsMostPressingFirstAndNeverTheCountdown() {
-        val order = listOf("checkpoint", "wall", "rescue", "plan", "branch", "charter")
+        val order = listOf("checkpoint", "wall", "readiness", "rescue", "prep", "plan", "branch", "charter")
         var seen = 0
         for (policy in listOf(GuildPolicy.ADAPTIVE, GuildPolicy.GREEDY_DIVER, GuildPolicy.NOVICE)) for (s in mornings(policy, 9)) {
             val ui = engine.guildUi(s)!!
             val g = s.guild!!
             assertTrue(ui.today.size <= TODAY_ROWS)
-            assertEquals("rows in priority order", ui.today.map { order.indexOf(it.key.substringBefore('_')) }.sorted(), ui.today.map { order.indexOf(it.key.substringBefore('_')) })
+            val ordered = ui.today.filterNot { it.key.startsWith("rescue_") }
+            assertEquals("decisions before opportunities", ordered.filterNot { it.optional } + ordered.filter { it.optional }, ordered)
             assertTrue(ui.today.toString(), ui.today.none { it.text.startsWith("Siege") })
             // An empty place is a row exactly on the eve and the day, and the row goes to the assign sheet.
-            val empty = ui.wall.daysLeft <= 1 && ui.wall.defenders.size < ui.wall.places
+            val empty = ui.wall.daysLeft in 0..2 && ui.wall.defenders.size < ui.wall.places
             assertEquals(empty, ui.today.any { it.target == TodayTarget.AssignWall })
             // A checkpoint without word is always first.
             val waiting = g.mission?.let { it.outcome == null && it.stage == 1 && it.offer.optionalPush && it.choice == null } == true
-            if (waiting) { seen++; assertEquals("checkpoint", ui.today.first().key) }
+            if (waiting) { seen++; assertTrue(ui.today.any { it.key == "checkpoint" }); assertTrue(ui.today.first().key == "checkpoint" || ui.today.first().key.startsWith("rescue_")) }
             // "No contract planned" only when nothing is out or planned, and always when there is room for it.
-            val unplanned = g.mission == null && g.planned == null && g.offers.isNotEmpty()
-            if (ui.today.any { it.key == "plan" }) assertTrue(unplanned)
+            val unplanned = ui.wall.daysLeft > 1 && g.mission == null && g.planned == null && g.offers.isNotEmpty()
+            if (ui.today.any { it.key == "plan" }) { assertTrue(unplanned); assertTrue(ui.today.first { it.key == "plan" }.optional) }
             if (unplanned && ui.today.size < TODAY_ROWS) assertTrue(ui.today.toString(), ui.today.any { it.key == "plan" })
         }
         assertTrue("the bots reach a checkpoint", seen > 0)
+    }
+
+    @Test
+    fun siegeNightPermitsStayingHomeAndEarlyQuestsAreOptional() {
+        val fresh = engine.guildRun(7)
+        val early = engine.guildUi(fresh)!!
+        assertTrue(early.today.first { it.key == "plan" }.optional)
+        assertTrue(early.today.first { it.key == "plan" }.text.contains("Keeping members home"))
+        val tonight = fresh.copy(day = fresh.town.nextSiegeDay)
+        assertTrue(engine.guildUi(tonight)!!.today.none { it.key == "plan" })
+    }
+
+    @Test
+    fun lastRescueDepartureOutranksReadinessAndOptionalQuestsAndAPlanSettlesIt() {
+        val fresh = engine.guildRun(7)
+        val g = fresh.guild!!
+        val hero = g.members.first().heroId
+        val offer = g.offers.first().copy(id = "last-rescue", subjectHeroId = hero, expiresDay = fresh.day)
+        val state = fresh.copy(town = fresh.town.copy(nextSiegeDay = fresh.day), guild = g.copy(
+            members = g.members.map { if (it.heroId == hero) it.copy(status = com.tinyblacksmith.core.model.MemberStatus.CAPTURED) else it },
+            captives = listOf(com.tinyblacksmith.core.model.Captive(hero, fresh.factions.keys.first(), fresh.day, fresh.day + 1)),
+            offers = g.offers + offer,
+        ))
+        val today = engine.guildUi(state)!!.today
+        assertEquals("rescue_${hero.value}", today.first().key)
+        assertTrue(today.first().text.contains("Last day"))
+        assertFalse(today.first().optional)
+        assertEquals(TodayTarget.Tab(GuildTab.CONTRACTS, "offer_last-rescue"), today.first().target)
+        val planned = state.copy(guild = state.guild!!.copy(planned = com.tinyblacksmith.core.model.PlannedDeployment(offer.id, listOf(g.members.last().heroId), Posture.BALANCED)))
+        assertTrue(engine.guildUi(planned)!!.today.none { it.key.startsWith("rescue_") })
     }
 
     @Test
