@@ -6,6 +6,7 @@ import com.example.blacksmithproject.ui.StepState
 import com.example.blacksmithproject.ui.TODAY_ROWS
 import com.example.blacksmithproject.ui.TodayTarget
 import com.example.blacksmithproject.ui.guildTabFor
+import com.example.blacksmithproject.ui.GuildUi
 import com.example.blacksmithproject.ui.guildUi
 import com.tinyblacksmith.core.combat.Posture
 import com.tinyblacksmith.core.content.GuildContent
@@ -113,18 +114,44 @@ class GuildPlanUiTest {
     @Test
     fun theCharterOpensRetiringAndTheRanksAndARankIsKept() {
         val fresh = engine.guildRun(7)
-        val before = engine.guildUi(fresh)!!.steps
+        fun GuildUi.charter() = steps.filter { it.key != "road" }
+        val before = engine.guildUi(fresh)!!.charter()
         assertEquals("charter", before.first().key)
         assertTrue(before.all { it.state == StepState.LOCKED })
         val g = fresh.guild!!
         val secured = fresh.copy(guild = g.copy(milestones = g.milestones + RunMilestoneClaim(GuildContent.CHARTER_SECURED, fresh.day)))
         val after = engine.guildUi(secured)!!
-        assertEquals(StepState.DONE, after.steps.first().state)
-        assertTrue(after.steps.drop(1).all { it.state == StepState.OPEN })
+        assertEquals(StepState.DONE, after.charter().first().state)
+        assertTrue(after.charter().drop(1).all { it.state == StepState.OPEN })
         assertTrue("a charter secured today is a row of Today", after.today.any { it.key == "charter" })
         val ranked = secured.send(Command.SetGuildRank(1))
-        val steps = engine.guildUi(ranked)!!.steps
+        val steps = engine.guildUi(ranked)!!.charter()
         assertEquals(StepState.DONE, steps[1].state)
         assertFalse(steps.drop(2).any { it.state == StepState.LOCKED })
+    }
+
+    @Test
+    fun theDeepRoadIsSaidAsTheRulesOpenIt() {
+        // Shut on the first morning: a step still to come, and a contract the board will post after the first siege.
+        val fresh = engine.guildRun(7)
+        val road = engine.content.guild!!.mission(GuildContent.DEEP_ROAD)
+        engine.guildUi(fresh)!!.run {
+            assertEquals(StepState.LOCKED, steps.first { it.key == "road" }.state)
+            assertTrue(upcoming.toString(), upcoming.any { it.name == road.name && it.condition == "Posted after the first siege while the road is shut" })
+        }
+        // Its contract on the board: the step is open, the card says what it opens, and it is no longer "to come".
+        val posted = listOf(GuildPolicy.ADAPTIVE, GuildPolicy.NOVICE).asSequence().flatMap { p -> (7L..12L).asSequence().flatMap { mornings(p, it, 14) } }
+            .first { s -> s.guild!!.offers.any { it.defId == GuildContent.DEEP_ROAD } }
+        engine.guildUi(posted)!!.run {
+            assertEquals(StepState.OPEN, steps.first { it.key == "road" }.state)
+            assertTrue(upcoming.none { it.name == road.name })
+            assertTrue(offers.first { o -> posted.guild!!.offers.first { it.id == o.id }.defId == GuildContent.DEEP_ROAD }.specials.contains("Opens the deep road"))
+        }
+        // Open: done, with its day, and nothing left to post.
+        val open = fresh.copy(deepRoadOpenDay = fresh.day)
+        engine.guildUi(open)!!.run {
+            assertEquals(StepState.DONE to "Opened on day ${fresh.day}.", steps.first { it.key == "road" }.let { it.state to it.condition })
+            assertTrue(upcoming.none { it.name == road.name })
+        }
     }
 }

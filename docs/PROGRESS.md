@@ -100,8 +100,10 @@ content, balance, siege scheduling or combat. Worktree `.claude/worktrees/guild-
   device. The Assign button on an empty wall place was not seen on a device: no scenario has an empty place (the
   rule is covered by `GuildPlanUiTest`; the assign sheet was reached through "Keep a member for the wall").
 - Rough edge: the assign sheet closes while its "Keep home" confirmation is up and reopens after, without animation.
-- Pending: the deep road (rules 7, another agent's work in the main checkout) as an entry of What comes next and a
-  special-reward chip once `Reward.road` lands. Merge conflicts expected in `WorkshopScreen.kt` (the `ShopPanel(...)`
+- Done after the merge (branch `guild-deep-road-steps` from `54a97bf`): the deep road is a step of "What opens"
+  (shut, its contract on the board or out, open since day N or by the second siege), an entry of What comes next while
+  it is shut, and the "Opens the deep road" chip (`Reward.road`). `GuildPlanUiTest.theDeepRoadIsSaidAsTheRulesOpenIt`;
+  app tests 273 / 0. Not seen on a device. Merge conflicts expected in `WorkshopScreen.kt` (the `ShopPanel(...)`
   call), `ShopPanel.kt`, `ForgePanel.kt`, `GuildUi.kt`, CHANGELOG and PROGRESS: keep both sides. The earlier
   `[Unreleased]` line "The siege in proportion" describes the strip this branch removes.
 
