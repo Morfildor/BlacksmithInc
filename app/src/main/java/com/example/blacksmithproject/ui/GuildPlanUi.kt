@@ -5,6 +5,7 @@ import com.example.blacksmithproject.GuildTab
 import com.example.blacksmithproject.GuildTabMemory
 import com.tinyblacksmith.core.content.GuildContent
 import com.tinyblacksmith.core.content.MissionArchetype
+import com.tinyblacksmith.core.engine.DeepRoad
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.GuildMember
@@ -80,6 +81,7 @@ internal fun GameEngine.specialRewards(state: GameState, offer: MissionOffer): L
         "Heartfire".takeIf { r.heartfire > 0 },
         r.captiveId?.let { state.heroes[it]?.name }?.let { "Brings $it home" },
         r.weaponId?.let { state.weapons[it]?.name }?.let { "Brings back $it" },
+        "Opens the deep road".takeIf { r.road },
     )
 }.distinct()
 
@@ -117,7 +119,7 @@ internal fun GameEngine.guildToday(state: GameState, g: GuildRunState, wall: Wal
 /**
  * The contracts the board can post but does not show today, each with the rule that brings it (`Missions.refreshBoard`):
  * a drawn contract before its first day (none when the charter opens them early), the siege's two jobs, a rescue, a
- * recovery. What is on the board already is not listed.
+ * recovery, and the deep road while it is shut (`DeepRoad.contractDue`). What is on the board or out already is not listed.
  */
 internal fun GameEngine.upcomingContracts(state: GameState, g: GuildRunState): List<UpcomingUi> {
     val cat = content.guild ?: return emptyList()
@@ -132,7 +134,10 @@ internal fun GameEngine.upcomingContracts(state: GameState, g: GuildRunState): L
         ?.let { UpcomingUi("${it.name} and an opportunity", "Posted together once a siege's besieger is known, while a party can still be home for it") }
     val rescue = cat.missionById[GuildContent.RESCUE]?.takeIf { GuildContent.RESCUE !in onBoard }?.let { UpcomingUi(it.name, "Posted while a member is held by the enemy") }
     val recovery = cat.missionById[GuildContent.RECOVERY]?.takeIf { GuildContent.RECOVERY !in onBoard }?.let { UpcomingUi(it.name, "Posted while an enemy carries a weapon of this forge") }
-    return drawn + listOfNotNull(sabotage, rescue, recovery)
+    val road = cat.missionById[GuildContent.DEEP_ROAD]
+        ?.takeIf { DeepRoad.matters(content, config) && DeepRoad.stage(state) == 0 && it.id !in onBoard && g.mission?.offer?.defId != it.id }
+        ?.let { UpcomingUi(it.name, "Posted after the first siege while the road is shut") }
+    return drawn + listOfNotNull(sabotage, rescue, recovery, road)
 }
 
 /**
@@ -156,13 +161,14 @@ internal fun GameEngine.assignRows(state: GameState, g: GuildRunState, places: I
 }
 
 /**
- * What the charter opens, as the rules have it (`Stories.charterSiege`, `Stories.setRank`): securing it (the charter
- * warlord broken at the wall) opens retiring and the ranks; any higher rank may then be taken, and none is ever given back.
+ * What the run opens, as the rules have it: the deep road (`DeepRoad`: its contract after the first siege, or the second
+ * siege, opens the supplier's big ingredients), then the charter (`Stories.charterSiege`: the charter warlord broken at the
+ * wall opens retiring and the ranks); any higher rank may then be taken, and none is ever given back.
  */
 internal fun GameEngine.charterSteps(state: GameState, g: GuildRunState): List<StepUi> {
     val cat = content.guild ?: return emptyList()
     val secured = g.milestone(GuildContent.CHARTER_SECURED)
-    return listOf(
+    return listOfNotNull(roadStep(state, g)) + listOf(
         StepUi(
             "charter", "Secure the charter", if (secured != null) StepState.DONE else StepState.LOCKED,
             secured?.let { "Secured on day ${it.day}." }
@@ -177,4 +183,18 @@ internal fun GameEngine.charterSteps(state: GameState, g: GuildRunState): List<S
             r.description,
         )
     }
+}
+
+/** The deep road as a step: open (and since when), its contract on the board or out, or still to come; null where the catalog holds nothing back. */
+private fun GameEngine.roadStep(state: GameState, g: GuildRunState): StepUi? {
+    if (!DeepRoad.matters(content, config)) return null
+    val first = DeepRoad.names(content, config, 1)
+    val second = DeepRoad.names(content, config, 2)
+    val (st, condition) = when {
+        DeepRoad.stage(state) >= 1 -> StepState.DONE to (state.deepRoadOpenDay?.let { "Opened on day $it." } ?: "Opened by the second siege.")
+        g.mission?.offer?.defId == GuildContent.DEEP_ROAD -> StepState.OPEN to "A party is on the road now. If they win, it opens the next morning."
+        g.offers.any { it.defId == GuildContent.DEEP_ROAD } -> StepState.OPEN to "Its contract is on the board: win it and the road opens the next morning. The second siege opens it anyway."
+        else -> StepState.LOCKED to "After the first siege its contract is posted. Win it, or the second siege opens the road anyway."
+    }
+    return StepUi("road", "The deep road", st, condition, "The supplier carries $first." + if (second.isNotEmpty()) " After the second siege, $second too." else "")
 }
