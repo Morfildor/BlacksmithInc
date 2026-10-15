@@ -32,6 +32,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -245,17 +246,17 @@ private fun ForgeHeading(commissions: Int, offers: Int, endDayNote: String, onOp
 @Composable
 private fun Workbench(title: String, d: ForgeDraft, content: ContentCatalog, compact: Boolean, reducedMotion: Boolean) {
     val large = LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenHeightDp < 620
-    val height = if (compact) 72.dp else if (large) 88.dp else 132.dp
-    val blade = wholePixelDp(56, if (compact || large) 56.dp else 104.dp)
+    val height = if (large) 40.dp else if (compact) 72.dp else 132.dp
+    val blade = wholePixelDp(56, if (large) 32.dp else if (compact) 56.dp else 104.dp)
     Column(Modifier.fillMaxWidth().testTag("forge_workbench").semantics(mergeDescendants = true) { contentDescription = "On the anvil: $title" }) {
         Box(Modifier.fillMaxWidth().height(height).clip(Card).border(1.dp, BronzeDeep, Card), contentAlignment = Alignment.BottomCenter) {
             Backdrop(R.drawable.bg_counter_forge, Modifier.matchParentSize().clearAndSetSemantics {}, dim = 0.35f, sink = 0.2f)
-            PixelImage(R.drawable.anvil, wholePixelDp(109, if (compact || large) 72.dp else 109.dp), description = null, modifier = Modifier.padding(bottom = 2.dp).height(if (compact || large) 48.dp else 72.dp))
+            PixelImage(R.drawable.anvil, wholePixelDp(109, if (large) 40.dp else if (compact) 72.dp else 109.dp), description = null, modifier = Modifier.padding(bottom = 2.dp).height(if (large) 24.dp else if (compact) 48.dp else 72.dp))
             d.familyId?.let { family ->
                 val core = d.coreId ?: content.materials(MaterialCategory.CORE).first().id
                 PixelImage(
                     Sprites.weapon(family, core, d.augmentId?.let { content.material(it).element }), blade, description = null,
-                    modifier = Modifier.padding(bottom = if (compact || large) 22.dp else 30.dp).alpha(if (d.coreId != null) 1f else 0.55f).landing(Triple(family, d.coreId, d.augmentId), reducedMotion),
+                    modifier = Modifier.padding(bottom = if (large) 8.dp else if (compact) 22.dp else 30.dp).alpha(if (d.coreId != null) 1f else 0.55f).landing(Triple(family, d.coreId, d.augmentId), reducedMotion),
                 )
             }
         }
@@ -335,22 +336,24 @@ private fun slotArt(slot: RecipeSlot, d: ForgeDraft, content: ContentCatalog): I
 /** The places of the recipe side by side: the thing chosen as an object, its kind over it, its name under it. */
 @Composable
 private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog, open: RecipeSlot?, reducedMotion: Boolean, onToggle: (RecipeSlot) -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(top = Space.sm).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+    val large = LocalDensity.current.fontScale > 1.3f
+    Row(Modifier.fillMaxWidth().then(if (large) Modifier.horizontalScroll(rememberScrollState()) else Modifier).padding(top = Space.sm).height(IntrinsicSize.Min).testTag("forge_slots_${slots.first().slot.name.lowercase()}"), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
         slots.forEach { slot ->
             val active = open == slot.slot
             Column(
-                Modifier.weight(1f).fillMaxHeight().heightIn(min = 84.dp).clip(Card).background(if (active) BronzeContainer else ForgePanelRaised).border(if (active) 1.5.dp else 1.dp, if (active) Gold else BronzeLine, Card)
+                (if (large) Modifier.width(156.dp) else Modifier.weight(1f)).fillMaxHeight().heightIn(min = if (large) 64.dp else 84.dp).clip(Card).background(if (active) BronzeContainer else ForgePanelRaised).border(if (active) 1.5.dp else 1.dp, if (active) Gold else BronzeLine, Card)
                     .clickable(role = Role.Button) { onToggle(slot.slot) }.padding(horizontal = Space.xs, vertical = 6.dp).testTag("forge_slot_${slot.slot.name.lowercase()}")
                     .semantics(mergeDescendants = true) { contentDescription = "${slot.slot.label}: ${slot.value ?: "not chosen"}${slot.stock?.let { n -> ", $n in stock" }.orEmpty()}, ${if (active) "choosing" else "tap to change"}" },
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(slot.slot.label, style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
-                Box(Modifier.fillMaxWidth().padding(vertical = 2.dp), contentAlignment = Alignment.Center) {
+                if (!large) Box(Modifier.fillMaxWidth().padding(vertical = 2.dp), contentAlignment = Alignment.Center) {
                     val art = slotArt(slot.slot, d, content)
                     if (art != null) PixelImage(art, 40.dp, description = null, modifier = Modifier.landing(slot.value, reducedMotion))
                     else Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) { Text(if (slot.value != null) "✦" else "+", style = MaterialTheme.typography.titleMedium, color = if (slot.value != null) Gold else Bronze) }
                     slot.stock?.let { Text("$it", style = MaterialTheme.typography.labelSmall, color = if (it == 0) FlawRed else CreamMuted, modifier = Modifier.align(Alignment.CenterEnd).background(ForgeSlot, Chip).padding(horizontal = 6.dp, vertical = 4.dp)) }
                 }
+                if (large) slot.stock?.let { Text(if (it == 0) "None left" else "$it in stock", style = MaterialTheme.typography.labelSmall, color = CreamMuted) }
                 Text(
                     slot.value ?: slot.slot.empty, style = MaterialTheme.typography.labelMedium, fontWeight = if (slot.value != null) FontWeight.SemiBold else null,
                     color = if (slot.value != null) Cream else CreamMuted, textAlign = TextAlign.Center,
@@ -367,14 +370,14 @@ private fun optionArt(slot: RecipeSlot, option: OptionUi, content: ContentCatalo
 }
 
 /**
- * The choices for one place, as a grid of equal tiles: three across, two on a narrow screen or with large text. A tap
- * on a tile that can be used places it and the tray stays open; a material that has run out stays in the tray, apart
- * and dimmed, and a tap on it only shows it, with why it cannot be used and where more comes from. Under the grid, one
+ * The choices for one place in a horizontally scrolling row beside the focused comparison. A tap
+ * on a tile that can be used places it and the tray stays open. Stock-empty tiles remain dimmed and inspectable,
+ * with why they cannot be used and where more comes from. Immediately under the options, one
  * focused choice: what it is and does, and how the draft now differs from the one the tray was opened on ([change]),
  * with the way back to it. Choosing is free: nothing is spent and nothing is drawn until "Forge".
  */
 @Composable
-private fun Tray(
+internal fun Tray(
     slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, change: TrayChangeUi?, onRestock: (MaterialId?) -> Unit, onDone: () -> Unit, onPutBack: () -> Unit,
     onPick: (OptionUi) -> Unit,
 ) {
@@ -388,24 +391,18 @@ private fun Tray(
         }
         if (columns == 2) {
             Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm).semantics { heading() })
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { actions() }
         } else Row(verticalAlignment = Alignment.CenterVertically) {
             Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
             actions()
         }
-        @Composable
-        fun grid(tiles: List<OptionUi>) = tiles.chunked(columns).forEach { row ->
-            // One height for the row: a name that wraps makes its neighbours as tall, not itself the odd one.
-            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(bottom = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                row.forEach { o -> OptionTile(o, optionArt(slot, o, content), Modifier.weight(1f).fillMaxHeight(), inspected = o.id != null && o.id == inspected) { if (o.usable) { inspected = null; onPick(o) } else inspected = o.id } }
-                repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
+        // Alternatives and the delta share the reading area; this is scroll content, not another pinned panel.
+        val choiceScroll = rememberSaveable(slot, saver = androidx.compose.foundation.ScrollState.Saver) { androidx.compose.foundation.ScrollState(0) }
+        Row(Modifier.fillMaxWidth().horizontalScroll(choiceScroll).height(IntrinsicSize.Min).testTag("forge_choices"), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+            options.forEach { o ->
+                OptionTile(o, if (LocalDensity.current.fontScale > 1.3f) null else optionArt(slot, o, content), Modifier.width(if (columns == 2) 144.dp else 112.dp).fillMaxHeight(), inspected = o.id != null && o.id == inspected) {
+                    if (o.usable) { inspected = null; onPick(o) } else inspected = o.id
+                }
             }
-        }
-        grid(options.filter { it.usable })
-        val out = options.filter { !it.usable }
-        if (out.isNotEmpty()) {
-            Text("Out of stock", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.padding(bottom = Space.xs))
-            grid(out)
         }
         val focused = staleFree(inspected, options) ?: options.firstOrNull { it.selected }
         if (focused == null) {
@@ -413,7 +410,9 @@ private fun Tray(
             // does in a fight, so it can be made before it is placed.
             Text(slot.hint, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
             val rules = options.filter { it.fight.isNotEmpty() }
-            if (rules.isNotEmpty()) Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("forge_tray_fight")) {
+            var showRules by rememberSaveable(slot) { mutableStateOf(false) }
+            if (rules.isNotEmpty()) InlineActionButton(if (showRules) "Hide ingredient rules" else "Ingredient rules", { showRules = !showRules }, Modifier.testTag("forge_tray_rules"))
+            if (rules.isNotEmpty() && showRules) Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("forge_tray_fight")) {
                 Text("Effects in a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
                 rules.forEach { o ->
                     Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
@@ -423,6 +422,7 @@ private fun Tray(
                 }
             }
         } else TrayFocus(slot, focused, if (focused.usable) change else null, { onRestock(focused.id?.let(::MaterialId)) }, onPutBack)
+        if (columns == 2) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { actions() }
     }
 }
 
@@ -430,13 +430,10 @@ private fun Tray(
 @Composable
 private fun TrayFocus(slot: RecipeSlot, o: OptionUi, change: TrayChangeUi?, onRestock: () -> Unit, onPutBack: () -> Unit) {
     Column(Modifier.fillMaxWidth().clip(Chip).background(ForgeNight).border(1.dp, BronzeDeep, Chip).padding(horizontal = 12.dp, vertical = Space.sm).testTag("forge_tray_detail")) {
-        Text(listOfNotNull(o.name, o.stock?.let { if (it == 0) "none left" else "$it in stock" }).joinToString(" · "), style = MaterialTheme.typography.titleSmall, color = if (o.usable) Cream else CreamMuted)
-        (o.detail ?: slot.hint.takeIf { o.id == null })?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+        Text(o.name, style = MaterialTheme.typography.titleSmall, color = if (o.usable) Cream else CreamMuted)
+        o.detail?.takeIf { it.length <= 64 }?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
         o.mark?.let { mark ->
             Text("${mark.kind.sign} ${o.name} against the siege: ${mark.label}", style = MaterialTheme.typography.bodySmall, color = mark.kind.color, modifier = Modifier.padding(top = Space.xs).testTag("forge_siege_mark"))
-        }
-        if (o.fight.isNotEmpty()) Column(Modifier.padding(top = Space.xs).testTag("forge_tray_fight")) {
-            o.fight.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp)) }
         }
         o.blocked?.let { why ->
             Row(Modifier.fillMaxWidth().padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically) {
@@ -460,6 +457,17 @@ private fun TrayFocus(slot: RecipeSlot, o: OptionUi, change: TrayChangeUi?, onRe
                 }
             }
         }
+        var rules by rememberSaveable(slot, o.id) { mutableStateOf(false) }
+        if (o.detail?.let { it.length > 64 } == true || o.fight.isNotEmpty()) {
+            InlineActionButton(if (rules) "Hide ingredient rules" else "Ingredient rules", { rules = !rules }, Modifier.testTag("forge_tray_rules"))
+            if (rules) {
+                (o.detail?.takeIf { it.length > 64 } ?: slot.hint.takeIf { o.id == null })?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+                if (o.fight.isNotEmpty()) Column(Modifier.padding(top = Space.xs).testTag("forge_tray_fight")) {
+                    o.fight.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp)) }
+                }
+            }
+        }
+
     }
 }
 
@@ -475,9 +483,10 @@ private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, inspected: Bo
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.xs, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             if (art != null) PixelImage(art, 36.dp, description = null)
+            o.stock?.let { Text(if (it == 0) "None left" else "$it in stock", style = MaterialTheme.typography.labelSmall, color = CreamMuted) }
             Text(o.name, style = MaterialTheme.typography.labelMedium, color = Cream, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 2.dp))
+            if (o.fight.isNotEmpty()) Text(o.fight.joinToString(" / ") { it.substringBefore(":") }, style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
         }
-        o.stock?.let { Text("×$it", style = MaterialTheme.typography.labelSmall, color = CreamMuted, modifier = Modifier.align(Alignment.TopEnd).padding(horizontal = Space.xs, vertical = 2.dp)) }
         o.mark?.let { Text(it.kind.sign, style = MaterialTheme.typography.titleSmall, color = it.kind.color, modifier = Modifier.align(Alignment.TopStart).padding(horizontal = 6.dp)) }
     }
 }

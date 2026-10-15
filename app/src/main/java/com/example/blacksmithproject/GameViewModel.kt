@@ -1,6 +1,8 @@
 package com.example.blacksmithproject
 
 import android.app.Application
+import com.example.blacksmithproject.ui.ForgePurpose
+import com.example.blacksmithproject.ui.purpose
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -160,6 +162,7 @@ sealed interface UiState {
         /** The Guild part last chosen, and on which day; UI-only. */
         val guildTab: GuildTabMemory? = null,
         val partyDraft: PartyDraft? = null,
+        val resultPurpose: ForgePurpose? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
     }
@@ -217,6 +220,9 @@ class GameViewModel(
     private data class Local(
         val dest: Dest = Dest.SHOP,
         val partyDraft: PartyDraft? = null,
+        val resultPurpose: ForgePurpose? = null,
+        val draftPurpose: ForgePurpose? = null,
+        val pendingForgePurpose: ForgePurpose? = null,
         val guildTab: GuildTabMemory? = null,
         val records: RecordsPage = RecordsPage.GAZETTE,
         val draft: ForgeDraft = ForgeDraft(),
@@ -403,7 +409,7 @@ class GameViewModel(
         val intro = engine.introUi(record, run, l.dest, l.draft)
         // While the first day is guided the relic offer does not open by itself ("Decide later"); the Shop's row still opens it.
         val relicDay = l.relicOfferDismissedDay ?: run.day.takeIf { intro != null && !l.relicAsked }
-        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, relicDay, planned.guild, intro, guildTab = l.guildTab, partyDraft = l.partyDraft)
+        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, relicDay, planned.guild, intro, guildTab = l.guildTab, partyDraft = l.partyDraft, resultPurpose = l.resultPurpose)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -455,6 +461,9 @@ class GameViewModel(
         saved[KEY_RECORDS] = l.records.name
         saved[KEY_GUILD_TAB] = l.guildTab?.let { "${it.tab.name}@${it.day}" }
         saved[KEY_REVEAL] = l.revealWeaponId?.value
+        saved["resultPurpose"] = l.resultPurpose?.encode()
+        saved["draftPurpose"] = l.draftPurpose?.encode()
+        saved["pendingForgePurpose"] = l.pendingForgePurpose?.encode()
         saved[KEY_BLESSING_DAY] = l.blessingOfferDismissedDay
         saved[KEY_RELIC_DAY] = l.relicOfferDismissedDay
         saved[KEY_SHEET] = when (val sheet = l.sheet) { is Sheet.Hero -> "hero:${sheet.id.value}"; is Sheet.Item -> "item:${sheet.id.value}"; Sheet.Visitor -> "visitor:"; null -> null }
@@ -491,6 +500,9 @@ class GameViewModel(
                 wantHeroId = d.getOrNull(10)?.let(::HeroId),
             ),
             revealWeaponId = saved.get<String>(KEY_REVEAL)?.let(::WeaponId),
+            resultPurpose = saved.get<ArrayList<String?>>("resultPurpose")?.let(ForgePurpose::decode),
+            draftPurpose = saved.get<ArrayList<String?>>("draftPurpose")?.let(ForgePurpose::decode),
+            pendingForgePurpose = saved.get<ArrayList<String?>>("pendingForgePurpose")?.let(ForgePurpose::decode),
             blessingOfferDismissedDay = saved.get<Int>(KEY_BLESSING_DAY),
             relicOfferDismissedDay = saved.get<Int>(KEY_RELIC_DAY),
             sheet = saved.get<String>(KEY_SHEET)?.let { s ->
@@ -509,7 +521,7 @@ class GameViewModel(
     private fun show(result: Result) {
         when (result) {
             // A forge spends the bellows and the Heartfire it was asked to use: the next draft starts without them.
-            is Result.Done -> edit { it.copy(lastError = null, revealWeaponId = result.accepted?.forgedWeaponId ?: it.revealWeaponId, draft = if (result.accepted?.forgedWeaponId != null) it.draft.copy(bellows = false, heartfire = false) else it.draft) }
+            is Result.Done -> edit { it.copy(lastError = null, revealWeaponId = result.accepted?.forgedWeaponId ?: it.revealWeaponId, resultPurpose = if (result.accepted?.forgedWeaponId != null) it.pendingForgePurpose else it.resultPurpose, pendingForgePurpose = if (result.accepted?.forgedWeaponId != null) null else it.pendingForgePurpose, draft = if (result.accepted?.forgedWeaponId != null) it.draft.copy(bellows = false, heartfire = false) else it.draft) }
             is Result.Rejected -> edit { it.copy(lastError = describe(result.error)) }
             is Result.EngineFault -> edit { it.copy(lastError = "The forge cannot do that right now.") }
             // Stale and DayNotWatched: the screen already shows why. Failed: the session holds it and SaveFailureDialog shows it.
@@ -569,7 +581,7 @@ class GameViewModel(
         val asked = run.commissions[id] ?: return
         val augments = engine.content.materials(MaterialCategory.AUGMENT).filter { asked.element != null && it.element == asked.element }
         val augment = augments.firstOrNull { (run.materials[it.id] ?: 0) > 0 } ?: augments.firstOrNull()
-        edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(familyId = asked.familyId, augmentId = augment?.id ?: it.draft.augmentId, commissionId = id, wantHeroId = null)) }
+        edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draftPurpose = ForgePurpose(commissionId = id, commission = asked), draft = it.draft.copy(familyId = asked.familyId, augmentId = augment?.id ?: it.draft.augmentId, commissionId = id, wantHeroId = null)) }
     }
     /** The forge opens with [id] on the anvil and no purpose: free work. */
     fun forgeFamily(id: WeaponFamilyId) = edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(familyId = id, commissionId = null, wantHeroId = null)) }
@@ -580,13 +592,13 @@ class GameViewModel(
      */
     fun forgeWant(heroId: HeroId) {
         val want = session.snapshot.value?.run?.heroes?.get(heroId)?.takeIf { it.isAlive }?.want ?: return
-        edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(familyId = want.familyId, commissionId = null, wantHeroId = heroId)) }
+        edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draftPurpose = ForgePurpose(heroId = heroId, want = want), draft = it.draft.copy(familyId = want.familyId, commissionId = null, wantHeroId = heroId)) }
     }
     /** "Use this recipe" on a found signature in the journal: the forge opens on the whole recipe (`SignatureCatalog.recipe`). Nothing is forged. */
     fun useRecipe(recipe: Command.Forge) = edit {
         it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = ForgeDraft(recipe.mode, recipe.familyId, recipe.coreId, recipe.augmentId, recipe.catalystId, recipe.risk, recipe.technique))
     }
-    fun dismissReveal() = edit { it.copy(revealWeaponId = null, learning = null) }
+    fun dismissReveal() = edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null) }
 
     /** "Use" on a notebook row: its two ingredients go onto the workbench and the rest of the draft stays. Nothing is forged. */
     fun usePairing(key: String) {
@@ -620,17 +632,17 @@ class GameViewModel(
         launch(Op.Dispatch(Command.ToggleShelf(id, true, price), run.runId)) {
             val now = session.snapshot.value?.run ?: return@launch
             val name = now.weapons[id]?.name ?: return@launch
-            edit { it.copy(revealWeaponId = null, learning = null, notice = "Listed $name for $price gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}. Ready to forge another.") }
+            edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null, notice = "Listed $name for $price gold. Shelf ${now.listedWeapons().size} of ${engine.shelfSlots(now)}. Ready to forge another.") }
         }
     }
 
     /** "Set price" on the forge result: the blade stays in storage and its sheet opens, where the price is chosen by hand and it is listed. */
-    fun priceForged(id: WeaponId) = edit { it.copy(revealWeaponId = null, learning = null, sheet = Sheet.Item(id), notice = null) }
+    fun priceForged(id: WeaponId) = edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null, sheet = Sheet.Item(id), notice = null) }
 
     /** "Store" on the forge result, and closing it any other way: the blade stays in storage, and the workshop says so. */
     fun storeForged() {
         val name = local.value.revealWeaponId?.let { session.snapshot.value?.run?.weapons?.get(it) }?.takeIf { it.isInStorage }?.name
-        edit { it.copy(revealWeaponId = null, learning = null, notice = name?.let { n -> "Stored $n. It isn't for sale. Ready to forge another." } ?: it.notice) }
+        edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null, notice = name?.let { n -> "Stored $n. It isn't for sale. Ready to forge another." } ?: it.notice) }
     }
 
     /** The notice has been shown; a newer one is left alone. */
@@ -838,6 +850,11 @@ class GameViewModel(
         // The journal on either side of the accepted forge, and the blade it made: what the result card says was learned
         // and what the forge was as an attempt at a signature, from the saved result, never from its text.
         val before = run.legacy.journal
+        val draft = local.value.draft
+        if (session.status.value is Status.Working) return
+        val purpose = local.value.draftPurpose?.takeIf { it.commissionId == draft.commissionId && it.heroId == draft.wantHeroId } ?: draft.purpose(run)
+        // Keep the command's receipt through a failed write and Retry; attach it atomically with the accepted weapon ID.
+        edit { it.copy(pendingForgePurpose = purpose) }
         launch(Op.Dispatch(command, run.runId)) {
             val now = session.snapshot.value?.run ?: return@launch
             val forged = now.weapons.values.firstOrNull { it.id !in run.weapons }
@@ -974,7 +991,7 @@ class GameViewModel(
         launch(Op.Dispatch(Command.LoanWeapon(heroId, id), run.runId)) {
             val now = session.snapshot.value?.run ?: return@launch
             val name = now.weapons[id]?.name ?: return@launch
-            edit { it.copy(revealWeaponId = null, learning = null, notice = "$name is on loan to ${now.heroes[heroId]?.fullName ?: "a member of the guild"}. Your ingredients stay selected.") }
+            edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null, notice = "$name is on loan to ${now.heroes[heroId]?.fullName ?: "a member of the guild"}. Your ingredients stay selected.") }
         }
     }
 

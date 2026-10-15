@@ -512,7 +512,7 @@ fun GameEngine.trayChange(state: GameState, baseline: ForgeDraft, draft: ForgeDr
     val was = material(baseline)
     val now = material(draft)
     if (slot == RecipeSlot.METAL || slot == RecipeSlot.AUGMENT || slot == RecipeSlot.CATALYST) {
-        if (now != null) changes += ChangeUi("Uses 1 ${now.name}, ${state.materials[now.id] ?: 0} in stock, ${now.price} gold to restock" + (was?.let { " (${it.name}: ${it.price} gold)" } ?: ""), was?.let { now.price <= it.price })
+        if (now != null) changes += ChangeUi("Restock: " + (was?.let { "${it.price} \u2192 " } ?: "") + "${now.price} gold, uses 1", was?.let { now.price <= it.price })
         else if (was != null) changes += ChangeUi("No catalyst used: keeps your ${was.name}")
     }
     if (slot == RecipeSlot.METAL && was != null && now != null) {
@@ -539,7 +539,7 @@ fun GameEngine.trayChange(state: GameState, baseline: ForgeDraft, draft: ForgeDr
     // What the journal may say of each pairing, where it changed: its own words for the stage reached, an untried one nothing.
     after.notes.forEach { n ->
         val old = before.notes.firstOrNull { it.label == n.label }
-        if (old == null || old.subject != n.subject) changes += ChangeUi("${n.label}: ${if (n.state == KnowledgeState.UNKNOWN) "untried" else "${n.hint} (${n.stage.lowercase()})"}")
+        if (old == null || old.subject != n.subject) changes += ChangeUi("${n.label}: ${if (n.state == KnowledgeState.UNKNOWN) "untried" else if (n.label == "Signature") n.stage.lowercase() else n.hint}")
     }
     // A guild run: the rules every forge of the recipe carries, gained and lost; what they now wait for.
     val rulesWas = before.outlook?.certain.orEmpty().map { it.name }.toSet()
@@ -547,7 +547,8 @@ fun GameEngine.trayChange(state: GameState, baseline: ForgeDraft, draft: ForgeDr
     if (before.outlook != null && after.outlook != null) {
         (rulesNow - rulesWas).forEach { changes += ChangeUi("Gains the effect $it", true) }
         (rulesWas - rulesNow).forEach { changes += ChangeUi("Loses the effect $it", false) }
-        after.outlook.needs.filter { n -> before.outlook.needs.none { it.rule == n.rule } }.forEach { n -> changes += ChangeUi("${n.rule} needs ${n.needs.joinToString(" or ")}", false) }
+        after.outlook.needs.filter { n -> n !in before.outlook.needs }.forEach { n -> changes += ChangeUi("${n.rule} needs ${n.needs.joinToString(" or ")}", false) }
+        before.outlook.needs.filter { n -> n.rule in rulesNow && after.outlook.needs.none { it.rule == n.rule } }.forEach { n -> changes += ChangeUi("${n.rule} now has what it needs", true) }
         if (after.outlook.tradeoff != null && after.outlook.tradeoff != before.outlook.tradeoff) changes += ChangeUi("Trade-off: ${after.outlook.tradeoff}", false)
     }
     // A change no fact above speaks to (Plain for a technique, say) is still a change: never "Unchanged".

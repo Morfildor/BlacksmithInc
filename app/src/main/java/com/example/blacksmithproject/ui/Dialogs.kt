@@ -78,6 +78,7 @@ import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.gazette.Gazette
 import com.tinyblacksmith.core.gazette.GazetteDigest
+import com.example.blacksmithproject.ui.theme.Ember
 import com.tinyblacksmith.core.model.CombatReplay
 import com.tinyblacksmith.core.model.DayResolution
 import com.tinyblacksmith.core.model.GameState
@@ -98,7 +99,7 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
     val haptics = LocalHaptics.current
     LaunchedEffect(weaponId) { haptics.play(if (w.signatureId != null || w.rarity >= Rarity.EPIC) Moment.FORGE_SIGNATURE else Moment.FORGE_STRIKE) }
     val detail = remember(s.state, weaponId) { vm.engine.itemDetail(s.state, weaponId) } ?: return
-    val request = remember(s.state, weaponId, s.draft.commissionId) { vm.engine.forgedFor(s.state, weaponId, s.draft.commissionId) }
+    val request = remember(s.state, weaponId, s.resultPurpose) { vm.engine.forgedFor(s.state, weaponId, s.resultPurpose?.commissionId)?.takeIf { vm.engine.assessPurpose(s.state, weaponId, s.resultPurpose)?.fits != null } }
     // What rarity buys is taught on the first result card and then kept behind a tap: settings remember it, as a tip.
     val seen by vm.settings.seenTips.collectAsStateWithLifecycle<Set<String>?>(initialValue = null)
     var teach by remember(weaponId) { mutableStateOf<Boolean?>(null) }
@@ -119,6 +120,7 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
             reveal = !reducedMotion,
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
             learning = s.learning,
+            assessment = vm.engine.assessPurpose(s.state, weaponId, s.resultPurpose),
             explainRarity = teach != false,
             // The guided first day: its step is said at the head of the card, which covers the strip, and can be skipped from here too.
             guide = s.intro?.result?.let { line -> { IntroCardLine(line, onSkip = { vm.skipIntro() }) } },
@@ -152,7 +154,7 @@ private const val REVEAL_FADE_MS = 250
  * [guide] is the guided first day's line, at the head of the card's scrolling part: never pinned over the blade's numbers.
  *
  * The blade comes first, with what the forge discovered, then what it is made of and what rarity means ([explainRarity]:
- * in full the first time, behind a tap after), then the commission it was made for, beside the ways on.
+ * in full the first time, behind a tap after), with its purpose assessment beside its identity. Purpose details open on demand.
  *
  * With [onLoan] (a guild run) a third way on, "Loan", opens the members the blade could go to; nothing is lent until
  * one is chosen.
@@ -177,13 +179,35 @@ fun ForgeResultCard(
     learning: ForgeLearningUi? = null,
     guide: (@Composable () -> Unit)? = null,
     explainRarity: Boolean = true,
+    assessment: PurposeAssessmentUi? = request?.let { PurposeAssessmentUi(it.title.substringBefore(":") + ": " + it.fit, "${it.terms}. ${it.handover} ${it.reserved}", it.fits) },
 ) {
     var revealed by rememberSaveable(detail.weaponId.value) { mutableStateOf(!reveal) }
     LaunchedEffect(detail.weaponId) { if (!revealed) { delay(REVEAL_HOLD_MS); revealed = true } }
     val shown by animateFloatAsState(if (revealed) 1f else 0f, tween(if (reveal) REVEAL_FADE_MS else 0), label = "reveal")
     val fresh = remember(detail) { detail.withoutEmptyStats() }
     val blade: @Composable ColumnScope.() -> Unit = {
-        WeaponStatBody(fresh, overSprite, detailAlpha = { shown })
+        WeaponStatBody(fresh, overSprite, detailAlpha = { shown }, afterIdentity = {
+            assessment?.let { a ->
+                Column(Modifier.padding(top = Space.sm).testTag("reveal_assessment")) {
+                    Text(a.line, style = MaterialTheme.typography.titleSmall, color = if (a.fits == false) Ember else Cream)
+                    var more by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
+                    InlineActionButton(if (more) "Hide purpose details" else "Purpose details", { more = !more }, Modifier.testTag("reveal_purpose_details"))
+                    if (more) {
+                        if (request == null) Secondary(a.details, Modifier.testTag("reveal_purpose_expanded"))
+                        request?.let { r ->
+                            Column(Modifier.padding(top = Space.sm).testTag("reveal_request")) {
+                                Text(r.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                                Secondary(r.terms)
+                                EffectRow(if (r.fits) EffectKind.BUFF else EffectKind.FLAW, r.fit, r.handover)
+                                if (!r.accepted) SecondaryActionButton("Accept commission", onAccept, Modifier.padding(top = Space.xs).heightIn(min = 48.dp).testTag("reveal_accept"), enabled = enabled)
+                                // Whether this blade is reserved, from the save (`Weapon.promisedTo`, owner decision L).
+                                Secondary(r.reserved, Modifier.testTag("reveal_reserved"))
+                            }
+                        }
+                    }
+                }
+            }
+        })
         // What this forge added to the notebook; absent on a result reopened later, where "new" could no longer be told.
         learning?.let { LearningCard(it, Modifier.padding(top = Space.sm)) }
         Secondary(recipe, Modifier.padding(top = Space.md).graphicsLayer { alpha = shown })
@@ -191,16 +215,6 @@ fun ForgeResultCard(
         var rarity by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
         if (explainRarity || rarity) Secondary(RARITY_RULE, Modifier.padding(top = Space.xs).graphicsLayer { alpha = shown }.testTag("reveal_rarity"))
         else InlineActionButton("What rarity means", { rarity = true }, Modifier.graphicsLayer { alpha = shown }.testTag("reveal_rarity_more"))
-        request?.let { r ->
-            Column(Modifier.padding(top = Space.sm).testTag("reveal_request")) {
-                Text(r.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                Secondary(r.terms)
-                EffectRow(if (r.fits) EffectKind.BUFF else EffectKind.FLAW, r.fit, r.handover)
-                if (!r.accepted) SecondaryActionButton("Accept commission", onAccept, Modifier.padding(top = Space.xs).heightIn(min = 48.dp).testTag("reveal_accept"), enabled = enabled)
-                // Whether this blade is reserved, from the save (`Weapon.promisedTo`, owner decision L).
-                Secondary(r.reserved, Modifier.testTag("reveal_reserved"))
-            }
-        }
         HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
     }
     val price: @Composable ColumnScope.() -> Unit = price@{

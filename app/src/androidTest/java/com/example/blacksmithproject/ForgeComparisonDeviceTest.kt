@@ -81,7 +81,7 @@ class ForgeComparisonDeviceTest {
             val ui by vm.ui.collectAsState()
             BlacksmithProjectTheme {
                 DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(size) then DeviceConfigurationOverride.FontScale(font)) {
-                    key(round) { (ui as? UiState.Playing)?.let { ForgePanel(it, vm, reducedMotion = true, tip = null) } }
+                    key(round) { (ui as? UiState.Playing)?.let { androidx.compose.material3.Surface(color = com.example.blacksmithproject.ui.theme.ForgeNight) { ForgePanel(it, vm, reducedMotion = true, tip = null) } } }
                 }
             }
         }
@@ -107,6 +107,16 @@ class ForgeComparisonDeviceTest {
     /** A text somewhere under the node tagged [tag], scrolled into view: the tagged containers merge no text of their own. */
     private fun textIn(tag: String, text: String) =
         compose.onNode(hasText(text, substring = true) and hasAnyAncestor(hasTestTag(tag)), useUnmergedTree = true).performScrollTo().assertExists()
+
+    // performScrollTo scrolls the nearest scroll parent. Bring the vertical row in first, then its horizontal item.
+    private fun chooseSlot(slot: String) {
+        compose.onNodeWithTag("forge_slots_weapon").performScrollTo()
+        compose.onNodeWithTag("forge_slot_$slot").performScrollTo().assertIsDisplayed().performClick()
+    }
+    private fun chooseOption(id: String) {
+        compose.onNodeWithTag("forge_choices").performScrollTo()
+        compose.onNodeWithTag("forge_option_$id").performScrollTo().assertIsDisplayed().performClick()
+    }
 
     private val matrix = listOf(320, 360).flatMap { w -> listOf(1f, 1.5f, 2f).map { w to it } }
 
@@ -136,11 +146,14 @@ class ForgeComparisonDeviceTest {
             assertInside("$where, brief")
             shot("classic-brief-$w-$f")
             // Open the metal tray on A and try B: the tray stays open and says what changed.
-            compose.onNodeWithTag("forge_slot_metal").performScrollTo().performClick()
-            compose.onNodeWithTag("forge_option_${b.value}").performScrollTo().performClick()
+            chooseSlot("metal")
+            shot("classic-metal-open-$w-$f")
+            chooseOption("${b.value}")
             compose.waitForIdle()
             assertEquals(where, b, vm.playing().draft.coreId)
             compose.onNodeWithTag("forge_tray_metal").assertExists()
+            compose.onNodeWithTag("forge_choices").performScrollTo().assertIsDisplayed()
+            compose.onNodeWithTag("forge_tray_change").assertIsDisplayed()
             textIn("forge_tray_change", "Compared with ${engine.content.material(a).name}")
             assertInside("$where, comparing")
             shot("classic-compare-$w-$f")
@@ -168,8 +181,8 @@ class ForgeComparisonDeviceTest {
         for ((w, f) in listOf(360 to 1f, 320 to 2f)) {
             compose.runOnUiThread { size = DpSize(w.dp, 800.dp); font = f; round++ }
             compose.waitForIdle()
-            compose.onNodeWithTag("forge_slot_metal").performScrollTo().performClick()
-            compose.onNodeWithTag("forge_option_${out.value}").performScrollTo().performClick()
+            chooseSlot("metal")
+            chooseOption("${out.value}")
             compose.waitForIdle()
             compose.onNode(hasText("None left.", substring = true) and hasTestTag("forge_tray_blocked"), useUnmergedTree = true).performScrollTo().assertExists()
             assertEquals("a blocked tile is only inspected", start, vm.playing().draft)
@@ -211,13 +224,14 @@ class ForgeComparisonDeviceTest {
             // The first choice of an empty place lists what each metal does in a fight.
             compose.runOnUiThread { size = DpSize(w.dp, 800.dp); font = f; vm.updateDraft { start.copy(coreId = null) }; round++ }
             compose.waitForIdle()
+            compose.onNodeWithTag("forge_tray_rules").performScrollTo().performClick()
             compose.onNodeWithTag("forge_tray_fight").performScrollTo()
             assertInside("guild first choice at $w dp x $f")
             shot("guild-first-choice-$w-$f")
             compose.runOnUiThread { vm.updateDraft { start }; round++ }
             compose.waitForIdle()
-            compose.onNodeWithTag("forge_slot_augment").performScrollTo().performClick()
-            compose.onNodeWithTag("forge_option_${b.id.value}").performScrollTo().performClick()
+            chooseSlot("augment")
+            chooseOption("${b.id.value}")
             compose.waitForIdle()
             assertEquals(b.id, vm.playing().draft.augmentId)
             val marks = compose.onAllNodes(hasTestTag("forge_siege_mark"), useUnmergedTree = true).fetchSemanticsNodes()
@@ -227,16 +241,25 @@ class ForgeComparisonDeviceTest {
                 assertTrue("Matchup is inside focused detail", node.parent?.config?.getOrNull(SemanticsProperties.TestTag) == "forge_tray_detail")
             }
 
+            compose.onNodeWithTag("forge_choices").performScrollTo().assertIsDisplayed()
+            compose.onNodeWithTag("forge_tray_change").assertIsDisplayed()
             textIn("forge_tray_change", "Compared with ${a.name}")
             assertInside("guild comparing at $w dp x $f")
             shot("guild-compare-$w-$f")
+            if (f == 2f) {
+                compose.onNodeWithTag("forge_tray_rules").performScrollTo().performClick()
+                compose.onNodeWithTag("forge_tray_fight").performScrollTo().assertIsDisplayed()
+                shot("guild-conditional-rules-$w-$f")
+                compose.onNodeWithTag("forge_tray_rules").performScrollTo().performClick()
+            }
         }
         // Exercise every revealed matchup, including inspection of any out-of-stock ingredient.
         val options = engine.forgeOptions(guild, vm.playing().draft, com.example.blacksmithproject.ui.RecipeSlot.AUGMENT, vm.playing().shop.threat)
         assertTrue("Fixture exposes siege matchups", options.any { it.mark != null })
         for (option in options.filter { it.mark != null }) {
             val before = vm.playing().draft
-            compose.onNodeWithTag("forge_option_${option.id}").performScrollTo().performClick()
+            chooseOption("${option.id}")
+            shot("guild-inspected-${option.id}")
             textIn("forge_tray_detail", "${option.name} against the siege: ${option.mark!!.label}")
             if (!option.usable) assertEquals("Inspection preserves draft", before, vm.playing().draft)
             shot("guild-matchup-${option.id}")

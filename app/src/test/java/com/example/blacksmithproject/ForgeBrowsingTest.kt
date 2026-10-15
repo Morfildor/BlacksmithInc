@@ -127,7 +127,7 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         val advanced = a.copy(mode = com.tinyblacksmith.core.model.ForgeMode.ADVANCED)
         val with = engine.trayChange(fresh, advanced, advanced.copy(catalystId = catalyst.id), RecipeSlot.CATALYST, emptyList(), null)!!
         assertEquals("None", with.from)
-        assertTrue(with.changes.first().text.startsWith("Uses 1 ${catalyst.name}, "))
+        assertTrue(with.changes.first().text.startsWith("Restock: "))
     }
 
     @Test
@@ -144,7 +144,7 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         val iron = engine.content.material(a.coreId!!)
         val fine = engine.content.materials(MaterialCategory.CORE).first { it.tier >= engine.config.depth.legend.fineCoreTier }
         val c = engine.trayChange(fresh, a, a.copy(coreId = fine.id), RecipeSlot.METAL, emptyList(), null)!!.changes.map { it.text }
-        assertTrue(c.toString(), "Uses 1 ${fine.name}, ${fresh.materials[fine.id] ?: 0} in stock, ${fine.price} gold to restock (${iron.name}: ${iron.price} gold)" in c)
+        assertTrue(c.toString(), "Restock: ${iron.price} \u2192 ${fine.price} gold, uses 1" in c)
         if (!com.tinyblacksmith.core.crafting.Forge.holdsEpic(iron.tier, engine.config)) assertTrue(c.toString(), "Can reach Epic quality" in c)
         // The journal is quoted, never more: an untried pairing is only "untried".
         assertTrue(c.toString(), c.any { it == "Metal + augment: untried" })
@@ -166,6 +166,21 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         assertEquals((after - before).map { "Gains the effect $it" }.toSet(), ruled.filter { it.text.startsWith("Gains") }.map { it.text }.toSet())
         assertEquals((before - after).map { "Loses the effect $it" }.toSet(), ruled.filter { it.text.startsWith("Loses") }.map { it.text }.toSet())
         assertTrue(ruled.any { it.text.startsWith("Adds ") })
+    }
+
+    @Test
+    fun anIncompleteComparisonKeepsPairingKnowledgeHiddenAndNeverCreatesACommand() {
+        val a = ready().copy(familyId = null)
+        val b = engine.content.materials(MaterialCategory.CORE).first { it.id != a.coreId }
+        val state = fresh.copy(legacy = fresh.legacy.copy(journal = Journal()))
+        val before = com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state)
+        val changed = a.copy(coreId = b.id)
+        val delta = engine.trayChange(state, a, changed, RecipeSlot.METAL, emptyList(), null)!!
+        assertTrue(delta.changes.any { it.text.startsWith("Restock:") })
+        assertTrue(delta.changes.any { it.text == "Metal + augment: untried" })
+        assertNull(engine.forgeWorkbench(state, changed, emptyList()).command)
+        assertNull(engine.forgeWorkbench(state, changed, emptyList()).outlook)
+        assertEquals(before, com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state))
     }
 
     @Test

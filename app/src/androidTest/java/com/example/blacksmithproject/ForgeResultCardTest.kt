@@ -123,6 +123,7 @@ class ForgeResultCardTest {
         compose.onNodeWithTag("reveal_afford").assertTextEquals(afford(suggested))
         // No price field on the card: a price of one's own is chosen on the blade's sheet.
         compose.onNodeWithTag("reveal_price").assertDoesNotExist()
+        compose.onNodeWithTag("reveal_assessment").assertDoesNotExist()
         compose.onNodeWithTag("reveal_set_price").assertIsDisplayed().performClick()
         compose.onNodeWithTag("reveal_list").assertTextContains("List at $suggested").performClick()
         compose.runOnIdle { assertEquals(listOf(suggested) to 1, listed.toList() to priced) }
@@ -145,7 +146,8 @@ class ForgeResultCardTest {
         val accepted = Commission(CommissionId("c1"), forged.aliveHeroes().first().id, blade.familyId, 1, 80, forged.day, forged.day + 3, CommissionStatus.ACCEPTED)
         val state = forged.copy(commissions = mapOf(accepted.id to accepted))
         show(engine.itemDetail(state, blade.id)!!, engine.forgedFor(state, blade.id, accepted.id))
-        // The request is under the blade now, in the card's scrolling part: brought into view first.
+        compose.onNodeWithTag("reveal_assessment").assertIsDisplayed()
+        compose.onNodeWithTag("reveal_purpose_details").performClick()
         fun inRequest(text: String) = compose.onNode(hasText(text, substring = true) and hasAnyAncestor(hasTestTag("reveal_request"))).performScrollTo().assertIsDisplayed()
         inRequest("For ${forged.aliveHeroes().first().fullName}")
         inRequest("This weapon meets the commission")

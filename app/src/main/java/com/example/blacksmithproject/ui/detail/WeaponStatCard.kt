@@ -115,7 +115,7 @@ fun WeaponStatCard(
  * [detailAlpha] fades everything under the sprite, name and rarity (the forge's reveal); the layout never changes with it.
  */
 @Composable
-fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxScope.() -> Unit = {}, detailAlpha: () -> Float = { 1f }) {
+fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxScope.() -> Unit = {}, detailAlpha: () -> Float = { 1f }, afterIdentity: (@Composable () -> Unit)? = null) {
     Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
         Box(
             Modifier.size(88.dp).background(ForgeSlot).border(1.dp, Bronze).drawBehind {
@@ -137,6 +137,7 @@ fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxSc
             detail.deeds?.let { Text("Deeds toward Legendary: $it", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.testTag("card_deeds")) }
         }
     }
+    afterIdentity?.invoke()
     Column(Modifier.graphicsLayer { alpha = detailAlpha() }) { WeaponStatDetails(detail) }
 }
 

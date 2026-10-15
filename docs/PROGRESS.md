@@ -1,5 +1,12 @@
 # Progress — 2026-10-15 (text and header pass; 2026-10-14: deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Wave 1 exit Batch B: S3/S4 only (2026-10-15)
+
+- S3: result identity now leads into a named fit/miss assessment. Commission fit and handover use existing rules; wants use market affordability/preferences with explicit sale uncertainty. Unavailable purposes fall back, free work has no assessment. Recorded purpose persists independently of recipe edits, including SavedState and failed-save Retry.
+- S4: horizontal ingredient choices sit directly above the focused delta; short cost, element, requirement, known pairing and conditional-effect changes precede disclosed explanations. Enlarged text drops decorative slot art and puts tray actions after the comparison. Baseline/Put back, blocked inspection, stock, knowledge gates and first-fill advancement remain.
+- Verified: 48 focused Forge JVM tests, 675 core tests, 320 app JVM tests, debug and instrumented APK builds. 14 targeted checks on an isolated API 37 emulator passed, covering 320/360 dp and 1.0/1.5/2.0 font overrides, plus navigation and knowledge gates. Exact files, device results and screenshots: `app/build/batch-b/REPORT.md` (ignored local evidence).
+- Limits: long names and 2.0 text still require scrolling; horizontal rows expose additional choices by swiping. Existing Forge header/brief wrapping remains. TalkBack, switch access and OS process-kill restoration were not manually verified. No gameplay/balance/RNG/save-schema changes, scenario rewrites, commits or pushes.
+
 ## Wave 1 exit Batch A ? S1/S2/S7 only (2026-10-15)
 
 - Preserved the pre-existing T1?T4 worktree; initial patch saved and compared, with no changes outside the Batch A files. No gameplay, balance, RNG, saves, resolver or design-document edits; no checkout/commit/push/merge/reset.
