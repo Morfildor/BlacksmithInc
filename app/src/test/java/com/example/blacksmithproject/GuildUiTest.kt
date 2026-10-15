@@ -179,12 +179,32 @@ class GuildUiTest {
         assertTrue(ui.wall.defenders.none { it.heroId in party })
         assertEquals("$names leave for $contract, home on the morning of day ${s.day + 1}", ui.endDay[0])
         assertTrue(ui.endDay[1], ui.endDay[1].startsWith("Siege tonight"))
-        assertTrue(ui.endDay[1], if (ui.wall.defenders.isEmpty()) ui.endDay[1].endsWith("Nobody stands on the wall tonight") else ui.endDay[1].endsWith("On the wall: " + ui.wall.defenders.joinToString(", ") { it.name }))
+        assertTrue(ui.endDay[1], ui.endDay[1].contains("Current expected defenders:"))
+        assertTrue(ui.endDay[1], ui.endDay[1].contains("Reserved Guild members:"))
+        assertTrue(ui.endDay[1], ui.endDay[1].contains("Automatic town substitutes (current):"))
+        assertTrue(ui.endDay[1], ui.endDay[1].contains("Town activity during End Day may change automatic substitutes."))
+        ui.wall.defenders.forEach { assertTrue(ui.endDay[1], ui.endDay[1].contains(it.name)) }
         assertTrue(ui.endDay.size <= 3)
         // A planned member cannot be kept for the wall as well, and the toggle says why.
         assertEquals("${planned.heroes.getValue(party[0]).fullName} is in the party you planned for today.", ui.wall.reserve.first { it.heroId == party[0] }.blocked)
         // Without a plan and without a siege tonight End Day has nothing to add.
         assertEquals(emptyList<String>(), engine.guildUi(fresh.siegeOn(fresh.day + 3))!!.endDay)
+    }
+
+    @Test
+    fun expectedLineupSeparatesReservationsAndAutomaticSubstitutesWithoutMutatingTheRun() {
+        val fresh = guildRun()
+        val reserved = fresh.guild!!.members.first().heroId
+        val state = fresh.siegeOn(fresh.day).copy(guild = fresh.guild!!.copy(reserved = listOf(reserved)))
+        val before = com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state)
+        val ui = engine.guildUi(state)!!
+        val text = ui.endDay.single { it.startsWith("Siege tonight") }
+        assertTrue(text, text.contains("Reserved Guild members: " + ui.wall.defenders.filter { it.reserved }.joinToString(", ") { it.name }))
+        assertTrue(text, text.contains("Automatic Guild substitutes (current):"))
+        assertTrue(text, text.contains("Automatic town substitutes (current):"))
+        assertTrue(text, text.contains("may change automatic substitutes"))
+        assertTrue(ui.wall.defenders.any { it.heroId == reserved && it.reserved })
+        assertEquals(before, com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state))
     }
 
     @Test

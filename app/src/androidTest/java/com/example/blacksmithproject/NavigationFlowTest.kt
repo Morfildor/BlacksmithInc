@@ -107,6 +107,30 @@ class NavigationFlowTest {
         return s
     }
 
+    /** Actual device configuration: full Forge chrome, labels, hit targets and destination callbacks. */
+    @Test
+    fun batchANavigationAtCurrentDeviceConfiguration() {
+        val vm = play(stocked())
+        compose.onNodeWithTag("nav_forge").performClick()
+        val config = context.resources.configuration
+        val dir = File(context.getExternalFilesDir(null), "batch-a-evidence").apply { mkdirs() }
+        File(dir, "forge-${config.screenWidthDp}-${config.fontScale}.png").outputStream().use {
+            compose.onRoot().captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it)
+        }
+        for (dest in listOf("shop", "forge", "town", "records")) {
+            val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+            compose.onNodeWithTag("nav_label_$dest", useUnmergedTree = true)
+                .performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) { it(layouts) }
+            assertTrue("$dest label overflow", layouts.isNotEmpty() && layouts.none { it.hasVisualOverflow })
+            val b = compose.onNodeWithTag("nav_$dest").fetchSemanticsNode().boundsInRoot
+            val density = context.resources.displayMetrics.density
+            assertTrue("$dest touch area", b.width >= 48 * density - 1 && b.height >= 48 * density - 1)
+            compose.onNodeWithTag("nav_$dest").performClick().assertIsSelected()
+        }
+        compose.onNodeWithTag("nav_forge").performClick()
+        compose.onNodeWithTag("forge_weapon").assertIsDisplayed()
+    }
+
     @Test
     fun guildPartySurvivesEquipmentAndBackWithExactOrderAndOneFee() {
         val run = planningRun()

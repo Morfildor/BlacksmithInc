@@ -407,10 +407,6 @@ private fun Tray(
             Text("Out of stock", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.padding(bottom = Space.xs))
             grid(out)
         }
-        // What the besieger is weak to or resists, in words under the tiles: a tile's sign alone could be read as a verdict on the pairing.
-        options.mapNotNull { it.mark }.distinct().forEach { mark ->
-            Text("${mark.kind.sign} Against the siege: ${mark.label}", style = MaterialTheme.typography.bodySmall, color = mark.kind.color, modifier = Modifier.padding(bottom = Space.xs).testTag("forge_siege_mark"))
-        }
         val focused = staleFree(inspected, options) ?: options.firstOrNull { it.selected }
         if (focused == null) {
             // Nothing in this place yet: the first choice is made from the whole tray. A guild run says what each choice
@@ -436,6 +432,9 @@ private fun TrayFocus(slot: RecipeSlot, o: OptionUi, change: TrayChangeUi?, onRe
     Column(Modifier.fillMaxWidth().clip(Chip).background(ForgeNight).border(1.dp, BronzeDeep, Chip).padding(horizontal = 12.dp, vertical = Space.sm).testTag("forge_tray_detail")) {
         Text(listOfNotNull(o.name, o.stock?.let { if (it == 0) "none left" else "$it in stock" }).joinToString(" · "), style = MaterialTheme.typography.titleSmall, color = if (o.usable) Cream else CreamMuted)
         (o.detail ?: slot.hint.takeIf { o.id == null })?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+        o.mark?.let { mark ->
+            Text("${mark.kind.sign} ${o.name} against the siege: ${mark.label}", style = MaterialTheme.typography.bodySmall, color = mark.kind.color, modifier = Modifier.padding(top = Space.xs).testTag("forge_siege_mark"))
+        }
         if (o.fight.isNotEmpty()) Column(Modifier.padding(top = Space.xs).testTag("forge_tray_fight")) {
             o.fight.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp)) }
         }

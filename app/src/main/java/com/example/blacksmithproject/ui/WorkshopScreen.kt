@@ -24,8 +24,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -304,35 +302,43 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inS
     }
 }
 
-/**
- * The four destinations. Every label has the same fixed style and never shrinks to fit: a larger font scale makes the
- * label taller, not smaller, and the four names are short enough to stay on one line. [guild]: a guild run, where the
- * third destination is called Guild. [marked]: the destination the guided first day points at.
- */
+/** Wrapping destination labels use the full slot width without increasing the bar's existing heights. */
 @Composable
 fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier = Modifier, guild: Boolean = false, marked: Dest? = null) {
-    // 72dp instead of the 80dp default: the workshop needs the vertical space more than the bar does.
-    // A panel under a bronze rule; the chosen destination is a lit plate with a gold edge, not Material's pill.
-    // Large text: the label is taller, so the bar is; it never shrinks the label to fit.
-    val height = if (LocalDensity.current.fontScale > 1.3f) 96.dp else 72.dp
+    val density = LocalDensity.current
+    val large = density.fontScale > 1.3f
+    val measurer = androidx.compose.ui.text.rememberTextMeasurer()
+    val labelStyle = MaterialTheme.typography.labelMedium
+    // Share the available width by measured label demand: Records needs more than Shop.
+    // Keep at least 48dp per destination, including at ordinary font sizes.
+    val weights = Dest.entries.associateWith { d ->
+        maxOf(with(density) { 48.dp.toPx() }, measurer.measure(destName(d, guild), labelStyle, softWrap = false).size.width.toFloat() + with(density) { 8.dp.toPx() })
+    }
+    val height = if (large) 96.dp else 72.dp
     NavigationBar(
         containerColor = ForgePanel, tonalElevation = 0.dp, windowInsets = WindowInsets(0, 0, 0, 0),
         modifier = modifier.navigationBarsPadding().height(height).drawWithContent { drawContent(); drawLine(Bronze, Offset.Zero, Offset(size.width, 0f), strokeWidth = 2.dp.toPx()) },
     ) {
         Dest.entries.forEach { d ->
-            NavigationBarItem(
-                selected = selected == d,
-                onClick = { onSelect(d) },
-                colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent, selectedTextColor = Gold, unselectedTextColor = CreamMuted),
-                modifier = Modifier.testTag("nav_${d.name.lowercase()}").introMark(marked == d).drawBehind {
-                    if (selected == d) {
-                        drawRect(BronzeContainer)
-                        drawRect(Gold, size = Size(size.width, 2.dp.toPx()))
+            val on = selected == d
+            Column(
+                Modifier.weight(weights.getValue(d)).height(height).testTag("nav_${d.name.lowercase()}").introMark(marked == d)
+                    .drawBehind {
+                        if (on) {
+                            drawRect(BronzeContainer)
+                            drawRect(Gold, size = Size(size.width, 2.dp.toPx()))
+                        }
                     }
-                },
-                icon = { PixelImage(destIcon(d), wholePixelDp(40, 36.dp), description = null) },
-                label = { Text(destName(d, guild), style = MaterialTheme.typography.labelMedium, maxLines = 1, softWrap = false, modifier = Modifier.testTag("nav_label_${d.name.lowercase()}")) },
-            )
+                    .clickable(role = Role.Tab) { onSelect(d) }
+                    .semantics { this.selected = on },
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
+            ) {
+                PixelImage(destIcon(d), wholePixelDp(40, if (large) 24.dp else 36.dp), description = null)
+                Text(destName(d, guild), style = MaterialTheme.typography.labelMedium,
+                    color = if (on) Gold else CreamMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().testTag("nav_label_${d.name.lowercase()}"))
+            }
         }
     }
 }

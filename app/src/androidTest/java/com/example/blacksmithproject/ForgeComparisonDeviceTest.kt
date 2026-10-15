@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.example.blacksmithproject.ui.forgeOptions
 import com.example.blacksmithproject.ui.ForgePanel
 import com.example.blacksmithproject.ui.theme.BlacksmithProjectTheme
 import com.tinyblacksmith.core.content.GuildContent
@@ -219,9 +220,26 @@ class ForgeComparisonDeviceTest {
             compose.onNodeWithTag("forge_option_${b.id.value}").performScrollTo().performClick()
             compose.waitForIdle()
             assertEquals(b.id, vm.playing().draft.augmentId)
+            val marks = compose.onAllNodes(hasTestTag("forge_siege_mark"), useUnmergedTree = true).fetchSemanticsNodes()
+            assertTrue("Only the focused ingredient has a matchup notice", marks.size <= 1)
+            marks.forEach { node ->
+                assertTrue("Matchup names its ingredient", node.config[SemanticsProperties.Text].joinToString().contains(b.name))
+                assertTrue("Matchup is inside focused detail", node.parent?.config?.getOrNull(SemanticsProperties.TestTag) == "forge_tray_detail")
+            }
+
             textIn("forge_tray_change", "Compared with ${a.name}")
             assertInside("guild comparing at $w dp x $f")
             shot("guild-compare-$w-$f")
+        }
+        // Exercise every revealed matchup, including inspection of any out-of-stock ingredient.
+        val options = engine.forgeOptions(guild, vm.playing().draft, com.example.blacksmithproject.ui.RecipeSlot.AUGMENT, vm.playing().shop.threat)
+        assertTrue("Fixture exposes siege matchups", options.any { it.mark != null })
+        for (option in options.filter { it.mark != null }) {
+            val before = vm.playing().draft
+            compose.onNodeWithTag("forge_option_${option.id}").performScrollTo().performClick()
+            textIn("forge_tray_detail", "${option.name} against the siege: ${option.mark!!.label}")
+            if (!option.usable) assertEquals("Inspection preserves draft", before, vm.playing().draft)
+            shot("guild-matchup-${option.id}")
         }
     }
 }

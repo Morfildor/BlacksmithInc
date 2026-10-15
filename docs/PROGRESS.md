@@ -1,5 +1,14 @@
 # Progress — 2026-10-15 (text and header pass; 2026-10-14: deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Wave 1 exit Batch A ? S1/S2/S7 only (2026-10-15)
+
+- Preserved the pre-existing T1?T4 worktree; initial patch saved and compared, with no changes outside the Batch A files. No gameplay, balance, RNG, saves, resolver or design-document edits; no checkout/commit/push/merge/reset.
+- S1: moved the existing option mark into the focused ingredient detail and named its subject. Neutral Frost has no unrelated notice; blocked Grave Dust/Sun Ash remain inspectable with named resistance/effectiveness and an unchanged draft. Existing calculations and reveal gates are unchanged.
+- S2: End Day now says ?Current expected defenders?, separating reserved Guild members, automatic Guild substitutes and automatic town substitutes. Only automatic substitutes are described as subject to town activity during End Day. Planned departure/checkpoint wording and selection rules are unchanged.
+- S7: full-slot navigation uses measured label demand, wrapping text and smaller icons at enlarged text; original 72/96 dp bar heights and label typography remain. Records fits at both requested widths, including 2.0; all destination callbacks, selected semantics and >=48 dp touch targets passed.
+- Verification: `:app:testDebugUnitTest` ? 312 tests, zero failures/errors/skips; `:app:assembleDebug` and `:app:assembleDebugAndroidTest` passed. Isolated read-only Pixel_10_Pro API 37, serial emulator-5562: six full-app navigation checks at 320/360 dp ? 1.0/1.5/2.0; four ForgeComparisonDeviceTest cases (Classic/Guild matrix, named matchup and blocked inspection); two Guild NavigationFlowTest planning cases all passed. Guild wording regression failed before the correction and passed afterward.
+- Remaining limits: no manual TalkBack or physical-device audit. Existing Supplies wrapping, extensive scrolling and scarce Forge viewport at large text remain outside this batch. Component comparison captures do not establish whole-screen simultaneous visibility; Guild planning device checks were at 360 dp/1.0, while Forge Guild comparisons cover all six configurations. Exact changed files, tests, screenshots and logs: `app/build/batch-a/REPORT.md` (ignored local evidence).
+
 ## T4 Guild planning (2026-10-15, HEAD 335d3f2, not committed; existing T1-T3 edits preserved)
 
 - Comparable offer rows now show objective, fee, expected return morning, danger/modifier, each stored stage reward, expiry and siege absence. Optional stages and wound-related readiness are distinguished. Yesterday follows the offers, and keeping members home remains legitimate.

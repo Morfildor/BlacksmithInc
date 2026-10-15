@@ -425,7 +425,11 @@ private fun GameEngine.guildEndDay(state: GameState, g: GuildRunState, wall: Wal
     },
     if (wall.daysLeft > 0) null
     else (if (wall.committed) "Siege tonight: ${wall.besieger}. " else "Siege tonight. ") +
-        if (wall.defenders.isEmpty()) "Nobody stands on the wall tonight" else "On the wall: ${names(wall.defenders.map { it.name })}",
+        "Current expected defenders: " +
+        "Reserved Guild members: ${names(wall.defenders.filter { it.reserved }.map { it.name }).ifEmpty { "none" }}. " +
+        "Automatic Guild substitutes (current): ${names(wall.defenders.filter { it.member && !it.reserved }.map { it.name }).ifEmpty { "none" }}. " +
+        "Automatic town substitutes (current): ${names(wall.defenders.filter { !it.member }.map { it.name }).ifEmpty { "none" }}. " +
+        "Town activity during End Day may change automatic substitutes.",
     g.mission?.takeIf { it.outcome == null && it.stage == 1 && it.offer.optionalPush && it.choice == null }?.let { m ->
         "The party at ${content.guild!!.route(m.offer.factionId)?.name ?: "the checkpoint"} returns home unless you choose to go deeper"
     },
