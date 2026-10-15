@@ -31,7 +31,16 @@ import com.example.blacksmithproject.data.ShopDaySpeed
 import com.example.blacksmithproject.ui.shopday.ShopDayUiModel
 import com.example.blacksmithproject.ui.shopday.toUi
 import com.example.blacksmithproject.ui.theme.BlacksmithProjectTheme
+import com.tinyblacksmith.core.content.GuildContent
+import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.model.CombatReplay
+import com.tinyblacksmith.core.model.CommandId
+import com.tinyblacksmith.core.model.LegacyProfile
+import com.tinyblacksmith.core.model.SiegeVerdict
+import com.tinyblacksmith.core.shopday.ShopDay
+import com.tinyblacksmith.core.sim.GuildBot
+import com.tinyblacksmith.core.sim.GuildPolicy
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.ReplayKind
 import com.tinyblacksmith.core.model.VisitKind
@@ -72,6 +81,7 @@ class ShopDayScreenTest {
     private var closes = 0
     private var skips = 0
     private var watched: MutableList<String?> = mutableListOf()
+    private var wall: MutableList<Boolean> = mutableListOf()
     private var openedHero: HeroId? = null
     private var openedBlade: WeaponId? = null
 
@@ -98,6 +108,7 @@ class ShopDayScreenTest {
                     onWatchFight = { id -> watched += id; replay = resolutionReplays.firstOrNull { if (id == null) it.kind == ReplayKind.SIEGE else it.eventId == id } },
                     onClose = { closes++ },
                     coach = coach,
+                    onWatchSiege = { wall += it },
                 )
                 replay?.let { ReplayOverlay(it, onClose = { replay = null }) }
             }
@@ -436,9 +447,14 @@ class ShopDayScreenTest {
         compose.mainClock.autoAdvance = false
         position = at
         compose.mainClock.advanceTimeByFrame()
-        compose.onNodeWithTag("shopday_aftermath_text", useUnmergedTree = true).assertTextEquals(card.text).assertIsDisplayed()   // what happened, before any replay
-        // The siege's card is taller than the screen: bringing the button into view is a scroll, which needs the clock.
+        // The outcome and what it cost lead the card; the day's own words are one tap down, whole.
+        compose.onNodeWithTag("shopday_siege_outcome", useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithTag("shopday_siege_cost", useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithTag("shopday_aftermath_text", useUnmergedTree = true).assertDoesNotExist()
+        // The siege's card is taller than the screen: bringing a button into view is a scroll, which needs the clock.
         compose.mainClock.autoAdvance = true
+        compose.onNodeWithTag("shopday_siege_account_toggle").performScrollTo().performClick()
+        compose.onNodeWithTag("shopday_aftermath_text", useUnmergedTree = true).assertTextEquals(card.text)
         compose.onNodeWithTag("shopday_watch").performScrollTo()
         compose.mainClock.autoAdvance = false
         compose.onNodeWithTag("shopday_watch").performClick()
@@ -446,6 +462,56 @@ class ShopDayScreenTest {
         assertEquals(listOf(card.replay!!.eventId), watched)
         compose.onNodeWithTag("shopday_replay_outcome", useUnmergedTree = true).assertTextEquals(card.replay!!.outcome).assertIsDisplayed()
         assertNull("the siege replay is asked for without an event id", if (card.replay!!.kind == ReplayKind.SIEGE) watched.single() else null)
+    }
+
+    /** A guild run's costly hold: the siege the wall fought and held with a defender down, from the bots' own play. */
+    private fun guildSiegeDay(): ShopDayFixtures.Day {
+        val e = ShopDayFixtures.engine
+        for (seed in 1L..6L) {
+            val bot = GuildBot(e, GuildPolicy.GREEDY_DIVER)
+            var s = e.newRun(LegacyProfile(), seed, charterId = GuildContent.TOWNS_LAST_HOPE).let { r ->
+                (e.handle(r, Command.ChooseOpening(r.guild!!.openingOffer.first().defId)) as CommandOutcome.Accepted).state
+            }
+            while (!s.isEnded && s.day <= 24) {
+                val out = e.handle(bot.planDay(s), Command.EndDay(CommandId("${s.runId.value}:day${s.day}"))) as CommandOutcome.Accepted
+                val r = out.resolution!!
+                if (r.siege?.fight != null && r.siege!!.verdict == SiegeVerdict.HELD_AT_A_COST) return ShopDayFixtures.Day(e, seed, r, out.state, ShopDay.script(r, out.state, e.content, e.config))
+                s = out.state
+            }
+        }
+        error("the bots never held a siege at a cost on seeds 1..6")
+    }
+
+    @Test
+    fun aGuildSiegeLeadsWithTheOutcomeOneRecordedPartAndTheCostsOnce() {
+        val day = guildSiegeDay()
+        val m = day.ui()
+        val at = m.first { it is Beat.Aftermath && it.card.siege != null }
+        val card = (m.beats[at] as Beat.Aftermath).card
+        val siege = card.siege!!
+        assertNotNull("a costly hold with a recorded fight names a contribution", siege.contribution)
+        show(m, at)
+        compose.onNodeWithTag("shopday_siege_outcome", useUnmergedTree = true).assertTextEquals("The town held, at a cost").assertIsDisplayed()
+        compose.onNodeWithTag("shopday_siege_contribution", useUnmergedTree = true).assertIsDisplayed()
+        text(siege.contribution!!).assertIsDisplayed()
+        compose.onNodeWithTag("shopday_siege_cost", useUnmergedTree = true).assertIsDisplayed()
+        // Each cost is one row, said once on the card: the forge's damage appears under the receipt and nowhere above the account.
+        compose.onAllNodesWithText("Forge damage", useUnmergedTree = true).assertCountEquals(1)
+        compose.onAllNodesWithText("Fell", useUnmergedTree = true).assertCountEquals(1)
+        compose.onAllNodesWithText("Went down, lived", useUnmergedTree = true).assertCountEquals(1)
+        text("Battle report").assertIsDisplayed()
+        text("Watch the siege").assertIsDisplayed()
+        compose.onNodeWithTag("shopday_siege_highlights", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag("shopday_siege_notes", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithTag("shopday_aftermath_text", useUnmergedTree = true).assertDoesNotExist()
+        // Nothing of the night is gone: the whole account is behind its one button, in the record's own words.
+        compose.mainClock.autoAdvance = true
+        compose.onNodeWithTag("shopday_siege_account_toggle").performScrollTo().performClick()
+        compose.onNodeWithTag("shopday_aftermath_text", useUnmergedTree = true).assertTextEquals(card.text)
+        compose.onNodeWithTag("shopday_siege_notes", useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag("shopday_siege_report").performScrollTo().performClick()
+        assertEquals("the report is asked for, and the day is neither moved nor closed", listOf(true), wall)
+        assertEquals(0, closes)
     }
 
     @Test

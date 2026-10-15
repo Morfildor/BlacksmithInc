@@ -35,6 +35,29 @@ import org.junit.Test
 
 /** The Guild destination's models against real engine states: a guild run under Town's Last Hope, days ended by the engine. */
 class GuildUiTest {
+    @Test
+    fun storedStageRewardsCostsAndReturnsAreComparableWithoutChangingTheState() {
+        val s = guildRun()
+        val original = s.guild!!.offers.first()
+        val short = original.copy(id = "short", fee = 17)
+        val long = original.copy(id = "long", fee = 43, days = 2, optionalPush = true,
+            stages = listOf(original.stages.first().copy(reward = com.tinyblacksmith.core.model.Reward(gold = 23)), original.stages.first().copy(reward = com.tinyblacksmith.core.model.Reward(militia = 4, integrity = 7))))
+        val state = s.copy(guild = s.guild!!.copy(offers = listOf(short, long)), town = s.town.copy(nextSiegeDay = s.day + 1))
+        val encoded = com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state)
+        val offers = engine.guildUi(state)!!.offers.associateBy { it.id }
+        assertEquals(17, offers.getValue("short").feeGold)
+        assertEquals(43, offers.getValue("long").feeGold)
+        assertEquals(state.day + 1, offers.getValue("short").returnDay)
+        assertEquals(state.day + 2, offers.getValue("long").returnDay)
+        assertNull(offers.getValue("short").missesSiege)
+        assertNotNull(offers.getValue("long").missesSiege)
+        assertTrue(offers.getValue("long").reward, offers.getValue("long").reward.contains("23 gold"))
+        assertTrue(offers.getValue("long").reward, offers.getValue("long").reward.contains("4 militia"))
+        assertTrue(offers.getValue("long").reward, offers.getValue("long").reward.contains("7 forge health"))
+        assertTrue(offers.getValue("long").reward, offers.getValue("long").reward.contains("Optional stage 2"))
+        assertTrue(offers.getValue("long").timingNote.contains("Wounds"))
+        assertEquals(encoded, com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state))
+    }
     private val engine = GameEngine()
     private val cfg = engine.config.guild
 
@@ -181,8 +204,8 @@ class GuildUiTest {
         assertTrue(ui.wall.reserve.none { it.heroId == hurt.heroId })
         val pick = engine.contractUi(s, s.offerOf(1)!!.id, listOf(hurt.heroId), Posture.BALANCED)!!
         assertEquals("$name is injured until day ${siege + 2}.", pick.picks.first { it.heroId == hurt.heroId }.blocked)
-        assertNull("an unfit member is never part of the party", pick.picks.first { it.heroId == hurt.heroId }.order)
-        assertEquals("Pick one to ${cfg.partyMax} members.", pick.sendBlocked)
+        assertEquals("an invalid member stays visible until explicitly removed", 1, pick.picks.first { it.heroId == hurt.heroId }.order)
+        assertTrue(pick.sendBlocked!!, pick.sendBlocked!!.contains("Some selected members cannot go"))
 
         // A party on a two-day road over the siege night: each of them is missing, by name, with the morning they return.
         val away = (7L..14L).asSequence().flatMap { mornings(GuildPolicy.GREEDY_DIVER, it) }.firstOrNull { st -> engine.wallForecast(st)!!.missing.any { it.second.startsWith("away until the morning of day") } }
@@ -229,8 +252,11 @@ class GuildUiTest {
         for (o in fresh.guild!!.offers) {
             val row = ui.offers.first { it.id == o.id }
             assertEquals(o.stages.maxOf { it.danger }, row.danger)
-            assertTrue(row.reward, row.reward.startsWith(row.stages.first().reward))
-            assertEquals(o.stages.size > 1, row.reward.endsWith("more if the first day is won"))
+            o.stages.forEach { stage ->
+                if (stage.reward.gold > 0) assertTrue(row.reward, row.reward.contains("${stage.reward.gold} gold"))
+                stage.reward.materials.forEach { (id, count) -> assertTrue(row.reward, row.reward.contains("$count ${engine.content.material(id).name}")) }
+            }
+            assertEquals(fresh.day + o.days, row.returnDay)
             assertEquals(listOf(row.time.substringBefore(':'), row.fee).joinToString(" · "), row.terms)
             assertEquals(engine.content.guild!!.modifier(o.modifierId)?.name, row.modifierName)
         }

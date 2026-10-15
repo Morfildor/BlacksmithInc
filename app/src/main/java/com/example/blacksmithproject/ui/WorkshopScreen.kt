@@ -172,7 +172,9 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                             LeadKind.LIST_STOCK -> storageOpen = true
                             LeadKind.ANSWER_REQUEST -> boardOpen = true
                             LeadKind.PRICES_TOO_HIGH -> lead.weaponId?.let { vm.openSheet(Sheet.Item(it)) }
-                            LeadKind.ANSWER_WANT -> lead.familyId?.let(vm::forgeFamily) ?: vm.selectDest(Dest.FORGE)
+                            // Who the work is for goes to the Forge with it: the commission, or the hero whose want it is.
+                            LeadKind.FORGE_FOR_REQUEST -> lead.commissionId?.let(vm::forgeFor) ?: vm.selectDest(Dest.FORGE)
+                            LeadKind.ANSWER_WANT -> lead.heroId?.let(vm::forgeWant) ?: lead.familyId?.let(vm::forgeFamily) ?: vm.selectDest(Dest.FORGE)
                             LeadKind.REVIEW_WALL -> { vm.selectGuildTab(GuildTab.WALL); vm.selectDest(Dest.TOWN) }
                             LeadKind.GUILD_RESCUE, LeadKind.GUILD_CHECKPOINT -> { vm.selectGuildTab(GuildTab.CONTRACTS); vm.selectDest(Dest.TOWN) }
                             LeadKind.DAY_SETTLED -> Unit
@@ -236,7 +238,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
         remember(s.shop.requests, s.shop.wants) { s.shop.board() }, s.shop.requestSlots, s.busy, s.draft.commissionId,
         onOpenHero = { vm.openSheet(Sheet.Hero(it)) },
         onAnswer = { id, accept -> vm.dispatch(if (accept) Command.AcceptCommission(id) else Command.DeclineCommission(id)) },
-        onForgeThis = { boardOpen = false; vm.forgeFor(it) }, onForgeWant = { boardOpen = false; vm.forgeFamily(it) },
+        onForgeThis = { boardOpen = false; vm.forgeFor(it) }, onForgeWant = { boardOpen = false; vm.forgeWant(it) },
         onDismiss = { boardOpen = false },
     )
     if (!storageOpen) s.sheet?.let { DetailSheet(s, it, vm) }
@@ -266,6 +268,7 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inS
             else if (inStorage) HeroDetailContent(detail, openHero, onOpenItem = { vm.openSheet(Sheet.Item(it)) }, onDismiss = vm::closeSheet, closeLabel = "Back to storage")
             else HeroDetailSheet(
                 detail, openHero, onOpenItem = { vm.openSheet(Sheet.Item(it)) }, onDismiss = vm::closeSheet,
+                closeLabel = if (s.partyDraft != null) "Back to party" else "Close",
                 // A member of the guild: the smith's own actions on them (a branch, a loan, letting them go).
                 member = MemberActions(
                     enabled = !s.busy,
@@ -284,6 +287,7 @@ private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inS
             else if (inStorage) ItemDetailContent(detail, planning = true, openHero, onStock = { vm.stock(sheet.id, it) }, onDismiss = vm::closeSheet, enabled = !s.busy, closeLabel = "Back to storage", onBench = onBench)
             else ItemDetailSheet(
                 detail, planning = true, openHero,
+                closeLabel = if (s.partyDraft != null) "Back to party" else "Close",
                 onStock = { vm.stock(sheet.id, it) },
                 onDismiss = vm::closeSheet, enabled = !s.busy, notice = s.notice, onBench = onBench,
             )
@@ -369,6 +373,8 @@ object Tips {
     val MARKET = Tip("market", "Put weapons on the shelf and set their prices. Heroes look for gear they like and can afford.")
     /** Not a banner: one line under the first customer of the first shop day the player watches (`ShopDayHost`). */
     val COUNTER = Tip("counter", "Tap to see the next card. $SKIP_TO_EVENING takes you to the day's final card.")
+    /** Not a banner: what rarity means, in full on the first forge result and behind a tap after (`ForgeResultDialog`). */
+    const val RARITY = "rarity"
     val ORDER = listOf(FORGE, END_DAY, MARKET, COUNTER)
     val ALL = ORDER.map { it.id }.toSet()
     fun forDest(d: Dest): List<Tip> = when (d) { Dest.FORGE -> listOf(END_DAY); Dest.SHOP -> listOf(MARKET); else -> emptyList() }

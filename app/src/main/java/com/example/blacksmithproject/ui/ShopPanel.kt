@@ -57,7 +57,6 @@ import com.tinyblacksmith.core.engine.Encounters
 import com.tinyblacksmith.core.engine.Relics
 import com.tinyblacksmith.core.model.CommissionId
 import com.tinyblacksmith.core.model.HeroId
-import com.tinyblacksmith.core.model.WeaponFamilyId
 import com.tinyblacksmith.core.model.WeaponId
 
 /**
@@ -299,18 +298,18 @@ internal fun RequestCard(r: RequestUi, busy: Boolean, onOpenHero: (HeroId) -> Un
 }
 
 /**
- * A standing want: the line opens the hero's sheet; under it, "Forge this" (the forge opens on the family asked for) or,
+ * A standing want: the line opens the hero's sheet; under it, "Forge this" (the forge opens on the family asked for, with who wants it) or,
  * once a listed blade answers it, a mark that says so. Stacked, so the sentence keeps the row's width at any text size.
  */
 @Composable
-internal fun WantRow(want: WantUi, onOpenHero: (HeroId) -> Unit, onForge: (WeaponFamilyId) -> Unit, modifier: Modifier = Modifier) {
+internal fun WantRow(want: WantUi, onOpenHero: (HeroId) -> Unit, onForge: (HeroId) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().testTag("want_${want.heroId.value}")) {
         Text(
             want.line, style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.fillMaxWidth().clickable(onClickLabel = "Open details", role = Role.Button) { onOpenHero(want.heroId) }.heightIn(min = 48.dp).padding(horizontal = Space.md, vertical = Space.sm),
         )
         if (want.answered) Text("✓ A suitable weapon is on the shelf", style = MaterialTheme.typography.labelLarge, color = BuffGreen, modifier = Modifier.padding(start = Space.md, end = Space.md, bottom = Space.sm).testTag("want_answered_${want.heroId.value}"))
-        else SecondaryActionButton("Forge this", { onForge(want.familyId) }, Modifier.padding(start = Space.md, end = Space.md, bottom = Space.sm).testTag("forge_want_${want.heroId.value}"))
+        else SecondaryActionButton("Forge this", { onForge(want.heroId) }, Modifier.padding(start = Space.md, end = Space.md, bottom = Space.sm).testTag("forge_want_${want.heroId.value}"))
     }
 }
 

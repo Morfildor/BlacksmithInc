@@ -4,6 +4,21 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onRoot
+import com.tinyblacksmith.core.engine.Command
+import com.tinyblacksmith.core.engine.CommandOutcome
+import com.tinyblacksmith.core.content.GuildContent
+import com.tinyblacksmith.core.content.LaunchContent
+import com.tinyblacksmith.core.combat.Posture
+import com.tinyblacksmith.core.model.ForgeMode
+import com.tinyblacksmith.core.model.Risk
+import java.io.File
+import android.graphics.Bitmap
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
@@ -11,6 +26,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.lifecycle.SavedStateHandle
@@ -79,6 +95,99 @@ class NavigationFlowTest {
     }
 
     private fun back() { Espresso.pressBack(); compose.waitForIdle() }
+
+    private fun planningRun(): GameState {
+        var s = engine.newRun(LegacyProfile(), 9, charterId = GuildContent.TOWNS_LAST_HOPE)
+        fun send(c: Command) { s = (engine.handle(s, c) as CommandOutcome.Accepted).state }
+        send(Command.ChooseOpening(s.guild!!.openingOffer.first().defId))
+        if (s.pendingRelicOffer.isNotEmpty()) send(Command.DeclineRelicOffer)
+        s = s.copy(gold = 10_000)
+        send(Command.RecruitHero(s.guild!!.candidates.first().heroId))
+        send(Command.Forge(ForgeMode.QUICK, LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, null, Risk.BALANCED))
+        return s
+    }
+
+    @Test
+    fun guildPartySurvivesEquipmentAndBackWithExactOrderAndOneFee() {
+        val run = planningRun()
+        val vm = play(run)
+        val (a, b, c) = run.guild!!.members.map { it.heroId }
+        val offer = run.guild!!.offers.first { engine.partyMax(run, it.id) == 3 }
+        compose.onNodeWithTag("nav_town").performClick()
+        compose.onNodeWithTag("guild_list").performScrollToNode(hasTestTag("guild_offer_${offer.id}"))
+        compose.onNodeWithTag("guild_offer_${offer.id}").performClick()
+        for (id in listOf(a, b, c)) compose.onNodeWithTag("contract_pick_${id.value}").performScrollTo().performClick()
+        repeat(2) { compose.onNodeWithTag("contract_up_${c.value}").performScrollTo().performClick() }
+        compose.onNodeWithTag("contract_posture_cautious").performScrollTo().performClick()
+        compose.onNodeWithTag("contract_equipment_${c.value}").performScrollTo().performClick()
+        val weapon = run.weapons.values.first { it.isInStorage }
+        compose.onNodeWithTag("sheet_loan_${weapon.id.value}").performScrollTo().performClick()
+        compose.waitUntil(10_000) { (vm.ui.value as? UiState.Playing)?.state?.loanOf(c)?.id == weapon.id }
+        back()
+        compose.onNodeWithTag("contract_send").assertIsNotEnabled()
+        compose.onNodeWithTag("contract_review_equipment").performScrollTo().performClick()
+        compose.onNodeWithTag("contract_send").assertIsEnabled()
+        val draft = (vm.ui.value as UiState.Playing).partyDraft!!
+        assertEquals(listOf(c, a, b), draft.members)
+        assertEquals(Posture.CAUTIOUS, draft.posture)
+        // Weapon inspection also replaces the modal and returns to the same authoritative draft.
+        compose.runOnUiThread { vm.openSheet(Sheet.Item(weapon.id)) }
+        compose.onNodeWithTag("item_sheet").assertIsDisplayed()
+        back()
+        assertEquals(draft, (vm.ui.value as UiState.Playing).partyDraft)
+        compose.onNodeWithTag("contract_send").performClick()
+        compose.waitUntil(10_000) { (vm.ui.value as? UiState.Playing)?.partyDraft == null }
+        val after = (vm.ui.value as UiState.Playing).state
+        assertEquals(listOf(c, a, b), after.guild!!.planned!!.heroIds)
+        assertEquals(Posture.CAUTIOUS, after.guild!!.planned!!.posture)
+        assertEquals(run.gold - offer.fee, after.gold)
+        compose.runOnUiThread { vm.openContract(offer.id) }
+        compose.onNodeWithTag("contract_cancel").performScrollTo().performClick()
+        compose.waitUntil(10_000) { (vm.ui.value as? UiState.Playing)?.state?.guild?.planned == null }
+        assertEquals(run.gold, (vm.ui.value as UiState.Playing).state.gold)
+    }
+
+    /** Run with real emulator width/font settings. Evidence includes the board and the sheet's pinned action. */
+    @Test
+    fun guildPlanningLayoutAtCurrentDeviceConfiguration() {
+        var initial = planningRun()
+        while (initial.guild!!.members.size < engine.config.guild.maxMembers && initial.guild!!.candidates.isNotEmpty()) {
+            initial = (engine.handle(initial, Command.RecruitHero(initial.guild!!.candidates.first().heroId)) as CommandOutcome.Accepted).state
+        }
+        val longNames = initial.guild!!.members.mapIndexed { i, m -> m.heroId to initial.heroes.getValue(m.heroId).copy(name = "Alexandria of the Northern Mountains ${i + 1}") }.toMap()
+        val run = initial.copy(heroes = initial.heroes + longNames, town = initial.town.copy(nextSiegeDay = initial.day))
+        val vm = play(run)
+        compose.onNodeWithTag("nav_town").performClick()
+        compose.onNodeWithTag("guild_tab_contracts").performClick()
+        val offer = run.guild!!.offers.first { engine.partyMax(run, it.id) == 3 }
+        compose.onNodeWithTag("guild_list").performScrollToNode(hasTestTag("guild_offer_${offer.id}"))
+        compose.onNodeWithTag("guild_offer_terms_${offer.id}", useUnmergedTree = true).assertExists()
+        val config = context.resources.configuration
+        val label = "${config.screenWidthDp}dp-${config.fontScale}"
+        val dir = File(context.getExternalFilesDir(null), "t4-evidence").apply { mkdirs() }
+        fun shot(tag: String, name: String) { File(dir, "$label-$name.png").outputStream().use { compose.onNodeWithTag(tag).captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it) } }
+        shot("guild_list", "contracts")
+        compose.onNodeWithTag("guild_offer_${offer.id}").performClick()
+        for (id in run.guild!!.members.take(3).map { it.heroId }) compose.onNodeWithTag("contract_pick_${id.value}").performScrollTo().performClick()
+        compose.onNodeWithTag("contract_send").assertIsDisplayed().assertIsEnabled()
+        compose.onNodeWithTag("contract_returns").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("contract_siege_warning").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("contract_send").assertIsDisplayed()
+        // Every text lays out without ellipsis, and reorder controls have at least 48 dp hit areas.
+        val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+        compose.onNodeWithTag("contract_siege_warning").performSemanticsAction(androidx.compose.ui.semantics.SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        shot("contract_sheet", "confirmation")
+        assertTrue("Warning layouts: ${layouts.map { "${it.size}, width=${it.didOverflowWidth}, height=${it.didOverflowHeight}, lines=${it.lineCount}" }}", layouts.isNotEmpty() && layouts.none { it.hasVisualOverflow })
+        val id = run.guild!!.members[2].heroId
+        compose.onNodeWithTag("contract_up_${id.value}").performScrollTo().assertIsDisplayed()
+        val bounds = compose.onNodeWithTag("contract_up_${id.value}").fetchSemanticsNode().boundsInRoot
+        assertTrue(bounds.height >= 48 * context.resources.displayMetrics.density - 1)
+        shot("contract_sheet", "party")
+        assertEquals(run, (vm.ui.value as UiState.Playing).state)
+        back()
+        compose.onNodeWithTag("contract_sheet").assertDoesNotExist()
+        assertEquals(run.gold, (vm.ui.value as UiState.Playing).state.gold)
+    }
 
     @Test
     fun theShopKeepsItsPlaceAcrossTheForgeAndTheMenu() {

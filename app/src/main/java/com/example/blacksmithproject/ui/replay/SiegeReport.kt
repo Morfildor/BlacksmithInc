@@ -49,7 +49,6 @@ import com.tinyblacksmith.core.combat.Contribution
 import com.tinyblacksmith.core.combat.FightAccount
 import com.tinyblacksmith.core.combat.FightResult
 import com.tinyblacksmith.core.combat.Share
-import com.tinyblacksmith.core.combat.Side
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.SiegeVerdict
@@ -75,15 +74,10 @@ fun SiegeReport(
         Text(siege.outcome, style = MaterialTheme.typography.headlineMedium, color = kind.color, modifier = Modifier.semantics { heading() }.testTag("replay_report_outcome"))
         Text("On the wall: ${fightOutcomeLine(fight).lowercase()}", style = MaterialTheme.typography.bodyMedium)
 
-        // What it cost, as recorded: the forge, and the defenders who went down or fell.
-        val downed = fight.actors.filter { it.side == Side.PARTY && !it.summoned && it.downed }
-        val fell = downed.filter { HeroId(it.key) in siege.fell }
-        val hurt = downed.filter { HeroId(it.key) !in siege.fell }
+        // The costs the card the report was opened from shows, from the same fields. The part the record counted most is
+        // under "Worth knowing" and in each defender's own card below.
         Column(Modifier.fillMaxWidth().testTag("replay_report_cost")) {
-            ReportRow("Forge damage", siege.forgeDamage?.let { if (it > 0) "${EffectKind.FLAW.sign}$it" else "None" } ?: "None recorded")
-            ReportRow("Forge health now", "${siege.forgeHealthNow}")
-            ReportRow("Fell", fell.joinToString(", ") { it.name }.ifEmpty { "Nobody" })
-            ReportRow("Went down, injured", hurt.joinToString(", ") { it.name }.ifEmpty { "Nobody" })
+            siege.consequences.forEach { ReportRow(it.label, it.value) }
         }
 
         if (!replayable) {

@@ -9,6 +9,10 @@ import com.tinyblacksmith.core.engine.CommandOutcome
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.Journal
 import com.tinyblacksmith.core.model.KnowledgeState
+import com.tinyblacksmith.core.model.ForgeMode
+import com.tinyblacksmith.core.crafting.ClueRung
+import com.tinyblacksmith.core.crafting.SignatureCatalog
+import kotlinx.coroutines.test.advanceUntilIdle
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -16,6 +20,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** What a forge taught, read from the journal before and after the accepted command; the notebook; the untried-pairing suggestion. */
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class ForgeLearningTest : ShopDayTestBase() {
     private val ca = Journal.coreAugmentKey(forgeSword.coreId, forgeSword.augmentId)
     private val af = Journal.augmentFamilyKey(forgeSword.augmentId, forgeSword.familyId)
@@ -56,6 +61,52 @@ class ForgeLearningTest : ShopDayTestBase() {
         assertTrue("a first forge is first notes", "First notes" in titles)
         assertTrue("repeating reaches understanding", "Pairing learned" in titles)
         assertTrue("a known recipe teaches nothing and says so", "No new findings. You've already learned these pairings." in notes)
+    }
+
+    private val dawn = SignatureCatalog.forRecipe(forgeSword)!!
+    private val exact = forgeSword.copy(mode = ForgeMode.ADVANCED, catalystId = dawn.catalystId)
+    private fun clues(vararg rungs: ClueRung) = Journal(interactions = mapOf(dawn.journalKey to KnowledgeState.OBSERVED), signatureClues = mapOf(dawn.journalKey to rungs.sumOf { it.bit }))
+    private val every get() = clues(*ClueRung.entries.toTypedArray())
+    private val blade by lazy { (engine.handle(fresh, forgeSword) as CommandOutcome.Accepted).let { it.state.weapons.getValue(it.forgedWeaponId!!) } }
+
+    @Test
+    fun anExactAttemptThatDidNotTakeIsToldOnlyWhenEveryClueIsHeld() {
+        val missed = blade.copy(quality = dawn.minQuality, signatureId = null)
+        val l = engine.forgeLearning(every, every, exact, missed)
+        assertEquals("This forge met every condition of the recipe. The signature did not take this time. It is never certain.", l.attempt)
+        assertNull("the attempt stands in for the generic note", l.note)
+        // A clue still missing: the same forge earned it instead, and the clue speaks. No claim that it was eligible.
+        assertNull(engine.forgeLearning(clues(ClueRung.RECIPE, ClueRung.CATALYST), clues(ClueRung.RECIPE, ClueRung.CATALYST, ClueRung.TEMPER), exact, missed).attempt)
+    }
+
+    @Test
+    fun aMissedConditionIsNamedOnlyWhenAClueHeldBeforeTheForgeNamesIt() {
+        assertEquals("No signature could form: its quality fell short of what the recipe needs.", engine.forgeLearning(every, every, exact, blade.copy(quality = dawn.minQuality - 1, signatureId = null)).attempt)
+        assertEquals("No signature could form: ${JournalRules.clue(dawn, ClueRung.CATALYST, engine.config)}.", engine.forgeLearning(every, every, forgeSword, blade.copy(quality = dawn.minQuality, signatureId = null)).attempt)
+        // Only the base clue held: the missed catalyst is the clue this forge earns, said once, as a clue.
+        assertNull(engine.forgeLearning(clues(ClueRung.RECIPE), clues(ClueRung.RECIPE, ClueRung.CATALYST), forgeSword, blade.copy(signatureId = null)).attempt)
+        // No clue at all: nothing is said of a hidden recipe.
+        assertNull(engine.forgeLearning(Journal(), Journal(), forgeSword, blade.copy(signatureId = null)).attempt)
+    }
+
+    @Test
+    fun aKnownSignatureThatTookAgainIsSaidAndAFirstOneIsADiscovery() {
+        val found = Journal(interactions = mapOf(dawn.journalKey to KnowledgeState.SIGNATURE_DISCOVERED), signatureClues = mapOf(dawn.journalKey to ClueRung.ALL))
+        assertEquals("The known signature took again: ${dawn.name}.", engine.forgeLearning(found, found, exact, blade.copy(signatureId = dawn.id)).attempt)
+        val first = engine.forgeLearning(every, found, exact, blade.copy(signatureId = dawn.id))
+        assertNull(first.attempt)
+        assertTrue(first.changes.any { it.title == "Signature discovered" })
+    }
+
+    @Test
+    fun theAttemptIsReadFromTheAcceptedForgeAndTheBladeItMade() = vmTest {
+        // Every clue held, forged without the catalyst the recipe needs: what the engine made, never its event text.
+        val before = fresh.copy(legacy = fresh.legacy.copy(journal = every))
+        val vm = open(planning(before))
+        vm.dispatch(forgeSword); advanceUntilIdle()
+        val p = vm.playing()
+        assertNull(p.state.weapons.getValue(p.revealWeaponId!!).signatureId)
+        assertEquals("No signature could form: ${JournalRules.clue(dawn, ClueRung.CATALYST, engine.config)}.", p.learning!!.attempt)
     }
 
     @Test

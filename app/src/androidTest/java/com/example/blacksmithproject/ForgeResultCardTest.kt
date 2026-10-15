@@ -145,14 +145,15 @@ class ForgeResultCardTest {
         val accepted = Commission(CommissionId("c1"), forged.aliveHeroes().first().id, blade.familyId, 1, 80, forged.day, forged.day + 3, CommissionStatus.ACCEPTED)
         val state = forged.copy(commissions = mapOf(accepted.id to accepted))
         show(engine.itemDetail(state, blade.id)!!, engine.forgedFor(state, blade.id, accepted.id))
-        fun inRequest(text: String) = compose.onNode(hasText(text, substring = true) and hasAnyAncestor(hasTestTag("reveal_request"))).assertIsDisplayed()
+        // The request is under the blade now, in the card's scrolling part: brought into view first.
+        fun inRequest(text: String) = compose.onNode(hasText(text, substring = true) and hasAnyAncestor(hasTestTag("reveal_request"))).performScrollTo().assertIsDisplayed()
         inRequest("For ${forged.aliveHeroes().first().fullName}")
         inRequest("This weapon meets the commission")
         inRequest("Ready. ${blade.name} will be collected at End Day.")
         // Owner decision L: whether this blade is reserved, from the save. A fresh blade never is.
         compose.onNodeWithTag("reveal_reserved", useUnmergedTree = true).assertTextEquals("Not reserved. At End Day the buyer takes a matching weapon from storage first, then the shelf.")
-        // The request is told before the blade, and both ways on are still there.
-        assertTrue(compose.onNodeWithTag("reveal_request").getUnclippedBoundsInRoot().top < compose.onNodeWithText(blade.name).getUnclippedBoundsInRoot().top)
+        // The blade comes first; the request is told under it, beside the ways on, which are both still there.
+        assertTrue(compose.onNodeWithTag("reveal_request").getUnclippedBoundsInRoot().top > compose.onNodeWithText(blade.name).getUnclippedBoundsInRoot().top)
         compose.onNodeWithTag("reveal_store").assertIsDisplayed()
         compose.onNodeWithTag("reveal_list").assertIsDisplayed()
     }

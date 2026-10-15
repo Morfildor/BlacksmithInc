@@ -5,6 +5,8 @@ import com.example.blacksmithproject.ui.leadActionLabel
 import com.example.blacksmithproject.ui.shopUi
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.model.CommissionId
+import com.tinyblacksmith.core.model.CommissionStatus
+import com.example.blacksmithproject.ui.forgeWorkbench
 import com.tinyblacksmith.core.model.Want
 import com.tinyblacksmith.core.shopday.Advice
 import com.tinyblacksmith.core.shopday.Demand
@@ -72,5 +74,36 @@ class WantsModelTest : ShopDayTestBase() {
         assertEquals(Dest.FORGE, p.dest)
         assertEquals("the family asked for, the rest of the draft kept, no request linked", ForgeDraft(familyId = family, coreId = LaunchContent.IRON), p.draft)
         assertEquals("nothing was issued: the save is the same", state, p.state)
+    }
+
+    @Test
+    fun forgeThisOnAWantKeepsWhoWantsItAndNeverMakesItAnOrder() = vmTest {
+        val hero = stocked.aliveHeroes().first()
+        val family = engine.content.families.first { f -> stocked.listedWeapons().none { it.familyId == f.id } }.id
+        val state = stocked.copy(heroes = stocked.heroes + (hero.id to hero.copy(want = Want(family, minPower = 10, budget = 95, sinceDay = stocked.day))))
+        val vm = open(planning(state))
+        // The lead names the hero, so the Shop's "Forge this" can carry them to the Forge.
+        assertEquals(hero.id, vm.playing().shop.lead.heroId)
+        vm.updateDraft { it.copy(coreId = LaunchContent.IRON, commissionId = CommissionId("gone")) }
+        vm.forgeWant(hero.id); advanceUntilIdle()
+        val p = vm.playing()
+        assertEquals(Dest.FORGE, p.dest)
+        assertEquals("the family wanted and who wants it; one purpose at a time", ForgeDraft(familyId = family, coreId = LaunchContent.IRON, wantHeroId = hero.id), p.draft)
+        assertEquals("nothing was issued: the save is the same", state, p.state)
+        assertEquals("no commission was made of it", state.commissions, p.state.commissions)
+        assertTrue("nothing was set aside", p.state.weapons.values.all { it.promisedTo == null })
+        val brief = engine.forgeWorkbench(p.state, p.draft, p.shop.requests).brief!!
+        assertEquals("Not an order", brief.status)
+        // A commission taken up after it replaces the want, and free work drops both.
+        p.state.commissions.values.firstOrNull { it.status == CommissionStatus.OFFERED }?.let { c ->
+            vm.forgeFor(c.id); advanceUntilIdle()
+            assertNull(vm.playing().draft.wantHeroId)
+        }
+        vm.forgeWant(hero.id); vm.forgeFamily(family); advanceUntilIdle()
+        assertEquals(null to null, vm.playing().draft.let { it.wantHeroId to it.commissionId })
+        // A want that has already gone opens nothing and changes nothing.
+        val before = vm.playing().draft
+        vm.forgeWant(stocked.aliveHeroes().first { it.id != hero.id && it.want == null }.id); advanceUntilIdle()
+        assertEquals(before, vm.playing().draft)
     }
 }

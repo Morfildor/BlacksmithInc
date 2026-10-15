@@ -215,8 +215,10 @@ fun AftermathCard(
 }
 
 /**
- * The siege's own card: the outcome in the largest type of the day, then what it cost as recorded (the day's damage and
- * the forge as it stands now, two separate facts), who stood on the wall, the day's own words, and the stored replay.
+ * The siege's own card, in the order a player asks: what happened (the outcome in the largest type of the day), what
+ * the record counted most plainly, what it cost (each fact once, from its own field: [SiegeOutcomeUi.consequences]),
+ * then the ways into the whole fight. The day's own words (the account, the key moments and the cause lines) are all
+ * still here, behind "The night's account"; none of them is repeated above it.
  */
 @Composable
 fun SiegeOutcomeCard(
@@ -226,41 +228,51 @@ fun SiegeOutcomeCard(
 ) {
     val card = beat.card
     var whole by rememberSaveable { mutableStateOf(false) }
+    var account by rememberSaveable { mutableStateOf(false) }
     val kind = when { siege.verdict == SiegeVerdict.HELD_AT_A_COST -> EffectKind.NEUTRAL; siege.held -> EffectKind.BUFF; else -> EffectKind.FLAW }
+    val replayable = siege.fight?.let { FightReplay.supports(it) } == true
     Column(modifier.fillMaxWidth().testTag("shopday_siege"), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         siege.foe?.let { Overline(it, strong = true) }
         Text(siege.outcome, style = MaterialTheme.typography.headlineMedium, color = kind.color, modifier = Modifier.semantics { heading() }.testTag("shopday_siege_outcome"))
-        ReceiptRows(
-            listOf(
-                ReceiptRow("Forge damage", siege.forgeDamage?.let { if (it > 0) "${EffectKind.FLAW.sign}$it" else "None" } ?: "None recorded"),
-                ReceiptRow("Forge health now", "${siege.forgeHealthNow}"),
-            ),
-            Modifier.padding(vertical = Space.xs).testTag("shopday_siege_cost"),
-        )
+        // One recorded part of the fight, said as counted: where there is none to say, there is no line and no heading.
+        siege.contribution?.let {
+            Column(Modifier.testTag("shopday_siege_contribution")) {
+                Overline("In the record")
+                Body(it)
+            }
+        }
+        ReceiptRows(siege.consequences, Modifier.padding(vertical = Space.xs).testTag("shopday_siege_cost"))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+            // A record from which the replay can be drawn opens it; an older one keeps its summary under the account.
+            if (replayable) {
+                SecondaryActionButton("Battle report", { onWatchSiege(true) }, Modifier.heightIn(min = 48.dp).testTag("shopday_siege_report"))
+                SecondaryActionButton("Watch the siege", { onWatchSiege(false) }, Modifier.heightIn(min = 48.dp).testTag("shopday_watch_siege"))
+            }
+            // The round list is for a siege that has no fight of its own.
+            else if (siege.fight == null) card.replay?.let { replay ->
+                SecondaryActionButton("Watch the siege", { onWatchFight(replay) }, Modifier.heightIn(min = 48.dp).testTag("shopday_watch"))
+            }
+        }
         if (card.champions.isNotEmpty()) {
             Overline("On the wall")
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) { card.champions.forEach { PersonChip(it, onOpenHero) } }
         }
-        // A guild run: what the watch did before the wall, then what decided the fight on it.
-        siege.outerLine?.let { Body(it, Modifier.testTag("shopday_siege_outer")) }
-        FightHighlights(siege.highlights, "shopday_siege_highlights")
-        if (siege.notes.isNotEmpty()) Column(Modifier.testTag("shopday_siege_notes")) {
-            // Under the fight's highlights these lines go on under the same heading.
-            if (siege.highlights.isEmpty()) Overline("Key moments")
-            siege.notes.forEach { Text("· $it", style = MaterialTheme.typography.bodyMedium) }
-        }
-        Body(card.text, Modifier.testTag("shopday_aftermath_text"))
-        siege.fight?.let { fight ->
-            // A record from which the replay can be drawn opens it; an older one keeps its summary here, as it always had.
-            if (FightReplay.supports(fight)) FlowRow(Modifier.padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-                SecondaryActionButton("Watch the siege", { onWatchSiege(false) }, Modifier.heightIn(min = 48.dp).testTag("shopday_watch_siege"))
-                SecondaryActionButton("Battle report", { onWatchSiege(true) }, Modifier.heightIn(min = 48.dp).testTag("shopday_siege_report"))
+        InlineActionButton(
+            if (account) "Hide the night's account" else "The night's account", { account = !account },
+            Modifier.heightIn(min = 48.dp).testTag("shopday_siege_account_toggle"),
+        )
+        if (account) Column(Modifier.testTag("shopday_siege_account"), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+            // The day's words as recorded, whole and in their own order: what the wall did before the fight, then the fight.
+            Body(card.text, Modifier.testTag("shopday_aftermath_text"))
+            siege.outerLine?.let { Body(it, Modifier.testTag("shopday_siege_outer")) }
+            FightHighlights(siege.highlights, "shopday_siege_highlights")
+            if (siege.notes.isNotEmpty()) Column(Modifier.testTag("shopday_siege_notes")) {
+                // Under the fight's highlights these lines go on under the same heading.
+                if (siege.highlights.isEmpty()) Overline("Key moments")
+                siege.notes.forEach { Text("· $it", style = MaterialTheme.typography.bodyMedium) }
             }
-            else FightReport(fight, Modifier.padding(top = Space.xs), expanded = whole, onToggle = { whole = !whole }, highlights = 0)
-        }
-        // The wall's fight has its whole timeline above; the round list is for a siege that has none.
-        card.replay?.takeIf { siege.fight == null }?.let { replay ->
-            SecondaryActionButton("Watch the siege", { onWatchFight(replay) }, Modifier.heightIn(min = 48.dp).testTag("shopday_watch"))
+            // A fight recorded before replays is read here, as the save keeps it.
+            siege.fight?.takeIf { !replayable }?.let { FightReport(it, Modifier.padding(top = Space.xs), expanded = whole, onToggle = { whole = !whole }, highlights = 0) }
         }
     }
 }

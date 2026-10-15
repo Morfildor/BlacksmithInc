@@ -211,12 +211,16 @@ private fun PairingRow(p: PairingUi, onBench: Boolean, art: List<Int>, onUse: ()
     }
 }
 
-/** What the forge just done taught, on its result: each gain by name with the journal's words, or one line when nothing moved. */
+/**
+ * What the forge just done taught, on its result: each gain by name with the journal's words, or one line when nothing
+ * moved; then what it was as an attempt at a signature the clues know of.
+ */
 @Composable
 fun LearningCard(learning: ForgeLearningUi, modifier: Modifier = Modifier) {
     val card = RoundedCornerShape(9.dp)
     if (learning.changes.isEmpty()) {
         learning.note?.let { Secondary(it, modifier.testTag("reveal_learning_note")) }
+        learning.attempt?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = modifier.testTag("reveal_attempt")) }
         return
     }
     Column(
@@ -229,5 +233,6 @@ fun LearningCard(learning: ForgeLearningUi, modifier: Modifier = Modifier) {
                 Text(c.line, style = MaterialTheme.typography.bodySmall, color = Cream)
             }
         }
+        learning.attempt?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.testTag("reveal_attempt")) }
     }
 }

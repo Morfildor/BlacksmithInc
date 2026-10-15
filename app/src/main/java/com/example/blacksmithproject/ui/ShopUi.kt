@@ -38,8 +38,15 @@ import com.tinyblacksmith.core.shopday.TallyOutcome
 import com.tinyblacksmith.core.shopday.ThreatMark
 import com.tinyblacksmith.core.shopday.Threats
 
-/** The one thing worth doing first, in the words of `Lines.lead`; [weaponId] is the blade it points at and [familyId] the family a want asks for, if any. */
-@Immutable data class LeadUi(val kind: LeadKind, val action: String, val reason: String?, val weaponId: WeaponId? = null, val familyId: WeaponFamilyId? = null)
+/**
+ * The one thing worth doing first, in the words of `Lines.lead`; [weaponId] is the blade it points at and [familyId] the
+ * family a want asks for, if any. [commissionId] and [heroId] are the request and the hero it is about (`Advice.Lead`),
+ * so "Go to the forge" and "Forge this" keep who the work is for.
+ */
+@Immutable data class LeadUi(
+    val kind: LeadKind, val action: String, val reason: String?, val weaponId: WeaponId? = null, val familyId: WeaponFamilyId? = null,
+    val commissionId: CommissionId? = null, val heroId: HeroId? = null,
+)
 
 /** A hero's standing want in the words of `Lines.want`. [answered]: a blade on the shelf today is what they left without (`DemandSummary.wantsAnswered`). */
 @Immutable
@@ -312,7 +319,7 @@ fun GameEngine.shopUi(state: GameState, forecast: Battle.SiegeOutlook? = null): 
     return ShopUi(
         seats =config.customers.shopCapacity + toolTotal(state, ToolEffect.EXTRA_CUSTOMERS) + if (festival) config.customers.festivalExtraSeats else 0,
         slots = shelfSlots(state),
-        lead = LeadUi(lead.kind, line.action, line.reason, lead.weaponId, lead.familyId),
+        lead = LeadUi(lead.kind, line.action, line.reason, lead.weaponId, lead.familyId, lead.commissionId, lead.heroId),
         siegeLead = Advice.siegeReadiness(state, content, config)?.takeIf {
             lead.kind == LeadKind.FORGE_FOR_REQUEST && lead.days == 0
         }?.let { gap -> Lines.lead(gap, state, content, config).let { LeadUi(gap.kind, it.action, it.reason) } },

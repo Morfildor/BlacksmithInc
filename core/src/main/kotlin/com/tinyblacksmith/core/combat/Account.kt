@@ -49,6 +49,17 @@ data class FightAccount(
     val observations: List<String>,
 )
 
+/** Which tier of [FightAccounting.standout] a [Standout] came from. */
+enum class StandoutKind { WEAPON_RULE, WEAPON_STATES, HERO_PART }
+
+/**
+ * One defender's one share, picked by [FightAccounting.standout], with the names as the fight recorded them (the
+ * weapon is the one in the defender's hands in that fight, not whatever they carry now) and its sentence.
+ */
+data class Standout(val kind: StandoutKind, val memberKey: String, val memberName: String, val weapon: String?, val weaponId: String?, val share: Share, val text: String) {
+    constructor(kind: StandoutKind, m: Contribution, s: Share, text: String) : this(kind, m.key, m.name, m.weapon.takeIf { s.weapon }, m.weaponId.takeIf { s.weapon }, s, text)
+}
+
 object FightAccounting {
     const val OWN = "Own moves"
 
@@ -155,15 +166,66 @@ object FightAccounting {
         return FightAccount(members, sharedShare, enemyDamage, observations(result, members))
     }
 
+    /**
+     * The one part of the fight the record shows most plainly, for a card that has room for a single line (the siege
+     * outcome). Read from the account alone, so it is the same for the same record every time it is opened.
+     *
+     * The ordering, first tier that has a candidate wins; inside a tier the larger amount, then the defender listed first:
+     *  1. a blade's rule by its recorded total (damage, Guard it took for the party and effective healing, each counted
+     *     once). Support competes with damage by what the record counted, and the line names the part that is largest,
+     *     against the whole of that kind in the fight ("16 of the 193 damage the enemy took").
+     *  2. a blade's rule that only left states on the enemy (stacks put on, nothing counted yet).
+     *  3. a defender's own part (their moves or a rule that is not the blade's), named for the defender and not the blade.
+     * Shared damage, Guard or healing the record cannot give to one hand is never a candidate. A contribution is
+     * what was counted in the fight: it is not a claim that it decided the fight.
+     */
+    fun standout(account: FightAccount): Standout? {
+        val members = account.members
+        weaponLead(members)?.let { (m, s) -> return Standout(StandoutKind.WEAPON_RULE, m, s, "${m.name}'s ${m.weapon ?: "weapon"}: ${s.name} ${partOf(s, account)}${firedAfter(s)}.") }
+        members.flatMap { m -> m.shares.filter { it.weapon && it.applied > 0 }.map { m to it } }
+            .maxWithOrNull(compareBy<Pair<Contribution, Share>> { it.second.applied }.thenBy { -members.indexOf(it.first) })?.let { (m, s) ->
+                val put = members.sumOf { c -> c.shares.sumOf { it.applied } }
+                return Standout(StandoutKind.WEAPON_STATES, m, s, "${m.name}'s ${m.weapon ?: "weapon"}: ${s.name} left ${s.applied} of the $put ${if (put == 1) "stack" else "stacks"} put on foes${firedAfter(s)}.")
+            }
+        members.flatMap { m -> m.shares.filter { !it.weapon && it.total > 0 }.map { m to it } }
+            .maxWithOrNull(compareBy<Pair<Contribution, Share>> { it.second.total }.thenBy { -members.indexOf(it.first) })?.let { (m, s) ->
+                val whose = if (s.ruleId == null) "${m.name}'s own moves" else "${m.name}: ${s.name}"
+                return Standout(StandoutKind.HERO_PART, m, s, "$whose ${partOf(s, account)}${firedAfter(s)}.")
+            }
+        return null
+    }
+
+    /** The share's largest part against the whole of that kind in the fight, so a small part is never read as a large one. */
+    private fun partOf(s: Share, account: FightAccount): String {
+        val taken = account.members.sumOf { it.prevented } + account.shared.prevented
+        val mended = account.members.sumOf { it.healed } + account.shared.healed
+        return listOf(
+            s.damage to "dealt ${s.damage} of the ${account.enemyDamage} damage the enemy took",
+            s.prevented to "blocked ${s.prevented} of the $taken damage the party's Guard took",
+            s.healed to "healed ${s.healed} of the $mended health the party mended",
+        ).maxBy { it.first }.second
+    }
+
+    private fun firedAfter(s: Share): String = if (s.times > 0) ", in ${s.times} ${if (s.times == 1) "activation" else "activations"}" else ""
+
+    /** The blade rule that did the most, the one first listed when equal. */
+    private fun weaponLead(members: List<Contribution>): Pair<Contribution, Share>? =
+        members.flatMap { m -> m.shares.filter { it.weapon && it.total > 0 }.map { m to it } }
+            .maxWithOrNull(compareBy<Pair<Contribution, Share>> { it.second.total }.thenBy { -members.indexOf(it.first) })
+
+    private fun whatItDid(s: Share): String =
+        listOf(s.damage to "dealt ${s.damage} damage", s.prevented to "blocked ${s.prevented} damage", s.healed to "healed ${s.healed}").maxBy { it.first }.second
+
+    private fun firedNote(s: Share): String = if (s.times > 0) " in ${s.times} ${if (s.times == 1) "activation" else "activations"}" else ""
+
+    /** The report's "Worth knowing" line, as it has always read. */
+    private fun weaponLine(m: Contribution, s: Share): String = "${m.name}'s ${m.weapon ?: "weapon"}: ${s.name} ${whatItDid(s)}${firedNote(s)}."
+
     /** At most two facts worth knowing about the blades, in the order a smith can act on them. */
     private fun observations(result: FightResult, members: List<Contribution>): List<String> {
         val out = ArrayList<String>()
         // The blade rule that did the most.
-        members.flatMap { m -> m.shares.filter { it.weapon && it.total > 0 }.map { m to it } }.maxWithOrNull(compareBy<Pair<Contribution, Share>> { it.second.total }.thenBy { -members.indexOf(it.first) })?.let { (m, s) ->
-            val what = listOf(s.damage to "dealt ${s.damage} damage", s.prevented to "blocked ${s.prevented} damage", s.healed to "healed ${s.healed}").maxBy { it.first }.second
-            val times = if (s.times > 0) " in ${s.times} ${if (s.times == 1) "activation" else "activations"}" else ""
-            out += "${m.name}'s ${m.weapon ?: "weapon"}: ${s.name} $what$times."
-        }
+        weaponLead(members)?.let { (m, s) -> out += weaponLine(m, s) }
         val party = result.actors.filter { it.side == Side.PARTY }.associateBy { it.key }
         val hits = result.events.filter { it.tick == null && (it.kind == EventKind.DAMAGE || it.kind == EventKind.GUARD_ABSORBED) && it.source in party.keys && result.actor(it.target ?: "")?.side == Side.ENEMY }
         // A blade whose element the enemy resists is worth knowing before the next siege.

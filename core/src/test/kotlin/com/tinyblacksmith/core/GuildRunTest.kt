@@ -181,6 +181,25 @@ class GuildRunTest {
 
     // ---- contracts ----
 
+    @Test fun `ordered parties keep order and posture through plan change refund and departure`() {
+        val start = guildRun(seed = 9).copy(gold = 10_000)
+        val recruited = start.run(Command.RecruitHero(start.guild!!.candidates.first().heroId))
+        val offer = recruited.guild!!.offers.first().copy(fee = 37)
+        val s = recruited.copy(guild = recruited.guild!!.copy(offers = listOf(offer)))
+        val (a, b, c) = s.members()
+        val initial = s.run(Command.PlanDeployment(offer.id, listOf(a, b, c), Posture.BALANCED))
+        val changed = initial.run(Command.PlanDeployment(offer.id, listOf(c, a, b), Posture.CAUTIOUS)).sound()
+        assertEquals(s.gold - offer.fee, changed.gold)
+        assertEquals(listOf(c, a, b), changed.guild!!.planned!!.heroIds)
+        assertEquals(s.weapons, changed.weapons)
+        val reloaded = SaveCodec.decodeRun(SaveCodec.encodeRun(changed))
+        assertEquals(changed, reloaded)
+        assertEquals(s.gold, changed.run(Command.CancelPlannedDeployment).gold)
+        // The actual fight record keeps the command order, even when the one-stage quest returns next morning.
+        val out = changed.endDay().sound()
+        assertEquals(listOf(c, a, b), out.guild!!.lastMission!!.party)
+    }
+
     private fun GameState.send(a: MissionArchetype, posture: Posture = Posture.BALANCED, party: List<HeroId> = members()): GameState = run(Command.PlanDeployment(offer(a).id, party, posture))
 
     @Test fun `a plan pays its fee once, replacing or cancelling returns it, and End Day sends the party`() {

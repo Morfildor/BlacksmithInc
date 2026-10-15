@@ -23,10 +23,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
@@ -49,6 +46,15 @@ import com.tinyblacksmith.core.model.Danger
 
 internal fun contractRows(ui: GuildUi, a: GuildActions): List<GuildRow> = buildList {
     ui.party?.let { p -> add(GuildRow("party") { PartyCard(p, a.enabled) { id, choice -> a.send(Command.ChooseMissionCheckpoint(id, choice)) } }) }
+    add(GuildRow("board") {
+        Column {
+            SectionTitle("The board")
+            Secondary("Quests are optional. Wounds can delay readiness after return.")
+            ui.plan?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Gold, modifier = Modifier.testTag("guild_plan")) }
+            ui.boardNote?.let { Secondary(it, Modifier.testTag("guild_board_note")) }
+        }
+    })
+    ui.offers.forEach { o -> add(GuildRow("offer_${o.id}") { OfferCard(o) { a.openContract(o.id) } }) }
     ui.yesterday?.let { y ->
         add(GuildRow("yesterday") {
             Collapsible("yesterday", "Yesterday · ${y.title}", y.outcome, openAtFirst = false, tag = "guild_yesterday") {
@@ -58,14 +64,6 @@ internal fun contractRows(ui: GuildUi, a: GuildActions): List<GuildRow> = buildL
             }
         })
     }
-    add(GuildRow("board") {
-        Column {
-            SectionTitle("The board")
-            ui.plan?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Gold, modifier = Modifier.testTag("guild_plan")) }
-            ui.boardNote?.let { Secondary(it, Modifier.testTag("guild_board_note")) }
-        }
-    })
-    ui.offers.forEach { o -> add(GuildRow("offer_${o.id}") { OfferCard(o) { a.openContract(o.id) } }) }
     if (ui.upcoming.isNotEmpty()) add(GuildRow("upcoming") {
         Collapsible(
             "upcoming", "What comes next", if (ui.upcoming.size == 1) "1 contract not on the board yet" else "${ui.upcoming.size} contracts not on the board yet",
@@ -113,37 +111,34 @@ private fun PartyCard(p: PartyUi, enabled: Boolean, onChoose: (String, Checkpoin
 private fun dangerColor(d: Danger) = when (d) { Danger.SAFE -> Cream; Danger.DANGEROUS -> Ember; Danger.LETHAL -> EffectKind.FLAW.color }
 
 /**
- * One contract on the board: its name, the facts as chips (danger in word and colour, days, fee, what it brings besides
- * gold and stock), the first day's reward, and the way to choose its party. The rest is on the sheet the tap opens.
+ * Comparable offer facts in a plain row. Stage rewards come from the posting, with the full situation on the sheet.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
     Column(
-        Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().clickable(onClickLabel = "Choose a party", role = Role.Button, onClick = onOpen)
-            .padding(horizontal = 12.dp, vertical = Space.sm).testTag("guild_offer_${o.id}"),
+        Modifier.fillMaxWidth().clickable(onClickLabel = "Choose a party", role = Role.Button, onClick = onOpen)
+            .padding(vertical = Space.sm).testTag("guild_offer_${o.id}"),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
             Text(o.title, style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.weight(1f))
             if (o.planned) Chip("Planned", EffectKind.BUFF.color)
         }
-        // The facts as one quiet line, not a row of plates: the danger in its word and colour, what it brings besides gold in gold.
+        Secondary(o.purpose)
         Text(
-            buildAnnotatedString {
-                withStyle(SpanStyle(color = dangerColor(o.danger))) { append(dangerWord(o.danger)) }
-                append(" · " + (if (o.days == 1) "1 day" else "${o.days} days") + " · " + (if (o.feeGold > 0) "Fee ${o.feeGold}g" else "Free"))
-                (listOfNotNull(o.tag) + o.specials).forEach { append(" · "); withStyle(SpanStyle(color = Gold)) { append(it) } }
-            },
-            style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp),
+            (if (o.feeGold > 0) "Fee ${o.feeGold} gold" else "No fee") + " · Home morning of day ${o.returnDay}",
+            style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs).testTag("guild_offer_terms_${o.id}"),
         )
+        Text(dangerWord(o.danger) + (o.modifierName?.let { " · $it" } ?: ""), color = dangerColor(o.danger), style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("guild_offer_modifier_${o.id}"))
         Text(o.reward, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.padding(top = Space.xs).testTag("guild_offer_line_${o.id}"))
+        if (o.days > 1) Secondary(if (o.optionalPush) "Return includes the optional stage." else "Return includes all stages.")
         o.missesSiege?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
-        o.why?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
-        o.modifierName?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.testTag("guild_offer_modifier_${o.id}")) }
-        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
-            Secondary(o.expiry, Modifier.weight(1f))
+
+        Column(Modifier.fillMaxWidth().padding(top = Space.xs)) {
+            Secondary(o.expiry)
             Text(if (o.planned) "Change the party  ›" else "Choose a party  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
         }
+        HorizontalDivider(Modifier.padding(top = Space.sm), color = BronzeDeep)
     }
 }
 

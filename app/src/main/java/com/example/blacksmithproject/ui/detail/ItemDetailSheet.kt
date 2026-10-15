@@ -317,6 +317,7 @@ fun ItemDetailSheet(
     notice: String? = null,
     /** Opens the bench for this weapon. Offered only in a guild run, where the card has an "In a fight" section. */
     onBench: (() -> Unit)? = null,
+    closeLabel: String = "Close",
 ) {
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     ModalBottomSheet(
@@ -327,7 +328,7 @@ fun ItemDetailSheet(
     ) {
         Column {
             notice?.let { NoticeLine(it) }
-            ItemDetailContent(detail, planning, onOpenHero, onStock, onDismiss, enabled, onBench = onBench)
+            ItemDetailContent(detail, planning, onOpenHero, onStock, onDismiss, enabled, onBench = onBench, closeLabel = closeLabel)
         }
     }
 }

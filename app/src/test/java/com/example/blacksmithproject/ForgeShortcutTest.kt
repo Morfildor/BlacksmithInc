@@ -7,6 +7,8 @@ import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.engine.WorldEvents
 import com.tinyblacksmith.core.model.CommissionStatus
+import com.tinyblacksmith.core.engine.Command
+import com.example.blacksmithproject.ui.forgeWorkbench
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import org.junit.Assert.assertEquals
@@ -44,6 +46,42 @@ class ForgeShortcutTest : ShopDayTestBase() {
         vm.updateDraft { it.copy(commissionId = null) }; advanceUntilIdle()
         assertNull(vm.playing().draft.commissionId)
         assertEquals(asked.familyId, vm.playing().draft.familyId)
+    }
+
+    @Test
+    fun anAcceptedCommissionSurvivesTheWayBackAndARestartAndIsSaidGoneOnceItCloses() = vmTest {
+        val state = mornings().firstOrNull { s -> s.commissions.values.any { it.status == CommissionStatus.OFFERED && s.heroes[it.buyerId]?.isAlive == true } }
+        assertNotNull("no morning with an offer", state)
+        val offer = state!!.commissions.values.first { it.status == CommissionStatus.OFFERED && state.heroes[it.buyerId]?.isAlive == true }
+        val handle = SavedStateHandle()
+        val vm = open(planning(state), saved = handle)
+        vm.dispatch(Command.AcceptCommission(offer.id)); advanceUntilIdle()
+        vm.forgeFor(offer.id); advanceUntilIdle()
+        fun brief() = vm.playing().let { p -> engine.forgeWorkbench(p.state, p.draft, p.shop.requests).brief }
+        assertEquals("Accepted", brief()!!.status)
+        // Forge, back to the Shop, Forge again: the same purpose and the same draft.
+        val draft = vm.playing().draft
+        assertTrue(vm.back()); advanceUntilIdle()
+        assertEquals(Dest.SHOP, vm.playing().dest)
+        vm.selectDest(Dest.FORGE); advanceUntilIdle()
+        assertEquals(draft, vm.playing().draft)
+        assertEquals(offer.id, brief()!!.id)
+        assertNull(brief()!!.gone)
+        // The process comes back with it.
+        val kept = handle.keys().associateWith { handle.get<Any?>(it) }
+        val accepted = vm.playing().state
+        assertEquals(draft, open(planning(accepted), saved = SavedStateHandle(kept)).playing().draft)
+        // The save moves on and the commission closes while the draft still names it: said gone, never silently dropped.
+        val closed = accepted.copy(commissions = accepted.commissions + (offer.id to accepted.commissions.getValue(offer.id).copy(status = CommissionStatus.EXPIRED)))
+        val later = open(planning(closed), saved = SavedStateHandle(kept))
+        val p = later.playing()
+        assertEquals(offer.id, p.draft.commissionId)
+        val gone = engine.forgeWorkbench(p.state, p.draft, p.shop.requests)
+        assertTrue(gone.brief!!.gone!!.contains("expired"))
+        assertEquals("the forge does not wait on the purpose", engine.forgeWorkbench(p.state, p.draft.copy(commissionId = null), p.shop.requests).action, gone.action)
+        // "Forge freely" drops it and keeps the ingredients.
+        later.updateDraft { it.copy(commissionId = null, wantHeroId = null) }; advanceUntilIdle()
+        assertEquals(p.draft.copy(commissionId = null), later.playing().draft)
     }
 
     @Test

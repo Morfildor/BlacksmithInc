@@ -77,7 +77,7 @@ fun ShopUi.board(): BoardUi = BoardUi(
 @Composable
 fun CommissionBoardSheet(
     board: BoardUi, slots: Int, busy: Boolean, chosen: CommissionId?,
-    onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, onForgeThis: (CommissionId) -> Unit, onForgeWant: (WeaponFamilyId) -> Unit, onDismiss: () -> Unit,
+    onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, onForgeThis: (CommissionId) -> Unit, onForgeWant: (HeroId) -> Unit, onDismiss: () -> Unit,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -89,7 +89,7 @@ fun CommissionBoardSheet(
 @Composable
 fun CommissionBoard(
     board: BoardUi, slots: Int, busy: Boolean, chosen: CommissionId?,
-    onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, onForgeThis: (CommissionId) -> Unit, onForgeWant: (WeaponFamilyId) -> Unit, modifier: Modifier = Modifier,
+    onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, onForgeThis: (CommissionId) -> Unit, onForgeWant: (HeroId) -> Unit, modifier: Modifier = Modifier,
     /** When given, the board ends with a "Close" button. */
     onClose: (() -> Unit)? = null,
 ) {

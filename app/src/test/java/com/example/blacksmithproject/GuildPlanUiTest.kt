@@ -27,6 +27,15 @@ import org.junit.Test
 
 /** What the Guild puts first and what it says is to come: Today, the sub-part on a visit, the contracts still to come, the assign sheet, the charter's steps. */
 class GuildPlanUiTest {
+    @Test
+    fun opportunitiesPrecedeYesterdayAndDoNotRequireADeployment() {
+        val s = mornings(GuildPolicy.NOVICE, 9).first { it.guild!!.lastMission != null && it.guild!!.offers.isNotEmpty() }
+        val ui = engine.guildUi(s)!!
+        val a = com.example.blacksmithproject.ui.GuildActions(true, {}, {}, {}, {}, {})
+        val keys = com.example.blacksmithproject.ui.contractRows(ui, a).map { it.key }
+        assertTrue(keys.toString(), keys.indexOf("board") < keys.indexOf("yesterday"))
+        assertTrue(keys.toString(), keys.indices.filter { keys[it].startsWith("offer_") }.all { it < keys.indexOf("yesterday") })
+    }
     private val engine = GameEngine()
 
     private fun GameState.send(cmd: Command): GameState = (engine.handle(this, cmd) as CommandOutcome.Accepted).state

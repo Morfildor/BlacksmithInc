@@ -2,7 +2,9 @@ package com.example.blacksmithproject.ui.shopday
 
 import androidx.compose.runtime.Immutable
 import com.example.blacksmithproject.data.ShopDaySpeed
+import com.tinyblacksmith.core.combat.FightAccounting
 import com.tinyblacksmith.core.combat.FightResult
+import com.tinyblacksmith.core.combat.Side
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.crafting.Interactions
@@ -114,7 +116,31 @@ data class SiegeOutcomeUi(
     val fell: Set<HeroId> = emptySet(),
     /** Interaction paths this night showed for the first time, by name (the day's "Seen in a real fight" records). */
     val discoveries: List<String> = emptyList(),
+    /**
+     * The one thing the record counted most plainly, as a sentence (`FightAccounting.standout`; in a classic run the
+     * champion who counted most of the town's defense). What was counted, never a claim that it decided the night.
+     * Null for a record that cannot say (older, or without a fight).
+     */
+    val contribution: String? = null,
+    /** Who died on the wall, by the name the day recorded (`FieldResult.heroName`): the card's own words, not the hero's present state. */
+    val fellNames: List<String> = emptyList(),
+    /** Who went down in the fight and lived, by the name the fight recorded; null when there is no fight record to say. */
+    val wentDown: List<String>? = null,
+    /** Whether the day recorded who stood on the wall, so that "Nobody" in [consequences] is a recorded fact and not a gap. */
+    val wallRecorded: Boolean = false,
 ) {
+    /**
+     * What the night cost, each fact once and from its own typed field. The day's damage and the forge as it stands
+     * after the night are two facts and never subtracted; a row the record cannot fill is left out, not guessed.
+     */
+    val consequences: List<ReceiptRow> get() = buildList {
+        // No damage record on a night whose wall the day did record is no damage; with no wall record it is only "none recorded".
+        add(ReceiptRow("Forge damage", forgeDamage?.let { if (it > 0) "−$it" else "None" } ?: if (wallRecorded) "None" else "None recorded"))
+        add(ReceiptRow("Forge health now", "$forgeHealthNow"))
+        if (wallRecorded || fellNames.isNotEmpty()) add(ReceiptRow("Fell", fellNames.joinToString(", ").ifEmpty { "Nobody" }))
+        wentDown?.let { add(ReceiptRow("Went down, lived", it.joinToString(", ").ifEmpty { "Nobody" })) }
+    }
+
     val outcome: String get() = when (verdict) {
         SiegeVerdict.HELD -> "The town held"
         // A town that holds while the forge is hit or a defender goes down: both are said (spec 1.2).
@@ -235,6 +261,17 @@ private fun aftermathLabel(kind: AftermathKind): String = when (kind) {
 }
 
 private fun plural(n: Int, one: String, many: String) = "$n ${if (n == 1) one else many}"
+
+/**
+ * A classic siege is one sum, not a fight: each champion's recorded round is the defense they counted
+ * (`Battle.resolveSiegeIfDue`), beside the militia and the watch. The champion who counted most, the first listed when
+ * equal, in the record's own words ("strikes with ..."), against the town's whole defense when the record kept it.
+ */
+internal fun classicContribution(replay: CombatReplay?, townDefense: String?): String? {
+    val best = replay?.rounds.orEmpty().filter { it.attackerId != null && it.damage > 0 }.maxByOrNull { it.damage } ?: return null
+    val of = townDefense?.toIntOrNull()?.takeIf { it >= best.damage }?.let { " of the town's $it defense" } ?: " defense"
+    return "${best.attacker} ${best.note}: ${best.damage}$of."
+}
 
 /**
  * The script as immutable UI models: every sentence is a `Lines` template over the day's records or a recorded number
@@ -362,12 +399,27 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
     val siege = aftermath.firstOrNull { it.kind == AftermathKind.SIEGE_HELD || it.kind == AftermathKind.SIEGE_LOST }
         ?.let { card ->
             val wall = resolution?.siege
+            // The day's own records, in either kind of run: who stood on the wall and who fell there.
+            val today = state.lastResolution?.takeIf { it.day == day }
+            val fallen = today?.field.orEmpty().filter { it.outcome == FieldOutcome.FELL_AT_THE_WALL }
+            val fallenIds = fallen.map { it.heroId.value }.toSet()
             SiegeOutcomeUi(
                 day, card.kind == AftermathKind.SIEGE_HELD, card.foe, card.forgeDamage, state.town.integrity,
                 verdict = wall?.verdict, outerLine = wall?.outerLine?.takeIf { it.isNotEmpty() },
                 highlights = wall?.fight?.highlights.orEmpty().take(HIGHLIGHTS_SHOWN).map { it.text }, fight = wall?.fight,
                 notes = wall?.notes.orEmpty(),
-                fell = resolution?.field.orEmpty().filter { it.outcome == FieldOutcome.FELL_AT_THE_WALL }.map { it.heroId }.toSet(),
+                fell = fallen.map { it.heroId }.toSet(),
+                // The name the fight recorded when there is a fight, so the receipt's rows read alike; the day's own name without one.
+                fellNames = fallen.map { f -> wall?.fight?.actors?.firstOrNull { it.key == f.heroId.value }?.name ?: f.heroName },
+                wentDown = wall?.fight?.actors?.filter { it.side == Side.PARTY && !it.summoned && it.downed && it.key !in fallenIds }?.map { it.name },
+                wallRecorded = wall != null || card.championIds.isNotEmpty() || today?.field.orEmpty().any { it.outcome == FieldOutcome.HELD_THE_WALL || it.outcome == FieldOutcome.FELL_AT_THE_WALL },
+                contribution = when {
+                    // A guild run: the fight's own account. A record that cannot be accounted (older, or none) says nothing.
+                    wall != null -> wall.fight?.let { FightAccounting.of(it) }?.let { FightAccounting.standout(it) }?.text
+                    // A classic run has no fight, only the defense each champion counted: what its replay recorded.
+                    state.guild == null -> classicContribution(card.replay, today?.events?.firstOrNull { it.type == EventType.SIEGE_WON || it.type == EventType.SIEGE_LOST }?.data?.get("townDefense"))
+                    else -> null
+                },
                 // Today's first sightings that this fight shows: a contract fought the same day may have shown others.
                 discoveries = content.combat?.let { combat ->
                     val shown = wall?.fight?.let { Interactions.shownIn(it, combat) }.orEmpty()

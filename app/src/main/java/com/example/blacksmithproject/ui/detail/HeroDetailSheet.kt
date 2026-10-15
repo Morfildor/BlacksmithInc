@@ -182,14 +182,14 @@ private fun fateWord(h: Hero): String? = when (h.fate) {
 /** The hero sheet as a modal bottom sheet. Dismissal (scrim, swipe, Back, Close) is reported, never acted on here. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HeroDetailSheet(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier, member: MemberActions? = null) {
+fun HeroDetailSheet(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier, member: MemberActions? = null, closeLabel: String = "Close") {
     // A sheet is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },   // the handle is a target too: 48 dp, not the default 32
         modifier = modifier.semantics { testTagsAsResourceId = true }.testTag("hero_sheet"),
-    ) { HeroDetailContent(detail, onOpenHero, onOpenItem, onDismiss, member = member) }
+    ) { HeroDetailContent(detail, onOpenHero, onOpenItem, onDismiss, member = member, closeLabel = closeLabel) }
 }
 
 /** The body of the hero sheet: one scrolling column, usable outside a sheet (the shop day's overlay, tests). */

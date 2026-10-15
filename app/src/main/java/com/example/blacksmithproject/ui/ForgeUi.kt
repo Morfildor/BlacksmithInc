@@ -6,12 +6,26 @@ import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.crafting.Bench
 import com.tinyblacksmith.core.crafting.Capabilities
+import com.tinyblacksmith.core.crafting.ClueRung
+import com.tinyblacksmith.core.crafting.SignatureCatalog
+import com.tinyblacksmith.core.crafting.SignatureDef
+import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.crafting.ForgeOutlook
 import com.tinyblacksmith.core.crafting.Journal
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.Technique
+import com.tinyblacksmith.core.content.Element
+import com.tinyblacksmith.core.engine.ResolutionContext
+import com.tinyblacksmith.core.market.Commissions
+import com.tinyblacksmith.core.market.Market
 import com.tinyblacksmith.core.model.CommissionId
+import com.tinyblacksmith.core.model.CommissionStatus
+import com.tinyblacksmith.core.model.HeroFate
+import com.tinyblacksmith.core.model.HeroId
+import com.tinyblacksmith.core.model.WeaponFamilyId
+import com.tinyblacksmith.core.model.WeaponId
+import com.tinyblacksmith.core.shopday.Lines
 import com.tinyblacksmith.core.model.ForgeMode
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.Journal as JournalModel
@@ -36,10 +50,20 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
  * One choice in a slot's tray. [id] is the family, material or technique it stands for (null: "None" or "Plain");
  * [stock] is what the smith owns of a material (null for what is not counted). An empty material is listed last.
  * [fight] (a guild run) is what a metal, an augment or a catalyst gives the blade in a fight, one "Name: rule" line each.
+ * [blocked] is why a material that has run out cannot be placed now, and where more comes from; null while it can be.
  */
-@Immutable data class OptionUi(val id: String?, val name: String, val stock: Int?, val selected: Boolean, val mark: MarkUi? = null, val detail: String? = null, val fight: List<String> = emptyList()) {
+@Immutable data class OptionUi(
+    val id: String?, val name: String, val stock: Int?, val selected: Boolean, val mark: MarkUi? = null, val detail: String? = null, val fight: List<String> = emptyList(),
+    val blocked: String? = null,
+) {
     val usable: Boolean get() = stock != 0
 }
+
+/** One way the draft differs from what it was when its tray was opened. [good]: true helps, false costs, null is only different. */
+@Immutable data class ChangeUi(val text: String, val good: Boolean? = null)
+
+/** The draft against the one the tray was opened on, for the place being changed: [from] the choice then, [changes] what differs now. */
+@Immutable data class TrayChangeUi(val from: String, val changes: List<ChangeUi>)
 
 /** One relationship of the recipe as the journal knows it today. An untried one says nothing of how it will go. */
 @Immutable data class NoteUi(val label: String, val subject: String, val state: KnowledgeState, val stage: String, val hint: String)
@@ -47,8 +71,20 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
 /** One requirement of a commission; [matches] is null where the draft cannot answer it (quality is known only after forging). */
 @Immutable data class AskUi(val text: String, val matches: Boolean?)
 
-/** The commission this draft was started from. Nothing is reserved for it: [accepted] is the request's own status. */
-@Immutable data class BriefUi(val id: CommissionId, val title: String, val asks: List<AskUi>, val accepted: Boolean)
+/** A blade already in the shop read against the draft's purpose: [fits] by the engine's own rule, [line] where it is and what it lacks. Nothing is reserved by it. */
+@Immutable data class StockFitUi(val weaponId: WeaponId, val name: String, val line: String, val fits: Boolean)
+
+/**
+ * Who the draft is for, read back from the save each time: an open commission ([id]) or a hero's standing want
+ * ([heroId], never an order). [status] is the request's own standing ("Accepted", "Not accepted yet") or "Not an order".
+ * [stock] is what the shop already holds of the type asked for, the fitting blades first, and [stockNote] says when none
+ * fits. [gone] says why a purpose the draft still names is no longer there; then it asks nothing and lists no stock.
+ */
+@Immutable data class BriefUi(
+    val title: String, val asks: List<AskUi>, val accepted: Boolean, val status: String,
+    val stock: List<StockFitUi> = emptyList(), val stockNote: String? = null, val gone: String? = null,
+    val id: CommissionId? = null, val heroId: HeroId? = null,
+)
 
 /**
  * The one action of the Forge. [note] is the single thing in its way, or the price of overwork; [restock] the material
@@ -213,6 +249,34 @@ fun GameEngine.note(journal: JournalModel, label: String, key: String): NoteUi {
     return NoteUi(label, Journal.subjectName(content, key), state, state.stage(), Journal.hint(journal, content, key))
 }
 
+/**
+ * What the journal's clues say of the signature hidden in [forge]'s weapon, metal and augment, beside the recipe; null
+ * unless the journal already holds that one is hidden there (nothing is told of a recipe the smith has no clue to).
+ * Only the clues held are read against the draft: a clue it misses is named, one it meets is not counted twice, and what
+ * the clues do not cover is said to be unknown. Quality is always the roll's, and a signature is never promised.
+ */
+fun GameEngine.signatureNote(journal: JournalModel, forge: Command.Forge): NoteUi? {
+    val def = SignatureCatalog.forRecipe(forge) ?: return null
+    val have = Journal.rungs(journal, def)
+    if (ClueRung.RECIPE !in have) return null
+    val subject = Journal.subjectName(content, def.journalKey)
+    if (journal.state(def.journalKey) == KnowledgeState.SIGNATURE_DISCOVERED) {
+        val misses = def.misses(forge, def.minQuality).map { Journal.clue(def, it.rung, config) }
+        return NoteUi("Signature", subject, KnowledgeState.SIGNATURE_DISCOVERED, def.name,
+            if (misses.isEmpty()) "Your draft is the recipe. Quality is decided by the roll." else "Your draft is not the recipe yet: ${misses.joinToString("; ")}.")
+    }
+    val missed = def.misses(forge, def.minQuality).filter { it.rung in have }.map { Journal.clue(def, it.rung, config) }
+    val complete = have.size == ClueRung.entries.size
+    return NoteUi(
+        "Signature", subject, if (complete) KnowledgeState.UNDERSTOOD else KnowledgeState.OBSERVED, if (complete) "All clues found" else "Incomplete clues",
+        when {
+            missed.isNotEmpty() -> "Your draft misses a clue: ${missed.joinToString("; ")}."
+            complete -> "Your draft matches every clue. Quality is decided by the roll, and a signature is never certain."
+            else -> "Your draft matches the clues you have. The rest are still unknown."
+        },
+    )
+}
+
 /** [bellows]: the forge will be sent with the Ashen Bellows (asked for and still possible), which the outlook has to count. */
 fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: List<RequestUi>, bellows: Boolean = false): ForgeWorkbenchUi {
     val advanced = draft.mode == ForgeMode.ADVANCED
@@ -257,19 +321,11 @@ fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: Lis
     val notes = if (core == null || augment == null) emptyList() else listOfNotNull(
         note(journal, "Metal + augment", JournalModel.coreAugmentKey(core.id, augment.id)),
         family?.let { note(journal, "Augment + weapon", JournalModel.augmentFamilyKey(augment.id, it.id)) },
+        plain?.let { signatureNote(journal, it) },
     )
 
-    val brief = requests.firstOrNull { it.id == draft.commissionId }?.let { r ->
-        BriefUi(
-            r.id, "${(r.buyer.hero?.name ?: r.buyer.name)}'s commission · ${r.reward} gold · ${r.due}",
-            listOfNotNull(
-                AskUi(r.family, family?.name == r.family),
-                r.element?.let { e -> AskUi(e.word(), augment?.element == e) },
-                AskUi("Quality ${r.minQuality}+", null),
-            ),
-            accepted = !r.offered,
-        )
-    }
+    val brief = draft.commissionId?.let { commissionBrief(state, it, requests, family?.id, augment?.element) }
+        ?: draft.wantHeroId?.let { wantBrief(state, it, family?.id) }
 
     return ForgeWorkbenchUi(
         title = when { family != null && core != null -> "${core.name} ${family.name.lowercase()}"; family != null -> family.name; else -> "Empty anvil" },
@@ -279,14 +335,105 @@ fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: Lis
     )
 }
 
+/** Where a blade of the shop is, for a stock line. */
+private fun where(w: Weapon) = w.listedPrice?.let { "On the shelf at $it gold" } ?: "In storage"
+
+/** How many stock lines a brief lists: the fitting ones first. */
+private const val BRIEF_STOCK = 3
+
+/**
+ * The commission [id] beside the draft: its asks against the draft, and the blades of its type the shop holds, read by
+ * `Commissions.fit` and `Commissions.pick` (one reserved for another commission never fits). One that has closed says how.
+ */
+private fun GameEngine.commissionBrief(state: GameState, id: CommissionId, requests: List<RequestUi>, family: WeaponFamilyId?, element: Element?): BriefUi {
+    val c = state.commissions[id]
+    val r = requests.firstOrNull { it.id == id }
+    if (c == null || r == null || (c.status != CommissionStatus.OFFERED && c.status != CommissionStatus.ACCEPTED)) {
+        val buyer = c?.let { state.heroes[it.buyerId]?.name }
+        return BriefUi(
+            if (buyer != null) "$buyer's commission" else "Commission", emptyList(), accepted = false, status = "Closed",
+            gone = when (c?.status) {
+                CommissionStatus.COMPLETED -> "It has been completed."
+                CommissionStatus.EXPIRED -> "It expired before a weapon was handed over."
+                CommissionStatus.DECLINED -> "It was declined."
+                else -> "It is no longer open."
+            } + " You can keep forging freely.",
+            id = id,
+        )
+    }
+    val accepted = c.status == CommissionStatus.ACCEPTED
+    val picked = if (accepted) Commissions.pick(state.weapons.values, c, config) else null
+    val stock = (state.storedWeapons() + state.listedWeapons()).filter { it.familyId == c.familyId }.map { w ->
+        val elsewhere = w.promisedTo != null && w.promisedTo != c.id
+        val fits = !elsewhere && Commissions.fit(w, c) == Commissions.Fit.OK
+        StockFitUi(
+            w.id, w.name,
+            listOfNotNull(where(w), if (elsewhere) "reserved for another commission" else Labels.fit(w, c, content), "End Day would hand this over".takeIf { picked?.id == w.id }).joinToString(" · "),
+            fits,
+        )
+    }.sortedBy { !it.fits }
+    return BriefUi(
+        "${r.buyer.hero?.name ?: r.buyer.name}'s commission · ${r.reward} gold · ${r.due}",
+        listOfNotNull(
+            AskUi(r.family, family == c.familyId),
+            r.element?.let { e -> AskUi(e.word(), element == e) },
+            AskUi("Quality ${r.minQuality}+", null),
+        ),
+        accepted = accepted, status = if (accepted) "Accepted" else "Not accepted yet",
+        stock = stock.take(BRIEF_STOCK),
+        stockNote = when { stock.isEmpty() -> "No ${r.family.lowercase()} in stock."; stock.none { it.fits } -> "Nothing in stock fits yet."; else -> null },
+        id = id,
+    )
+}
+
+/**
+ * The standing want of [heroId] beside the draft (`Hero.want`, in `Lines.want`'s words): never an order, nothing is
+ * accepted or set aside. A listed blade is read by the counter's own rule (`Market.answersWant`, no draw); a stored one
+ * cannot be, since only the shelf is browsed, so it is said as facts. A want that has gone says why.
+ */
+private fun GameEngine.wantBrief(state: GameState, heroId: HeroId, family: WeaponFamilyId?): BriefUi {
+    val hero = state.heroes[heroId]
+    val want = hero?.takeIf { it.isAlive }?.want
+    if (hero == null || want == null) return BriefUi(
+        "${hero?.fullName ?: "A customer"}'s want", emptyList(), accepted = false, status = "Gone",
+        gone = when {
+            hero == null -> "They are no longer in town."
+            hero.fate == HeroFate.DEAD -> "${hero.fullName} has died."
+            !hero.isAlive -> "${hero.fullName} has left town."
+            else -> "${hero.fullName} is no longer waiting for a weapon."
+        } + " You can keep forging freely.",
+        heroId = heroId,
+    )
+    val name = content.family(want.familyId).name
+    val ctx = ResolutionContext(state, content, config)   // read only: the counter's own rule, no draw
+    val stock = (state.listedWeapons() + state.storedWeapons()).filter { it.familyId == want.familyId }.map { w ->
+        val suits = w.isListed && Market.answersWant(ctx, hero, w)
+        StockFitUi(
+            w.id, w.name,
+            if (w.isListed) "${where(w)} · ${if (suits) "suits their want" else "not what they would take today"}" else "In storage, not for sale · power ${w.power}",
+            suits,
+        )
+    }.sortedBy { !it.fits }
+    return BriefUi(
+        Lines.want(hero, content) ?: "${hero.fullName}'s want",
+        listOf(AskUi(name, family == want.familyId), AskUi("Power ${want.minPower}+", null)),
+        accepted = false, status = "Not an order",
+        stock = stock.take(BRIEF_STOCK),
+        stockNote = if (stock.isEmpty()) "No ${name.lowercase()} in stock." else null,
+        heroId = heroId,
+    )
+}
+
 /** What a slot's tray offers, in catalog order, with the materials that have run out after those that can be used. */
 fun GameEngine.forgeOptions(state: GameState, draft: ForgeDraft, slot: RecipeSlot, threat: ThreatUi?): List<OptionUi> {
     // In a guild run a metal, an augment and a catalyst are also a rule in a fight: said where they are chosen, in the catalog's words.
     val guild = state.guild != null
     fun materials(category: MaterialCategory, chosen: MaterialId?) = content.materials(category).map { m ->
+        val stock = state.materials[m.id] ?: 0
         OptionUi(
-            m.id.value, m.name, state.materials[m.id] ?: 0, chosen == m.id, m.element?.let { threat?.marks?.get(it) }, m.element?.let { "Adds ${it.word()}" },
+            m.id.value, m.name, stock, chosen == m.id, m.element?.let { threat?.marks?.get(it) }, m.element?.let { "Adds ${it.word()}" },
             fight = if (guild) materialRules(content, m.id).map { "${it.name}: ${it.description}" } else emptyList(),
+            blocked = if (stock > 0) null else "None left. " + (roadLine(state, m.id) ?: "Buy more in Supplies."),
         )
     }.sortedBy { !it.usable }
     return when (slot) {
@@ -315,19 +462,116 @@ fun GameEngine.place(draft: ForgeDraft, slot: RecipeSlot, option: OptionUi): For
     RecipeSlot.TECHNIQUE -> draft.copy(technique = Technique.entries.firstOrNull { it.name == option.id })
 }
 
+/** The draft forged in [mode]: Quick drops the catalyst, the technique and the Heartfire, which only an Advanced forge takes. */
+fun ForgeDraft.inMode(mode: ForgeMode): ForgeDraft = copy(
+    mode = mode, catalystId = catalystId?.takeIf { mode == ForgeMode.ADVANCED }, technique = technique?.takeIf { mode == ForgeMode.ADVANCED }, heartfire = heartfire && mode == ForgeMode.ADVANCED,
+)
+
+/** The id the draft holds in [slot] (a family, a material or a technique), null for nothing chosen, "None" or "Plain". */
+fun ForgeDraft.idIn(slot: RecipeSlot): String? = when (slot) {
+    RecipeSlot.WEAPON -> familyId?.value
+    RecipeSlot.METAL -> coreId?.value
+    RecipeSlot.AUGMENT -> augmentId?.value
+    RecipeSlot.CATALYST -> catalystId?.value
+    RecipeSlot.TECHNIQUE -> technique?.name
+}
+
+/** The draft with [slot] set back to [id], an empty place included: the tray's baseline and "Put back". Nothing else moves. */
+fun ForgeDraft.withSlot(slot: RecipeSlot, id: String?): ForgeDraft = when (slot) {
+    RecipeSlot.WEAPON -> copy(familyId = id?.let(::WeaponFamilyId))
+    RecipeSlot.METAL -> copy(coreId = id?.let(::MaterialId))
+    RecipeSlot.AUGMENT -> copy(augmentId = id?.let(::MaterialId))
+    RecipeSlot.CATALYST -> copy(catalystId = id?.let(::MaterialId))
+    RecipeSlot.TECHNIQUE -> copy(technique = Technique.entries.firstOrNull { it.name == id })
+}
+
+/** What one place holds, by name, for the comparison's "from": the tray's own word for nothing chosen. */
+private fun GameEngine.nameIn(draft: ForgeDraft, slot: RecipeSlot): String = when (slot) {
+    RecipeSlot.WEAPON -> draft.familyId?.let { content.family(it).name }
+    RecipeSlot.METAL -> draft.coreId?.let { content.material(it).name }
+    RecipeSlot.AUGMENT -> draft.augmentId?.let { content.material(it).name }
+    RecipeSlot.CATALYST -> draft.catalystId?.let { content.material(it).name }
+    RecipeSlot.TECHNIQUE -> draft.technique?.let(Labels::technique)
+} ?: slot.empty
+
+/**
+ * How [draft] differs from [baseline], the draft its tray was opened on, in the place [slot] being changed: each line a
+ * fact the save, the catalog and the journal already give (stock and price, the element and how the besieger takes it,
+ * the most a metal can reach, the purpose's asks, what the journal may say of the pairings and, in a guild run, the
+ * rules every forge of the recipe carries). Never a score, a forecast or a hidden recipe. Null when the place was empty
+ * when the tray opened (nothing to compare with). An empty list only when the draft is back where it started. Pure.
+ */
+fun GameEngine.trayChange(state: GameState, baseline: ForgeDraft, draft: ForgeDraft, slot: RecipeSlot, requests: List<RequestUi>, threat: ThreatUi?): TrayChangeUi? {
+    if (slot.ordinal <= RecipeSlot.AUGMENT.ordinal && baseline.idIn(slot) == null) return null
+    val from = nameIn(baseline, slot)
+    if (baseline == draft) return TrayChangeUi(from, emptyList())
+    val changes = mutableListOf<ChangeUi>()
+    fun material(d: ForgeDraft) = when (slot) {
+        RecipeSlot.METAL -> d.coreId; RecipeSlot.AUGMENT -> d.augmentId; RecipeSlot.CATALYST -> d.catalystId; else -> null
+    }?.let(content::material)
+    val was = material(baseline)
+    val now = material(draft)
+    if (slot == RecipeSlot.METAL || slot == RecipeSlot.AUGMENT || slot == RecipeSlot.CATALYST) {
+        if (now != null) changes += ChangeUi("Uses 1 ${now.name}, ${state.materials[now.id] ?: 0} in stock, ${now.price} gold to restock" + (was?.let { " (${it.name}: ${it.price} gold)" } ?: ""), was?.let { now.price <= it.price })
+        else if (was != null) changes += ChangeUi("No catalyst used: keeps your ${was.name}")
+    }
+    if (slot == RecipeSlot.METAL && was != null && now != null) {
+        val epicWas = Forge.holdsEpic(was.tier, config)
+        val epicNow = Forge.holdsEpic(now.tier, config)
+        if (epicWas != epicNow) changes += ChangeUi(if (epicNow) "Can reach Epic quality" else "Stops at Rare quality", epicNow)
+    }
+    if (slot == RecipeSlot.AUGMENT && was?.element != now?.element) {
+        now?.element?.let { e -> changes += ChangeUi("Adds ${e.word().lowercase()} instead of ${was?.element?.word()?.lowercase() ?: "no element"}") }
+        val markWas = was?.element?.let { threat?.marks?.get(it) }
+        val markNow = now?.element?.let { threat?.marks?.get(it) }
+        if (markNow != markWas) changes += markNow?.let { ChangeUi("Against the siege: ${it.label}", it.counters) } ?: ChangeUi("Against the siege, no longer: ${markWas!!.label}", markWas!!.counters.not())
+    }
+    if (slot == RecipeSlot.WEAPON) {
+        draft.familyId?.let { f -> fans(f).takeIf { it.isNotEmpty() }?.let { changes += ChangeUi("Suits ${it.joinToString(", ")}") } }
+    }
+    if (slot == RecipeSlot.TECHNIQUE) draft.technique?.let { changes += ChangeUi(Labels.techniqueExplanation(it)) }
+    // The purpose's asks that this change answers or stops answering.
+    val before = forgeWorkbench(state, baseline, requests)
+    val after = forgeWorkbench(state, draft, requests)
+    before.brief?.asks.orEmpty().zip(after.brief?.asks.orEmpty()).forEach { (a, b) ->
+        if (a.text == b.text && a.matches != b.matches && b.matches != null) changes += ChangeUi(if (b.matches) "Now matches: ${b.text}" else "No longer matches: ${b.text}", b.matches)
+    }
+    // What the journal may say of each pairing, where it changed: its own words for the stage reached, an untried one nothing.
+    after.notes.forEach { n ->
+        val old = before.notes.firstOrNull { it.label == n.label }
+        if (old == null || old.subject != n.subject) changes += ChangeUi("${n.label}: ${if (n.state == KnowledgeState.UNKNOWN) "untried" else "${n.hint} (${n.stage.lowercase()})"}")
+    }
+    // A guild run: the rules every forge of the recipe carries, gained and lost; what they now wait for.
+    val rulesWas = before.outlook?.certain.orEmpty().map { it.name }.toSet()
+    val rulesNow = after.outlook?.certain.orEmpty().map { it.name }.toSet()
+    if (before.outlook != null && after.outlook != null) {
+        (rulesNow - rulesWas).forEach { changes += ChangeUi("Gains the effect $it", true) }
+        (rulesWas - rulesNow).forEach { changes += ChangeUi("Loses the effect $it", false) }
+        after.outlook.needs.filter { n -> before.outlook.needs.none { it.rule == n.rule } }.forEach { n -> changes += ChangeUi("${n.rule} needs ${n.needs.joinToString(" or ")}", false) }
+        if (after.outlook.tradeoff != null && after.outlook.tradeoff != before.outlook.tradeoff) changes += ChangeUi("Trade-off: ${after.outlook.tradeoff}", false)
+    }
+    // A change no fact above speaks to (Plain for a technique, say) is still a change: never "Unchanged".
+    if (changes.isEmpty()) changes += ChangeUi("Now ${nameIn(draft, slot)}")
+    return TrayChangeUi(from, changes)
+}
+
 internal fun com.tinyblacksmith.core.content.Element.word() = name.lowercase().replaceFirstChar { it.uppercase() }
 
 /** One thing a forge added to the journal: what kind of gain, and the pairing or recipe in the journal's own words for the stage reached. */
 @Immutable data class LearnedUi(val title: String, val line: String)
 
-/** What the forge just done taught. [note] stands in when nothing moved: a repeat still short of understanding, or a recipe already known. */
-@Immutable data class ForgeLearningUi(val changes: List<LearnedUi>, val note: String?)
+/**
+ * What the forge just done taught. [note] stands in when nothing moved: a repeat still short of understanding, or a
+ * recipe already known. [attempt] is what the forge was as an attempt at a signature the journal knows of, read from the
+ * command and the weapon: every condition met and it did not take, or a condition the clues name that it missed.
+ */
+@Immutable data class ForgeLearningUi(val changes: List<LearnedUi>, val note: String?, val attempt: String? = null)
 
 /**
  * The journal [before] and [after] one accepted forge, as the result card says it. Every sentence is `Journal.hint` on
  * the journal as it now stands, so an observed pairing stays tentative; nothing is read from the day's event text.
  */
-fun GameEngine.forgeLearning(before: JournalModel, after: JournalModel, forged: Command.Forge): ForgeLearningUi {
+fun GameEngine.forgeLearning(before: JournalModel, after: JournalModel, forged: Command.Forge, weapon: Weapon? = null): ForgeLearningUi {
     val pairings = listOf(JournalModel.coreAugmentKey(forged.coreId, forged.augmentId), JournalModel.augmentFamilyKey(forged.augmentId, forged.familyId))
     val learned = pairings.filter { after.state(it).ordinal > before.state(it).ordinal }.map { key ->
         LearnedUi(if (after.state(key) == KnowledgeState.OBSERVED) "First notes" else "Pairing learned", "${Journal.subjectName(content, key)}: ${Journal.hint(after, content, key)}")
@@ -341,14 +585,40 @@ fun GameEngine.forgeLearning(before: JournalModel, after: JournalModel, forged: 
     }
     val changes = learned + recipes
     val studying = pairings.any { after.state(it) == KnowledgeState.OBSERVED }
+    val attempt = weapon?.let { signatureAttempt(before, after, forged, it) }
     return ForgeLearningUi(
         changes,
         when {
-            changes.isNotEmpty() -> null
+            changes.isNotEmpty() || attempt != null -> null
             studying -> "Experiment recorded. Try this pairing again to learn more."
             else -> "No new findings. You've already learned these pairings."
         },
+        attempt,
     )
+}
+
+/**
+ * The forge as an attempt at the signature hidden in its recipe, from the accepted command and the weapon it made (its
+ * quality, its signature), said only as far as the journal's clues reach after it: "every condition met" needs every
+ * clue, and a missed condition is named only when a clue held before the forge names it. A first discovery is already among the changes and a
+ * clue just earned speaks for itself, so both are null here. No odds, no roll: what happened, in the clues' words.
+ */
+private fun GameEngine.signatureAttempt(before: JournalModel, after: JournalModel, forged: Command.Forge, weapon: Weapon): String? {
+    val def = SignatureCatalog.forRecipe(forged) ?: return null
+    if (weapon.signatureId == def.id) return if (before.state(def.journalKey) == KnowledgeState.SIGNATURE_DISCOVERED) "The known signature took again: ${def.name}." else null
+    val have = Journal.rungs(after, def)
+    if (ClueRung.RECIPE !in have) return null
+    val misses = def.misses(forged, weapon.quality)
+    if (misses.isEmpty()) return if (have.size == ClueRung.entries.size) "This forge met every condition of the recipe. The signature did not take this time. It is never certain." else null
+    // A condition is named only when a clue held before this forge names it: a clue it just earned has its own line.
+    val held = Journal.rungs(before, def)
+    val named = misses.filter { it.rung in held }.map {
+        when (it) {
+            SignatureDef.Miss.QUALITY -> "its quality fell short of what the recipe needs"
+            else -> Journal.clue(def, it.rung, config)
+        }
+    }
+    return if (named.isEmpty()) null else "No signature could form: ${named.joinToString("; ")}."
 }
 
 /**

@@ -49,7 +49,7 @@ import com.tinyblacksmith.core.model.KnowledgeState
 import com.tinyblacksmith.core.model.LegacyProfile
 import com.tinyblacksmith.core.model.LegendEntry
 import com.tinyblacksmith.core.model.Want
-import com.tinyblacksmith.core.model.WeaponFamilyId
+import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.persistence.DayCursor
 import com.tinyblacksmith.core.persistence.SaveCodec
 import com.tinyblacksmith.core.shopday.Lines
@@ -69,7 +69,7 @@ class M4ScreensTest {
     /** The first morning on seed 42 with blades still on the shelf (a three-day run can sell out) and heroes in town. */
     private val morning: GameState by lazy { ShopDayFixtures.run(42, 30).map { it.state }.first { !it.isEnded && it.listedWeapons().isNotEmpty() } }
 
-    private var forgedFamily: WeaponFamilyId? = null
+    private var forgedFor: HeroId? = null
 
     /** What is on screen: the Shop first, then the board in its place (content can be set only once). */
     private val shown = mutableStateOf<@Composable () -> Unit>({})
@@ -105,7 +105,7 @@ class M4ScreensTest {
         compose.onNodeWithText(line).assertIsDisplayed()
         compose.onNodeWithTag("want_answered_${hero.id.value}").assertDoesNotExist()
         compose.onNodeWithTag("forge_want_${hero.id.value}").performClick()
-        assertEquals(family, forgedFamily)
+        assertEquals("the want goes to the Forge with who it is for", hero.id, forgedFor)
     }
 
     @Test
@@ -127,7 +127,7 @@ class M4ScreensTest {
         val shop = engine.shopUi(state)
         shown.value = {
             Box(Modifier.size(360.dp, 640.dp)) {
-                CommissionBoard(shop.board(), shop.requestSlots, busy = false, chosen = null, onOpenHero = {}, onAnswer = { _, _ -> }, onForgeThis = {}, onForgeWant = { forgedFamily = it })
+                CommissionBoard(shop.board(), shop.requestSlots, busy = false, chosen = null, onOpenHero = {}, onAnswer = { _, _ -> }, onForgeThis = {}, onForgeWant = { forgedFor = it })
             }
         }
         compose.waitForIdle()

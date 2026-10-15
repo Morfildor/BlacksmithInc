@@ -68,6 +68,7 @@ import com.example.blacksmithproject.ForgeDraft
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.RecordsPage
+import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.shopday.Backdrop
 import com.example.blacksmithproject.ui.theme.Bronze
@@ -96,6 +97,7 @@ import com.tinyblacksmith.core.model.KnowledgeState
 import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.model.WeaponFamilyId
+import com.tinyblacksmith.core.model.WeaponId
 
 private const val NO_SLOT = "none"
 private val Card = RoundedCornerShape(10.dp)
@@ -151,7 +153,14 @@ fun ForgePanel(
         Column(Modifier.weight(1f).bottomFade(scroll.canScrollForward).verticalScroll(scroll).padding(horizontal = Space.md).padding(bottom = Space.md)) {
             ForgeHeading(s.shop.requests.size, s.shop.requests.count { it.offered }, endDayNote, onOpenBoard, { onOpenSupplies(null) }, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
             Workbench(bench.title, d, vm.engine.content, compact = open != null, reducedMotion)
-            bench.brief?.let { Brief(it, onOpenBoard) { vm.updateDraft { draft -> draft.copy(commissionId = null) } } }
+            bench.brief?.let { b ->
+                Brief(
+                    b, onOpen = { b.heroId?.let { vm.openSheet(Sheet.Hero(it)) } ?: onOpenBoard() }, onOpenBlade = { vm.openSheet(Sheet.Item(it)) },
+                    onClear = { vm.updateDraft { draft -> draft.copy(commissionId = null, wantHeroId = null) } },
+                )
+            }
+            // How it is forged comes before what goes in: Advanced adds two places to the recipe and the Heartfire switch.
+            ModeToggle(d) { change -> vm.updateDraft(change) }
             // The places and the open tray come into view together. A tray taller than the screen keeps its head in view,
             // so the labels of the places (Weapon, Metal, Augment) stay on screen while a choice is made.
             val recipe = remember { BringIntoViewRequester() }
@@ -161,19 +170,31 @@ fun ForgePanel(
                 if (bench.slots.size > 3) SlotRow(bench.slots.drop(3), d, engine.content, open, reducedMotion) { opened = if (open == it) NO_SLOT else it.name; follow = true }
                 if (open != null) {
                     val options = remember(s.state, d, open, s.shop.threat) { engine.forgeOptions(s.state, d, open, s.shop.threat) }
-                    Tray(open, options, engine.content, onOpenSupplies, onDone = { opened = NO_SLOT }) { option -> vm.updateDraft { engine.place(it, open, option) }; opened = null; follow = true }
+                    // What this place held when its tray opened: the comparison's baseline. Taken again when another place
+                    // opens or the tray is reopened, and kept across a restart ("" is nothing chosen).
+                    val baseId = rememberSaveable(open) { d.idIn(open) ?: "" }.ifEmpty { null }
+                    val change = remember(s.state, d, open, baseId, s.shop.requests, s.shop.threat) { engine.trayChange(s.state, d.withSlot(open, baseId), d, open, s.shop.requests, s.shop.threat) }
+                    Tray(open, options, engine.content, change, onOpenSupplies, onDone = { opened = NO_SLOT }, onPutBack = { vm.updateDraft { it.withSlot(open, baseId) } }) { option ->
+                        // Filling an empty place moves on to the next one, the first time through. Changing a choice keeps
+                        // the tray open, so another can be tried against the first and put back.
+                        val filling = open.ordinal <= RecipeSlot.AUGMENT.ordinal && d.idIn(open) == null
+                        vm.updateDraft { engine.place(it, open, option) }
+                        if (filling) { opened = null; follow = true }
+                    }
                 }
             }
             if (bench.notes.isNotEmpty()) FieldNotes(bench.notes) { vm.selectRecords(RecordsPage.JOURNAL) }
             bench.outlook?.let { ForgeOutlookCard(it) { rehearsing = true } }
-            ForgingOptions(d, engine.config) { change -> vm.updateDraft(change) }
             bench.heartfire?.let { h -> HeartfireRow(h) { v -> vm.updateDraft { it.copy(heartfire = v) } } }
             // The workshop's relics that bear on this forge: the bellows as a switch, the ledger's word on the family chosen.
             BellowsRow(s, vm)
             LedgerLine(s, vm)
             tip?.let { TipBanner(it, vm, Modifier.padding(top = Space.md)) }
         }
-        ForgeAction(bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay, marked = s.intro?.mark == IntroMark.FORGE) {
+        ForgeAction(
+            bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay, marked = s.intro?.mark == IntroMark.FORGE,
+            risk = { modifier, inline -> RiskChoice(d.risk, engine.config, modifier, inline) { r -> vm.updateDraft { draft -> draft.copy(risk = r) } } },
+        ) {
             if (bench.command?.heartfire == true) confirming = true else send()
         }
     }
@@ -246,18 +267,44 @@ private fun Workbench(title: String, d: ForgeDraft, content: ContentCatalog, com
     }
 }
 
-/** The commission the draft was started from: what it asks, whether the draft answers it, and that nothing is promised. */
+/**
+ * Who the draft is for: a commission or a hero's want, what it asks and whether the draft answers it, then the blades the
+ * shop already holds of that type, so stock is weighed before another forge. Nothing here is promised or set aside. A
+ * purpose that has gone says so in place. "Forge freely" drops it and keeps the ingredients.
+ */
 @Composable
-private fun Brief(b: BriefUi, onOpen: () -> Unit, onClear: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().clickable(onClickLabel = "Open commission", onClick = onOpen).padding(start = Space.md).testTag("forge_for"), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f).padding(vertical = Space.sm)) {
-            Text(b.title, style = MaterialTheme.typography.labelLarge, color = Cream)
-            Text(
-                b.asks.joinToString(" · ") { if (it.matches == true) "✓ ${it.text}" else it.text } + if (b.accepted) " · Accepted" else " · Not accepted yet",
-                style = MaterialTheme.typography.bodySmall, color = CreamMuted,
-            )
+private fun Brief(b: BriefUi, onOpen: () -> Unit, onOpenBlade: (WeaponId) -> Unit, onClear: () -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().testTag("forge_for")) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                Modifier.weight(1f).clickable(onClickLabel = if (b.heroId != null) "Open hero" else "Open commission", onClick = onOpen)
+                    .padding(start = Space.md, top = Space.sm, bottom = Space.sm, end = Space.xs),
+            ) {
+                Text(b.title, style = MaterialTheme.typography.labelLarge, color = if (b.gone == null) Cream else CreamMuted)
+                if (b.gone != null) Text(b.gone, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.testTag("forge_for_gone"))
+                else Text(
+                    (b.asks.map { if (it.matches == true) "✓ ${it.text}" else it.text } + b.status).joinToString(" · "),
+                    style = MaterialTheme.typography.bodySmall, color = CreamMuted,
+                )
+            }
+            TextButton(onClick = onClear, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_clear_target")) { Text("Forge freely", color = Gold) }
         }
-        TextButton(onClick = onClear, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_clear_target")) { Text("Clear target", color = Gold) }
+        if (b.gone == null && (b.stock.isNotEmpty() || b.stockNote != null)) Column(Modifier.padding(start = Space.md, end = Space.xs, bottom = Space.xs).testTag("forge_for_stock")) {
+            Text("Already in your shop", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+            b.stock.forEach { w ->
+                Row(
+                    Modifier.fillMaxWidth().clickable(onClickLabel = "Open ${w.name}", role = Role.Button) { onOpenBlade(w.weaponId) }.heightIn(min = 48.dp).testTag("forge_for_stock_${w.weaponId.value}"),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text((if (w.fits) "✓ " else "") + w.name, style = MaterialTheme.typography.bodyMedium, color = if (w.fits) BuffGreen else Cream)
+                        Text(w.line, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                    }
+                    Text("Open ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(horizontal = Space.sm))
+                }
+            }
+            b.stockNote?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(vertical = Space.xs)) }
+        }
     }
 }
 
@@ -321,24 +368,36 @@ private fun optionArt(slot: RecipeSlot, option: OptionUi, content: ContentCatalo
 
 /**
  * The choices for one place, as a grid of equal tiles: three across, two on a narrow screen or with large text. A tap
- * places a tile that can be used. A material that has run out stays in the tray, apart and dimmed: a tap on it says
- * what is missing and offers the way to buy it. What the chosen tile does is said once, under the grid.
+ * on a tile that can be used places it and the tray stays open; a material that has run out stays in the tray, apart
+ * and dimmed, and a tap on it only shows it, with why it cannot be used and where more comes from. Under the grid, one
+ * focused choice: what it is and does, and how the draft now differs from the one the tray was opened on ([change]),
+ * with the way back to it. Choosing is free: nothing is spent and nothing is drawn until "Forge".
  */
 @Composable
-private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, onRestock: (MaterialId?) -> Unit, onDone: () -> Unit, onPick: (OptionUi) -> Unit) {
+private fun Tray(
+    slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, change: TrayChangeUi?, onRestock: (MaterialId?) -> Unit, onDone: () -> Unit, onPutBack: () -> Unit,
+    onPick: (OptionUi) -> Unit,
+) {
     val columns = if (LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340) 2 else 3
     var inspected by remember(slot) { mutableStateOf<String?>(null) }
     Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeLine, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
+        // With large text the name takes its own line and the two actions sit under it, so it is never cut letter by letter.
+        @Composable fun actions() {
             TextButton(onClick = { onRestock(null) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_buy")) { Text("Buy more", color = Gold) }
-            TextButton(onClick = onDone, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_done")) { Text("Done", color = CreamMuted) }
+            TextButton(onClick = onDone, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_done")) { Text("Done", color = Gold) }
+        }
+        if (columns == 2) {
+            Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm).semantics { heading() })
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { actions() }
+        } else Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
+            actions()
         }
         @Composable
         fun grid(tiles: List<OptionUi>) = tiles.chunked(columns).forEach { row ->
             // One height for the row: a name that wraps makes its neighbours as tall, not itself the odd one.
             Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(bottom = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                row.forEach { o -> OptionTile(o, optionArt(slot, o, content), Modifier.weight(1f).fillMaxHeight()) { if (o.usable) onPick(o) else inspected = o.id } }
+                row.forEach { o -> OptionTile(o, optionArt(slot, o, content), Modifier.weight(1f).fillMaxHeight(), inspected = o.id != null && o.id == inspected) { if (o.usable) { inspected = null; onPick(o) } else inspected = o.id } }
                 repeat(columns - row.size) { Spacer(Modifier.weight(1f)) }
             }
         }
@@ -348,40 +407,71 @@ private fun Tray(slot: RecipeSlot, options: List<OptionUi>, content: ContentCata
             Text("Out of stock", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.padding(bottom = Space.xs))
             grid(out)
         }
-        val shown = staleFree(inspected, options) ?: options.firstOrNull { it.selected && it.id != null }
         // What the besieger is weak to or resists, in words under the tiles: a tile's sign alone could be read as a verdict on the pairing.
         options.mapNotNull { it.mark }.distinct().forEach { mark ->
             Text("${mark.kind.sign} Against the siege: ${mark.label}", style = MaterialTheme.typography.bodySmall, color = mark.kind.color, modifier = Modifier.padding(bottom = Space.xs).testTag("forge_siege_mark"))
         }
-        // A guild run: what each choice of this tray does in a fight, so the choice can be made before it is placed.
-        val rules = options.filter { it.fight.isNotEmpty() }
-        if (rules.isNotEmpty()) Column(Modifier.fillMaxWidth().padding(bottom = Space.sm).testTag("forge_tray_fight")) {
-            Text("Effects in a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
-            rules.forEach { o ->
-                Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
-                    Text(o.name, style = MaterialTheme.typography.labelLarge, color = if (o.selected) Gold else Cream)
-                    o.fight.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+        val focused = staleFree(inspected, options) ?: options.firstOrNull { it.selected }
+        if (focused == null) {
+            // Nothing in this place yet: the first choice is made from the whole tray. A guild run says what each choice
+            // does in a fight, so it can be made before it is placed.
+            Text(slot.hint, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+            val rules = options.filter { it.fight.isNotEmpty() }
+            if (rules.isNotEmpty()) Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("forge_tray_fight")) {
+                Text("Effects in a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+                rules.forEach { o ->
+                    Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
+                        Text(o.name, style = MaterialTheme.typography.labelLarge, color = Cream)
+                        o.fight.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+                    }
                 }
             }
+        } else TrayFocus(slot, focused, if (focused.usable) change else null, { onRestock(focused.id?.let(::MaterialId)) }, onPutBack)
+    }
+}
+
+/** The one choice in focus: its name and stock, what it is, its effects in a fight, why it cannot be used, and the draft against the tray's baseline. */
+@Composable
+private fun TrayFocus(slot: RecipeSlot, o: OptionUi, change: TrayChangeUi?, onRestock: () -> Unit, onPutBack: () -> Unit) {
+    Column(Modifier.fillMaxWidth().clip(Chip).background(ForgeNight).border(1.dp, BronzeDeep, Chip).padding(horizontal = 12.dp, vertical = Space.sm).testTag("forge_tray_detail")) {
+        Text(listOfNotNull(o.name, o.stock?.let { if (it == 0) "none left" else "$it in stock" }).joinToString(" · "), style = MaterialTheme.typography.titleSmall, color = if (o.usable) Cream else CreamMuted)
+        (o.detail ?: slot.hint.takeIf { o.id == null })?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+        if (o.fight.isNotEmpty()) Column(Modifier.padding(top = Space.xs).testTag("forge_tray_fight")) {
+            o.fight.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp)) }
         }
-        if (shown == null) Text(slot.hint, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-        else Row(Modifier.fillMaxWidth().testTag("forge_tray_detail"), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(if (shown.usable) listOfNotNull(shown.name, shown.detail).joinToString(" · ") else "No ${shown.name} left", style = MaterialTheme.typography.bodyMedium, color = Cream)
+        o.blocked?.let { why ->
+            Row(Modifier.fillMaxWidth().padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically) {
+                Text(why, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.weight(1f).testTag("forge_tray_blocked"))
+                TextButton(onClick = onRestock, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_restock_tray")) { Text("Restock", color = Gold) }
             }
-            if (!shown.usable) TextButton(onClick = { onRestock(shown.id?.let(::MaterialId)) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_restock_tray")) { Text("Restock", color = Gold) }
+        }
+        change?.let { c ->
+            Column(Modifier.padding(top = Space.sm).testTag("forge_tray_change")) {
+                if (c.changes.isEmpty()) Text("Unchanged from ${c.from}", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+                else {
+                    Text("Compared with ${c.from}", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+                    c.changes.forEach { ch ->
+                        val (sign, color) = when (ch.good) { true -> "+" to BuffGreen; false -> "−" to FlawRed; null -> "·" to CreamMuted }
+                        Row(Modifier.padding(top = 2.dp).semantics(mergeDescendants = true) {}) {
+                            Text(sign, style = MaterialTheme.typography.bodySmall, color = color, modifier = Modifier.width(16.dp))
+                            Text(ch.text, style = MaterialTheme.typography.bodySmall, color = Cream)
+                        }
+                    }
+                    InlineActionButton("Put back ${c.from}", onPutBack, Modifier.testTag("forge_tray_put_back"))
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, onClick: () -> Unit) {
+private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, inspected: Boolean = false, onClick: () -> Unit) {
     Box(
-        modifier.heightIn(min = 72.dp).clip(Chip).background(ForgeNight).border(if (o.selected) 1.5.dp else 1.dp, if (o.selected) Gold else BronzeDeep, Chip)
+        modifier.heightIn(min = 72.dp).clip(Chip).background(ForgeNight).border(if (o.selected || inspected) 1.5.dp else 1.dp, if (o.selected) Gold else if (inspected) CreamMuted else BronzeDeep, Chip)
             .clickable(role = Role.Button, onClick = onClick).alpha(if (o.usable) 1f else 0.5f).testTag("forge_option_${o.id ?: "none"}")
             .semantics(mergeDescendants = true) {
                 selected = o.selected
-                contentDescription = listOfNotNull(o.name, o.stock?.let { if (it == 0) "none left" else "$it in stock" }, o.mark?.label).joinToString(", ")
+                contentDescription = listOfNotNull(o.name, o.stock?.let { if (it == 0) "none left" else "$it in stock" }, o.mark?.label, o.blocked?.let { "cannot be used now" }).joinToString(", ")
             },
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.xs, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -409,11 +499,19 @@ fun FieldNotes(notes: List<NoteUi>, modifier: Modifier = Modifier, onOpenJournal
             Text("Field notes", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
             if (onOpenJournal != null) Text("Open notebook ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).wrapContentHeight().padding(start = Space.sm).testTag("forge_notes_journal"))
         }
-        if (stacked) notes.forEachIndexed { i, n -> FieldNote(i, n, Modifier.fillMaxWidth().padding(top = if (i > 0) Space.sm else 0.dp)) }
+        val pairings = notes.filter { it.label != "Signature" }
+        if (stacked) pairings.forEachIndexed { i, n -> FieldNote(i, n, Modifier.fillMaxWidth().padding(top = if (i > 0) Space.sm else 0.dp)) }
         else Row(Modifier.height(IntrinsicSize.Min)) {
-            notes.forEachIndexed { i, n ->
+            pairings.forEachIndexed { i, n ->
                 if (i > 0) Box(Modifier.padding(horizontal = 12.dp).width(1.dp).fillMaxHeight().background(BronzeDeep))
                 FieldNote(i, n, Modifier.weight(1f))
+            }
+        }
+        notes.firstOrNull { it.label == "Signature" }?.let { n ->
+            Column(Modifier.fillMaxWidth().padding(top = Space.sm).drawBehind { drawLine(BronzeDeep, Offset.Zero, Offset(size.width, 0f), strokeWidth = 1.dp.toPx()) }.padding(top = Space.sm).testTag("forge_note_signature")
+                .semantics(mergeDescendants = true) { contentDescription = "Signature, ${n.subject}, ${n.stage}: ${n.hint}" }) {
+                Text("${n.state.glyph()} Signature · ${n.stage}", style = MaterialTheme.typography.labelMedium, color = n.state.color())
+                Text(n.hint, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp))
             }
         }
     }
@@ -488,28 +586,34 @@ private fun FieldNote(i: Int, n: NoteUi, modifier: Modifier) {
     }
 }
 
-/** Quick or Advanced as a two-part toggle (its cost is on the Forge action), and risk as one compact choice whose menu says what each means. */
+/**
+ * Quick or Advanced as a two-part toggle, before the places it changes (its cost is on the Forge action). Going back to
+ * Quick drops the catalyst, the technique and the Heartfire, which only an Advanced forge takes.
+ */
 @Composable
-private fun ForgingOptions(d: ForgeDraft, config: BalanceConfig, onChange: ((ForgeDraft) -> ForgeDraft) -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+private fun ModeToggle(d: ForgeDraft, onChange: ((ForgeDraft) -> ForgeDraft) -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(top = Space.sm), verticalAlignment = Alignment.CenterVertically) {
         Row(Modifier.clip(Card).border(1.dp, BronzeDeep, Card).padding(4.dp)) {
             ForgeMode.entries.forEach { mode ->
                 val on = d.mode == mode
                 Box(
                     Modifier.heightIn(min = 48.dp).clip(Chip).background(if (on) BronzeContainer else ForgeNight).then(if (on) Modifier.border(1.dp, Gold, Chip) else Modifier)
-                        .clickable(role = Role.RadioButton) { onChange { it.copy(mode = mode, catalystId = it.catalystId?.takeIf { mode == ForgeMode.ADVANCED }, technique = it.technique?.takeIf { mode == ForgeMode.ADVANCED }, heartfire = it.heartfire && mode == ForgeMode.ADVANCED) } }
+                        .clickable(role = Role.RadioButton) { onChange { it.inMode(mode) } }
                         .padding(horizontal = 12.dp).testTag("forge_mode_${mode.name.lowercase()}").semantics { selected = on },
                     contentAlignment = Alignment.Center,
                 ) { Text(if (mode == ForgeMode.QUICK) "Quick" else "Advanced", style = MaterialTheme.typography.labelLarge, color = if (on) Gold else CreamMuted) }
             }
         }
-        Spacer(Modifier.weight(1f))
-        Choice("Risk", riskName(d.risk), "forge_risk", Modifier.width(132.dp), Risk.entries.map { Triple(riskName(it), riskExplanation(it, config), it) }) { risk -> onChange { it.copy(risk = risk) } }
     }
 }
 
+/** Risk as one compact choice whose menu says what each means, beside the action it changes. */
 @Composable
-private fun <T> Choice(label: String, value: String, tag: String, modifier: Modifier, choices: List<Triple<String, String, T>>, onPick: (T) -> Unit) {
+private fun RiskChoice(risk: Risk, config: BalanceConfig, modifier: Modifier, inline: Boolean, onPick: (Risk) -> Unit) =
+    Choice("Risk", riskName(risk), "forge_risk", modifier, Risk.entries.map { Triple(riskName(it), riskExplanation(it, config), it) }, inline, onPick)
+
+@Composable
+private fun <T> Choice(label: String, value: String, tag: String, modifier: Modifier, choices: List<Triple<String, String, T>>, inline: Boolean = false, onPick: (T) -> Unit) {
     Box(modifier) {
         var open by remember { mutableStateOf(false) }
         Row(
@@ -517,7 +621,9 @@ private fun <T> Choice(label: String, value: String, tag: String, modifier: Modi
                 .semantics(mergeDescendants = true) { contentDescription = "$label: $value, tap to change" },
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(Modifier.weight(1f)) {
+            // [inline]: one line, for a row of its own under large text, where two lines would take the recipe's room.
+            if (inline) Text("$label: $value", style = MaterialTheme.typography.labelLarge, color = Cream, modifier = Modifier.weight(1f))
+            else Column(Modifier.weight(1f)) {
                 Text(label, style = MaterialTheme.typography.labelSmall, color = CreamMuted)
                 Text(value, style = MaterialTheme.typography.labelLarge, color = Cream)
             }
@@ -536,10 +642,15 @@ private fun <T> Choice(label: String, value: String, tag: String, modifier: Modi
 
 /**
  * Pinned at the foot: the one thing in the way (with the way past it beside it), or the price of overwork, then the
- * one gold action with its energy cost in its own label. When no forge is possible today, End day stands beside it.
+ * temper ([risk]) and the one gold action with its energy cost in its own label: what the forge will cost and risk,
+ * together. When no forge is possible today, End day stands beside it. With large text, on a narrow screen or beside End
+ * day, the risk takes a row of its own rather than squeezing the action.
  */
 @Composable
-private fun ForgeAction(bench: ForgeWorkbenchUi, busy: Boolean, endDayNote: String, onRestock: () -> Unit, onEndDay: () -> Unit, marked: Boolean = false, onForge: () -> Unit) {
+private fun ForgeAction(
+    bench: ForgeWorkbenchUi, busy: Boolean, endDayNote: String, onRestock: () -> Unit, onEndDay: () -> Unit, marked: Boolean = false,
+    risk: @Composable (Modifier, Boolean) -> Unit = { _, _ -> }, onForge: () -> Unit,
+) {
     val a = bench.action
     Column(
         Modifier.fillMaxWidth().background(ForgePanel).drawBehind { drawLine(BronzeDeep, Offset.Zero, Offset(size.width, 0f), strokeWidth = 1.dp.toPx()) }
@@ -549,7 +660,10 @@ private fun ForgeAction(bench: ForgeWorkbenchUi, busy: Boolean, endDayNote: Stri
             Text(a.note, style = MaterialTheme.typography.bodySmall, color = if (a.enabled) Cream else CreamMuted, modifier = Modifier.weight(1f).padding(vertical = Space.xs).testTag("forge_note"))
             if (a.restock != null) TextButton(onClick = onRestock, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_restock")) { Text("Restock", color = Gold) }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+        val stacked = a.endDay || LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 360
+        if (stacked) risk(Modifier.fillMaxWidth().padding(bottom = Space.xs), true)
+        Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+            if (!stacked) risk(Modifier.width(124.dp), false)
             val enabled = a.enabled && !busy
             PrimaryActionButton(
                 a.label, onForge,
@@ -614,8 +728,13 @@ private fun HeartfireRow(h: HeartfireUi, onToggle: (Boolean) -> Unit) {
             h.outlook.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp)) }
             h.warning?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = 2.dp).testTag("forge_heartfire_warning")) }
         }
-        Secondary(h.rule, Modifier.padding(top = Space.xs))
-        Secondary(h.source)
+        // How Heartfire works is the same every day: one tap away, not under every forge.
+        var how by rememberSaveable { mutableStateOf(false) }
+        InlineActionButton(if (how) "Hide how Heartfire works" else "How Heartfire works", { how = !how }, Modifier.testTag("forge_heartfire_how"))
+        if (how) {
+            Secondary(h.rule)
+            Secondary(h.source, Modifier.padding(top = Space.xs))
+        }
     }
 }
 

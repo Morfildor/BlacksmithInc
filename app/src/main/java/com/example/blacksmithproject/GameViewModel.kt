@@ -29,6 +29,8 @@ import com.example.blacksmithproject.ui.introRow
 import com.example.blacksmithproject.ui.introSynced
 import com.example.blacksmithproject.ui.introUi
 import com.example.blacksmithproject.ui.guildUi
+import com.example.blacksmithproject.ui.contractUi
+import com.tinyblacksmith.core.combat.Posture
 import com.example.blacksmithproject.ui.threat
 import com.example.blacksmithproject.ui.ShopUi
 import com.example.blacksmithproject.ui.forgeLearning
@@ -104,6 +106,12 @@ data class ForgeDraft(
     val bellows: Boolean = false,
     /** "Forge with Heartfire" asked for on the next forge (Advanced only); cleared by that forge. */
     val heartfire: Boolean = false,
+    /**
+     * The hero whose standing want this draft was started from ("Forge this" on a want). Never an order: nothing is
+     * accepted, promised or set aside, and the Forge reads the want back from the save each time. At most one of this and
+     * [commissionId] is set.
+     */
+    val wantHeroId: HeroId? = null,
 ) {
     /** The forge command this draft stands for; null until a family, a core and an augment are chosen. */
     fun command(): Command.Forge? =
@@ -151,6 +159,7 @@ sealed interface UiState {
         val intro: IntroUi? = null,
         /** The Guild part last chosen, and on which day; UI-only. */
         val guildTab: GuildTabMemory? = null,
+        val partyDraft: PartyDraft? = null,
     ) : UiState {
         val busy: Boolean get() = op is Status.Working
     }
@@ -207,6 +216,7 @@ class GameViewModel(
 ) : ViewModel() {
     private data class Local(
         val dest: Dest = Dest.SHOP,
+        val partyDraft: PartyDraft? = null,
         val guildTab: GuildTabMemory? = null,
         val records: RecordsPage = RecordsPage.GAZETTE,
         val draft: ForgeDraft = ForgeDraft(),
@@ -393,7 +403,7 @@ class GameViewModel(
         val intro = engine.introUi(record, run, l.dest, l.draft)
         // While the first day is guided the relic offer does not open by itself ("Decide later"); the Shop's row still opens it.
         val relicDay = l.relicOfferDismissedDay ?: run.day.takeIf { intro != null && !l.relicAsked }
-        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, relicDay, planned.guild, intro, guildTab = l.guildTab)
+        return UiState.Playing(run, planned.shop, planned.forecast, l.dest, l.records, l.draft, l.revealWeaponId, l.lastError, op, l.blessingOfferDismissedDay, l.sheet, l.notice, l.forgeReveal, l.learning, planned.encounter, planned.relics, relicDay, planned.guild, intro, guildTab = l.guildTab, partyDraft = l.partyDraft)
     }
 
     /** The screen as it stands this instant ([ui] may be one dispatch behind, or waiting for a script). */
@@ -448,12 +458,23 @@ class GameViewModel(
         saved[KEY_BLESSING_DAY] = l.blessingOfferDismissedDay
         saved[KEY_RELIC_DAY] = l.relicOfferDismissedDay
         saved[KEY_SHEET] = when (val sheet = l.sheet) { is Sheet.Hero -> "hero:${sheet.id.value}"; is Sheet.Item -> "item:${sheet.id.value}"; Sheet.Visitor -> "visitor:"; null -> null }
-        saved[KEY_DRAFT] = with(l.draft) { arrayListOf(mode.name, familyId?.value, coreId?.value, augmentId?.value, catalystId?.value, risk.name, technique?.name, commissionId?.value, bellows.toString(), heartfire.toString()) }
+        saved[KEY_DRAFT] = with(l.draft) { arrayListOf(mode.name, familyId?.value, coreId?.value, augmentId?.value, catalystId?.value, risk.name, technique?.name, commissionId?.value, bellows.toString(), heartfire.toString(), wantHeroId?.value) }
+        saved[KEY_PARTY] = l.partyDraft?.let { d -> arrayListOf(d.runId, d.day.toString(), d.offerId, d.posture.name).apply {
+            d.members.forEach { add(it.value); add(d.equipment[it].orEmpty()) }
+        } }
     }
 
     private fun restored(): Local {
         val d = saved.get<ArrayList<String?>>(KEY_DRAFT)?.takeIf { it.size >= 7 }
         return Local(
+            partyDraft = saved.get<ArrayList<String>>(KEY_PARTY)?.let { p ->
+                if (p.size < 4 || (p.size - 4) % 2 != 0) null else p[1].toIntOrNull()?.let { day ->
+                    Posture.entries.firstOrNull { it.name == p[3] }?.let { posture ->
+                        val pairs = p.drop(4).chunked(2)
+                        PartyDraft(p[0], day, p[2], pairs.map { HeroId(it[0]) }, posture, pairs.associate { HeroId(it[0]) to it[1] })
+                    }
+                }
+            },
             dest = saved.get<String>(KEY_DEST)?.let { name -> Dest.entries.firstOrNull { it.name == name } } ?: Dest.SHOP,
             records = saved.get<String>(KEY_RECORDS)?.let { name -> RecordsPage.entries.firstOrNull { it.name == name } } ?: RecordsPage.GAZETTE,
             guildTab = saved.get<String>(KEY_GUILD_TAB)?.let { v ->
@@ -467,6 +488,7 @@ class GameViewModel(
                 commissionId = d.getOrNull(7)?.let(::CommissionId),
                 bellows = d.getOrNull(8) == "true",
                 heartfire = d.getOrNull(9) == "true",
+                wantHeroId = d.getOrNull(10)?.let(::HeroId),
             ),
             revealWeaponId = saved.get<String>(KEY_REVEAL)?.let(::WeaponId),
             blessingOfferDismissedDay = saved.get<Int>(KEY_BLESSING_DAY),
@@ -547,10 +569,19 @@ class GameViewModel(
         val asked = run.commissions[id] ?: return
         val augments = engine.content.materials(MaterialCategory.AUGMENT).filter { asked.element != null && it.element == asked.element }
         val augment = augments.firstOrNull { (run.materials[it.id] ?: 0) > 0 } ?: augments.firstOrNull()
-        edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(familyId = asked.familyId, augmentId = augment?.id ?: it.draft.augmentId, commissionId = id)) }
+        edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(familyId = asked.familyId, augmentId = augment?.id ?: it.draft.augmentId, commissionId = id, wantHeroId = null)) }
     }
-    /** "Forge this" on a standing want (the Shop's lead, "Who is buying", the Forge): the forge opens with the family the hero left without. */
-    fun forgeFamily(id: WeaponFamilyId) = edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(familyId = id, commissionId = null)) }
+    /** The forge opens with [id] on the anvil and no purpose: free work. */
+    fun forgeFamily(id: WeaponFamilyId) = edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(familyId = id, commissionId = null, wantHeroId = null)) }
+    /**
+     * "Forge this" on a hero's standing want (the Shop's lead, the board): the forge opens with the family they left
+     * without and keeps who wanted it beside the draft. Not an order: nothing is accepted or set aside. A want that has
+     * gone by now leaves the draft as it was.
+     */
+    fun forgeWant(heroId: HeroId) {
+        val want = session.snapshot.value?.run?.heroes?.get(heroId)?.takeIf { it.isAlive }?.want ?: return
+        edit { it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(familyId = want.familyId, commissionId = null, wantHeroId = heroId)) }
+    }
     /** "Use this recipe" on a found signature in the journal: the forge opens on the whole recipe (`SignatureCatalog.recipe`). Nothing is forged. */
     fun useRecipe(recipe: Command.Forge) = edit {
         it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = ForgeDraft(recipe.mode, recipe.familyId, recipe.coreId, recipe.augmentId, recipe.catalystId, recipe.risk, recipe.technique))
@@ -607,6 +638,46 @@ class GameViewModel(
     /** Opening or closing a sheet also puts away the last notice: it was about what was on screen before. */
     fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet, notice = null) }
     fun closeSheet() = edit { it.copy(sheet = null, notice = null) }
+
+    fun openContract(id: String) {
+        val run = session.snapshot.value?.run ?: return
+        if (run.guild?.offers?.none { it.id == id } != false) return
+        val planned = run.guild?.planned?.takeIf { it.offerId == id }
+        val draft = PartyDraft(run.runId.value, run.day, id, planned?.heroIds.orEmpty(), planned?.posture ?: Posture.BALANCED).reviewEquipment(run)
+        edit { it.copy(partyDraft = draft, sheet = null) }
+    }
+
+    fun closeContract() = edit { it.copy(partyDraft = null) }
+
+    fun togglePartyMember(id: HeroId) {
+        val run = session.snapshot.value?.run ?: return
+        val d = local.value.partyDraft ?: return
+        val ui = engine.contractUi(run, d.offerId, d.members, d.posture) ?: return
+        if (id !in d.members && (d.members.size >= ui.partyMax || ui.picks.none { it.heroId == id && it.blocked == null })) return
+        edit { it.copy(partyDraft = d.toggle(run, id)) }
+    }
+
+    fun movePartyMember(id: HeroId, offset: Int) = edit { it.copy(partyDraft = it.partyDraft?.move(id, offset)) }
+    fun setPartyPosture(posture: Posture) = edit { it.copy(partyDraft = it.partyDraft?.copy(posture = posture)) }
+    fun reviewPartyEquipment() {
+        val run = session.snapshot.value?.run ?: return
+        edit { it.copy(partyDraft = it.partyDraft?.reviewEquipment(run)) }
+    }
+
+    /** Re-read the session immediately before dispatch. Invalid drafts remain visible and never submit a subset. */
+    fun confirmParty() {
+        val run = session.snapshot.value?.run ?: return
+        val d = local.value.partyDraft ?: return
+        if (d.runId != run.runId.value || d.day != run.day || d.equipmentChanges(run).isNotEmpty()) return
+        val ui = engine.contractUi(run, d.offerId, d.members, d.posture) ?: return
+        if (ui.sendBlocked != null) return
+        launch(Op.Dispatch(Command.PlanDeployment(d.offerId, d.members, d.posture), run.runId)) { closeContract() }
+    }
+
+    fun cancelPartyPlan() {
+        val run = session.snapshot.value?.run ?: return
+        launch(Op.Dispatch(Command.CancelPlannedDeployment, run.runId)) { closeContract() }
+    }
 
     /**
      * A stock change from a blade's sheet or a Storage row. Once it is saved the screen says what happened ([notice]).
@@ -755,6 +826,7 @@ class GameViewModel(
         }
         val s = now() as? UiState.Playing ?: return false
         if (s.sheet != null) { closeSheet(); return true }
+        if (s.partyDraft != null) { closeContract(); return true }
         if (s.dest == Dest.SHOP) return false
         selectDest(Dest.SHOP)
         return true
@@ -763,11 +835,13 @@ class GameViewModel(
     fun dispatch(command: Command) {
         val run = session.snapshot.value?.run ?: return
         if (command !is Command.Forge) return launch(Op.Dispatch(command, run.runId))
-        // The journal on either side of the accepted forge: what the result card says was learned.
+        // The journal on either side of the accepted forge, and the blade it made: what the result card says was learned
+        // and what the forge was as an attempt at a signature, from the saved result, never from its text.
         val before = run.legacy.journal
         launch(Op.Dispatch(command, run.runId)) {
-            val after = session.snapshot.value?.run?.legacy?.journal ?: return@launch
-            edit { it.copy(learning = engine.forgeLearning(before, after, command)) }
+            val now = session.snapshot.value?.run ?: return@launch
+            val forged = now.weapons.values.firstOrNull { it.id !in run.weapons }
+            edit { it.copy(learning = engine.forgeLearning(before, now.legacy.journal, command, forged)) }
         }
     }
 
@@ -913,6 +987,7 @@ class GameViewModel(
         private const val KEY_RECORDS = "records"
         private const val KEY_GUILD_TAB = "guild_tab"
         private const val KEY_DRAFT = "draft"
+        private const val KEY_PARTY = "party_draft"
         private const val KEY_REVEAL = "reveal"
         private const val KEY_BLESSING_DAY = "blessing_day"
         private const val KEY_SHEET = "sheet"

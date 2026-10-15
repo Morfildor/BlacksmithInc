@@ -38,6 +38,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -98,6 +99,13 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
     LaunchedEffect(weaponId) { haptics.play(if (w.signatureId != null || w.rarity >= Rarity.EPIC) Moment.FORGE_SIGNATURE else Moment.FORGE_STRIKE) }
     val detail = remember(s.state, weaponId) { vm.engine.itemDetail(s.state, weaponId) } ?: return
     val request = remember(s.state, weaponId, s.draft.commissionId) { vm.engine.forgedFor(s.state, weaponId, s.draft.commissionId) }
+    // What rarity buys is taught on the first result card and then kept behind a tap: settings remember it, as a tip.
+    val seen by vm.settings.seenTips.collectAsStateWithLifecycle<Set<String>?>(initialValue = null)
+    var teach by remember(weaponId) { mutableStateOf<Boolean?>(null) }
+    LaunchedEffect(seen) {
+        val known = seen ?: return@LaunchedEffect
+        if (teach == null) { teach = Tips.RARITY !in known; if (teach == true) vm.dismissTip(Tips.RARITY) }
+    }
     // The card draws under the system bars and the keyboard and pads itself clear of both, so the price and the
     // buttons stay above the keyboard.
     Dialog(onDismissRequest = vm::storeForged, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
@@ -111,6 +119,7 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
             reveal = !reducedMotion,
             overSprite = { if (w.signatureId != null || w.rarity >= Rarity.EPIC) MilestoneBurst(88.dp, reducedMotion) },
             learning = s.learning,
+            explainRarity = teach != false,
             // The guided first day: its step is said at the head of the card, which covers the strip, and can be skipped from here too.
             guide = s.intro?.result?.let { line -> { IntroCardLine(line, onSkip = { vm.skipIntro() }) } },
         )
@@ -119,6 +128,9 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
 
 /** The card of a blade just made: a number without a ceiling that is still zero and never was anything else (renown) says nothing yet. */
 internal fun ItemDetail.withoutEmptyStats(): ItemDetail = copy(stats = stats.filter { it.max != null || it.value != 0 || it.was != null })
+
+/** What a rarity word buys, as `Forge.kt` grants base property slots. */
+internal const val RARITY_RULE = "Rarity sets how many properties it holds: none below Rare, Rare one, Epic two, Legendary three. Some forging choices add more."
 
 // The reveal's two lengths at normal motion: how long the sprite and name stand alone, and the fade that follows.
 private const val REVEAL_HOLD_MS = 700L
@@ -138,6 +150,9 @@ private const val REVEAL_FADE_MS = 250
  * whole at once. A brand-new blade has no renown to show, so the zero is left out here; the blade's sheet keeps it.
  *
  * [guide] is the guided first day's line, at the head of the card's scrolling part: never pinned over the blade's numbers.
+ *
+ * The blade comes first, with what the forge discovered, then what it is made of and what rarity means ([explainRarity]:
+ * in full the first time, behind a tap after), then the commission it was made for, beside the ways on.
  *
  * With [onLoan] (a guild run) a third way on, "Loan", opens the members the blade could go to; nothing is lent until
  * one is chosen.
@@ -161,14 +176,23 @@ fun ForgeResultCard(
     overSprite: @Composable BoxScope.() -> Unit = {},
     learning: ForgeLearningUi? = null,
     guide: (@Composable () -> Unit)? = null,
+    explainRarity: Boolean = true,
 ) {
     var revealed by rememberSaveable(detail.weaponId.value) { mutableStateOf(!reveal) }
     LaunchedEffect(detail.weaponId) { if (!revealed) { delay(REVEAL_HOLD_MS); revealed = true } }
     val shown by animateFloatAsState(if (revealed) 1f else 0f, tween(if (reveal) REVEAL_FADE_MS else 0), label = "reveal")
     val fresh = remember(detail) { detail.withoutEmptyStats() }
     val blade: @Composable ColumnScope.() -> Unit = {
+        WeaponStatBody(fresh, overSprite, detailAlpha = { shown })
+        // What this forge added to the notebook; absent on a result reopened later, where "new" could no longer be told.
+        learning?.let { LearningCard(it, Modifier.padding(top = Space.sm)) }
+        Secondary(recipe, Modifier.padding(top = Space.md).graphicsLayer { alpha = shown })
+        // What the rarity word buys (`Forge.kt`: the base slots per rarity): in full the first time, then one tap away.
+        var rarity by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
+        if (explainRarity || rarity) Secondary(RARITY_RULE, Modifier.padding(top = Space.xs).graphicsLayer { alpha = shown }.testTag("reveal_rarity"))
+        else InlineActionButton("What rarity means", { rarity = true }, Modifier.graphicsLayer { alpha = shown }.testTag("reveal_rarity_more"))
         request?.let { r ->
-            Column(Modifier.padding(bottom = Space.sm).testTag("reveal_request")) {
+            Column(Modifier.padding(top = Space.sm).testTag("reveal_request")) {
                 Text(r.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 Secondary(r.terms)
                 EffectRow(if (r.fits) EffectKind.BUFF else EffectKind.FLAW, r.fit, r.handover)
@@ -177,12 +201,6 @@ fun ForgeResultCard(
                 Secondary(r.reserved, Modifier.testTag("reveal_reserved"))
             }
         }
-        WeaponStatBody(fresh, overSprite, detailAlpha = { shown })
-        // What the rarity word buys, said once where a weapon is first seen (`Forge.kt`: the base slots per rarity).
-        Secondary("Rarity sets how many properties it holds: none below Rare, Rare one, Epic two, Legendary three. Some forging choices add more.", Modifier.padding(top = Space.xs).graphicsLayer { alpha = shown })
-        // What this forge added to the notebook; absent on a result reopened later, where "new" could no longer be told.
-        learning?.let { LearningCard(it, Modifier.padding(top = Space.sm)) }
-        Secondary(recipe, Modifier.padding(top = Space.md).graphicsLayer { alpha = shown })
         HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
     }
     val price: @Composable ColumnScope.() -> Unit = price@{

@@ -99,12 +99,11 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
     val st = s.state
     val tab = guildTabFor(s.guildTab, st.day, ui.wall.daysLeft)
     // The contract whose sheet is open, by its ID on the board; the assign sheet; a confirmation; the row Today asked for.
-    var contract by rememberSaveable { mutableStateOf<String?>(null) }
     var assigning by rememberSaveable { mutableStateOf(false) }
     var confirm by remember { mutableStateOf<Confirm?>(null) }
     var anchor by remember { mutableStateOf<Pair<GuildTab, String>?>(null) }
     val actions = GuildActions(
-        enabled = !s.busy, openHero = { vm.openSheet(Sheet.Hero(it)) }, openContract = { contract = it },
+        enabled = !s.busy, openHero = { vm.openSheet(Sheet.Hero(it)) }, openContract = vm::openContract,
         confirm = { confirm = it }, assign = { assigning = true }, send = vm::dispatch,
     )
     val dots = ui.today.filterNot { it.optional }.mapNotNull { it.tab }.toSet() + listOfNotNull(GuildTab.COMPANY.takeIf { ui.companyNeeds })
@@ -127,14 +126,13 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
         }
         GuildList(tab, rows, anchor, reducedMotion, ui.today, onToday) { anchor = null }
     }
-    // Under a hero's sheet the contract waits, as the commission board does.
-    contract?.let { id ->
-        if (st.guild?.offers?.none { it.id == id } != false) LaunchedEffect(id) { contract = null }
-        else if (s.sheet == null) ContractSheet(
-            st, vm.engine, id, s.busy,
-            onSend = { heroes, posture -> contract = null; vm.dispatch(Command.PlanDeployment(id, heroes, posture)) },
-            onCancelPlan = { contract = null; vm.dispatch(Command.CancelPlannedDeployment) },
-            onDismiss = { contract = null },
+    // The ViewModel owns the draft while the existing hero/weapon sheets replace this modal.
+    s.partyDraft?.let { draft ->
+        if (s.sheet == null) ContractSheet(
+            st, vm.engine, draft, s.busy,
+            onToggle = vm::togglePartyMember, onMove = vm::movePartyMember, onPosture = vm::setPartyPosture,
+            onOpenHero = { vm.openSheet(Sheet.Hero(it)) }, onReviewEquipment = vm::reviewPartyEquipment,
+            onSend = vm::confirmParty, onCancelPlan = vm::cancelPartyPlan, onDismiss = vm::closeContract,
         )
     }
     if (assigning && s.sheet == null && confirm == null) AssignSheet(ui, actions, onDismiss = { assigning = false })

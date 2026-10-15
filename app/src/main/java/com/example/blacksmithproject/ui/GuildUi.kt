@@ -97,12 +97,16 @@ data class OfferUi(
     val planned: Boolean,
     /** Rules 6: "Opportunity" for a chance that comes with a siege, what is different about this posting, and what is lost if nobody takes it. */
     val tag: String? = null, val modifier: String? = null, val stake: String? = null,
-    /** The board's one line: the worst danger of its days, first, and what the first day brings. Details are on the sheet. */
+    /** Worst stage danger and the stored rewards of each stage, including optional stages. */
     val danger: Danger = Danger.SAFE, val reward: String = "",
     /** The modifier's name alone, for the board; [modifier] has it whole. */
     val modifierName: String? = null,
     /** How many days it takes and what it costs, as numbers for the board's chips; and what it brings besides gold and stock. */
     val days: Int = 1, val feeGold: Int = 0, val specials: List<String> = emptyList(),
+    val returnDay: Int = 0,
+    val timingNote: String = "",
+    val purpose: String = "",
+    val optionalPush: Boolean = false,
 ) {
     /** "2 days · Fee 20 gold": how long it takes and what it costs, for the board. */
     val terms: String get() = listOf(time.substringBefore(':'), fee).joinToString(" · ")
@@ -206,11 +210,11 @@ private fun GameEngine.enemies(specs: List<EnemySpec>): List<EnemyUi> {
     return specs.groupBy { it.unitId }.map { (id, all) -> combat.unit(id).let { u -> EnemyUi(u.name, all.size, u.kit.moves.mapNotNull { it.telegraph }.distinct()) } }
 }
 
-private fun GameEngine.rewardWords(state: GameState, r: Reward, factionId: FactionId?): String = listOfNotNull(
+private fun GameEngine.rewardWords(state: GameState, r: Reward, factionId: FactionId?, compact: Boolean = false): String = listOfNotNull(
     "${r.gold} gold".takeIf { r.gold > 0 },
     r.materials.entries.joinToString(", ") { "${it.value} ${content.material(it.key).name}" }.ifEmpty { null },
-    factionId?.takeIf { r.suppression > 0 }?.let { "lowers the pressure of ${content.faction(it).name}" },
-    "repairs up to ${r.integrity} forge health".takeIf { r.integrity > 0 },
+    factionId?.takeIf { r.suppression > 0 }?.let { if (compact) "-${r.suppression} ${content.faction(it).name} pressure" else "lowers the pressure of ${content.faction(it).name}" },
+    (if (compact) "up to +${r.integrity} forge health" else "repairs up to ${r.integrity} forge health").takeIf { r.integrity > 0 },
     "+${r.militia} militia".takeIf { r.militia > 0 },
     "spoils their preparations for the siege".takeIf { r.sabotage },
     "a relic you may take for the workshop".takeIf { r.relicOffer },
@@ -258,16 +262,24 @@ private fun GameEngine.offerUi(state: GameState, g: GuildRunState, offer: Missio
         id = offer.id, title = contractTitle(offer), why = offer.reason, description = def.description,
         time = (if (offer.days == 1) "1 day away" else "${offer.days} days away") + ": leaves at End Day today, ${returnMorning(state.day + offer.days)}.",
         missesSiege = "Misses the siege on day $siegeDay: the party is away that night.".takeIf { missesSiege(state.day, offer.days, siegeDay) },
-        fee = if (offer.fee > 0) "Fee: ${offer.fee} gold, paid when you send the party. It comes back if you cancel the plan before End Day." else "No fee.",
+        fee = if (offer.fee > 0) "Fee: ${offer.fee} gold, paid when you plan departure. It comes back if you cancel the plan before End Day." else "No fee.",
         stages = offer.stages.indices.map { stageUi(state, offer, it) }, prep = def.prep, failure = def.failure,
         expiry = when (offer.expiresDay) { Int.MAX_VALUE -> "Always on the board"; state.day -> "Last day to send a party: today"; else -> "Last day to send a party: day ${offer.expiresDay}" },
         planned = g.planned?.offerId == offer.id,
         tag = "Opportunity".takeIf { def.archetype == MissionArchetype.OPPORTUNITY },
         modifier = content.guild!!.modifier(offer.modifierId)?.let { "${it.name}: ${it.description}" },
         danger = offer.stages.maxOf { it.danger },
-        reward = stageUi(state, offer, 0).reward + if (offer.stages.size > 1) " · more if the first day is won" else "",
+        reward = offer.stages.indices.joinToString("\n") { i ->
+            (if (offer.stages.size == 1) "" else if (i > 0 && offer.optionalPush) "Optional stage ${i + 1}: " else "Stage ${i + 1}: ") + rewardWords(state, offer.stages[i].reward, offer.factionId, compact = true)
+        },
         modifierName = content.guild!!.modifier(offer.modifierId)?.name,
         days = offer.days, feeGold = offer.fee, specials = specialRewards(state, offer),
+        returnDay = state.day + offer.days,
+        purpose = objectiveWords(offer.stages.first()),
+        optionalPush = offer.optionalPush,
+        timingNote = (if (offer.optionalPush) "Return shown includes the optional deeper stage. Returning at the checkpoint ends the quest earlier. " else
+            if (offer.stages.size > 1) "Return shown includes all stages. A failed stage or retreat can bring the party home earlier. " else "") +
+            "Wounds may keep members from defending after they return.",
         stake = "If the cart is lost, the supplier brings ${config.guild.supplierShakenStock} fewer of every limited material each morning for ${config.guild.supplierDays} days. Leaving the job on the board costs nothing.".takeIf { offer.lapse == GuildContent.LAPSE_SUPPLIER },
     )
 }
@@ -516,18 +528,20 @@ internal fun GameEngine.pickable(state: GameState, heroId: HeroId): Boolean =
 fun GameEngine.contractUi(state: GameState, offerId: String, picked: List<HeroId>, posture: Posture): ContractUi? {
     val g = state.guild ?: return null
     val offer = g.offers.firstOrNull { it.id == offerId } ?: return null
-    val party = picked.filter { pickable(state, it) }
-    val setup = if (party.isEmpty()) null else missionSetup(state, offerId, party, posture)
+    val party = picked
+    val valid = party.all { pickable(state, it) } && party.distinct().size == party.size && party.size <= partyMax(state, offerId)
+    val setup = if (party.isEmpty() || !valid) null else missionSetup(state, offerId, party, posture)
     val siegeDay = state.town.nextSiegeDay
     val home = g.members.count { it.heroId !in party && memberUnavailable(state, it.heroId) == null }
     // A plan made earlier today gives its fee back before this one's is taken (`Missions.plan`).
     val purse = state.gold + (g.planned?.let { p -> g.offers.firstOrNull { it.id == p.offerId }?.fee } ?: 0)
     return ContractUi(
         offer = offerUi(state, g, offer),
-        picks = g.members.mapNotNull { m ->
-            val h = state.heroes[m.heroId] ?: return@mapNotNull null
-            val why = memberUnavailable(state, h.id) ?: "is reserved for the wall".takeIf { h.id in g.reserved }
-            PickUi(h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), bladeLine(state, h.id), party.indexOf(h.id).takeIf { it >= 0 }?.plus(1), why?.let { "${h.fullName} $it." })
+        picks = (g.members.map { it.heroId } + picked).distinct().map { id ->
+            val h = state.heroes[id]
+            val name = h?.fullName ?: "Missing member (${id.value})"
+            val why = if (!g.isMember(id)) "is no longer a guild member" else memberUnavailable(state, id) ?: "is reserved for the wall".takeIf { id in g.reserved }
+            PickUi(id, h?.let { Sprites.portrait(it, small = true) } ?: 0, name, h?.let { classLine(it) }.orEmpty(), bladeLine(state, id), party.indexOf(id).takeIf { it >= 0 }?.plus(1), why?.let { "$name $it." })
         },
         partyMax = partyMax(state, offer.id),
         postures = Posture.entries.map { PostureUi(it, postureName(it), postureWords(it, config.guild.fight), it == posture) },
@@ -539,6 +553,8 @@ fun GameEngine.contractUi(state: GameState, offerId: String, picked: List<HeroId
         returns = returnMorning(state.day + offer.days).replaceFirstChar { it.uppercase() } + ".",
         sendBlocked = when {
             g.mission != null -> "The party is still out."
+            offer.expiresDay < state.day -> "This quest has left the board. Close this draft and choose another."
+            !valid -> "Some selected members cannot go, or the party exceeds its limit. Review the selected party."
             party.isEmpty() -> partyMax(state, offer.id).let { if (it == 1) "Pick one member." else "Pick one to $it members." }
             purse < offer.fee -> "Needs ${offer.fee} gold. You have $purse."
             else -> null

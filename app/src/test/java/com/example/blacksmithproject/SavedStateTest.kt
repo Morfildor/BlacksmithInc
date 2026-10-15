@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.model.ForgeMode
+import com.tinyblacksmith.core.model.CommissionId
 import com.tinyblacksmith.core.model.LegacyProfile
 import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.persistence.SaveCodec
@@ -67,6 +68,28 @@ class SavedStateTest {
             assertEquals(Dest.SHOP to ForgeDraft(), cold.dest to cold.draft)
             assertEquals(null, cold.revealWeaponId)
             assertEquals(null, cold.sheet)
+        } finally {
+            Dispatchers.resetMain()
+        }
+    }
+
+    /** A draft kept by the build before the want's slot (ten values) still comes back whole, with no want; one with it keeps it. */
+    @Test
+    fun aDraftKeptBeforeTheWantSlotStillRestores() = runTest {
+        Dispatchers.setMain(StandardTestDispatcher(testScheduler))
+        try {
+            val start = engine.newRun(LegacyProfile(), 42L)
+            val repo = FakeGameRepository(SaveCodec.encodeRun(start), SaveCodec.encodeLegacy(start.legacy))
+            fun open(saved: SavedStateHandle) = GameViewModel(engine, GameSession(engine, repo, compute = StandardTestDispatcher(testScheduler)), FakeSettings(), saved, compute = StandardTestDispatcher(testScheduler))
+            val old = arrayListOf<String?>("ADVANCED", "sword", "iron", "ember_resin", null, "SAFE", null, "c7", "false", "false")
+            val restored = open(SavedStateHandle(mapOf("draft" to old))).also { advanceUntilIdle() }.ui.value as UiState.Playing
+            assertEquals(ForgeDraft(ForgeMode.ADVANCED, LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, null, Risk.SAFE, null, CommissionId("c7")), restored.draft)
+            val hero = start.heroes.keys.first()
+            val handle = SavedStateHandle()
+            val vm = open(handle).also { advanceUntilIdle() }
+            vm.updateDraft { it.copy(familyId = LaunchContent.SWORD, wantHeroId = hero) }; advanceUntilIdle()
+            val kept = handle.keys().associateWith { handle.get<Any?>(it) }
+            assertEquals(hero, (open(SavedStateHandle(kept)).also { advanceUntilIdle() }.ui.value as UiState.Playing).draft.wantHeroId)
         } finally {
             Dispatchers.resetMain()
         }
