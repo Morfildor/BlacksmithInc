@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.blacksmithproject.ui.EffectKind
 import com.example.blacksmithproject.ui.FightReport
 import com.example.blacksmithproject.ui.InlineActionButton
@@ -69,7 +70,7 @@ fun SiegeReport(
 ) {
     var log by rememberSaveable { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(Space.md).testTag("replay_report"), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-        Text("SIEGE OF EMBERFALL · DAY ${siege.day}", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = CreamMuted)
+        Text("SIEGE OF EMBERFALL · DAY ${siege.day}", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = CreamMuted)
         val kind = when { siege.verdict == SiegeVerdict.HELD_AT_A_COST -> EffectKind.NEUTRAL; siege.held -> EffectKind.BUFF; else -> EffectKind.FLAW }
         Text(siege.outcome, style = MaterialTheme.typography.headlineMedium, color = kind.color, modifier = Modifier.semantics { heading() }.testTag("replay_report_outcome"))
         Text("On the wall: ${fightOutcomeLine(fight).lowercase()}", style = MaterialTheme.typography.bodyMedium)
@@ -91,7 +92,7 @@ fun SiegeReport(
             FightReport(fight, expanded = log, onToggle = { log = !log })
         } else {
             account?.let { a ->
-                Text("THE DEFENDERS", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
+                Text("THE DEFENDERS", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
                 Text("Damage dealt, damage their Guard took for the wall, and health mended. Each point counts once.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
                 a.members.forEach { m -> ContributionCard(m, faces[m.key], state, onOpenHero, onOpenBlade) }
                 if (a.shared.total > 0) {
@@ -101,12 +102,12 @@ fun SiegeReport(
                     )
                 }
                 if (a.observations.isNotEmpty()) {
-                    Text("WORTH KNOWING", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
+                    Text("WORTH KNOWING", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
                     Column(Modifier.testTag("replay_report_observations")) { a.observations.forEach { Text("· $it", style = MaterialTheme.typography.bodyMedium) } }
                 }
             }
             if (siege.discoveries.isNotEmpty()) {
-                Text("SEEN IN THIS FIGHT", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
+                Text("SEEN IN THIS FIGHT", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
                 siege.discoveries.forEach { Text("· $it", style = MaterialTheme.typography.bodyMedium) }
                 Text("Written into the Notebook.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
             }

@@ -227,7 +227,7 @@ fun SecondaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier 
         if (detail == null) Text(text, textAlign = TextAlign.Center)
         else Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
-            Text(detail, style = MaterialTheme.typography.labelSmall, color = if (enabled) Cream else LocalContentColor.current, textAlign = TextAlign.Center)
+            Text(detail, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Normal, color = if (enabled) Cream else LocalContentColor.current, textAlign = TextAlign.Center)
         }
     }
 }
@@ -324,7 +324,7 @@ fun PrimaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier = 
         val ink = if (enabled) Color(0xFF2A1A04) else Color(0xFF9A927E)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text, style = MaterialTheme.typography.titleMedium, color = ink, textAlign = TextAlign.Center)
-            if (detail != null) Text(detail, style = MaterialTheme.typography.labelSmall, color = ink, textAlign = TextAlign.Center)
+            if (detail != null) Text(detail, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Normal, color = ink, textAlign = TextAlign.Center)
         }
     }
 }

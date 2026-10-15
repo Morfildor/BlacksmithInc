@@ -197,13 +197,14 @@ fun ForgePanel(
 /** The destination's name, the ways to the commission board and the supplier, and the rarer actions behind "More". */
 @Composable
 private fun ForgeHeading(commissions: Int, offers: Int, endDayNote: String, onOpenBoard: () -> Unit, onOpenSupplies: () -> Unit, onOpenJournal: () -> Unit, onEndDay: () -> Unit, busy: Boolean) {
+    // No title of its own: the destination bar says Forge, and a serif "Forge" beside three actions was cut to "Forg / e".
     Row(Modifier.fillMaxWidth().padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically) {
-        Text("Forge", style = MaterialTheme.typography.headlineMedium, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
         TextButton(onClick = onOpenBoard, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_commissions")) {
             // An offer waiting for an answer is said in gold, as on the Shop's card.
             Text(if (offers > 0) "Commissions · $offers new" else if (commissions == 0) "Commissions" else "Commissions · $commissions", color = if (offers > 0) Gold else CreamMuted)
         }
         TextButton(onClick = onOpenSupplies, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_supplies")) { Text("Supplies", color = Gold) }
+        Spacer(Modifier.weight(1f))
         Box {
             var more by remember { mutableStateOf(false) }
             TextButton(onClick = { more = true }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_more")) { Text("⋯", style = MaterialTheme.typography.titleLarge, color = CreamMuted, modifier = Modifier.semantics { contentDescription = "More" }) }

@@ -1,7 +1,6 @@
 package com.example.blacksmithproject.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,11 +10,11 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,19 +32,19 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.BronzeDeep
-import com.example.blacksmithproject.ui.theme.BronzeLine
+import com.example.blacksmithproject.ui.theme.Bronze
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.Ember
 import com.example.blacksmithproject.ui.theme.EmberContainer
 import com.example.blacksmithproject.ui.theme.ForgePanel
-import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 
@@ -79,11 +78,11 @@ fun siegeHeader(day: Int, siegeDay: Int, interval: Int, besieger: String?, fille
     val start = maxOf(1, siegeDay - interval + 1).coerceAtMost(day)
     return SiegeHeaderUi(
         day = day, siegeDay = siegeDay,
-        countdown = when { left <= 0 -> "SIEGE TONIGHT · Day $siegeDay"; left == 1 -> "Siege tomorrow · Day $siegeDay"; else -> "Siege in $left days · Day $siegeDay" },
+        countdown = when { left <= 0 -> "Siege tonight"; left == 1 -> "Siege tomorrow"; else -> "Siege in $left days" },
         tone = when { left <= 0 -> SiegeTone.TONIGHT; left == 1 -> SiegeTone.TOMORROW; else -> SiegeTone.CALM },
         besieger = besieger,
         marks = (start..siegeDay).takeIf { siegeDay >= day && siegeDay - start < MAX_MARKS }?.map { DayMarkUi(it, it < day, it == day, it == siegeDay) }.orEmpty(),
-        defenders = if (left <= 1 && filled != null && places != null) "$filled of $places defender slots filled" else null,
+        defenders = if (left <= 1 && filled != null && places != null) "$filled of $places defenders" else null,
     )
 }
 
@@ -118,7 +117,7 @@ fun WorkshopHeader(ui: SiegeHeaderUi, gold: Int, energy: Int, onSettings: () -> 
             itemVerticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                "DAY ${ui.day}", style = MaterialTheme.typography.headlineMedium, color = Cream, maxLines = 1,
+                "Day ${ui.day}", style = MaterialTheme.typography.headlineMedium, color = Cream, maxLines = 1,
                 modifier = Modifier.semantics { heading(); contentDescription = "Day ${ui.day}" }.testTag("header_day"),
             )
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -141,58 +140,51 @@ private fun Stat(icon: Int, label: String, value: String, color: Color = Cream) 
     }
 }
 
-/** The countdown and who comes, the cycle's days, and on the eve and the day the wall's places: one tappable plate. */
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * The countdown and who comes, then the cycle as a slim track ending at the wall: plain text on the header's ground, no
+ * plate or tiles. The tone is said by the countdown's colour alone (cream, gold the day before, ember on the day).
+ */
 @Composable
 private fun SiegeStrip(ui: SiegeHeaderUi, markers: Boolean, onOpen: () -> Unit, openLabel: String) {
-    val (ground, edge, ink) = when (ui.tone) {
-        SiegeTone.CALM -> Triple(ForgePanel, BronzeDeep, Cream)
-        SiegeTone.TOMORROW -> Triple(ForgePanel, Gold, Gold)
-        SiegeTone.TONIGHT -> Triple(EmberContainer, Ember, Cream)
-    }
+    val ink = when (ui.tone) { SiegeTone.CALM -> Cream; SiegeTone.TOMORROW -> Gold; SiegeTone.TONIGHT -> Ember }
     Column(
-        Modifier.fillMaxWidth().padding(start = Space.sm, end = Space.sm, bottom = Space.sm)
-            .background(ground, MaterialTheme.shapes.small).border(if (ui.tone == SiegeTone.TONIGHT) 2.dp else 1.dp, edge, MaterialTheme.shapes.small)
-            .clickable(onClickLabel = openLabel, role = Role.Button, onClick = onOpen).heightIn(min = 48.dp)
-            .padding(horizontal = 12.dp, vertical = 4.dp).semantics(mergeDescendants = true) {}.testTag("siege_strip"),
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        Modifier.fillMaxWidth().clickable(onClickLabel = openLabel, role = Role.Button, onClick = onOpen).heightIn(min = 48.dp)
+            .padding(start = Space.md, end = Space.sm, bottom = 10.dp).semantics(mergeDescendants = true) {}.testTag("siege_strip"),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        // The countdown and who comes on one line, the cycle's days and the wall's places on the next; each wraps before it is cut.
         Row(verticalAlignment = Alignment.CenterVertically) {
-            FlowRow(Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(6.dp), itemVerticalAlignment = Alignment.CenterVertically) {
-                Text(ui.countdown, style = MaterialTheme.typography.titleSmall, color = ink, modifier = Modifier.testTag("siege_countdown"))
-                ui.besieger?.let { Text("· $it", style = MaterialTheme.typography.bodySmall, color = if (ui.tone == SiegeTone.TONIGHT) Cream else CreamMuted, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.testTag("siege_besieger")) }
-            }
-            Text("›", style = MaterialTheme.typography.titleMedium, color = if (ui.tone == SiegeTone.CALM) CreamMuted else ink)
+            // One paragraph, so with large text the besieger wraps as words do and never starts a line with its separator.
+            val body = MaterialTheme.typography.bodySmall
+            Text(
+                buildAnnotatedString {
+                    append(ui.countdown)
+                    ui.besieger?.let { withStyle(SpanStyle(color = CreamMuted, fontWeight = body.fontWeight, fontSize = body.fontSize)) { append("  ·  $it") } }
+                },
+                style = MaterialTheme.typography.titleSmall, color = ink, modifier = Modifier.weight(1f).testTag("siege_countdown"),
+            )
+            ui.defenders?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, maxLines = 1, modifier = Modifier.padding(start = Space.sm).testTag("siege_defenders")) }
+            Text("›", style = MaterialTheme.typography.titleMedium, color = CreamMuted, modifier = Modifier.padding(start = Space.sm, end = Space.xs))
         }
-        if (markers || ui.defenders != null) FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(4.dp), verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (markers) Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.testTag("siege_marks")) { ui.marks.forEach { DayMark(it, ui.tone) } }
-            ui.defenders?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = ink, modifier = Modifier.padding(start = 4.dp).testTag("siege_defenders")) }
+        // The days so far filled, today lit, the siege's day dark ember, the wall at the end; its day once it is not today.
+        if (markers) Row(Modifier.padding(end = Space.xs).testTag("siege_marks"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+            ui.marks.forEach { DaySegment(it, ui.tone, Modifier.weight(1f)) }
+            Spacer(Modifier.width(3.dp))
+            PixelImage(Sprites.siegeWall(damaged = false), 18.dp, description = null)
+            if (ui.tone != SiegeTone.TONIGHT) Text("Day ${ui.siegeDay}", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.padding(start = 6.dp))
         }
     }
 }
 
-/** A day of the cycle: its number; today outlined, past days muted, the siege day with the wall beside its number. */
+/** A day of the cycle as one segment of the track: past days filled bronze, today gold (ember on the siege's day), the rest dark. */
 @Composable
-private fun DayMark(m: DayMarkUi, tone: SiegeTone) {
-    val edge = when {
+private fun DaySegment(m: DayMarkUi, tone: SiegeTone, modifier: Modifier) {
+    val color = when {
         m.today -> if (tone == SiegeTone.TONIGHT) Ember else Gold
-        m.siege -> BronzeLine
+        m.past -> Bronze
+        m.siege -> EmberContainer
         else -> BronzeDeep
     }
-    Row(
-        Modifier.background(if (m.siege) ForgeSlot else Color.Transparent, MaterialTheme.shapes.extraSmall)
-            .border(if (m.today) 2.dp else 1.dp, edge, MaterialTheme.shapes.extraSmall).widthIn(min = 32.dp).padding(horizontal = 6.dp, vertical = 1.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterHorizontally),
-    ) {
-        Text(
-            "${m.day}", style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center,
-            color = when { m.past -> CreamMuted.copy(alpha = 0.55f); m.today -> Cream; else -> CreamMuted },
-        )
-        if (m.siege) Box { PixelImage(Sprites.siegeWall(damaged = false), 18.dp, description = null) }
-    }
+    Box(modifier.height(4.dp).background(color, MaterialTheme.shapes.extraSmall))
 }
 
 /**
@@ -206,9 +198,9 @@ fun SiegeMatchup(threat: ThreatUi, tag: String, note: String? = null) {
     val facts = listOfNotNull(threat.matchup?.let { m -> threat.besieger?.let { m.removePrefix(it).removePrefix(" · ") } ?: m }?.takeIf { it.isNotBlank() }, threat.outlook)
     if (facts.isEmpty() && note == null) return
     Column(
-        Modifier.fillMaxWidth().background(ForgePanel).padding(horizontal = Space.md, vertical = 6.dp).semantics(mergeDescendants = true) {}.testTag(tag),
+        Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.sm).semantics(mergeDescendants = true) {}.testTag(tag),
     ) {
-        if (facts.isNotEmpty()) Text(facts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = if (threat.today) Ember else Cream)
+        if (facts.isNotEmpty()) Text(facts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = if (threat.today) Ember else CreamMuted)
         note?.let { Secondary(it) }
     }
 }

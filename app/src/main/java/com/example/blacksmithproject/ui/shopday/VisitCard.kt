@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.blacksmithproject.ui.EffectKind
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.StatDelta
@@ -37,11 +38,11 @@ import com.example.blacksmithproject.ui.theme.SceneWood1
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.WeaponSnapshot
 
-/** The small capital line that says which part of the day a card belongs to. */
+/** The small capital line that says which part of the day a card belongs to: small, tracked and Medium, never bold. */
 @Composable
 internal fun Overline(text: String, modifier: Modifier = Modifier, strong: Boolean = false) {
     Text(
-        text.uppercase(), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold,
+        text.uppercase(), style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp,
         color = if (strong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant, modifier = modifier,
     )
 }
@@ -131,15 +132,15 @@ fun VisitCard(visit: VisitUi, onOpenBlade: (WeaponSnapshot) -> Unit, modifier: M
                     Modifier.fillMaxWidth().background(Gold, MaterialTheme.shapes.extraSmall).padding(horizontal = Space.sm, vertical = Space.xs).semantics(mergeDescendants = true) {},
                     verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
                 ) {
-                    Text(visit.banner.uppercase(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SceneInk, modifier = Modifier.weight(1f).testTag("shopday_outcome_chip"))
-                    Text("+${visit.coin} gold", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SceneInk, modifier = Modifier.testTag("shopday_coin"))
+                    Text(visit.banner.uppercase(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = SceneInk, modifier = Modifier.weight(1f).testTag("shopday_outcome_chip"))
+                    Text("+${visit.coin} gold", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = SceneInk, modifier = Modifier.testTag("shopday_coin"))
                 }
                 // Straight under the band, so the rise is on screen without a scroll.
                 if (visit.coin > 0) EarnedToday(visit.earnedBefore, visit.earnedAfter)
             }
         } else {
             Text(
-                visit.banner.uppercase(), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = EffectKind.FLAW.color,
+                visit.banner.uppercase(), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = EffectKind.FLAW.color,
                 modifier = Modifier.background(EffectKind.FLAW.color.copy(alpha = 0.14f), MaterialTheme.shapes.extraSmall).border(1.dp, EffectKind.FLAW.color, MaterialTheme.shapes.extraSmall)
                     .padding(horizontal = Space.sm, vertical = Space.xs).testTag("shopday_outcome_chip"),
             )

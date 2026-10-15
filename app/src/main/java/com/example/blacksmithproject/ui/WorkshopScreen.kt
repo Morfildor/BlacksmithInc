@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,10 +22,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -50,7 +47,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -155,7 +154,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                 onOpenSiege = { if (s.guild != null) vm.openGuildWall() else vm.selectDest(Dest.TOWN) },
                 openLabel = if (s.guild != null) "Open the wall" else "Open Town",
             )
-            HorizontalDivider(color = Bronze)
+            HorizontalDivider(color = BronzeDeep)
             // The guided first day's one step, in the layout and never over it: nothing under it is covered or blocked.
             s.intro?.let { IntroStrip(it, onSkip = { vm.skipIntro() }, onDone = { vm.finishIntro() }) }
             // Each tip belongs to one destination and shows one at a time; dismissal lives in settings. The guided day says
@@ -330,21 +329,21 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
     }
 }
 
-/** The segments of Records (News, Notebook, Legacy, and Town in a guild run) as one row of exclusive buttons. */
+/** The pages of Records (Gazette, Notebook, Legacy, and Town in a guild run) as one row of tabs, as the Guild's parts are. */
 @Composable
 fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier: Modifier = Modifier, pages: List<RecordsPage> = RecordsPage.entries - RecordsPage.TOWNSFOLK) {
-    SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth().padding(bottom = Space.sm)) {
-        pages.forEachIndexed { i, p ->
-            // These are pages, not a setting: no check mark. The chosen page is the lit bronze plate with gold lettering,
-            // and the row says which is selected to a screen reader.
-            SegmentedButton(
-                selected = selected == p,
-                onClick = { onSelect(p) },
-                shape = SegmentedButtonDefaults.itemShape(i, pages.size, MaterialTheme.shapes.small),
-                colors = SegmentedButtonDefaults.colors(activeContainerColor = BronzeContainer, activeContentColor = Gold, activeBorderColor = Bronze, inactiveContentColor = CreamMuted, inactiveBorderColor = BronzeDeep),
-                icon = {},
-                modifier = Modifier.heightIn(min = 48.dp).testTag("page_${p.name.lowercase()}"),
-            ) { Text(recordsPageName(p), style = if (pages.size > 3) MaterialTheme.typography.labelMedium else LocalTextStyle.current, maxLines = 1, softWrap = false) }
+    Row(modifier.fillMaxWidth().padding(bottom = Space.sm).drawBehind { drawLine(BronzeDeep, Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1.dp.toPx()) }) {
+        pages.forEach { p ->
+            // These are pages, not a setting: the chosen one is underlined in gold, the others plain, and the row says which is selected to a screen reader.
+            val on = selected == p
+            Box(
+                Modifier.weight(1f).heightIn(min = 48.dp)
+                    .drawBehind { if (on) drawRect(Gold, Offset(0f, size.height - 2.dp.toPx()), Size(size.width, 2.dp.toPx())) }
+                    .clickable(role = Role.Tab) { onSelect(p) }.semantics { this.selected = on }.testTag("page_${p.name.lowercase()}"),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(recordsPageName(p), style = if (pages.size > 3) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge, color = if (on) Gold else CreamMuted, maxLines = 1, softWrap = false)
+            }
         }
     }
 }
@@ -415,8 +414,9 @@ internal fun endDayNote(s: UiState.Playing): String {
         state.pendingBlessingOffer.isNotEmpty() -> "Choose a blessing"
         else -> null
     }
-    // The siege is fought after the day's trading, never instead of it: said on the day, in every run, before what else waits.
-    val siege = "Trading first. The siege follows tonight.".takeIf { state.town.nextSiegeDay <= state.day }
+    // The siege is fought after the day's trading, never instead of it: said on the day, before what else waits. A guild
+    // run's own line already says the siege tonight and who stands, so the button does not say it twice.
+    val siege = "Trading first. The siege follows tonight.".takeIf { state.town.nextSiegeDay <= state.day && guild.none { it.startsWith("Siege tonight") } }
     val note = when {
         blocker != null -> null
         // A visitor who waits, then a relic on offer: the words of the rule below. The guided first day keeps the relic

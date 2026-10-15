@@ -33,6 +33,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,7 +59,6 @@ import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.GuildTab
 import com.example.blacksmithproject.Sheet
 import com.example.blacksmithproject.UiState
-import com.example.blacksmithproject.ui.theme.BronzeContainer
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.BronzeLine
 import com.example.blacksmithproject.ui.theme.Cream
@@ -151,8 +153,8 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
 }
 
 /**
- * What needs the smith today. On a short screen or with large text only the first row shows, and a small "+N" on it
- * opens the rest in place: the part's own list keeps the room, and the parts' dots still say where the others are.
+ * What needs the smith today. On a short screen or with large text only the first row shows, and a small "N more" under
+ * it opens the rest in place: the part's own list keeps the room, and the parts' dots still say where the others are.
  * With nothing to do it is one quiet line.
  */
 @Composable
@@ -162,24 +164,24 @@ private fun TodayRows(rows: List<TodayUi>, onAct: (TodayUi) -> Unit) {
     val shown = if (compact && !more) rows.take(1) else rows
     Column(Modifier.fillMaxWidth().background(ForgePanel).padding(horizontal = Space.md).testTag("guild_today")) {
         if (rows.isEmpty()) Secondary("Nothing in the guild needs you today.", Modifier.heightIn(min = 32.dp).padding(vertical = 6.dp))
-        shown.forEachIndexed { i, r ->
+        shown.forEach { r ->
             Row(Modifier.fillMaxWidth().heightIn(min = 44.dp).testTag("guild_today_${r.key}"), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.padding(end = Space.sm).size(6.dp).background(Gold, CircleShape))
                 Text(r.text, style = MaterialTheme.typography.bodyMedium, color = Cream, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                if (i == 0 && compact && rows.size > 1) Text(
-                    if (more) "Less" else "+${rows.size - 1}", style = MaterialTheme.typography.labelMedium, color = Gold,
-                    modifier = Modifier.border(1.dp, BronzeLine, MaterialTheme.shapes.extraSmall)
-                        .clickable(onClickLabel = if (more) "Show one" else "Show ${rows.size - 1} more", role = Role.Button) { more = !more }
-                        .heightIn(min = 32.dp).widthIn(min = 40.dp).padding(horizontal = 8.dp, vertical = 6.dp).testTag("guild_today_more"),
-                )
                 InlineActionButton("${r.action}  ›", { onAct(r) }, Modifier.testTag("guild_today_go_${r.key}"))
             }
         }
+        // Under the rows, not inside the first: beside the action it squeezed the sentence onto two lines.
+        if (compact && rows.size > 1) Text(
+            if (more) "Show less" else "${rows.size - 1} more", style = MaterialTheme.typography.labelMedium, color = Gold,
+            modifier = Modifier.clickable(onClickLabel = if (more) "Show one" else "Show ${rows.size - 1} more", role = Role.Button) { more = !more }
+                .heightIn(min = 32.dp).widthIn(min = 40.dp).padding(start = 14.dp, end = 8.dp, bottom = 6.dp).testTag("guild_today_more"),
+        )
     }
 }
 
 /**
- * The four parts as one row of plates of equal width: the chosen one lit, a dot where something waits. A narrow screen
+ * The four parts as one row of tabs of equal width: the chosen one underlined in gold, a dot where something waits. A narrow screen
  * takes the smaller label; with large text the row scrolls sideways rather than cut a name.
  */
 @Composable
@@ -194,8 +196,8 @@ private fun GuildTabs(selected: GuildTab, dots: Set<GuildTab>, onSelect: (GuildT
             val on = t == selected
             Row(
                 (if (scroll) Modifier.widthIn(min = 80.dp) else Modifier.weight(1f)).heightIn(min = 44.dp)
-                    .background(if (on) BronzeContainer else Color.Transparent, MaterialTheme.shapes.small)
-                    .border(1.dp, if (on) Gold else BronzeDeep, MaterialTheme.shapes.small)
+                    // The chosen part underlined in gold, the others plain: tabs, not a row of buttons.
+                    .drawBehind { if (on) drawRect(Gold, Offset(0f, size.height - 2.dp.toPx()), Size(size.width, 2.dp.toPx())) }
                     .clickable(role = Role.Tab, onClick = { onSelect(t) })
                     .semantics { this.selected = on; if (t in dots) stateDescription = "Needs you" }
                     .padding(horizontal = 6.dp).testTag("guild_tab_${t.name.lowercase()}"),

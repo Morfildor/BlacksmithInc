@@ -1,7 +1,9 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.shape.CircleShape
 import com.example.blacksmithproject.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -38,7 +40,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.detail.WeaponStatLine
@@ -51,7 +52,6 @@ import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
-import com.example.blacksmithproject.ui.theme.SceneInk
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.Encounters
 import com.tinyblacksmith.core.engine.Relics
@@ -212,12 +212,12 @@ private fun CommissionsCard(rows: List<RequestUi>, busy: Boolean, onOpenBoard: (
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             PixelImage(R.drawable.icon_action_commission, 32.dp, description = null)
-            Text("Commissions · ${rows.size}", style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.weight(1f))
-            // The count of offers that wait, in the gold of the day's outcome chips: the thing on the Shop that needs an answer.
-            if (new > 0) Text(
-                "$new new", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = SceneInk,
-                modifier = Modifier.background(Gold, MaterialTheme.shapes.extraSmall).padding(horizontal = Space.sm, vertical = 2.dp).testTag("shop_commissions_new"),
-            )
+            Text("Commissions · ${rows.size}", style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.weight(1f))
+            // The count of offers that wait, beside a gold dot as on the Guild's tabs: the thing on the Shop that needs an answer.
+            if (new > 0) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.testTag("shop_commissions_new")) {
+                Box(Modifier.padding(end = 6.dp).size(7.dp).background(Gold, CircleShape))
+                Text("$new new", style = MaterialTheme.typography.labelLarge, color = Gold)
+            }
             Text("Open  ›", style = MaterialTheme.typography.labelLarge, color = Gold)
         }
         rows.forEach { r ->
@@ -245,7 +245,7 @@ private fun ReturnedCard(
     onKeep: (ReturnedUi) -> Unit, modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxWidth().forgeRow().padding(horizontal = Space.md, vertical = Space.sm).testTag("shop_returned")) {
-        Text("Back at the forge · ${rows.size}", style = MaterialTheme.typography.titleMedium, color = Gold)
+        Text("Back at the forge · ${rows.size}", style = MaterialTheme.typography.titleMedium, color = Cream)
         Secondary(if (shelfFree > 0) "In storage now. List, salvage or keep each one." else "In storage now. The shelf is full: salvage or keep, or make room to list.")
         rows.forEach { r ->
             val w = r.stock.weapon

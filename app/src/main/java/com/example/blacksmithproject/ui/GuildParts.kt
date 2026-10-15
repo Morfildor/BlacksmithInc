@@ -23,7 +23,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
@@ -120,16 +123,18 @@ private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
             .padding(horizontal = 12.dp, vertical = Space.sm).testTag("guild_offer_${o.id}"),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-            Text(o.title, style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.weight(1f))
+            Text(o.title, style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.weight(1f))
             if (o.planned) Chip("Planned", EffectKind.BUFF.color)
         }
-        FlowRow(Modifier.padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Chip(dangerWord(o.danger), dangerColor(o.danger))
-            Chip(if (o.days == 1) "1 day" else "${o.days} days")
-            Chip(if (o.feeGold > 0) "Fee ${o.feeGold}g" else "Free")
-            o.tag?.let { Chip(it, Gold) }
-            o.specials.forEach { Chip(it, Gold) }
-        }
+        // The facts as one quiet line, not a row of plates: the danger in its word and colour, what it brings besides gold in gold.
+        Text(
+            buildAnnotatedString {
+                withStyle(SpanStyle(color = dangerColor(o.danger))) { append(dangerWord(o.danger)) }
+                append(" · " + (if (o.days == 1) "1 day" else "${o.days} days") + " · " + (if (o.feeGold > 0) "Fee ${o.feeGold}g" else "Free"))
+                (listOfNotNull(o.tag) + o.specials).forEach { append(" · "); withStyle(SpanStyle(color = Gold)) { append(it) } }
+            },
+            style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp),
+        )
         Text(o.reward, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.padding(top = Space.xs).testTag("guild_offer_line_${o.id}"))
         o.missesSiege?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }
         o.why?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember) }

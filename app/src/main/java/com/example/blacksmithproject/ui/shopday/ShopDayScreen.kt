@@ -1,6 +1,7 @@
 package com.example.blacksmithproject.ui.shopday
 
 import android.view.accessibility.AccessibilityManager
+import androidx.compose.ui.unit.sp
 import com.example.blacksmithproject.data.ShopDaySpeed
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -38,7 +39,6 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.unit.dp
@@ -182,7 +182,7 @@ fun ShopDayScreen(
             // The first-run line is an aside, not a control: a muted italic under a small label, and a tap on it is a tap anywhere.
             coach?.takeIf { !(large && low) }?.let {
                 Row(Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                    Text("TIP", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp))
+                    Text("TIP", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 2.dp))
                     Text(it, style = MaterialTheme.typography.bodySmall, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f).testTag("shopday_coach"))
                 }
             }

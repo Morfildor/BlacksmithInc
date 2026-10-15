@@ -1,4 +1,25 @@
-# Progress — 2026-10-14 (deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
+# Progress — 2026-10-15 (text and header pass; 2026-10-14: deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
+
+## Text and header pass (2026-10-15, on `main` after 54a97bf, not committed)
+
+The owner, after the merged APK: "muddy and unclean, lots of bold text, the top siege thing is ugly". Changed:
+- `theme/Type.kt`: titleMedium and labelLarge Medium (were SemiBold), labelSmall tracking 0.4 sp (was 0.8). Light text on
+  the charcoal reads a step heavier than its weight, so nothing above Medium is a style now. The buttons' second line
+  is labelMedium Regular (was the tracked labelSmall). Caps overlines are labelSmall with 1.2 sp tracking, never bold.
+- `SiegeHeader.kt`: no plate, border or numbered tiles. "Day N" in the serif (was "DAY N"); one line "Siege in N days" /
+  "Siege tomorrow" / "Siege tonight" (tone by colour only) with the besieger in muted text and "N of M defenders" on the
+  eve and the day; the cycle as a slim segmented track ending at the wall and "Day N". `SiegeMatchup` is a quiet line on
+  the panel ground. The rule under the header is BronzeDeep.
+- Forge: the serif "Forge" title is gone (it broke into "Forg / e" beside its links). Guild: underlined tabs, the board's
+  facts as one line instead of chips, Today's "+N" as "N more" under the rows. Records: underlined tabs instead of
+  segmented buttons. Storage: filters at chip size (Material keeps the 48 dp touch area). Shop: the commissions card's
+  "N new" is a gold dot and words, its title cream. End Day on a guild run's siege day says the siege once.
+- Checks run: `:app:testDebugUnitTest` and `ProseGuardTest` green (SiegeHeaderTest updated to the new wording).
+  Screens seen on a private read-only Pixel_10_Pro AVD (port 5560, 1080x1920) at font scale 1.0 and 1.3: Shop, Forge,
+  Guild, Records, Town, Storage, a blade sheet, the visitor sheet, the board, a shop-day card. Instrumented suite not run
+  (`RecordsPanelTest`/`ConsistencyPassTest` read the Records tabs by tag, selection and text, which the new tabs keep).
+- Not done: the Gazette's `FontFamily.Serif` is a third face beside Alegreya and Fira; the Guild still says "contract"
+  where the glossary says "quest" (kept from the guild remaster merge); the Shop's commissions title wraps at 1.3x.
 
 ## Owner playtest of the debug APK (2026-10-14, branch `review-2026-10-14`, uncommitted after 117a3a2)
 

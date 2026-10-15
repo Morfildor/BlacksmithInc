@@ -337,7 +337,7 @@ private fun PaperSection(title: String, lines: List<String>) {
     val rule = LocalContentColor.current.copy(alpha = 0.3f)
     Column(Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-            Text(title.uppercase(), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, modifier = Modifier.semantics { heading() })
+            Text(title.uppercase(), style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, modifier = Modifier.semantics { heading() })
             HorizontalDivider(Modifier.weight(1f), color = rule)
         }
         lines.forEach { Text(it, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 6.dp)) }
@@ -381,7 +381,7 @@ fun EditionBody(edition: Gazette.Edition, modifier: Modifier = Modifier) {
         edition.sections.forEach { section ->
             // A section label runs into a rule to the edge of the column.
             Row(Modifier.padding(top = Space.md, bottom = 2.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                Text(section.title.uppercase(), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp, modifier = Modifier.semantics { heading() })
+                Text(section.title.uppercase(), style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, modifier = Modifier.semantics { heading() })
                 HorizontalDivider(Modifier.weight(1f), color = rule)
             }
             section.lines.forEach { line ->

@@ -2,6 +2,7 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.unit.sp
 import com.tinyblacksmith.core.content.Depth
 import com.example.blacksmithproject.R
 import androidx.compose.foundation.background
@@ -36,7 +37,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.shopday.FaceUi
 import com.example.blacksmithproject.ui.shopday.PersonChip
@@ -69,7 +69,7 @@ fun VisitorCard(view: Encounters.View, onOpen: () -> Unit, modifier: Modifier = 
         ) {
             PixelImage(R.drawable.icon_visitor, wholePixelDp(80, 48.dp), description = null)
             Column(Modifier.weight(1f)) {
-                Text("A VISITOR AT THE FORGE", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = Gold)
+                Text("A VISITOR AT THE FORGE", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = Gold)
                 Text(view.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
                 Secondary("Leaves at End Day")
                 Text("Hear them out  ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.xs))
@@ -103,7 +103,7 @@ fun EncounterContent(view: Encounters.View, state: GameState, busy: Boolean, onC
     var marked by rememberSaveable(inst.id, inst.inspected) { mutableStateOf<String?>(null) }
     val selected = view.options.firstOrNull { it.id == marked && it.blocked == null }
     Column(modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
-        Text("A VISITOR AT THE FORGE", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = Gold)
+        Text("A VISITOR AT THE FORGE", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = Gold)
         Text(view.name, style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.padding(top = Space.xs).semantics { heading() })
 
         // Who and what the visit is about, as the save has them today. Decorative: the text below names them too.

@@ -236,7 +236,10 @@ fun StorageList(
     }
 }
 
-/** The filter and order chips: only the families and rarities that are in storage, each row scrolling sideways when it is long. A chosen chip tapped again lets everything through. */
+/**
+ * The filter and order chips: only the families and rarities that are in storage, each row scrolling sideways when it is
+ * long. A chosen chip tapped again lets everything through. Drawn at the chip's own 32 dp; Material keeps the touch area at 48.
+ */
 @Composable
 private fun StorageFilters(storage: List<StockUi>, filter: StorageFilter, onChange: (StorageFilter) -> Unit) {
     val families = remember(storage) { storage.map { it.family }.distinct() }
@@ -246,13 +249,13 @@ private fun StorageFilters(storage: List<StockUi>, filter: StorageFilter, onChan
     fun ChipRow(tag: String, content: @Composable () -> Unit) =
         Row(Modifier.horizontalScroll(rememberScrollState()).testTag(tag), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) { content() }
     if (families.size > 1 || filter.family != null) ChipRow("storage_families") {
-        families.forEach { f -> FilterChip(selected = filter.family == f, onClick = { onChange(filter.copy(family = f.takeIf { filter.family != f })) }, label = { Text(f) }, modifier = Modifier.heightIn(min = 48.dp)) }
+        families.forEach { f -> FilterChip(selected = filter.family == f, onClick = { onChange(filter.copy(family = f.takeIf { filter.family != f })) }, label = { Text(f, style = MaterialTheme.typography.labelMedium) }) }
     }
     if (rarities.size > 1 || filter.rarity != null) ChipRow("storage_rarities") {
-        rarities.forEach { r -> FilterChip(selected = filter.rarity == r, onClick = { onChange(filter.copy(rarity = r.takeIf { filter.rarity != r })) }, label = { Text(Labels.rarity(r)) }, modifier = Modifier.heightIn(min = 48.dp)) }
+        rarities.forEach { r -> FilterChip(selected = filter.rarity == r, onClick = { onChange(filter.copy(rarity = r.takeIf { filter.rarity != r })) }, label = { Text(Labels.rarity(r), style = MaterialTheme.typography.labelMedium) }) }
     }
     ChipRow("storage_order") {
-        if (unsold in 1 until storage.size || filter.unsold) FilterChip(selected = filter.unsold, onClick = { onChange(filter.copy(unsold = !filter.unsold)) }, label = { Text("Never sold") }, modifier = Modifier.heightIn(min = 48.dp).testTag("storage_unsold"))
-        StorageSort.entries.forEach { o -> FilterChip(selected = filter.sort == o, onClick = { onChange(filter.copy(sort = o)) }, label = { Text(o.label) }, modifier = Modifier.heightIn(min = 48.dp)) }
+        if (unsold in 1 until storage.size || filter.unsold) FilterChip(selected = filter.unsold, onClick = { onChange(filter.copy(unsold = !filter.unsold)) }, label = { Text("Never sold", style = MaterialTheme.typography.labelMedium) }, modifier = Modifier.testTag("storage_unsold"))
+        StorageSort.entries.forEach { o -> FilterChip(selected = filter.sort == o, onClick = { onChange(filter.copy(sort = o)) }, label = { Text(o.label, style = MaterialTheme.typography.labelMedium) }) }
     }
 }

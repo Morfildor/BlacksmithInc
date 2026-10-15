@@ -13,8 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.combat.EventKind
 import com.tinyblacksmith.core.combat.FightOutcome
@@ -82,7 +82,7 @@ fun FightReport(result: FightResult, modifier: Modifier = Modifier, expanded: Bo
         if (expanded) {
             Column(Modifier.testTag("fight_timeline")) {
                 fightTimeline(result).forEach { line ->
-                    if (line.header) Text(line.text, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = Space.sm).semantics { heading() })
+                    if (line.header) Text(line.text, style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.sm).semantics { heading() })
                     else Text(line.text, style = MaterialTheme.typography.bodySmall, color = if (line.depth == 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(start = INDENT * line.depth, top = 2.dp))
                 }

@@ -16,20 +16,20 @@ class SiegeHeaderTest : ShopDayTestBase() {
     @Test
     fun theCountdownIsSaidInThreeVoices() {
         siegeHeader(day = 1, siegeDay = 5, interval = 5, besieger = null, filled = 2, places = 3).run {
-            assertEquals("Siege in 4 days · Day 5", countdown)
+            assertEquals("Siege in 4 days", countdown)
             assertEquals(SiegeTone.CALM, tone)
             assertNull("the wall's places are said only on the eve and the day", defenders)
         }
         siegeHeader(day = 4, siegeDay = 5, interval = 5, besieger = "Ashclaw Raiders", filled = 2, places = 3).run {
-            assertEquals("Siege tomorrow · Day 5", countdown)
+            assertEquals("Siege tomorrow", countdown)
             assertEquals(SiegeTone.TOMORROW, tone)
             assertEquals("Ashclaw Raiders", besieger)
-            assertEquals("2 of 3 defender slots filled", defenders)
+            assertEquals("2 of 3 defenders", defenders)
         }
         siegeHeader(day = 5, siegeDay = 5, interval = 5, besieger = null, filled = 3, places = 3).run {
-            assertEquals("SIEGE TONIGHT · Day 5", countdown)
+            assertEquals("Siege tonight", countdown)
             assertEquals(SiegeTone.TONIGHT, tone)
-            assertEquals("3 of 3 defender slots filled", defenders)
+            assertEquals("3 of 3 defenders", defenders)
         }
     }
 
@@ -44,7 +44,8 @@ class SiegeHeaderTest : ShopDayTestBase() {
         assertEquals(listOf(6, 7, 8, 9, 10), siegeHeader(6, 10, 5, null, null, null).marks.map { it.day })
         // Read from the schedule, not the day modulo five: a siege the save puts on day 9 is day 9.
         siegeHeader(day = 7, siegeDay = 9, interval = 5, besieger = null, filled = null, places = null).run {
-            assertEquals("Siege in 2 days · Day 9", countdown)
+            assertEquals("Siege in 2 days", countdown)
+            assertEquals(9, siegeDay)
             assertEquals(listOf(5, 6, 7, 8, 9), marks.map { it.day })
         }
         // Never a marker before day 1, and never a cycle that starts after today.
@@ -61,14 +62,14 @@ class SiegeHeaderTest : ShopDayTestBase() {
             val h = s.siegeHeader(engine.config.siegeInterval, engine.config.championCount)
             val left = state.town.nextSiegeDay - state.day
             assertEquals(state.day, h.day)
-            assertTrue(h.countdown, h.countdown.endsWith("Day ${state.town.nextSiegeDay}"))
+            assertEquals(state.town.nextSiegeDay, h.siegeDay)
             assertTrue(h.marks.any { it.today && it.day == state.day })
             assertTrue(h.marks.last().siege && h.marks.last().day == state.town.nextSiegeDay)
             // Who comes is said only once the warning is out.
             assertEquals(s.shop.threat?.takeIf { it.warned }?.besieger, h.besieger)
             if (left <= 1 && forecast != null) {
                 eves++
-                assertEquals("${forecast.champions.size} of ${engine.config.championCount} defender slots filled", h.defenders)
+                assertEquals("${forecast.champions.size} of ${engine.config.championCount} defenders", h.defenders)
             } else if (left > 1) assertNull(h.defenders)
             // End Day on the siege's day says trading comes first, and no other day says it.
             val note = endDayNote(s)
