@@ -1,0 +1,1592 @@
+{
+  "seedRange": [
+    910001,
+    910096
+  ],
+  "horizon": 80,
+  "runs": 1344,
+  "sourceSha256": {
+    "days.csv": "ecf55c378fe075730b0053237c29ee1257c296cb4b7b61c3f9237f9d1f81d361",
+    "runs.csv": "ea9c813e883e4c911d7f74104e37d4d651ff00a06b8f64efaed98e0ceb2162d5",
+    "selections.csv": "53b76c5eb10bd1f18b83a446478ae401aa323fd15252d3eab044d097b7c03428",
+    "sieges.csv": "278a3ff743638566170e973e179dfaafe0e10d4dfbd4fcb7a38354840e27148a",
+    "snapshots.csv": "0a47e7b169d360be9cd9930b1e8cce6a9e59bd85fdb85957fbf125a544416ac6"
+  },
+  "policies": [
+    {
+      "variant": "default",
+      "policy": "A_FIRE",
+      "n": 96,
+      "medianDays": 20.0,
+      "means": {
+        "days": 17.604,
+        "materialSpend": 1419.875,
+        "materialUnits": 164.469,
+        "forged": 88.521,
+        "sold": 25.156,
+        "recovered": 24.646,
+        "damage": 149.667,
+        "heroDeaths": 1.167
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 57,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 178.604,
+            "raid": 172.656,
+            "champions": 148.677,
+            "militia": 29.927,
+            "watch": 0.0,
+            "damage": 22.99,
+            "healthAfterRecovery": 78.99
+          },
+          "materialSpend": 336.75
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 9,
+          "aliveAfter": 95,
+          "means": {
+            "defense": 177.479,
+            "raid": 228.292,
+            "champions": 147.365,
+            "militia": 30.229,
+            "watch": 0.0,
+            "damage": 39.531,
+            "healthAfterRecovery": 49.51
+          },
+          "materialSpend": 768.719
+        },
+        {
+          "siege": 3,
+          "reached": 95,
+          "held": 0,
+          "aliveAfter": 49,
+          "means": {
+            "defense": 170.021,
+            "raid": 299.947,
+            "champions": 140.168,
+            "militia": 29.979,
+            "watch": 0.0,
+            "damage": 56.284,
+            "healthAfterRecovery": 10.305
+          },
+          "materialSpend": 1197.758
+        },
+        {
+          "siege": 4,
+          "reached": 49,
+          "held": 0,
+          "aliveAfter": 2,
+          "means": {
+            "defense": 171.082,
+            "raid": 355.02,
+            "champions": 146.163,
+            "militia": 24.837,
+            "watch": 0.0,
+            "damage": 59.163,
+            "healthAfterRecovery": 0.898
+          },
+          "materialSpend": 1612.837
+        }
+      ]
+    },
+    {
+      "variant": "default",
+      "policy": "A_FROST",
+      "n": 96,
+      "medianDays": 30.0,
+      "means": {
+        "days": 27.604,
+        "materialSpend": 2878.031,
+        "materialUnits": 213.104,
+        "forged": 113.625,
+        "sold": 37.979,
+        "recovered": 42.656,
+        "damage": 168.5,
+        "heroDeaths": 0.948
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 247.052,
+            "raid": 165.229,
+            "champions": 217.042,
+            "militia": 29.979,
+            "watch": 0.0,
+            "damage": 8.104,
+            "healthAfterRecovery": 93.75
+          },
+          "materialSpend": 551.99
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 91,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 260.302,
+            "raid": 207.875,
+            "champions": 231.75,
+            "militia": 28.646,
+            "watch": 0.0,
+            "damage": 14.448,
+            "healthAfterRecovery": 86.417
+          },
+          "materialSpend": 1230.104
+        },
+        {
+          "siege": 3,
+          "reached": 96,
+          "held": 45,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 261.948,
+            "raid": 265.177,
+            "champions": 232.698,
+            "militia": 29.417,
+            "watch": 0.0,
+            "damage": 25.646,
+            "healthAfterRecovery": 71.073
+          },
+          "materialSpend": 1891.521
+        },
+        {
+          "siege": 4,
+          "reached": 96,
+          "held": 5,
+          "aliveAfter": 89,
+          "means": {
+            "defense": 255.01,
+            "raid": 323.177,
+            "champions": 229.938,
+            "militia": 25.125,
+            "watch": 0.0,
+            "damage": 38.229,
+            "healthAfterRecovery": 43.896
+          },
+          "materialSpend": 2378.135
+        }
+      ]
+    },
+    {
+      "variant": "default",
+      "policy": "B_INVEST",
+      "n": 96,
+      "medianDays": 30.0,
+      "means": {
+        "days": 29.688,
+        "materialSpend": 5141.844,
+        "materialUnits": 107.021,
+        "forged": 82.146,
+        "sold": 51.177,
+        "recovered": 48.458,
+        "damage": 171.594,
+        "heroDeaths": 1.031
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 240.24,
+            "raid": 169.76,
+            "champions": 210.208,
+            "militia": 30.0,
+            "watch": 0.0,
+            "damage": 9.927,
+            "healthAfterRecovery": 92.031
+          },
+          "materialSpend": 1175.458
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 92,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 267.823,
+            "raid": 210.24,
+            "champions": 237.656,
+            "militia": 30.25,
+            "watch": 0.0,
+            "damage": 13.656,
+            "healthAfterRecovery": 86.729
+          },
+          "materialSpend": 2321.458
+        },
+        {
+          "siege": 3,
+          "reached": 96,
+          "held": 69,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 280.177,
+            "raid": 259.146,
+            "champions": 251.865,
+            "militia": 28.365,
+            "watch": 0.0,
+            "damage": 20.688,
+            "healthAfterRecovery": 76.292
+          },
+          "materialSpend": 3171.531
+        },
+        {
+          "siege": 4,
+          "reached": 96,
+          "held": 12,
+          "aliveAfter": 95,
+          "means": {
+            "defense": 280.115,
+            "raid": 321.042,
+            "champions": 252.083,
+            "militia": 28.115,
+            "watch": 0.0,
+            "damage": 32.01,
+            "healthAfterRecovery": 54.75
+          },
+          "materialSpend": 3911.458
+        }
+      ]
+    },
+    {
+      "variant": "default",
+      "policy": "C_EXPERT",
+      "n": 96,
+      "medianDays": 40.0,
+      "means": {
+        "days": 41.562,
+        "materialSpend": 9327.656,
+        "materialUnits": 265.448,
+        "forged": 171.646,
+        "sold": 86.177,
+        "recovered": 65.448,
+        "damage": 185.979,
+        "heroDeaths": 0.854
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 270.906,
+            "raid": 167.521,
+            "champions": 236.302,
+            "militia": 30.0,
+            "watch": 4.604,
+            "damage": 5.562,
+            "healthAfterRecovery": 96.083
+          },
+          "materialSpend": 700.917
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 328.167,
+            "raid": 206.188,
+            "champions": 294.615,
+            "militia": 28.729,
+            "watch": 4.833,
+            "damage": 6.083,
+            "healthAfterRecovery": 95.427
+          },
+          "materialSpend": 2589.365
+        },
+        {
+          "siege": 3,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 362.438,
+            "raid": 258.542,
+            "champions": 327.688,
+            "militia": 27.812,
+            "watch": 7.073,
+            "damage": 9.948,
+            "healthAfterRecovery": 91.729
+          },
+          "materialSpend": 3883.104
+        },
+        {
+          "siege": 4,
+          "reached": 96,
+          "held": 92,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 391.104,
+            "raid": 317.365,
+            "champions": 347.073,
+            "militia": 29.167,
+            "watch": 14.99,
+            "damage": 14.896,
+            "healthAfterRecovery": 85.094
+          },
+          "materialSpend": 5070.521
+        }
+      ]
+    },
+    {
+      "variant": "default",
+      "policy": "SIEGE_PREP",
+      "n": 96,
+      "medianDays": 40.0,
+      "means": {
+        "days": 40.26,
+        "materialSpend": 7404.042,
+        "materialUnits": 268.167,
+        "forged": 168.542,
+        "sold": 67.844,
+        "recovered": 65.281,
+        "damage": 188.875,
+        "heroDeaths": 1.396
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 256.271,
+            "raid": 169.719,
+            "champions": 215.875,
+            "militia": 29.948,
+            "watch": 10.49,
+            "damage": 7.635,
+            "healthAfterRecovery": 94.208
+          },
+          "materialSpend": 601.302
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 324.021,
+            "raid": 213.573,
+            "champions": 283.885,
+            "militia": 29.688,
+            "watch": 10.51,
+            "damage": 7.469,
+            "healthAfterRecovery": 93.688
+          },
+          "materialSpend": 2256.062
+        },
+        {
+          "siege": 3,
+          "reached": 96,
+          "held": 94,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 364.823,
+            "raid": 264.49,
+            "champions": 324.292,
+            "militia": 28.427,
+            "watch": 12.156,
+            "damage": 10.854,
+            "healthAfterRecovery": 90.25
+          },
+          "materialSpend": 3463.365
+        },
+        {
+          "siege": 4,
+          "reached": 96,
+          "held": 91,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 392.271,
+            "raid": 319.896,
+            "champions": 347.021,
+            "militia": 29.146,
+            "watch": 16.417,
+            "damage": 15.146,
+            "healthAfterRecovery": 83.854
+          },
+          "materialSpend": 4476.781
+        }
+      ]
+    },
+    {
+      "variant": "default",
+      "policy": "PASSIVE",
+      "n": 96,
+      "medianDays": 10.0,
+      "means": {
+        "days": 10.0,
+        "materialSpend": 0.0,
+        "materialUnits": 0.0,
+        "forged": 0.0,
+        "sold": 0.0,
+        "recovered": 9.469,
+        "damage": 120.0,
+        "heroDeaths": 0.75
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 0,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 80.708,
+            "raid": 180.99,
+            "champions": 50.688,
+            "militia": 30.0,
+            "watch": 0.0,
+            "damage": 60.0,
+            "healthAfterRecovery": 41.969
+          },
+          "materialSpend": 0.0
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 0,
+          "aliveAfter": 0,
+          "means": {
+            "defense": 81.542,
+            "raid": 248.521,
+            "champions": 51.135,
+            "militia": 30.469,
+            "watch": 0.0,
+            "damage": 60.0,
+            "healthAfterRecovery": 0.0
+          },
+          "materialSpend": 0.0
+        },
+        {
+          "siege": 3,
+          "reached": 0,
+          "held": 0,
+          "aliveAfter": 0,
+          "means": {},
+          "materialSpend": null
+        },
+        {
+          "siege": 4,
+          "reached": 0,
+          "held": 0,
+          "aliveAfter": 0,
+          "means": {},
+          "materialSpend": null
+        }
+      ]
+    },
+    {
+      "variant": "maxed",
+      "policy": "A_FIRE",
+      "n": 96,
+      "medianDays": 25.0,
+      "means": {
+        "days": 25.208,
+        "materialSpend": 2059.427,
+        "materialUnits": 232.844,
+        "forged": 151.75,
+        "sold": 39.062,
+        "recovered": 39.292,
+        "damage": 226.865,
+        "heroDeaths": 1.958
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 76,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 188.667,
+            "raid": 169.448,
+            "champions": 158.677,
+            "militia": 29.979,
+            "watch": 0.0,
+            "damage": 19.406,
+            "healthAfterRecovery": 142.594
+          },
+          "materialSpend": 253.156
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 16,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 185.479,
+            "raid": 222.0,
+            "champions": 156.188,
+            "militia": 29.375,
+            "watch": 0.0,
+            "damage": 34.927,
+            "healthAfterRecovery": 118.021
+          },
+          "materialSpend": 704.875
+        },
+        {
+          "siege": 3,
+          "reached": 96,
+          "held": 0,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 184.083,
+            "raid": 289.917,
+            "champions": 154.323,
+            "militia": 29.885,
+            "watch": 0.0,
+            "damage": 51.104,
+            "healthAfterRecovery": 77.062
+          },
+          "materialSpend": 1149.719
+        },
+        {
+          "siege": 4,
+          "reached": 96,
+          "held": 0,
+          "aliveAfter": 84,
+          "means": {
+            "defense": 177.344,
+            "raid": 360.969,
+            "champions": 148.375,
+            "militia": 29.021,
+            "watch": 0.0,
+            "damage": 58.927,
+            "healthAfterRecovery": 28.635
+          },
+          "materialSpend": 1597.938
+        }
+      ]
+    },
+    {
+      "variant": "maxed",
+      "policy": "C_EXPERT",
+      "n": 96,
+      "medianDays": 50.0,
+      "means": {
+        "days": 50.833,
+        "materialSpend": 12440.552,
+        "materialUnits": 284.812,
+        "forged": 235.198,
+        "sold": 104.667,
+        "recovered": 78.365,
+        "damage": 260.76,
+        "heroDeaths": 1.281
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 284.729,
+            "raid": 166.938,
+            "champions": 252.115,
+            "militia": 30.0,
+            "watch": 2.625,
+            "damage": 4.208,
+            "healthAfterRecovery": 157.156
+          },
+          "materialSpend": 463.74
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 351.521,
+            "raid": 204.479,
+            "champions": 319.24,
+            "militia": 29.354,
+            "watch": 2.99,
+            "damage": 4.229,
+            "healthAfterRecovery": 157.021
+          },
+          "materialSpend": 3189.5
+        },
+        {
+          "siege": 3,
+          "reached": 96,
+          "held": 95,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 394.844,
+            "raid": 257.688,
+            "champions": 362.208,
+            "militia": 28.052,
+            "watch": 4.667,
+            "damage": 7.042,
+            "healthAfterRecovery": 154.854
+          },
+          "materialSpend": 4550.594
+        },
+        {
+          "siege": 4,
+          "reached": 96,
+          "held": 95,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 414.208,
+            "raid": 313.281,
+            "champions": 382.406,
+            "militia": 25.979,
+            "watch": 5.854,
+            "damage": 12.083,
+            "healthAfterRecovery": 149.156
+          },
+          "materialSpend": 5863.312
+        }
+      ]
+    },
+    {
+      "variant": "noRecovery",
+      "policy": "A_FIRE",
+      "n": 96,
+      "medianDays": 15.0,
+      "means": {
+        "days": 16.042,
+        "materialSpend": 1286.042,
+        "materialUnits": 148.875,
+        "forged": 80.708,
+        "sold": 23.99,
+        "recovered": 0.74,
+        "damage": 131.115,
+        "heroDeaths": 1.083
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 57,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 178.604,
+            "raid": 172.656,
+            "champions": 148.677,
+            "militia": 29.927,
+            "watch": 0.0,
+            "damage": 22.99,
+            "healthAfterRecovery": 77.01
+          },
+          "materialSpend": 336.75
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 9,
+          "aliveAfter": 95,
+          "means": {
+            "defense": 177.167,
+            "raid": 228.25,
+            "champions": 147.042,
+            "militia": 30.229,
+            "watch": 0.0,
+            "damage": 39.615,
+            "healthAfterRecovery": 37.948
+          },
+          "materialSpend": 768.719
+        },
+        {
+          "siege": 3,
+          "reached": 95,
+          "held": 0,
+          "aliveAfter": 20,
+          "means": {
+            "defense": 170.474,
+            "raid": 300.495,
+            "champions": 140.632,
+            "militia": 29.989,
+            "watch": 0.0,
+            "damage": 56.4,
+            "healthAfterRecovery": 2.411
+          },
+          "materialSpend": 1197.695
+        },
+        {
+          "siege": 4,
+          "reached": 20,
+          "held": 0,
+          "aliveAfter": 1,
+          "means": {
+            "defense": 178.25,
+            "raid": 338.4,
+            "champions": 153.8,
+            "militia": 24.45,
+            "watch": 0.0,
+            "damage": 57.95,
+            "healthAfterRecovery": 0.45
+          },
+          "materialSpend": 1604.75
+        }
+      ]
+    },
+    {
+      "variant": "noRecovery",
+      "policy": "C_EXPERT",
+      "n": 96,
+      "medianDays": 35.0,
+      "means": {
+        "days": 35.521,
+        "materialSpend": 8284.677,
+        "materialUnits": 230.885,
+        "forged": 150.719,
+        "sold": 76.917,
+        "recovered": 7.677,
+        "damage": 128.552,
+        "heroDeaths": 0.708
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 270.906,
+            "raid": 167.521,
+            "champions": 236.302,
+            "militia": 30.0,
+            "watch": 4.604,
+            "damage": 5.562,
+            "healthAfterRecovery": 94.438
+          },
+          "materialSpend": 700.917
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 328.167,
+            "raid": 206.188,
+            "champions": 294.615,
+            "militia": 28.729,
+            "watch": 4.833,
+            "damage": 6.083,
+            "healthAfterRecovery": 89.281
+          },
+          "materialSpend": 2589.365
+        },
+        {
+          "siege": 3,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 362.438,
+            "raid": 258.542,
+            "champions": 327.688,
+            "militia": 27.812,
+            "watch": 7.073,
+            "damage": 9.948,
+            "healthAfterRecovery": 80.74
+          },
+          "materialSpend": 3883.104
+        },
+        {
+          "siege": 4,
+          "reached": 96,
+          "held": 92,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 391.667,
+            "raid": 317.323,
+            "champions": 347.375,
+            "militia": 29.167,
+            "watch": 15.26,
+            "damage": 14.844,
+            "healthAfterRecovery": 66.708
+          },
+          "materialSpend": 5069.0
+        }
+      ]
+    },
+    {
+      "variant": "noTraits",
+      "policy": "A_FIRE",
+      "n": 96,
+      "medianDays": 15.0,
+      "means": {
+        "days": 17.188,
+        "materialSpend": 1382.698,
+        "materialUnits": 160.302,
+        "forged": 86.438,
+        "sold": 24.771,
+        "recovered": 23.531,
+        "damage": 147.104,
+        "heroDeaths": 1.219
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 57,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 178.604,
+            "raid": 172.656,
+            "champions": 148.677,
+            "militia": 29.927,
+            "watch": 0.0,
+            "damage": 22.99,
+            "healthAfterRecovery": 78.99
+          },
+          "materialSpend": 336.75
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 6,
+          "aliveAfter": 95,
+          "means": {
+            "defense": 180.573,
+            "raid": 238.771,
+            "champions": 150.625,
+            "militia": 29.979,
+            "watch": 0.0,
+            "damage": 41.448,
+            "healthAfterRecovery": 47.594
+          },
+          "materialSpend": 768.719
+        },
+        {
+          "siege": 3,
+          "reached": 95,
+          "held": 0,
+          "aliveAfter": 43,
+          "means": {
+            "defense": 174.758,
+            "raid": 312.653,
+            "champions": 144.695,
+            "militia": 29.968,
+            "watch": 0.0,
+            "damage": 56.8,
+            "healthAfterRecovery": 8.537
+          },
+          "materialSpend": 1197.716
+        },
+        {
+          "siege": 4,
+          "reached": 43,
+          "held": 0,
+          "aliveAfter": 0,
+          "means": {
+            "defense": 185.0,
+            "raid": 369.86,
+            "champions": 154.86,
+            "militia": 29.953,
+            "watch": 0.0,
+            "damage": 59.07,
+            "healthAfterRecovery": 0.0
+          },
+          "materialSpend": 1597.535
+        }
+      ]
+    },
+    {
+      "variant": "noTraits",
+      "policy": "C_EXPERT",
+      "n": 96,
+      "medianDays": 42.5,
+      "means": {
+        "days": 41.771,
+        "materialSpend": 9407.219,
+        "materialUnits": 265.74,
+        "forged": 172.292,
+        "sold": 86.5,
+        "recovered": 67.385,
+        "damage": 191.156,
+        "heroDeaths": 0.917
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 270.906,
+            "raid": 167.521,
+            "champions": 236.302,
+            "militia": 30.0,
+            "watch": 4.604,
+            "damage": 5.562,
+            "healthAfterRecovery": 96.083
+          },
+          "materialSpend": 700.917
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 335.74,
+            "raid": 216.635,
+            "champions": 298.708,
+            "militia": 29.99,
+            "watch": 7.073,
+            "damage": 6.635,
+            "healthAfterRecovery": 95.052
+          },
+          "materialSpend": 2589.677
+        },
+        {
+          "siege": 3,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 368.75,
+            "raid": 268.771,
+            "champions": 329.594,
+            "militia": 29.969,
+            "watch": 9.271,
+            "damage": 10.76,
+            "healthAfterRecovery": 91.052
+          },
+          "materialSpend": 3882.115
+        },
+        {
+          "siege": 4,
+          "reached": 96,
+          "held": 89,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 399.646,
+            "raid": 329.49,
+            "champions": 351.708,
+            "militia": 29.99,
+            "watch": 18.0,
+            "damage": 15.542,
+            "healthAfterRecovery": 84.354
+          },
+          "materialSpend": 5056.833
+        }
+      ]
+    },
+    {
+      "variant": "nativeDepth",
+      "policy": "B_INVEST",
+      "n": 96,
+      "medianDays": 30.0,
+      "means": {
+        "days": 29.844,
+        "materialSpend": 5192.208,
+        "materialUnits": 95.958,
+        "forged": 83.188,
+        "sold": 53.573,
+        "recovered": 47.99,
+        "damage": 169.844,
+        "heroDeaths": 0.844
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 93,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 242.031,
+            "raid": 169.885,
+            "champions": 211.792,
+            "militia": 30.0,
+            "watch": 0.156,
+            "damage": 9.885,
+            "healthAfterRecovery": 92.0
+          },
+          "materialSpend": 1069.094
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 90,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 269.104,
+            "raid": 211.302,
+            "champions": 239.531,
+            "militia": 28.833,
+            "watch": 0.792,
+            "damage": 13.865,
+            "healthAfterRecovery": 85.812
+          },
+          "materialSpend": 2249.135
+        },
+        {
+          "siege": 3,
+          "reached": 96,
+          "held": 70,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 284.073,
+            "raid": 261.927,
+            "champions": 256.5,
+            "militia": 27.25,
+            "watch": 0.448,
+            "damage": 20.76,
+            "healthAfterRecovery": 74.865
+          },
+          "materialSpend": 3113.75
+        },
+        {
+          "siege": 4,
+          "reached": 96,
+          "held": 21,
+          "aliveAfter": 93,
+          "means": {
+            "defense": 282.292,
+            "raid": 316.938,
+            "champions": 253.26,
+            "militia": 28.094,
+            "watch": 1.104,
+            "damage": 30.938,
+            "healthAfterRecovery": 54.948
+          },
+          "materialSpend": 3910.24
+        }
+      ]
+    },
+    {
+      "variant": "nativeDepth",
+      "policy": "C_EXPERT",
+      "n": 96,
+      "medianDays": 45.0,
+      "means": {
+        "days": 43.958,
+        "materialSpend": 10938.021,
+        "materialUnits": 215.75,
+        "forged": 182.979,
+        "sold": 102.406,
+        "recovered": 66.438,
+        "damage": 187.219,
+        "heroDeaths": 0.896
+      },
+      "censored": 0,
+      "sieges": [
+        {
+          "siege": 1,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 280.521,
+            "raid": 167.812,
+            "champions": 241.604,
+            "militia": 30.0,
+            "watch": 8.969,
+            "damage": 4.573,
+            "healthAfterRecovery": 96.938
+          },
+          "materialSpend": 660.021
+        },
+        {
+          "siege": 2,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 340.573,
+            "raid": 205.458,
+            "champions": 300.635,
+            "militia": 29.76,
+            "watch": 10.25,
+            "damage": 4.969,
+            "healthAfterRecovery": 96.469
+          },
+          "materialSpend": 2577.125
+        },
+        {
+          "siege": 3,
+          "reached": 96,
+          "held": 96,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 381.958,
+            "raid": 257.135,
+            "champions": 342.99,
+            "militia": 27.406,
+            "watch": 11.708,
+            "damage": 7.896,
+            "healthAfterRecovery": 93.927
+          },
+          "materialSpend": 3895.521
+        },
+        {
+          "siege": 4,
+          "reached": 96,
+          "held": 94,
+          "aliveAfter": 96,
+          "means": {
+            "defense": 409.094,
+            "raid": 316.969,
+            "champions": 365.198,
+            "militia": 28.125,
+            "watch": 15.938,
+            "damage": 13.073,
+            "healthAfterRecovery": 87.833
+          },
+          "materialSpend": 5199.562
+        }
+      ]
+    }
+  ],
+  "paired": [
+    {
+      "comparison": "C_EXPERT vs A_FIRE",
+      "siege": 1,
+      "COnly": 39,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 40.625,
+      "pairedSE": 5.039,
+      "approx95Interval": [
+        30.749,
+        50.501
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs A_FIRE",
+      "siege": 2,
+      "COnly": 87,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 90.625,
+      "pairedSE": 2.991,
+      "approx95Interval": [
+        84.764,
+        96.486
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs A_FIRE",
+      "siege": 3,
+      "COnly": 96,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 100,
+      "pairedSE": 0.0,
+      "approx95Interval": [
+        100.0,
+        100.0
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs A_FIRE",
+      "siege": 4,
+      "COnly": 92,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 95.833,
+      "pairedSE": 2.05,
+      "approx95Interval": [
+        91.815,
+        99.852
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs A_FROST",
+      "siege": 1,
+      "COnly": 0,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 0,
+      "pairedSE": 0.0,
+      "approx95Interval": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs A_FROST",
+      "siege": 2,
+      "COnly": 5,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 5.208,
+      "pairedSE": 2.28,
+      "approx95Interval": [
+        0.74,
+        9.676
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs A_FROST",
+      "siege": 3,
+      "COnly": 51,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 53.125,
+      "pairedSE": 5.12,
+      "approx95Interval": [
+        43.09,
+        63.16
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs A_FROST",
+      "siege": 4,
+      "COnly": 87,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 90.625,
+      "pairedSE": 2.991,
+      "approx95Interval": [
+        84.764,
+        96.486
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs B_INVEST",
+      "siege": 1,
+      "COnly": 0,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 0,
+      "pairedSE": 0.0,
+      "approx95Interval": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs B_INVEST",
+      "siege": 2,
+      "COnly": 4,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 4.167,
+      "pairedSE": 2.05,
+      "approx95Interval": [
+        0.148,
+        8.185
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs B_INVEST",
+      "siege": 3,
+      "COnly": 27,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 28.125,
+      "pairedSE": 4.613,
+      "approx95Interval": [
+        19.084,
+        37.166
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs B_INVEST",
+      "siege": 4,
+      "COnly": 80,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 83.333,
+      "pairedSE": 3.824,
+      "approx95Interval": [
+        75.839,
+        90.828
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs SIEGE_PREP",
+      "siege": 1,
+      "COnly": 0,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 0,
+      "pairedSE": 0.0,
+      "approx95Interval": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs SIEGE_PREP",
+      "siege": 2,
+      "COnly": 0,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 0,
+      "pairedSE": 0.0,
+      "approx95Interval": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs SIEGE_PREP",
+      "siege": 3,
+      "COnly": 2,
+      "otherOnly": 0,
+      "deltaPercentagePoints": 2.083,
+      "pairedSE": 1.465,
+      "approx95Interval": [
+        -0.789,
+        4.955
+      ]
+    },
+    {
+      "comparison": "C_EXPERT vs SIEGE_PREP",
+      "siege": 4,
+      "COnly": 3,
+      "otherOnly": 2,
+      "deltaPercentagePoints": 1.042,
+      "pairedSE": 2.339,
+      "approx95Interval": [
+        -3.543,
+        5.626
+      ]
+    }
+  ],
+  "snapshots": [
+    {
+      "policy": "A_FIRE",
+      "siege": 1,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 93.934,
+        "noQualityPower": 33.871,
+        "noElements": -22.684,
+        "noFamilyFitOrWeight": 33.549,
+        "noTraitDefense": 0.0
+      },
+      "meanRaidRemovedWithoutTrait": 0.0
+    },
+    {
+      "policy": "A_FIRE",
+      "siege": 2,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 92.816,
+        "noQualityPower": 32.073,
+        "noElements": -23.706,
+        "noFamilyFitOrWeight": 35.457,
+        "noTraitDefense": -2.832
+      },
+      "meanRaidRemovedWithoutTrait": -10.427
+    },
+    {
+      "policy": "A_FIRE",
+      "siege": 3,
+      "n": 95,
+      "meanDefenseRemoved": {
+        "noWeapons": 83.892,
+        "noQualityPower": 28.713,
+        "noElements": -24.912,
+        "noFamilyFitOrWeight": 33.336,
+        "noTraitDefense": -3.493
+      },
+      "meanRaidRemovedWithoutTrait": -12.245
+    },
+    {
+      "policy": "A_FIRE",
+      "siege": 4,
+      "n": 49,
+      "meanDefenseRemoved": {
+        "noWeapons": 84.274,
+        "noQualityPower": 27.574,
+        "noElements": -22.76,
+        "noFamilyFitOrWeight": 34.512,
+        "noTraitDefense": -10.898
+      },
+      "meanRaidRemovedWithoutTrait": -18.479
+    },
+    {
+      "policy": "A_FROST",
+      "siege": 1,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 159.051,
+        "noQualityPower": 49.459,
+        "noElements": 29.368,
+        "noFamilyFitOrWeight": 49.678,
+        "noTraitDefense": 0.0
+      },
+      "meanRaidRemovedWithoutTrait": 0.0
+    },
+    {
+      "policy": "A_FROST",
+      "siege": 2,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 169.085,
+        "noQualityPower": 48.406,
+        "noElements": 34.953,
+        "noFamilyFitOrWeight": 55.416,
+        "noTraitDefense": -6.203
+      },
+      "meanRaidRemovedWithoutTrait": -10.766
+    },
+    {
+      "policy": "A_FROST",
+      "siege": 3,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 162.461,
+        "noQualityPower": 44.072,
+        "noElements": 29.986,
+        "noFamilyFitOrWeight": 55.768,
+        "noTraitDefense": -6.49
+      },
+      "meanRaidRemovedWithoutTrait": -9.864
+    },
+    {
+      "policy": "A_FROST",
+      "siege": 4,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 157.232,
+        "noQualityPower": 40.706,
+        "noElements": 33.797,
+        "noFamilyFitOrWeight": 54.824,
+        "noTraitDefense": -12.66
+      },
+      "meanRaidRemovedWithoutTrait": -17.121
+    },
+    {
+      "policy": "B_INVEST",
+      "siege": 1,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 146.029,
+        "noQualityPower": 45.882,
+        "noElements": 20.411,
+        "noFamilyFitOrWeight": 38.856,
+        "noTraitDefense": 0.0
+      },
+      "meanRaidRemovedWithoutTrait": 0.0
+    },
+    {
+      "policy": "B_INVEST",
+      "siege": 2,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 173.151,
+        "noQualityPower": 52.232,
+        "noElements": 28.241,
+        "noFamilyFitOrWeight": 48.763,
+        "noTraitDefense": -1.999
+      },
+      "meanRaidRemovedWithoutTrait": -7.328
+    },
+    {
+      "policy": "B_INVEST",
+      "siege": 3,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 181.112,
+        "noQualityPower": 51.682,
+        "noElements": 31.791,
+        "noFamilyFitOrWeight": 52.912,
+        "noTraitDefense": -6.157
+      },
+      "meanRaidRemovedWithoutTrait": -12.268
+    },
+    {
+      "policy": "B_INVEST",
+      "siege": 4,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 179.383,
+        "noQualityPower": 50.025,
+        "noElements": 28.587,
+        "noFamilyFitOrWeight": 52.724,
+        "noTraitDefense": -6.821
+      },
+      "meanRaidRemovedWithoutTrait": -12.384
+    },
+    {
+      "policy": "C_EXPERT",
+      "siege": 1,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 172.0,
+        "noQualityPower": 53.662,
+        "noElements": 27.447,
+        "noFamilyFitOrWeight": 52.887,
+        "noTraitDefense": 0.0
+      },
+      "meanRaidRemovedWithoutTrait": 0.0
+    },
+    {
+      "policy": "C_EXPERT",
+      "siege": 2,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 223.943,
+        "noQualityPower": 64.555,
+        "noElements": 42.676,
+        "noFamilyFitOrWeight": 64.578,
+        "noTraitDefense": -5.39
+      },
+      "meanRaidRemovedWithoutTrait": -10.309
+    },
+    {
+      "policy": "C_EXPERT",
+      "siege": 3,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 248.876,
+        "noQualityPower": 69.33,
+        "noElements": 45.277,
+        "noFamilyFitOrWeight": 71.914,
+        "noTraitDefense": -7.091
+      },
+      "meanRaidRemovedWithoutTrait": -10.176
+    },
+    {
+      "policy": "C_EXPERT",
+      "siege": 4,
+      "n": 96,
+      "meanDefenseRemoved": {
+        "noWeapons": 268.825,
+        "noQualityPower": 72.403,
+        "noElements": 51.128,
+        "noFamilyFitOrWeight": 79.852,
+        "noTraitDefense": -7.68
+      },
+      "meanRaidRemovedWithoutTrait": -12.345
+    }
+  ],
+  "startingSelection": {
+    "worlds": {
+      "Lean Harvest": 41,
+      "Restless Roads": 19,
+      "Calm Season": 36
+    },
+    "uniqueStartingKits": 1,
+    "uniqueClassCompositions": 74,
+    "allClassesEveryRun": true,
+    "startingEquipped": {
+      "": 96
+    },
+    "visitorsFirstTenDays": {
+      "none": 276,
+      "last_crate": 143,
+      "crooked_merchant": 68,
+      "deep_road": 96,
+      "masters_afternoon": 108,
+      "collectors_offer": 66,
+      "smiths_wager": 70,
+      "festival_contract": 115,
+      "cracked_family_blade": 6,
+      "blade_for_the_wall": 12
+    }
+  }
+}
