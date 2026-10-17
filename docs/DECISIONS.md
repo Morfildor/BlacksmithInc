@@ -4688,3 +4688,39 @@ Next implementation pass, in the owner's order: finish the accepted but unbuilt 
 confirmation); bring `GDD_CHECKLIST.md` up to v2.0; remove the empty root `GDD.md` if unused. Documentation cleanup and
 gameplay changes go in separate commits. Make existing decisions visible and understandable before another balance
 revision.
+
+## Living heroes and siege variety (2026-10-17, branch `living-heroes`)
+
+Spec: `docs/Tiny_Blacksmith_Living_Heroes_Final_Design.md` (final design v2.0, the owner's handoff), content:
+`docs/Tiny_Blacksmith_Peoples_Names_and_Siege_Bestiary.md`. Ledger and resume point: `docs/LIVING_HEROES_LEDGER.md`.
+
+### Explicit contract changes (final design 3.2; owner requirements, recorded here as LOCKED revisions)
+
+| Existing contract | Revised contract | Basis |
+|---|---|---|
+| Guild members never shop | Eligible members at home visit the smith's counter with their own purse, one a day, after the town's visitors | Explicit owner direction |
+| The smith selects a member's Speciality (`ChooseSpeciality`) | The member chooses after an announced lean, from real evidence; the command is refused in new eras and kept in legacy eras | Explicit owner direction |
+| A loan outranks personal equipment until manually recalled | A loan outranks while active; the member can end it after a full planning morning's notice and equip a suitable weapon they own | Necessary for the owner's equipment autonomy |
+| A first name never repeats in an era; unrelated surnames never repeat | Prefer unused given names; surnames reserved for lineages, founders and kin. Hard rule: unique living full names, family shared explicitly | Finite culture pools, kin, endless eras |
+| Classic and guild control split | Preserved: new controls and behaviours are guild-only; a classic era gains identities, kin and background grievances only | Existing owner contract |
+| Four fighters a side, party order, existing statuses | Preserved, with Poison, channels and Interrupt, return once, survive once and structural hits as narrow typed additions | Engine-aware integration ruling |
+
+Designer defaults (PROPOSED, `BalanceConfig.living`, v17): one member counter visit a day; one full planning morning of
+loan-return notice; three planning mornings of departure notice; at most one departure notice and one personal offer on
+the board at a time; five-day offer cooldowns; three missed fair chances before a notice; debt 40 gold due after the
+first siege; grudges fade after ten days without an offer; evidence capped at 6 per family; a lead of 3 is a certain
+choice.
+
+### Technical rulings
+
+- **Era feature revision** `GameState.livingRevision`: 0 for every save from before (schema 7 and older decode as 0) and
+  for any era begun before it; 1 for new eras. Every changed behaviour is gated on it. Schema 8 (`{ it }` steps), rules 8,
+  content 7, balance 17.
+- **Keyed draws** (`rng/Keyed`): identity, Hooks, the counter's noise, leans and personal offers draw from a generator
+  seeded by the run seed and a stable key, never from a gameplay stream. A classic living era draws exactly what a legacy
+  era draws on every stream: `GoldenStateTest.aClassicLivingEraDrawsExactlyWhatALegacyEraDraws` (20 seeds × 15 days).
+  The recorded golden projection is pinned to the legacy revision (a lost weapon's reason quotes a hero's name).
+- Departure is `HeroFate.DEPARTED`: alive in the story, gone from the town; owned weapons go to `Lost` ("carried away
+  by ..."), the external-holder model, so no weapon is owned by an absent hero.
+- Portraits carry a people where the face fits it (owner, 2026-10-17: use what makes sense now, review with the race art
+  later); a people with no matching face for a class wears the class silhouette `silhouette_<class>`.
