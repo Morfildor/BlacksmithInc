@@ -121,6 +121,10 @@ tool rack, shelf, wall and floor tiles and embers (the `ForgeScene` that draws t
 and `splash_anvil` (not referenced), the 50 battle frames (animation, 16 px, out of budget), hero silhouettes and old
 portrait sets (hero art belongs to the portrait work; the old sets are not shown).
 
+Bestiary start (same evening, the last $1.26): the three engines and three great monsters of
+`docs/ART_NEEDED_BESTIARY.md`, drawn at 96 px and set on 112 px canvases, delivered to `Assets/Enemies/` and not wired
+(the replay code maps bestiary IDs to figures). The hill giant retake came out worse and was not used. Balance $0.08.
+
 For the owner: `blessing_runic_insight` draws rune glyphs (the brief says no letters; runes read as decoration);
 the victory gatehouse fills about half its canvas and reads smaller than the other banners; the intact and breached
 walls differ slightly in tone (never shown together); the anvil's face touches the top of its canvas; the raider is

@@ -69,6 +69,8 @@ shared style and reuse groups are in the bible's section 15 and `docs/ART_BRIEF.
 
 ## Engines and great monsters
 
+Drawn 2026-10-17 with Retro Diffusion and waiting in `Assets/Enemies/` (112x112), not wired: all six below.
+
 | assetId | Name | Visual brief |
 | --- | --- | --- |
 | eng_battering_ram | Covered Battering Ram | Timber roof over a suspended iron-headed ram, the crew's feet visible below. |
