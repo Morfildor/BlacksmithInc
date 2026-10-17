@@ -156,6 +156,16 @@ object Hooks {
         clearConcern(ctx, heroId)
     }
 
+    /** opp_unburied_oath: a member with a grievance against the Pale Procession held the wall against its unburied knight. */
+    fun unburied(ctx: ResolutionContext, heroId: HeroId, captain: String): String {
+        val hero = ctx.hero(heroId)
+        ctx.reputation += ctx.config.living.deedReputation
+        val text = "${hero.fullName} held the wall against $captain and answered the old grievance against the ${ctx.content.faction(hero.hook!!.factionId!!).name}: +${ctx.config.living.deedReputation} reputation."
+        close(ctx, heroId, HookStatus.RESOLVED, text)
+        if (hero.ambition == Ambition.AVENGER) Heroes.fulfilAmbition(ctx, heroId, Ambition.AVENGER)
+        return text
+    }
+
     private fun clearConcern(ctx: ResolutionContext, heroId: HeroId) {
         val m = ctx.guild?.member(heroId) ?: return
         val c = m.concern ?: return

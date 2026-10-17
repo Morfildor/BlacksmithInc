@@ -87,7 +87,8 @@ object SiegeFight {
         ctx.siege = scenario.copy(factionId = faction, plan = units, charter = charter, prepId = prep?.id, armyId = army.id)
         ctx.guild = ctx.guild!!.copy(armyLog = (ctx.guild!!.armyLog + army.id).takeLast(6))
         val who = if (charter) "${ctx.content.combat!!.unit(cat.siegeLeaders.getValue(faction)).name} leads it, escorted by ${army.name.lowercase()}" else army.name
-        ctx.emit(EventType.SIEGE_PREPARATION, 7, "Scouts report the army coming on day ${scenario.siegeDay}: $who. ${army.forecast}" + (prep?.let { " They also prepare ${it.name.lowercase()}. ${it.description}" } ?: ""),
+        val drill = Agency.drill(ctx, army)?.let { " $it" }.orEmpty()
+        ctx.emit(EventType.SIEGE_PREPARATION, 7, "Scouts report the army coming on day ${scenario.siegeDay}: $who. ${army.forecast}" + (prep?.let { " They also prepare ${it.name.lowercase()}. ${it.description}" } ?: "") + drill,
             data = mapOf("army" to army.id, "day" to scenario.siegeDay.toString(), "faction" to faction.value) + (prep?.let { mapOf("prep" to it.id) } ?: emptyMap()))
     }
 
