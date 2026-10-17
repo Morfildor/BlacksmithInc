@@ -7,6 +7,9 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Added
+- **The siege bestiary (living heroes guild eras).** 48 enemies march for the three factions: the Iron Banner with the Ashclaw Raiders, the Pale Procession with the Hollowbound and the Thorn Covenant with the Embermaw Brood. Twelve standard enemies each, six captains, three siege engines and three great monsters, in 36 armies the scouts name four days ahead with their answers. Sappers, an ogre, a ram, a catapult and a hill giant prepare attacks on the defences, a necromancer or the Bellkeeper returns one fallen soldier once, and each enemy card says what it prepares. Classic eras and guild eras begun before living heroes keep their old attackers. Art is still placeholder (`docs/ART_NEEDED_BESTIARY.md`).
+
 ### Changed
 - **Cards say each thing once, and mark it truly.** The Guardian's and the Battlemage's class lines no longer repeat Riposte and Echo, which keep their own rows. A hero's Support says what it does ("4 Armor each round", "6 healing each round") and appears only for a class that uses it; Health is one line, the fight figure with the between-fights percentage beside it ("40/40 (100%)"); rows are labelled Ability, Passive, Trait or Speciality in plain words. A member's quest share (and a recruit's fee) sit under "Terms"; Gold-Hungry, which also raises the share, no longer carries a "+", and its share line shows the parts ("15% … (10% + 5% Gold-Hungry)").
 - Material cards: a metal shows its quality cap beside its rarity limit, and the price reads "10 gold each". A caveat is marked as what it is: a real drawback keeps "−" (Obsidian cracks, an enemy resists the element), a condition its effect waits for gets "◇", and Iron's "the weakest metal" is a plain comparison. The Forge's recipe sheet heads them "Drawbacks and conditions", and the comparison calls only a real drawback one.
