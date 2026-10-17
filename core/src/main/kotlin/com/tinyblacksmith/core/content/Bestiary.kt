@@ -294,7 +294,101 @@ object Bestiary {
             forecast = "Grave rats are spreading through the drains."),
     )
 
-    private val built: List<Built> = ironBanner + paleProcession
+    // ---- Thorn Covenant (Embermaw Brood): pack focus, Armor stripped away, Poison, large creatures ----
+    private val thornCovenant = listOf(
+        enemy("tc_dire_wolf", "Dire Wolf", TC, 41, 10, 0, cost = 4, siege = 1, tags = setOf(Tags.BEAST, Tags.PACK, CALLED), pack = 20,
+            moves = listOf(attack(telegraph = "Once per round, it deals 20% more damage to a defender another beast already damaged this round. It attacks.")),
+            job = "Rushes the breaches and singles out one defender.",
+            counter = "No Armor. Defeat one wolf early, or protect the defender the pack is hitting.",
+            forecast = "Large wolves are being driven toward the breaches."),
+        enemy("tc_giant_spider", "Giant Spider", TC, 35, 7, 0, cost = 4, siege = 2, tags = setOf(Tags.BEAST, CALLED, SPECIALIST), weakTo = Element.FIRE,
+            moves = listOf(
+                move("web", "Web", Cadence.Actions(2, 5), "On its 2nd and 5th actions, puts 1 Chill on the back defender instead of attacking.", Give(Stat.CHILL, Aim.BackFoe)),
+                attack()),
+            job = "Fouls the gatehouse and hinders the defenders.",
+            counter = "Modest Health. It is weak to Fire, and bows reach it at the back of their line.",
+            forecast = "Giant spiders are webbing the outer timbers."),
+        enemy("tc_harpy", "Harpy", TC, 31, 8, 0, cost = 5, siege = 2, tags = setOf(SPECIALIST),
+            moves = listOf(
+                move("shriek", "Shriek", Cadence.Actions(2, 5), "On its 2nd and 5th actions, attacks the back defender for 50% of its Attack and removes up to 4 Armor from that defender.",
+                    Damage(Aim.BackFoe, Strike(50)), Take(Stat.GUARD, Aim.BackFoe, Fixed(4))),
+                attack()),
+            job = "Unsettles the watch from above.",
+            counter = "Very little Health. Ordinary attacks reach it.",
+            forecast = "Harpies are circling the wall."),
+        enemy("tc_minotaur", "Minotaur", TC, 72, 14, 10, cost = 7, siege = 3,
+            moves = listOf(
+                prepared("horn_charge", "Horn Charge", Cadence.Actions(1),
+                    interruptible("On its 1st action, it starts Preparing a horn charge at the front defender. On its next action, the charge deals 150% of its Attack to that defender and removes up to 4 Armor from them."),
+                    ChannelDef("horn_charge", "Horn Charge", uses = 1, onInterrupt = OnInterrupt.SPENT, aim = Aim.FrontFoe,
+                        payload = listOf(Damage(Aim.EventTarget, Strike(150)), Take(Stat.GUARD, Aim.EventTarget, Fixed(4))), fallback = listOf(Damage(Aim.Foe, Strike())))),
+                attack()),
+            job = "Charges the gate and breaks the front.",
+            counter = "Slow. Interrupt the charge, give the front defender Armor before it lands, or bring it down first.",
+            forecast = "A minotaur is clearing space for a charge."),
+        enemy("tc_manticore", "Manticore", TC, 58, 12, 5, cost = 7, siege = 3, tags = setOf(SPECIALIST),
+            moves = listOf(
+                move("tail_spikes", "Tail spikes", Cadence.Actions(2, 5), "On its 2nd and 5th actions, hits the first 2 defenders in the line for 65% of its Attack each, past a Guardian.",
+                    Damage(Aim.FrontFoes(2), Strike(65))),
+                move("spike", "Spike", Cadence.Always, "Otherwise it shoots the back defender, past the front.", Damage(Aim.BackFoe, Strike()))),
+            job = "Bombards the defenders from the approach.",
+            counter = "Moderate Health and little Armor. Healing and concentrated attacks work.",
+            forecast = "A manticore is circling beyond the palisade."),
+        enemy("tc_wyvern", "Wyvern", TC, 82, 14, 10, cost = 10, siege = 4,
+            moves = listOf(
+                move("venom_dive", "Venom dive", Cadence.Actions(2, 5), "On its 2nd and 5th actions, attacks the defender with the least Health, past a Guardian, and puts 2 Poison on that defender.",
+                    Damage(Aim.WeakestFoe, Strike()), Give(Stat.POISON, Aim.WeakestFoe, Fixed(2))),
+                attack()),
+            job = "Dives on the wounded defenders.",
+            counter = "Healing and Purifying weapons remove its Poison. Armor and Health on your weakest defender, and concentrated attacks.",
+            forecast = "A wyvern has been sighted. Prepare for venomous dives."),
+        enemy("tc_treant", "Thornbound Treant", TC, 96, 12, 20, cost = 9, siege = 3, weakTo = Element.FIRE,
+            passives = listOf(e("tc_treant_thorns", "Thornbark", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Damage(Aim.EventSource, Fixed(3))), Limit(perRound = 1),
+                "The first time each round a defender's attack damages the Treant, the Treant deals 3 damage to that defender. Once per round.", listOf(Condition.FromAction, Condition.SourceIsFoe))),
+            moves = listOf(attack()),
+            job = "Tears down barricades and shelters smaller creatures.",
+            counter = "Weak to Fire. A few heavy hits are better than many small ones. Burn and Bleed damage never set off its bark.",
+            forecast = "A bound walking tree is approaching. Its bark catches fire."),
+        enemy("tc_earth_elemental", "Earth Elemental", TC, 102, 13, 30, cost = 10, siege = 4, bonusFrom = axeWeak,
+            moves = listOf(
+                move("stone_skin", "Stone skin", Cadence.Actions(2, 5), "On its 2nd and 5th actions, gains 6 Armor, then attacks.", Guard(Aim.Self, Fixed(6)), Damage(Aim.Foe, Strike())),
+                attack(telegraph = "Axe attacks deal 30% more damage to it. It attacks.")),
+            job = "Crushes a prepared breach.",
+            counter = "Very slow, with no healing. Axe attacks deal 30% more damage, and spears get past part of its Armor.",
+            forecast = "Bound stone is moving beneath the hillside."),
+        enemy("tc_fire_elemental", "Fire Elemental", TC, 60, 10, 0, cost = 8, siege = 4, weakTo = Element.FROST, resists = Element.FIRE, immune = bones,
+            moves = listOf(
+                move("searing_touch", "Searing touch", Cadence.Actions(2, 5), "On its 2nd and 5th actions, attacks with fire and puts 2 Burn on the defender it attacks.",
+                    Damage(Aim.Foe, Strike(), Element.FIRE), Give(Stat.BURN, Aim.Foe, Fixed(2))),
+                attack(Element.FIRE, telegraph = "Poison and Bleed never affect it. Its attacks deal fire damage.")),
+            job = "Burns the timber and forces the defenders to protect themselves.",
+            counter = "Weak to Frost, resists Fire. Armor blocks its Burn.",
+            forecast = "A bound flame is advancing with the beasts."),
+        enemy("tc_giant_serpent", "Giant Serpent", TC, 65, 11, 5, cost = 6, siege = 3, tags = setOf(Tags.BEAST, CALLED),
+            moves = listOf(
+                move("coiling_bite", "Coiling bite", Cadence.Actions(2, 5), "On its 2nd and 5th actions, attacks the front defender and puts 1 Chill on that defender.",
+                    Damage(Aim.FrontFoe, Strike()), Give(Stat.CHILL, Aim.FrontFoe)),
+                attack()),
+            job = "Holds the breach and pins one defender's attention.",
+            counter = "Little Armor. Concentrated attacks work.",
+            forecast = "A giant serpent has been driven toward the gate."),
+        enemy("tc_werewolf", "Werewolf", TC, 61, 11, 10, cost = 8, siege = 3, tags = setOf(CALLED), recover = Recovery(2, setOf(SILVER)), bonusFrom = listOf(SourceBonus(SILVER, 30)),
+            moves = listOf(attack(telegraph = "Before each of its actions, it heals 2 Health, unless a Fire hit, Burn or a Silver weapon damaged it since its last action. Silver weapons deal 30% more damage to it. Then it attacks.")),
+            job = "Rushes the defenders and keeps itself going through a long fight.",
+            counter = "Silver weapons, Fire hits and Burn stop its healing. Silver weapons deal 30% more damage to it.",
+            forecast = "A werewolf is among the attackers. Silver stops it healing."),
+        enemy("tc_beastcaller", "Beastcaller", TC, 33, 6, 0, cost = 5, siege = 2, tags = setOf(SPECIALIST),
+            moves = listOf(
+                move("horn_call", "Horn call", Cadence.Actions(2, 5), "On its 2nd and 5th actions, gives 3 Armor to its weakest beast (lowest Health percentage), then attacks the defender with the least Health for 50% of its Attack, past a Guardian.",
+                    Guard(Aim.WeakestAllyTagged(CALLED), Fixed(3)), Damage(Aim.WeakestFoe, Strike(50))),
+                attack()),
+            job = "Coordinates the creatures around the weak point.",
+            counter = "Little Health. Defeat it to end the coordination.",
+            forecast = "A horn-bearer is directing the beasts.",
+            adaptation = "It gives its beasts Armor and points its own attack at the weakest defender, instead of a damage bonus and a shared target (final design Appendix A)."),
+    )
+
+    private val built: List<Built> = ironBanner + paleProcession + thornCovenant
 
     val units: List<UnitDef> = built.map { it.unit }
     val profiles: List<EnemyProfile> = built.map { it.profile }
