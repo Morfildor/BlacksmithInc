@@ -82,13 +82,15 @@ object SiegeFight {
         val units = if (charter) listOf(EnemySpec(cat.siegeLeaders.getValue(faction), Fight.pct(percent, cfg.charterWarlordPercent))) + army.members.take(max - 1).map { EnemySpec(it, percent) }
             else army.members.take(max).map { EnemySpec(it, percent) }
         // A preparation that fits the field as authored: none that replaces its members, none that would push a fifth actor in.
-        val preps = cat.preparations.filter { it.factionId == faction && it.gruntUnit == null && (it.addUnit == null || units.size < max) }
+        // A preparation that changes how the authored field fights, never who is in it: the scouts' report stays the field.
+        val preps = cat.preparations.filter { it.factionId == faction && it.gruntUnit == null && it.addUnit == null }
         val prep = if (preps.isEmpty()) null else rng.pick(preps)
         ctx.siege = scenario.copy(factionId = faction, plan = units, charter = charter, prepId = prep?.id, armyId = army.id)
         ctx.guild = ctx.guild!!.copy(armyLog = (ctx.guild!!.armyLog + army.id).takeLast(6))
         val who = if (charter) "${ctx.content.combat!!.unit(cat.siegeLeaders.getValue(faction)).name} leads it, escorted by ${army.name.lowercase()}" else army.name
         val drill = Agency.drill(ctx, army)?.let { " $it" }.orEmpty()
-        ctx.emit(EventType.SIEGE_PREPARATION, 7, "Scouts report the army coming on day ${scenario.siegeDay}: $who. ${army.forecast}" + (prep?.let { " They also prepare ${it.name.lowercase()}. ${it.description}" } ?: "") + drill,
+        ctx.emit(EventType.SIEGE_PREPARATION, 7, "Scouts report the army coming on day ${scenario.siegeDay}: $who. ${army.forecast} Ways to answer it: ${army.counters.joinToString(" ")}" +
+            (prep?.let { " They also prepare ${it.name.lowercase()}. ${it.description} Ways to answer it: ${it.counters.joinToString(" ")}" } ?: "") + drill,
             data = mapOf("army" to army.id, "day" to scenario.siegeDay.toString(), "faction" to faction.value) + (prep?.let { mapOf("prep" to it.id) } ?: emptyMap()))
     }
 
@@ -111,7 +113,7 @@ object SiegeFight {
         var units = scenario.plan
         /** Takes a place in the line: a free one, else the place of the last of the rank and file. */
         fun seat(spec: EnemySpec) {
-            units = if (units.size < max) units + spec else units.indexOfLast { it.tag == null && it != units.first() }.let { i -> if (i < 0) units else units.filterIndexed { j, _ -> j != i } + spec }
+            units = if (units.size < max) units + spec else units.indices.lastOrNull { it > 0 && units[it].tag == null }.let { i -> if (i == null) units else units.filterIndexed { j, _ -> j != i } + spec }
         }
         val grunt = units.last().percent
         GuildOps.catalog(ctx).preparation(scenario.prepId)?.let { prep ->
@@ -122,6 +124,10 @@ object SiegeFight {
         return units
     }
 
+    /** The leader whose charge the party spoiled: every preparation of it lands without its attack on the defences. */
+    private fun unspoiled(u: com.tinyblacksmith.core.combat.UnitDef): com.tinyblacksmith.core.combat.UnitDef =
+        u.copy(kit = u.kit.copy(moves = u.kit.moves.map { m -> m.channel?.let { c -> m.copy(channel = c.copy(payload = c.payload.filterNot { it is com.tinyblacksmith.core.combat.Action.Structural })) } ?: m }))
+
     private fun withStats(c: Combatant, add: Map<com.tinyblacksmith.core.combat.Stat, Int>): Combatant = if (add.isEmpty()) c else c.copy(stats = (c.stats.keys + add.keys).associateWith { (c.stats[it] ?: 0) + (add[it] ?: 0) })
 
     /** What a won sabotage does: the announced trait is spoiled if there is one, else the last of their line does not come. Once a siege. */
@@ -131,11 +137,14 @@ object SiegeFight {
         if (s.sabotaged > 0) return "Their preparations were already spoiled."
         val trait = ctx.content.siegeTrait(s.traitId)
         val prep = GuildOps.catalog(ctx).preparation(s.prepId)
-        // Living heroes: the party's sabotage spoils the charge against the wall first. A unit that would breach it stays home,
-        // unless it leads the army, so the headline still comes as reported (final design 13.4).
+        // Living heroes: the party's sabotage spoils the charge against the wall first. A breacher in the ranks stays home; one
+        // that leads the army still comes as reported, but its attack on the defences is spoiled (final design 13.4).
         val units = ctx.content.combat!!.unitById
-        val breacher = if (ctx.living) s.plan.indices.drop(1).lastOrNull { STRUCTURAL in (units[s.plan[it].unitId]?.tags ?: emptySet()) } else null
-        val text = if (breacher != null) {
+        val breacher = if (ctx.living) s.plan.indices.lastOrNull { STRUCTURAL in (units[s.plan[it].unitId]?.tags ?: emptySet()) } else null
+        val text = if (breacher == 0) {
+            ctx.siege = s.copy(chargeSpoiled = true, sabotaged = 1)
+            "The ${units.getValue(s.plan[0].unitId).name.lowercase()} still comes to the siege on day ${s.siegeDay}, but its attack on the defences is spoiled."
+        } else if (breacher != null) {
             val gone = s.plan[breacher]
             ctx.siege = s.copy(plan = s.plan.filterIndexed { i, _ -> i != breacher }, sabotaged = 1)
             "The ${units.getValue(gone.unitId).name.lowercase()} will not come to the siege on day ${s.siegeDay}: the charge against the wall is spoiled."
@@ -181,7 +190,7 @@ object SiegeFight {
         val prep = GuildOps.catalog(ctx).preparation(scenario.prepId)
         val nemesis = nemesisAtWall(ctx, scenario)
         val units = fieldPlan(ctx, scenario).mapIndexed { i, e ->
-            val foe = Loadout.enemy(combat.unit(e.unitId), "e${i + 1}", e.percent)
+            val foe = Loadout.enemy(combat.unit(e.unitId).let { if (scenario.chargeSpoiled && i == 0) unspoiled(it) else it }, "e${i + 1}", e.percent)
             withStats(if (e.tag == TAG_NEMESIS && nemesis != null) Stories.armed(ctx, foe, nemesis) else foe, prep?.enemyStats.orEmpty())
         }
         val total = units.sumOf { it.maxHealth }
