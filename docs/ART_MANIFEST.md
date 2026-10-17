@@ -30,12 +30,12 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | portrait_duelist | 16×16 | portrait | programmatic placeholder | generate_assets.py | anchor=top-left, heroClass=duelist |
 | portrait_battlemage | 16×16 | portrait | programmatic placeholder | generate_assets.py | anchor=top-left, heroClass=battlemage |
 | portrait_warden | 16×16 | portrait | programmatic placeholder | generate_assets.py | anchor=top-left, heroClass=warden |
-| faction_ashclaw_raider | 80×80 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=ashclaw_raiders |
-| faction_ashclaw_brute | 112×112 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=ashclaw_raiders, variant=elite |
-| faction_hollowbound_shade | 80×80 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=hollowbound |
-| faction_hollowbound_wraith | 112×112 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=hollowbound, variant=elite |
-| faction_embermaw_whelp | 80×80 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=embermaw_brood |
-| faction_embermaw_drake | 112×112 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=embermaw_brood, variant=elite |
+| faction_ashclaw_raider | 80×80 | enemy | imported: script-drawn pack | pack:enemies | anchor=bottom-center, faction=ashclaw_raiders |
+| faction_ashclaw_brute | 112×112 | enemy | imported: script-drawn pack | pack:enemies | anchor=bottom-center, faction=ashclaw_raiders, variant=elite |
+| faction_hollowbound_shade | 80×80 | enemy | imported: script-drawn pack | pack:enemies | anchor=bottom-center, faction=hollowbound |
+| faction_hollowbound_wraith | 112×112 | enemy | imported: script-drawn pack | pack:enemies | anchor=bottom-center, faction=hollowbound, variant=elite |
+| faction_embermaw_whelp | 80×80 | enemy | imported: script-drawn pack | pack:enemies | anchor=bottom-center, faction=embermaw_brood |
+| faction_embermaw_drake | 112×112 | enemy | imported: script-drawn pack | pack:enemies | anchor=bottom-center, faction=embermaw_brood, variant=elite |
 | badge_common | 24×24 | badge | imported: script-drawn pack | pack:icons | rarity=COMMON |
 | badge_uncommon | 24×24 | badge | imported: script-drawn pack | pack:icons | rarity=UNCOMMON |
 | badge_rare | 24×24 | badge | imported: script-drawn pack | pack:icons | rarity=RARE |
@@ -90,10 +90,10 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | art_day_sale_receipt | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
 | art_day_siege_victory | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
 | art_day_till | 128×64 | art | imported: script-drawn pack | pack:day_art |  |
-| bg_counter_forge | 540×270 | bg | imported: script-drawn pack | pack:backgrounds |  |
+| bg_counter_forge | 256×128 | bg | imported: script-drawn pack | pack:backgrounds |  |
 | bg_forge_night | 232×211 | bg | imported: script-drawn pack | pack:backgrounds |  |
-| bg_run_end_fallen_forge | 270×150 | bg | imported: script-drawn pack | pack:backgrounds |  |
-| bg_title_workshop_night | 941×1672 | bg | imported: script-drawn pack | pack:backgrounds |  |
+| bg_run_end_fallen_forge | 256×144 | bg | imported: script-drawn pack | pack:backgrounds |  |
+| bg_title_workshop_night | 1152×2048 | bg | imported: script-drawn pack | pack:backgrounds |  |
 | ember_3 | 32×32 | ember | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png |  |
 | faction_ashclaw_alt_0 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
 | faction_ashclaw_alt_1 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
