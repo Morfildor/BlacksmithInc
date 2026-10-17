@@ -56,6 +56,8 @@ data class LivingConfig(
     // Sieges (13.4).
     /** Forge health completed structural hits may add to one siege, on top of the ordinary loss and within its maximum. */
     val structuralCapPerSiege: Int = 12,
+    /** The authored armies' strength on top of the siege's own scaling (the bible's numbers converted at ×0.4), calibrated against the old roster's bands. The charter warlord keeps its own. */
+    val armyPercent: Int = 140,
     /** Extra counter utility (on the 0.5 purchase threshold's scale) a weapon has for a member who wants one that stops a mending enemy (opp_troll_test, opp_silver_saving). */
     val mendingAnswerUtility: Double = 0.4,
 )

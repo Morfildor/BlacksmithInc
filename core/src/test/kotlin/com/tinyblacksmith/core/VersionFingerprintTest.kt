@@ -69,8 +69,8 @@ class VersionFingerprintTest {
         // 16: owner playtest. The quality each core metal holds, the deep road replacing the supplier's days (`roadStageByTier`, the wait and the first crate), contract gold three times its card.
         16 to "e8ad9fc5eff7628e31a2c77a140e8470bb5f2172f087828b83b03eaa391dea3f",
         // 17: living heroes (`LivingConfig`). Re-pinned inside the unreleased step as its numbers land.
-        // 17, re-pinned inside the unreleased step (from 2c5c9a7f...): `living` (with the mending answer) and `guild.fight` gains Poison (its cap and the two healing numbers). No classic outcome moves.
-        17 to "8d0476a06a4405696a7404aed023c2acaaf2dfbcec613f91aff50fc8dedd66bc",
+        // 17, re-pinned inside the unreleased step (from 2c5c9a7f...): `living` (with the mending answer and the army strength) and `guild.fight` gains Poison (its cap and the two healing numbers). No classic outcome moves.
+        17 to "8c3a6ef70fcd4b9374e7c3fb5c1fb875c32066fe41d55ed1d8883fd2583c9ef7",
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where", "costNote", "counters", "sabotageBrief", "plan", "build", "drawback")

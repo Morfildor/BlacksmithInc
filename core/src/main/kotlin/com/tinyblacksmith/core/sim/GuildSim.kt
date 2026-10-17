@@ -633,7 +633,8 @@ fun main(args: Array<String>) {
         supplyThinPercent = sets["supplyThin"]?.split("/")?.map { it.toInt() } ?: g0.supplyThinPercent, nemesisPercent = sets["nemesisPercent"]?.toInt() ?: g0.nemesisPercent,
         damageHeldPerDowned = sets["damageHeldPerDowned"]?.toInt() ?: g0.damageHeldPerDowned, rewardPercentPerDay = sets["rewardPercentPerDay"]?.toDouble() ?: g0.rewardPercentPerDay,
         siegeGruntEvery = sets["siegeGruntEvery"]?.toInt() ?: g0.siegeGruntEvery, damageCostPercent = sets["damageCostPercent"]?.toInt() ?: g0.damageCostPercent,
-        wallWorkExtraRecovery = sets["wallWorkExtraRecovery"]?.toInt() ?: g0.wallWorkExtraRecovery, contractGoldPercent = sets["contractGoldPercent"]?.toInt() ?: g0.contractGoldPercent))
+        wallWorkExtraRecovery = sets["wallWorkExtraRecovery"]?.toInt() ?: g0.wallWorkExtraRecovery, contractGoldPercent = sets["contractGoldPercent"]?.toInt() ?: g0.contractGoldPercent),
+        living = BalanceConfig.DEFAULT.living.copy(armyPercent = sets["armyPercent"]?.toInt() ?: BalanceConfig.DEFAULT.living.armyPercent))
     // --transcript: one run told from its own records, for the evidence report. Reproducible: seed, policy, charter and opening are all it needs.
     if ("--transcript" in args) {
         val told = setOf(EventType.OPENING_CHOSEN, EventType.GUILD_RECRUITED, EventType.SIEGE_PREPARATION, EventType.MISSION_WON, EventType.MISSION_FAILED, EventType.MEMBER_CAPTURED, EventType.MEMBER_RESCUED, EventType.SABOTAGE_DONE,

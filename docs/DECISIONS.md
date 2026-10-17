@@ -4724,3 +4724,38 @@ choice.
   by ..."), the external-holder model, so no weapon is owned by an absent hero.
 - Portraits carry a people where the face fits it (owner, 2026-10-17: use what makes sense now, review with the race art
   later); a people with no matching face for a class wears the class silhouette `silhouette_<class>`.
+
+### Army strength calibration (`living.armyPercent` = 140, balance 17)
+
+The design converts the bible's enemies at ×0.4 Health and Attack as an initial scale "to calibrate before release" and asks
+for living eras to be compared with the existing bands (final design 12.4, 18.4). Converted as written, the 36 armies
+made sieges far easier: on seeds 1-300 ADAPTIVE reached the charter in 92% of runs against 54% in legacy eras, and a
+passive smith held half of its first sieges. One scalar on the armies' members (the charter warlord keeps its own
+110%) was swept on tuning seeds 1-300 and the pick confirmed once on the unseen block 800001-800300 (now spent).
+
+Tuning (seeds 1-300, charter / defeated, 300 runs each):
+
+| armyPercent | ADAPTIVE | SYNERGY | HIGHEST_STAT | NOVICE | PASSIVE (days med) |
+|---|---|---|---|---|---|
+| legacy era | 54 / 7 | 53 / 10 | 10 / 73 | 10 / 46 | 0 / 100 (15) |
+| 100 | 92 / 0 | 91 / 0 | 35 / 19 | 55 / 2 | 0 / 94 (30) |
+| 130 | 72 / 2 | 66 / 4 | 13 / 53 | 26 / 20 | 0 / 100 (20) |
+| 140 | 62 / 6 | 56 / 9 | 10 / 62 | 13 / 37 | 0 / 100 (20) |
+| 145 | 50 / 9 | 52 / 10 | 7 / 70 | 13 / 45 | 0 / 100 (20) |
+| 160 | 28 / 22 | 39 / 22 | 3 / 83 | 5 / 66 | 0 / 100 (15) |
+
+Validation (seeds 800001-800300, same policies, living at 140 vs legacy on the same seeds):
+
+| Policy | Charter living / legacy | Defeated living / legacy | Siege 1 held living / legacy | Siege 2 | Siege 3 | Siege 4 (charter) |
+|---|---|---|---|---|---|---|
+| ADAPTIVE | 52 / 51 | 4 / 6 | 59 / 73 | 65 / 61 | 82 / 75 | 19 / 20 |
+| SYNERGY | 56 / 54 | 7 / 16 | 43 / 47 | 67 / 44 | 79 / 61 | 18 / 23 |
+| HIGHEST_STAT | 11 / 8 | 60 / 73 | 30 / 24 | 51 / 19 | 44 / 23 | 2 / 2 |
+| NOVICE | 15 / 12 | 38 / 45 | 47 / 46 | 65 / 33 | 57 / 36 | 2 / 3 |
+| PASSIVE | 0 / 0 | 100 / 100 | 10 / 4 | 8 / 0 | 6 / 1 | 0 / 0 |
+
+Reading: the run-level bands hold (charter within 1-3 points, defeats a little lower). Deliberate deviation reported:
+the shape inside a run moved. The first siege is harder for the adaptive smith (59% held against 73%), the second and
+third are easier for every policy, because the armies field the same members at every siege while the old roster grew
+by a grunt every third siege. A passive smith survives about 5 days longer. The charter siege is unchanged. Owner
+decides whether to shape strength by siege number; no other number was moved.
