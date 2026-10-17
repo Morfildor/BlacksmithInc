@@ -25,6 +25,22 @@ internal fun GameEngine.raceClass(raceId: String?, classId: HeroClassId): String
 /** The background's name ("Former poacher"). Nothing in the rules reads a background yet, so nothing more is claimed of it. */
 internal fun GameEngine.backgroundName(h: Hero): String? = h.backgroundId?.let { content.backgroundById[it]?.name }
 
+/** A living era (`GameState.livingRevision`): members decide for themselves; a legacy era keeps every old screen. */
+internal val GameState.living: Boolean get() = livingRevision >= com.tinyblacksmith.core.model.LivingRevision.CURRENT
+
+/**
+ * The Speciality pair the smith may choose for a member: only in a legacy era. In a living era the member leans and
+ * chooses on their own (`Agency`, `GameError.SpecialityChosenByMember`), so nothing is offered to the smith.
+ */
+internal fun GameEngine.choosableBranches(state: GameState, heroId: HeroId) = if (state.living) emptyList() else openBranches(state, heroId)
+
+/** Why [h]'s oath refuses [w] as a loan, before the smith tries it (`Agency.oathAllows`, `LivingText.oath`); null when it may be lent. */
+internal fun GameEngine.oathRefuses(h: Hero, w: com.tinyblacksmith.core.model.Weapon): String? {
+    val hook = h.hook?.takeIf { it.kind == HookKind.OATH && it.isOpen } ?: return null
+    if (com.tinyblacksmith.core.guild.Agency.oathAllows(h, w)) return null
+    return "${h.name} ${LivingText.oath(hook, content).replaceFirstChar { it.lowercase() }}"
+}
+
 /** A sentence with a number kept beside its word ("day 8", "level 3"), so a line never starts with a lone number. */
 internal fun String.keepNumbersTogether(): String = replace(Regex("\\b(day|days|level|gold) (\\d+)")) { "${it.groupValues[1]} ${it.groupValues[2]}" }
     .replace(Regex("(\\d+) (gold|days|day|health)\\b")) { "${it.groupValues[1]} ${it.groupValues[2]}" }
@@ -45,13 +61,12 @@ internal fun hookLabel(kind: HookKind): String = when (kind) {
 internal fun GameEngine.hookSentence(state: GameState, h: Hero): String? = LivingText.hook(h, state, content)
 
 /**
- * A member's actionable situation beyond the Hook, most urgent first (final design 15): a departure notice, a concern,
+ * A member's actionable situation beyond the Hook, most urgent first (final design 15): a concern,
  * a Speciality lean, an announced loan return. Label and core's sentence (`LivingText`); empty for anyone else.
  */
 internal fun GameEngine.situation(state: GameState, h: Hero): List<Pair<String, String>> {
     val m = state.guild?.member(h.id) ?: return emptyList()
     return listOfNotNull(
-        LivingText.departure(h, m)?.let { "Leaving" to it },
         LivingText.concern(h, m)?.let { "Concern" to it },
         LivingText.lean(h, m, content)?.let { "Speciality" to it },
         LivingText.loanReturn(h, m, state)?.let { "Loan" to it },

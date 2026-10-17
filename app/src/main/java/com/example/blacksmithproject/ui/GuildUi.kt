@@ -42,6 +42,7 @@ import com.tinyblacksmith.core.shopday.Advice
 import com.tinyblacksmith.core.shopday.Lead
 import com.tinyblacksmith.core.shopday.Lines
 import com.tinyblacksmith.core.model.WoundKind
+import com.tinyblacksmith.core.text.LivingText
 import com.tinyblacksmith.core.text.Terms
 import com.tinyblacksmith.core.content.Depth
 import com.tinyblacksmith.core.guild.Stories
@@ -142,6 +143,8 @@ data class MemberUi(
     val weaponArt: Int? = null,
     /** [name] without a byname of residence, and that byname for a quieter second line (`nameParts`). */
     val shortName: String = name, val byname: String? = null,
+    /** A living era: the member's own decision in a few words (`LivingText.marker`); [urgent] for a departure notice. */
+    val notice: String? = null, val urgent: Boolean = false,
 ) {
     /** The roster's one line under the name: class, health and the wall; role and trait are on the hero's sheet. */
     val line: String get() = "$sub · $health" + if (reserved) " · reserved for the wall" else ""
@@ -572,9 +575,10 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
             MemberUi(
                 h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), combat?.kitByClass?.get(h.classId)?.role.orEmpty(), traitLine(m.traitId),
                 memberStatus(state, g, m), bladeLine(state, h.id), fighter?.let { "Health ${it.health}/${it.maxHealth}" } ?: Labels.health(h).replaceFirstChar { it.uppercase() },
-                reserved = h.id in g.reserved, branchOpen = openBranches(state, h.id).isNotEmpty(),
+                reserved = h.id in g.reserved, branchOpen = choosableBranches(state, h.id).isNotEmpty(),
                 weaponArt = (state.loanOf(h.id) ?: state.equippedWeapon(h.id))?.let(Sprites::weapon),
                 shortName = nameParts(h).first, byname = nameParts(h).second,
+                notice = if (state.living) LivingText.marker(m, state, content) else null, urgent = state.living && m.concern?.departure != null,
             ).let { ui ->
                 // One chip: a speciality to choose stands in for "Fit", never for a wound, an absence or the wall.
                 memberChip(state, g, m).let { (chip, tone) -> if (ui.branchOpen && tone == ChipTone.OK) ui.copy(chip = "Speciality to choose", chipTone = ChipTone.KEPT) else ui.copy(chip = chip, chipTone = tone) }
@@ -600,7 +604,7 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
         upcoming = upcomingContracts(state, g),
         assign = assignRows(state, g, config.guild.defenders),
         steps = charterSteps(state, g),
-        companyNeeds = g.members.any { openBranches(state, it.heroId).isNotEmpty() },
+        companyNeeds = g.members.any { choosableBranches(state, it.heroId).isNotEmpty() },
     )
 }
 
@@ -746,7 +750,8 @@ internal fun watchOut(setup: FightSetup): List<String> {
 
 /** A speciality the member may choose; [opened] says which of their deeds opened it. */
 @Immutable data class BranchUi(val id: String, val name: String, val description: String, val opened: String = "")
-@Immutable data class LoanableUi(val weaponId: WeaponId, val name: String, val summary: String)
+/** [refused]: why this member's oath refuses the weapon, said before the smith tries it; null when it may be lent. */
+@Immutable data class LoanableUi(val weaponId: WeaponId, val name: String, val summary: String, val refused: String? = null)
 
 /**
  * What the hero sheet adds for a member of the guild. [numbers] are the fighter's own (`fighterView`), [rules] every rule
@@ -782,7 +787,7 @@ fun GameEngine.memberDetail(state: GameState, heroId: HeroId): MemberDetailUi? {
     val cat = content.guild ?: return null
     val fighter = fighterView(state, heroId)
     val away = when (m.status) { MemberStatus.AWAY -> "${h.fullName} is away with the party."; MemberStatus.CAPTURED -> "${h.fullName} has been captured."; MemberStatus.HOME -> null }
-    fun loanable(w: Weapon) = LoanableUi(w.id, w.name, Labels.weaponSummary(w, content))
+    fun loanable(w: Weapon) = LoanableUi(w.id, w.name, Labels.weaponSummary(w, content), refused = oathRefuses(h, w))
     val traitDef = cat.trait(m.traitId)
     val branch = cat.speciality(m.specialityId)
     val kit = content.combat?.kitByClass?.get(h.classId)
@@ -799,7 +804,7 @@ fun GameEngine.memberDetail(state: GameState, heroId: HeroId): MemberDetailUi? {
             listOfNotNull("Health" to "${f.health}/${f.maxHealth} (${h.health}%)", "Attack" to if (f.strikeMax > f.strikeMin) "${f.strikeMin} to ${f.strikeMax}" else "${f.strikeMin}", kit?.let { k -> supportValue(k.kit, f.support)?.let { "Support" to it } })
         }.orEmpty(),
         rules = fighter?.let { f -> (f.kit.passives + f.effects).distinctBy { it.id }.map { it.name to it.description } }.orEmpty(),
-        branches = openBranches(state, heroId).map { BranchUi(it.id, it.name, it.description, deedWord(it.deed)) },
+        branches = choosableBranches(state, heroId).map { BranchUi(it.id, it.name, it.description, deedWord(it.deed)) },
         loan = state.loanOf(heroId)?.let(::loanable),
         ownBlade = state.equippedWeapon(heroId)?.name,
         loanable = if (away != null) emptyList() else state.storedWeapons().filter { it.promisedTo == null }.map(::loanable),
@@ -818,7 +823,10 @@ fun GameEngine.memberDetail(state: GameState, heroId: HeroId): MemberDetailUi? {
         since = if (m.fee > 0) "Recruited on day ${m.joinedDay} for ${m.fee} gold." else "With the guild since day ${m.joinedDay}.",
         status = memberStatus(state, g, m),
         home = homeRules(config.heroRestHeal, state.livingRevision >= com.tinyblacksmith.core.model.LivingRevision.CURRENT, config.living.memberVisitsPerDay),
-        unlock = if (m.specialityId != null) null else
+        unlock = if (m.specialityId != null || m.lean != null) null else if (state.living)
+            "A speciality opens after ${Stories.VETERAN_WINS} quests won (${m.missionWins} so far) or after going down ${Stories.SURVIVOR_DOWNS} times (${m.timesDowned} so far). " +
+                "${h.name} then chooses one on their own and you see which way they lean a day before."
+        else
             "A speciality opens after ${Stories.VETERAN_WINS} quests won (${m.missionWins} so far) or after going down ${Stories.SURVIVOR_DOWNS} times (${m.timesDowned} so far). " +
                 "A hero sworn to defend the walls also opens one by fulfilling that ambition.",
     )

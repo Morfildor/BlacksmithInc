@@ -121,7 +121,7 @@ internal fun GameEngine.guildToday(state: GameState, g: GuildRunState, wall: Wal
             wall.prep?.let { TodayUi("prep", "Known preparation: ${it.name}.", "See answers", TodayTarget.Tab(GuildTab.WALL, "prep"), optional = true) },
             TodayUi("plan", "Quests are on the board.", "Browse quests", TodayTarget.Tab(GuildTab.CONTRACTS, "board"), optional = true)
                 .takeIf { wall.daysLeft > 1 && g.mission == null && g.planned == null && g.offers.isNotEmpty() },
-            g.members.firstOrNull { openBranches(state, it.heroId).isNotEmpty() }?.let { b ->
+            g.members.firstOrNull { choosableBranches(state, it.heroId).isNotEmpty() }?.let { b ->
                 TodayUi("branch", "${state.heroes[b.heroId]?.name ?: "A member"} can choose a speciality", "Choose a speciality", TodayTarget.Hero(b.heroId), optional = true)
             },
             g.milestone(GuildContent.CHARTER_SECURED)?.takeIf { it.day >= state.day - 1 && !g.retired }?.let {

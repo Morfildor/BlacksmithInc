@@ -61,6 +61,7 @@ import com.example.blacksmithproject.ui.nameParts
 import com.example.blacksmithproject.ui.situation
 import com.example.blacksmithproject.ui.heroRules
 import com.example.blacksmithproject.ui.TipLine
+import com.example.blacksmithproject.ui.TipTone
 import com.example.blacksmithproject.ui.TipKeyword
 import com.example.blacksmithproject.R
 import androidx.compose.foundation.ScrollState
@@ -135,6 +136,8 @@ data class HeroDetail(
     val equipment: String? = null,
     /** A recruit's fight rules in full, as a member's sheet gives them: the quick card says them only in short. */
     val fight: List<TipLine> = emptyList(), val fightKeywords: List<TipKeyword> = emptyList(),
+    /** A living era: the member's departure notice, with its date and remedy (`LivingText.departure`), said first under the head. */
+    val departure: String? = null,
 )
 
 private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)
@@ -200,6 +203,7 @@ fun GameEngine.heroDetail(state: GameState, heroId: HeroId, snapshot: CustomerSn
             state.loanOf(h.id)?.let { "On loan: ${it.name}" } ?: state.equippedWeapon(h.id)?.let { "Carries ${it.name}" } ?: "Unarmed"
         },
         fight = if (member == null && state.guild?.candidates?.any { it.heroId == heroId } == true) heroRules(state, heroId).first else emptyList(),
+        departure = hero?.let { h -> state.guild?.member(h.id)?.let { m -> com.tinyblacksmith.core.text.LivingText.departure(h, m) } },
         fightKeywords = if (member == null && state.guild?.candidates?.any { it.heroId == heroId } == true) heroRules(state, heroId).second else emptyList(),
     )
 }
@@ -302,6 +306,13 @@ fun HeroDetailContent(
 ) {
     Column(modifier.fillMaxWidth().verticalScroll(scroll).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
         HeroHead(detail)
+        // A departure notice is the most pressing thing about a member: under the head, with its date, never alarming.
+        detail.departure?.let { line ->
+            Row(Modifier.fillMaxWidth().padding(top = Space.sm).semantics(mergeDescendants = true) {}.testTag("sheet_departure"), horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+                Text(TipTone.CONDITION.sign, style = MaterialTheme.typography.bodyMedium, color = Ember)
+                Text(line.keepNumbersTogether(), style = MaterialTheme.typography.bodyMedium, color = Ember, modifier = Modifier.weight(1f))
+            }
+        }
         // Their story first, most pressing line on top, each sentence under its label at full width so a long label or
         // sentence never breaks inside a word.
         if (detail.story.isNotEmpty()) {
@@ -464,8 +475,10 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
                     Column(Modifier.weight(1f)) {
                         Text(w.name, style = MaterialTheme.typography.bodyMedium)
                         Secondary(w.summary)
+                        // An oath that refuses this weapon says so before the smith tries it.
+                        w.refused?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.testTag("sheet_loan_refused_${w.weaponId.value}")) }
                     }
-                    InlineActionButton("Loan", { actions.onLoan(w.weaponId) }, Modifier.testTag("sheet_loan_${w.weaponId.value}"), enabled = actions.enabled)
+                    InlineActionButton("Loan", { actions.onLoan(w.weaponId) }, Modifier.testTag("sheet_loan_${w.weaponId.value}"), enabled = actions.enabled && w.refused == null)
                 }
             }
         }
