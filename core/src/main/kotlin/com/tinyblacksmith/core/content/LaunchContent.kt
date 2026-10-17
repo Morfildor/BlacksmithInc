@@ -72,6 +72,9 @@ object LaunchContent {
     val CURSED = AffixId("cursed")
     val BLOODBOUND = AffixId("bloodbound")
     val SENTIENT = AffixId("sentient")
+    /** Living revision guild eras only (`ContentCatalog.livingAffixes`, final design 13.1 and 13.2). */
+    val DISRUPTING = AffixId("disrupting")
+    val PURIFYING = AffixId("purifying")
 
     val FORGEFIRE = BlessingId("forgefire")
     val TIRELESS_HANDS = BlessingId("tireless_hands")
@@ -308,6 +311,11 @@ object LaunchContent {
             portraitRaces = mapOf("01" to "human", "08" to "human", "11" to "human", "12" to "human", "13" to "human", "16" to "human", "19" to "human",
                 "04" to "elf", "05" to "elf", "06" to "elf", "10" to "elf", "14" to "elf", "15" to "elf", "17" to "elf", "20" to "elf",
                 "02" to "lizardfolk", "07" to "orc", "09" to "orc", "03" to "hornborn", "18" to "halfling").mapKeys { "portrait_hero_${it.key}" },
+            // Rolled only by a Rare or better weapon forged in a guild era of the living revision (Forge.apply). Power is PROPOSED.
+            livingAffixes = listOf(
+                AffixDef(DISRUPTING, "Disrupting", AffixKind.BENEFICIAL, power = 2, description = "+2 power. Its effect stops an ability an enemy is preparing."),
+                AffixDef(PURIFYING, "Purifying", AffixKind.BENEFICIAL, power = 2, description = "+2 power. Its effect removes Poison from an ally."),
+            ),
         )
     }
 }

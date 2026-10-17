@@ -20,6 +20,9 @@ object Highlights {
                 EventKind.SUMMONED -> 6
                 EventKind.DAMAGE -> if (enemy && e.via == Via.EFFECT) 2 + e.amount / 3 else 0
                 EventKind.GUARD_GAINED, EventKind.HEALED -> if (e.via == Via.EFFECT) 2 else 0
+                // A prepared ability the party stopped, or one that landed on the town or raised the fallen.
+                EventKind.INTERRUPTED -> if (enemy) 6 else 0
+                EventKind.STRUCTURAL_HIT, EventKind.RETURNED -> 5
                 else -> 0
             }
             if (ending == 0) return 0

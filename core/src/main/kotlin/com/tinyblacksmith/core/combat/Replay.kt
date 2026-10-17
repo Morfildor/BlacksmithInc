@@ -104,7 +104,7 @@ object FightReplay {
     const val BIG_HIT_PERCENT = 30
 
     /** States a hostile rule puts on somebody: "applied" the first time. The rest are an actor's own stores. */
-    private val AILMENTS = setOf(Stat.BURN, Stat.CHILL, Stat.WET, Stat.BLEED, Stat.MARK)
+    private val AILMENTS = setOf(Stat.BURN, Stat.CHILL, Stat.WET, Stat.BLEED, Stat.MARK, Stat.POISON)
 
     private fun word(stat: Stat): String = Terms.stat(stat)
 
@@ -219,6 +219,17 @@ object FightReplay {
                     EventKind.HEALTH_PAID -> if (t != null) pop(e, t, PopKind.PAID, "−${e.amount}", listOfNotNull("Paid", note).joinToString(" · "), change(t) { it.copy(health = (it.health - e.amount).coerceAtLeast(0)) })
                     EventKind.FRACTURED -> if (t != null) pop(e, t, PopKind.CRACKED, "Weapon cracked", note, emptyMap())
                     EventKind.SUMMONED -> if (t != null) pop(e, t, PopKind.JOINED, "Joins", note, change(t) { it.copy(present = true) })
+                    // Living heroes: said on the actor they are about, with the pops a screen already draws.
+                    EventKind.CHANNEL_STARTED -> e.source?.let { pop(e, it, PopKind.STATUS, "Preparing ${e.ability ?: "an ability"}", null, emptyMap()) }
+                    EventKind.CHANNEL_COMPLETED -> Unit
+                    EventKind.CHANNEL_CANCELLED -> if (t != null) pop(e, t, PopKind.SPENT, "${e.ability ?: "Ability"} cancelled", null, emptyMap(), shown = false)
+                    EventKind.INTERRUPTED -> if (t != null) pop(e, t, PopKind.SPENT, "Interrupted", listOfNotNull(e.ability, note).joinToString(" · ").ifEmpty { null }, emptyMap())
+                    EventKind.STRUCTURAL_HIT -> e.source?.let { pop(e, it, PopKind.STATUS, "Wall −${e.amount}", null, emptyMap()) }
+                    EventKind.NEUTRALIZED -> if (t != null) pop(e, t, PopKind.SPENT, "Neutralized", null, emptyMap())
+                    EventKind.RETURNED -> if (t != null) pop(e, t, PopKind.JOINED, "Returned", note, change(t) { it.copy(health = e.amount, downed = false, present = true, stats = emptyMap()) })
+                    EventKind.SURVIVED -> if (t != null) pop(e, t, PopKind.STATUS, "Survived at 1 Health", null, emptyMap())
+                    EventKind.RECOVERY_STOPPED -> if (t != null) pop(e, t, PopKind.STATUS, "No healing", null, emptyMap())
+                    EventKind.PREY_MARKED -> if (t != null) pop(e, t, PopKind.STATUS, "Prey", note, emptyMap())
                     EventKind.ROUND_START, EventKind.OBJECTIVE, EventKind.RETREATED, EventKind.ROUND_END, EventKind.ACTED -> Unit
                 }
                 if (i == lastTicked) pendingTick?.let { (k, s) ->
@@ -258,8 +269,8 @@ object FightReplay {
                 .map { (h, r) -> RuleUse(h, r, ruleName(r)!!, isWeapon(h, r)) }
             val turns = HashSet<Turn>()
             if (group.any { it.id in told }) turns += Turn.TOLD
-            if (group.any { it.kind == EventKind.DOWNED }) turns += Turn.DOWN
-            if (group.any { it.kind == EventKind.SUMMONED }) turns += Turn.CALLED
+            if (group.any { it.kind == EventKind.DOWNED || it.kind == EventKind.NEUTRALIZED }) turns += Turn.DOWN
+            if (group.any { it.kind == EventKind.SUMMONED || it.kind == EventKind.RETURNED }) turns += Turn.CALLED
             if (group.any { it.kind == EventKind.FRACTURED }) turns += Turn.CRACKED
             if (uses.any { it.weapon && usedRules.add(it.holder to it.ruleId) }) turns += Turn.FIRST_RULE
             if (group.any { e -> e.kind == EventKind.DAMAGE && e.target != null && e.amount * 100 >= BIG_HIT_PERCENT * (byKey[e.target]?.maxHealth ?: Int.MAX_VALUE) }) turns += Turn.BIG_HIT

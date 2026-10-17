@@ -10,7 +10,13 @@ import com.tinyblacksmith.core.text.Terms
  * Order. Rounds 1..max. In a round the party acts in slot order, then the enemies in theirs; each actor takes the first
  * move of its kit whose cadence fits. After every action the trigger queue is drained in the order events were recorded;
  * for one event, holders are asked in slot order (party, then enemies) and each holder's effects in their listed order,
- * then the party's own rules. At round end Burn ticks, Regeneration ticks and Wet dries, in slot order.
+ * then the party's own rules. At round end Burn ticks, then Poison, then Regeneration, and Wet dries, in slot order.
+ *
+ * Living heroes (final design 13). An actor counts its own actions (1 for its first; [Cadence.Actions]). A channel
+ * ([ChannelDef]) takes one action to start and completes on the actor's next one, payload or fallback, never an extra
+ * action. Poison ticks at round end past Armor and weakens every heal its holder receives, and each positive heal
+ * attempt on it uses up 1 Poison after the heal. A returned actor ([Action.Return]) waits for the next round. A
+ * neutralized engine stands but no longer acts, is no target and does not keep its side in the fight.
  *
  * Finite chains. An effect never answers an event it produced itself. An echo never answers an echo. A cost is paid
  * before the action it buys is recorded. Every effect has a limit per round or per fight. The event budget is a guard
@@ -25,19 +31,36 @@ object Fight {
 
     fun resolve(setup: FightSetup): FightResult = Run(setup).play()
 
+    /** A channel an actor has started and not yet resolved. [target] is its fixed target's key, when it has one. */
+    private data class Pending(val channel: ChannelDef, val target: String?, val interrupted: Boolean = false)
+
     private class Actor(val def: Combatant, val slot: Int, val summoned: Boolean = false) {
         val key = def.key
         val name = def.name
         val side = def.side
         var health = def.health.coerceIn(0, def.maxHealth)
-        val stats = HashMap<Stat, Int>().apply { def.stats.forEach { (s, n) -> if (n > 0) put(s, n) } }
+        val stats = HashMap<Stat, Int>().apply { def.stats.forEach { (s, n) -> if (n > 0 && s !in def.immune) put(s, n) } }
         var downed = health <= 0
         var fractured = false
         var strike = def.strikeMin
         val effects: List<EffectDef> = def.kit.passives + def.effects
         val tags: Set<String> = def.kit.tags + def.tags
+        /** Actions taken so far in this fight. */
+        var actions = 0
+        var pending: Pending? = null
+        /** Uses left per channel id; a channel not yet started has all of its own. */
+        val uses = HashMap<String, Int>()
+        var returned = false
+        var returnedRound = 0
+        var survived = false
+        var neutralized = false
+        /** Order of going down, for "the earliest downed". */
+        var downedOrder = 0
+        /** What stopped its [Combatant.recover] since its last action, in words; null while nothing has. */
+        var recoveryStopped: String? = null
         fun stat(s: Stat) = stats[s] ?: 0
-        val alive get() = !downed
+        fun usesLeft(c: ChannelDef) = uses[c.id] ?: c.uses
+        val alive get() = !downed && !neutralized
     }
 
     private class Run(val setup: FightSetup) {
@@ -52,9 +75,16 @@ object Fight {
         var round = 0
         var roundEvents = 0
         var nextSummon = 1
+        var downs = 0
         val enteringHealth = setup.party.sumOf { it.health.coerceAtLeast(0) }
         /** The state ticking while its tick is recorded: stamped on the tick's own events (records only, no rule reads it). */
         var ticking: Stat? = null
+        /** Each side's prey for this round ([Action.MarkPrey]), by key. */
+        val prey = HashMap<Side, String>()
+        /** Who has damaged each actor with an own action this round: the evidence of a pack bonus. */
+        val hitBy = HashMap<String, MutableSet<String>>()
+        /** Actors that used their pack bonus this round. */
+        val packUsed = HashSet<String>()
 
         init {
             require(setup.party.isNotEmpty()) { "A fight needs a party" }
@@ -65,13 +95,15 @@ object Fight {
 
         fun side(side: Side) = actors.filter { it.side == side }
         fun living(side: Side) = actors.filter { it.side == side && it.alive }
+        /** Who takes up a place on the field: not down. A neutralized engine still stands there. */
+        fun standing(side: Side) = actors.count { it.side == side && !it.downed }
         fun actor(key: String?) = key?.let { k -> actors.firstOrNull { it.key == k } }
         fun other(side: Side) = if (side == Side.PARTY) Side.ENEMY else Side.PARTY
 
-        fun emit(kind: EventKind, source: Actor?, target: Actor?, amount: Int = 0, stat: Stat? = null, via: Via = Via.ACTION, effect: EffectDef? = null, parent: FightEvent? = null, text: String, affinity: Affinity? = null): FightEvent {
+        fun emit(kind: EventKind, source: Actor?, target: Actor?, amount: Int = 0, stat: Stat? = null, via: Via = Via.ACTION, effect: EffectDef? = null, parent: FightEvent? = null, text: String, affinity: Affinity? = null, ability: String? = null): FightEvent {
             if (++roundEvents > rules.eventBudgetPerRound) throw FightLoopException(setup.seed, round, setup.title)
             val id = events.size + 1
-            val e = FightEvent(id, round, kind, source?.key, target?.key, amount, stat, via, effect?.id, parent?.id, parent?.rootId ?: id, text, tick = ticking.takeIf { via == Via.TICK }, affinity = affinity)
+            val e = FightEvent(id, round, kind, source?.key, target?.key, amount, stat, via, effect?.id, parent?.id, parent?.rootId ?: id, text, tick = ticking.takeIf { via == Via.TICK }, affinity = affinity, ability = ability)
             events += e
             queue += e
             return e
@@ -83,11 +115,15 @@ object Fight {
                 round += 1
                 roundEvents = 0
                 perRound.clear()
+                prey.clear()
+                hitBy.clear()
+                packUsed.clear()
                 emit(EventKind.ROUND_START, null, null, text = "Round $round.")
                 drain()
                 for (a in actors.toList()) {
                     if (finished() != null) break
-                    if (a.alive) { act(a); drain() }
+                    // Returned this round: it acts from the next.
+                    if (a.alive && a.returnedRound != round) { act(a); drain() }
                 }
                 if (finished() == null) endOfRound()
                 emit(EventKind.ROUND_END, null, null, text = "")
@@ -108,9 +144,10 @@ object Fight {
             val rules = (actors.flatMap { it.effects } + setup.partyEffects + setup.units.values.flatMap { it.effects + it.kit.passives }).filter { it.id in named }.associate { it.id to it.name }
             return FightResult(setup.title, result, round, actors.map { a ->
                 ActorResult(a.key, a.name, a.side, a.health, a.def.maxHealth, a.downed, a.fractured, a.summoned,
-                    start = a.def.health.coerceIn(0, a.def.maxHealth), startStats = a.def.stats.filterValues { it > 0 }, kit = a.def.kit.name, weapon = a.def.weaponName,
-                    weaponId = a.def.weaponId, element = a.def.element, weaponRules = a.def.weaponRules, unitId = a.def.unitId)
-            }, events.toList(), Highlights.of(events, actors.associate { it.key to it.side }), FightResult.RECORD, rules)
+                    start = a.def.health.coerceIn(0, a.def.maxHealth), startStats = a.def.stats.filterValues { it > 0 }.filterKeys { it !in a.def.immune }, kit = a.def.kit.name, weapon = a.def.weaponName,
+                    weaponId = a.def.weaponId, element = a.def.element, weaponRules = a.def.weaponRules, unitId = a.def.unitId, neutralized = a.neutralized, returned = a.returned)
+            }, events.toList(), Highlights.of(events, actors.associate { it.key to it.side }), FightResult.RECORD, rules,
+                structural = events.filter { it.kind == EventKind.STRUCTURAL_HIT }.sumOf { it.amount })
         }
 
         /** Decided the moment it is true, whoever's turn it is. */
@@ -147,33 +184,95 @@ object Fight {
                 drain()
                 if (a.downed || finished() != null) return
             }
-            val move = a.def.kit.moves.firstOrNull { fits(it.cadence, a) } ?: return
+            // A pending channel takes this action whatever the cadences say: it completes, or falls back.
+            val pending = a.pending
+            val move = if (pending == null) a.def.kit.moves.firstOrNull { fits(it, a, a.actions + 1) } ?: return else null
+            a.actions += 1
             a.strike = if (a.def.strikeMax > a.def.strikeMin) rng.nextInt(a.def.strikeMin, a.def.strikeMax) else a.def.strikeMin
-            val action = emit(EventKind.ACTION, a, null, text = "${a.name}: ${move.name}.")
+            val title = when {
+                pending == null -> move!!.name
+                pending.interrupted -> pending.channel.fallbackName
+                else -> pending.channel.name
+            }
+            val action = emit(EventKind.ACTION, a, null, text = "${a.name}: $title.")
+            recover(a, action)
             drain()   // what is paid or readied "before the wielder acts" comes before the move itself
             if (a.downed || finished() != null) return
-            var chilled = false
-            for (step in move.actions) {
-                if (a.downed) break
-                // Chill bites the first strike of the action and is spent by it.
-                val cold = step is Action.Damage && !chilled && a.stat(Stat.CHILL) > 0
-                if (cold) { chilled = true; spend(a, Stat.CHILL, 1, null, action, "${a.name} uses up 1 Chill, so this attack deals ${rules.chillPercent}% less damage.") }
-                perform(step, a, action, null, 0, if (cold) 100 - rules.chillPercent else 100)
+            when {
+                pending != null -> {
+                    // Read again: what answered the action may have interrupted it.
+                    val p = a.pending ?: pending
+                    a.pending = null
+                    if (p.interrupted) carryOut(p.channel.fallback, a, action)
+                    else {
+                        val done = emit(EventKind.CHANNEL_COMPLETED, a, actor(p.target), parent = action, text = "${a.name} finishes ${p.channel.name}.", ability = p.channel.name)
+                        carryOut(p.channel.payload, a, done)
+                    }
+                }
+                move!!.channel != null -> start(a, move.channel!!, action)
+                else -> carryOut(move.actions, a, action)
             }
             if (a.alive) emit(EventKind.ACTED, a, null, parent = action, text = "")
+            // An engine is out of the fight once the action that resolves its last use is over.
+            if (pending != null && pending.channel.neutralizeWhenSpent && a.usesLeft(pending.channel) <= 0 && a.alive && a.pending == null) {
+                a.neutralized = true
+                emit(EventKind.NEUTRALIZED, null, a, parent = action, text = "${a.name} is spent and takes no further part in the fight.")
+            }
         }
 
-        fun fits(c: Cadence, a: Actor): Boolean = when (c) {
+        /** One action's steps in order. Chill bites the first damage of the action and is spent by it. */
+        fun carryOut(steps: List<Action>, a: Actor, root: FightEvent) {
+            var chilled = false
+            for (step in steps) {
+                if (a.downed) break
+                val cold = step is Action.Damage && !chilled && a.stat(Stat.CHILL) > 0
+                if (cold) { chilled = true; spend(a, Stat.CHILL, 1, null, root, "${a.name} uses up 1 Chill, so this attack deals ${rules.chillPercent}% less damage.") }
+                perform(step, a, root, null, 0, if (cold) 100 - rules.chillPercent else 100)
+            }
+        }
+
+        /** The action starts [c]: one use is taken now, and the next action resolves it. */
+        fun start(a: Actor, c: ChannelDef, action: FightEvent) {
+            a.uses[c.id] = a.usesLeft(c) - 1
+            val target = c.aim?.let { targets(it, a, action).firstOrNull() }
+            a.pending = Pending(c, target?.key)
+            emit(EventKind.CHANNEL_STARTED, a, target, parent = action, ability = c.name,
+                text = "${a.name} is preparing ${c.name}${target?.let { ", aimed at ${it.name}" }.orEmpty()}. It happens on ${a.name}'s next action unless it is interrupted.")
+        }
+
+        /** Before its own action a unit with [Combatant.recover] heals, unless something since its last action stopped it. */
+        fun recover(a: Actor, action: FightEvent) {
+            val r = a.def.recover ?: return
+            val why = a.recoveryStopped
+            a.recoveryStopped = null
+            if (why != null) emit(EventKind.RECOVERY_STOPPED, a, a, via = Via.EFFECT, parent = action, text = "${a.name} does not heal before this action, because it took damage from $why since its last action.")
+            else if (a.health < a.def.maxHealth) heal(a, a, r.amount, Via.EFFECT, null, action, null)
+        }
+
+        fun fits(m: Move, a: Actor, n: Int): Boolean = (m.channel == null || a.usesLeft(m.channel) > 0) && fits(m.cadence, a, n)
+
+        /** [n] is the number the action being chosen would have. */
+        fun fits(c: Cadence, a: Actor, n: Int): Boolean = when (c) {
             Cadence.Always -> true
             Cadence.Opener -> round == 1
             is Cadence.Every -> round >= c.first && (round - c.first) % c.every == 0
             is Cadence.WhileHolding -> a.stat(c.stat) >= c.atLeast
             is Cadence.HealthAtMost -> a.health * 100 <= a.def.maxHealth * c.percent
+            is Cadence.Actions -> n in c.numbers
+            is Cadence.ActionsFrom -> n >= c.first
+            is Cadence.AllyDownedEligible -> returnable(a.side, c.tag) != null
+            is Cadence.All -> c.cadences.all { fits(it, a, n) }
+        }
+
+        /** The ally [Action.Return] would raise now: the earliest downed with [tag] that was never returned and may be, while there is room. */
+        fun returnable(side: Side, tag: String): Actor? {
+            if (standing(side) >= rules.maxActorsPerSide) return null
+            return actors.filter { it.side == side && it.downed && !it.returned && tag in it.tags && it.tags.none { t -> t in Tags.NEVER_RETURNED } }.minByOrNull { it.downedOrder }
         }
 
         fun endOfRound() {
             for (a in actors.toList()) {
-                if (a.downed) continue
+                if (!a.alive) continue
                 val burn = a.stat(Stat.BURN)
                 if (burn > 0) {
                     ticking = Stat.BURN
@@ -181,6 +280,15 @@ object Fight {
                     damage(null, a, tickAmount(a, Stat.BURN, burn), null, pierce = false, via = Via.TICK, effect = null, parent = tick, what = "Burn")
                     ticking = null
                     a.stats[Stat.BURN] = burn - 1
+                }
+                // Poison: 1 damage per stack past Armor, then 1 is lost. A tick, so it is no hit and sets nothing off that answers one.
+                val poison = a.stat(Stat.POISON)
+                if (poison > 0 && a.alive) {
+                    ticking = Stat.POISON
+                    val tick = emit(EventKind.ACTION, a, a, via = Via.TICK, text = "")
+                    damage(null, a, tickAmount(a, Stat.POISON, poison), null, pierce = true, via = Via.TICK, effect = null, parent = tick, what = "Poison")
+                    ticking = null
+                    a.stats[Stat.POISON] = poison - 1
                 }
                 val regen = a.stat(Stat.REGEN)
                 if (regen > 0 && a.alive) {
@@ -209,7 +317,7 @@ object Fight {
                 if (finished() != null) continue   // the fight is decided: nothing more is spent or struck
                 for (holder in actors.toList()) {
                     for (effect in holder.effects) {
-                        if (holder.downed) break
+                        if (!holder.alive) break
                         if (matches(effect.trigger, holder, e)) fire(effect, holder, e, holder.key)
                     }
                 }
@@ -294,6 +402,7 @@ object Fight {
             is Condition.Happened -> (holder.side to c.kind) in happened
             is Condition.HolderTagged -> c.tag in holder.tags
             is Condition.TargetTagged -> actor(e.target)?.let { c.tag in it.tags } == true
+            Condition.TargetChanneling -> actor(e.target)?.let { it.alive && it.pending?.interrupted == false } == true
         }
 
         // ---- actions ----
@@ -318,25 +427,47 @@ object Fight {
                 Aim.AllAllies -> allies
                 Aim.OtherAllies -> allies.filter { it !== holder }
                 is Aim.AllyTagged -> listOfNotNull(allies.firstOrNull { t.tag in it.tags })
-                Aim.Foe -> listOfNotNull(
+                // A pack member goes for its side's prey first, past a Guardian; the prey fallen, it aims as anybody would.
+                Aim.Foe -> listOfNotNull(huntedBy(holder) ?: (
                     if (holder.side == Side.PARTY) foes.firstOrNull { it.stat(Stat.MARK) > 0 } ?: foes.firstOrNull()
-                    else foes.firstOrNull { "intercept" in it.tags && it.stat(Stat.GUARD) > 0 } ?: foes.firstOrNull())
+                    else foes.firstOrNull { "intercept" in it.tags && it.stat(Stat.GUARD) > 0 } ?: foes.firstOrNull()))
                 Aim.MarkedFoe -> listOfNotNull(foes.firstOrNull { it.stat(Stat.MARK) > 0 })
                 Aim.AllFoes -> foes
                 Aim.WeakestFoe -> listOfNotNull(foes.minWithOrNull(compareBy<Actor> { it.health }.thenBy { it.slot }))
                 Aim.BackFoe -> listOfNotNull(foes.lastOrNull())
                 Aim.PriorityFoe -> listOfNotNull(foes.firstOrNull { "anchor" in it.tags } ?: foes.firstOrNull { "leader" in it.tags } ?: foes.maxWithOrNull(compareBy<Actor> { it.health }.thenByDescending { it.slot }))
+                Aim.FrontFoe -> listOfNotNull(foes.firstOrNull())
+                is Aim.FrontFoes -> foes.take(t.count)
+                is Aim.WeakestAllyTagged -> listOfNotNull(allies.filter { t.tag in it.tags && (t.exclude == null || t.exclude !in it.tags) }.minWithOrNull(weakest))
+                is Aim.WeakestOtherAlly -> allies.filter { it !== holder }.let { others ->
+                    listOfNotNull((t.preferTag?.let { p -> others.filter { p in it.tags } }?.takeIf { it.isNotEmpty() } ?: others).minWithOrNull(weakest))
+                }
+                is Aim.WeakestAllyHolding -> listOfNotNull(allies.filter { it.stat(t.stat) > 0 }.minWithOrNull(weakest))
+                Aim.PackPrey -> listOfNotNull(prey[holder.side]?.let(::actor))
             }.filter { it.alive }
         }
+
+        /** The living ally with the least health for its size, the first in the line when equal. */
+        val weakest = compareBy<Actor> { it.health * 1000 / it.def.maxHealth }.thenBy { it.slot }
+
+        /** The prey [holder] hunts: its side's prey this round, while it stands, if [holder] runs with the pack. */
+        fun huntedBy(holder: Actor): Actor? = if (Tags.PACK in holder.tags) prey[holder.side]?.let(::actor)?.takeIf { it.alive } else null
 
         /** [e] is the event the rule answers (what "the event target" and "its amount" mean); [parent] is what the result is recorded under. */
         fun perform(step: Action, holder: Actor, e: FightEvent, effect: EffectDef?, spent: Int, scale: Int, parent: FightEvent = e) {
             val via = if (effect == null) Via.ACTION else Via.EFFECT
             when (step) {
-                is Action.Damage -> for (t in targets(step.target, holder, e)) {
-                    val n = pct(amount(step.amount, holder, e, spent), scale)
-                    // A strike carries the blade's element; a fixed amount only the element its rule names.
-                    damage(holder, t, n, step.element ?: holder.def.element.takeIf { step.amount is Amount.Strike }, step.pierce, via, effect, parent, null)
+                is Action.Damage -> {
+                    val area = step.target == Aim.AllFoes || (step.target is Aim.FrontFoes && step.target.count >= 2)
+                    for (t in targets(step.target, holder, e)) {
+                        val n = pct(amount(step.amount, holder, e, spent), scale)
+                        // A strike carries the blade's element; a fixed amount only the element its rule names.
+                        val dealt = damage(holder, t, n, step.element ?: holder.def.element.takeIf { step.amount is Amount.Strike }, step.pierce, via, effect, parent, null, step.ignoreArmor, area)
+                        if (step.drainPercent > 0 && dealt > 0 && holder.alive) {
+                            val drained = pct(dealt, step.drainPercent)
+                            heal(holder, holder, if (step.drainCap > 0) minOf(step.drainCap, drained) else drained, via, effect, parent, null)
+                        }
+                    }
                 }
                 is Action.Heal -> for (t in targets(step.target, holder, e)) heal(holder, t, amount(step.amount, holder, e, spent), via, effect, parent, null)
                 is Action.Guard -> for (t in targets(step.target, holder, e)) give(holder, t, Stat.GUARD, amount(step.amount, holder, e, spent), via, effect, parent)
@@ -357,13 +488,45 @@ object Fight {
                 }
                 is Action.Summon -> {
                     val unit = setup.units[step.unitId] ?: return
-                    if (side(holder.side).count { it.alive } >= rules.maxActorsPerSide) return
+                    if (standing(holder.side) >= rules.maxActorsPerSide) return
                     val key = "s${nextSummon++}"
                     val c = Combatant(key, unit.name, holder.side, unit.kit, unit.health, unit.health, unit.strikeMin, unit.strikeMax, unit.support, weakTo = unit.weakTo, resists = unit.resists,
-                        effects = unit.effects, tags = unit.tags + "summoned", tickResist = unit.tickResist, unitId = unit.id)
+                        effects = unit.effects, tags = unit.tags + "summoned", tickResist = unit.tickResist, unitId = unit.id,
+                        immune = unit.immune, surviveOnce = unit.surviveOnce, bonusFrom = unit.bonusFrom, recover = unit.recover, packBonusPercent = unit.packBonusPercent)
                     val s = Actor(c, side(holder.side).size, summoned = true)
                     actors.add(actors.indexOfLast { it.side == holder.side } + 1, s)
                     emit(EventKind.SUMMONED, holder, s, via = via, effect = effect, parent = parent, text = "${unit.name} joins ${if (holder.side == Side.PARTY) "the party" else "the enemy"}${effect?.let { " (${it.name})" } ?: ""}.")
+                }
+                is Action.Interrupt -> {
+                    val preparing = targets(step.target, holder, e).filter { it.pending?.interrupted == false }
+                    // Nothing is said of an interruption that found nothing to stop.
+                    if (preparing.isEmpty()) step.otherwise.forEach { perform(it, holder, e, effect, spent, scale, parent) }
+                    for (t in preparing) {
+                        val p = t.pending!!
+                        t.pending = p.copy(interrupted = true)
+                        val more = p.channel.onInterrupt == OnInterrupt.SPENT && t.usesLeft(p.channel) > 0
+                        if (p.channel.onInterrupt == OnInterrupt.SPENT) t.uses[p.channel.id] = 0
+                        emit(EventKind.INTERRUPTED, holder, t, via = via, effect = effect, parent = parent, ability = p.channel.name,
+                            text = "${owner(holder, effect)} interrupts ${t.name}'s ${p.channel.name}." + if (more) " ${t.name} cannot prepare it again in this fight." else "")
+                    }
+                }
+                is Action.Structural -> emit(EventKind.STRUCTURAL_HIT, holder, null, step.amount, via = via, effect = effect, parent = parent,
+                    text = "${owner(holder, effect)} damages the town's defences for ${step.amount} forge health.")
+                is Action.Return -> {
+                    val t = returnable(holder.side, step.eligibleTag) ?: return
+                    t.downed = false
+                    t.health = maxOf(1, pct(t.def.maxHealth, step.healthPercent))
+                    t.stats.clear()
+                    t.pending = null
+                    t.returned = true
+                    t.returnedRound = round
+                    emit(EventKind.RETURNED, holder, t, t.health, via = via, effect = effect, parent = parent,
+                        text = "${owner(holder, effect)} brings ${t.name} back with ${t.health} health. ${t.name} acts again from the next round.")
+                }
+                is Action.MarkPrey -> {
+                    val t = targets(step.target, holder, e).firstOrNull() ?: return
+                    prey[holder.side] = t.key
+                    emit(EventKind.PREY_MARKED, holder, t, via = via, effect = effect, parent = parent, text = "${owner(holder, effect)} sets the pack on ${t.name} until the round ends.")
                 }
             }
         }
@@ -385,7 +548,7 @@ object Fight {
         }
 
         fun give(source: Actor, t: Actor, stat: Stat, n: Int, via: Via, effect: EffectDef?, parent: FightEvent) {
-            if (n <= 0 || t.downed) return
+            if (n <= 0 || t.downed || stat in t.def.immune) return
             // Heat on cold or on wet, cold on heat: the two cancel one for one and whoever brought the second gets Steam for it.
             val meets = when (stat) { Stat.BURN -> listOf(Stat.CHILL, Stat.WET); Stat.CHILL -> listOf(Stat.BURN); else -> emptyList() }.firstOrNull { t.stat(it) > 0 }
             if (meets != null && source.side != t.side) {
@@ -406,8 +569,21 @@ object Fight {
                 if (source === t) "${t.name} gains $gained ${Terms.stat(stat)}$from$now." else if (source.side == t.side) "$who gives ${t.name} $gained ${Terms.stat(stat)}$now." else "$who puts $gained ${Terms.stat(stat)} on ${t.name}$now.")
         }
 
-        fun heal(source: Actor, t: Actor, n: Int, via: Via, effect: EffectDef?, parent: FightEvent, tick: String?) {
-            if (n <= 0 || t.downed) return
+        /**
+         * A positive healing attempt. On a poisoned fighter it is [FightRules.poisonHealPercent] smaller per Poison (at most
+         * [FightRules.poisonHealMax]) before rounding, and afterwards 1 Poison is used up, even when nothing was healed.
+         */
+        fun heal(source: Actor, t: Actor, attempt: Int, via: Via, effect: EffectDef?, parent: FightEvent, tick: String?) {
+            if (attempt <= 0 || t.downed) return
+            val poison = t.stat(Stat.POISON)
+            val cut = if (poison > 0) minOf(rules.poisonHealMax, rules.poisonHealPercent * poison) else 0
+            val n = pct(attempt, 100 - cut)
+            mend(source, t, n, via, effect, parent, tick)
+            if (poison > 0) spend(t, Stat.POISON, 1, effect, parent, "Poison cuts the healing on ${t.name} by $cut%. ${t.name} loses 1 Poison.", source)
+        }
+
+        fun mend(source: Actor, t: Actor, n: Int, via: Via, effect: EffectDef?, parent: FightEvent, tick: String?) {
+            if (n <= 0) return
             val effective = minOf(n, t.def.maxHealth - t.health)
             val who = owner(source, effect)
             if (effective > 0) {
@@ -418,11 +594,16 @@ object Fight {
             if (over > 0) emit(EventKind.OVERHEAL, source, t, over, via = via, effect = effect, parent = parent, text = if (effective > 0) "" else if (tick != null) "" else if (source === t) "${t.name} is already at full health." else "$who heals ${t.name}, who is already at full health.")
         }
 
-        /** [source] is null for a tick. A direct hit (not a tick) spends a Mark for the bonus and meets Thorns. */
-        fun damage(source: Actor?, t: Actor, base: Int, element: Element?, pierce: Boolean, via: Via, effect: EffectDef?, parent: FightEvent, what: String?) {
-            if (base <= 0 || t.downed) return
+        /**
+         * [source] is null for a tick. A direct hit (not a tick) spends a Mark for the bonus and meets Thorns. Returns the
+         * health the target lost. Order: element, the target's weakness to the source ([Combatant.bonusFrom]), the pack
+         * bonus, Wet, Mark, then Armor ([ignoreArmor] of it passed), then survival once, then health.
+         */
+        fun damage(source: Actor?, t: Actor, base: Int, element: Element?, pierce: Boolean, via: Via, effect: EffectDef?, parent: FightEvent, what: String?, ignoreArmor: Int = 0, area: Boolean = false): Int {
+            if (base <= 0 || !t.alive) return 0
             var n = base
             val who = if (source == null) t.name else owner(source, effect)
+            var pack = 0
             // Recorded only: whether the element met a weakness or a resistance, or the target shrugged off part of a tick.
             var affinity: Affinity? = if (via == Via.TICK && (ticking?.let { t.def.tickResist[it] } ?: 0) > 0) Affinity.RESISTED else null
             if (via != Via.TICK && source != null && source.side != t.side) {
@@ -430,6 +611,18 @@ object Fight {
                     t.def.weakTo -> { affinity = Affinity.WEAK; pct(n, rules.weakPercent) }
                     t.def.resists -> { affinity = Affinity.RESISTED; pct(n, rules.resistPercent) }
                     else -> n
+                }
+                // The strongest one weakness to what the source is (an Axe, Silver, a blow at several), never two.
+                t.def.bonusFrom.filter { b -> if (b.tag == Tags.AREA) area else b.tag in source.tags }.maxOfOrNull { it.percent }?.takeIf { it > 0 }?.let { b ->
+                    n = pct(n, 100 + b)
+                    if (affinity == null) affinity = Affinity.WEAK
+                }
+                // The pack: once a round, on a target another beast of its side has already damaged with its own action.
+                if (source.def.packBonusPercent > 0 && source.key !in packUsed &&
+                    hitBy[t.key].orEmpty().any { k -> k != source.key && actor(k)?.let { it.side == source.side && Tags.BEAST in it.tags } == true }) {
+                    packUsed += source.key
+                    pack = source.def.packBonusPercent
+                    n = pct(n, 100 + pack)
                 }
                 if (element == Element.STORM && t.stat(Stat.WET) > 0) {
                     spend(t, Stat.WET, 1, effect, parent, "${t.name} is Wet, so the storm deals ${rules.wetStormBonus} extra damage.", source)
@@ -442,7 +635,8 @@ object Fight {
             }
             if (!pierce) {
                 val guard = t.stat(Stat.GUARD)
-                val absorbed = minOf(guard, n)
+                // Points passed by ignoreArmor block nothing and stay.
+                val absorbed = minOf(maxOf(0, guard - ignoreArmor), n)
                 if (absorbed > 0) {
                     t.stats[Stat.GUARD] = guard - absorbed
                     n -= absorbed
@@ -450,21 +644,44 @@ object Fight {
                     if (guard - absorbed == 0) emit(EventKind.GUARD_BROKEN, source, t, absorbed, Stat.GUARD, via, effect, parent, "${t.name}'s Armor breaks.")
                 }
             }
+            // Survival once: the first direct hit that would down it leaves 1 health, unless it is Fire or Sun.
+            val survives = n > 0 && n >= t.health && via != Via.TICK && t.def.surviveOnce && !t.survived && element != Element.FIRE && element != Element.SUN
+            if (survives) { t.survived = true; n = t.health - 1 }
+            var hit: FightEvent? = null
+            // The record keeps the whole blow; what a drain counts is the health the target actually lost.
+            val lost = minOf(n, t.health)
             if (n > 0) {
                 t.health = maxOf(0, t.health - n)
-                val hit = emit(EventKind.DAMAGE, source, t, n, via = via, effect = effect, parent = parent, text = if (what != null) "${t.name} takes $n damage from $what." else "$who deals $n damage to ${t.name}.", affinity = affinity)
+                val packNote = if (pack > 0) " Another beast already damaged ${t.name} this round, so this attack deals $pack% more." else ""
+                hit = emit(EventKind.DAMAGE, source, t, n, via = via, effect = effect, parent = parent, text = if (what != null) "${t.name} takes $n damage from $what." else "$who deals $n damage to ${t.name}.$packNote", affinity = affinity)
+                if (via == Via.ACTION && source != null) hitBy.getOrPut(t.key) { HashSet() } += source.key
+                t.def.recover?.let { r -> if (t.recoveryStopped == null) t.recoveryStopped = when {
+                    via == Via.TICK && ticking == Stat.BURN -> "Burn"
+                    via != Via.TICK && element == Element.FIRE -> "a Fire hit"
+                    via != Via.TICK && source != null && source.tags.any { it in r.suppressedBy } -> "${source.name}'s ${source.def.weaponName ?: "attack"}"
+                    else -> null
+                } }
                 if (t.health == 0) {
                     t.downed = true
-                    emit(EventKind.DOWNED, source, t, via = via, effect = effect, parent = hit, text = "${t.name} is down.")
+                    t.downedOrder = ++downs
+                    val down = emit(EventKind.DOWNED, source, t, via = via, effect = effect, parent = hit, text = "${t.name} is down.")
+                    t.pending?.let { p ->
+                        t.pending = null
+                        emit(EventKind.CHANNEL_CANCELLED, null, t, via = via, parent = down, ability = p.channel.name, text = "${t.name}'s ${p.channel.name} will not happen.")
+                    }
                 }
             }
+            if (survives) emit(EventKind.SURVIVED, source, t, via = via, effect = effect, parent = hit ?: parent, text = "${t.name} survives the hit with 1 health. This happens once per fight.")
             // Thorns answer a blow from an action, once, and are spent; what they deal is an effect's damage and meets no Thorns itself.
+            // A retaliation written as an effect (a Treant's: DAMAGE on itself, FromAction, SourceIsFoe, perRound) is effect damage
+            // too, so the two never answer each other: one blow is answered at most once by each path (CombatGrammarTest).
             if (via == Via.ACTION && source != null && source.alive && source.side != t.side && t.stat(Stat.THORNS) > 0) {
                 val thorns = t.stat(Stat.THORNS)
                 t.stats[Stat.THORNS] = 0
                 val spent = emit(EventKind.STAT_SPENT, t, t, thorns, Stat.THORNS, Via.EFFECT, null, parent, "")
                 damage(t, source, thorns, null, pierce = false, via = Via.EFFECT, effect = null, parent = spent, what = "${t.name}'s Thorns")
             }
+            return lost
         }
     }
 }

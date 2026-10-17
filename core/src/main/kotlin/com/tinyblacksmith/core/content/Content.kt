@@ -198,13 +198,18 @@ data class ContentCatalog(
     val bynames: List<String> = emptyList(),
     /** The people an existing portrait shows, by asset ID, where that is certain. A portrait not listed is worn only by a hero of unknown ancestry. */
     val portraitRaces: Map<String, String> = emptyMap(),
+    /**
+     * Bonuses a weapon can roll only in a guild era of the living revision, at Rare or better (`Forge.apply`). Kept out
+     * of [affixes] so every draw a classic or legacy run makes from that list stays exactly as it was.
+     */
+    val livingAffixes: List<AffixDef> = emptyList(),
 ) {
     val raceById: Map<String, RaceDef> = races.associateBy { it.id }
     val cultureById: Map<String, CultureDef> = cultures.associateBy { it.id }
     val backgroundById: Map<String, BackgroundDef> = backgrounds.associateBy { it.id }
     val familyById: Map<WeaponFamilyId, WeaponFamilyDef> = families.associateBy { it.id }
     val materialById: Map<MaterialId, MaterialDef> = materials.associateBy { it.id }
-    val affixById: Map<AffixId, AffixDef> = affixes.associateBy { it.id }
+    val affixById: Map<AffixId, AffixDef> = (affixes + livingAffixes).associateBy { it.id }
     val classById: Map<HeroClassId, HeroClassDef> = classes.associateBy { it.id }
     val traitById: Map<TraitId, TraitDef> = traits.associateBy { it.id }
     val factionById: Map<FactionId, FactionDef> = factions.associateBy { it.id }
@@ -234,7 +239,7 @@ data class ContentCatalog(
             if (d.isNotEmpty()) problems += "Duplicate $name ids: $d"
         }
         dup("family", families.map { it.id }); dup("material", materials.map { it.id })
-        dup("affix", affixes.map { it.id }); dup("class", classes.map { it.id })
+        dup("affix", (affixes + livingAffixes).map { it.id }); dup("class", classes.map { it.id })
         dup("trait", traits.map { it.id }); dup("faction", factions.map { it.id })
         dup("blessing", blessings.map { it.id }); dup("upgrade", upgrades.map { it.id })
         dup("tool", tools.map { it.id })
@@ -342,7 +347,7 @@ data class ContentCatalog(
         surnames.groupBy { it.takeLast(3) }.filterValues { it.size > 4 }.forEach { (end, names) -> problems += "${names.size} surnames end in -$end (at most 4)" }
         // Game terms: every word of an ID or a display name of a family, material, affix, class or faction, and the elements.
         // A name may not contain one, nor begin with the first five letters of one (its stem: "Holloway" and the Hollowbound).
-        val terms = (families.flatMap { listOf(it.id.value, it.name) } + materials.flatMap { listOf(it.id.value, it.name) } + affixes.flatMap { listOf(it.id.value, it.name) } +
+        val terms = (families.flatMap { listOf(it.id.value, it.name) } + materials.flatMap { listOf(it.id.value, it.name) } + (affixes + livingAffixes).flatMap { listOf(it.id.value, it.name) } +
             classes.flatMap { listOf(it.id.value, it.name) } + factions.flatMap { listOf(it.id.value, it.name) } + Element.entries.map { it.name })
             .flatMap { it.lowercase().split(Regex("[^a-z]+")) }.filter { it.length >= 3 }.toSet()
         for (name in firstNames + surnames) {

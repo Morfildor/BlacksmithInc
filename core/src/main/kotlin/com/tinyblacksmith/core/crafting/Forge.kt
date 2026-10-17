@@ -173,7 +173,10 @@ object Forge {
         val affixes = mutableListOf<AffixId>()
         val flaws = mutableListOf<AffixId>()
         val elementAffix = content.affixes.firstOrNull { it.kind == AffixKind.BENEFICIAL && it.element == augment.element }
-        val neutralAffixes = content.affixes.filter { it.kind == AffixKind.BENEFICIAL && it.element == null }
+        // Disrupting and Purifying join the draw only for a Rare or better weapon of a living guild era. Everywhere else the
+        // list is the old one, so a classic or legacy forging spends the crafting stream exactly as before.
+        val neutralAffixes = content.affixes.filter { it.kind == AffixKind.BENEFICIAL && it.element == null } +
+            (if (ctx.guildEra && ctx.living && rarity >= Rarity.RARE) content.livingAffixes.filter { it.kind == AffixKind.BENEFICIAL && it.element == null } else emptyList())
         var affixSlots = when (rarity) { Rarity.COMMON -> 0; Rarity.UNCOMMON -> 0; Rarity.RARE -> 1; Rarity.EPIC -> 2; Rarity.LEGENDARY -> 3 } + (if (exceptional) 1 else 0)
         if (cmd.technique == Technique.ETCH) affixSlots += config.etchExtraAffixSlots
         affixSlots += profile.extraSlots + (if (cmd.heartfire && !breakthrough) config.depth.legend.missExtraSlots else 0)
