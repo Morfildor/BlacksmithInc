@@ -1,5 +1,9 @@
 package com.example.blacksmithproject.ui
 
+import androidx.compose.runtime.DisposableEffect
+
+import androidx.compose.foundation.ScrollState
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -260,15 +264,20 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
 @Composable
 private fun DetailSheet(s: UiState.Playing, sheet: Sheet, vm: GameViewModel, inStorage: Boolean = false) {
     val st = s.state
-    val openHero = { id: HeroId -> vm.openSheet(Sheet.Hero(id)) }
+    // A hero or weapon opened from inside a sheet is a related one: closing it returns to the sheet it came from.
+    val openHero = { id: HeroId -> vm.openRelated(Sheet.Hero(id)) }
+    // Where each hero sheet was scrolled to while sheets stay open, so coming back from a related one finds the same place.
+    val heroScroll = remember { mutableMapOf<HeroId, Int>() }
     when (sheet) {
         is Sheet.Hero -> {
             val detail = remember(st, sheet) { vm.engine.heroDetail(st, sheet.id, st.lastResolution?.takeIf { sheet.id !in st.heroes }?.customerSnapshot(sheet.id)) }
+            val scroll = remember(sheet.id) { ScrollState(heroScroll[sheet.id] ?: 0) }
+            DisposableEffect(sheet.id) { onDispose { heroScroll[sheet.id] = scroll.value } }
             if (detail == null) LaunchedEffect(sheet) { vm.closeSheet() }
-            else if (inStorage) HeroDetailContent(detail, openHero, onOpenItem = { vm.openSheet(Sheet.Item(it)) }, onDismiss = vm::closeSheet, closeLabel = "Back to storage")
+            else if (inStorage) HeroDetailContent(detail, openHero, onOpenItem = { vm.openRelated(Sheet.Item(it)) }, onDismiss = vm::closeSheet, closeLabel = "Back to storage", scroll = scroll)
             else HeroDetailSheet(
-                detail, openHero, onOpenItem = { vm.openSheet(Sheet.Item(it)) }, onDismiss = vm::closeSheet,
-                closeLabel = if (s.partyDraft != null) "Back to party" else "Close",
+                detail, openHero, onOpenItem = { vm.openRelated(Sheet.Item(it)) }, onDismiss = vm::closeSheet,
+                closeLabel = if (s.partyDraft != null) "Back to party" else "Close", scroll = scroll,
                 // A member of the guild: the smith's own actions on them (a branch, a loan, letting them go).
                 member = MemberActions(
                     enabled = !s.busy,

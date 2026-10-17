@@ -98,7 +98,8 @@ class BladeRulesUiTest {
 
     @Test
     fun aBladeInTheShopCanBeLentToAMemberInTownAndCalledBack() {
-        val blade = CombatSandbox.capacitor
+        // An ID of its own: the sandbox blade is "w1", which a living era may already use for a family weapon in Lost.
+        val blade = CombatSandbox.capacitor.copy(id = com.tinyblacksmith.core.model.WeaponId("w700"))
         val stocked = guild.with(blade)
         val members = stocked.guild!!.members
         val targets = engine.loanTargets(stocked)

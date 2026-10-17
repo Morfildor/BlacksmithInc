@@ -6,6 +6,8 @@ import com.example.blacksmithproject.ui.guildUi
 import com.example.blacksmithproject.ui.heroTip
 import com.example.blacksmithproject.ui.hookSentence
 import com.example.blacksmithproject.ui.raceClass
+import com.example.blacksmithproject.ui.nameParts
+import com.tinyblacksmith.core.text.LivingText
 import com.tinyblacksmith.core.content.LaunchContent
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.Ambition
@@ -37,34 +39,35 @@ class LivingIdentityUiTest {
     fun peopleAndClassReadAsOneWordPairAndTheClassAloneWithoutAPeople() {
         val duelist = member.copy(classId = LaunchContent.DUELIST, raceId = "elf", level = 3)
         assertEquals("Elf Duelist", engine.raceClass(duelist))
-        assertEquals("Elf Duelist level 3", engine.classLine(duelist))
+        assertEquals("Elf Duelist level\u00A03", engine.classLine(duelist))
         assertEquals("Duelist", engine.raceClass(duelist.copy(raceId = null)))
         assertEquals("an unknown people is not shown", "Duelist", engine.raceClass(duelist.copy(raceId = "giant")))
-        assertEquals("Elf Duelist · level 3", engine.heroDetail(run.with(duelist), duelist.id)!!.kind)
+        assertEquals("Elf Duelist, level\u00A03", engine.heroDetail(run.with(duelist), duelist.id)!!.kind)
     }
 
+    /** Every Hook in core's own words (`LivingText.hook`): screens compose nothing of their own about a hero's situation. */
     @Test
-    fun everyHookIsOneSentenceFromItsRecord() {
+    fun everyHookIsCoresSentenceFromItsRecord() {
         val kin = candidate
-        val creditor = run.heroes.values.first { it.id != member.id && it.id != kin.id && it.isAlive }
         val weapon = run.weapons.values.first()
-        fun say(hook: Hook?, state: GameState = run) = engine.hookSentence(state, member.hooked(hook))
-        assertEquals("Carries an old grievance against the Ashclaw Raiders.", say(Hook(HookKind.GRUDGE, 1, factionId = FactionId("ashclaw_raiders"), background = true)))
-        assertEquals("Holds a grievance against the Hollowbound.", say(Hook(HookKind.GRUDGE, 1, factionId = FactionId("hollowbound"))))
-        assertEquals("Owes 40 gold to ${creditor.fullName}, due day 12.", say(Hook(HookKind.DEBT, 1, creditor = creditor.fullName, creditorHeroId = creditor.id, amount = 40, dueDay = 12)))
-        assertEquals("Owes 40 gold to a moneylender in Emberfall, due day 9.", say(Hook(HookKind.DEBT, 1, creditor = "a moneylender in Emberfall", amount = 40, dueDay = 9)))
-        assertEquals("A family weapon, the ${weapon.name}, was lost before they came to Emberfall.", say(Hook(HookKind.LOST_WEAPON, 1, weaponId = weapon.id, background = true)))
-        assertEquals("Will carry only Common or Uncommon weapons.", say(Hook(HookKind.OATH, 1, oath = OathKind.PLAIN_WORK)))
-        assertEquals("Will not carry a Grave weapon.", say(Hook(HookKind.OATH, 1, oath = OathKind.NO_GRAVE)))
-        assertEquals("Will carry only spears.", say(Hook(HookKind.OATH, 1, oath = OathKind.FAVOURED_FAMILY, familyId = LaunchContent.SPEAR)))
-        assertEquals("Will carry only axes.", say(Hook(HookKind.OATH, 1, oath = OathKind.FAVOURED_FAMILY, familyId = LaunchContent.AXE)))
-        assertEquals("Kin of ${kin.fullName}.", say(Hook(HookKind.KIN, 1, kinHeroId = kin.id)))
-        val fallen = kin.copy(fate = HeroFate.DEAD, diedOnDay = 9)
-        assertEquals("Kin of ${kin.fullName}, who fell on day 9.", say(Hook(HookKind.KIN, 1, kinHeroId = kin.id), run.with(fallen)))
+        val hooks = listOf(
+            Hook(HookKind.GRUDGE, 1, factionId = FactionId("ashclaw_raiders"), background = true),
+            Hook(HookKind.DEBT, 1, creditor = "a moneylender in Emberfall", amount = 40, dueDay = 9),
+            Hook(HookKind.LOST_WEAPON, 1, weaponId = weapon.id, background = true),
+            Hook(HookKind.OATH, 1, oath = OathKind.PLAIN_WORK), Hook(HookKind.OATH, 1, oath = OathKind.NO_GRAVE),
+            Hook(HookKind.OATH, 1, oath = OathKind.FAVOURED_FAMILY, familyId = LaunchContent.SPEAR),
+            Hook(HookKind.KIN, 1, kinHeroId = kin.id),
+        )
+        for (hook in hooks) {
+            val hero = member.hooked(hook)
+            val said = engine.hookSentence(run, hero)
+            assertEquals(LivingText.hook(hero, run, engine.content), said)
+            assertTrue("$said is one sentence", said!!.endsWith(".") && " ;" !in said)
+        }
+        assertEquals("Kin of ${kin.fullName}.", engine.hookSentence(run, member.hooked(Hook(HookKind.KIN, 1, kinHeroId = kin.id))))
         // Settled: only what was recorded about it, never an invented ending.
-        assertNull(say(Hook(HookKind.DEBT, 1, status = HookStatus.RESOLVED, amount = 40)))
-        assertEquals("Paid in full.", say(Hook(HookKind.DEBT, 1, status = HookStatus.RESOLVED, amount = 40, note = "Paid in full.")))
-        assertNull(say(null))
+        assertEquals("Paid in full.", engine.hookSentence(run, member.hooked(Hook(HookKind.DEBT, 1, status = HookStatus.RESOLVED, amount = 40, note = "Paid in full."))))
+        assertNull(engine.hookSentence(run, member.hooked(null)))
     }
 
     @Test
@@ -74,9 +77,11 @@ class LivingIdentityUiTest {
             reasons = listOf(ReasonRecord(3, "deed", "Held the gate with a borrowed spear."), ReasonRecord(6, "loan", "Took the Iron Sword on loan.")),
         )
         val d = engine.heroDetail(run.with(oath), oath.id)!!
-        assertEquals(listOf("Background", "Oath", "Ambition"), d.story.map { it.label })
-        assertEquals("Former poacher", d.story.first().value)
-        assertEquals("Will not carry a Grave weapon.", d.story[1].value)
+        // The pressing line first, the background last.
+        assertEquals(listOf("Oath", "Ambition", "Background"), d.story.map { it.label })
+        assertEquals("Former poacher", d.story.last().value)
+        assertEquals(LivingText.hook(oath, run, engine.content), d.story.first().value)
+        assertEquals("what they carry is in the head", run.equippedWeapon(oath.id)?.let { "Carries ${it.name}" } ?: "Unarmed", d.equipment)
         assertEquals(listOf("Day 6: Took the Iron Sword on loan.", "Day 3: Held the gate with a borrowed spear."), d.moments)
         assertTrue("a well member's numbers say their condition", d.condition == null)
 
@@ -85,6 +90,26 @@ class LivingIdentityUiTest {
         val plain = engine.heroDetail(run.with(legacy), legacy.id)!!
         assertTrue(plain.story.isEmpty())
         assertTrue(plain.moments.isEmpty())
+        // A newcomer's lifetime numbers are all zero and say nothing; any that are not are said alone.
+        assertNull(engine.heroDetail(run.with(legacy.copy(fame = 0, victories = 0, kills = 0)), legacy.id)!!.deeds)
+        assertEquals("2 victories", engine.heroDetail(run.with(legacy.copy(fame = 0, victories = 2, kills = 0)), legacy.id)!!.deeds)
+    }
+
+    @Test
+    fun theCaptainsAmbitionIsSaidPlainlyWithTheMembersCount() {
+        val captain = member.copy(ambition = Ambition.CAPTAIN, ambitionDone = false)
+        val led = run.copy(guild = run.guild!!.copy(members = run.guild!!.members.map { if (it.heroId == captain.id) it.copy(ledWins = 1) else it }))
+        val d = engine.heroDetail(led.with(captain), captain.id)!!
+        assertEquals("Wants to lead the party, first in its order, to 3 won quests. 1 so far.", d.story.single { it.label == "Ambition" }.value)
+    }
+
+    @Test
+    fun aBynameOfResidenceIsSplitOffAndNoOtherSurname() {
+        val by = engine.content.bynames.first()
+        assertEquals("Tansy Saffronfield" to by, engine.nameParts("Tansy Saffronfield $by"))
+        assertEquals("Tansy" to by, engine.nameParts("Tansy $by"))
+        assertEquals("Keshra Obsidianhorn" to null, engine.nameParts("Keshra Obsidianhorn"))
+        assertEquals("a name that is only a byname stays whole", by to null, engine.nameParts(by))
     }
 
     @Test
@@ -103,11 +128,11 @@ class LivingIdentityUiTest {
         val sworn = candidate.hooked(Hook(HookKind.OATH, 1, oath = OathKind.PLAIN_WORK))
         val state = run.with(sworn)
         val row = engine.guildUi(state)!!.candidates.single { it.heroId == sworn.id }
-        assertEquals("Will carry only Common or Uncommon weapons.", row.complication)
+        assertEquals(LivingText.hook(sworn, state, engine.content), row.complication)
         assertTrue(row.sub, row.sub.startsWith("Elf "))
         val tip = engine.heroTip(state, sworn.id)!!
         assertTrue(tip.kind, tip.kind.startsWith("Elf "))
-        assertTrue(tip.sections.flatMap { it.lines }.any { it.text == "Will carry only Common or Uncommon weapons." })
+        assertTrue(tip.sections.flatMap { it.lines }.any { it.text == row.complication })
         // No Hook, no line.
         assertNull(engine.guildUi(run.with(candidate.copy(hook = null)))!!.candidates.single { it.heroId == candidate.id }.complication)
     }

@@ -140,6 +140,8 @@ data class MemberUi(
     val chip: String = "Fit", val chipTone: ChipTone = ChipTone.OK,
     /** The weapon in hand as a small sprite (decorative: [blade] says it); null when unarmed. */
     val weaponArt: Int? = null,
+    /** [name] without a byname of residence, and that byname for a quieter second line (`nameParts`). */
+    val shortName: String = name, val byname: String? = null,
 ) {
     /** The roster's one line under the name: class, health and the wall; role and trait are on the hero's sheet. */
     val line: String get() = "$sub · $health" + if (reserved) " · reserved for the wall" else ""
@@ -153,6 +155,8 @@ data class CandidateUi(
     val feeGold: Int = 0, val sharePercent: Int = 0,
     /** Their Hook in one sentence, shown before the fee is paid (an oath above all); null without one. */
     val complication: String? = null,
+    /** [name] without a byname of residence, and that byname for a quieter second line (`nameParts`). */
+    val shortName: String = name, val byname: String? = null,
 ) {
     /** Class and the trait's name in one line; what the trait does is on the hero's sheet. */
     val line: String get() = "$sub · ${trait.substringBefore(':')}"
@@ -191,7 +195,15 @@ data class GuildUi(
 // ---- words shared by the board, the checkpoint and the contract sheet ----
 
 /** What members at home do each day on their own (`GuildOps.homeDay`): no daily command, owner decision J. [heal] is `BalanceConfig.heroRestHeal`. */
-internal fun homeLine(heal: Int): String = "Members at home act on their own each day. A hurt member rests and heals $heal health. A fit member trains."
+internal fun homeLine(heal: Int): String = "At home, hurt members rest and heal $heal health, and fit members train."
+
+/**
+ * The whole of what a member at home does without a command (`GuildOps.homeDay`, and in a living era `Agency.counter`), for
+ * the member's sheet. The roster says the short [homeLine].
+ */
+internal fun homeRules(heal: Int, living: Boolean): String =
+    "Each day at home, a hurt member rests and heals $heal health and a fit member trains. A member who stood on the wall on a siege night does neither that day." +
+        if (living) " One member a day who needs a weapon may come to your counter and buy one with their own gold." else ""
 
 /** The danger alone, for the board's line: the sheet says what it means. */
 internal fun dangerWord(d: Danger): String = Terms.danger(d)
@@ -231,7 +243,10 @@ internal fun missesSiege(day: Int, days: Int, siegeDay: Int): Boolean = siegeDay
 private fun names(list: List<String>) = list.joinToString(", ")
 
 /** "Elf Duelist level 3": people, class and level, as every guild row says them. */
-internal fun GameEngine.classLine(h: Hero) = "${raceClass(h)} level ${h.level}"
+internal fun GameEngine.classLine(h: Hero) = "${raceClass(h)} ${levelWords(h.level)}"
+
+/** "level 3", never broken across two lines. */
+internal fun levelWords(level: Int) = "level $level"
 
 /** Each kind of unit on a field once, with its count, its health as the field scales it and its card. [note]: what changes the numbers before the fight. */
 private fun GameEngine.enemies(specs: List<EnemySpec>, note: String? = null): List<EnemyUi> {
@@ -559,6 +574,7 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
                 memberStatus(state, g, m), bladeLine(state, h.id), fighter?.let { "Health ${it.health}/${it.maxHealth}" } ?: Labels.health(h).replaceFirstChar { it.uppercase() },
                 reserved = h.id in g.reserved, branchOpen = openBranches(state, h.id).isNotEmpty(),
                 weaponArt = (state.loanOf(h.id) ?: state.equippedWeapon(h.id))?.let(Sprites::weapon),
+                shortName = nameParts(h).first, byname = nameParts(h).second,
             ).let { ui ->
                 // One chip: a speciality to choose stands in for "Fit", never for a wound, an absence or the wall.
                 memberChip(state, g, m).let { (chip, tone) -> if (ui.branchOpen && tone == ChipTone.OK) ui.copy(chip = "Speciality to choose", chipTone = ChipTone.KEPT) else ui.copy(chip = chip, chipTone = tone) }
@@ -570,6 +586,7 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
                 h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), combat?.kitByClass?.get(h.classId)?.role.orEmpty(), traitLine(c.traitId),
                 "Recruitment fee: ${c.fee} gold. Keeps ${c.sharePercent}% of the gold from quests they go on.", recruitBlocked(state, g, c.fee),
                 feeGold = c.fee, sharePercent = c.sharePercent, complication = hookSentence(state, h),
+                shortName = nameParts(h).first, byname = nameParts(h).second,
             )
         },
         candidatesNote = if (g.candidates.isEmpty()) "Nobody is for hire today. The list is redrawn on the morning of day $refresh." else "The list is redrawn on the morning of day $refresh.",
@@ -754,6 +771,8 @@ data class MemberDetailUi(
     val status: String? = null,
     /** How a speciality opens, with the member's progress; null once one is chosen (`Stories.openBranches`). */
     val unlock: String? = null,
+    /** What a member at home does each day without a command, in full ([homeRules]); the roster says it short. */
+    val home: String = "",
 )
 
 fun GameEngine.memberDetail(state: GameState, heroId: HeroId): MemberDetailUi? {
@@ -798,6 +817,7 @@ fun GameEngine.memberDetail(state: GameState, heroId: HeroId): MemberDetailUi? {
         ),
         since = if (m.fee > 0) "Recruited on day ${m.joinedDay} for ${m.fee} gold." else "With the guild since day ${m.joinedDay}.",
         status = memberStatus(state, g, m),
+        home = homeRules(config.heroRestHeal, state.livingRevision >= com.tinyblacksmith.core.model.LivingRevision.CURRENT),
         unlock = if (m.specialityId != null) null else
             "A speciality opens after ${Stories.VETERAN_WINS} quests won (${m.missionWins} so far) or after going down ${Stories.SURVIVOR_DOWNS} times (${m.timesDowned} so far). " +
                 "A hero sworn to defend the walls also opens one by fulfilling that ambition.",

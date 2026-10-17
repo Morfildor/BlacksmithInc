@@ -100,7 +100,7 @@ fun GameEngine.heroTip(state: GameState, heroId: HeroId, home: Boolean = false, 
         else -> null
     }
     return TipUi(
-        name = h.fullName, kind = "${raceClass(h)} · level ${h.level}", icon = Sprites.portrait(h),
+        name = h.fullName, kind = "${raceClass(h)}, ${levelWords(h.level)}", icon = Sprites.portrait(h),
         meta = when { member != null -> "Guild member"; candidate != null -> "For hire"; else -> "Of the town" },
         stats = fighter?.let { f ->
             listOfNotNull(
@@ -111,10 +111,11 @@ fun GameEngine.heroTip(state: GameState, heroId: HeroId, home: Boolean = false, 
             )
         } ?: listOf(TipStat("Health", warning ?: Labels.health(h).replaceFirstChar { it.uppercase() })),
         sections = listOf(
-            TipSection("In a fight", if (fighter == null || kit == null) emptyList() else listOf(kitLine(kit)) + kit.kit.passives.map { it.ability("Passive") }),
+            // A quick card: each ability by name with its first sentence. Every trigger, number and exception stays in the sheet ("Full details").
+            TipSection("In a fight", if (fighter == null || kit == null) emptyList() else (listOf(kitLine(kit)) + kit.kit.passives.map { it.ability("Passive") }).map { it.brief() }),
             TipSection(null, listOfNotNull(
-                trait?.let { traitLine(it) },
-                branch?.let { abilityLine(it.name, it.description, "Speciality", TipTone.BONUS) },
+                trait?.let { traitLine(it).brief() },
+                branch?.let { abilityLine(it.name, it.description, "Speciality", TipTone.BONUS).brief() },
                 TipLine("Reserved for the wall", TipTone.CONDITION).takeIf { g != null && heroId in g.reserved },
                 // Their Hook, as the recruit row says it before the fee is paid.
                 hookSentence(state, h)?.let { TipLine(it, TipTone.CONDITION) }.takeIf { h.isAlive },
@@ -136,13 +137,30 @@ fun GameEngine.heroTip(state: GameState, heroId: HeroId, home: Boolean = false, 
                 )
             }),
         ),
-        // Support is said as what it does on its own line, so only Attack needs telling apart from the action.
-        keywords = if (fighter == null || kit == null) emptyList() else statKeywords() + keywords(
-            kit.kit.moves.flatMap { it.statuses() } + (kit.kit.passives + trait?.effects.orEmpty() + branch?.effects.orEmpty() + weaponRules).flatMap { it.statuses() }, config,
-        ),
+        // The statuses' meanings are in the sheet beside the full rules: a quick card does not carry a glossary.
         warning = warning?.takeIf { fighter != null || member != null },
         actions = actions, tag = tag,
     )
+}
+
+/** An ability said short for a quick card: its name, where it comes from and how often, and its first sentence. */
+internal fun TipLine.brief(): TipLine = copy(text = firstSentence(text), trigger = trigger?.takeIf { it.length <= BRIEF_TRIGGER })
+
+private const val BRIEF_TRIGGER = 24
+
+/**
+ * A recruit's fight rules in full, as a member's sheet gives them (`memberDetail`): what the class does, its passives and
+ * the trait offered with them, with the meanings of the statuses they name. Empty outside a guild era.
+ */
+internal fun GameEngine.heroRules(state: GameState, heroId: HeroId): Pair<List<TipLine>, List<TipKeyword>> {
+    val none = emptyList<TipLine>() to emptyList<TipKeyword>()
+    val h = state.heroes[heroId] ?: return none
+    val g = state.guild ?: return none
+    val kit = content.combat?.kitByClass?.get(h.classId) ?: return none
+    val trait = (g.member(heroId)?.traitId ?: g.candidates.firstOrNull { it.heroId == heroId }?.traitId)?.let { content.guild?.trait(it) }
+    val lines = listOf(kitLine(kit)) + kit.kit.passives.map { it.ability("Passive") } + listOfNotNull(trait?.let { traitLine(it) })
+    val words = statKeywords() + keywords(kit.kit.moves.flatMap { it.statuses() } + (kit.kit.passives + trait?.effects.orEmpty()).flatMap { it.statuses() }, config)
+    return lines to words
 }
 
 /** "Summoner", "Leader", "Elite": the tags that decide the priority target (summoner, then leader) and that an effect can answer (Giant Slayer), in words. */

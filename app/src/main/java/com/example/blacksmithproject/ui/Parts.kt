@@ -68,6 +68,49 @@ fun FactLine(facts: List<Fact>, modifier: Modifier = Modifier, emphasis: Boolean
     )
 }
 
+/**
+ * The facts of [FactLine] as pieces that flow onto as many lines as they need. A separator is drawn only between two
+ * facts on the same line, so a wrapped line never ends or starts with a stray " · ". A fact wider than the line wraps
+ * inside itself. One merged description for TalkBack, as [FactLine] gives.
+ */
+@Composable
+fun FactFlow(facts: List<Fact>, modifier: Modifier = Modifier, emphasis: Boolean = false) {
+    if (facts.isEmpty()) return
+    val style = if (emphasis) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall
+    androidx.compose.ui.layout.Layout(
+        content = {
+            facts.forEach { Text(factText(listOf(it)), style = style, color = Cream) }
+            repeat(facts.size - 1) { Text(" · ", style = style, color = CreamMuted) }
+        },
+        modifier = modifier.semantics(mergeDescendants = true) { contentDescription = facts.joinToString(". ") { f -> listOfNotNull(f.label, f.value).joinToString(" ") } },
+    ) { measurables, constraints ->
+        val loose = constraints.copy(minWidth = 0, minHeight = 0)
+        val items = measurables.take(facts.size).map { it.measure(loose) }
+        val seps = measurables.drop(facts.size).map { it.measure(loose) }
+        val max = constraints.maxWidth
+        // Lines of item indices, greedily: a fact joins the line when it fits after a separator.
+        val lines = mutableListOf(mutableListOf(0))
+        var x = items[0].width
+        for (i in 1 until items.size) {
+            val needed = seps[i - 1].width + items[i].width
+            if (x + needed <= max) { lines.last() += i; x += needed } else { lines += mutableListOf(i); x = items[i].width }
+        }
+        val heights = lines.map { line -> line.maxOf { items[it].height } }
+        val width = if (constraints.hasBoundedWidth) max else lines.maxOf { line -> line.sumOf { items[it].width } + (line.size - 1) * (seps.firstOrNull()?.width ?: 0) }
+        layout(width.coerceAtLeast(constraints.minWidth), heights.sum().coerceAtLeast(constraints.minHeight)) {
+            var y = 0
+            lines.forEachIndexed { n, line ->
+                var px = 0
+                line.forEachIndexed { k, i ->
+                    if (k > 0) { seps[i - 1].placeRelative(px, y); px += seps[i - 1].width }
+                    items[i].placeRelative(px, y); px += items[i].width
+                }
+                y += heights[n]
+            }
+        }
+    }
+}
+
 internal fun factText(facts: List<Fact>): AnnotatedString = buildAnnotatedString {
     facts.forEachIndexed { i, f ->
         // The separator is bound to the fact before it (no-break space), so a wrapped line never starts with it.

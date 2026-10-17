@@ -2,6 +2,8 @@ package com.example.blacksmithproject
 
 import com.example.blacksmithproject.ui.ChipTone
 import com.example.blacksmithproject.ui.raceClass
+import com.example.blacksmithproject.ui.brief
+import com.example.blacksmithproject.ui.heroRules
 import com.example.blacksmithproject.ui.FactTone
 import com.example.blacksmithproject.ui.TipLine
 import com.example.blacksmithproject.ui.TipStat
@@ -77,7 +79,7 @@ class GuildInspectTest {
             val tip = engine.heroTip(s, m.heroId)!!
             assertNothingEmptyTitled(tip)
             assertEquals(h.fullName, tip.name)
-            assertEquals("${engine.raceClass(h)} · level ${h.level}", tip.kind)
+            assertEquals("${engine.raceClass(h)}, level\u00A0${h.level}", tip.kind)
             assertEquals("Guild member", tip.meta)
             // The same numbers as the hero sheet: one read of the fighter, `fighterView`.
             // Health says the fight's number and the health between fights (a percentage) on one line; Support is shown
@@ -86,9 +88,11 @@ class GuildInspectTest {
             assertEquals(engine.memberDetail(s, m.heroId)!!.numbers, tip.stats.map { it.label to it.value })
             assertTrue(tip.stats.first().value, tip.stats.first().label == "Health" && tip.stats.first().value.endsWith("(${h.health}%)"))
             assertEquals(readsSupport(kit.kit), tip.stats.any { it.label == "Support" })
-            // What the class does every round leads, under its moves' names, then the class's own rules.
+            // What the class does every round leads, under its moves' names, then the class's own rules: on the quick
+            // card each said short (its first sentence); the sheet's `heroRules` keeps them whole.
             val fight = tip.section("In a fight")
-            assertEquals(kitLine(kit), fight.first())
+            assertEquals(kitLine(kit).brief(), fight.first())
+            assertEquals(kitLine(kit), engine.heroRules(s, m.heroId).first.first())
             assertEquals(kit.kit.moves.joinToString(" and ") { it.name }, fight.first().title)
             assertEquals(kit.kit.passives.map { it.name }, fight.drop(1).map { it.title })
             // The trait is a gain (a mixed one, which also raises the share, carries no sign); the share is a cost, under Terms.
@@ -105,20 +109,25 @@ class GuildInspectTest {
     fun aClassPassiveIsAnAbilitySplitIntoWhenWhatAndHowOften() {
         val (s, id) = withClass(guildRun(), LaunchContent.GUARDIAN)
         val tip = engine.heroTip(s, id)!!
-        val riposte = tip.section("In a fight").single { it.title == "Riposte" }
+        // The full rule, as the sheet gives it; the quick card names it and keeps its short trigger and its limit.
+        val (rules, words) = engine.heroRules(s, id)
+        val riposte = rules.single { it.title == "Riposte" }
+        assertEquals(riposte.brief(), tip.section("In a fight").single { it.title == "Riposte" })
         assertEquals(TipTone.ABILITY, riposte.tone)
         // Its typed trigger (Guard broken, by a foe) in a few words, standing for the sentence's own "When ..." clause.
         assertEquals("Enemy breaks Armor", riposte.trigger)
         assertEquals("Once per round", riposte.limit)
         assertEquals("Passive", riposte.source)
         // The class's own line does not say Riposte's counterattack again.
-        assertFalse(tip.section("In a fight").first().text, "hits back" in tip.section("In a fight").first().text)
-        assertTrue(tip.keywords.map { it.name }.toString(), "Armor" in tip.keywords.map { it.name })
+        assertFalse(rules.first().text, "hits back" in rules.first().text)
+        assertTrue(words.map { it.name }.toString(), "Armor" in words.map { it.name })
         // The stat Attack is told apart from the action once; Support is said as what it does (Hold the line reads it).
-        assertEquals("Attack", tip.keywords.first().name)
-        assertTrue(tip.keywords.none { it.name == "Support" })
+        assertEquals("Attack", words.first().name)
+        assertTrue(words.none { it.name == "Support" })
         assertEquals("${engine.fighterView(s, id)!!.support} Armor each round", tip.stats.single { it.label == "Support" }.value)
-        assertEquals("The damage of this fighter's attacks.", tip.keywords.first().meaning)
+        assertEquals("The damage of this fighter's attacks.", words.first().meaning)
+        // A quick card carries no glossary: the meanings stand beside the full rules.
+        assertTrue(tip.keywords.isEmpty())
         // A resident who stands in for the guild is of the town, with no share and no trait.
         assertEquals("Of the town", tip.meta)
         assertTrue(tip.lines().none { it.tone == TipTone.DRAWBACK && "gold" in it.text })
@@ -127,11 +136,11 @@ class GuildInspectTest {
     @Test
     fun aBattlemagesCardExplainsTheStatusesItsKitNamesOnce() {
         val (s, id) = withClass(guildRun(), LaunchContent.BATTLEMAGE)
-        val tip = engine.heroTip(s, id)!!
-        val names = tip.keywords.map { it.name }
+        val words = engine.heroRules(s, id).second
+        val names = words.map { it.name }
         assertTrue(names.toString(), names.containsAll(listOf("Mark", "Charge", "Burn", "Chill", "Wet")))
         assertEquals(names.distinct(), names)
-        assertTrue(tip.keywords.all { it.meaning.isNotBlank() })
+        assertTrue(words.all { it.meaning.isNotBlank() })
     }
 
     @Test

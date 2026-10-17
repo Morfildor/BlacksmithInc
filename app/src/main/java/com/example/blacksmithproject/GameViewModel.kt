@@ -232,6 +232,8 @@ class GameViewModel(
         /** The player opened the relic offer themselves: the guided first day no longer keeps it closed. */
         val relicAsked: Boolean = false,
         val sheet: Sheet? = null,
+        /** The sheet a related one (a kin, a mentor, a weapon) was opened from: closing the related one goes back to it. */
+        val sheetBack: Sheet? = null,
         val lastError: String? = null,
         val notice: String? = null,
         val forgeReveal: Int = 0,
@@ -648,8 +650,10 @@ class GameViewModel(
     /** The notice has been shown; a newer one is left alone. */
     fun dismissNotice(shown: String) = local.update { if (it.notice == shown) it.copy(notice = null) else it }
     /** Opening or closing a sheet also puts away the last notice: it was about what was on screen before. */
-    fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet, notice = null) }
-    fun closeSheet() = edit { it.copy(sheet = null, notice = null) }
+    fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet, sheetBack = null, notice = null) }
+    /** A sheet opened from inside another (a relative, a mentor, a weapon): closing it returns to the one it came from. */
+    fun openRelated(sheet: Sheet) = edit { it.copy(sheet = sheet, sheetBack = it.sheet?.takeIf { from -> from != sheet }, notice = null) }
+    fun closeSheet() = edit { it.copy(sheet = it.sheetBack, sheetBack = null, notice = null) }
 
     fun openContract(id: String) {
         val run = session.snapshot.value?.run ?: return

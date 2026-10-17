@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
@@ -202,40 +204,58 @@ private fun HeldWeapon(art: Int?, name: String) {
 }
 
 /**
- * A member at a glance: the face, the name with one chip (fit, a branch to choose, kept for the wall, laid up, away or
- * held), class, level and health, and the weapon in hand as a sprite. A tap reads their card ([tip]).
+ * Whether a row has room for the weapon beside the identity: the identity keeps about 190 dp of text at the default size
+ * once the face (44 dp), the gaps and the weapon (up to 64 dp) are taken. With less (a narrow phone at 1.3x text) the
+ * weapon goes under the identity instead of squeezing the name and class into a word a line.
+ */
+@Composable
+private fun roomBeside(maxWidth: Dp): Boolean = (maxWidth - 132.dp) / LocalDensity.current.fontScale >= 190.dp
+
+/**
+ * A member at a glance, in reading order: the face, the name with one chip (fit, a branch to choose, kept for the wall,
+ * laid up, away or held), people, class and level, health, then the weapon in hand: beside the text when there is room,
+ * under it when there is not. The face lines up with the name. A tap reads their card ([tip]).
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun MemberRow(m: MemberUi, tip: () -> TipUi?) {
-    Row(
-        Modifier.fillMaxWidth().heroInspect(m.name, tip).testTag("guild_member_${m.heroId.value}").heightIn(min = 64.dp).padding(vertical = Space.sm),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Face(m.portrait)
-        Column(Modifier.weight(1f)) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(2.dp), itemVerticalAlignment = Alignment.CenterVertically) {
-                Text(m.name, style = MaterialTheme.typography.titleSmall)
-                Chip(m.chip, chipColor(m.chipTone))
+    BoxWithConstraints(Modifier.fillMaxWidth().heroInspect(m.name, tip).testTag("guild_member_${m.heroId.value}").heightIn(min = 64.dp).padding(vertical = Space.sm)) {
+        val beside = roomBeside(maxWidth)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Face(m.portrait)
+            Column(Modifier.weight(1f)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(2.dp), itemVerticalAlignment = Alignment.CenterVertically) {
+                    Text(m.shortName, style = MaterialTheme.typography.titleSmall)
+                    Chip(m.chip, chipColor(m.chipTone))
+                }
+                m.byname?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+                FactFlow(listOf(Fact(m.sub), Fact(m.health)), Modifier.testTag("guild_member_line_${m.heroId.value}"))
+                if (!beside) Row(Modifier.padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    m.weaponArt?.let { PixelImage(it, 32.dp, description = null) }
+                    Text(m.blade, style = MaterialTheme.typography.bodySmall, color = if (m.weaponArt == null) CreamMuted else Cream)
+                }
             }
-            Secondary("${m.sub} · ${m.health}")
+            if (beside) HeldWeapon(m.weaponArt, m.blade)
         }
-        HeldWeapon(m.weaponArt, m.blade)
     }
 }
 
-/** Who would sign: the face, the name, class and trait, the fee and the share in figures; a tap reads their card. Recruit stays on the row. */
+/**
+ * Who would sign, in reading order: the face beside the name (a byname of residence on its own quieter line), people,
+ * class, level and trait, the fee and the share in figures, then their Hook, all before Recruit. A tap reads their card.
+ */
 @Composable
 private fun CandidateRow(c: CandidateUi, enabled: Boolean, tip: () -> TipUi?, onRecruit: () -> Unit) {
     Column(Modifier.fillMaxWidth().padding(vertical = Space.sm).testTag("guild_candidate_${c.heroId.value}")) {
-        Row(Modifier.fillMaxWidth().heroInspect(c.name, tip).heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth().heroInspect(c.name, tip).heightIn(min = 48.dp), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Face(c.portrait)
             Column(Modifier.weight(1f)) {
-                Text(c.name, style = MaterialTheme.typography.titleSmall)
-                Secondary(c.line)
-                FactLine(listOf(Fact("${c.feeGold} gold", "Fee"), Fact("${c.sharePercent}% of quest gold", "Keeps")))
-                // Their Hook before the fee is paid: what comes with them, an oath above all (final design 20.4). A sign and words, not colour alone.
-                // The sign hangs in its own column so a wrapped sentence lines up under its first word.
+                Text(c.shortName, style = MaterialTheme.typography.titleSmall)
+                c.byname?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+                FactFlow(listOf(Fact(c.sub), Fact(c.trait.substringBefore(':'), "Trait")))
+                FactFlow(listOf(Fact("${c.feeGold} gold", "Fee"), Fact("${c.sharePercent}% of quest gold", "Keeps")))
+                // Their Hook before the fee is paid: what comes with them, an oath above all (final design 20.4). A sign and words,
+                // not colour alone; the sign hangs in its own column so a wrapped sentence lines up under its first word.
                 c.complication?.let { line ->
                     Row(Modifier.padding(top = 2.dp).semantics(mergeDescendants = true) { contentDescription = line }.testTag("guild_candidate_hook_${c.heroId.value}"), horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
                         Text(TipTone.CONDITION.sign, style = MaterialTheme.typography.bodySmall, color = TipTone.CONDITION.color)
