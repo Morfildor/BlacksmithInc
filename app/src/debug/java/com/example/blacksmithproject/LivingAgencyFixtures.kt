@@ -116,7 +116,7 @@ object LivingAgencyFixtures {
         val heroes = s.heroes.toMutableMap()
         heroes[departing]?.let { heroes[departing] = it.copy(hook = Hook(HookKind.DEBT, 1, creditor = "Celine Sallow", amount = 40, dueDay = s.day)) }
         // A personal offer: a quest on the board that serves the leaning member's grudge.
-        val personal = g.offers.firstOrNull()?.let { o ->
+        val personal = g.offers.firstOrNull { it.defId != GuildContent.WALL_WORK && it.defId != GuildContent.SABOTAGE }?.let { o ->
             o.copy(id = "${o.id}-personal", sponsorHeroId = leaning, opportunityId = "grudge", reason = "${s.heroes.getValue(leaning).name} asks for this one: the raiders who burned a home village are camped on this road.")
         }
         val drawn = s.siege?.takeIf { it.siegeDay == s.town.nextSiegeDay } ?: SiegeScenario(s.town.nextSiegeDay)
