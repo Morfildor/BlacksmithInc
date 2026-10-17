@@ -639,7 +639,7 @@ class GameViewModel(
     }
 
     /** "Set price" on the forge result: the blade stays in storage and its sheet opens, where the price is chosen by hand and it is listed. */
-    fun priceForged(id: WeaponId) = edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null, sheet = Sheet.Item(id), notice = null) }
+    fun priceForged(id: WeaponId) = edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null, sheet = Sheet.Item(id), sheetBack = null, notice = null) }
 
     /** "Store" on the forge result, and closing it any other way: the blade stays in storage, and the workshop says so. */
     fun storeForged() {
@@ -660,7 +660,7 @@ class GameViewModel(
         if (run.guild?.offers?.none { it.id == id } != false) return
         val planned = run.guild?.planned?.takeIf { it.offerId == id }
         val draft = PartyDraft(run.runId.value, run.day, id, planned?.heroIds.orEmpty(), planned?.posture ?: Posture.BALANCED).reviewEquipment(run)
-        edit { it.copy(partyDraft = draft, sheet = null) }
+        edit { it.copy(partyDraft = draft, sheet = null, sheetBack = null) }
     }
 
     fun closeContract() = edit { it.copy(partyDraft = null) }
@@ -723,7 +723,7 @@ class GameViewModel(
                 StockAction.Recall -> "Recalled $name to storage."
             }
             val leaves = action is StockAction.ListAt || action == StockAction.Salvage || action == StockAction.Donate
-            edit { it.copy(notice = said, sheet = if (leaves && it.sheet == Sheet.Item(id)) null else it.sheet) }
+            edit { it.copy(notice = said, sheet = if (leaves && it.sheet == Sheet.Item(id)) null else it.sheet, sheetBack = if (leaves && it.sheet == Sheet.Item(id)) null else it.sheetBack) }
         }
     }
     fun dismissError() = edit { it.copy(lastError = null) }
@@ -818,7 +818,7 @@ class GameViewModel(
         edit { it.copy(dest = Dest.SHOP, forgeReveal = 0, blessingOfferDismissedDay = if (s.state.pendingBlessingOffer.isNotEmpty()) s.state.day else it.blessingOfferDismissedDay) }
         viewModelScope.launch {
             session.run(Op.MoveCursor(DayCursor(last.commandId.value, DayCursor.Stage.DONE)))
-            local.update { it.copy(dayId = null, sheet = null, gazetteOpen = false) }
+            local.update { it.copy(dayId = null, sheet = null, sheetBack = null, gazetteOpen = false) }
         }
     }
 

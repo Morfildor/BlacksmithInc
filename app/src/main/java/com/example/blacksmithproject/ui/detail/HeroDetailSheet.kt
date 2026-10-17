@@ -64,7 +64,6 @@ import com.example.blacksmithproject.ui.TipLine
 import com.example.blacksmithproject.ui.TipKeyword
 import com.example.blacksmithproject.R
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon

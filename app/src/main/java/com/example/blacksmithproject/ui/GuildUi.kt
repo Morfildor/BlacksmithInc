@@ -201,9 +201,9 @@ internal fun homeLine(heal: Int): String = "At home, hurt members rest and heal 
  * The whole of what a member at home does without a command (`GuildOps.homeDay`, and in a living era `Agency.counter`), for
  * the member's sheet. The roster says the short [homeLine].
  */
-internal fun homeRules(heal: Int, living: Boolean): String =
-    "Each day at home, a hurt member rests and heals $heal health and a fit member trains. A member who stood on the wall on a siege night does neither that day." +
-        if (living) " One member a day who needs a weapon may come to your counter and buy one with their own gold." else ""
+internal fun homeRules(heal: Int, living: Boolean, visitsPerDay: Int): String =
+    "Each day at home, a hurt member rests and heals $heal health and a fit member trains. On a siege day, a member who stood on the wall does neither." +
+        if (living && visitsPerDay > 0) (if (visitsPerDay == 1) " 1 member a day who needs a weapon may come to your counter" else " Up to $visitsPerDay members a day who need a weapon may come to your counter") + " and buy one with their own gold." else ""
 
 /** The danger alone, for the board's line: the sheet says what it means. */
 internal fun dangerWord(d: Danger): String = Terms.danger(d)
@@ -817,7 +817,7 @@ fun GameEngine.memberDetail(state: GameState, heroId: HeroId): MemberDetailUi? {
         ),
         since = if (m.fee > 0) "Recruited on day ${m.joinedDay} for ${m.fee} gold." else "With the guild since day ${m.joinedDay}.",
         status = memberStatus(state, g, m),
-        home = homeRules(config.heroRestHeal, state.livingRevision >= com.tinyblacksmith.core.model.LivingRevision.CURRENT),
+        home = homeRules(config.heroRestHeal, state.livingRevision >= com.tinyblacksmith.core.model.LivingRevision.CURRENT, config.living.memberVisitsPerDay),
         unlock = if (m.specialityId != null) null else
             "A speciality opens after ${Stories.VETERAN_WINS} quests won (${m.missionWins} so far) or after going down ${Stories.SURVIVOR_DOWNS} times (${m.timesDowned} so far). " +
                 "A hero sworn to defend the walls also opens one by fulfilling that ambition.",
