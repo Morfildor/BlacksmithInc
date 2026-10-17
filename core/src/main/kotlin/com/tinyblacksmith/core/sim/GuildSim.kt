@@ -341,7 +341,8 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         // The shop-focused smith keeps the best of the stock for sale and loans from what is left.
         val keep = if (policy == GuildPolicy.SHOP_FOCUSED) s.storedWeapons().filter { it.promisedTo == null }.sortedByDescending { it.power }.take(3).map { it.id }.toSet() else emptySet()
         for (m in members) {
-            val stock = s.storedWeapons().filter { it.promisedTo == null && it.id !in keep }
+            // A member's oath is on their card: the smith offers only what it allows (living heroes).
+            val stock = s.storedWeapons().filter { it.promisedTo == null && it.id !in keep && com.tinyblacksmith.core.guild.Agency.oathAllows(s.hero(m.heroId), it) }
             val current = s.loanOf(m.heroId) ?: s.equippedWeapon(m.heroId)
             val best = stock.maxByOrNull { worth(s, m.heroId, it) } ?: continue
             if (current == null || worth(s, m.heroId, best) > worth(s, m.heroId, current) + 2) { s = s.send(Command.LoanWeapon(m.heroId, best.id)); loans++ }
@@ -351,7 +352,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
             val w = s.loanOf(m.heroId) ?: continue
             val mendAt = if (plan(s, "salvage_bell") && w.flaws.any { it.value == "brittle" }) 75 else 60
             if (w.condition < mendAt && s.energy >= cfg.honeEnergy && (s.materials[w.coreId] ?: 0) > 0) {
-                s = s.send(Command.RecallLoan(w.id)); s = s.send(Command.Hone(w.id)); s = s.send(Command.LoanWeapon(m.heroId, w.id))
+                s = s.send(Command.RecallLoan(w.id)); s = s.send(Command.Hone(w.id)); if (com.tinyblacksmith.core.guild.Agency.oathAllows(s.hero(m.heroId), s.weapon(w.id))) s = s.send(Command.LoanWeapon(m.heroId, w.id))
             }
         }
         return s
@@ -382,7 +383,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         var s = s0
         if (policy != GuildPolicy.DEFENCE_FIRST && !adaptive) return s
         if (s.town.nextSiegeDay - s.day > 1) return s
-        val fit = s.guild!!.members.filter { engine.memberUnavailable(s, it.heroId) == null && it.heroId !in s.guild!!.reserved }
+        val fit = s.guild!!.members.filter { engine.memberUnavailable(s, it.heroId) == null && it.heroId !in s.guild!!.reserved && it.concern?.departure == null }
         val strongest = fit.sortedByDescending { engine.fighterView(s, it.heroId, home = true)?.let { f -> f.maxHealth + f.strikeMin * 3 } ?: 0 }.take(cfg.guild.defenders - s.guild!!.reserved.size)
         // Against knives for the back, the sturdiest stands last in the line: the wall is reserved in the order it stands.
         val order = if (readsScouts && engine.wallForecast(s)?.prep?.id == "cutpurses") strongest.sortedBy { engine.fighterView(s, it.heroId, home = true)?.maxHealth ?: 0 } else strongest
@@ -394,7 +395,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         val s = s0
         val g = s.guild!!
         if (g.mission != null) return s
-        val fit = g.members.filter { engine.memberUnavailable(s, it.heroId) == null && it.heroId !in g.reserved }.map { it.heroId }
+        val fit = g.members.filter { engine.memberUnavailable(s, it.heroId) == null && it.heroId !in g.reserved && it.concern?.departure == null }.map { it.heroId }
         if (fit.isEmpty()) return s
         val keepHome = siegeTonight(s) && (adaptive || policy in setOf(GuildPolicy.DEFENCE_FIRST, GuildPolicy.RECOVERY_AWARE, GuildPolicy.NOVICE, GuildPolicy.SYNERGY, GuildPolicy.RECOMMENDED))
         if (keepHome) return s

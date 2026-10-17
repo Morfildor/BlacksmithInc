@@ -48,6 +48,10 @@ data class LivingConfig(
     val sponsoredOnBoard: Int = 1,
     val missesForDeparture: Int = 3,
     val departureNoticeMornings: Int = 3,
+    /** A won public deed (opp_reputation_deed) adds this much reputation; a lesson this much experience; a healer for a friend costs this much. */
+    val deedReputation: Int = 2,
+    val lessonXp: Int = 25,
+    val healerFee: Int = 25,
 
     // Sieges (13.4).
     /** Forge health completed structural hits may add to one siege, on top of the ordinary loss and within its maximum. */

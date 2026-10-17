@@ -79,6 +79,29 @@ object Invariants {
         }
         state.weapons.values.forEach { w -> if (w.promisedTo != null && w.promisedTo !in state.commissions) problems += "Weapon ${w.id.value} is promised to an unknown commission" }
         problems += guild(state, config)
+        problems += living(state)
+        return problems
+    }
+
+    /** Living heroes (final design 18.1): Hooks point at real things, one departure notice at most, an intent names a real loan and an owned weapon. */
+    private fun living(state: GameState): List<String> {
+        val problems = mutableListOf<String>()
+        for (h in state.heroes.values) {
+            val hook = h.hook ?: continue
+            if (hook.isOpen && hook.kind == com.tinyblacksmith.core.model.HookKind.LOST_WEAPON && state.weapons[hook.weaponId]?.location !is WeaponLocation.Lost) problems += "Hero ${h.fullName}'s family weapon is not lost but the Hook is open"
+            if (hook.kind == com.tinyblacksmith.core.model.HookKind.KIN && hook.kinHeroId !in state.heroes) problems += "Hero ${h.fullName}'s kin is unknown"
+        }
+        val g = state.guild ?: return problems
+        if (g.members.count { it.concern?.departure != null } > 1) problems += "More than one departure notice"
+        for (m in g.members) {
+            m.loanReturn?.let { i ->
+                if (state.weapons[i.loanId]?.loanedTo != m.heroId) problems += "Member ${m.heroId.value} intends to return a loan they do not hold"
+                if (state.weapons[i.ownedId]?.ownerId != m.heroId) problems += "Member ${m.heroId.value} intends to fight with a weapon they do not own"
+            }
+            m.lean?.let { l -> if (l.leaningTo !in l.options || l.options.isEmpty()) problems += "Member ${m.heroId.value} leans to a Speciality that is not open" }
+            if (m.lean != null && m.specialityId != null) problems += "Member ${m.heroId.value} leans after choosing"
+        }
+        if (g.offers.any { o -> o.sponsorHeroId != null && state.heroes[o.sponsorHeroId] == null }) problems += "A quest is sponsored by an unknown hero"
         return problems
     }
 

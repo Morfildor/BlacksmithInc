@@ -132,6 +132,10 @@ sealed interface GameError {
     data object OpeningPending : GameError
     data object NoOpeningOffer : GameError
     data class OpeningNotOffered(val openingId: String) : GameError
+    /** Living heroes: a member chooses their own Speciality after an announced lean; the smith influences it through their work. */
+    data class SpecialityChosenByMember(val heroId: HeroId) : GameError
+    /** The member's oath forbids this weapon ([reason] finishes "The oath ..."). */
+    data class OathForbids(val heroId: HeroId, val weaponId: WeaponId, val reason: String) : GameError
 }
 
 sealed interface CommandOutcome {

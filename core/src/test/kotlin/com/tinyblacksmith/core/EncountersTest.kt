@@ -66,7 +66,7 @@ class EncountersTest {
     @Test
     fun theCatalogueHoldsEightVisitorsAndTheChainsSecondStage() {
         assertEquals(8, drawn.size)
-        assertEquals(listOf(Depth.DEBT_REPAID, Depth.DEEP_ROAD), content.encounters.filter { it.followUp }.map { it.id })
+        assertEquals(listOf(Depth.DEBT_REPAID, Depth.DEEP_ROAD, com.tinyblacksmith.core.guild.Hooks.CREDITOR), content.encounters.filter { it.followUp }.map { it.id })
         assertTrue(content.validate().isEmpty())
     }
 

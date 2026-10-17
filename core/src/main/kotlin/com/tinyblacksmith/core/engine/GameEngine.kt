@@ -427,6 +427,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         Market.resolveCommissions(ctx)
         Consequences.settle(ctx)  // wagers judged, pledges learn what became of their order
         Market.resolveShelfVisits(ctx)
+        com.tinyblacksmith.core.guild.Agency.counter(ctx)  // living heroes: one member of the guild at the counter with their own purse
         Recognitions.apply(ctx)  // what the counter knows each browser by; narration, no draw
         Market.resolveMerchant(ctx)  // GDD 7 merchant resale, after the smith's own customers; draws no RNG
         // 3. Equipment/finances were applied inside purchases.
@@ -445,6 +446,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         if (ctx.phase != Phase.ENDED) Heroes.resolveAmbitions(ctx)
         Heroes.resolveRetirements(ctx)
         GuildOps.reconcile(ctx)
+        com.tinyblacksmith.core.guild.Agency.reconcile(ctx)  // living heroes: Hooks, leans and choices, loan returns, departures
         recover(ctx)
         // 9. Histories and blessings expiry.
         ctx.blessings = ctx.blessings.filter { it.expiresDay > day }

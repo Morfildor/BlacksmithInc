@@ -241,6 +241,8 @@ object GuildOps {
         weapon.promisedTo?.let { return GameError.WeaponPromised(weaponId, it) }
         if (m.status != MemberStatus.HOME) return GameError.MemberUnavailable(heroId, if (m.status == MemberStatus.AWAY) "is away with the party" else "has been captured")
         val hero = ctx.hero(heroId)
+        // An oath is shown before recruitment and holds: an incompatible loan is refused now, never punished later (final design 7.3).
+        if (ctx.living && !Agency.oathAllows(hero, weapon)) return GameError.OathForbids(heroId, weaponId, oathWords(hero))
         loanOf(ctx, heroId)?.let { old ->
             ctx.updateWeapon(old.copy(location = WeaponLocation.Storage))
             ctx.addWeaponHistory(old.id, "LOAN_RETURNED", "Handed back by ${hero.fullName}.", listOf(heroId.value))
@@ -248,7 +250,16 @@ object GuildOps {
         ctx.updateWeapon(ctx.weapon(weaponId).copy(location = WeaponLocation.Loaned(heroId)))
         ctx.addWeaponHistory(weaponId, "LOANED", "Loaned to ${hero.fullName} of the guild.", listOf(heroId.value))
         ctx.emit(EventType.WEAPON_LOANED, 1, "${weapon.name} was loaned to ${hero.fullName}.", listOf(weaponId.value, heroId.value))
+        Agency.onLoanChanged(ctx, heroId)
         return null
+    }
+
+    /** What an oath allows, as the refusal and the recruit card say it. */
+    fun oathWords(hero: Hero): String = when (hero.hook?.oath) {
+        OathKind.PLAIN_WORK -> "allows only Common or Uncommon weapons"
+        OathKind.NO_GRAVE -> "forbids Grave weapons"
+        OathKind.FAVOURED_FAMILY -> "allows only a weapon of the family ${hero.hook.familyId?.value ?: "it names"}"
+        null -> "allows any weapon"
     }
 
     fun recall(ctx: ResolutionContext, weaponId: WeaponId): GameError? {
@@ -259,6 +270,7 @@ object GuildOps {
         if (m != null && m.status != MemberStatus.HOME) return GameError.MemberUnavailable(holder, "is away with the party")
         ctx.updateWeapon(weapon.copy(location = WeaponLocation.Storage))
         ctx.addWeaponHistory(weaponId, "LOAN_RETURNED", "Recalled from ${ctx.heroes[holder]?.fullName ?: "its bearer"}.", listOf(holder.value))
+        Agency.onLoanChanged(ctx, holder)
         return null
     }
 
@@ -270,6 +282,7 @@ object GuildOps {
         if (m.status != MemberStatus.HOME) return GameError.MemberUnavailable(heroId, "is not in town")
         if (g.planned?.heroIds?.contains(heroId) == true) return GameError.MemberUnavailable(heroId, "is in the party you planned for today")
         if (g.reserved.size >= ctx.config.guild.defenders) return GameError.PartyInvalid("The wall has only ${ctx.config.guild.defenders} places.")
+        Hooks.departureBlocks(ctx, heroId, ctx.town.nextSiegeDay, remedy = false)?.let { return GameError.MemberUnavailable(heroId, it) }
         update(ctx) { it.copy(reserved = it.reserved + heroId) }
         return null
     }

@@ -58,7 +58,7 @@ class DeepForgingTest {
 
     private fun bench(w: Weapon, wielder: HeroClassId, companions: String = "alone", target: String = "attrition", relics: List<String> = emptyList()) = Bench.run(w, false, wielder, companions, target, content, config, relics)
 
-    private fun guildRun(seed: Long = 7): GameState = engine.newRun(LegacyProfile(), seed, charterId = GuildContent.TOWNS_LAST_HOPE).copy(materials = content.materials.associate { it.id to 60 }, energy = 10)
+    private fun guildRun(seed: Long = 7): GameState = engine.newRun(LegacyProfile(), seed, charterId = GuildContent.TOWNS_LAST_HOPE, livingRevision = com.tinyblacksmith.core.model.LivingRevision.LEGACY).copy(materials = content.materials.associate { it.id to 60 }, energy = 10)
 
     // ---- composition ----
 

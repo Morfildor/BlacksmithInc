@@ -52,11 +52,15 @@ object Missions {
         val rng = ctx.rng(RngStream.GUILD)
         var offers = g.offers.filter { o ->
             o.expiresDay >= ctx.day && cat.missionById[o.defId] != null && (o.defId != GuildContent.DEEP_ROAD || DeepRoad.contractDue(ctx)) &&
-                (o.subjectHeroId == null || g.captives.any { it.heroId == o.subjectHeroId }) && (o.subjectWeaponId == null || g.nemesis?.weaponId == o.subjectWeaponId)
+                (o.subjectHeroId == null || g.captives.any { it.heroId == o.subjectHeroId }) && (o.subjectWeaponId == null || g.nemesis?.weaponId == o.subjectWeaponId || Hooks.isHookWeapon(ctx, o.subjectWeaponId)) &&
+                (o.sponsorHeroId == null || o.defId == GuildContent.SABOTAGE || g.member(o.sponsorHeroId)?.let { ctx.heroes[it.heroId]?.isAlive } == true)
         }
+        // A member's own offer that left the board untaken is weighed as a missed chance (living heroes, final design 10.3).
+        g.offers.filter { o -> o.expiresDay < ctx.day && o.sponsorHeroId != null }.forEach { Hooks.lapsed(ctx, it) }
         var serial = g.nextMissionSerial
-        fun post(def: MissionDef, faction: FactionId, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = offerExpiry(ctx, def), modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null) {
-            offers = offers + generate(ctx, def, faction, rng, "m${serial++}", hero, weapon, reason, expires, modifier, lapse)
+        fun post(def: MissionDef, faction: FactionId, hero: HeroId? = null, weapon: WeaponId? = null, reason: String? = null, expires: Int = offerExpiry(ctx, def), modifier: com.tinyblacksmith.core.content.MissionModifierDef? = null, lapse: String? = null,
+            sponsor: HeroId? = null, opportunity: String? = null) {
+            offers = offers + generate(ctx, def, faction, rng, "m${serial++}", hero, weapon, reason, expires, modifier, lapse).copy(sponsorHeroId = sponsor, opportunityId = opportunity)
         }
         val factions = ctx.factions.values.sortedBy { it.id.value }
         fun anyFaction(): FactionId = rng.pickWeighted(factions.map { it.id to (it.pressure + 10).toDouble() })
@@ -83,7 +87,10 @@ object Missions {
                 jobsPosted = true
                 val prep = cat.preparation(scenario.prepId)
                 val gone = "Leaves the board after day $last."
-                post(if (prep != null) def.copy(stages = listOf(def.stages.first(), prep.sabotage)) else def, scenario.factionId!!, reason = (prep?.let { "${it.sabotageBrief} " } ?: "") + gone, expires = last)
+                // Living heroes: a member who knows the attackers' ways (a scout, a militia veteran, a deserter) sponsors the sabotage of a field that brings a breach (opp_powder_trail).
+                val scout = Hooks.powderScout(ctx, scenario)
+                post(if (prep != null) def.copy(stages = listOf(def.stages.first(), prep.sabotage)) else def, scenario.factionId!!, reason = (scout?.let { "${ctx.hero(it).fullName} knows the route their sappers use. " } ?: "") + (prep?.let { "${it.sabotageBrief} " } ?: "") + gone, expires = last,
+                    sponsor = scout, opportunity = scout?.let { "opp_powder_trail" })
                 val chances = cat.missions.filter { it.archetype == MissionArchetype.OPPORTUNITY && it.stages.none { s -> s.road } }
                 if (chances.isNotEmpty()) rng.pick(chances).let { chance ->
                     post(chance, scenario.factionId, reason = "$gone The guild has one party: taking this quest means the sabotage cannot be done.", expires = last, lapse = GuildContent.LAPSE_SUPPLIER.takeIf { chance.stages.any { s -> s.supplier } })
@@ -98,6 +105,23 @@ object Missions {
         }
         val slots = cfg.offersOnBoard + (charter?.extraOffers ?: 0)
         fun ordinary() = offers.count { !special(it.defId) && it.defId != GuildContent.WALL_WORK }
+        // A member's personal offer takes an ordinary slot, one at a time, and waits (queued, never counted as ignored) while the board is full.
+        var queued = g.queued
+        var cooldowns = g.cooldowns
+        if (ctx.living) {
+            val onBoard = offers.count { Hooks.sponsored(it) }
+            val candidates = Hooks.candidates(ctx).filter { c -> offers.none { o -> o.sponsorHeroId == c.sponsor && o.opportunityId == c.opportunityId } }
+            val next = candidates.firstOrNull { it.key == queued } ?: candidates.firstOrNull()
+            if (next != null && onBoard < ctx.config.living.sponsoredOnBoard) {
+                if (ordinary() < slots && open(next.def)) {
+                    post(next.def, next.faction, weapon = next.weapon, reason = next.reason, sponsor = next.sponsor, opportunity = next.opportunityId)
+                    cooldowns = (cooldowns + (next.key to ctx.day)).entries.sortedBy { it.value }.takeLast(24).associate { it.key to it.value }
+                    queued = null
+                    ctx.heroes[next.sponsor]?.hook?.takeIf { it.kind == HookKind.GRUDGE }?.let { h -> ctx.updateHero(ctx.hero(next.sponsor).copy(hook = h.copy(lastOfferDay = ctx.day))) }
+                    ctx.emit(EventType.OPPORTUNITY_POSTED, 4, "${next.reason} The quest is on the board.", listOf(next.sponsor.value), mapOf("opportunity" to next.opportunityId))
+                } else queued = next.key
+            }
+        }
         while (ordinary() < slots) {
             val pool = cat.missions.filter { drawn(it) && it.archetype != MissionArchetype.SUPPLY && it.archetype != MissionArchetype.SABOTAGE && open(it) && offers.none { o -> o.defId == it.id } }
             if (pool.isEmpty()) break
@@ -113,7 +137,7 @@ object Missions {
         g.nemesis?.let { n -> if (offers.none { it.subjectWeaponId == n.weaponId }) cat.missionById[GuildContent.RECOVERY]?.let { def ->
             ctx.weapons[n.weaponId]?.let { blade -> post(def, n.factionId, weapon = n.weaponId, reason = "${n.name} carries ${blade.name}, a weapon of this forge.") }
         } }
-        update(ctx) { it.copy(offers = offers, nextMissionSerial = serial, completed = if (jobsPosted) it.completed + (jobsKey to scenario!!.siegeDay) else it.completed) }
+        update(ctx) { it.copy(offers = offers, nextMissionSerial = serial, completed = if (jobsPosted) it.completed + (jobsKey to scenario!!.siegeDay) else it.completed, queued = queued, cooldowns = cooldowns) }
     }
 
     /** The supplier's answer to what the guild did: more of every limited material each morning for a few days, or less. One mood at a time. */
@@ -190,6 +214,7 @@ object Missions {
             val m = g.member(id) ?: return GameError.NotAMember(id)
             GuildOps.unavailable(ctx, m)?.let { return GameError.MemberUnavailable(id, it) }
             if (id in g.reserved) return GameError.MemberUnavailable(id, "is reserved for the wall")
+            Hooks.departureBlocks(ctx, id, ctx.day + offer.days, remedy = offer.sponsorHeroId == id)?.let { return GameError.MemberUnavailable(id, it) }
         }
         // The fee of a plan made earlier today comes back before this one's is taken: replacing a plan never costs twice.
         val back = g.planned?.let { p -> g.offers.firstOrNull { it.id == p.offerId }?.fee } ?: 0
@@ -267,7 +292,9 @@ object Missions {
         // A rescue is never walked into alone: the watch sends a guard for every empty place, and they stand in front.
         val def = GuildOps.catalog(ctx).mission(m.offer.defId)
         val watch = def.watchUnitId?.let { id -> (m.party.size until ctx.config.guild.partyMax).map { i -> Loadout.enemy(combat.unit(id), "watch${i + 1}").copy(side = Side.PARTY) } }.orEmpty()
+        // The one who carries a member's family weapon carries what it does, like the nemesis (living heroes).
         val nemesis = ctx.guild?.nemesis?.takeIf { m.offer.subjectWeaponId == it.weaponId }
+            ?: m.offer.subjectWeaponId?.takeIf { Hooks.isHookWeapon(ctx, it) }?.let { w -> Nemesis(Hooks.holderName(ctx, m.offer.factionId, w), m.offer.factionId, w, m.offer.postedDay, "") }
         val enemies = stage.enemies.mapIndexed { i, e ->
             val unit = combat.unit(e.unitId)
             val foe = Loadout.enemy(unit, "e${i + 1}", e.percent)
@@ -301,6 +328,7 @@ object Missions {
             FightOutcome.LOST -> MissionOutcome.LOST
         }
         if (fight != null) aftermath(ctx, m, fight, setup, outcome, lines)
+        if (fight != null) Agency.afterFight(ctx, alive, fight, outcome == MissionOutcome.WON, siege = false)
         val traits = alive.mapNotNull { id -> ctx.guild!!.member(id)?.let { GuildOps.catalog(ctx).trait(it.traitId) } }
         var gained = Reward()
         if (outcome == MissionOutcome.WON) {
@@ -341,7 +369,7 @@ object Missions {
         }
         fight?.let { Stories.noteCombos(ctx, m, it) }
         update(ctx) { it.copy(lastMission = MissionReport(m.id, m.offer.defId, where.replaceFirstChar { c -> c.uppercase() }, ctx.day, m.stage, m.party, outcome, continues, fight?.let { compact(it) }, gained, lines)) }
-        if (outcome == MissionOutcome.WON && !continues) Stories.afterContract(ctx, m)
+        if (outcome == MissionOutcome.WON && !continues) { Stories.afterContract(ctx, m); Hooks.won(ctx, m); Agency.ledHome(ctx, m.party) }
     }
 
     /** What a fight did to those who fought it: health, wounds, wear and cracks, experience. Applied once, here. */
@@ -433,6 +461,8 @@ object Missions {
         if (r.road) lines += DeepRoad.openTomorrow(ctx, "The caravan master's train got through.")
         if (r.relicOffer && com.tinyblacksmith.core.engine.Relics.offer(ctx, "The party brought something out of the deep hall: you may take a relic.")) lines += "A relic came back with them."
         r.weaponId?.let { id -> ctx.weapons[id]?.let { w ->
+            // A member's family weapon goes home to its family, not to the smith's storage.
+            if (Hooks.heirloomHome(ctx, id, m.party)) { lines += "${w.name} is back with its family."; return@let }
             ctx.updateWeapon(w.copy(location = WeaponLocation.Storage))
             ctx.addWeaponHistory(id, "RECOVERED", "Won back by the guild's party and returned to the forge.", m.party.map { it.value })
             ctx.emit(EventType.WEAPON_RECOVERED, 6, "${w.name} is back at the forge: the guild's party took it from the enemy who carried it.", listOf(id.value) + m.party.map { it.value }, mapOf(WeaponFate.KEY to WeaponFate.RECOVERED.name))

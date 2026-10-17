@@ -290,6 +290,8 @@ object GuildContent {
     /** Rules 7: the guild's way to open the deep road after the first siege (`engine.DeepRoad`). Posted, never drawn. */
     const val DEEP_ROAD = "deep_road"
     const val LAPSE_SUPPLIER = "supplier"
+    /** Living heroes: the caravan a member once guarded (opp_missing_caravan). Posted only as a member's own offer, never drawn. */
+    const val MISSING_CARAVAN = "missing_caravan"
 
     const val TOWNS_LAST_HOPE = "towns_last_hope"
     const val LICENSED_BAD_IDEAS = "licensed_bad_ideas"
@@ -309,6 +311,10 @@ object GuildContent {
         EncounterDef(SWORD_COMPLAINT, "The Sword Files a Complaint", 2.5, maxPerRun = 3, cooldownDays = 5, description = "A weapon with opinions has one about who carries it."),
         EncounterDef(ACROSS_THE_COUNTER, "Your Best Sword Is Across the Counter", 4.0, maxPerRun = 3, cooldownDays = 3, description = "A dealer knows how to get a weapon of this forge back from the enemy who carries it."),
         EncounterDef(INSURANCE_ADJUSTER, "Insurance Adjuster from the Underworld", 1.5, maxPerRun = 2, cooldownDays = 6, description = "An adjuster will insure one loan against the enemy.", minDay = 4),
+        // Living heroes: callers sent by a member's own situation (guild/Hooks). The creditor comes first when a debt is due; the others are drawn.
+        EncounterDef(com.tinyblacksmith.core.guild.Hooks.CREDITOR, "The Creditor Calls", 0.0, maxPerRun = 30, cooldownDays = 0, description = "A creditor wants the money a member owes.", followUp = true),
+        EncounterDef(com.tinyblacksmith.core.guild.Hooks.LESSON, "A Lesson Offered", 3.0, maxPerRun = 4, cooldownDays = 3, description = "An experienced member offers to teach a new one.", minDay = 3),
+        EncounterDef(com.tinyblacksmith.core.guild.Hooks.WOUNDED_FRIEND, "A Friend Asks for a Healer", 3.0, maxPerRun = 4, cooldownDays = 3, description = "A member asks for a healer for an injured friend.", minDay = 3),
     )
 
     /** What a blade that took the oath of `The Sword Files a Complaint` adds while its whole party is inexperienced. */
@@ -399,6 +405,12 @@ object GuildContent {
             prep = "Prepare as for a hunt. The enemy who carries your weapon is stronger with it and uses its effects. Winning it back also brings 1 Heartfire.",
             failure = "The weapon stays with them, and you still know where it is. If the whole party goes down, 1 member is captured.",
             stages = listOf(StageDef(roster(listOf("ashclaw_warchief", "ashclaw_brute"), listOf("pale_knight", "bone_warden"), listOf("ember_drake", "cinder_knight")), Danger.DANGEROUS, percent = 85, goldMin = 20, goldMax = 30, suppression = 4, heartfire = 1))),
+        MissionDef(MISSING_CARAVAN, MissionArchetype.ESCORT, "The missing caravan", days = 1, fee = 0, weight = 0.0, lifeDays = 3,
+            description = "A caravan failed to arrive. A member who once guarded that road knows where it would have stopped. The party finds it and drives off whoever holds it.",
+            prep = "A party that can win one fight. What the caravan carried is the reward.",
+            failure = "The caravan stays lost. If the whole party goes down, 1 member is captured.",
+            stages = listOf(StageDef(roster(listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_thief"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.DANGEROUS, percent = 95,
+                goldMin = 30, goldMax = 45, materials = MaterialDraw(3, 1, 3), suppression = 2))),
         MissionDef(WALL_WORK, MissionArchetype.EMERGENCY, "Restore the forge", days = 1, fee = 0, weight = 0.0,
             description = "No fight. The members spend the day restoring the forge.",
             prep = "Any member who can stand.",
