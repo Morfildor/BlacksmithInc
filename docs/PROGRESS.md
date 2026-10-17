@@ -1,5 +1,23 @@
 # Progress — 2026-10-15 (text and header pass; 2026-10-14: deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Layered weapons and new material icons (2026-10-17, branch `living-heroes`, after 0.9.0)
+
+- Owner asks: every level adds something, every material and infusion shows on the weapon, keep the current weapon
+  designs, layers, be efficient, materials and infusions in the same style. Decisions: level rule kept (metal tier +
+  rarity + signature), catalysts shown, bows and staffs carry the metal on fittings, string and orb.
+- `tools/pixelart/weapon_layers.py` (run by `import_assets.py` on the master sheet) derives 768 layers from the 336
+  cells: 288 bases (base row recoloured per metal: grey, painted blue and violet blades and orbs, loose sparkles, the
+  gold heads of axe 7-8 and bow 7), 288 infusion effects (edge, glow, the element row's effects aligned on the base),
+  192 catalyst charms (the catalyst icon at 15 px on a cord from the grip). The old 336 drawables are pruned.
+  `Sprites.weapon` returns a `WeaponLook`; `PixelImage`/`PixelSprite` stack it; `WeaponSnapshot` carries `catalystId`.
+- Material icons: 16 redrawn with Retro Diffusion (`rd_pro__fantasy` 48 px, one reference image of two weapon cells),
+  4 retaken (starsteel, verdant sap, grave dust, sun ash), into `Assets/Implemented/materials` (the stale 128 px set
+  removed). RD spend this session $5.94 (12 style samples $2.16; 21 icons with one test and 4 retakes $3.78).
+- Checks: metal pairs differ by 93+ pixels on every non-bow cell (bows 2-4: only string and tips, 5+ pixels); every
+  infusion layer has pixels at level 1. `:app:testDebugUnitTest` 377/377 (new `WeaponArtTest`), `:core:test` 742/742.
+  Emulator 5562 (Pixel_10_Pro read-only): Forge preview and trays show the layers and icons.
+- Known: Bows at levels 2-4 show the metal only on the string and tips; silver and moonsteel are close there.
+
 ## Living heroes and siege variety (2026-10-17, implementing on branch `living-heroes`)
 
 - Released 2026-10-17: the owner tested every commit on the branch; `living-heroes` fast-forwarded into `main` as 0.9.0
@@ -21,6 +39,9 @@
   Notebook frames (nine-slice, wired), the milestone burst, the launcher icon and the 11 replay cues (waiting) redrawn with Retro
   Diffusion at about one pixel per displayed dp; every icon call site through `PixelIcon` (whole-pixel scaling). Checked:
   `:app:testDebugUnitTest`, emulator screenshots on a read-only Pixel_10_Pro at 420 dpi (port 5562). Embers still wanted.
+- Visual and UX audit 2026-10-17 (no code changed): `docs/VISUAL_UX_AUDIT_2026-10-17.md`, evidence in
+  `docs/visual_audit_2026-10-17/` (58 surfaces rendered on a read-only Pixel_10_Pro, 360/393/412 dp, font 1.0 to 2.0).
+  58 register items (VA-01..58), a five-pass roadmap and a ranked top 15; waiting for the owner's review before any fix.
 - Art wanted lists refreshed 2026-10-17 (`Assets/*/WANTED.txt`, `PRIORITIES.txt`): faces by people (six peoples have none), the 48 bestiary pictures in batches A to D, optional replay cue marks; stale branch notes removed. No game files changed.
 - Done (core): era revision boundary (legacy eras unchanged, classic RNG parity proven), schema 8 / rules 8 / content 7 /
   balance 17; 12 peoples and all 1,800 names; Hooks, eight ambitions, counter visits, announced loan returns, autonomous

@@ -79,7 +79,7 @@ internal fun EarnedToday(before: Int, after: Int, modifier: Modifier = Modifier)
 @Composable
 internal fun BladeTile(blade: WeaponSnapshot, modifier: Modifier = Modifier) {
     Box(modifier.background(SceneDeep).border(1.dp, SceneWood1).padding(2.dp).clearAndSetSemantics {}) {
-        PixelSprite(Sprites.weapon(blade.familyId, blade.coreId, blade.element, blade.rarity, signature = blade.signatureId != null), wholeScale(56, 40.dp))
+        PixelSprite(Sprites.weapon(blade.familyId, blade.coreId, blade.element, blade.rarity, signature = blade.signatureId != null, catalystId = blade.catalystId), wholeScale(56, 40.dp))
     }
 }
 

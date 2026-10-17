@@ -183,7 +183,7 @@ fun GameEngine.familyTip(state: GameState, id: WeaponFamilyId, tag: String = "in
     val combat = content.combat?.familyById?.get(id)?.takeIf { guild }
     val fans = fans(id)
     return TipUi(
-        name = f.name, kind = "Weapon type", icon = Sprites.weapon(id, content.materials(MaterialCategory.CORE).first().id, null),
+        name = f.name, kind = "Weapon type", icon = Sprites.weapon(id, content.materials(MaterialCategory.CORE).first().id, null).base,
         stats = listOfNotNull(
             fans.takeIf { it.isNotEmpty() }?.let { TipStat("Suits", it.joinToString(", ")) },
             combat?.let { TipStat("Attack", "${it.strikePercent}%") },
@@ -206,8 +206,8 @@ fun techniqueTip(t: Technique, tag: String = "inspect"): TipUi = TipUi(
  * The recipe on the anvil as a card (a guild run): its quality range, who it suits, the rules every forge of it carries,
  * what they still need, its trade-off, and what only a roll may add, kept apart and never called certain.
  */
-fun recipeTip(o: ForgeOutlookUi, title: String, icon: Int?, config: BalanceConfig, actions: List<TipAction>, tag: String = "forge_inspect", accent: androidx.compose.ui.graphics.Color? = null): TipUi = TipUi(
-    name = title, kind = "Recipe · ${o.role}", icon = icon, accent = accent,
+fun recipeTip(o: ForgeOutlookUi, title: String, icon: Int?, config: BalanceConfig, actions: List<TipAction>, tag: String = "forge_inspect", accent: androidx.compose.ui.graphics.Color? = null, look: WeaponLook? = null): TipUi = TipUi(
+    name = title, kind = "Recipe · ${o.role}", icon = icon, look = look, accent = accent,
     headline = TipStat("Likely quality", if (o.qualityLow == o.qualityHigh) "${o.qualityLow}" else "${o.qualityLow} to ${o.qualityHigh}").takeIf { o.qualityHigh > 0 },
     stats = listOfNotNull(o.suits.takeIf { it.isNotEmpty() }?.let { TipStat("Suits", it.joinToString(", ")) }),
     sections = listOf(
@@ -231,7 +231,7 @@ fun weaponTip(d: com.example.blacksmithproject.ui.detail.ItemDetail, config: Bal
     val rules = d.rules
     return TipUi(
         name = d.name, nameColor = com.example.blacksmithproject.ui.detail.rarityColor(d.rarity),
-        kind = "${Terms.rarity(d.rarity)} · ${d.kind}", icon = d.sprite,
+        kind = "${Terms.rarity(d.rarity)} · ${d.kind}", icon = d.sprite.base, look = d.sprite,
         meta = d.legend ?: d.title,
         // Power is the weapon's headline number, as an item's damage; the rest are its lines.
         headline = d.stats.firstOrNull { it.label == "Power" }?.let { TipStat(it.label, "${it.value}") },

@@ -763,112 +763,112 @@
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "9486f5f68a1f039c9bc8ae428abdc0f336011330ad6cefe7654d2229f243c760"
+  "sha256": "a1167cbcb470757a2e09ef89e030179c4b1b41e73b35e273940df11703a37deb"
  },
  "material_bronze": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "c9b21644c09b1064568fc9764933a1a67101e9b7c301208b66d4a1cd873585b8"
+  "sha256": "4280a63ec5284cc686a5e7918d4de4617f6c5283645a01eec467da8c8f655eca"
  },
  "material_dragon_oil": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "6e782e7afeb15027bad0010842893bbcadd11ff6a2b39dec1d999098e880dd39"
+  "sha256": "ea15e2b203678dc18d1093045c42494405b329b20897e38f2f129279235f94ae"
  },
  "material_ember_resin": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "89e866e8cf8c84dcef1ef75ea620e8ec29ae6ed639467c0f5213a15edef0a8e6"
+  "sha256": "8d3fb5009b22ac55cdc8842f8adc252911116cb2d56fa2eb71078d1e8869c74a"
  },
  "material_frost_bloom": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "64a5260a7589172c14ff32aea6cd73d83345d3cfd0fb020ccbefc976985080dc"
+  "sha256": "85855c3fa88f4dbeb4c826ba98b6a9867388fef82b3b652aa80d675f8b951c90"
  },
  "material_grave_dust": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "694e2ad7961218131703141e99e691f02f5ff1f2c660b73d80786b1543a06bf0"
+  "sha256": "0c30c5d882fb460b06fc35b88945c7bb7ee0cc052048b7d6ea293cd1941808c5"
  },
  "material_iron": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "2b20bd3ed89fec8a2ff2c19b13baaf1d416d81aa77bc34b50a419e7759f0106d"
+  "sha256": "950e904082f965dc08edb37daad1db85ad4ea94374e4efefe84e36935164a7b2"
  },
  "material_moonsteel": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "58d5d695bbeaebfdd757d094ee4d810f406cccb5d9c9809fc072e72462065c95"
+  "sha256": "855d6aef06c55bcebe83f19f6e6634fbfeaa17f0c8f99d0d2b00bb09e525c9fd"
  },
  "material_obsidian": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "4d6019184c3e97ab16dd821a0701f55b17251541313d9d3ade6d2b8df4d083d1"
+  "sha256": "e56e8df03402c293614d3b5b617137176be1e5d759cfe5e80519e161a98f4c65"
  },
  "material_runestone_shard": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "10d769ea8754d2cc3f1f0bc48ea496b65f701310eda66387383fbd80bb823555"
+  "sha256": "2ad0f7df869c7d350e351b98dc3015fc518069e4525275ff3e5862106f3c4c1d"
  },
  "material_silver": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "05cf19d36346a6cf8d3798c0a852e24cef73496094d4a1e5458a5212183a41af"
+  "sha256": "5a1b4dcaa1bed2d3c09bb0deddf13ae32f21b8775a36a4b0738dfe13a5d16757"
  },
  "material_starsteel": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "de0f8cf91fc1b4e07bc1bfb6427dd5b4c30d0683f0d4cc0c24625528ebaa630c"
+  "sha256": "e059ca9fbb316620e85d3836b7f860530d5d3230fde774a8c8f6620f265d67a8"
  },
  "material_stormglass": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "48f59401ade5e74f2f62e6f8017e1ed2234d7ecc94bfa1e4b867e267fb785975"
+  "sha256": "e82217062541e74e51ddb4980b984a95cc4f311df603f13471266ec79410cf6f"
  },
  "material_sun_ash": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "c8a45f27e9b56540d1b64a28c05d7db5ccd5f7941e2856b0f136d7cf8bb7f783"
+  "sha256": "a5819970029a7b13d50816c3b6f43933f93c8d375d50534afa4962dd695fbdc1"
  },
  "material_verdant_sap": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "d7330c9e2219b633a40803b654e7f6ccc3f6f5b0e5886d02ac6d95c7216be2fe"
+  "sha256": "78f413f67db0b96968e25a0fff6a73260a111117251f04613246011053dd1f4a"
  },
  "material_void_ink": {
   "sheet": "pack:materials",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "de50193b1cc15b922b62dcef8e400de1278b40625053018a008cba223d27de54"
+  "sha256": "ece5b01bfb4a36657b5cc6bdbcfa3beb7e36ad6be4ad4a1ab9db0a0b3d4e0d64"
  },
  "monster_ashclaw_brute_attack_0": {
   "sheet": "pack:New folder",
@@ -3250,2352 +3250,5376 @@
   "sourceKind": "script_drawn_pack",
   "sha256": "3eca0ac17786bc919d30c7e5bd78679532d690c0a90bde44c927329f7d5cb42b"
  },
- "weapon_axe_base_1": {
+ "weapon_axe_bronze_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_base_2": {
+ "weapon_axe_bronze_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_base_3": {
+ "weapon_axe_bronze_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_base_4": {
+ "weapon_axe_bronze_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_base_5": {
+ "weapon_axe_bronze_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_base_6": {
+ "weapon_axe_bronze_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_base_7": {
+ "weapon_axe_bronze_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_base_8": {
+ "weapon_axe_bronze_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_fire_1": {
+ "weapon_axe_iron_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_fire_2": {
+ "weapon_axe_iron_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_fire_3": {
+ "weapon_axe_iron_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_fire_4": {
+ "weapon_axe_iron_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_fire_5": {
+ "weapon_axe_iron_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_fire_6": {
+ "weapon_axe_iron_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_fire_7": {
+ "weapon_axe_iron_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_fire_8": {
+ "weapon_axe_iron_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_frost_1": {
+ "weapon_axe_moonsteel_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_frost_2": {
+ "weapon_axe_moonsteel_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_frost_3": {
+ "weapon_axe_moonsteel_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_frost_4": {
+ "weapon_axe_moonsteel_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_frost_5": {
+ "weapon_axe_moonsteel_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_frost_6": {
+ "weapon_axe_moonsteel_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_frost_7": {
+ "weapon_axe_moonsteel_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_frost_8": {
+ "weapon_axe_moonsteel_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_grave_1": {
+ "weapon_axe_obsidian_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_grave_2": {
+ "weapon_axe_obsidian_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_grave_3": {
+ "weapon_axe_obsidian_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_grave_4": {
+ "weapon_axe_obsidian_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_grave_5": {
+ "weapon_axe_obsidian_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_grave_6": {
+ "weapon_axe_obsidian_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_grave_7": {
+ "weapon_axe_obsidian_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_grave_8": {
+ "weapon_axe_obsidian_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_storm_1": {
+ "weapon_axe_silver_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_storm_2": {
+ "weapon_axe_silver_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_storm_3": {
+ "weapon_axe_silver_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_storm_4": {
+ "weapon_axe_silver_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_storm_5": {
+ "weapon_axe_silver_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_storm_6": {
+ "weapon_axe_silver_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_storm_7": {
+ "weapon_axe_silver_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_storm_8": {
+ "weapon_axe_silver_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_sun_1": {
+ "weapon_axe_starsteel_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_sun_2": {
+ "weapon_axe_starsteel_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_sun_3": {
+ "weapon_axe_starsteel_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_sun_4": {
+ "weapon_axe_starsteel_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_sun_5": {
+ "weapon_axe_starsteel_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_sun_6": {
+ "weapon_axe_starsteel_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_sun_7": {
+ "weapon_axe_starsteel_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_sun_8": {
+ "weapon_axe_starsteel_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_verdant_1": {
+ "weapon_bow_bronze_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_verdant_2": {
+ "weapon_bow_bronze_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_verdant_3": {
+ "weapon_bow_bronze_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_verdant_4": {
+ "weapon_bow_bronze_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_verdant_5": {
+ "weapon_bow_bronze_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_verdant_6": {
+ "weapon_bow_bronze_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_verdant_7": {
+ "weapon_bow_bronze_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_axe_verdant_8": {
+ "weapon_bow_bronze_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_base_1": {
+ "weapon_bow_iron_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_base_2": {
+ "weapon_bow_iron_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_base_3": {
+ "weapon_bow_iron_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_base_4": {
+ "weapon_bow_iron_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_base_5": {
+ "weapon_bow_iron_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_base_6": {
+ "weapon_bow_iron_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_base_7": {
+ "weapon_bow_iron_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_base_8": {
+ "weapon_bow_iron_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_fire_1": {
+ "weapon_bow_moonsteel_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_fire_2": {
+ "weapon_bow_moonsteel_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_fire_3": {
+ "weapon_bow_moonsteel_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_fire_4": {
+ "weapon_bow_moonsteel_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_fire_5": {
+ "weapon_bow_moonsteel_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_fire_6": {
+ "weapon_bow_moonsteel_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_fire_7": {
+ "weapon_bow_moonsteel_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_fire_8": {
+ "weapon_bow_moonsteel_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_frost_1": {
+ "weapon_bow_obsidian_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_frost_2": {
+ "weapon_bow_obsidian_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_frost_3": {
+ "weapon_bow_obsidian_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_frost_4": {
+ "weapon_bow_obsidian_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_frost_5": {
+ "weapon_bow_obsidian_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_frost_6": {
+ "weapon_bow_obsidian_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_frost_7": {
+ "weapon_bow_obsidian_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_frost_8": {
+ "weapon_bow_obsidian_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_grave_1": {
+ "weapon_bow_silver_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_grave_2": {
+ "weapon_bow_silver_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_grave_3": {
+ "weapon_bow_silver_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_grave_4": {
+ "weapon_bow_silver_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_grave_5": {
+ "weapon_bow_silver_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_grave_6": {
+ "weapon_bow_silver_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_grave_7": {
+ "weapon_bow_silver_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_grave_8": {
+ "weapon_bow_silver_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_storm_1": {
+ "weapon_bow_starsteel_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_storm_2": {
+ "weapon_bow_starsteel_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_storm_3": {
+ "weapon_bow_starsteel_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_storm_4": {
+ "weapon_bow_starsteel_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_storm_5": {
+ "weapon_bow_starsteel_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_storm_6": {
+ "weapon_bow_starsteel_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_storm_7": {
+ "weapon_bow_starsteel_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_storm_8": {
+ "weapon_bow_starsteel_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_sun_1": {
+ "weapon_charm_axe_binding_salt_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_sun_2": {
+ "weapon_charm_axe_binding_salt_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_sun_3": {
+ "weapon_charm_axe_binding_salt_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_sun_4": {
+ "weapon_charm_axe_binding_salt_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_sun_5": {
+ "weapon_charm_axe_binding_salt_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_sun_6": {
+ "weapon_charm_axe_binding_salt_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_sun_7": {
+ "weapon_charm_axe_binding_salt_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_sun_8": {
+ "weapon_charm_axe_binding_salt_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_verdant_1": {
+ "weapon_charm_axe_dragon_oil_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_verdant_2": {
+ "weapon_charm_axe_dragon_oil_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_verdant_3": {
+ "weapon_charm_axe_dragon_oil_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_verdant_4": {
+ "weapon_charm_axe_dragon_oil_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_verdant_5": {
+ "weapon_charm_axe_dragon_oil_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_verdant_6": {
+ "weapon_charm_axe_dragon_oil_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_verdant_7": {
+ "weapon_charm_axe_dragon_oil_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_bow_verdant_8": {
+ "weapon_charm_axe_dragon_oil_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_base_1": {
+ "weapon_charm_axe_runestone_shard_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_base_2": {
+ "weapon_charm_axe_runestone_shard_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_base_3": {
+ "weapon_charm_axe_runestone_shard_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_base_4": {
+ "weapon_charm_axe_runestone_shard_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_base_5": {
+ "weapon_charm_axe_runestone_shard_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_base_6": {
+ "weapon_charm_axe_runestone_shard_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_base_7": {
+ "weapon_charm_axe_runestone_shard_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_base_8": {
+ "weapon_charm_axe_runestone_shard_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_fire_1": {
+ "weapon_charm_axe_void_ink_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_fire_2": {
+ "weapon_charm_axe_void_ink_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_fire_3": {
+ "weapon_charm_axe_void_ink_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_fire_4": {
+ "weapon_charm_axe_void_ink_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_fire_5": {
+ "weapon_charm_axe_void_ink_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_fire_6": {
+ "weapon_charm_axe_void_ink_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_fire_7": {
+ "weapon_charm_axe_void_ink_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_fire_8": {
+ "weapon_charm_axe_void_ink_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_frost_1": {
+ "weapon_charm_bow_binding_salt_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_frost_2": {
+ "weapon_charm_bow_binding_salt_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_frost_3": {
+ "weapon_charm_bow_binding_salt_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_frost_4": {
+ "weapon_charm_bow_binding_salt_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_frost_5": {
+ "weapon_charm_bow_binding_salt_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_frost_6": {
+ "weapon_charm_bow_binding_salt_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_frost_7": {
+ "weapon_charm_bow_binding_salt_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_frost_8": {
+ "weapon_charm_bow_binding_salt_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_grave_1": {
+ "weapon_charm_bow_dragon_oil_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_grave_2": {
+ "weapon_charm_bow_dragon_oil_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_grave_3": {
+ "weapon_charm_bow_dragon_oil_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_grave_4": {
+ "weapon_charm_bow_dragon_oil_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_grave_5": {
+ "weapon_charm_bow_dragon_oil_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_grave_6": {
+ "weapon_charm_bow_dragon_oil_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_grave_7": {
+ "weapon_charm_bow_dragon_oil_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_grave_8": {
+ "weapon_charm_bow_dragon_oil_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_storm_1": {
+ "weapon_charm_bow_runestone_shard_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_storm_2": {
+ "weapon_charm_bow_runestone_shard_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_storm_3": {
+ "weapon_charm_bow_runestone_shard_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_storm_4": {
+ "weapon_charm_bow_runestone_shard_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_storm_5": {
+ "weapon_charm_bow_runestone_shard_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_storm_6": {
+ "weapon_charm_bow_runestone_shard_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_storm_7": {
+ "weapon_charm_bow_runestone_shard_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_storm_8": {
+ "weapon_charm_bow_runestone_shard_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_sun_1": {
+ "weapon_charm_bow_void_ink_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_sun_2": {
+ "weapon_charm_bow_void_ink_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_sun_3": {
+ "weapon_charm_bow_void_ink_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_sun_4": {
+ "weapon_charm_bow_void_ink_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_sun_5": {
+ "weapon_charm_bow_void_ink_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_sun_6": {
+ "weapon_charm_bow_void_ink_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_sun_7": {
+ "weapon_charm_bow_void_ink_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_sun_8": {
+ "weapon_charm_bow_void_ink_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_verdant_1": {
+ "weapon_charm_dagger_binding_salt_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_verdant_2": {
+ "weapon_charm_dagger_binding_salt_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_verdant_3": {
+ "weapon_charm_dagger_binding_salt_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_verdant_4": {
+ "weapon_charm_dagger_binding_salt_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_verdant_5": {
+ "weapon_charm_dagger_binding_salt_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_verdant_6": {
+ "weapon_charm_dagger_binding_salt_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_verdant_7": {
+ "weapon_charm_dagger_binding_salt_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_dagger_verdant_8": {
+ "weapon_charm_dagger_binding_salt_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_base_1": {
+ "weapon_charm_dagger_dragon_oil_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_base_2": {
+ "weapon_charm_dagger_dragon_oil_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_base_3": {
+ "weapon_charm_dagger_dragon_oil_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_base_4": {
+ "weapon_charm_dagger_dragon_oil_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_base_5": {
+ "weapon_charm_dagger_dragon_oil_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_base_6": {
+ "weapon_charm_dagger_dragon_oil_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_base_7": {
+ "weapon_charm_dagger_dragon_oil_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_base_8": {
+ "weapon_charm_dagger_dragon_oil_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_fire_1": {
+ "weapon_charm_dagger_runestone_shard_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_fire_2": {
+ "weapon_charm_dagger_runestone_shard_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_fire_3": {
+ "weapon_charm_dagger_runestone_shard_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_fire_4": {
+ "weapon_charm_dagger_runestone_shard_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_fire_5": {
+ "weapon_charm_dagger_runestone_shard_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_fire_6": {
+ "weapon_charm_dagger_runestone_shard_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_fire_7": {
+ "weapon_charm_dagger_runestone_shard_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_fire_8": {
+ "weapon_charm_dagger_runestone_shard_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_frost_1": {
+ "weapon_charm_dagger_void_ink_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_frost_2": {
+ "weapon_charm_dagger_void_ink_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_frost_3": {
+ "weapon_charm_dagger_void_ink_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_frost_4": {
+ "weapon_charm_dagger_void_ink_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_frost_5": {
+ "weapon_charm_dagger_void_ink_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_frost_6": {
+ "weapon_charm_dagger_void_ink_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_frost_7": {
+ "weapon_charm_dagger_void_ink_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_frost_8": {
+ "weapon_charm_dagger_void_ink_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_grave_1": {
+ "weapon_charm_spear_binding_salt_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_grave_2": {
+ "weapon_charm_spear_binding_salt_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_grave_3": {
+ "weapon_charm_spear_binding_salt_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_grave_4": {
+ "weapon_charm_spear_binding_salt_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_grave_5": {
+ "weapon_charm_spear_binding_salt_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_grave_6": {
+ "weapon_charm_spear_binding_salt_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_grave_7": {
+ "weapon_charm_spear_binding_salt_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_grave_8": {
+ "weapon_charm_spear_binding_salt_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_storm_1": {
+ "weapon_charm_spear_dragon_oil_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_storm_2": {
+ "weapon_charm_spear_dragon_oil_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_storm_3": {
+ "weapon_charm_spear_dragon_oil_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_storm_4": {
+ "weapon_charm_spear_dragon_oil_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_storm_5": {
+ "weapon_charm_spear_dragon_oil_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_storm_6": {
+ "weapon_charm_spear_dragon_oil_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_storm_7": {
+ "weapon_charm_spear_dragon_oil_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_storm_8": {
+ "weapon_charm_spear_dragon_oil_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_sun_1": {
+ "weapon_charm_spear_runestone_shard_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_sun_2": {
+ "weapon_charm_spear_runestone_shard_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_sun_3": {
+ "weapon_charm_spear_runestone_shard_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_sun_4": {
+ "weapon_charm_spear_runestone_shard_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_sun_5": {
+ "weapon_charm_spear_runestone_shard_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_sun_6": {
+ "weapon_charm_spear_runestone_shard_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_sun_7": {
+ "weapon_charm_spear_runestone_shard_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_sun_8": {
+ "weapon_charm_spear_runestone_shard_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_verdant_1": {
+ "weapon_charm_spear_void_ink_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_verdant_2": {
+ "weapon_charm_spear_void_ink_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_verdant_3": {
+ "weapon_charm_spear_void_ink_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_verdant_4": {
+ "weapon_charm_spear_void_ink_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_verdant_5": {
+ "weapon_charm_spear_void_ink_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_verdant_6": {
+ "weapon_charm_spear_void_ink_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_verdant_7": {
+ "weapon_charm_spear_void_ink_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_spear_verdant_8": {
+ "weapon_charm_spear_void_ink_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_base_1": {
+ "weapon_charm_staff_binding_salt_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_base_2": {
+ "weapon_charm_staff_binding_salt_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_base_3": {
+ "weapon_charm_staff_binding_salt_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_base_4": {
+ "weapon_charm_staff_binding_salt_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_base_5": {
+ "weapon_charm_staff_binding_salt_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_base_6": {
+ "weapon_charm_staff_binding_salt_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_base_7": {
+ "weapon_charm_staff_binding_salt_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_base_8": {
+ "weapon_charm_staff_binding_salt_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_fire_1": {
+ "weapon_charm_staff_dragon_oil_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_fire_2": {
+ "weapon_charm_staff_dragon_oil_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_fire_3": {
+ "weapon_charm_staff_dragon_oil_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_fire_4": {
+ "weapon_charm_staff_dragon_oil_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_fire_5": {
+ "weapon_charm_staff_dragon_oil_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_fire_6": {
+ "weapon_charm_staff_dragon_oil_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_fire_7": {
+ "weapon_charm_staff_dragon_oil_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_fire_8": {
+ "weapon_charm_staff_dragon_oil_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_frost_1": {
+ "weapon_charm_staff_runestone_shard_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_frost_2": {
+ "weapon_charm_staff_runestone_shard_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_frost_3": {
+ "weapon_charm_staff_runestone_shard_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_frost_4": {
+ "weapon_charm_staff_runestone_shard_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_frost_5": {
+ "weapon_charm_staff_runestone_shard_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_frost_6": {
+ "weapon_charm_staff_runestone_shard_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_frost_7": {
+ "weapon_charm_staff_runestone_shard_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_frost_8": {
+ "weapon_charm_staff_runestone_shard_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_grave_1": {
+ "weapon_charm_staff_void_ink_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_grave_2": {
+ "weapon_charm_staff_void_ink_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_grave_3": {
+ "weapon_charm_staff_void_ink_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_grave_4": {
+ "weapon_charm_staff_void_ink_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_grave_5": {
+ "weapon_charm_staff_void_ink_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_grave_6": {
+ "weapon_charm_staff_void_ink_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_grave_7": {
+ "weapon_charm_staff_void_ink_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_grave_8": {
+ "weapon_charm_staff_void_ink_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_storm_1": {
+ "weapon_charm_sword_binding_salt_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_storm_2": {
+ "weapon_charm_sword_binding_salt_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_storm_3": {
+ "weapon_charm_sword_binding_salt_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_storm_4": {
+ "weapon_charm_sword_binding_salt_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_storm_5": {
+ "weapon_charm_sword_binding_salt_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_storm_6": {
+ "weapon_charm_sword_binding_salt_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_storm_7": {
+ "weapon_charm_sword_binding_salt_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_storm_8": {
+ "weapon_charm_sword_binding_salt_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_sun_1": {
+ "weapon_charm_sword_dragon_oil_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_sun_2": {
+ "weapon_charm_sword_dragon_oil_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_sun_3": {
+ "weapon_charm_sword_dragon_oil_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_sun_4": {
+ "weapon_charm_sword_dragon_oil_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_sun_5": {
+ "weapon_charm_sword_dragon_oil_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_sun_6": {
+ "weapon_charm_sword_dragon_oil_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_sun_7": {
+ "weapon_charm_sword_dragon_oil_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_sun_8": {
+ "weapon_charm_sword_dragon_oil_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_verdant_1": {
+ "weapon_charm_sword_runestone_shard_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_verdant_2": {
+ "weapon_charm_sword_runestone_shard_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_verdant_3": {
+ "weapon_charm_sword_runestone_shard_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_verdant_4": {
+ "weapon_charm_sword_runestone_shard_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_verdant_5": {
+ "weapon_charm_sword_runestone_shard_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_verdant_6": {
+ "weapon_charm_sword_runestone_shard_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_verdant_7": {
+ "weapon_charm_sword_runestone_shard_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_staff_verdant_8": {
+ "weapon_charm_sword_runestone_shard_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_base_1": {
+ "weapon_charm_sword_void_ink_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_base_2": {
+ "weapon_charm_sword_void_ink_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_base_3": {
+ "weapon_charm_sword_void_ink_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_base_4": {
+ "weapon_charm_sword_void_ink_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_base_5": {
+ "weapon_charm_sword_void_ink_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_base_6": {
+ "weapon_charm_sword_void_ink_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_base_7": {
+ "weapon_charm_sword_void_ink_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_base_8": {
+ "weapon_charm_sword_void_ink_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_fire_1": {
+ "weapon_dagger_bronze_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_fire_2": {
+ "weapon_dagger_bronze_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_fire_3": {
+ "weapon_dagger_bronze_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_fire_4": {
+ "weapon_dagger_bronze_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_fire_5": {
+ "weapon_dagger_bronze_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_fire_6": {
+ "weapon_dagger_bronze_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_fire_7": {
+ "weapon_dagger_bronze_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_fire_8": {
+ "weapon_dagger_bronze_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_frost_1": {
+ "weapon_dagger_iron_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_frost_2": {
+ "weapon_dagger_iron_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_frost_3": {
+ "weapon_dagger_iron_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_frost_4": {
+ "weapon_dagger_iron_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_frost_5": {
+ "weapon_dagger_iron_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_frost_6": {
+ "weapon_dagger_iron_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_frost_7": {
+ "weapon_dagger_iron_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_frost_8": {
+ "weapon_dagger_iron_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_grave_1": {
+ "weapon_dagger_moonsteel_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_grave_2": {
+ "weapon_dagger_moonsteel_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_grave_3": {
+ "weapon_dagger_moonsteel_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_grave_4": {
+ "weapon_dagger_moonsteel_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_grave_5": {
+ "weapon_dagger_moonsteel_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_grave_6": {
+ "weapon_dagger_moonsteel_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_grave_7": {
+ "weapon_dagger_moonsteel_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_grave_8": {
+ "weapon_dagger_moonsteel_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_storm_1": {
+ "weapon_dagger_obsidian_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_storm_2": {
+ "weapon_dagger_obsidian_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_storm_3": {
+ "weapon_dagger_obsidian_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_storm_4": {
+ "weapon_dagger_obsidian_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_storm_5": {
+ "weapon_dagger_obsidian_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_storm_6": {
+ "weapon_dagger_obsidian_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_storm_7": {
+ "weapon_dagger_obsidian_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_storm_8": {
+ "weapon_dagger_obsidian_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_sun_1": {
+ "weapon_dagger_silver_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_sun_2": {
+ "weapon_dagger_silver_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_sun_3": {
+ "weapon_dagger_silver_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_sun_4": {
+ "weapon_dagger_silver_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_sun_5": {
+ "weapon_dagger_silver_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_sun_6": {
+ "weapon_dagger_silver_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_sun_7": {
+ "weapon_dagger_silver_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_sun_8": {
+ "weapon_dagger_silver_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_verdant_1": {
+ "weapon_dagger_starsteel_1": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_verdant_2": {
+ "weapon_dagger_starsteel_2": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_verdant_3": {
+ "weapon_dagger_starsteel_3": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_verdant_4": {
+ "weapon_dagger_starsteel_4": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_verdant_5": {
+ "weapon_dagger_starsteel_5": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_verdant_6": {
+ "weapon_dagger_starsteel_6": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_verdant_7": {
+ "weapon_dagger_starsteel_7": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,
   "sourceKind": "ai_generated_sheet",
   "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
  },
- "weapon_sword_verdant_8": {
+ "weapon_dagger_starsteel_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_fire_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_fire_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_fire_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_fire_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_fire_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_fire_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_fire_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_fire_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_frost_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_frost_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_frost_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_frost_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_frost_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_frost_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_frost_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_frost_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_grave_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_grave_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_grave_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_grave_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_grave_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_grave_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_grave_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_grave_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_storm_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_storm_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_storm_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_storm_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_storm_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_storm_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_storm_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_storm_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_sun_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_sun_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_sun_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_sun_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_sun_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_sun_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_sun_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_sun_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_verdant_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_verdant_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_verdant_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_verdant_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_verdant_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_verdant_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_verdant_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_axe_verdant_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_fire_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_fire_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_fire_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_fire_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_fire_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_fire_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_fire_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_fire_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_frost_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_frost_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_frost_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_frost_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_frost_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_frost_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_frost_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_frost_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_grave_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_grave_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_grave_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_grave_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_grave_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_grave_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_grave_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_grave_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_storm_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_storm_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_storm_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_storm_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_storm_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_storm_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_storm_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_storm_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_sun_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_sun_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_sun_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_sun_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_sun_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_sun_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_sun_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_sun_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_verdant_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_verdant_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_verdant_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_verdant_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_verdant_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_verdant_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_verdant_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_bow_verdant_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_fire_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_fire_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_fire_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_fire_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_fire_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_fire_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_fire_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_fire_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_frost_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_frost_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_frost_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_frost_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_frost_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_frost_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_frost_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_frost_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_grave_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_grave_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_grave_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_grave_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_grave_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_grave_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_grave_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_grave_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_storm_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_storm_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_storm_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_storm_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_storm_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_storm_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_storm_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_storm_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_sun_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_sun_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_sun_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_sun_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_sun_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_sun_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_sun_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_sun_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_verdant_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_verdant_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_verdant_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_verdant_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_verdant_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_verdant_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_verdant_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_dagger_verdant_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_fire_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_fire_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_fire_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_fire_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_fire_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_fire_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_fire_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_fire_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_frost_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_frost_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_frost_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_frost_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_frost_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_frost_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_frost_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_frost_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_grave_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_grave_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_grave_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_grave_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_grave_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_grave_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_grave_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_grave_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_storm_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_storm_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_storm_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_storm_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_storm_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_storm_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_storm_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_storm_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_sun_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_sun_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_sun_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_sun_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_sun_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_sun_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_sun_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_sun_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_verdant_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_verdant_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_verdant_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_verdant_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_verdant_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_verdant_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_verdant_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_spear_verdant_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_fire_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_fire_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_fire_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_fire_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_fire_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_fire_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_fire_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_fire_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_frost_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_frost_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_frost_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_frost_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_frost_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_frost_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_frost_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_frost_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_grave_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_grave_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_grave_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_grave_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_grave_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_grave_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_grave_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_grave_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_storm_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_storm_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_storm_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_storm_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_storm_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_storm_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_storm_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_storm_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_sun_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_sun_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_sun_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_sun_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_sun_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_sun_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_sun_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_sun_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_verdant_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_verdant_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_verdant_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_verdant_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_verdant_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_verdant_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_verdant_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_staff_verdant_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_fire_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_fire_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_fire_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_fire_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_fire_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_fire_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_fire_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_fire_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_frost_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_frost_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_frost_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_frost_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_frost_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_frost_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_frost_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_frost_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_grave_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_grave_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_grave_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_grave_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_grave_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_grave_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_grave_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_grave_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_storm_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_storm_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_storm_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_storm_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_storm_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_storm_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_storm_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_storm_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_sun_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_sun_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_sun_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_sun_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_sun_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_sun_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_sun_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_sun_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_verdant_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_verdant_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_verdant_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_verdant_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_verdant_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_verdant_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_verdant_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_fx_sword_verdant_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_bronze_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_bronze_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_bronze_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_bronze_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_bronze_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_bronze_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_bronze_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_bronze_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_iron_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_iron_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_iron_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_iron_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_iron_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_iron_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_iron_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_iron_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_moonsteel_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_moonsteel_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_moonsteel_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_moonsteel_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_moonsteel_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_moonsteel_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_moonsteel_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_moonsteel_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_obsidian_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_obsidian_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_obsidian_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_obsidian_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_obsidian_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_obsidian_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_obsidian_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_obsidian_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_silver_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_silver_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_silver_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_silver_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_silver_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_silver_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_silver_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_silver_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_starsteel_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_starsteel_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_starsteel_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_starsteel_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_starsteel_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_starsteel_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_starsteel_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_spear_starsteel_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_bronze_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_bronze_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_bronze_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_bronze_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_bronze_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_bronze_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_bronze_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_bronze_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_iron_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_iron_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_iron_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_iron_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_iron_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_iron_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_iron_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_iron_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_moonsteel_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_moonsteel_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_moonsteel_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_moonsteel_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_moonsteel_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_moonsteel_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_moonsteel_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_moonsteel_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_obsidian_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_obsidian_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_obsidian_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_obsidian_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_obsidian_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_obsidian_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_obsidian_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_obsidian_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_silver_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_silver_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_silver_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_silver_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_silver_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_silver_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_silver_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_silver_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_starsteel_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_starsteel_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_starsteel_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_starsteel_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_starsteel_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_starsteel_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_starsteel_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_staff_starsteel_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_bronze_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_bronze_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_bronze_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_bronze_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_bronze_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_bronze_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_bronze_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_bronze_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_iron_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_iron_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_iron_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_iron_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_iron_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_iron_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_iron_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_iron_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_moonsteel_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_moonsteel_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_moonsteel_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_moonsteel_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_moonsteel_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_moonsteel_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_moonsteel_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_moonsteel_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_obsidian_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_obsidian_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_obsidian_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_obsidian_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_obsidian_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_obsidian_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_obsidian_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_obsidian_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_silver_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_silver_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_silver_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_silver_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_silver_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_silver_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_silver_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_silver_8": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_starsteel_1": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_starsteel_2": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_starsteel_3": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_starsteel_4": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_starsteel_5": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_starsteel_6": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_starsteel_7": {
+  "sheet": "Weapons master",
+  "width": 56,
+  "height": 56,
+  "sourceKind": "ai_generated_sheet",
+  "sha256": "9f97fe83369c57eac994009b5e491e792014bcce3090a7d9be0eb8f5017c1b2d"
+ },
+ "weapon_sword_starsteel_8": {
   "sheet": "Weapons master",
   "width": 56,
   "height": 56,

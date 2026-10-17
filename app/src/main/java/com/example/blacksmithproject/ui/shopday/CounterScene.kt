@@ -56,6 +56,7 @@ import androidx.compose.ui.zIndex
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.Sprites
+import com.example.blacksmithproject.ui.WeaponLook
 import com.example.blacksmithproject.ui.heroUpgraded
 import com.example.blacksmithproject.ui.theme.SceneCream
 import com.example.blacksmithproject.ui.theme.SceneDeep
@@ -78,6 +79,16 @@ internal fun PixelSprite(resId: Int, scale: Int, modifier: Modifier = Modifier, 
     val size = with(LocalDensity.current) { (bitmap.width * scale).toDp() }
     Canvas(modifier.size(size)) {
         drawImage(bitmap, dstSize = IntSize(bitmap.width * scale, bitmap.height * scale), alpha = alpha, filterQuality = FilterQuality.None)
+    }
+}
+
+/** [PixelSprite] for a weapon: its layers drawn over one another at the same scale. */
+@Composable
+internal fun PixelSprite(look: WeaponLook, scale: Int, modifier: Modifier = Modifier, alpha: Float = 1f) {
+    val bitmaps = look.layers.map { ImageBitmap.imageResource(it) }
+    val size = with(LocalDensity.current) { (bitmaps[0].width * scale).toDp() }
+    Canvas(modifier.size(size)) {
+        bitmaps.forEach { drawImage(it, dstSize = IntSize(it.width * scale, it.height * scale), alpha = alpha, filterQuality = FilterQuality.None) }
     }
 }
 
@@ -204,7 +215,7 @@ fun WeaponSlot(blade: WeaponSnapshot, price: Int, state: SlotState, reducedMotio
             .defaultMinSize(48.dp, 48.dp)
             .padding(2.dp),
     ) {
-        val sprite = Sprites.weapon(blade.familyId, blade.coreId, blade.element, blade.rarity, signature = blade.signatureId != null)
+        val sprite = Sprites.weapon(blade.familyId, blade.coreId, blade.element, blade.rarity, signature = blade.signatureId != null, catalystId = blade.catalystId)
         PixelSprite(sprite, scale, alpha = when (state) { SlotState.GONE -> 0.12f; SlotState.SOLD_NOW -> 0.4f; else -> 1f })
         if (!gone) {
             // The badges are 24 px art for a 24 px slot: drawn at the pip's whole-number scale.

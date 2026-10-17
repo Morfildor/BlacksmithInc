@@ -7,6 +7,10 @@ with `0.y.z` during early development (minor = new feature set, patch = fixes/tu
 
 ## [Unreleased]
 
+### Changed
+- **A weapon shows what it is made of.** The blade, head, fittings, bow string or staff orb takes the colour of its metal (grey iron, warm bronze, bright silver, black-violet obsidian, starry blue starsteel, pale cyan moonsteel) at every level, the infusion adds its own edge, glow and sparks (fire, frost, storm, grave, verdant, sun) even on a plain level 1 weapon, and a catalyst hangs from the grip as a small charm on a cord (salt, a runestone, a flask of dragon oil, an inkwell). The ornaments still grow with the metal's tier and the weapon's rarity. The Forge's preview, the recipe card, the shop shelf and counter, weapon cards and the guild's rows all show it.
+- **New material icons.** All 16 metals, infusions and catalysts are redrawn in the weapons' style, in the same colours a weapon shows them in (stormglass is now violet and grave dust teal, like their weapons).
+
 ## [0.9.0] - 2026-10-17
 
 ### Added

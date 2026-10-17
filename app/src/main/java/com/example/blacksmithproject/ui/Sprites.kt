@@ -64,12 +64,22 @@ object Sprites {
         ((coreStep[coreId.value] ?: 1) + when (rarity) { Rarity.LEGENDARY -> 2; Rarity.EPIC -> 1; else -> 0 } + (if (signature) 2 else 0))
             .coerceIn(1, WeaponArt.LEVELS)
 
-    fun weapon(w: Weapon): Int = weapon(w.familyId, w.coreId, w.element, w.rarity, signature = w.signatureId != null)
+    fun weapon(w: Weapon): WeaponLook = weapon(w.familyId, w.coreId, w.element, w.rarity, signature = w.signatureId != null, catalystId = w.catalystId)
 
-    /** Also used for the forge preview of a draft that has no Weapon yet: the "base" row until an augment is chosen. */
-    fun weapon(familyId: WeaponFamilyId, coreId: MaterialId, element: Element?, rarity: Rarity? = null, signature: Boolean = false): Int =
-        WeaponArt.sprite(familyId.value, element?.name?.lowercase() ?: "base", weaponLevel(coreId, rarity, signature))
-            ?: WeaponArt.sprite("sword", "base", 1)!!
+    /**
+     * Also used for the forge preview of a draft that has no Weapon yet: the plain metal until an augment is chosen.
+     * The base shows the core metal at the visual level, the effect the augment's element, the charm the catalyst.
+     */
+    fun weapon(familyId: WeaponFamilyId, coreId: MaterialId, element: Element?, rarity: Rarity? = null, signature: Boolean = false, catalystId: MaterialId? = null): WeaponLook {
+        val level = weaponLevel(coreId, rarity, signature)
+        val family = familyId.value.takeIf { WeaponArt.base(it, "iron", level) != null } ?: "sword"
+        val metal = coreId.value.takeIf { it in WeaponArt.metals } ?: "iron"
+        return WeaponLook(
+            WeaponArt.base(family, metal, level)!!,
+            element?.let { WeaponArt.effect(family, it.name.lowercase(), level) },
+            catalystId?.let { WeaponArt.charm(family, it.value, level) },
+        )
+    }
 
     private val heroIdKey = Regex("h\\d+")
 
@@ -264,6 +274,18 @@ fun PixelImage(resId: Int, size: Dp, description: String?, modifier: Modifier = 
         contentDescription = description,
         modifier = modifier.size(size),
     )
+}
+
+/** A weapon in its layers (`WeaponArt`), drawn in this order at one size and origin: the core metal, the augment's effect, the catalyst's charm. */
+data class WeaponLook(val base: Int, val effect: Int? = null, val charm: Int? = null) {
+    val layers: List<Int> get() = listOfNotNull(base, effect, charm)
+}
+
+@Composable
+fun PixelImage(look: WeaponLook, size: Dp, description: String?, modifier: Modifier = Modifier) {
+    Box(modifier.size(size).then(if (description != null) Modifier.semantics { contentDescription = description } else Modifier)) {
+        look.layers.forEach { PixelImage(it, size, description = null) }
+    }
 }
 
 @Composable

@@ -176,8 +176,8 @@ fun ForgePanel(
                 bench, d, engine.content, s.shop.threat, compact = open != null, tight = tight, reducedMotion = reducedMotion,
                 inspect = bench.outlook?.let { o ->
                     {
-                        val art = d.familyId?.let { f -> d.coreId?.let { c -> Sprites.weapon(f, c, d.augmentId?.let { engine.content.material(it).element }) } }
-                        recipeTip(o, bench.title, art, engine.config, accent = d.augmentId?.let { engine.content.material(it).element }?.let { com.example.blacksmithproject.ui.detail.elementColor(it) }, actions = listOf(
+                        val art = d.familyId?.let { f -> d.coreId?.let { c -> Sprites.weapon(f, c, d.augmentId?.let { engine.content.material(it).element }, catalystId = d.catalystId) } }
+                        recipeTip(o, bench.title, art?.base, engine.config, look = art, accent = d.augmentId?.let { engine.content.material(it).element }?.let { com.example.blacksmithproject.ui.detail.elementColor(it) }, actions = listOf(
                             TipAction("Practice fight", "forge_tip_bench") { rehearsing = true },
                             TipAction("Full details", "forge_outlook_details") { details = true },
                         ))
@@ -317,8 +317,9 @@ private fun ForgeHero(
                 Modifier.padding(top = 4.dp).size(40.dp).clip(Chip).background(ForgeSlot).testTag("forge_workbench").semantics(mergeDescendants = true) { contentDescription = "On the anvil: ${bench.title}" },
                 contentAlignment = Alignment.Center,
             ) {
-                val art = d.familyId?.let { f -> Sprites.weapon(f, d.coreId ?: content.materials(MaterialCategory.CORE).first().id, element) } ?: R.drawable.anvil
-                PixelImage(art, 32.dp, description = null, modifier = Modifier.alpha(if (d.familyId == null || d.coreId != null) 1f else 0.55f))
+                val art = d.familyId?.let { f -> Sprites.weapon(f, d.coreId ?: content.materials(MaterialCategory.CORE).first().id, element, catalystId = d.catalystId) }
+                val shade = Modifier.alpha(if (d.familyId == null || d.coreId != null) 1f else 0.55f)
+                if (art != null) PixelImage(art, 32.dp, description = null, modifier = shade) else PixelImage(R.drawable.anvil, 32.dp, description = null, modifier = shade)
             } else {
                 val scene = when { compact -> 56.dp; tight -> 72.dp; else -> 104.dp }
                 AnvilScene(bench.title, d, content, Modifier.size(scene), compact = scene < 80.dp, reducedMotion)
@@ -405,7 +406,7 @@ private fun AnvilScene(title: String, d: ForgeDraft, content: ContentCatalog, mo
         d.familyId?.let { family ->
             val core = d.coreId ?: content.materials(MaterialCategory.CORE).first().id
             PixelImage(
-                Sprites.weapon(family, core, d.augmentId?.let { content.material(it).element }), blade, description = null,
+                Sprites.weapon(family, core, d.augmentId?.let { content.material(it).element }, catalystId = d.catalystId), blade, description = null,
                 modifier = Modifier.padding(bottom = if (compact) 16.dp else 26.dp).alpha(if (d.coreId != null) 1f else 0.55f).landing(Triple(family, d.coreId, d.augmentId), reducedMotion),
             )
         }
@@ -475,7 +476,7 @@ private fun Modifier.landing(what: Any?, reducedMotion: Boolean): Modifier {
 }
 
 private fun slotArt(slot: RecipeSlot, d: ForgeDraft, content: ContentCatalog): Int? = when (slot) {
-    RecipeSlot.WEAPON -> d.familyId?.let { Sprites.weapon(it, content.materials(MaterialCategory.CORE).first().id, null) }
+    RecipeSlot.WEAPON -> d.familyId?.let { Sprites.weapon(it, content.materials(MaterialCategory.CORE).first().id, null).base }
     RecipeSlot.METAL -> d.coreId?.let(Sprites::material)
     RecipeSlot.AUGMENT -> d.augmentId?.let(Sprites::material)
     RecipeSlot.CATALYST -> d.catalystId?.let(Sprites::material)
@@ -513,7 +514,7 @@ private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog,
 }
 
 private fun optionArt(slot: RecipeSlot, option: OptionUi, content: ContentCatalog): Int? = when (slot) {
-    RecipeSlot.WEAPON -> option.id?.let { Sprites.weapon(WeaponFamilyId(it), content.materials(MaterialCategory.CORE).first().id, null) }
+    RecipeSlot.WEAPON -> option.id?.let { Sprites.weapon(WeaponFamilyId(it), content.materials(MaterialCategory.CORE).first().id, null).base }
     RecipeSlot.TECHNIQUE -> null
     else -> option.id?.let { Sprites.material(MaterialId(it)) }
 }

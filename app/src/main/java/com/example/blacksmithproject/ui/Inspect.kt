@@ -136,6 +136,8 @@ enum class TipTone(val sign: String, val color: Color) {
  */
 @Immutable data class TipUi(
     val name: String, val kind: String, val icon: Int? = null, val nameColor: Color = Cream, val meta: String? = null,
+    /** A weapon drawn in its layers in place of [icon] (the forge's recipe). */
+    val look: WeaponLook? = null,
     val stats: List<TipStat> = emptyList(), val sections: List<TipSection> = emptyList(), val keywords: List<TipKeyword> = emptyList(),
     val note: String? = null, val warning: String? = null, val actions: List<TipAction> = emptyList(), val tag: String = "inspect",
     /** The colour of the card's frame and name band (an element, a rarity); null: the name's rarity colour, else bronze. */
@@ -289,7 +291,7 @@ fun TipCard(tip: TipUi, onClose: () -> Unit, modifier: Modifier = Modifier) {
                             Modifier.size(slot).background(Brush.radialGradient(listOf(frame.copy(alpha = 0.22f), ForgeSlot)), RoundedCornerShape(2.dp))
                                 .border(1.dp, frame.copy(alpha = 0.5f), RoundedCornerShape(2.dp)),
                             contentAlignment = Alignment.Center,
-                        ) { PixelIcon(icon, if (pinHead) 40.dp else 32.dp) }
+                        ) { tip.look?.layers?.forEach { PixelIcon(it, if (pinHead) 40.dp else 32.dp) } ?: PixelIcon(icon, if (pinHead) 40.dp else 32.dp) }
                         Spacer(Modifier.width(12.dp))
                     }
                     Column(Modifier.weight(1f).padding(top = 2.dp)) {

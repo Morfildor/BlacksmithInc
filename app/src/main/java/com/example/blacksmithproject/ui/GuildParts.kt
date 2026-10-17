@@ -210,7 +210,7 @@ private fun Modifier.heroInspect(name: String, tip: () -> TipUi?): Modifier {
 
 /** The weapon a hero holds as a small sprite (its name is said, the art is decoration), or "Unarmed" in words. */
 @Composable
-private fun HeldWeapon(art: Int?, name: String) {
+private fun HeldWeapon(art: WeaponLook?, name: String) {
     if (art != null) PixelImage(art, 32.dp, description = name)
     else Text("Unarmed", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
 }

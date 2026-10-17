@@ -40,25 +40,23 @@ colour cue, because colour is used for the material.
 | `shelf` | 32×12 | bottom-left | Display shelf; weapons are drawn on top by the app |
 | `ember_0` … `ember_3` | 8×8 | top-left | 4 looping frames, 180 ms each, rising sparks above the furnace mouth (currently 3 frames; 4 are fine) |
 
-### 2.2 Weapons (16×16, anchor bottom-center, shown in lists, result card, shelves, hero cards)
+### 2.2 Weapons (56×56 layers, shown in lists, result card, shelves, hero cards)
 
-Six families × six core metals = 36 sprites. Two ways to deliver; either is fine, say which:
-
-- **Minimum:** 6 family sprites using exactly two "metal" colours (lit face, shaded face). We recolour per core
-  with the ramps in section 7. IDs: `weapon_sword_iron`, `weapon_axe_iron`, `weapon_spear_iron`, `weapon_bow_iron`,
-  `weapon_dagger_iron`, `weapon_staff_iron`.
-- **Full:** all 36 drawn by hand, IDs `weapon_<family>_<core>` with family ∈ sword, axe, spear, bow, dagger, staff
-  and core ∈ iron, bronze, silver, obsidian, starsteel, moonsteel. Higher cores may add ornament (fuller, gems, runes).
+A weapon is three layers drawn at one origin (`ui/WeaponArt.kt`, `Sprites.weapon` returns a `WeaponLook`), all derived
+by `tools/pixelart/weapon_layers.py` from the weapon master sheet (section 8) and the material icons:
+`weapon_<family>_<metal>_<level>` (the base row, its metal parts recoloured with the metal's ramp; 288),
+`weapon_fx_<family>_<element>_<level>` (the infusion: edge, glow and the element row's sparks; 288) and
+`weapon_charm_<family>_<catalyst>_<level>` (the catalyst's icon at 15 px on a cord from the grip; 192). The level is
+the metal's tier plus 1 for Epic, 2 for Legendary and 2 for a signature, 1..8. New weapon art is a new master sheet, not
+loose layer files.
 
 Family feel: sword = straight arming sword; axe = bearded one-hander; spear = leaf-blade on a shaft; bow = recurve
 with string; dagger = short, clearly shorter than the sword; staff = wooden shaft with a metal head (currently a
 forked crescent, which reads as a tuning fork at 16 px; please improve).
 
-### 2.3 Element overlays (16×16, anchor top-left, drawn on top of the weapon at ~60 % opacity)
+### 2.3 Element overlays
 
-`overlay_fire`, `overlay_frost`, `overlay_storm`, `overlay_grave`, `overlay_verdant`, `overlay_sun`. Mostly
-transparent; a few glowing pixels/wisps around the blade edge that read as the element over any metal colour.
-Grave (green-grey, lowest contrast today) needs the most work.
+Replaced by the `weapon_fx_*` layers of section 2.2.
 
 ### 2.4 Rarity badges (8×8, drawn in the weapon's corner)
 
@@ -172,8 +170,8 @@ sprite with a distinctive detail (glowing fuller, wrapped grip, runes). IDs `wea
 | Section | Sprites / frames |
 |---|---|
 | Forge scene | 8 statics + 4 ember frames |
-| Weapons | 6 (minimum) or 36 (full) |
-| Element overlays | 6 |
+| Weapons | 1 master sheet (768 layers derived from it) |
+| Element overlays | 0 (part of the weapon layers) |
 | Rarity badges | 6 |
 | Portraits | 5 |
 | Faction monsters | 6 |
@@ -209,9 +207,9 @@ Deliver into the `Pixel art assets/` folder, in either form:
   fixed rectangles; a sheet with no registered layout is skipped with a message.
 - **Weapon master sheet** (file name starting `Weapons master`): six family panels, each 8 levels (+1..+8) by
   7 rows (base, fire, frost, storm, grave, verdant, sun) on a flat dark background. It is keyed and sliced into
-  336 `weapon_<family>_<row>_<level>` sprites; a re-export must keep the same panel/grid proportions (the slicer
-  scales with the image width). This sheet replaces the per-core weapon icons and the element overlays: the level
-  column shows the core tier (+1 iron … +6 moonsteel) plus +1 for epic and +2 for legendary rolls.
+  336 cells in memory; a re-export must keep the same panel/grid proportions (the slicer scales with the image
+  width). The weapon layers of section 2.2 are derived from the cells (the base row per level, the element rows for
+  the effects): the level column shows the core tier (+1 iron … +6 moonsteel) plus +1 for epic and +2 for legendary.
 
 `python tools/pixelart/import_assets.py` then writes the drawables and records the IDs as imported (the tooling still labels them
 "hand-made" in its output and manifest until task T2.4 renames the label), and the placeholder generator leaves those IDs alone. Any sprite you do not deliver keeps its placeholder, so partial

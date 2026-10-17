@@ -187,7 +187,7 @@ private fun FightNoteKindLine(kind: FightNoteKind, text: String) {
 /** The two things a pairing joins, as sprites: metal and augment, or augment and the weapon type in plain metal. */
 private fun pairingArt(p: PairingUi, vm: GameViewModel): List<Int> = listOfNotNull(
     p.metalId?.let(Sprites::material), p.augmentId?.let(Sprites::material),
-    p.familyId?.let { Sprites.weapon(it, vm.engine.content.materials(MaterialCategory.CORE).first().id, null) },
+    p.familyId?.let { Sprites.weapon(it, vm.engine.content.materials(MaterialCategory.CORE).first().id, null).base },
 )
 
 @Composable

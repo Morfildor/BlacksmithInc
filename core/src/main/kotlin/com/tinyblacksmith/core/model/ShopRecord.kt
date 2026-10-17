@@ -38,9 +38,10 @@ enum class VisitFactor {
     @EncodeDefault(NEVER) val fame: Int = 0, @EncodeDefault(NEVER) val title: String? = null, @EncodeDefault(NEVER) val affixes: List<AffixId> = emptyList(),
     @EncodeDefault(NEVER) val flaws: List<AffixId> = emptyList(), @EncodeDefault(NEVER) val signatureId: String? = null,
     @EncodeDefault(NEVER) val dormantAffixes: List<AffixId> = emptyList(),   // a returned legend's sleeping affixes, for the dormant marker
+    @EncodeDefault(NEVER) val catalystId: MaterialId? = null,   // the catalyst's charm on the counter's blade
 ) {
     companion object {
-        fun of(w: Weapon) = WeaponSnapshot(w.id, w.name, w.familyId, w.coreId, w.augmentId, w.element, w.rarity, w.quality, w.power, w.condition, w.fame, w.title, w.affixes, w.flaws, w.signatureId, w.dormantAffixes)
+        fun of(w: Weapon) = WeaponSnapshot(w.id, w.name, w.familyId, w.coreId, w.augmentId, w.element, w.rarity, w.quality, w.power, w.condition, w.fame, w.title, w.affixes, w.flaws, w.signatureId, w.dormantAffixes, w.catalystId)
     }
 }
 @Serializable data class CustomerSnapshot(

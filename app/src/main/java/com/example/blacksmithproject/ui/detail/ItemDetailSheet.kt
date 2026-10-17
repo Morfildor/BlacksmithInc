@@ -55,6 +55,7 @@ import com.example.blacksmithproject.ui.keywords
 import com.example.blacksmithproject.ui.promisedLine
 import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.Sprites
+import com.example.blacksmithproject.ui.WeaponLook
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.engine.Command
@@ -139,7 +140,7 @@ data class ItemDetail(
     val weaponId: WeaponId,
     val name: String,
     /** Drawables of the blade and of its rarity pip; the rarity is always also a word in the facts. */
-    val sprite: Int,
+    val sprite: WeaponLook,
     val badge: Int,
     val signature: Boolean,
     /** "Spear", or "Frost spear". */
@@ -225,7 +226,7 @@ private fun GameEngine.card(state: GameState, weaponId: WeaponId, shown: WeaponS
     return ItemDetail(
         weaponId = weaponId,
         name = shown.name,
-        sprite = Sprites.weapon(shown.familyId, shown.coreId, shown.element, shown.rarity, signature = shown.signatureId != null),
+        sprite = Sprites.weapon(shown.familyId, shown.coreId, shown.element, shown.rarity, signature = shown.signatureId != null, catalystId = weapon?.catalystId ?: shown.catalystId),
         badge = Sprites.badge(shown.rarity),
         signature = shown.signatureId != null,
         kind = shown.element?.let { "${Terms.element(it)} ${family.lowercase()}" } ?: family,

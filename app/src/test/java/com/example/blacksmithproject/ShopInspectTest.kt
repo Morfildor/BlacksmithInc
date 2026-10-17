@@ -67,7 +67,8 @@ class ShopInspectTest {
         assertEquals(listed.name, tip.name)
         assertEquals(rarityColor(listed.rarity), tip.nameColor)
         assertTrue(tip.kind, tip.kind.startsWith(listed.rarity.name.lowercase().replaceFirstChar { it.uppercase() }))
-        assertEquals(engine.itemDetail(state, listed.id)!!.sprite, tip.icon)
+        assertEquals(engine.itemDetail(state, listed.id)!!.sprite, tip.look)
+        assertEquals(tip.look!!.base, tip.icon)
         // The numbers are the row's own (a renown of nothing left out), then what the shelf asks.
         val numbers = setOf("Power", "Quality", "Condition", "Fame")
         // Power leads as the card's headline number; the other numbers follow as its lines.

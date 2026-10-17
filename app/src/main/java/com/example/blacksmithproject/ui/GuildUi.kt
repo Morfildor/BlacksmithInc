@@ -68,7 +68,7 @@ import com.tinyblacksmith.core.guild.Stories
  */
 @Immutable data class DefenderUi(
     val heroId: HeroId, val portrait: Int, val name: String, val sub: String, val blade: String, val member: Boolean, val reserved: Boolean,
-    val weaponArt: Int? = null, val chip: String = "", val chipTone: ChipTone = ChipTone.OK,
+    val weaponArt: WeaponLook? = null, val chip: String = "", val chipTone: ChipTone = ChipTone.OK,
 )
 
 /** A present member who is not kept for the wall yet, or is: the Reserve / Release toggle. */
@@ -158,7 +158,7 @@ data class MemberUi(
     /** The roster's one chip: fit, kept for the wall, laid up, away or held. */
     val chip: String = "Fit", val chipTone: ChipTone = ChipTone.OK,
     /** The weapon in hand as a small sprite (decorative: [blade] says it); null when unarmed. */
-    val weaponArt: Int? = null,
+    val weaponArt: WeaponLook? = null,
     /** [name] without a byname of residence, and that byname for a quieter second line (`nameParts`). */
     val shortName: String = name, val byname: String? = null,
     /** A living era: the member's own decision in a few words (`LivingText.marker`); [urgent] for a departure notice. */

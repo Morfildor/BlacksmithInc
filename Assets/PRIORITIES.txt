@@ -13,8 +13,8 @@ Each folder's WANTED.txt has the IDs, sizes and notes. This is the order.
    Heroes       the 20 small battle frames (16x16: idle x2, attack x2, for five classes).
 5. Heroes       6 visitor faces (64x64), optional: the morning visitors have text only today.
 6. UI           delivered 2026-10-17; Effects: the four ember frames (milestone burst and the 11 replay cues delivered).
-7. Weapons      336 sprites, last and only as one consistent set (they exist and read fine; the style differs from
-                the newer icons, materials and blessings).
+7. Weapons      delivered 2026-10-17: layered from the master sheet (metal, infusion and catalyst all show); the
+                16 material icons were redrawn in the weapons' style the same day.
 
 Complete, nothing wanted: Backgrounds, Scene, Materials, Blessings, Relics, Icons.
 Delivered and waiting for a screen (do not resend): art_day_rumour (Scene), icon_action_legacy / icon_action_price /
