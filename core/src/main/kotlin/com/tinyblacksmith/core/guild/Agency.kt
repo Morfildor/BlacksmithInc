@@ -244,7 +244,7 @@ object Agency {
         "rallier" to setOf(LaunchContent.LOYAL, LaunchContent.AMBITIOUS, LaunchContent.GREEDY),
     )
     private val evidenceFor: Map<String, List<String>> = mapOf(
-        "vanguard" to listOf("front", "held"), "striker" to listOf("struck", "won"), "unbroken" to listOf("downed", "front"),
+        "vanguard" to listOf("front", "held"), "striker" to listOf("struck"), "unbroken" to listOf("downed", "front"),
         "careful" to listOf("shielded"), "wallwarden" to listOf("held", "front"), "rallier" to listOf("together", "shielded"),
     )
 
@@ -255,7 +255,10 @@ object Agency {
         val heavy = weapon?.let { (ctx.content.combat?.familyById?.get(it.familyId)?.strikePercent ?: 100) > 100 } == true
         val ev = evidenceFor[def.id].orEmpty().sumOf { m.evidence[it] ?: 0 }
         val tool = when (def.id) { "careful", "rallier" -> if (support) 1 else 0; "striker" -> if (heavy) 1 else 0; else -> 0 }
-        return ev + tool + hero.traits.count { it in inclinations[def.id].orEmpty() }
+        // The class is the role the member plays every fight: a Guardian or a Warden holds and shelters, the others strike.
+        val holds = hero.classId == LaunchContent.GUARDIAN || hero.classId == LaunchContent.WARDEN
+        val role = when (def.id) { "vanguard", "wallwarden", "careful" -> if (holds) 2 else 0; "striker", "unbroken", "rallier" -> if (holds) 0 else 1; else -> 0 }
+        return ev + tool + role + hero.traits.count { it in inclinations[def.id].orEmpty() }
     }
 
     /** The evidence that most supports [def], in words, from the counts themselves. */

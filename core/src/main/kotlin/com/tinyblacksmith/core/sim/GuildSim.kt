@@ -56,6 +56,8 @@ data class GuildRunStats(
     val attempts: List<Attempt> = emptyList(), val stockValue: Int = 0,
     /** Contracts taken by the modifier on their card. */
     val modifiers: Map<String, Int> = emptyMap(),
+    /** Living heroes, counted from each day's own record: member purchases, announced and completed loan returns, Specialities chosen (by ID), personal offers posted (by opportunity), Hooks answered or changed, concerns, departure notices and departures. */
+    val living: Map<String, Int> = emptyMap(),
 )
 
 data class Attempt(val archetype: String, val party: Int, val health: Int, val won: Boolean)
@@ -81,6 +83,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
     private val legends = HashMap<String, Int>()
     private var firstLegend: Int? = null
     private val income = HashMap<IncomeKind, Int>()
+    private val living = HashMap<String, Int>()
     private var spent = 0
     private var overworkDays = 0
     private val recipes = HashSet<String>()
@@ -134,7 +137,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         return GuildRunStats(seed, policy, s.day, g.milestone(GuildContent.CHARTER_SECURED)?.day, s.isEnded && !g.retired, g.retired, contracts.toMap(), captured, rescued, dead, sieges.toMap(), g.comboNotes.size, firstCombo,
             s.gold, g.members.size, rejected, firstSiegeIntegrity, loans, forged.toMap(), legends.toMap(), firstLegend, income.toMap(), spent, overworkDays, recipes.size,
             siegeLog.toList(), heartfireGained, heartfireForges, deeds, g.openingId, stalled, sabotaged, firstLoans.toMap(), bestDay5, bestDay20, firstEpicDay, firstEpicBy, attempts.toList(),
-            s.weapons.values.filter { it.location is WeaponLocation.Storage || it.location is WeaponLocation.Shelf || it.isLoaned }.sumOf { engine.suggestedPrice(it) } + s.materials.entries.sumOf { (m, n) -> content.material(m).price * n }, modifiers.toMap()) to s
+            s.weapons.values.filter { it.location is WeaponLocation.Storage || it.location is WeaponLocation.Shelf || it.isLoaned }.sumOf { engine.suggestedPrice(it) } + s.materials.entries.sumOf { (m, n) -> content.material(m).price * n }, modifiers.toMap(), living.toMap()) to s
     }
 
     private fun record(before: GameState, after: GameState) {
@@ -169,9 +172,24 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         if (g.mission == null && g.members.none { engine.memberUnavailable(before, it.heroId) == null }) stalled++
         // What the members carried on the fifth morning: the opening recipes a run settled on, for the variety table.
         if (before.day == 5) for (m in g.members) before.loanOf(m.heroId)?.let { w -> firstLoans.merge("${w.familyId.value}/${w.element?.name?.lowercase() ?: "plain"}", 1, Int::plus) }
+        for (e in r.events) when (e.type) {
+            EventType.MEMBER_PURCHASE -> living.merge("purchase", 1, Int::plus)
+            EventType.LOAN_RETURN_ANNOUNCED -> living.merge(if (e.data["cancelled"] == "true") "return_cancelled" else "return_announced", 1, Int::plus)
+            EventType.LOAN_RETURNED -> living.merge("returned", 1, Int::plus)
+            EventType.SPECIALITY_CHOSEN -> living.merge("speciality:${e.data["speciality"]}", 1, Int::plus)
+            EventType.OPPORTUNITY_POSTED -> living.merge("offer:${e.data["opportunity"]}", 1, Int::plus)
+            EventType.HOOK_CHANGED -> living.merge("hook:${e.data["status"] ?: "CHANGED"}", 1, Int::plus)
+            EventType.CONCERN_RAISED -> living.merge("concern", 1, Int::plus)
+            EventType.DEPARTURE_ANNOUNCED -> living.merge(if (e.data["cancelled"] == "true") "departure_cancelled" else "departure_notice", 1, Int::plus)
+            EventType.MEMBER_DEPARTED -> living.merge("departed", 1, Int::plus)
+            EventType.ENCOUNTER_OFFERED -> e.data["encounter"]?.takeIf { it in setOf("creditor_calls", "a_lesson", "wounded_friend") }?.let { living.merge("visitor:$it", 1, Int::plus) }
+            else -> {}
+        }
+
+        r.mission?.takeIf { !it.continues }?.let { m -> (before.guild?.mission?.takeIf { it.id == m.missionId }?.offer ?: before.guild?.offers?.firstOrNull { it.id == m.missionId })?.opportunityId?.let { living.merge("taken:$it:${m.outcome.name}", 1, Int::plus) } }
         captured += r.events.count { it.type == EventType.MEMBER_CAPTURED }
         rescued += r.events.count { it.type == EventType.MEMBER_RESCUED }
-        dead += before.guild!!.members.count { m -> after.heroes[m.heroId]?.isAlive != true }
+        dead += before.guild!!.members.count { m -> after.heroes[m.heroId]?.let { it.fate == HeroFate.DEAD } ?: true }
         if (firstCombo == null && r.events.any { it.type == EventType.COMBO_NOTED }) firstCombo = r.day
     }
 
@@ -560,13 +578,31 @@ object GuildSim {
     fun run(policy: GuildPolicy, runs: Int, seed: Long, config: BalanceConfig = BalanceConfig.DEFAULT, charterId: String = GuildContent.TOWNS_LAST_HOPE, horizon: Int = 30, legacy: (GameEngine) -> LegacyProfile = { LegacyProfile() },
         opening: String? = null, retire: Boolean = true, followPlan: Boolean = true, noDrawback: Boolean = false,
         /** Another catalog for the same runs (`ForgeLab.guild`: the metals' fight rules on and off). */
-        content: com.tinyblacksmith.core.content.ContentCatalog? = null): GuildReport {
+        content: com.tinyblacksmith.core.content.ContentCatalog? = null,
+        /** The era feature revision of every run: living heroes, or `LivingRevision.LEGACY` for the feature-off baseline. */
+        livingRevision: Int = com.tinyblacksmith.core.model.LivingRevision.CURRENT): GuildReport {
         val list = IntStream.range(0, runs).parallel().mapToObj { i ->
             // Without drawbacks: every opening keeps its relic, trait, stock and weapon and loses only what it takes away (one gold is left, the catalog insists on a drawback). The measure of what a drawback costs.
             val engine = if (noDrawback) GameEngine(config = config).let { e -> GameEngine(e.content.copy(guild = e.content.guild!!.copy(openings = e.content.guild.openings.map { it.copy(goldDelta = -1, militiaDelta = 0, integrityDelta = 0) })), config) } else if (content != null) GameEngine(content, config) else GameEngine(config = config)
-            GuildBot(engine, policy, charterId, horizon, opening, retire, followPlan).play(seed + i, legacy(engine)).first
+            GuildBot(engine, policy, charterId, horizon, opening, retire, followPlan).also { it.livingRevision = livingRevision }.play(seed + i, legacy(engine)).first
         }.collect(Collectors.toList())
         return GuildReport(policy, list.sortedBy { it.seed })
+    }
+
+    /** What the members did of their own accord, per run: means over the report's runs, from each day's record (`GuildRunStats.living`). */
+    fun livingTable(r: GuildReport): String = buildString {
+        val n = r.runs.size.coerceAtLeast(1)
+        fun mean(key: String) = r.runs.sumOf { it.living[key] ?: 0 }.toDouble() / n
+        fun share(pred: (GuildRunStats) -> Boolean) = 100.0 * r.runs.count(pred) / n
+        appendLine("${r.policy.name} living heroes, a run: purchases %.2f | returns announced %.2f, done %.2f, answered by the smith %.2f | concerns %.2f, departure notices %.2f, departures %.2f (runs with one %.0f%%) | visitors: creditor %.2f, lesson %.2f, healer %.2f".format(
+            mean("purchase"), mean("return_announced"), mean("returned"), mean("return_cancelled"), mean("concern"), mean("departure_notice"), mean("departed"), share { (it.living["departed"] ?: 0) > 0 },
+            mean("visitor:creditor_calls"), mean("visitor:a_lesson"), mean("visitor:wounded_friend")))
+        val specs = r.runs.flatMap { s -> s.living.filterKeys { it.startsWith("speciality:") }.entries }.groupBy({ it.key.removePrefix("speciality:") }, { it.value }).mapValues { it.value.sum() }
+        appendLine("  Specialities chosen (all runs): " + specs.entries.sortedByDescending { it.value }.joinToString(", ") { "${it.key} ${it.value}" })
+        val offers = r.runs.flatMap { s -> s.living.filterKeys { it.startsWith("offer:") }.entries }.groupBy({ it.key.removePrefix("offer:") }, { it.value }).mapValues { it.value.sum() }
+        val taken = r.runs.flatMap { s -> s.living.filterKeys { it.startsWith("taken:") }.entries }.groupBy({ it.key.removePrefix("taken:") }, { it.value }).mapValues { it.value.sum() }
+        appendLine("  Personal offers posted (all runs): " + offers.entries.sortedByDescending { it.value }.joinToString(", ") { "${it.key} ${it.value}" } + " | taken: " + taken.entries.sortedByDescending { it.value }.joinToString(", ") { "${it.key} ${it.value}" })
+        appendLine("  Hooks answered or changed (all runs): " + r.runs.flatMap { s -> s.living.filterKeys { it.startsWith("hook:") }.entries }.groupBy({ it.key }, { it.value }).mapValues { it.value.sum() }.entries.joinToString(", ") { "${it.key.removePrefix("hook:").lowercase()} ${it.value}" })
     }
 }
 
@@ -666,8 +702,10 @@ fun main(args: Array<String>) {
         return
     }
     if ("--why" in args) for (p in policies) { val bot = GuildBot(GameEngine(config = config), p, charter, horizon); bot.play(seed); println("${p.name}: ${bot.rejected} rejected"); bot.rejections.forEach { println("  $it") } }
-    val reports = policies.map { p -> GuildSim.run(p, runs, seed, config, charterId = charter, horizon = horizon, legacy = { if (maxed) Simulator.maxedLegacy(it) else LegacyProfile() }, opening = a["--opening"], retire = "--playOn" !in args) }
-    for (r in reports) { print(r.render()); if ("--byOpening" in args) print(GuildSim.byOpening(r)) }
+    // --legacy: every run begun before living heroes (the feature-off baseline). --living: the members' own decisions, per policy.
+    val revision = if ("--legacy" in args) com.tinyblacksmith.core.model.LivingRevision.LEGACY else com.tinyblacksmith.core.model.LivingRevision.CURRENT
+    val reports = policies.map { p -> GuildSim.run(p, runs, seed, config, charterId = charter, horizon = horizon, legacy = { if (maxed) Simulator.maxedLegacy(it) else LegacyProfile() }, opening = a["--opening"], retire = "--playOn" !in args, livingRevision = revision) }
+    for (r in reports) { print(r.render()); if ("--byOpening" in args) print(GuildSim.byOpening(r)); if ("--living" in args) print(GuildSim.livingTable(r)) }
     // --pair A,B[+C,D]: two policies on the same seeds (both must be among --policy). Several pairs are joined with a plus.
     a["--pair"]?.split("+")?.forEach { pair -> pair.split(",").map { GuildPolicy.valueOf(it.uppercase()) }.let { (x, y) -> print(GuildSim.paired(reports.first { it.policy == x }, reports.first { it.policy == y })) } }
 }
