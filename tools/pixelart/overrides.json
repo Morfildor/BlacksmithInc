@@ -167,6 +167,27 @@
   "sourceKind": "script_drawn_pack",
   "sha256": "99ee525e37dc3223e321741d340e12a0a45845a0810f71fbcd9879f3131758fa"
  },
+ "boss_ash_dragon": {
+  "sheet": "pack:enemies",
+  "width": 112,
+  "height": 112,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "b093d88046e338538aafc7dd12fc512bc4160112640af5446c20b13605014126"
+ },
+ "boss_bone_colossus": {
+  "sheet": "pack:enemies",
+  "width": 112,
+  "height": 112,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "4f443177a6196af8e2644f780bea5f0ba36ec13358ccf4dfc7515987545a1c8c"
+ },
+ "boss_hill_giant": {
+  "sheet": "pack:enemies",
+  "width": 112,
+  "height": 112,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "a54244f2a9f2a6c83c76b0534ba30d2c7e0c84932a5c1b8a092f33476e0922a8"
+ },
  "ember_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
   "width": 32,
@@ -194,6 +215,27 @@
   "height": 32,
   "sourceKind": "ai_generated_sheet",
   "sha256": "81fcf432fc8357fa4d5ac73539ebc84fbf77e250dbbe1811f04f7c82c92de8da"
+ },
+ "eng_ballista": {
+  "sheet": "pack:enemies",
+  "width": 112,
+  "height": 112,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "03f98f3b12d6036f2a6d3ccb963272486ce92b4666a04f053f7cab2c87bf7565"
+ },
+ "eng_battering_ram": {
+  "sheet": "pack:enemies",
+  "width": 112,
+  "height": 112,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "8d0d54eaab71d7d97c94d86b7687833312ffe80f8da614a831290b7cf535b5f7"
+ },
+ "eng_corpse_catapult": {
+  "sheet": "pack:enemies",
+  "width": 112,
+  "height": 112,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "611ce61968f595ba4256ab26ce556f9d7dcbe8770cce006f7caf8e40c44a62f4"
  },
  "faction_ashclaw_alt_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",

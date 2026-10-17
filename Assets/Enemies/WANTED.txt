@@ -78,8 +78,8 @@ NEW WITH THE LIVING HEROES UPDATE (2026-10-17): THE BESTIARY, 48 ENEMIES
               cap_death_knight (Sir Carrow, the Unburied), cap_elder_treant (Old Root-Crown), cap_beast_matriarch (The White-Fang Matriarch)
     engines:  eng_battering_ram, eng_ballista, eng_corpse_catapult
     majors:   boss_hill_giant (boulder and sling visible, scale must read in a portrait), boss_bone_colossus, boss_ash_dragon
-  DELIVERED 2026-10-17, NOT WIRED YET (Retro Diffusion, 112x112 in this folder): the three engines and the three majors
-  above. The game still shows a faction figure or a name plate for them until the replay code maps these IDs; the hill
+  DELIVERED 2026-10-17 (Retro Diffusion, 112x112, imported as drawables from Assets/Implemented/enemies under their
+  own IDs) but NOT WIRED YET: the three engines and the three majors above. The game still shows a faction figure or a name plate for them until the replay code maps these IDs; the hill
   giant's crown and the colossus's legs touch the canvas edge (framing).
   Prefixes: ib_ Iron Banner, pp_ Pale Procession, tc_ Thorn Covenant. Section 10.2 to 10.4 of the document describes how each
   should look ("Recognition/art"); read that line before drawing.

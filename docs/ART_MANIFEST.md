@@ -94,7 +94,13 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | bg_forge_night | 232×211 | bg | imported: script-drawn pack | pack:backgrounds |  |
 | bg_run_end_fallen_forge | 256×144 | bg | imported: script-drawn pack | pack:backgrounds |  |
 | bg_title_workshop_night | 1152×2048 | bg | imported: script-drawn pack | pack:backgrounds |  |
+| boss_ash_dragon | 112×112 | boss | imported: script-drawn pack | pack:enemies |  |
+| boss_bone_colossus | 112×112 | boss | imported: script-drawn pack | pack:enemies |  |
+| boss_hill_giant | 112×112 | boss | imported: script-drawn pack | pack:enemies |  |
 | ember_3 | 32×32 | ember | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png |  |
+| eng_ballista | 112×112 | eng | imported: script-drawn pack | pack:enemies |  |
+| eng_battering_ram | 112×112 | eng | imported: script-drawn pack | pack:enemies |  |
+| eng_corpse_catapult | 112×112 | eng | imported: script-drawn pack | pack:enemies |  |
 | faction_ashclaw_alt_0 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
 | faction_ashclaw_alt_1 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
 | faction_embermaw_alt_0 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |

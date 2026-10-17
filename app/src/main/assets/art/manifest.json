@@ -777,6 +777,36 @@
       "sourceKind": "script_drawn_pack"
     },
     {
+      "id": "boss_ash_dragon",
+      "file": "drawable-nodpi/boss_ash_dragon.png",
+      "width": 112,
+      "height": 112,
+      "layer": "boss",
+      "source": "imported",
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "boss_bone_colossus",
+      "file": "drawable-nodpi/boss_bone_colossus.png",
+      "width": 112,
+      "height": 112,
+      "layer": "boss",
+      "source": "imported",
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "boss_hill_giant",
+      "file": "drawable-nodpi/boss_hill_giant.png",
+      "width": 112,
+      "height": 112,
+      "layer": "boss",
+      "source": "imported",
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
       "id": "ember_3",
       "file": "drawable-nodpi/ember_3.png",
       "width": 32,
@@ -785,6 +815,36 @@
       "source": "imported",
       "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
       "sourceKind": "ai_generated_sheet"
+    },
+    {
+      "id": "eng_ballista",
+      "file": "drawable-nodpi/eng_ballista.png",
+      "width": 112,
+      "height": 112,
+      "layer": "eng",
+      "source": "imported",
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "eng_battering_ram",
+      "file": "drawable-nodpi/eng_battering_ram.png",
+      "width": 112,
+      "height": 112,
+      "layer": "eng",
+      "source": "imported",
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
+    },
+    {
+      "id": "eng_corpse_catapult",
+      "file": "drawable-nodpi/eng_corpse_catapult.png",
+      "width": 112,
+      "height": 112,
+      "layer": "eng",
+      "source": "imported",
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "faction_ashclaw_alt_0",
