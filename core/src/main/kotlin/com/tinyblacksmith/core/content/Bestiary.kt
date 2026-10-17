@@ -196,7 +196,105 @@ object Bestiary {
             forecast = "Deserters are bringing heavy crossbows."),
     )
 
-    private val built: List<Built> = ironBanner
+    // ---- Pale Procession (Hollowbound): endurance, one return, weaker healing, pressure on fragile defenders ----
+    private val bones = setOf(Stat.POISON, Stat.BLEED)
+    private val axeWeak = listOf(SourceBonus(AXE, 30))
+    private const val BONES = "Axe attacks deal 30% more damage to it. Poison and Bleed never affect it."
+    private val paleProcession = listOf(
+        enemy("pp_skeleton_guard", "Skeleton Spearman", PP, 30, 7, 10, cost = 3, siege = 1, tags = setOf(UNDEAD, RAISABLE, STANDARD_UNDEAD),
+            immune = bones, bonusFrom = axeWeak,
+            moves = listOf(attack(telegraph = "$BONES It attacks.")),
+            job = "Tires the defenders and holds a narrow breach.",
+            counter = "Fragile bones. Axe attacks, or ordinary concentrated attacks.",
+            forecast = "Skeleton spearmen are marching in ranks."),
+        enemy("pp_skeleton_archer", "Skeleton Archer", PP, 23, 9, 0, cost = 3, siege = 1, tags = setOf(UNDEAD, RAISABLE, STANDARD_UNDEAD, SPECIALIST),
+            immune = bones, bonusFrom = axeWeak,
+            moves = listOf(attack(telegraph = "$BONES It shoots.")),
+            job = "Tires the defenders with volleys from behind.",
+            counter = "Very little Health. Bows and Storm weapons reach it at the back of their line.",
+            forecast = "Bone archers are assembling behind the dead."),
+        enemy("pp_zombie", "Zombie", PP, 54, 7, 0, cost = 3, siege = 1, tags = setOf(UNDEAD, RAISABLE, STANDARD_UNDEAD),
+            immune = setOf(Stat.POISON), surviveOnce = true,
+            moves = listOf(attack(telegraph = "The first hit that would down it leaves it at 1 Health instead, once per fight. Fire and Sun hits are not stopped by it. Poison never affects it.")),
+            job = "Soaks up damage and drags the defence out.",
+            counter = "Slow and weak. A second hit after its survival, or a Fire or Sun hit, finishes it.",
+            forecast = "The dead are advancing slowly, but some refuse to fall."),
+        enemy("pp_ghoul", "Ghoul", PP, 36, 9, 0, cost = 5, siege = 2, tags = setOf(UNDEAD, STANDARD_UNDEAD),
+            moves = listOf(
+                move("rotting_claw", "Rotting claw", Cadence.Actions(2, 5), "On its 2nd and 5th actions, attacks and puts 2 Poison on the defender it attacks.",
+                    Damage(Aim.Foe, Strike()), Give(Stat.POISON, Aim.Foe, Fixed(2))),
+                attack()),
+            job = "Goes for the wounded defenders.",
+            counter = "Little Health and no Armor. Healing and Purifying weapons remove its Poison.",
+            forecast = "Ghouls are prowling behind the corpse line. Their claws poison the wounded."),
+        enemy("pp_wight", "Wight", PP, 55, 11, 15, cost = 7, siege = 3, tags = setOf(UNDEAD, STANDARD_UNDEAD),
+            moves = listOf(
+                move("life_drain", "Life drain", Cadence.Actions(2, 5), "On its 2nd and 5th actions, attacks and heals itself for 40% of the Health damage it deals, at most 3. Damage that Armor blocks heals it nothing.",
+                    Damage(Aim.Foe, Strike(), drainPercent = 40, drainCap = 3)),
+                attack()),
+            job = "Keeps a disciplined undead assault going.",
+            counter = "Armor on your defenders denies its drain. Concentrated attacks and Sun weapons bring it down.",
+            forecast = "An armored wight leads the dead. Its weapon restores it."),
+        enemy("pp_necromancer", "Necromancer", PP, 34, 8, 0, cost = 7, siege = 3, tags = setOf(SPECIALIST),
+            moves = listOf(
+                prepared("raise_dead", "Raise Dead", Cadence.All(listOf(Cadence.ActionsFrom(2), Cadence.AllyDownedEligible(RAISABLE))),
+                    interruptible("From its 2nd action, once a skeleton or a zombie has fallen, it starts Preparing to raise the dead. On its next action, the first of them to fall stands again with 35% of its Health and acts from the next round."),
+                    ChannelDef("raise_dead", "Raise Dead", uses = 1, onInterrupt = OnInterrupt.SPENT, payload = listOf(Action.Return(RAISABLE, 35)), fallback = listOf(Damage(Aim.Foe, Strike(), Element.GRAVE)), fallbackName = "Grave attack")),
+                attack(Element.GRAVE)),
+            job = "Returns one fallen soldier to the assault.",
+            counter = "Fragile, and an Interrupt costs it the raising for good. Or defeat the returned soldier a second time.",
+            forecast = "A necromancer will try to raise the fallen."),
+        enemy("pp_acolyte", "Grave Acolyte", PP, 29, 5, 0, cost = 5, siege = 2, tags = setOf(SPECIALIST),
+            moves = listOf(
+                move("tend_the_dead", "Tend the dead", Cadence.Actions(2, 5), "On its 2nd and 5th actions, heals its most wounded undead ally (lowest Health percentage, spirits excluded) by 4 instead of attacking.",
+                    Heal(Aim.WeakestAllyTagged(UNDEAD, exclude = Tags.SPIRIT), Fixed(4))),
+                attack(Element.GRAVE)),
+            job = "Keeps the bound dead standing.",
+            counter = "Little Health. Defeat it first, or put Poison on the undead it tends.",
+            forecast = "A lantern-bearer is tending the dead."),
+        enemy("pp_ogre_zombie", "Ogre Zombie", PP, 110, 14, 0, cost = 8, siege = 3, tags = setOf(UNDEAD, STANDARD_UNDEAD), immune = setOf(Stat.POISON),
+            moves = listOf(
+                move("beam_sweep", "Beam sweep", Cadence.Actions(3, 6), "On its 3rd and 6th actions, hits the first 2 defenders in the line for 70% of its Attack each, past a Guardian.",
+                    Damage(Aim.FrontFoes(2), Strike(70))),
+                attack(telegraph = "Poison never affects it. It attacks.")),
+            job = "An immovable mass at the gate.",
+            counter = "Very slow, with no Armor and no healing. Concentrated attacks work.",
+            forecast = "An ogre corpse carries a beam toward the gate."),
+        enemy("pp_banshee", "Banshee", PP, 42, 8, 0, cost = 7, siege = 3, tags = setOf(UNDEAD, Tags.SPIRIT, SPECIALIST),
+            moves = listOf(
+                prepared("wail", "Wail", Cadence.Actions(2),
+                    interruptible("On its 2nd action, it starts Preparing a wail. On its next action, the wail deals 50% of its Attack as grave damage to every defender and puts 1 Chill on each."),
+                    ChannelDef("wail", "Wail", uses = 1, onInterrupt = OnInterrupt.SPENT, payload = listOf(Damage(Aim.AllFoes, Strike(50), Element.GRAVE), Give(Stat.CHILL, Aim.AllFoes)),
+                        fallback = listOf(Damage(Aim.Foe, Strike(), Element.GRAVE)), fallbackName = "Grave attack")),
+                attack(Element.GRAVE)),
+            job = "Weakens the whole party with a dreadful cry.",
+            counter = "Fragile. Interrupt the wail, defeat it first, or heal through the one cry.",
+            forecast = "A mourning spirit is preparing a dreadful cry."),
+        enemy("pp_wraith", "Wraith", PP, 47, 10, 10, cost = 7, siege = 3, tags = setOf(UNDEAD, Tags.SPIRIT), resists = Element.FROST,
+            moves = listOf(
+                move("through_the_breach", "Through the breach", Cadence.Actions(1, 4), "On its 1st and 4th actions, attacks the back defender with grave damage, past the front.",
+                    Damage(Aim.BackFoe, Strike(), Element.GRAVE)),
+                attack(Element.GRAVE)),
+            job = "Slips through a breach and goes for a defender at the back.",
+            counter = "Modest Health and no healing. Armor on the back defender and concentrated attacks work. It resists Frost.",
+            forecast = "A wraith has been seen drifting above the graves."),
+        enemy("pp_black_knight", "Undead Black Knight", PP, 73, 12, 30, cost = 8, siege = 3, tags = setOf(UNDEAD, STANDARD_UNDEAD), immune = bones,
+            moves = listOf(
+                move("dark_guard", "Dark guard", Cadence.Actions(2, 5), "On its 2nd and 5th actions, gains 5 Armor, then attacks.", Guard(Aim.Self, Fixed(5)), Damage(Aim.Foe, Strike())),
+                attack(telegraph = "Poison and Bleed never affect it. It attacks.")),
+            job = "Holds the breach while the support works.",
+            counter = "Heavy Armor. Spears get past part of it. Defeat its support instead of hitting its plate.",
+            forecast = "A black-armored corpse is guarding the procession.",
+            adaptation = "It does not force a defender to attack it: it gains Armor and attacks (final design Appendix A, no Taunt)."),
+        enemy("pp_grave_rats", "Grave Rat Swarm", PP, 29, 6, 0, cost = 3, siege = 2, bonusFrom = listOf(SourceBonus(Tags.AREA, 30)),
+            moves = listOf(move("gnaw", "Gnaw", Cadence.Always, "Attacks the defender with the least Health, past a Guardian. An attack that hits several enemies deals 30% more damage to the swarm.",
+                Damage(Aim.WeakestFoe, Strike()))),
+            job = "Harasses the wounded defenders beneath the fighting.",
+            counter = "Little Health. Attacks that hit several enemies deal 30% more damage to it.",
+            forecast = "Grave rats are spreading through the drains."),
+    )
+
+    private val built: List<Built> = ironBanner + paleProcession
 
     val units: List<UnitDef> = built.map { it.unit }
     val profiles: List<EnemyProfile> = built.map { it.profile }
