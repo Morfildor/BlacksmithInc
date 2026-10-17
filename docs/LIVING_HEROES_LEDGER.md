@@ -52,11 +52,12 @@ read it first, then `git log --oneline living-heroes`.
 - [x] M1 core: revision + versions (schema 8, rules 8, content 7, balance 17), peoples and names, Hooks, counter visit,
   loan returns, leans, sponsored offers, concerns and departures, invariants, fixtures 1-14 and 20 (`LivingIdentityTest`,
   `LivingAgencyTest`), guildsim `--living` / `--legacy`. Commits baf7db3, 1f9b8a5, bdb02a9.
-- [ ] M1 UI: identity on sheet / roster / recruit card, silhouettes (agent, worktree), then agency notices
+- [x] M1 UI: identity on sheet / roster / recruit card, silhouettes, the owner's six UI fixes (merged; evidence `docs/living_heroes_evidence/ui_identity/`). Agency notices: in progress (agent)
 - [~] M2: five Hooks done; eight ambitions done (Avenger, Heirloom, Captain, Name wired); 18 opportunities classified
   (section 5); candidate inclination text (`LivingText.inclination`); market attachment done
-- [~] M3-M5: combat grammar (agent, worktree); army templates machinery in `SiegeFight.planArmy` (data pending);
-  bestiary data after the grammar merges; structural accounting after the grammar merges
+- [x] M3-M5: combat grammar (merged 9d79ef5), 48 enemies and 36 armies (`content/Bestiary.kt`, `BestiaryTest`),
+  structural accounting and sabotage of the charge (`LivingSiegeTest`), army strength calibrated (`living.armyPercent` 140,
+  DECISIONS "Army strength calibration")
 - [ ] M6 sims (legacy vs living, paired influence), UI render checks, docs (GDD, Writing Guide, PROGRESS, checklist, bible notice)
 
 Resume notes: `Agency` (counter, returns, leans, evidence) and `Hooks` (offers, concerns, departures, visitors) are the
@@ -96,8 +97,8 @@ Opportunities (content bible 14.2):
 | opp_familiar_weapon | implemented | Acknowledgement at an attachment milestone |
 | opp_safe_experiment | deferred | No test-commission mechanic for members |
 
-Enemies and armies: 48 definitions and 36 templates extracted (scratchpad `armies_rows.kt`); status filled when the
-bestiary lands.
+Enemies and armies: 48 implemented (`EnemyProfile.status`: adapted ones carry their reason, see `content/Bestiary.kt`),
+36 armies: 24 standard, 6 captain, 3 engine, 3 great monster. Art wanted: `docs/ART_NEEDED_BESTIARY.md`.
 
 ## 6. Evidence and seeds
 
