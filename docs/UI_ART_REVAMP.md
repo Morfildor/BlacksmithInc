@@ -108,8 +108,10 @@ backdrops (stored at their native 256 px; `Backdrop` enlarges by whole pixels).
 | Blessings | all 8 | 1 each | |
 | Relics | all 5 | 1, 1, 1, 1, 2 | bellows retaken (background left in) |
 
-Checks: no opaque pixel on a sprite's edge except ground lines and the walls' full width, no key colour left,
-sizes as before; `import_assets.py --accept-changed-sources` then `generate_assets.py` change only these 30
+Checks: no key colour left and sizes as before on every pick; edges: the walls run the full width and the fallen
+forge and dawn pictures stand on a ground line at the bottom by design, a few grazes of 2 to 10 pixels remain (shade's
+sword, whelp's wing, patronage banner, crucible, fallen forge and dawn sides), and the anvil's face touches the top row
+(53 px; the old anvil left a margin); `import_assets.py --accept-changed-sources` then `generate_assets.py` change only these 30
 drawables; `:app:testDebugUnitTest` 402/402; emulator (Pixel_10_Pro read-only, 1080x2400 at 420 dpi): title,
 counter, Forge preview, shop-day sale, tally, fallen, tomorrow, siege lost. Spent about $7.70 of Retro Diffusion
 credit (balance $9.08 to $1.34).
@@ -121,4 +123,7 @@ portrait sets (hero art belongs to the portrait work; the old sets are not shown
 
 For the owner: `blessing_runic_insight` draws rune glyphs (the brief says no letters; runes read as decoration);
 the victory gatehouse fills about half its canvas and reads smaller than the other banners; the intact and breached
-walls differ slightly in tone (never shown together).
+walls differ slightly in tone (never shown together); the anvil's face touches the top of its canvas; the raider is
+a 64 px figure on the 80 px canvas, so it reads about 80% the size of the shade beside it; the banners that use the
+title painting (guild's party, "Beyond the door", the town's thanks) need `NIGHT_FOCUS` of about 0.68 to frame the smith
+at the door (the visual pass session owns that constant and was told).
