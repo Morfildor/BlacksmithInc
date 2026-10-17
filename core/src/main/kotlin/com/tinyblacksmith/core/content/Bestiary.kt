@@ -388,9 +388,225 @@ object Bestiary {
             adaptation = "It gives its beasts Armor and points its own attack at the weakest defender, instead of a damage bonus and a shared target (final design Appendix A)."),
     )
 
-    private val built: List<Built> = ironBanner + paleProcession + thornCovenant
+    // ---- six captains: one central rule each. Never returned, never healed by an enemy support ----
+    private val captain = setOf(Tags.CAPTAIN, LEADER, ELITE)
+    private val captains = listOf(
+        enemy("cap_iron_marshal", "Varka the Iron Marshal", IB, 115, 15, 25, cost = 16, siege = 4, tags = captain,
+            moves = listOf(
+                prepared("last_advance", "Last Advance", Cadence.HealthAtMost(50),
+                    interruptible("The first time the Marshal's Health is at 50% or less, the Marshal starts Preparing a last advance. On the Marshal's next action, every other attacker gains 5 Armor."),
+                    ChannelDef("last_advance", "Last Advance", uses = 1, onInterrupt = OnInterrupt.SPENT, payload = listOf(Guard(Aim.OtherAllies, Fixed(5))), fallback = listOf(Damage(Aim.Foe, Strike())))),
+                attack()),
+            job = "An orc military contractor who values trained formations.",
+            counter = "Defeat the escorts before the Marshal is wounded, interrupt the last advance, or bring the Marshal down in one push.",
+            forecast = "Varka will rally the surviving troops when wounded."),
+        enemy("cap_goblin_chief", "Nibba Fuse-Ear", IB, 82, 11, 10, cost = 13, siege = 3, tags = captain + SPECIALIST,
+            moves = listOf(
+                prepared("demolition_order", "Demolition Order", Cadence.Actions(2),
+                    interruptible("On Nibba's 2nd action, Nibba starts Preparing a demolition order. On Nibba's next action, the sapper gains 5 Armor, or the weakest other attacker when no sapper stands."),
+                    ChannelDef("demolition_order", "Demolition Order", uses = 1, onInterrupt = OnInterrupt.SPENT, payload = listOf(Guard(Aim.WeakestOtherAlly(STRUCTURAL), Fixed(5))), fallback = listOf(Damage(Aim.Foe, Strike())))),
+                attack()),
+            job = "A goblin engineer who sells breached gates to the highest bidder.",
+            counter = "Defeat or interrupt the sapper, interrupt Nibba, or defeat the shield that protects the sapper.",
+            forecast = "Nibba's orders will protect the sapper's charge.",
+            adaptation = "The engine cannot hurry another unit's preparation: the order gives the sapper 5 Armor to protect its charge instead of making it land sooner."),
+        enemy("cap_lich", "The Bellkeeper", PP, 88, 12, 10, cost = 18, siege = 5, tags = captain + UNDEAD + SPECIALIST,
+            moves = listOf(
+                prepared("funeral_toll", "Funeral Toll", Cadence.All(listOf(Cadence.ActionsFrom(1), Cadence.AllyDownedEligible(STANDARD_UNDEAD))),
+                    interruptible("Once one of its standard undead has fallen, the Bellkeeper starts Preparing a funeral toll. On its next action, the first of them to fall stands again with 40% of its Health and acts from the next round. Leaders and spirits never return."),
+                    ChannelDef("funeral_toll", "Funeral Toll", uses = 1, onInterrupt = OnInterrupt.SPENT, payload = listOf(Action.Return(STANDARD_UNDEAD, 40)), fallback = listOf(Damage(Aim.Foe, Strike(), Element.GRAVE)), fallbackName = "Grave attack")),
+                attack(Element.GRAVE)),
+            job = "A skeletal ritualist who carries the cracked bell of a flooded chapel.",
+            counter = "Interrupt the toll, defeat the Bellkeeper, or defeat the returned soldier a second time.",
+            forecast = "The Bellkeeper will try to call one fallen soldier back."),
+        enemy("cap_death_knight", "Sir Carrow, the Unburied", PP, 130, 16, 30, cost = 18, siege = 4, tags = captain + UNDEAD,
+            moves = listOf(
+                prepared("oath_of_ruin", "Oath of Ruin", Cadence.Actions(2, 5),
+                    "On his 2nd and 5th actions, he starts Preparing an oath of ruin. On his next action, the oath deals 80% of his Attack as grave damage to every defender. An Interrupt stops only that oath.",
+                    ChannelDef("oath_of_ruin", "Oath of Ruin", uses = 2, onInterrupt = OnInterrupt.CYCLE, payload = listOf(Damage(Aim.AllFoes, Strike(80), Element.GRAVE)), fallback = listOf(Damage(Aim.Foe, Strike())))),
+                attack()),
+            job = "A former gate commander, bound by an oath to hold every wall he reaches.",
+            counter = "Interrupt each oath, or heal through the two. Spears and Bleed get past his heavy Armor.",
+            forecast = "The Unburied Knight is preparing an oath that strikes every defender."),
+        enemy("cap_elder_treant", "Old Root-Crown", TC, 155, 15, 20, cost = 18, siege = 4, tags = captain, weakTo = Element.FIRE,
+            moves = listOf(
+                prepared("root_shelter", "Root Shelter", Cadence.Actions(2),
+                    interruptible("On its 2nd action, Root-Crown starts Preparing a root shelter. On its next action, Root-Crown and every creature with it gain 7 Armor."),
+                    ChannelDef("root_shelter", "Root Shelter", uses = 1, onInterrupt = OnInterrupt.SPENT, payload = listOf(Guard(Aim.AllAllies, Fixed(7))), fallback = listOf(Damage(Aim.Foe, Strike())))),
+                attack()),
+            job = "An ancient treant bound by a Covenant oath.",
+            counter = "Interrupt the shelter, defeat the lighter creatures before it lands, or burn through it. Weak to Fire.",
+            forecast = "Root-Crown will shelter the creatures around it."),
+        enemy("cap_beast_matriarch", "The White-Fang Matriarch", TC, 112, 15, 10, cost = 16, siege = 4, tags = captain + Tags.BEAST + CALLED,
+            moves = listOf(
+                move("pack_prey", "Pack prey", Cadence.Actions(2, 5), "On her 2nd and 5th actions, she attacks the defender with the least Health, past a Guardian, and sets her wolves on that defender until the round ends.",
+                    Action.MarkPrey(Aim.WeakestFoe), Damage(Aim.PackPrey, Strike())),
+                attack()),
+            job = "An unusually large dire wolf that protects its pack.",
+            counter = "Armor and healing on the defender she marks, fewer wolves, or the Matriarch defeated.",
+            forecast = "The white-fanged wolf will set the pack on a wounded defender."),
+    )
+
+    // ---- three engines: crew inside the same Health. Weak to Fire, no Poison or Bleed, never returned ----
+    private val engine = setOf(Tags.ENGINE)
+    private const val SPENT_ENGINE = "Once its last use is spent, it stands on the field but no longer acts."
+    private val engines = listOf(
+        enemy("eng_battering_ram", "Covered Battering Ram", IB, 90, 0, 20, cost = 10, siege = 3, tags = engine + STRUCTURAL, weakTo = Element.FIRE, immune = bones,
+            moves = listOf(
+                prepared("ram_stroke", "Ram Stroke", Cadence.Actions(1, 3, 5),
+                    "On its 1st, 3rd and 5th actions, it starts Preparing a ram stroke: 4 damage to the defences on its next action. An Interrupt stops only that stroke. At most 3 strokes. $SPENT_ENGINE",
+                    ChannelDef("ram_stroke", "Ram Stroke", uses = 3, onInterrupt = OnInterrupt.CYCLE, payload = listOf(Action.Structural(4)), neutralizeWhenSpent = true)),
+                waits("It does not attack.")),
+            job = "Batters the gate under a timber roof.",
+            counter = "Weak to Fire. Concentrated attacks destroy it, and each Interrupt saves the defences one stroke.",
+            forecast = "A covered ram is approaching. Its first stroke will come after a short preparation."),
+        enemy("eng_ballista", "Field Ballista", IB, 48, 16, 5, cost = 8, siege = 3, tags = engine + SPECIALIST, weakTo = Element.FIRE, immune = bones,
+            moves = listOf(
+                prepared("heavy_bolt", "Heavy Bolt", Cadence.Actions(1, 3, 5),
+                    "On its 1st, 3rd and 5th actions, it starts Preparing a heavy bolt. On its next action, the bolt hits the front defender and ignores up to 5 of that defender's Armor. An Interrupt wastes that bolt. At most 3 bolts. $SPENT_ENGINE",
+                    ChannelDef("heavy_bolt", "Heavy Bolt", uses = 3, onInterrupt = OnInterrupt.CYCLE, payload = listOf(Damage(Aim.FrontFoe, Strike(), ignoreArmor = 5)), neutralizeWhenSpent = true)),
+                waits("It does not attack otherwise.")),
+            job = "Winds heavy bolts against the defenders.",
+            counter = "Little Health and weak to Fire. Armor beyond the 5 its bolt ignores still blocks.",
+            forecast = "A field ballista is being wound against the defenders."),
+        enemy("eng_corpse_catapult", "Corpse Catapult", PP, 65, 0, 10, cost = 11, siege = 4, tags = engine + STRUCTURAL + SPECIALIST, weakTo = Element.FIRE, immune = bones,
+            moves = listOf(
+                prepared("grave_volley", "Grave Volley", Cadence.Actions(2),
+                    "On its 2nd action, it starts Preparing a grave volley. On its next action, the volley does 3 damage to the defences and deals 2 grave damage to every defender. An Interrupt stops it for good. $SPENT_ENGINE",
+                    ChannelDef("grave_volley", "Grave Volley", uses = 1, onInterrupt = OnInterrupt.SPENT, payload = listOf(Action.Structural(3), Damage(Aim.AllFoes, Fixed(2), Element.GRAVE)), neutralizeWhenSpent = true)),
+                waits("It does not attack.")),
+            job = "Throws one foul load at the town.",
+            counter = "Weak to Fire. Interrupt it or destroy it before its single shot. Bows reach it at the back of their line.",
+            forecast = "A corpse catapult is preparing one foul volley."),
+    )
+
+    // ---- three great monsters: late, named, never returned ----
+    private val boss = setOf(Tags.BOSS, ELITE)
+    private val monsters = listOf(
+        enemy("boss_hill_giant", "Hill Giant", IB, 180, 22, 10, cost = 23, siege = 5, tags = boss + STRUCTURAL,
+            moves = listOf(
+                prepared("boulder_cast", "Boulder Cast", Cadence.Actions(2),
+                    interruptible("On its 2nd action, it starts Preparing a boulder cast: 6 damage to the defences on its next action."),
+                    ChannelDef("boulder_cast", "Boulder Cast", uses = 1, onInterrupt = OnInterrupt.SPENT, payload = listOf(Action.Structural(6)), fallback = listOf(Damage(Aim.Foe, Strike())))),
+                move("club_sweep", "Club sweep", Cadence.Actions(5), "On its 5th action, hits the first 2 defenders in the line for 70% of its Attack each, past a Guardian.", Damage(Aim.FrontFoes(2), Strike(70))),
+                attack()),
+            job = "A towering giant hired to break the gate with stones.",
+            counter = "Very slow, with no healing. Interrupt the boulder, then keep up your attacks and your Armor.",
+            forecast = "A hill giant is bringing stones large enough to break the gate."),
+        enemy("boss_bone_colossus", "Bone Colossus", PP, 170, 18, 25, cost = 24, siege = 5, tags = boss + UNDEAD, immune = bones, bonusFrom = axeWeak,
+            passives = listOf(e("boss_bone_colossus_crack", "Cracked shell", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Take(Stat.GUARD, Aim.Self, Fixed(14))), Limit(perFight = 1),
+                "The first time the Colossus is damaged to 50% of its Health or less, its shell cracks and it loses all its Armor. Once per fight.", listOf(Condition.HolderHealthAtMost(50)))),
+            moves = listOf(
+                move("bone_shell", "Bone shell", Cadence.Actions(2, 5), "On its 2nd and 5th actions, gains 6 Armor, then attacks.", Guard(Aim.Self, Fixed(6)), Damage(Aim.Foe, Strike())),
+                attack(telegraph = "$BONES It attacks.")),
+            job = "A mass of bound bones shaped into a giant.",
+            counter = "Axe attacks deal 30% more damage. Bring it below half Health to crack its shell.",
+            forecast = "A giant of bound bones is approaching. Break its outer shell.",
+            adaptation = "The crack removes its Armor once, but a later Bone shell still gains Armor: nothing can stop a gain from 50% Health on."),
+        enemy("boss_ash_dragon", "Ash Dragon", TC, 150, 17, 20, cost = 26, siege = 6, tags = boss, weakTo = Element.FROST, resists = Element.FIRE,
+            moves = listOf(
+                prepared("ash_breath", "Ash Breath", Cadence.Actions(2),
+                    interruptible("On its 2nd action, it starts Preparing its ash breath. On its next action, the breath deals 70% of its Attack as fire damage to every defender and puts 2 Burn on the defender with the least Health."),
+                    ChannelDef("ash_breath", "Ash Breath", uses = 1, onInterrupt = OnInterrupt.SPENT, payload = listOf(Damage(Aim.AllFoes, Strike(70), Element.FIRE), Give(Stat.BURN, Aim.WeakestFoe, Fixed(2))),
+                        fallback = listOf(Damage(Aim.Foe, Strike())))),
+                attack()),
+            job = "A young dragon that attacks for territory and tribute.",
+            counter = "Interrupt the breath, or heal and gain Armor before it lands. Weak to Frost, resists Fire.",
+            forecast = "An ash-scaled dragon demands the town's stores. Prepare for one great breath of fire."),
+    )
+
+    private val built: List<Built> = ironBanner + paleProcession + thornCovenant + captains + engines + monsters
 
     val units: List<UnitDef> = built.map { it.unit }
     val profiles: List<EnemyProfile> = built.map { it.profile }
-    val armies: List<ArmyDef> = emptyList()
+
+    private fun army(id: String, host: Host, kind: ArmyKind, name: String, members: List<String>, cost: Int, firstSiege: Int, forecast: String, vararg counters: String) =
+        ArmyDef(id, host.factionId, name, kind, members, cost, firstSiege, forecast, counters.toList())
+
+    private val S = ArmyKind.STANDARD
+
+    /**
+     * The 36 armies of content bible 13, front first. Reordered from the bible's lists, so the screen stands in front and the
+     * defining specialist keeps a place a charter escort keeps: ib_03, ib_04, ib_05, ib_06, ib_07, ib_08, pp_01, pp_03, pp_04,
+     * pp_05, pp_06, tc_05, tc_08, cap_01, cap_02, cap_03, cap_05, eng_01, eng_02, eng_03. Members and costs are the bible's.
+     */
+    val armies: List<ArmyDef> = listOf(
+        army("army_ib_01", IB, S, "Shield and Arrows", listOf("ib_hobgoblin_shield", "ib_goblin_skirmisher", "ib_hobgoblin_archer"), 11, 1,
+            "Shieldbearers escort archers toward the wall.", "Defeat the Shieldbearer first.", "Bows and Storm weapons reach the archer at the back of their line."),
+        army("army_ib_02", IB, S, "Stolen Colours", listOf("ib_goblin_skirmisher", "ib_goblin_skirmisher", "ib_deserter", "ib_hobgoblin_archer"), 12, 1,
+            "Climbers will cover deserter crossbows.", "Give your defenders Armor: a crossbow bolt ignores only 4 of it.", "Defeat the fragile archer and crossbowman."),
+        army("army_ib_03", IB, S, "Powder at the Gate", listOf("ib_hobgoblin_shield", "ib_goblin_skirmisher", "ib_goblin_sapper", "ib_goblin_skirmisher"), 13, 2,
+            "A protected sapper is preparing a powder charge.", "Interrupt the sapper or defeat it before its charge lands.", "The charge lands only once."),
+        army("army_ib_04", IB, S, "Drums and Fangs", listOf("ib_wolf_rider", "ib_goblin_skirmisher", "ib_war_drummer", "ib_goblin_skirmisher"), 13, 2,
+            "War drums will drive a wolf rider at the wounded.", "Defeat the drummer.", "Heal or protect the defender with the least Health."),
+        army("army_ib_05", IB, S, "Broken Shields", listOf("ib_orc_breaker", "ib_hobgoblin_shield", "ib_deserter"), 15, 2,
+            "Heavy mauls will strip Armor away for the crossbow bolts.", "Armor gained every round replaces what the mauls remove.", "Defeat the crossbowman."),
+        army("army_ib_06", IB, S, "The Side Wall", listOf("ib_bugbear", "ib_hobgoblin_shield", "ib_orc_shaman", "ib_hobgoblin_archer"), 19, 3,
+            "A climber and a war shaman will test the back of your line.", "Put a sturdy defender at the back of your line for the climber's first attack.", "Defeat the shaman."),
+        army("army_ib_07", IB, S, "Ogre at the Door", listOf("ib_ogre", "ib_goblin_skirmisher", "ib_war_drummer"), 16, 3,
+            "An ogre carries a ram under the war drums.", "Interrupt the ogre's gate rush.", "Defeat the drummer, and concentrate your attacks on the ogre."),
+        army("army_ib_08", IB, S, "The Paid Troll", listOf("ib_troll", "ib_hobgoblin_shield", "ib_deserter"), 18, 3,
+            "A healing troll escorts armored mercenaries.", "Fire hits and Burn stop the troll healing.", "Concentrate your attacks on the troll.", "Spears and Bleed get past the mercenaries' Armor."),
+
+        army("army_pp_01", PP, S, "Old Spears", listOf("pp_zombie", "pp_skeleton_guard", "pp_skeleton_guard", "pp_skeleton_archer"), 12, 1,
+            "Skeleton spears and bows advance behind a shambling corpse.", "Axe attacks deal 30% more damage to skeletons.", "Ordinary concentrated attacks work as well."),
+        army("army_pp_02", PP, S, "Slow Advance", listOf("pp_zombie", "pp_zombie", "pp_skeleton_archer", "pp_skeleton_archer"), 12, 1,
+            "Shambling corpses screen a line of bone archers.", "Bows and Storm weapons reach the archers at the back of their line.", "Clearing the corpses at the front quickly works too."),
+        army("army_pp_03", PP, S, "Hungry Dead", listOf("pp_zombie", "pp_ghoul", "pp_grave_rats"), 11, 2,
+            "A ghoul and grave rats will go for the wounded defenders.", "Healing and Purifying weapons remove the ghoul's Poison.", "Defeat the fragile ghoul early."),
+        army("army_pp_04", PP, S, "Black Lantern", listOf("pp_skeleton_guard", "pp_skeleton_guard", "pp_acolyte", "pp_skeleton_archer"), 14, 2,
+            "A lantern-bearer is healing the skeleton line.", "Defeat the Grave Acolyte.", "Its healing is small: concentrated attacks outpace it."),
+        army("army_pp_05", PP, S, "A Second March", listOf("pp_skeleton_guard", "pp_skeleton_guard", "pp_necromancer", "pp_skeleton_archer"), 16, 3,
+            "A necromancer will try to raise one fallen skeleton.", "Interrupt the raising.", "Be ready to defeat one skeleton twice."),
+        army("army_pp_06", PP, S, "Mourning at the Gate", listOf("pp_zombie", "pp_zombie", "pp_banshee", "pp_skeleton_archer"), 16, 3,
+            "A banshee will weaken the party with a single wail.", "Interrupt the wail, or defeat the banshee before it lands.", "The wail comes only once: heal through it."),
+        army("army_pp_07", PP, S, "The Empty Armour", listOf("pp_black_knight", "pp_wraith", "pp_skeleton_archer"), 18, 3,
+            "A black knight holds the gate while a wraith goes for the back of your line.", "Spears and Bleed get past the knight's Armor.", "Protect the defender at the back of your line."),
+        army("army_pp_08", PP, S, "The Great Corpse", listOf("pp_ogre_zombie", "pp_wight", "pp_grave_rats"), 18, 3,
+            "A giant corpse advances beside a life-draining wight.", "Armor on your defenders denies the wight's drain.", "Concentrate your attacks to keep the fight short."),
+
+        army("army_tc_01", TC, S, "Driven Pack", listOf("tc_dire_wolf", "tc_dire_wolf", "tc_dire_wolf"), 12, 1,
+            "Three driven wolves are gathering at the breach.", "Defeat one wolf early: each wolf hits harder after another has hit the same defender."),
+        army("army_tc_02", TC, S, "Horn and Web", listOf("tc_dire_wolf", "tc_giant_spider", "tc_beastcaller"), 13, 2,
+            "A horn-bearer directs a wolf while a spider webs the wall.", "Defeat the Beastcaller.", "The spider is weak to Fire."),
+        army("army_tc_03", TC, S, "Horns Below, Wings Above", listOf("tc_minotaur", "tc_harpy"), 12, 3,
+            "A minotaur will charge while a harpy strips Armor from your defenders.", "Interrupt the horn charge.", "Give the front defender Armor before the charge lands.", "Defeat the harpy."),
+        army("army_tc_04", TC, S, "Roots and Teeth", listOf("tc_treant", "tc_dire_wolf"), 13, 3,
+            "A bound walking tree shelters a driven wolf.", "Fire and a few heavy hits work best against the tree.", "Concentrate your attacks on the wolf."),
+        army("army_tc_05", TC, S, "Spines and Coils", listOf("tc_giant_serpent", "tc_dire_wolf", "tc_manticore"), 17, 3,
+            "A giant serpent holds the breach beneath falling tail spikes.", "Healing keeps the party ahead of the spikes.", "Concentrate your attacks on one enemy at a time."),
+        army("army_tc_06", TC, S, "Venom from Above", listOf("tc_wyvern", "tc_harpy"), 15, 4,
+            "A wyvern will dive while a harpy strips away Armor.", "Healing and Purifying weapons remove the wyvern's Poison.", "Protect the defender with the least Health.", "Defeat the fragile harpy."),
+        army("army_tc_07", TC, S, "Bound Stone, Bound Flame", listOf("tc_earth_elemental", "tc_fire_elemental"), 18, 4,
+            "Bound stone and flame are advancing together.", "Axe attacks deal 30% more damage to the stone.", "Weapons without Fire work against the flame, and Frost works best."),
+        army("army_tc_08", TC, S, "The Marked Hunt", listOf("tc_werewolf", "tc_dire_wolf", "tc_beastcaller"), 17, 3,
+            "A horn-bearer leads a werewolf and a dire wolf.", "Defeat the Beastcaller.", "Silver weapons, Fire hits and Burn stop the werewolf healing."),
+
+        army("army_cap_01", IB, ArmyKind.CAPTAIN, "The Last Advance", listOf("ib_hobgoblin_shield", "cap_iron_marshal", "ib_hobgoblin_archer"), 25, 4,
+            "Varka will rally the surviving troops when wounded.", "Defeat the escorts first.", "Interrupt the last advance."),
+        army("army_cap_02", IB, ArmyKind.CAPTAIN, "Fuse-Ear's Breach", listOf("ib_hobgoblin_shield", "ib_goblin_skirmisher", "ib_goblin_sapper", "cap_goblin_chief"), 24, 3,
+            "Nibba will protect the sapper's powder charge.", "Interrupt Nibba's order or the sapper's charge.", "Defeat the sapper before its charge lands."),
+        army("army_cap_03", PP, ArmyKind.CAPTAIN, "The Funeral Toll", listOf("pp_skeleton_guard", "pp_skeleton_guard", "cap_lich", "pp_skeleton_archer"), 27, 5,
+            "The Bellkeeper will call one fallen soldier back.", "Interrupt the funeral toll.", "The returned soldier comes back only once, with part of its Health."),
+        army("army_cap_04", PP, ArmyKind.CAPTAIN, "The Unburied Oath", listOf("cap_death_knight", "pp_grave_rats", "pp_skeleton_archer"), 24, 4,
+            "The Unburied Knight prepares an oath that strikes the whole party.", "Interrupt each oath.", "Spears and Bleed get past his Armor."),
+        army("army_cap_05", TC, ArmyKind.CAPTAIN, "Under Root-Crown", listOf("cap_elder_treant", "tc_dire_wolf", "tc_giant_spider"), 26, 4,
+            "Root-Crown will shelter the creatures around it.", "Interrupt the root shelter.", "Defeat the lighter creatures before it lands.", "Fire deals 30% more damage to Root-Crown."),
+        army("army_cap_06", TC, ArmyKind.CAPTAIN, "White-Fang's Pack", listOf("cap_beast_matriarch", "tc_dire_wolf", "tc_dire_wolf"), 24, 4,
+            "The white-fanged matriarch will set her pack on a wounded defender.", "Protect and heal the defender with the least Health.", "Defeat the wolves to thin the pack."),
+
+        army("army_eng_01", IB, ArmyKind.ENGINE, "Under the Timber Roof", listOf("ib_hobgoblin_shield", "eng_battering_ram", "ib_deserter"), 19, 3,
+            "A covered ram is approaching beneath shields and crossbows.", "Fire deals 30% more damage to the ram.", "Each Interrupt stops one stroke."),
+        army("army_eng_02", IB, ArmyKind.ENGINE, "The Heavy Bolt", listOf("ib_goblin_skirmisher", "ib_goblin_skirmisher", "eng_ballista", "ib_hobgoblin_archer"), 16, 3,
+            "A field ballista is winding a bolt against the defenders.", "Armor on the front defender beyond the 5 a bolt ignores still blocks.", "Fire deals 30% more damage to the fragile engine."),
+        army("army_eng_03", PP, ArmyKind.ENGINE, "A Foul Volley", listOf("pp_zombie", "pp_zombie", "eng_corpse_catapult", "pp_skeleton_archer"), 20, 4,
+            "A corpse catapult is preparing one foul volley.", "Interrupt or destroy the catapult before its single shot.", "Fire deals 30% more damage to it."),
+
+        army("army_boss_01", IB, ArmyKind.MONSTER, "Stones for the Gate", listOf("boss_hill_giant", "ib_goblin_skirmisher", "ib_goblin_skirmisher"), 27, 5,
+            "A hill giant is bringing a boulder toward the gate.", "Interrupt the boulder cast.", "Keep up your attacks and your Armor: it is slow but hard to bring down."),
+        army("army_boss_02", PP, ArmyKind.MONSTER, "The Walking Ossuary", listOf("boss_bone_colossus", "pp_skeleton_guard", "pp_skeleton_guard"), 30, 5,
+            "A giant of bound bones is approaching with a brittle outer shell.", "Axe attacks deal 30% more damage to it.", "Below half Health its shell cracks and its Armor is gone."),
+        army("army_boss_03", TC, ArmyKind.MONSTER, "Tribute in Ash", listOf("boss_ash_dragon"), 26, 6,
+            "An ash-scaled dragon demands tribute. Prepare for one great breath of fire.", "Interrupt the breath, or heal through it.", "Weapons without Fire work best, Frost most of all."),
+    )
 }
