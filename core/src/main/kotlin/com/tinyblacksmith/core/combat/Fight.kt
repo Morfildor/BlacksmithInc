@@ -191,7 +191,8 @@ object Fight {
             a.strike = if (a.def.strikeMax > a.def.strikeMin) rng.nextInt(a.def.strikeMin, a.def.strikeMax) else a.def.strikeMin
             val title = when {
                 pending == null -> move!!.name
-                pending.interrupted -> pending.channel.fallbackName
+                // An interruption with nothing to fall back on says so, instead of naming an attack that never comes.
+                pending.interrupted -> if (pending.channel.fallback.isEmpty()) "${pending.channel.name} (interrupted)" else pending.channel.fallbackName
                 else -> pending.channel.name
             }
             val action = emit(EventKind.ACTION, a, null, text = "${a.name}: $title.")

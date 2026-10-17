@@ -248,6 +248,7 @@ class CombatGrammarTest {
             listOf(catapult(), foe("grunt", wait, health = 45))).replays()
         assertEquals(1, r.of(EventKind.INTERRUPTED).size)
         assertEquals(0, r.structural)
+        assertTrue(r.events.any { it.kind == EventKind.ACTION && it.source == "cat" && it.text == "cat: Corpse shot (interrupted)." }, "no attack is named that never comes")
         assertEquals(1, r.of(EventKind.NEUTRALIZED).size)
         assertEquals(FightOutcome.WON, r.outcome)
     }

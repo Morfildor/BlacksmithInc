@@ -104,7 +104,8 @@ enum class OnInterrupt { SPENT, CYCLE }
  * A prepared ability (final design 13.1). The move that carries it spends its action starting it: a use is taken, a
  * CHANNEL_STARTED event says so and, with [aim], fixes its target there and then. On the actor's next own action it
  * completes: [payload] if nobody interrupted it (CHANNEL_COMPLETED, its [Aim.EventTarget] the fixed target, nobody if
- * that target has fallen), else [fallback] under the name [fallbackName]. Never an extra action. A source that goes
+ * that target has fallen), else [fallback] under the name [fallbackName] ("<name> (interrupted)" when there is no
+ * fallback, as for an engine). Never an extra action. A source that goes
  * down cancels it. [uses] bounds it per fight; a move whose channel has no use left does not fit, so the kit falls
  * through to its next move. With [neutralizeWhenSpent] (an engine), the actor is neutralized after the action that
  * resolves its last use, completed or not.
