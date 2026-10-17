@@ -312,6 +312,11 @@ object CombatContent {
         LaunchContent.UNDEAD_BANE to listOf(e("affix_undead_bane", "Undead Bane", onOwnHit, listOf(Damage(Aim.EventTarget, Fixed(4), Element.SUN)), Limit(perRound = 1), "When the wielder's attack damages one of the Hollowbound, the weapon deals 4 more sun damage to that enemy. Once per round.", struck + Condition.TargetTagged(TAG_UNDEAD))),
         LaunchContent.GUARDIANS to listOf(e("affix_guardians", "Guardian's", Trigger(EventKind.GUARD_GAINED, Who.SELF_TARGET), listOf(Guard(Aim.Self, Fixed(2))), Limit(perRound = 1), "When the wielder gains Armor from the wielder's own ability, the wielder gains 2 more. Once per round.", struck)),
         LaunchContent.REINFORCED to listOf(e("affix_reinforced", "Reinforced", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(4))), Limit(perFight = 1), "The wielder starts each fight with 4 Armor.")),
+        // Living revision guild eras only (ContentCatalog.livingAffixes): the answers to a prepared ability and to Poison.
+        LaunchContent.DISRUPTING to listOf(e("affix_disrupting", "Disrupting", onOwnHit, listOf(Action.Interrupt(Aim.EventTarget)), Limit(perFight = 1),
+            "When the wielder's attack damages an enemy that is preparing an ability, the weapon interrupts that ability. It does nothing while no enemy is preparing one. Once per fight.", struck + Condition.TargetChanneling)),
+        LaunchContent.PURIFYING to listOf(e("affix_purifying", "Purifying", Trigger(EventKind.ACTED, Who.SELF_SOURCE), listOf(Action.Take(Stat.POISON, Aim.WeakestAllyHolding(Stat.POISON))), Limit(perRound = 1),
+            "After the wielder acts, the weapon removes 1 Poison from the weakest ally (lowest health percentage) who has Poison. It does nothing while no ally has Poison. Once per round.", struck)),
         LaunchContent.RESONANT to listOf(e("affix_resonant", "Resonant", Trigger(EventKind.HEALED, Who.SELF_SOURCE), listOf(Give(Stat.REGEN, Aim.EventTarget)), Limit(perRound = 1), "When the wielder's own ability heals an ally, that ally also gains 1 Regeneration. Once per round.", struck)),
         // Flaws: a cost, and for the right party a piece of a build.
         LaunchContent.BRITTLE to listOf(e("affix_brittle", "Brittle", Trigger(EventKind.GUARD_BROKEN, Who.SELF_TARGET), listOf(Action.Fracture(2)), Limit(perFight = 1),

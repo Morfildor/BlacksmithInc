@@ -27,10 +27,10 @@ import com.tinyblacksmith.core.text.Terms
  * guess. Nothing here predicts a fight. The bench shows one.
  */
 
-/** Something a rule makes, takes or waits for. The eleven fight statuses by their own names (`Terms.stat`), and what is not a status. */
+/** Something a rule makes, takes or waits for. The twelve fight statuses by their own names (`Terms.stat`), and what is not a status. */
 enum class Res(private val own: String? = null) {
-    GUARD, CHARGE, MARK("a Mark"), BURN, REGEN, CHILL, WET, BLEED, SCRAP, THORNS, STEAM,
-    HEALING("healing"), DAMAGE("damage"), FRACTURE("a cracked weapon"), HEALTH_PAID("health paid to a weapon"), HELPER("a helper");
+    GUARD, CHARGE, MARK("a Mark"), BURN, REGEN, CHILL, WET, BLEED, SCRAP, THORNS, STEAM, POISON,
+    HEALING("healing"), DAMAGE("damage"), FRACTURE("a cracked weapon"), HEALTH_PAID("health paid to a weapon"), HELPER("a helper"), INTERRUPT("an interrupted enemy ability");
 
     val word: String get() = own ?: Terms.stat(Stat.valueOf(name))
 
@@ -139,6 +139,10 @@ object Capabilities {
         Aim.WeakestFoe -> On.WEAKEST_FOE
         Aim.BackFoe -> On.BACK_FOE
         Aim.PriorityFoe -> On.PRIORITY_FOE
+        Aim.FrontFoe, Aim.PackPrey -> On.FOE
+        is Aim.FrontFoes -> if (aim.count > 1) On.ALL_FOES else On.FOE
+        is Aim.WeakestAllyTagged, is Aim.WeakestAllyHolding -> On.WEAKEST_ALLY
+        is Aim.WeakestOtherAlly -> On.AN_ALLY
         // The event's own subject: an enemy for what harms, an ally for what helps. The wielder itself when the rule answers what happens to the wielder.
         Aim.EventTarget, Aim.EventSource -> if (!helpful) On.FOE else if (aim == Aim.EventTarget && e?.trigger?.who == Who.SELF_TARGET) On.SELF else On.AN_ALLY
     }
@@ -234,6 +238,9 @@ object Capabilities {
             is Action.Echo -> e?.conditions?.filterIsInstance<Condition.StatIn>()?.firstOrNull()?.stats?.forEach { fact(Verb.PROVIDES, Res.of(it), On.FOE) }
             is Action.Fracture -> { fact(Verb.PROVIDES, Res.FRACTURE, On.SELF); fact(Verb.PROVIDES, Res.SCRAP, On.SELF) }
             is Action.Summon -> fact(Verb.PROVIDES, Res.HELPER, On.SELF)
+            is Action.Interrupt -> fact(Verb.PROVIDES, Res.INTERRUPT, on(a.target, false, e), more = listOf(Need.Circumstance("It needs an enemy that is preparing an ability.")))
+            // Enemy grammar: nothing a weapon's facts are asked about.
+            is Action.Structural, is Action.Return, is Action.MarkPrey -> {}
         }
         return out
     }

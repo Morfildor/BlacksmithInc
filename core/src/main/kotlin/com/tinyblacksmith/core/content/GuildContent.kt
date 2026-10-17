@@ -220,7 +220,7 @@ data class GuildCatalog(
     val bestiary: List<EnemyProfile> = emptyList(),
     val armies: List<ArmyDef> = emptyList(),
 ) {
-    val profileById: Map<String, EnemyProfile> by lazy { bestiary.associateBy { it.unitId } }
+    val profileById: Map<String, EnemyProfile> = bestiary.associateBy { it.unitId }
     fun army(id: String?): ArmyDef? = armies.firstOrNull { it.id == id }
     fun opening(id: String?): OpeningDef? = openings.firstOrNull { it.id == id }
     fun preparation(id: String?): SiegePrepDef? = preparations.firstOrNull { it.id == id }

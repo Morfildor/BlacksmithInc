@@ -19,7 +19,7 @@ import com.tinyblacksmith.core.model.WoundKind
 object Terms {
     fun stat(s: Stat): String = when (s) {
         Stat.GUARD -> "Armor"; Stat.CHARGE -> "Charge"; Stat.MARK -> "Mark"; Stat.BURN -> "Burn"; Stat.REGEN -> "Regeneration"
-        Stat.CHILL -> "Chill"; Stat.WET -> "Wet"; Stat.BLEED -> "Bleed"; Stat.SCRAP -> "Scrap"; Stat.THORNS -> "Thorns"; Stat.STEAM -> "Steam"
+        Stat.CHILL -> "Chill"; Stat.WET -> "Wet"; Stat.BLEED -> "Bleed"; Stat.SCRAP -> "Scrap"; Stat.THORNS -> "Thorns"; Stat.STEAM -> "Steam"; Stat.POISON -> "Poison"
     }
 
     fun element(e: Element): String = when (e) {

@@ -59,14 +59,14 @@ fun popColor(kind: PopKind): Color = when (kind) {
 /** The colour of a state's chip, by what it does to its holder. */
 fun statColor(stat: Stat): Color = when (stat) {
     Stat.GUARD, Stat.THORNS -> Iron
-    Stat.BURN, Stat.BLEED, Stat.MARK -> FlawRed
+    Stat.BURN, Stat.BLEED, Stat.MARK, Stat.POISON -> FlawRed
     Stat.CHILL, Stat.WET -> Color(0xFF9CC8F0)
     Stat.REGEN -> BuffGreen
     Stat.CHARGE, Stat.SCRAP, Stat.STEAM -> CreamMuted
 }
 
 /** The order states are listed on a portrait: protection first, then what hurts, then stores. */
-val STAT_ORDER = listOf(Stat.GUARD, Stat.THORNS, Stat.BURN, Stat.BLEED, Stat.MARK, Stat.CHILL, Stat.WET, Stat.REGEN, Stat.CHARGE, Stat.SCRAP, Stat.STEAM)
+val STAT_ORDER = listOf(Stat.GUARD, Stat.THORNS, Stat.BURN, Stat.BLEED, Stat.POISON, Stat.MARK, Stat.CHILL, Stat.WET, Stat.REGEN, Stat.CHARGE, Stat.SCRAP, Stat.STEAM)
 
 /**
  * What a status does, with the fight's own numbers ([FightRules] is `BalanceConfig.guild.fight`): the same rules the fight
@@ -84,6 +84,7 @@ fun statMeaning(stat: Stat, rules: FightRules): String = when (stat) {
     Stat.WET -> "A storm hit on a Wet fighter deals ${rules.wetStormBonus} extra damage and uses up 1 Wet. Loses 1 Wet each round."
     Stat.STEAM -> "When a fighter puts Burn on an enemy with Chill or Wet, or Chill on an enemy with Burn, they cancel one for one and the giver gains that much Steam."
     Stat.SCRAP -> "Left (2) when a weapon cracks in a fight. Some relics spend it."
+    Stat.POISON -> "At the end of each round the fighter takes 1 damage per Poison (ignores Armor), then loses 1 Poison. Healing the fighter receives is ${rules.poisonHealPercent}% smaller per Poison (at most ${rules.poisonHealMax}% smaller), and each heal on the fighter then removes 1 Poison."
 } + " At most ${rules.cap(stat)}."
 
 /** The short word under a pop's number: what kind of hit or mend it was. The rule's own name is said on the one whose rule it was. */

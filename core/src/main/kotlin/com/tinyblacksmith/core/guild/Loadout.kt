@@ -46,6 +46,8 @@ object Loadout {
             // Plain gear is what ordinary forging makes on purpose: a common or an uncommon weapon, or none (rules 6).
             if (weapon == null || weapon.rarity <= Rarity.UNCOMMON) add(CombatContent.TAG_COMMON_GEAR)
             if (effects.any { it.id == CombatContent.CHARGE_BURST.id }) add(CombatContent.TAG_CHARGE)
+            // What the weapon is made of, as an enemy's weakness reads it (`SourceBonus`, `Recovery`): from its parts, never its art.
+            weapon?.let { add(familyTag(it.familyId.value)); add(metalTag(it.coreId.value)) }
         }
         return Combatant(
             key = hero.id.value, name = hero.name, side = Side.PARTY, kit = kit.kit, maxHealth = max,
@@ -55,6 +57,10 @@ object Loadout {
         )
     }
 
+    /** The source tags of a weapon's family and metal: `family:axe`, `metal:silver`. */
+    fun familyTag(familyId: String) = "family:$familyId"
+    fun metalTag(coreId: String) = "metal:$coreId"
+
     /** A fight's health back on the hero's 0..100 scale; a fighter who was not downed keeps at least 1. */
     fun heroHealth(health: Int, maxHealth: Int): Int = if (health <= 0) 0 else maxOf(1, (health * 100 + maxHealth / 2) / maxHealth).coerceAtMost(100)
 
@@ -62,5 +68,6 @@ object Loadout {
     fun enemy(unit: UnitDef, key: String, percent: Int = 100, name: String = unit.name): Combatant = Combatant(
         key = key, name = name, side = Side.ENEMY, kit = unit.kit, maxHealth = maxOf(1, Fight.pct(unit.health, percent)), strikeMin = Fight.pct(unit.strikeMin, percent),
         strikeMax = Fight.pct(unit.strikeMax, percent), support = Fight.pct(unit.support, percent), weakTo = unit.weakTo, resists = unit.resists, effects = unit.effects, tags = unit.tags, tickResist = unit.tickResist, unitId = unit.id,
+        immune = unit.immune, surviveOnce = unit.surviveOnce, bonusFrom = unit.bonusFrom, recover = unit.recover, packBonusPercent = unit.packBonusPercent,
     )
 }
