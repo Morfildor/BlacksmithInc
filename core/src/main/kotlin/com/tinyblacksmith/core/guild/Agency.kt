@@ -441,6 +441,8 @@ object Agency {
     /** A won quest led from the front: the Captain ambition counts it. Nobody dies or is captured in a won fight. */
     fun ledHome(ctx: ResolutionContext, party: List<HeroId>) {
         if (!on(ctx)) return
+        // A Captain's win counts only when the whole party came home: nobody killed, nobody captured (final design 7.2).
+        if (party.any { id -> ctx.heroes[id]?.isAlive != true || ctx.guild!!.member(id)?.status == MemberStatus.CAPTURED }) return
         val lead = party.firstOrNull { ctx.guild!!.member(it) != null } ?: return
         GuildOps.updateMember(ctx, lead) { it.copy(ledWins = it.ledWins + 1) }
         val hero = ctx.hero(lead)

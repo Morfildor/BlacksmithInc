@@ -218,14 +218,10 @@ private fun GameEngine.story(state: GameState, h: Hero): List<Fact> =
         listOfNotNull(ambitionText(state, h)?.let { Fact(AMBITION, it) }, backgroundName(h)?.let { Fact("Background", it) })
 
 /**
- * The ambition with its progress (`Heroes.describeAmbition`). The Captain's is said here in plainer words with the same
- * condition (`Agency.ledHome`: 3 won quests with them as the first member in the party's order) and the member's count.
+ * The ambition with its progress (`Heroes.describeAmbition`); the Captain's with the member's count (`LivingText.captain`).
  */
 private fun GameEngine.ambitionText(state: GameState, h: Hero): String? {
-    if (h.ambition == Ambition.CAPTAIN && !h.ambitionDone && h.isAlive) {
-        val led = state.guild?.member(h.id)?.ledWins
-        return "Wants to lead the party, first in its order, to 3 won quests." + (led?.let { " ${minOf(it, 3)} so far." } ?: "")
-    }
+    com.tinyblacksmith.core.text.LivingText.captain(h, state.guild?.member(h.id))?.let { return it }
     return Heroes.describeAmbition(h, state.equippedWeapon(h.id), config)
 }
 

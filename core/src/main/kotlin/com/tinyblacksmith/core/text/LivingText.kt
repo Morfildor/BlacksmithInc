@@ -67,6 +67,12 @@ object LivingText {
         return "Hopes you will ${c.remedy}."
     }
 
+    /** The Captain's ambition with the member's count (`Agency.ledHome`), or null for anyone else. */
+    fun captain(hero: Hero, m: GuildMember?): String? {
+        if (hero.ambition != Ambition.CAPTAIN || hero.ambitionDone || !hero.isAlive) return null
+        return "Wants to lead the party home from 3 won quests, first in its order, with nobody killed or captured." + (m?.let { " ${minOf(it.ledWins, 3)} so far." } ?: "")
+    }
+
     /** What a resident would bring if recruited, from their background and Personality: an inclination, never a promise. */
     fun inclination(hero: Hero, content: ContentCatalog): String? {
         val bg = hero.backgroundId?.let { content.backgroundById[it] } ?: return null
