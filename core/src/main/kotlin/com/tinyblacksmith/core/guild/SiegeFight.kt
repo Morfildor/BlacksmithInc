@@ -11,6 +11,7 @@ import com.tinyblacksmith.core.combat.Objective
 import com.tinyblacksmith.core.combat.Posture
 import com.tinyblacksmith.core.combat.Side
 import com.tinyblacksmith.core.content.BlessingEffect
+import com.tinyblacksmith.core.content.ArmyKind
 import com.tinyblacksmith.core.content.Depth
 import com.tinyblacksmith.core.content.FactionDef
 import com.tinyblacksmith.core.content.GuildContent
@@ -39,6 +40,7 @@ object SiegeFight {
         if (ctx.guild == null || scenario.plan.isNotEmpty()) return
         val faction = scenario.factionId ?: Battle.besieger(ctx)?.id ?: return
         val cat = GuildOps.catalog(ctx)
+        if (ctx.living && cat.armies.any { it.factionId == faction }) return planArmy(ctx, scenario, faction)
         val cfg = ctx.config.guild
         val state = ctx.factions[faction] ?: return
         val number = ctx.town.siegesSurvived + ctx.town.siegesLost + 1
@@ -55,6 +57,38 @@ object SiegeFight {
         ctx.siege = scenario.copy(factionId = faction, plan = units, charter = charter, prepId = prep?.id)
         if (prep != null) ctx.emit(EventType.SIEGE_PREPARATION, 7, "Scouts report what the ${ctx.content.faction(faction).name} prepare for day ${scenario.siegeDay}: ${prep.name.lowercase()}. ${prep.description} Ways to answer it: ${prep.counters.joinToString(" ")}",
             data = mapOf("prep" to prep.id, "day" to scenario.siegeDay.toString(), "faction" to faction.value))
+    }
+
+    /**
+     * Living heroes (final design 12.4): the field is one of the authored armies, committed whole with its preparation, so
+     * what the scouts report is what comes. Standard armies are the rule, captains, engines and great monsters the headline;
+     * an army two newer ones of its faction have not displaced is not sent again. The charter warlord leads the charter siege,
+     * with a standard army as escort, cut to fit four a side. Keyed draws: nothing else moves.
+     */
+    private fun planArmy(ctx: ResolutionContext, scenario: SiegeScenario, faction: FactionId) {
+        val cat = GuildOps.catalog(ctx)
+        val cfg = ctx.config.guild
+        val state = ctx.factions.getValue(faction)
+        val number = ctx.town.siegesSurvived + ctx.town.siegesLost + 1
+        val percent = GuildOps.ranked(ctx, cfg.siegePercentBase + (cfg.siegePercentPerDay * scenario.siegeDay + cfg.siegePercentPerPressure * state.pressure).toInt())
+        val charter = charterSiege(ctx, scenario.siegeDay)
+        val rng = com.tinyblacksmith.core.rng.Keyed.rng(ctx.base.seed, "army|${ctx.era}|${scenario.siegeDay}")
+        val recent = ctx.guild!!.armyLog.mapNotNull { cat.army(it) }.filter { it.factionId == faction }.takeLast(2).map { it.id }.toSet()
+        val eligible = cat.armies.filter { it.factionId == faction && it.firstSiege <= number && (!charter || it.kind == ArmyKind.STANDARD) }
+        val fresh = eligible.filter { it.id !in recent }.ifEmpty { eligible }
+        val warlord = state.pressure >= ctx.config.warlordPressure
+        val army = rng.pickWeighted(fresh.map { it to if (it.kind == ArmyKind.STANDARD) 1.0 else if (warlord) 2.0 else 0.5 })
+        val max = cfg.fight.maxActorsPerSide
+        val units = if (charter) listOf(EnemySpec(cat.siegeLeaders.getValue(faction), Fight.pct(percent, cfg.charterWarlordPercent))) + army.members.take(max - 1).map { EnemySpec(it, percent) }
+            else army.members.take(max).map { EnemySpec(it, percent) }
+        // A preparation that fits the field as authored: none that replaces its members, none that would push a fifth actor in.
+        val preps = cat.preparations.filter { it.factionId == faction && it.gruntUnit == null && (it.addUnit == null || units.size < max) }
+        val prep = if (preps.isEmpty()) null else rng.pick(preps)
+        ctx.siege = scenario.copy(factionId = faction, plan = units, charter = charter, prepId = prep?.id, armyId = army.id)
+        ctx.guild = ctx.guild!!.copy(armyLog = (ctx.guild!!.armyLog + army.id).takeLast(6))
+        val who = if (charter) "${ctx.content.combat!!.unit(cat.siegeLeaders.getValue(faction)).name} leads it, escorted by ${army.name.lowercase()}" else army.name
+        ctx.emit(EventType.SIEGE_PREPARATION, 7, "Scouts report the army coming on day ${scenario.siegeDay}: $who. ${army.forecast}" + (prep?.let { " They also prepare ${it.name.lowercase()}. ${it.description}" } ?: ""),
+            data = mapOf("army" to army.id, "day" to scenario.siegeDay.toString(), "faction" to faction.value) + (prep?.let { mapOf("prep" to it.id) } ?: emptyMap()))
     }
 
     private const val TAG_PREP = "prep"
@@ -156,6 +190,8 @@ object SiegeFight {
         val missing: List<Pair<Hero, String>>, val watch: Int, val sabotaged: Boolean,
         /** What the besieger prepares, or what the party spoiled, and the bearer of the smith's weapon if it marches with them. */
         val prep: com.tinyblacksmith.core.content.SiegePrepDef? = null, val spoiled: com.tinyblacksmith.core.content.SiegePrepDef? = null, val nemesis: Nemesis? = null,
+        /** Living heroes: the authored army committed for this siege, with its scouts' report and answers. */
+        val army: com.tinyblacksmith.core.content.ArmyDef? = null,
     )
 
     /** What the Guild screen says of the coming siege. Reads only; simulates nothing. */
@@ -177,7 +213,7 @@ object SiegeFight {
         }
         return Forecast(faction, scenario?.let { fieldPlan(ctx, it) }.orEmpty(), scenario?.factionId != null, scenario?.charter == true, defenders(ctx, faction), missing,
             ((ctx.town.militia + ctx.town.armory) * (trait?.watchMultiplier ?: 1.0)).roundToInt(), (scenario?.sabotaged ?: 0) > 0,
-            GuildOps.catalog(ctx).preparation(scenario?.prepId), GuildOps.catalog(ctx).preparation(scenario?.prepSpoiled), scenario?.let { nemesisAtWall(ctx, it) })
+            GuildOps.catalog(ctx).preparation(scenario?.prepId), GuildOps.catalog(ctx).preparation(scenario?.prepSpoiled), scenario?.let { nemesisAtWall(ctx, it) }, GuildOps.catalog(ctx).army(scenario?.armyId))
     }
 
     /** Step 7 of End Day in a guild run. */

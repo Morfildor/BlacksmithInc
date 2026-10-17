@@ -167,6 +167,27 @@ data class CharterDef(
     val earlyDanger: Boolean = false,
 )
 
+enum class ArmyKind { STANDARD, CAPTAIN, ENGINE, MONSTER }
+
+/**
+ * One of the 36 authored armies (content bible 13): its whole field in line order, front first, never more than the
+ * four a side the fight allows. [cost] and [firstSiege] are the bible's authoring numbers; the live strength is the
+ * siege's own scaling, applied once. [forecast] is what the scouts report when it is committed, [counters] the answers.
+ */
+data class ArmyDef(val id: String, val factionId: FactionId, val name: String, val kind: ArmyKind, val members: List<String>, val cost: Int, val firstSiege: Int, val forecast: String, val counters: List<String>)
+
+/**
+ * What the bestiary records of an enemy beyond its fight numbers (content bible 10.1, final design Appendix A): its
+ * host, authoring cost and earliest siege, the bible's prototype numbers it was converted from once, the role in a few
+ * words, the counter, the forecast line, and how faithfully it is implemented. [assetId] is the art it waits for.
+ */
+data class EnemyProfile(
+    val unitId: String, val factionId: FactionId, val host: String, val cost: Int, val earliestSiege: Int,
+    val bibleHealth: Int, val bibleAttack: Int, val bibleArmorPercent: Int,
+    val job: String, val counter: String, val forecast: String,
+    val status: String = "implemented", val adaptation: String = "", val assetId: String = unitId,
+)
+
 /** A branch a member's own deeds open (spec 12.3): one of two, chosen by the smith, or neither. */
 data class SpecialityDef(val id: String, val name: String, val deed: String, val description: String, val effects: List<EffectDef> = emptyList(), val healthPercent: Int = 100, val strikePercent: Int = 100, val supportPercent: Int = 100)
 
@@ -195,7 +216,12 @@ data class GuildCatalog(
     val openings: List<OpeningDef> = emptyList(),
     val preparations: List<SiegePrepDef> = emptyList(),
     val modifiers: List<MissionModifierDef> = emptyList(),
+    /** Living heroes: the authored siege bestiary's profiles and its 36 army templates (content bible 10 to 13, final design Appendix A). */
+    val bestiary: List<EnemyProfile> = emptyList(),
+    val armies: List<ArmyDef> = emptyList(),
 ) {
+    val profileById: Map<String, EnemyProfile> by lazy { bestiary.associateBy { it.unitId } }
+    fun army(id: String?): ArmyDef? = armies.firstOrNull { it.id == id }
     fun opening(id: String?): OpeningDef? = openings.firstOrNull { it.id == id }
     fun preparation(id: String?): SiegePrepDef? = preparations.firstOrNull { it.id == id }
     fun modifier(id: String?): MissionModifierDef? = modifiers.firstOrNull { it.id == id }
@@ -262,6 +288,19 @@ data class GuildCatalog(
             if (modifiers.none { it.archetypes.isEmpty() || m.archetype in it.archetypes }) problems += "No modifier fits ${m.id}"
         }
         if (traits.count { !it.hook } < 1 || traits.count { it.hook } < 1) problems += "Guild traits need both kinds"
+        dup("army", armies.map { it.id }); dup("bestiary entry", bestiary.map { it.unitId })
+        for (a in armies) {
+            if (a.members.isEmpty() || a.members.size > 4) problems += "Army ${a.id} has ${a.members.size} members"
+            a.members.forEach { if (it !in combat.unitById) problems += "Army ${a.id} fields unknown unit $it" }
+            if (content.factions.none { it.id == a.factionId }) problems += "Army ${a.id} belongs to unknown faction ${a.factionId.value}"
+            if (bestiary.isNotEmpty()) {
+                val profiles = a.members.mapNotNull { profileById[it] }
+                if (profiles.size == a.members.size && profiles.sumOf { it.cost } != a.cost) problems += "Army ${a.id} costs ${a.cost}, its members ${profiles.sumOf { it.cost }}"
+                if (profiles.any { it.earliestSiege > a.firstSiege }) problems += "Army ${a.id} comes before its members may"
+            }
+            if (a.counters.isEmpty()) problems += "Army ${a.id} has no answer"
+        }
+        bestiary.forEach { p -> if (p.unitId !in combat.unitById) problems += "Bestiary entry ${p.unitId} has no unit" }
         content.factions.forEach { f ->
             if (routes.none { it.factionId == f.id }) problems += "No route for ${f.id.value}"
             listOf(siegeLeaders[f.id], siegeElites[f.id]).plus(siegeGrunts[f.id].orEmpty()).forEach { if (it == null || it !in combat.unitById) problems += "Siege roster of ${f.id.value} names $it" }
