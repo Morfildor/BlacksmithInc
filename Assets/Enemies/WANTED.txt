@@ -1,6 +1,7 @@
 Assets/Enemies
 Faction enemies: portraits for reports and small battle frames (idle, attack, hit) for the fight replay.
 PRIORITY 3: the 12 faction portraits (80x80, 112x112, 64x64 alternates) first, then PRIORITY 4: the 30 small battle frames (16x16).
+NEW (2026-10-17): the 48 bestiary enemies below, in four batches, after the 12 faction portraits. None blocks the game.
 
 File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
@@ -51,3 +52,30 @@ IDs in the game today (42), with the current in-game size:
   monster_hollowbound_wraith_idle_1       16x16
 
 Status as of 2026-10-10: nothing in this folder is delivered yet; everything above is still wanted.
+
+NEW WITH THE LIVING HEROES UPDATE (2026-10-17): THE BESTIARY, 48 ENEMIES
+  From docs/Tiny_Blacksmith_Peoples_Names_and_Siege_Bestiary.md (sections 10 to 12; the art brief is section 15). The game's
+  bestiary data is still being added, so no picture is blocking anything.
+  One portrait each, named by the ID. Size PROPOSED to match the faction portraits above: 80x80 for ordinary enemies, 112x112
+  for captains, engines and major monsters (tell us if you draw at another clean multiple). No names, health bars or words in
+  the art. Engine crews live inside the engine picture, swarms are one picture, riders are one mounted picture. Captains need
+  a silhouette of their own, not just a border. The 16x16 battle frames are not asked for these.
+  Pictures that may share a body (changed weapon and pose): skeleton spearman and archer; zombie and ogre zombie need
+  different proportions; shieldbearer and archer may share a uniform but not a silhouette; treant and Root-Crown differ in crown.
+
+  Batch A, core variety (8):
+    ib_goblin_skirmisher, ib_hobgoblin_shield, ib_hobgoblin_archer, ib_deserter,
+    pp_skeleton_guard, pp_skeleton_archer, pp_zombie, tc_dire_wolf
+  Batch B, enemies that teach a decision (8):
+    ib_goblin_sapper, ib_war_drummer, ib_orc_breaker, pp_ghoul, pp_acolyte, tc_giant_spider, tc_harpy, tc_beastcaller
+  Batch C, recognisable large threats (20):
+    ib_wolf_rider, ib_orc_shaman, ib_bugbear, ib_ogre, ib_troll, pp_wight, pp_necromancer, pp_ogre_zombie, pp_banshee,
+    pp_wraith, pp_black_knight, pp_grave_rats, tc_minotaur, tc_manticore, tc_wyvern, tc_treant, tc_earth_elemental,
+    tc_fire_elemental, tc_giant_serpent, tc_werewolf
+  Batch D, headline encounters (12):
+    captains: cap_iron_marshal (Varka the Iron Marshal), cap_goblin_chief (Nibba Fuse-Ear), cap_lich (The Bellkeeper),
+              cap_death_knight (Sir Carrow, the Unburied), cap_elder_treant (Old Root-Crown), cap_beast_matriarch (The White-Fang Matriarch)
+    engines:  eng_battering_ram, eng_ballista, eng_corpse_catapult
+    majors:   boss_hill_giant (boulder and sling visible, scale must read in a portrait), boss_bone_colossus, boss_ash_dragon
+  Prefixes: ib_ Iron Banner, pp_ Pale Procession, tc_ Thorn Covenant. Section 10.2 to 10.4 of the document describes how each
+  should look ("Recognition/art"); read that line before drawing.

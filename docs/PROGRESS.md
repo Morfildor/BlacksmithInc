@@ -15,6 +15,11 @@
   Setting in the base prompt (no background edits), upgrades at strength 0.7-0.75; 4 bases and 9 upgrades redone,
   about $13.50 of API spend. Imported, appearances and portraitRaces extended, content 7 re-pinned, face counts updated.
   Heroes already in a save keep the key stamped at creation (a silhouette stays a silhouette; re-stamping is design 6.3, open).
+- UI art revamp 2026-10-17 (`docs/UI_ART_REVAMP.md`): the 36 interface icons, badges and markers, the paper, the Gazette and
+  Notebook frames (nine-slice, wired), the milestone burst, the launcher icon and the 11 replay cues (waiting) redrawn with Retro
+  Diffusion at about one pixel per displayed dp; every icon call site through `PixelIcon` (whole-pixel scaling). Checked:
+  `:app:testDebugUnitTest`, emulator screenshots on a read-only Pixel_10_Pro at 420 dpi (port 5562). Embers still wanted.
+- Art wanted lists refreshed 2026-10-17 (`Assets/*/WANTED.txt`, `PRIORITIES.txt`): faces by people (six peoples have none), the 48 bestiary pictures in batches A to D, optional replay cue marks; stale branch notes removed. No game files changed.
 - Done (core): era revision boundary (legacy eras unchanged, classic RNG parity proven), schema 8 / rules 8 / content 7 /
   balance 17; 12 peoples and all 1,800 names; Hooks, eight ambitions, counter visits, announced loan returns, autonomous
   Specialities, personal offers, concerns and departures, creditor / lesson / healer visitors; combat grammar (Poison,

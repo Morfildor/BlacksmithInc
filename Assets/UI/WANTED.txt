@@ -11,4 +11,8 @@ IDs in the game today (3), with the current in-game size:
   panel_gazette                           256x126
   panel_journal                           256x163
 
-Status as of 2026-10-10: nothing in this folder is delivered yet; everything above is still wanted.
+Status as of 2026-10-17: delivered with Retro Diffusion and in the game (Assets/Implemented/ui; docs/UI_ART_REVAMP.md):
+  tile_paper     120x120 seamless (a 60 px sheet mirrored 2x2), tiled at a whole scale
+  panel_gazette  25x25 nine-slice: 12 px corners, a 1 px edge profile, empty centre (the Gazette and its archive)
+  panel_journal  25x25 nine-slice, same rule (the Notebook)
+Nothing is wanted.

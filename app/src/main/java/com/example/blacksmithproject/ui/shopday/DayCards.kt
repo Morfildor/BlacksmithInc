@@ -45,6 +45,7 @@ import com.example.blacksmithproject.ui.SKIP_TO_EVENING
 import com.example.blacksmithproject.ui.InlineActionButton
 import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.FramedPanel
+import com.example.blacksmithproject.ui.PixelIcon
 import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.SecondaryActionButton
@@ -325,7 +326,7 @@ private fun FactTile(icon: Int, value: String, label: String, said: String, modi
     // V3: a fact, not a plate: the picture, the number in cream and its label, side by side with the next.
     Column(modifier.padding(vertical = Space.xs).clearAndSetSemantics { contentDescription = said }) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
-            PixelImage(icon, 24.dp, description = null)
+            PixelIcon(icon, 24.dp)
             Text(value, style = MaterialTheme.typography.titleLarge, color = Cream)
         }
         Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -358,7 +359,7 @@ fun TomorrowCard(tomorrow: Beat.Tomorrow, onOpenGazette: () -> Unit, modifier: M
                 Modifier.fillMaxWidth().drawBehind { drawLine(BronzeDeep, Offset.Zero, Offset(size.width, 0f), 1.dp.toPx()) }.padding(top = Space.sm),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
             ) {
-                PixelImage(R.drawable.icon_integrity, 24.dp, description = null)
+                PixelIcon(R.drawable.icon_integrity, 24.dp)
                 Text(tomorrow.siege, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
             }
         }

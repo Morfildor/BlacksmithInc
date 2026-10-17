@@ -13,6 +13,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
+import com.example.blacksmithproject.R
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.RecordsPage
 import com.example.blacksmithproject.UiState
@@ -32,10 +34,13 @@ fun RecordsPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
     var showGone by rememberSaveable { mutableStateOf(false) }
     Column(modifier.fillMaxSize().padding(horizontal = Space.md).padding(top = Space.sm)) {
         SegmentRow(page, vm::selectRecords, pages = pages)
+        // The notebook is a bound book: a leather frame stays over the page while its rows scroll inside.
+        val book = page == RecordsPage.JOURNAL
+        val inset = if (book) frameInset() else 0.dp
         LazyColumn(
-            Modifier.fillMaxSize().testTag("records_list"),
+            Modifier.fillMaxSize().then(if (book) Modifier.padding(top = Space.sm).pixelFrame(R.drawable.panel_journal) else Modifier).testTag("records_list"),
             state = rememberSaveable(page, bookTab, saver = LazyListState.Saver) { LazyListState() },
-            contentPadding = PaddingValues(bottom = Space.lg),
+            contentPadding = PaddingValues(start = inset + if (book) Space.sm else 0.dp, end = inset + if (book) Space.sm else 0.dp, top = inset, bottom = inset + Space.lg),
         ) {
             when (page) {
                 // The edition archive is one item: its per-day rows keep the Gazette's own open and close state.

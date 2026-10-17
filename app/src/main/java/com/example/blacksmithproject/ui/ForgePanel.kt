@@ -274,7 +274,7 @@ private fun ForgeBar(
                 .semantics(mergeDescendants = true) { contentDescription = if (offers > 0) "Commissions, $offers new" else "Commissions, $commissions" },
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            PixelImage(R.drawable.icon_action_commission, 28.dp, description = null)
+            PixelIcon(R.drawable.icon_action_commission, 28.dp)
             if (commissions > 0) Text(
                 if (offers > 0) "$offers new" else "$commissions", style = MaterialTheme.typography.labelLarge, color = if (offers > 0) Gold else CreamMuted,
                 modifier = Modifier.padding(start = 6.dp),

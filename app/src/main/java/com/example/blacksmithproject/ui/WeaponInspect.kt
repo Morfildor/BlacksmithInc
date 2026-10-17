@@ -141,7 +141,7 @@ internal fun WeaponRow(
             stock.dormant?.let { Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold) }
             stock.promised?.let {
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    PixelImage(R.drawable.icon_promised, wholePixelDp(48, 20.dp), description = null)
+                    PixelIcon(R.drawable.icon_promised, 20.dp)
                     Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold, modifier = Modifier.testTag(promisedTag))
                 }
             }

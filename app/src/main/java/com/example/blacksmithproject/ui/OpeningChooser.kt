@@ -197,7 +197,7 @@ private fun OpeningCard(o: OpeningUi, chosen: Boolean, enabled: Boolean, showSig
             Modifier.fillMaxWidth().padding(top = Space.xs).heightIn(min = 40.dp).clickable(role = Role.Button, onClickLabel = if (relic) "Hide the relic's effect" else "Read the relic's effect") { relic = !relic }.testTag("opening_relic_${o.id}"),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
-            PixelImage(R.drawable.icon_relic, 24.dp, description = null)
+            PixelIcon(R.drawable.icon_relic, 24.dp)
             Text(
                 buildAnnotatedString { append("Relic  "); withStyle(SpanStyle(color = Cream, fontWeight = FontWeight.Medium)) { append(o.relic) } },
                 style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f),

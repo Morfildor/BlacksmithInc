@@ -345,7 +345,7 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
             ) {
-                PixelImage(destIcon(d), wholePixelDp(40, if (large) 24.dp else 30.dp), description = null)
+                PixelIcon(destIcon(d), if (large) 24.dp else 30.dp)
                 Text(destName(d, guild), style = MaterialTheme.typography.labelMedium,
                     color = if (on) Gold else CreamMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().testTag("nav_label_${d.name.lowercase()}"))

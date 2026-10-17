@@ -71,7 +71,7 @@ fun VisitorCard(view: Encounters.View, onOpen: () -> Unit, modifier: Modifier = 
                 .heightIn(min = 56.dp).padding(horizontal = Space.xs, vertical = Space.sm).testTag("visitor_open"),
             horizontalArrangement = Arrangement.spacedBy(Space.md), verticalAlignment = Alignment.CenterVertically,
         ) {
-            PixelImage(R.drawable.icon_visitor, wholePixelDp(80, 48.dp), description = null)
+            PixelIcon(R.drawable.icon_visitor, 48.dp)
             Column(Modifier.weight(1f)) {
                 Text("A visitor at the forge", style = SectionLabel, color = CreamMuted)
                 Text(view.name, style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.semantics { heading() })

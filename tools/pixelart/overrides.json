@@ -43,45 +43,45 @@
  },
  "badge_common": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "1c3b64fc3d0a2f4274e4a617f40fb4671748de67e096f99164b34b22a3aaf9bf"
+  "sha256": "53758c7b9e16cd84b5f82595f515a3161556c48793571f9d4c03e93fe378858e"
  },
  "badge_epic": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "3b5267427bea43060eafbdff4bc5083d9e8db6c1fafd4379b5bbb19b9534e350"
+  "sha256": "345eb46ac8d5ff6ddc539c59973bc5193a13ddf5086ddd9d330e050e3b069eae"
  },
  "badge_flaw": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "69ed1ec05764ddc7bd6ed7caf53f110a978e39ab0469eb8c5fffb958881e66e4"
+  "sha256": "9511f192075ef29381692266a8ead6ffde9f4cd1aaa40dc3f42fcb953416bb27"
  },
  "badge_legendary": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "9c013c4f4d2414a95800ec75b27ff7c62e9f6184da7f438d1b3aaeccca3d1e31"
+  "sha256": "bf7720ec009b953c10b80c179ea9e48b7e13631086db58efaadcd9c6e6ac15d9"
  },
  "badge_rare": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "2f390f33f9fe11d0ffc090c707d046f78fa64c160358d1b8ede7fed78a6a078f"
+  "sha256": "b0f77716f029bf7590a04b2f8784e9f0c466db1e4ce6f25244cd3250e7b1c883"
  },
  "badge_uncommon": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "3a2edd171b5800a3d772b9a6bbb8f6705d4f4fb61d5691f390581d4a34f0ff79"
+  "sha256": "f2e82cffcc9dba3f31df4dc57806be22b16a0fd71240fab946eb09db253dc314"
  },
  "bg_counter_forge": {
   "sheet": "pack:backgrounds",
@@ -301,48 +301,32 @@
   "sha256": "b63c57b06747ff5e1a760e2cbfa2d5f577ca87fadc78aad00546d1b03a058efc"
  },
  "fx_milestone_0": {
-  "sheet": "pack:New folder",
+  "sheet": "pack:ui",
   "width": 16,
   "height": 16,
   "sourceKind": "script_drawn_pack",
-  "sha256": "76bb7f9426cf627969e90f8ce3a70a72c9d34be5825e3332e0698af7980efa66",
-  "anchor": "top-left",
-  "kind": "animation",
-  "durationMs": 100,
-  "notes": "Milestone burst"
+  "sha256": "cbf83acd089538db903716549371fe9ad6cbdbe03f77518f4caf8a3bb0062f18"
  },
  "fx_milestone_1": {
-  "sheet": "pack:New folder",
+  "sheet": "pack:ui",
   "width": 16,
   "height": 16,
   "sourceKind": "script_drawn_pack",
-  "sha256": "4ce09d1271fd314a030be53948ed0b496826af48a4048db71d9d684986dc5e7a",
-  "anchor": "top-left",
-  "kind": "animation",
-  "durationMs": 100,
-  "notes": "Milestone burst"
+  "sha256": "fec50d14c2efb3fc0244ff9a120e28f75f05a667f7fae514162fe28b9b3d3857"
  },
  "fx_milestone_2": {
-  "sheet": "pack:New folder",
+  "sheet": "pack:ui",
   "width": 16,
   "height": 16,
   "sourceKind": "script_drawn_pack",
-  "sha256": "0a2b928637b4a3351204e63c8fd93d54b72db4fcba8f7931697a88e47708a642",
-  "anchor": "top-left",
-  "kind": "animation",
-  "durationMs": 100,
-  "notes": "Milestone burst"
+  "sha256": "dc2f58c51c5070535812d5bc7ac355a350b1b7354c002fdeb484fd285e088616"
  },
  "fx_milestone_3": {
-  "sheet": "pack:New folder",
+  "sheet": "pack:ui",
   "width": 16,
   "height": 16,
   "sourceKind": "script_drawn_pack",
-  "sha256": "2435f64f3ab1687b1d72c0dd2e110c73ac46052f73ced9a0eeb2342aa9479107",
-  "anchor": "top-left",
-  "kind": "animation",
-  "durationMs": 100,
-  "notes": "Milestone burst"
+  "sha256": "ba40641e04a301f2e220efef6eb99a0f868d7621675d9a1b1d2bc30b7d284964"
  },
  "hero_battlemage_attack_0": {
   "sheet": "pack:New folder",
@@ -566,213 +550,213 @@
  },
  "icon_action_commission": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "a60c56a7b738f956e70ad38235fffd902ed7de1d355930790aa7cdf0a6237d74"
+  "sha256": "130f27b1492386c08b2807ad0fbafa8b6f55fa9bde156750b66a730ef8fe9923"
  },
  "icon_action_donate": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "a6a631f1d5601360e90345dc05dcb881f818aaabdcfae2aaaecc445068404edb"
+  "sha256": "8a7e8a7643e7e4c471f8e77478b19ec2e080347f8a8306023eaadc740d20c826"
  },
  "icon_action_hone": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "016bfbdd2bdc6846bf0bcee03d330e95edc1cc9863f36d4c269e1baf4207cccf"
+  "sha256": "fb5433876e3514d5e39605313cb14472a2d230eb8277bec0349139803811e627"
  },
  "icon_action_legacy": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "e674e2a9e0348f82d92210ce1792b5293b8f1b8b78f8f7e0c09b6352f639274f"
+  "sha256": "75c47b544062a6a30c8aa61c0e969d89252ddc7adc5d231b87a575085f0a183d"
  },
  "icon_action_price": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "3c56a1f3fbd01d29c8ff5f1f8f743890a3b1796f554d008b88d50ad5e3db57be"
+  "sha256": "fd41bcea6a0a1e51a1a196960996ad24fbf1f260614c7e0ec69a343aa6f05bdb"
  },
  "icon_action_scrap": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "9b47c8c3f7a2850dc79d2c19ced3239241760eeda3ce2a5caf6cd08d172b8d6e"
+  "sha256": "0bbeeb85992cb08a24b0c1f1a20ffdadc55366b37dea5177076bc56425ac938b"
  },
  "icon_action_storage": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "4c2f7e391343fa636ef95251dd9afad1d7d7726c5d8b68565c7d1a24dd1aac63"
+  "sha256": "f560c9b68a78b27d2d612e8220064a5379fd0d6f78c07e7f4b8c5a32d9300821"
  },
  "icon_action_supplies": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "5fd75f85c4eb1592ab07a37141febd83a7a7ddbfcfa32913c272a79155e15328"
+  "sha256": "8d18a028bbf284744c68fa13d2a516776dd14ea2127b90097727efb2ebe497dd"
  },
  "icon_day": {
   "sheet": "pack:icons",
   "width": 24,
   "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "0ec22a0673b6a9c23a6892e343644fbc7ff7f6066d84383d947393d1dbd03770"
+  "sha256": "be8f9e354b5d539711baec4390398cebd4859343dbdae39bcd7beafd68023d63"
  },
  "icon_energy": {
   "sheet": "pack:icons",
   "width": 24,
   "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "e8694b4aecf0ea8b3e396e1c16937a900ddeb67aff9f7e7d084b7caddf73653a"
+  "sha256": "bd851a40e2f83a229ec410cef76009d193fd0c477c63dfda4b5a4181f3ddbf76"
  },
  "icon_gold": {
   "sheet": "pack:icons",
   "width": 24,
   "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "a7b76d2d5e330f52f7a4d4b99463c22c770fd078f3b7480b6c98e6eb6d363e1f"
+  "sha256": "62950913acc6c7e61ff3d79abfb15fcd8b407f380ad79bd7d714140b1003f4c6"
  },
  "icon_integrity": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "a33c2d422a54747207891a8b061203e2df08cf0cfe24a215b16074b867148e67"
+  "sha256": "b02140a519869eafc450719790a3af700532f39311b1fa356d0645194c9e18ba"
  },
  "icon_militia": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "a6896e4fb79fc2584a90af7ed958a15db7d1ea810257162bda5dc8985bd17844"
+  "sha256": "7cb957854227f8148383e17efedec4fa3549dbc17ff83d53bdbb045c76eb0d37"
  },
  "icon_nav_forge": {
   "sheet": "pack:icons",
-  "width": 40,
-  "height": 40,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "b6a9ae1a09594a6a78414b95f3b351becc42a8782fd27d06cc11fb7fb607e22b"
+  "sha256": "40f5318b187bfcbf59a5d9797b9cc39ec99df2e35e4e5b18f389f651f1797949"
  },
  "icon_nav_gazette": {
   "sheet": "pack:icons",
-  "width": 80,
-  "height": 80,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "cd307cfcc3a876fc8336fa7d2d7611aec1e459a8dbe8114969f5c380b4066efb"
+  "sha256": "23676aefc06447efe84dd1a93df73a5722f12e2f11d08c65594ab0e4098cb72e"
  },
  "icon_nav_home": {
   "sheet": "pack:icons",
-  "width": 80,
-  "height": 80,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "643f62f13363a92d0152a5ed01e4fc723535bc04e458ed2fc8360ecb7354b210"
+  "sha256": "94fe1866027bf7e5539f7a9348bc18fbb506d8dca1a66f73d59df8777f588398"
  },
  "icon_nav_journal": {
   "sheet": "pack:icons",
-  "width": 40,
-  "height": 40,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "6661aa249803d87763a933369f6e1930689c48729014c605fbb523a1a704d16a"
+  "sha256": "28dd987b3dbf29d09a92e573eaf475d71cf79fc8af5ce19461879e73301547b0"
  },
  "icon_nav_legacy": {
   "sheet": "pack:icons",
-  "width": 80,
-  "height": 80,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "13ed9878e3875ffcdd9be907120dcf44fa1ba71700649c3d742bcbf7e0ac8768"
+  "sha256": "a4b918dcf6cfd4227bf4c4cc03093840266f53849c2ca3c72f5141ad7aeee06c"
  },
  "icon_nav_market": {
   "sheet": "pack:icons",
-  "width": 40,
-  "height": 40,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "20950b723bd6d0b45c94fafd1768335e816b7146b8798b5b1ba25ea6531808ee"
+  "sha256": "229f498b508af31ef6629caed83d6fd2564dc95322adfd327d0150a5573746a1"
  },
  "icon_nav_town": {
   "sheet": "pack:icons",
-  "width": 40,
-  "height": 40,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "6ed5c35bd165b153ae70bb2e73de64a8fadc737f577566fef2efc3cedd0bef6c"
+  "sha256": "d0a2d6e4949cdadf6265ac1228826524581a4addd90d53d2de20162b78396427"
  },
  "icon_promised": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "87f2543917ba44a4913b56b4c792cc94ac2a5826c320c3f9b2399f653ef4fc6a"
+  "sha256": "7c37d41811d48fb9b0f7d9982103096964a239a6cbf438c737c6aedb840dd05b"
  },
  "icon_purse": {
   "sheet": "pack:icons",
-  "width": 80,
-  "height": 80,
+  "width": 40,
+  "height": 40,
   "sourceKind": "script_drawn_pack",
-  "sha256": "b472d32c3ae93b19c609040d9aaec82491488de6d788315bd04e3cc77d98f590"
+  "sha256": "4021148e3d3821999b6259d30b918a1d44550641010e15f3a366774b997331ed"
  },
  "icon_relic": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "ab7aad65365b5b5fd5f186dc58f3b3f2f297c2db9b8e973951831d2ff9684106"
+  "sha256": "b0163cfb93044c90eee15e7f1e2c54e872b202c45efb19ddc85c5f7fa06ed02d"
  },
  "icon_reputation": {
   "sheet": "pack:icons",
-  "width": 48,
-  "height": 48,
+  "width": 24,
+  "height": 24,
   "sourceKind": "script_drawn_pack",
-  "sha256": "19f1177f9ee6df6b6a0c2e6231b36d21ebf219d77da53ea2cb8de0cc5915b46d"
+  "sha256": "a5d565eecbdf30f49aefe4ad79950be0b10c552be7f702360d4ad6d3e45c0df1"
  },
  "icon_settings": {
   "sheet": "pack:icons",
-  "width": 80,
-  "height": 80,
+  "width": 32,
+  "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "bd767edffacaae0c5d558144b01144d52c229bc9e45c5bfb44eb6d864f6a8b0b"
+  "sha256": "eddfac27c24f383513c13d56c8522a22d9ed2eeb83c0c0dc6e4bf69a3275d23d"
  },
  "icon_trait_long_assault": {
   "sheet": "pack:icons",
-  "width": 80,
-  "height": 80,
+  "width": 40,
+  "height": 40,
   "sourceKind": "script_drawn_pack",
-  "sha256": "21947a6c51d6dbc4040170a154d089c598d2d7d303bb629ab265cb06ec33112b"
+  "sha256": "97a1410617b8a6a745fe3ac9b7e05ff1d08b7b97c332eaaae29786870a4d29f6"
  },
  "icon_trait_many_breaches": {
   "sheet": "pack:icons",
-  "width": 80,
-  "height": 80,
+  "width": 40,
+  "height": 40,
   "sourceKind": "script_drawn_pack",
-  "sha256": "bad5da2da46212ec0ee95ee6a83fc4ba13cfc91fabc91b1c6665910634db27c6"
+  "sha256": "b8ad6b805791340937dc514126aec46becb897fe56deb4d325759d44fcf461bc"
  },
  "icon_visitor": {
   "sheet": "pack:icons",
-  "width": 80,
-  "height": 80,
+  "width": 48,
+  "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "24b659e7f025be8d717d252da40ea9d352766966ecf931a9cf8d392f49f60c7b"
+  "sha256": "f2599dae3c2113638e9d4c7fb6e795929f27c802f3ca10cafbbc7ba7f319f844"
  },
  "marker_dead": {
   "sheet": "pack:icons",
   "width": 16,
   "height": 16,
   "sourceKind": "script_drawn_pack",
-  "sha256": "f2a3b06723ef09d26313e1d9f2c1e30786b0927495ac628c034eb754b820a4f8"
+  "sha256": "4d99e9dee231ad332bac5581b6e873df040c47209f50b8bf482d3d319bf83bec"
  },
  "marker_retired": {
   "sheet": "pack:icons",
   "width": 16,
   "height": 16,
   "sourceKind": "script_drawn_pack",
-  "sha256": "c6a66b6f05ea1710de7d5f4bfd72130cefd9cc9cf2d08c063dcdd90e6bf58929"
+  "sha256": "06bb616c3d017439b80966eaf330774ff97f27bfd8cd3e7207a7d76b6066b9e4"
  },
  "material_binding_salt": {
   "sheet": "pack:materials",
@@ -1217,18 +1201,18 @@
   "notes": "Combat idle frame"
  },
  "panel_gazette": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-  "width": 256,
-  "height": 126,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sheet": "pack:ui",
+  "width": 25,
+  "height": 25,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "7aba491cec9500679e3342abfc72a0bc1ae31bbadc73dd897ebefbe077e52cd9"
  },
  "panel_journal": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-  "width": 256,
-  "height": 163,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sheet": "pack:ui",
+  "width": 25,
+  "height": 25,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "5993677e9a7889e6ee6b0e52a777e79b6ce68aa1268fa8dae32f51b1f5aef9f5"
  },
  "portrait_battlemage_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png",
@@ -3246,11 +3230,11 @@
   "sha256": "603ae52963a411fc9cc1b249c1007ed0ea551efd95b9fd11ad0e1fe137491170"
  },
  "tile_paper": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-  "width": 64,
-  "height": 64,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "7baee4af2a8e8fabe71b6ee878e45aad5e3e7f91650fa3eaeb1c69f12f784015"
+  "sheet": "pack:ui",
+  "width": 120,
+  "height": 120,
+  "sourceKind": "script_drawn_pack",
+  "sha256": "38f4d5aba6170bc5bf9a8a7b764cc77d9f9b79b486d08f60f13bf95cfc54ea05"
  },
  "tile_wall": {
   "sheet": "pack:backgrounds",

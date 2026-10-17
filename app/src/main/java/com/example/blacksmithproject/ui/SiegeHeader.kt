@@ -155,7 +155,7 @@ fun WorkshopHeader(ui: SiegeHeaderUi, gold: Int, energy: Int, onSettings: () -> 
 @Composable
 private fun Stat(icon: Int, label: String, value: String, color: Color = Cream) {
     Row(Modifier.semantics(mergeDescendants = true) { contentDescription = "$label $value" }, verticalAlignment = Alignment.CenterVertically) {
-        PixelImage(icon, wholePixelDp(24, 22.dp), description = null)
+        PixelIcon(icon, 22.dp)
         Spacer(Modifier.width(4.dp))
         Text(value, style = MaterialTheme.typography.titleSmall, color = color, maxLines = 1)
     }

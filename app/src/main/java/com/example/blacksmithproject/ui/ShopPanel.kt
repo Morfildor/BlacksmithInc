@@ -189,7 +189,7 @@ private fun DoorRow(icon: Int, title: String, action: String, tag: String, onOpe
             .clickable(onClickLabel = action, role = Role.Button, onClick = onOpen).heightIn(min = 52.dp).padding(horizontal = Space.xs).testTag(tag),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        PixelImage(icon, 28.dp, description = null)
+        PixelIcon(icon, 28.dp)
         Column(Modifier.weight(1f).padding(vertical = Space.sm)) {
             Text(title, style = MaterialTheme.typography.titleSmall)
             detail?.let { Secondary(it, Modifier.testTag("${tag}_detail")) }
@@ -213,7 +213,7 @@ private fun CommissionsCard(rows: List<RequestUi>, busy: Boolean, onOpenBoard: (
             Modifier.fillMaxWidth().hairline().clickable(onClickLabel = "Open the board", role = Role.Button, onClick = onOpenBoard).heightIn(min = 52.dp).padding(horizontal = Space.xs).testTag("shop_commissions_open"),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            PixelImage(R.drawable.icon_action_commission, 28.dp, description = null)
+            PixelIcon(R.drawable.icon_action_commission, 28.dp)
             Text("Commissions · ${rows.size}", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
             // The count of offers that wait, beside a gold dot as on the Guild's tabs: the thing on the Shop that needs an answer.
             if (new > 0) Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.testTag("shop_commissions_new")) {
@@ -278,7 +278,7 @@ private fun ReturnedCard(
 internal fun RequestCard(r: RequestUi, busy: Boolean, onOpenHero: (HeroId) -> Unit, onAnswer: (CommissionId, Boolean) -> Unit, onForgeThis: (CommissionId) -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().padding(horizontal = Space.md, vertical = Space.sm)) {
         Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-            PixelImage(R.drawable.icon_action_commission, wholePixelDp(48, 36.dp), description = null)
+            PixelIcon(R.drawable.icon_action_commission, 36.dp)
             Column(Modifier.weight(1f)) {
                 Text(r.asks, style = MaterialTheme.typography.titleMedium)
                 FactLine(r.askFacts())

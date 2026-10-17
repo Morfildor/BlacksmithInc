@@ -4,7 +4,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
-import com.example.blacksmithproject.ui.wholePixelDp
+import com.example.blacksmithproject.ui.PixelIcon
 import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.R
 import androidx.compose.foundation.layout.Arrangement
@@ -479,7 +479,7 @@ private fun StockEditor(weaponId: WeaponId, stock: Stock, enabled: Boolean, onSt
     val free = stock.promised == null
     stock.promised?.let {
         Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-            PixelImage(R.drawable.icon_promised, wholePixelDp(48, 24.dp), description = null)
+            PixelIcon(R.drawable.icon_promised, 24.dp)
             Text("$it. It stays in storage until the commission is collected.", style = MaterialTheme.typography.bodyMedium, modifier = Modifier.testTag("item_promised"))
         }
     }

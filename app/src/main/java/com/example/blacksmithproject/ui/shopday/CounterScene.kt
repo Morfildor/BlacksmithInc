@@ -207,7 +207,7 @@ fun WeaponSlot(blade: WeaponSnapshot, price: Int, state: SlotState, reducedMotio
         val sprite = Sprites.weapon(blade.familyId, blade.coreId, blade.element, blade.rarity, signature = blade.signatureId != null)
         PixelSprite(sprite, scale, alpha = when (state) { SlotState.GONE -> 0.12f; SlotState.SOLD_NOW -> 0.4f; else -> 1f })
         if (!gone) {
-            // The badges are 48 px art for a 24 px slot: drawn at the pip's size, not at a whole-number scale of their own.
+            // The badges are 24 px art for a 24 px slot: drawn at the pip's whole-number scale.
             val badgeSize = with(LocalDensity.current) { (24 * pip).toDp() }
             PixelImage(Sprites.badge(blade.rarity), badgeSize, description = null, modifier = Modifier.align(Alignment.TopStart))
             if (blade.flaws.isNotEmpty()) PixelImage(Sprites.badgeFlaw, badgeSize, description = null, modifier = Modifier.align(Alignment.TopEnd))

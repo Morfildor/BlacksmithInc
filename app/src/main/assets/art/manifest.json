@@ -131,8 +131,8 @@
     {
       "id": "badge_common",
       "file": "drawable-nodpi/badge_common.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "badge",
       "rarity": "COMMON",
       "source": "imported",
@@ -142,8 +142,8 @@
     {
       "id": "badge_uncommon",
       "file": "drawable-nodpi/badge_uncommon.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "badge",
       "rarity": "UNCOMMON",
       "source": "imported",
@@ -153,8 +153,8 @@
     {
       "id": "badge_rare",
       "file": "drawable-nodpi/badge_rare.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "badge",
       "rarity": "RARE",
       "source": "imported",
@@ -164,8 +164,8 @@
     {
       "id": "badge_epic",
       "file": "drawable-nodpi/badge_epic.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "badge",
       "rarity": "EPIC",
       "source": "imported",
@@ -175,8 +175,8 @@
     {
       "id": "badge_legendary",
       "file": "drawable-nodpi/badge_legendary.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "badge",
       "rarity": "LEGENDARY",
       "source": "imported",
@@ -186,8 +186,8 @@
     {
       "id": "badge_flaw",
       "file": "drawable-nodpi/badge_flaw.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "badge",
       "meaning": "flaw",
       "source": "imported",
@@ -587,35 +587,35 @@
     {
       "id": "tile_paper",
       "file": "drawable-nodpi/tile_paper.png",
-      "width": 64,
-      "height": 64,
+      "width": 120,
+      "height": 120,
       "layer": "ui",
       "tile": true,
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:ui",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "panel_gazette",
       "file": "drawable-nodpi/panel_gazette.png",
-      "width": 256,
-      "height": 126,
+      "width": 25,
+      "height": 25,
       "layer": "ui",
       "tile": true,
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:ui",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "panel_journal",
       "file": "drawable-nodpi/panel_journal.png",
-      "width": 256,
-      "height": 163,
+      "width": 25,
+      "height": 25,
       "layer": "ui",
       "tile": true,
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:ui",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "furnace_cold",
@@ -769,8 +769,8 @@
     {
       "id": "bg_title_workshop_night",
       "file": "drawable-nodpi/bg_title_workshop_night.png",
-      "width": 270,
-      "height": 150,
+      "width": 941,
+      "height": 1672,
       "layer": "bg",
       "source": "imported",
       "sourceSheet": "pack:backgrounds",
@@ -851,52 +851,40 @@
       "file": "drawable-nodpi/fx_milestone_0.png",
       "width": 16,
       "height": 16,
-      "layer": "animation",
+      "layer": "fx",
       "source": "imported",
-      "sourceSheet": "pack:New folder",
-      "sourceKind": "script_drawn_pack",
-      "anchor": "top-left",
-      "durationMs": 100,
-      "notes": "Milestone burst"
+      "sourceSheet": "pack:ui",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "fx_milestone_1",
       "file": "drawable-nodpi/fx_milestone_1.png",
       "width": 16,
       "height": 16,
-      "layer": "animation",
+      "layer": "fx",
       "source": "imported",
-      "sourceSheet": "pack:New folder",
-      "sourceKind": "script_drawn_pack",
-      "anchor": "top-left",
-      "durationMs": 100,
-      "notes": "Milestone burst"
+      "sourceSheet": "pack:ui",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "fx_milestone_2",
       "file": "drawable-nodpi/fx_milestone_2.png",
       "width": 16,
       "height": 16,
-      "layer": "animation",
+      "layer": "fx",
       "source": "imported",
-      "sourceSheet": "pack:New folder",
-      "sourceKind": "script_drawn_pack",
-      "anchor": "top-left",
-      "durationMs": 100,
-      "notes": "Milestone burst"
+      "sourceSheet": "pack:ui",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "fx_milestone_3",
       "file": "drawable-nodpi/fx_milestone_3.png",
       "width": 16,
       "height": 16,
-      "layer": "animation",
+      "layer": "fx",
       "source": "imported",
-      "sourceSheet": "pack:New folder",
-      "sourceKind": "script_drawn_pack",
-      "anchor": "top-left",
-      "durationMs": 100,
-      "notes": "Milestone burst"
+      "sourceSheet": "pack:ui",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "hero_battlemage_attack_0",
@@ -1161,8 +1149,8 @@
     {
       "id": "icon_action_commission",
       "file": "drawable-nodpi/icon_action_commission.png",
-      "width": 48,
-      "height": 48,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1171,8 +1159,8 @@
     {
       "id": "icon_action_donate",
       "file": "drawable-nodpi/icon_action_donate.png",
-      "width": 48,
-      "height": 48,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1181,8 +1169,8 @@
     {
       "id": "icon_action_hone",
       "file": "drawable-nodpi/icon_action_hone.png",
-      "width": 48,
-      "height": 48,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1191,8 +1179,8 @@
     {
       "id": "icon_action_legacy",
       "file": "drawable-nodpi/icon_action_legacy.png",
-      "width": 48,
-      "height": 48,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1201,8 +1189,8 @@
     {
       "id": "icon_action_price",
       "file": "drawable-nodpi/icon_action_price.png",
-      "width": 48,
-      "height": 48,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1211,8 +1199,8 @@
     {
       "id": "icon_action_scrap",
       "file": "drawable-nodpi/icon_action_scrap.png",
-      "width": 48,
-      "height": 48,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1221,8 +1209,8 @@
     {
       "id": "icon_action_storage",
       "file": "drawable-nodpi/icon_action_storage.png",
-      "width": 48,
-      "height": 48,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1231,8 +1219,8 @@
     {
       "id": "icon_action_supplies",
       "file": "drawable-nodpi/icon_action_supplies.png",
-      "width": 48,
-      "height": 48,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1271,8 +1259,8 @@
     {
       "id": "icon_integrity",
       "file": "drawable-nodpi/icon_integrity.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1281,8 +1269,8 @@
     {
       "id": "icon_militia",
       "file": "drawable-nodpi/icon_militia.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1291,8 +1279,8 @@
     {
       "id": "icon_nav_forge",
       "file": "drawable-nodpi/icon_nav_forge.png",
-      "width": 40,
-      "height": 40,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1301,8 +1289,8 @@
     {
       "id": "icon_nav_gazette",
       "file": "drawable-nodpi/icon_nav_gazette.png",
-      "width": 80,
-      "height": 80,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1311,8 +1299,8 @@
     {
       "id": "icon_nav_home",
       "file": "drawable-nodpi/icon_nav_home.png",
-      "width": 80,
-      "height": 80,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1321,8 +1309,8 @@
     {
       "id": "icon_nav_journal",
       "file": "drawable-nodpi/icon_nav_journal.png",
-      "width": 40,
-      "height": 40,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1331,8 +1319,8 @@
     {
       "id": "icon_nav_legacy",
       "file": "drawable-nodpi/icon_nav_legacy.png",
-      "width": 80,
-      "height": 80,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1341,8 +1329,8 @@
     {
       "id": "icon_nav_market",
       "file": "drawable-nodpi/icon_nav_market.png",
-      "width": 40,
-      "height": 40,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1351,8 +1339,8 @@
     {
       "id": "icon_nav_town",
       "file": "drawable-nodpi/icon_nav_town.png",
-      "width": 40,
-      "height": 40,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1361,8 +1349,8 @@
     {
       "id": "icon_promised",
       "file": "drawable-nodpi/icon_promised.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1371,8 +1359,8 @@
     {
       "id": "icon_purse",
       "file": "drawable-nodpi/icon_purse.png",
-      "width": 80,
-      "height": 80,
+      "width": 40,
+      "height": 40,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1381,8 +1369,8 @@
     {
       "id": "icon_relic",
       "file": "drawable-nodpi/icon_relic.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1391,8 +1379,8 @@
     {
       "id": "icon_reputation",
       "file": "drawable-nodpi/icon_reputation.png",
-      "width": 48,
-      "height": 48,
+      "width": 24,
+      "height": 24,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1401,8 +1389,8 @@
     {
       "id": "icon_settings",
       "file": "drawable-nodpi/icon_settings.png",
-      "width": 80,
-      "height": 80,
+      "width": 32,
+      "height": 32,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1411,8 +1399,8 @@
     {
       "id": "icon_trait_long_assault",
       "file": "drawable-nodpi/icon_trait_long_assault.png",
-      "width": 80,
-      "height": 80,
+      "width": 40,
+      "height": 40,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1421,8 +1409,8 @@
     {
       "id": "icon_trait_many_breaches",
       "file": "drawable-nodpi/icon_trait_many_breaches.png",
-      "width": 80,
-      "height": 80,
+      "width": 40,
+      "height": 40,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -1431,8 +1419,8 @@
     {
       "id": "icon_visitor",
       "file": "drawable-nodpi/icon_visitor.png",
-      "width": 80,
-      "height": 80,
+      "width": 48,
+      "height": 48,
       "layer": "icon",
       "source": "imported",
       "sourceSheet": "pack:icons",
@@ -2299,30 +2287,10 @@
       "sourceKind": "ai_generated_portrait"
     },
     {
-      "id": "portrait_hero_11_sm",
-      "file": "drawable-nodpi/portrait_hero_11_sm.png",
-      "width": 48,
-      "height": 48,
-      "layer": "portrait",
-      "source": "imported",
-      "sourceSheet": "Assets/Implemented/heroes/hero_11_guardian_base.png",
-      "sourceKind": "ai_generated_portrait"
-    },
-    {
       "id": "portrait_hero_11_up",
       "file": "drawable-nodpi/portrait_hero_11_up.png",
       "width": 64,
       "height": 64,
-      "layer": "portrait",
-      "source": "imported",
-      "sourceSheet": "Assets/Implemented/heroes/hero_11_guardian_upgraded.png",
-      "sourceKind": "ai_generated_portrait"
-    },
-    {
-      "id": "portrait_hero_11_up_sm",
-      "file": "drawable-nodpi/portrait_hero_11_up_sm.png",
-      "width": 48,
-      "height": 48,
       "layer": "portrait",
       "source": "imported",
       "sourceSheet": "Assets/Implemented/heroes/hero_11_guardian_upgraded.png",
@@ -2339,30 +2307,10 @@
       "sourceKind": "ai_generated_portrait"
     },
     {
-      "id": "portrait_hero_12_sm",
-      "file": "drawable-nodpi/portrait_hero_12_sm.png",
-      "width": 48,
-      "height": 48,
-      "layer": "portrait",
-      "source": "imported",
-      "sourceSheet": "Assets/Implemented/heroes/hero_12_ranger_base.png",
-      "sourceKind": "ai_generated_portrait"
-    },
-    {
       "id": "portrait_hero_12_up",
       "file": "drawable-nodpi/portrait_hero_12_up.png",
       "width": 64,
       "height": 64,
-      "layer": "portrait",
-      "source": "imported",
-      "sourceSheet": "Assets/Implemented/heroes/hero_12_ranger_upgraded.png",
-      "sourceKind": "ai_generated_portrait"
-    },
-    {
-      "id": "portrait_hero_12_up_sm",
-      "file": "drawable-nodpi/portrait_hero_12_up_sm.png",
-      "width": 48,
-      "height": 48,
       "layer": "portrait",
       "source": "imported",
       "sourceSheet": "Assets/Implemented/heroes/hero_12_ranger_upgraded.png",
@@ -2379,30 +2327,10 @@
       "sourceKind": "ai_generated_portrait"
     },
     {
-      "id": "portrait_hero_13_sm",
-      "file": "drawable-nodpi/portrait_hero_13_sm.png",
-      "width": 48,
-      "height": 48,
-      "layer": "portrait",
-      "source": "imported",
-      "sourceSheet": "Assets/Implemented/heroes/hero_13_duelist_base.png",
-      "sourceKind": "ai_generated_portrait"
-    },
-    {
       "id": "portrait_hero_13_up",
       "file": "drawable-nodpi/portrait_hero_13_up.png",
       "width": 64,
       "height": 64,
-      "layer": "portrait",
-      "source": "imported",
-      "sourceSheet": "Assets/Implemented/heroes/hero_13_duelist_upgraded.png",
-      "sourceKind": "ai_generated_portrait"
-    },
-    {
-      "id": "portrait_hero_13_up_sm",
-      "file": "drawable-nodpi/portrait_hero_13_up_sm.png",
-      "width": 48,
-      "height": 48,
       "layer": "portrait",
       "source": "imported",
       "sourceSheet": "Assets/Implemented/heroes/hero_13_duelist_upgraded.png",
@@ -2419,30 +2347,10 @@
       "sourceKind": "ai_generated_portrait"
     },
     {
-      "id": "portrait_hero_14_sm",
-      "file": "drawable-nodpi/portrait_hero_14_sm.png",
-      "width": 48,
-      "height": 48,
-      "layer": "portrait",
-      "source": "imported",
-      "sourceSheet": "Assets/Implemented/heroes/hero_14_battlemage_base.png",
-      "sourceKind": "ai_generated_portrait"
-    },
-    {
       "id": "portrait_hero_14_up",
       "file": "drawable-nodpi/portrait_hero_14_up.png",
       "width": 64,
       "height": 64,
-      "layer": "portrait",
-      "source": "imported",
-      "sourceSheet": "Assets/Implemented/heroes/hero_14_battlemage_upgraded.png",
-      "sourceKind": "ai_generated_portrait"
-    },
-    {
-      "id": "portrait_hero_14_up_sm",
-      "file": "drawable-nodpi/portrait_hero_14_up_sm.png",
-      "width": 48,
-      "height": 48,
       "layer": "portrait",
       "source": "imported",
       "sourceSheet": "Assets/Implemented/heroes/hero_14_battlemage_upgraded.png",
@@ -2459,30 +2367,10 @@
       "sourceKind": "ai_generated_portrait"
     },
     {
-      "id": "portrait_hero_15_sm",
-      "file": "drawable-nodpi/portrait_hero_15_sm.png",
-      "width": 48,
-      "height": 48,
-      "layer": "portrait",
-      "source": "imported",
-      "sourceSheet": "Assets/Implemented/heroes/hero_15_warden_base.png",
-      "sourceKind": "ai_generated_portrait"
-    },
-    {
       "id": "portrait_hero_15_up",
       "file": "drawable-nodpi/portrait_hero_15_up.png",
       "width": 64,
       "height": 64,
-      "layer": "portrait",
-      "source": "imported",
-      "sourceSheet": "Assets/Implemented/heroes/hero_15_warden_upgraded.png",
-      "sourceKind": "ai_generated_portrait"
-    },
-    {
-      "id": "portrait_hero_15_up_sm",
-      "file": "drawable-nodpi/portrait_hero_15_up_sm.png",
-      "width": 48,
-      "height": 48,
       "layer": "portrait",
       "source": "imported",
       "sourceSheet": "Assets/Implemented/heroes/hero_15_warden_upgraded.png",
@@ -2586,6 +2474,926 @@
       "layer": "portrait",
       "source": "imported",
       "sourceSheet": "Assets/Implemented/heroes/hero_20_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_21",
+      "file": "drawable-nodpi/portrait_hero_21.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_21_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_21_up",
+      "file": "drawable-nodpi/portrait_hero_21_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_21_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_22",
+      "file": "drawable-nodpi/portrait_hero_22.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_22_battlemage_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_22_up",
+      "file": "drawable-nodpi/portrait_hero_22_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_22_battlemage_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_23",
+      "file": "drawable-nodpi/portrait_hero_23.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_23_battlemage_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_23_up",
+      "file": "drawable-nodpi/portrait_hero_23_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_23_battlemage_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_24",
+      "file": "drawable-nodpi/portrait_hero_24.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_24_ranger_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_24_up",
+      "file": "drawable-nodpi/portrait_hero_24_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_24_ranger_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_25",
+      "file": "drawable-nodpi/portrait_hero_25.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_25_ranger_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_25_up",
+      "file": "drawable-nodpi/portrait_hero_25_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_25_ranger_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_26",
+      "file": "drawable-nodpi/portrait_hero_26.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_26_duelist_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_26_up",
+      "file": "drawable-nodpi/portrait_hero_26_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_26_duelist_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_27",
+      "file": "drawable-nodpi/portrait_hero_27.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_27_guardian_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_27_up",
+      "file": "drawable-nodpi/portrait_hero_27_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_27_guardian_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_28",
+      "file": "drawable-nodpi/portrait_hero_28.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_28_battlemage_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_28_up",
+      "file": "drawable-nodpi/portrait_hero_28_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_28_battlemage_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_29",
+      "file": "drawable-nodpi/portrait_hero_29.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_29_guardian_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_29_up",
+      "file": "drawable-nodpi/portrait_hero_29_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_29_guardian_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_30",
+      "file": "drawable-nodpi/portrait_hero_30.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_30_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_30_up",
+      "file": "drawable-nodpi/portrait_hero_30_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_30_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_31",
+      "file": "drawable-nodpi/portrait_hero_31.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_31_ranger_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_31_up",
+      "file": "drawable-nodpi/portrait_hero_31_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_31_ranger_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_32",
+      "file": "drawable-nodpi/portrait_hero_32.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_32_duelist_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_32_up",
+      "file": "drawable-nodpi/portrait_hero_32_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_32_duelist_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_33",
+      "file": "drawable-nodpi/portrait_hero_33.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_33_ranger_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_33_up",
+      "file": "drawable-nodpi/portrait_hero_33_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_33_ranger_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_34",
+      "file": "drawable-nodpi/portrait_hero_34.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_34_battlemage_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_34_up",
+      "file": "drawable-nodpi/portrait_hero_34_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_34_battlemage_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_35",
+      "file": "drawable-nodpi/portrait_hero_35.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_35_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_35_up",
+      "file": "drawable-nodpi/portrait_hero_35_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_35_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_36",
+      "file": "drawable-nodpi/portrait_hero_36.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_36_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_36_up",
+      "file": "drawable-nodpi/portrait_hero_36_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_36_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_37",
+      "file": "drawable-nodpi/portrait_hero_37.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_37_guardian_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_37_up",
+      "file": "drawable-nodpi/portrait_hero_37_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_37_guardian_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_38",
+      "file": "drawable-nodpi/portrait_hero_38.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_38_ranger_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_38_up",
+      "file": "drawable-nodpi/portrait_hero_38_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_38_ranger_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_39",
+      "file": "drawable-nodpi/portrait_hero_39.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_39_duelist_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_39_up",
+      "file": "drawable-nodpi/portrait_hero_39_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_39_duelist_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_40",
+      "file": "drawable-nodpi/portrait_hero_40.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_40_guardian_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_40_up",
+      "file": "drawable-nodpi/portrait_hero_40_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_40_guardian_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_41",
+      "file": "drawable-nodpi/portrait_hero_41.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_41_battlemage_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_41_up",
+      "file": "drawable-nodpi/portrait_hero_41_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_41_battlemage_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_42",
+      "file": "drawable-nodpi/portrait_hero_42.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_42_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_42_up",
+      "file": "drawable-nodpi/portrait_hero_42_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_42_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_43",
+      "file": "drawable-nodpi/portrait_hero_43.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_43_guardian_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_43_up",
+      "file": "drawable-nodpi/portrait_hero_43_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_43_guardian_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_44",
+      "file": "drawable-nodpi/portrait_hero_44.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_44_duelist_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_44_up",
+      "file": "drawable-nodpi/portrait_hero_44_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_44_duelist_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_45",
+      "file": "drawable-nodpi/portrait_hero_45.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_45_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_45_up",
+      "file": "drawable-nodpi/portrait_hero_45_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_45_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_46",
+      "file": "drawable-nodpi/portrait_hero_46.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_46_duelist_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_46_up",
+      "file": "drawable-nodpi/portrait_hero_46_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_46_duelist_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_47",
+      "file": "drawable-nodpi/portrait_hero_47.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_47_battlemage_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_47_up",
+      "file": "drawable-nodpi/portrait_hero_47_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_47_battlemage_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_48",
+      "file": "drawable-nodpi/portrait_hero_48.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_48_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_48_up",
+      "file": "drawable-nodpi/portrait_hero_48_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_48_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_49",
+      "file": "drawable-nodpi/portrait_hero_49.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_49_guardian_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_49_up",
+      "file": "drawable-nodpi/portrait_hero_49_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_49_guardian_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_50",
+      "file": "drawable-nodpi/portrait_hero_50.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_50_battlemage_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_50_up",
+      "file": "drawable-nodpi/portrait_hero_50_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_50_battlemage_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_51",
+      "file": "drawable-nodpi/portrait_hero_51.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_51_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_51_up",
+      "file": "drawable-nodpi/portrait_hero_51_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_51_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_52",
+      "file": "drawable-nodpi/portrait_hero_52.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_52_ranger_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_52_up",
+      "file": "drawable-nodpi/portrait_hero_52_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_52_ranger_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_53",
+      "file": "drawable-nodpi/portrait_hero_53.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_53_duelist_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_53_up",
+      "file": "drawable-nodpi/portrait_hero_53_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_53_duelist_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_54",
+      "file": "drawable-nodpi/portrait_hero_54.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_54_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_54_up",
+      "file": "drawable-nodpi/portrait_hero_54_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_54_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_55",
+      "file": "drawable-nodpi/portrait_hero_55.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_55_guardian_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_55_up",
+      "file": "drawable-nodpi/portrait_hero_55_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_55_guardian_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_56",
+      "file": "drawable-nodpi/portrait_hero_56.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_56_ranger_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_56_up",
+      "file": "drawable-nodpi/portrait_hero_56_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_56_ranger_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_57",
+      "file": "drawable-nodpi/portrait_hero_57.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_57_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_57_up",
+      "file": "drawable-nodpi/portrait_hero_57_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_57_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_58",
+      "file": "drawable-nodpi/portrait_hero_58.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_58_ranger_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_58_up",
+      "file": "drawable-nodpi/portrait_hero_58_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_58_ranger_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_59",
+      "file": "drawable-nodpi/portrait_hero_59.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_59_duelist_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_59_up",
+      "file": "drawable-nodpi/portrait_hero_59_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_59_duelist_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_60",
+      "file": "drawable-nodpi/portrait_hero_60.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_60_battlemage_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_60_up",
+      "file": "drawable-nodpi/portrait_hero_60_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_60_battlemage_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_61",
+      "file": "drawable-nodpi/portrait_hero_61.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_61_guardian_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_61_up",
+      "file": "drawable-nodpi/portrait_hero_61_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_61_guardian_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_62",
+      "file": "drawable-nodpi/portrait_hero_62.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_62_battlemage_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_62_up",
+      "file": "drawable-nodpi/portrait_hero_62_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_62_battlemage_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_63",
+      "file": "drawable-nodpi/portrait_hero_63.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_63_warden_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_63_up",
+      "file": "drawable-nodpi/portrait_hero_63_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_63_warden_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_64",
+      "file": "drawable-nodpi/portrait_hero_64.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_64_guardian_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_64_up",
+      "file": "drawable-nodpi/portrait_hero_64_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_64_guardian_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_65",
+      "file": "drawable-nodpi/portrait_hero_65.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_65_duelist_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_65_up",
+      "file": "drawable-nodpi/portrait_hero_65_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_65_duelist_upgraded.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_66",
+      "file": "drawable-nodpi/portrait_hero_66.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_66_battlemage_base.png",
+      "sourceKind": "ai_generated_portrait"
+    },
+    {
+      "id": "portrait_hero_66_up",
+      "file": "drawable-nodpi/portrait_hero_66_up.png",
+      "width": 64,
+      "height": 64,
+      "layer": "portrait",
+      "source": "imported",
+      "sourceSheet": "Assets/Implemented/heroes/hero_66_battlemage_upgraded.png",
       "sourceKind": "ai_generated_portrait"
     },
     {

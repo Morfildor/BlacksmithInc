@@ -5,7 +5,10 @@ File rules: PNG with a transparent background unless the piece is a full scene o
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
-Status as of 2026-10-10. Pieces already delivered and in the game are not listed as wanted: do not resend them.
+Status as of 2026-10-17. Pieces already delivered and in the game are not listed as wanted: do not resend them.
+Redrawn 2026-10-17 with Retro Diffusion (rd_pro__fantasy) as one set at about one art pixel per displayed dp: status icons and
+badges 24 px, actions and navigation 32 px, purse and siege traits 40 px, visitor 48 px, markers 16 px
+(docs/UI_ART_REVAMP.md). The sizes below are the earlier ones.
 
 DELIVERED AND IN THE GAME (do not resend)
   icon_day, icon_energy, icon_gold, icon_integrity, icon_militia, icon_reputation (24x24)
@@ -16,7 +19,6 @@ DELIVERED AND IN THE GAME (do not resend)
   icon_visitor (40x40), icon_relic (24x24), icon_trait_long_assault (40x40), icon_trait_many_breaches (40x40),
   icon_promised (24x24)
   icon_action_storage, icon_action_supplies, icon_action_commission, icon_action_hone, icon_action_donate (48x48)
-  (the visitor, relic, trait, promised and action icons are used in the gameplay-depth branch; the rest are in the main line)
 
 DELIVERED, NOT SHOWN YET (do not resend; no button or heading uses them)
   icon_action_legacy, icon_action_price, icon_action_scrap (48x48)

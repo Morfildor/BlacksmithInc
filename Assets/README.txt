@@ -4,7 +4,7 @@ Put replacement assets in the folder for their kind. Each folder has a WANTED.tx
 today and their in-game size. Tell Claude when a folder is ready; it is then imported by
 tools/pixelart/import_assets.py and every piece is checked in the running app before it is switched on.
 
-Order of delivery: see PRIORITIES.txt.
+Order of delivery: see PRIORITIES.txt (updated 2026-10-17 with the living-heroes art: faces by people, the bestiary, replay cues).
 
 Folders: Heroes, Weapons, Materials, Blessings, Relics, Enemies, Icons, Backgrounds, Scene, Effects, UI, Audio, AppIcon
 

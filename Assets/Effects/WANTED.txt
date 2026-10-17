@@ -16,4 +16,20 @@ IDs in the game today (8), with the current in-game size:
   fx_milestone_2                          16x16
   fx_milestone_3                          16x16
 
-Status as of 2026-10-10: nothing in this folder is delivered yet; everything above is still wanted.
+Status as of 2026-10-17: fx_milestone_0..3 delivered with Retro Diffusion and in the game (Assets/Implemented/ui). ember_0..3 are
+still wanted (the Retro Diffusion effect style failed twice; the old frames stay).
+
+NEW WITH THE LIVING HEROES UPDATE: REPLAY CUES (optional; delivered 2026-10-17 as fx_cue_*.png in this folder, waiting for a
+screen; fx_cue_interrupted reads too much like fx_cue_preparing and fx_cue_exposed shows its crack weakly: redraw before use)
+  Small marks the siege replay can pop over a unit when the real event happens (bestiary document, section 15.5). They must not
+  rely on colour alone. IDs and size are PROPOSED; draw at 16x16 unless you prefer another clean multiple:
+    fx_cue_guard             a small shield pulse
+    fx_cue_protected         a link from a shieldbearer to the ally it covers
+    fx_cue_recovered         a small plus (an enemy healed)
+    fx_cue_recovery_stopped  the same plus, crossed out
+    fx_cue_preparing         a countdown mark on a unit that is preparing something
+    fx_cue_interrupted       the same mark, broken
+    fx_cue_raised            a short pulse where a dead unit reappears
+    fx_cue_exposed           a cracked shield
+    fx_cue_poison, fx_cue_burn   two ticks that cannot be mistaken for each other or for healing
+    fx_cue_wall              a wall mark for each hit on the gate

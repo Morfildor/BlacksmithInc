@@ -18,12 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.imageResource
@@ -273,19 +275,27 @@ fun WeaponSprite(w: Weapon, size: Dp = 48.dp, modifier: Modifier = Modifier) {
             .drawBehind { if (signature) drawCircle(Sprites.signatureRing, radius = this.size.minDimension / 2 - 1.dp.toPx(), style = Stroke(2.dp.toPx())) },
     ) {
         PixelImage(Sprites.weapon(w), size, description = null)
-        PixelImage(Sprites.badge(w.rarity), size / 3, description = null, modifier = Modifier.size(size / 3))
+        PixelIcon(Sprites.badge(w.rarity), size / 3)
     }
 }
 
-/** Tiles the parchment sprite behind content at an integer scale (nearest-neighbour), for the Gazette. */
+/**
+ * An interface icon at the whole-pixel size nearest [hint] for its own width ([wholePixelDp]). The icons are drawn at
+ * about one art pixel per dp, so each is enlarged evenly and never with uneven pixel columns.
+ */
+@Composable
+fun PixelIcon(resId: Int, hint: Dp, modifier: Modifier = Modifier, description: String? = null) {
+    PixelImage(resId, wholePixelDp(ImageBitmap.imageResource(resId).width, hint), description, modifier)
+}
+
+/** Tiles the seamless parchment sprite behind content at an integer scale (nearest-neighbour), for the Gazette. */
 @Composable
 fun Modifier.paperBackground(): Modifier {
     val paper = ImageBitmap.imageResource(R.drawable.tile_paper)
     return drawBehind {
-        if (paper.width <= 16) {
-            // Seamless placeholder tile: repeat at an integer scale.
-            val scale = maxOf(1, density.toInt())
-            val tile = IntSize(paper.width * scale, paper.height * scale)
+        val scale = maxOf(1, density.toInt())
+        val tile = IntSize(paper.width * scale, paper.height * scale)
+        clipRect {
             var y = 0
             while (y < size.height) {
                 var x = 0
@@ -295,10 +305,43 @@ fun Modifier.paperBackground(): Modifier {
                 }
                 y += tile.height
             }
-        } else {
-            // Hand-made parchment is not seamless: stretch one sheet to cover the surface.
-            drawImage(paper, dstSize = IntSize(size.width.toInt(), size.height.toInt()), filterQuality = FilterQuality.Low)
         }
+    }
+}
+
+/** Corner size of the nine-slice frames (`panel_gazette`, `panel_journal`): two corners around a one-pixel edge profile. */
+private const val FRAME_CORNER = 12
+
+/** Device pixels per frame pixel: the frame is drawn at about one pixel per dp, at a whole scale. */
+@Composable
+private fun frameScale(): Int = maxOf(1, LocalDensity.current.density.roundToInt())
+
+/** How far a [pixelFrame] reaches in from each edge: framed content is padded by this much. */
+@Composable
+fun frameInset(): Dp = with(LocalDensity.current) { (FRAME_CORNER * frameScale()).toDp() }
+
+/** Draws a nine-slice pixel frame over the edges of the content: whole corners, edges stretched from their profile. */
+@Composable
+fun Modifier.pixelFrame(resId: Int): Modifier {
+    val frame = ImageBitmap.imageResource(resId)
+    val k = frameScale()
+    return drawWithContent {
+        drawContent()
+        val c = FRAME_CORNER
+        val ck = c * k
+        val w = size.width.toInt()
+        val h = size.height.toInt()
+        fun piece(sx: Int, sy: Int, sw: Int, sh: Int, dx: Int, dy: Int, dw: Int, dh: Int) {
+            if (dw > 0 && dh > 0) drawImage(frame, IntOffset(sx, sy), IntSize(sw, sh), IntOffset(dx, dy), IntSize(dw, dh), filterQuality = FilterQuality.None)
+        }
+        piece(0, 0, c, c, 0, 0, ck, ck)
+        piece(c + 1, 0, c, c, w - ck, 0, ck, ck)
+        piece(0, c + 1, c, c, 0, h - ck, ck, ck)
+        piece(c + 1, c + 1, c, c, w - ck, h - ck, ck, ck)
+        piece(c, 0, 1, c, ck, 0, w - 2 * ck, ck)
+        piece(c, c + 1, 1, c, ck, h - ck, w - 2 * ck, ck)
+        piece(0, c, c, 1, 0, ck, ck, h - 2 * ck)
+        piece(c + 1, c, c, 1, w - ck, ck, ck, h - 2 * ck)
     }
 }
 

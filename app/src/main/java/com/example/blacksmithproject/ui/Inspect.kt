@@ -289,7 +289,7 @@ fun TipCard(tip: TipUi, onClose: () -> Unit, modifier: Modifier = Modifier) {
                             Modifier.size(slot).background(Brush.radialGradient(listOf(frame.copy(alpha = 0.22f), ForgeSlot)), RoundedCornerShape(2.dp))
                                 .border(1.dp, frame.copy(alpha = 0.5f), RoundedCornerShape(2.dp)),
                             contentAlignment = Alignment.Center,
-                        ) { PixelImage(icon, if (pinHead) 40.dp else 32.dp, description = null) }
+                        ) { PixelIcon(icon, if (pinHead) 40.dp else 32.dp) }
                         Spacer(Modifier.width(12.dp))
                     }
                     Column(Modifier.weight(1f).padding(top = 2.dp)) {

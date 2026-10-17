@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.blacksmithproject.R
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
 import androidx.compose.foundation.background
@@ -363,9 +364,9 @@ fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reduc
             color = Color.Transparent,
             contentColor = PaperInk,
             shape = MaterialTheme.shapes.large,
-            modifier = Modifier.fillMaxWidth().heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp).padding(horizontal = Space.md).paperBackground().semantics { testTagsAsResourceId = true },
+            modifier = Modifier.fillMaxWidth().heightIn(max = (LocalConfiguration.current.screenHeightDp * 0.92f).dp).padding(horizontal = Space.md).paperBackground().pixelFrame(R.drawable.panel_gazette).semantics { testTagsAsResourceId = true },
         ) {
-            Column(Modifier.padding(horizontal = Space.lg, vertical = Space.md)) {
+            Column(Modifier.padding(horizontal = Space.lg, vertical = frameInset() + Space.xs)) {
                 // The paper's name large, the date as a dateline under it.
                 Column(Modifier.fillMaxWidth().semantics(mergeDescendants = true) { heading() }, horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(Gazette.PAPER, style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)

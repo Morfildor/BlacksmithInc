@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.Role
 import com.example.blacksmithproject.ui.Labels
+import com.example.blacksmithproject.ui.PixelIcon
 import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.Secondary
 import com.example.blacksmithproject.ui.Sprites
@@ -363,7 +364,7 @@ private fun HeroHead(detail: HeroDetail) {
     val face = @Composable {
         Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(4.dp)) {
             PixelImage(detail.portrait, 72.dp, description = null)
-            detail.marker?.let { PixelImage(it, 24.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
+            detail.marker?.let { PixelIcon(it, 24.dp, Modifier.align(Alignment.BottomEnd)) }
         }
     }
     // Reading order: name (a byname of residence on a quieter line), condition, people, class and level, what they carry.

@@ -104,6 +104,7 @@ OWNER_PACKS = {
     "materials": ("material_",),
     "blessings": ("blessing_",),
     "relics": ("relic_",),
+    "ui": ("panel_", "tile_paper", "fx_milestone_"),
 }
 # An ID the owner delivered wins over every older source (concept sheets, atlas, packs) that also draws it.
 OWNED_IDS = {p.stem for name in OWNER_PACKS for p in (OWNER_ROOT / name / "drawable-nodpi").glob("*.png") if p.stem.startswith(OWNER_PACKS[name])}

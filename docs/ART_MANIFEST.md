@@ -36,12 +36,12 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | faction_hollowbound_wraith | 112×112 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=hollowbound, variant=elite |
 | faction_embermaw_whelp | 80×80 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=embermaw_brood |
 | faction_embermaw_drake | 112×112 | enemy | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png | anchor=bottom-center, faction=embermaw_brood, variant=elite |
-| badge_common | 48×48 | badge | imported: script-drawn pack | pack:icons | rarity=COMMON |
-| badge_uncommon | 48×48 | badge | imported: script-drawn pack | pack:icons | rarity=UNCOMMON |
-| badge_rare | 48×48 | badge | imported: script-drawn pack | pack:icons | rarity=RARE |
-| badge_epic | 48×48 | badge | imported: script-drawn pack | pack:icons | rarity=EPIC |
-| badge_legendary | 48×48 | badge | imported: script-drawn pack | pack:icons | rarity=LEGENDARY |
-| badge_flaw | 48×48 | badge | imported: script-drawn pack | pack:icons | meaning=flaw |
+| badge_common | 24×24 | badge | imported: script-drawn pack | pack:icons | rarity=COMMON |
+| badge_uncommon | 24×24 | badge | imported: script-drawn pack | pack:icons | rarity=UNCOMMON |
+| badge_rare | 24×24 | badge | imported: script-drawn pack | pack:icons | rarity=RARE |
+| badge_epic | 24×24 | badge | imported: script-drawn pack | pack:icons | rarity=EPIC |
+| badge_legendary | 24×24 | badge | imported: script-drawn pack | pack:icons | rarity=LEGENDARY |
+| badge_flaw | 24×24 | badge | imported: script-drawn pack | pack:icons | meaning=flaw |
 | material_iron | 48×48 | material | imported: script-drawn pack | pack:materials | material=iron, category=CORE |
 | material_bronze | 48×48 | material | imported: script-drawn pack | pack:materials | material=bronze, category=CORE |
 | material_silver | 48×48 | material | imported: script-drawn pack | pack:materials | material=silver, category=CORE |
@@ -76,9 +76,9 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | silhouette_warden | 64×64 | portrait | programmatic placeholder | generate_assets.py | anchor=top-left, heroClass=warden, placeholder=silhouette |
 | tile_wall | 64×64 | background | imported: script-drawn pack | pack:backgrounds | tile=True |
 | tile_floor | 64×32 | background | imported: script-drawn pack | pack:backgrounds | tile=True |
-| tile_paper | 64×64 | ui | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | tile=True |
-| panel_gazette | 256×126 | ui | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | tile=True |
-| panel_journal | 256×163 | ui | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | tile=True |
+| tile_paper | 120×120 | ui | imported: script-drawn pack | pack:ui | tile=True |
+| panel_gazette | 25×25 | ui | imported: script-drawn pack | pack:ui | tile=True |
+| panel_journal | 25×25 | ui | imported: script-drawn pack | pack:ui | tile=True |
 | furnace_cold | 77×96 | scene | imported: script-drawn pack | pack:scene | anchor=bottom-left, state=cold |
 | furnace_warm | 79×96 | scene | imported: script-drawn pack | pack:scene | anchor=bottom-left, state=warm |
 | furnace_hot | 80×96 | scene | imported: script-drawn pack | pack:scene | anchor=bottom-left, state=hot |
@@ -93,7 +93,7 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | bg_counter_forge | 540×270 | bg | imported: script-drawn pack | pack:backgrounds |  |
 | bg_forge_night | 232×211 | bg | imported: script-drawn pack | pack:backgrounds |  |
 | bg_run_end_fallen_forge | 270×150 | bg | imported: script-drawn pack | pack:backgrounds |  |
-| bg_title_workshop_night | 270×150 | bg | imported: script-drawn pack | pack:backgrounds |  |
+| bg_title_workshop_night | 941×1672 | bg | imported: script-drawn pack | pack:backgrounds |  |
 | ember_3 | 32×32 | ember | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png |  |
 | faction_ashclaw_alt_0 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
 | faction_ashclaw_alt_1 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
@@ -101,10 +101,10 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | faction_embermaw_alt_1 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
 | faction_hollowbound_alt_0 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
 | faction_hollowbound_alt_1 | 64×64 | faction | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png |  |
-| fx_milestone_0 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=top-left, durationMs=100, notes=Milestone burst |
-| fx_milestone_1 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=top-left, durationMs=100, notes=Milestone burst |
-| fx_milestone_2 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=top-left, durationMs=100, notes=Milestone burst |
-| fx_milestone_3 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=top-left, durationMs=100, notes=Milestone burst |
+| fx_milestone_0 | 16×16 | fx | imported: script-drawn pack | pack:ui |  |
+| fx_milestone_1 | 16×16 | fx | imported: script-drawn pack | pack:ui |  |
+| fx_milestone_2 | 16×16 | fx | imported: script-drawn pack | pack:ui |  |
+| fx_milestone_3 | 16×16 | fx | imported: script-drawn pack | pack:ui |  |
 | hero_battlemage_attack_0 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
 | hero_battlemage_attack_1 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
 | hero_battlemage_idle_0 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
@@ -125,34 +125,34 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | hero_warden_attack_1 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
 | hero_warden_idle_0 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
 | hero_warden_idle_1 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Side view facing right; empty attack hand |
-| icon_action_commission | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_action_donate | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_action_hone | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_action_legacy | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_action_price | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_action_scrap | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_action_storage | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_action_supplies | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_commission | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_donate | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_hone | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_legacy | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_price | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_scrap | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_storage | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_action_supplies | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_day | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_energy | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
 | icon_gold | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_integrity | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_militia | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_nav_forge | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_nav_gazette | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_nav_home | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_nav_journal | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_nav_legacy | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_nav_market | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_nav_town | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_promised | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_purse | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_relic | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_reputation | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_settings | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_trait_long_assault | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_trait_many_breaches | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
-| icon_visitor | 80×80 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_integrity | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_militia | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_nav_forge | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_nav_gazette | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_nav_home | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_nav_journal | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_nav_legacy | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_nav_market | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_nav_town | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_promised | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_purse | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_relic | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_reputation | 24×24 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_settings | 32×32 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_trait_long_assault | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_trait_many_breaches | 40×40 | icon | imported: script-drawn pack | pack:icons |  |
+| icon_visitor | 48×48 | icon | imported: script-drawn pack | pack:icons |  |
 | marker_dead | 16×16 | marker | imported: script-drawn pack | pack:icons |  |
 | marker_retired | 16×16 | marker | imported: script-drawn pack | pack:icons |  |
 | monster_ashclaw_brute_attack_0 | 16×16 | animation | imported: script-drawn pack | pack:New folder | anchor=bottom-center, durationMs=120, notes=Combat attack frame |
@@ -221,25 +221,15 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | portrait_hero_10 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_10_duelist_base.png |  |
 | portrait_hero_10_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_10_duelist_upgraded.png |  |
 | portrait_hero_11 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_11_guardian_base.png |  |
-| portrait_hero_11_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_11_guardian_base.png |  |
 | portrait_hero_11_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_11_guardian_upgraded.png |  |
-| portrait_hero_11_up_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_11_guardian_upgraded.png |  |
 | portrait_hero_12 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_12_ranger_base.png |  |
-| portrait_hero_12_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_12_ranger_base.png |  |
 | portrait_hero_12_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_12_ranger_upgraded.png |  |
-| portrait_hero_12_up_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_12_ranger_upgraded.png |  |
 | portrait_hero_13 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_13_duelist_base.png |  |
-| portrait_hero_13_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_13_duelist_base.png |  |
 | portrait_hero_13_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_13_duelist_upgraded.png |  |
-| portrait_hero_13_up_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_13_duelist_upgraded.png |  |
 | portrait_hero_14 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_14_battlemage_base.png |  |
-| portrait_hero_14_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_14_battlemage_base.png |  |
 | portrait_hero_14_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_14_battlemage_upgraded.png |  |
-| portrait_hero_14_up_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_14_battlemage_upgraded.png |  |
 | portrait_hero_15 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_15_warden_base.png |  |
-| portrait_hero_15_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_15_warden_base.png |  |
 | portrait_hero_15_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_15_warden_upgraded.png |  |
-| portrait_hero_15_up_sm | 48×48 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_15_warden_upgraded.png |  |
 | portrait_hero_16 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_16_guardian_base.png |  |
 | portrait_hero_16_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_16_guardian_upgraded.png |  |
 | portrait_hero_17 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_17_ranger_base.png |  |
@@ -250,6 +240,98 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | portrait_hero_19_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_19_battlemage_upgraded.png |  |
 | portrait_hero_20 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_20_warden_base.png |  |
 | portrait_hero_20_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_20_warden_upgraded.png |  |
+| portrait_hero_21 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_21_warden_base.png |  |
+| portrait_hero_21_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_21_warden_upgraded.png |  |
+| portrait_hero_22 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_22_battlemage_base.png |  |
+| portrait_hero_22_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_22_battlemage_upgraded.png |  |
+| portrait_hero_23 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_23_battlemage_base.png |  |
+| portrait_hero_23_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_23_battlemage_upgraded.png |  |
+| portrait_hero_24 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_24_ranger_base.png |  |
+| portrait_hero_24_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_24_ranger_upgraded.png |  |
+| portrait_hero_25 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_25_ranger_base.png |  |
+| portrait_hero_25_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_25_ranger_upgraded.png |  |
+| portrait_hero_26 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_26_duelist_base.png |  |
+| portrait_hero_26_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_26_duelist_upgraded.png |  |
+| portrait_hero_27 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_27_guardian_base.png |  |
+| portrait_hero_27_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_27_guardian_upgraded.png |  |
+| portrait_hero_28 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_28_battlemage_base.png |  |
+| portrait_hero_28_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_28_battlemage_upgraded.png |  |
+| portrait_hero_29 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_29_guardian_base.png |  |
+| portrait_hero_29_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_29_guardian_upgraded.png |  |
+| portrait_hero_30 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_30_warden_base.png |  |
+| portrait_hero_30_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_30_warden_upgraded.png |  |
+| portrait_hero_31 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_31_ranger_base.png |  |
+| portrait_hero_31_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_31_ranger_upgraded.png |  |
+| portrait_hero_32 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_32_duelist_base.png |  |
+| portrait_hero_32_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_32_duelist_upgraded.png |  |
+| portrait_hero_33 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_33_ranger_base.png |  |
+| portrait_hero_33_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_33_ranger_upgraded.png |  |
+| portrait_hero_34 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_34_battlemage_base.png |  |
+| portrait_hero_34_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_34_battlemage_upgraded.png |  |
+| portrait_hero_35 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_35_warden_base.png |  |
+| portrait_hero_35_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_35_warden_upgraded.png |  |
+| portrait_hero_36 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_36_warden_base.png |  |
+| portrait_hero_36_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_36_warden_upgraded.png |  |
+| portrait_hero_37 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_37_guardian_base.png |  |
+| portrait_hero_37_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_37_guardian_upgraded.png |  |
+| portrait_hero_38 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_38_ranger_base.png |  |
+| portrait_hero_38_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_38_ranger_upgraded.png |  |
+| portrait_hero_39 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_39_duelist_base.png |  |
+| portrait_hero_39_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_39_duelist_upgraded.png |  |
+| portrait_hero_40 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_40_guardian_base.png |  |
+| portrait_hero_40_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_40_guardian_upgraded.png |  |
+| portrait_hero_41 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_41_battlemage_base.png |  |
+| portrait_hero_41_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_41_battlemage_upgraded.png |  |
+| portrait_hero_42 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_42_warden_base.png |  |
+| portrait_hero_42_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_42_warden_upgraded.png |  |
+| portrait_hero_43 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_43_guardian_base.png |  |
+| portrait_hero_43_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_43_guardian_upgraded.png |  |
+| portrait_hero_44 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_44_duelist_base.png |  |
+| portrait_hero_44_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_44_duelist_upgraded.png |  |
+| portrait_hero_45 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_45_warden_base.png |  |
+| portrait_hero_45_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_45_warden_upgraded.png |  |
+| portrait_hero_46 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_46_duelist_base.png |  |
+| portrait_hero_46_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_46_duelist_upgraded.png |  |
+| portrait_hero_47 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_47_battlemage_base.png |  |
+| portrait_hero_47_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_47_battlemage_upgraded.png |  |
+| portrait_hero_48 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_48_warden_base.png |  |
+| portrait_hero_48_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_48_warden_upgraded.png |  |
+| portrait_hero_49 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_49_guardian_base.png |  |
+| portrait_hero_49_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_49_guardian_upgraded.png |  |
+| portrait_hero_50 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_50_battlemage_base.png |  |
+| portrait_hero_50_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_50_battlemage_upgraded.png |  |
+| portrait_hero_51 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_51_warden_base.png |  |
+| portrait_hero_51_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_51_warden_upgraded.png |  |
+| portrait_hero_52 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_52_ranger_base.png |  |
+| portrait_hero_52_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_52_ranger_upgraded.png |  |
+| portrait_hero_53 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_53_duelist_base.png |  |
+| portrait_hero_53_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_53_duelist_upgraded.png |  |
+| portrait_hero_54 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_54_warden_base.png |  |
+| portrait_hero_54_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_54_warden_upgraded.png |  |
+| portrait_hero_55 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_55_guardian_base.png |  |
+| portrait_hero_55_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_55_guardian_upgraded.png |  |
+| portrait_hero_56 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_56_ranger_base.png |  |
+| portrait_hero_56_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_56_ranger_upgraded.png |  |
+| portrait_hero_57 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_57_warden_base.png |  |
+| portrait_hero_57_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_57_warden_upgraded.png |  |
+| portrait_hero_58 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_58_ranger_base.png |  |
+| portrait_hero_58_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_58_ranger_upgraded.png |  |
+| portrait_hero_59 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_59_duelist_base.png |  |
+| portrait_hero_59_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_59_duelist_upgraded.png |  |
+| portrait_hero_60 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_60_battlemage_base.png |  |
+| portrait_hero_60_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_60_battlemage_upgraded.png |  |
+| portrait_hero_61 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_61_guardian_base.png |  |
+| portrait_hero_61_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_61_guardian_upgraded.png |  |
+| portrait_hero_62 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_62_battlemage_base.png |  |
+| portrait_hero_62_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_62_battlemage_upgraded.png |  |
+| portrait_hero_63 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_63_warden_base.png |  |
+| portrait_hero_63_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_63_warden_upgraded.png |  |
+| portrait_hero_64 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_64_guardian_base.png |  |
+| portrait_hero_64_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_64_guardian_upgraded.png |  |
+| portrait_hero_65 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_65_duelist_base.png |  |
+| portrait_hero_65_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_65_duelist_upgraded.png |  |
+| portrait_hero_66 | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_66_battlemage_base.png |  |
+| portrait_hero_66_up | 64×64 | portrait | imported: AI-generated hero portrait | Assets/Implemented/heroes/hero_66_battlemage_upgraded.png |  |
 | portrait_ranger_0 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 54] |
 | portrait_ranger_1 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 59] |
 | portrait_ranger_2 | 64×64 | portrait | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_56 PM-3.png | contentBox=[1, 1, 63, 58] |

@@ -15,9 +15,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.background
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.text.font.FontFamily
+import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.theme.PaperInk
 import com.example.blacksmithproject.ui.theme.PaperInkMuted
 import com.example.blacksmithproject.ui.theme.PaperRule
@@ -174,7 +174,7 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
     forecast?.trait?.let { t ->
         Column(Modifier.fillMaxWidth().padding(top = Space.md).drawBehind { drawLine(BronzeDeep, Offset.Zero, Offset(size.width, 0f), 1.dp.toPx()) }.padding(top = Space.sm)) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                traitIcon(t.id)?.let { PixelImage(it, wholePixelDp(80, 40.dp), description = null) }
+                traitIcon(t.id)?.let { PixelIcon(it, 40.dp) }
                 Column(Modifier.weight(1f)) {
                     Text("Siege modifier", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
                     Text(t.name, style = MaterialTheme.typography.titleSmall, color = Ember, modifier = Modifier.testTag("town_trait"))
@@ -305,7 +305,7 @@ internal fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
     ) {
         Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) {
             PixelImage(Sprites.portrait(h, small = true), 44.dp, description = null)
-            Sprites.marker(h.fate)?.let { PixelImage(it, 16.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
+            Sprites.marker(h.fate)?.let { PixelIcon(it, 16.dp, Modifier.align(Alignment.BottomEnd)) }
         }
         Column(Modifier.weight(1f)) {
             Text(h.fullName + (h.descendantOf?.let { " · descended from $it" } ?: ""), style = MaterialTheme.typography.titleSmall)
@@ -361,7 +361,7 @@ fun GazettePanel(s: UiState.Playing, vm: GameViewModel) {
         if (expanded) {
             // The open edition is a sheet of the paper itself, as the day's own report is: fixed ink on parchment.
             val head = remember(day) { gazetteHead(day) }
-            Column(Modifier.padding(top = Space.sm).fillMaxWidth().clip(MaterialTheme.shapes.small).paperBackground()) {
+            Column(Modifier.padding(top = Space.sm).fillMaxWidth().paperBackground().pixelFrame(R.drawable.panel_gazette).padding(horizontal = Space.xs, vertical = frameInset())) {
                 CompositionLocalProvider(LocalContentColor provides PaperInk) {
                     // Masthead and dateline strip are one target: the paper's name, a double rule, then the day and "Hide" on one line.
                     Column(toggle.padding(horizontal = Space.md).padding(top = 12.dp)) {
