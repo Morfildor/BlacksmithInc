@@ -4759,3 +4759,21 @@ the shape inside a run moved. The first siege is harder for the adaptive smith (
 third are easier for every policy, because the armies field the same members at every siege while the old roster grew
 by a grunt every third siege. A passive smith survives about 5 days longer. The charter siege is unchanged. Owner
 decides whether to shape strength by siege number; no other number was moved.
+
+### Owner ruling: sieges escalate (2026-10-17)
+
+Owner: "It should scale harder. We are making a rogue like game. We are trying to make the gamer fail. They should beat
+us with strategy. But it should be possible." The flat 140% above is replaced by `living.armyPercent` 130 for the
+first siege plus `living.armyPercentPerSiege` 15 for each one after it (the charter siege's escort at 175%, the
+warlord keeps its own 110%). Tuning seeds 1-200, charter / defeated:
+
+| Curve | ADAPTIVE | SYNERGY | NOVICE | PASSIVE | Siege 1-2-3-4 held (ADAPTIVE) |
+|---|---|---|---|---|---|
+| flat 140 (seeds 1-300) | 62 / 6 | 56 / 9 | 13 / 37 | 0 / 100 | 64-68-84-22 |
+| 130 + 15 (chosen) | 21 / 19 | 26 / 25 | 4 / 75 | 0 / 100 | 69-67-73-7 |
+| 135 + 25 | 7 / 66 | 11 / 58 | 1 / 97 | 0 / 100 | 69-53-41-2 |
+
+Reading: the first siege is as viable as in legacy eras (69% held against 71-73%); from there each siege grows faster
+than the bots' strength, and the charter siege is the wall a run usually breaks on. Strategy bots secure the charter
+in about one run of four or five, the naive smith in one of twenty-five, the passive never. Not confirmed on an unseen
+block (800001-800300 is spent; owner asked for speed).

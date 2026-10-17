@@ -79,7 +79,7 @@ object SiegeFight {
         val warlord = state.pressure >= ctx.config.warlordPressure
         val army = rng.pickWeighted(fresh.map { it to if (it.kind == ArmyKind.STANDARD) 1.0 else if (warlord) 2.0 else 0.5 })
         val max = cfg.fight.maxActorsPerSide
-        val armyPercent = Fight.pct(percent, ctx.config.living.armyPercent)
+        val armyPercent = Fight.pct(percent, ctx.config.living.armyPercent + ctx.config.living.armyPercentPerSiege * (number - 1))
         val units = if (charter) listOf(EnemySpec(cat.siegeLeaders.getValue(faction), Fight.pct(percent, cfg.charterWarlordPercent))) + army.members.take(max - 1).map { EnemySpec(it, armyPercent) }
             else army.members.take(max).map { EnemySpec(it, armyPercent) }
         // A preparation that fits the field as authored: none that replaces its members, none that would push a fifth actor in.
