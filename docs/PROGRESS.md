@@ -2,6 +2,8 @@
 
 ## Living heroes and siege variety (2026-10-17, implementing on branch `living-heroes`)
 
+- Released 2026-10-17: the owner tested every commit on the branch; `living-heroes` fast-forwarded into `main` as 0.9.0
+  (versionCode 9) and pushed, debug APK built.
 - Spec: `docs/Tiny_Blacksmith_Living_Heroes_Final_Design.md`, content bible `docs/Tiny_Blacksmith_Peoples_Names_and_Siege_Bestiary.md`.
   Per-task status, coverage and evidence: `docs/LIVING_HEROES_LEDGER.md` (the resume point).
 - Hero faces v2 (2026-10-17, owner-approved style, `docs/HERO_FACES_V2_PLAN.md`): all 35 faces generated with Retro
