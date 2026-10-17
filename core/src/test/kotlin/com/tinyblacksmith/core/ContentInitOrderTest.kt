@@ -20,6 +20,7 @@ class ContentInitOrderTest {
     private val entryPoints = listOf(
         "Depth" to listOf("getEncounters", "getRelics", "getSiegeTraits"),
         "CombatContent" to listOf("getRelicEffects", "getCatalog"),
+        "Bestiary" to listOf("getUnits", "getProfiles", "getArmies"),
         "GuildContent" to listOf("getEncounters", "getCatalog"),
         "LaunchContent" to listOf("getCatalog"),
         "SliceContent" to listOf("getCatalog"),
