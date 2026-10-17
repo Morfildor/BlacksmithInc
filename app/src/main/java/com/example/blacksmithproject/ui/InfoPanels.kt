@@ -289,7 +289,6 @@ private fun Versus(defense: Int, raid: Int) {
 
 @Composable
 internal fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
-    val content = vm.engine.content
     val st = s.state
     val w = st.equippedWeapon(h.id)
     val fateLabel = when (h.fate) {
@@ -310,7 +309,7 @@ internal fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
         }
         Column(Modifier.weight(1f)) {
             Text(h.fullName + (h.descendantOf?.let { " · descended from $it" } ?: ""), style = MaterialTheme.typography.titleSmall)
-            Secondary("${content.heroClass(h.classId).name} ${h.level} · " + (fateLabel ?: Labels.health(h)) + " · " + (w?.let { it.name + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "no weapon"))
+            Secondary("${vm.engine.raceClass(h)} ${h.level} · " + (fateLabel ?: Labels.health(h)) + " · " + (w?.let { it.name + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "no weapon"))
             townTies(h, st, vm.engine.config)?.let { Secondary(it) }
         }
     }

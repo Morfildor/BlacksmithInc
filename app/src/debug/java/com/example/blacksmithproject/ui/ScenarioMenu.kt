@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.blacksmithproject.GameViewModel
+import com.example.blacksmithproject.LivingHeroFixtures
+import com.tinyblacksmith.core.persistence.SaveCodec
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import kotlinx.serialization.json.Json
@@ -35,6 +37,9 @@ import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+
+/** The one scenario built in the app rather than read from the assets (`LivingHeroFixtures`). */
+private const val LIVING_HEROES = "living_heroes"
 
 /** One row of `assets/scenarios/index.json`, written by `./gradlew :core:scenarios` (core test sources, `ScenarioSaves.kt`). */
 private class ScenarioEntry(val id: String, val title: String, val description: String, val built: String, val ownLegacy: Boolean)
@@ -60,7 +65,11 @@ fun ScenarioMenu(vm: GameViewModel, hasRun: Boolean, enabled: Boolean, onLoaded:
             Json.parseToJsonElement(assets.open("scenarios/index.json").bufferedReader().use { it.readText() }).jsonArray.map { it.jsonObject }.map { row ->
                 fun text(key: String) = row.getValue(key).jsonPrimitive.content
                 ScenarioEntry(text("id"), text("title"), text("description"), text("built"), row.getValue("ownLegacy").jsonPrimitive.boolean)
-            }
+            } + ScenarioEntry(
+                LIVING_HEROES, "Living heroes: long names and every Hook",
+                "A guild era on day 1. The members, the recruits and one townsperson carry long names from the content pools, peoples without portraits and each kind of Hook.",
+                "Built in the app from seed 41 (LivingHeroFixtures): names, peoples and Hooks are set by hand.", false,
+            )
         }
         // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
         Dialog(onDismissRequest = { open = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
@@ -88,7 +97,8 @@ fun ScenarioMenu(vm: GameViewModel, hasRun: Boolean, enabled: Boolean, onLoaded:
                 TextButton(onClick = { chosen = null }) { Text("Cancel") }
                 TextButton(
                     onClick = {
-                        val run = assets.open("scenarios/${e.id}.json").bufferedReader().use { it.readText() }
+                        val run = if (e.id == LIVING_HEROES) SaveCodec.encodeRun(LivingHeroFixtures.build().state)
+                        else assets.open("scenarios/${e.id}.json").bufferedReader().use { it.readText() }
                         chosen = null
                         vm.loadScenario(run, e.ownLegacy) { open = false; onLoaded() }
                     },

@@ -232,6 +232,8 @@ class GameViewModel(
         /** The player opened the relic offer themselves: the guided first day no longer keeps it closed. */
         val relicAsked: Boolean = false,
         val sheet: Sheet? = null,
+        /** The sheet a related one (a kin, a mentor, a weapon) was opened from: closing the related one goes back to it. */
+        val sheetBack: Sheet? = null,
         val lastError: String? = null,
         val notice: String? = null,
         val forgeReveal: Int = 0,
@@ -637,7 +639,7 @@ class GameViewModel(
     }
 
     /** "Set price" on the forge result: the blade stays in storage and its sheet opens, where the price is chosen by hand and it is listed. */
-    fun priceForged(id: WeaponId) = edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null, sheet = Sheet.Item(id), notice = null) }
+    fun priceForged(id: WeaponId) = edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null, sheet = Sheet.Item(id), sheetBack = null, notice = null) }
 
     /** "Store" on the forge result, and closing it any other way: the blade stays in storage, and the workshop says so. */
     fun storeForged() {
@@ -648,15 +650,17 @@ class GameViewModel(
     /** The notice has been shown; a newer one is left alone. */
     fun dismissNotice(shown: String) = local.update { if (it.notice == shown) it.copy(notice = null) else it }
     /** Opening or closing a sheet also puts away the last notice: it was about what was on screen before. */
-    fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet, notice = null) }
-    fun closeSheet() = edit { it.copy(sheet = null, notice = null) }
+    fun openSheet(sheet: Sheet) = edit { it.copy(sheet = sheet, sheetBack = null, notice = null) }
+    /** A sheet opened from inside another (a relative, a mentor, a weapon): closing it returns to the one it came from. */
+    fun openRelated(sheet: Sheet) = edit { it.copy(sheet = sheet, sheetBack = it.sheet?.takeIf { from -> from != sheet }, notice = null) }
+    fun closeSheet() = edit { it.copy(sheet = it.sheetBack, sheetBack = null, notice = null) }
 
     fun openContract(id: String) {
         val run = session.snapshot.value?.run ?: return
         if (run.guild?.offers?.none { it.id == id } != false) return
         val planned = run.guild?.planned?.takeIf { it.offerId == id }
         val draft = PartyDraft(run.runId.value, run.day, id, planned?.heroIds.orEmpty(), planned?.posture ?: Posture.BALANCED).reviewEquipment(run)
-        edit { it.copy(partyDraft = draft, sheet = null) }
+        edit { it.copy(partyDraft = draft, sheet = null, sheetBack = null) }
     }
 
     fun closeContract() = edit { it.copy(partyDraft = null) }
@@ -719,7 +723,7 @@ class GameViewModel(
                 StockAction.Recall -> "Recalled $name to storage."
             }
             val leaves = action is StockAction.ListAt || action == StockAction.Salvage || action == StockAction.Donate
-            edit { it.copy(notice = said, sheet = if (leaves && it.sheet == Sheet.Item(id)) null else it.sheet) }
+            edit { it.copy(notice = said, sheet = if (leaves && it.sheet == Sheet.Item(id)) null else it.sheet, sheetBack = if (leaves && it.sheet == Sheet.Item(id)) null else it.sheetBack) }
         }
     }
     fun dismissError() = edit { it.copy(lastError = null) }
@@ -814,7 +818,7 @@ class GameViewModel(
         edit { it.copy(dest = Dest.SHOP, forgeReveal = 0, blessingOfferDismissedDay = if (s.state.pendingBlessingOffer.isNotEmpty()) s.state.day else it.blessingOfferDismissedDay) }
         viewModelScope.launch {
             session.run(Op.MoveCursor(DayCursor(last.commandId.value, DayCursor.Stage.DONE)))
-            local.update { it.copy(dayId = null, sheet = null, gazetteOpen = false) }
+            local.update { it.copy(dayId = null, sheet = null, sheetBack = null, gazetteOpen = false) }
         }
     }
 

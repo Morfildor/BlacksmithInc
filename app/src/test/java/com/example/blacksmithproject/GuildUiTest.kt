@@ -326,7 +326,7 @@ class GuildUiTest {
         }
         assertEquals(listOf("Safe", "Dangerous", "Lethal"), Danger.entries.map { dangerWord(it) })
         for (m in ui.roster) assertEquals("${m.sub} · ${m.health}" + if (m.reserved) " · reserved for the wall" else "", m.line)
-        assertEquals("Members at home act on their own each day. A hurt member rests and heals ${engine.config.heroRestHeal} health. A fit member trains.", ui.rosterNote)
+        assertEquals("At home, hurt members rest and heal ${engine.config.heroRestHeal} health, and fit members train.", ui.rosterNote)
         // Militia's worth on the wall in the fight's own numbers, and what keeping it costs.
         val t = fresh.town
         assertEquals(
