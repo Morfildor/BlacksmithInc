@@ -11,7 +11,8 @@ import kotlinx.serialization.Serializable
 // The visit record is stored once per day for up to ten visitors, so a field of it that holds its default (nothing, none,
 // zero, no) is left out of the save: `@EncodeDefault(NEVER)`. Reading is unaffected, and such a default must never change.
 
-enum class VisitKind { BROWSE, COMMISSION, COLLECTOR }
+/** MEMBER (living heroes): a member of the player's guild at the counter with their own purse, after the town's visitors. */
+enum class VisitKind { BROWSE, COMMISSION, COLLECTOR, MEMBER }
 
 /** The first nine keep the v1 spellings. M4 appended the last five; constants are only ever appended. */
 enum class VisitReason {

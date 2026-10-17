@@ -36,6 +36,7 @@ object Legends {
         val total = w.renown + renown
         ctx.updateWeapon(w.copy(renown = total))
         ctx.addWeaponHistory(weaponId, HISTORY_DEED, text, subjects)
+        com.tinyblacksmith.core.guild.Agency.onDeed(ctx, weaponId)
         if (w.rarity == Rarity.LEGENDARY || total < cfg.renownForLegend) {
             val earned = if (renown == 1) "a deed" else "$renown deeds"
             val toward = if (w.rarity == Rarity.LEGENDARY) "" else " ($total of ${cfg.renownForLegend} toward Legendary)"

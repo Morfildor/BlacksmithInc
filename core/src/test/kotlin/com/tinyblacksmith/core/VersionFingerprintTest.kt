@@ -39,7 +39,8 @@ class VersionFingerprintTest {
         // caveat as a drawback, a condition or a comparison, so a card signs it truly (UI polish). Display only; no number moved.
         6 to "185758a6a844edd1ea4293637a77648709dc0eb63f5b33d261ec6b26deae4baa",
         // 7: living heroes (the twelve peoples, backgrounds, bynames, portrait peoples). Re-pinned inside the unreleased step as the bestiary lands.
-        7 to "4be970f82e878fb20a7bae303317911c838112c7459ffc9541dc3bc2a80e0c34",
+        // 7, re-pinned inside the unreleased step (from 4be970f8...): the peoples, the bestiary types, the combat grammar (channels, Poison, returns, structural hits) and the two living-era bonuses, Disrupting and Purifying.
+        7 to "f9f000a698d62f8b101d00fc78c50476801e77169106eb00f8d2bde74836ec0d",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
@@ -67,7 +68,8 @@ class VersionFingerprintTest {
         // 16: owner playtest. The quality each core metal holds, the deep road replacing the supplier's days (`roadStageByTier`, the wait and the first crate), contract gold three times its card.
         16 to "e8ad9fc5eff7628e31a2c77a140e8470bb5f2172f087828b83b03eaa391dea3f",
         // 17: living heroes (`LivingConfig`). Re-pinned inside the unreleased step as its numbers land.
-        17 to "2c5c9a7f8024385458c02d11794472d5ff7d3d6c73e68391dd48ec73beaa7149",
+        // 17, re-pinned inside the unreleased step (from 2c5c9a7f...): `living` and `guild.fight` gains Poison (its cap and the two healing numbers). No classic outcome moves.
+        17 to "0c499271a94ecac1af371161083fb7b28465b85d2f471856993a1b1798b1a115",
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where", "costNote", "counters", "sabotageBrief", "plan", "build", "drawback")

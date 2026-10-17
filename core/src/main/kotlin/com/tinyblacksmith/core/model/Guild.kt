@@ -241,6 +241,8 @@ data class GuildRunState(
     /** Living heroes: the last day each personal offer family was posted for a hero ("grudge|h4"), bounded; and one waiting for a free slot. */
     val cooldowns: Map<String, Int> = emptyMap(),
     val queued: String? = null,
+    /** Living heroes: the armies of the last sieges, newest last (at most 6): an army is not sent again while two newer ones of its faction remain. */
+    val armyLog: List<String> = emptyList(),
 ) {
     fun member(id: HeroId): GuildMember? = members.firstOrNull { it.heroId == id }
     fun isMember(id: HeroId): Boolean = members.any { it.heroId == id }

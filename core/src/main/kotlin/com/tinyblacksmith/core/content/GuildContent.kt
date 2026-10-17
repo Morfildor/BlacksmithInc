@@ -167,6 +167,27 @@ data class CharterDef(
     val earlyDanger: Boolean = false,
 )
 
+enum class ArmyKind { STANDARD, CAPTAIN, ENGINE, MONSTER }
+
+/**
+ * One of the 36 authored armies (content bible 13): its whole field in line order, front first, never more than the
+ * four a side the fight allows. [cost] and [firstSiege] are the bible's authoring numbers; the live strength is the
+ * siege's own scaling, applied once. [forecast] is what the scouts report when it is committed, [counters] the answers.
+ */
+data class ArmyDef(val id: String, val factionId: FactionId, val name: String, val kind: ArmyKind, val members: List<String>, val cost: Int, val firstSiege: Int, val forecast: String, val counters: List<String>)
+
+/**
+ * What the bestiary records of an enemy beyond its fight numbers (content bible 10.1, final design Appendix A): its
+ * host, authoring cost and earliest siege, the bible's prototype numbers it was converted from once, the role in a few
+ * words, the counter, the forecast line, and how faithfully it is implemented. [assetId] is the art it waits for.
+ */
+data class EnemyProfile(
+    val unitId: String, val factionId: FactionId, val host: String, val cost: Int, val earliestSiege: Int,
+    val bibleHealth: Int, val bibleAttack: Int, val bibleArmorPercent: Int,
+    val job: String, val counter: String, val forecast: String,
+    val status: String = "implemented", val adaptation: String = "", val assetId: String = unitId,
+)
+
 /** A branch a member's own deeds open (spec 12.3): one of two, chosen by the smith, or neither. */
 data class SpecialityDef(val id: String, val name: String, val deed: String, val description: String, val effects: List<EffectDef> = emptyList(), val healthPercent: Int = 100, val strikePercent: Int = 100, val supportPercent: Int = 100)
 
@@ -195,7 +216,12 @@ data class GuildCatalog(
     val openings: List<OpeningDef> = emptyList(),
     val preparations: List<SiegePrepDef> = emptyList(),
     val modifiers: List<MissionModifierDef> = emptyList(),
+    /** Living heroes: the authored siege bestiary's profiles and its 36 army templates (content bible 10 to 13, final design Appendix A). */
+    val bestiary: List<EnemyProfile> = emptyList(),
+    val armies: List<ArmyDef> = emptyList(),
 ) {
+    val profileById: Map<String, EnemyProfile> = bestiary.associateBy { it.unitId }
+    fun army(id: String?): ArmyDef? = armies.firstOrNull { it.id == id }
     fun opening(id: String?): OpeningDef? = openings.firstOrNull { it.id == id }
     fun preparation(id: String?): SiegePrepDef? = preparations.firstOrNull { it.id == id }
     fun modifier(id: String?): MissionModifierDef? = modifiers.firstOrNull { it.id == id }
@@ -262,6 +288,19 @@ data class GuildCatalog(
             if (modifiers.none { it.archetypes.isEmpty() || m.archetype in it.archetypes }) problems += "No modifier fits ${m.id}"
         }
         if (traits.count { !it.hook } < 1 || traits.count { it.hook } < 1) problems += "Guild traits need both kinds"
+        dup("army", armies.map { it.id }); dup("bestiary entry", bestiary.map { it.unitId })
+        for (a in armies) {
+            if (a.members.isEmpty() || a.members.size > 4) problems += "Army ${a.id} has ${a.members.size} members"
+            a.members.forEach { if (it !in combat.unitById) problems += "Army ${a.id} fields unknown unit $it" }
+            if (content.factions.none { it.id == a.factionId }) problems += "Army ${a.id} belongs to unknown faction ${a.factionId.value}"
+            if (bestiary.isNotEmpty()) {
+                val profiles = a.members.mapNotNull { profileById[it] }
+                if (profiles.size == a.members.size && profiles.sumOf { it.cost } != a.cost) problems += "Army ${a.id} costs ${a.cost}, its members ${profiles.sumOf { it.cost }}"
+                if (profiles.any { it.earliestSiege > a.firstSiege }) problems += "Army ${a.id} comes before its members may"
+            }
+            if (a.counters.isEmpty()) problems += "Army ${a.id} has no answer"
+        }
+        bestiary.forEach { p -> if (p.unitId !in combat.unitById) problems += "Bestiary entry ${p.unitId} has no unit" }
         content.factions.forEach { f ->
             if (routes.none { it.factionId == f.id }) problems += "No route for ${f.id.value}"
             listOf(siegeLeaders[f.id], siegeElites[f.id]).plus(siegeGrunts[f.id].orEmpty()).forEach { if (it == null || it !in combat.unitById) problems += "Siege roster of ${f.id.value} names $it" }
@@ -290,6 +329,8 @@ object GuildContent {
     /** Rules 7: the guild's way to open the deep road after the first siege (`engine.DeepRoad`). Posted, never drawn. */
     const val DEEP_ROAD = "deep_road"
     const val LAPSE_SUPPLIER = "supplier"
+    /** Living heroes: the caravan a member once guarded (opp_missing_caravan). Posted only as a member's own offer, never drawn. */
+    const val MISSING_CARAVAN = "missing_caravan"
 
     const val TOWNS_LAST_HOPE = "towns_last_hope"
     const val LICENSED_BAD_IDEAS = "licensed_bad_ideas"
@@ -309,6 +350,10 @@ object GuildContent {
         EncounterDef(SWORD_COMPLAINT, "The Sword Files a Complaint", 2.5, maxPerRun = 3, cooldownDays = 5, description = "A weapon with opinions has one about who carries it."),
         EncounterDef(ACROSS_THE_COUNTER, "Your Best Sword Is Across the Counter", 4.0, maxPerRun = 3, cooldownDays = 3, description = "A dealer knows how to get a weapon of this forge back from the enemy who carries it."),
         EncounterDef(INSURANCE_ADJUSTER, "Insurance Adjuster from the Underworld", 1.5, maxPerRun = 2, cooldownDays = 6, description = "An adjuster will insure one loan against the enemy.", minDay = 4),
+        // Living heroes: callers sent by a member's own situation (guild/Hooks). The creditor comes first when a debt is due; the others are drawn.
+        EncounterDef(com.tinyblacksmith.core.guild.Hooks.CREDITOR, "The Creditor Calls", 0.0, maxPerRun = 30, cooldownDays = 0, description = "A creditor wants the money a member owes.", followUp = true),
+        EncounterDef(com.tinyblacksmith.core.guild.Hooks.LESSON, "A Lesson Offered", 3.0, maxPerRun = 4, cooldownDays = 3, description = "An experienced member offers to teach a new one.", minDay = 3),
+        EncounterDef(com.tinyblacksmith.core.guild.Hooks.WOUNDED_FRIEND, "A Friend Asks for a Healer", 3.0, maxPerRun = 4, cooldownDays = 3, description = "A member asks for a healer for an injured friend.", minDay = 3),
     )
 
     /** What a blade that took the oath of `The Sword Files a Complaint` adds while its whole party is inexperienced. */
@@ -399,6 +444,12 @@ object GuildContent {
             prep = "Prepare as for a hunt. The enemy who carries your weapon is stronger with it and uses its effects. Winning it back also brings 1 Heartfire.",
             failure = "The weapon stays with them, and you still know where it is. If the whole party goes down, 1 member is captured.",
             stages = listOf(StageDef(roster(listOf("ashclaw_warchief", "ashclaw_brute"), listOf("pale_knight", "bone_warden"), listOf("ember_drake", "cinder_knight")), Danger.DANGEROUS, percent = 85, goldMin = 20, goldMax = 30, suppression = 4, heartfire = 1))),
+        MissionDef(MISSING_CARAVAN, MissionArchetype.ESCORT, "The missing caravan", days = 1, fee = 0, weight = 0.0, lifeDays = 3,
+            description = "A caravan failed to arrive. A member who once guarded that road knows where it would have stopped. The party finds it and drives off whoever holds it.",
+            prep = "A party that can win one fight. What the caravan carried is the reward.",
+            failure = "The caravan stays lost. If the whole party goes down, 1 member is captured.",
+            stages = listOf(StageDef(roster(listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_thief"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.DANGEROUS, percent = 95,
+                goldMin = 30, goldMax = 45, materials = MaterialDraw(3, 1, 3), suppression = 2))),
         MissionDef(WALL_WORK, MissionArchetype.EMERGENCY, "Restore the forge", days = 1, fee = 0, weight = 0.0,
             description = "No fight. The members spend the day restoring the forge.",
             prep = "Any member who can stand.",

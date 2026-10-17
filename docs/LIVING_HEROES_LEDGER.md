@@ -48,19 +48,56 @@ read it first, then `git log --oneline living-heroes`.
 
 ## 4. Milestone checklist
 
-- [ ] M0 ledger, decisions rows, baseline tests
-- [ ] M1 people loop: revision + versions, cultures and names, hooks, counter visit, loan return, lean, one sponsored card, fixtures
-- [ ] M2 full personal content: 5 hooks, 8 ambitions, 18 opportunities, concerns and departure, candidate cards, attachment
-- [ ] M3 bestiary grammar and standard enemies and templates
-- [ ] M4 channel / interrupt, Poison, return and survival, structural hits, Disrupting and Purifying
-- [ ] M5 captains, engines, bosses, variants, charter escort, art manifest
-- [ ] M6 sims, paired interventions, UI render checks, docs, handoff
+- [x] M0 ledger, decisions rows (DECISIONS.md "Living heroes and siege variety"), baseline `:core:test` green (686 tests)
+- [x] M1 core: revision + versions (schema 8, rules 8, content 7, balance 17), peoples and names, Hooks, counter visit,
+  loan returns, leans, sponsored offers, concerns and departures, invariants, fixtures 1-14 and 20 (`LivingIdentityTest`,
+  `LivingAgencyTest`), guildsim `--living` / `--legacy`. Commits baf7db3, 1f9b8a5, bdb02a9.
+- [ ] M1 UI: identity on sheet / roster / recruit card, silhouettes (agent, worktree), then agency notices
+- [~] M2: five Hooks done; eight ambitions done (Avenger, Heirloom, Captain, Name wired); 18 opportunities classified
+  (section 5); candidate inclination text (`LivingText.inclination`); market attachment done
+- [~] M3-M5: combat grammar (agent, worktree); army templates machinery in `SiegeFight.planArmy` (data pending);
+  bestiary data after the grammar merges; structural accounting after the grammar merges
+- [ ] M6 sims (legacy vs living, paired influence), UI render checks, docs (GDD, Writing Guide, PROGRESS, checklist, bible notice)
+
+Resume notes: `Agency` (counter, returns, leans, evidence) and `Hooks` (offers, concerns, departures, visitors) are the
+member-side resolvers. Scripts that generated content from the bible: scratchpad `tools/peoples.py`, `tools/armies.py`
+(not committed; rerun from the bible if needed).
 
 ## 5. Content coverage ledger (status: implemented / mapped / narrative / deferred)
 
-Filled per milestone. Groups: 12 races, 12 cultures (1,200 given, 600 family names), 20 backgrounds, 5 Hooks, 8 ambitions,
-6 Specialities, 16 personality concepts (backlog), 18 opportunities, 36 standard enemies, 6 captains, 3 engines,
-3 major monsters, 24 + 6 + 3 + 3 templates, 6 variants, 12 titles (backlog).
+Peoples: 12 races, 12 cultures (1,200 given / 600 family names), 20 backgrounds, 10 bynames: implemented
+(`content/Peoples.kt`, generated from the bible). Portrait coverage: 20 imported faces tagged human (7), elf (8), orc (2),
+lizardfolk, hornborn, halfling (1 each) as best fit; every other people and class pair wears `silhouette_<class>`.
+
+Hooks: Grudge, Debt, Lost Weapon, Oath, Kin implemented (classic eras: Grudge as background, Kin). Ambitions: Slayer,
+Defender, Collector, Fortune (kept), Avenger, Heirloom, Captain, Name (implemented, guild members). Specialities: the
+existing six, autonomous in new eras. Personality concepts (16 in the bible): backlog, the existing nine are used.
+
+Opportunities (content bible 14.2):
+
+| ID | Status | Route |
+|---|---|---|
+| opp_powder_trail | implemented | A scout, militia veteran, deserter or mason sponsors the siege's sabotage when the field brings a breach |
+| opp_troll_test | pending | Member want with an element (counter) |
+| opp_silver_saving | pending | Member want for Silver |
+| opp_bone_lesson | implemented (shared route) | The lesson visitor |
+| opp_lantern_hunt | deferred | Enemies have no identity that persists between fights except the nemesis |
+| opp_gate_practice | pending | Evidence after a structural hit (needs the grammar) |
+| opp_returned_blade | implemented | Family-weapon recovery card; the weapon goes home to its family |
+| opp_missing_caravan | implemented | `missing_caravan` quest, sponsored by a caravan guard |
+| opp_shared_watch | pending | Evidence when two bonded members hold the wall |
+| opp_apprentice_request | implemented | The lesson visitor (costs both members the day) |
+| opp_wounded_friend | implemented | The healer visitor for an injured bonded member |
+| opp_captains_drill | pending | Forecast line by a deserter or militia veteran when a captain is committed |
+| opp_ash_samples | pending | Clue rung after a Fire Elemental siege with a scholar on the wall |
+| opp_unburied_oath | pending | Reputation when a member with a Hollowbound grudge holds against Sir Carrow |
+| opp_forests_binding | narrative | The forecast already names every Covenant role |
+| opp_reputation_deed | implemented | A noble's or deserter's sponsored hunt, +2 reputation on a win |
+| opp_familiar_weapon | pending | Acknowledgement at an attachment milestone |
+| opp_safe_experiment | deferred | No test-commission mechanic for members |
+
+Enemies and armies: 48 definitions and 36 templates extracted (scratchpad `armies_rows.kt`); status filled when the
+bestiary lands.
 
 ## 6. Evidence and seeds
 

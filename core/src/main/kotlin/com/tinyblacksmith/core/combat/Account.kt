@@ -143,6 +143,8 @@ object FightAccounting {
                     if (by != null && actors[t]?.side == Side.ENEMY) bucket(by).applied += e.amount
                 }
                 EventKind.STAT_SPENT -> if (t != null && e.stat != null) lose(t, e.stat, e.amount)
+                // A returned actor comes back with no states: what it held is nobody's any more.
+                EventKind.RETURNED -> if (t != null) { stacks.keys.filter { it.first == t }.forEach { stacks.remove(it) }; givers.keys.filter { it.first == t }.forEach { givers.remove(it) } }
                 EventKind.HEALED -> if (t != null && party(t)) {
                     bucket(if (e.tick != null) tickOwner else by).healed += e.amount
                 }

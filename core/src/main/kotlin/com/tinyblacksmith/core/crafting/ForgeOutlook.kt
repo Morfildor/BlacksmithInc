@@ -104,7 +104,8 @@ object ForgeOutlook {
         val possible = buildList {
             if (elementBuff != null && !elementBuffCertain && (most >= 1)) add(Possible(Kind.ELEMENT_BUFF, elementBuff.name,
                 "It needs a free property slot. A Rare or better result, an exceptional result, ${Terms.risk(Risk.RECKLESS)} risk or Etch gives one. The Quench technique always adds it.", combat.affixEffects[elementBuff.id].orEmpty()))
-            val others = content.affixes.filter { it.kind == AffixKind.BENEFICIAL && it.element == null }
+            val others = content.affixes.filter { it.kind == AffixKind.BENEFICIAL && it.element == null } +
+                (if (ctx.guildEra && ctx.living && Forge.forgedRarity(best, config, core.tier) >= Rarity.RARE) content.livingAffixes else emptyList())
             if (most > (if (elementBuff != null) 1 else 0) && others.isNotEmpty()) add(Possible(Kind.OTHER_BUFF, "Another bonus", "A good enough result can also add one of these: ${others.joinToString(", ") { it.name }}. Which one is random."))
             if (defect > 0.0) add(Possible(Kind.FLAW, "A flaw", "This forging can leave a flaw. Which flaw is random, and each flaw also has its own effect in a fight."))
             // A signature is said only when the journal already holds it. A clue stays a clue, in the notes.

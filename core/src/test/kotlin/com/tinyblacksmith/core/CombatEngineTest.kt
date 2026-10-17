@@ -365,7 +365,8 @@ class CombatEngineTest {
         }
         assertTrue(n > 500)
         // Every rule a blade or a relic can carry did something somewhere in the sweep: none is dead text.
-        val silent = combat.allEffects.map { it.id }.toSet() - fired
+        // Disrupting and Purifying answer what no launch enemy does yet (a prepared ability, Poison): CombatGrammarTest fires them.
+        val silent = combat.allEffects.map { it.id }.toSet() - fired - content.livingAffixes.flatMap { combat.affixEffects[it.id].orEmpty() }.map { it.id }.toSet()
         assertEquals(emptySet(), silent, "rules that never fired")
     }
 }

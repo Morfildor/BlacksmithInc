@@ -73,4 +73,6 @@ data class SiegeScenario(
     /** Rules 6, a guild run: what the besieger is preparing (`GuildContent.preparations`), drawn with the plan. [prepSpoiled] names one the party spoiled. */
     val prepId: String? = null,
     val prepSpoiled: String? = null,
+    /** Living heroes: the authored army the field was committed from (`GuildCatalog.armies`); null for the old roster rule. */
+    val armyId: String? = null,
 )

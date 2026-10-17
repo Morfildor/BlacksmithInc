@@ -11,6 +11,7 @@ import com.tinyblacksmith.core.combat.Objective
 import com.tinyblacksmith.core.combat.Posture
 import com.tinyblacksmith.core.combat.Side
 import com.tinyblacksmith.core.content.BlessingEffect
+import com.tinyblacksmith.core.content.ArmyKind
 import com.tinyblacksmith.core.content.Depth
 import com.tinyblacksmith.core.content.FactionDef
 import com.tinyblacksmith.core.content.GuildContent
@@ -39,6 +40,7 @@ object SiegeFight {
         if (ctx.guild == null || scenario.plan.isNotEmpty()) return
         val faction = scenario.factionId ?: Battle.besieger(ctx)?.id ?: return
         val cat = GuildOps.catalog(ctx)
+        if (ctx.living && cat.armies.any { it.factionId == faction }) return planArmy(ctx, scenario, faction)
         val cfg = ctx.config.guild
         val state = ctx.factions[faction] ?: return
         val number = ctx.town.siegesSurvived + ctx.town.siegesLost + 1
@@ -57,7 +59,41 @@ object SiegeFight {
             data = mapOf("prep" to prep.id, "day" to scenario.siegeDay.toString(), "faction" to faction.value))
     }
 
+    /**
+     * Living heroes (final design 12.4): the field is one of the authored armies, committed whole with its preparation, so
+     * what the scouts report is what comes. Standard armies are the rule, captains, engines and great monsters the headline;
+     * an army two newer ones of its faction have not displaced is not sent again. The charter warlord leads the charter siege,
+     * with a standard army as escort, cut to fit four a side. Keyed draws: nothing else moves.
+     */
+    private fun planArmy(ctx: ResolutionContext, scenario: SiegeScenario, faction: FactionId) {
+        val cat = GuildOps.catalog(ctx)
+        val cfg = ctx.config.guild
+        val state = ctx.factions.getValue(faction)
+        val number = ctx.town.siegesSurvived + ctx.town.siegesLost + 1
+        val percent = GuildOps.ranked(ctx, cfg.siegePercentBase + (cfg.siegePercentPerDay * scenario.siegeDay + cfg.siegePercentPerPressure * state.pressure).toInt())
+        val charter = charterSiege(ctx, scenario.siegeDay)
+        val rng = com.tinyblacksmith.core.rng.Keyed.rng(ctx.base.seed, "army|${ctx.era}|${scenario.siegeDay}")
+        val recent = ctx.guild!!.armyLog.mapNotNull { cat.army(it) }.filter { it.factionId == faction }.takeLast(2).map { it.id }.toSet()
+        val eligible = cat.armies.filter { it.factionId == faction && it.firstSiege <= number && (!charter || it.kind == ArmyKind.STANDARD) }
+        val fresh = eligible.filter { it.id !in recent }.ifEmpty { eligible }
+        val warlord = state.pressure >= ctx.config.warlordPressure
+        val army = rng.pickWeighted(fresh.map { it to if (it.kind == ArmyKind.STANDARD) 1.0 else if (warlord) 2.0 else 0.5 })
+        val max = cfg.fight.maxActorsPerSide
+        val units = if (charter) listOf(EnemySpec(cat.siegeLeaders.getValue(faction), Fight.pct(percent, cfg.charterWarlordPercent))) + army.members.take(max - 1).map { EnemySpec(it, percent) }
+            else army.members.take(max).map { EnemySpec(it, percent) }
+        // A preparation that fits the field as authored: none that replaces its members, none that would push a fifth actor in.
+        val preps = cat.preparations.filter { it.factionId == faction && it.gruntUnit == null && (it.addUnit == null || units.size < max) }
+        val prep = if (preps.isEmpty()) null else rng.pick(preps)
+        ctx.siege = scenario.copy(factionId = faction, plan = units, charter = charter, prepId = prep?.id, armyId = army.id)
+        ctx.guild = ctx.guild!!.copy(armyLog = (ctx.guild!!.armyLog + army.id).takeLast(6))
+        val who = if (charter) "${ctx.content.combat!!.unit(cat.siegeLeaders.getValue(faction)).name} leads it, escorted by ${army.name.lowercase()}" else army.name
+        ctx.emit(EventType.SIEGE_PREPARATION, 7, "Scouts report the army coming on day ${scenario.siegeDay}: $who. ${army.forecast}" + (prep?.let { " They also prepare ${it.name.lowercase()}. ${it.description}" } ?: ""),
+            data = mapOf("army" to army.id, "day" to scenario.siegeDay.toString(), "faction" to faction.value) + (prep?.let { mapOf("prep" to it.id) } ?: emptyMap()))
+    }
+
     private const val TAG_PREP = "prep"
+    /** The unit tag of an enemy whose completed preparation strikes the defences (Sapper, Ogre, engines, the giant). */
+    const val STRUCTURAL = "structural"
     private const val TAG_NEMESIS = "nemesis"
 
     /** The bearer of the smith's weapon when it belongs to the besieger and the weapon is still in enemy hands: it comes to the wall. */
@@ -94,7 +130,15 @@ object SiegeFight {
         if (s.sabotaged > 0) return "Their preparations were already spoiled."
         val trait = ctx.content.siegeTrait(s.traitId)
         val prep = GuildOps.catalog(ctx).preparation(s.prepId)
-        val text = if (prep != null) {
+        // Living heroes: the party's sabotage spoils the charge against the wall first. A unit that would breach it stays home,
+        // unless it leads the army, so the headline still comes as reported (final design 13.4).
+        val units = ctx.content.combat!!.unitById
+        val breacher = if (ctx.living) s.plan.indices.drop(1).lastOrNull { STRUCTURAL in (units[s.plan[it].unitId]?.tags ?: emptySet()) } else null
+        val text = if (breacher != null) {
+            val gone = s.plan[breacher]
+            ctx.siege = s.copy(plan = s.plan.filterIndexed { i, _ -> i != breacher }, sabotaged = 1)
+            "The ${units.getValue(gone.unitId).name.lowercase()} will not come to the siege on day ${s.siegeDay}: the charge against the wall is spoiled."
+        } else if (prep != null) {
             ctx.siege = s.copy(prepId = null, prepSpoiled = prep.id, sabotaged = 1)
             "Their preparation is spoiled: ${prep.name.lowercase()}. It will not be used in the siege on day ${s.siegeDay}."
         } else if (trait != null) {
@@ -156,6 +200,8 @@ object SiegeFight {
         val missing: List<Pair<Hero, String>>, val watch: Int, val sabotaged: Boolean,
         /** What the besieger prepares, or what the party spoiled, and the bearer of the smith's weapon if it marches with them. */
         val prep: com.tinyblacksmith.core.content.SiegePrepDef? = null, val spoiled: com.tinyblacksmith.core.content.SiegePrepDef? = null, val nemesis: Nemesis? = null,
+        /** Living heroes: the authored army committed for this siege, with its scouts' report and answers. */
+        val army: com.tinyblacksmith.core.content.ArmyDef? = null,
     )
 
     /** What the Guild screen says of the coming siege. Reads only; simulates nothing. */
@@ -177,7 +223,7 @@ object SiegeFight {
         }
         return Forecast(faction, scenario?.let { fieldPlan(ctx, it) }.orEmpty(), scenario?.factionId != null, scenario?.charter == true, defenders(ctx, faction), missing,
             ((ctx.town.militia + ctx.town.armory) * (trait?.watchMultiplier ?: 1.0)).roundToInt(), (scenario?.sabotaged ?: 0) > 0,
-            GuildOps.catalog(ctx).preparation(scenario?.prepId), GuildOps.catalog(ctx).preparation(scenario?.prepSpoiled), scenario?.let { nemesisAtWall(ctx, it) })
+            GuildOps.catalog(ctx).preparation(scenario?.prepId), GuildOps.catalog(ctx).preparation(scenario?.prepSpoiled), scenario?.let { nemesisAtWall(ctx, it) }, GuildOps.catalog(ctx).army(scenario?.armyId))
     }
 
     /** Step 7 of End Day in a guild run. */
@@ -214,15 +260,19 @@ object SiegeFight {
             Fight.resolve(FightSetup("Siege of Emberfall, day ${ctx.day}", party, standing, GuildOps.relicRules(ctx, GuildOps.relicIds(ctx)), Objective(), Posture.BALANCED, rules, ctx.rng(RngStream.COMBAT).nextLong(), combat.unitById))
         else null
         fight?.let { com.tinyblacksmith.core.crafting.Interactions.witness(ctx, it) }
+        if (fight != null) Agency.afterFight(ctx, wall.map { it.first.id }, fight, fight.outcome == FightOutcome.WON || fight.outcome == FightOutcome.TIMED_OUT, siege = true)
         val left = when {
             standing.isEmpty() -> 0
             fight == null -> standing.sumOf { it.health }
-            else -> fight.actors.filter { it.side == Side.ENEMY && !it.summoned }.sumOf { it.health }
+            // A neutralized engine still stands on the field but threatens nothing more (final design 13.4).
+            else -> fight.actors.filter { it.side == Side.ENEMY && !it.summoned && !it.neutralized }.sumOf { it.health }
         }
+        // Completed attacks on the defences (Sapper, Ogre, engines, the giant): one forge consequence, charged here once, capped per siege.
+        val structural = if (ctx.living) minOf(ctx.config.living.structuralCapPerSiege, fight?.structural ?: 0) else 0
         val share = left * 100 / maxOf(1, enemyTotal)   // percent of the raid's whole strength still standing at the end
         val downed = fight?.actors?.filter { it.side == Side.PARTY && it.downed && !it.summoned }?.map { HeroId(it.key) }.orEmpty()
         val verdict = when {
-            standing.isEmpty() || fight?.outcome == FightOutcome.WON -> if (downed.isEmpty()) SiegeVerdict.HELD else SiegeVerdict.HELD_AT_A_COST
+            standing.isEmpty() || fight?.outcome == FightOutcome.WON -> if (downed.isEmpty() && structural == 0) SiegeVerdict.HELD else SiegeVerdict.HELD_AT_A_COST
             fight?.outcome == FightOutcome.TIMED_OUT -> SiegeVerdict.HELD_AT_A_COST
             else -> SiegeVerdict.BREACHED
         }
@@ -233,19 +283,20 @@ object SiegeFight {
             fight.outcome == FightOutcome.WON -> cfg.damageHeldPerDowned * downed.size
             fight.outcome == FightOutcome.TIMED_OUT -> maxOf(1, max * cfg.damageCostPercent / 100 * share / 100) + cfg.damageHeldPerDowned * downed.size
             else -> maxOf(cfg.damageBreachMin, max * cfg.damageBreachPercent / 100 * share / 100)
-        }.coerceIn(0, max)
+        }.let { it + structural }.coerceIn(0, max)
         val won = verdict != SiegeVerdict.BREACHED
 
         ctx.town = ctx.town.copy(integrity = ctx.town.integrity - forgeDamage, championIds = wall.map { it.first.id }, nextSiegeDay = ctx.town.nextSiegeDay + config.siegeInterval,
             armory = (ctx.town.armory * (1.0 - config.armorySiegeWear)).toInt())
         if (forgeDamage > 0) ctx.emit(EventType.FORGE_DAMAGED, 7, "The forge took $forgeDamage damage in the siege.", data = mapOf("damage" to forgeDamage.toString()))
+        if (structural > 0) ctx.emit(EventType.STRUCTURAL_DAMAGE, 6, "Their attacks on the defences took $structural of the forge's health.", data = mapOf("damage" to structural.toString(), "recorded" to fight!!.structural.toString()))
         val names = wall.joinToString(", ") { it.first.fullName }.ifEmpty { "no defenders" }
         val data = mapOf("verdict" to verdict.name, "left" to share.toString()) + (trait?.let { mapOf("trait" to it.id) } ?: emptyMap())
         val told = fight?.highlights?.firstOrNull()?.text?.let { " $it" }.orEmpty()
         val event = when (verdict) {
             SiegeVerdict.HELD -> ctx.emit(EventType.SIEGE_WON, 9, "Emberfall repelled $attacker! On the wall: $names.$told", wall.map { it.first.id.value }, data)
             // A town that holds and a forge that is hit: both are true, and the report says both (spec 1.2).
-            SiegeVerdict.HELD_AT_A_COST -> ctx.emit(EventType.SIEGE_WON, 9, "Emberfall held against $attacker, at a cost: the forge was hit${if (downed.isNotEmpty()) " and ${downed.size} of the defenders went down" else ""}. On the wall: $names.$told", wall.map { it.first.id.value }, data)
+            SiegeVerdict.HELD_AT_A_COST -> ctx.emit(EventType.SIEGE_WON, 9, "Emberfall held against $attacker, at a cost: the ${if (structural > 0) "defences were" else "forge was"} hit${if (downed.isNotEmpty()) " and ${downed.size} of the defenders went down" else ""}. On the wall: $names.$told", wall.map { it.first.id.value }, data)
             SiegeVerdict.BREACHED -> ctx.emit(EventType.SIEGE_LOST, 9, "${attacker.replaceFirstChar { it.uppercase() }} broke through ($names).$told", wall.map { it.first.id.value }, data)
         }
         // A note reads after the attacker's name: "Mira's weapon (Bronze) deals 5 damage to X" becomes "deals 5 damage to X with the weapon (Bronze)".
@@ -308,6 +359,8 @@ object SiegeFight {
             val mended = fight.events.count { it.kind == EventKind.HEALED && it.source == a.key && it.target != a.key }
             if (mended > 0) notes += "${a.name} was still standing at the end and had healed the other enemies $mended ${if (mended == 1) "time" else "times"}."
         }
+        if (structural > 0) notes += "Completed attacks on the defences cost the forge $structural health" + (if (fight!!.structural > structural) " (the most a siege can take that way)." else ".")
+        else if (ctx.living && fight != null && fight.events.any { it.kind == EventKind.INTERRUPTED || it.kind == EventKind.CHANNEL_CANCELLED }) notes += "Their attack on the defences was stopped before it landed."
         notes += if (forgeDamage > 0) "The forge lost $forgeDamage health." else "The forge took no damage."
         // The lead felled by a defender's own hand is that weapon's deed, and a warlord broken on the wall leaves Heartfire.
         val beatenOutright = fight?.outcome == FightOutcome.WON
@@ -332,6 +385,7 @@ object SiegeFight {
                 notes += "${nemesis.name} came carrying ${blade.name} and was defeated. It is back at the forge."
             } else if (blade != null) notes += "${nemesis.name} fought on their side with ${blade.name}, a weapon of this forge."
         }
+        notes += Agency.afterSiege(ctx, wall.map { it.first.id }, won)
         ctx.guild = ctx.guild!!.copy(lastSiege = SiegeReport(ctx.day, wall.map { it.first.id }, fight?.let { Missions.compact(it) }, verdict, forgeDamage, outer, notes), reserved = emptyList())
 
         if (won) {

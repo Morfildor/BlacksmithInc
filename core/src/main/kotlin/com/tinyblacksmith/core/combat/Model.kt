@@ -9,11 +9,11 @@ import kotlinx.serialization.Serializable
 enum class Side { PARTY, ENEMY }
 
 /**
- * Integer stacks an actor carries in a fight. GUARD is consumed before health. MARK, CHILL, BURN, REGEN, BLEED, WET and
- * THORNS have a rule of their own in [Fight]; CHARGE, SCRAP and STEAM are plain resources that only effects read.
- * Nothing here outlives the fight.
+ * Integer stacks an actor carries in a fight. GUARD is consumed before health. MARK, CHILL, BURN, REGEN, BLEED, WET,
+ * THORNS and POISON have a rule of their own in [Fight]; CHARGE, SCRAP and STEAM are plain resources that only effects
+ * read. Nothing here outlives the fight. New states are appended: the constant names are save keys.
  */
-enum class Stat { GUARD, CHARGE, MARK, BURN, REGEN, CHILL, WET, BLEED, SCRAP, THORNS, STEAM }
+enum class Stat { GUARD, CHARGE, MARK, BURN, REGEN, CHILL, WET, BLEED, SCRAP, THORNS, STEAM, POISON }
 
 /**
  * What can be recorded in a fight. A DAMAGE or HEALED event exists only for a positive effective amount: a hit that
@@ -24,6 +24,27 @@ enum class EventKind {
     HEALTH_PAID, FRACTURED, DOWNED, SUMMONED, RETREATED, OBJECTIVE, ROUND_END,
     /** An actor has finished its action: what answers "after the wielder acts" answers this. ACTION is recorded before the move is carried out. */
     ACTED,
+    // Living heroes (final design 13). Appended: the constant names are save keys.
+    /** An actor spent its action starting a channel ([FightEvent.ability] names it); [FightEvent.target] is its fixed target, if it has one. */
+    CHANNEL_STARTED,
+    /** The channel was finished on the actor's next action, uninterrupted: its payload follows under this event. */
+    CHANNEL_COMPLETED,
+    /** The channel's source went down with the channel pending: it never completes. */
+    CHANNEL_CANCELLED,
+    /** The source interrupted the pending channel of the target. Recorded only when a real channel was pending. */
+    INTERRUPTED,
+    /** A completed attack on the town's defences: the amount is forge health, summed in [FightResult.structural]. */
+    STRUCTURAL_HIT,
+    /** An engine spent its last use: it stops acting and no longer keeps the fight going. Nobody is credited with it. */
+    NEUTRALIZED,
+    /** A downed actor stands again with the amount as its health, once ever (the source returned it). */
+    RETURNED,
+    /** A hit that would have downed the actor left it at 1 health, once per fight. */
+    SURVIVED,
+    /** The actor's healing before its action did not happen, because of what hit it since its last action. */
+    RECOVERY_STOPPED,
+    /** The source chose the target as its side's prey until the round ends: that side's pack attacks it. */
+    PREY_MARKED,
 }
 
 /** How an event came about: an actor's own action, a triggered effect, or a tick of a state at its scheduled moment. */
@@ -55,6 +76,8 @@ data class FightEvent(
     val text: String = "",
     @EncodeDefault(NEVER) val tick: Stat? = null,
     @EncodeDefault(NEVER) val affinity: Affinity? = null,
+    /** The name of the prepared ability a channel event is about (CHANNEL_STARTED, CHANNEL_COMPLETED, CHANNEL_CANCELLED, INTERRUPTED). Records only. */
+    @EncodeDefault(NEVER) val ability: String? = null,
 )
 
 enum class Posture { CAUTIOUS, BALANCED, RECKLESS }
@@ -85,8 +108,11 @@ data class FightRules(
     val resistPercent: Int = 70,
     val caps: Map<Stat, Int> = mapOf(
         Stat.GUARD to 14, Stat.CHARGE to 5, Stat.MARK to 1, Stat.BURN to 6, Stat.REGEN to 4, Stat.CHILL to 3,
-        Stat.WET to 2, Stat.BLEED to 5, Stat.SCRAP to 4, Stat.THORNS to 8, Stat.STEAM to 4,
+        Stat.WET to 2, Stat.BLEED to 5, Stat.SCRAP to 4, Stat.THORNS to 8, Stat.STEAM to 4, Stat.POISON to 3,
     ),
+    /** Healing a poisoned fighter receives is this much smaller (percent) per Poison, at most [poisonHealMax] in all. */
+    val poisonHealPercent: Int = 20,
+    val poisonHealMax: Int = 60,
     /** Cautious leaves when a member is down or the party's health is under this share of what it came with. */
     val cautiousHealthPercent: Int = 40,
     /** Balanced leaves when this many members are down, or when the last one standing is under [lastStandPercent]. */
@@ -124,7 +150,46 @@ data class Combatant(
     val weaponId: String? = null,
     val weaponRules: List<String> = emptyList(),
     val unitId: String? = null,
+    /** States this actor never receives: `Fight` skips giving them. Empty for every unit written before Poison. */
+    val immune: Set<Stat> = emptySet(),
+    /** The first direct hit that would down it leaves it at 1 health instead, unless the hit is Fire or Sun. Once per fight, kept across a return. */
+    val surviveOnce: Boolean = false,
+    /** Extra direct damage it takes from a source with a tag ([SourceBonus]): the strongest one applies, never two. */
+    val bonusFrom: List<SourceBonus> = emptyList(),
+    /** Healing before each of its actions that some hits stop ([Recovery]). */
+    val recover: Recovery? = null,
+    /** Once per round, this much more direct damage (percent) on a target another allied [Tags.BEAST] already damaged with its own action this round. */
+    val packBonusPercent: Int = 0,
 )
+
+/**
+ * A source a unit is weak to beyond its element: direct damage from an actor with [tag] deals [percent] more. Tags of a
+ * party member come from its weapon (`Loadout`: `family:<id>`, `metal:<id>`). [Tags.AREA] means a hit of an action that
+ * strikes several enemies at once ([Aim.AllFoes], [Aim.FrontFoes] of 2 or more).
+ */
+data class SourceBonus(val tag: String, val percent: Int)
+
+/**
+ * Before each of its own actions the unit heals [amount], unless since its previous action it took health damage from a
+ * Fire hit, from a Burn tick, or from a source carrying one of [suppressedBy] (such as `metal:silver`).
+ */
+data class Recovery(val amount: Int, val suppressedBy: Set<String> = emptySet())
+
+/** Tags the fight itself reads. A unit may carry any others for content to name. */
+object Tags {
+    /** Never returned by [Action.Return]: captains, engines, spirits and major monsters. */
+    const val CAPTAIN = "captain"
+    const val ENGINE = "engine"
+    const val SPIRIT = "spirit"
+    const val BOSS = "boss"
+    /** An enemy that attacks its side's prey ([Action.MarkPrey]) with [Aim.Foe]. */
+    const val PACK = "pack"
+    /** What [Combatant.packBonusPercent] counts as another pack member's hit. */
+    const val BEAST = "beast"
+    /** A [SourceBonus] tag: a hit of an action that strikes several enemies. */
+    const val AREA = "area"
+    val NEVER_RETURNED = setOf(CAPTAIN, ENGINE, SPIRIT, BOSS)
+}
 
 /** Something an effect can call onto the field: one helper, with numbers of its own. */
 data class UnitDef(
@@ -140,6 +205,12 @@ data class UnitDef(
     val weakTo: Element? = null,
     val resists: Element? = null,
     val tickResist: Map<Stat, Int> = emptyMap(),
+    /** As on [Combatant]: states it never receives, survival once, source weaknesses, recovery and the pack bonus. */
+    val immune: Set<Stat> = emptySet(),
+    val surviveOnce: Boolean = false,
+    val bonusFrom: List<SourceBonus> = emptyList(),
+    val recover: Recovery? = null,
+    val packBonusPercent: Int = 0,
 )
 
 data class FightSetup(
@@ -172,6 +243,10 @@ data class ActorResult(
     /** The rule IDs the actor's blade brought to this fight, in the order the fight asked them. */
     @EncodeDefault(NEVER) val weaponRules: List<String> = emptyList(),
     @EncodeDefault(NEVER) val unitId: String? = null,
+    /** An engine that spent its last use: standing, but out of the fight. */
+    @EncodeDefault(NEVER) val neutralized: Boolean = false,
+    /** Downed once and returned to the fight ([EventKind.RETURNED]). */
+    @EncodeDefault(NEVER) val returned: Boolean = false,
 )
 
 /** A chain worth telling: the events it is made of, root first, and the sentence built from their own texts. */
@@ -191,6 +266,11 @@ data class FightResult(
     @EncodeDefault(NEVER) val record: Int = 0,
     /** The name of every rule an event of this fight names, by ID: the record says what fired without the catalog. */
     @EncodeDefault(NEVER) val rules: Map<String, String> = emptyMap(),
+    /**
+     * Forge health the completed structural hits of this fight took ([EventKind.STRUCTURAL_HIT]), summed and uncapped.
+     * The siege applies it once, under its own cap. 0 for every fight before them.
+     */
+    @EncodeDefault(NEVER) val structural: Int = 0,
 ) {
     fun actor(key: String): ActorResult? = actors.firstOrNull { it.key == key }
     val won: Boolean get() = outcome == FightOutcome.WON

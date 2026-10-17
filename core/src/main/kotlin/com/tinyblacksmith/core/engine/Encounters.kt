@@ -110,7 +110,9 @@ object Encounters {
         val cfg = ctx.config.depth
         val followUp = Consequences.dueFollowUp(ctx)
         // The caravan master after the first siege (rules 7) is a visit of her own: drawn by nothing, she waits for a free morning.
-        val inst = followUp ?: DeepRoad.visitor(ctx) ?: run {
+        // A guild member's due debt brings its creditor before any chance visitor (living heroes, final design 7.3).
+        val creditor = if (followUp == null) com.tinyblacksmith.core.guild.Hooks.debtor(ctx)?.let { com.tinyblacksmith.core.guild.Hooks.build(ctx, com.tinyblacksmith.core.guild.Hooks.CREDITOR, newId(ctx)) } else null
+        val inst = followUp ?: creditor ?: DeepRoad.visitor(ctx) ?: run {
             if (ctx.day < cfg.encounterFirstDay) return
             val rng = ctx.rng(RngStream.ENCOUNTERS)
             if (!rng.chance(cfg.encounterChance)) return

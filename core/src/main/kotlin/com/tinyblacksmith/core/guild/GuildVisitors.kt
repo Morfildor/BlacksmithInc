@@ -44,7 +44,7 @@ internal object GuildVisitors {
             GuildContent.SWORD_COMPLAINT -> sentient(ctx) != null
             GuildContent.ACROSS_THE_COUNTER -> ctx.guild!!.nemesis?.let { n -> ctx.guild!!.mission?.offer?.subjectWeaponId != n.weaponId && ctx.weapons[n.weaponId] != null } == true
             GuildContent.INSURANCE_ADJUSTER -> insurable(ctx) != null
-            else -> false
+            else -> Hooks.eligible(ctx, def.id)
         }
     }
 
@@ -59,7 +59,7 @@ internal object GuildVisitors {
                 val worth = Market.askingPrice(w, ctx.config)
                 base.copy(weaponId = w.id, heroId = w.loanedTo, amounts = mapOf("fee" to maxOf(5, worth * cfg.insuranceFeePercent / 100), "payout" to worth * cfg.insurancePayoutPercent / 100, "until" to ctx.day + cfg.insuranceDays))
             }
-            else -> error("No offer for encounter ${def.id}")
+            else -> Hooks.build(ctx, def.id, id)
         }
     }
 
@@ -75,6 +75,7 @@ internal object GuildVisitors {
             GuildContent.ACROSS_THE_COUNTER -> ctx.guild?.nemesis?.let { n -> "A dealer in things found on battlefields can get ${blade ?: "your weapon"} back from ${n.name}: pay ${a["price"]} gold and it is on your counter today. Or he will tell you where ${n.name} sleeps." }
                 ?: "The dealer's news is stale: the weapon is no longer in those hands."
             GuildContent.INSURANCE_ADJUSTER -> "An adjuster with ash on his cuffs will insure one loan against the enemy: ${blade ?: "a weapon"}, carried by ${name(ctx, i.heroId)}. If it is taken from the guild by day ${a["until"]}, he pays ${a["payout"]} gold, once."
+            Hooks.CREDITOR, Hooks.LESSON, Hooks.WOUNDED_FRIEND -> Hooks.text(ctx, i)
             else -> def.description
         }
     }
@@ -147,6 +148,7 @@ internal object GuildVisitors {
                 },
                 pass("Decline", "The adjuster left his card."),
             )
+            Hooks.CREDITOR, Hooks.LESSON, Hooks.WOUNDED_FRIEND -> Hooks.options(ctx, i)
             else -> listOf(pass("Send them away", "The visitor left."))
         }
     }

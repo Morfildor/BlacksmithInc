@@ -95,6 +95,8 @@ object Stories {
     fun chooseBranch(ctx: ResolutionContext, heroId: HeroId, specialityId: String): GameError? {
         val m = ctx.guild!!.member(heroId) ?: return GameError.NotAMember(heroId)
         if (m.specialityId == specialityId) return null
+        // Living heroes: the member chooses after an announced lean (final design 9.3). A legacy era keeps the smith's choice.
+        if (ctx.living) return GameError.SpecialityChosenByMember(heroId)
         val def = openBranches(ctx, m).firstOrNull { it.id == specialityId } ?: return GameError.UnknownContent(specialityId)
         GuildOps.updateMember(ctx, heroId) { it.copy(specialityId = def.id) }
         ctx.emit(EventType.GUILD_STORY, 5, "${ctx.hero(heroId).fullName} has a new speciality: ${def.name}.", listOf(heroId.value), mapOf("speciality" to def.id))
@@ -206,7 +208,7 @@ object Stories {
             if (ctx.day >= r.nextMoveDay) {
                 // What the smith has already planned for today is the smith's: the rival never takes an accepted contract.
                 val planned = ctx.guild!!.planned?.offerId
-                val open = ctx.guild!!.offers.filter { o -> o.id != planned && o.subjectHeroId == null && o.subjectWeaponId == null && cat.mission(o.defId).let { it.weight > 0.0 && it.archetype != MissionArchetype.SUPPLY && it.archetype != MissionArchetype.SABOTAGE } }
+                val open = ctx.guild!!.offers.filter { o -> o.id != planned && o.subjectHeroId == null && o.subjectWeaponId == null && o.sponsorHeroId == null && cat.mission(o.defId).let { it.weight > 0.0 && it.archetype != MissionArchetype.SUPPLY && it.archetype != MissionArchetype.SABOTAGE } }
                 val pick = open.firstOrNull { cat.mission(it.defId).archetype.name == r.wants } ?: open.minByOrNull { it.postedDay }
                 val line = pick?.let { Missions.title(ctx, it) }
                 val named = pick?.let { Missions.named(ctx, it) }

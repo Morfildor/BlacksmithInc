@@ -199,7 +199,7 @@ class RunVarietyTest {
     @Test fun `End Day waits for the opening, every package can be taken and leaves a start that can be played, and it is taken once`() {
         for (charter in cat.charters) for (def in cat.openings.filter { charter.id in it.charters }) {
             val seed = (1L..200L).first { s -> engine.newRun(LegacyProfile(), s, charterId = charter.id).guild!!.openingOffer.any { it.defId == def.id } }
-            val fresh = engine.newRun(LegacyProfile(), seed, charterId = charter.id)
+            val fresh = engine.newRun(LegacyProfile(), seed, charterId = charter.id, livingRevision = com.tinyblacksmith.core.model.LivingRevision.LEGACY)
             assertEquals(GameError.OpeningPending, fresh.rejected(Command.EndDay(TestSupport.endDayId(fresh))))
             val s = fresh.send(Command.ChooseOpening(def.id)).sound()
             val g = s.guild!!
