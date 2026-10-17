@@ -1,5 +1,14 @@
 # Progress — 2026-10-15 (text and header pass; 2026-10-14: deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Living heroes design review (2026-10-17, review only)
+
+- The owner's ChatGPT proposal "Living Heroes, Autonomous Agendas, and Run Variety" reviewed as a designer / RPG / DM /
+  director; `docs/LIVING_HEROES_REVIEW_2026-10-17.md`. Evidence: GDD v2.0, two code audits, five spot-checks. Verdict:
+  keep the direction, rewrite around the smith's decisions; half of Stages 1–3 already exist; two LOCKED collisions
+  (members never shop, the smith chooses the speciality) need owner rulings. Six owner decisions listed in its §8.
+- Races, name pools and the enemy roster are the owner's separate content bible; the review hands it the engine's
+  vocabulary (§9). Nothing in the game changed. Next: ChatGPT review, owner's final document, then an implementation brief.
+
 ## Post-terminology UI polish (2026-10-17, branch `ui-polish-post-terms`)
 
 - Owner handoff "Post-Terminology UI Polish Brief". Baseline `6e039cc` (terminology V2 + V3 inspect cards, committed by
