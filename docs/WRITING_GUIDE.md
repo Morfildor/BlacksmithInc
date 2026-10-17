@@ -102,6 +102,12 @@ that meaning.
 | **Elite, Leader, Summoner** | Enemy labels on the enemy card. | champion, named fighter |
 | **Enemy, enemies** | Whoever the party or the town fights. Siege enemies are **the attackers**. | foe, besiegers |
 | **Once per round / per fight** | The most often an effect can trigger for its holder. A party effect "for each member" counts per member. | twice a fight |
+| **Preparing** (living eras) | An enemy ability that starts on one action and lands on that enemy's next action. The card names it and what it does when it lands ("Preparing a powder charge: 4 damage to the defences"). Downing the enemy or an **Interrupt** stops it. | charging, channel, casting |
+| **Interrupt** | Stops an enemy that is Preparing. Whether the preparation is lost or only delayed is on the enemy's card. On a target that is not Preparing, the card says what happens instead. | Silence, Stun |
+| **Returned** | A standard enemy raised once by a Necromancer, a Lich or a Bellkeeper, at part of its Health. Leaders, engines, spirits and great monsters are never returned. | revived, resurrected |
+| **Survives at 1 Health** | The first hit that would down this enemy leaves it at 1 Health instead, once per fight. Fire, Sun, Burn, Bleed and Poison are not stopped by it. | undying |
+| **Neutralized** | An engine that has used all its strokes stands on the field but no longer acts and does not keep the fight going. | destroyed |
+| **Attack on the defences** | A completed enemy preparation that costs the forge health after the siege, whatever the battle's result. At most 12 a siege, added to the siege's ordinary forge damage, never past its maximum. A held siege with such a hit is **Held at a cost**. | wall damage, structural damage |
 | **Siege only / Quests only** | Where an effect applies. | "Only on the town's wall", "(at home)" |
 
 ### 2.2 Statuses (every status ends with the fight)
@@ -114,6 +120,7 @@ that meaning.
 | **Bleed** | Before the fighter acts, it takes 1 damage per Bleed (ignores Armor), then loses 1 Bleed. At most 5. | |
 | **Regeneration** | At the end of each round the fighter heals 3, then loses 1 Regeneration. More Regeneration lasts longer, it does not heal more. At most 4. | Regen |
 | **Mark** | The party attacks a marked enemy first. The next hit on it deals 3 extra damage and removes the Mark. At most 1. | |
+| **Poison** | At the end of each round the fighter takes 1 damage per Poison (ignores Armor), then loses 1 Poison. Each heal it receives is 20% smaller per Poison (at most 60%) and uses up 1 Poison. At most 3. | Poisoned, toxin |
 | **Thorns** | The next enemy attack that hits this fighter, even into Armor, takes all the Thorns as damage, and the Thorns are used up. Effects, Burn and Bleed never set it off. At most 8. | |
 | **Charge** | Stored energy. A **Discharge** spends all of it at 3 or more for 8 storm damage. At most 5. | Charge burst |
 | **Wet** | A storm hit on a Wet fighter deals 2 extra damage and uses up 1 Wet. Loses 1 Wet each round. At most 2. | |
@@ -190,7 +197,12 @@ that meaning.
 | **Injured, Exhausted, Scarred, Captured** | Member conditions with their days. | held, taken |
 | **Defeated** | A quest stage lost. | lost, beaten |
 | **Trait** | A member's personal fight effect. | |
-| **Speciality** | A permanent improvement a member chooses once they have won 3 quests, been downed twice, or fulfilled their own ambition. | branch |
+| **Speciality** | A permanent improvement a member earns once they have won 3 quests, been downed twice, or fulfilled their own ambition. In an era begun before living heroes the smith picks it. Since then the member chooses it: first a **lean** ("Leaning to Vanguard"), shown with its reason and the day the choice is made, then the choice. | branch |
+| **Hook** (living eras) | Something from a member's life before the guild: a grievance, a debt, a lost family weapon, an oath or kin in town. Said in one sentence on the hero sheet. An open Hook can bring a personal offer. | backstory, quest hook |
+| **Personal offer** | A board card a member asks for, with their name on it. The board keeps at most one. Leaving it is allowed: a member who misses three fair chances may raise a **concern**. | sponsored quest |
+| **Concern, Leaves the guild** | A member's worry with its remedy ("Hopes you will..."). A concern can become a notice with a date: "Leaves the guild on the morning of day 14 unless you ...". A member who leaves is alive and gone with what they own. | quits, deserts |
+| **Counter visit** | A member buying a weapon at your counter with their own gold, at most one a day. Never a loan. | |
+| **Loan return** | A member who would rather carry their own weapon says so a day ahead, with the reason. The loan goes back to storage unless you lend something better. | |
 | **Level** | 1 to 20. Each level adds Health, Attack and Support. | |
 | **Starting kit** | The first morning's choice of relic, traits and gear. | opening, package |
 | **Challenge tier** | After the charter is secured: an optional, permanent step up in difficulty (stronger enemies, more siege enemies, shorter quest offers) worth more legacy points. The tiers keep their names (Chartered Company, Wardens of the March, The Last Company). | Rank |
@@ -200,7 +212,7 @@ that meaning.
 
 ### 2.6 Names
 
-Kept because they are familiar: Health, Burn, Bleed, Chill, Regeneration, Thorns, Mark, Charge, Wet,
+Kept because they are familiar: Health, Burn, Bleed, Poison, Chill, Regeneration, Thorns, Mark, Charge, Wet,
 Overheal, Quest, Party, Retreat, Stage, Checkpoint, Level, Rarity, Quality, Power, Condition, Salvage, Upgrade,
 Repair, Commission, Blessing, Relic, Siege, Militia, Elite, Leader, Riposte, Second Wind, Mend, Second arrow.
 
@@ -230,7 +242,7 @@ Effect names renamed in the overhaul (old name: new name, mechanic):
 | Greedy (guild trait) | Gold-Hungry | +20% stage gold, keeps an extra 5% of the quest gold |
 | Loyal (guild trait) | Avenger | When an enemy downs an ally: full Attack to that enemy, once per fight |
 
-Not adopted, because no mechanic matches: Block, Dodge, Miss, Critical hit, Poisoned, Stunned, Frozen, Slowed,
+Not adopted, because no mechanic matches: Block, Dodge, Miss, Critical hit, Stunned, Frozen, Slowed,
 Lifesteal, Taunt, Vulnerable, Companion, Loot, Expedition (for quests), Encounter (for visitors), Boss, Enchantment.
 
 ## 3. Retreat rules

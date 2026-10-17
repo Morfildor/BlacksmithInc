@@ -459,7 +459,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
             policy !in setOf(GuildPolicy.PASSIVE, GuildPolicy.NOVICE, GuildPolicy.SHOP_FOCUSED, GuildPolicy.RECOMMENDED) && (MissionArchetype.RESCUE !in order || offers.none { o -> arch(o) == MissionArchetype.RESCUE })
         }
         // The first card on the board that the till can pay for, whatever it is.
-        val mine = if (personal == "answer" && offers.none { arch(it) == MissionArchetype.RESCUE }) offers.firstOrNull { com.tinyblacksmith.core.guild.Hooks.sponsored(it) } else null
+        val mine = if (personal == "answer" && health >= 75 && fit.size >= 2 && offers.none { arch(it) == MissionArchetype.RESCUE }) offers.firstOrNull { com.tinyblacksmith.core.guild.Hooks.sponsored(it) } else null
         val offer = mine ?: road ?: (if (policy == GuildPolicy.RECOMMENDED) offers.firstOrNull { arch(it) != MissionArchetype.EMERGENCY } else order.firstNotNullOfOrNull { a -> offers.firstOrNull { arch(it) == a } }) ?: return s
         val posture = when (policy) {
             GuildPolicy.GREEDY_DIVER -> Posture.RECKLESS
