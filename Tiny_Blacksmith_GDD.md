@@ -2,7 +2,7 @@
 ## Game Design Document — v2.0
 
 **Date:** 2026-10-14
-**Describes:** the game as built at rules 6, content 6, balance 15, save schema 7 (app 0.8.0 plus `[Unreleased]`, aimed at 0.9.0)
+**Describes:** the game as built at rules 6, content 6, balance 15, save schema 7 (app 0.8.0 plus `[Unreleased]`, aimed at 0.9.0); since 2026-10-17 §12.14 also describes living heroes on branch `living-heroes` (rules 8, content 7, balance 17, schema 8)
 **Supersedes:** GDD v1.0 (2026-10-08, nine design rounds; in git history as `Tiny_Blacksmith_GDD_v1.0.md`) and folds in
 the addendum `docs/GDD_REVISION_2026-10-10.md` (guild runs), the run-variety rulings (rules 6), the deep-forging rulings
 and the owner's decisions A–M of 2026-10-14.
@@ -168,6 +168,7 @@ These stories come from deterministic systems, never from a script dressed up as
 | 2026-10-11 | Deep forging | One composer for a weapon's fight rules; metals have rules; weapons keep the composition they were forged with; the bench never counts as evidence | `docs/DEEP_FORGING_LEDGER.md` (F1–F9) |
 | 2026-10-11 | Presentation | Copy remaster, Gazette briefing, guided first day | DECISIONS "Copy remaster…", "Guided first day" |
 | 2026-10-14 | Owner decisions A–M | §2.3 | DECISIONS "Owner decisions on the 2026-10-14 review" |
+| 2026-10-17 | Living heroes and siege variety (owner's final design) | In guild eras begun at rules 8: peoples, culture names, Hooks, members who shop at the counter, return loans, choose their own Speciality, ask for personal quests and may leave; authored siege armies with attacks on the defences. Two LOCKED rules change for those eras only, by the owner's design: members may shop (one a day, own gold, never a loan), and members choose their Speciality. Earlier eras keep every old rule | `docs/Tiny_Blacksmith_Living_Heroes_Final_Design.md`, `docs/LIVING_HEROES_LEDGER.md`, DECISIONS "Living heroes and siege variety" |
 
 ## 2.3 Owner decisions of 2026-10-14
 
@@ -200,7 +201,7 @@ A run's mode is fixed when it starts and never changes (a save from before the g
 | | Classic run (no charter) | Guild run (charter) |
 |---|---|---|
 | Player actions | Forge, price, list, buy, commissions, visitors, relics, blessings, hone/salvage/scrap/donate, End Day | All classic actions, plus recruit, dismiss, lend, recall, plan a deployment (party, contract, posture), choose a checkpoint, reserve defenders, choose specialities, opening, rank, retirement |
-| Heroes | All autonomous | Townsfolk autonomous; contracted members never shop, wander or take commissions |
+| Heroes | All autonomous | Townsfolk autonomous; contracted members never wander or take commissions, and (eras before rules 8) never shop; since rules 8 a member may buy at the counter (§12.14) |
 | Fights | Scalar resolver (§10.2) | Contracts and the siege on the interaction engine (§10.3); residents' own expeditions stay scalar |
 | Weapons in a fight | Multipliers (attack, defence, element) | Every part carries a typed fight rule (§5.9) |
 | Siege warning | 2 evenings ahead | Besieger, field and preparation committed 4 days ahead |
@@ -532,7 +533,7 @@ Store keeps it (decision K).
    halved for a hero who browsed yesterday and bought nothing).
 3. Served in seating order; turned-away heroes are recorded.
 
-Guild members are not residents and never shop. The town refills toward 12 (certain below 9, events cap at 16).
+Guild members are not residents and never shop with the town (since rules 8 they make their own counter visit, §12.14). The town refills toward 12 (certain below 9, events cap at 16).
 
 ## 7.3 The purchase decision
 
@@ -593,7 +594,8 @@ observable weight (activity choice, shopping, price sensitivity, loyalty gain, c
 Slayer (4 expedition wins), Defender (stand in a held siege), Collector (wield quality ≥ 50), Fortune (hold 300 gold);
 fulfilling one gives fame, loyalty, shop reputation and a legacy milestone. Names from 120 first names and 96 surnames,
 never repeated in a run; a face from the owner's 20-hero portrait set, stored on the hero, upgraded after a title or 5
-kills.
+kills. Since rules 8 (§12.14) every hero belongs to one of 12 peoples and is named from their culture (100 given and 50
+family names each); a people without a face for the class shows a neutral class silhouette.
 
 ## 8.3 Daily life (classic, and townsfolk in a guild run)
 
@@ -868,6 +870,32 @@ Box, Blood Receipt, The Blunt Oath, Coward's Medal. Pacts: Widow's Whetstone, Oa
 | One workshop with panels | Four destinations kept; Town becomes Guild |
 
 ---
+
+## 12.14 Living heroes (guild eras begun at rules 8)
+
+An era records its feature revision when it begins (`GameState.livingRevision`). Eras begun earlier keep every old rule
+and draw; a classic era begun since draws exactly what an old one did. Detail, numbers and coverage:
+`docs/LIVING_HEROES_LEDGER.md`; PROPOSED numbers in `BalanceConfig.living`.
+
+- **People and story.** 12 peoples with their cultures' names, 20 backgrounds, and for many a **Hook**: a grievance
+  against a faction, a debt with a creditor and a due day, a family weapon lost to a holder, an oath (plain work, no Grave,
+  one weapon type) or kin in town. Ambitions add Avenger, Heirloom, Captain and Name for members. Each change is kept as a
+  short reason record on the hero (at most 10).
+- **What members decide.** One member a day may buy a weapon at the counter with their own gold (trade-in of what they own,
+  never a loan). A member who would rather carry their own weapon announces a **loan return** with its reason a day ahead.
+  A member with an open Speciality first **leans** toward one, with the reason from their record, and chooses it at a later
+  End Day at home (`ChooseSpeciality` is refused). Members never refuse a quest or the wall.
+- **Personal offers.** An open Hook can put one personal card on the board (grievance hunt, family-weapon recovery, a
+  caravan guard's missing caravan, a deed for reputation, the sabotage a scout asks for). It competes with every other card
+  for the one party. A member who misses three fair chances raises a concern; then a notice with its date and remedy; a
+  member who leaves is alive and gone with what they own. Visitors: the creditor, a lesson, a healer for a hurt friend.
+- **Siege armies.** Each siege commits one of 36 authored armies of the 48-enemy bestiary (24 standard, 6 captain, 3
+  engine, 3 great monster), reported with its answers. Enemies use Poison, preparations an Interrupt stops, a return once,
+  survival at 1 Health, recovery that Fire or Silver stops, pack prey and attacks on the defences. Completed attacks on the
+  defences add forge loss once after the battle (at most 12 a siege, within its maximum of 60), and a held siege with one
+  is held at a cost. Sabotage spoils the charge first. Two new Bonuses: Disrupting and Purifying.
+- **Moments.** Shared watch, a familiar weapon, gate practice, a captain recognised, ash samples, the unburied oath, the
+  troll and the werewolf lessons: story and evidence, never free power.
 
 # 13. Legacy and permanent progression
 

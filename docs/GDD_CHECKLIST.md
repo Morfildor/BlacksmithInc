@@ -233,6 +233,20 @@ Ticked = built and JVM-tested. What was seen on a device is in the ledger.
 - [ ] Any of this in a classic run (its resolver does not run fight rules)
 - [ ] Human playtest: does forming a hypothesis and testing it feel good
 
+## Living heroes and siege variety (owner's final design of 2026-10-17; `docs/LIVING_HEROES_LEDGER.md`)
+- [x] Era feature revision: legacy eras unchanged, classic RNG parity (golden test), schema 8 migration
+- [x] 12 peoples, 12 cultures (1,200 given / 600 family names), 20 backgrounds, bynames; silhouettes for missing faces
+- [x] Hooks (5), ambitions (8), reason records; Hook text before recruiting
+- [x] Member counter visit, announced loan returns, Speciality lean then autonomous choice, oaths enforced on loans
+- [x] Personal offers, concerns, dated departure notices, departures; creditor, lesson and healer visitors
+- [x] Combat grammar: Poison, preparations and Interrupt, return once, survival, recovery suppression, pack prey, attacks on the defences, Disrupting and Purifying
+- [x] 48 enemies, 36 armies, committed army planner, structural forge loss once (cap 12), sabotage of the charge
+- [x] Opportunities: 16 of 18 routed, 2 deferred (lantern hunt, safe experiment)
+- [x] Identity UI and the owner's six UI fixes (screenshots `docs/living_heroes_evidence/ui_identity/`)
+- [ ] Agency and siege UI (lean, returns, departures, personal offers, counter purchases, army forecast, enemy traits)
+- [ ] Army strength calibrated to the existing bands on tuning seeds, confirmed on validation block 800001-800300
+- [ ] Debug scenario saves regenerated; device pass at 360 dp, 1.0x / 1.3x
+
 ## Pipeline (owner requests and review findings, beyond the GDD)
 - [x] Signboard effect (+1 customer a day per level; +0.4 days, +3.5 sales a run for the active smith)
 - [x] Affix magnitude sweep (Giant Slayer, Cursed / Bloodbound, Reinforced / Swift, Heavy)

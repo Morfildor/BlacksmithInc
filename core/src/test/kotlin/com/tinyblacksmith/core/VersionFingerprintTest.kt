@@ -41,7 +41,9 @@ class VersionFingerprintTest {
         // 7: living heroes (the twelve peoples, backgrounds, bynames, portrait peoples). Re-pinned inside the unreleased step as the bestiary lands.
         // 7, re-pinned inside the unreleased step (from 4be970f8...): the peoples, the bestiary types, the combat grammar (channels, Poison, returns, structural hits) and the two living-era bonuses, Disrupting and Purifying.
         // 7, re-pinned inside the unreleased step (from f9f000a6...): the siege bestiary, 48 enemies with their profiles and the 36 armies (content/Bestiary.kt). No balance number moved.
-        7 to "fb8147846a5739638b80c3cfbff60682b787c730a05d6fdeee9c75090e09b6cc",
+        // 7, re-pinned inside the unreleased step (from fb814784...): the first two dwarf faces (portrait_hero_21 Warden, _22 Battlemage) in the class appearances and portrait peoples. No number moved.
+        // 7, re-pinned inside the unreleased step (from f82098d7...): the v2 faces 23-35 (two for every people, docs/HERO_FACES_V2_PLAN.md) in the class appearances and portrait peoples. No number moved.
+        7 to "46f6da1420006db686d9b9793473c16848e6d0a4305062849795628b726cdd2f",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
@@ -69,8 +71,8 @@ class VersionFingerprintTest {
         // 16: owner playtest. The quality each core metal holds, the deep road replacing the supplier's days (`roadStageByTier`, the wait and the first crate), contract gold three times its card.
         16 to "e8ad9fc5eff7628e31a2c77a140e8470bb5f2172f087828b83b03eaa391dea3f",
         // 17: living heroes (`LivingConfig`). Re-pinned inside the unreleased step as its numbers land.
-        // 17, re-pinned inside the unreleased step (from 2c5c9a7f...): `living` (with the mending answer) and `guild.fight` gains Poison (its cap and the two healing numbers). No classic outcome moves.
-        17 to "8d0476a06a4405696a7404aed023c2acaaf2dfbcec613f91aff50fc8dedd66bc",
+        // 17, re-pinned inside the unreleased step (from 2c5c9a7f...): `living` (with the mending answer and the army strength and its rise per siege) and `guild.fight` gains Poison (its cap and the two healing numbers). No classic outcome moves.
+        17 to "bbd6767d3f611c050415e501dfbc30fa7e20c81766ef472e3f3b9ab426d73da0",
     )
 
     private val prose = setOf("name", "description", "flavor", "siegeName", "warlordName", "encounterNames", "eliteNames", "counsel", "role", "forgeHint", "pattern", "telegraph", "prep", "failure", "pitch", "advantage", "constraint", "play", "rivalNames", "where", "costNote", "counters", "sabotageBrief", "plan", "build", "drawback")
