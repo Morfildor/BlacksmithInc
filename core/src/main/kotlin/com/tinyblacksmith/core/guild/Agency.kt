@@ -236,12 +236,23 @@ object Agency {
     /**
      * After a siege (content bible 14.2): bonded members who held the wall side by side are remembered for it
      * (opp_shared_watch), and a member's third siege held with the same weapon is acknowledged (opp_familiar_weapon).
+     * A militia veteran or a mason who stays standing on the wall while the defences are struck learns from it
+     * (opp_gate_practice): evidence toward holding the wall, never free forge health.
      * Story and evidence only, never a reward. Returns the report's lines.
      */
-    fun afterSiege(ctx: ResolutionContext, wall: List<HeroId>, won: Boolean): List<String> {
-        if (!on(ctx) || !won) return emptyList()
+    fun afterSiege(ctx: ResolutionContext, wall: List<HeroId>, won: Boolean, fight: FightResult?): List<String> {
+        if (!on(ctx)) return emptyList()
         val lines = ArrayList<String>()
         val members = wall.filter { ctx.guild!!.member(it) != null && ctx.heroes[it]?.isAlive == true }
+        if (fight != null && fight.events.any { it.kind == EventKind.STRUCTURAL_HIT }) for (id in members) {
+            val hero = ctx.hero(id)
+            if (hero.backgroundId !in GATE_BACKGROUNDS || fight.actor(id.value)?.downed != false) continue
+            bump(ctx, id, setOf("gate"))
+            val text = "${hero.fullName} stood at the gate while it was struck and learned how the defences give."
+            Identity.note(ctx, id, "gate", text)
+            lines += text
+        }
+        if (!won) return lines
         for (a in members) for (b in members) if (a.value < b.value && ctx.guild!!.member(a)!!.bonds.any { it.withHeroId == b }) {
             val text = "${ctx.hero(a).fullName} and ${ctx.hero(b).fullName} held the wall side by side."
             Identity.note(ctx, a, "shared_watch", text, listOf(b.value)); Identity.note(ctx, b, "shared_watch", text, listOf(a.value))
@@ -259,6 +270,8 @@ object Agency {
         return lines
     }
 
+    private val GATE_BACKGROUNDS = setOf("bg_militia", "bg_mason")
+
     // ---- Specialities (step 13) ----
 
     private val inclinations: Map<String, Set<TraitId>> = mapOf(
@@ -271,7 +284,7 @@ object Agency {
     )
     private val evidenceFor: Map<String, List<String>> = mapOf(
         "vanguard" to listOf("front", "held"), "striker" to listOf("struck"), "unbroken" to listOf("downed", "front"),
-        "careful" to listOf("shielded"), "wallwarden" to listOf("held", "front"), "rallier" to listOf("together", "shielded"),
+        "careful" to listOf("shielded"), "wallwarden" to listOf("held", "front", "gate"), "rallier" to listOf("together", "shielded"),
     )
 
     /** What [hero]'s record says for [def]: capped evidence, a support weapon for the steady branches, and their Personality. */
@@ -294,6 +307,7 @@ object Agency {
         return when (k) {
             "front" -> "has stood first in the line in $n ${if (n == 1) "fight" else "fights"}"
             "held" -> "has held the wall in $n ${if (n == 1) "siege" else "sieges"}"
+            "gate" -> "has stood at the gate while it was struck in $n ${if (n == 1) "siege" else "sieges"}"
             "struck" -> "has defeated enemies in $n ${if (n == 1) "fight" else "fights"}"
             "won" -> "has won $n ${if (n == 1) "quest" else "quests"}"
             "downed" -> "has gone down and come back $n ${if (n == 1) "time" else "times"}"

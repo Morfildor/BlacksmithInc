@@ -120,6 +120,8 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
 
     /** The era feature revision the bot's runs start under. */
     var livingRevision: Int = com.tinyblacksmith.core.model.LivingRevision.CURRENT
+    /** Living heroes: "answer" takes a member's personal offer first (after a rescue), "ignore" never takes one; null plays the policy as it is. */
+    var personal: String? = null
 
     fun play(seed: Long, legacy: LegacyProfile = LegacyProfile(), onDay: (GameState) -> Unit = {}): Pair<GuildRunStats, GameState> {
         var s = engine.newRun(legacy, seed, charterId = charterId, livingRevision = livingRevision)
@@ -420,7 +422,7 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         fun arch(o: MissionOffer) = guildCat.mission(o.defId).archetype
         // A two-day contract that would keep the party away over the siege night is one the careful leave on the board.
         val careful = adaptive || policy in setOf(GuildPolicy.DEFENCE_FIRST, GuildPolicy.RECOVERY_AWARE, GuildPolicy.SYNERGY, GuildPolicy.NOVICE, GuildPolicy.RECOMMENDED)
-        val offers = g.offers.filter { o -> s.gold >= o.fee && !(careful && s.day + o.days - 1 >= s.town.nextSiegeDay) }
+        val offers = g.offers.filter { o -> s.gold >= o.fee && !(careful && s.day + o.days - 1 >= s.town.nextSiegeDay) && !(personal == "ignore" && com.tinyblacksmith.core.guild.Hooks.sponsored(o)) }
         val health = fit.sumOf { s.heroes[it]?.health ?: 0 } / fit.size
         val order: List<MissionArchetype> = when (policy) {
             GuildPolicy.NOVICE -> listOf(MissionArchetype.SUPPLY)
@@ -457,7 +459,8 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
             policy !in setOf(GuildPolicy.PASSIVE, GuildPolicy.NOVICE, GuildPolicy.SHOP_FOCUSED, GuildPolicy.RECOMMENDED) && (MissionArchetype.RESCUE !in order || offers.none { o -> arch(o) == MissionArchetype.RESCUE })
         }
         // The first card on the board that the till can pay for, whatever it is.
-        val offer = road ?: (if (policy == GuildPolicy.RECOMMENDED) offers.firstOrNull { arch(it) != MissionArchetype.EMERGENCY } else order.firstNotNullOfOrNull { a -> offers.firstOrNull { arch(it) == a } }) ?: return s
+        val mine = if (personal == "answer" && offers.none { arch(it) == MissionArchetype.RESCUE }) offers.firstOrNull { com.tinyblacksmith.core.guild.Hooks.sponsored(it) } else null
+        val offer = mine ?: road ?: (if (policy == GuildPolicy.RECOMMENDED) offers.firstOrNull { arch(it) != MissionArchetype.EMERGENCY } else order.firstNotNullOfOrNull { a -> offers.firstOrNull { arch(it) == a } }) ?: return s
         val posture = when (policy) {
             GuildPolicy.GREEDY_DIVER -> Posture.RECKLESS
             GuildPolicy.NOVICE, GuildPolicy.RECOVERY_AWARE -> Posture.CAUTIOUS
@@ -580,11 +583,11 @@ object GuildSim {
         /** Another catalog for the same runs (`ForgeLab.guild`: the metals' fight rules on and off). */
         content: com.tinyblacksmith.core.content.ContentCatalog? = null,
         /** The era feature revision of every run: living heroes, or `LivingRevision.LEGACY` for the feature-off baseline. */
-        livingRevision: Int = com.tinyblacksmith.core.model.LivingRevision.CURRENT): GuildReport {
+        livingRevision: Int = com.tinyblacksmith.core.model.LivingRevision.CURRENT, personal: String? = null): GuildReport {
         val list = IntStream.range(0, runs).parallel().mapToObj { i ->
             // Without drawbacks: every opening keeps its relic, trait, stock and weapon and loses only what it takes away (one gold is left, the catalog insists on a drawback). The measure of what a drawback costs.
             val engine = if (noDrawback) GameEngine(config = config).let { e -> GameEngine(e.content.copy(guild = e.content.guild!!.copy(openings = e.content.guild.openings.map { it.copy(goldDelta = -1, militiaDelta = 0, integrityDelta = 0) })), config) } else if (content != null) GameEngine(content, config) else GameEngine(config = config)
-            GuildBot(engine, policy, charterId, horizon, opening, retire, followPlan).also { it.livingRevision = livingRevision }.play(seed + i, legacy(engine)).first
+            GuildBot(engine, policy, charterId, horizon, opening, retire, followPlan).also { it.livingRevision = livingRevision; it.personal = personal }.play(seed + i, legacy(engine)).first
         }.collect(Collectors.toList())
         return GuildReport(policy, list.sortedBy { it.seed })
     }
@@ -704,7 +707,7 @@ fun main(args: Array<String>) {
     if ("--why" in args) for (p in policies) { val bot = GuildBot(GameEngine(config = config), p, charter, horizon); bot.play(seed); println("${p.name}: ${bot.rejected} rejected"); bot.rejections.forEach { println("  $it") } }
     // --legacy: every run begun before living heroes (the feature-off baseline). --living: the members' own decisions, per policy.
     val revision = if ("--legacy" in args) com.tinyblacksmith.core.model.LivingRevision.LEGACY else com.tinyblacksmith.core.model.LivingRevision.CURRENT
-    val reports = policies.map { p -> GuildSim.run(p, runs, seed, config, charterId = charter, horizon = horizon, legacy = { if (maxed) Simulator.maxedLegacy(it) else LegacyProfile() }, opening = a["--opening"], retire = "--playOn" !in args, livingRevision = revision) }
+    val reports = policies.map { p -> GuildSim.run(p, runs, seed, config, charterId = charter, horizon = horizon, legacy = { if (maxed) Simulator.maxedLegacy(it) else LegacyProfile() }, opening = a["--opening"], retire = "--playOn" !in args, livingRevision = revision, personal = a["--personal"]) }
     for (r in reports) { print(r.render()); if ("--byOpening" in args) print(GuildSim.byOpening(r)); if ("--living" in args) print(GuildSim.livingTable(r)) }
     // --pair A,B[+C,D]: two policies on the same seeds (both must be among --policy). Several pairs are joined with a plus.
     a["--pair"]?.split("+")?.forEach { pair -> pair.split(",").map { GuildPolicy.valueOf(it.uppercase()) }.let { (x, y) -> print(GuildSim.paired(reports.first { it.policy == x }, reports.first { it.policy == y })) } }
