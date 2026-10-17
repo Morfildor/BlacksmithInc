@@ -4,6 +4,17 @@
 
 - Spec: `docs/Tiny_Blacksmith_Living_Heroes_Final_Design.md`, content bible `docs/Tiny_Blacksmith_Peoples_Names_and_Siege_Bestiary.md`.
   Per-task status, coverage and evidence: `docs/LIVING_HEROES_LEDGER.md` (the resume point).
+- Hero faces v2 (2026-10-17, owner-approved style, `docs/HERO_FACES_V2_PLAN.md`): all 35 faces generated with Retro
+  Diffusion (RD Pro painterly 64 px base, RD Pro edit for settings and upgraded looks) by four agents from a per-hero
+  matrix (people, class, look, pose, backdrop, setting, upgrade accent); 01-20 redrawn in place as their tagged people,
+  21-35 new, so every people has two faces (29 of 60 people-class cells). Imported (`--accept-changed-sources`; the
+  11-15 small-row crops dropped), appearances and portraitRaces extended, content 7 re-pinned, face counts in
+  AppearanceTest / PortraitArtTest. About $23 of API spend. Device check done (emulator-5566).
+- Hero faces phase 2 (2026-10-17, owner: "we gotta do them also"): 31 faces 36-66, one for every people-and-class cell
+  still on the silhouette, so all 60 cells have a face (guardian 14, ranger 12, duelist 12, battlemage 14, warden 14).
+  Setting in the base prompt (no background edits), upgrades at strength 0.7-0.75; 4 bases and 9 upgrades redone,
+  about $13.50 of API spend. Imported, appearances and portraitRaces extended, content 7 re-pinned, face counts updated.
+  Heroes already in a save keep the key stamped at creation (a silhouette stays a silhouette; re-stamping is design 6.3, open).
 - Done (core): era revision boundary (legacy eras unchanged, classic RNG parity proven), schema 8 / rules 8 / content 7 /
   balance 17; 12 peoples and all 1,800 names; Hooks, eight ambitions, counter visits, announced loan returns, autonomous
   Specialities, personal offers, concerns and departures, creditor / lesson / healer visitors; combat grammar (Poison,

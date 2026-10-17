@@ -113,11 +113,12 @@ HERO_BOX = 64
 # on the emulator against 128 and 256 px at 44, 56, 85 and 112 dp: the larger sizes are sharper on their own but read
 # as a second, finer art style beside the native 64 px heroes; at 64 px all twenty share one pixel size.
 HERO_COLOURS = 96
-# Heroes 11-15 are drawn from further away than the rest: on a 44 dp list row the face is about 35 px across and hard to
-# read (15 most of all). They also get a `_sm` tile for small list rows: this HERO_SMALL_BOX square of the 64 px tile,
-# cut at the given left and top so the head stays whole; no resampling. The other heroes need none.
+# A hero drawn from further away than the rest (the face about 35 px across on a 44 dp list row) gets a `_sm` tile for
+# small list rows: this HERO_SMALL_BOX square of the 64 px tile, cut at the given left and top so the head stays whole;
+# no resampling. The v2 faces (2026-10-17, docs/HERO_FACES_V2_PLAN.md) are all close chest-up busts, so none needs one;
+# the old 11-15 entries went with the faces they were measured on.
 HERO_SMALL_BOX = 48
-HERO_SMALL = {"11": (0, 0), "12": (12, 0), "13": (3, 0), "14": (10, 0), "15": (0, 2)}
+HERO_SMALL: dict[str, tuple[int, int]] = {}
 
 # Logical scene unit: the forge scene is laid out in 96x48 "scene pixels"; imported scene pieces are exported at
 # SCENE_UNIT bitmap pixels per scene pixel so ForgeScene can keep positioning in scene coordinates.

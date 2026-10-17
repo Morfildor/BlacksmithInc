@@ -64,7 +64,7 @@ class AppearanceTest {
 
     @Test
     fun contentListsTheFacesOfEachClass() {
-        assertEquals(mapOf("guardian" to 5, "ranger" to 4, "duelist" to 4, "battlemage" to 4, "warden" to 3), content.classes.associate { it.id.value to it.appearances.size })
+        assertEquals(mapOf("guardian" to 14, "ranger" to 12, "duelist" to 12, "battlemage" to 14, "warden" to 14), content.classes.associate { it.id.value to it.appearances.size })
         val first = content.classes.first()
         assertTrue(content.copy(classes = listOf(first.copy(appearances = emptyList())) + content.classes.drop(1)).validate().any { "no appearance" in it })
         assertTrue(content.copy(classes = listOf(first.copy(appearances = content.classes[1].appearances)) + content.classes.drop(1)).validate().any { "Duplicate appearance" in it })

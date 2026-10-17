@@ -171,11 +171,11 @@ object LaunchContent {
             ),
             classes = listOf(
                 // Guardian and Ranger keep slice values. Base power, gold ranges and preferred elements of the new classes are PROPOSED.
-                HeroClassDef(GUARDIAN, "Guardian", basePower = 16, powerPerLevel = 2, preferredFamilies = listOf(SWORD, AXE, SPEAR), preferredElement = Element.FROST, startingGoldMin = 60, startingGoldMax = 140, appearances = listOf("portrait_hero_01", "portrait_hero_06", "portrait_hero_09", "portrait_hero_11", "portrait_hero_16")),
-                HeroClassDef(RANGER, "Ranger", basePower = 14, powerPerLevel = 2, preferredFamilies = listOf(BOW, DAGGER), preferredElement = Element.STORM, startingGoldMin = 50, startingGoldMax = 120, appearances = listOf("portrait_hero_02", "portrait_hero_07", "portrait_hero_12", "portrait_hero_17")),
-                HeroClassDef(DUELIST, "Duelist", basePower = 15, powerPerLevel = 2, preferredFamilies = listOf(SWORD, DAGGER), preferredElement = Element.GRAVE, startingGoldMin = 55, startingGoldMax = 130, appearances = listOf("portrait_hero_03", "portrait_hero_10", "portrait_hero_13", "portrait_hero_18")),
-                HeroClassDef(BATTLEMAGE, "Battlemage", basePower = 13, powerPerLevel = 3, preferredFamilies = listOf(STAFF, SWORD), preferredElement = Element.FIRE, startingGoldMin = 70, startingGoldMax = 150, appearances = listOf("portrait_hero_04", "portrait_hero_08", "portrait_hero_14", "portrait_hero_19")),
-                HeroClassDef(WARDEN, "Warden", basePower = 15, powerPerLevel = 2, preferredFamilies = listOf(SPEAR, AXE, STAFF), preferredElement = Element.VERDANT, startingGoldMin = 50, startingGoldMax = 120, appearances = listOf("portrait_hero_05", "portrait_hero_15", "portrait_hero_20")),
+                HeroClassDef(GUARDIAN, "Guardian", basePower = 16, powerPerLevel = 2, preferredFamilies = listOf(SWORD, AXE, SPEAR), preferredElement = Element.FROST, startingGoldMin = 60, startingGoldMax = 140, appearances = listOf("portrait_hero_01", "portrait_hero_06", "portrait_hero_09", "portrait_hero_11", "portrait_hero_16", "portrait_hero_27", "portrait_hero_29", "portrait_hero_37", "portrait_hero_40", "portrait_hero_43", "portrait_hero_49", "portrait_hero_55", "portrait_hero_61", "portrait_hero_64")),
+                HeroClassDef(RANGER, "Ranger", basePower = 14, powerPerLevel = 2, preferredFamilies = listOf(BOW, DAGGER), preferredElement = Element.STORM, startingGoldMin = 50, startingGoldMax = 120, appearances = listOf("portrait_hero_02", "portrait_hero_07", "portrait_hero_12", "portrait_hero_17", "portrait_hero_24", "portrait_hero_25", "portrait_hero_31", "portrait_hero_33", "portrait_hero_38", "portrait_hero_52", "portrait_hero_56", "portrait_hero_58")),
+                HeroClassDef(DUELIST, "Duelist", basePower = 15, powerPerLevel = 2, preferredFamilies = listOf(SWORD, DAGGER), preferredElement = Element.GRAVE, startingGoldMin = 55, startingGoldMax = 130, appearances = listOf("portrait_hero_03", "portrait_hero_10", "portrait_hero_13", "portrait_hero_18", "portrait_hero_26", "portrait_hero_32", "portrait_hero_39", "portrait_hero_44", "portrait_hero_46", "portrait_hero_53", "portrait_hero_59", "portrait_hero_65")),
+                HeroClassDef(BATTLEMAGE, "Battlemage", basePower = 13, powerPerLevel = 3, preferredFamilies = listOf(STAFF, SWORD), preferredElement = Element.FIRE, startingGoldMin = 70, startingGoldMax = 150, appearances = listOf("portrait_hero_04", "portrait_hero_08", "portrait_hero_14", "portrait_hero_19", "portrait_hero_22", "portrait_hero_23", "portrait_hero_28", "portrait_hero_34", "portrait_hero_41", "portrait_hero_47", "portrait_hero_50", "portrait_hero_60", "portrait_hero_62", "portrait_hero_66")),
+                HeroClassDef(WARDEN, "Warden", basePower = 15, powerPerLevel = 2, preferredFamilies = listOf(SPEAR, AXE, STAFF), preferredElement = Element.VERDANT, startingGoldMin = 50, startingGoldMax = 120, appearances = listOf("portrait_hero_05", "portrait_hero_15", "portrait_hero_20", "portrait_hero_21", "portrait_hero_30", "portrait_hero_35", "portrait_hero_36", "portrait_hero_42", "portrait_hero_45", "portrait_hero_48", "portrait_hero_51", "portrait_hero_54", "portrait_hero_57", "portrait_hero_63")),
             ),
             traits = listOf(
                 TraitDef(BRAVE, "Brave", expeditionWeight = 1.5, restWeight = -0.5, combatModifier = 1.05),
@@ -310,7 +310,15 @@ object LaunchContent {
             // The people each imported face reads as (best fit, owner direction 2026-10-17; reviewed with the race art later, docs/LIVING_HEROES_LEDGER.md).
             portraitRaces = mapOf("01" to "human", "08" to "human", "11" to "human", "12" to "human", "13" to "human", "16" to "human", "19" to "human",
                 "04" to "elf", "05" to "elf", "06" to "elf", "10" to "elf", "14" to "elf", "15" to "elf", "17" to "elf", "20" to "elf",
-                "02" to "lizardfolk", "07" to "orc", "09" to "orc", "03" to "hornborn", "18" to "halfling").mapKeys { "portrait_hero_${it.key}" },
+                "02" to "lizardfolk", "07" to "orc", "09" to "orc", "03" to "hornborn", "18" to "halfling", "21" to "dwarf", "22" to "dwarf",
+                // The v2 faces drawn for the peoples that had none or one (docs/HERO_FACES_V2_PLAN.md).
+                "23" to "gnome", "24" to "gnome", "25" to "goblin", "26" to "goblin", "27" to "dragonkin", "28" to "dragonkin",
+                "29" to "stonekin", "30" to "stonekin", "31" to "catfolk", "32" to "catfolk", "33" to "halfling", "34" to "hornborn", "35" to "lizardfolk",
+                // Phase 2: a face for every people-and-class cell still empty (docs/HERO_FACES_V2_PLAN.md).
+                "36" to "human", "37" to "dwarf", "38" to "dwarf", "39" to "dwarf", "40" to "halfling", "41" to "halfling", "42" to "halfling", "43" to "gnome",
+                "44" to "gnome", "45" to "gnome", "46" to "orc", "47" to "orc", "48" to "orc", "49" to "goblin", "50" to "goblin", "51" to "goblin",
+                "52" to "dragonkin", "53" to "dragonkin", "54" to "dragonkin", "55" to "hornborn", "56" to "hornborn", "57" to "hornborn", "58" to "stonekin", "59" to "stonekin",
+                "60" to "stonekin", "61" to "catfolk", "62" to "catfolk", "63" to "catfolk", "64" to "lizardfolk", "65" to "lizardfolk", "66" to "lizardfolk").mapKeys { "portrait_hero_${it.key}" },
             // Rolled only by a Rare or better weapon forged in a guild era of the living revision (Forge.apply). Power is PROPOSED.
             livingAffixes = listOf(
                 AffixDef(DISRUPTING, "Disrupting", AffixKind.BENEFICIAL, power = 2, description = "+2 power. Its effect stops an ability an enemy is preparing."),

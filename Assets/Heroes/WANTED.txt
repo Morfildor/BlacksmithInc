@@ -1,15 +1,15 @@
 Assets/Heroes
 Hero and townsfolk portraits, and the small hero battle frames.
-PRIORITY 4: the 20 small battle frames (16x16). PRIORITY 5 (optional): the 6 visitor faces. More wardens: low.
+PRIORITY 3 (new, living heroes): faces for the 6 peoples that have none, then a second face for the thin ones. PRIORITY 4: the 20 small battle frames (16x16). PRIORITY 5 (optional): the 6 visitor faces. More wardens: low.
 
 File rules: PNG with a transparent background unless the piece is a full scene or a framed portrait tile.
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
-Status as of 2026-10-10. Pieces already delivered and in the game are not listed as wanted: do not resend them.
+Status as of 2026-10-17. Pieces already delivered and in the game are not listed as wanted: do not resend them.
 
 DELIVERED AND IN THE GAME (do not resend)
-  The 20 hero portraits, each with a base and an upgraded face (hero_01 .. hero_20, 64x64).
+  The 66 hero portraits of the v2 set, each with a base and an upgraded face (hero_01 .. hero_66, 64x64, 2026-10-17).
 
 STILL WANTED
   Small battle frames for the fight replay, 16x16, two idle frames and two attack frames per class
@@ -35,8 +35,6 @@ STILL WANTED
   hero_warden_idle_0                      16x16
   hero_warden_idle_1                      16x16
 
-  More wardens, if you have them (three warden faces exist now).
-
 OPTIONAL, NEW WITH THE VISITORS UPDATE (the screens work without them; text stands in today)
   Morning visitors who are not heroes of the town have no face. Same framed tile style as the hero portraits,
   64x64 native, one face each, no upgraded state. A visitor who is a hero already uses that hero's own portrait.
@@ -46,3 +44,18 @@ OPTIONAL, NEW WITH THE VISITORS UPDATE (the screens work without them; text stan
   visitor_crooked_merchant                64x64   The Crooked Merchant: a merchant with a quick smile, not to be trusted
   visitor_rival_smith                     64x64   The Smith's Wager: a proud smith passing through
   visitor_council_envoy                   64x64   The Festival Contract: an envoy of the town council
+
+NEW WITH THE LIVING HEROES UPDATE (2026-10-17): FACES BY PEOPLE
+  Heroes are now generated as one of 12 peoples (docs/Tiny_Blacksmith_Peoples_Names_and_Siege_Bestiary.md, section 3 for the look of
+  each, section 15.2 for the brief). A hero wears a face tagged with their people; where no face is tagged, the game draws the
+  neutral silhouette of their class (silhouette_guardian, silhouette_ranger, silhouette_duelist, silhouette_battlemage,
+  silhouette_warden) with the right race in the text. Nothing breaks without new art; a face simply replaces the silhouette.
+  Same format as the 20 delivered portraits: 64x64 framed tile, a base face and an upgraded face, no names or words in the art.
+  Every face is worn by one class (guardian, ranger, duelist, battlemage or warden): say which in the manifest.json that
+  comes with the sheet (as Implemented/heroes/manifest.json does), together with the people. Dress the class, not the people.
+
+  Done 2026-10-17: every people now has two faces (v2 set, Retro Diffusion, Implemented/heroes). Faces per people:
+    human 8, elf 8, dwarf 5, halfling 5, gnome 5, orc 5, goblin 5, dragonkin 5, hornborn 5, stonekin 5, catfolk 5, lizardfolk 5.
+  Done 2026-10-17 (phase 2, hero_36 .. hero_66): every people has a face for every class. Wanted later (optional): a second face
+  per cell, toward the bible's four per people.
+  The manifest's race_concept now matches the game's tags (LaunchContent.portraitRaces).

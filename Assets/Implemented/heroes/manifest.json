@@ -1,195 +1,195 @@
 {
   "title": "BlacksmithInc - Combined Hero Portrait Collection",
-  "hero_count": 20,
+  "hero_count": 66,
   "states_per_hero": 2,
-  "total_files": 40,
-  "notes": "Combined archive of all hero portraits created in this conversation. Heroes 1-10 are original high-resolution portrait renders. Heroes 11-20 are native 64x64 pixel portrait assets.",
+  "total_files": 132,
+  "notes": "v2 set (2026-10-17, docs/HERO_FACES_V2_PLAN.md): all 66 heroes, one for every people and class, are native 64x64 painterly portraits generated with Retro Diffusion (RD Pro painterly base, RD Pro edit for the setting and the upgraded face), approved by the owner. race_concept is the people the game tags the face with (LaunchContent.portraitRaces).",
   "heroes": [
     {
       "id": "hero_01",
       "class": "guardian",
-      "character": "Auburn Braided Guardian",
-      "race_concept": "Dwarf",
+      "character": "Harbour Wall Defender",
+      "race_concept": "Human",
       "states": {
         "base": "hero_01_guardian_base.png",
         "upgraded": "hero_01_guardian_upgraded.png"
       },
       "base_resolution": [
-        1254,
-        1254
+        64,
+        64
       ],
       "upgraded_resolution": [
-        1254,
-        1254
+        64,
+        64
       ]
     },
     {
       "id": "hero_02",
       "class": "ranger",
-      "character": "Hooded Lizardfolk Ranger",
+      "character": "Crested Marsh Ranger",
       "race_concept": "Lizardfolk",
       "states": {
         "base": "hero_02_ranger_base.png",
         "upgraded": "hero_02_ranger_upgraded.png"
       },
       "base_resolution": [
-        1254,
-        1254
+        64,
+        64
       ],
       "upgraded_resolution": [
-        1254,
-        1254
+        64,
+        64
       ]
     },
     {
       "id": "hero_03",
       "class": "duelist",
-      "character": "Crimson Tiefling Duelist",
-      "race_concept": "Tiefling",
+      "character": "Ember-Horned Duelist",
+      "race_concept": "Hornborn",
       "states": {
         "base": "hero_03_duelist_base.png",
         "upgraded": "hero_03_duelist_upgraded.png"
       },
       "base_resolution": [
-        1254,
-        1254
+        64,
+        64
       ],
       "upgraded_resolution": [
-        1254,
-        1254
+        64,
+        64
       ]
     },
     {
       "id": "hero_04",
       "class": "battlemage",
-      "character": "Undead Arcane Hatmaster",
-      "race_concept": "Undead",
+      "character": "Duskflame Sorceress",
+      "race_concept": "Elf",
       "states": {
         "base": "hero_04_battlemage_base.png",
         "upgraded": "hero_04_battlemage_upgraded.png"
       },
       "base_resolution": [
-        1254,
-        1254
+        64,
+        64
       ],
       "upgraded_resolution": [
-        1254,
-        1254
+        64,
+        64
       ]
     },
     {
       "id": "hero_05",
       "class": "warden",
-      "character": "Emerald Eyed Dryad Warden",
-      "race_concept": "Dryad",
+      "character": "Orchard Warden",
+      "race_concept": "Elf",
       "states": {
         "base": "hero_05_warden_base.png",
         "upgraded": "hero_05_warden_upgraded.png"
       },
       "base_resolution": [
-        1254,
-        1254
+        64,
+        64
       ],
       "upgraded_resolution": [
-        1254,
-        1254
+        64,
+        64
       ]
     },
     {
       "id": "hero_06",
       "class": "guardian",
-      "character": "Sunlit Elf Spear Guardian",
+      "character": "Gate-Bronze Guardian",
       "race_concept": "Elf",
       "states": {
         "base": "hero_06_guardian_base.png",
         "upgraded": "hero_06_guardian_upgraded.png"
       },
       "base_resolution": [
-        1254,
-        1254
+        64,
+        64
       ],
       "upgraded_resolution": [
-        1254,
-        1254
+        64,
+        64
       ]
     },
     {
       "id": "hero_07",
       "class": "ranger",
-      "character": "Goblin Demolitions Scout",
-      "race_concept": "Goblin",
+      "character": "Pinewood Orc Ranger",
+      "race_concept": "Orc",
       "states": {
         "base": "hero_07_ranger_base.png",
         "upgraded": "hero_07_ranger_upgraded.png"
       },
       "base_resolution": [
-        1254,
-        1254
+        64,
+        64
       ],
       "upgraded_resolution": [
-        1254,
-        1254
+        64,
+        64
       ]
     },
     {
       "id": "hero_08",
       "class": "battlemage",
-      "character": "Moonlit Oracle Priestess",
+      "character": "Observatory Scholar",
       "race_concept": "Human",
       "states": {
         "base": "hero_08_battlemage_base.png",
         "upgraded": "hero_08_battlemage_upgraded.png"
       },
       "base_resolution": [
-        1254,
-        1254
+        64,
+        64
       ],
       "upgraded_resolution": [
-        1254,
-        1254
+        64,
+        64
       ]
     },
     {
       "id": "hero_09",
       "class": "guardian",
-      "character": "Frostborn Orc Warlord",
+      "character": "Hearthbanner Elder",
       "race_concept": "Orc",
       "states": {
         "base": "hero_09_guardian_base.png",
         "upgraded": "hero_09_guardian_upgraded.png"
       },
       "base_resolution": [
-        1254,
-        1254
+        64,
+        64
       ],
       "upgraded_resolution": [
-        1254,
-        1254
+        64,
+        64
       ]
     },
     {
       "id": "hero_10",
       "class": "duelist",
-      "character": "Shadowcourt Fae Assassin",
-      "race_concept": "Fae Elf",
+      "character": "Silverbraid Blade",
+      "race_concept": "Elf",
       "states": {
         "base": "hero_10_duelist_base.png",
         "upgraded": "hero_10_duelist_upgraded.png"
       },
       "base_resolution": [
-        1254,
-        1254
+        64,
+        64
       ],
       "upgraded_resolution": [
-        1254,
-        1254
+        64,
+        64
       ]
     },
     {
       "id": "hero_11",
       "class": "guardian",
-      "character": "Ironbraid Sentinel",
-      "race_concept": "Dwarf",
+      "character": "Barracks Veteran",
+      "race_concept": "Human",
       "states": {
         "base": "hero_11_guardian_base.png",
         "upgraded": "hero_11_guardian_upgraded.png"
@@ -206,8 +206,8 @@
     {
       "id": "hero_12",
       "class": "ranger",
-      "character": "Briarshot Pathfinder",
-      "race_concept": "Wood Elf",
+      "character": "Meadow Scout",
+      "race_concept": "Human",
       "states": {
         "base": "hero_12_ranger_base.png",
         "upgraded": "hero_12_ranger_upgraded.png"
@@ -224,7 +224,7 @@
     {
       "id": "hero_13",
       "class": "duelist",
-      "character": "Crimson Ribbon Fencer",
+      "character": "Curtain-Call Duelist",
       "race_concept": "Human",
       "states": {
         "base": "hero_13_duelist_base.png",
@@ -242,8 +242,8 @@
     {
       "id": "hero_14",
       "class": "battlemage",
-      "character": "Sapphire Star Arcanist",
-      "race_concept": "Drow",
+      "character": "Stormcrystal Elder",
+      "race_concept": "Elf",
       "states": {
         "base": "hero_14_battlemage_base.png",
         "upgraded": "hero_14_battlemage_upgraded.png"
@@ -260,8 +260,8 @@
     {
       "id": "hero_15",
       "class": "warden",
-      "character": "Mossbound Thornkeeper",
-      "race_concept": "Horned Forest Elf",
+      "character": "Lantern Warden",
+      "race_concept": "Elf",
       "states": {
         "base": "hero_15_warden_base.png",
         "upgraded": "hero_15_warden_upgraded.png"
@@ -278,7 +278,7 @@
     {
       "id": "hero_16",
       "class": "guardian",
-      "character": "Bastion Knight",
+      "character": "Watchtower Spear",
       "race_concept": "Human",
       "states": {
         "base": "hero_16_guardian_base.png",
@@ -296,7 +296,7 @@
     {
       "id": "hero_17",
       "class": "ranger",
-      "character": "Goldleaf Marksman",
+      "character": "Highland Frost Ranger",
       "race_concept": "Elf",
       "states": {
         "base": "hero_17_ranger_base.png",
@@ -314,7 +314,7 @@
     {
       "id": "hero_18",
       "class": "duelist",
-      "character": "Mosscloak Blade",
+      "character": "Tavern Veteran",
       "race_concept": "Halfling",
       "states": {
         "base": "hero_18_duelist_base.png",
@@ -332,7 +332,7 @@
     {
       "id": "hero_19",
       "class": "battlemage",
-      "character": "Cobalt Pyromancer",
+      "character": "Frostrune Scholar",
       "race_concept": "Human",
       "states": {
         "base": "hero_19_battlemage_base.png",
@@ -350,11 +350,839 @@
     {
       "id": "hero_20",
       "class": "warden",
-      "character": "Antlerbound Keeper",
-      "race_concept": "Sylvan Fae",
+      "character": "Antlered Songwarden",
+      "race_concept": "Elf",
       "states": {
         "base": "hero_20_warden_base.png",
         "upgraded": "hero_20_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_21",
+      "class": "warden",
+      "character": "Silverbrow Hearth-Healer",
+      "race_concept": "Dwarf",
+      "states": {
+        "base": "hero_21_warden_base.png",
+        "upgraded": "hero_21_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_22",
+      "class": "battlemage",
+      "character": "Spectacled Ember Scholar",
+      "race_concept": "Dwarf",
+      "states": {
+        "base": "hero_22_battlemage_base.png",
+        "upgraded": "hero_22_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_23",
+      "class": "battlemage",
+      "character": "Wild-Haired Sparkwright",
+      "race_concept": "Gnome",
+      "states": {
+        "base": "hero_23_battlemage_base.png",
+        "upgraded": "hero_23_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_24",
+      "class": "ranger",
+      "character": "Cliffside Naturalist",
+      "race_concept": "Gnome",
+      "states": {
+        "base": "hero_24_ranger_base.png",
+        "upgraded": "hero_24_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_25",
+      "class": "ranger",
+      "character": "Rainroad Scout",
+      "race_concept": "Goblin",
+      "states": {
+        "base": "hero_25_ranger_base.png",
+        "upgraded": "hero_25_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_26",
+      "class": "duelist",
+      "character": "Spectacled Fencer",
+      "race_concept": "Goblin",
+      "states": {
+        "base": "hero_26_duelist_base.png",
+        "upgraded": "hero_26_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_27",
+      "class": "guardian",
+      "character": "Copperscale Rampart Guard",
+      "race_concept": "Dragonkin",
+      "states": {
+        "base": "hero_27_guardian_base.png",
+        "upgraded": "hero_27_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_28",
+      "class": "battlemage",
+      "character": "Stormscale Mage",
+      "race_concept": "Dragonkin",
+      "states": {
+        "base": "hero_28_battlemage_base.png",
+        "upgraded": "hero_28_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_29",
+      "class": "guardian",
+      "character": "Quartzvein Sentinel",
+      "race_concept": "Stonekin",
+      "states": {
+        "base": "hero_29_guardian_base.png",
+        "upgraded": "hero_29_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_30",
+      "class": "warden",
+      "character": "Chalkseam Root Warden",
+      "race_concept": "Stonekin",
+      "states": {
+        "base": "hero_30_warden_base.png",
+        "upgraded": "hero_30_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_31",
+      "class": "ranger",
+      "character": "Moonglade Tabby",
+      "race_concept": "Catfolk",
+      "states": {
+        "base": "hero_31_ranger_base.png",
+        "upgraded": "hero_31_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_32",
+      "class": "duelist",
+      "character": "Harbour Night Blade",
+      "race_concept": "Catfolk",
+      "states": {
+        "base": "hero_32_duelist_base.png",
+        "upgraded": "hero_32_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_33",
+      "class": "ranger",
+      "character": "Birchwood Hunter",
+      "race_concept": "Halfling",
+      "states": {
+        "base": "hero_33_ranger_base.png",
+        "upgraded": "hero_33_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_34",
+      "class": "battlemage",
+      "character": "Ramhorn Lorekeeper",
+      "race_concept": "Hornborn",
+      "states": {
+        "base": "hero_34_battlemage_base.png",
+        "upgraded": "hero_34_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_35",
+      "class": "warden",
+      "character": "Riverbank Shell Warden",
+      "race_concept": "Lizardfolk",
+      "states": {
+        "base": "hero_35_warden_base.png",
+        "upgraded": "hero_35_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_36",
+      "class": "warden",
+      "character": "Field-Tent Healer",
+      "race_concept": "Human",
+      "states": {
+        "base": "hero_36_warden_base.png",
+        "upgraded": "hero_36_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_37",
+      "class": "guardian",
+      "character": "Clasp-Beard Gatekeeper",
+      "race_concept": "Dwarf",
+      "states": {
+        "base": "hero_37_guardian_base.png",
+        "upgraded": "hero_37_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_38",
+      "class": "ranger",
+      "character": "Canyon Caravan Scout",
+      "race_concept": "Dwarf",
+      "states": {
+        "base": "hero_38_ranger_base.png",
+        "upgraded": "hero_38_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_39",
+      "class": "duelist",
+      "character": "Dice-Hall Swordsman",
+      "race_concept": "Dwarf",
+      "states": {
+        "base": "hero_39_duelist_base.png",
+        "upgraded": "hero_39_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_40",
+      "class": "guardian",
+      "character": "Camp Palisade Shield",
+      "race_concept": "Halfling",
+      "states": {
+        "base": "hero_40_guardian_base.png",
+        "upgraded": "hero_40_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_41",
+      "class": "battlemage",
+      "character": "Windmill Courier-Mage",
+      "race_concept": "Halfling",
+      "states": {
+        "base": "hero_41_battlemage_base.png",
+        "upgraded": "hero_41_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_42",
+      "class": "warden",
+      "character": "Beehive Herbalist",
+      "race_concept": "Halfling",
+      "states": {
+        "base": "hero_42_warden_base.png",
+        "upgraded": "hero_42_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_43",
+      "class": "guardian",
+      "character": "Gearhouse Sentry",
+      "race_concept": "Gnome",
+      "states": {
+        "base": "hero_43_guardian_base.png",
+        "upgraded": "hero_43_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_44",
+      "class": "duelist",
+      "character": "Hedge-Maze Fencer",
+      "race_concept": "Gnome",
+      "states": {
+        "base": "hero_44_duelist_base.png",
+        "upgraded": "hero_44_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_45",
+      "class": "warden",
+      "character": "Mushroom-Wood Naturalist",
+      "race_concept": "Gnome",
+      "states": {
+        "base": "hero_45_warden_base.png",
+        "upgraded": "hero_45_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_46",
+      "class": "duelist",
+      "character": "Deckhand Sabreur",
+      "race_concept": "Orc",
+      "states": {
+        "base": "hero_46_duelist_base.png",
+        "upgraded": "hero_46_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_47",
+      "class": "battlemage",
+      "character": "Caldera Stonecaller",
+      "race_concept": "Orc",
+      "states": {
+        "base": "hero_47_battlemage_base.png",
+        "upgraded": "hero_47_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_48",
+      "class": "warden",
+      "character": "Ferry-Landing Warden",
+      "race_concept": "Orc",
+      "states": {
+        "base": "hero_48_warden_base.png",
+        "upgraded": "hero_48_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_49",
+      "class": "guardian",
+      "character": "Bridge-Watch Shield",
+      "race_concept": "Goblin",
+      "states": {
+        "base": "hero_49_guardian_base.png",
+        "upgraded": "hero_49_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_50",
+      "class": "battlemage",
+      "character": "Wisp-Lantern Witch",
+      "race_concept": "Goblin",
+      "states": {
+        "base": "hero_50_battlemage_base.png",
+        "upgraded": "hero_50_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_51",
+      "class": "warden",
+      "character": "Willow-Pond Elder",
+      "race_concept": "Goblin",
+      "states": {
+        "base": "hero_51_warden_base.png",
+        "upgraded": "hero_51_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_52",
+      "class": "ranger",
+      "character": "Badlands Tracker",
+      "race_concept": "Dragonkin",
+      "states": {
+        "base": "hero_52_ranger_base.png",
+        "upgraded": "hero_52_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_53",
+      "class": "duelist",
+      "character": "Moonlit Balcony Blade",
+      "race_concept": "Dragonkin",
+      "states": {
+        "base": "hero_53_duelist_base.png",
+        "upgraded": "hero_53_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_54",
+      "class": "warden",
+      "character": "Tea-Terrace Keeper",
+      "race_concept": "Dragonkin",
+      "states": {
+        "base": "hero_54_warden_base.png",
+        "upgraded": "hero_54_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_55",
+      "class": "guardian",
+      "character": "Broken-Horn Templar",
+      "race_concept": "Hornborn",
+      "states": {
+        "base": "hero_55_guardian_base.png",
+        "upgraded": "hero_55_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_56",
+      "class": "ranger",
+      "character": "Vine-Ruin Archer",
+      "race_concept": "Hornborn",
+      "states": {
+        "base": "hero_56_ranger_base.png",
+        "upgraded": "hero_56_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_57",
+      "class": "warden",
+      "character": "Ivy-Horn Elder",
+      "race_concept": "Hornborn",
+      "states": {
+        "base": "hero_57_warden_base.png",
+        "upgraded": "hero_57_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_58",
+      "class": "ranger",
+      "character": "Alpine Lake Hunter",
+      "race_concept": "Stonekin",
+      "states": {
+        "base": "hero_58_ranger_base.png",
+        "upgraded": "hero_58_ranger_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_59",
+      "class": "duelist",
+      "character": "Snow-Court Duellist",
+      "race_concept": "Stonekin",
+      "states": {
+        "base": "hero_59_duelist_base.png",
+        "upgraded": "hero_59_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_60",
+      "class": "battlemage",
+      "character": "Crystal-Vein Mage",
+      "race_concept": "Stonekin",
+      "states": {
+        "base": "hero_60_battlemage_base.png",
+        "upgraded": "hero_60_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_61",
+      "class": "guardian",
+      "character": "Lynx Gate Sentinel",
+      "race_concept": "Catfolk",
+      "states": {
+        "base": "hero_61_guardian_base.png",
+        "upgraded": "hero_61_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_62",
+      "class": "battlemage",
+      "character": "Rooftop Starcaller",
+      "race_concept": "Catfolk",
+      "states": {
+        "base": "hero_62_battlemage_base.png",
+        "upgraded": "hero_62_battlemage_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_63",
+      "class": "warden",
+      "character": "Bell-Staff Elder",
+      "race_concept": "Catfolk",
+      "states": {
+        "base": "hero_63_warden_base.png",
+        "upgraded": "hero_63_warden_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_64",
+      "class": "guardian",
+      "character": "Stilt-Fort Shield",
+      "race_concept": "Lizardfolk",
+      "states": {
+        "base": "hero_64_guardian_base.png",
+        "upgraded": "hero_64_guardian_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_65",
+      "class": "duelist",
+      "character": "Dock-Market Dancer",
+      "race_concept": "Lizardfolk",
+      "states": {
+        "base": "hero_65_duelist_base.png",
+        "upgraded": "hero_65_duelist_upgraded.png"
+      },
+      "base_resolution": [
+        64,
+        64
+      ],
+      "upgraded_resolution": [
+        64,
+        64
+      ]
+    },
+    {
+      "id": "hero_66",
+      "class": "battlemage",
+      "character": "Flooded-Temple Tidecaller",
+      "race_concept": "Lizardfolk",
+      "states": {
+        "base": "hero_66_battlemage_base.png",
+        "upgraded": "hero_66_battlemage_upgraded.png"
       },
       "base_resolution": [
         64,

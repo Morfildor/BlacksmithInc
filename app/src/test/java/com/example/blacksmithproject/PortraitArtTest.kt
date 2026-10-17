@@ -18,7 +18,10 @@ import java.io.File
 /** The generated portrait table (tools/pixelart/import_assets.py) against the drawables that are really in the module. */
 class PortraitArtTest {
     private val classes = listOf("guardian", "ranger", "duelist", "battlemage", "warden")
-    private val faceCount = mapOf("guardian" to 5, "ranger" to 4, "duelist" to 4, "battlemage" to 4, "warden" to 3)
+    private val faceCount = mapOf("guardian" to 14, "ranger" to 12, "duelist" to 12, "battlemage" to 14, "warden" to 14)
+
+    /** The faces each class had when the frozen legacy table was written (heroes 01-20). */
+    private val legacyFaceCount = mapOf("guardian" to 5, "ranger" to 4, "duelist" to 4, "battlemage" to 4, "warden" to 3)
     private fun drawable(name: String) = File("src/main/res/drawable-nodpi/$name.png")
 
     /**
@@ -53,8 +56,8 @@ class PortraitArtTest {
         assertEquals(classes, PortraitArt.heroFaces.keys.toList())
         for (cls in classes) assertEquals("faces of $cls", faceCount[cls], PortraitArt.heroFaces.getValue(cls).size)
         val all = PortraitArt.heroFaces.values.flatten()
-        assertEquals("a hero belongs to one class", 20, all.toSet().size)
-        assertEquals((1..20).map { "portrait_hero_%02d".format(it) }.toSet(), all.toSet())
+        assertEquals("a hero belongs to one class", 66, all.toSet().size)
+        assertEquals((1..66).map { "portrait_hero_%02d".format(it) }.toSet(), all.toSet())
         assertEquals(all.toSet(), PortraitArt.heroes.keys)
         assertEquals(all.toSet(), PortraitArt.heroesUpgraded.keys)
     }
@@ -75,7 +78,7 @@ class PortraitArtTest {
             assertEquals(base.drawable, Sprites.portrait(key, HeroClassId(cls)))
             assertEquals(up.drawable, Sprites.portrait(key, HeroClassId(cls), upgraded = true))
         }
-        assertEquals(40, seen.size)
+        assertEquals(132, seen.size)
     }
 
     /** Every key that existed before the hero set (25 sheet-3 keys, 25 second-set keys) and hero IDs h1..h40. */
@@ -112,7 +115,7 @@ class PortraitArtTest {
             for (n in 1..40) assertEquals(face("portrait_${cls}_${Math.floorMod("h$n".hashCode(), 5)}", cls), face("h$n", cls))
             // Spread: every face of the class is used, and no face takes more than two of the five slots.
             val spread = sheet3.getValue(cls).groupingBy { it }.eachCount()
-            assertEquals(faceCount[cls], spread.size)
+            assertEquals(legacyFaceCount[cls], spread.size)
             assertTrue(spread.values.all { it <= 2 })
         }
         assertEquals("asking twice gives the same face", face("h17", "ranger"), face("h17", "ranger"))
@@ -168,7 +171,8 @@ class PortraitArtTest {
 
     @Test
     fun smallRowTilesExistOnlyWhereTheFaceIsSmall() {
-        val small = (11..15).map { "portrait_hero_$it" }.toSet()
+        // The v2 faces are all close busts, so none has a small tile (HERO_SMALL in the importer); the check stays for one that does.
+        val small = emptySet<String>()
         assertEquals(small, PortraitArt.heroesSmall.keys)
         assertEquals(small, PortraitArt.heroesUpgradedSmall.keys)
         val seen = (PortraitArt.heroes.values + PortraitArt.heroesUpgraded.values).map { it.drawable }.toHashSet()

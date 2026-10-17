@@ -3,7 +3,7 @@
 What the twelve peoples and the 48 enemies of the content bible (`docs/Tiny_Blacksmith_Peoples_Names_and_Siege_Bestiary.md`)
 still need as art. Written 2026-10-17 from the code as it stands: `core/.../content/LaunchContent.kt` (`portraitRaces`,
 `HeroClassDef.appearances`), `core/.../heroes/Appearance.kt` (`stamp`, `silhouette`) and the import pipeline
-`tools/pixelart/import_assets.py`. No art is generated here; the owner supplies it (bible 15.1, design 6.3).
+`tools/pixelart/import_assets.py`. Hero faces are generated with Retro Diffusion in the owner-approved v2 style (`docs/HERO_FACES_V2_PLAN.md`); enemy art is still to come.
 
 ## 1. How a hero gets a face today
 
@@ -31,64 +31,44 @@ Same as the 20 faces in `Assets/Implemented/heroes`:
 
 ## 3. Coverage now (faces per people and class)
 
+All 66 faces are the v2 set (2026-10-17, `docs/HERO_FACES_V2_PLAN.md`): one painterly 64 px style generated with Retro
+Diffusion, approved by the owner; 01-20 redrawn as the people they are tagged, 21-35 new, 36-66 the phase-2 faces.
+
 | People | Guardian | Ranger | Duelist | Battlemage | Warden | Identities |
 |---|---|---|---|---|---|---|
-| Human | 01, 11, 16 | 12 | 13 | 08, 19 | none | 7 |
+| Human | 01, 11, 16 | 12 | 13 | 08, 19 | 36 | 8 |
 | Elf | 06 | 17 | 10 | 04, 14 | 05, 15, 20 | 8 |
-| Dwarf | none | none | none | none | none | 0 |
-| Halfling | none | none | 18 | none | none | 1 |
-| Gnome | none | none | none | none | none | 0 |
-| Orc | 09 | 07 | none | none | none | 2 |
-| Goblin | none | none | none | none | none | 0 |
-| Dragonkin | none | none | none | none | none | 0 |
-| Hornborn | none | none | 03 | none | none | 1 |
-| Stonekin | none | none | none | none | none | 0 |
-| Catfolk | none | none | none | none | none | 0 |
-| Lizardfolk | none | 02 | none | none | none | 1 |
+| Dwarf | 37 | 38 | 39 | 22 | 21 | 5 |
+| Halfling | 40 | 33 | 18 | 41 | 42 | 5 |
+| Gnome | 43 | 24 | 44 | 23 | 45 | 5 |
+| Orc | 09 | 07 | 46 | 47 | 48 | 5 |
+| Goblin | 49 | 25 | 26 | 50 | 51 | 5 |
+| Dragonkin | 27 | 52 | 53 | 28 | 54 | 5 |
+| Hornborn | 55 | 56 | 03 | 34 | 57 | 5 |
+| Stonekin | 29 | 58 | 59 | 60 | 30 | 5 |
+| Catfolk | 61 | 31 | 32 | 62 | 63 | 5 |
+| Lizardfolk | 64 | 02 | 65 | 66 | 35 | 5 |
 
-14 of the 60 people-and-class cells have a face; the other 46 show the class silhouette.
-
-The people tags are the owner's best fit (2026-10-17). The folder's own `race_concept` differs for several faces and may
-be worth a second look before more art is commissioned: 01 and 11 are drawn as Dwarf (tagged Human), 07 as Goblin (tagged
-Orc), 03 as Tiefling (Hornborn), 04 as Undead, 05 as Dryad, 10 as Fae Elf, 14 as Drow, 15 as Horned Forest Elf and 20 as
-Sylvan Fae (all tagged Elf). Retagging 01, 11 and 07 would give Dwarf two Guardians and Goblin a Ranger at no art cost.
+All 60 people-and-class cells have a face. A new hero never wears the class silhouette now; a hero stamped with a
+silhouette before these faces existed keeps it (section 1).
 
 ## 4. What to make
 
-The bible (15.2) asks for at least two identities per people before that people is enabled by default, ideally four,
-each with a base and an upgraded look; vary age, build, skin, fur or scale, hair, expression and scars within a people,
-and let clothing carry the class.
+The bible (15.2) asks for at least two identities per people, ideally four, each with a base and an upgraded look; vary
+age, build, skin, fur or scale, hair, expression and scars within a people, and let clothing carry the class. New faces
+follow the v2 recipe and format standard in `docs/HERO_FACES_V2_PLAN.md`.
 
-### 4.1 First batch: two identities for every people (15 identities, 30 files)
+### 4.1 First batch: two identities for every people
 
-| People | Has | Needs | Suggested classes (cells with no face yet) |
-|---|---|---|---|
-| Dwarf | 0 | 2 | Guardian, Warden |
-| Gnome | 0 | 2 | Battlemage, Ranger |
-| Goblin | 0 | 2 | Ranger, Duelist |
-| Dragonkin | 0 | 2 | Guardian, Battlemage |
-| Stonekin | 0 | 2 | Guardian, Warden |
-| Catfolk | 0 | 2 | Ranger, Duelist |
-| Halfling | 1 | 1 | Ranger |
-| Hornborn | 1 | 1 | Battlemage |
-| Lizardfolk | 1 | 1 | Warden |
+Done (2026-10-17).
 
-### 4.2 Full coverage: one face for every cell (46 identities, 92 files)
+### 4.2 Full coverage: one face for every cell (31 identities, 62 files)
 
-- Human: Warden
-- Elf: none missing
-- Dwarf: Guardian, Ranger, Duelist, Battlemage, Warden
-- Halfling: Guardian, Ranger, Battlemage, Warden
-- Gnome: Guardian, Ranger, Duelist, Battlemage, Warden
-- Orc: Duelist, Battlemage, Warden
-- Goblin: Guardian, Ranger, Duelist, Battlemage, Warden
-- Dragonkin: Guardian, Ranger, Duelist, Battlemage, Warden
-- Hornborn: Guardian, Ranger, Battlemage, Warden
-- Stonekin: Guardian, Ranger, Duelist, Battlemage, Warden
-- Catfolk: Guardian, Ranger, Duelist, Battlemage, Warden
-- Lizardfolk: Guardian, Duelist, Battlemage, Warden
+Done (2026-10-17, hero_36 .. hero_66).
 
-Until a cell has a face, its heroes keep the silhouette: honest, never another people's face.
+### 4.3 Later (optional)
+
+A second face per cell, so a people's heroes of one class do not all share a face.
 
 ## 5. Enemies (48 identities, asset ID = content ID)
 
