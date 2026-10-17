@@ -79,7 +79,8 @@ fun FactFlow(facts: List<Fact>, modifier: Modifier = Modifier, emphasis: Boolean
     val style = if (emphasis) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodySmall
     androidx.compose.ui.layout.Layout(
         content = {
-            facts.forEach { Text(factText(listOf(it)), style = style, color = Cream) }
+            // A fact without a label is a plain description (people, class and level): quiet, so it never competes with a name.
+            facts.forEach { f -> if (f.label == null && f.tone == FactTone.PLAIN) Text(f.value, style = style, color = CreamMuted) else Text(factText(listOf(f)), style = style, color = Cream) }
             repeat(facts.size - 1) { Text(" · ", style = style, color = CreamMuted) }
         },
         modifier = modifier.semantics(mergeDescendants = true) { contentDescription = facts.joinToString(". ") { f -> listOfNotNull(f.label, f.value).joinToString(" ") } },

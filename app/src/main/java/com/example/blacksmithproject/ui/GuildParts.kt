@@ -259,7 +259,7 @@ private fun CandidateRow(c: CandidateUi, enabled: Boolean, tip: () -> TipUi?, on
                 c.complication?.let { line ->
                     Row(Modifier.padding(top = 2.dp).semantics(mergeDescendants = true) { contentDescription = line }.testTag("guild_candidate_hook_${c.heroId.value}"), horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
                         Text(TipTone.CONDITION.sign, style = MaterialTheme.typography.bodySmall, color = TipTone.CONDITION.color)
-                        Text(line, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.weight(1f))
+                        Text(line.keepNumbersTogether(), style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.weight(1f))
                     }
                 }
             }

@@ -55,6 +55,7 @@ import com.example.blacksmithproject.ui.hookSentence
 import com.example.blacksmithproject.ui.kinOf
 import com.example.blacksmithproject.ui.kinSentence
 import com.example.blacksmithproject.ui.raceClass
+import com.example.blacksmithproject.ui.keepNumbersTogether
 import com.example.blacksmithproject.ui.levelWords
 import com.example.blacksmithproject.ui.nameParts
 import com.example.blacksmithproject.ui.situation
@@ -289,7 +290,7 @@ fun HeroDetailSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },   // the handle is a target too: 48 dp, not the default 32
+        dragHandle = { HandleWithClose(onDismiss) },
         modifier = modifier.semantics { testTagsAsResourceId = true }.testTag("hero_sheet"),
     ) { HeroDetailContent(detail, onOpenHero, onOpenItem, onDismiss, member = member, closeLabel = closeLabel, scroll = scroll) }
 }
@@ -305,12 +306,12 @@ fun HeroDetailContent(
     member: MemberActions? = null, scroll: ScrollState = rememberScrollState(),
 ) {
     Column(modifier.fillMaxWidth().verticalScroll(scroll).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
-        HeroHead(detail, onDismiss)
+        HeroHead(detail)
         // Their story first, most pressing line on top, each sentence under its label at full width so a long label or
         // sentence never breaks inside a word.
         if (detail.story.isNotEmpty()) {
             SheetSection("Their story")
-            FactBlock(null, detail.story, "sheet_story", onOpenHero, onOpenItem, stacked = true)
+            FactBlock(null, detail.story.map { it.copy(value = it.value.keepNumbersTogether()) }, "sheet_story", onOpenHero, onOpenItem, stacked = true)
         }
         detail.member?.let { MemberHead(it) }
         detail.want?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("hero_want")) }
@@ -352,7 +353,7 @@ private const val HEALTH = "Health"
  * under it once the text is so large that a long family name would break inside a word.
  */
 @Composable
-private fun HeroHead(detail: HeroDetail, onDismiss: () -> Unit) {
+private fun HeroHead(detail: HeroDetail) {
     val face = @Composable {
         Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(4.dp)) {
             PixelImage(detail.portrait, 72.dp, description = null)
@@ -372,20 +373,29 @@ private fun HeroHead(detail: HeroDetail, onDismiss: () -> Unit) {
             detail.deeds?.let { Secondary(it) }
         }
     }
-    // The way out at the top as well as at the foot, so a long sheet never has to be scrolled to be left.
-    val close = @Composable {
-        Box(
-            Modifier.size(48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onDismiss).semantics { contentDescription = "Close" }.testTag("sheet_close_top"),
-            contentAlignment = Alignment.Center,
-        ) { Icon(painterResource(R.drawable.ic_close), contentDescription = null, tint = CreamMuted, modifier = Modifier.size(18.dp)) }
-    }
     // The face lines up with the name. With very large text it stands above the words, so a long family name never breaks inside a word.
     if (LocalDensity.current.fontScale > 1.5f) Column(Modifier.fillMaxWidth().padding(top = Space.sm), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) { face(); Spacer(Modifier.weight(1f)); close() }
-        words(Modifier.fillMaxWidth())
+        face(); words(Modifier.fillMaxWidth())
     }
     else Row(Modifier.fillMaxWidth().padding(top = Space.sm), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
-        face(); words(Modifier.weight(1f)); close()
+        face(); words(Modifier.weight(1f))
+    }
+}
+
+/**
+ * The sheet's handle with the way out beside it, so a long sheet never has to be scrolled to its foot to be left. It sits
+ * in the handle's own row: the name keeps the whole width under it.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HandleWithClose(onDismiss: () -> Unit) {
+    Box(Modifier.fillMaxWidth()) {
+        BottomSheetDefaults.DragHandle(width = 48.dp, modifier = Modifier.align(Alignment.Center))   // the handle is a target too: 48 dp, not the default 32
+        Box(
+            Modifier.align(Alignment.CenterEnd).padding(end = Space.xs).size(48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onDismiss)
+                .semantics { contentDescription = "Close" }.testTag("sheet_close_top"),
+            contentAlignment = Alignment.Center,
+        ) { Icon(painterResource(R.drawable.ic_close), contentDescription = null, tint = CreamMuted, modifier = Modifier.size(18.dp)) }
     }
 }
 

@@ -25,6 +25,10 @@ internal fun GameEngine.raceClass(raceId: String?, classId: HeroClassId): String
 /** The background's name ("Former poacher"). Nothing in the rules reads a background yet, so nothing more is claimed of it. */
 internal fun GameEngine.backgroundName(h: Hero): String? = h.backgroundId?.let { content.backgroundById[it]?.name }
 
+/** A sentence with a number kept beside its word ("day 8", "level 3"), so a line never starts with a lone number. */
+internal fun String.keepNumbersTogether(): String = replace(Regex("\\b(day|days|level|gold) (\\d+)")) { "${it.groupValues[1]} ${it.groupValues[2]}" }
+    .replace(Regex("(\\d+) (gold|days|day|health)\\b")) { "${it.groupValues[1]} ${it.groupValues[2]}" }
+
 /** The short label of a Hook on the hero sheet, beside its sentence. */
 internal fun hookLabel(kind: HookKind): String = when (kind) {
     HookKind.GRUDGE -> "Grudge"
