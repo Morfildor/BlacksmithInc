@@ -104,7 +104,7 @@ fun GameEngine.heroTip(state: GameState, heroId: HeroId, home: Boolean = false, 
         stats = fighter?.let { f ->
             listOfNotNull(
                 // The fight's health is the hero's health between fights (a percentage) on the fight's scale: one line says both.
-                TipStat("Health", "${f.health}/${f.maxHealth} (${h.health}%)"),
+                TipStat("Health", "${f.health}/${f.maxHealth} (${h.health}%)"),
                 TipStat("Attack", if (f.strikeMax > f.strikeMin) "${f.strikeMin} to ${f.strikeMax}" else "${f.strikeMin}"),
                 kit?.let { k -> supportValue(k.kit, f.support)?.let { TipStat("Support", it) } },
             )

@@ -325,6 +325,8 @@ private fun ForgeHero(
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f).then(if (o != null) Modifier.testTag("forge_outlook") else Modifier)) {
+                // The name below is a plan, not a weapon the smith holds: said once, quietly, above it.
+                if (d.familyId != null) Text("Forge preview", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.testTag("forge_preview_label"))
                 Row(verticalAlignment = Alignment.Top) {
                     Text(
                         bench.title + (element?.takeIf { bench.command != null }?.let { " · ${it.word()}" } ?: ""), style = MaterialTheme.typography.titleLarge, color = Cream,
@@ -341,8 +343,9 @@ private fun ForgeHero(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         rules.forEach { r ->
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(EffectKind.NEUTRAL.sign, style = MaterialTheme.typography.labelMedium, color = EffectKind.NEUTRAL.color, modifier = Modifier.padding(end = 4.dp))
+                            // The mark sits on the first line of a phrase that wraps, at the text's own size.
+                            Row(verticalAlignment = Alignment.Top) {
+                                Text(EffectKind.NEUTRAL.sign, style = MaterialTheme.typography.bodyMedium, color = EffectKind.NEUTRAL.color, modifier = Modifier.padding(end = 4.dp))
                                 Text(o.label(r), style = MaterialTheme.typography.bodyMedium, color = Cream)
                             }
                         }
@@ -352,23 +355,29 @@ private fun ForgeHero(
                 FactLine(facts, Modifier.padding(top = 2.dp).testTag("forge_identity"))
             }
         }
-        if (o != null && inspect != null && !compact && !tight) Row(Modifier.fillMaxWidth().padding(start = 104.dp + 12.dp - Space.sm)) {
+        if (o != null && inspect != null && !compact && !tight) Row(Modifier.fillMaxWidth().padding(start = 104.dp + 12.dp, top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
             ForgeLink("Effects", "forge_inspect_recipe", info = true, onClick = open)
             ForgeLink("Practice fight", "forge_bench_open", onClick = onBench)
         }
     }
 }
 
-/** A quiet way on from the anvil: cream text (with the inspect ring for "Effects"), 48 dp tall, never a second gold action. */
+/**
+ * A quiet way on from the anvil: cream text on a dim bronze edge (with the inspect ring for "Effects"), 48 dp tall, so it
+ * reads as a button without competing with the gold Forge action.
+ */
 @Composable
 private fun ForgeLink(label: String, tag: String, info: Boolean = false, onClick: () -> Unit) {
-    Row(
-        Modifier.heightIn(min = 48.dp).clip(Chip).clickable(role = Role.Button, onClick = onClick).padding(horizontal = Space.sm).testTag(tag),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (info) androidx.compose.material3.Icon(androidx.compose.ui.res.painterResource(R.drawable.ic_info), contentDescription = null, tint = CreamMuted, modifier = Modifier.padding(end = 6.dp).size(18.dp))
-        Text(label, style = MaterialTheme.typography.labelLarge, color = Cream)
-        if (!info) Chevron(ChevronWay.RIGHT, tint = CreamMuted, size = 18.dp)
+    // The whole 48 dp box is the touch target; the drawn edge inside it is the visible button.
+    Box(Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClick = onClick).testTag(tag), contentAlignment = Alignment.Center) {
+        Row(
+            Modifier.heightIn(min = 36.dp).border(1.dp, BronzeLine, Chip).padding(horizontal = Space.sm),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (info) androidx.compose.material3.Icon(androidx.compose.ui.res.painterResource(R.drawable.ic_info), contentDescription = null, tint = CreamMuted, modifier = Modifier.padding(end = 6.dp).size(18.dp))
+            Text(label, style = MaterialTheme.typography.labelLarge, color = Cream)
+            if (!info) Chevron(ChevronWay.RIGHT, tint = CreamMuted, size = 18.dp)
+        }
     }
 }
 
@@ -491,7 +500,7 @@ private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog,
                     val art = slotArt(slot.slot, d, content)
                     if (art != null) PixelImage(art, 40.dp, description = null, modifier = Modifier.landing(slot.value, reducedMotion))
                     else Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) { Text(if (slot.value != null) "✦" else "+", style = MaterialTheme.typography.titleMedium, color = if (slot.value != null) Gold else Bronze) }
-                    slot.stock?.let { Text("$it", style = MaterialTheme.typography.labelSmall, color = if (it == 0) FlawRed else CreamMuted, modifier = Modifier.align(Alignment.CenterEnd).background(ForgeSlot, Chip).padding(horizontal = 6.dp, vertical = 4.dp)) }
+                    slot.stock?.let { Text("×$it", style = MaterialTheme.typography.labelSmall, color = if (it == 0) FlawRed else CreamMuted, modifier = Modifier.align(Alignment.CenterEnd).background(ForgeSlot, Chip).padding(horizontal = 6.dp, vertical = 4.dp)) }
                 }
                 if (large) slot.stock?.let { Text(if (it == 0) "None left" else "$it in stock", style = MaterialTheme.typography.labelSmall, color = CreamMuted) }
                 Text(
@@ -608,16 +617,18 @@ private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, inspected: Bo
         modifier.heightIn(min = 76.dp).clip(Chip).background(if (o.selected) BronzeContainer else ForgeNight)
             .border(if (o.selected || inspected) 1.5.dp else 1.dp, if (o.selected) Gold else if (inspected) CreamMuted else BronzeDeep, Chip)
             .then(if (card != null) Modifier.inspectable(anchor, inspector, card, onClick = onClick) else Modifier.clickable(role = Role.Button, onClick = onClick))
-            .alpha(if (o.usable) 1f else 0.5f).testTag("forge_option_${o.id ?: "none"}")
+            .testTag("forge_option_${o.id ?: "none"}")
             .semantics(mergeDescendants = true) {
                 selected = o.selected
                 contentDescription = listOfNotNull(o.name, o.stock?.let { if (it == 0) "none left" else "$it in stock" }, o.mark?.label, o.blocked?.let { "cannot be used now" }).joinToString(", ")
             },
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.xs, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            if (art != null) PixelImage(art, 36.dp, description = null)
-            Text(o.name, style = MaterialTheme.typography.labelMedium, color = Cream, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 2.dp))
-            o.stock?.let { Text(if (it == 0) "None left" else "$it owned", style = MaterialTheme.typography.labelSmall, color = if (it == 0) FlawRed else CreamMuted) }
+            // Out of stock or blocked: the art and the name dim, the line that says why stays at full strength.
+            val dim = Modifier.alpha(if (o.usable) 1f else 0.5f)
+            if (art != null) PixelImage(art, 36.dp, description = null, modifier = dim)
+            Text(o.name, style = MaterialTheme.typography.labelMedium, color = Cream, textAlign = TextAlign.Center, modifier = dim.padding(top = 2.dp))
+            o.stock?.let { Text(if (it == 0) "None left" else "$it owned", style = MaterialTheme.typography.labelSmall, fontWeight = if (it == 0) FontWeight.SemiBold else null, color = if (it == 0) FlawRed else CreamMuted) }
             if (o.fight.isNotEmpty()) Text(o.fight.joinToString(" · ") { it.substringBefore(":") }, style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
         }
         o.mark?.let { Text(it.kind.sign, style = MaterialTheme.typography.titleSmall, color = it.kind.color, modifier = Modifier.align(Alignment.TopStart).padding(horizontal = 6.dp)) }

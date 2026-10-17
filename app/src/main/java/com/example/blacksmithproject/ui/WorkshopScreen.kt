@@ -397,7 +397,12 @@ fun TipBanner(tip: Tips.Tip, vm: GameViewModel, modifier: Modifier = Modifier) {
         shape = MaterialTheme.shapes.small,
         modifier = modifier.fillMaxWidth().padding(bottom = Space.sm),
     ) {
-        Row(Modifier.padding(start = Space.md, end = Space.sm, top = Space.sm, bottom = Space.sm), verticalAlignment = Alignment.CenterVertically) {
+        // With large text the sentence keeps the full width and "Got it" goes under it, so the tip is not a tall
+        // column of single words that fills a small screen's work area.
+        if (LocalDensity.current.fontScale >= 1.5f) Column(Modifier.padding(start = Space.md, end = Space.sm, top = Space.sm), horizontalAlignment = Alignment.End) {
+            Text(tip.body, style = MaterialTheme.typography.bodySmall, modifier = Modifier.fillMaxWidth())
+            InlineActionButton("Got it", { vm.dismissTip(tip.id) }, Modifier.heightIn(min = 48.dp))
+        } else Row(Modifier.padding(start = Space.md, end = Space.sm, top = Space.sm, bottom = Space.sm), verticalAlignment = Alignment.CenterVertically) {
             Text(tip.body, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
             InlineActionButton("Got it", { vm.dismissTip(tip.id) }, Modifier.heightIn(min = 48.dp))
         }

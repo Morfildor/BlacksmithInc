@@ -391,7 +391,9 @@ private val TipSectionTitle @Composable get() = MaterialTheme.typography.labelMe
 internal fun TipSectionBlock(s: TipSection, frame: Color = Bronze) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         s.title?.let { Text(it, style = TipSectionTitle, color = frame.copy(alpha = 0.85f).takeIf { frame != Bronze } ?: CreamMuted, modifier = Modifier.semantics { heading() }) }
-        s.lines.forEach { l -> if (l.title != null) TipAbility(l) else TipPlainLine(l) }
+        // An unmarked line among marked ones keeps their text column, so the block reads as one aligned list.
+        val column = s.lines.any { it.tone != TipTone.PLAIN }
+        s.lines.forEach { l -> if (l.title != null) TipAbility(l) else TipPlainLine(l, column) }
     }
 }
 
@@ -407,10 +409,10 @@ private fun TipMark(tone: TipTone, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun TipPlainLine(l: TipLine) {
+private fun TipPlainLine(l: TipLine, column: Boolean = false) {
     Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.Top) {
         // A plain line needs no mark: only gains, costs, conditions, chances and rules carry one.
-        if (l.tone != TipTone.PLAIN) TipMark(l.tone)
+        if (l.tone != TipTone.PLAIN) TipMark(l.tone) else if (column) Spacer(Modifier.width(18.dp))
         val words = when (l.tone) { TipTone.CHANCE, TipTone.PLAIN -> CreamMuted; else -> Cream.copy(alpha = 0.92f) }
         Text(numbered(l.text, words), style = MaterialTheme.typography.bodyMedium)
     }

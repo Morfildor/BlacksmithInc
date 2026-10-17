@@ -774,7 +774,7 @@ fun GameEngine.memberDetail(state: GameState, heroId: HeroId): MemberDetailUi? {
         bonds = m.bonds.map { b -> "${bondWord(b.kind)} with ${state.heroes[b.withHeroId]?.fullName ?: "one who is gone"} since day ${b.sinceDay}. ${b.reason}" },
         share = "Keeps ${m.sharePercent}% of the gold from quests they go on. " + if (m.fee > 0) "Recruited on day ${m.joinedDay} for ${m.fee} gold." else "With the guild since day ${m.joinedDay}.",
         numbers = fighter?.let { f ->
-            listOfNotNull("Health" to "${f.health}/${f.maxHealth} (${h.health}%)", "Attack" to if (f.strikeMax > f.strikeMin) "${f.strikeMin} to ${f.strikeMax}" else "${f.strikeMin}", kit?.let { k -> supportValue(k.kit, f.support)?.let { "Support" to it } })
+            listOfNotNull("Health" to "${f.health}/${f.maxHealth} (${h.health}%)", "Attack" to if (f.strikeMax > f.strikeMin) "${f.strikeMin} to ${f.strikeMax}" else "${f.strikeMin}", kit?.let { k -> supportValue(k.kit, f.support)?.let { "Support" to it } })
         }.orEmpty(),
         rules = fighter?.let { f -> (f.kit.passives + f.effects).distinctBy { it.id }.map { it.name to it.description } }.orEmpty(),
         branches = openBranches(state, heroId).map { BranchUi(it.id, it.name, it.description, deedWord(it.deed)) },

@@ -143,10 +143,12 @@ fun WorkshopHeader(ui: SiegeHeaderUi, gold: Int, energy: Int, onSettings: () -> 
             ) {
                 day()
                 SiegeLine(ui, Modifier.testTag("siege_strip"))
+                // Under the countdown it counts towards, not under the purse: it reads as the days to the siege.
+                if (ui.marks.isNotEmpty()) CycleTrack(ui, Modifier.padding(top = 6.dp))
             }
             stats()
         }
-        if (ui.marks.isNotEmpty()) CycleTrack(ui, Modifier.padding(start = Space.md, end = Space.md, bottom = 6.dp))
+        if (large && ui.marks.isNotEmpty()) CycleTrack(ui, Modifier.padding(start = Space.md, end = Space.md, bottom = 6.dp))
     }
 }
 
@@ -206,12 +208,13 @@ private fun SiegeLine(ui: SiegeHeaderUi, modifier: Modifier = Modifier, brief: B
 }
 
 /**
- * The cycle as a hairline track under the header: past days bronze, today gold (ember on the siege's day), days to come
- * dark, the siege's own day a dark ember. Decorative: the countdown says the same in words, so it is hidden from TalkBack.
+ * The cycle as a hairline track under the countdown: past days bronze, today gold (ember on the siege's day), days to
+ * come dark, the siege's own day a dark ember. TalkBack hears where today stands in it ("Siege cycle: day 3 of 5").
  */
 @Composable
 private fun CycleTrack(ui: SiegeHeaderUi, modifier: Modifier = Modifier) {
-    Row(modifier.fillMaxWidth().clearAndSetSemantics {}.testTag("siege_marks"), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+    val where = ui.marks.indexOfFirst { it.today }.takeIf { it >= 0 }?.let { "Siege cycle: day ${it + 1} of ${ui.marks.size}" }
+    Row(modifier.fillMaxWidth().clearAndSetSemantics { where?.let { contentDescription = it } }.testTag("siege_marks"), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
         ui.marks.forEach { m ->
             val color = when {
                 m.today -> if (ui.tone == SiegeTone.TONIGHT) Ember else Gold
