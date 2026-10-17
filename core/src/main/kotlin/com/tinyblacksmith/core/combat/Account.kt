@@ -1,5 +1,8 @@
 package com.tinyblacksmith.core.combat
 
+import com.tinyblacksmith.core.text.LegacyProse
+import com.tinyblacksmith.core.text.Terms
+
 /**
  * Who did what in a recorded fight, counted once (the siege report). Every point of damage the enemy took, every point
  * of the party's Guard that took a blow, and every point of effective healing a member received lands in exactly one
@@ -61,7 +64,7 @@ data class Standout(val kind: StandoutKind, val memberKey: String, val memberNam
 }
 
 object FightAccounting {
-    const val OWN = "Own moves"
+    const val OWN = "Own abilities"
 
     fun of(result: FightResult): FightAccount? {
         if (!FightReplay.supports(result)) return null
@@ -150,10 +153,10 @@ object FightAccounting {
         fun name(rule: String?): String = when {
             rule == null -> OWN
             rule == "#thorns" -> "Thorns"
-            rule == "#guard" -> "Guard"
+            rule == "#guard" -> "Armor"
             rule == "#regen" -> "Regeneration"
-            rule.startsWith("#ticks:") -> runCatching { FightReplay.word(Stat.valueOf(rule.removePrefix("#ticks:"))) + " ticks" }.getOrDefault(rule)
-            else -> result.rules[rule] ?: rule
+            rule.startsWith("#ticks:") -> runCatching { Terms.stat(Stat.valueOf(rule.removePrefix("#ticks:"))) + " damage" }.getOrDefault(rule)
+            else -> result.rules[rule]?.let { LegacyProse.ruleName(rule, it) } ?: rule
         }
         val members = result.actors.filter { it.side == Side.PARTY && !it.summoned }.map { a ->
             val shares = buckets.filterKeys { it.first == a.key }.map { (k, b) ->
@@ -181,16 +184,16 @@ object FightAccounting {
      */
     fun standout(account: FightAccount): Standout? {
         val members = account.members
-        weaponLead(members)?.let { (m, s) -> return Standout(StandoutKind.WEAPON_RULE, m, s, "${m.name}'s ${m.weapon ?: "weapon"}: ${s.name} ${partOf(s, account)}${firedAfter(s)}.") }
+        weaponLead(members)?.let { (m, s) -> return Standout(StandoutKind.WEAPON_RULE, m, s, "${m.name}'s ${m.weapon ?: "weapon"} ${partOf(s, account)} with its ${s.name} effect.${firedAfter(s)}") }
         members.flatMap { m -> m.shares.filter { it.weapon && it.applied > 0 }.map { m to it } }
             .maxWithOrNull(compareBy<Pair<Contribution, Share>> { it.second.applied }.thenBy { -members.indexOf(it.first) })?.let { (m, s) ->
                 val put = members.sumOf { c -> c.shares.sumOf { it.applied } }
-                return Standout(StandoutKind.WEAPON_STATES, m, s, "${m.name}'s ${m.weapon ?: "weapon"}: ${s.name} left ${s.applied} of the $put ${if (put == 1) "stack" else "stacks"} put on foes${firedAfter(s)}.")
+                return Standout(StandoutKind.WEAPON_STATES, m, s, "${m.name}'s ${m.weapon ?: "weapon"} put ${s.applied} of the party's $put ${if (put == 1) "status" else "statuses"} on enemies with its ${s.name} effect.${firedAfter(s)}")
             }
         members.flatMap { m -> m.shares.filter { !it.weapon && it.total > 0 }.map { m to it } }
             .maxWithOrNull(compareBy<Pair<Contribution, Share>> { it.second.total }.thenBy { -members.indexOf(it.first) })?.let { (m, s) ->
-                val whose = if (s.ruleId == null) "${m.name}'s own moves" else "${m.name}: ${s.name}"
-                return Standout(StandoutKind.HERO_PART, m, s, "$whose ${partOf(s, account)}${firedAfter(s)}.")
+                val whose = if (s.ruleId == null) "${m.name}'s own abilities" else "${m.name}'s ${s.name}"
+                return Standout(StandoutKind.HERO_PART, m, s, "$whose ${partOf(s, account)}.${firedAfter(s)}")
             }
         return null
     }
@@ -200,13 +203,14 @@ object FightAccounting {
         val taken = account.members.sumOf { it.prevented } + account.shared.prevented
         val mended = account.members.sumOf { it.healed } + account.shared.healed
         return listOf(
-            s.damage to "dealt ${s.damage} of the ${account.enemyDamage} damage the enemy took",
-            s.prevented to "blocked ${s.prevented} of the $taken damage the party's Guard took",
-            s.healed to "healed ${s.healed} of the $mended health the party mended",
+            s.damage to "dealt ${s.damage} of the ${account.enemyDamage} damage the enemies took",
+            s.prevented to "blocked ${s.prevented} of the $taken damage the party's Armor took",
+            s.healed to "healed ${s.healed} of the $mended health the party healed",
         ).maxBy { it.first }.second
     }
 
-    private fun firedAfter(s: Share): String = if (s.times > 0) ", in ${s.times} ${if (s.times == 1) "activation" else "activations"}" else ""
+    /** " The effect triggered 4 times." after a sentence, or nothing for a share that is not one effect's. */
+    private fun firedAfter(s: Share): String = if (s.times > 0) " The effect triggered ${if (s.times == 1) "once" else "${s.times} times"}." else ""
 
     /** The blade rule that did the most, the one first listed when equal. */
     private fun weaponLead(members: List<Contribution>): Pair<Contribution, Share>? =
@@ -216,10 +220,8 @@ object FightAccounting {
     private fun whatItDid(s: Share): String =
         listOf(s.damage to "dealt ${s.damage} damage", s.prevented to "blocked ${s.prevented} damage", s.healed to "healed ${s.healed}").maxBy { it.first }.second
 
-    private fun firedNote(s: Share): String = if (s.times > 0) " in ${s.times} ${if (s.times == 1) "activation" else "activations"}" else ""
-
-    /** The report's "Worth knowing" line, as it has always read. */
-    private fun weaponLine(m: Contribution, s: Share): String = "${m.name}'s ${m.weapon ?: "weapon"}: ${s.name} ${whatItDid(s)}${firedNote(s)}."
+    /** The report's "Worth knowing" line. */
+    private fun weaponLine(m: Contribution, s: Share): String = "${m.name}'s ${m.weapon ?: "weapon"} ${whatItDid(s)} with its ${s.name} effect.${firedAfter(s)}"
 
     /** At most two facts worth knowing about the blades, in the order a smith can act on them. */
     private fun observations(result: FightResult, members: List<Contribution>): List<String> {
@@ -233,12 +235,12 @@ object FightAccounting {
             out += "${list.size} of ${party.getValue(k).name}'s hits were resisted."
         }
         hits.filter { it.affinity == Affinity.WEAK }.groupBy { it.source!! }.maxByOrNull { it.value.size }?.takeIf { it.value.size >= 2 }?.let { (k, list) ->
-            out += "${list.size} of ${party.getValue(k).name}'s hits struck a weakness."
+            out += "${list.size} of ${party.getValue(k).name}'s hits met a weakness."
         }
         // The strongest foe, and whose hand brought it down.
         val lead = result.actors.filter { it.side == Side.ENEMY && !it.summoned }.maxByOrNull { it.maxHealth }
         result.events.firstOrNull { it.kind == EventKind.DOWNED && it.target == lead?.key && it.source in party.keys }?.let { e ->
-            out += "${party.getValue(e.source!!).name} felled ${lead!!.name} in round ${e.round}."
+            out += "${party.getValue(e.source!!).name} defeated ${lead!!.name} in round ${e.round}."
         }
         return out.take(2)
     }

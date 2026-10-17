@@ -1,6 +1,8 @@
 package com.tinyblacksmith.core.combat
 
 import com.tinyblacksmith.core.content.Element
+import com.tinyblacksmith.core.text.LegacyProse
+import com.tinyblacksmith.core.text.Terms
 
 /**
  * A recorded fight as something to watch: the siege replay's model. It is built from a [FightResult] alone, reruns
@@ -104,18 +106,17 @@ object FightReplay {
     /** States a hostile rule puts on somebody: "applied" the first time. The rest are an actor's own stores. */
     private val AILMENTS = setOf(Stat.BURN, Stat.CHILL, Stat.WET, Stat.BLEED, Stat.MARK)
 
-    fun word(stat: Stat): String = when (stat) {
-        Stat.GUARD -> "Guard"; Stat.CHARGE -> "Charge"; Stat.MARK -> "Mark"; Stat.BURN -> "Burn"; Stat.REGEN -> "Regen"; Stat.CHILL -> "Chill"
-        Stat.WET -> "Wet"; Stat.BLEED -> "Bleed"; Stat.SCRAP -> "Scrap"; Stat.THORNS -> "Thorns"; Stat.STEAM -> "Steam"
-    }
+    private fun word(stat: Stat): String = Terms.stat(stat)
 
     fun supports(result: FightResult): Boolean = result.record >= FightResult.RECORD
 
     /**
      * The replay of [result], or null when the record cannot carry one: a fight stored before replays, or a record whose
-     * events do not add up to the health it says the fight ended on. The caller shows its summary then.
+     * events do not add up to the health it says the fight ended on. The caller shows its summary then. [rules] gives the
+     * numbers a pop names ("Chill −35%", "Mark +3"): the fight's own (`BalanceConfig.guild.fight`).
+     * Stored names and sentences are shown in today's words (`LegacyProse`), never changed in the record.
      */
-    fun of(result: FightResult): Replay? {
+    fun of(result: FightResult, rules: FightRules = FightRules()): Replay? {
         if (!supports(result)) return null
         val actors = result.actors.map { a ->
             ReplayActor(a.key, a.name, a.side, a.maxHealth, a.summoned, a.kit, a.weapon, a.weaponId, a.element, a.weaponRules, a.unitId)
@@ -131,7 +132,8 @@ object FightReplay {
         val told = result.highlights.flatMap { it.eventIds }.toSet()
         val usedRules = HashSet<Pair<String, String>>()
 
-        fun ruleName(id: String?): String? = id?.let { result.rules[it] ?: it }
+        val names = LegacyProse.ruleNames(result.rules)
+        fun ruleName(id: String?): String? = id?.let { names[it] ?: it }
         fun isWeapon(holder: String?, rule: String?): Boolean = holder != null && rule != null && byKey[holder]?.weaponRules?.contains(rule) == true
         fun change(key: String, f: (ActorState) -> ActorState): Map<String, ActorState> {
             val s = now[key] ?: return emptyMap()
@@ -190,8 +192,8 @@ object FightReplay {
                         val kindNote = when { e.tick != null -> word(e.tick); e.affinity == Affinity.RESISTED -> "Resisted"; e.affinity == Affinity.WEAK -> "Weak"; else -> null }
                         pop(e, t, PopKind.BLOCK, "Blocked ${e.amount}", kindNote, change(t) { it.add(Stat.GUARD, -e.amount) })
                     }
-                    EventKind.GUARD_BROKEN -> if (t != null) pop(e, t, PopKind.GUARD_BROKEN, "Guard broken", null, change(t) { it.copy(stats = it.stats - Stat.GUARD) })
-                    EventKind.GUARD_GAINED -> if (t != null) pop(e, t, PopKind.GUARD, "Guard +${e.amount}", note, change(t) { it.add(Stat.GUARD, e.amount) })
+                    EventKind.GUARD_BROKEN -> if (t != null) pop(e, t, PopKind.GUARD_BROKEN, "Armor broken", null, change(t) { it.copy(stats = it.stats - Stat.GUARD) })
+                    EventKind.GUARD_GAINED -> if (t != null) pop(e, t, PopKind.GUARD, "Armor +${e.amount}", note, change(t) { it.add(Stat.GUARD, e.amount) })
                     EventKind.HEALED -> if (t != null) {
                         val m = byKey[t]?.maxHealth ?: Int.MAX_VALUE
                         pop(e, t, PopKind.HEAL, "+${e.amount}", if (e.tick != null) word(e.tick) else note ?: "Heal", change(t) { it.copy(health = minOf(m, it.health + e.amount)) })
@@ -205,10 +207,10 @@ object FightReplay {
                     }
                     EventKind.STAT_SPENT -> if (t != null && e.stat != null) {
                         val text = when {
-                            e.id in boiled -> "${word(e.stat)} boiled off"
-                            e.stat == Stat.MARK -> "Mark struck"
-                            e.stat == Stat.WET && e.source != t -> "Wet struck"
-                            e.stat == Stat.CHILL && e.effectId == null && e.source == t -> "Chilled · weaker"
+                            e.id in boiled -> "Steam (${word(e.stat)} −${e.amount})"
+                            e.stat == Stat.MARK -> "Mark +${rules.markBonus}"
+                            e.stat == Stat.WET && e.source != t -> "Wet +${rules.wetStormBonus}"
+                            e.stat == Stat.CHILL && e.effectId == null && e.source == t -> "Chill −${rules.chillPercent}%"
                             e.stat == Stat.THORNS -> "Thorns"
                             else -> "${word(e.stat)} −${e.amount}"
                         }
@@ -242,7 +244,8 @@ object FightReplay {
                     kind = StepKind.MOVE; actor = root.source
                     val name = byKey[actor]?.name.orEmpty()
                     // The engine writes "Name: Move." for an action; the move is what it names.
-                    move = root.text.removePrefix("$name: ").removeSuffix(".").takeIf { it.isNotBlank() && it != root.text }
+                    val said = LegacyProse.fightLine(root.text)
+                    move = said.removePrefix("$name: ").removeSuffix(".").takeIf { it.isNotBlank() && it != said }
                     title = listOfNotNull(name.ifEmpty { null }, move).joinToString(" · ")
                 }
                 else -> {
@@ -261,14 +264,14 @@ object FightReplay {
             if (uses.any { it.weapon && usedRules.add(it.holder to it.ruleId) }) turns += Turn.FIRST_RULE
             if (group.any { e -> e.kind == EventKind.DAMAGE && e.target != null && e.amount * 100 >= BIG_HIT_PERCENT * (byKey[e.target]?.maxHealth ?: Int.MAX_VALUE) }) turns += Turn.BIG_HIT
             if (kind == StepKind.ROUND || kind == StepKind.END) turns.clear()
-            steps += Step(steps.size, first.round, kind, actor, title, move, uses, pops, group.filter { it.text.isNotEmpty() && it.kind != EventKind.ROUND_START }.map { it.text }, turns, before)
+            steps += Step(steps.size, first.round, kind, actor, title, move, uses, pops, group.filter { it.text.isNotEmpty() && it.kind != EventKind.ROUND_START }.map { LegacyProse.fightLine(it.text) }, turns, before)
         }
 
         // The record must add up: the health every pop leaves is the health the fight says each actor ended on.
         val end = steps.lastOrNull()?.after ?: start
         if (result.actors.any { a -> end[a.key]?.health != a.health || end[a.key]?.downed != a.downed }) return null
 
-        return Replay(result.title, result.outcome, result.rounds, actors, start, steps, highlights(steps), result.rules)
+        return Replay(result.title, result.outcome, result.rounds, actors, start, steps, highlights(steps), names)
     }
 
     /** The steps that turned the fight, at most [MAX_HIGHLIGHTS], in the order they happened, and the end. Nothing is added to fill. */
@@ -281,7 +284,7 @@ object FightReplay {
     fun outcomeWord(outcome: FightOutcome): String = when (outcome) {
         FightOutcome.WON -> "Victory"
         FightOutcome.LOST -> "Defeat"
-        FightOutcome.RETREATED -> "Pulled back"
+        FightOutcome.RETREATED -> "Retreated"
         FightOutcome.TIMED_OUT -> "Undecided"
     }
 }

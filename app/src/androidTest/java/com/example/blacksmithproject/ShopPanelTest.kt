@@ -1,5 +1,6 @@
 package com.example.blacksmithproject
 
+import com.example.blacksmithproject.ui.leadActionLabel
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
@@ -21,6 +22,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performScrollToIndex
@@ -106,7 +109,8 @@ class ShopPanelTest {
         // Each listed blade is shown once, as its row: the Shop draws no second shelf of slots.
         assertEquals(day.state.listedWeapons().size, blades.size)
         compose.onNodeWithTag("shopday_shelf", useUnmergedTree = true).assertDoesNotExist()
-        assertTrue("the shelf rows sit between their heading and the board", with(compose.density) { top("shop_shelf").toPx() < blades.min() && blades.max() < top("shop_board").toPx() })
+        // V3: the shelf's rows follow its place in the list (no heading of their own), before the board.
+        assertTrue("the shelf rows sit between their place and the board", with(compose.density) { top("shop_shelf").toPx() <= blades.min() && blades.max() < top("shop_board").toPx() })
         // A shelf row still names the blade and its price for TalkBack, though it shows less.
         val blade = day.state.listedWeapons().first()
         val spoken = compose.onNodeWithTag("stock_${blade.id.value}").fetchSemanticsNode().config.getOrNull(SemanticsProperties.ContentDescription).orEmpty().joinToString()
@@ -153,7 +157,12 @@ class ShopPanelTest {
             compose.waitForIdle()
             compose.onNodeWithTag("shop_lead", useUnmergedTree = true).assertTextEquals(tomorrow.action)
             // The same sentence a morning later: the day the card called "today" is the Shop's "yesterday" (`Lines.lead`).
-            if (tomorrow.reason != null) compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals(tomorrow.reason!!.replace("on price today", "on price yesterday"))
+            // V2: a lead with nowhere to go (a settled day) shows its first sentence and folds the rest behind "More".
+            val said = tomorrow.reason?.replace("on price today", "on price yesterday")?.let { if (it.startsWith("Today, ")) "Yesterday, " + it.removePrefix("Today, ") else it }?.let { r ->
+                val cut = r.indexOf(". ")
+                if (leadActionLabel(day.script.lead!!.kind) == null && cut >= 0) r.substring(0, cut + 1) else r
+            }
+            if (said != null) compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertTextEquals(said)
             else compose.onNodeWithTag("shop_lead_reason", useUnmergedTree = true).assertDoesNotExist()
         }
     }
@@ -177,6 +186,10 @@ class ShopPanelTest {
         val middle = prices[(prices.size - 1) / 2]
         fun row(label: String, value: String) =
             compose.onNode(hasText(label) and hasText(value)).assertExists("\"$label\" should read $value")
+        // V2: who is buying folds under its heading; open it to read the rows.
+        compose.onNodeWithTag("shop_list").performScrollToNode(hasTestTag("shop_demand_toggle"))
+        compose.onNodeWithTag("shop_demand_toggle").performClick()
+        compose.waitForIdle()
         row("Heroes in town", "${heroes.size}")
         row("Need a weapon", "${heroes.count { s.equippedWeapon(it.id) == null }}")
         row("Need to replace a worn weapon", "${heroes.count { h -> s.equippedWeapon(h.id)?.let { it.condition < engine.config.wornConditionThreshold } == true }}")
@@ -252,15 +265,15 @@ class StorageSheetTest {
         compose.onNodeWithTag("storage_bulk_scrap").assertIsNotEnabled()
         for (id in listOf("t1", "t4")) compose.onNodeWithTag("stock_$id").performClick()
         compose.onNodeWithTag("storage_bulk_scrap").performClick()
-        compose.onNodeWithText("Scrap 2 weapons?").assertIsDisplayed()
+        compose.onNodeWithText("Melt down 2 weapons?").assertIsDisplayed()
         assertTrue(scrapped.isEmpty())
         compose.onNodeWithTag("storage_scrap_confirm").performClick()
         assertEquals(listOf(listOf(WeaponId("t1"), WeaponId("t4"))), scrapped)
 
         // "Select all shown" then the watch: the same single question.
         compose.onNodeWithTag("storage_select_all").performClick()
-        compose.onNodeWithTag("storage_bulk_donate").assertTextEquals("Arm the watch 5").performClick()
-        compose.onNodeWithText("Give 5 weapons to the town watch?").assertIsDisplayed()
+        compose.onNodeWithTag("storage_bulk_donate").assertTextEquals("Donate 5 to the armory").performClick()
+        compose.onNodeWithText("Donate 5 weapons to the armory?").assertIsDisplayed()
         compose.onNodeWithTag("storage_bulk_confirm").performClick()
         assertEquals((1..5).map { Command.DonateWeapon(WeaponId("t$it")) }, issued.last())
         assertEquals(2, issued.size)

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -48,7 +50,7 @@ import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
 
 /** One authoritative party draft, with scrollable planning details and a persistent confirmation action. */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ContractSheet(
     state: GameState, engine: GameEngine, draft: PartyDraft, busy: Boolean,
@@ -75,40 +77,44 @@ fun ContractSheet(
     ) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(0.95f).navigationBarsPadding().padding(horizontal = Space.md)) {
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).testTag("contract_details")) {
-                Text(ui?.offer?.title ?: "Quest unavailable", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
+                Text(ui?.offer?.title ?: "Quest unavailable", style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() })
                 if (ui != null) {
                     SectionHeader("Selected party")
-                    Secondary("Up to ${ui.partyMax} members. They act in the order shown.")
-                    if (draft.members.isEmpty()) Secondary("Nobody selected. Keeping members home is a valid choice.")
+                    Secondary(partyIntro(ui.partyMax, draft.members.isEmpty()))
                     ui.picks.filter { it.order != null }.sortedBy { it.order }.forEach { p ->
                         Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(Space.sm).testTag("contract_selected_${p.heroId.value}")) {
                             Text("${p.order}. ${p.name}", style = MaterialTheme.typography.titleSmall)
-                            Secondary(p.blade)
+                            MemberLines(p)
                             p.blocked?.let { Text(it, color = Ember, style = MaterialTheme.typography.bodySmall) }
                             if (p.heroId in changed) Text("Equipment changed: ${p.blade}", color = Ember, style = MaterialTheme.typography.bodySmall)
                             Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                                 SecondaryActionButton("↑", { onMove(p.heroId, -1) }, Modifier.weight(1f).heightIn(min = 48.dp).semantics { contentDescription = "Move ${p.name} up" }.testTag("contract_up_${p.heroId.value}"), enabled = !busy && p.order != 1)
                                 SecondaryActionButton("↓", { onMove(p.heroId, 1) }, Modifier.weight(1f).heightIn(min = 48.dp).semantics { contentDescription = "Move ${p.name} down" }.testTag("contract_down_${p.heroId.value}"), enabled = !busy && p.order != draft.members.size)
                             }
-                            InlineActionButton("Equipment and details", { onOpenHero(p.heroId) }, Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("contract_equipment_${p.heroId.value}"), enabled = !busy)
-                            InlineActionButton("Remove", { onToggle(p.heroId) }, Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("contract_remove_${p.heroId.value}"), enabled = !busy)
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                                InlineActionButton("Equipment and details", { onOpenHero(p.heroId) }, Modifier.heightIn(min = 48.dp).testTag("contract_equipment_${p.heroId.value}"), enabled = !busy)
+                                InlineActionButton("Remove", { onToggle(p.heroId) }, Modifier.heightIn(min = 48.dp).testTag("contract_remove_${p.heroId.value}"), enabled = !busy)
+                            }
                         }
                     }
                     if (changed.isNotEmpty()) SecondaryActionButton("Use current equipment", onReviewEquipment, Modifier.fillMaxWidth().testTag("contract_review_equipment"), enabled = !busy)
                     SectionHeader("Roster")
-                    ui.picks.filter { it.order == null }.forEach { p ->
-                        Column(Modifier.fillMaxWidth().padding(top = Space.xs).forgeRow().padding(Space.sm)) {
+                    // Members as rows, not plates: face, name, class and health, the weapon; why one cannot go stays in sight.
+                    ui.picks.filter { it.order == null }.forEachIndexed { i, p ->
+                        if (i > 0) RowRule()
+                        Column(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                                 if (p.portrait != 0) Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { PixelImage(p.portrait, 44.dp, description = null) }
                                 Column(Modifier.weight(1f)) {
                                     Text(p.name, style = MaterialTheme.typography.titleSmall)
-                                    Secondary(p.sub)
-                                    Secondary(p.blade)
+                                    MemberLines(p)
                                 }
                             }
                             p.blocked?.let { Text(it, color = Ember, style = MaterialTheme.typography.bodySmall) }
-                            InlineActionButton("Add to party", { onToggle(p.heroId) }, Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("contract_pick_${p.heroId.value}"), enabled = !busy && p.blocked == null && draft.members.size < ui.partyMax)
-                            InlineActionButton("Equipment and details", { onOpenHero(p.heroId) }, Modifier.fillMaxWidth().heightIn(min = 48.dp).testTag("contract_equipment_${p.heroId.value}"), enabled = !busy)
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                                InlineActionButton("Add to party", { onToggle(p.heroId) }, Modifier.heightIn(min = 48.dp).testTag("contract_pick_${p.heroId.value}"), enabled = !busy && p.blocked == null && draft.members.size < ui.partyMax)
+                                InlineActionButton("Equipment and details", { onOpenHero(p.heroId) }, Modifier.heightIn(min = 48.dp).testTag("contract_equipment_${p.heroId.value}"), enabled = !busy)
+                            }
                         }
                     }
                     SectionHeader("Retreat rule")
@@ -123,7 +129,9 @@ fun ContractSheet(
                             Secondary(o.line)
                         }
                     }
-                    Secondary(ui.retreatNote, Modifier.padding(top = Space.xs))
+                    Disclosure("How retreat works", key = "contract_retreat_note", summary = "When the rule is checked and what a retreat costs") {
+                        Secondary(ui.retreatNote)
+                    }
                     Statements("Works together", ui.together, EffectKind.BUFF, "contract_together")
                     Statements("Watch out", ui.watchOut, EffectKind.FLAW, "contract_watch")
                     SectionHeader("At home")
@@ -134,8 +142,10 @@ fun ContractSheet(
                     ui.offer.modifier?.let { Text(it, modifier = Modifier.testTag("contract_modifier")) }
                     ui.offer.stake?.let { Text(it, color = Ember, modifier = Modifier.testTag("contract_stake")) }
                     ui.offer.stages.forEach { StageLines(it, Modifier.padding(top = Space.sm)) }
-                    Secondary("Bring: ${ui.offer.prep}")
-                    Secondary("If it fails: ${ui.offer.failure}")
+                    // What to bring is a condition and failing a cost: each with its sign, as on the quest's card.
+                    Box(Modifier.padding(top = Space.sm)) {
+                        TipSectionBlock(TipSection(null, listOf(TipLine("Bring: ${ui.offer.prep}", TipTone.CONDITION), TipLine("If it fails: ${ui.offer.failure}", TipTone.DRAWBACK))))
+                    }
                     Secondary(ui.offer.expiry)
                     Secondary(ui.offer.timingNote)
                     Secondary(ui.offer.fee)
@@ -146,11 +156,16 @@ fun ContractSheet(
             HorizontalDivider(color = BronzeDeep)
             // At extreme text sizes the facts scroll independently, while the confirmation button stays reachable.
             Column(Modifier.fillMaxWidth().heightIn(max = factHeight).verticalScroll(rememberScrollState()).padding(top = Space.xs).testTag("contract_confirmation")) {
-                Text("Party: " + draft.members.joinToString(" → ") { state.heroes[it]?.fullName ?: "Missing member" }.ifEmpty { "Nobody selected" }, style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("contract_party_summary"))
+                // What planning commits to, in one line: who goes, when they leave and are back, the fee. A missed siege is its own warning.
                 ui?.let {
-                    Text("Leaves at End Day today. Home on the morning of day ${it.offer.returnDay}.", style = MaterialTheme.typography.bodySmall, modifier = Modifier.testTag("contract_returns"))
-                    Text((if (it.offer.feeGold > 0) "Fee ${it.offer.feeGold} gold" else "No fee") + " · Retreat: ${postureName(draft.posture)}", style = MaterialTheme.typography.bodySmall)
-                    it.offer.missesSiege?.let { warning -> Text(warning, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.fillMaxWidth().testTag("contract_siege_warning")) }
+                    Box(Modifier.fillMaxWidth().testTag("contract_party_summary")) { FactLine(
+                        listOf(
+                            Fact("${draft.members.size} of ${it.partyMax}", "Party"), Fact("End Day today", "Leaves"), Fact("day ${it.offer.returnDay}", "Back"),
+                            if (it.offer.feeGold > 0) Fact("${it.offer.feeGold} gold", "Fee") else Fact("No fee"),
+                        ),
+                        Modifier.fillMaxWidth().testTag("contract_returns"), emphasis = true,
+                    ) }
+                    it.offer.missesSiege?.let { warning -> FactLine(listOf(Fact(warning, tone = FactTone.WARN)), Modifier.fillMaxWidth().padding(top = 2.dp).testTag("contract_siege_warning")) }
                 }
                 blocked?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.testTag("contract_blocked")) }
             }
@@ -170,11 +185,18 @@ private fun Statements(title: String, lines: List<String>, kind: EffectKind, tag
     Column(Modifier.testTag(tag)) { lines.forEach { Text("${kind.sign} $it", style = MaterialTheme.typography.bodyMedium, color = kind.color) } }
 }
 
+/** A member's class, level and health in one line, and the weapon they would carry in the next. */
+@Composable
+private fun MemberLines(p: PickUi) {
+    Secondary(listOf(p.sub, p.health).filter { it.isNotEmpty() }.joinToString(" · "))
+    Text(p.blade, style = MaterialTheme.typography.bodySmall, color = Cream)
+}
+
 /** One stage of a quest as separate rows: when and what it secures, then the objective, the reward and the risk. */
 @Composable
 private fun StageLines(st: StageUi, modifier: Modifier = Modifier) {
     Column(modifier) {
-        Text(st.label, style = MaterialTheme.typography.labelLarge, color = Gold)
+        Text(st.label, style = MaterialTheme.typography.titleSmall, color = Cream)
         Text("Objective: ${st.objective}.", style = MaterialTheme.typography.bodyMedium)
         Text("Reward: ${st.reward}.", style = MaterialTheme.typography.bodyMedium)
         Secondary(st.danger)

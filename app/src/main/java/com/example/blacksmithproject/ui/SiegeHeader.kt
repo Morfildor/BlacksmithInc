@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -108,26 +109,44 @@ fun UiState.Playing.siegeHeader(interval: Int, championCount: Int): SiegeHeaderU
 @Composable
 fun WorkshopHeader(ui: SiegeHeaderUi, gold: Int, energy: Int, onSettings: () -> Unit, onOpenSiege: () -> Unit, openLabel: String) {
     val large = LocalDensity.current.fontScale >= 1.3f
-    // The markers are the first thing to go: on a short screen or with large text the countdown says it alone.
-    val markers = ui.marks.isNotEmpty() && !large && LocalConfiguration.current.screenHeightDp >= 700
-    Column(Modifier.fillMaxWidth().background(ForgePanel).testTag("workshop_header")) {
-        FlowRow(
-            Modifier.fillMaxWidth().padding(start = Space.md, end = Space.xs),
-            horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.Center,
-            itemVerticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                "Day ${ui.day}", style = MaterialTheme.typography.headlineMedium, color = Cream, maxLines = 1,
-                modifier = Modifier.semantics { heading(); contentDescription = "Day ${ui.day}" }.testTag("header_day"),
-            )
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Stat(R.drawable.icon_gold, "Gold", "$gold", Gold)
-                Spacer(Modifier.width(Space.md))
-                Stat(R.drawable.icon_energy, "Energy", "$energy")
-                IconButton(onClick = onSettings, modifier = Modifier.size(48.dp).testTag("nav_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings", tint = Gold) }
-            }
+    val stats: @Composable () -> Unit = {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Stat(R.drawable.icon_gold, "Gold", "$gold", Gold)
+            Spacer(Modifier.width(Space.md))
+            Stat(R.drawable.icon_energy, "Energy", "$energy")
+            IconButton(onClick = onSettings, modifier = Modifier.size(48.dp).testTag("nav_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings", tint = Gold) }
         }
-        SiegeStrip(ui, markers, onOpenSiege, openLabel)
+    }
+    val day: @Composable () -> Unit = {
+        Text(
+            "Day ${ui.day}", style = MaterialTheme.typography.titleLarge, color = Cream, maxLines = 1,
+            modifier = Modifier.semantics { heading(); contentDescription = "Day ${ui.day}" }.testTag("header_day"),
+        )
+    }
+    // V2: one band. The day and the countdown stack on the left as one tap to where the siege is prepared, the purse
+    // and energy sit on the right, and the cycle is a hairline track along the foot. With large text the purse takes a
+    // row of its own beside the day, as before.
+    Column(Modifier.fillMaxWidth().background(ForgePanel).testTag("workshop_header")) {
+        if (large) {
+            FlowRow(
+                Modifier.fillMaxWidth().padding(start = Space.md, end = Space.xs),
+                horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.Center,
+                itemVerticalAlignment = Alignment.CenterVertically,
+            ) { day(); stats() }
+            // A short screen with large text keeps only the countdown here: who comes and how many stand are one tap away.
+            val tight = LocalConfiguration.current.screenHeightDp < 700
+            SiegeStrip(ui, onOpenSiege, openLabel, Modifier.padding(start = Space.md, end = Space.sm, bottom = Space.xs), brief = tight)
+        } else Row(Modifier.fillMaxWidth().padding(start = Space.md, end = Space.xs), verticalAlignment = Alignment.CenterVertically) {
+            Column(
+                Modifier.weight(1f).clickable(onClickLabel = openLabel, role = Role.Button, onClick = onOpenSiege).heightIn(min = 48.dp).padding(vertical = 6.dp),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                day()
+                SiegeLine(ui, Modifier.testTag("siege_strip"))
+            }
+            stats()
+        }
+        if (ui.marks.isNotEmpty()) CycleTrack(ui, Modifier.padding(start = Space.md, end = Space.md, bottom = 6.dp))
     }
 }
 
@@ -145,48 +164,64 @@ private fun Stat(icon: Int, label: String, value: String, color: Color = Cream) 
  * plate or tiles. The tone is said by the countdown's colour alone (cream, gold the day before, ember on the day).
  */
 @Composable
-private fun SiegeStrip(ui: SiegeHeaderUi, markers: Boolean, onOpen: () -> Unit, openLabel: String) {
-    val stacked = LocalDensity.current.fontScale >= 1.3f
-    val ink = when (ui.tone) { SiegeTone.CALM -> Cream; SiegeTone.TOMORROW -> Gold; SiegeTone.TONIGHT -> Ember }
-    Column(
-        Modifier.fillMaxWidth().clickable(onClickLabel = openLabel, role = Role.Button, onClick = onOpen).heightIn(min = 48.dp)
-            .padding(start = Space.md, end = Space.sm, bottom = 10.dp).semantics(mergeDescendants = true) {}.testTag("siege_strip"),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+private fun SiegeStrip(ui: SiegeHeaderUi, onOpen: () -> Unit, openLabel: String, modifier: Modifier = Modifier, brief: Boolean = false) {
+    Row(
+        modifier.fillMaxWidth().clickable(onClickLabel = openLabel, role = Role.Button, onClick = onOpen).heightIn(min = 48.dp).testTag("siege_strip"),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            // One paragraph, so with large text the besieger wraps as words do and never starts a line with its separator.
-            val body = MaterialTheme.typography.bodySmall
-            Text(
-                buildAnnotatedString {
-                    append(ui.countdown)
-                    ui.besieger?.let { withStyle(SpanStyle(color = CreamMuted, fontWeight = body.fontWeight, fontSize = body.fontSize)) { append("  ·  $it") } }
-                },
-                style = MaterialTheme.typography.titleSmall, color = ink, modifier = Modifier.weight(1f).testTag("siege_countdown"),
-            )
-            ui.defenders?.takeUnless { stacked }?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, maxLines = 1, modifier = Modifier.padding(start = Space.sm).testTag("siege_defenders")) }
-            Text("›", style = MaterialTheme.typography.titleMedium, color = CreamMuted, modifier = Modifier.padding(start = Space.sm, end = Space.xs))
-        }
-        if (stacked) ui.defenders?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.testTag("siege_defenders")) }
-        // The days so far filled, today lit, the siege's day dark ember, the wall at the end; its day once it is not today.
-        if (markers) Row(Modifier.padding(end = Space.xs).testTag("siege_marks"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(3.dp)) {
-            ui.marks.forEach { DaySegment(it, ui.tone, Modifier.weight(1f)) }
-            Spacer(Modifier.width(3.dp))
-            PixelImage(Sprites.siegeWall(damaged = false), 18.dp, description = null)
-            if (ui.tone != SiegeTone.TONIGHT) Text("Day ${ui.siegeDay}", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.padding(start = 6.dp))
-        }
+        SiegeLine(ui, Modifier.weight(1f), brief)
+        Chevron(ChevronWay.RIGHT, Modifier.padding(start = Space.sm, end = Space.xs), tint = CreamMuted)
     }
 }
 
-/** A day of the cycle as one segment of the track: past days filled bronze, today gold (ember on the siege's day), the rest dark. */
+/**
+ * The countdown in its tone, the besieger muted after it, and on the eve and the day how many places the forecast fills,
+ * as one paragraph that wraps as words do (a separator never starts a line).
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DaySegment(m: DayMarkUi, tone: SiegeTone, modifier: Modifier) {
-    val color = when {
-        m.today -> if (tone == SiegeTone.TONIGHT) Ember else Gold
-        m.past -> Bronze
-        m.siege -> EmberContainer
-        else -> BronzeDeep
+private fun SiegeLine(ui: SiegeHeaderUi, modifier: Modifier = Modifier, brief: Boolean = false) {
+    val ink = when (ui.tone) { SiegeTone.CALM -> CreamMuted; SiegeTone.TOMORROW -> Gold; SiegeTone.TONIGHT -> Ember }
+    val small = MaterialTheme.typography.bodySmall
+    if (brief) {
+        // Said whole to a screen reader; on screen, the countdown alone.
+        Text(
+            ui.countdown, style = MaterialTheme.typography.labelLarge, color = ink,
+            modifier = modifier.testTag("siege_countdown").semantics { contentDescription = listOfNotNull(ui.countdown, ui.besieger, ui.defenders).joinToString(", ") },
+        )
+        return
     }
-    Box(modifier.height(4.dp).background(color, MaterialTheme.shapes.extraSmall))
+    FlowRow(modifier.semantics(mergeDescendants = true) {}, itemVerticalAlignment = Alignment.CenterVertically) {
+        // The separator is bound to the word before it (a no-break space), so a wrapped line never starts with it.
+        Text(
+            buildAnnotatedString {
+                append(ui.countdown)
+                ui.besieger?.let { withStyle(SpanStyle(color = CreamMuted, fontWeight = small.fontWeight)) { append(" · $it") } }
+                if (ui.defenders != null) withStyle(SpanStyle(color = CreamMuted)) { append(" ·") }
+            },
+            style = MaterialTheme.typography.labelLarge, color = ink, modifier = Modifier.padding(end = Space.xs).testTag("siege_countdown"),
+        )
+        ui.defenders?.let { Text(it, style = MaterialTheme.typography.labelLarge, fontWeight = small.fontWeight, color = CreamMuted, modifier = Modifier.testTag("siege_defenders")) }
+    }
+}
+
+/**
+ * The cycle as a hairline track under the header: past days bronze, today gold (ember on the siege's day), days to come
+ * dark, the siege's own day a dark ember. Decorative: the countdown says the same in words, so it is hidden from TalkBack.
+ */
+@Composable
+private fun CycleTrack(ui: SiegeHeaderUi, modifier: Modifier = Modifier) {
+    Row(modifier.fillMaxWidth().clearAndSetSemantics {}.testTag("siege_marks"), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+        ui.marks.forEach { m ->
+            val color = when {
+                m.today -> if (ui.tone == SiegeTone.TONIGHT) Ember else Gold
+                m.past -> Bronze
+                m.siege -> EmberContainer
+                else -> BronzeDeep
+            }
+            Box(Modifier.weight(1f).height(3.dp).background(color, MaterialTheme.shapes.extraSmall))
+        }
+    }
 }
 
 /**
@@ -195,12 +230,12 @@ private fun DaySegment(m: DayMarkUi, tone: SiegeTone, modifier: Modifier) {
  * the first warned morning, what buyers now weigh.
  */
 @Composable
-fun SiegeMatchup(threat: ThreatUi, tag: String, note: String? = null) {
+fun SiegeMatchup(threat: ThreatUi, tag: String, note: String? = null, inset: Boolean = true) {
     // The besieger's name is the header's; what tells against them (and a classic run's outlook) is this line's own.
     val facts = listOfNotNull(threat.matchup?.let { m -> threat.besieger?.let { m.removePrefix(it).removePrefix(" · ") } ?: m }?.takeIf { it.isNotBlank() }, threat.outlook)
     if (facts.isEmpty() && note == null) return
     Column(
-        Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.sm).semantics(mergeDescendants = true) {}.testTag(tag),
+        Modifier.fillMaxWidth().padding(start = if (inset) Space.md else 0.dp, end = if (inset) Space.md else 0.dp, top = Space.sm).semantics(mergeDescendants = true) {}.testTag(tag),
     ) {
         if (facts.isNotEmpty()) Text(facts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = if (threat.today) Ember else CreamMuted)
         note?.let { Secondary(it) }

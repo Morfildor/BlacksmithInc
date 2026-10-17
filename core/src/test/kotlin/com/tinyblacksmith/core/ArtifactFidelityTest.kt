@@ -252,7 +252,7 @@ class ArtifactFidelityTest {
         assertTrue(entry.lostToTime)
         assertEquals("era1:Flaming Keen Iron Sword:Bane of the Ashclaw Raiders", entry.key)
         val lines = Lines.legend(entry, content, 2)
-        assertEquals(listOf("Flaming Keen Iron Sword, Bane of the Ashclaw Raiders. Era 1. 12 victories. Fame 9.", "No record of its properties survives.", "Carried by Mira Vance."), lines)
+        assertEquals(listOf("Flaming Keen Iron Sword, Bane of the Ashclaw Raiders. Era 1. 12 kills. Fame 9.", "No record of its properties survives.", "Carried by Mira Vance."), lines)
         // What returns is honest about it: no affixes awake or asleep, no flaws, a plain name; its fame and title are all that is known.
         val (_, blade) = returned(legacy)
         assertEquals(listOf("Iron Sword", emptyList<AffixId>(), emptyList<AffixId>(), emptyList<AffixId>(), null, 9, "Bane of the Ashclaw Raiders"),

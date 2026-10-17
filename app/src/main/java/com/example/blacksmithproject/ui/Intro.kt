@@ -114,9 +114,9 @@ fun GameEngine.introUi(record: IntroRecord?, state: GameState, dest: Dest, draft
         IntroStep.RECIPE -> IntroUi(
             step, overline,
             IntroLine(
-                "Choose a weapon, a metal and an augment.",
-                if (onForge) "The metal sets its strength and the augment sets its element. You learn how well the two work together by forging them." else toForge,
-                "A more expensive metal gives more quality and power. Each metal and augment pair also has a hidden fit. Your Notebook records what you learn each time you forge.",
+                "Choose a weapon, a metal and an infusion.",
+                if (onForge) "The metal sets its strength and the infusion sets its element. You learn how well the two work together by forging them." else toForge,
+                "A more expensive metal gives more quality and power. Each combination of a metal and an infusion also has a hidden fit. Your Notebook records what you learn each time you forge.",
             ),
             mark = IntroMark.NAV_FORGE.takeIf { !onForge },
         )
@@ -127,7 +127,7 @@ fun GameEngine.introUi(record: IntroRecord?, state: GameState, dest: Dest, draft
                 step, overline,
                 IntroLine(
                     "Forge it.",
-                    if (onForge) "It costs $spends and one of each ingredient. The quality lands close to what the recipe promises, sometimes a little higher and sometimes a little lower." else toForge,
+                    if (onForge) "It costs $spends and one of each material. The quality lands close to what the recipe promises, sometimes a little higher and sometimes a little lower." else toForge,
                     "The Risk choice on the workbench sets how far the quality can move. Every forge gives a usable weapon, even one with a flaw.",
                 ),
                 mark = if (onForge) IntroMark.FORGE else IntroMark.NAV_FORGE,
@@ -143,7 +143,7 @@ fun GameEngine.introUi(record: IntroRecord?, state: GameState, dest: Dest, draft
             step, overline,
             IntroLine(
                 "Forge one more, your way.",
-                if (onForge) "Change the metal or the augment, then compare the two results." else if (dest == Dest.SHOP) "Open the Forge to do this, or end the day here." else toForge,
+                if (onForge) "Change the metal or the infusion, then compare the two results." else if (dest == Dest.SHOP) "Open the Forge to do this, or end the day here." else toForge,
                 "This step is optional. You can end the day whenever you are ready.",
             ),
             mark = IntroMark.NAV_FORGE.takeIf { !onForge },
@@ -196,7 +196,7 @@ internal fun dayOutcome(day: DayResolution): IntroLine {
 fun introRow(record: IntroRecord, startsNow: Boolean): IntroRowUi {
     val replay = if (startsNow) "Replay now" else "Replay in next new game"
     return when (record.status) {
-        IntroStatus.ACTIVE -> IntroRowUi("In progress in this run.", "Skip guidance")
+        IntroStatus.ACTIVE -> IntroRowUi("In progress in this era.", "Skip guidance")
         IntroStatus.QUEUED -> IntroRowUi("Starts with your next new game.", "Cancel")
         IntroStatus.OFFERED -> IntroRowUi("Stopped before the end.", replay)
         IntroStatus.COMPLETED -> IntroRowUi("Completed.", replay)

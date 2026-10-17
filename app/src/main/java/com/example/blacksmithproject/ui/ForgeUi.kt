@@ -2,6 +2,9 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.runtime.Immutable
 import com.example.blacksmithproject.ForgeDraft
+import com.tinyblacksmith.core.combat.Action
+import com.tinyblacksmith.core.combat.Amount
+import com.tinyblacksmith.core.combat.EffectDef
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.crafting.Bench
@@ -33,13 +36,15 @@ import com.tinyblacksmith.core.model.KnowledgeState
 import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.model.Weapon
+import com.tinyblacksmith.core.text.Terms
+import com.tinyblacksmith.core.text.joinSentences
 
 /** The places of a recipe on the workbench. The last two exist only in an Advanced forge. */
 enum class RecipeSlot(val label: String, val empty: String, val choose: String, val hint: String) {
     WEAPON("Weapon", "Choose", "Choose weapon", "Each weapon type suits some hero classes. Choose one to see which."),
     METAL("Metal", "Choose", "Choose metal", "Choose the metal you'll forge with."),
-    AUGMENT("Augment", "Choose", "Choose augment", "Add fire, frost or another element."),
-    CATALYST("Catalyst", "None", "Choose catalyst", "Optional. Improves the result and is used up when you forge."),
+    AUGMENT("Infusion", "Choose", "Choose infusion", "Gives the weapon its element, such as Fire or Frost."),
+    CATALYST("Catalyst", "None", "Choose catalyst", "Optional. +${BalanceConfig.DEFAULT.catalystQualityBonus} quality, more exceptional results and fewer flaws. Used up when you forge."),
     TECHNIQUE("Technique", "Plain", "Choose technique", "Optional. Changes how you finish the weapon."),
 }
 
@@ -59,8 +64,11 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
     val usable: Boolean get() = stock != 0
 }
 
-/** One way the draft differs from what it was when its tray was opened. [good]: true helps, false costs, null is only different. */
-@Immutable data class ChangeUi(val text: String, val good: Boolean? = null)
+/**
+ * One way the draft differs from what it was when its tray was opened. [good]: true helps, false costs, null is only
+ * different. [rule]: a line about the notebook or a fight rule, told one tap away; the others are the decision facts.
+ */
+@Immutable data class ChangeUi(val text: String, val good: Boolean? = null, val rule: Boolean = false)
 
 /** The draft against the one the tray was opened on, for the place being changed: [from] the choice then, [changes] what differs now. */
 @Immutable data class TrayChangeUi(val from: String, val changes: List<ChangeUi>)
@@ -72,7 +80,7 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
 @Immutable data class AskUi(val text: String, val matches: Boolean?)
 
 /** A blade already in the shop read against the draft's purpose: [fits] by the engine's own rule, [line] where it is and what it lacks. Nothing is reserved by it. */
-@Immutable data class StockFitUi(val weaponId: WeaponId, val name: String, val line: String, val fits: Boolean)
+@Immutable data class StockFitUi(val weaponId: WeaponId, val name: String, val line: String, val fits: Boolean, val handsOver: Boolean = false)
 
 /**
  * Who the draft is for, read back from the save each time: an open commission ([id]) or a hero's standing want
@@ -111,7 +119,52 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
 data class ForgeOutlookUi(
     val role: String, val suits: List<String>, val parts: List<OutlookPartUi>, val needs: List<OutlookNeedUi>, val tradeoff: String?,
     val possible: List<OutlookChanceUi>, val certain: List<BladeRuleUi>, val notes: List<String>, val demonstration: Weapon,
+    /** The quality the forge gives this recipe before any exceptional result or flaw (`ForgeOutlook.qualityLow`/`qualityHigh`). */
+    val qualityLow: Int = 0, val qualityHigh: Int = 0,
+    /** By rule ID: what a metal's or an element's effect does, in a few words ([effectPhrase]). */
+    val phrases: Map<String, String> = emptyMap(),
 )
+
+/** A certain rule as the Forge names it: its source with what it does ("Iron · Starts each fight with 3 Armor"), else its name. */
+fun ForgeOutlookUi.label(r: BladeRuleUi): String = phrases[r.id]?.let { "${r.name} · $it" } ?: r.name
+
+/**
+ * What a metal's or an element's effect does, in a few words, for the places that name it beside its source
+ * (docs/WRITING_GUIDE.md 1: the source is never shown alone). Its number is read from the effect. Null for any other
+ * effect, whose name already says what it does.
+ */
+internal fun effectPhrase(effect: EffectDef): String? {
+    val n = effect.actions.firstNotNullOfOrNull { a ->
+        when (a) { is Action.Damage -> a.amount; is Action.Guard -> a.amount; is Action.Give -> a.amount; else -> null } as? Amount.Fixed
+    }?.value
+    return when (effect.id) {
+        "core_iron" -> n?.let { "Starts each fight with $it Armor" }
+        "core_bronze" -> n?.let { "Hits back for $it when Armor breaks" }
+        "core_silver" -> n?.let { "Starts each fight with $it Charge" }
+        "core_obsidian" -> "Cracks the first time Armor breaks"
+        "core_starsteel" -> n?.let { "+$it damage when its attack uses up a Mark" }
+        "core_moonsteel" -> n?.let { "+$it damage to an enemy with Chill" }
+        "element_fire" -> "Burns on hit"
+        "element_frost" -> "Chills on hit"
+        "element_storm" -> n?.let { "$it storm damage to the back enemy on hit" }
+        "element_grave" -> "Inflicts Bleed on hit"
+        "element_verdant" -> "Regenerates on hit"
+        "element_sun" -> "Marks on hit"
+        else -> null
+    }
+}
+
+/**
+ * The outlook's decision facts, said before its details: the likely quality and who it suits in a few words. The
+ * energy it costs is on the Forge action, so it is not said again here.
+ */
+fun ForgeOutlookUi.facts(): List<Fact> = listOfNotNull(
+    Fact(if (qualityLow == qualityHigh) "$qualityLow" else "$qualityLow to $qualityHigh", "Likely quality").takeIf { qualityHigh > 0 },
+    suits.takeIf { it.isNotEmpty() }?.let { s -> Fact(if (s.size <= 2) s.joinToString(" and ") else "${s.take(2).joinToString(", ")} and ${s.size - 2} more", "Suits") },
+)
+
+/** A commission's or a want's asks as facts, a met one ticked, then its standing ("Accepted", "Not an order"). */
+fun BriefUi.facts(): List<Fact> = asks.map { Fact(if (it.matches == true) "✓ ${it.text}" else it.text) } + Fact(status)
 
 /**
  * The Forge destination for one save and one draft. [next] is the first place still empty; [command] is exactly what
@@ -123,6 +176,8 @@ data class ForgeWorkbenchUi(
     val title: String, val slots: List<SlotUi>, val next: RecipeSlot?, val notes: List<NoteUi>, val brief: BriefUi?, val action: ForgeActionUi, val command: Command.Forge?,
     val outlook: ForgeOutlookUi? = null,
     val heartfire: HeartfireUi? = null,
+    /** The quality the forge gives this recipe before any exceptional result or flaw (`ForgeOutlook`), in either kind of run; null until the recipe is whole. */
+    val quality: Pair<Int, Int>? = null,
 )
 
 /**
@@ -168,8 +223,8 @@ fun riskExplanation(r: Risk, config: BalanceConfig): String {
     fun breakthrough(bonus: Double) = when { bonus < 0 -> " A Heartfire breakthrough is less likely."; bonus > 0 -> " A Heartfire breakthrough is more likely."; else -> "" }
     return when (r) {
         Risk.SAFE -> "Quality stays within $spread of what the recipe gives. Few flaws and few exceptional results." + breakthrough(legend.safeBonus)
-        Risk.BALANCED -> "Quality moves up to $spread either way. A chance of exceptional work or flaws."
-        Risk.RECKLESS -> "Adds ${if (profile.extraSlots == 1) "one more property" else "${profile.extraSlots} more properties"}. Flaws are ${frequencyWord(profile.defectChance)}, and a flawed weapon is still usable." + breakthrough(legend.recklessBonus)
+        Risk.BALANCED -> "Quality moves up to $spread either way. A result can be exceptional (+${config.qualityExceptionalBonus} quality, never above the metal's quality cap, and 1 more property) or flawed (−${config.qualityDefectPenalty} quality and 1 flaw)."
+        Risk.RECKLESS -> "Adds ${if (profile.extraSlots == 1) "1 more property" else "${profile.extraSlots} more properties"}. Flaws are ${frequencyWord(profile.defectChance)}, and a flawed weapon is still usable." + breakthrough(legend.recklessBonus)
     }
 }
 
@@ -192,13 +247,13 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
             else -> "Chance of Legendary: ${chanceWord(it.chanceLow)} at quality ${it.qualityLow}, ${chanceWord(it.chanceHigh)} at quality ${it.qualityHigh}."
         }
     }
-    val miss = o?.let { "If it does not become Legendary, the weapon still gets ${if (it.missSlots == 1) "one more property" else "${it.missSlots} more properties"}." }
+    val miss = o?.let { "If it does not become Legendary, the weapon still gets ${if (it.missSlots == 1) "1 more property" else "${it.missSlots} more properties"}." }
     return HeartfireUi(
         held = "Heartfire ${state.heartfire} of ${legend.heartfireMax}",
         on = on, blocked = blocked,
         outlook = when {
             !on -> emptyList()
-            o == null -> listOf("Choose a weapon, a metal and an augment to see what it would do.")
+            o == null -> listOf("Choose a weapon, a metal and an infusion to see what it would do.")
             else -> listOfNotNull(
                 "Costs 1 Heartfire and ${legend.heartfireEnergy} extra energy, ${o.energy} energy in all. Both are spent even if the weapon does not become Legendary.",
                 "Quality will be between ${o.qualityLow} and ${o.qualityHigh}, before any exceptional result or flaw. Only a weapon of quality ${o.floor} or more can become Legendary.",
@@ -211,9 +266,9 @@ fun GameEngine.heartfireUi(state: GameState, advanced: Boolean, asked: Boolean, 
             chance,
             miss,
         ),
-        warning = o?.takeIf { !it.fineMetal }?.let { "Heartfire cannot make a weapon of this metal Legendary. Only ${fineMetals()} can reach Epic." }
+        warning = o?.takeIf { !it.fineMetal }?.let { "Heartfire cannot make a weapon of this metal Legendary. Rarity can reach Epic only in ${fineMetals()}." }
             ?: o?.takeIf { it.qualityHigh < it.floor }?.let { "Without an exceptional result, this recipe stays under quality ${it.floor}, so it cannot become Legendary." },
-        rule = "Without Heartfire, quality can reach Epic at most, and only in ${fineMetals()}. Weapons of other metals stop at Rare. Only Heartfire or great deeds make a weapon Legendary.",
+        rule = "Without Heartfire, the highest rarity is Epic, and only ${fineMetals()} weapons can be Epic. Weapons of other metals stop at Rare. Only Heartfire or ${legend.renownForLegend} deeds make a weapon Legendary.",
         source = "Heartfire comes from dangerous work: a deep hall cleared, a taken weapon won back, a starfall site, a warlord defeated at the town wall.",
     )
 }
@@ -232,6 +287,8 @@ fun GameEngine.forgeOutlook(state: GameState, forge: Command.Forge): ForgeOutloo
         certain = o.certain.rules.map { it.ui() },
         notes = o.notes.map { Capabilities.text(it, o.certain) },
         demonstration = Bench.demonstration(forge.familyId, forge.coreId, forge.augmentId, forge.catalystId, content, config, (o.qualityLow + o.qualityHigh) / 2),
+        qualityLow = o.qualityLow, qualityHigh = o.qualityHigh,
+        phrases = o.certain.rules.mapNotNull { r -> effectPhrase(r.effect)?.let { r.id to it } }.toMap(),
     )
 }
 
@@ -263,14 +320,14 @@ fun GameEngine.signatureNote(journal: JournalModel, forge: Command.Forge): NoteU
     if (journal.state(def.journalKey) == KnowledgeState.SIGNATURE_DISCOVERED) {
         val misses = def.misses(forge, def.minQuality).map { Journal.clue(def, it.rung, config) }
         return NoteUi("Signature", subject, KnowledgeState.SIGNATURE_DISCOVERED, def.name,
-            if (misses.isEmpty()) "Your draft is the recipe. Quality is decided by the roll." else "Your draft is not the recipe yet: ${misses.joinToString("; ")}.")
+            if (misses.isEmpty()) "Your draft is the recipe. Quality is decided by the roll." else (listOf("Your draft is not the recipe yet") + misses).joinSentences())
     }
     val missed = def.misses(forge, def.minQuality).filter { it.rung in have }.map { Journal.clue(def, it.rung, config) }
     val complete = have.size == ClueRung.entries.size
     return NoteUi(
         "Signature", subject, if (complete) KnowledgeState.UNDERSTOOD else KnowledgeState.OBSERVED, if (complete) "All clues found" else "Incomplete clues",
         when {
-            missed.isNotEmpty() -> "Your draft misses a clue: ${missed.joinToString("; ")}."
+            missed.isNotEmpty() -> (listOf("Your draft misses a clue") + missed).joinSentences()
             complete -> "Your draft matches every clue. Quality is decided by the roll, and a signature is never certain."
             else -> "Your draft matches the clues you have. The rest are still unknown."
         },
@@ -310,7 +367,7 @@ fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: Lis
     val action = when {
         next == RecipeSlot.WEAPON -> ForgeActionUi(label, false, "Choose a weapon type")
         next == RecipeSlot.METAL -> ForgeActionUi(label, false, "Choose a metal")
-        next == RecipeSlot.AUGMENT -> ForgeActionUi(label, false, "Choose an augment")
+        next == RecipeSlot.AUGMENT -> ForgeActionUi(label, false, "Choose an infusion")
         missing != null -> ForgeActionUi(label, false, "No ${missing.name} left", restock = missing.id)
         !canAfford -> ForgeActionUi(label, false, "Not enough energy left today", endDay = true)
         overwork > 0 -> ForgeActionUi(label, true, "You'll have $overwork less energy tomorrow")
@@ -319,19 +376,21 @@ fun GameEngine.forgeWorkbench(state: GameState, draft: ForgeDraft, requests: Lis
 
     val journal = state.legacy.journal
     val notes = if (core == null || augment == null) emptyList() else listOfNotNull(
-        note(journal, "Metal + augment", JournalModel.coreAugmentKey(core.id, augment.id)),
-        family?.let { note(journal, "Augment + weapon", JournalModel.augmentFamilyKey(augment.id, it.id)) },
+        note(journal, "Metal + infusion", JournalModel.coreAugmentKey(core.id, augment.id)),
+        family?.let { note(journal, "Infusion + weapon", JournalModel.augmentFamilyKey(augment.id, it.id)) },
         plain?.let { signatureNote(journal, it) },
     )
 
     val brief = draft.commissionId?.let { commissionBrief(state, it, requests, family?.id, augment?.element) }
         ?: draft.wantHeroId?.let { wantBrief(state, it, family?.id) }
 
+    val outlook = command?.let { forgeOutlook(state, it.copy(bellows = bellows)) }
     return ForgeWorkbenchUi(
         title = when { family != null && core != null -> "${core.name} ${family.name.lowercase()}"; family != null -> family.name; else -> "Empty anvil" },
         slots = slots, next = next, notes = notes, brief = brief, action = action, command = command,
-        outlook = command?.let { forgeOutlook(state, it.copy(bellows = bellows)) },
+        outlook = outlook,
         heartfire = heartfire,
+        quality = outlook?.let { it.qualityLow to it.qualityHigh } ?: command?.let { ForgeOutlook.of(state, content, config, it.copy(bellows = bellows)) }?.let { it.qualityLow to it.qualityHigh },
     )
 }
 
@@ -369,7 +428,7 @@ private fun GameEngine.commissionBrief(state: GameState, id: CommissionId, reque
         StockFitUi(
             w.id, w.name,
             listOfNotNull(where(w), if (elsewhere) "reserved for another commission" else Labels.fit(w, c, content), "End Day would hand this over".takeIf { picked?.id == w.id }).joinToString(" · "),
-            fits,
+            fits, handsOver = picked?.id == w.id,
         )
     }.sortedBy { !it.fits }
     return BriefUi(
@@ -431,9 +490,9 @@ fun GameEngine.forgeOptions(state: GameState, draft: ForgeDraft, slot: RecipeSlo
     fun materials(category: MaterialCategory, chosen: MaterialId?) = content.materials(category).map { m ->
         val stock = state.materials[m.id] ?: 0
         OptionUi(
-            m.id.value, m.name, stock, chosen == m.id, m.element?.let { threat?.marks?.get(it) }, m.element?.let { "Adds ${it.word()}" },
+            m.id.value, m.name, stock, chosen == m.id, m.element?.let { threat?.marks?.get(it) }, m.element?.let { "${it.word()} element" },
             fight = if (guild) materialRules(content, m.id).map { "${it.name}: ${it.description}" } else emptyList(),
-            blocked = if (stock > 0) null else "None left. " + (roadLine(state, m.id) ?: "Buy more in Supplies."),
+            blocked = if (stock > 0) null else "None left. " + (roadLine(state, m.id) ?: "Buy it in Supplies."),
         )
     }.sortedBy { !it.usable }
     return when (slot) {
@@ -512,16 +571,19 @@ fun GameEngine.trayChange(state: GameState, baseline: ForgeDraft, draft: ForgeDr
     val was = material(baseline)
     val now = material(draft)
     if (slot == RecipeSlot.METAL || slot == RecipeSlot.AUGMENT || slot == RecipeSlot.CATALYST) {
-        if (now != null) changes += ChangeUi("Restock: " + (was?.let { "${it.price} \u2192 " } ?: "") + "${now.price} gold, uses 1", was?.let { now.price <= it.price })
-        else if (was != null) changes += ChangeUi("No catalyst used: keeps your ${was.name}")
+        if (now != null) changes += ChangeUi("Costs ${now.price} gold each" + (was?.let { " (${it.name} costs ${it.price})" } ?: "") + ". This forge uses 1.", was?.let { now.price <= it.price })
+        else if (was != null) changes += ChangeUi("No catalyst. Your ${was.name} is kept.")
     }
     if (slot == RecipeSlot.METAL && was != null && now != null) {
         val epicWas = Forge.holdsEpic(was.tier, config)
         val epicNow = Forge.holdsEpic(now.tier, config)
-        if (epicWas != epicNow) changes += ChangeUi(if (epicNow) "Can reach Epic quality" else "Stops at Rare quality", epicNow)
+        if (epicWas != epicNow) changes += ChangeUi(if (epicNow) "Rarity can reach Epic" else "Rarity stops at Rare", epicNow)
+        val capWas = Forge.qualityCap(was.tier, config)
+        val capNow = Forge.qualityCap(now.tier, config)
+        if (capWas != capNow) changes += ChangeUi("Quality cap $capNow instead of $capWas", capNow > capWas)
     }
     if (slot == RecipeSlot.AUGMENT && was?.element != now?.element) {
-        now?.element?.let { e -> changes += ChangeUi("Adds ${e.word().lowercase()} instead of ${was?.element?.word()?.lowercase() ?: "no element"}") }
+        now?.element?.let { e -> changes += ChangeUi("${e.word()} element instead of ${was?.element?.word() ?: "none"}") }
         val markWas = was?.element?.let { threat?.marks?.get(it) }
         val markNow = now?.element?.let { threat?.marks?.get(it) }
         if (markNow != markWas) changes += markNow?.let { ChangeUi("Against the siege: ${it.label}", it.counters) } ?: ChangeUi("Against the siege, no longer: ${markWas!!.label}", markWas!!.counters.not())
@@ -539,24 +601,25 @@ fun GameEngine.trayChange(state: GameState, baseline: ForgeDraft, draft: ForgeDr
     // What the journal may say of each pairing, where it changed: its own words for the stage reached, an untried one nothing.
     after.notes.forEach { n ->
         val old = before.notes.firstOrNull { it.label == n.label }
-        if (old == null || old.subject != n.subject) changes += ChangeUi("${n.label}: ${if (n.state == KnowledgeState.UNKNOWN) "untried" else if (n.label == "Signature") n.stage.lowercase() else n.hint}")
+        if (old == null || old.subject != n.subject) changes += ChangeUi("${n.label}: ${if (n.state == KnowledgeState.UNKNOWN) "untried" else if (n.label == "Signature") n.stage.lowercase() else n.hint}", rule = true)
     }
     // A guild run: the rules every forge of the recipe carries, gained and lost; what they now wait for.
     val rulesWas = before.outlook?.certain.orEmpty().map { it.name }.toSet()
     val rulesNow = after.outlook?.certain.orEmpty().map { it.name }.toSet()
     if (before.outlook != null && after.outlook != null) {
-        (rulesNow - rulesWas).forEach { changes += ChangeUi("Gains the effect $it", true) }
-        (rulesWas - rulesNow).forEach { changes += ChangeUi("Loses the effect $it", false) }
-        after.outlook.needs.filter { n -> n !in before.outlook.needs }.forEach { n -> changes += ChangeUi("${n.rule} needs ${n.needs.joinToString(" or ")}", false) }
-        before.outlook.needs.filter { n -> n.rule in rulesNow && after.outlook.needs.none { it.rule == n.rule } }.forEach { n -> changes += ChangeUi("${n.rule} now has what it needs", true) }
-        if (after.outlook.tradeoff != null && after.outlook.tradeoff != before.outlook.tradeoff) changes += ChangeUi("Trade-off: ${after.outlook.tradeoff}", false)
+        fun ForgeOutlookUi.named(name: String) = certain.firstOrNull { it.name == name }?.let { label(it) } ?: name
+        (rulesNow - rulesWas).forEach { changes += ChangeUi("Gains the effect ${after.outlook.named(it)}", true, rule = true) }
+        (rulesWas - rulesNow).forEach { changes += ChangeUi("Loses the effect ${before.outlook.named(it)}", false, rule = true) }
+        after.outlook.needs.filter { n -> n !in before.outlook.needs }.forEach { n -> changes += ChangeUi("${n.rule} needs ${n.needs.joinToString(" or ")}", false, rule = true) }
+        before.outlook.needs.filter { n -> n.rule in rulesNow && after.outlook.needs.none { it.rule == n.rule } }.forEach { n -> changes += ChangeUi("${n.rule} now has what it needs", true, rule = true) }
+        if (after.outlook.tradeoff != null && after.outlook.tradeoff != before.outlook.tradeoff) changes += ChangeUi("Drawback: ${after.outlook.tradeoff}", false, rule = true)
     }
     // A change no fact above speaks to (Plain for a technique, say) is still a change: never "Unchanged".
     if (changes.isEmpty()) changes += ChangeUi("Now ${nameIn(draft, slot)}")
     return TrayChangeUi(from, changes)
 }
 
-internal fun com.tinyblacksmith.core.content.Element.word() = name.lowercase().replaceFirstChar { it.uppercase() }
+internal fun com.tinyblacksmith.core.content.Element.word() = Terms.element(this)
 
 /** One thing a forge added to the journal: what kind of gain, and the pairing or recipe in the journal's own words for the stage reached. */
 @Immutable data class LearnedUi(val title: String, val line: String)
@@ -575,7 +638,7 @@ internal fun com.tinyblacksmith.core.content.Element.word() = name.lowercase().r
 fun GameEngine.forgeLearning(before: JournalModel, after: JournalModel, forged: Command.Forge, weapon: Weapon? = null): ForgeLearningUi {
     val pairings = listOf(JournalModel.coreAugmentKey(forged.coreId, forged.augmentId), JournalModel.augmentFamilyKey(forged.augmentId, forged.familyId))
     val learned = pairings.filter { after.state(it).ordinal > before.state(it).ordinal }.map { key ->
-        LearnedUi(if (after.state(key) == KnowledgeState.OBSERVED) "First notes" else "Pairing learned", "${Journal.subjectName(content, key)}: ${Journal.hint(after, content, key)}")
+        LearnedUi(if (after.state(key) == KnowledgeState.OBSERVED) "First notes" else "Combination learned", "${Journal.subjectName(content, key)}: ${Journal.hint(after, content, key)}")
     }
     val recipes = after.interactions.keys.filter { it.startsWith("sig:") }.sorted().mapNotNull { key ->
         when {
@@ -591,8 +654,8 @@ fun GameEngine.forgeLearning(before: JournalModel, after: JournalModel, forged: 
         changes,
         when {
             changes.isNotEmpty() || attempt != null -> null
-            studying -> "Experiment recorded. Try this pairing again to learn more."
-            else -> "No new findings. You've already learned these pairings."
+            studying -> "Experiment recorded. Try this combination again to learn more."
+            else -> "No new findings. You've already learned these combinations."
         },
         attempt,
     )
@@ -619,7 +682,7 @@ private fun GameEngine.signatureAttempt(before: JournalModel, after: JournalMode
             else -> Journal.clue(def, it.rung, config)
         }
     }
-    return if (named.isEmpty()) null else "No signature could form: ${named.joinToString("; ")}."
+    return if (named.isEmpty()) null else (listOf("No signature could form") + named).joinSentences()
 }
 
 /**

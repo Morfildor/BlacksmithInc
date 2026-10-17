@@ -318,7 +318,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         back.forEach { (id, n) -> ctx.materials[id] = (ctx.materials[id] ?: 0) + n }
         weapons.forEach {
             ctx.updateWeapon(it.copy(location = WeaponLocation.Destroyed(state.day)))
-            ctx.addWeaponHistory(it.id, "SALVAGED", "Carted to the scrap heap.")
+            ctx.addWeaponHistory(it.id, "SALVAGED", "Melted down with other weapons.")
         }
         val got = back.entries.joinToString(", ") { "${it.value} ${content.material(it.key).name}" }
         // One record for the lot, with its count: two hundred blades are not two hundred lines in the save.
@@ -362,10 +362,10 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         ctx.town = ctx.town.copy(armory = ctx.town.armory + gain)
         ctx.reputation += 1
         ctx.updateWeapon(weapon.copy(location = WeaponLocation.Lost(state.day, "given to the town watch")))
-        ctx.addWeaponHistory(weapon.id, "DONATED", "Given to the town watch of Emberfall.")
+        ctx.addWeaponHistory(weapon.id, "DONATED", "Donated to the armory of Emberfall.")
         val bounty = Consequences.bounty(ctx)
         ctx.gold += bounty
-        ctx.emit(EventType.WEAPON_DONATED, 3, "You gave ${weapon.name} to the town watch." + (if (bounty > 0) " The council paid $bounty gold for it." else ""), listOf(weapon.id.value),
+        ctx.emit(EventType.WEAPON_DONATED, 3, "You donated ${weapon.name} to the armory." + (if (bounty > 0) " The council paid $bounty gold for it." else ""), listOf(weapon.id.value),
             mapOf("armory" to gain.toString()) + (if (bounty > 0) mapOf("bounty" to bounty.toString()) else emptyMap()))
         return accept(ctx)
     }
@@ -495,7 +495,7 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
         val applied = minOf(earned, maxIntegrity - ctx.town.integrity)
         if (applied > 0) {
             ctx.town = ctx.town.copy(integrity = ctx.town.integrity + applied)
-            ctx.emit(EventType.TOWN_RECOVERED, 1, "Heroes repaired the forge: +$applied forge health.", data = mapOf("amount" to applied.toString()))
+            ctx.emit(EventType.TOWN_RECOVERED, 1, "Heroes restored $applied forge health.", data = mapOf("amount" to applied.toString()))
         }
         ctx.town = ctx.town.copy(militia = maxOf(0, ctx.town.militia - config.militiaDecayPerDay))
         // The forecast's own champions: the same faction, warlord flag and ranking the siege will use.

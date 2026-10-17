@@ -12,6 +12,7 @@ import com.tinyblacksmith.core.engine.GameError
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.RngStream
+import com.tinyblacksmith.core.text.Terms
 
 /**
  * What a guild's days leave behind (spec 7.5, 10.7, 12, 9.4): notes of chains that really happened, the charter
@@ -24,6 +25,9 @@ object Stories {
     private const val MAX_BONDS = 2
     const val BOND_COMRADES = "comrades"
     const val BOND_PROTECTOR = "protector"
+    /** Quests won that open a member's veteran specialities, and times downed that open the survivor ones (`openBranches`). */
+    const val VETERAN_WINS = 3
+    const val SURVIVOR_DOWNS = 2
 
     // ---- combo notes ----
 
@@ -81,8 +85,8 @@ object Stories {
         if (m.specialityId != null) return emptyList()
         val hero = ctx.heroes[m.heroId] ?: return emptyList()
         val deeds = buildSet {
-            if (m.missionWins >= 3) add("veteran")
-            if (m.timesDowned >= 2) add("survivor")
+            if (m.missionWins >= VETERAN_WINS) add("veteran")
+            if (m.timesDowned >= SURVIVOR_DOWNS) add("survivor")
             if (hero.ambition == Ambition.DEFENDER && hero.ambitionDone) add("defender")
         }
         return GuildOps.catalog(ctx).specialities.filter { it.deed in deeds }
@@ -102,14 +106,14 @@ object Stories {
     fun charterSiege(ctx: ResolutionContext, leader: String, beaten: Boolean) {
         val cfg = ctx.config.guild
         if (!beaten) {
-            ctx.emit(EventType.GUILD_STORY, 7, "$leader was held off, not beaten. The charter is not secured: $leader leads the next siege as well.", data = mapOf("charter" to "pending"))
+            ctx.emit(EventType.GUILD_STORY, 7, "$leader was held off, not defeated. The charter is not secured: $leader leads the next siege as well.", data = mapOf("charter" to "pending"))
             return
         }
         if (ctx.guild!!.milestone(GuildContent.CHARTER_SECURED) != null) return
         update(ctx) { it.copy(milestones = it.milestones + RunMilestoneClaim(GuildContent.CHARTER_SECURED, ctx.day, points = cfg.charterLegacyPoints)) }
         ctx.earn(IncomeKind.TRIBUTE, cfg.charterTribute)
         ctx.milestones += "CHARTER_SECURED"
-        ctx.emit(EventType.CHARTER_SECURED, 10, "Charter secured. $leader broke on the walls of Emberfall on day ${ctx.day}, and the council paid ${cfg.charterTribute} gold. The smith may close this chapter with honour, or go on.", data = mapOf("milestone" to GuildContent.CHARTER_SECURED, "tribute" to cfg.charterTribute.toString()))
+        ctx.emit(EventType.CHARTER_SECURED, 10, "Charter secured. $leader was defeated at the walls of Emberfall on day ${ctx.day}, and the council paid ${cfg.charterTribute} gold. The charter adds ${cfg.charterLegacyPoints} legacy points when the era ends. You can now retire the guild and end the era as a success, or keep playing and take a challenge tier.", data = mapOf("milestone" to GuildContent.CHARTER_SECURED, "tribute" to cfg.charterTribute.toString()))
     }
 
     /** Closing the chapter by choice (spec 10.7): only with the charter secured, and the run ends as a success. */
@@ -119,8 +123,8 @@ object Stories {
         if (g.mission != null) return GameError.PartyAway
         update(ctx) { it.copy(retired = true, milestones = it.milestones.map { c -> if (c.id == claim.id) c.copy(claimed = true) else c }) }
         ctx.phase = Phase.ENDED
-        ctx.endCause = "The smith closed the chapter with the charter secured, on day ${ctx.day}."
-        ctx.emit(EventType.RUN_RETIRED, 10, "The smith closed the guild's chapter with its charter secured. The forge stands.")
+        ctx.endCause = "The smith retired the guild with the charter secured, on day ${ctx.day}."
+        ctx.emit(EventType.RUN_RETIRED, 10, "The smith retired the guild with its charter secured. The forge stands.")
         return null
     }
 
@@ -130,9 +134,9 @@ object Stories {
         if (g.milestone(GuildContent.CHARTER_SECURED) == null) return GameError.MilestoneNotEarned(GuildContent.CHARTER_SECURED)
         if (rank == g.rank) return null
         val def = GuildOps.catalog(ctx).rank(rank) ?: return GameError.UnknownContent("rank $rank")
-        if (rank < g.rank) return GameError.PartyInvalid("A rank once taken is kept.")
+        if (rank < g.rank) return GameError.PartyInvalid("A challenge tier cannot be undone.")
         update(ctx) { it.copy(rank = rank) }
-        ctx.emit(EventType.GUILD_STORY, 6, "The guild took the rank of ${def.name}. ${def.description}", data = mapOf("rank" to rank.toString()))
+        ctx.emit(EventType.GUILD_STORY, 6, "The guild took on the challenge tier ${def.name}. ${def.description} If the guild holds this tier when the era ends, it adds ${def.legacyPoints} legacy points.", data = mapOf("rank" to rank.toString()))
         return null
     }
 
@@ -166,7 +170,7 @@ object Stories {
             ctx.emit(EventType.GUILD_STORY, 4, "${ctx.weapons[weaponId]?.name ?: "The weapon"} is already back, so the party you planned to send for it stays home." + (if (o.fee > 0) " The ${o.fee} gold fee was returned." else ""), listOf(weaponId.value))
         }
         update(ctx) { it.copy(nemesis = null, offers = it.offers.filter { o -> o.subjectWeaponId != weaponId }) }
-        ctx.emit(EventType.GUILD_STORY, 6, "${n.name} is beaten and carries nothing of this forge any more.", listOf(weaponId.value))
+        ctx.emit(EventType.GUILD_STORY, 6, "${n.name} is defeated and carries nothing of this forge any more.", listOf(weaponId.value))
     }
 
     /**
@@ -196,7 +200,7 @@ object Stories {
             val (name, leader) = rng.pick(cat.rivalNames)
             val wants = rng.pick(listOf(MissionArchetype.HUNT, MissionArchetype.DELVE, MissionArchetype.ESCORT)).name
             update(ctx) { it.copy(rival = RivalGuild(name, leader, wants, nextMoveDay = ctx.day + cfg.rivalMoveEveryDays)) }
-            ctx.emit(EventType.GUILD_STORY, 5, "Another guild has taken rooms in Emberfall: $name, under $leader. On day ${ctx.day + cfg.rivalMoveEveryDays} they will take a quest off the board, a ${wants.lowercase()} if there is one.", data = mapOf("rival" to name))
+            ctx.emit(EventType.GUILD_STORY, 5, "Another guild has taken rooms in Emberfall: $name, under $leader. On day ${ctx.day + cfg.rivalMoveEveryDays} they will take a quest off the board. They prefer ${Terms.archetype(wants)} quests.", data = mapOf("rival" to name))
         }
         ctx.guild!!.rival?.let { r ->
             if (ctx.day >= r.nextMoveDay) {

@@ -11,6 +11,7 @@ import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.RngStream
+import com.tinyblacksmith.core.text.Terms
 
 /** Crafting resolver (GDD 4.3/4.4). Every valid attempt yields a usable weapon; materials/energy are consumed exactly once. */
 object Forge {
@@ -202,14 +203,14 @@ object Forge {
         val power = powerOf(content, config, family.id, core.id, quality, affixes + flaws, signature?.bonusPower ?: 0)
 
         val name = weaponName(content, family.id, core.id, affixes, signature?.id)
-        val techniqueNote = cmd.technique?.let { ", ${it.name.lowercase()}ed" } ?: ""
+        val techniqueNote = cmd.technique?.let { ", ${Terms.techniqueDone(it)}" } ?: ""
         val id = ctx.newWeaponId()
         val weapon = Weapon(
             id = id, name = name, familyId = family.id, coreId = core.id, augmentId = augment.id, catalystId = catalyst?.id,
             mode = cmd.mode, risk = cmd.risk, quality = quality, rarity = rarity, power = power, element = augment.element,
             affixes = affixes, flaws = flaws, location = WeaponLocation.Storage, forgedEra = ctx.era, forgedDay = ctx.day,
             history = listOfNotNull(
-                HistoryEntry(ctx.era, ctx.day, "FORGED", "Forged from ${core.name} and ${augment.name} (${cmd.risk.name.lowercase()} risk$techniqueNote)." + (if (cmd.heartfire) " Heartfire went into it." else "")),
+                HistoryEntry(ctx.era, ctx.day, "FORGED", "Forged from ${core.name} and ${augment.name} (${Terms.risk(cmd.risk).lowercase()} risk$techniqueNote)." + (if (cmd.heartfire) " Heartfire went into it." else "")),
                 HistoryEntry(ctx.era, ctx.day, Legends.HISTORY_LEGEND, "The Heartfire worked. The weapon left the anvil Legendary.").takeIf { breakthrough },
                 signature?.let { HistoryEntry(ctx.era, ctx.day, "SIGNATURE", "${it.name}: ${it.flavor}") },
             ),
@@ -218,7 +219,7 @@ object Forge {
         ctx.updateWeapon(weapon)
         ctx.emit(
             EventType.WEAPON_FORGED, 1,
-            "Forged $name. ${rarity.name.lowercase().replaceFirstChar { it.uppercase() }}. Quality $quality${if (flaws.isNotEmpty()) ". Flaws include ${flaws.joinToString { content.affix(it).name }}" else ""}.",
+            "Forged $name. ${Terms.rarity(rarity)}. Quality $quality${if (flaws.isNotEmpty()) ". Flaws include ${flaws.joinToString { content.affix(it).name }}" else ""}.",
             subjects = listOf(id.value),
             data = mapOf("quality" to quality.toString(), "rarity" to rarity.name, "exceptional" to exceptional.toString(), "defect" to defect.toString(), "augmentSaved" to augmentSaved.toString(),
                 "technique" to (cmd.technique?.name ?: "")) + (if (cmd.bellows) mapOf("bellows" to "true") else emptyMap()) + (if (ledger > 0) mapOf("ledger" to ledger.toString()) else emptyMap()) +
@@ -231,7 +232,7 @@ object Forge {
             val first = Journal.recordSignatureDiscovered(ctx, signature)
             ctx.emit(
                 EventType.SIGNATURE_DISCOVERED, 6,
-                if (first) "New signature discovered. ${signature.name}. ${signature.flavor}" else "Forged ${signature.name} again.",
+                if (first) "Signature discovered. ${signature.name}. ${signature.flavor}" else "Forged ${signature.name} again.",
                 subjects = listOf(id.value), data = mapOf("key" to signature.journalKey, "first" to first.toString()),
             )
         } else if (recipe != null) {

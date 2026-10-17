@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -23,13 +21,10 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.BladeRulesUi
 import com.example.blacksmithproject.ui.EffectKind
@@ -43,12 +38,19 @@ import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.StatBar
 import com.example.blacksmithproject.ui.StatDelta
 import com.example.blacksmithproject.ui.StatRow
+import com.example.blacksmithproject.ui.TipKeyword
+import com.example.blacksmithproject.ui.TipKeywords
+import com.example.blacksmithproject.ui.TipLine
+import com.example.blacksmithproject.ui.TipSection
+import com.example.blacksmithproject.ui.TipSectionBlock
+import com.example.blacksmithproject.ui.ability
 import com.example.blacksmithproject.ui.theme.Bronze
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
+import com.tinyblacksmith.core.text.Terms
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.model.Rarity
 
@@ -71,34 +73,14 @@ fun elementColor(e: Element): Color = when (e) {
     Element.SUN -> Color(0xFFFFD76A)
 }
 
-/**
- * A blade in one wrapping line, for a row of the shelf or the storeroom: the rarity in words, then the same [Stat]s the
- * card shows as "Power 24", "Quality 52", then each buff ("+", green) and each flaw ("−", red) by name. Numbers, not
- * bars: a row is one line of reading.
- */
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-fun WeaponStatLine(rarity: Rarity, stats: List<Stat>, buffs: List<String>, flaws: List<String>, modifier: Modifier = Modifier) {
-    FlowRow(modifier, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-        Text(Labels.rarity(rarity), style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-        stats.forEach { s ->
-            Row {
-                Text("${s.label} ", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-                Text("${s.value}", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
-            }
-        }
-        buffs.forEach { Text("${EffectKind.BUFF.sign} $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.BUFF.color) }
-        flaws.forEach { Text("${EffectKind.FLAW.sign} $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.FLAW.color) }
-    }
-}
-
 private class Cell(val label: String, val value: String, val color: Color? = null, val delta: StatDelta? = null)
 
 /**
  * A blade as an item card: the sprite in its slot, the name in the rarity's colour over the rarity and kind in words,
  * the numbers core holds (bars where core bounds them), then what helps ("+", green) and what hurts ("−", red).
  * Every number is a field of [detail]; a "was → now" appears only where [Stat.was] carries the visit snapshot's value.
- * Nothing in it can be tapped. [overSprite] draws over the slot (the forge's burst).
+ * Its fight rules are open ability rows. [overSprite] draws over the slot (the forge's burst). Without [rules] the card
+ * leaves the fight rules to its caller ([WeaponFightRules]), which places them after the price.
  */
 @Composable
 fun WeaponStatCard(
@@ -106,16 +88,22 @@ fun WeaponStatCard(
     modifier: Modifier = Modifier,
     title: String? = null,
     overSprite: @Composable BoxScope.() -> Unit = {},
+    rules: Boolean = true,
+    showValue: Boolean = true,
 ) {
-    FramedPanel(title, modifier.fillMaxWidth()) { WeaponStatBody(detail, overSprite) }
+    FramedPanel(title, modifier.fillMaxWidth()) { WeaponStatBody(detail, overSprite, rules = rules, showValue = showValue) }
 }
 
 /**
  * What [WeaponStatCard] says of a blade, without the plate around it: for a caller that frames or scrolls it itself.
  * [detailAlpha] fades everything under the sprite, name and rarity (the forge's reveal); the layout never changes with it.
+ * [showValue] false leaves out the "Value" cell where the price is said next to it (the forge result, the sheet's Price).
  */
 @Composable
-fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxScope.() -> Unit = {}, detailAlpha: () -> Float = { 1f }, afterIdentity: (@Composable () -> Unit)? = null) {
+fun ColumnScope.WeaponStatBody(
+    detail: ItemDetail, overSprite: @Composable BoxScope.() -> Unit = {}, detailAlpha: () -> Float = { 1f }, afterIdentity: (@Composable () -> Unit)? = null,
+    rules: Boolean = true, showValue: Boolean = true,
+) {
     Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
         Box(
             Modifier.size(88.dp).background(ForgeSlot).border(1.dp, Bronze).drawBehind {
@@ -131,37 +119,31 @@ fun ColumnScope.WeaponStatBody(detail: ItemDetail, overSprite: @Composable BoxSc
             Text(detail.name, style = MaterialTheme.typography.titleLarge, color = rarityColor(detail.rarity), modifier = Modifier.semantics { heading() })
             Text("${Labels.rarity(detail.rarity)} · ${detail.kind}", style = MaterialTheme.typography.bodyMedium, color = CreamMuted)
             detail.title?.let { Text("\"$it\"", style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic) }
-            if (detail.signature) Text("Signature work", style = MaterialTheme.typography.labelMedium, color = Gold)
+            if (detail.signature) Text("Signature weapon", style = MaterialTheme.typography.labelMedium, color = Gold)
             // Why it is Legendary, and what its deeds have earned so far: said under the name, where the rarity is.
             detail.legend?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = rarityColor(Rarity.LEGENDARY), modifier = Modifier.testTag("card_legend")) }
             detail.deeds?.let { Text("Deeds toward Legendary: $it", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.testTag("card_deeds")) }
         }
     }
     afterIdentity?.invoke()
-    Column(Modifier.graphicsLayer { alpha = detailAlpha() }) { WeaponStatDetails(detail) }
+    Column(Modifier.graphicsLayer { alpha = detailAlpha() }) { WeaponStatDetails(detail, rules, showValue) }
 }
 
 @Composable
-private fun ColumnScope.WeaponStatDetails(detail: ItemDetail) {
+private fun ColumnScope.WeaponStatDetails(detail: ItemDetail, rules: Boolean, showValue: Boolean) {
     HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
 
-    // The numbers without a ceiling, two to a line while the text is small enough; then one bar for each that has one.
-    val cells =detail.stats.filter { it.max == null }.map { s ->
+    // V3: the numbers as an inspect card has them, one stat row each (label left, value right); then one bar for each
+    // number that has a ceiling.
+    val cells = detail.stats.filter { it.max == null }.map { s ->
         Cell(s.label, s.word?.let { "$it (${s.value})" } ?: s.value.toString(), delta = s.was?.let { StatDelta(it.toString(), if (s.value > it) EffectKind.BUFF else EffectKind.FLAW) })
-    } + Cell("Element", detail.element?.let { it.name.lowercase().replaceFirstChar { c -> c.uppercase() } } ?: "None", detail.element?.let { elementColor(it) }) +
-        listOfNotNull(detail.stock?.let { Cell("Value", "${it.suggestedPrice} gold", Gold) })
-    // On a 360 dp phone half a line cannot hold "Renown" and "Unsung (1)": the label broke mid-word. One to a line there.
-    if (LocalDensity.current.fontScale > 1f || LocalConfiguration.current.screenWidthDp < 400) cells.forEach { StatRow(it.label, it.value, valueColor = it.color, delta = it.delta) }
-    else cells.chunked(2).forEach { pair ->
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
-            pair.forEach { StatRow(it.label, it.value, Modifier.weight(1f), it.color, it.delta) }
-            if (pair.size == 1) Box(Modifier.weight(1f))
-        }
-    }
+    } + Cell("Element", detail.element?.let { Terms.element(it) } ?: "None", detail.element?.let { elementColor(it) }) +
+        listOfNotNull(detail.stock?.takeIf { showValue }?.let { Cell("Value", "${it.suggestedPrice} gold") })
+    cells.forEach { StatRow(it.label, it.value, valueColor = it.color, delta = it.delta) }
     detail.stats.filter { it.max != null }.forEach { s -> StatBar(s.label, s.value, s.max!!, Modifier.padding(top = Space.xs), word = s.word, was = s.was) }
 
-    SectionHeader("Buffs")
-    if (detail.affixes.isEmpty()) Secondary("No buffs.")
+    // Nothing to say, nothing said: a weapon without a buff has no "Buffs" heading.
+    if (detail.affixes.isNotEmpty() || detail.dormant != null) SectionHeader("Bonuses")
     detail.affixes.forEach { EffectRow(EffectKind.BUFF, it.name, it.description) }
     // Asleep, so not a buff: its own gold "◆" row, in core's words, after whatever is awake.
     detail.dormant?.let { EffectRow(EffectKind.NEUTRAL, it, "", Modifier.testTag("card_dormant")) }
@@ -169,30 +151,27 @@ private fun ColumnScope.WeaponStatDetails(detail: ItemDetail) {
         SectionHeader("Flaws")
         detail.flaws.forEach { EffectRow(EffectKind.FLAW, it.name, it.description) }
     }
-    detail.rules?.let { FightRules(it) }
+    if (rules) detail.rules?.let { WeaponFightRules(it, detail.keywords) }
 }
 
 /**
- * What the blade does in a fight (guild runs): how its family strikes, then each rule in the catalog's own words with the
- * part of the blade it comes from (both parts for a rule two of them share), then the rules it has only on the town's
- * wall, then what the rules do to each other.
+ * What the weapon does in a fight (guild runs): how its family strikes, then every rule as an ability row, always open
+ * (its name and the part it comes from, then when it fires, what it does and how often), then the rules it has only on
+ * the town's wall the same way, the statuses they name ([keywords]) and what the rules do to each other.
  */
 @Composable
-private fun ColumnScope.FightRules(rules: BladeRulesUi) {
-    Column(Modifier.fillMaxWidth().testTag("card_fight")) {
+fun WeaponFightRules(rules: BladeRulesUi, keywords: List<TipKeyword> = emptyList()) {
+    Column(Modifier.fillMaxWidth().testTag("card_fight"), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         SectionHeader("Effects in a fight")
-        // Where these rules are resolved: a townsperson's own outing is still settled by the blade's power alone.
+        // Where these rules are resolved: a townsperson's own outing is still settled by the weapon's power alone.
         Secondary("These work on guild quests, and for any hero who defends the town wall.")
         rules.pattern?.let { Secondary(it) }
-        if (rules.road.isEmpty() && rules.homeOnly.isEmpty()) Secondary("No effect of its own beyond its normal strike.")
-        rules.road.forEach { EffectRow(EffectKind.NEUTRAL, it.heading, it.description) }
-        if (rules.homeOnly.isNotEmpty()) {
-            Text("Only when defending the town", style = MaterialTheme.typography.labelLarge, color = CreamMuted, modifier = Modifier.padding(top = Space.xs))
-            rules.homeOnly.forEach { EffectRow(EffectKind.NEUTRAL, it.heading, it.description) }
-        }
-        if (rules.notes.isNotEmpty()) Column(Modifier.testTag("card_fight_notes")) {
-            Text("How its effects work together", style = MaterialTheme.typography.labelLarge, color = CreamMuted, modifier = Modifier.padding(top = Space.xs))
-            rules.notes.forEach { Secondary(it, Modifier.padding(top = 2.dp)) }
+        if (rules.road.isEmpty() && rules.homeOnly.isEmpty()) Secondary("No effect of its own beyond its normal attack.")
+        if (rules.road.isNotEmpty()) TipSectionBlock(TipSection(null, rules.road.map { it.ability() }))
+        if (rules.homeOnly.isNotEmpty()) TipSectionBlock(TipSection("Siege only", rules.homeOnly.map { it.ability() }))
+        TipKeywords(keywords)
+        if (rules.notes.isNotEmpty()) Box(Modifier.testTag("card_fight_notes")) {
+            TipSectionBlock(TipSection("How its effects work together", rules.notes.map { TipLine(it) }))
         }
     }
 }

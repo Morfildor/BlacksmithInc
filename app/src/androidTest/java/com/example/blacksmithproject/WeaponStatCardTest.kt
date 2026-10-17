@@ -44,7 +44,7 @@ class WeaponStatCardTest {
         assertEquals("no snapshot, so nothing is told as changed", emptyList<Int>(), detail.stats.mapNotNull { it.was })
         compose.setContent { BlacksmithProjectTheme { WeaponStatCard(detail) } }
         compose.onNodeWithText(keen.name).assertIsDisplayed()
-        compose.onNodeWithText("Buffs").assertIsDisplayed()
+        compose.onNodeWithText("Bonuses").assertIsDisplayed()
         compose.onNodeWithText(good.name, substring = true).assertIsDisplayed()
         compose.onNodeWithText("Flaws").assertIsDisplayed()
         compose.onNodeWithText(flaw.name, substring = true).assertIsDisplayed()

@@ -2,6 +2,7 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.runtime.Immutable
 import com.tinyblacksmith.core.combat.EffectDef
+import com.tinyblacksmith.core.combat.Stat
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.crafting.Capabilities
 import com.tinyblacksmith.core.crafting.WeaponRules
@@ -17,8 +18,10 @@ import com.tinyblacksmith.core.model.WeaponId
  * One rule a blade follows in a fight: the definition's own [name] and [description], and the part of the blade it comes
  * from ([source]). [alsoFrom] names the other parts that bring the same rule: it is listed once and counts once.
  */
-@Immutable data class BladeRuleUi(val id: String, val name: String, val description: String, val source: String, val alsoFrom: List<String> = emptyList()) {
-    /** "Arc · element", or "Charge burst · buff, also Binding Salt" for a rule two parts share. */
+@Immutable data class BladeRuleUi(val id: String, val name: String, val description: String, val source: String, val alsoFrom: List<String> = emptyList(), val stats: List<Stat> = emptyList(),
+    /** When it fires and how often, in a few words from its typed trigger and limit (`triggerWords`, `limitWords`); null where only [description] says it. */
+    val trigger: String? = null, val limit: String? = null) {
+    /** "Storm · element", or "Discharge · bonus, also Binding Salt" for a rule two parts share. */
     val heading: String get() = "$name · $source" + if (alsoFrom.isEmpty()) "" else ", also ${alsoFrom.joinToString(" and ")}"
 }
 
@@ -29,7 +32,7 @@ import com.tinyblacksmith.core.model.WeaponId
  */
 @Immutable data class BladeRulesUi(val pattern: String?, val road: List<BladeRuleUi>, val homeOnly: List<BladeRuleUi>, val notes: List<String> = emptyList())
 
-internal fun WeaponRules.Rule.ui() = BladeRuleUi(id, effect.name, effect.description, source.word, alsoFrom)
+internal fun WeaponRules.Rule.ui() = BladeRuleUi(id, effect.name, effect.description, source.word, alsoFrom, effect.statuses(), triggerWords(effect), limitWords(effect.limit))
 
 /** The rules of [weapon] as `WeaponRules` composes them, on the road and at home. A weapon forged before metals had a rule (`Weapon.craft` 1) lists none for its metal. */
 fun bladeRules(weapon: Weapon, content: ContentCatalog): BladeRulesUi {

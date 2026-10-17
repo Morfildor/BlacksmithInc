@@ -9,9 +9,9 @@ import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.model.EventType
 import com.tinyblacksmith.core.model.KnowledgeState
 import com.tinyblacksmith.core.model.MaterialId
-import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.model.WeaponFamilyId
 import com.tinyblacksmith.core.model.Journal as JournalModel
+import com.tinyblacksmith.core.text.Terms
 import com.tinyblacksmith.core.text.joinSentences
 
 /**
@@ -36,7 +36,7 @@ object Journal {
                 val subject = subjectName(ctx.content, key)
                 if (next == KnowledgeState.UNDERSTOOD) {
                     ctx.discoveriesThisRun += 1
-                    ctx.emit(EventType.DISCOVERY, 3, "Pairing learned. $subject. ${label.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
+                    ctx.emit(EventType.DISCOVERY, 3, "Combination learned. $subject. ${label.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 } else {
                     ctx.emit(EventType.DISCOVERY, 1, "First notes on $subject. ${label.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 }
@@ -124,12 +124,7 @@ object Journal {
     fun clue(def: SignatureDef, rung: ClueRung, config: BalanceConfig): String = when (rung) {
         ClueRung.RECIPE -> "this combination can make a signature weapon"
         ClueRung.CATALYST -> "this recipe ${catalystPhrase(def.catalystId)}"
-        ClueRung.TEMPER -> when (def.risk) {
-            Risk.SAFE -> "use Safe forging"
-            Risk.BALANCED -> "use Balanced forging"
-            Risk.RECKLESS -> "use Reckless forging"
-            null -> "any forging risk will work"
-        }
+        ClueRung.TEMPER -> def.risk?.let { "forge with ${Terms.risk(it)} risk" } ?: "any risk will work"
         ClueRung.QUALITY -> "reach ${QualityBand.of(def.minQuality, config).word} quality or better"
     }
 
@@ -156,7 +151,7 @@ object Journal {
         affinity >= 4 -> "promising match"
         affinity >= 1 -> "slight benefit"
         affinity == 0 -> "neutral match"
-        affinity >= -2 -> "slight drawback"
+        affinity >= -2 -> "slight mismatch"
         else -> "poor match"
     }
 

@@ -2,7 +2,6 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.ui.unit.sp
 import com.tinyblacksmith.core.content.Depth
 import com.example.blacksmithproject.R
 import androidx.compose.foundation.background
@@ -27,6 +26,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -42,7 +43,10 @@ import com.example.blacksmithproject.ui.shopday.FaceUi
 import com.example.blacksmithproject.ui.shopday.PersonChip
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.ForgeSlot
+import com.example.blacksmithproject.ui.theme.Cream
+import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.Gold
+import com.example.blacksmithproject.ui.theme.SectionLabel
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.RelicDef
 import com.tinyblacksmith.core.engine.Encounters
@@ -56,23 +60,27 @@ fun visitorNote(view: Encounters.View?): String? = view?.instance?.takeIf { it.s
 }
 
 /**
- * The visitor on the Shop: who is at the forge and until when, as one row like the Shop's other doors. The whole row
- * opens the sheet ("Hear them out"); nothing is answered from here, and the gold plate stays End Day's.
+ * The visitor on the Shop: who is at the forge and until when, as one row like the Shop's other doors (no plate). The
+ * whole row opens the sheet ("Hear them out"); nothing is answered from here, and the gold plate stays End Day's.
  */
 @Composable
 fun VisitorCard(view: Encounters.View, onOpen: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().testTag("visitor_card")) {
         Row(
-            Modifier.fillMaxWidth().forgeRow().clickable(onClickLabel = "Hear them out", role = Role.Button, onClick = onOpen)
-                .heightIn(min = 56.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag("visitor_open"),
+            Modifier.fillMaxWidth().hairline().clickable(onClickLabel = "Hear them out", role = Role.Button, onClick = onOpen)
+                .heightIn(min = 56.dp).padding(horizontal = Space.xs, vertical = Space.sm).testTag("visitor_open"),
             horizontalArrangement = Arrangement.spacedBy(Space.md), verticalAlignment = Alignment.CenterVertically,
         ) {
             PixelImage(R.drawable.icon_visitor, wholePixelDp(80, 48.dp), description = null)
             Column(Modifier.weight(1f)) {
-                Text("A VISITOR AT THE FORGE", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = Gold)
-                Text(view.name, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
-                Secondary("Leaves at End Day")
-                Text("Hear them out  ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.xs))
+                Text("A visitor at the forge", style = SectionLabel, color = CreamMuted)
+                Text(view.name, style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.semantics { heading() })
+                // When they go is said here, before the sheet: an unanswered visitor is told the default at End Day.
+                Secondary("Waits for your answer. Leaves at End Day.")
+                Row(Modifier.padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Hear them out", style = MaterialTheme.typography.labelLarge, color = Cream)
+                    Chevron(ChevronWay.RIGHT, Modifier.padding(start = Space.xs), tint = CreamMuted, size = 18.dp)
+                }
             }
         }
     }
@@ -103,7 +111,7 @@ fun EncounterContent(view: Encounters.View, state: GameState, busy: Boolean, onC
     var marked by rememberSaveable(inst.id, inst.inspected) { mutableStateOf<String?>(null) }
     val selected = view.options.firstOrNull { it.id == marked && it.blocked == null }
     Column(modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
-        Text("A VISITOR AT THE FORGE", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = Gold)
+        Text("A visitor at the forge", style = SectionLabel, color = CreamMuted)
         Text(view.name, style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.padding(top = Space.xs).semantics { heading() })
 
         // Who and what the visit is about, as the save has them today. Decorative: the text below names them too.
@@ -121,11 +129,12 @@ fun EncounterContent(view: Encounters.View, state: GameState, busy: Boolean, onC
 
         view.options.forEach { o ->
             val open = o.blocked == null
-            // A choice row: a tap marks the answer, Commit sends it. What it costs and what it brings as bullets.
+            // A choice row: a tap marks the answer, the gold action sends it. What it brings ("+") and what it costs ("−"),
+            // each on a line of its own, are read before choosing; an answer that cannot be taken says why.
             ChoiceRow(selected?.id == o.id, { marked = o.id }, Modifier.padding(top = Space.sm).testTag("visitor_option_${o.id}"), enabled = open && !busy) {
                 Text(o.label, style = MaterialTheme.typography.titleSmall)
                 if (o.effect.isNotEmpty()) EffectBullets(EffectKind.BUFF, listOf(o.effect))
-                if (o.cost == "Free") Secondary("Free") else EffectBullets(EffectKind.FLAW, listOf(o.cost))
+                if (o.cost == "Free") Secondary("Free") else EffectBullets(EffectKind.FLAW, listOf("Costs ${o.cost}"))
                 o.blocked?.let { Text("Not possible: $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.FLAW.color, modifier = Modifier.testTag("visitor_blocked_${o.id}")) }
             }
         }
@@ -133,51 +142,60 @@ fun EncounterContent(view: Encounters.View, state: GameState, busy: Boolean, onC
         Secondary("If you don't answer by End Day: ${view.defaultLabel}.", Modifier.padding(top = Space.sm).testTag("visitor_default"))
 
         FlowRow(Modifier.fillMaxWidth().padding(top = Space.md), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-            PrimaryActionButton("Commit", { selected?.let { onCommit(it.id) } }, Modifier.weight(1f).testTag("visitor_commit"), enabled = selected != null && !busy)
+            // V2: the action says the answer it sends; with none marked it asks for one. V3: the cost is said again on it.
+            PrimaryActionButton(
+                selected?.label ?: "Choose an answer", { selected?.let { onCommit(it.id) } }, Modifier.weight(1f).testTag("visitor_commit"), enabled = selected != null && !busy,
+                detail = selected?.cost?.takeIf { it != "Free" }?.let { "Costs $it" },
+            )
             SecondaryActionButton("Later", onDismiss, Modifier.heightIn(min = 52.dp).testTag("visitor_later"))
         }
     }
 }
 
 /**
- * The workshop's relics on the Shop: one row per slot, a held relic with where it stands today (tap for what it does),
- * an empty slot as empty. With an offer waiting, the row that opens it again.
+ * The workshop's relics on the Shop: one row per held relic with where it stands today; a tap on the row (or its ringed
+ * "i") opens its card, with what it does. The free slots are one line, and with an offer waiting, the row that opens it again.
  */
 @Composable
 fun RelicRows(relics: List<Relics.View>, slots: Int, offerPending: Boolean, onOpenOffer: () -> Unit, modifier: Modifier = Modifier) {
-    var open by rememberSaveable { mutableStateOf<String?>(null) }
+    val inspector = LocalInspector.current
     Column(modifier.fillMaxWidth().testTag("shop_relics")) {
-        Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.Bottom) {
-            PixelImage(R.drawable.icon_relic, wholePixelDp(48, 28.dp), description = null, modifier = Modifier.padding(bottom = Space.sm))
-            SectionTitle("Workshop relics · ${relics.size} of $slots")
-        }
+        SectionTitle("Workshop relics · ${relics.size} of $slots")
         relics.forEach { r ->
-            Column(
-                Modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow()
-                    .clickable(onClickLabel = if (open == r.id) "Hide what it does" else "Show what it does", role = Role.Button) { open = if (open == r.id) null else r.id }
-                    .heightIn(min = 48.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag("relic_held_${r.id}"),
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+            key(r.id) {
+                val anchor = remember { InspectAnchor() }
+                val tip = { relicTip(r) }
+                Row(
+                    Modifier.fillMaxWidth().hairline().inspectAnchor(anchor)
+                        .clickable(enabled = inspector != null, onClickLabel = "Inspect", role = Role.Button) { inspector?.show(tip(), anchor.rect) }
+                        .heightIn(min = 56.dp).padding(vertical = Space.sm).testTag("relic_held_${r.id}"),
+                    horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically,
+                ) {
                     PixelImage(relicIcon(r.id), wholePixelDp(48, 44.dp), description = null)
                     Column(Modifier.weight(1f)) {
                         Text(r.name, style = MaterialTheme.typography.titleSmall)
                         Secondary(r.status)
                     }
+                    InfoButton(r.name, tip, anchor = anchor, tag = "relic_held_${r.id}_info")
                 }
-                if (open == r.id) Text(r.description, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs))
             }
         }
-        repeat((slots - relics.size).coerceAtLeast(0)) {
-            Box(Modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().heightIn(min = 48.dp).padding(horizontal = Space.md, vertical = Space.sm), contentAlignment = Alignment.CenterStart) {
-                Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-                    PixelImage(R.drawable.relic_slot_empty, wholePixelDp(48, 44.dp), description = null)
-                    Secondary("Empty slot")
-                }
-            }
+        // V2: the free slots are one line, not a plate each: "2 empty slots".
+        val empty = (slots - relics.size).coerceAtLeast(0)
+        if (empty > 0) Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(vertical = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+            PixelImage(R.drawable.relic_slot_empty, wholePixelDp(48, 28.dp), description = null)
+            Secondary(if (empty == 1) "1 empty slot" else "$empty empty slots")
         }
         if (offerPending) SecondaryActionButton("Choose your offered relic", onOpenOffer, Modifier.fillMaxWidth().padding(top = Space.xs).testTag("relic_reopen"))
     }
 }
+
+/** A held relic as an inspect card: what it does in the catalog's words, and where it stands today (`Relics.View`). */
+internal fun relicTip(r: Relics.View): TipUi = TipUi(
+    name = r.name, kind = "Workshop relic", icon = relicIcon(r.id),
+    sections = listOf(TipSection("What it does", listOf(TipLine(r.description))), TipSection("Today", listOf(TipLine(r.status)))),
+    tag = "relic_inspect",
+)
 
 /**
  * The relic offer as choice rows: a tap marks a relic, and the one gold action takes it. With every slot taken, "Choose

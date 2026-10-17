@@ -609,7 +609,7 @@ class GameViewModel(
                 key.startsWith("af:") -> it.draft.copy(augmentId = MaterialId(ids[0]), familyId = WeaponFamilyId(ids[1]))
                 else -> return@edit it
             }
-            it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = draft, notice = "Pairing selected. Forge when ready.")
+            it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = draft, notice = "Combination selected. Forge when ready.")
         }
     }
 
@@ -618,8 +618,8 @@ class GameViewModel(
         val run = session.snapshot.value?.run ?: return
         val pair = engine.untriedPairing(run)
         edit {
-            if (pair == null) it.copy(notice = "You've tried every metal pairing your stock allows.")
-            else it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(coreId = pair.first, augmentId = pair.second), notice = "Selected a new pairing. No materials spent.")
+            if (pair == null) it.copy(notice = "You've tried every combination of metal and infusion your stock allows.")
+            else it.copy(dest = Dest.FORGE, forgeReveal = it.forgeReveal + 1, draft = it.draft.copy(coreId = pair.first, augmentId = pair.second), notice = "Selected a new combination. No materials spent.")
         }
     }
 
@@ -714,7 +714,7 @@ class GameViewModel(
                     "Condition ${was?.condition} to ${blade.condition}".takeIf { was?.condition != blade.condition },
                 ).joinSentences()
                 StockAction.Salvage -> "Salvaged $name. Recovered one ${engine.content.material(blade.coreId).name}."
-                StockAction.Donate -> "Donated $name to the watch. Armory defense increased from ${before.town.armory} to ${now.town.armory}."
+                StockAction.Donate -> "Donated $name to the armory. Armory defense increased from ${before.town.armory} to ${now.town.armory}."
                 is StockAction.Loan -> "Loaned $name to ${now.heroes[action.heroId]?.fullName ?: "a guild member"}."
                 StockAction.Recall -> "Recalled $name to storage."
             }
@@ -883,7 +883,7 @@ class GameViewModel(
             val blades = if (done == 1) "1 weapon" else "$done weapons"
             val said = when (commands.firstOrNull()) {
                 is Command.Salvage -> "Salvaged $blades."
-                is Command.DonateWeapon -> "Donated $blades to the watch."
+                is Command.DonateWeapon -> "Donated $blades to the armory."
                 else -> null
             }
             if (done > 0 && said != null) edit { it.copy(notice = said) }
@@ -931,12 +931,12 @@ class GameViewModel(
     /** Player-facing text for an engine error; the UI also uses it to explain disabled choices. */
     fun describe(e: GameError): String = when (e) {
         GameError.RunEnded -> "The forge has fallen. This era is over."
-        is GameError.NotEnoughEnergy -> "This needs ${e.needed} energy. You have ${e.available}, and you can overwork by ${e.overworkAvailable} more today."
+        is GameError.NotEnoughEnergy -> "This needs ${e.needed} energy. You have ${e.available}, and you can borrow ${e.overworkAvailable} more from tomorrow."
         is GameError.MissingMaterial -> "You're out of ${engine.content.material(e.materialId).name}."
         is GameError.UnknownContent -> "Unknown item ${e.id}."
-        is GameError.WrongMaterialCategory -> "${engine.content.material(e.materialId).name} is not " + when (e.expected) { "CORE" -> "a metal."; "AUGMENT" -> "an augment."; "CATALYST" -> "a catalyst."; else -> "the right kind of material." }
-        is GameError.CatalystRequiresAdvanced -> "Catalysts need the Advanced Forge."
-        is GameError.TechniqueRequiresAdvanced -> "Techniques need the Advanced Forge."
+        is GameError.WrongMaterialCategory -> "${engine.content.material(e.materialId).name} is not " + when (e.expected) { "CORE" -> "a metal."; "AUGMENT" -> "an infusion."; "CATALYST" -> "a catalyst."; else -> "the right kind of material." }
+        is GameError.CatalystRequiresAdvanced -> "Catalysts need the Advanced forge."
+        is GameError.TechniqueRequiresAdvanced -> "Techniques need the Advanced forge."
         is GameError.WeaponNotFound -> "That weapon is gone."
         is GameError.WeaponNotAvailable -> "That weapon is not in the shop."
         GameError.ShelfFull -> "All ${session.snapshot.value?.run?.let { engine.shelfSlots(it) } ?: engine.config.shelfSlots} shelf slots are full."
@@ -949,10 +949,10 @@ class GameViewModel(
         GameError.RunNotEnded -> "This era hasn't ended yet."
         is GameError.AlreadyClaimed -> "You've already claimed this era's legacy."
         is GameError.NotEnoughLegacyPoints -> "This costs ${e.needed} legacy points. You have ${e.available}."
-        is GameError.UpgradeMaxed -> "This upgrade is at maximum level."
+        is GameError.UpgradeMaxed -> "This perk is at maximum level."
         is GameError.AlreadyHoned -> "That weapon is already upgraded and in full condition."
         is GameError.ToolMaxed -> "This tool is at maximum level."
-        GameError.ArmoryFull -> "The town watch armory is full."
+        GameError.ArmoryFull -> "The armory is full."
         GameError.NoEncounter, is GameError.EncounterNotOpen -> "You've already answered this visitor."
         is GameError.EncounterOptionBlocked -> e.reason
         GameError.NoRelicOffer, is GameError.RelicNotOffered -> "That relic isn't available."
@@ -962,7 +962,7 @@ class GameViewModel(
         is GameError.WeaponPromised -> "That weapon is reserved for ${session.snapshot.value?.run?.let { promisedBuyer(it, e.commissionId) } ?: "a customer"}'s commission."
         GameError.NotAGuildRun -> "This era has no guild."
         is GameError.NotAMember -> "${heroName(e.heroId)} is not a member of the guild."
-        is GameError.NotACandidate -> "${heroName(e.heroId)} is not looking to sign today."
+        is GameError.NotACandidate -> "${heroName(e.heroId)} is not for hire today."
         GameError.RosterFull -> "The guild's roster is full (${engine.config.guild.maxMembers} members)."
         is GameError.MemberUnavailable -> "${heroName(e.heroId)} ${e.reason}."
         is GameError.WeaponOnLoan -> "That weapon is on loan to ${heroName(e.heroId)}. Recall it first."
@@ -974,10 +974,10 @@ class GameViewModel(
         GameError.NoMissionCheckpoint -> "The party is not waiting for your choice."
         is GameError.MilestoneNotEarned -> "The charter is not secured yet."
         GameError.NoHeartfire -> "The forge holds no Heartfire."
-        GameError.HeartfireRequiresAdvanced -> "Heartfire needs the Advanced Forge."
+        GameError.HeartfireRequiresAdvanced -> "Heartfire needs the Advanced forge."
         GameError.OpeningPending -> "Choose how the guild begins first. The day cannot end before that."
         GameError.NoOpeningOffer -> "The guild has already begun."
-        is GameError.OpeningNotOffered -> "That opening is not on offer."
+        is GameError.OpeningNotOffered -> "That starting kit is not on offer."
         // Core grows concurrently; unmapped errors still get a readable line instead of a build break.
         else -> "The forge cannot do that right now."
     }
@@ -991,7 +991,7 @@ class GameViewModel(
         launch(Op.Dispatch(Command.LoanWeapon(heroId, id), run.runId)) {
             val now = session.snapshot.value?.run ?: return@launch
             val name = now.weapons[id]?.name ?: return@launch
-            edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null, notice = "$name is on loan to ${now.heroes[heroId]?.fullName ?: "a member of the guild"}. Your ingredients stay selected.") }
+            edit { it.copy(revealWeaponId = null, learning = null, resultPurpose = null, notice = "$name is on loan to ${now.heroes[heroId]?.fullName ?: "a member of the guild"}. Your materials stay selected.") }
         }
     }
 

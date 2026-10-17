@@ -70,7 +70,7 @@ class GazetteEditionTest {
                 events[0].text,
                 events[2].text,
                 "Sten Dunmore and Sable Stonebrook couldn't afford anything.",
-                "Thane Kestrel found no upgrade for their weapon.",
+                "Thane Kestrel found nothing better than their weapon.",
             ),
             section(e, Gazette.SHOP),
         )
@@ -121,7 +121,7 @@ class GazetteEditionTest {
         val e = Gazette.edition(events, names)
         assertEquals(
             listOf(
-                "Forged 3 weapons (1 legendary, 1 epic). Listed 2. Upgraded or repaired 1. Donated 1 weapon to the watch. Salvaged 1. Bought Display Case.",
+                "Forged 3 weapons (1 Legendary, 1 Epic). Listed 2. Upgraded or repaired 1. Donated 1 weapon to the armory. Salvaged 1. Bought Display Case.",
                 "First notes on Ember Resin on Spears. Faint harmony.",
             ),
             section(e, Gazette.FORGE),

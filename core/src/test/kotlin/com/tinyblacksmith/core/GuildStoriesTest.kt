@@ -316,7 +316,7 @@ class GuildStoriesTest {
         val e = easySieges(20)
         val won = charterEve(e).endDay(e)
         val ranked = won.send(Command.SetGuildRank(2), e).sound(e)
-        assertEquals(GameError.PartyInvalid("A rank once taken is kept."), (e.handle(ranked, Command.SetGuildRank(1)) as CommandOutcome.Rejected).error)
+        assertEquals(GameError.PartyInvalid("A challenge tier cannot be undone."), (e.handle(ranked, Command.SetGuildRank(1)) as CommandOutcome.Rejected).error)
         // The next siege is not the charter's again.
         val fallen = ranked.copy(town = ranked.town.copy(integrity = 0), phase = Phase.ENDED, endCause = "The forge fell.")
         val end = e.closeRun(fallen)

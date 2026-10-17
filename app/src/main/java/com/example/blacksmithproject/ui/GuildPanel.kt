@@ -7,6 +7,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -76,7 +78,10 @@ internal data class Confirm(val title: String, val body: String, val action: Str
 /** One row of a Guild part's list: its key (what Today scrolls to) and what it shows. */
 internal class GuildRow(val key: String, val content: @Composable () -> Unit)
 
-/** What a part needs from the frame: open a hero's sheet or a contract, ask before a step that cannot be undone, open the assign sheet. */
+/**
+ * What a part needs from the frame: open a hero's sheet or a contract, ask before a step that cannot be undone, open the
+ * assign sheet, and a hero's inspect card ([heroTip]: the hero, and whether as they would stand on the wall).
+ */
 internal class GuildActions(
     val enabled: Boolean,
     val openHero: (HeroId) -> Unit,
@@ -84,9 +89,10 @@ internal class GuildActions(
     val confirm: (Confirm) -> Unit,
     val assign: () -> Unit,
     val send: (Command) -> Unit,
+    val heroTip: (HeroId, Boolean) -> TipUi? = { _, _ -> null },
 )
 
-internal fun guildTabName(t: GuildTab) = when (t) { GuildTab.CONTRACTS -> "Contracts"; GuildTab.COMPANY -> "Company"; GuildTab.WALL -> "Wall"; GuildTab.CHARTER -> "Charter" }
+internal fun guildTabName(t: GuildTab) = when (t) { GuildTab.CONTRACTS -> "Quests"; GuildTab.COMPANY -> "Roster"; GuildTab.WALL -> "Wall"; GuildTab.CHARTER -> "Charter" }
 
 /**
  * The Guild destination of a guild run, in the place Town has in a classic run. Today (at most three
@@ -105,6 +111,8 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
     val actions = GuildActions(
         enabled = !s.busy, openHero = { vm.openSheet(Sheet.Hero(it)) }, openContract = vm::openContract,
         confirm = { confirm = it }, assign = { assigning = true }, send = vm::dispatch,
+        // V3: a tap on a hero reads their card; the sheet (equipment, loans, branches) is its "Full details".
+        heroTip = { id, home -> vm.engine.heroTip(st, id, home, listOf(TipAction("Full details", "guild_hero_details") { vm.openSheet(Sheet.Hero(id)) }), tag = "guild_hero_tip") },
     )
     val dots = ui.today.filterNot { it.optional }.mapNotNull { it.tab }.toSet() + listOfNotNull(GuildTab.COMPANY.takeIf { ui.companyNeeds })
     val reducedMotion by vm.settings.reducedMotion.collectAsStateWithLifecycle(initialValue = false)
@@ -150,15 +158,19 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
 }
 
 /** Today scrolls with the part, so full reminders and actions fit even at large font scales. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun TodayRows(rows: List<TodayUi>, onAct: (TodayUi) -> Unit) {
     Column(Modifier.fillMaxWidth().background(ForgePanel).testTag("guild_today")) {
-        if (rows.none { !it.optional }) Secondary("No urgent guild decisions. You can keep today's plan.", Modifier.padding(vertical = Space.sm))
+        if (rows.none { !it.optional }) Secondary("Nothing urgent today.", Modifier.padding(vertical = Space.sm))
         rows.forEach { r ->
             Column(Modifier.fillMaxWidth().padding(vertical = Space.xs).testTag("guild_today_${r.key}")) {
-                if (r.optional) Secondary("Optional", Modifier.testTag("guild_today_optional_${r.key}"))
                 Text(r.text, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.testTag("guild_today_text_${r.key}"))
-                InlineActionButton("${r.action}  ›", { onAct(r) }, Modifier.heightIn(min = 48.dp).testTag("guild_today_go_${r.key}"))
+                // The action, and beside it whether it can wait: one row, not a label above the reminder.
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), itemVerticalAlignment = Alignment.CenterVertically) {
+                    InlineActionButton("${r.action}  ›", { onAct(r) }, Modifier.heightIn(min = 48.dp).testTag("guild_today_go_${r.key}"))
+                    if (r.optional) Secondary("Optional", Modifier.testTag("guild_today_optional_${r.key}"))
+                }
             }
         }
     }
@@ -196,7 +208,7 @@ private fun GuildTabs(selected: GuildTab, dots: Set<GuildTab>, onSelect: (GuildT
 
 /** One part's rows as one lazy list; a row Today pointed at is scrolled to once. Each part keeps its own scroll. */
 @Composable
-private fun GuildList(tab: GuildTab, rows: List<GuildRow>, anchor: Pair<GuildTab, String>?, reducedMotion: Boolean, today: List<TodayUi>, onToday: (TodayUi) -> Unit, onAnchored: () -> Unit) {
+private fun GuildList(tab: GuildTab, rows: List<GuildRow>, anchor: Pair<GuildTab, String>?, reducedMotion: Boolean, today: List<TodayUi>, onToday: (TodayUi) -> Unit, onAnchored: () -> Unit) = androidx.compose.runtime.CompositionLocalProvider(LocalGuildAnchor provides anchor?.takeIf { it.first == tab }?.second) {
     val list = key(tab) { rememberLazyListState() }
     // Once the part Today pointed at is the one shown: the save that switches it may land a frame later.
     LaunchedEffect(anchor, tab) {
@@ -224,16 +236,25 @@ internal fun Face(portrait: Int, size: Int = 44) {
 @Composable
 internal fun Chip(text: String, color: Color = CreamMuted, modifier: Modifier = Modifier) {
     Text(
-        text, style = MaterialTheme.typography.labelMedium, color = color, maxLines = 1,
+        text, style = MaterialTheme.typography.labelMedium, color = color,
         modifier = modifier.border(1.dp, color.copy(alpha = 0.6f), MaterialTheme.shapes.extraSmall).padding(horizontal = 6.dp, vertical = 2.dp),
     )
 }
 
-/** A section that opens and closes under its heading: the count and one line say what is inside while it is closed. */
+/** The key of the Guild row a Today action is taking the player to, while the list scrolls there; null otherwise. */
+internal val LocalGuildAnchor = androidx.compose.runtime.staticCompositionLocalOf<String?> { null }
+
+/**
+ * A section that opens and closes under its heading: the count and one line say what is inside while it is closed.
+ * [tag] marks the content once open, or with [tagWhole] the whole section whether open or not (its content is then `<tag>_body`).
+ */
 @Composable
-internal fun Collapsible(key: String, title: String, summary: String?, openAtFirst: Boolean, tag: String, content: @Composable () -> Unit) {
+internal fun Collapsible(key: String, title: String, summary: String?, openAtFirst: Boolean, tag: String, tagWhole: Boolean = false, content: @Composable () -> Unit) {
     var open by rememberSaveable(key) { mutableStateOf(openAtFirst) }
-    Column(Modifier.fillMaxWidth().padding(top = Space.sm)) {
+    // A Today action that points at this section ("See answers") lands on it open, never on a folded head.
+    val asked = LocalGuildAnchor.current
+    androidx.compose.runtime.LaunchedEffect(asked) { if (asked == key) open = true }
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).then(if (tagWhole) Modifier.testTag(tag) else Modifier)) {
         Row(
             Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClickLabel = if (open) "Close" else "Open", role = Role.Button) { open = !open }
                 .semantics { heading(); stateDescription = if (open) "Open" else "Closed" }.testTag("${tag}_head"),
@@ -243,20 +264,25 @@ internal fun Collapsible(key: String, title: String, summary: String?, openAtFir
                 Text(title, style = MaterialTheme.typography.titleMedium, color = Gold)
                 if (!open) summary?.let { Secondary(it) }
             }
-            Text(if (open) "▴" else "▾", style = MaterialTheme.typography.titleMedium, color = Gold)
+            Chevron(if (open) ChevronWay.UP else ChevronWay.DOWN)
         }
         HorizontalDivider(color = BronzeDeep)
-        if (open) Column(Modifier.fillMaxWidth().padding(top = Space.xs).testTag(tag)) { content() }
+        if (open) Column(Modifier.fillMaxWidth().padding(top = Space.xs).testTag(if (tagWhole) "${tag}_body" else tag)) { content() }
     }
 }
 
-/** What is known of the units on a field: each kind once, with how many of it and its known moves under it. */
+/**
+ * The units on a field, each kind once: how many of it, its name and its health as the field scales it. What it does
+ * (its moves, its rules, what it is weak to) is on its card, behind the ringed "i".
+ */
 @Composable
 internal fun EnemyLines(enemies: List<EnemyUi>, modifier: Modifier = Modifier) {
     Column(modifier) {
         enemies.forEach { e ->
-            Text(e.label, style = MaterialTheme.typography.bodyMedium, color = Cream)
-            e.rules.forEach { Secondary("· $it", Modifier.padding(start = Space.sm)) }
+            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                FactLine(listOfNotNull(Fact(e.label), e.health.takeIf { it.isNotEmpty() }?.let { Fact(it, "Health") }), Modifier.weight(1f), emphasis = true)
+                e.tip?.let { t -> InfoButton(e.name, { t }, tag = "guild_enemy_${e.unitId}_info") }
+            }
         }
     }
 }
@@ -275,8 +301,9 @@ private fun AssignSheet(ui: GuildUi, a: GuildActions, onDismiss: () -> Unit) {
         modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("guild_assign_sheet"),
     ) {
         Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
-            Text("Keep for the wall", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-            Secondary("A kept member stands first and no party takes them. The other places go to the strongest fit, members or townsfolk.")
+            Text("Reserve for the wall", style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() })
+            Secondary("Members you reserve take the first places on the wall, in the order you reserve them, and cannot be sent on a quest. The other places go to the strongest available heroes, from the guild or the town. Reservations are cleared after each siege.")
+            if (ui.wall.rulesLine.isNotEmpty()) Secondary(ui.wall.rulesLine, Modifier.padding(top = Space.xs))
             Text("${ui.wall.defenders.size} of ${ui.wall.places} places filled", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm))
             ui.assign.forEach { r ->
                 Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm).testTag("guild_assign_row_${r.heroId.value}")) {
@@ -290,10 +317,10 @@ private fun AssignSheet(ui: GuildUi, a: GuildActions, onDismiss: () -> Unit) {
                         }
                     }
                     when (r.action) {
-                        AssignAction.RESERVE -> SecondaryActionButton("Keep", { a.send(Command.ReserveDefender(r.heroId, true)) }, Modifier.heightIn(min = 48.dp).testTag("guild_reserve_${r.heroId.value}"), enabled = a.enabled)
+                        AssignAction.RESERVE -> SecondaryActionButton("Reserve", { a.send(Command.ReserveDefender(r.heroId, true)) }, Modifier.heightIn(min = 48.dp).testTag("guild_reserve_${r.heroId.value}"), enabled = a.enabled)
                         AssignAction.RELEASE -> InlineActionButton("Release", { a.send(Command.ReserveDefender(r.heroId, false)) }, Modifier.heightIn(min = 48.dp).testTag("guild_reserve_${r.heroId.value}"), enabled = a.enabled)
                         AssignAction.KEEP_HOME -> InlineActionButton("Keep home", {
-                            a.confirm(Confirm("Keep the party home?", "Today's planned contract is cancelled and its fee comes back. You can plan another this morning.", "Keep home", Command.CancelPlannedDeployment))
+                            a.confirm(Confirm("Keep the party home?", "Today's planned quest is cancelled and its fee is returned. You can plan another quest before End Day.", "Keep home", Command.CancelPlannedDeployment))
                         }, Modifier.heightIn(min = 48.dp).testTag("guild_keep_home_${r.heroId.value}"), enabled = a.enabled)
                         AssignAction.NONE -> Unit
                     }

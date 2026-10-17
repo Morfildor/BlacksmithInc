@@ -63,13 +63,13 @@ past_offers() {
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
 wait_text "Tiny Blacksmith"
-# A cleared install offers the guided first day and marks "No charter": this script is about the guild, so the
+# A cleared install offers the guided first day and marks "Classic run": this script is about the guild, so the
 # guidance is skipped and the first charter's row is chosen on the run setup that "New game" opens.
 tap_id intro_menu_skip
 shot 01_title
 tap_id title_new_run || exit 1
 check has_id charter_picker
-tap_id charter_row_ || exit 1
+tap_id setup_mode_guild || exit 1   # V2: "Guild run" selects the first charter and shows the charters
 check has_id charter_details
 shot 01_title_charter
 tap_id setup_begin || exit 1
@@ -110,6 +110,8 @@ tap_id guild_tab_company; $ADB shell sleep 1
 for i in 1 2 3 4 5 6 7 8 9 10; do has_id guild_member_ && break; swipe_up; done
 shot 15b_roster
 tap_id guild_member_
+# V3: the row opens the member's card; its "Full details" opens the sheet
+wait_id guild_hero_tip && { shot 16a_member_card; tap_id guild_hero_details; }
 $ADB shell sleep 1; shot 16_member_sheet
 swipe_up; shot 17_member_sheet_lower
 $ADB shell input keyevent KEYCODE_BACK; $ADB shell sleep 1

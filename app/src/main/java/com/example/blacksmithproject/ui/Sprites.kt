@@ -252,10 +252,10 @@ fun PixelImage(resId: Int, size: Dp, description: String?, modifier: Modifier = 
 
 @Composable
 fun WeaponSprite(w: Weapon, size: Dp = 48.dp, modifier: Modifier = Modifier) {
-    val element = w.element?.name?.lowercase()?.let { ", $it" } ?: ""
+    val element = w.element?.let { ", ${com.tinyblacksmith.core.text.Terms.element(it).lowercase()}" } ?: ""
     val signature = w.signatureId != null
     Box(
-        modifier.size(size).semantics { contentDescription = "${w.name}, ${w.rarity.name.lowercase()}$element" }
+        modifier.size(size).semantics { contentDescription = "${w.name}, ${com.tinyblacksmith.core.text.Terms.rarity(w.rarity).lowercase()}$element" }
             .drawBehind { if (signature) drawCircle(Sprites.signatureRing, radius = this.size.minDimension / 2 - 1.dp.toPx(), style = Stroke(2.dp.toPx())) },
     ) {
         PixelImage(Sprites.weapon(w), size, description = null)

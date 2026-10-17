@@ -15,6 +15,7 @@ import com.tinyblacksmith.core.model.GuildRunState
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.MemberStatus
 import com.tinyblacksmith.core.model.MissionOffer
+import com.tinyblacksmith.core.text.Terms
 
 /*
  * What the Guild destination puts first and what it says is still to come, as facts read from the save and the content
@@ -49,7 +50,14 @@ enum class AssignAction { RESERVE, RELEASE, KEEP_HOME, NONE }
 enum class StepState { DONE, OPEN, LOCKED }
 
 /** One thing the charter opens: its state, the rule that opens it, and what it changes. */
-@Immutable data class StepUi(val key: String, val name: String, val state: StepState, val condition: String, val effect: String)
+@Immutable data class StepUi(val key: String, val name: String, val state: StepState, val condition: String, val effect: String) {
+    /** The row's one line: the rule's first sentence. [more] and [effect] are read on a tap. */
+    val gist: String get() = firstSentence(condition)
+    val more: String get() = condition.substringAfter(". ", "")
+}
+
+/** The first sentence of [text], with its full stop. */
+internal fun firstSentence(text: String): String = text.substringBefore(". ").let { if (it.endsWith(".") || it == text) it else "$it." }
 
 /** The tone of a member's status chip: fit, held back, or out of reach. */
 enum class ChipTone { OK, KEPT, HURT, OUT }
@@ -65,10 +73,10 @@ fun guildTabFor(memory: GuildTabMemory?, day: Int, daysToSiege: Int): GuildTab =
 internal fun memberChip(state: GameState, g: GuildRunState, m: GuildMember): Pair<String, ChipTone> {
     val wound = m.wound?.takeIf { it.untilDay > state.day }
     return when {
-        m.status == MemberStatus.CAPTURED -> (g.captives.firstOrNull { it.heroId == m.heroId }?.let { "Held · ${it.deadlineDay - state.day}d left" } ?: "Held") to ChipTone.OUT
+        m.status == MemberStatus.CAPTURED -> (g.captives.firstOrNull { it.heroId == m.heroId }?.let { "Captured · ${it.deadlineDay - state.day}d left" } ?: "Captured") to ChipTone.OUT
         m.status == MemberStatus.AWAY -> (g.mission?.let { "Away · back day ${it.returnDay}" } ?: "Away") to ChipTone.OUT
-        wound != null -> "${wound.kind.name.lowercase().replaceFirstChar { it.uppercase() }} · day ${wound.untilDay}" to ChipTone.HURT
-        m.heroId in g.reserved -> "Kept for the wall" to ChipTone.KEPT
+        wound != null -> "${Terms.wound(wound.kind)} · day ${wound.untilDay}" to ChipTone.HURT
+        m.heroId in g.reserved -> "Reserved for the wall" to ChipTone.KEPT
         else -> "Fit" to ChipTone.OK
     }
 }
@@ -94,26 +102,27 @@ internal fun GameEngine.guildToday(state: GameState, g: GuildRunState, wall: Wal
         if (g.planned?.offerId == offer.id || g.mission?.offer?.subjectHeroId == c.heroId) return@mapNotNull null
         val name = state.heroes[c.heroId]?.name ?: return@mapNotNull null
         TodayUi("rescue_${c.heroId.value}",
-            if (offer.expiresDay == state.day) "$name is held. Last day to send the rescue party."
-            else "$name is held. Send a rescue by day ${offer.expiresDay}.",
+            if (offer.expiresDay == state.day) "$name has been captured. Last day to send the rescue party."
+            else "$name has been captured. Send a rescue by day ${offer.expiresDay}.",
             "See rescue", TodayTarget.Tab(GuildTab.CONTRACTS, "offer_${offer.id}")) to (offer.expiresDay == state.day)
     }
     val checkpoint = g.mission?.takeIf { it.outcome == null && it.stage == 1 && it.offer.optionalPush && it.choice == null }?.let {
-        TodayUi("checkpoint", "The party waits at the deeper door. Without word, they return home with the rewards already won.", "Decide", TodayTarget.Tab(GuildTab.CONTRACTS, "party"))
+        TodayUi("checkpoint", "The party is waiting at the checkpoint. If you do not choose, it returns with the rewards already won.", "Decide", TodayTarget.Tab(GuildTab.CONTRACTS, "party"))
     }
     val readiness = wall.readiness?.let { lead ->
-        val reason = wall.readinessReason!!
+        // Without a gap the reason's second sentence is the caveat that readiness is no promise: the Wall says it, Today does not repeat it.
+        val reason = wall.readinessReason!!.let { r -> if (lead.readiness == null) firstSentence(r) else r }
         val empty = lead.readiness == ReadinessGap.EMPTY_PLACE
         TodayUi(if (empty) "wall" else "readiness", reason, if (empty) "Assign defender" else "Review wall",
             if (empty) TodayTarget.AssignWall else TodayTarget.Tab(GuildTab.WALL, "readiness"))
     }
     return (rescues.filter { it.second }.map { it.first } + listOfNotNull(checkpoint, readiness) +
         rescues.filterNot { it.second }.map { it.first } + listOfNotNull(
-            wall.prep?.let { TodayUi("prep", "Known preparation: ${it.name}. You can review the available answers.", "See answers", TodayTarget.Tab(GuildTab.WALL, "prep"), optional = true) },
-            TodayUi("plan", "Quests are available. Keeping members home is also a plan.", "Browse contracts", TodayTarget.Tab(GuildTab.CONTRACTS, "board"), optional = true)
+            wall.prep?.let { TodayUi("prep", "Known preparation: ${it.name}.", "See answers", TodayTarget.Tab(GuildTab.WALL, "prep"), optional = true) },
+            TodayUi("plan", "Quests are on the board.", "Browse quests", TodayTarget.Tab(GuildTab.CONTRACTS, "board"), optional = true)
                 .takeIf { wall.daysLeft > 1 && g.mission == null && g.planned == null && g.offers.isNotEmpty() },
             g.members.firstOrNull { openBranches(state, it.heroId).isNotEmpty() }?.let { b ->
-                TodayUi("branch", "${state.heroes[b.heroId]?.name ?: "A member"} can choose a branch", "Choose branch", TodayTarget.Hero(b.heroId), optional = true)
+                TodayUi("branch", "${state.heroes[b.heroId]?.name ?: "A member"} can choose a speciality", "Choose a speciality", TodayTarget.Hero(b.heroId), optional = true)
             },
             g.milestone(GuildContent.CHARTER_SECURED)?.takeIf { it.day >= state.day - 1 && !g.retired }?.let {
                 TodayUi("charter", "Charter secured", "Open charter", TodayTarget.Tab(GuildTab.CHARTER, "opens"), optional = true)
@@ -136,8 +145,8 @@ internal fun GameEngine.upcomingContracts(state: GameState, g: GuildRunState): L
         .map { UpcomingUi(it.name, "May be posted from day ${it.minDay}") }
     val sabotage = cat.missions.firstOrNull { it.archetype == MissionArchetype.SABOTAGE }
         ?.takeIf { def -> g.offers.none { cat.mission(it.defId).archetype == MissionArchetype.SABOTAGE } && def.id !in onBoard }
-        ?.let { UpcomingUi("${it.name} and an opportunity", "Posted together once a siege's besieger is known, while a party can still be home for it") }
-    val rescue = cat.missionById[GuildContent.RESCUE]?.takeIf { GuildContent.RESCUE !in onBoard }?.let { UpcomingUi(it.name, "Posted while a member is held by the enemy") }
+        ?.let { UpcomingUi("${it.name} and an opportunity", "Posted together once the attackers of a siege are known, while a party can still be home for it") }
+    val rescue = cat.missionById[GuildContent.RESCUE]?.takeIf { GuildContent.RESCUE !in onBoard }?.let { UpcomingUi(it.name, "Posted while a member is captured") }
     val recovery = cat.missionById[GuildContent.RECOVERY]?.takeIf { GuildContent.RECOVERY !in onBoard }?.let { UpcomingUi(it.name, "Posted while an enemy carries a weapon of this forge") }
     val road = cat.missionById[GuildContent.DEEP_ROAD]
         ?.takeIf { DeepRoad.matters(content, config) && DeepRoad.stage(state) == 0 && it.id !in onBoard && g.mission?.offer?.defId != it.id }
@@ -155,11 +164,11 @@ internal fun GameEngine.assignRows(state: GameState, g: GuildRunState, places: I
     val h = state.heroes[m.heroId] ?: return@mapNotNull null
     val away = memberUnavailable(state, h.id)
     val (reason, action) = when {
-        h.id in g.reserved -> "Kept for the wall" to AssignAction.RELEASE
+        h.id in g.reserved -> "Reserved for the wall" to AssignAction.RELEASE
         // The roster's own words where they say when (home on day N, wounded until day N, days left to a rescue).
         away != null -> (memberStatus(state, g, m) ?: away.removePrefix("is ").replaceFirstChar { it.uppercase() }) to AssignAction.NONE
         g.planned?.heroIds?.contains(h.id) == true -> "In today's planned party" to AssignAction.KEEP_HOME
-        g.reserved.size >= places -> "All $places places are already kept" to AssignAction.NONE
+        g.reserved.size >= places -> "All $places places are already reserved" to AssignAction.NONE
         else -> null to AssignAction.RESERVE
     }
     AssignUi(h.id, Sprites.portrait(h, small = true), h.fullName, "${content.heroClass(h.classId).name} level ${h.level}", reason, action)
@@ -177,15 +186,15 @@ internal fun GameEngine.charterSteps(state: GameState, g: GuildRunState): List<S
         StepUi(
             "charter", "Secure the charter", if (secured != null) StepState.DONE else StepState.LOCKED,
             secured?.let { "Secured on day ${it.day}." }
-                ?: "Break the charter warlord at the wall. He leads the first siege on or after day ${config.guild.charterDay}. If he is held off, he leads the next one too.",
-            "Opens retiring the chapter as a success, and the ranks.",
+                ?: "Defeat the charter warlord at the wall. He leads the first siege on or after day ${config.guild.charterDay}. If he is held off, he leads the next one too.",
+            "Opens retiring the guild as a success, and the challenge tiers. A secured charter adds ${config.guild.charterLegacyPoints} legacy points when the era ends.",
         ),
     ) + cat.ranks.filter { it.rank > 0 }.sortedBy { it.rank }.map { r ->
         StepUi(
-            "rank_${r.rank}", r.name,
+            "rank_${r.rank}", "Challenge tier ${r.rank}: ${r.name}",
             when { r.rank <= g.rank -> StepState.DONE; secured != null -> StepState.OPEN; else -> StepState.LOCKED },
-            when { r.rank <= g.rank -> "Taken."; secured != null -> "May be taken now. A rank once taken is kept."; else -> "After the charter is secured." },
-            r.description,
+            when { r.rank <= g.rank -> "Taken. It cannot be undone."; secured != null -> "May be taken now. A challenge tier cannot be undone."; else -> "After the charter is secured." },
+            "${r.description} If the guild holds this tier when the era ends, it adds ${r.legacyPoints} legacy points.",
         )
     }
 }
@@ -198,8 +207,8 @@ private fun GameEngine.roadStep(state: GameState, g: GuildRunState): StepUi? {
     val (st, condition) = when {
         DeepRoad.stage(state) >= 1 -> StepState.DONE to (state.deepRoadOpenDay?.let { "Opened on day $it." } ?: "Opened by the second siege.")
         g.mission?.offer?.defId == GuildContent.DEEP_ROAD -> StepState.OPEN to "A party is on the road now. If they win, it opens the next morning."
-        g.offers.any { it.defId == GuildContent.DEEP_ROAD } -> StepState.OPEN to "Its contract is on the board: win it and the road opens the next morning. The second siege opens it anyway."
-        else -> StepState.LOCKED to "After the first siege its contract is posted. Win it, or the second siege opens the road anyway."
+        g.offers.any { it.defId == GuildContent.DEEP_ROAD } -> StepState.OPEN to "Its quest is on the board: win it and the road opens the next morning. The second siege opens it anyway."
+        else -> StepState.LOCKED to "After the first siege its quest is posted. Win it, or the second siege opens the road anyway."
     }
     return StepUi("road", "The deep road", st, condition, "The supplier carries $first." + if (second.isNotEmpty()) " After the second siege, $second too." else "")
 }

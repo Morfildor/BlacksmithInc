@@ -17,6 +17,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -81,7 +82,7 @@ class ForgeComparisonDeviceTest {
             val ui by vm.ui.collectAsState()
             BlacksmithProjectTheme {
                 DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(size) then DeviceConfigurationOverride.FontScale(font)) {
-                    key(round) { (ui as? UiState.Playing)?.let { androidx.compose.material3.Surface(color = com.example.blacksmithproject.ui.theme.ForgeNight) { ForgePanel(it, vm, reducedMotion = true, tip = null) } } }
+                    key(round) { (ui as? UiState.Playing)?.let { androidx.compose.material3.Surface(color = com.example.blacksmithproject.ui.theme.ForgeNight) { com.example.blacksmithproject.ui.ProvideInspector { ForgePanel(it, vm, reducedMotion = true, tip = null) } } } }
                 }
             }
         }
@@ -99,9 +100,10 @@ class ForgeComparisonDeviceTest {
             val label = n.config.getOrNull(SemanticsProperties.Text)?.joinToString() ?: n.config.getOrNull(SemanticsProperties.TestTag) ?: "a control"
             assertTrue("$where: \"$label\" spans ${b.left}..${b.right} of ${root.width}", b.left >= -0.5f && b.right <= root.width + 0.5f)
         }
-        // The pinned foot: the action and the temper beside it are always on screen.
+        // The pinned foot: the action is always on screen. The temper sits beside it, or from font 1.3 in the list with
+        // "Risk: X" said on the action itself (V3), so it always exists.
         compose.onNodeWithTag("forge_weapon").assertIsDisplayed()
-        compose.onNodeWithTag("forge_risk").assertIsDisplayed()
+        compose.onNodeWithTag("forge_risk").assertExists()
     }
 
     /** A text somewhere under the node tagged [tag], scrolled into view: the tagged containers merge no text of their own. */
@@ -221,11 +223,13 @@ class ForgeComparisonDeviceTest {
         val b = augments.first { it.element != a.element }
         val start = ForgeDraft(familyId = engine.content.families.first().id, coreId = stocked(guild, MaterialCategory.CORE).first().id, augmentId = a.id)
         for ((w, f) in matrix) {
-            // The first choice of an empty place lists what each metal does in a fight.
+            // The first choice of an empty place: each metal's card says what it does in a fight (V3: the "i" on its tile).
             compose.runOnUiThread { size = DpSize(w.dp, 800.dp); font = f; vm.updateDraft { start.copy(coreId = null) }; round++ }
             compose.waitForIdle()
-            compose.onNodeWithTag("forge_tray_rules").performScrollTo().performClick()
-            compose.onNodeWithTag("forge_tray_fight").performScrollTo()
+            compose.onNodeWithTag("forge_option_${stocked(guild, MaterialCategory.CORE).first().id.value}_info").performScrollTo().performClick()
+            compose.onNodeWithTag("forge_tray_fight").assertIsDisplayed()
+            compose.onNodeWithTag("forge_tray_fight_close").performClick()
+            compose.waitForIdle()
             assertInside("guild first choice at $w dp x $f")
             shot("guild-first-choice-$w-$f")
             compose.runOnUiThread { vm.updateDraft { start }; round++ }
@@ -247,10 +251,12 @@ class ForgeComparisonDeviceTest {
             assertInside("guild comparing at $w dp x $f")
             shot("guild-compare-$w-$f")
             if (f == 2f) {
+                // The focused choice's card, opened from its "i" and closed again: one card, nothing left over.
                 compose.onNodeWithTag("forge_tray_rules").performScrollTo().performClick()
-                compose.onNodeWithTag("forge_tray_fight").performScrollTo().assertIsDisplayed()
-                shot("guild-conditional-rules-$w-$f")
-                compose.onNodeWithTag("forge_tray_rules").performScrollTo().performClick()
+                compose.onNodeWithTag("forge_tray_fight").assertIsDisplayed()
+                compose.onNodeWithTag("forge_tray_fight_close").performClick()
+                compose.waitForIdle()
+                compose.onAllNodes(hasTestTag("forge_tray_fight")).assertCountEquals(0)
             }
         }
         // Exercise every revealed matchup, including inspection of any out-of-stock ingredient.

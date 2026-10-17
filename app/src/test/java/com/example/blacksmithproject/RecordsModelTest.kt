@@ -57,7 +57,7 @@ class RecordsModelTest : ShopDayTestBase() {
         // Two rungs earned: the base recipe and the catalyst.
         val partial = JournalModel(interactions = mapOf(def.journalKey to KnowledgeState.OBSERVED), signatureClues = mapOf(def.journalKey to (ClueRung.RECIPE.bit or ClueRung.CATALYST.bit)))
         val ui = signatureUi(partial, def.journalKey, engine.content, engine.config)!!
-        assertEquals(listOf("Recipe", "Catalyst", "Temper", "Finish"), ui.rungs.map { it.label })
+        assertEquals(listOf("Recipe", "Catalyst", "Risk", "Quality"), ui.rungs.map { it.label })
         assertEquals(Journal.rungs(partial, def), ClueRung.entries.filterIndexed { i, _ -> ui.rungs[i].clue != null }.toSet())
         assertEquals(listOf(Journal.clue(def, ClueRung.RECIPE, engine.config), Journal.clue(def, ClueRung.CATALYST, engine.config), null, null), ui.rungs.map { it.clue })
         assertNull("an unfound signature offers no recipe", ui.recipe)

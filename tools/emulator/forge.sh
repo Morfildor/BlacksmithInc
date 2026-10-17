@@ -75,22 +75,24 @@ past_offers || { shot 00_stuck_after_new_run; texts; exit 1; }
 tap_id nav_forge || exit 1
 $ADB shell sleep 1; shot 01_forge_empty
 tap_id forge_option_sword; shot 02_metal_tray
-check has_id forge_tray_fight
+# V3: what a metal does in a fight is on its card (the "i" on its tile).
+tap_id forge_option_iron_info && { shot 02b_iron_card; check has_id forge_tray_fight; tap_id forge_tray_fight_close; }
 tap_id forge_option_iron; shot 03_augment_tray
 tap_id forge_option_frost_bloom
-# 2. The explanation: the outlook card.
+# 2. The explanation: the weapon's identity, its card ("Effects") and the recipe sheet ("Full details").
 scroll_to_id forge_outlook; shot 04_outlook
 check has_id forge_outlook_role
 echo "--- outlook card"; texts 80 | grep -n "" | sed -n '1,80p'
-scroll_to_id forge_outlook_details && tap_id forge_outlook_details
+tap_id forge_inspect_recipe && shot 04b_recipe_card && tap_id forge_outlook_details
 swipe_up; shot 05_outlook_details
 check has_id forge_outlook_expanded
 swipe_up; shot 06_outlook_details_lower
-# 3. The bench for the recipe.
-scroll_to_id forge_bench_open && tap_id forge_bench_open
+# 3. The bench for the recipe, from the details sheet's own button.
+tap_id forge_details_bench || { back; scroll_to_id forge_bench_open && tap_id forge_bench_open; }
 wait_id bench_sheet; shot 07_bench_recipe
 check has "Practice fight"
-tap_id bench_company_frost; shot 08_bench_recipe_frost
+# The choices stand under the outcome (V3): scroll to them; a new choice brings the new outcome back into view.
+scroll_to_id bench_company_frost && tap_id bench_company_frost; shot 08_bench_recipe_frost
 scroll_to_id bench_target_attrition && tap_id bench_target_attrition; shot 09_bench_recipe_attrition
 # The town's wall: the labelled home-defence rehearsal.
 scroll_to_id bench_target_wall && tap_id bench_target_wall; shot 09b_bench_recipe_wall
@@ -140,7 +142,7 @@ check has_id card_bench_open
 tap_id card_bench_open
 wait_id bench_sheet; shot 16_bench_owned
 check has "Practice fight"
-tap_id bench_company_fire; swipe_up; shot 17_bench_owned_fire
+scroll_to_id bench_company_fire && tap_id bench_company_fire; shot 17_bench_owned_fire
 swipe_up; shot 17b_bench_owned_lower
 echo "--- bench (owned)"; texts 80
 scroll_to_id bench_close && tap_id bench_close

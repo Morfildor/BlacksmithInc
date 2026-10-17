@@ -17,10 +17,10 @@ class LoadFailureTextTest {
         for (f in listOf(SaveFailure.Corrupt("legacy", cause, runSound = true), SaveFailure.Newer("legacy", 3, 2, runSound = true))) {
             val text = loadFailureText(f)
             val over = text.startOver!!
-            assertTrue(text.safe, "Your current run can still be opened" in text.safe)
-            assertEquals("Rebuild the legacy from the run", over.button)
-            assertTrue(over.does, "continues the run" in over.does)
-            assertFalse("the run is not set aside", "run aside" in over.does || "era 1" in over.does || "era 1" in over.confirm)
+            assertTrue(text.safe, "Your current era can still be opened" in text.safe)
+            assertEquals("Rebuild the legacy from the era", over.button)
+            assertTrue(over.does, "continues the era" in over.does)
+            assertFalse("the run is not set aside", "era aside" in over.does || "run aside" in over.does || "era 1" in over.does || "era 1" in over.confirm)
         }
     }
 
@@ -28,7 +28,7 @@ class LoadFailureTextTest {
     fun aLegacyRowWithNoSoundRunNamesThePermanentLoss() {
         for (f in listOf(SaveFailure.Corrupt("legacy", cause), SaveFailure.Newer("legacy", 3, 2))) {
             val over = loadFailureText(f).startOver!!
-            assertTrue(over.does, "no points, upgrades or legends" in over.does)
+            assertTrue(over.does, "no points, perks or Hall of Legends" in over.does)
             assertTrue(over.confirm, "removed from the active game" in over.confirm)
         }
     }
@@ -55,6 +55,6 @@ class LoadFailureTextTest {
         assertEquals("This save is from a newer version", newerRules.title)
         assertTrue("Update the game" in newerRules.happened)
         assertTrue(newerRules.startOver!!.confirm.endsWith("even after updating."))
-        assertEquals("This version cannot continue the saved run", loadFailureText(SaveFailure.Incompatible(listOf("Negative gold"))).title)
+        assertEquals("This version cannot continue the saved era",loadFailureText(SaveFailure.Incompatible(listOf("Negative gold"))).title)
     }
 }

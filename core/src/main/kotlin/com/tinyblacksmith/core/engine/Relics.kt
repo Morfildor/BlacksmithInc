@@ -32,7 +32,7 @@ object Relics {
         val used = ctx.relicUses[r.id] == ctx.day
         val cfg = ctx.config.depth
         when (def.effect) {
-            RelicEffect.SALVAGE_AUGMENT -> View(r.id, def.name, def.description, if (used) "Used today." else "Ready. Salvage a weapon of quality ${ctx.config.rareMin} or more today to also get its augment back.", !used)
+            RelicEffect.SALVAGE_AUGMENT -> View(r.id, def.name, def.description, if (used) "Used today." else "Ready. Salvage a weapon of quality ${ctx.config.rareMin} or more today to also get its infusion back.", !used)
             RelicEffect.BELLOWS -> View(r.id, def.name, def.description, if (used) "Used today." else "Ready. One forge today can borrow ${cfg.bellowsDebt} energy from tomorrow for ${if (cfg.bellowsExtraSlots == 1) "one more property" else "${cfg.bellowsExtraSlots} more properties"}.", !used)
             RelicEffect.PREMIUM_SEAL -> View(r.id, def.name, def.description, "Seals: ${r.progress} of ${cfg.sealsPerReward}." + (if (used) " Today's seal is already earned." else ""), !used)
             RelicEffect.FAMILY_STREAK -> View(r.id, def.name, def.description,

@@ -227,7 +227,7 @@ class RelicsAndSiegeTraitsTest {
             assertEquals(fought.data.getValue("townDefense").toInt() >= fought.data.getValue("raidPower").toInt(), fought.type == EventType.SIEGE_WON)
             val replay = day.resolution!!.replays.first { it.kind == ReplayKind.SIEGE }
             val watch = content.siegeTrait(trait)?.watchMultiplier ?: 1.0
-            assertEquals((eve.town.armory * watch).roundToInt(), replay.rounds.single { it.attacker == "Town watch" }.damage, "trait $trait: the watch fights at what the forecast counted it for")
+            assertEquals((eve.town.armory * watch).roundToInt(), replay.rounds.single { it.attacker == "Town armory" }.damage, "trait $trait: the watch fights at what the forecast counted it for")
         }
     }
 

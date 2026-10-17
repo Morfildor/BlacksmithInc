@@ -111,12 +111,12 @@ class IntroStripTest {
         // The title says the game about to start is guided, with the way out beside it; the run setup opens on the shop alone.
         compose.onNodeWithTag("intro_menu_skip").assertIsDisplayed()
         compose.onNodeWithTag("title_new_run").performClick()
-        compose.onNodeWithTag("charter_name", useUnmergedTree = true).assertTextEquals("No charter")
+        compose.onNodeWithTag("charter_name", useUnmergedTree = true).assertTextEquals("Classic era")
         compose.onNodeWithTag("setup_begin").performClick()
         compose.waitUntil(15_000) { (vm.ui.value as? UiState.Playing)?.intro != null }
 
         compose.onNodeWithTag("intro_strip").assertIsDisplayed()
-        compose.onNodeWithTag("intro_objective", useUnmergedTree = true).assertTextEquals("Choose a weapon, a metal and an augment.")
+        compose.onNodeWithTag("intro_objective", useUnmergedTree = true).assertTextEquals("Choose a weapon, a metal and an infusion.")
         // No relic dialog over it, and the bar under the strip takes its tap.
         compose.onNodeWithTag("nav_forge").performClick()
         compose.waitForIdle()

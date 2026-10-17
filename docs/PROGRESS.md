@@ -1,5 +1,60 @@
 # Progress — 2026-10-15 (text and header pass; 2026-10-14: deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## RPG terminology and writing overhaul V2, Phase 2 (2026-10-17, implemented)
+
+- Approved with owner amendments (top of `docs/TERMINOLOGY_PROPOSAL.md`), plus a later owner change: the status
+  Guard is now **Armor**. The authoritative glossary is `docs/WRITING_GUIDE.md` section 2.
+- Done: display text only, in four area batches (combat and cards, forging and shop, guild, town/legacy/menus).
+  One enum word map `core/text/Terms.kt`; old-save display mapping for fight records in `text/LegacyProse.kt`
+  (whole templates and effect names only, never weapon names or titles). The 22 text-vs-code errors are fixed.
+  No rule, number, RNG draw, ID, enum constant or save key changed.
+- Checks: `:core:test` 686 pass, `:app:testDebugUnitTest` 357 pass, `:app:assembleDebug` builds,
+  `:core:scenarios` regenerated.
+- Not run or not done (owner asked for essentials only): `:app:connectedDebugAndroidTest`; device captures at
+  320 dp and large fonts (the Forge identity line is longer now); emulator script greps (`tools/emulator/*.sh`:
+  "Continue run", "Champions", "Permanent upgrades", "augment", "Begin a classic run", "Renown", "rings back",
+  "broken Guard answers", "One of the watch is held"); the GDD revision note for T1 to T11.
+- Known leftovers: two short-phrase maps for metal/element effects (`ForgeUi.effectPhrase` and
+  `CombatContent.briefs`) should become one; some guild content text hard-codes config numbers (supplier days,
+  oath level).
+
+## RPG terminology and writing overhaul V2, Phase 1 (2026-10-17, proposal only)
+
+- Owner brief "RPG Terminology & Writing Overhaul V2": audit and proposal first, no implementation before approval.
+  Proposal `docs/TERMINOLOGY_PROPOSAL.md` (decisions T1 to T11, glossary, replacement table, 22 text-vs-code
+  errors, Phase 2 plan); evidence `docs/terminology_audit/` (combat, crafting and town, guild, saves and tests).
+- Nothing in the game changed. Next: the owner answers T1 to T11, then Phase 2 in batches (label maps, combat,
+  crafting, guild, town and legacy, old-save display map, docs), each tested.
+
+## UI V3 inspect pass (2026-10-16, same tree, not committed)
+
+- Owner follow-ups: "Diablo-inspired UI and tooltip redesign" and an annotated review of the progress screenshots.
+  State and evidence: `docs/UI_V2_LEDGER.md` §7 (M7). Shared system `ui/Inspect.kt` + `ui/InspectUi.kt`; Forge
+  recomposed in the main session; Guild, Shop/weapons and Results/Siege/Records by three agents in worktrees
+  `C:/Users/tuncb/Desktop/bs-v3-{guild,shop,results}` (merged; removable).
+- Checks: app JVM tests 357 passed, androidTest compiles, debug APK builds. Device captures 411/360/320 dp at fonts
+  1.0/1.3/2.0 for the Forge and cards; Shop/Guild/results at 411/1.0, large-text runs captured after merge.
+- 2026-10-17, owner: tooltips "clean, like Diablo 4": `TipCard` restyled as an item tooltip (ledger §7). App JVM
+  tests 357 passed; device captures of every card kind at 411/1.0, 360/1.3 and 320/2.0; review package
+  `blacksmith_v3_tooltips_review.zip` sent to the owner. Instrumented suite: 98 tests, 3 failures (ledger §7: one fails
+  without V3 too, one intermittent, `M4ScreensTest.theForgeMarksTheElementsTheBesiegerCaresAbout` open).
+- Next: the open M4 matchup test, TalkBack and reduced-motion pass, the 1.5 font column of the matrix, classic Town and
+  Records captures; owner question on the body font still open.
+
+## UI/UX V2 (2026-10-16, on `main` at `bd6939b`, not committed)
+
+- Resume point and full surface ledger: `docs/UI_V2_LEDGER.md` (diagnosis, direction, milestones, per-surface state,
+  verification record). Evidence: `app/build/v2-evidence/` (ignored), before/after montages `BEFORE_AFTER_1.png`, `_2.png`.
+- Implemented: M1 shell (header, nav, End Day + "What happens", guided strip, `Parts.kt` components, icon/splash), M2 Forge
+  and weapons (agent worktree, merged), M3 Shop/Storage/Supplies/board/visitor, M4 Guild (agent worktree, merged), M5 run
+  setup/Town/run end (opening chooser, Records, Settings, failures retained), M5b typography (owner request mid-session).
+- Checks: `:app:testDebugUnitTest` 327 passed + new `V2ShellTest`; debug and androidTest APKs build. Device: 411 dp / 1.0
+  for every changed surface except result/bench/weapon sheet/run end (unit-tested only). M6 matrix running.
+- Agent worktrees `C:/Users/tuncb/Desktop/bs-v2-forge` and `bs-v2-guild` are merged and can be removed
+  (`git worktree remove`), owner's call.
+- Open owner questions: a different body font (Inter or Source Sans 3) or keep Fira Sans; the launcher icon is built
+  from the existing anvil art and can be replaced.
+
 ## Classic gameplay rescue investigation (2026-10-15)
 
 - Baseline `main` at `d9c31b41c2e3e055fb75902f0c50f66e51f6fe75`, no tracked edits; pre-existing untracked `build-output/` preserved. No production gameplay, balance, content, RNG, save schema or UI changes. No reproduced unlock defect, so no speculative progression fix was applied.

@@ -2,6 +2,7 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -46,6 +47,9 @@ import com.example.blacksmithproject.ui.theme.Space
  * control or takes a tap meant for one. The objective and its sentence are read out when the step changes; focus is
  * left where the player put it. "Skip guidance" is on every step; the day's outcome closes with "Done" instead.
  */
+/** A guided sentence this short stays in view under its objective; a longer one waits behind "Why?". */
+private const val SHORT_SENTENCE = 60
+
 @Composable
 fun IntroStrip(ui: IntroUi, onSkip: () -> Unit, onDone: () -> Unit, modifier: Modifier = Modifier) {
     var why by rememberSaveable(ui.step) { mutableStateOf(false) }
@@ -56,8 +60,13 @@ fun IntroStrip(ui: IntroUi, onSkip: () -> Unit, onDone: () -> Unit, modifier: Mo
             .drawBehind { drawRect(Gold, size = Size(3.dp.toPx(), size.height)) }
             .padding(start = Space.md, end = Space.xs, bottom = Space.sm).testTag("intro_strip"),
     ) {
+        val large = LocalDensity.current.fontScale >= 1.3f
+        // V2: the objective is the strip. A short pointer ("Open the Forge to do this") stays under it; a longer
+        // explanation waits behind "Why?" with the rest, so the strip is two lines and the workbench under it keeps its room.
+        // The day's outcome keeps its sentence: there it is the news itself.
+        val folded = !ui.last && (large || ui.line.sentence.length > SHORT_SENTENCE)
         val actions: @Composable () -> Unit = {
-            if (ui.line.why != null) InlineActionButton(if (why) "Hide" else "Why?", { why = !why }, Modifier.testTag("intro_why"))
+            if (ui.line.why != null || folded) InlineActionButton(if (why) "Hide" else "Why?", { why = !why }, Modifier.testTag("intro_why"))
             if (ui.last) InlineActionButton("Done", onDone, Modifier.testTag("intro_done"))
             else InlineActionButton("Skip guidance", onSkip, Modifier.testTag("intro_skip"))
         }
@@ -65,8 +74,6 @@ fun IntroStrip(ui: IntroUi, onSkip: () -> Unit, onDone: () -> Unit, modifier: Mo
         // Large text: the actions get a row of their own under the words, as the stat rows stack, and the sentence waits
         // behind "Why?" with the rest, so the step, its way out and the controls under the strip all stay within reach.
         // The day's outcome keeps its sentence: there it is the news itself.
-        val large = LocalDensity.current.fontScale > 1.3f
-        val folded = large && !ui.last
         if (large) overline(Modifier.padding(top = Space.xs))
         else Row(verticalAlignment = Alignment.CenterVertically) { overline(Modifier.weight(1f)); actions() }
         Column(Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(end = Space.sm).semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }) {
@@ -74,7 +81,7 @@ fun IntroStrip(ui: IntroUi, onSkip: () -> Unit, onDone: () -> Unit, modifier: Mo
             if (!folded || why) Text(ui.line.sentence, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.testTag("intro_sentence"))
             if (why) ui.line.why?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs).testTag("intro_why_text")) }
         }
-        if (large) Row { actions() }
+        if (large) FlowRow { actions() }
     }
 }
 
@@ -86,12 +93,14 @@ fun IntroCardLine(line: IntroLine, onSkip: () -> Unit, modifier: Modifier = Modi
         Column(Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite }) {
             Text(line.objective, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.testTag("intro_objective"))
             Text(line.sentence, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-            if (why) line.why?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs).testTag("intro_why_text")) }
         }
-        Row {
+        // The two ways wrap under each other with large text rather than run off a narrow screen. They come before the
+        // reason "Why?" opens, so opening it never moves them (or "Skip guidance") off a short screen.
+        FlowRow {
             if (line.why != null) InlineActionButton(if (why) "Hide" else "Why?", { why = !why }, Modifier.testTag("intro_why"))
             InlineActionButton("Skip guidance", onSkip, Modifier.testTag("intro_skip"))
         }
+        if (why) line.why?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }.testTag("intro_why_text")) }
     }
 }
 

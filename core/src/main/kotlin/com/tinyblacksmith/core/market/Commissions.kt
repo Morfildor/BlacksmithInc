@@ -5,6 +5,7 @@ import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.model.Commission
 import com.tinyblacksmith.core.model.IdOrder
 import com.tinyblacksmith.core.model.Weapon
+import com.tinyblacksmith.core.text.Terms
 
 /**
  * The five quality words and the quality each starts at: the rarity thresholds of [BalanceConfig], defined once.
@@ -52,16 +53,16 @@ object Commissions {
      */
     fun why(commission: Commission, buyer: String, recipient: String?): String? = when (commission.kind) {
         com.tinyblacksmith.core.model.CommissionKind.ORDINARY -> null
-        com.tinyblacksmith.core.model.CommissionKind.NOBLE -> "$buyer is placing an order for a noble."
+        com.tinyblacksmith.core.model.CommissionKind.NOBLE -> "$buyer is commissioning a weapon for a noble."
         com.tinyblacksmith.core.model.CommissionKind.REPLACEMENT -> "$buyer needs a replacement weapon."
         com.tinyblacksmith.core.model.CommissionKind.SIEGE_PREP -> "$buyer is preparing to defend the walls on day ${commission.deadlineDay}."
         com.tinyblacksmith.core.model.CommissionKind.AMBITION -> "$buyer wants a fine weapon for their collection."
-        com.tinyblacksmith.core.model.CommissionKind.FIRST_BLADE -> "A first weapon for ${recipient ?: "a newcomer"}. $buyer pays for the order."
+        com.tinyblacksmith.core.model.CommissionKind.FIRST_BLADE -> "A first weapon for ${recipient ?: "a newcomer"}. $buyer pays for the commission."
         com.tinyblacksmith.core.model.CommissionKind.WALL_PLEDGE -> "$buyer pays half on collection and means to settle the other half after the siege."
         com.tinyblacksmith.core.model.CommissionKind.HEIRLOOM -> "This restored weapon is reserved for $buyer."
     }
 
     /** What a request asks for, in the terms the rule checks: "fine frost Spear (quality 50+)". */
     fun describe(commission: Commission, content: ContentCatalog, config: BalanceConfig): String =
-        "${QualityBand.of(commission.minQuality, config).word} ${commission.element?.let { it.name.lowercase() + " " }.orEmpty()}${content.family(commission.familyId).name} (quality ${commission.minQuality}+)"
+        "${QualityBand.of(commission.minQuality, config).word} ${commission.element?.let { Terms.element(it).lowercase() + " " }.orEmpty()}${content.family(commission.familyId).name} (quality ${commission.minQuality}+)"
 }

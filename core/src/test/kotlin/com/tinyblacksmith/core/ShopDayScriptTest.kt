@@ -528,7 +528,7 @@ class ShopDayScriptTest {
         assertEquals("Reasons to pass. They can't afford it.", Lines.weighed(Considered(WeaponId("a"), 60, listOf(VisitFactor.CANNOT_AFFORD))))
         assertEquals("", Lines.weighed(Considered(WeaponId("a"), 60)))
         assertEquals("Nothing on the shelf improved on their Iron Bow.", line(left(3, "h4", VisitReason.NOT_BETTER).let { it.copy(customer = it.customer!!.copy(equipped = bow)) }))
-        assertEquals("Found no upgrade for their weapon.", line(left(3, "h4", VisitReason.NOT_BETTER)))
+        assertEquals("Found nothing better than their weapon.", line(left(3, "h4", VisitReason.NOT_BETTER)))
         assertEquals("Bronze Axe doesn't suit a Guardian.", line(left(4, "h5", VisitReason.NOT_SUITED, listOf(Considered(WeaponId("b"), 30, listOf(VisitFactor.OFF_CLASS))))))
         assertEquals("They didn't think Bronze Axe was worth 300 gold.", line(left(5, "h6", VisitReason.OVERPRICED, listOf(Considered(WeaponId("b"), 300, listOf(VisitFactor.ABOVE_THEIR_CEILING))))))
         assertEquals("Thought the price was too high.", line(left(5, "h6", VisitReason.OVERPRICED)))

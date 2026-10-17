@@ -43,7 +43,7 @@ private fun startOver(does: String, confirm: String) = StartOverText("Start over
 
 internal fun loadFailureText(f: SaveFailure): LoadFailureText = when (f) {
     is SaveFailure.Corrupt -> if (f.key == "legacy") legacyRowText(newer = false, runSound = f.runSound) else runRowText(
-        "The saved run cannot be read", "Your current run's save is damaged and couldn't be opened.", "the unreadable run", newer = false,
+        "The saved era cannot be read", "Your current era's save is damaged and couldn't be opened.", "the unreadable era", newer = false,
     )
     is SaveFailure.Newer -> (if (f.key == "legacy") legacyRowText(newer = true, runSound = f.runSound) else newerRunText())
         .let { LoadFailureText(it.title, it.happened, it.safe, it.startOver, listOf("Save format ${f.found}. This version supports up to ${f.supported}.")) }
@@ -51,17 +51,17 @@ internal fun loadFailureText(f: SaveFailure): LoadFailureText = when (f) {
         val details = f.problems.take(3) + listOfNotNull("and ${f.problems.size - 3} more".takeIf { f.problems.size > 3 })
         // A run from newer rules or content is not a damaged run: the way on is to update the game.
         val text = if (f.problems.any { it.startsWith("Run uses rules") || it.startsWith("Run uses content") }) newerRunText() else runRowText(
-            "This version cannot continue the saved run", "This run contains game data that this version doesn't support.", "the run this version cannot play", newer = false,
+            "This version cannot continue the saved era", "This era contains game data that this version doesn't support.", "the era this version cannot play", newer = false,
         )
         LoadFailureText(text.title, text.happened, text.safe, text.startOver, details)
     }
     is SaveFailure.FileDamaged -> LoadFailureText(
         "The save file is damaged",
-        "The save for your run and legacy is damaged. It couldn't be opened.",
+        "The save for your era and legacy is damaged. It couldn't be opened.",
         UNTOUCHED,
         startOver(
-            "Keeps the damaged save as a backup on this device. Starts era 1 with no run, points, upgrades or legends.",
-            "Keeps the damaged save as a backup. Your run, points, upgrades and legends will be removed from the active game. Starts era 1. $NO_WAY_BACK.",
+            "Keeps the damaged save as a backup on this device. Starts again from era 1 with no points, perks or Hall of Legends.",
+            "Keeps the damaged save as a backup. Your era, points, perks and Hall of Legends will be removed from the active game. Starts era 1. $NO_WAY_BACK.",
         ),
     )
     is SaveFailure.Io -> LoadFailureText(
@@ -74,16 +74,16 @@ internal fun loadFailureText(f: SaveFailure): LoadFailureText = when (f) {
 
 private fun newerRunText() = runRowText(
     "This save is from a newer version",
-    "A newer version of Tiny Blacksmith saved this run. Update the game to continue.",
-    "the run from the newer version", newer = true,
+    "A newer version of Tiny Blacksmith saved this era. Update the game to continue.",
+    "the era from the newer version", newer = true,
 )
 
 /** Only the run row is the problem: the legacy row was read, so it is safe and stays. */
 private fun runRowText(title: String, happened: String, theRun: String, newer: Boolean) = LoadFailureText(
-    title, happened, "$UNTOUCHED Your points, upgrades and legends are stored separately and are safe.",
+    title, happened, "$UNTOUCHED Your points, perks and Hall of Legends are stored separately and are safe.",
     startOver(
         "Keeps $theRun as a backup on this device and returns to the title screen. Keeps your legacy.",
-        "Keeps ${theRun} as a backup. You won't be able to continue that run. $NO_WAY_BACK" + (if (newer) ", even after updating." else "."),
+        "Keeps ${theRun} as a backup. You won't be able to continue that era. $NO_WAY_BACK" + (if (newer) ", even after updating." else "."),
     ),
 )
 
@@ -94,18 +94,18 @@ private fun runRowText(title: String, happened: String, theRun: String, newer: B
 private fun legacyRowText(newer: Boolean, runSound: Boolean): LoadFailureText {
     val theRecord = if (newer) "the legacy record from the newer version" else "the unreadable legacy record"
     val title = if (newer) "This save is from a newer version" else "The legacy record cannot be read"
-    val happened = "The save that holds your legacy record (points, upgrades and legends) " +
+    val happened = "The save that holds your legacy record (points, perks and Hall of Legends) " +
         (if (newer) "was saved by a newer version of Tiny Blacksmith. Update the game to continue." else "is damaged and couldn't be opened.")
     if (runSound) return LoadFailureText(
-        title, happened, "$UNTOUCHED Your current run can still be opened. It contains a copy of your legacy.",
+        title, happened, "$UNTOUCHED Your current era can still be opened. It contains a copy of your legacy.",
         StartOverText(
-            "Rebuild the legacy from the run",
-            "Keeps $theRecord as a backup. Restores the legacy copy from your current run, then continues the run." +
+            "Rebuild the legacy from the era",
+            "Keeps $theRecord as a backup. Restores the legacy copy from your current era, then continues the era." +
                 (if (newer) " Any legacy data added by the newer version stays only in the backup." else ""),
             "Rebuild the legacy?",
-            "Keeps $theRecord as a backup and replaces it with the legacy copy from your current run. " +
-                "Continues with the points, upgrades and legends in that copy. If the run has ended, claim its legacy again, " +
-                "then buy any later upgrades again using the restored points." +
+            "Keeps $theRecord as a backup and replaces it with the legacy copy from your current era. " +
+                "Continues with the points, perks and Hall of Legends in that copy. If the era has ended, claim its legacy again, " +
+                "then buy any later perks again using the restored points." +
                 (if (newer) " Data added by the newer version remains only in the backup, even after updating. $NO_WAY_BACK." else ""),
             "Rebuild",
         ),
@@ -113,9 +113,9 @@ private fun legacyRowText(newer: Boolean, runSound: Boolean): LoadFailureText {
     return LoadFailureText(
         title, happened, UNTOUCHED,
         startOver(
-            "Keeps $theRecord and any current run as backups. Starts era 1 with no points, upgrades or legends.",
-            "Keeps $theRecord and any current run as backups. $NO_WAY_BACK. " +
-                "Your run, points, upgrades and legends will be removed from the active game" + (if (newer) ", even after updating." else ".") + " You begin again from era 1.",
+            "Keeps $theRecord and any current era as backups. Starts era 1 with no points, perks or Hall of Legends.",
+            "Keeps $theRecord and any current era as backups. $NO_WAY_BACK. " +
+                "Your era, points, perks and Hall of Legends will be removed from the active game" + (if (newer) ", even after updating." else ".") + " You begin again from era 1.",
         ),
     )
 }

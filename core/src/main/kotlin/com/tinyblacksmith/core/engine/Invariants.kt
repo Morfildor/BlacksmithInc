@@ -20,13 +20,13 @@ object Invariants {
         RngStream.entries.forEach { if (it !in state.rng.streams) problems += "Missing RNG stream $it" }
         // A run ends when the forge falls, or, in a guild run, when the smith closes the chapter with a milestone earned.
         val retired = state.guild?.retired == true
-        if (retired && state.guild?.milestones.isNullOrEmpty()) problems += "A run was closed without a milestone"
-        if ((state.phase == Phase.ENDED) != (state.town.integrity == 0 || retired)) problems += "Phase ${state.phase} with forge integrity ${state.town.integrity}"
+        if (retired && state.guild?.milestones.isNullOrEmpty()) problems += "An era was closed without a milestone"
+        if ((state.phase == Phase.ENDED) != (state.town.integrity == 0 || retired)) problems += "Phase ${state.phase} with forge health ${state.town.integrity}"
         if (state.gold < 0) problems += "Negative gold ${state.gold}"
         if (state.energy < 0) problems += "Negative energy ${state.energy}"
         if (state.overworkToday < 0 || state.overworkToday > config.maxOverworkPerDay) problems += "Overwork out of bounds ${state.overworkToday}"
         state.materials.forEach { (m, n) -> if (n < 0) problems += "Negative material ${m.value}" }
-        if (state.town.integrity < 0) problems += "Negative integrity"
+        if (state.town.integrity < 0) problems += "Negative forge health"
         if (state.town.armory !in 0..config.armoryMax) problems += "Armory out of bounds ${state.town.armory}"
         if (state.listedWeapons().size > shelfSlots) problems += "Shelf overfull"
         state.weapons.values.forEach { w ->
@@ -55,11 +55,11 @@ object Invariants {
             if (h.level !in 1..config.heroMaxLevel) problems += "Hero ${h.fullName} level out of bounds ${h.level}"
             if (h.xp < 0 || h.loyalty < 0 || h.fame < 0 || h.kills < 0 || h.victories < 0) problems += "Hero ${h.fullName} has a negative record"
         }
-        if (state.town.championIds.size > config.championCount) problems += "More than ${config.championCount} champions"
-        if (state.town.championIds.toSet().size != state.town.championIds.size) problems += "A champion is listed twice"
+        if (state.town.championIds.size > config.championCount) problems += "More than ${config.championCount} defenders"
+        if (state.town.championIds.toSet().size != state.town.championIds.size) problems += "A defender is listed twice"
         state.town.championIds.forEach { id ->
             val h = state.heroes[id]
-            if (h == null || !h.isAlive) problems += "Dead or missing champion ${id.value}"
+            if (h == null || !h.isAlive) problems += "Dead or missing defender ${id.value}"
         }
         state.factions.values.forEach { f -> if (f.pressure !in 0..100) problems += "Faction pressure out of range" }
         state.town.guilds.forEach { g -> if (g.founderId !in state.heroes) problems += "Guild ${g.id} founded by unknown hero" }
@@ -74,10 +74,10 @@ object Invariants {
         if (state.relics.map { it.id }.toSet().size != state.relics.size) problems += "A relic is held twice"
         state.weapons.values.forEach { w ->
             val order = w.promisedTo?.let { state.commissions[it] } ?: return@forEach
-            if (!w.isInStorage && !w.isListed) problems += "Weapon ${w.id.value} is promised to an order and not in the shop"
-            if (order.status != com.tinyblacksmith.core.model.CommissionStatus.ACCEPTED) problems += "Weapon ${w.id.value} is kept for a closed order"
+            if (!w.isInStorage && !w.isListed) problems += "Weapon ${w.id.value} is promised to a commission and not in the shop"
+            if (order.status != com.tinyblacksmith.core.model.CommissionStatus.ACCEPTED) problems += "Weapon ${w.id.value} is kept for a closed commission"
         }
-        state.weapons.values.forEach { w -> if (w.promisedTo != null && w.promisedTo !in state.commissions) problems += "Weapon ${w.id.value} is promised to an unknown order" }
+        state.weapons.values.forEach { w -> if (w.promisedTo != null && w.promisedTo !in state.commissions) problems += "Weapon ${w.id.value} is promised to an unknown commission" }
         problems += guild(state, config)
         return problems
     }
@@ -88,7 +88,7 @@ object Invariants {
         val g = state.guild
         val loans = state.weapons.values.filter { it.isLoaned }
         if (g == null) {
-            if (loans.isNotEmpty()) problems += "A run without a guild has ${loans.size} weapons on loan"
+            if (loans.isNotEmpty()) problems += "An era without a guild has ${loans.size} weapons on loan"
             return problems
         }
         val cfg = config.guild
@@ -103,7 +103,7 @@ object Invariants {
         for (w in loans) {
             val holder = g.member(w.loanedTo!!)
             if (holder == null) problems += "Weapon ${w.id.value} is on loan to ${w.loanedTo!!.value}, who is not a member"
-            if (w.promisedTo != null) problems += "Weapon ${w.id.value} is on loan and promised to an order"
+            if (w.promisedTo != null) problems += "Weapon ${w.id.value} is on loan and promised to a commission"
         }
         loans.groupingBy { it.loanedTo!! }.eachCount().forEach { (id, n) -> if (n > 1) problems += "Member ${id.value} holds $n loans" }
         if (g.reserved.size > cfg.defenders || g.reserved.toSet().size != g.reserved.size) problems += "The wall's reservations are out of bounds"
@@ -112,16 +112,16 @@ object Invariants {
         g.planned?.let { p ->
             if (p.heroIds.isEmpty() || p.heroIds.size > cfg.partyMax) problems += "The planned party has ${p.heroIds.size} members"
             p.heroIds.forEach { if (g.member(it)?.status != MemberStatus.HOME) problems += "${it.value} is planned for a party and is not in town" }
-            if (g.offers.none { it.id == p.offerId }) problems += "A party is planned for a contract that is not on the board"
+            if (g.offers.none { it.id == p.offerId }) problems += "A party is planned for a quest that is not on the board"
             if (g.mission != null) problems += "A party is planned while another is out"
         }
         val away = g.members.filter { it.status == MemberStatus.AWAY }.map { it.heroId }.toSet()
         val out = g.mission?.party.orEmpty().filter { g.isMember(it) && g.member(it)?.status != MemberStatus.CAPTURED }.toSet() + listOfNotNull(g.mission?.offer?.subjectHeroId?.takeIf { g.member(it)?.status == MemberStatus.AWAY })
         if (away != out.filter { g.member(it)?.status == MemberStatus.AWAY }.toSet() || !out.all { it in away }) problems += "Members away (${away.map { it.value }}) are not the party that is out (${out.map { it.value }})"
-        g.mission?.let { m -> if (m.stage > m.offer.stages.size || m.party.isEmpty()) problems += "The party's contract is out of bounds" }
+        g.mission?.let { m -> if (m.stage > m.offer.stages.size || m.party.isEmpty()) problems += "The party's quest is out of bounds" }
         g.captives.forEach { c -> if (state.heroes[c.heroId]?.isAlive != true) problems += "Captive ${c.heroId.value} is dead or missing" }
         g.nemesis?.let { n -> if ((state.weapons[n.weaponId]?.location as? WeaponLocation.Lost) == null) problems += "The nemesis carries ${n.weaponId.value}, which is not lost" }
-        if (g.offers.map { it.id }.toSet().size != g.offers.size) problems += "A contract is on the board twice"
+        if (g.offers.map { it.id }.toSet().size != g.offers.size) problems += "A quest is on the board twice"
         if (g.milestones.map { it.id }.toSet().size != g.milestones.size) problems += "A milestone is recorded twice"
         return problems
     }

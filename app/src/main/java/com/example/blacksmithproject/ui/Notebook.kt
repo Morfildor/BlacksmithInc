@@ -14,11 +14,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.HorizontalDivider
+import com.tinyblacksmith.core.config.BalanceConfig
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,8 +54,8 @@ import com.tinyblacksmith.core.model.KnowledgeState
 
 /** The kinds of thing the notebook keeps apart. [FIGHTS] is a page only where fights read a weapon's rules (`fightNotes`). */
 enum class BookTab(val label: String, val empty: String) {
-    METAL("Metal pairings", "Your first forge will add a metal pairing here."),
-    WEAPON("Weapon pairings", "Your first forge will add a weapon pairing here."),
+    METAL("Metal combinations", "Your first forge will add a metal combination here."),
+    WEAPON("Weapon combinations", "Your first forge will add a weapon combination here."),
     CLUES("Recipe clues", "No recipe clues yet. Experiments and visitors can reveal them."),
     FIGHTS("Fight notes", "No fight notes yet. Forge a weapon to discover its effects in a fight."),
 }
@@ -88,9 +89,9 @@ fun LazyListScope.notebookItems(s: UiState.Playing, vm: GameViewModel, chosen: B
     }
     item(key = "book_head") {
         Column {
-            // The page's head on a plate, as the Legacy page has its own.
-            FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
-                Text("Notebook", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
+            // The page's head, as the Legacy page has its own: a title and the smith's own count, no plate.
+            Column(Modifier.fillMaxWidth().padding(top = Space.md)) {
+                Text("Notebook", style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() })
                 Secondary("${book.counts}. Your notes carry over to every era.", Modifier.testTag("book_counts"))
             }
             // Tabs of one width across the page; a label may take two lines, so nothing is cut at a larger text size.
@@ -111,27 +112,32 @@ fun LazyListScope.notebookItems(s: UiState.Playing, vm: GameViewModel, chosen: B
         }
     }
     if (tab == BookTab.FIGHTS && fights != null) {
-        fightNoteItems(fights)
+        fightNoteItems(fights, engine.config)
         return
     }
     val pairings = when (tab) { BookTab.METAL -> book.metal; BookTab.WEAPON -> book.weapon; BookTab.CLUES, BookTab.FIGHTS -> emptyList() }
     if ((tab == BookTab.CLUES && book.clues.isEmpty()) || (tab != BookTab.CLUES && pairings.isEmpty())) {
         // An empty kind is a blank page of the same book, not a stray line.
         item(key = "book_empty") {
-            Box(Modifier.fillMaxWidth().padding(top = 12.dp).forgeRow().padding(horizontal = Space.md, vertical = Space.lg), contentAlignment = Alignment.Center) {
+            Box(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.lg), contentAlignment = Alignment.Center) {
                 Text(tab.empty, style = MaterialTheme.typography.bodyMedium, color = CreamMuted, textAlign = TextAlign.Center, modifier = Modifier.testTag("book_empty"))
             }
         }
     }
-    items(pairings, key = { "journal_${it.key}" }) { p -> PairingRow(p, onBench = p.key in bench, art = pairingArt(p, vm)) { vm.usePairing(p.key) } }
-    if (tab == BookTab.CLUES) items(book.clues, key = { "journal_$it" }) { key ->
-        Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = Space.sm)) {
+    // V3: rows with hairlines between them, not a stack of plates.
+    itemsIndexed(pairings, key = { _, p -> "journal_${p.key}" }) { i, p ->
+        if (i > 0) HorizontalDivider(color = BronzeDeep)
+        PairingRow(p, onBench = p.key in bench, art = pairingArt(p, vm)) { vm.usePairing(p.key) }
+    }
+    if (tab == BookTab.CLUES) itemsIndexed(book.clues, key = { _, k -> "journal_$k" }) { i, key ->
+        if (i > 0) HorizontalDivider(color = BronzeDeep)
+        Column(Modifier.fillMaxWidth().padding(top = Space.xs)) {
             AffinityHint(journal, engine.content, key)
             signatureUi(journal, key, engine.content, engine.config)?.let { SignatureLadder(it, onUse = vm::useRecipe) }
         }
     }
     item(key = "book_try") {
-        SecondaryActionButton("Try a new pairing", vm::tryUntried, Modifier.fillMaxWidth().padding(top = Space.md).testTag("book_try"), detail = "Puts a metal and an augment from your stock that you have never forged together on the workbench. Nothing is spent.")
+        SecondaryActionButton("Try a new combination", vm::tryUntried, Modifier.fillMaxWidth().padding(top = Space.md).testTag("book_try"), detail = "Puts a metal and an infusion from your stock that you have never forged together on the workbench. Nothing is spent.")
     }
 }
 
@@ -140,28 +146,26 @@ fun LazyListScope.notebookItems(s: UiState.Playing, vm: GameViewModel, chosen: B
  * open, marked as only suggested by the rules or as seen in a real fight, then how many paths are still closed. Each
  * kind has its own word, sign and colour. The bench writes nothing here.
  */
-private fun LazyListScope.fightNoteItems(notes: FightNotesUi) {
+private fun LazyListScope.fightNoteItems(notes: FightNotesUi, config: BalanceConfig) {
     if (notes.learned.isEmpty() && notes.paths.isEmpty()) item(key = "book_empty") {
-        Box(Modifier.fillMaxWidth().padding(top = 12.dp).forgeRow().padding(horizontal = Space.md, vertical = Space.lg), contentAlignment = Alignment.Center) {
+        Box(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.lg), contentAlignment = Alignment.Center) {
             Text(BookTab.FIGHTS.empty, style = MaterialTheme.typography.bodyMedium, color = CreamMuted, textAlign = TextAlign.Center, modifier = Modifier.testTag("book_empty"))
         }
     }
+    // The effects forged so far as ability rows (when, what, how often), with the statuses they name explained once.
     if (notes.learned.isNotEmpty()) item(key = "book_learned") {
-        Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm).testTag("book_learned")) {
-            Text("Discovered weapon effects", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.semantics { heading() })
-            notes.learned.forEach { r ->
-                Column(Modifier.padding(top = Space.sm).semantics(mergeDescendants = true) {}) {
-                    Text(r.name, style = MaterialTheme.typography.titleSmall, color = Cream)
-                    FightNoteKindLine(FightNoteKind.LEARNED, r.description)
-                }
-            }
+        Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("book_learned"), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            TipSectionBlock(TipSection("Discovered weapon effects", notes.learned.map { abilityLine(it.name, it.description, source = "${FightNoteKind.LEARNED.sign} ${FightNoteKind.LEARNED.word}") }))
+            TipKeywords(keywords(notes.learned.flatMap { it.stats }, config))
         }
     }
-    items(notes.paths, key = { "interaction_${it.id}" }) { p ->
-        Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm).testTag("book_interaction_${p.id}").semantics(mergeDescendants = true) {}) {
+    if (notes.paths.isNotEmpty()) item(key = "book_paths_head") { SectionHeader("How effects work together") }
+    itemsIndexed(notes.paths, key = { _, p -> "interaction_${p.id}" }) { i, p ->
+        if (i > 0) HorizontalDivider(color = BronzeDeep)
+        Column(Modifier.fillMaxWidth().padding(vertical = Space.sm).testTag("book_interaction_${p.id}").semantics(mergeDescendants = true) {}) {
             Text(p.name, style = MaterialTheme.typography.titleSmall, color = Cream)
             FightNoteKindLine(p.kind, p.description)
-            Text("Drawback: ${p.tradeoff}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp))
+            Text("${EffectKind.FLAW.sign} Drawback: ${p.tradeoff}", style = MaterialTheme.typography.bodySmall, color = EffectKind.FLAW.color, modifier = Modifier.padding(top = 2.dp))
             if (p.known.isNotEmpty()) Text("Effects you have discovered: ${p.known.joinToString(", ")}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp))
         }
     }
@@ -189,8 +193,7 @@ private fun pairingArt(p: PairingUi, vm: GameViewModel): List<Int> = listOfNotNu
 @Composable
 private fun PairingRow(p: PairingUi, onBench: Boolean, art: List<Int>, onUse: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().then(if (onBench) Modifier.border(1.dp, Gold, RoundedCornerShape(4.dp)) else Modifier)
-            .padding(start = Space.sm).testTag("book_row_${p.key}"),
+        Modifier.fillMaxWidth().padding(vertical = Space.xs).testTag("book_row_${p.key}"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Both ingredients in one dark slot, as the workbench shows them.
@@ -207,32 +210,35 @@ private fun PairingRow(p: PairingUi, onBench: Boolean, art: List<Int>, onUse: ()
             )
             if (onBench) Text("◆ On the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
         }
-        TextButton(onClick = onUse, modifier = Modifier.heightIn(min = 48.dp).testTag("book_use_${p.key}")) { Text("Use ›", color = Gold) }
+        // A way to the workbench, said in cream with the one chevron, as every door is.
+        Row(
+            Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Put on the workbench", onClick = onUse).padding(horizontal = Space.sm).testTag("book_use_${p.key}"),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("Use", style = MaterialTheme.typography.labelLarge, color = Cream)
+            Chevron(ChevronWay.RIGHT, tint = CreamMuted, size = 18.dp)
+        }
     }
 }
 
 /**
- * What the forge just done taught, on its result: each gain by name with the journal's words, or one line when nothing
- * moved; then what it was as an attempt at a signature the clues know of.
+ * What the forge just done taught, on its result, in one line ([learningLine]): the kind of each gain with a green "+",
+ * or the note that nothing moved. Each gain in the journal's words, and the attempt at a signature the clues know of,
+ * are on its card behind the ringed "i" ([learningTip]).
  */
 @Composable
 fun LearningCard(learning: ForgeLearningUi, modifier: Modifier = Modifier) {
-    val card = RoundedCornerShape(9.dp)
-    if (learning.changes.isEmpty()) {
-        learning.note?.let { Secondary(it, modifier.testTag("reveal_learning_note")) }
-        learning.attempt?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = modifier.testTag("reveal_attempt")) }
-        return
-    }
-    Column(
-        modifier.fillMaxWidth().clip(card).background(BuffGreen.copy(alpha = 0.10f)).border(1.dp, BuffGreen.copy(alpha = 0.45f), card).padding(horizontal = 12.dp, vertical = Space.sm).testTag("reveal_learning"),
-        verticalArrangement = Arrangement.spacedBy(Space.sm),
-    ) {
-        learning.changes.forEach { c ->
-            Column(Modifier.semantics(mergeDescendants = true) {}) {
-                Text(c.title, style = MaterialTheme.typography.titleSmall, color = BuffGreen)
-                Text(c.line, style = MaterialTheme.typography.bodySmall, color = Cream)
-            }
+    val line = learningLine(learning) ?: return
+    val gained = learning.changes.isNotEmpty()
+    val tag = when { gained -> "reveal_learning"; learning.note != null -> "reveal_learning_note"; else -> "reveal_attempt" }
+    Row(modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}.testTag(tag)) {
+            Text("Notebook", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+            Text(
+                if (gained) "${EffectKind.BUFF.sign} $line" else line, style = MaterialTheme.typography.bodyMedium,
+                color = if (gained) BuffGreen else Cream,
+            )
         }
-        learning.attempt?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.testTag("reveal_attempt")) }
+        InfoButton("what the notebook learned", { learningTip(learning) }, tag = "reveal_learning_info")
     }
 }

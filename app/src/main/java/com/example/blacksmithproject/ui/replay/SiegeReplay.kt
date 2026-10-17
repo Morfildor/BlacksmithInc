@@ -99,7 +99,9 @@ import com.tinyblacksmith.core.combat.ReplayActor
 import com.tinyblacksmith.core.combat.ReplayTimeline
 import com.tinyblacksmith.core.combat.Side
 import com.tinyblacksmith.core.combat.StepKind
+import com.tinyblacksmith.core.content.CombatContent
 import com.tinyblacksmith.core.content.ContentCatalog
+import com.tinyblacksmith.core.text.Terms
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.WeaponId
@@ -129,7 +131,7 @@ fun SiegeReplayDialog(
     onOpenGazette: () -> Unit,
     onClose: () -> Unit,
 ) {
-    val replay = remember(fight) { FightReplay.of(fight) }
+    val replay = remember(fight, rules) { FightReplay.of(fight, rules) }
     val account = remember(fight) { FightAccounting.of(fight) }
     val faces = remember(replay, state) { replay?.let { replayFaces(it, state, content) }.orEmpty() }
     var report by rememberSaveable(fight.title) { mutableStateOf(startOnReport || replay == null) }
@@ -204,7 +206,7 @@ private fun ReplayStage(
             InlineActionButton("Close", onClose, Modifier.testTag("replay_close"))
         }
         Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Space.md)) {
-            SideRow("Besiegers", enemies, faces, now, labels, step.actor, activeHolder, current, frame, lane, reducedMotion, towardBelow = true) { inspecting = it; playing = false }
+            SideRow("Attackers", enemies, faces, now, labels, step.actor, activeHolder, current, frame, lane, reducedMotion, towardBelow = true) { inspecting = it; playing = false }
             NowBanner(replay, frame, Modifier.padding(vertical = Space.sm))
             SideRow("On the wall", party, faces, now, labels, step.actor, activeHolder, current, frame, lane, reducedMotion, towardBelow = false) { inspecting = it; playing = false }
             RecentStrip(replay, frames, index, Modifier.padding(top = Space.sm))
@@ -275,9 +277,9 @@ private fun ActorTile(
     val said = buildString {
         append(a.name); append(", ")
         append(if (s.downed) "down" else "${s.health} of ${a.maxHealth} health")
-        stats.forEach { (st, n) -> append(", ${FightReplay.word(st)} $n") }
+        stats.forEach { (st, n) -> append(", ${Terms.stat(st)} $n") }
         if (acting) append(", acting")
-        if (bladeSource) append(", their weapon's rule fires") else if (ruleSource) append(", their rule fires")
+        if (bladeSource) append(", their weapon's effect triggers") else if (ruleSource) append(", their effect triggers")
         label?.let { append(". ${it.text}${shortNote(it.note)?.let { n -> " $n" }.orEmpty()}") }
     }
     Column(
@@ -320,7 +322,7 @@ private fun ActorTile(
         ) {
             stats.forEach { (st, n) ->
                 Text(
-                    "${FightReplay.word(st)} $n", style = MaterialTheme.typography.labelSmall, color = statColor(st), maxLines = 1,
+                    "${Terms.stat(st)} $n", style = MaterialTheme.typography.labelSmall, color = statColor(st), maxLines = 1,
                     modifier = Modifier.background(ForgePanel, RoundedCornerShape(3.dp)).border(1.dp, statColor(st).copy(alpha = 0.6f), RoundedCornerShape(3.dp)).padding(horizontal = 3.dp),
                 )
             }
@@ -355,10 +357,14 @@ private fun NowBanner(replay: Replay, frame: Frame, modifier: Modifier = Modifie
         frame.kind == FrameKind.END -> null
         pop?.rule != null -> {
             val holder = replay.actor(pop.source)
-            if (pop.weapon) "Weapon · ${holder?.weapon ?: "weapon"}: ${pop.rule}" else listOfNotNull(holder?.name, pop.rule).joinToString(": ")
+            // A metal's or an element's effect is named after its source: what it does is said beside it.
+            val named = step.uses.firstOrNull { it.holder == pop.source && it.name == pop.rule }?.let { CombatContent.label(it.ruleId, it.name) } ?: pop.rule
+            if (pop.weapon) "Weapon · ${holder?.weapon ?: "weapon"}: $named" else listOfNotNull(holder?.name, named).joinToString(": ")
         }
-        frame.kind == FrameKind.INTRO && step.uses.isNotEmpty() -> step.uses.joinToString(", ") { u -> if (u.weapon) "Weapon: ${u.name}" else u.name }
-        step.kind == StepKind.TICK -> "A state ticks"
+        frame.kind == FrameKind.INTRO && step.uses.isNotEmpty() -> step.uses.joinToString(", ") { u -> CombatContent.label(u.ruleId, u.name).let { if (u.weapon) "Weapon: $it" else it } }
+        step.kind == StepKind.TICK -> step.pops.firstNotNullOfOrNull { it.tick }?.let { s ->
+            if (s == com.tinyblacksmith.core.combat.Stat.REGEN) "${Terms.stat(s)} heals" else "${Terms.stat(s)} deals damage"
+        } ?: "A status takes effect"
         else -> null
     }
     Column(
@@ -405,13 +411,13 @@ private fun Inspector(
             s?.let { Text(if (it.downed) "Down" else "Health ${it.health} of ${a.maxHealth}", style = MaterialTheme.typography.bodyMedium) }
             a.weapon?.let { Text("Weapon: $it", style = MaterialTheme.typography.bodyMedium) }
             a.weaponRules.forEach { id ->
-                Text("${replay.rules[id] ?: id}: ${descriptions[id] ?: "a rule of this weapon."}", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                Text("${replay.rules[id] ?: id}: ${descriptions[id] ?: "an effect of this weapon."}", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
             }
             val stats = STAT_ORDER.mapNotNull { st -> s?.stats?.get(st)?.takeIf { it > 0 }?.let { st to it } }
             if (stats.isNotEmpty()) {
                 Text("Now on ${a.name}", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
-                stats.forEach { (st, n) -> Text("${FightReplay.word(st)} $n: ${statMeaning(st, rules)}", style = MaterialTheme.typography.bodySmall) }
-            } else if (s?.downed != true) Text("No states on ${a.name} now.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                stats.forEach { (st, n) -> Text("${Terms.stat(st)} $n: ${statMeaning(st, rules)}", style = MaterialTheme.typography.bodySmall) }
+            } else if (s?.downed != true) Text("No statuses on ${a.name} now.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.xs), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                 val bladeId = a.weaponId?.let { WeaponId(it) }?.takeIf { state.weapons.containsKey(it) }
                 if (a.side == Side.PARTY && bladeId != null) SecondaryActionButton("Weapon record", { onOpenBlade(bladeId) }, Modifier.testTag("replay_open_blade"))

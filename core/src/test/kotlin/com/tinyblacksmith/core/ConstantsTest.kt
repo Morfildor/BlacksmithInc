@@ -40,7 +40,7 @@ class ConstantsTest {
         Allowed("battle/Battle.kt", "1.15", "SiegeOdds.STRONG", "the forecast's word for the odds"),
         Allowed("battle/Battle.kt", "0.8", "SiegeOdds.OUTMATCHED", "the forecast's word for the odds"),
         Allowed("battle/Battle.kt", "80", "overwhelming threat", "the word for a pressure"),
-        Allowed("battle/Battle.kt", "60", "grave threat", "the word for a pressure"),
+        Allowed("battle/Battle.kt", "60", "severe threat", "the word for a pressure"),
         Allowed("battle/Battle.kt", "40", "rising threat", "the word for a pressure"),
         Allowed("battle/Battle.kt", "20", "restless", "the word for a pressure"),
         // Text handling.

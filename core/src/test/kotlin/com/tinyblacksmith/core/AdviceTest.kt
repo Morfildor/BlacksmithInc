@@ -122,8 +122,8 @@ class AdviceTest {
         val forecast = engine.siegeForecast(s)!!
         assertTrue(forecast.odds == Battle.SiegeOdds.OUTMATCHED || forecast.odds == Battle.SiegeOdds.DIRE, "the scenario: ${forecast.odds}")
         assertEquals(Lead(LeadKind.ARM_DEFENDERS, factionId = forecast.faction.id, days = 1, element = forecast.faction.weakTo), lead(s))
-        val weak = forecast.faction.weakTo?.let { " Weak to ${it.name.lowercase()}." }.orEmpty()
-        assertEquals(LeadLine("Offer weapons for the defence", "The town looks outmatched for the siege tomorrow. The ${forecast.faction.name} are coming.$weak Heroes choose what to buy. More weapons do not guarantee a hold."), line(s))
+        val weak = forecast.faction.weakTo?.let { " They are weak to ${it.name.lowercase()}." }.orEmpty()
+        assertEquals(LeadLine("Stock weapons for the siege", "As things stand, the town's defense falls short of the raid for the siege tomorrow. The ${forecast.faction.name} are coming.$weak Heroes choose what to buy. More weapons on the shelf do not guarantee that the town holds."), line(s))
         assertNotEquals(LeadKind.ARM_DEFENDERS, lead(stocked.besiegedIn(3)).kind, "three days off: not yet")
         val safe = stocked.besiegedIn(2, pressure = 0, militia = 100_000)
         assertEquals(Battle.SiegeOdds.STRONG, engine.siegeForecast(safe)!!.odds)

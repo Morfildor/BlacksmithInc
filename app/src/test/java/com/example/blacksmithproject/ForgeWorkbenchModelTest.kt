@@ -53,7 +53,7 @@ class ForgeWorkbenchModelTest : ShopDayTestBase() {
         assertEquals("Choose a metal", one.action.note)
         val two = bench(ForgeDraft(familyId = family.id, coreId = core.id))
         assertEquals(RecipeSlot.AUGMENT, two.next)
-        assertEquals("Choose an augment", two.action.note)
+        assertEquals("Choose an infusion", two.action.note)
         assertTrue(two.notes.isEmpty())
     }
 
@@ -111,7 +111,7 @@ class ForgeWorkbenchModelTest : ShopDayTestBase() {
         val ca = Journal.coreAugmentKey(core.id, augment.id)
         val af = Journal.augmentFamilyKey(augment.id, family.id)
         val untried = bench(ready).notes
-        assertEquals(listOf("Metal + augment", "Augment + weapon"), untried.map { it.label })
+        assertEquals(listOf("Metal + infusion", "Infusion + weapon"), untried.map { it.label })
         assertEquals(listOf("Untried", "Untried"), untried.map { it.stage })
         assertTrue(untried.all { it.hint == "Forge to learn" })
 
@@ -135,7 +135,7 @@ class ForgeWorkbenchModelTest : ShopDayTestBase() {
             assertEquals("Incomplete clues", it.stage)
             assertEquals("Your draft matches the clues you have. The rest are still unknown.", it.hint)
         }
-        assertEquals("Your draft misses a clue: ${JournalRules.clue(dawn, ClueRung.CATALYST, engine.config)}.", note(with(ClueRung.RECIPE, ClueRung.CATALYST))!!.hint)
+        assertEquals("Your draft misses a clue. ${JournalRules.clue(dawn, ClueRung.CATALYST, engine.config).replaceFirstChar { it.uppercase() }}.", note(with(ClueRung.RECIPE, ClueRung.CATALYST))!!.hint)
         val exact = quick.copy(mode = ForgeMode.ADVANCED, catalystId = dawn.catalystId)
         note(with(*ClueRung.entries.toTypedArray()), exact)!!.let {
             assertEquals("All clues found", it.stage)

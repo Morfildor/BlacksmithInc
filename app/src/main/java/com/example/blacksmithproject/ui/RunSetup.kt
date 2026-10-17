@@ -44,14 +44,11 @@ fun RunSetup(vm: GameViewModel, era: Int, enabled: Boolean, onBack: () -> Unit, 
         ) {
             InlineActionButton("Back", onBack, Modifier.testTag("setup_back"))
             Text("How era $era begins", style = MaterialTheme.typography.headlineMedium, color = Cream, modifier = Modifier.padding(top = Space.xs).semantics { heading() })
-            Text(
-                "A charter adds a guild: heroes you hire, arm with loaned weapons and send on quests. Without a charter, you run only the shop.",
-                style = MaterialTheme.typography.bodyMedium, color = CreamMuted, modifier = Modifier.padding(top = Space.xs, bottom = Space.md),
-            )
-            CharterPicker(charters, selected, vm::selectCharter, vm.engine.content, title = null)
+            // The two kinds of run say what they are in their own rows (CharterPicker), so the heading needs no paragraph under it.
+            CharterPicker(charters, selected, vm::selectCharter, vm.engine.content, Modifier.padding(top = Space.md), title = null)
         }
         PrimaryActionButton(
-            chosen?.let { "Begin under ${it.name}" } ?: "Begin a classic run", onBegin,
+            chosen?.let { "Begin under ${it.name}" } ?: "Begin a classic era", onBegin,
             Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm).testTag("setup_begin"), enabled = enabled,
         )
     }

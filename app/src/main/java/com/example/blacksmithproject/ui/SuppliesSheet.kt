@@ -21,6 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -33,7 +35,9 @@ import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.content.MaterialDef
+import com.tinyblacksmith.core.content.ToolDef
 import com.tinyblacksmith.core.content.UpgradeEffect
+import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.engine.WorldEvents
@@ -69,6 +73,15 @@ fun GameEngine.supplyNotes(state: GameState, m: MaterialDef): List<String> {
     )
 }
 
+/** "Iron, Bronze and Silver". */
+internal fun andList(names: List<String>): String = if (names.size <= 1) names.joinToString() else names.dropLast(1).joinToString(", ") + " and " + names.last()
+
+/** The metals that stop at Rare and those that can reach Epic (`LegendConfig.fineCoreTier`), by name: "Iron, Bronze, Silver and Obsidian stop at Rare. Starsteel and Moonsteel can reach Epic." */
+internal fun GameEngine.metalRarityLine(): String {
+    val (epic, rare) = content.materials(MaterialCategory.CORE).sortedBy { it.tier }.partition { Forge.holdsEpic(it.tier, config) }
+    return listOfNotNull(rare.takeIf { it.isNotEmpty() }?.let { "${andList(it.map { m -> m.name })} stop at Rare." }, epic.takeIf { it.isNotEmpty() }?.let { "${andList(it.map { m -> m.name })} can reach Epic." }).joinToString(" ")
+}
+
 /**
  * The supplier's mood after what the guild did for them or left undone, and the last morning it holds: limited materials
  * restock by one more or one fewer each morning (`Missions.supplierStockDelta`). Null while the supplier has no mood.
@@ -81,6 +94,18 @@ fun GameEngine.supplierMood(state: GameState): String? {
 
 /** A tool's level and what the next one costs (`GameEngine.toolCost`; null once there is no next level). */
 internal fun toolLine(level: Int, maxLevel: Int, cost: Int?): String = "Level $level of $maxLevel · " + (cost?.let { "$it gold" } ?: "fully built")
+
+/** The test tag of the cards the supplies open, and the prefix of their parts ("supplies_inspect_close"). */
+internal const val SUPPLY_CARD = "supplies_inspect"
+
+/** A workshop tool as an inspect card: what it does in the catalog's words, the level it is at and what the next level costs. */
+internal fun toolTip(t: ToolDef, level: Int, cost: Int?, tag: String = SUPPLY_CARD): TipUi = TipUi(
+    name = t.name, kind = "Workshop tool",
+    stats = listOf(TipStat("Level", "$level of ${t.maxLevel}"), TipStat("Next level", cost?.let { "$it gold" } ?: "Fully built")),
+    sections = listOf(TipSection(null, listOf(TipLine(t.description)))),
+    note = "Tools last for the current era.",
+    tag = tag,
+)
 
 /** The supplier and the workshop tools, as a sheet over the Shop or the Forge; with [focus] it opens on that material's row. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,6 +127,8 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
     val st = s.state
     val groups = MaterialCategory.entries.map { it to content.materials(it) }.filter { it.second.isNotEmpty() }
     val listState = rememberLazyListState()
+    // Narrow or large text: Buy goes under the row's words instead of squeezing them.
+    val stack = LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340
     // The asked-for row's place in the list below, by the keys the list gives its items up to the last material.
     LaunchedEffect(focus) {
         val keys = listOf("supplier") + groups.flatMap { (category, group) -> listOf("supplier_${category.name}") + group.map { "material_${it.id.value}" } }
@@ -116,42 +143,55 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                     Text("Supplies", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.weight(1f).semantics { heading() })
                     Text("${st.gold} gold", style = MaterialTheme.typography.titleMedium, color = Gold, modifier = Modifier.semantics { contentDescription = "${st.gold} gold in the purse" })
                 }
-                Secondary("Buy one at a time. Basic metals are always in stock.")
+                Secondary("${andList(content.materials(MaterialCategory.CORE).filter { it.dailySupplierStock == null }.map { it.name })} are always in stock.")
                 vm.engine.supplierMood(st)?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Gold, modifier = Modifier.padding(top = Space.xs).testTag("supplies_mood")) }
             }
         }
         groups.forEach { (category, group) ->
             item(key = "supplier_${category.name}") {
-                SectionHeader(when (category) { MaterialCategory.CORE -> "Metals";MaterialCategory.AUGMENT -> "Augments"; MaterialCategory.CATALYST -> "Catalysts" })
+                Column {
+                    SectionHeader(when (category) { MaterialCategory.CORE -> "Metals";MaterialCategory.AUGMENT -> "Infusions"; MaterialCategory.CATALYST -> "Catalysts" })
+                    if (category == MaterialCategory.CORE) Secondary(vm.engine.metalRarityLine())
+                }
             }
             items(group, key = { "material_${it.id.value}" }) { m ->
                 val price = vm.engine.materialPrice(st, m.id)
                 val stock = st.supplierStock[m.id]
                 val have = st.materials[m.id] ?: 0
                 val needed = m.id == focus
-                Row(
-                    // The row the Forge asked for: a gold line and its own words, never the colour alone.
-                    Modifier.fillMaxWidth().padding(vertical = Space.xs).then(if (needed) Modifier.border(1.dp, Gold, MaterialTheme.shapes.small).padding(Space.xs) else Modifier),
-                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Sprites.material(m.id)?.let { PixelImage(it, wholePixelDp(48, 40.dp), description = null) }
-                    Column(Modifier.weight(1f)) {
-                        if (needed) Text("Needed on the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
-                        Text(m.name, style = MaterialTheme.typography.titleSmall)
-                        Secondary("Owned $have · $price gold" + (stock?.let { " · $it left today" } ?: ""))
-                        // What the metal can hold (rules 6): said here, where it is bought, so a fine roll in a plain metal is no surprise.
-                        if (m.category == MaterialCategory.CORE) Secondary(if (m.tier >= vm.engine.config.depth.legend.fineCoreTier) "Can reach Epic rarity." else "Rarity stops at Rare in this metal.")
-                        vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
-                        // A guild run: what an augment or a catalyst gives a blade in a fight, in the catalog's own words.
-                        if (st.guild != null) materialRules(content, m.id).forEach { Secondary("Effect in a fight: ${it.name}. ${it.description}") }
-                    }
-                    // A greyed Buy says why to a screen reader; on screen the row's own lines do (the price, "0 left today").
-                    val blocked = when { stock == 0 && !vm.engine.onTheRoad(st, m.id) -> "it comes down the deep road later in the run"; stock == 0 -> "none left today"; st.gold < price -> "it costs $price gold and you have ${st.gold}"; else -> null }
+                // A greyed Buy says why to a screen reader; on screen the row's own lines do (the price, "0 left today").
+                val blocked = when { stock == 0 && !vm.engine.onTheRoad(st, m.id) -> "it comes down the deep road later in the era"; stock == 0 -> "none left today"; st.gold < price -> "it costs $price gold and you have ${st.gold}"; else -> null }
+                val buy: @Composable (Modifier) -> Unit = { mod ->
                     SecondaryActionButton(
                         "Buy", { vm.dispatch(Command.BuyMaterial(m.id, 1)) },
-                        Modifier.testTag("buy_${m.id.value}").semantics { contentDescription = blocked?.let { "Buy ${m.name}, unavailable: $it" } ?: "Buy ${m.name} for $price gold" },
+                        mod.testTag("buy_${m.id.value}").semantics { contentDescription = blocked?.let { "Buy ${m.name}, unavailable: $it" } ?: "Buy ${m.name} for $price gold" },
                         enabled = blocked == null && !s.busy,
                     )
+                }
+                // V3: the row is for buying (art, name, what is owned, the price, what is left today, Buy); what the
+                // material is and does (its rarity cap, its rule in a fight, the besieger's view of it) is on its card.
+                Column(
+                    // The row the Forge asked for: a gold line and its own words, never the colour alone.
+                    Modifier.fillMaxWidth().then(if (needed) Modifier.padding(vertical = Space.xs).border(1.dp, Gold, MaterialTheme.shapes.small).padding(Space.xs) else Modifier.hairline())
+                        .padding(vertical = Space.xs).testTag("material_${m.id.value}"),
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Sprites.material(m.id)?.let { PixelImage(it, wholePixelDp(48, 40.dp), description = null) }
+                        Column(Modifier.weight(1f)) {
+                            if (needed) Text("Needed on the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
+                            Text(m.name, style = MaterialTheme.typography.titleSmall)
+                            FactLine(listOfNotNull(
+                                Fact("$have", "Owned"), Fact("$price gold"),
+                                Fact("${Forge.qualityCap(m.tier, vm.engine.config)}", "Quality cap").takeIf { m.category == MaterialCategory.CORE },
+                                stock?.let { Fact("$it left today", tone = if (it == 0) FactTone.WARN else FactTone.PLAIN) },
+                            ))
+                            // Why a limited material is short or comes later stays on the row: it is why Buy may be grey.
+                            vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
+                        }
+                        InfoButton(m.name, { vm.engine.materialTip(st, m.id, s.shop.threat, tag = SUPPLY_CARD) }, tag = "material_${m.id.value}_info")
+                        if (!stack) buy(Modifier)
+                    }
+                    if (stack) buy(Modifier.fillMaxWidth().padding(top = Space.xs))
                 }
             }
         }
@@ -164,25 +204,35 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
         items(content.tools, key = { "tool_${it.id}" }) { t ->
             val cost = vm.engine.toolCost(st, t.id)
             val level = st.tools[t.id] ?: 0
-            // A tool's row is a material's row: the name, what it does, then its level and price, and the same "Buy".
-            Row(Modifier.fillMaxWidth().padding(vertical = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Column(Modifier.weight(1f)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                        Text(t.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f, fill = false))
-                        LevelDots(level, t.maxLevel)
+            // A tool's row is a material's row: the name and its level, what the next level costs, the same "Buy"; what it
+            // does is on its card.
+            Column(Modifier.fillMaxWidth().hairline().padding(vertical = Space.xs).testTag("tool_${t.id}")) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(Modifier.weight(1f)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                            Text(t.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f, fill = false))
+                            LevelDots(level, t.maxLevel)
+                        }
+                        Secondary(toolLine(level, t.maxLevel, cost))
                     }
-                    Secondary(t.description)
-                    Secondary(toolLine(level, t.maxLevel, cost))
+                    InfoButton(t.name, { toolTip(t, level, cost) }, tag = "tool_${t.id}_info")
+                    if (cost != null && !stack) ToolBuy(t, cost, st.gold, s.busy, Modifier) { vm.dispatch(Command.BuyTool(t.id)) }
                 }
-                if (cost != null) SecondaryActionButton(
-                    "Buy", { vm.dispatch(Command.BuyTool(t.id)) },
-                    Modifier.testTag("buy_tool_${t.id}").semantics { contentDescription = if (st.gold >= cost) "Buy ${t.name} for $cost gold" else "Buy ${t.name}, unavailable: it costs $cost gold and you have ${st.gold}" },
-                    enabled = st.gold >= cost && !s.busy,
-                )
+                if (cost != null && stack) ToolBuy(t, cost, st.gold, s.busy, Modifier.fillMaxWidth().padding(top = Space.xs)) { vm.dispatch(Command.BuyTool(t.id)) }
             }
         }
         if (onClose != null) item(key = "close") {
             SecondaryActionButton("Close", onClose, Modifier.fillMaxWidth().padding(top = Space.md).testTag("supplies_close"))
         }
     }
+}
+
+/** A tool's "Buy": greyed while the purse is short, and then it says why to a screen reader. */
+@Composable
+private fun ToolBuy(t: ToolDef, cost: Int, gold: Int, busy: Boolean, modifier: Modifier, onBuy: () -> Unit) {
+    SecondaryActionButton(
+        "Buy", onBuy,
+        modifier.testTag("buy_tool_${t.id}").semantics { contentDescription = if (gold >= cost) "Buy ${t.name} for $cost gold" else "Buy ${t.name}, unavailable: it costs $cost gold and you have $gold" },
+        enabled = gold >= cost && !busy,
+    )
 }

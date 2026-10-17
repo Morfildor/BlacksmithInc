@@ -49,7 +49,7 @@ object Consequences {
                     else -> {
                         ctx.consequences -= q
                         val hero = ctx.heroes[q.heroId]
-                        ctx.emit(EventType.PLEDGE_RESOLVED, 3, "The order on credit for ${hero?.fullName ?: "a defender"} expired. The weapon was not delivered.", listOfNotNull(q.heroId?.value), mapOf("outcome" to "lapsed"))
+                        ctx.emit(EventType.PLEDGE_RESOLVED, 3, "The commission on credit for ${hero?.fullName ?: "a defender"} expired. The weapon was not delivered.", listOfNotNull(q.heroId?.value), mapOf("outcome" to "lapsed"))
                     }
                 }
             }

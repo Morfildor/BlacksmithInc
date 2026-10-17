@@ -15,7 +15,7 @@ class CharterBulletsTest {
     @Test
     fun theTownsLastHopeSaysWhatItGivesAndCostsInItsOwnNumbers() {
         val c = charters.getValue(GuildContent.TOWNS_LAST_HOPE)
-        assertEquals(listOf("Guardian and Warden sign on day 1", "Battlemage ready to hire on day 1", "3 extra militia on the wall", "1 Binding Salt"), charterGains(c, content))
+        assertEquals(listOf("Guardian and Warden join on day 1", "Battlemage for hire on day 1 at half the recruitment fee", "3 extra militia on the wall", "1 Binding Salt"), charterGains(c, content))
         assertEquals(listOf("Start with 40 less gold"), charterCosts(c))
     }
 

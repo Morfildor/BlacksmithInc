@@ -53,10 +53,10 @@ object Bench {
     data class Setting(val seed: Long = SEED, val level: Int = LEVEL, val enemyPercent: Int = 100, val holdRounds: Int = 0)
 
     val targets: List<Target> = listOf(
-        Target("armoured", "An armoured line", "Two enemies that raise Guard every round. Shows what gets through Guard and what Guard stops.", listOf("cinder_knight", "bone_warden"), 180),
+        Target("armoured", "An armored line", "Two enemies that raise Armor every round. Shows what gets through Armor and what Armor stops.", listOf("cinder_knight", "bone_warden"), 180),
         Target("backline", "A guarded caster", "A gravecaller stands behind a bone warden and a shambler and heals its weakest ally every round. Shows what reaches the back of the line.", listOf("bone_warden", "hollow_shambler", "gravecaller"), 170),
-        Target("attrition", "A long fight", "A warchief and two brutes that hit hard and keep hitting. Shows what Guard, healing and broken Guard are worth.", listOf("ashclaw_brute", "ashclaw_brute", "ashclaw_warchief"), 150),
-        Target("wall", "The town's wall", "A raiding line met on the wall at home. Effects a weapon has only on the wall work here. Effects that work only away from town do not.", listOf("ashclaw_scout", "ashclaw_brute", "ashclaw_warchief"), 150, home = true),
+        Target("attrition", "A long fight", "A warchief and two brutes that hit hard and keep hitting. Shows what Armor, healing and broken Armor are worth.", listOf("ashclaw_brute", "ashclaw_brute", "ashclaw_warchief"), 150),
+        Target("wall", "The town's wall", "A raiding line met on the wall at home. Siege-only effects work here. Quests-only effects do not.", listOf("ashclaw_scout", "ashclaw_brute", "ashclaw_warchief"), 150, home = true),
     )
 
     val companions: List<Companions> = listOf(
@@ -67,9 +67,9 @@ object Bench {
             listOf(Ally(LaunchContent.BATTLEMAGE, "Bench Battlemage", LaunchContent.STAFF, LaunchContent.BRONZE, LaunchContent.FROST_BLOOM, "Frost staff")), ahead = true),
         Companions("fire", "With a fire mage", "A Battlemage with an ember staff acts first. Its first hit each round puts 2 Burn on its target: 1 from the staff and 1 from its Echo. It opens the fight with a Charge for an ally who can store it and a Mark on the priority target.",
             listOf(Ally(LaunchContent.BATTLEMAGE, "Bench Battlemage", LaunchContent.STAFF, LaunchContent.IRON, LaunchContent.EMBER_RESIN, "Ember staff")), ahead = true),
-        Companions("spotter", "With a spotter", "A Ranger with a sapwood spear acts first. Every round it strikes, then puts a Mark on the priority target: the summoner, else the leader, else the enemy with the most health. None of the Ranger's other effects uses the Mark.",
+        Companions("spotter", "With a spotter", "A Ranger with a sapwood spear acts first. Every round it attacks, then puts a Mark on the priority target: the summoner, else the leader, else the enemy with the most health. None of the Ranger's other effects uses the Mark.",
             listOf(Ally(LaunchContent.RANGER, "Bench Ranger", LaunchContent.SPEAR, LaunchContent.BRONZE, LaunchContent.VERDANT_SAP, "Sapwood spear")), ahead = true),
-        Companions("front", "Behind a Guardian", "A Guardian with an obsidian sword stands in front. Enemies attack the Guardian while it has Guard. The sword cracks the first time the Guardian's Guard breaks.",
+        Companions("front", "Behind a Guardian", "A Guardian with an obsidian sword stands in front. Enemies attack the Guardian while it has Armor. The sword cracks the first time the Guardian's Armor breaks.",
             listOf(Ally(LaunchContent.GUARDIAN, "Bench Guardian", LaunchContent.SWORD, LaunchContent.OBSIDIAN, LaunchContent.EMBER_RESIN, "Obsidian sword")), ahead = true),
     )
 
@@ -157,7 +157,7 @@ object Bench {
                 "The enemies are a fixed line with more health than usual, and they deal the same damage every time. No quest or siege will look like this.",
                 "The wall here is made up as well. It is not the siege the scouts report.".takeIf { t.home },
                 "The party fights to the end here. On a quest, its retreat rule decides when it retreats.",
-                "A recipe, not a weapon you own: shown at middling quality with no buff, flaw or signature, because those are rolled.".takeIf { demonstration },
+                "This is a recipe, not a weapon you own. It is shown at middling quality with no bonus, flaw or signature, because those are rolled.".takeIf { demonstration },
                 "Nothing here costs or earns gold, adds to your notebook or goes into the records.",
             ),
             setup = setup, result = result, wielderKey = me.key, fired = fired, silent = silent, notTested = composed.rules.filter { it.where != WeaponRules.Where.ANYWHERE && (it.where == WeaponRules.Where.HOME) != t.home }, home = t.home,
@@ -192,7 +192,7 @@ object Bench {
                     Res.HEALING in n.any -> "${me.name} healed nobody."
                     Res.FRACTURE in n.any -> "No weapon in the party cracked."
                     Res.HEALTH_PAID in n.any -> "Nobody paid health to a weapon."
-                    n.place == Place.WIELDER && Res.GUARD in n.any -> "${me.name} never had Guard for an enemy to break."
+                    n.place == Place.WIELDER && Res.GUARD in n.any -> "${me.name} never had Armor for an enemy to break."
                     n.place == Place.WIELDER -> "${me.name} never got ${words(n.any)}."
                     n.place == Place.PARTY -> "Nobody in the party had ${words(n.any)}."
                     n.byWielder -> "${me.name}'s own hit never left ${words(n.any)} on an enemy."
@@ -201,8 +201,8 @@ object Bench {
                 if (n.beforeHit) return "${words(n.any).replaceFirstChar { it.uppercase() }} was never on the target when ${me.name}'s hit landed."
             }
             is Need.Spent -> if (events.none { it.kind == EventKind.STAT_SPENT && it.stat?.let(Res::of) == n.res && (if (n.byWielder) it.source == me.key else it.source in party) })
-                return if (n.res == Res.MARK) "There was no Mark for ${me.name}'s hit to consume." else "Nobody consumed ${n.res.word}."
-            is Need.FoeIs -> if (foes.none { n.tag in it.tags || n.tag in it.kit.tags }) return when (n.tag) { "elite" -> "None of these enemies is an elite or a leader."; "undead" -> "None of these enemies is one of the Hollowbound."; else -> "None of these enemies is the kind this effect needs." }
+                return if (n.res == Res.MARK) "There was no Mark for ${me.name}'s hit to use up." else "Nobody used up ${n.res.word}."
+            is Need.FoeIs -> if (foes.none { n.tag in it.tags || n.tag in it.kit.tags }) return when (n.tag) { "elite" -> "None of these enemies is an Elite."; "undead" -> "None of these enemies is one of the Hollowbound."; else -> "None of these enemies is the kind this effect needs." }
             is Need.HolderIs, is Need.Circumstance, is Need.Unverified -> {}
         }
         // Everything it waits for was there: say which moment never came.
@@ -213,8 +213,8 @@ object Bench {
             rule.effect.conditions.any { it is Condition.HolderHealthAtMost } -> "${me.name} was never hurt badly enough."
             taken != null && taken.target == com.tinyblacksmith.core.combat.Aim.PriorityFoe -> "The priority target never had ${Res.of(taken.stat).word} when the round ended. This effect takes it only from the priority target."
             taken != null -> "The enemy ${me.name} faced never had ${Res.of(taken.stat).word} at that moment."
-            t.kind == EventKind.GUARD_BROKEN && !mine(EventKind.GUARD_BROKEN) -> "No enemy broke ${me.name}'s Guard."
-            t.kind == EventKind.GUARD_ABSORBED -> "No enemy Guard stopped ${me.name}'s hit."
+            t.kind == EventKind.GUARD_BROKEN && !mine(EventKind.GUARD_BROKEN) -> "No enemy broke ${me.name}'s Armor."
+            t.kind == EventKind.GUARD_ABSORBED -> "No enemy Armor stopped ${me.name}'s hit."
             t.kind == EventKind.DOWNED -> "No enemy went down in the way this effect needs."
             t.kind == EventKind.STAT_GAINED && t.stat != null -> "${me.name} never held enough ${Res.of(t.stat).word} at once."
             me.strikeMin <= 0 -> "${me.name} never landed a hit."

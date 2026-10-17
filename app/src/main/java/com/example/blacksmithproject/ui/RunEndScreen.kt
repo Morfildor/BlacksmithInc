@@ -26,6 +26,9 @@ import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.BuffGreen
+import com.example.blacksmithproject.ui.theme.Cream
+import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.legacy.Legacy
@@ -47,53 +50,51 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
     // The next step stays pinned under the scrolling summary, so it never hides below the upgrade list.
     Column(Modifier.fillMaxSize().safeDrawingPadding()) {
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = Space.md, vertical = Space.lg)) {
-            Text(if (retired) "The chapter is closed" else "The forge has fallen", style = MaterialTheme.typography.headlineMedium, color = Gold, modifier = Modifier.testTag("run_end_title"))
+            Text(if (retired) "The guild has retired" else "The forge has fallen", style = MaterialTheme.typography.headlineMedium, color = Gold, modifier = Modifier.testTag("run_end_title"))
             Text(end.cause, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs))
             Secondary("Era ${end.era} lasted ${end.daysSurvived} days.", Modifier.padding(top = Space.xs))
 
-            FramedPanel(if (s.claimed) "Legacy claimed ✓" else "Legacy reward", Modifier.fillMaxWidth().padding(top = Space.md)) {
-                StatRow("Baseline", "${end.basePoints}")
-                StatRow("Survival", "${end.survivalPoints}")
-                StatRow("Discoveries", "${end.discoveryPoints}")
-                StatRow("Milestones", "${end.milestonePoints}")
-                end.milestones.forEach { Secondary("• ${milestoneLabel(it)}") }
-                HorizontalDivider(Modifier.padding(vertical = Space.xs), color = BronzeDeep)
-                StatRow("Total", "${end.totalPoints} points", valueColor = Gold)
-                Secondary(
-                    if (s.claimed) "Reward claimed. These points are yours to keep." else "Claim these points to keep them for future eras.",
-                    Modifier.padding(top = Space.sm),
-                )
-                if (!s.claimed) PrimaryActionButton("Claim ${end.totalPoints} legacy points", vm::claimLegacy, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("run_claim"), enabled = !s.busy)
-                s.lastError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs)) }
+            // V3: the reward is one large number, no plate; how it adds up is on its card. The claim is the pinned action below.
+            Row(Modifier.fillMaxWidth().padding(top = Space.md), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}.testTag("run_points")) {
+                    Text(if (s.claimed) "Legacy claimed ✓" else "Legacy reward", style = MaterialTheme.typography.labelLarge, color = if (s.claimed) BuffGreen else CreamMuted)
+                    Text("${end.totalPoints} points", style = MaterialTheme.typography.headlineMedium, color = Gold)
+                    Secondary(if (s.claimed) "Reward claimed. These points are yours to keep." else "Claim these points to keep them for future eras.")
+                }
+                InfoButton("how the points add up", { runPointsTip(end, ::milestoneLabel) }, tag = "run_points_info")
             }
+            s.lastError?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs)) }
 
             if (end.legends.isNotEmpty()) {
-                SectionTitle("Weapons remembered")
+                SectionTitle("Hall of Legends")
                 end.legends.forEach { Text("${it.title} · ${it.kills} kills", style = MaterialTheme.typography.bodyMedium) }
             }
             end.lineage?.let { SectionTitle("Lineage"); Text("${it.heroName} ${it.deed}. Their descendants may return.", style = MaterialTheme.typography.bodyMedium) }
 
-            SectionTitle("Permanent upgrades · ${s.legacy.points} points")
-            if (!s.claimed) Secondary("Claim your legacy first to spend points.")
-            content.upgrades.forEach { u ->
+            SectionTitle("Legacy perks · ${s.legacy.points} points")
+            if (!s.claimed) Secondary("Claim your legacy first to spend points. Then begin era $nextEra.")
+            content.upgrades.forEachIndexed { i, u ->
                 val level = s.legacy.upgradeLevel(u.id)
                 val cost = u.costPerLevel.getOrNull(level)
-                FramedPanel(modifier = Modifier.fillMaxWidth().padding(vertical = Space.xs), contentPadding = PaddingValues(12.dp)) {
+                // One row an upgrade, divided by hairlines: a list of things to buy, not a stack of plates. What the next level
+                // gives, in the engine's own numbers, is on the upgrade's card.
+                if (i > 0) HorizontalDivider(color = BronzeDeep)
+                Column(Modifier.fillMaxWidth().padding(vertical = Space.sm)) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(u.name, style = MaterialTheme.typography.titleSmall, color = Gold)
+                        Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
+                            Text(u.name, style = MaterialTheme.typography.titleSmall, color = Cream)
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 LevelDots(level, u.maxLevel)
                                 Spacer(Modifier.width(6.dp))
                                 Secondary("level $level of ${u.maxLevel}")
                             }
                             Secondary(u.description)
-                            Secondary(Legacy.preview(u.id, level + 1, content, vm.engine.config)?.text ?: "Fully upgraded.")
                         }
+                        InfoButton(u.name, { upgradeTip(u, level, Legacy.preview(u.id, level + 1, content, vm.engine.config)?.text, cost, tag = "run_upgrade_tip") }, tag = "run_upgrade_${u.id.value}_info")
                         // A greyed button says why: nothing is bought before the claim, or the points are short.
                         val blocked = when { cost == null -> null; !s.claimed -> "claim the legacy first"; s.legacy.points < cost -> "it costs $cost points and you have ${s.legacy.points}"; else -> null }
                         SecondaryActionButton(
-                            cost?.let { "$it pts" } ?: "Max", { vm.buyUpgrade(u.id) },
+                            cost?.let { "$it points" } ?: "Max", { vm.buyUpgrade(u.id) },
                             Modifier.padding(start = Space.sm).semantics {
                                 contentDescription = when { cost == null -> "${u.name} at maximum level"; blocked != null -> "Buy ${u.name} level ${level + 1}, unavailable: $blocked"; else -> "Buy ${u.name} level ${level + 1} for $cost points" }
                             },
@@ -107,11 +108,9 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
             CharterPicker(vm, Modifier.padding(top = Space.md))
         }
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm)) {
-            if (s.claimed) {
+            if (!s.claimed) PrimaryActionButton("Claim ${end.totalPoints} legacy points", vm::claimLegacy, Modifier.fillMaxWidth().testTag("run_claim"), enabled = !s.busy)
+            else if (s.claimed) {
                 PrimaryActionButton("Begin era $nextEra", vm::beginNextEra, Modifier.fillMaxWidth().testTag("run_begin_era"), enabled = !s.busy)
-            } else {
-                PrimaryActionButton("Begin era $nextEra", vm::beginNextEra, Modifier.fillMaxWidth().semantics { contentDescription = "Begin era $nextEra, unavailable: claim the legacy above first" }, enabled = false)
-                Secondary("Claim your legacy points to begin the next era.", Modifier.padding(top = Space.xs))
             }
         }
     }
@@ -120,12 +119,12 @@ fun RunEndScreen(s: UiState.RunEnded, vm: GameViewModel) {
 private fun milestoneLabel(key: String) = when (key) {
     "FIRST_SALE" -> "First sale"
     "SIEGE_SURVIVED" -> "Survived a siege"
-    "CHAMPION_ARMED" -> "A champion defended the town with your weapon"
-    "EPIC_FORGED" -> "Forged an epic weapon"
-    "LEGENDARY_FORGED" -> "Forged a legendary weapon"
+    "CHAMPION_ARMED" -> "A defender held the wall with your weapon"
+    "EPIC_FORGED" -> "Forged an Epic weapon"
+    "LEGENDARY_FORGED" -> "Forged a Legendary weapon"
     "HERO_LEVEL_5" -> "A hero reached level 5"
     "WEAPON_FIVE_KILLS" -> "A weapon earned a title"
     "CHARTER_SECURED" -> "Charter secured"
-    "LEGEND_EARNED" -> "A weapon became a legend by its deeds"
+    "LEGEND_EARNED" -> "A weapon became Legendary by its deeds"
     else -> key
 }

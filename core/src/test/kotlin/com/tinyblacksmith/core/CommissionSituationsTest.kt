@@ -192,7 +192,7 @@ class CommissionSituationsTest {
         assertTrue(newcomer.id != patron.id && newcomer.shopPurchases == 0 && guilded.equippedWeapon(newcomer.id) == null)
         assertEquals(other.id, newcomer.id, "nobody else is of the patron's guild, so the earliest arrival")
         assertTrue(c.familyId in content.heroClass(newcomer.classId).preferredFamilies, "a blade for the newcomer's class, not the patron's")
-        assertEquals("A first weapon for ${newcomer.fullName}. ${patron.fullName} pays for the order.", Lines.commissionWhy(c, guilded))
+        assertEquals("A first weapon for ${newcomer.fullName}. ${patron.fullName} pays for the commission.", Lines.commissionWhy(c, guilded))
         assertNull(offered(town, only(CommissionKind.FIRST_BLADE)).second, "no guild member, no such request")
 
         val answer = blade.copy(id = WeaponId("w95"), familyId = c.familyId, quality = QualityBand.FINE.floor(base), location = WeaponLocation.Storage)

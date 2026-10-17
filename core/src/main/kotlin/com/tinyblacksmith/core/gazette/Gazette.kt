@@ -11,7 +11,9 @@ import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.ShopLedger
 import com.tinyblacksmith.core.model.VisitKind
 import com.tinyblacksmith.core.model.VisitReason
+import com.tinyblacksmith.core.shopday.Lines
 import com.tinyblacksmith.core.text.LegacyProse
+import com.tinyblacksmith.core.text.Terms
 import com.tinyblacksmith.core.text.joinSentences
 
 /** The Emberfall Gazette (GDD 11): headlines derive only from real event records, ordered by priority. */
@@ -68,16 +70,8 @@ object Gazette {
         EventType.TOOL_BOUGHT, EventType.DISCOVERY, EventType.SIGNATURE_DISCOVERED, EventType.MATERIAL_BOUGHT,
     )
 
-    /** Why a visitor left without buying (`MarketVisit.reason`), as the paper puts it. */
-    fun visitReason(reason: VisitReason): String = when (reason) {
-        VisitReason.TOO_EXPENSIVE -> "couldn't afford anything"
-        VisitReason.NOT_BETTER -> "found no upgrade for their weapon"
-        VisitReason.EMPTY_SHELVES -> "found an empty shelf"
-        VisitReason.OVERPRICED -> "thought the prices were too high"
-        VisitReason.NOT_SUITED -> "found no suitable weapon"
-        VisitReason.RESISTED -> "passed on a weapon the attackers resist"
-        else -> "left undecided"
-    }
+    /** Why a visitor left without buying (`MarketVisit.reason`): the shop day's own words ([Lines.reason]), so the paper and the counter agree. */
+    fun visitReason(reason: VisitReason): String = Lines.reason(reason)
 
     private const val VISITORS = "visitors"
     private const val BOUGHT = "bought"
@@ -216,12 +210,12 @@ object Gazette {
         val fine = forged.mapNotNull { e -> e.data["rarity"]?.let { r -> Rarity.entries.firstOrNull { it.name == r } } }.filter { it >= Rarity.EPIC }
         val parts = buildList {
             if (forged.isNotEmpty()) {
-                val detail = Rarity.entries.reversed().mapNotNull { r -> fine.count { it == r }.takeIf { it > 0 }?.let { "$it ${r.name.lowercase()}" } }
+                val detail = Rarity.entries.reversed().mapNotNull { r -> fine.count { it == r }.takeIf { it > 0 }?.let { "$it ${Terms.rarity(r)}" } }
                 add("forged ${count(forged.size, "weapon")}" + if (detail.isEmpty()) "" else " (${detail.joinToString(", ")})")
             }
             events.count { it.type == EventType.WEAPON_LISTED }.takeIf { it > 0 }?.let { add("listed $it") }
             events.count { it.type == EventType.WEAPON_HONED }.takeIf { it > 0 }?.let { add("upgraded or repaired $it") }
-            events.count { it.type == EventType.WEAPON_DONATED }.takeIf { it > 0 }?.let { add("donated ${count(it, "weapon")} to the watch") }
+            events.count { it.type == EventType.WEAPON_DONATED }.takeIf { it > 0 }?.let { add("donated ${count(it, "weapon")} to the armory") }
             events.filter { it.type == EventType.WEAPON_SALVAGED }.sumOf { it.data["count"]?.toIntOrNull() ?: 1 }.takeIf { it > 0 }?.let { add("salvaged $it") }
             events.filter { it.type == EventType.TOOL_BOUGHT }.forEach { add("bought ${it.data["name"] ?: it.text.substringAfter(": ").trimEnd('.')}") }
             events.filter { it.type == EventType.MATERIAL_BOUGHT }.sumOf { it.data["cost"]?.toIntOrNull() ?: 0 }.takeIf { it > 0 }?.let { add("spent $it gold on materials") }

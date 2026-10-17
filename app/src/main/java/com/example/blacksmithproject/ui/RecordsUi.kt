@@ -2,6 +2,7 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.runtime.Immutable
 import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.combat.Stat
 import com.tinyblacksmith.core.content.CombatCatalog
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.crafting.ClueRung
@@ -40,8 +41,8 @@ fun legendUi(entry: LegendEntry, content: ContentCatalog, currentEra: Int): Lege
 private fun rungLabel(rung: ClueRung) = when (rung) {
     ClueRung.RECIPE -> "Recipe"
     ClueRung.CATALYST -> "Catalyst"
-    ClueRung.TEMPER -> "Temper"
-    ClueRung.QUALITY -> "Finish"
+    ClueRung.TEMPER -> "Risk"
+    ClueRung.QUALITY -> "Quality"
 }
 
 /** Null for a journal row that is not a signature's ("sig:" keys only). */
@@ -87,7 +88,7 @@ data class NotebookUi(val metal: List<PairingUi>, val weapon: List<PairingUi>, v
 enum class FightNoteKind(val word: String, val sign: String) { LEARNED("Learned", "●"), SUGGESTED("Possible, not seen yet", "?"), WITNESSED("Seen in a real fight", "✓") }
 
 /** A fight rule the smith has forged on a weapon, in the catalog's own words. */
-@Immutable data class LearnedRuleUi(val id: String, val name: String, val description: String)
+@Immutable data class LearnedRuleUi(val id: String, val name: String, val description: String, val stats: List<Stat> = emptyList())
 
 /** A relationship between rules: [kind] is SUGGESTED until a real contract or siege has shown it. [known] are its rules the smith has forged, by name. */
 @Immutable data class InteractionUi(val id: String, val name: String, val description: String, val tradeoff: String, val kind: FightNoteKind, val known: List<String>)
@@ -105,7 +106,7 @@ data class FightNotesUi(val learned: List<LearnedRuleUi>, val paths: List<Intera
 fun fightNotes(journal: JournalModel, combat: CombatCatalog): FightNotesUi {
     val page = Interactions.page(journal, combat)
     return FightNotesUi(
-        page.learned.map { LearnedRuleUi(it.id, it.name, it.description) },
+        page.learned.map { LearnedRuleUi(it.id, it.name, it.description, it.statuses()) },
         page.entries.map { e ->
             InteractionUi(e.def.id, e.def.name, e.def.description, e.def.constraint, if (e.evidence == Interactions.Evidence.WITNESSED) FightNoteKind.WITNESSED else FightNoteKind.SUGGESTED, e.known.map { it.name })
         },

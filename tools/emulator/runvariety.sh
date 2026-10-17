@@ -186,17 +186,17 @@ step_supplies() {
   load heartfire_breakthrough || return
   open_supplies || { bad "Supplies opens"; return; }
   shot supplies_0_top
-  scroll_to_text "Rarity stops at Rare in this metal." >/dev/null
+  scroll_to_text "Iron" >/dev/null
   shot supplies_1_plain_metals
-  for m in Iron Bronze Silver Obsidian; do local r=$(supply_row $m); echo "ROW $m: $r"; [ -n "$r" ] && expect "$m says what it holds" "$r" "Rarity stops at Rare in this metal."; done
+  for m in Iron Bronze Silver Obsidian; do local r=$(supply_row $m); echo "ROW $m: $r"; [ -n "$r" ] && expect "$m says what it holds" "$r" "Up to Rare"; done
   echo "BUY Iron: $(buy_state Iron)"
   scroll_to_text "Starsteel" >/dev/null; scroll_to_text "Moonsteel" >/dev/null; $ADB shell input swipe 540 1300 540 1100 600; $ADB shell sleep 1
   shot supplies_2_starsteel_moonsteel
   local st=$(supply_row Starsteel) mo=$(supply_row Moonsteel)
   echo "ROW Starsteel: $st"; echo "ROW Moonsteel: $mo"
-  expect "Starsteel says what it holds" "$st" "Can reach Epic rarity."
+  expect "Starsteel says what it holds" "$st" "Up to Epic"
   expect "Starsteel says the supplier's day" "$st" "day 6"
-  expect "Moonsteel says what it holds" "$mo" "Can reach Epic rarity."
+  expect "Moonsteel says what it holds" "$mo" "Up to Epic"
   expect "Moonsteel says the supplier's day" "$mo" "day 11"
   echo "BUY Starsteel: $(buy_state Starsteel)"; echo "BUY Moonsteel: $(buy_state Moonsteel)"
 }

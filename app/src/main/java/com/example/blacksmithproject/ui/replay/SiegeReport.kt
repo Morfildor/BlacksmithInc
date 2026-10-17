@@ -1,8 +1,5 @@
 package com.example.blacksmithproject.ui.replay
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -11,8 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,15 +20,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.blacksmithproject.ui.EffectKind
+import com.example.blacksmithproject.ui.Fact
+import com.example.blacksmithproject.ui.FactLine
+import com.example.blacksmithproject.ui.FactTone
+import com.example.blacksmithproject.ui.FightFullBody
 import com.example.blacksmithproject.ui.FightReport
+import com.example.blacksmithproject.ui.FullReportHead
 import com.example.blacksmithproject.ui.InlineActionButton
 import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.PrimaryActionButton
@@ -39,27 +39,26 @@ import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.fightOutcomeLine
 import com.example.blacksmithproject.ui.shopday.SiegeOutcomeUi
 import com.example.blacksmithproject.ui.theme.BronzeDeep
-import com.example.blacksmithproject.ui.theme.BronzeLine
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
-import com.example.blacksmithproject.ui.theme.ForgePanel
-import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.combat.Contribution
 import com.tinyblacksmith.core.combat.FightAccount
 import com.tinyblacksmith.core.combat.FightResult
 import com.tinyblacksmith.core.combat.Share
+import com.tinyblacksmith.core.content.CombatContent
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.SiegeVerdict
 import com.tinyblacksmith.core.model.WeaponId
 
 /**
- * The siege's report, after the replay or instead of it: how it ended and what it cost, then each defender's part in
- * the record's own numbers (damage dealt, damage their Guard took, effective healing), each part split by the rule
- * that did it with every point counted once (`FightAccounting`), at most two observations of the record, the
- * discoveries the night made, and the whole fight as text. Without a replay ([replayable] false) it says so and is
- * the summary the save holds.
+ * The siege's report, after the replay or instead of it, in two levels. The lead: how it ended and what it cost, what
+ * the night showed for the first time (written into the Notebook), each defender as a row (face, name, weapon, whether
+ * they went down, and their three totals in the record's own numbers), and at most two observations of the record.
+ * Then one "Full report" row that opens the technical part in place: each defender's totals split by the rule that did
+ * them, every point counted once (`FightAccounting`), what the record cannot give to one defender, both sides and the
+ * whole fight as text. Without a replay ([replayable] false) it says so and is the summary the save holds.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -74,8 +73,7 @@ fun SiegeReport(
         Text(siege.outcome, style = MaterialTheme.typography.headlineMedium, color = kind.color, modifier = Modifier.semantics { heading() }.testTag("replay_report_outcome"))
         Text("On the wall: ${fightOutcomeLine(fight).lowercase()}", style = MaterialTheme.typography.bodyMedium)
 
-        // The costs the card the report was opened from shows, from the same fields. The part the record counted most is
-        // under "Worth knowing" and in each defender's own card below.
+        // The costs the card the report was opened from shows, from the same fields.
         Column(Modifier.fillMaxWidth().testTag("replay_report_cost")) {
             siege.consequences.forEach { ReportRow(it.label, it.value) }
         }
@@ -85,28 +83,40 @@ fun SiegeReport(
             Text("This siege was recorded before replays, so it can be read but not watched.", style = MaterialTheme.typography.bodyMedium, color = CreamMuted, modifier = Modifier.testTag("replay_report_fallback"))
             FightReport(fight, expanded = log, onToggle = { log = !log })
         } else {
+            // What the night gave the smith to keep: paths of the rules seen for the first time.
+            if (siege.discoveries.isNotEmpty()) Column(Modifier.testTag("replay_report_discoveries")) {
+                ReportLabel("Seen in this fight")
+                siege.discoveries.forEach { Text("${EffectKind.BUFF.sign} $it", style = MaterialTheme.typography.bodyMedium, color = EffectKind.BUFF.color) }
+                Text("Written into the Notebook.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+            }
             account?.let { a ->
-                Text("THE DEFENDERS", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
-                Text("Damage dealt, damage their Guard took for the wall, and health mended. Each point counts once.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-                a.members.forEach { m -> ContributionCard(m, faces[m.key], state, onOpenHero, onOpenBlade) }
-                if (a.shared.total > 0) {
-                    Text(
-                        "Shared: ${parts(a.shared).joinToString(", ")}. From states or Guard more than one hand put on, so the record cannot give it to one defender.",
-                        style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.testTag("replay_report_shared"),
-                    )
+                ReportLabel("The defenders")
+                Column {
+                    a.members.forEachIndexed { i, m ->
+                        if (i > 0) HorizontalDivider(color = BronzeDeep)
+                        DefenderRow(m, faces[m.key])
+                    }
                 }
                 if (a.observations.isNotEmpty()) {
-                    Text("WORTH KNOWING", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
+                    ReportLabel("Worth knowing")
                     Column(Modifier.testTag("replay_report_observations")) { a.observations.forEach { Text("· $it", style = MaterialTheme.typography.bodyMedium) } }
                 }
             }
-            if (siege.discoveries.isNotEmpty()) {
-                Text("SEEN IN THIS FIGHT", style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
-                siege.discoveries.forEach { Text("· $it", style = MaterialTheme.typography.bodyMedium) }
-                Text("Written into the Notebook.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+            // The technical part, one tap away and opened in place: never mixed into the lead above.
+            FullReportHead(log, { log = !log }, summary = "Each defender's effects, both sides and every event", tag = "replay_report_full")
+            if (log) Column(Modifier.fillMaxWidth().testTag("replay_report_full_body"), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+                account?.let { a ->
+                    Text("Damage dealt to enemies, damage blocked by Armor each defender gave, and health each defender healed. Each point is counted once.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                    a.members.forEach { m -> DefenderAccount(m, state, onOpenHero, onOpenBlade) }
+                    if (a.shared.total > 0) {
+                        Text(
+                            "Shared: ${parts(a.shared).joinToString(", ")}. It came from statuses or Armor that more than one defender gave, so it is not credited to one defender.",
+                            style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.testTag("replay_report_shared"),
+                        )
+                    }
+                }
+                FightFullBody(fight)
             }
-            // The whole log is there, under its button: secondary to the replay and the numbers above.
-            FightReport(fight, Modifier.padding(top = Space.sm), expanded = log, onToggle = { log = !log }, highlights = 0)
         }
         FlowRow(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
             onWatch?.let { SecondaryActionButton("Watch again", it, Modifier.testTag("replay_watch_again")) }
@@ -115,6 +125,10 @@ fun SiegeReport(
         }
     }
 }
+
+@Composable
+private fun ReportLabel(text: String) =
+    Text(text.uppercase(), style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, color = CreamMuted, modifier = Modifier.padding(top = Space.sm).semantics { heading() })
 
 @Composable
 private fun ReportRow(label: String, value: String) {
@@ -130,58 +144,55 @@ private fun parts(s: Share): List<String> = listOfNotNull(
 )
 
 /**
- * One defender: face, name and blade, the three totals in words and numbers, and on a tap the same totals split by
- * rule, a blade's rules marked as the blade's, with how often each fired and what it left on the enemy.
+ * One defender in the lead: face, name and weapon, "went down" as a cost with its sign, and the three totals as one line
+ * of facts. What each rule of theirs did is in the full report.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ContributionCard(m: Contribution, face: ReplayFace?, state: GameState, onOpenHero: (HeroId) -> Unit, onOpenBlade: (WeaponId) -> Unit) {
-    var open by rememberSaveable(m.key) { mutableStateOf(false) }
-    val shape = RoundedCornerShape(4.dp)
-    Column(
-        Modifier.fillMaxWidth().background(ForgePanel, shape).border(1.dp, if (open) Gold else BronzeLine, shape)
-            .clickable(onClickLabel = if (open) "Hide the rules" else "Show each rule", role = Role.Button) { open = !open }
-            .semantics { stateDescription = if (open) "Rules shown" else "Rules hidden" }
-            .padding(Space.sm).testTag("replay_contribution_${m.key}"),
-        verticalArrangement = Arrangement.spacedBy(Space.xs),
+private fun DefenderRow(m: Contribution, face: ReplayFace?) {
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = Space.sm).semantics(mergeDescendants = true) {}.testTag("replay_contribution_${m.key}"),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-            face?.res?.let { PixelImage(it, 40.dp, description = null) }
-            Column(Modifier.weight(1f)) {
-                Text(m.name + if (m.downed) " · went down" else "", style = MaterialTheme.typography.titleSmall, color = Gold)
-                Text(m.weapon ?: "No weapon", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-            }
-        }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.md), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Total("Damage", m.damage); Total("Blocked", m.prevented); Total("Healed", m.healed)
-        }
-        if (open) {
-            Column(Modifier.fillMaxWidth().padding(top = Space.xs), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-                if (m.shares.isEmpty()) Text("Nothing the record can give to ${m.name}.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-                m.shares.forEach { s ->
-                    Column(Modifier.fillMaxWidth().border(1.dp, BronzeDeep, shape).padding(horizontal = Space.sm, vertical = Space.xs).testTag("replay_share_${m.key}_${s.ruleId ?: "own"}")) {
-                        Text((if (s.weapon) "Weapon · " else "") + s.name, style = MaterialTheme.typography.labelLarge, color = if (s.weapon) Gold else Cream)
-                        val line = parts(s) + listOfNotNull(
-                            "${s.applied} ${if (s.applied == 1) "stack" else "stacks"} on foes".takeIf { s.applied > 0 },
-                            "fired ${s.times} ${if (s.times == 1) "time" else "times"}".takeIf { s.times > 0 },
-                        )
-                        Text(line.joinToString(" · ").ifEmpty { "Fired, with nothing to count" }, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-                    }
-                }
-            }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.xs), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-                val blade = m.weaponId?.let { WeaponId(it) }?.takeIf { state.weapons.containsKey(it) }
-                blade?.let { SecondaryActionButton("Weapon record", { onOpenBlade(it) }, Modifier.testTag("replay_report_blade_${m.key}")) }
-                if (state.heroes.containsKey(HeroId(m.key))) SecondaryActionButton("Hero", { onOpenHero(HeroId(m.key)) }, Modifier.testTag("replay_report_hero_${m.key}"))
-            }
+        face?.res?.let { PixelImage(it, 40.dp, description = null) }
+        Column(Modifier.weight(1f)) {
+            Text(m.name, style = MaterialTheme.typography.titleSmall, color = Cream)
+            Text(m.weapon ?: "No weapon", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+            FactLine(
+                listOfNotNull(
+                    Fact("went down", tone = FactTone.WARN).takeIf { m.downed },
+                    Fact("${m.damage}", "Damage"), Fact("${m.prevented}", "Blocked"), Fact("${m.healed}", "Healed"),
+                ),
+                Modifier.padding(top = 2.dp),
+            )
         }
     }
 }
 
+/**
+ * One defender in the full report: their totals split by rule (a weapon's rules marked as the weapon's), how often each
+ * fired and what it left on the enemy, as hairline rows; then the ways to the weapon's record and the hero.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun Total(label: String, value: Int) {
-    Column {
-        Text("$value", style = MaterialTheme.typography.titleMedium, color = if (value > 0) Cream else CreamMuted)
-        Text(label, style = MaterialTheme.typography.labelSmall, color = CreamMuted)
+private fun DefenderAccount(m: Contribution, state: GameState, onOpenHero: (HeroId) -> Unit, onOpenBlade: (WeaponId) -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.xs), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(m.name, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.semantics { heading() })
+        if (m.shares.isEmpty()) Text("Nothing the record can give to ${m.name}.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+        m.shares.forEachIndexed { i, s ->
+            if (i > 0) HorizontalDivider(color = BronzeDeep)
+            Column(Modifier.fillMaxWidth().padding(vertical = Space.xs).semantics(mergeDescendants = true) {}.testTag("replay_share_${m.key}_${s.ruleId ?: "own"}")) {
+                Text((if (s.weapon) "Weapon · " else "") + (s.ruleId?.let { CombatContent.label(it, s.name) } ?: s.name), style = MaterialTheme.typography.labelLarge, color = Cream)
+                val line = parts(s) + listOfNotNull(
+                    "${s.applied} ${if (s.applied == 1) "status" else "statuses"} on enemies".takeIf { s.applied > 0 },
+                    "triggered ${if (s.times == 1) "once" else "${s.times} times"}".takeIf { s.times > 0 },
+                )
+                Text(line.joinToString(" · ").ifEmpty { "Triggered, with nothing to count" }, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+            }
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.xs), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+            val blade = m.weaponId?.let { WeaponId(it) }?.takeIf { state.weapons.containsKey(it) }
+            blade?.let { InlineActionButton("Weapon record", { onOpenBlade(it) }, Modifier.testTag("replay_report_blade_${m.key}")) }
+            if (state.heroes.containsKey(HeroId(m.key))) InlineActionButton("Hero", { onOpenHero(HeroId(m.key)) }, Modifier.testTag("replay_report_hero_${m.key}"))
+        }
     }
 }

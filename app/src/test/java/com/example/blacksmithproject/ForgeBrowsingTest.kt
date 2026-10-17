@@ -3,6 +3,8 @@ package com.example.blacksmithproject
 import com.example.blacksmithproject.ui.forgeOptions
 import com.example.blacksmithproject.ui.forgeWorkbench
 import com.example.blacksmithproject.ui.idIn
+import com.example.blacksmithproject.ui.label
+import com.example.blacksmithproject.ui.word
 import com.example.blacksmithproject.ui.place
 import com.example.blacksmithproject.ui.roadLine
 import com.example.blacksmithproject.ui.trayChange
@@ -35,7 +37,7 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         assertEquals(Dest.FORGE, first.dest)
         assertEquals("the weapon chosen before stays", forgeSword.familyId, first.draft.familyId)
         assertTrue((saved.materials[first.draft.coreId] ?: 0) > 0 && (saved.materials[first.draft.augmentId] ?: 0) > 0)
-        assertEquals("Selected a new pairing. No materials spent.", first.notice)
+        assertEquals("Selected a new combination. No materials spent.", first.notice)
 
         vm.usePairing(Journal.augmentFamilyKey(forgeSword.augmentId, engine.content.families.last().id)); advanceUntilIdle()
         val second = vm.playing()
@@ -107,7 +109,7 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         val out = fresh.copy(materials = fresh.materials + (core.id to 0))
         val tile = engine.forgeOptions(out, a, RecipeSlot.METAL, null).first { it.id == core.id.value }
         assertFalse(tile.usable)
-        assertEquals("None left. " + (engine.roadLine(out, core.id) ?: "Buy more in Supplies."), tile.blocked)
+        assertEquals("None left. " + (engine.roadLine(out, core.id) ?: "Buy it in Supplies."), tile.blocked)
         assertTrue("an option in stock is never blocked", engine.forgeOptions(fresh, a, RecipeSlot.METAL, null).filter { it.usable }.all { it.blocked == null })
         // A material the deep road has not brought yet says so, not "buy more".
         val far = engine.content.materials(MaterialCategory.CORE).firstOrNull { engine.roadLine(fresh, it.id) != null }
@@ -127,7 +129,7 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         val advanced = a.copy(mode = com.tinyblacksmith.core.model.ForgeMode.ADVANCED)
         val with = engine.trayChange(fresh, advanced, advanced.copy(catalystId = catalyst.id), RecipeSlot.CATALYST, emptyList(), null)!!
         assertEquals("None", with.from)
-        assertTrue(with.changes.first().text.startsWith("Restock: "))
+        assertTrue(with.changes.first().text.startsWith("Costs "))
     }
 
     @Test
@@ -144,10 +146,10 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         val iron = engine.content.material(a.coreId!!)
         val fine = engine.content.materials(MaterialCategory.CORE).first { it.tier >= engine.config.depth.legend.fineCoreTier }
         val c = engine.trayChange(fresh, a, a.copy(coreId = fine.id), RecipeSlot.METAL, emptyList(), null)!!.changes.map { it.text }
-        assertTrue(c.toString(), "Restock: ${iron.price} \u2192 ${fine.price} gold, uses 1" in c)
-        if (!com.tinyblacksmith.core.crafting.Forge.holdsEpic(iron.tier, engine.config)) assertTrue(c.toString(), "Can reach Epic quality" in c)
+        assertTrue(c.toString(), "Costs ${fine.price} gold each (${iron.name} costs ${iron.price}). This forge uses 1." in c)
+        if (!com.tinyblacksmith.core.crafting.Forge.holdsEpic(iron.tier, engine.config)) assertTrue(c.toString(), "Rarity can reach Epic" in c)
         // The journal is quoted, never more: an untried pairing is only "untried".
-        assertTrue(c.toString(), c.any { it == "Metal + augment: untried" })
+        assertTrue(c.toString(), c.any { it == "Metal + infusion: untried" })
         // No odds, no score, no signature name anywhere.
         val names = com.tinyblacksmith.core.crafting.SignatureCatalog.all.map { it.name }
         assertTrue(c.none { line -> '%' in line || names.any { it in line } })
@@ -161,11 +163,14 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         val a = ready(g)
         val other = engine.content.materials(MaterialCategory.AUGMENT).first { (g.materials[it.id] ?: 0) > 0 && it.element != engine.content.material(a.augmentId!!).element }
         val ruled = engine.trayChange(g, a, a.copy(augmentId = other.id), RecipeSlot.AUGMENT, emptyList(), null)!!.changes
-        val before = engine.forgeWorkbench(g, a, emptyList()).outlook!!.certain.map { it.name }.toSet()
-        val after = engine.forgeWorkbench(g, a.copy(augmentId = other.id), emptyList()).outlook!!.certain.map { it.name }.toSet()
-        assertEquals((after - before).map { "Gains the effect $it" }.toSet(), ruled.filter { it.text.startsWith("Gains") }.map { it.text }.toSet())
-        assertEquals((before - after).map { "Loses the effect $it" }.toSet(), ruled.filter { it.text.startsWith("Loses") }.map { it.text }.toSet())
-        assertTrue(ruled.any { it.text.startsWith("Adds ") })
+        val was = engine.forgeWorkbench(g, a, emptyList()).outlook!!
+        val now = engine.forgeWorkbench(g, a.copy(augmentId = other.id), emptyList()).outlook!!
+        val before = was.certain.map { it.name }.toSet()
+        val after = now.certain.map { it.name }.toSet()
+        // Each rule is named with what it does where it has a phrase: "Fire · Burns on hit".
+        assertEquals((after - before).map { n -> "Gains the effect ${now.label(now.certain.first { it.name == n })}" }.toSet(), ruled.filter { it.text.startsWith("Gains") }.map { it.text }.toSet())
+        assertEquals((before - after).map { n -> "Loses the effect ${was.label(was.certain.first { it.name == n })}" }.toSet(), ruled.filter { it.text.startsWith("Loses") }.map { it.text }.toSet())
+        assertTrue(ruled.any { it.text.endsWith(" element instead of ${engine.content.material(a.augmentId!!).element!!.word()}") })
     }
 
     @Test
@@ -176,8 +181,8 @@ class ForgeBrowsingTest : ShopDayTestBase() {
         val before = com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state)
         val changed = a.copy(coreId = b.id)
         val delta = engine.trayChange(state, a, changed, RecipeSlot.METAL, emptyList(), null)!!
-        assertTrue(delta.changes.any { it.text.startsWith("Restock:") })
-        assertTrue(delta.changes.any { it.text == "Metal + augment: untried" })
+        assertTrue(delta.changes.any { it.text.startsWith("Costs ") })
+        assertTrue(delta.changes.any { it.text == "Metal + infusion: untried" })
         assertNull(engine.forgeWorkbench(state, changed, emptyList()).command)
         assertNull(engine.forgeWorkbench(state, changed, emptyList()).outlook)
         assertEquals(before, com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state))

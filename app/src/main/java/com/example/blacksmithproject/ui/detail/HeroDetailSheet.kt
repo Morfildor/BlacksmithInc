@@ -29,13 +29,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.SecondaryActionButton
-import com.example.blacksmithproject.ui.EffectKind
-import com.example.blacksmithproject.ui.EffectRow
-import com.example.blacksmithproject.ui.FramedPanel
 import com.example.blacksmithproject.ui.ForgeDialog
 import com.example.blacksmithproject.ui.InlineActionButton
 import com.example.blacksmithproject.ui.MemberDetailUi
-import com.example.blacksmithproject.ui.StatRow
 import com.example.blacksmithproject.ui.memberDetail
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.getValue
@@ -47,9 +43,17 @@ import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.Secondary
 import com.example.blacksmithproject.ui.Sprites
-import com.example.blacksmithproject.ui.theme.Bronze
+import com.example.blacksmithproject.ui.Chevron
+import com.example.blacksmithproject.ui.ChevronWay
+import com.example.blacksmithproject.ui.StatRow
+import com.example.blacksmithproject.ui.TipKeywords
+import com.example.blacksmithproject.ui.TipSection
+import com.example.blacksmithproject.ui.TipSectionBlock
+import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.Cream
+import com.example.blacksmithproject.ui.theme.CreamMuted
+import com.example.blacksmithproject.ui.theme.Ember
 import com.example.blacksmithproject.ui.theme.ForgeSlot
-import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.heroes.Heroes
@@ -66,6 +70,8 @@ import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponSnapshot
 import com.tinyblacksmith.core.shopday.Lines as ShopLines
 import com.tinyblacksmith.core.text.joinSentences
+import com.tinyblacksmith.core.text.Terms
+import kotlin.math.roundToInt
 
 /**
  * A hero as the sheet shows them. When a visit snapshot was supplied and the hero has changed since (or is gone),
@@ -92,6 +98,8 @@ data class HeroDetail(
     val events: List<String>,
     /** What the guild knows of them, when they are one of its members (a guild run only). */
     val member: MemberDetailUi? = null,
+    /** Class and level under the name, as on the hero's card: "Guardian · level 3". */
+    val kind: String? = null,
 )
 
 private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)
@@ -139,6 +147,7 @@ fun GameEngine.heroDetail(state: GameState, heroId: HeroId, snapshot: CustomerSn
         shop = (refusals + dealings).sortedByDescending { it.first }.map { it.second },
         events = records.filter { it.type !in shopTypes }.asReversed().take(RECENT_EVENTS).map { dated(state, it.era, it.day, it.text) },
         member = memberDetail(state, heroId),
+        kind = "${content.classById[hero?.classId ?: first.classId]?.name ?: first.classId.value} · level ${hero?.level ?: first.level}",
     )
 }
 
@@ -156,8 +165,9 @@ private fun GameEngine.present(state: GameState, h: Hero) = CustomerSnapshot(
 
 private fun GameEngine.facts(state: GameState, c: CustomerSnapshot): List<Fact> = listOfNotNull(
     Fact("Class", "${content.classById[c.classId]?.name ?: c.classId.value}, level ${c.level}"),
-    Fact("Element taste", c.elementTaste?.let { "Favors ${it.name.lowercase()} weapons" } ?: "No favourite element"),
-    Fact("Traits", c.traits.joinToString { content.traitById[it]?.name ?: it.value }.ifEmpty { "None of note" }),
+    Fact("Element taste", c.elementTaste?.let { "Favors ${Terms.element(it).lowercase()} weapons" } ?: "No favourite element"),
+    // A customer's temperament (code: trait); Brave and Cautious also change the hero's Attack (`Power.traitModifier`).
+    Fact("Personality", c.traits.joinToString { id -> content.traitById[id]?.let { it.name + attackNote(it.combatModifier) } ?: id.value }.ifEmpty { "None of note" }),
     Fact(PURSE, "${c.gold} gold"),
     Fact(STANDING, if (c.regular) "A shop regular" else "Not a regular yet"),
     c.ambition?.let { Fact(AMBITION, ambitionWord(it)) },
@@ -165,6 +175,12 @@ private fun GameEngine.facts(state: GameState, c: CustomerSnapshot): List<Fact> 
     c.mentorName?.let { m -> Fact("Mentor", m, heroId = state.heroes.values.firstOrNull { it.fullName == m }?.id) },
     Fact(CARRIES, c.equipped?.name ?: "Unarmed", weaponId = c.equipped?.weaponId),
 )
+
+/** What a personality's fight modifier does to Attack, from the catalog's own number: " (+5% Attack in fights)". */
+private fun attackNote(modifier: Double): String {
+    val percent = ((modifier - 1.0) * 100).roundToInt()
+    return if (percent == 0) "" else " (${if (percent > 0) "+" else ""}$percent% Attack in fights)"
+}
 
 private fun ambitionWord(a: Ambition) = when (a) {
     Ambition.SLAYER -> "A slayer's vow"
@@ -192,32 +208,54 @@ fun HeroDetailSheet(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem
     ) { HeroDetailContent(detail, onOpenHero, onOpenItem, onDismiss, member = member, closeLabel = closeLabel) }
 }
 
-/** The body of the hero sheet: one scrolling column, usable outside a sheet (the shop day's overlay, tests). */
+/**
+ * The body of the hero sheet: one scrolling column, usable outside a sheet (the shop day's overlay, tests). Its top reads
+ * like the hero's card (V3): the face, the name, class and level; for a member of the guild the fight's numbers as stat
+ * rows and the trait, speciality and share as + / − lines. The facts, the guild's part, the shop and the records follow.
+ */
 @Composable
 fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier, closeLabel: String = "Close", member: MemberActions? = null) {
     Column(modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
-        FramedPanel(modifier = Modifier.fillMaxWidth()) {
-            Row(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
-                Box(Modifier.background(ForgeSlot).border(1.dp, Bronze).padding(4.dp)) {
-                    PixelImage(detail.portrait, 72.dp, description = null)
-                    detail.marker?.let { PixelImage(it, 24.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
-                }
-                Column(Modifier.weight(1f)) {
-                    Text(detail.name, style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-                    detail.lineage?.let { Secondary(it) }
-                    detail.deeds?.let { Secondary(it) }
-                }
+        Row(Modifier.fillMaxWidth().padding(top = Space.sm).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+            Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(4.dp)) {
+                PixelImage(detail.portrait, 72.dp, description = null)
+                detail.marker?.let { PixelImage(it, 24.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
             }
-            detail.want?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("hero_want")) }
-            FactBlock(AT_THE_COUNTER.takeIf { detail.counter.isNotEmpty() }, detail.counter, "sheet_counter", onOpenHero, onOpenItem)
-            FactBlock(NOW.takeIf { detail.counter.isNotEmpty() }, detail.now, "sheet_now", onOpenHero, onOpenItem)
+            Column(Modifier.weight(1f)) {
+                Text(detail.name, style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() })
+                detail.kind?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = CreamMuted) }
+                detail.lineage?.let { Secondary(it) }
+                detail.deeds?.let { Secondary(it) }
+            }
         }
+        detail.member?.let { MemberHead(it) }
+        detail.want?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("hero_want")) }
+        FactBlock(AT_THE_COUNTER.takeIf { detail.counter.isNotEmpty() }, detail.counter, "sheet_counter", onOpenHero, onOpenItem)
+        // Class and level are under the name, and a member's health is a stat row: the whole hero's facts do not say them
+        // twice. Against a visit snapshot every line stays, since a changed level is news.
+        val shown = if (detail.counter.isNotEmpty()) detail.now else detail.now.filterNot { f ->
+            (f.label == CLASS && detail.kind != null) || (f.label == HEALTH && detail.member?.numbers?.isNotEmpty() == true)
+        }
+        FactBlock(NOW.takeIf { detail.counter.isNotEmpty() }, shown, "sheet_now", onOpenHero, onOpenItem)
         detail.member?.let { MemberSection(it, member, onOpenItem) }
         SheetSection("With your shop")
         Lines(detail.shop, "No visits or purchases recorded yet.")
         SheetSection("Recent events")
         Lines(detail.events, "No recent activity recorded.")
         SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close"))
+    }
+}
+
+private const val CLASS = "Class"
+private const val HEALTH = "Health"
+
+/** A member's card at the top of their sheet: the numbers they would enter a fight with, then what they bring and cost. */
+@Composable
+private fun MemberHead(m: MemberDetailUi) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("sheet_member_head"), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+        m.status?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember, modifier = Modifier.testTag("sheet_member_status")) }
+        if (m.numbers.isNotEmpty()) Column { m.numbers.forEach { (label, value) -> StatRow(label, value) } }
+        TipSectionBlock(TipSection(null, m.gains + m.costs))
     }
 }
 
@@ -236,19 +274,20 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
     var confirmDismiss by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxWidth().testTag("sheet_member")) {
         SheetSection("In the guild")
-        Text(m.trait, style = MaterialTheme.typography.bodyMedium)
-        m.speciality?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
-        Secondary(m.share)
+        // The trait, the speciality and the share are + / − lines at the top; here the guild's history with them.
+        Secondary(m.since)
         m.bonds.forEach { Secondary(it) }
+        if (m.branches.isEmpty()) m.unlock?.let { Secondary(it, Modifier.testTag("sheet_member_unlock")) }
 
         if (m.branches.isNotEmpty()) {
             SheetSection("Choose a speciality")
-            Secondary("Their deeds have earned a speciality. Choose one of these, or leave it for later. The choice is permanent.")
+            Secondary("Choose one now or leave it for later. The choice is permanent.")
             m.branches.forEach { b ->
                 Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                     Column(Modifier.weight(1f)) {
                         Text(b.name, style = MaterialTheme.typography.titleSmall)
                         Secondary(b.description)
+                        if (b.opened.isNotEmpty()) Secondary(b.opened)
                     }
                     if (actions != null) InlineActionButton("Choose", { actions.onChooseBranch(b.id) }, Modifier.testTag("sheet_branch_${b.id}"), enabled = actions.enabled)
                 }
@@ -256,16 +295,22 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
         }
 
         SheetSection("In a fight")
-        m.numbers.forEach { (label, value) -> StatRow(label, value) }
-        if (m.rules.isEmpty()) Secondary("No fight effects of their own with this weapon.")
-        m.rules.forEach { (name, description) -> EffectRow(EffectKind.NEUTRAL, name, description) }
+        // What the class does and every rule they bring, always open: when it fires, what it does and how often.
+        if (m.abilities.isEmpty()) Secondary("No fight effects of their own with this weapon.")
+        Column(Modifier.fillMaxWidth().testTag("sheet_member_abilities"), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            TipSectionBlock(TipSection(null, m.abilities))
+            TipKeywords(m.keywords)
+        }
 
         SheetSection("Weapon")
         val loan = m.loan
         if (loan != null) {
             Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                 Column(Modifier.weight(1f).clickable(onClickLabel = "Open ${loan.name}", role = Role.Button) { onOpenItem(loan.weaponId) }) {
-                    Text("On loan: ${loan.name}  ›", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("On loan: ${loan.name}", style = MaterialTheme.typography.bodyMedium, color = Cream)
+                        Chevron(ChevronWay.RIGHT, tint = CreamMuted, size = 18.dp)
+                    }
                     Secondary(loan.summary)
                 }
                 if (actions != null) InlineActionButton("Recall", { actions.onRecall(loan.weaponId) }, Modifier.testTag("sheet_recall"), enabled = actions.enabled && m.loanBlocked == null)
@@ -274,7 +319,7 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
         m.loanBlocked?.let { Secondary(it) }
         if (actions != null && m.loanBlocked == null) {
             if (m.loanable.isEmpty()) Secondary("Nothing in storage to loan.")
-            else Text("Loan a weapon", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.padding(top = Space.sm))
+            else Text("Loan a weapon", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm))
             m.loanable.forEach { w ->
                 Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                     Column(Modifier.weight(1f)) {
@@ -297,6 +342,6 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
             InlineActionButton("Dismiss", { confirmDismiss = false; actions.onDismissMember() }, Modifier.testTag("sheet_dismiss_yes"))
         },
     ) {
-        Text("The signing fee is not returned. A weapon on loan returns to storage.")
+        Text("The recruitment fee is not returned. A weapon on loan returns to storage.")
     }
 }

@@ -43,12 +43,12 @@ class BladeRulesUiTest {
     @Test
     fun aCapacitorSwordListsItsElementAndCatalystRulesInTheCatalogsWords() {
         val rules = bladeRules(CombatSandbox.capacitor, engine.content)
-        assertEquals("One clean strike. 100% strike and support.", rules.pattern)
-        assertEquals(listOf("Arc" to "element", "Capacitor" to "catalyst", "Charge burst" to "catalyst"), rules.road.map { it.name to it.source })
-        assertEquals(CombatContent.CAPACITOR.description, rules.road.first { it.name == "Capacitor" }.description)
+        assertEquals("Attack 100% · Support 100%", rules.pattern)
+        assertEquals(listOf("Storm" to "element", "Conduit" to "catalyst", "Discharge" to "catalyst"), rules.road.map { it.name to it.source })
+        assertEquals(CombatContent.CAPACITOR.description, rules.road.first { it.name == "Conduit" }.description)
         assertTrue(rules.homeOnly.isEmpty())
         // The same sword without Binding Salt: the element's rule alone.
-        assertEquals(listOf("Arc"), bladeRules(CombatSandbox.plainSword, engine.content).road.map { it.name })
+        assertEquals(listOf("Storm"),bladeRules(CombatSandbox.plainSword, engine.content).road.map { it.name })
     }
 
     @Test
@@ -62,9 +62,9 @@ class BladeRulesUiTest {
     fun aRuleABladeHasOnlyAtHomeIsListedApart() {
         val sentient = CombatSandbox.blade("w_s", LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, affixes = listOf(LaunchContent.SENTIENT))
         val rules = bladeRules(sentient, engine.content)
-        assertEquals(listOf("Sentient (at home)" to "buff"), rules.homeOnly.map { it.name to it.source })
-        assertTrue(rules.road.any { it.name == "Sentient (on the road)" })
-        assertFalse(rules.road.any { it.name == "Sentient (at home)" })
+        assertEquals(listOf("Sentient (siege only)" to "bonus"), rules.homeOnly.map { it.name to it.source })
+        assertTrue(rules.road.any { it.name == "Sentient (quests only)" })
+        assertFalse(rules.road.any { it.name == "Sentient (siege only)" })
     }
 
     @Test
@@ -85,13 +85,13 @@ class BladeRulesUiTest {
         val draft = ForgeDraft(familyId = LaunchContent.SWORD, coreId = LaunchContent.IRON, augmentId = LaunchContent.STORMGLASS, catalystId = LaunchContent.BINDING_SALT, mode = ForgeMode.ADVANCED)
         // A weapon forged today: the metal's rule first, then the element's and the catalyst's, each under the part it comes from.
         val certain = engine.forgeWorkbench(guild, draft, emptyList()).outlook!!.certain
-        assertEquals(listOf("Iron holds" to "metal", "Arc" to "element", "Capacitor" to "catalyst", "Charge burst" to "catalyst"), certain.filter { it.source != "buff" }.map { it.name to it.source })
+        assertEquals(listOf("Iron" to "metal", "Storm" to "element", "Conduit" to "catalyst", "Discharge" to "catalyst"), certain.filter { it.source != "bonus" }.map { it.name to it.source })
         // A quick forge carries no catalyst, whatever the draft still holds.
         assertTrue(engine.forgeWorkbench(guild, draft.copy(mode = ForgeMode.QUICK), emptyList()).outlook!!.certain.none { it.source == "catalyst" })
         assertNull(engine.forgeWorkbench(classic, draft, emptyList()).outlook)
         // Each catalyst says its rules where it is chosen; "None" has none.
         val tray = engine.forgeOptions(guild, draft, RecipeSlot.CATALYST, null)
-        assertEquals(listOf("Capacitor: ${CombatContent.CAPACITOR.description}", "Charge burst: ${CombatContent.CHARGE_BURST.description}"), tray.first { it.id == LaunchContent.BINDING_SALT.value }.fight)
+        assertEquals(listOf("Conduit: ${CombatContent.CAPACITOR.description}", "Discharge: ${CombatContent.CHARGE_BURST.description}"), tray.first { it.id == LaunchContent.BINDING_SALT.value }.fight)
         assertTrue(tray.first { it.id == null }.fight.isEmpty())
         assertTrue(tray.filter { it.id != null }.all { it.fight.isNotEmpty() })
     }

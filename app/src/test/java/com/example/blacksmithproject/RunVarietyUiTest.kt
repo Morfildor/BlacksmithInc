@@ -134,7 +134,7 @@ class RunVarietyUiTest {
         assertFalse(none.command!!.heartfire)
         assertEquals("Forge · ${engine.config.advancedForgeEnergy} energy", none.action.label)
         assertTrue(h0.outlook.isEmpty())
-        assertTrue(h0.rule, h0.rule.startsWith("Without Heartfire, quality can reach Epic at most, and only in Starsteel and Moonsteel. Weapons of other metals stop at Rare."))
+        assertTrue(h0.rule, h0.rule.startsWith("Without Heartfire, the highest rarity is Epic, and only Starsteel and Moonsteel weapons can be Epic. Weapons of other metals stop at Rare."))
         assertTrue(h0.source, listOf("a deep hall cleared", "a taken weapon won back", "a starfall site", "a warlord defeated at the town wall").all { it in h0.source })
 
         // One held, but Quick: the reason is the engine's own rule.
@@ -164,12 +164,12 @@ class RunVarietyUiTest {
         assertEquals(4, h.outlook.size)
         assertEquals("Costs 1 Heartfire and ${legend.heartfireEnergy} extra energy, ${o.energy} energy in all. Both are spent even if the weapon does not become Legendary.", h.outlook[0])
         assertEquals("Quality will be between ${o.qualityLow} and ${o.qualityHigh}, before any exceptional result or flaw. Only a weapon of quality ${o.floor} or more can become Legendary.", h.outlook[1])
-        assertEquals("If it does not become Legendary, the weapon still gets one more property.", h.outlook[3])
+        assertEquals("If it does not become Legendary, the weapon still gets 1 more property.", h.outlook[3])
         // A cheap first-day recipe is in a metal that does not hold Epic work: the panel says so instead of promising a chance.
         assertTrue("the first metals should not reach Epic", o.qualityHigh < o.floor)
         assertFalse(o.fineMetal)
         assertEquals("Chance of Legendary: none in this metal.", h.outlook[2])
-        assertEquals("Heartfire cannot make a weapon of this metal Legendary. Only Starsteel and Moonsteel can reach Epic.", h.warning)
+        assertEquals("Heartfire cannot make a weapon of this metal Legendary. Rarity can reach Epic only in Starsteel and Moonsteel.", h.warning)
         // The forge is the one the panel described: the Heartfire and the energy are gone.
         val after = (engine.handle(held, b.command!!) as CommandOutcome.Accepted).state
         assertEquals(0, after.heartfire)
@@ -193,7 +193,7 @@ class RunVarietyUiTest {
         assertEquals(listOf(chance, top.heartfire!!.outlook[3]), confirm.drop(1))
         assertTrue("nothing to confirm before the recipe is whole", bench(held, ForgeDraft(mode = ForgeMode.ADVANCED, heartfire = true)).heartfire!!.confirm.isEmpty())
         // A recipe that is not whole has no outlook to show yet.
-        assertEquals(listOf("Choose a weapon, a metal and an augment to see what it would do."), bench(held, ForgeDraft(mode = ForgeMode.ADVANCED, heartfire = true)).heartfire!!.outlook)
+        assertEquals(listOf("Choose a weapon, a metal and an infusion to see what it would do."), bench(held, ForgeDraft(mode = ForgeMode.ADVANCED, heartfire = true)).heartfire!!.outlook)
         assertEquals(RecipeSlot.WEAPON, bench(held, ForgeDraft(mode = ForgeMode.ADVANCED, heartfire = true)).next)
     }
 
@@ -204,7 +204,7 @@ class RunVarietyUiTest {
         assertTrue(safe, safe.startsWith("Quality stays within ${cfg.risk.getValue(Risk.SAFE).rollSpread} of what the recipe gives."))
         assertTrue(riskExplanation(Risk.BALANCED, cfg).startsWith("Quality moves up to ${cfg.qualityRollSpread} either way."))
         val reckless = riskExplanation(Risk.RECKLESS, cfg)
-        assertTrue(reckless, reckless.startsWith("Adds one more property. Flaws are ${frequencyWord(cfg.risk.getValue(Risk.RECKLESS).defectChance)}, and a flawed weapon is still usable."))
+        assertTrue(reckless, reckless.startsWith("Adds 1 more property. Flaws are ${frequencyWord(cfg.risk.getValue(Risk.RECKLESS).defectChance)}, and a flawed weapon is still usable."))
         assertFalse("hidden odds are words, never a percentage", reckless.contains('%'))
     }
 
@@ -225,7 +225,7 @@ class RunVarietyUiTest {
         // The same siege once a party has spoiled it: the preparation is gone from the wall and named as spoiled, once.
         val spoiled = engine.guildUi(s.copy(siege = s.siege!!.copy(prepId = null, prepSpoiled = def.id, sabotaged = 1)))!!.wall
         assertNull(spoiled.prep)
-        assertEquals("Your party spoiled their preparation: ${def.name}. It will not come.", spoiled.spoiled)
+        assertEquals("Your party spoiled their preparation: ${def.name}. It will not be used.", spoiled.spoiled)
         assertFalse("Their preparations are spoiled." in spoiled.notes)
         // Before the besieger is committed there is nothing to say of either.
         val early = engine.guildUi(engine.guildRun(7))!!.wall
@@ -256,7 +256,7 @@ class RunVarietyUiTest {
         val g = engine.config.guild
         val stake = card(road!!.first, road.second.id)
         assertEquals("Opportunity", stake.tag)
-        assertEquals("If the cart is lost, the supplier brings ${g.supplierShakenStock} fewer of every limited material each morning for ${g.supplierDays} days. Leaving the job on the board costs nothing.", stake.stake)
+        assertEquals("If the cart is lost, the supplier brings ${g.supplierShakenStock} fewer of every limited material each morning for ${g.supplierDays} days. Leaving this quest on the board costs nothing.", stake.stake)
         assertTrue(stake.stages.toString(), stake.stages.any { "the supplier's thanks" in it.reward })
         // An ordinary contract carries none of the three.
         val plain = all.first().let { s -> card(s, s.guild!!.offers.first { it.modifierId == null && it.lapse == null && cat.mission(it.defId).archetype != MissionArchetype.OPPORTUNITY }.id) }

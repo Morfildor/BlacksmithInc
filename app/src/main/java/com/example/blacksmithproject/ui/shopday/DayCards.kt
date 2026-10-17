@@ -2,8 +2,6 @@
 
 package com.example.blacksmithproject.ui.shopday
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -42,7 +40,7 @@ import com.example.blacksmithproject.ui.EffectKind
 import com.example.blacksmithproject.ui.FightReport
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import com.example.blacksmithproject.ui.BlessingOption
+import com.example.blacksmithproject.ui.ChoiceRow
 import com.example.blacksmithproject.ui.SKIP_TO_EVENING
 import com.example.blacksmithproject.ui.InlineActionButton
 import com.example.blacksmithproject.ui.SecondaryActionButton
@@ -53,8 +51,9 @@ import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.theme.BronzeDeep
-import com.example.blacksmithproject.ui.theme.ForgePanelRaised
-import com.example.blacksmithproject.ui.theme.Gold
+import com.example.blacksmithproject.ui.theme.Cream
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.combat.FightReplay
 import com.tinyblacksmith.core.model.BlessingId
@@ -99,8 +98,10 @@ fun ShopOpenCard(open: Beat.Open, modifier: Modifier = Modifier) {
 }
 
 /**
- * The guild's party, first card of the day: where it went and who, how it ended in the report's own outcome, the
- * fight's highlights, what the day brought and cost, and the whole fight behind a button. Real text throughout.
+ * The guild's party, first card of the day, outcome first: where it went, how it ended in the report's own outcome, then
+ * what the day brought and cost (who was hurt, captured or lost, the gold, what came back), then who went and the
+ * fight's highlights. The fight's technical part (both sides, every event) is one "Full report" row under them, opened
+ * in place. Real text throughout.
  */
 @Composable
 fun ContractCard(contract: ContractUi, onOpenHero: (FaceUi) -> Unit, modifier: Modifier = Modifier) {
@@ -109,18 +110,19 @@ fun ContractCard(contract: ContractUi, onOpenHero: (FaceUi) -> Unit, modifier: M
     Column(modifier.fillMaxWidth().testTag("shopday_contract"), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         Overline(contract.title, Modifier.testTag("shopday_contract_title"), strong = true)
         Text(contract.outcome, style = MaterialTheme.typography.headlineSmall, color = kind.color, modifier = Modifier.semantics { heading() }.testTag("shopday_contract_outcome"))
-        if (contract.party.isNotEmpty()) {
-            Overline("Who went")
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) { contract.party.forEach { PersonChip(it, onOpenHero) } }
-        }
-        FightHighlights(contract.highlights, "shopday_contract_highlights")
+        // What the day brought and cost leads: the rewards and the losses are what the smith acts on.
         if (contract.lines.isNotEmpty()) {
             Column(Modifier.padding(top = Space.xs).testTag("shopday_contract_lines"), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                 Overline("Gains and losses")
                 contract.lines.forEach { Body(it) }
             }
         }
-        // The highlights are said above, so the report lists none of its own.
+        if (contract.party.isNotEmpty()) {
+            Overline("Who went", Modifier.padding(top = Space.xs))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) { contract.party.forEach { PersonChip(it, onOpenHero) } }
+        }
+        FightHighlights(contract.highlights, "shopday_contract_highlights")
+        // The highlights are said above, so the report lists none of its own; its technical part opens on request.
         contract.fight?.let { FightReport(it, Modifier.padding(top = Space.xs), expanded = whole, onToggle = { whole = !whole }, highlights = 0) }
     }
 }
@@ -308,7 +310,7 @@ fun ReplayOverlay(replay: CombatReplay, onClose: () -> Unit, modifier: Modifier 
 fun FallenCard(fallen: Beat.Fallen, onOpenGazette: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         fallen.recap?.let { SiegeRecap(it) }
-        Overline("The run ended on day ${fallen.days}", strong = true)
+        Overline("The era ended on day ${fallen.days}", strong = true)
         fallen.cause?.let { CardTitle(it, Modifier.testTag("shopday_fallen_cause")) }
         InlineActionButton("Read the Gazette", onOpenGazette, Modifier.heightIn(min = 48.dp).testTag("shopday_gazette"))
     }
@@ -317,10 +319,11 @@ fun FallenCard(fallen: Beat.Fallen, onOpenGazette: () -> Unit, modifier: Modifie
 /** One fact of the evening as a tile: its picture and number, and what it counts under them. One node for a screen reader, with the unit said. */
 @Composable
 private fun FactTile(icon: Int, value: String, label: String, said: String, modifier: Modifier = Modifier) {
-    Column(modifier.background(ForgePanelRaised, MaterialTheme.shapes.extraSmall).border(1.dp, BronzeDeep, MaterialTheme.shapes.extraSmall).padding(Space.sm).clearAndSetSemantics { contentDescription = said }) {
+    // V3: a fact, not a plate: the picture, the number in cream and its label, side by side with the next.
+    Column(modifier.padding(vertical = Space.xs).clearAndSetSemantics { contentDescription = said }) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
             PixelImage(icon, 24.dp, description = null)
-            Text(value, style = MaterialTheme.typography.titleLarge, color = Gold)
+            Text(value, style = MaterialTheme.typography.titleLarge, color = Cream)
         }
         Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -349,7 +352,7 @@ fun TomorrowCard(tomorrow: Beat.Tomorrow, onOpenGazette: () -> Unit, modifier: M
                 FactTile(R.drawable.icon_action_storage, "${tomorrow.storage}", "In storage", "In storage: ${count(tomorrow.storage, "weapon", "weapons")}", Modifier.weight(1f).fillMaxHeight())
             }
             Row(
-                Modifier.fillMaxWidth().background(ForgePanelRaised, MaterialTheme.shapes.extraSmall).border(1.dp, BronzeDeep, MaterialTheme.shapes.extraSmall).padding(Space.sm),
+                Modifier.fillMaxWidth().drawBehind { drawLine(BronzeDeep, Offset.Zero, Offset(size.width, 0f), 1.dp.toPx()) }.padding(top = Space.sm),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
             ) {
                 PixelImage(R.drawable.icon_integrity, 24.dp, description = null)
@@ -360,17 +363,27 @@ fun TomorrowCard(tomorrow: Beat.Tomorrow, onOpenGazette: () -> Unit, modifier: M
     }
 }
 
-/** The town's thanks after a held siege: one button per blessing. "Decide later" is the screen's wide button. */
+/**
+ * The town's thanks after a held siege, chosen as every lasting choice is (the workshop's blessing dialog, a visitor, a
+ * relic): a tap marks a blessing, "Take ..." takes it. "Decide later" is the screen's wide button.
+ */
 @Composable
 fun BlessingChoices(choices: List<BlessingUi>, onChoose: (BlessingId) -> Unit, modifier: Modifier = Modifier, siege: String? = null) {
+    var marked by rememberSaveable { mutableStateOf<String?>(null) }
+    val taking = choices.firstOrNull { it.id.value == marked }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         siege?.let { SiegeRecap(it) }
         CardTitle("The town offers a blessing")
         choices.forEach { b ->
-            BlessingOption(b.name, b.description, { onChoose(b.id) }, Modifier.testTag("blessing_${b.id.value}")) {
-                Sprites.blessing(b.id)?.let { PixelSprite(it, wholeScale(48, 40.dp), Modifier.clearAndSetSemantics {}); Spacer(Modifier.width(12.dp)) }
+            ChoiceRow(
+                taking?.id == b.id, { marked = b.id.value }, Modifier.testTag("blessing_${b.id.value}"),
+                leading = { Sprites.blessing(b.id)?.let { PixelSprite(it, wholeScale(48, 40.dp), Modifier.clearAndSetSemantics {}) } },
+            ) {
+                Text(b.name, style = MaterialTheme.typography.titleSmall)
+                Text(b.description, style = MaterialTheme.typography.bodySmall)
             }
         }
+        PrimaryActionButton(taking?.let { "Take ${it.name}" } ?: "Choose a blessing", { taking?.let { onChoose(it.id) } }, Modifier.fillMaxWidth().testTag("blessing_take"), enabled = taking != null)
     }
 }
 

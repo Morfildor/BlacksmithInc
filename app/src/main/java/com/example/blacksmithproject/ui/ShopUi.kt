@@ -118,7 +118,7 @@ val MarkUi.kind: EffectKind get() = if (counters) EffectKind.BUFF else EffectKin
  */
 @Immutable
 data class StockUi(
-    val weapon: Weapon, val summary: String, val favoured: String?, val price: Int?, val suggested: Int,
+    val weapon: Weapon, val summary: String, val price: Int?, val suggested: Int,
     val stats: List<Stat> = emptyList(), val buffs: List<String> = emptyList(), val flaws: List<String> = emptyList(),
     /** How the blade's element stands against the besieger; null for a plain blade or an element the besieger does not care about. */
     val threat: MarkUi? = null,
@@ -130,6 +130,8 @@ data class StockUi(
     val unsold: Boolean = false,
     /** "Kept for X's order" for a blade the engine holds back for an open order (it cannot be listed, salvaged, scrapped or given away); null otherwise. */
     val promised: String? = null,
+    /** The weapon's inspect card (`stockTip`), without actions: the row adds "Full details". Null where none was built. */
+    val tip: TipUi? = null,
 )
 
 /**
@@ -226,23 +228,17 @@ private fun dueWords(left: Int, deadline: Int) = when { left <= 0 -> "due today"
 /** The hero classes that favour this family, plural, in catalog order. */
 internal fun GameEngine.fans(familyId: WeaponFamilyId): List<String> = content.classes.filter { familyId in it.preferredFamilies }.map { it.name + "s" }
 
-/** Which hero classes favour this family: a content read, never a sale prediction. */
-private fun GameEngine.favoured(familyId: WeaponFamilyId): String? {
-    val fans = fans(familyId)
-    return if (fans.isEmpty()) null else "${fans.joinToString(" and ")} favour the ${content.family(familyId).name.lowercase()}"
-}
-
-private fun GameEngine.stock(w: Weapon, threat: ThreatUi?, era: Int, promised: String? = null) = StockUi(
-    w, Labels.weaponSummary(w, content), favoured(w.familyId), w.listedPrice, suggestedPrice(w),
+private fun GameEngine.stock(state: GameState, w: Weapon, threat: ThreatUi?, promised: String? = null) = StockUi(
+    w, Labels.weaponSummary(w, content), w.listedPrice, suggestedPrice(w),
     // A number with a ceiling is always said; one without (power, renown) only when there is any.
     stats = weaponStats(WeaponSnapshot.of(w)).filter { it.max != null || it.value > 0 },
     buffs = w.affixes.map { content.affix(it).name }, flaws = w.flaws.map { content.affix(it).name },
     threat = w.element?.let { threat?.marks?.get(it) },
     dormant = Lines.dormant(w.dormantAffixes, content),
     family = content.family(w.familyId).name,
-    unsold = w.legendKey == null && Legacy.holders(w, era).isEmpty(),
+    unsold = w.legendKey == null && Legacy.holders(w, state.era).isEmpty(),
     promised = promised,
-)
+).let { it.copy(tip = stockTip(state, it)) }
 
 /** The besieger for the Shop's plate, the Forge's plate, the augment chips and the stock rows: `Threats` and `Lines`, plus the day count in words. */
 fun GameEngine.threatUi(state: GameState): ThreatUi? = Threats.of(state, content, config)?.let { t ->
@@ -314,7 +310,7 @@ fun GameEngine.shopUi(state: GameState, forecast: Battle.SiegeOutlook? = null): 
         d.unservedClasses.takeIf { it.isNotEmpty() && d.cheapestPrice != null }?.let { ids -> DemandRow("No suitable weapon for", ids.joinToString { content.heroClass(it).name + "s" }) },
     )
 
-    val storage = state.storedWeapons().map { stock(it, threat, state.era, promisedLine(state, it)) }
+    val storage = state.storedWeapons().map { stock(state, it, threat, promisedLine(state, it)) }
 
     return ShopUi(
         seats =config.customers.shopCapacity + toolTotal(state, ToolEffect.EXTRA_CUSTOMERS) + if (festival) config.customers.festivalExtraSeats else 0,
@@ -327,7 +323,7 @@ fun GameEngine.shopUi(state: GameState, forecast: Battle.SiegeOutlook? = null): 
         demand = demand,
         // A day that cannot be laid out is left out here; the Gazette still has it.
         yesterday = state.lastResolution?.takeIf { it.day == state.day - 1 }?.let { runCatching { yesterday(state, it) }.getOrNull() },
-        shelf = state.listedWeapons().map { stock(it, threat, state.era) },
+        shelf = state.listedWeapons().map { stock(state, it, threat) },
         storage = storage,
         returned = storage.mapNotNull { s -> returnedBy(s.weapon, state)?.let { e -> ReturnedUi(s, e.text, e.day, salvageLabel(state, s.weapon)) } },
         threat = threat,

@@ -212,15 +212,15 @@ fun ForgeDialog(
 }
 
 /**
- * Any action that is not the way forward: the same cut as the gold plate, as a bronze outline with gold lettering. At least 48 dp tall.
+ * Any action that is not the way forward: the same cut as the gold plate, as a dim bronze outline with cream lettering, so it never competes with the gold action (V3). At least 48 dp tall.
  * [detail] is a second, smaller line under the label, as on the gold plate.
  */
 @Composable
 fun SecondaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, detail: String? = null) {
     OutlinedButton(
         onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small,
-        border = BorderStroke(1.dp, if (enabled) Bronze else BronzeDeep),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Gold),
+        border = BorderStroke(1.dp, if (enabled) BronzeLine else BronzeDeep),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Cream),
         contentPadding = PaddingValues(horizontal = Space.md, vertical = Space.sm),
         modifier = modifier.heightIn(min = 48.dp),
     ) {
@@ -239,21 +239,6 @@ fun InlineActionButton(text: String, onClick: () -> Unit, modifier: Modifier = M
         onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small,
         colors = ButtonDefaults.textButtonColors(contentColor = Gold), modifier = modifier.heightIn(min = 48.dp),
     ) { Text(text, textAlign = TextAlign.Center) }
-}
-
-/** One blessing on offer, in the workshop's dialog and on the day's card: [icon], its name and what it does, in the outline of a secondary action. */
-@Composable
-fun BlessingOption(name: String, description: String, onClick: () -> Unit, modifier: Modifier = Modifier, icon: @Composable () -> Unit = {}) {
-    OutlinedButton(
-        onClick = onClick, shape = MaterialTheme.shapes.small, border = BorderStroke(1.dp, Bronze),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Cream), modifier = modifier.fillMaxWidth().heightIn(min = 56.dp),
-    ) {
-        icon()
-        Column(Modifier.weight(1f)) {
-            Text(name, style = MaterialTheme.typography.titleSmall, color = Gold)
-            Text(description, style = MaterialTheme.typography.bodySmall)
-        }
-    }
 }
 
 /** What a stock action just did, said inside the sheet it was done in (the workshop's own notice is under the sheet there). */
@@ -296,7 +281,10 @@ fun NoticeBanner(text: String, onDismiss: () -> Unit, modifier: Modifier = Modif
 /** The way back from a blade or a hero to the list it was opened from, pinned at the head of the sheet. */
 @Composable
 fun BackRow(text: String, onBack: () -> Unit, modifier: Modifier = Modifier) {
-    TextButton(onClick = onBack, modifier = modifier.padding(horizontal = Space.xs).heightIn(min = 48.dp).testTag("sheet_back")) { Text("‹  $text", color = Gold) }
+    TextButton(onClick = onBack, modifier = modifier.padding(horizontal = Space.xs).heightIn(min = 48.dp).testTag("sheet_back")) {
+        Chevron(ChevronWay.LEFT, Modifier.padding(end = Space.xs), size = 18.dp)
+        Text(text, color = Gold)
+    }
 }
 
 /**
@@ -333,7 +321,7 @@ fun PrimaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier = 
 @Composable
 fun SectionHeader(text: String, modifier: Modifier = Modifier) {
     Text(
-        text, style = MaterialTheme.typography.titleMedium, color = Gold,
+        text, style = com.example.blacksmithproject.ui.theme.SectionLabel, color = Gold,
         modifier = modifier.fillMaxWidth().padding(top = Space.md, bottom = Space.xs).semantics { heading() }.drawBehind {
             drawLine(BronzeDeep, Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1.dp.toPx())
         }.padding(bottom = 2.dp),

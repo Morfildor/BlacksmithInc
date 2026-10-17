@@ -78,7 +78,7 @@ class ForgePurposeDeviceTest {
             BlacksmithProjectTheme {
                 DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(DpSize(width.dp, 800.dp)) then DeviceConfigurationOverride.FontScale(scale)) {
                     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-                        Tray(RecipeSlot.METAL, listOf(OptionUi(a.id.value, longName, 4, selected == a.id.value, detail = longRule), OptionUi(b.id.value, b.name, 0, false, blocked = "None left. Buy more in Supplies.")), engine.content, TrayChangeUi(longName, listOf(ChangeUi("Restock: 5 to 10 gold, uses 1"))), {}, {}, {}, { selected = it.id!! })
+                        Tray(RecipeSlot.METAL, listOf(OptionUi(a.id.value, longName, 4, selected == a.id.value, detail = longRule), OptionUi(b.id.value, b.name, 0, false, blocked = "None left. Buy more in Supplies.")), engine.content, TrayChangeUi(longName, listOf(ChangeUi("Restock: 5 to 10 gold, uses 1"))), {}, {}, {}, onPick = { selected = it.id!! })
                     }
                 }
             }
@@ -87,13 +87,13 @@ class ForgePurposeDeviceTest {
             compose.runOnUiThread { width = w; scale = f }
             compose.waitForIdle()
             compose.onNodeWithTag("forge_choices").performScrollTo().assertIsDisplayed()
-            compose.onNodeWithTag("forge_tray_change").assertIsDisplayed()
+            // The whole long description now stands above it (V3), so the comparison may need a scroll at large text.
+            compose.onNodeWithTag("forge_tray_change").performScrollTo().assertIsDisplayed()
             shot("long-material-$w-$f")
-            compose.onNodeWithTag("forge_tray_rules").performScrollTo().performClick()
+            // Without a card to hold it, a long description stays in the focused choice, whole.
             compose.onNodeWithText(longRule).performScrollTo().assertIsDisplayed()
             val bounds = compose.onNodeWithText(longRule).fetchSemanticsNode().boundsInRoot
             assertTrue(bounds.right <= compose.onRoot().fetchSemanticsNode().boundsInRoot.right)
-            compose.onNodeWithTag("forge_tray_rules").performScrollTo().performClick()
             compose.onNodeWithTag("forge_choices").performScrollTo()
             compose.onNodeWithTag("forge_option_${b.id.value}").performScrollTo().performClick()
             compose.onNodeWithTag("forge_tray_blocked").performScrollTo().assertIsDisplayed()

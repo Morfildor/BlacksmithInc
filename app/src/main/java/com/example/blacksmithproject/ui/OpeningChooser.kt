@@ -124,9 +124,9 @@ fun OpeningChooser(ui: OpeningChooserUi, enabled: Boolean, onChoose: (String) ->
             verticalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
             Column {
-                Text("How the guild begins", style = MaterialTheme.typography.headlineMedium, color = Cream, modifier = Modifier.semantics { heading() })
+                Text("Choose a starting kit", style = MaterialTheme.typography.headlineMedium, color = Cream, modifier = Modifier.semantics { heading() })
                 Text(
-                    listOfNotNull(ui.charter.ifEmpty { null }, "One start, kept for the whole run.").joinToString(" · "),
+                    listOfNotNull(ui.charter.ifEmpty { null }, "One starting kit, kept for the whole era.").joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = Space.xs),
                 )
             }
@@ -135,7 +135,7 @@ fun OpeningChooser(ui: OpeningChooserUi, enabled: Boolean, onChoose: (String) ->
             ui.openings.forEach { o -> OpeningCard(o, o.id == marked, enabled, showSigners = shared == null, onMark = { marked = o.id }) }
         }
         PrimaryActionButton(
-            chosen?.let { "Begin with ${it.name}" } ?: "Pick a start to begin", { chosen?.let { onChoose(it.id) } },
+            chosen?.let { "Begin with ${it.name}" } ?: "Pick a starting kit to begin", { chosen?.let { onChoose(it.id) } },
             Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm).testTag("opening_begin"), enabled = enabled && chosen != null,
         )
     }
@@ -145,7 +145,7 @@ fun OpeningChooser(ui: OpeningChooserUi, enabled: Boolean, onChoose: (String) ->
 @Composable
 private fun Signers(signers: List<OpeningSignerUi>) {
     Column(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
-        Caps("Joining with every start")
+        Caps("Joining with every starting kit")
         Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
             signers.forEach { m ->
                 Row(Modifier.weight(1f).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
@@ -184,7 +184,7 @@ private fun OpeningCard(o: OpeningUi, chosen: Boolean, enabled: Boolean, showSig
         val traits = o.signers.groupBy { it.traitName }
         Text(
             buildAnnotatedString {
-                if (showSigners) append("Signs ${o.signers.joinToString(" and ") { "${it.firstName} (${it.className})" }}. ")
+                if (showSigners) append("${o.signers.joinToString(" and ") { "${it.firstName} (${it.className})" }} ${if (o.signers.size == 1) "joins" else "join"}. ")
                 traits.entries.forEachIndexed { i, (trait, who) ->
                     if (i > 0) append(" · ")
                     append(if (who.size == o.signers.size && who.size > 1) "Both gain " else "${who.joinToString(" and ") { it.firstName }} gains ")
@@ -202,7 +202,7 @@ private fun OpeningCard(o: OpeningUi, chosen: Boolean, enabled: Boolean, showSig
                 buildAnnotatedString { append("Relic  "); withStyle(SpanStyle(color = Cream, fontWeight = FontWeight.Medium)) { append(o.relic) } },
                 style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f),
             )
-            Text(if (relic || chosen) "▴" else "▾", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+            Chevron(if (relic || chosen) ChevronWay.UP else ChevronWay.DOWN, tint = CreamMuted, size = 18.dp)
         }
         if (relic || chosen) Text(o.relicDescription, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(start = 32.dp, bottom = Space.xs))
         // The cost of the choice is read before it is made, on every card, as plainly as the benefit.

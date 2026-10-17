@@ -18,6 +18,7 @@ import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.RngStream
+import com.tinyblacksmith.core.text.Terms
 import kotlin.math.roundToInt
 
 /**
@@ -107,7 +108,7 @@ object SiegeFight {
             ctx.siege = s.copy(sabotaged = 1)
             "Their camp was thrown into disorder, but the siege on day ${s.siegeDay} is unchanged."
         }
-        ctx.emit(EventType.SABOTAGE_DONE, 6, "The guild's party spoiled the besiegers' preparations. $text", data = mapOf("day" to s.siegeDay.toString()))
+        ctx.emit(EventType.SABOTAGE_DONE, 6, "The guild's party spoiled the attackers' preparations. $text", data = mapOf("day" to s.siegeDay.toString()))
         return text
     }
 
@@ -167,9 +168,9 @@ object SiegeFight {
         val missing = g.members.mapNotNull { m ->
             val hero = ctx.heroes[m.heroId] ?: return@mapNotNull null
             val why = when {
-                m.status == MemberStatus.CAPTURED -> "held by the enemy"
+                m.status == MemberStatus.CAPTURED -> "captured"
                 m.status == MemberStatus.AWAY && away != null -> "away until the morning of day ${away.returnDay}"
-                GuildOps.laidUp(ctx, m)?.let { it.untilDay > ctx.town.nextSiegeDay } == true -> "${m.wound!!.kind.name.lowercase()} until day ${m.wound.untilDay}"
+                GuildOps.laidUp(ctx, m)?.let { it.untilDay > ctx.town.nextSiegeDay } == true -> "${Terms.wound(m.wound!!.kind).lowercase()} until day ${m.wound.untilDay}"
                 else -> null
             }
             why?.let { hero to it }
@@ -198,13 +199,13 @@ object SiegeFight {
         val nemesis = nemesisAtWall(ctx, scenario)
         val nemesisKey = line.indexOfFirst { it.tag == TAG_NEMESIS }.takeIf { it >= 0 && nemesis != null }?.let { "e${it + 1}" }
         // Who is not there, as the roster stands tonight: said in the report, because it is the smith's own doing.
-        val absent = ctx.guild!!.members.mapNotNull { m -> ctx.heroes[m.heroId]?.takeIf { it.isAlive }?.let { h -> when { m.status == MemberStatus.AWAY -> "${h.fullName} was away with the party."; m.status == MemberStatus.CAPTURED -> "${h.fullName} was in enemy hands."; else -> GuildOps.laidUp(ctx, m)?.let { w -> "${h.fullName} was ${w.kind.name.lowercase()}." } } } }
+        val absent = ctx.guild!!.members.mapNotNull { m -> ctx.heroes[m.heroId]?.takeIf { it.isAlive }?.let { h -> when { m.status == MemberStatus.AWAY -> "${h.fullName} was away with the party."; m.status == MemberStatus.CAPTURED -> "${h.fullName} was captured."; else -> GuildOps.laidUp(ctx, m)?.let { w -> "${h.fullName} was ${Terms.wound(w.kind).lowercase()}." } } } }
         val warlord = leadUnit.id == GuildOps.catalog(ctx).siegeLeaders[factionId]
         val attacker = if (warlord) "${leadUnit.name} and the ${faction.siegeName}" else "the ${faction.siegeName}"
         val watch = (ctx.town.militia + ctx.town.armory) * (trait?.watchMultiplier ?: 1.0)
         val (enemies, enemyTotal) = field(ctx, scenario, watch)
         val outerTaken = enemyTotal - enemies.sumOf { it.health }
-        val outer = if (outerTaken > 0) "The watch and the militia wore them down on the way in (${outerTaken * 100 / maxOf(1, enemyTotal)}% of their health)." else "Nobody fought them before the wall."
+        val outer = if (outerTaken > 0) "The militia and the armory wore them down on the way in (${outerTaken * 100 / maxOf(1, enemyTotal)}% of their health)." else "Nobody fought them before the wall."
         val standing = enemies.filter { it.health > 0 }
         val wall = defenders(ctx, faction)
         val party = wall.map { (h, w) -> withStats(GuildOps.fighter(ctx, h, w, Loadout.Field.HOME, wall.map { it.first.id }), prep?.partyStats.orEmpty()) }
@@ -238,7 +239,7 @@ object SiegeFight {
         ctx.town = ctx.town.copy(integrity = ctx.town.integrity - forgeDamage, championIds = wall.map { it.first.id }, nextSiegeDay = ctx.town.nextSiegeDay + config.siegeInterval,
             armory = (ctx.town.armory * (1.0 - config.armorySiegeWear)).toInt())
         if (forgeDamage > 0) ctx.emit(EventType.FORGE_DAMAGED, 7, "The forge took $forgeDamage damage in the siege.", data = mapOf("damage" to forgeDamage.toString()))
-        val names = wall.joinToString(", ") { it.first.fullName }.ifEmpty { "no champion" }
+        val names = wall.joinToString(", ") { it.first.fullName }.ifEmpty { "no defenders" }
         val data = mapOf("verdict" to verdict.name, "left" to share.toString()) + (trait?.let { mapOf("trait" to it.id) } ?: emptyMap())
         val told = fight?.highlights?.firstOrNull()?.text?.let { " $it" }.orEmpty()
         val event = when (verdict) {
@@ -247,10 +248,16 @@ object SiegeFight {
             SiegeVerdict.HELD_AT_A_COST -> ctx.emit(EventType.SIEGE_WON, 9, "Emberfall held against $attacker, at a cost: the forge was hit${if (downed.isNotEmpty()) " and ${downed.size} of the defenders went down" else ""}. On the wall: $names.$told", wall.map { it.first.id.value }, data)
             SiegeVerdict.BREACHED -> ctx.emit(EventType.SIEGE_LOST, 9, "${attacker.replaceFirstChar { it.uppercase() }} broke through ($names).$told", wall.map { it.first.id.value }, data)
         }
+        // A note reads after the attacker's name: "Mira's weapon (Bronze) deals 5 damage to X" becomes "deals 5 damage to X with the weapon (Bronze)".
+        fun note(text: String, name: String?): String {
+            val own = text.removePrefix("$name's ")
+            if (own != text && " deals " in own) return "deals ${own.substringAfter(" deals ")} with ${own.substringBefore(" deals ").let { if (it.startsWith("weapon")) "the $it" else it }}"
+            return own.removePrefix("$name ")
+        }
         // The wall as the day's siege replay: the blows of the fight that landed, in order, then what reached the forge.
         val rounds = fight?.events.orEmpty().filter { it.kind == EventKind.DAMAGE && it.source != null && it.target != null }.take(14).map { e ->
             val src = fight!!.actor(e.source!!); val dst = fight.actor(e.target!!)
-            CombatRound(src?.name ?: "?", dst?.name ?: "?", e.amount, e.text.removePrefix("${src?.name}'s ").removePrefix("${src?.name} ").removeSuffix("."), e.source.takeIf { src?.side == Side.PARTY && src.summoned.not() })
+            CombatRound(src?.name ?: "?", dst?.name ?: "?", e.amount, note(e.text.removeSuffix("."), src?.name), e.source.takeIf { src?.side == Side.PARTY && src.summoned.not() })
         } + CombatRound(faction.siegeName, "the forge", forgeDamage, if (won) "is driven off" else "breaks through")
         ctx.replays += CombatReplay("Siege of Emberfall, day ${ctx.day}", ctx.day, rounds, when (verdict) { SiegeVerdict.HELD -> "Town held"; SiegeVerdict.HELD_AT_A_COST -> "Held at a cost"; SiegeVerdict.BREACHED -> "Defenses broken" })
 
@@ -287,7 +294,7 @@ object SiegeFight {
             if (won) { Heroes.grantXp(ctx, ctx.hero(h.id), config.siegeXp); Heroes.fulfilAmbition(ctx, h.id, Ambition.DEFENDER) }
             if (a?.downed == true && member != null) GuildOps.updateMember(ctx, h.id) { it.copy(wound = Wound(WoundKind.INJURED, ctx.day + 1 + cfg.injuredDays, "Went down on the wall on day ${ctx.day}."), timesDowned = it.timesDowned + 1) }
             if (won) {
-                if (w != null) ctx.milestone("CHAMPION_ARMED", "A champion defended the town with a weapon from this forge: ${w.name}.")
+                if (w != null) ctx.milestone("CHAMPION_ARMED", "A defender held the wall with a weapon from this forge: ${w.name}.")
                 ctx.field += FieldResult(h.id, h.fullName, FieldOutcome.HELD_THE_WALL, faction.siegeName, factionId = factionId, eventIds = listOf(event.id))
             }
         }
@@ -308,11 +315,11 @@ object SiegeFight {
             fight!!.events.firstOrNull { it.kind == EventKind.DOWNED && it.target == "e1" }?.source?.let { key -> wall.firstOrNull { it.first.id.value == key } }?.let { (h, w) ->
                 if (w != null && ctx.weapons[w.id]?.location !is WeaponLocation.Lost) {
                     val legend = ctx.config.depth.legend
-                    com.tinyblacksmith.core.crafting.Legends.deed(ctx, w.id, if (scenario.charter) legend.renownCharter else legend.renownWarlord, "${h.fullName} felled ${leadUnit.name} with it on the wall of Emberfall.", listOf(h.id.value))
-                    notes += "${h.fullName} felled ${leadUnit.name} with ${w.name}."
+                    com.tinyblacksmith.core.crafting.Legends.deed(ctx, w.id, if (scenario.charter) legend.renownCharter else legend.renownWarlord, "${h.fullName} defeated ${leadUnit.name} with it on the wall of Emberfall.", listOf(h.id.value))
+                    notes += "${h.fullName} defeated ${leadUnit.name} with ${w.name}."
                 }
             }
-            if (warlord) com.tinyblacksmith.core.crafting.Legends.gainHeartfire(ctx, 1, "${leadUnit.name} broke on the wall and left Heartfire behind.")
+            if (warlord) com.tinyblacksmith.core.crafting.Legends.gainHeartfire(ctx, 1, "${leadUnit.name} was defeated on the wall and left Heartfire behind.")
         }
         // The one who carried the smith's weapon came with them. Felled on a wall that held, the weapon is home.
         if (nemesis != null && nemesisKey != null) {
@@ -320,9 +327,9 @@ object SiegeFight {
             if (won && fight?.actor(nemesisKey)?.downed == true && blade != null) {
                 ctx.updateWeapon(blade.copy(location = WeaponLocation.Storage))
                 ctx.addWeaponHistory(blade.id, "RECOVERED", "Taken back on the wall from ${nemesis.name}, who had carried it against its own forge.")
-                ctx.emit(EventType.WEAPON_RECOVERED, 7, "${blade.name} is back at the forge. ${nemesis.name} carried it to the wall and fell there.", listOf(blade.id.value), mapOf(WeaponFate.KEY to WeaponFate.RECOVERED.name))
+                ctx.emit(EventType.WEAPON_RECOVERED, 7, "${blade.name} is back at the forge. ${nemesis.name} carried it to the wall and was defeated there.", listOf(blade.id.value), mapOf(WeaponFate.KEY to WeaponFate.RECOVERED.name))
                 Stories.recovered(ctx, blade.id)
-                notes += "${nemesis.name} came carrying ${blade.name} and fell. It is back at the forge."
+                notes += "${nemesis.name} came carrying ${blade.name} and was defeated. It is back at the forge."
             } else if (blade != null) notes += "${nemesis.name} fought on their side with ${blade.name}, a weapon of this forge."
         }
         ctx.guild = ctx.guild!!.copy(lastSiege = SiegeReport(ctx.day, wall.map { it.first.id }, fight?.let { Missions.compact(it) }, verdict, forgeDamage, outer, notes), reserved = emptyList())
@@ -334,7 +341,7 @@ object SiegeFight {
             if (warlord && beaten) {
                 ctx.earn(IncomeKind.TRIBUTE, config.warlordTribute)
                 ctx.emit(EventType.MILESTONE, 6, "${leadUnit.name} was thrown back from the walls. The town paid the smith ${config.warlordTribute} gold in thanks.", data = mapOf("tribute" to config.warlordTribute.toString()))
-                ctx.milestone("WARLORD_DEFEATED", "Emberfall broke a warlord at its walls.")
+                ctx.milestone("WARLORD_DEFEATED", "Emberfall defeated a warlord at the walls.")
             }
             ctx.milestone("SIEGE_SURVIVED", "Emberfall survived its first siege.")
             if (scenario.charter) Stories.charterSiege(ctx, leadUnit.name, beaten)

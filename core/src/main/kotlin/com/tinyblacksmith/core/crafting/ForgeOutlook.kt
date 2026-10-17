@@ -12,6 +12,8 @@ import com.tinyblacksmith.core.engine.Technique
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.KnowledgeState
 import com.tinyblacksmith.core.model.Rarity
+import com.tinyblacksmith.core.model.Risk
+import com.tinyblacksmith.core.text.Terms
 
 /**
  * What can honestly be said of a recipe before it is forged. [Outlook.certain] holds only rules every forge of this
@@ -38,18 +40,18 @@ object ForgeOutlook {
     fun role(facets: List<Facet>): String {
         fun gives(res: Res, test: (On) -> Boolean = { true }) = facets.any { it.verb == Verb.PROVIDES && it.res == res && test(it.on) }
         return when {
-            gives(Res.GUARD) { it.others } || gives(Res.HEALING) { it.others } -> "Protects the party"
-            gives(Res.GUARD) { it == On.WEAKEST_ALLY } -> "Shields whoever is weakest"
-            facets.any { it.verb == Verb.SPENDS && it.res == Res.STEAM } -> "Turns heat and cold into Steam"
-            gives(Res.FRACTURE) -> "Cracks to help the party"
-            facets.any { it.verb == Verb.SPENDS && it.res == Res.CHARGE } -> "Builds to a burst"
-            gives(Res.DAMAGE) { it.back } -> "Reaches the back of the line"
-            gives(Res.GUARD) { it == On.SELF } || gives(Res.THORNS) -> "Holds the line"
-            gives(Res.BURN) || gives(Res.BLEED) -> "Wears the enemy down"
-            gives(Res.CHILL) -> "Weakens enemy attacks"
-            gives(Res.MARK) -> "Marks a target for the next hit"
-            gives(Res.REGEN) || gives(Res.HEALING) -> "Keeps its wielder standing"
-            else -> "A plain striker"
+            gives(Res.GUARD) { it.others } || gives(Res.HEALING) { it.others } -> "Party support"
+            gives(Res.GUARD) { it == On.WEAKEST_ALLY } -> "Protects the weakest"
+            facets.any { it.verb == Verb.SPENDS && it.res == Res.STEAM } -> "Steam combos"
+            gives(Res.FRACTURE) -> "Breaks for the party"
+            facets.any { it.verb == Verb.SPENDS && it.res == Res.CHARGE } -> "Burst damage"
+            gives(Res.DAMAGE) { it.back } -> "Back-line damage"
+            gives(Res.GUARD) { it == On.SELF } || gives(Res.THORNS) -> "Tank"
+            gives(Res.BURN) || gives(Res.BLEED) -> "Damage over time"
+            gives(Res.CHILL) -> "Weakens enemies"
+            gives(Res.MARK) -> "Marks targets"
+            gives(Res.REGEN) || gives(Res.HEALING) -> "Self-healing"
+            else -> "Plain damage"
         }
     }
 
@@ -98,9 +100,9 @@ object ForgeOutlook {
 
         val possible = buildList {
             if (elementBuff != null && !elementBuffCertain && (most >= 1)) add(Possible(Kind.ELEMENT_BUFF, elementBuff.name,
-                "It needs a free buff slot, and only a good enough result has one. The Quench technique always adds it.", combat.affixEffects[elementBuff.id].orEmpty()))
+                "It needs a free property slot. A Rare or better result, an exceptional result, ${Terms.risk(Risk.RECKLESS)} risk or Etch gives one. The Quench technique always adds it.", combat.affixEffects[elementBuff.id].orEmpty()))
             val others = content.affixes.filter { it.kind == AffixKind.BENEFICIAL && it.element == null }
-            if (most > (if (elementBuff != null) 1 else 0) && others.isNotEmpty()) add(Possible(Kind.OTHER_BUFF, "Another buff", "A good enough result can also add one of these: ${others.joinToString(", ") { it.name }}. Which one is random."))
+            if (most > (if (elementBuff != null) 1 else 0) && others.isNotEmpty()) add(Possible(Kind.OTHER_BUFF, "Another bonus", "A good enough result can also add one of these: ${others.joinToString(", ") { it.name }}. Which one is random."))
             if (defect > 0.0) add(Possible(Kind.FLAW, "A flaw", "This forging can leave a flaw. Which flaw is random, and each flaw also has its own effect in a fight."))
             // A signature is said only when the journal already holds it. A clue stays a clue, in the notes.
             SignatureCatalog.forRecipe(cmd)?.takeIf { state.legacy.journal.state(it.journalKey) == KnowledgeState.SIGNATURE_DISCOVERED }?.let { sig ->

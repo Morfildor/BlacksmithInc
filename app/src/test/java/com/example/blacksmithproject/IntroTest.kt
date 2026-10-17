@@ -240,7 +240,7 @@ class IntroTest : ShopDayTestBase() {
         vm.introAction(); advanceUntilIdle()
         assertEquals("the weapon made before the replay is not its first forge", IntroStep.RECIPE, vm.step())
         assertEquals(run, store.run)
-        assertEquals("In progress in this run." to "Skip guidance", vm.introRow.value!!.let { it.detail to it.action })
+        assertEquals("In progress in this era." to "Skip guidance", vm.introRow.value!!.let { it.detail to it.action })
     }
 
     @Test

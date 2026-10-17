@@ -182,7 +182,7 @@ object WorldEvents {
         WorldEventDef(
             id = "caravan_delayed", name = "Trade Caravan Delayed", weight = 2.0, eligibility = { rareMaterials(it).isNotEmpty() }, maxPerRun = 4, cooldownDays = 3,
             apply = { ctx -> ctx.worldFlags[FLAG_CARAVAN_DELAYED] = ctx.day + 1; WorldEventOutcome() },
-            story = "The trade caravan is stuck in the mountains. The supplier gets no rare materials tomorrow.",
+            story = "The trade caravan is stuck in the mountains. The supplier gets no limited materials tomorrow.",
         ),
         // 3
         WorldEventDef(
@@ -218,7 +218,7 @@ object WorldEvents {
                 ctx.commissions[id] = c
                 WorldEventOutcome(mapOf("hero" to buyer.fullName, "family" to ctx.content.family(family).name, "request" to Commissions.describe(c, ctx.content, config), "reward" to reward.toString(), "day" to c.deadlineDay.toString()), listOf(buyer.id.value, id.value))
             },
-            story = "{hero} brings an order from a noble: a {request} by day {day}, for {reward} gold.",
+            story = "{hero} brings a commission from a noble: a {request} by day {day}, for {reward} gold.",
         ),
         // 6
         WorldEventDef(
@@ -303,7 +303,7 @@ object WorldEvents {
                 ctx.emit(EventType.DISCOVERY, 1, "New notes on $subject. ${Journal.describeAffinity(Journal.affinityFor(ctx.content, key)).replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 WorldEventOutcome(mapOf("subject" to subject, "key" to key))
             },
-            story = "Old smithing notes turned up at the market. They describe the pairing {subject}.",
+            story = "Old smithing notes turned up at the market. They describe the combination {subject}.",
         ),
         // 17
         WorldEventDef(
@@ -316,7 +316,7 @@ object WorldEvents {
                 ctx.emit(EventType.DISCOVERY, 1, "New notes on $subject. ${Journal.describeAffinity(Journal.affinityFor(ctx.content, key)).replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 WorldEventOutcome(mapOf("subject" to subject, "key" to key))
             },
-            story = "A trader's alloy revealed something about the pairing {subject}. You also received some of both materials.",
+            story = "A trader's alloy revealed something about the combination {subject}. You also received some of both materials.",
         ),
         // 18
         WorldEventDef(
@@ -338,10 +338,10 @@ object WorldEvents {
                 ctx.discoveriesThisRun += 1
                 val subject = Journal.subjectName(ctx.content, key)
                 val label = Journal.describeAffinity(Journal.affinityFor(ctx.content, key))
-                ctx.emit(EventType.DISCOVERY, 3, "Pairing learned. $subject. ${label.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
+                ctx.emit(EventType.DISCOVERY, 3, "Combination learned. $subject. ${label.replaceFirstChar { it.uppercase() }}.", data = mapOf("key" to key))
                 WorldEventOutcome(mapOf("subject" to subject, "label" to label, "key" to key))
             },
-            story = "A master smith taught you the pairing {subject}: {label}.",
+            story = "A master smith taught you the combination {subject}: {label}.",
         ),
         // 20
         WorldEventDef(
@@ -397,7 +397,7 @@ object WorldEvents {
         ),
         // 22
         WorldEventDef(
-            id = "descendant", name = "Descendant of a Champion", weight = 1.0,
+            id = "descendant", name = "Descendant of a Famous Hero", weight = 1.0,
             eligibility = { ctx -> ctx.residents().size < ctx.config.customers.maxHeroPopulation && ctx.legacy.lineages.any { l -> ctx.heroes.values.none { it.lineageId == l.id } } },
             maxPerRun = 2, cooldownDays = 5,
             apply = { ctx ->

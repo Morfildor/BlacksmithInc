@@ -107,6 +107,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
     // The material a "Restock" was tapped for: Supplies opens on its row. Any other way in opens at the top.
     var suppliesFocus by rememberSaveable { mutableStateOf<String?>(null) }
     var boardOpen by rememberSaveable { mutableStateOf(false) }
+    var endDayPreview by rememberSaveable { mutableStateOf(false) }
     val workshopHaptics = LocalHaptics.current
     // Back returns to Shop from any other destination, and from Shop it opens the main menu. Sheets and dialogs are
     // their own windows and take Back first.
@@ -139,7 +140,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                 // End Day is the Shop's way forward, on a footer of its own under a rule: the list ends above it, so it never
                 // sits on a cut row. The Forge keeps it under "More", and beside its action when no forge is left today.
                 if (s.dest == Dest.SHOP) Box(Modifier.fillMaxWidth().background(ForgePanel).drawBehind { drawLine(BronzeDeep, Offset.Zero, Offset(size.width, 0f), strokeWidth = 1.dp.toPx()) }) {
-                    EndDayButton(s, vm, primary = true)
+                    EndDayButton(s, vm, primary = true, onPreview = { endDayPreview = true })
                 }
                 DestinationBar(s.dest, vm::selectDest, guild = s.guild != null, marked = when (s.intro?.mark) { IntroMark.NAV_FORGE -> Dest.FORGE; IntroMark.NAV_SHOP -> Dest.SHOP; else -> null })
             }
@@ -195,7 +196,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     onAnswer = { id, accept -> vm.dispatch(if (accept) Command.AcceptCommission(id) else Command.DeclineCommission(id)) },
                     onList = { id, price -> vm.stock(id, StockAction.ListAt(price)) }, onSalvage = { vm.stock(it, StockAction.Salvage) },
                 )
-                Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesFocus = it?.value; suppliesOpen = true }, onOpenBoard = { boardOpen = true }, onEndDay = { workshopHaptics.play(Moment.END_DAY); vm.endDay() })
+                Dest.FORGE -> ForgePanel(s, vm, reducedMotion, tip, onOpenSupplies = { suppliesFocus = it?.value; suppliesOpen = true }, onOpenBoard = { boardOpen = true }, onEndDay = { workshopHaptics.play(Moment.END_DAY); vm.endDay() }, onEndDayPreview = { endDayPreview = true })
                 Dest.RECORDS -> RecordsPanel(s, vm)
                 Dest.TOWN -> TownPanel(s, vm)
             }
@@ -247,6 +248,7 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
         state.pendingRelicOffer.mapNotNull { vm.engine.content.relic(it) }, s.relics, vm.engine.config.depth.relicSlots, s.busy,
         onChoose = vm::chooseRelic, onDecline = vm::declineRelics, onLater = vm::dismissRelicOffer,
     )
+    if (endDayPreview) EndDayPreviewDialog(endDayLines(s), onDismiss = { endDayPreview = false })
     s.lastError?.let { ErrorDialog(it, vm::dismissError) }
 }
 
@@ -314,7 +316,7 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
     val weights = Dest.entries.associateWith { d ->
         maxOf(with(density) { 48.dp.toPx() }, measurer.measure(destName(d, guild), labelStyle, softWrap = false).size.width.toFloat() + with(density) { 8.dp.toPx() })
     }
-    val height = if (large) 96.dp else 72.dp
+    val height = if (large) 88.dp else 64.dp
     NavigationBar(
         containerColor = ForgePanel, tonalElevation = 0.dp, windowInsets = WindowInsets(0, 0, 0, 0),
         modifier = modifier.navigationBarsPadding().height(height).drawWithContent { drawContent(); drawLine(Bronze, Offset.Zero, Offset(size.width, 0f), strokeWidth = 2.dp.toPx()) },
@@ -334,7 +336,7 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
             ) {
-                PixelImage(destIcon(d), wholePixelDp(40, if (large) 24.dp else 36.dp), description = null)
+                PixelImage(destIcon(d), wholePixelDp(40, if (large) 24.dp else 30.dp), description = null)
                 Text(destName(d, guild), style = MaterialTheme.typography.labelMedium,
                     color = if (on) Gold else CreamMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().testTag("nav_label_${d.name.lowercase()}"))
@@ -374,7 +376,7 @@ const val SKIP_TO_EVENING = "Skip to evening"
 /** First-run tips (GDD 3.3 onboarding): dismissed IDs live in settings, never in the save. */
 object Tips {
     data class Tip(val id: String, val body: String)
-    val FORGE = Tip("forge", "Choose a weapon, metal and augment. Then forge. You'll always make something usable.")
+    val FORGE = Tip("forge", "Choose a weapon, metal and infusion. Then forge. You'll always make something usable.")
     val END_DAY = Tip("end_day", "End Day opens the shop and sends the heroes out. Check the Gazette to see who came back.")
     val MARKET = Tip("market", "Put weapons on the shelf and set their prices. Heroes look for gear they like and can afford.")
     /** Not a banner: one line under the first customer of the first shop day the player watches (`ShopDayHost`). */
@@ -407,18 +409,68 @@ fun TipBanner(tip: Tips.Tip, vm: GameViewModel, modifier: Modifier = Modifier) {
  * plate, on the Shop; on the Forge, where "Forge weapon" is the way forward, the same action as an outline.
  */
 @Composable
-private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean) {
+private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean, onPreview: () -> Unit) {
     val haptics = LocalHaptics.current
-    val note = endDayNote(s)
-    // Clear of the destination bar under it: this is the one tap of the day that cannot be taken back.
-    val place = Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.md).testTag("end_day").introMark(s.intro?.mark == IntroMark.END_DAY)
+    val lines = endDayLines(s)
+    val headline = endDayHeadline(lines)
     val end = { haptics.play(Moment.END_DAY); vm.endDay() }
-    if (primary) PrimaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)
-    else SecondaryActionButton("End Day", end, place, enabled = !s.busy, detail = note)
+    // V2: the button carries one sentence, the most pressing; everything End Day sets in motion is one tap away beside
+    // it ("What happens", read-only). Clear of the destination bar under it: this is the one tap of the day that cannot be taken back.
+    // Stacked from font 1.3, so the headline is never broken a word a line beside "What happens".
+    val large = LocalDensity.current.fontScale >= 1.3f
+    val button: @Composable (Modifier) -> Unit = { m ->
+        val place = m.testTag("end_day").introMark(s.intro?.mark == IntroMark.END_DAY)
+        if (primary) PrimaryActionButton("End Day", end, place, enabled = !s.busy, detail = headline)
+        else SecondaryActionButton("End Day", end, place, enabled = !s.busy, detail = headline)
+    }
+    val preview: @Composable (Modifier) -> Unit = { m -> SecondaryActionButton("What happens", onPreview, m.heightIn(min = 52.dp).testTag("end_day_preview")) }
+    val more = endDayHasMore(lines)
+    val pad = Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.md)
+    when {
+        !more -> button(pad)
+        large -> Column(pad, verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Space.xs)) { button(Modifier.fillMaxWidth()); preview(Modifier.fillMaxWidth()) }
+        else -> Row(pad, horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+            preview(Modifier)
+            button(Modifier.weight(1f))
+        }
+    }
 }
 
+/**
+ * Everything End Day sets in motion, one fact a row, read from the save and never acted on: the visitor's free answer,
+ * the siege and who stands, the party that leaves, a checkpoint left without word. Closing it changes nothing.
+ */
+@Composable
+internal fun EndDayPreviewDialog(lines: List<String>, onDismiss: () -> Unit) {
+    ForgeDialog("What happens at End Day", onDismiss, tag = "end_day_preview_dialog", actions = { InlineActionButton("Close", onDismiss, Modifier.testTag("end_day_preview_close")) }) {
+        lines.forEach { line ->
+            Column(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
+                val parts = line.split(". ").map { it.trim() }.filter { it.isNotEmpty() }
+                Text(parts.first().let { if (parts.size > 1 && !it.endsWith(".")) "$it." else it }, style = MaterialTheme.typography.titleSmall)
+                parts.drop(1).forEach { p -> Secondary(if (p.endsWith(".")) p else "$p.") }
+            }
+        }
+        Secondary("Nothing here is final until you end the day.", Modifier.padding(top = Space.sm))
+    }
+}
+
+/** The most a button's second line holds whole ("Trading first. The siege follows tonight."); a longer line gives its first sentence. */
+private const val HEADLINE_CHARS = 48
+
+/** The one line End Day's button carries: the most pressing line, or its first sentence when it is long. */
+internal fun endDayHeadline(lines: List<String>): String? = lines.firstOrNull()?.let { first ->
+    val cut = first.indexOf(". ")
+    if (first.length <= HEADLINE_CHARS || cut < 0) first else first.substring(0, cut + 1)
+}
+
+/** True when the button's line does not say everything, so "What happens" is offered beside it. */
+internal fun endDayHasMore(lines: List<String>): Boolean = lines.size > 1 || lines.firstOrNull()?.let { endDayHeadline(lines) != it } == true
+
 /** What End Day would leave behind or bring on, the most pressing first: said wherever the day can be ended (the Shop's button, the Forge's menu and its foot). */
-internal fun endDayNote(s: UiState.Playing): String {
+internal fun endDayNote(s: UiState.Playing): String = endDayLines(s).joinToString("\n")
+
+/** The lines of [endDayNote], most pressing first: what must be done, the siege, what is left open, then what the guild sets in motion. */
+internal fun endDayLines(s: UiState.Playing): List<String> {
     val state = s.state
     val offers = state.commissions.values.count { it.status == CommissionStatus.OFFERED }
     // A guild run: what End Day sets in motion for the guild (the party that leaves, tonight's siege and who stands, a checkpoint without word), under whatever still waits.
@@ -445,7 +497,9 @@ internal fun endDayNote(s: UiState.Playing): String {
         state.energy > 0 -> "${state.energy} energy unused"
         else -> "Rest until dawn"
     }
-    return (listOfNotNull(blocker, siege, note) + guild).joinToString("\n")
+    // The siege tonight leads what is merely left open (a visitor's free answer, unused energy): it is the night's news.
+    val (guildSiege, guildRest) = guild.partition { it.startsWith("Siege tonight") }
+    return listOfNotNull(blocker, siege) + guildSiege + listOfNotNull(note) + guildRest
 }
 
 /** What End Day will leave behind, most pressing first. An unanswered visitor is told the free answer; an offer waits for another day. */
@@ -474,9 +528,10 @@ private fun destIcon(d: Dest) = when (d) {
 /** Section heading: a gold serif title over a bronze rule, with a generous top gap so sections read as separate blocks. */
 @Composable
 fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    // V2: small caps in gold (theme `SectionLabel`), not the serif: the serif is kept for screen titles and big moments.
     Text(
-        text, style = MaterialTheme.typography.titleLarge, color = Gold,
-        modifier = modifier.padding(top = Space.lg, bottom = Space.sm).semantics { heading() }.drawBehind {
+        text, style = com.example.blacksmithproject.ui.theme.SectionLabel, color = Gold,
+        modifier = modifier.fillMaxWidth().padding(top = Space.lg, bottom = Space.sm).semantics { heading() }.drawBehind {
             drawLine(BronzeDeep, Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1.dp.toPx())
         }.padding(bottom = 2.dp),
     )

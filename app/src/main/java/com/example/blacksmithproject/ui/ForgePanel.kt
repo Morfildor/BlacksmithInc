@@ -12,6 +12,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
@@ -35,6 +37,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -99,6 +107,8 @@ import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.model.WeaponFamilyId
 import com.tinyblacksmith.core.model.WeaponId
+import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.engine.Technique
 
 private const val NO_SLOT = "none"
 private val Card = RoundedCornerShape(10.dp)
@@ -114,9 +124,12 @@ private val Chip = RoundedCornerShape(6.dp)
 fun ForgePanel(
     s: UiState.Playing, vm: GameViewModel, reducedMotion: Boolean, tip: Tips.Tip?,
     onOpenSupplies: (MaterialId?) -> Unit = {}, onOpenBoard: () -> Unit = {}, onEndDay: () -> Unit = {},
+    /** Opens the read-only list of what End Day sets in motion (the Shop's "What happens"). */
+    onEndDayPreview: () -> Unit = {},
 ) {
     // What End Day would leave behind or bring on, said beside both of the Forge's ways to it.
-    val endDayNote = endDayNote(s)
+    // V2: the Forge's End Day carries the same one line as the Shop's; the full list is on the Shop ("What happens").
+    val endDayNote = endDayHeadline(endDayLines(s)).orEmpty()
     val engine = vm.engine
     val d = s.draft
     // Asked for and still possible: a draft that has lost its bellows since forges without them, and the outlook says the same.
@@ -124,8 +137,10 @@ fun ForgePanel(
     val bench = remember(s.state, d, s.shop.requests, bellows) { engine.forgeWorkbench(s.state, d, s.shop.requests, bellows) }
     // The rehearsal of the recipe on the anvil, open over the Forge.
     var rehearsing by rememberSaveable { mutableStateOf(false) }
+    // The recipe's full study (V3 details): every ingredient, what each costs, how the effects work together, each chance.
+    var details by rememberSaveable { mutableStateOf(false) }
     // Restored open over a recipe that is no longer whole: closed, so it does not spring open when the recipe is completed again.
-    LaunchedEffect(bench.outlook == null) { if (bench.outlook == null) rehearsing = false }
+    LaunchedEffect(bench.outlook == null) { if (bench.outlook == null) { rehearsing = false; details = false } }
 
     // null = the first empty place is open; NO_SLOT = no tray; otherwise the place the player opened.
     var opened by rememberSaveable { mutableStateOf<String?>(null) }
@@ -147,21 +162,41 @@ fun ForgePanel(
 
     Column(Modifier.fillMaxSize()) {
         // The header owns the day and the countdown; once the siege is warned the Forge keeps who comes and what bites.
-        s.shop.threat?.takeIf { it.warned && it.matchup != null }?.let { SiegeMatchup(it, "forge_threat") }
         val scroll = rememberScrollState()
+        // With large text the risk is a choice among the others, so the pinned foot keeps only what stops or sends the forge.
+        val largeText = LocalDensity.current.fontScale >= 1.3f
+        // Larger text or a short screen: decoration and secondary ways give way first, so the recipe stays in view.
+        val tight = LocalDensity.current.fontScale > 1.15f || LocalConfiguration.current.screenHeightDp < 700
         // The last choice closes the tray: the finished blade over the anvil comes back into view.
         LaunchedEffect(open) { if (open == null && follow) scroll.animateScrollTo(0) }
         Column(Modifier.weight(1f).bottomFade(scroll.canScrollForward).verticalScroll(scroll).padding(horizontal = Space.md).padding(bottom = Space.md)) {
-            ForgeHeading(s.shop.requests.size, s.shop.requests.count { it.offered }, endDayNote, onOpenBoard, { onOpenSupplies(null) }, { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy)
-            Workbench(bench.title, d, vm.engine.content, compact = open != null, reducedMotion)
+            // V3: the weapon on the anvil and what it is, side by side; the rules behind "Inspect", the study behind "Full details".
+            val inspector = LocalInspector.current
+            ForgeHero(
+                bench, d, engine.content, s.shop.threat, compact = open != null, tight = tight, reducedMotion = reducedMotion,
+                inspect = bench.outlook?.let { o ->
+                    {
+                        val art = d.familyId?.let { f -> d.coreId?.let { c -> Sprites.weapon(f, c, d.augmentId?.let { engine.content.material(it).element }) } }
+                        recipeTip(o, bench.title, art, engine.config, accent = d.augmentId?.let { engine.content.material(it).element }?.let { com.example.blacksmithproject.ui.detail.elementColor(it) }, actions = listOf(
+                            TipAction("Practice fight", "forge_tip_bench") { rehearsing = true },
+                            TipAction("Full details", "forge_outlook_details") { details = true },
+                        ))
+                    }
+                },
+                onBench = { rehearsing = true }, inspector = inspector,
+            )
+            // How it is forged, and the ways to the board and the rarer actions, on one line under the anvil.
+            ForgeBar(
+                d, { change -> vm.updateDraft(change) }, s.shop.requests.size, s.shop.requests.count { it.offered }, endDayNote, onOpenBoard, { onOpenSupplies(null) },
+                { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy, onEndDayPreview.takeIf { endDayHasMore(endDayLines(s)) },
+                onBench = if (tight && bench.outlook != null) { { rehearsing = true } } else null,
+            )
             bench.brief?.let { b ->
                 Brief(
                     b, onOpen = { b.heroId?.let { vm.openSheet(Sheet.Hero(it)) } ?: onOpenBoard() }, onOpenBlade = { vm.openSheet(Sheet.Item(it)) },
                     onClear = { vm.updateDraft { draft -> draft.copy(commissionId = null, wantHeroId = null) } },
                 )
             }
-            // How it is forged comes before what goes in: Advanced adds two places to the recipe and the Heartfire switch.
-            ModeToggle(d) { change -> vm.updateDraft(change) }
             // The places and the open tray come into view together. A tray taller than the screen keeps its head in view,
             // so the labels of the places (Weapon, Metal, Augment) stay on screen while a choice is made.
             val recipe = remember { BringIntoViewRequester() }
@@ -175,7 +210,10 @@ fun ForgePanel(
                     // opens or the tray is reopened, and kept across a restart ("" is nothing chosen).
                     val baseId = rememberSaveable(open) { d.idIn(open) ?: "" }.ifEmpty { null }
                     val change = remember(s.state, d, open, baseId, s.shop.requests, s.shop.threat) { engine.trayChange(s.state, d.withSlot(open, baseId), d, open, s.shop.requests, s.shop.threat) }
-                    Tray(open, options, engine.content, change, onOpenSupplies, onDone = { opened = NO_SLOT }, onPutBack = { vm.updateDraft { it.withSlot(open, baseId) } }) { option ->
+                    // Who comes and what bites, where it decides: over the augments (the header keeps the countdown).
+                    if (open == RecipeSlot.AUGMENT) s.shop.threat?.takeIf { it.warned && it.matchup != null }?.let { SiegeMatchup(it, "forge_threat", inset = false) }
+                    val tipFor: (OptionUi) -> TipUi? = { o -> optionTip(engine, s, open, o, onOpenSupplies) }
+                    Tray(open, options, engine.content, change, onOpenSupplies, onDone = { opened = NO_SLOT }, onPutBack = { vm.updateDraft { it.withSlot(open, baseId) } }, tipFor = tipFor) { option ->
                         // Filling an empty place moves on to the next one, the first time through. Changing a choice keeps
                         // the tray open, so another can be tried against the first and put back.
                         val filling = open.ordinal <= RecipeSlot.AUGMENT.ordinal && d.idIn(open) == null
@@ -184,8 +222,8 @@ fun ForgePanel(
                     }
                 }
             }
+            if (largeText) RiskChoice(d.risk, engine.config, Modifier.fillMaxWidth().padding(top = Space.sm), true) { r -> vm.updateDraft { draft -> draft.copy(risk = r) } }
             if (bench.notes.isNotEmpty()) FieldNotes(bench.notes) { vm.selectRecords(RecordsPage.JOURNAL) }
-            bench.outlook?.let { ForgeOutlookCard(it) { rehearsing = true } }
             bench.heartfire?.let { h -> HeartfireRow(h) { v -> vm.updateDraft { it.copy(heartfire = v) } } }
             // The workshop's relics that bear on this forge: the bellows as a switch, the ledger's word on the family chosen.
             BellowsRow(s, vm)
@@ -194,7 +232,9 @@ fun ForgePanel(
         }
         ForgeAction(
             bench, s.busy, endDayNote, { onOpenSupplies(bench.action.restock) }, onEndDay, marked = s.intro?.mark == IntroMark.FORGE,
-            risk = { modifier, inline -> RiskChoice(d.risk, engine.config, modifier, inline) { r -> vm.updateDraft { draft -> draft.copy(risk = r) } } },
+            risk = if (largeText) { _, _ -> } else { modifier, inline -> RiskChoice(d.risk, engine.config, modifier, inline) { r -> vm.updateDraft { draft -> draft.copy(risk = r) } } },
+            // With the choice in the scroll, the action still says the temper it will forge at.
+            riskNote = if (largeText) "Risk: ${riskName(d.risk)}" else null,
         ) {
             if (bench.command?.heartfire == true) confirming = true else send()
         }
@@ -210,68 +250,164 @@ fun ForgePanel(
         confirm.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Cream) }
         bench.heartfire?.warning?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember) }
     }
+    if (details) bench.outlook?.let { o -> RecipeDetailSheet(bench.title, o, engine.config, onBench = { details = false; rehearsing = true }) { details = false } }
     if (rehearsing) bench.outlook?.let { o ->
         val relics = remember(s.state.relics) { benchRelics(s.state, engine.content) }
         BenchSheet(o.demonstration, demonstration = true, engine.content, engine.config, relics) { rehearsing = false }
     }
 }
 
-/** The destination's name, the ways to the commission board and the supplier, and the rarer actions behind "More". */
+/**
+ * One line under the anvil: Quick or Advanced, then the commission board (its count, new offers in gold) and the rarer
+ * ways on behind "More" (the supplier, the notebook, what End Day sets in motion, End day itself).
+ */
 @Composable
-private fun ForgeHeading(commissions: Int, offers: Int, endDayNote: String, onOpenBoard: () -> Unit, onOpenSupplies: () -> Unit, onOpenJournal: () -> Unit, onEndDay: () -> Unit, busy: Boolean) {
-    // No title of its own: the destination bar says Forge, and a serif "Forge" beside three actions was cut to "Forg / e".
-    Row(Modifier.fillMaxWidth().padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically) {
-        TextButton(onClick = onOpenBoard, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_commissions")) {
-            // An offer waiting for an answer is said in gold, as on the Shop's card.
-            Text(if (offers > 0) "Commissions · $offers new" else if (commissions == 0) "Commissions" else "Commissions · $commissions", color = if (offers > 0) Gold else CreamMuted)
-        }
-        TextButton(onClick = onOpenSupplies, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_supplies")) { Text("Supplies", color = Gold) }
+private fun ForgeBar(
+    d: ForgeDraft, onMode: ((ForgeDraft) -> ForgeDraft) -> Unit, commissions: Int, offers: Int, endDayNote: String, onOpenBoard: () -> Unit, onOpenSupplies: () -> Unit,
+    onOpenJournal: () -> Unit, onEndDay: () -> Unit, busy: Boolean, onEndDayPreview: (() -> Unit)? = null, onBench: (() -> Unit)? = null,
+) {
+    Row(Modifier.fillMaxWidth().padding(top = Space.sm), verticalAlignment = Alignment.CenterVertically) {
+        ModeToggle(d, onMode)
         Spacer(Modifier.weight(1f))
+        Row(
+            Modifier.heightIn(min = 48.dp).clip(Chip).clickable(role = Role.Button, onClick = onOpenBoard).padding(horizontal = Space.sm).testTag("forge_commissions")
+                .semantics(mergeDescendants = true) { contentDescription = if (offers > 0) "Commissions, $offers new" else "Commissions, $commissions" },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            PixelImage(R.drawable.icon_action_commission, 28.dp, description = null)
+            if (commissions > 0) Text(
+                if (offers > 0) "$offers new" else "$commissions", style = MaterialTheme.typography.labelLarge, color = if (offers > 0) Gold else CreamMuted,
+                modifier = Modifier.padding(start = 6.dp),
+            )
+        }
         Box {
             var more by remember { mutableStateOf(false) }
             TextButton(onClick = { more = true }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_more")) { Text("⋯", style = MaterialTheme.typography.titleLarge, color = CreamMuted, modifier = Modifier.semantics { contentDescription = "More" }) }
             DropdownMenu(expanded = more, onDismissRequest = { more = false }, containerColor = ForgePanel) {
+                onBench?.let { go -> DropdownMenuItem(text = { Text("Practice fight") }, onClick = { more = false; go() }, modifier = Modifier.testTag("forge_bench_open")) }
+                DropdownMenuItem(text = { Text("Supplies") }, onClick = { more = false; onOpenSupplies() }, modifier = Modifier.testTag("forge_supplies"))
                 DropdownMenuItem(text = { Text("Notebook") }, onClick = { more = false; onOpenJournal() }, modifier = Modifier.testTag("forge_journal"))
-                DropdownMenuItem(text = { Column { Text("End day"); Text(endDayNote, style = MaterialTheme.typography.bodySmall, color = CreamMuted) } }, enabled = !busy, onClick = { more = false; onEndDay() }, modifier = Modifier.testTag("forge_end_day"))
+                onEndDayPreview?.let { open -> DropdownMenuItem(text = { Text("What happens at End Day") }, onClick = { more = false; open() }, modifier = Modifier.testTag("forge_end_day_preview")) }
+                DropdownMenuItem(text = { Column { Text("End Day"); Text(endDayNote, style = MaterialTheme.typography.bodySmall, color = CreamMuted) } }, enabled = !busy, onClick = { more = false; onEndDay() }, modifier = Modifier.testTag("forge_end_day"))
             }
         }
     }
 }
 
 /**
- * The room, the anvil and the blade being planned, as one framed place with its name on a plate under it. The preview
- * is the ordinary art of the weapon type and the augment's element: what a forge will really give (quality, properties,
- * a signature) is shown only by the result. [compact] while a tray is open under it, so the choices get the height.
+ * The anvil with the weapon being planned, and beside it what that weapon is: its name and element, its part in a party
+ * (a guild run), the names of the rules every forge of it carries, and the likely quality. "Effects" opens the recipe's
+ * card. Where room is short ([tight]: larger text or a short screen) the scene shrinks first and "Practice fight" moves
+ * to the card and the More menu, so the recipe's places stay in view. The preview is the ordinary art of the type and
+ * element: what a forge really gives is shown only by the result. [compact] while a tray is open.
  */
 @Composable
-private fun Workbench(title: String, d: ForgeDraft, content: ContentCatalog, compact: Boolean, reducedMotion: Boolean) {
-    val large = LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenHeightDp < 620
-    val height = if (large) 40.dp else if (compact) 72.dp else 132.dp
-    val blade = wholePixelDp(56, if (large) 32.dp else if (compact) 56.dp else 104.dp)
-    Column(Modifier.fillMaxWidth().testTag("forge_workbench").semantics(mergeDescendants = true) { contentDescription = "On the anvil: $title" }) {
-        Box(Modifier.fillMaxWidth().height(height).clip(Card).border(1.dp, BronzeDeep, Card), contentAlignment = Alignment.BottomCenter) {
-            Backdrop(R.drawable.bg_counter_forge, Modifier.matchParentSize().clearAndSetSemantics {}, dim = 0.35f, sink = 0.2f)
-            PixelImage(R.drawable.anvil, wholePixelDp(109, if (large) 40.dp else if (compact) 72.dp else 109.dp), description = null, modifier = Modifier.padding(bottom = 2.dp).height(if (large) 24.dp else if (compact) 48.dp else 72.dp))
-            d.familyId?.let { family ->
-                val core = d.coreId ?: content.materials(MaterialCategory.CORE).first().id
-                PixelImage(
-                    Sprites.weapon(family, core, d.augmentId?.let { content.material(it).element }), blade, description = null,
-                    modifier = Modifier.padding(bottom = if (large) 8.dp else if (compact) 22.dp else 30.dp).alpha(if (d.coreId != null) 1f else 0.55f).landing(Triple(family, d.coreId, d.augmentId), reducedMotion),
-                )
+private fun ForgeHero(
+    bench: ForgeWorkbenchUi, d: ForgeDraft, content: ContentCatalog, threat: ThreatUi?, compact: Boolean, tight: Boolean, reducedMotion: Boolean,
+    inspect: (() -> TipUi)?, onBench: () -> Unit, inspector: Inspector?,
+) {
+    val element = d.augmentId?.let { content.material(it).element }
+    val o = bench.outlook
+    val anchor = remember { InspectAnchor() }
+    val open = { if (inspect != null) inspector?.show(inspect(), anchor.rect) }
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).inspectAnchor(anchor)) {
+        Row(verticalAlignment = Alignment.Top) {
+            // Very large text: the room gives way to the weapon alone, small, so the name keeps the width.
+            if (LocalDensity.current.fontScale >= 1.8f) Box(
+                Modifier.padding(top = 4.dp).size(40.dp).clip(Chip).background(ForgeSlot).testTag("forge_workbench").semantics(mergeDescendants = true) { contentDescription = "On the anvil: ${bench.title}" },
+                contentAlignment = Alignment.Center,
+            ) {
+                val art = d.familyId?.let { f -> Sprites.weapon(f, d.coreId ?: content.materials(MaterialCategory.CORE).first().id, element) } ?: R.drawable.anvil
+                PixelImage(art, 32.dp, description = null, modifier = Modifier.alpha(if (d.familyId == null || d.coreId != null) 1f else 0.55f))
+            } else {
+                val scene = when { compact -> 56.dp; tight -> 72.dp; else -> 104.dp }
+                AnvilScene(bench.title, d, content, Modifier.size(scene), compact = scene < 80.dp, reducedMotion)
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f).then(if (o != null) Modifier.testTag("forge_outlook") else Modifier)) {
+                Row(verticalAlignment = Alignment.Top) {
+                    Text(
+                        bench.title + (element?.takeIf { bench.command != null }?.let { " · ${it.word()}" } ?: ""), style = MaterialTheme.typography.titleLarge, color = Cream,
+                        modifier = Modifier.weight(1f).testTag("forge_title"),
+                    )
+                    // Tight: the recipe's card is the ringed "i" beside its name, the inspect mark used on every tile.
+                    if (o != null && inspect != null && tight && !compact) InfoButton("${bench.title} effects", inspect, anchor = anchor, tag = "forge_inspect_recipe")
+                }
+                o?.let { Text(it.role, style = MaterialTheme.typography.bodyMedium, color = CreamMuted, modifier = Modifier.semantics { heading() }.testTag("forge_outlook_role")) }
+                // What every forge of it carries, as the rules' names: the weapon's identity at a glance, each read on its card.
+                if (o != null) o.certain.takeIf { it.isNotEmpty() && bench.command != null }?.let { rules ->
+                    FlowRow(
+                        Modifier.padding(top = 2.dp).testTag("forge_identity_rules").clearAndSetSemantics { contentDescription = "Always: ${rules.joinToString(", ") { o.label(it) }}" },
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        rules.forEach { r ->
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(EffectKind.NEUTRAL.sign, style = MaterialTheme.typography.labelMedium, color = EffectKind.NEUTRAL.color, modifier = Modifier.padding(end = 4.dp))
+                                Text(o.label(r), style = MaterialTheme.typography.bodyMedium, color = Cream)
+                            }
+                        }
+                    }
+                }
+                val facts = identityFacts(o, bench.quality, element?.let { threat?.marks?.get(it) }, bench.command != null)
+                FactLine(facts, Modifier.padding(top = 2.dp).testTag("forge_identity"))
             }
         }
-        // While a tray is open the name gives its line to the choices; it is still said for a screen reader, above.
-        if (!compact) Text(
-            title, style = MaterialTheme.typography.titleLarge, color = Cream, textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = 6.dp).testTag("forge_title"),
-        )
+        if (o != null && inspect != null && !compact && !tight) Row(Modifier.fillMaxWidth().padding(start = 104.dp + 12.dp - Space.sm)) {
+            ForgeLink("Effects", "forge_inspect_recipe", info = true, onClick = open)
+            ForgeLink("Practice fight", "forge_bench_open", onClick = onBench)
+        }
+    }
+}
+
+/** A quiet way on from the anvil: cream text (with the inspect ring for "Effects"), 48 dp tall, never a second gold action. */
+@Composable
+private fun ForgeLink(label: String, tag: String, info: Boolean = false, onClick: () -> Unit) {
+    Row(
+        Modifier.heightIn(min = 48.dp).clip(Chip).clickable(role = Role.Button, onClick = onClick).padding(horizontal = Space.sm).testTag(tag),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (info) androidx.compose.material3.Icon(androidx.compose.ui.res.painterResource(R.drawable.ic_info), contentDescription = null, tint = CreamMuted, modifier = Modifier.padding(end = 6.dp).size(18.dp))
+        Text(label, style = MaterialTheme.typography.labelLarge, color = Cream)
+        if (!info) Chevron(ChevronWay.RIGHT, tint = CreamMuted, size = 18.dp)
     }
 }
 
 /**
- * Who the draft is for: a commission or a hero's want, what it asks and whether the draft answers it, then the blades the
- * shop already holds of that type, so stock is weighed before another forge. Nothing here is promised or set aside. A
- * purpose that has gone says so in place. "Forge freely" drops it and keeps the ingredients.
+ * The recipe's deciding facts in one line, under the names of the rules every forge of it carries: the likely quality,
+ * how the besieger takes its element, and an effect that still needs a partner. What only a roll may add is named on
+ * the recipe's card, never counted here as if it were had.
+ */
+internal fun identityFacts(o: ForgeOutlookUi?, quality: Pair<Int, Int>?, mark: MarkUi?, whole: Boolean): List<Fact> = if (!whole) emptyList() else listOfNotNull(
+    quality?.takeIf { it.second > 0 }?.let { (low, high) -> Fact(if (low == high) "$low" else "$low to $high", "Likely quality") },
+    mark?.let { Fact(it.label, tone = if (it.counters) FactTone.GOOD else FactTone.WARN) },
+    o?.needs?.takeIf { it.isNotEmpty() }?.let { n -> Fact(n.joinToString(", ") { it.rule }, "Needs a partner", FactTone.WARN) },
+)
+
+/** The room, the anvil and the blade being planned, framed. Decorative to a screen reader but for what is on the anvil. */
+@Composable
+private fun AnvilScene(title: String, d: ForgeDraft, content: ContentCatalog, modifier: Modifier, compact: Boolean, reducedMotion: Boolean) {
+    val blade = wholePixelDp(56, if (compact) 48.dp else 80.dp)
+    Box(
+        modifier.clip(Card).border(1.dp, BronzeDeep, Card).testTag("forge_workbench").semantics(mergeDescendants = true) { contentDescription = "On the anvil: $title" },
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        Backdrop(R.drawable.bg_counter_forge, Modifier.matchParentSize().clearAndSetSemantics {}, dim = 0.35f, sink = 0.2f)
+        PixelImage(R.drawable.anvil, wholePixelDp(109, if (compact) 64.dp else 96.dp), description = null, modifier = Modifier.padding(bottom = 2.dp).height(if (compact) 40.dp else 60.dp))
+        d.familyId?.let { family ->
+            val core = d.coreId ?: content.materials(MaterialCategory.CORE).first().id
+            PixelImage(
+                Sprites.weapon(family, core, d.augmentId?.let { content.material(it).element }), blade, description = null,
+                modifier = Modifier.padding(bottom = if (compact) 16.dp else 26.dp).alpha(if (d.coreId != null) 1f else 0.55f).landing(Triple(family, d.coreId, d.augmentId), reducedMotion),
+            )
+        }
+    }
+}
+
+/**
+ * Who the draft is for, as a compact strip: a commission or a hero's want, what it asks as facts (a met ask ticked) and
+ * its standing. The weapons the shop already holds of that type are one tap away under a count, so stock is weighed
+ * before another forge; a weapon End Day would hand over is said on the closed row. Nothing here is promised or set
+ * aside. A purpose that has gone says so in place. "Forge freely" drops it and keeps the ingredients.
  */
 @Composable
 private fun Brief(b: BriefUi, onOpen: () -> Unit, onOpenBlade: (WeaponId) -> Unit, onClear: () -> Unit) {
@@ -283,15 +419,19 @@ private fun Brief(b: BriefUi, onOpen: () -> Unit, onOpenBlade: (WeaponId) -> Uni
             ) {
                 Text(b.title, style = MaterialTheme.typography.labelLarge, color = if (b.gone == null) Cream else CreamMuted)
                 if (b.gone != null) Text(b.gone, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.testTag("forge_for_gone"))
-                else Text(
-                    (b.asks.map { if (it.matches == true) "✓ ${it.text}" else it.text } + b.status).joinToString(" · "),
-                    style = MaterialTheme.typography.bodySmall, color = CreamMuted,
-                )
+                else FactLine(b.facts())
             }
             TextButton(onClick = onClear, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_clear_target")) { Text("Forge freely", color = Gold) }
         }
-        if (b.gone == null && (b.stock.isNotEmpty() || b.stockNote != null)) Column(Modifier.padding(start = Space.md, end = Space.xs, bottom = Space.xs).testTag("forge_for_stock")) {
-            Text("Already in your shop", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+        if (b.gone == null && b.stock.isEmpty()) b.stockNote?.let {
+            Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(start = Space.md, end = Space.xs, bottom = Space.sm).testTag("forge_for_stock"))
+        }
+        if (b.gone == null && b.stock.isNotEmpty()) Disclosure(
+            "Already in your shop · ${b.stock.size}", "forge_for_stock_${b.id?.value ?: b.heroId?.value}", Modifier.padding(start = Space.md, end = Space.xs),
+            summary = b.stock.firstOrNull { it.handsOver }?.let { "End Day would hand over ${it.name}" }
+                ?: b.stock.count { it.fits }.takeIf { it > 0 }?.let { "$it ${if (it == 1) "fits" else "fit"}" } ?: b.stockNote,
+            tag = "forge_for_stock",
+        ) {
             b.stock.forEach { w ->
                 Row(
                     Modifier.fillMaxWidth().clickable(onClickLabel = "Open ${w.name}", role = Role.Button) { onOpenBlade(w.weaponId) }.heightIn(min = 48.dp).testTag("forge_for_stock_${w.weaponId.value}"),
@@ -370,23 +510,23 @@ private fun optionArt(slot: RecipeSlot, option: OptionUi, content: ContentCatalo
 }
 
 /**
- * The choices for one place in a horizontally scrolling row beside the focused comparison. A tap
- * on a tile that can be used places it and the tray stays open. Stock-empty tiles remain dimmed and inspectable,
- * with why they cannot be used and where more comes from. Immediately under the options, one
- * focused choice: what it is and does, and how the draft now differs from the one the tray was opened on ([change]),
- * with the way back to it. Choosing is free: nothing is spent and nothing is drawn until "Forge".
+ * The choices for one place in a horizontally scrolling row, each a tile: its art, its name, what the smith holds of it
+ * and the name of the rule it gives. A tap on a tile that can be used places it and the tray stays open; its ringed "i"
+ * (or a long press) opens its card. Stock-empty tiles stay dimmed: a tap says why they cannot be used and where more
+ * comes from. Under the options, the choice in focus and how the draft now differs from the one the tray was opened on
+ * ([change]), with the way back to it. Choosing is free: nothing is spent and nothing is drawn until "Forge".
  */
 @Composable
 internal fun Tray(
     slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, change: TrayChangeUi?, onRestock: (MaterialId?) -> Unit, onDone: () -> Unit, onPutBack: () -> Unit,
-    onPick: (OptionUi) -> Unit,
+    tipFor: ((OptionUi) -> TipUi?)? = null, onPick: (OptionUi) -> Unit,
 ) {
     val columns = if (LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340) 2 else 3
     var inspected by remember(slot) { mutableStateOf<String?>(null) }
-    Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(ForgePanelRaised).border(1.dp, BronzeLine, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_tray_${slot.name.lowercase()}")) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("forge_tray_${slot.name.lowercase()}")) {
         // With large text the name takes its own line and the two actions sit under it, so it is never cut letter by letter.
         @Composable fun actions() {
-            TextButton(onClick = { onRestock(null) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_buy")) { Text("Buy more", color = Gold) }
+            TextButton(onClick = { onRestock(null) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_buy")) { Text("Buy", color = CreamMuted) }
             TextButton(onClick = onDone, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_done")) { Text("Done", color = Gold) }
         }
         if (columns == 2) {
@@ -395,87 +535,80 @@ internal fun Tray(
             Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
             actions()
         }
-        // Alternatives and the delta share the reading area; this is scroll content, not another pinned panel.
         val choiceScroll = rememberSaveable(slot, saver = androidx.compose.foundation.ScrollState.Saver) { androidx.compose.foundation.ScrollState(0) }
-        Row(Modifier.fillMaxWidth().horizontalScroll(choiceScroll).height(IntrinsicSize.Min).testTag("forge_choices"), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+        Row(Modifier.fillMaxWidth().horizontalScroll(choiceScroll).height(IntrinsicSize.Min).padding(top = Space.xs).testTag("forge_choices"), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
             options.forEach { o ->
-                OptionTile(o, if (LocalDensity.current.fontScale > 1.3f) null else optionArt(slot, o, content), Modifier.width(if (columns == 2) 144.dp else 112.dp).fillMaxHeight(), inspected = o.id != null && o.id == inspected) {
+                OptionTile(
+                    o, if (LocalDensity.current.fontScale > 1.3f) null else optionArt(slot, o, content), Modifier.width(if (columns == 2) 144.dp else 112.dp).fillMaxHeight(),
+                    inspected = o.id != null && o.id == inspected, tip = if (o.id != null && tipFor != null) { { tipFor(o) } } else null,
+                ) {
                     if (o.usable) { inspected = null; onPick(o) } else inspected = o.id
                 }
             }
         }
         val focused = staleFree(inspected, options) ?: options.firstOrNull { it.selected }
-        if (focused == null) {
-            // Nothing in this place yet: the first choice is made from the whole tray. A guild run says what each choice
-            // does in a fight, so it can be made before it is placed.
-            Text(slot.hint, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-            val rules = options.filter { it.fight.isNotEmpty() }
-            var showRules by rememberSaveable(slot) { mutableStateOf(false) }
-            if (rules.isNotEmpty()) InlineActionButton(if (showRules) "Hide ingredient rules" else "Ingredient rules", { showRules = !showRules }, Modifier.testTag("forge_tray_rules"))
-            if (rules.isNotEmpty() && showRules) Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("forge_tray_fight")) {
-                Text("Effects in a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
-                rules.forEach { o ->
-                    Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
-                        Text(o.name, style = MaterialTheme.typography.labelLarge, color = Cream)
-                        o.fight.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
-                    }
-                }
-            }
-        } else TrayFocus(slot, focused, if (focused.usable) change else null, { onRestock(focused.id?.let(::MaterialId)) }, onPutBack)
+        if (focused == null) Text(slot.hint, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
+        else TrayFocus(slot, focused, if (focused.usable) change else null, { onRestock(focused.id?.let(::MaterialId)) }, onPutBack, tip = if (focused.id != null && tipFor != null) { { tipFor(focused) } } else null)
         if (columns == 2) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { actions() }
     }
 }
 
-/** The one choice in focus: its name and stock, what it is, its effects in a fight, why it cannot be used, and the draft against the tray's baseline. */
+/**
+ * The one choice in focus: its name, what it is, how the besieger takes it, why it cannot be used, and the draft against
+ * the tray's baseline. What it does in a fight is on its card ([tip]), one tap away.
+ */
 @Composable
-private fun TrayFocus(slot: RecipeSlot, o: OptionUi, change: TrayChangeUi?, onRestock: () -> Unit, onPutBack: () -> Unit) {
-    Column(Modifier.fillMaxWidth().clip(Chip).background(ForgeNight).border(1.dp, BronzeDeep, Chip).padding(horizontal = 12.dp, vertical = Space.sm).testTag("forge_tray_detail")) {
-        Text(o.name, style = MaterialTheme.typography.titleSmall, color = if (o.usable) Cream else CreamMuted)
-        o.detail?.takeIf { it.length <= 64 }?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+private fun TrayFocus(slot: RecipeSlot, o: OptionUi, change: TrayChangeUi?, onRestock: () -> Unit, onPutBack: () -> Unit, tip: (() -> TipUi?)? = null) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Chip).background(ForgePanel).padding(start = 12.dp, end = Space.xs, bottom = Space.sm).testTag("forge_tray_detail")) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f).padding(vertical = Space.xs)) {
+                Text(o.name, style = MaterialTheme.typography.titleSmall, color = if (o.usable) Cream else CreamMuted)
+                // A long description belongs to the card; without one it stays here, whole.
+                o.detail?.takeIf { it.length <= 64 || tip == null }?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
+            }
+            tip?.let { t -> InfoButton(o.name, { t() ?: TipUi(o.name, slot.label) }, tag = "forge_tray_rules") }
+        }
         o.mark?.let { mark ->
-            Text("${mark.kind.sign} ${o.name} against the siege: ${mark.label}", style = MaterialTheme.typography.bodySmall, color = mark.kind.color, modifier = Modifier.padding(top = Space.xs).testTag("forge_siege_mark"))
+            Text("${mark.kind.sign} ${o.name} against the siege: ${mark.label}", style = MaterialTheme.typography.bodySmall, color = mark.kind.color, modifier = Modifier.padding(end = Space.sm).testTag("forge_siege_mark"))
         }
         o.blocked?.let { why ->
             Row(Modifier.fillMaxWidth().padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically) {
                 Text(why, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.weight(1f).testTag("forge_tray_blocked"))
-                TextButton(onClick = onRestock, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_restock_tray")) { Text("Restock", color = Gold) }
+                TextButton(onClick = onRestock, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_restock_tray")) { Text("Buy", color = Gold) }
             }
         }
         change?.let { c ->
-            Column(Modifier.padding(top = Space.sm).testTag("forge_tray_change")) {
+            Column(Modifier.padding(top = Space.xs, end = Space.sm).testTag("forge_tray_change")) {
                 if (c.changes.isEmpty()) Text("Unchanged from ${c.from}", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
                 else {
+                    // The decision facts as one wrapping line; what the notebook and the fight rules say is one tap away.
                     Text("Compared with ${c.from}", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
-                    c.changes.forEach { ch ->
-                        val (sign, color) = when (ch.good) { true -> "+" to BuffGreen; false -> "−" to FlawRed; null -> "·" to CreamMuted }
-                        Row(Modifier.padding(top = 2.dp).semantics(mergeDescendants = true) {}) {
-                            Text(sign, style = MaterialTheme.typography.bodySmall, color = color, modifier = Modifier.width(16.dp))
-                            Text(ch.text, style = MaterialTheme.typography.bodySmall, color = Cream)
-                        }
+                    FactLine(c.changes.filter { !it.rule }.map(::changeFact), Modifier.padding(top = 2.dp))
+                    val more = c.changes.filter { it.rule }
+                    if (more.isNotEmpty()) Disclosure("Effects and notes · ${more.size}", "forge_tray_change_more_${slot.name}_${o.id}", summary = more.first().text) {
+                        more.forEach { ch -> FactLine(listOf(changeFact(ch))) }
                     }
                     InlineActionButton("Put back ${c.from}", onPutBack, Modifier.testTag("forge_tray_put_back"))
                 }
             }
         }
-        var rules by rememberSaveable(slot, o.id) { mutableStateOf(false) }
-        if (o.detail?.let { it.length > 64 } == true || o.fight.isNotEmpty()) {
-            InlineActionButton(if (rules) "Hide ingredient rules" else "Ingredient rules", { rules = !rules }, Modifier.testTag("forge_tray_rules"))
-            if (rules) {
-                (o.detail?.takeIf { it.length > 64 } ?: slot.hint.takeIf { o.id == null })?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
-                if (o.fight.isNotEmpty()) Column(Modifier.padding(top = Space.xs).testTag("forge_tray_fight")) {
-                    o.fight.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp)) }
-                }
-            }
-        }
-
     }
 }
 
+/** A change of the comparison as a fact: a gain with its "+", a cost with its "−", a plain difference with no sign. */
+private fun changeFact(c: ChangeUi) = Fact(c.text, tone = when (c.good) { true -> FactTone.GOOD; false -> FactTone.WARN; null -> FactTone.PLAIN })
+
+/** One choice of a tray: art, stock, name and the name of its rule; gold-edged once chosen. Long press or "i" inspects. */
 @Composable
-private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, inspected: Boolean = false, onClick: () -> Unit) {
+private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, inspected: Boolean = false, tip: (() -> TipUi?)? = null, onClick: () -> Unit) {
+    val inspector = LocalInspector.current
+    val anchor = remember { InspectAnchor() }
+    val card: (() -> TipUi)? = tip?.let { t -> { t() ?: TipUi(o.name, "") } }
     Box(
-        modifier.heightIn(min = 72.dp).clip(Chip).background(ForgeNight).border(if (o.selected || inspected) 1.5.dp else 1.dp, if (o.selected) Gold else if (inspected) CreamMuted else BronzeDeep, Chip)
-            .clickable(role = Role.Button, onClick = onClick).alpha(if (o.usable) 1f else 0.5f).testTag("forge_option_${o.id ?: "none"}")
+        modifier.heightIn(min = 76.dp).clip(Chip).background(if (o.selected) BronzeContainer else ForgeNight)
+            .border(if (o.selected || inspected) 1.5.dp else 1.dp, if (o.selected) Gold else if (inspected) CreamMuted else BronzeDeep, Chip)
+            .then(if (card != null) Modifier.inspectable(anchor, inspector, card, onClick = onClick) else Modifier.clickable(role = Role.Button, onClick = onClick))
+            .alpha(if (o.usable) 1f else 0.5f).testTag("forge_option_${o.id ?: "none"}")
             .semantics(mergeDescendants = true) {
                 selected = o.selected
                 contentDescription = listOfNotNull(o.name, o.stock?.let { if (it == 0) "none left" else "$it in stock" }, o.mark?.label, o.blocked?.let { "cannot be used now" }).joinToString(", ")
@@ -483,11 +616,12 @@ private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, inspected: Bo
     ) {
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.xs, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             if (art != null) PixelImage(art, 36.dp, description = null)
-            o.stock?.let { Text(if (it == 0) "None left" else "$it in stock", style = MaterialTheme.typography.labelSmall, color = CreamMuted) }
             Text(o.name, style = MaterialTheme.typography.labelMedium, color = Cream, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 2.dp))
-            if (o.fight.isNotEmpty()) Text(o.fight.joinToString(" / ") { it.substringBefore(":") }, style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
+            o.stock?.let { Text(if (it == 0) "None left" else "$it owned", style = MaterialTheme.typography.labelSmall, color = if (it == 0) FlawRed else CreamMuted) }
+            if (o.fight.isNotEmpty()) Text(o.fight.joinToString(" · ") { it.substringBefore(":") }, style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
         }
         o.mark?.let { Text(it.kind.sign, style = MaterialTheme.typography.titleSmall, color = it.kind.color, modifier = Modifier.align(Alignment.TopStart).padding(horizontal = 6.dp)) }
+        if (card != null) InfoButton(o.name, card, Modifier.align(Alignment.TopEnd), anchor = anchor, tag = "forge_option_${o.id}_info")
     }
 }
 
@@ -501,10 +635,26 @@ private fun KnowledgeState.glyph() = when (this) {
  */
 @Composable
 fun FieldNotes(notes: List<NoteUi>, modifier: Modifier = Modifier, onOpenJournal: (() -> Unit)? = null) {
+    // Nothing tried yet and no clue held: one quiet row says so, not a card of question marks.
+    if (notes.all { it.state == KnowledgeState.UNKNOWN && it.label != "Signature" }) {
+        Row(
+            modifier.fillMaxWidth().padding(top = Space.xs).heightIn(min = 48.dp).testTag("forge_notes")
+                .semantics(mergeDescendants = true) { contentDescription = "Notebook: ${notes.joinToString(" and ") { it.label }} untried. ${notes.first().hint}" },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("? ", style = MaterialTheme.typography.titleSmall, color = KnowledgeState.UNKNOWN.color())
+            Text("Untried combination${if (notes.size == 1) "" else "s"} · ${notes.first().hint}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f))
+            if (onOpenJournal != null) Row(Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).padding(start = Space.sm).testTag("forge_notes_journal"), verticalAlignment = Alignment.CenterVertically) {
+                Text("Notebook", style = MaterialTheme.typography.labelLarge, color = Cream)
+                Chevron(ChevronWay.RIGHT, tint = CreamMuted, size = 18.dp)
+            }
+        }
+        return
+    }
     val stacked = LocalDensity.current.fontScale > 1.3f
     Column(modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(SceneDeep).border(1.dp, BronzeDeep, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_notes")) {
         Row(Modifier.heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Field notes", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
+            Text("Notebook", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
             if (onOpenJournal != null) Text("Open notebook ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).wrapContentHeight().padding(start = Space.sm).testTag("forge_notes_journal"))
         }
         val pairings = notes.filter { it.label != "Signature" }
@@ -526,57 +676,36 @@ fun FieldNotes(notes: List<NoteUi>, modifier: Modifier = Modifier, onOpenJournal
 }
 
 /**
- * What the recipe on the anvil will do in a fight (guild runs), as far as it can be said before the forge: its part in
- * a party and who it suits, a line for each ingredient, what its rules still wait for, what the choice costs, and what
- * only a roll decides. "Details" opens every rule the recipe is sure to carry and each ingredient's price. A rule is
- * called certain only when every forge of this recipe has it. What a roll may add is listed apart, by name.
+ * The recipe on the anvil studied in full (a guild run; V3 details): each ingredient and what choosing it costs, every
+ * rule every forge of it carries, what they still need, how they work together, and each chance with when it comes.
+ * Certain and random stay apart; a rule is called certain only when every forge of this recipe has it.
  */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-private fun ForgeOutlookCard(o: ForgeOutlookUi, onBench: () -> Unit) {
-    var details by rememberSaveable { mutableStateOf(false) }
-    @Composable fun label(text: String) = Text(text, style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
-    Column(Modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(SceneDeep).border(1.dp, BronzeDeep, Card).padding(12.dp).testTag("forge_outlook")) {
-        Text("This recipe in a fight", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
-        Text(o.role, style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.semantics { heading() }.testTag("forge_outlook_role"))
-        if (o.suits.isNotEmpty()) Text("Suits: ${o.suits.joinToString(", ")}", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-        o.parts.forEach { p -> Text("${p.name}: ${p.role}", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs)) }
-        if (o.needs.isNotEmpty()) Column(Modifier.testTag("forge_outlook_needs")) {
-            label("Its effects need")
-            o.needs.forEach { n -> n.needs.forEach { Text("${n.rule}: $it", style = MaterialTheme.typography.bodySmall, color = Gold) } }
-        }
-        o.tradeoff?.let {
-            label("Trade-off")
-            Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.testTag("forge_outlook_tradeoff"))
-        }
-        if (o.possible.isNotEmpty()) {
-            label("May also get, by chance")
-            Text(o.possible.joinToString(", ") { it.name }, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.testTag("forge_outlook_possible"))
-        }
-        InlineActionButton(if (details) "Hide details" else "Details", { details = !details }, Modifier.testTag("forge_outlook_details"))
-        if (details) Column(Modifier.testTag("forge_outlook_expanded")) {
-            label("Every weapon from this recipe has")
-            if (o.certain.isEmpty()) Text("No effect beyond its normal strike.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-            o.certain.forEach { r ->
-                Column(Modifier.padding(top = Space.xs).semantics(mergeDescendants = true) {}) {
-                    Text(r.heading, style = MaterialTheme.typography.titleSmall, color = Cream)
-                    Text(r.description, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-                }
+private fun RecipeDetailSheet(title: String, o: ForgeOutlookUi, config: BalanceConfig, onBench: () -> Unit, onClose: () -> Unit) {
+    ModalBottomSheet(
+        onDismissRequest = onClose, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
+        modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("forge_recipe_sheet"),
+    ) {
+        Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Space.md).padding(bottom = Space.lg).testTag("forge_outlook_expanded"), verticalArrangement = Arrangement.spacedBy(Space.md)) {
+            Column {
+                Text(title, style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() })
+                Text(o.role + if (o.qualityHigh > 0) " · likely quality ${o.qualityLow} to ${o.qualityHigh}, before any exceptional result or flaw" else "", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
             }
-            val costs = o.parts.filter { it.constraint != null }
-            if (costs.isNotEmpty()) {
-                label("What each choice costs")
-                costs.forEach { Text("${it.name}: ${it.constraint}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
+            TipSectionBlock(TipSection("Each choice", o.parts.map { TipLine(it.role, TipTone.PLAIN, title = it.name) }))
+            Box(Modifier.testTag("forge_outlook_tradeoff")) {
+                TipSectionBlock(TipSection("Drawbacks", o.parts.mapNotNull { p -> p.constraint?.let { TipLine("${p.name}: $it", TipTone.DRAWBACK) } }))
             }
-            if (o.notes.isNotEmpty()) {
-                label("How its effects work together")
-                o.notes.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
+            TipSectionBlock(TipSection("Every forge of it has", if (o.certain.isEmpty()) listOf(TipLine("No effect beyond its normal attack", TipTone.PLAIN)) else o.certain.map { it.ability() }))
+            if (o.needs.isNotEmpty()) Box(Modifier.testTag("forge_outlook_needs")) {
+                TipSectionBlock(TipSection("Its effects need", o.needs.flatMap { n -> n.needs.map { TipLine("${n.rule}: $it", TipTone.CONDITION) } }))
             }
-            if (o.possible.isNotEmpty()) {
-                label("What the forge may add by chance")
-                o.possible.forEach { Text("${it.name}: ${it.text}", style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = 2.dp)) }
-            }
+            TipSectionBlock(TipSection("How its effects work together", o.notes.map { TipLine(it, TipTone.PLAIN) }))
+            TipSectionBlock(TipSection("By chance, never certain", o.possible.map { TipLine(it.text, TipTone.CHANCE, title = it.name) }))
+            TipKeywords(keywords(o.certain.flatMap { it.stats }, config))
+            SecondaryActionButton("Practice fight", onBench, Modifier.fillMaxWidth().testTag("forge_details_bench"))
         }
-        SecondaryActionButton("Try this recipe in a practice fight", onBench, Modifier.fillMaxWidth().padding(top = Space.xs).testTag("forge_bench_open"))
     }
 }
 
@@ -600,17 +729,15 @@ private fun FieldNote(i: Int, n: NoteUi, modifier: Modifier) {
  */
 @Composable
 private fun ModeToggle(d: ForgeDraft, onChange: ((ForgeDraft) -> ForgeDraft) -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(top = Space.sm), verticalAlignment = Alignment.CenterVertically) {
-        Row(Modifier.clip(Card).border(1.dp, BronzeDeep, Card).padding(4.dp)) {
-            ForgeMode.entries.forEach { mode ->
-                val on = d.mode == mode
-                Box(
-                    Modifier.heightIn(min = 48.dp).clip(Chip).background(if (on) BronzeContainer else ForgeNight).then(if (on) Modifier.border(1.dp, Gold, Chip) else Modifier)
-                        .clickable(role = Role.RadioButton) { onChange { it.inMode(mode) } }
-                        .padding(horizontal = 12.dp).testTag("forge_mode_${mode.name.lowercase()}").semantics { selected = on },
-                    contentAlignment = Alignment.Center,
-                ) { Text(if (mode == ForgeMode.QUICK) "Quick" else "Advanced", style = MaterialTheme.typography.labelLarge, color = if (on) Gold else CreamMuted) }
-            }
+    Row(Modifier.clip(Card).background(ForgeSlot).border(1.dp, BronzeDeep, Card).padding(2.dp)) {
+        ForgeMode.entries.forEach { mode ->
+            val on = d.mode == mode
+            Box(
+                Modifier.heightIn(min = 48.dp).clip(Chip).background(if (on) BronzeContainer else ForgeSlot)
+                    .clickable(role = Role.RadioButton) { onChange { it.inMode(mode) } }
+                    .padding(horizontal = 14.dp).testTag("forge_mode_${mode.name.lowercase()}").semantics { selected = on },
+                contentAlignment = Alignment.Center,
+            ) { Text(if (mode == ForgeMode.QUICK) "Quick" else "Advanced", style = MaterialTheme.typography.labelLarge, color = if (on) Cream else CreamMuted) }
         }
     }
 }
@@ -635,7 +762,7 @@ private fun <T> Choice(label: String, value: String, tag: String, modifier: Modi
                 Text(label, style = MaterialTheme.typography.labelSmall, color = CreamMuted)
                 Text(value, style = MaterialTheme.typography.labelLarge, color = Cream)
             }
-            Text("▾", color = CreamMuted)
+            Chevron(ChevronWay.DOWN, tint = CreamMuted, size = 18.dp)
         }
         DropdownMenu(expanded = open, onDismissRequest = { open = false }, containerColor = ForgePanel) {
             choices.forEach { (name, detail, choice) ->
@@ -657,7 +784,7 @@ private fun <T> Choice(label: String, value: String, tag: String, modifier: Modi
 @Composable
 private fun ForgeAction(
     bench: ForgeWorkbenchUi, busy: Boolean, endDayNote: String, onRestock: () -> Unit, onEndDay: () -> Unit, marked: Boolean = false,
-    risk: @Composable (Modifier, Boolean) -> Unit = { _, _ -> }, onForge: () -> Unit,
+    risk: @Composable (Modifier, Boolean) -> Unit = { _, _ -> }, riskNote: String? = null, onForge: () -> Unit,
 ) {
     val a = bench.action
     Column(
@@ -666,20 +793,21 @@ private fun ForgeAction(
     ) {
         if (a.note != null) Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(a.note, style = MaterialTheme.typography.bodySmall, color = if (a.enabled) Cream else CreamMuted, modifier = Modifier.weight(1f).padding(vertical = Space.xs).testTag("forge_note"))
-            if (a.restock != null) TextButton(onClick = onRestock, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_restock")) { Text("Restock", color = Gold) }
+            if (a.restock != null) TextButton(onClick = onRestock, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_restock")) { Text("Buy", color = Gold) }
         }
-        val stacked = a.endDay || LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 360
+        val stacked = a.endDay || LocalConfiguration.current.screenWidthDp < 340
         if (stacked) risk(Modifier.fillMaxWidth().padding(bottom = Space.xs), true)
         Row(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-            if (!stacked) risk(Modifier.width(124.dp), false)
+            // Its own width (never a word cut letter by letter), the action takes the rest.
+            if (!stacked) risk(Modifier.widthIn(min = 124.dp).width(IntrinsicSize.Max), false)
             val enabled = a.enabled && !busy
             PrimaryActionButton(
                 a.label, onForge,
                 // A disabled button says why, so a screen reader is not left with a dead action.
                 Modifier.weight(1f).testTag("forge_weapon").introMark(marked).semantics { if (!enabled && a.note != null) contentDescription = "${a.label}, unavailable: ${a.note}" },
-                enabled = enabled,
+                enabled = enabled, detail = riskNote,
             )
-            if (a.endDay) SecondaryActionButton("End day", onEndDay, Modifier.weight(1f).testTag("end_day"), enabled = !busy, detail = endDayNote)
+            if (a.endDay) SecondaryActionButton("End Day", onEndDay, Modifier.weight(1f).testTag("end_day"), enabled = !busy, detail = endDayNote)
         }
     }
 }
@@ -716,10 +844,26 @@ fun AffinityHint(journal: JournalModel, content: ContentCatalog, key: String) {
 
 /**
  * Heartfire on the workbench: how much the forge holds, always. In Advanced with some held, a switch to forge with it.
- * While the switch is on, everything it spends and can give stands here before the Forge action is tapped.
+ * While the switch is on, everything it spends and can give stands here before the Forge action is tapped. When it
+ * cannot be used (none held, a Quick forge) it is one quiet row: what is held, why not, and how it works one tap away.
  */
 @Composable
 private fun HeartfireRow(h: HeartfireUi, onToggle: (Boolean) -> Unit) {
+    if (h.blocked != null) {
+        val large = LocalDensity.current.fontScale > 1.3f
+        Column(Modifier.fillMaxWidth().padding(top = Space.xs).testTag("forge_heartfire")) {
+            @Composable fun said(modifier: Modifier) = Row(modifier, verticalAlignment = Alignment.CenterVertically) {
+                Text(h.held, style = MaterialTheme.typography.labelLarge, color = Cream, modifier = Modifier.testTag("forge_heartfire_held"))
+                Text("  ·  ", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                Text(h.blocked, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f).testTag("forge_heartfire_state"))
+            }
+            Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                said(Modifier.weight(1f))
+                InfoButton("Heartfire", { heartfireTip(h) }, tag = "forge_heartfire_how")
+            }
+        }
+        return
+    }
     Column(
         Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow()
             .then(if (h.blocked == null) Modifier.toggleable(value = h.on, role = Role.Switch, onValueChange = onToggle) else Modifier)
@@ -730,18 +874,13 @@ private fun HeartfireRow(h: HeartfireUi, onToggle: (Boolean) -> Unit) {
                 Text(h.held, style = MaterialTheme.typography.titleSmall, color = if (h.on) Gold else Cream, modifier = Modifier.testTag("forge_heartfire_held"))
                 Secondary(h.blocked ?: "Forge with Heartfire", Modifier.testTag("forge_heartfire_state"))
             }
+            // How Heartfire works is the same every day: on its card, not under every forge.
+            InfoButton("Heartfire", { heartfireTip(h) }, tag = "forge_heartfire_how")
             if (h.blocked == null) Switch(checked = h.on, onCheckedChange = null)
         }
         if (h.outlook.isNotEmpty()) Column(Modifier.padding(top = Space.xs).testTag("forge_heartfire_outlook")) {
             h.outlook.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp)) }
             h.warning?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = 2.dp).testTag("forge_heartfire_warning")) }
-        }
-        // How Heartfire works is the same every day: one tap away, not under every forge.
-        var how by rememberSaveable { mutableStateOf(false) }
-        InlineActionButton(if (how) "Hide how Heartfire works" else "How Heartfire works", { how = !how }, Modifier.testTag("forge_heartfire_how"))
-        if (how) {
-            Secondary(h.rule)
-            Secondary(h.source, Modifier.padding(top = Space.xs))
         }
     }
 }
@@ -756,7 +895,7 @@ internal fun bellowsBlocked(s: UiState.Playing, config: BalanceConfig): String? 
     val debt = config.depth.bellowsDebt
     return when {
         s.relics.firstOrNull { it.id == Depth.ASHEN_BELLOWS }?.ready == false -> "Used today."
-        (cost - st.energy).coerceAtLeast(0) + debt > config.maxOverworkPerDay - st.overworkToday -> "Not enough overwork left today. The bellows borrow $debt energy from tomorrow, on top of this forge."
+        (cost - st.energy).coerceAtLeast(0) + debt > config.maxOverworkPerDay - st.overworkToday -> "Not enough energy left to borrow today. The bellows borrow $debt energy from tomorrow, on top of this forge."
         else -> null
     }
 }
@@ -775,7 +914,7 @@ private fun BellowsRow(s: UiState.Playing, vm: GameViewModel) {
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
     ) {
         Column(Modifier.weight(1f)) {
-            Text("Ashen Bellows: adds ${config.depth.bellowsExtraSlots.let { if (it == 1) "one more property" else "$it more properties" }} and borrows ${config.depth.bellowsDebt} energy from tomorrow.", style = MaterialTheme.typography.titleSmall)
+            Text("Ashen Bellows: adds ${config.depth.bellowsExtraSlots.let { if (it == 1) "1 more property" else "$it more properties" }} and borrows ${config.depth.bellowsDebt} energy from tomorrow.", style = MaterialTheme.typography.titleSmall)
             blocked?.let { Secondary(it, Modifier.testTag("forge_bellows_blocked")) }
         }
         Switch(checked = on, onCheckedChange = null, enabled = blocked == null)
@@ -794,4 +933,24 @@ private fun LedgerLine(s: UiState.Playing, vm: GameViewModel) {
         else -> return
     }
     Text(line, style = MaterialTheme.typography.bodySmall, color = Gold, modifier = Modifier.padding(top = Space.xs).testTag("forge_ledger"))
+}
+
+/** Heartfire as a card: what is held, how a weapon becomes Legendary, and where more comes from, a line a sentence. */
+private fun heartfireTip(h: HeartfireUi) = TipUi(
+    name = "Heartfire", kind = "For Legendary forging · Advanced forge only", icon = R.drawable.blessing_forgefire, nameColor = Ember, meta = h.held,
+    sections = listOf(
+        TipSection("How it works", h.rule.split(Regex("(?<=\\.)\\s+")).map { TipLine(it, TipTone.PLAIN) }),
+        TipSection("Where it comes from", listOf(TipLine(h.source.substringAfter(": ", h.source).replaceFirstChar { it.uppercase() }, TipTone.PLAIN))),
+    ),
+    tag = "forge_heartfire_tip",
+)
+
+/** The card of a tray's choice: a weapon type, a technique or a material; "None" and "Plain" have none. */
+internal fun optionTip(engine: GameEngine, s: UiState.Playing, slot: RecipeSlot, o: OptionUi, onRestock: (MaterialId?) -> Unit): TipUi? {
+    val id = o.id ?: return null
+    return when (slot) {
+        RecipeSlot.WEAPON -> engine.familyTip(s.state, WeaponFamilyId(id), tag = "forge_tray_fight")
+        RecipeSlot.TECHNIQUE -> Technique.entries.firstOrNull { it.name == id }?.let { techniqueTip(it, "forge_tray_fight") }
+        else -> engine.materialTip(s.state, MaterialId(id), s.shop.threat, o.blocked, onRestock = { onRestock(MaterialId(id)) }, tag = "forge_tray_fight")
+    }
 }

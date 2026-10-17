@@ -89,7 +89,7 @@ class RecordsPanelTest {
 
         compose.onNodeWithTag("page_legacy").performClick()
         compose.onNodeWithTag("page_legacy").assertIsSelected()
-        compose.onNodeWithText("Permanent upgrades").assertIsDisplayed()
+        compose.onNodeWithText("Legacy perks").assertIsDisplayed()
         val tracks = engine.content.upgrades
         assertEquals("the launch catalogue has eleven legacy tracks", 11, tracks.size)
         tracks.forEach { u ->

@@ -11,6 +11,7 @@ import com.tinyblacksmith.core.model.Hero
 import com.tinyblacksmith.core.model.Rarity
 import com.tinyblacksmith.core.model.Risk
 import com.tinyblacksmith.core.model.Weapon
+import com.tinyblacksmith.core.text.Terms
 
 /** Descriptive, never numeric, player-facing labels (GDD round 9 disclosure rule). */
 object Labels {
@@ -25,7 +26,7 @@ object Labels {
     fun fit(w: Weapon, c: Commission, content: ContentCatalog): String = when (Commissions.fit(w, c)) {
         Commissions.Fit.OK -> "fits"
         Commissions.Fit.FAMILY -> "not a ${content.family(c.familyId).name}"
-        Commissions.Fit.ELEMENT -> "not ${c.element?.name?.lowercase()}"
+        Commissions.Fit.ELEMENT -> "not ${c.element?.let { Terms.element(it).lowercase() }}"
         Commissions.Fit.QUALITY -> "quality ${w.quality}, needs ${c.minQuality}"
     }
 
@@ -37,43 +38,40 @@ object Labels {
         val lacks = nearest?.let { Commissions.fit(it, c) }
         return "No matching weapon yet. " + when {
             nearest != null && lacks == Commissions.Fit.QUALITY -> "${nearest.name} has quality ${nearest.quality}. This commission needs ${c.minQuality} or more."
-            lacks == Commissions.Fit.ELEMENT -> "You need a ${c.element?.name?.lowercase()} $family in storage or on the shelf."
+            lacks == Commissions.Fit.ELEMENT -> "You need a ${c.element?.let { Terms.element(it).lowercase() }} $family in storage or on the shelf."
             else -> "You need a $family in storage or on the shelf."
         }
     }
 
     /** How the next siege looks as things stand (`Battle.SiegeOutlook.odds`), in the same words on the Shop, the Forge and in Town. */
     fun outlook(odds: Battle.SiegeOdds): String = when (odds) {
-        Battle.SiegeOdds.STRONG -> "Strong position"
-        Battle.SiegeOdds.EVEN -> "Evenly matched"
-        Battle.SiegeOdds.OUTMATCHED -> "Outmatched"
-        Battle.SiegeOdds.DIRE -> "Dire odds"   // never "grave": Grave is an element, and "Resists Grave · Grave danger" read as one fact
+        Battle.SiegeOdds.STRONG -> "Holding strong"
+        Battle.SiegeOdds.EVEN -> "Holding"
+        Battle.SiegeOdds.OUTMATCHED -> "Falling short"
+        Battle.SiegeOdds.DIRE -> "Far behind"   // never "grave": Grave is an element, and "Resists Grave · Grave danger" read as one fact. Never "odds": the classic siege has no roll
     }
 
     fun rarity(r: Rarity): String = when (r) {
-        Rarity.COMMON -> "Common ◇"
-        Rarity.UNCOMMON -> "Uncommon ◈"
-        Rarity.RARE -> "Rare ◆"
-        Rarity.EPIC -> "Epic ★"
-        Rarity.LEGENDARY -> "Legendary ✦"
+        Rarity.COMMON -> "${Terms.rarity(r)} ◇"
+        Rarity.UNCOMMON -> "${Terms.rarity(r)} ◈"
+        Rarity.RARE -> "${Terms.rarity(r)} ◆"
+        Rarity.EPIC -> "${Terms.rarity(r)} ★"
+        Rarity.LEGENDARY -> "${Terms.rarity(r)} ✦"
     }
 
-    fun risk(r: Risk): String = when (r) {
-        Risk.SAFE -> "Safe. A narrow quality roll and few flaws."
-        Risk.BALANCED -> "Balanced. A chance of exceptional work or flaws."
-        Risk.RECKLESS -> "Reckless. One more property and many more flaws."
+    /** "Careful. …": the word ([Terms.risk]) before the first full stop, then what it means. */
+    fun risk(r: Risk): String = Terms.risk(r) + when (r) {
+        Risk.SAFE -> ". A narrow quality roll and few flaws."
+        Risk.BALANCED -> ". A chance of an exceptional result or a flaw."
+        Risk.RECKLESS -> ". 1 more property and many more flaws."
     }
 
-    fun technique(t: Technique): String = when (t) {
-        Technique.TEMPER -> "Temper"
-        Technique.QUENCH -> "Quench"
-        Technique.ETCH -> "Etch"
-    }
+    fun technique(t: Technique): String = Terms.technique(t)
 
     fun techniqueExplanation(t: Technique): String = when (t) {
         Technique.TEMPER -> "Fewer flaws, but fewer exceptional results too."
-        Technique.QUENCH -> "Ensures the elemental property appears, at a small cost to quality."
-        Technique.ETCH -> "Adds one more property, with a greater risk of flaws."
+        Technique.QUENCH -> "Always adds the infusion's element property. −${BalanceConfig.DEFAULT.quenchQualityPenalty} quality."
+        Technique.ETCH -> "Adds ${BalanceConfig.DEFAULT.etchExtraAffixSlots} more property, with a greater risk of flaws."
     }
 
     fun health(h: Hero): String = when {

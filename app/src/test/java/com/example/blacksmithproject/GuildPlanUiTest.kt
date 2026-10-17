@@ -52,6 +52,12 @@ class GuildPlanUiTest {
     }
 
     @Test
+    fun firstSentenceKeepsItsFullStop() {
+        assertEquals("Review the wall.", com.example.blacksmithproject.ui.firstSentence("Review the wall. It is no promise."))
+        assertEquals("One sentence", com.example.blacksmithproject.ui.firstSentence("One sentence"))
+    }
+
+    @Test
     fun thePartShownIsTodaysChoiceElseTheWallOnTheEveElseContracts() {
         assertEquals(GuildTab.CONTRACTS, guildTabFor(null, day = 3, daysToSiege = 2))
         assertEquals(GuildTab.WALL, guildTabFor(null, day = 4, daysToSiege = 1))
@@ -90,7 +96,10 @@ class GuildPlanUiTest {
         val fresh = engine.guildRun(7)
         val early = engine.guildUi(fresh)!!
         assertTrue(early.today.first { it.key == "plan" }.optional)
-        assertTrue(early.today.first { it.key == "plan" }.text.contains("Keeping members home"))
+        assertEquals("Quests are on the board.", early.today.first { it.key == "plan" }.text)
+        // That staying home is a plan too is said once, where a party is picked: the sheet with nobody selected.
+        assertTrue(com.example.blacksmithproject.ui.partyIntro(3, empty = true).contains("keeping members home is a valid plan"))
+        assertFalse(com.example.blacksmithproject.ui.partyIntro(3, empty = false).contains("home"))
         val tonight = fresh.copy(day = fresh.town.nextSiegeDay)
         assertTrue(engine.guildUi(tonight)!!.today.none { it.key == "plan" })
     }
@@ -177,6 +186,10 @@ class GuildPlanUiTest {
         val road = engine.content.guild!!.mission(GuildContent.DEEP_ROAD)
         engine.guildUi(fresh)!!.run {
             assertEquals(StepState.LOCKED, steps.first { it.key == "road" }.state)
+            // The row says the rule's first sentence, a tap the rest.
+            assertEquals("After the first siege its quest is posted.", steps.first { it.key == "road" }.gist)
+            assertEquals("Win it, or the second siege opens the road anyway.", steps.first { it.key == "road" }.more)
+            assertEquals("Defeat the charter warlord at the wall.", steps.first { it.key == "charter" }.gist)
             assertTrue(upcoming.toString(), upcoming.any { it.name == road.name && it.condition == "Posted after the first siege while the road is shut" })
         }
         // Its contract on the board: the step is open, the card says what it opens, and it is no longer "to come".

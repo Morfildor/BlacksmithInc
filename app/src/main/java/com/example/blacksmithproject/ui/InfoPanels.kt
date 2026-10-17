@@ -1,8 +1,6 @@
 package com.example.blacksmithproject.ui
 
 import kotlin.math.roundToInt
-import com.tinyblacksmith.core.content.Depth
-import com.example.blacksmithproject.R
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -10,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
@@ -113,106 +112,120 @@ fun TownPanel(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Modifi
     }
 }
 
-/** The besieger, the other factions and the three champions. */
+/**
+ * The besieger, the other factions and the three champions (V3). The enemy leads: its face, who and when, how hard it
+ * presses and one chip for how the siege reads, its card behind the ringed "i". What bites it and the warlord stay on
+ * the surface, then the two forecast numbers as a bar, the forge's health, and the town's own numbers as facts. A trait
+ * the scouts report is named with what it says, its effects and what helps on its card. The champions are rows: face,
+ * name, weapon (a worn one marked) and the defense the forecast counts for them.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
-    val content = vm.engine.content
+    val config = vm.engine.config
     val st = s.state
     // The engine's own choice of besieger (it breaks a pressure tie by ID), so Town agrees with the Shop and the siege.
     val siege = remember(st, s.forecast) { vm.engine.townSiege(st, s.forecast) }
     val threat = s.shop.threat
     val forecast = s.forecast
+    val face = siege.factionId?.let { id -> Sprites.faction(id, elite = st.factions[id]?.let { it.pressure >= 60 } == true) }
 
-    FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
-        // Who and when: the besieger's face beside the day count, its name and how hard it presses.
-        Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            siege.factionId?.let { id -> Sprites.faction(id, elite = st.factions[id]?.let { it.pressure >= 60 } == true)?.let { SpriteSlot { PixelImage(it, 56.dp, description = null) } } }
-            Column(Modifier.weight(1f)) {
-                Text(threat?.let { if (it.warned && !it.today) "Siege approaching" else it.siege } ?: "No threat", style = MaterialTheme.typography.titleLarge, color = if (threat?.warned == true) Ember else Gold, modifier = Modifier.testTag("town_siege"))
-                threat?.takeIf { it.warned && !it.today }?.let { Text(it.siege.removePrefix("Siege ").replaceFirstChar { c -> c.uppercase() } + " · day ${st.town.nextSiegeDay}", style = MaterialTheme.typography.titleSmall) }
-                threat?.takeIf { it.today }?.let { Text("After today's trading", style = MaterialTheme.typography.titleSmall) }
-                siege.foe?.let { Text(it, style = MaterialTheme.typography.titleSmall) }
-                Secondary(siege.pressure)
-            }
+    // Who and when: the besieger's face beside the day count, its name, how hard it presses and how the siege reads.
+    Row(Modifier.fillMaxWidth().padding(top = Space.sm), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        face?.let { SpriteSlot { PixelImage(it, 56.dp, description = null) } }
+        Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
+            Text(threat?.let { if (it.warned && !it.today) "Siege approaching" else it.siege } ?: "No threat", style = MaterialTheme.typography.titleLarge, color = if (threat?.warned == true) Ember else Cream, modifier = Modifier.testTag("town_siege"))
+            threat?.takeIf { it.warned && !it.today }?.let { Text(it.siege.removePrefix("Siege ").replaceFirstChar { c -> c.uppercase() } + " · day ${st.town.nextSiegeDay}", style = MaterialTheme.typography.titleSmall) }
+            threat?.takeIf { it.today }?.let { Text("After today's trading", style = MaterialTheme.typography.titleSmall) }
+            siege.foe?.let { Text(it, style = MaterialTheme.typography.titleSmall) }
+            Secondary("Pressure: ${siege.pressure.lowercase()}")
         }
-        // What works against them: a sign, the words and a colour each, as on a blade's own row.
-        if (siege.weakTo != null || siege.resists != null) FlowRow(
-            Modifier.padding(top = Space.sm).testTag("town_matchup"), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs),
-        ) {
-            siege.weakTo?.let { MatchMark(EffectKind.BUFF, "Weak to $it") }
-            siege.resists?.let { MatchMark(EffectKind.FLAW, "Resists $it") }
-        }
-        siege.warlord?.let { Text("⚑ $it", style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.padding(top = Space.sm)) }
-        HorizontalDivider(Modifier.padding(top = 12.dp, bottom = Space.sm), color = MaterialTheme.colorScheme.outlineVariant)
+        besiegerTip(siege, threat?.outlook, forecast?.odds, face)?.let { tip -> InfoButton(tip.name, { tip }, tag = "town_enemy_info") }
+    }
+    // One readiness chip, then what works against them: a sign, the words and a colour each, as on a weapon's own row.
+    FlowRow(Modifier.padding(top = Space.sm).testTag("town_matchup"), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        MatchMark(when (oddsTone(forecast?.odds)) { FactTone.GOOD -> EffectKind.BUFF; FactTone.WARN -> EffectKind.FLAW; FactTone.PLAIN -> EffectKind.NEUTRAL }, threat?.outlook ?: "Outlook unknown", Modifier.testTag("town_outlook"))
+        siege.weakTo?.let { MatchMark(EffectKind.BUFF, "Weak to $it") }
+        siege.resists?.let { MatchMark(EffectKind.FLAW, "Resists $it") }
+    }
+    siege.warlord?.let { Text("⚑ $it", style = MaterialTheme.typography.bodyMedium, color = Ember, modifier = Modifier.padding(top = Space.sm)) }
+    Column(Modifier.fillMaxWidth().padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         if (siege.defense != null && siege.raid != null) Versus(siege.defense, siege.raid)
-        StatRow("Outlook", threat?.outlook ?: "Unknown", Modifier.padding(top = Space.xs))
+        // The classic siege is this comparison and nothing else (`Battle.resolveSiegeIfDue`), and a narrow hold still costs forge health.
+        if (st.guild == null && siege.defense != null && siege.raid != null) Secondary(
+            "The town holds if its defense is at least the raid. There is no roll. A narrow hold still costs up to ${config.forgeDamageBase.roundToInt()} forge health, " +
+                "and a lost siege costs ${config.forgeDamageBase.roundToInt()} to ${config.maxForgeDamagePerSiege}. Only a defense far above the raid costs none.",
+            Modifier.testTag("town_siege_rule"),
+        )
         StatBar("Forge health", siege.forgeHealth, siege.forgeHealthMax)
-        HorizontalDivider(Modifier.padding(top = 12.dp, bottom = Space.sm), color = MaterialTheme.colorScheme.outlineVariant)
-        // The town's own numbers and the season, each a value over its label; they wrap as cells, never mid-phrase.
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.lg), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-            (siege.standing + ("World" to siege.world)).forEach { (label, value) ->
-                Column(Modifier.semantics(mergeDescendants = true) {}) {
-                    Text(value, style = MaterialTheme.typography.titleSmall)
-                    Text(label, style = MaterialTheme.typography.labelSmall, color = CreamMuted)
+        // What the forecast adds for this siege: how the defense number is made up (a trait may raise the watch and the militia).
+        forecast?.let { o ->
+            FactLine(listOf(Fact("${o.championPowers.sum().roundToInt()}", "Defenders"), Fact("${o.militia.roundToInt()}", "Militia"), Fact("${o.armory.roundToInt()}", "Armory")), Modifier.testTag("town_defense_parts"))
+        }
+        // The town's own numbers and the season, as recorded.
+        FactLine((siege.standing + ("World" to siege.world)).map { (label, value) -> Fact(value, label) }, Modifier.testTag("town_standing"))
+        if (forecast != null) Secondary(
+            if (st.siege?.takeIf { it.siegeDay == st.town.nextSiegeDay }?.factionId != null) "The warning confirms which faction will attack."
+            else "The attacking faction may change until the first warning.",
+            Modifier.testTag("town_besieger"),
+        )
+    }
+    // The trait the scouts report: its name and what it says stay here, its effects and what helps are on its card.
+    forecast?.trait?.let { t ->
+        Column(Modifier.fillMaxWidth().padding(top = Space.md).drawBehind { drawLine(BronzeDeep, Offset.Zero, Offset(size.width, 0f), 1.dp.toPx()) }.padding(top = Space.sm)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                traitIcon(t.id)?.let { PixelImage(it, wholePixelDp(80, 40.dp), description = null) }
+                Column(Modifier.weight(1f)) {
+                    Text("Siege modifier", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
+                    Text(t.name, style = MaterialTheme.typography.titleSmall, color = Ember, modifier = Modifier.testTag("town_trait"))
                 }
+                InfoButton(t.name, { siegeTraitTip(t, config, st.town.nextSiegeDay) }, tag = "town_trait_info")
             }
+            Text(t.description, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.xs))
         }
     }
-    // What the forecast adds for this siege: how the defense number is made up (a trait may raise the watch and the
-    // militia), whether the besieger can still change, and the trait the scouts report, if any.
-    s.forecast?.let { o ->
-        Column(Modifier.fillMaxWidth().padding(horizontal = Space.sm).padding(top = Space.sm)) {
-            Secondary("Defense is champions ${o.championPowers.sum().roundToInt()} · militia ${o.militia.roundToInt()} · watch ${o.armory.roundToInt()}", Modifier.testTag("town_defense_parts"))
-            Secondary(
-                if (st.siege?.takeIf { it.siegeDay == st.town.nextSiegeDay }?.factionId != null) "The warning confirms which faction will attack."
-                else "The attacking faction may change until the first warning.",
-                Modifier.testTag("town_besieger"),
-            )
-            o.trait?.let { t ->
-                Row(Modifier.padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-                    when (t.id) { Depth.LONG_ASSAULT -> R.drawable.icon_trait_long_assault; Depth.MANY_BREACHES -> R.drawable.icon_trait_many_breaches; else -> null }
-                        ?.let { PixelImage(it, wholePixelDp(80, 40.dp), description = null) }
-                    Text(t.name, style = MaterialTheme.typography.titleSmall, color = Gold, modifier = Modifier.testTag("town_trait"))
-                }
-                Text(t.description, style = MaterialTheme.typography.bodyMedium)
-                Secondary(t.counsel)
-            }
-        }
-    }
-    // Every faction presses on the town (GDD 8); the others are listed so the leader's rise can be read coming.
-    if (siege.others.isNotEmpty()) SectionHeader("Other threats")
-    FactionRows(siege.others)
 
-    SectionTitle("Champions")
+    SectionTitle("Defenders")
     // The engine's rule (`Battle.selectChampions`): alive, not wounded, the three strongest against the besieger. Shown is
     // the engine's own pick as things stand today; the stored list is only filled by the first End Day.
-    val fit = vm.engine.config.heroWoundedThreshold
-    Secondary("The three heroes with the most power against these attackers defend the wall. Each needs at least $fit health. The choice can change before the siege.")
+    val fit = config.heroWoundedThreshold
+    Secondary("The 3 strongest heroes with at least $fit% health, ranked against these attackers. The list can change before the siege.")
     val champions = forecast?.champions?.map { it.first } ?: st.town.championIds.mapNotNull { st.heroes[it] }
-    val empty = "No other hero has enough health. This slot needs at least $fit."
+    val empty = "No other hero has enough health. This place needs at least $fit% health."
     (0 until 3).forEach { i ->
         val h = champions.getOrNull(i)
+        if (i > 0) HorizontalDivider(color = BronzeDeep)
         Row(
-            Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().then(if (h == null) Modifier else Modifier.clickable(onClickLabel = "Open details") { vm.openSheet(Sheet.Hero(h.id)) })
-                .heightIn(min = 64.dp).padding(horizontal = 12.dp, vertical = Space.sm).semantics(mergeDescendants = true) {},
+            Modifier.fillMaxWidth().then(if (h == null) Modifier else Modifier.clickable(onClickLabel = "Open details") { vm.openSheet(Sheet.Hero(h.id)) })
+                .heightIn(min = 64.dp).padding(vertical = Space.sm).semantics(mergeDescendants = true) {},
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             // The place at the walls, in one column so the faces line up whether or not a place is filled.
-            Text("${i + 1}", style = MaterialTheme.typography.titleLarge, color = if (h == null) CreamMuted else Gold, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 20.dp))
+            Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = CreamMuted, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 20.dp))
             if (h == null) Secondary(empty, Modifier.weight(1f).testTag("town_champion_empty_$i"))
             else {
                 val w = st.equippedWeapon(h.id)
                 SpriteSlot { PixelImage(Sprites.portrait(h), 48.dp, description = null) }
                 Column(Modifier.weight(1f)) {
                     Text(h.fullName, style = MaterialTheme.typography.titleSmall)
-                    Text(w?.let { "Wields ${it.name}" + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "Unarmed", style = MaterialTheme.typography.bodySmall, color = Cream)
-                    Secondary("${content.heroClass(h.classId).name} level ${h.level} · ${Labels.health(h)}")
+                    FactLine(listOfNotNull(
+                        Fact(w?.name ?: "Unarmed", tone = if (w == null) FactTone.WARN else FactTone.PLAIN),
+                        w?.let { Labels.condition(it) }?.let { Fact(it, tone = FactTone.WARN) },
+                    ))
                 }
-                w?.let { WeaponSprite(it, size = 40.dp) }
+                // What the forecast counts for this champion against this besieger: their readiness in its own number.
+                forecast?.championPowers?.getOrNull(i)?.let { p ->
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text("${p.roundToInt()}", style = MaterialTheme.typography.titleMedium, color = Cream)
+                        Text("defense", style = MaterialTheme.typography.labelSmall, color = CreamMuted)
+                    }
+                }
             }
         }
     }
+    // Every faction presses on the town (GDD 8); the others are listed so the leader's rise can be read coming.
+    if (siege.others.isNotEmpty()) SectionHeader("Other threats")
+    FactionRows(siege.others)
 }
 
 /** Factions that press on the town beside the besieger: sprite, name, pressure in a word, and the element that bites. */
@@ -243,10 +256,10 @@ internal fun SpriteSlot(content: @Composable () -> Unit) {
 
 /** One mark of a matchup: "+" and green for what bites, "−" and red for what glances off, always with its words. */
 @Composable
-internal fun MatchMark(kind: EffectKind, text: String) {
+internal fun MatchMark(kind: EffectKind, text: String, modifier: Modifier = Modifier) {
     Text(
         "${kind.sign} $text", style = MaterialTheme.typography.labelMedium, color = kind.color,
-        modifier = Modifier.background(kind.color.copy(alpha = 0.14f), MaterialTheme.shapes.extraSmall).border(1.dp, kind.color.copy(alpha = 0.6f), MaterialTheme.shapes.extraSmall).padding(horizontal = Space.sm, vertical = Space.xs),
+        modifier = modifier.background(kind.color.copy(alpha = 0.14f), MaterialTheme.shapes.extraSmall).border(1.dp, kind.color.copy(alpha = 0.6f), MaterialTheme.shapes.extraSmall).padding(horizontal = Space.sm, vertical = Space.xs),
     )
 }
 
@@ -340,7 +353,7 @@ fun GazettePanel(s: UiState.Playing, vm: GameViewModel) {
     val days = st.events.map { it.day }.distinct().sortedDescending()
     var open by remember(days.firstOrNull()) { mutableStateOf(days.firstOrNull()) }
     if (days.isEmpty()) Secondary("No Gazette reports yet.", Modifier.padding(top = Space.md))
-    days.forEach { day ->
+    days.forEachIndexed { i, day ->
         // One pipeline for the report and the archive: the same digest, read from the day's own records.
         val digest = remember(st, day) { GazetteDigest.of(st, day, vm.engine.content, vm.engine.config) }
         val expanded = open == day
@@ -371,21 +384,23 @@ fun GazettePanel(s: UiState.Playing, vm: GameViewModel) {
         } else {
             val marks = remember(st.events, day) { gazetteMarks(st.eventsForDay(day).map { it.type }) }
             val first = digest.headline
+            // V3: an archive is a list, not a stack of plates: one row a day, hairlines between them.
+            if (i > 0 && open != days[i - 1]) HorizontalDivider(color = BronzeDeep)
             Row(
-                Modifier.padding(top = Space.sm).forgeRow().then(toggle).heightIn(min = 56.dp).padding(horizontal = 12.dp, vertical = Space.sm),
+                Modifier.then(toggle).heightIn(min = 56.dp).padding(vertical = Space.sm),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 // The day as a date block at the head of the row, so a column of editions reads as an archive.
                 Column(Modifier.widthIn(min = 36.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("DAY", style = MaterialTheme.typography.labelSmall, color = CreamMuted)
-                    Text("$day", style = MaterialTheme.typography.titleLarge, color = Gold)
+                    Text("$day", style = MaterialTheme.typography.titleLarge, color = Cream)
                 }
                 Column(Modifier.weight(1f)) {
                     // A sign and a word, so the colour is never the only cue.
                     if (marks.isNotEmpty()) Text(marks.joinToString(" · "), style = MaterialTheme.typography.labelMedium, color = Ember)
                     Text(first, style = MaterialTheme.typography.bodyMedium, fontFamily = FontFamily.Serif)
                 }
-                Text("▾", style = MaterialTheme.typography.titleMedium, color = Gold)
+                Chevron(ChevronWay.DOWN, tint = CreamMuted)
             }
         }
     }
@@ -398,34 +413,38 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
     item(key = "legacy_head") {
         Column {
             // The account at a glance: the era on one side, the banked points as the one large number on the other.
-            FramedPanel(modifier = Modifier.fillMaxWidth().padding(top = Space.sm)) {
-                Row(Modifier.semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Era ${s.state.era}", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() })
-                        Secondary("Claim legacy points when an era ends. Keep them for future eras.")
-                    }
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text("${legacy.points}", style = MaterialTheme.typography.headlineMedium, color = Gold)
-                        Text("legacy points banked", style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.End, modifier = Modifier.widthIn(max = 96.dp))
-                    }
+            Row(Modifier.fillMaxWidth().padding(top = Space.md).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+                Column(Modifier.weight(1f)) {
+                    Text("Era ${s.state.era}", style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() })
+                    Secondary("Claim legacy points when an era ends. Keep them for future eras.")
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text("${legacy.points}", style = MaterialTheme.typography.headlineMedium, color = Gold)
+                    Text("legacy points banked", style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.End, modifier = Modifier.widthIn(max = 96.dp))
                 }
             }
             if (s.state.pendingBlessingOffer.isNotEmpty()) {
                 PrimaryActionButton("Choose a blessing", vm::reopenBlessingOffer, Modifier.fillMaxWidth().padding(top = Space.sm))
             }
-            SectionHeader("Permanent upgrades")
+            SectionHeader("Legacy perks")
         }
     }
     itemsIndexed(content.upgrades, key = { _, u -> "upgrade_${u.id.value}" }) { i, u ->
         if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-        // The name and its level share a line, so every track starts at the same edge whatever its number of levels.
-        Column(Modifier.fillMaxWidth().padding(vertical = Space.sm).semantics(mergeDescendants = true) {}) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                Text(u.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-                LevelDots(legacy.upgradeLevel(u.id), u.maxLevel)
+        // The name and its level share a line, so every track starts at the same edge whatever its number of levels. What
+        // the next level gives and costs is on the upgrade's card.
+        val level = legacy.upgradeLevel(u.id)
+        Row(Modifier.fillMaxWidth().padding(vertical = Space.xs), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    Text(u.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                    LevelDots(level, u.maxLevel)
+                }
+                Secondary(u.description)
             }
-            Secondary(u.description)
-            Text(com.tinyblacksmith.core.legacy.Legacy.preview(u.id, legacy.upgradeLevel(u.id) + 1, content, vm.engine.config)?.text ?: "Fully upgraded.", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = 2.dp))
+            InfoButton(u.name, {
+                upgradeTip(u, level, com.tinyblacksmith.core.legacy.Legacy.preview(u.id, level + 1, content, vm.engine.config)?.text, u.costPerLevel.getOrNull(level), tag = "legacy_upgrade_tip")
+            }, tag = "legacy_upgrade_${u.id.value}_info")
         }
     }
     if (s.state.blessings.isNotEmpty()) {
@@ -442,19 +461,24 @@ fun LazyListScope.legacyItems(s: UiState.Playing, vm: GameViewModel) {
     }
     item(key = "legends_head") {
         Column {
-            SectionHeader("Legend Board")
-            if (legacy.legendBoard.isEmpty()) Secondary("No legendary histories recorded yet.", Modifier.padding(vertical = Space.xs))
+            SectionHeader("Hall of Legends")
+            if (legacy.legendBoard.isEmpty()) Secondary("No famous weapons recorded yet.", Modifier.padding(vertical = Space.xs))
         }
     }
     itemsIndexed(legacy.legendBoard, key = { i, _ -> "legend_$i" }) { i, entry ->
         val legend = remember(entry, s.state.era) { legendUi(entry, content, s.state.era) }
-        Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(horizontal = 12.dp, vertical = Space.sm).testTag("legend_$i")) {
-            Text(legend.head, style = MaterialTheme.typography.titleSmall, color = Gold)
-            legend.lines.forEachIndexed { j, line ->
-                // An entry older than the record of its make: said as a note in its own voice, not as a property.
-                if (j == 0 && legend.lostToTime) Text("◆ $line", style = MaterialTheme.typography.bodySmall, fontStyle = FontStyle.Italic, color = CreamMuted, modifier = Modifier.testTag("legend_lost_$i"))
-                else Secondary(line)
+        if (i > 0) HorizontalDivider(color = BronzeDeep)
+        // V3: the weapon and what it was on the row, who carried it and its story on its card.
+        Row(Modifier.fillMaxWidth().padding(vertical = Space.sm).testTag("legend_$i"), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(legend.head, style = MaterialTheme.typography.titleSmall, color = Cream)
+                legend.lines.firstOrNull()?.let { line ->
+                    // An entry older than the record of its make: said as a note in its own voice, not as a property.
+                    if (legend.lostToTime) Text("◆ $line", style = MaterialTheme.typography.bodySmall, fontStyle = FontStyle.Italic, color = CreamMuted, modifier = Modifier.testTag("legend_lost_$i"))
+                    else Secondary(line)
+                }
             }
+            if (legend.lines.size > 1) InfoButton(legend.head, { legendTip(legend, tag = "legend_tip") }, tag = "legend_${i}_info")
         }
     }
     item(key = "lineages_head") {
@@ -478,7 +502,7 @@ fun LevelDots(level: Int, max: Int) {
     Text(
         "●".repeat(level) + "○".repeat((max - level).coerceAtLeast(0)),
         style = MaterialTheme.typography.bodyMedium,
-        color = Gold,
+        color = Cream,
         modifier = Modifier.semantics { contentDescription = "level $level of $max" },
     )
 }

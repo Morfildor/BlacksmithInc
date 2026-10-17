@@ -88,11 +88,10 @@ private fun SwitchRow(title: String, detail: String, checked: Boolean, onChange:
 /** The guided first day: where it stands, and the one action on it (replay, cancel a queued replay, or skip it while it runs). */
 @Composable
 private fun IntroRow(row: IntroRowUi, onAction: () -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(top = Space.sm).testTag("settings_intro"), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f).padding(vertical = Space.sm).padding(end = Space.sm)) {
-            Text("Guided first day", style = MaterialTheme.typography.titleSmall)
-            Secondary(row.detail, Modifier.testTag("settings_intro_status"))
-        }
+    // The action goes under the words: its label ("Replay in next new game") is long enough to crush the title beside it.
+    Column(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(top = Space.sm).testTag("settings_intro")) {
+        Text("Guided first day", style = MaterialTheme.typography.titleSmall)
+        Secondary(row.detail, Modifier.testTag("settings_intro_status"))
         InlineActionButton(row.action, onAction, Modifier.testTag("settings_intro_action"))
     }
 }

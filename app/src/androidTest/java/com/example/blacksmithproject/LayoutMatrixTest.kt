@@ -237,7 +237,8 @@ class LayoutMatrixTest {
             compose.onNodeWithTag("guild_assign_sheet").assertIsDisplayed()
             File(evidence, "guild-assign-$scale.png").outputStream().use { compose.onNodeWithTag("guild_assign_sheet").captureToImage().asAndroidBitmap().compress(Bitmap.CompressFormat.PNG, 100, it) }
             val member = states[1].guild!!.members.first().heroId
-            compose.onNodeWithText(states[1].heroes.getValue(member).fullName).performScrollTo().performClick()
+            // The name in the sheet (the Wall behind it names the same member on its row since V3).
+            compose.onNode(androidx.compose.ui.test.hasText(states[1].heroes.getValue(member).fullName) and androidx.compose.ui.test.hasAnyAncestor(hasTestTag("guild_assign_sheet"))).performScrollTo().performClick()
             compose.runOnIdle { assertEquals(Sheet.Hero(member), (vms[1].ui.value as UiState.Playing).sheet) }
             compose.runOnUiThread { vms[1].closeSheet() }
             compose.onNodeWithTag("guild_assign_done").performScrollTo().performClick()

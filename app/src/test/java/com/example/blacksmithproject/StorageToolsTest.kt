@@ -137,7 +137,7 @@ class StorageToolsTest : ShopDayTestBase() {
         vm.dispatchAll(ids.map { StockAction.Donate.toCommand(it) }); advanceUntilIdle()
         val after = vm.playing()
         assertEquals(engine.config.armoryMax, after.state.town.armory)
-        assertTrue(after.lastError, after.lastError!!.startsWith("Completed ") && after.lastError!!.endsWith("of 40 actions before stopping. The town watch armory is full."))
+        assertTrue(after.lastError, after.lastError!!.startsWith("Completed ") && after.lastError!!.endsWith("of 40 actions before stopping. The armory is full."))
         assertTrue("some were given and the rest are still stored", after.shop.storage.size in 1 until 40)
         assertEquals(ids.takeLast(after.shop.storage.size), after.shop.storage.map { it.weapon.id })
     }

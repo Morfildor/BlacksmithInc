@@ -172,7 +172,7 @@ object Heroes {
             // A sworn defender drills the watch: more militia than a patrol raises, but no suppression and no pay.
             Ambition.DEFENDER -> {
                 ctx.town = ctx.town.copy(militia = minOf(config.militiaMax, ctx.town.militia + config.heroLife.defenderDrillMilitia))
-                val e = ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} trained the town watch.", listOf(hero.id.value), data)
+                val e = ctx.emit(EventType.AMBITION_PURSUED, 2, "${hero.fullName} trained the town militia.", listOf(hero.id.value), data)
                 ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.AMBITION_DAY, eventIds = listOf(e.id))
             }
             // A prized weapon and a fortune both take gold: a day of paid work, and nothing else.

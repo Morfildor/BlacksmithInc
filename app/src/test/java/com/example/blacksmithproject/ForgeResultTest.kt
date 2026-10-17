@@ -45,10 +45,10 @@ class ForgeResultTest : ShopDayTestBase() {
     @Test
     fun aFreshBladesCardLeavesOutRenownItHasNotEarned() {
         val detail = engine.itemDetail(forged, blade.id)!!
-        assertEquals("the blade's sheet keeps all four", listOf("Power", "Quality", "Condition", "Renown"), detail.stats.map { it.label })
+        assertEquals("the blade's sheet keeps all four", listOf("Power", "Quality", "Condition", "Fame"), detail.stats.map { it.label })
         assertEquals(listOf("Power", "Quality", "Condition"), detail.withoutEmptyStats().stats.map { it.label })
         val famed = engine.itemDetail(forged.copy(weapons = forged.weapons + (blade.id to blade.copy(fame = 3))), blade.id)!!
-        assertEquals(3, famed.withoutEmptyStats().stats.single { it.label == "Renown" }.value)
+        assertEquals(3, famed.withoutEmptyStats().stats.single { it.label == "Fame" }.value)
     }
 
     @Test

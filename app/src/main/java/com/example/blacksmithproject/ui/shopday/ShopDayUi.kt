@@ -265,7 +265,7 @@ private fun plural(n: Int, one: String, many: String) = "$n ${if (n == 1) one el
 /**
  * A classic siege is one sum, not a fight: each champion's recorded round is the defense they counted
  * (`Battle.resolveSiegeIfDue`), beside the militia and the watch. The champion who counted most, the first listed when
- * equal, in the record's own words ("strikes with ..."), against the town's whole defense when the record kept it.
+ * equal, in the record's own words ("attacks with ..."), against the town's whole defense when the record kept it.
  */
 internal fun classicContribution(replay: CombatReplay?, townDefense: String?): String? {
     val best = replay?.rounds.orEmpty().filter { it.attackerId != null && it.damage > 0 }.maxByOrNull { it.damage } ?: return null

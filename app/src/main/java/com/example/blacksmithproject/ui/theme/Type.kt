@@ -17,15 +17,25 @@ val BodyFamily = FontFamily(
 /** Headings: Alegreya Bold, a calligraphic serif for the workshop's voice. Headings only, never running text, and with lining figures (its default figures are old-style, a 0 reads as an o). Licences in assets/licenses. */
 val HeadingFamily = FontFamily(Font(R.font.alegreya_bold, FontWeight.Bold))
 
+/** Tabular lining figures: numbers in a column or beside a label line up and do not jump as they change. */
+const val NUMBERS = "tnum, lnum"
+
+/**
+ * A heading inside a panel or a sheet ("Champions", "Who is buying"): Fira SemiBold in true small caps with a little
+ * tracking. The string stays as written (tests, TalkBack); the font draws the capitals. Gold, over a hairline.
+ */
+val SectionLabel = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = 22.sp, letterSpacing = 0.8.sp, fontFeatureSettings = "smcp, lnum")
+
 /**
  * Four working styles (GDD 12: scalable, readable text). Panels use only these:
  *  - titleLarge  serif, panel and section headings
  *  - titleMedium medium, card titles, key numbers, primary buttons
  *  - bodyMedium  body text, never below 16sp
  *  - bodySmall   secondary text, always paired with onSurfaceVariant
- * Sentences are Regular and get their readability from size, line height and the ivory on charcoal. Light text on the dark
- * ground reads a step heavier than its weight, so nothing above Medium is a style: titles, labels and buttons are Medium,
- * and hierarchy comes from size and colour (cream, muted, gold for what can be tapped). Headings are the serif.
+ * Weight is given by role, never by size (V2, the owner's "selective bold"): SemiBold for the names of things (a weapon,
+ * a hero, a quest, a material) and for key numbers (gold, prices, stats), always on cream or gold and never below 16 sp;
+ * Medium for buttons, tabs and chips; Regular for every sentence and every secondary line. Section headings inside panels
+ * are [SectionLabel] small caps; the serif is kept for screen and dialog titles, the day and the big moments.
  * labelMedium/labelSmall exist for chips and the nav bar only.
  */
 val Typography = Typography(
@@ -34,12 +44,12 @@ val Typography = Typography(
     // Dialog titles (Material's AlertDialog reads this slot): the same serif as a panel heading, never the 24 sp Regular default.
     headlineSmall = TextStyle(fontFamily = HeadingFamily, fontFeatureSettings = "lnum", fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 28.sp),
     titleLarge = TextStyle(fontFamily = HeadingFamily, fontFeatureSettings = "lnum", fontWeight = FontWeight.Bold, fontSize = 22.sp, lineHeight = 28.sp),
-    titleMedium = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.Medium, fontSize = 18.sp, lineHeight = 24.sp),
-    titleSmall = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp, lineHeight = 22.sp),
+    titleMedium = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, lineHeight = 24.sp, fontFeatureSettings = NUMBERS),
+    titleSmall = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, lineHeight = 22.sp, fontFeatureSettings = NUMBERS),
     bodyLarge = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.Normal, fontSize = 17.sp, lineHeight = 26.sp, letterSpacing = 0.15.sp),
     bodyMedium = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.Normal, fontSize = 16.sp, lineHeight = 24.sp, letterSpacing = 0.15.sp),
     bodySmall = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.Normal, fontSize = 15.sp, lineHeight = 21.sp, letterSpacing = 0.15.sp),
-    labelLarge = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp, lineHeight = 20.sp),
-    labelMedium = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = 18.sp),
+    labelLarge = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp, lineHeight = 20.sp, fontFeatureSettings = NUMBERS),
+    labelMedium = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.Medium, fontSize = 14.sp, lineHeight = 18.sp, fontFeatureSettings = NUMBERS),
     labelSmall = TextStyle(fontFamily = BodyFamily, fontWeight = FontWeight.Medium, fontSize = 12.sp, lineHeight = 16.sp, letterSpacing = 0.4.sp),
 )

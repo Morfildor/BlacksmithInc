@@ -13,6 +13,8 @@ import com.tinyblacksmith.core.combat.Limit
 import com.tinyblacksmith.core.combat.Stat
 import com.tinyblacksmith.core.combat.UnitDef
 import com.tinyblacksmith.core.combat.Who
+import com.tinyblacksmith.core.content.CombatContent
+import com.tinyblacksmith.core.text.Terms
 
 /**
  * What a weapon can do in a fight, as typed facts a requirement can be checked against (the interface a commission
@@ -25,10 +27,12 @@ import com.tinyblacksmith.core.combat.Who
  * guess. Nothing here predicts a fight. The bench shows one.
  */
 
-/** Something a rule makes, takes or waits for. The eleven fight states by their own names, and what is not a state. */
-enum class Res(val word: String) {
-    GUARD("Guard"), CHARGE("Charge"), MARK("a Mark"), BURN("Burn"), REGEN("Regeneration"), CHILL("Chill"), WET("Wet"), BLEED("Bleed"), SCRAP("Scrap"), THORNS("Thorns"), STEAM("Steam"),
+/** Something a rule makes, takes or waits for. The eleven fight statuses by their own names (`Terms.stat`), and what is not a status. */
+enum class Res(private val own: String? = null) {
+    GUARD, CHARGE, MARK("a Mark"), BURN, REGEN, CHILL, WET, BLEED, SCRAP, THORNS, STEAM,
     HEALING("healing"), DAMAGE("damage"), FRACTURE("a cracked weapon"), HEALTH_PAID("health paid to a weapon"), HELPER("a helper");
+
+    val word: String get() = own ?: Terms.stat(Stat.valueOf(name))
 
     companion object {
         fun of(stat: Stat): Res = valueOf(stat.name)
@@ -325,7 +329,7 @@ object Capabilities {
     private fun reason(q: Query): String = when (q) {
         is Query.Generates -> "Nothing on it makes ${q.res.word}${mapOf(Place.WIELDER to " for the wielder", Place.PARTY to " for the party", Place.FOE to " on an enemy")[q.place].orEmpty()}."
         is Query.Spends -> "Nothing on it consumes ${q.res.word}."
-        Query.ProtectsAnother -> "Nothing on it gives Guard or healing to anybody but the wielder."
+        Query.ProtectsAnother -> "Nothing on it gives Armor or healing to anybody but the wielder."
         is Query.Requires -> "Nothing on it waits for ${q.res.word}."
         is Query.Converts -> "Nothing on it turns ${q.from.word} into ${q.to.word}."
         Query.ReachesBackline -> "Nothing on it hits past the front enemy. A Mark on the back enemy would make the party attack that enemy first."
@@ -388,18 +392,18 @@ object Capabilities {
             Res.HEALING in need.any -> "A healer in the party."
             Res.FRACTURE in need.any -> "A weapon in the party that cracks."
             Res.HEALTH_PAID in need.any -> "A weapon in the party that takes health from its wielder."
-            need.place == Place.FOE && Res.GUARD in need.any -> "An enemy that raises Guard."
-            need.place == Place.FOE && need.beforeHit -> "${list(need.any).cap()} on the enemy before the hit lands. An ally can put it there, or a wielder who strikes twice per round."
+            need.place == Place.FOE && Res.GUARD in need.any -> "An enemy that raises Armor."
+            need.place == Place.FOE && need.beforeHit -> "${list(need.any).cap()} on the enemy before the hit lands. An ally can put it there, or a wielder who attacks twice per round."
             need.place == Place.FOE && need.byWielder -> "The wielder's own hit has to leave ${list(need.any)} on an enemy."
             need.place == Place.FOE -> "${list(need.any).cap()} on an enemy."
             need.ownAction -> "A wielder whose own action raises ${list(need.any)}."
-            need.place == Place.WIELDER && Res.GUARD in need.any -> "Guard on the wielder for an enemy to break."
+            need.place == Place.WIELDER && Res.GUARD in need.any -> "Armor on the wielder for an enemy to break."
             need.place == Place.WIELDER && need.atLeast > 1 -> "More ${list(need.any)} for the wielder. It takes ${need.atLeast} to spend."
             need.place == Place.WIELDER -> "A way for the wielder to get ${list(need.any)}."
             else -> "${list(need.any).cap()} on somebody in the party."
         }
         is Need.Spent -> if (need.res == Res.MARK) "A Mark on an enemy for the wielder's hit to consume." else if (need.byWielder) "An effect on this weapon that consumes ${need.res.word}." else "Somebody in the party who consumes ${need.res.word}."
-        is Need.FoeIs -> when (need.tag) { "elite" -> "An elite or a leader among the enemies."; "undead" -> "One of the Hollowbound among the enemies."; else -> "An enemy of the right kind." }
+        is Need.FoeIs -> when (need.tag) { "elite" -> "An Elite enemy."; "undead" -> "One of the Hollowbound among the enemies."; else -> "An enemy of the right kind." }
         is Need.HolderIs -> "A wielder of the right kind."
         is Need.Circumstance -> need.text
         is Need.Unverified -> "${text(need.need)} The company can bring it, but only through another effect first. That is not checked here. Try it on the bench to see it."
@@ -407,7 +411,7 @@ object Capabilities {
 
     /** A verdict as a smith reads it. "Available" never promises that the moment comes. */
     fun text(v: Verdict, c: WeaponRules.Composition): String = when (v) {
-        is Verdict.Available -> "Available when its trigger happens: ${v.by.map { c.rule(it.ruleId)?.effect?.name ?: it.ruleId }.distinct().joinToString(", ")}."
+        is Verdict.Available -> "Available when its trigger happens: ${v.by.map { c.rule(it.ruleId)?.effect?.let { e -> CombatContent.label(e.id, e.name) } ?: it.ruleId }.distinct().joinToString(", ")}."
         is Verdict.Needs -> "Needs: ${v.missing.joinToString(" ") { text(it) }}"
         is Verdict.CannotProvide -> "Cannot provide. ${v.reason}"
     }

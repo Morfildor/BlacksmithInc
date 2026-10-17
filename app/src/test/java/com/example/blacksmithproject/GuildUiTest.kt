@@ -2,6 +2,9 @@ package com.example.blacksmithproject
 
 import com.tinyblacksmith.core.model.Danger
 import com.example.blacksmithproject.ui.dangerWord
+import com.example.blacksmithproject.ui.Fact
+import com.example.blacksmithproject.ui.FactTone
+import com.example.blacksmithproject.ui.offerFacts
 import com.example.blacksmithproject.ui.contractUi
 import com.example.blacksmithproject.ui.destName
 import com.example.blacksmithproject.ui.guildUi
@@ -55,9 +58,44 @@ class GuildUiTest {
         assertTrue(offers.getValue("long").reward, offers.getValue("long").reward.contains("4 militia"))
         assertTrue(offers.getValue("long").reward, offers.getValue("long").reward.contains("7 forge health"))
         assertTrue(offers.getValue("long").reward, offers.getValue("long").reward.contains("Optional stage 2"))
-        assertTrue(offers.getValue("long").timingNote.contains("Wounds"))
+        assertTrue(offers.getValue("long").timingNote.contains("cannot defend the wall"))
         assertEquals(encoded, com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state))
     }
+    /** V3: a board row is one line of facts, the summary first (the reward in a few words, the danger as a warning unless safe, away and back, the fee, the last day); each stage is on the card. */
+    @Test
+    fun aBoardRowIsOneLineOfFactsWithTheDangerAsAWarning() {
+        val s = guildRun()
+        val original = s.guild!!.offers.first()
+        val first = original.stages.first()
+        val long = original.copy(id = "long", fee = 43, days = 2, optionalPush = true, stages = listOf(
+            first.copy(reward = com.tinyblacksmith.core.model.Reward(gold = 23), danger = Danger.DANGEROUS),
+            first.copy(reward = com.tinyblacksmith.core.model.Reward(militia = 4, integrity = 7), danger = Danger.LETHAL),
+        ))
+        val free = original.copy(id = "free", fee = 0, days = 1, optionalPush = false, expiresDay = s.day, stages = listOf(first.copy(reward = com.tinyblacksmith.core.model.Reward(relicOffer = true), danger = Danger.SAFE)))
+        val state = s.copy(guild = s.guild!!.copy(offers = listOf(long.copy(expiresDay = s.day + 3), free)))
+        val offers = engine.guildUi(state)!!.offers.associateBy { it.id }
+        val l = offers.getValue("long")
+        assertEquals("up to 23 gold and 2 more", l.rewardSummary)
+        val facts = offerFacts(l)
+        assertEquals(Fact(l.rewardSummary, "Reward"), facts[0])
+        assertEquals(Fact("Lethal", tone = FactTone.WARN), facts[1])
+        assertEquals(Fact("2 days, back day ${state.day + 2}", "Away"), facts[2])
+        assertEquals(Fact("43 gold", "Fee"), facts[3])
+        assertEquals(Fact("day ${state.day + 3}", "Send by"), facts[4])
+        // Each stage's reward stays whole for the quest's card and sheet.
+        assertTrue(l.reward, l.reward.contains("23 gold") && l.reward.contains("Optional stage 2"))
+        val f = offers.getValue("free")
+        assertEquals("A relic", f.rewardSummary)
+        val ff = offerFacts(f)
+        assertEquals(Fact("Safe"), ff[1])
+        assertEquals(Fact("1 day, back day ${state.day + 1}", "Away"), ff[2])
+        assertEquals(Fact("No fee"), ff[3])
+        // The last day to send a party is a warning on that day.
+        assertEquals(Fact("today", "Send by", FactTone.WARN), ff[4])
+        // Work that is always on the board has no last day.
+        assertTrue(offerFacts(f.copy(lastDay = null)).none { it.label == "Send by" })
+    }
+
     private val engine = GameEngine()
     private val cfg = engine.config.guild
 
@@ -107,10 +145,13 @@ class GuildUiTest {
         val ui = engine.guildUi(state)!!
         val actions = com.example.blacksmithproject.ui.GuildActions(true, {}, {}, {}, {}, {})
         val keys = com.example.blacksmithproject.ui.wallRows(ui, actions).map { it.key }
-        assertTrue(keys.toString(), keys.indexOf("wall") < keys.indexOf("readiness"))
-        assertTrue(keys.toString(), keys.indexOf("readiness") < keys.indexOf("prep"))
-        assertTrue(keys.toString(), keys.indexOf("prep") < keys.indexOf("watch"))
-        assertTrue(keys.toString(), keys.indexOf("watch") < keys.indexOf("places"))
+        // V2: who stands (the places and the one action) first, then the forge and the watch, then the enemy, then the details.
+        assertEquals(keys.toString(), "readiness", keys.first())
+        assertTrue(keys.toString(), keys.indexOf("readiness") < keys.indexOf("watch"))
+        assertTrue(keys.toString(), keys.indexOf("watch") < keys.indexOf("prep"))
+        // The enemy's facts, when there are any, sit between the watch and the folded details.
+        if ("wall" in keys) assertTrue(keys.toString(), keys.indexOf("watch") < keys.indexOf("wall") && keys.indexOf("wall") < keys.indexOf("prep"))
+        assertTrue(keys.toString(), "places" !in keys)
     }
 
     @Test
@@ -179,10 +220,11 @@ class GuildUiTest {
         assertTrue(ui.wall.defenders.none { it.heroId in party })
         assertEquals("$names leave for $contract, home on the morning of day ${s.day + 1}", ui.endDay[0])
         assertTrue(ui.endDay[1], ui.endDay[1].startsWith("Siege tonight"))
-        assertTrue(ui.endDay[1], ui.endDay[1].contains("Current expected defenders:"))
-        assertTrue(ui.endDay[1], ui.endDay[1].contains("Reserved Guild members:"))
-        assertTrue(ui.endDay[1], ui.endDay[1].contains("Automatic town substitutes (current):"))
-        assertTrue(ui.endDay[1], ui.endDay[1].contains("Town activity during End Day may change automatic substitutes."))
+        // The three groups by their own words, one sentence each (the End Day dialog shows a sentence a row).
+        assertTrue(ui.endDay[1], ui.endDay[1].contains("Reserved for the wall:"))
+        assertTrue(ui.endDay[1], ui.endDay[1].contains("Guild members filling in for now:"))
+        assertTrue(ui.endDay[1], ui.endDay[1].contains("Townsfolk filling in for now:"))
+        assertTrue(ui.endDay[1], ui.endDay[1].endsWith("Who fills in can still change during End Day."))
         ui.wall.defenders.forEach { assertTrue(ui.endDay[1], ui.endDay[1].contains(it.name)) }
         assertTrue(ui.endDay.size <= 3)
         // A planned member cannot be kept for the wall as well, and the toggle says why.
@@ -199,10 +241,11 @@ class GuildUiTest {
         val before = com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state)
         val ui = engine.guildUi(state)!!
         val text = ui.endDay.single { it.startsWith("Siege tonight") }
-        assertTrue(text, text.contains("Reserved Guild members: " + ui.wall.defenders.filter { it.reserved }.joinToString(", ") { it.name }))
-        assertTrue(text, text.contains("Automatic Guild substitutes (current):"))
-        assertTrue(text, text.contains("Automatic town substitutes (current):"))
-        assertTrue(text, text.contains("may change automatic substitutes"))
+        val sentences = text.split(". ")
+        assertEquals(text, "Reserved for the wall: " + ui.wall.defenders.filter { it.reserved }.joinToString(", ") { it.name }.ifEmpty { "none" }, sentences[1])
+        assertEquals(text, "Guild members filling in for now: " + ui.wall.defenders.filter { it.member && !it.reserved }.joinToString(", ") { it.name }.ifEmpty { "none" }, sentences[2])
+        assertEquals(text, "Townsfolk filling in for now: " + ui.wall.defenders.filter { !it.member }.joinToString(", ") { it.name }.ifEmpty { "none" }, sentences[3])
+        assertEquals(text, "Who fills in can still change during End Day.", sentences[4])
         assertTrue(ui.wall.defenders.any { it.heroId == reserved && it.reserved })
         assertEquals(before, com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state))
     }
@@ -253,7 +296,7 @@ class GuildUiTest {
         assertEquals("Lethal: if the whole party goes down, 1 member dies and another is captured.", cp.danger)
         assertTrue(cp.enemies.isNotEmpty())
         assertNull(cp.chosen)
-        assertEquals("If you choose nothing, the party returns home at End Day.", cp.note)
+        assertEquals("If you choose nothing, the party returns at End Day with the rewards already won.", cp.note)
         assertEquals("The party at ${engine.content.guild!!.route(m.offer.factionId)!!.name} returns home unless you choose to go deeper", ui.endDay.last())
         // Word sent: the card says which, and End Day no longer warns.
         val pushed = engine.guildUi(s.send(Command.ChooseMissionCheckpoint(m.id, CheckpointChoice.PUSH)))!!
@@ -281,13 +324,13 @@ class GuildUiTest {
             assertEquals(engine.content.guild!!.modifier(o.modifierId)?.name, row.modifierName)
         }
         assertEquals(listOf("Safe", "Dangerous", "Lethal"), Danger.entries.map { dangerWord(it) })
-        for (m in ui.roster) assertEquals("${m.sub} · ${m.health}" + if (m.reserved) " · kept for the wall" else "", m.line)
-        assertEquals("At home, the hurt rest and the fit train on their own. You choose who goes out and who holds the wall.", ui.rosterNote)
+        for (m in ui.roster) assertEquals("${m.sub} · ${m.health}" + if (m.reserved) " · reserved for the wall" else "", m.line)
+        assertEquals("Members at home act on their own each day. A hurt member rests and heals ${engine.config.heroRestHeal} health. A fit member trains.", ui.rosterNote)
         // Militia's worth on the wall in the fight's own numbers, and what keeping it costs.
         val t = fresh.town
         assertEquals(
             "Militia ${t.militia} and the armory ${t.armory} take up to ${Math.round(ui.wall.watch * engine.config.guild.outerHealthPerPoint)} health from the enemy before the wall. " +
-                "Militia falls by ${engine.config.militiaDecayPerDay} a day. A contract that pays in militia adds to it.",
+                "Militia falls by ${engine.config.militiaDecayPerDay} a day. A quest that pays in militia adds to it.",
             ui.wall.watchLine,
         )
     }
@@ -304,7 +347,7 @@ class GuildUiTest {
         val trait = engine.content.guild!!.trait(c.traitId)!!
         val row = rich.candidates.first { it.heroId == c.heroId }
         assertEquals("${trait.name}: ${trait.description}", row.trait)
-        assertEquals("Signing fee: ${c.fee} gold. Keeps ${c.sharePercent}% of the gold from quests they go on.", row.terms)
+        assertEquals("Recruitment fee: ${c.fee} gold. Keeps ${c.sharePercent}% of the gold from quests they go on.", row.terms)
         assertEquals(engine.content.combat!!.kitByClass.getValue(fresh.heroes.getValue(c.heroId).classId).role, row.role)
         // The row shows class and the trait's name in one line; what the trait does is on the sheet.
         assertEquals("${row.sub} · ${trait.name}", row.line)
@@ -339,7 +382,7 @@ class GuildUiTest {
         val both = engine.contractUi(salted, offer.id, listOf(bearer, warden), Posture.BALANCED)!!
         val w = salted.heroes.getValue(warden).name
         val b = salted.heroes.getValue(bearer).name
-        assertTrue(both.together.toString(), "$w's healing charges $b's weapon (Capacitor)." in both.together)
+        assertTrue(both.together.toString(), "$w's healing charges $b's weapon (Conduit)." in both.together)
         assertFalse(both.watchOut.toString(), "Nobody in this party heals." in both.watchOut)
         assertEquals(listOf(1, 2), both.picks.filter { it.order != null }.sortedBy { it.order }.map { it.order })
         assertEquals(bearer, both.picks.first { it.order == 1 }.heroId)
@@ -352,7 +395,7 @@ class GuildUiTest {
         val capacitor = com.tinyblacksmith.core.content.CombatContent.CAPACITOR
         assertTrue(detail.rules.toString(), (capacitor.name to capacitor.description) in detail.rules)
         assertEquals(blade.name, detail.loan!!.name)
-        assertEquals(listOf("Health", "Strike", "Support"), detail.numbers.map { it.first })
+        assertEquals(listOf("Health", "Attack", "Support"), detail.numbers.map { it.first })
         assertNull(engine.memberDetail(salted, salted.residents().first().id))
     }
 

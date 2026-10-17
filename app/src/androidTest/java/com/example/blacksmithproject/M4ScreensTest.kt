@@ -152,10 +152,11 @@ class M4ScreensTest {
     fun theForgeMarksTheElementsTheBesiegerCaresAbout() {
         val threat = engine.threatUi(morning)!!
         val vm = showForge(morning)
-        compose.onNodeWithText(threat.matchup!!, substring = true).assertIsDisplayed()
-        // With a weapon and a metal chosen the augment tray is the open one: its tiles carry the marks.
+        // With a weapon and a metal chosen the augment tray is the open one: its tiles carry the marks, and what tells
+        // against the besieger stands over them, where it decides (V3). The besieger's name is the header's, not this line's.
         compose.runOnUiThread { vm.updateDraft { it.copy(familyId = engine.content.families.first().id, coreId = engine.content.materials(MaterialCategory.CORE).first().id) } }
         compose.waitForIdle()
+        compose.onNodeWithTag("forge_threat").assertIsDisplayed().assertTextContains(threat.matchup!!.removePrefix("${threat.besieger} · "), substring = true)
         for ((element, mark) in threat.marks) {
             val augment = engine.content.materials(MaterialCategory.AUGMENT).first { it.element == element }
             compose.onNodeWithTag("forge_option_${augment.id.value}").assertContentDescriptionContains(mark.label, substring = true)

@@ -45,22 +45,22 @@ class ForgeLearningTest : ShopDayTestBase() {
             val now = after.legacy.journal
             val learned = engine.forgeLearning(was, now, forgeSword)
             val moved = listOf(ca, af).filter { now.state(it).ordinal > was.state(it).ordinal }
-            val pairings = learned.changes.filter { it.title == "First notes" || it.title == "Pairing learned" }
+            val pairings = learned.changes.filter { it.title == "First notes" || it.title == "Combination learned" }
             assertEquals(moved.size, pairings.size)
             moved.zip(pairings).forEach { (key, change) ->
-                assertEquals(if (now.state(key) == KnowledgeState.OBSERVED) "First notes" else "Pairing learned", change.title)
+                assertEquals(if (now.state(key) == KnowledgeState.OBSERVED) "First notes" else "Combination learned", change.title)
                 // The words are the journal's own for the stage reached: an observed pairing stays tentative.
                 assertEquals("${JournalRules.subjectName(engine.content, key)}: ${JournalRules.hint(now, engine.content, key)}", change.line)
                 if (now.state(key) == KnowledgeState.OBSERVED) assertTrue(change.line, change.line.contains(": Seems "))
             }
             if (learned.changes.isEmpty()) assertNotNull(learned.note) else assertNull(learned.note)
-            if (learned.changes.isEmpty() && listOf(ca, af).any { now.state(it) == KnowledgeState.OBSERVED }) assertEquals("Experiment recorded. Try this pairing again to learn more.", learned.note)
+            if (learned.changes.isEmpty() && listOf(ca, af).any { now.state(it) == KnowledgeState.OBSERVED }) assertEquals("Experiment recorded. Try this combination again to learn more.", learned.note)
             titles += learned.changes.map { it.title }
             learned.note?.let { notes += it }
         }
         assertTrue("a first forge is first notes", "First notes" in titles)
-        assertTrue("repeating reaches understanding", "Pairing learned" in titles)
-        assertTrue("a known recipe teaches nothing and says so", "No new findings. You've already learned these pairings." in notes)
+        assertTrue("repeating reaches understanding", "Combination learned" in titles)
+        assertTrue("a known recipe teaches nothing and says so", "No new findings. You've already learned these combinations." in notes)
     }
 
     private val dawn = SignatureCatalog.forRecipe(forgeSword)!!
@@ -81,8 +81,8 @@ class ForgeLearningTest : ShopDayTestBase() {
 
     @Test
     fun aMissedConditionIsNamedOnlyWhenAClueHeldBeforeTheForgeNamesIt() {
-        assertEquals("No signature could form: its quality fell short of what the recipe needs.", engine.forgeLearning(every, every, exact, blade.copy(quality = dawn.minQuality - 1, signatureId = null)).attempt)
-        assertEquals("No signature could form: ${JournalRules.clue(dawn, ClueRung.CATALYST, engine.config)}.", engine.forgeLearning(every, every, forgeSword, blade.copy(quality = dawn.minQuality, signatureId = null)).attempt)
+        assertEquals("No signature could form. Its quality fell short of what the recipe needs.", engine.forgeLearning(every, every, exact, blade.copy(quality = dawn.minQuality - 1, signatureId = null)).attempt)
+        assertEquals("No signature could form. ${JournalRules.clue(dawn, ClueRung.CATALYST, engine.config).replaceFirstChar { it.uppercase() }}.", engine.forgeLearning(every, every, forgeSword, blade.copy(quality = dawn.minQuality, signatureId = null)).attempt)
         // Only the base clue held: the missed catalyst is the clue this forge earns, said once, as a clue.
         assertNull(engine.forgeLearning(clues(ClueRung.RECIPE), clues(ClueRung.RECIPE, ClueRung.CATALYST), forgeSword, blade.copy(signatureId = null)).attempt)
         // No clue at all: nothing is said of a hidden recipe.
@@ -106,7 +106,7 @@ class ForgeLearningTest : ShopDayTestBase() {
         vm.dispatch(forgeSword); advanceUntilIdle()
         val p = vm.playing()
         assertNull(p.state.weapons.getValue(p.revealWeaponId!!).signatureId)
-        assertEquals("No signature could form: ${JournalRules.clue(dawn, ClueRung.CATALYST, engine.config)}.", p.learning!!.attempt)
+        assertEquals("No signature could form. ${JournalRules.clue(dawn, ClueRung.CATALYST, engine.config).replaceFirstChar { it.uppercase() }}.", p.learning!!.attempt)
     }
 
     @Test

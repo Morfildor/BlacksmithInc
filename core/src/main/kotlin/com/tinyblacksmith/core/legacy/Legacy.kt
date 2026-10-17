@@ -168,9 +168,9 @@ object Legacy {
             UpgradeEffect.QUALITY_BONUS -> make(prev, next, "Gain $next quality on each forge, up from $prev.")
             UpgradeEffect.STARTING_MATERIALS -> make(prev, next, "Start with $next extra of each starting material, up from $prev.")
             UpgradeEffect.MATERIAL_EFFICIENCY ->
-                make(prev, next, "The augment is kept ${Odds.often(next / 100.0)} after a forge, more often $than. It is never certain.")
+                make(prev, next, "The infusion is kept ${Odds.often(next / 100.0)} after a forge, more often $than. It is never certain.")
             UpgradeEffect.EXCEPTIONAL_CHANCE ->
-                make(prev, next, "Exceptional work comes more often $than, whatever the temper. It is never certain.")
+                make(prev, next, "Exceptional results come more often $than, at any risk. It is never certain.")
             UpgradeEffect.STARTING_REPUTATION ->
                 make(prev, next, "Start with $next reputation and $level ${if (level == 1) "regular" else "regulars"}. Each has ${tracks.knownNameRegularGold} gold saved. Previously $prev reputation and ${level - 1} regulars.")
             UpgradeEffect.CATALOG_ACCESS -> {
@@ -186,7 +186,7 @@ object Legacy {
             UpgradeEffect.LEGACY_ARTIFACTS -> {
                 val base = config.returnedLegendQualityFactor
                 fun strength(steps: Int) = Math.round(100 * maxOf(base, minOf(tracks.returnedLegendQualityFactorMax, base + steps * tracks.legendQualityFactorPerLevel))).toInt()
-                make(strength(prev), strength(next), "Returning legends keep ${strength(next)}% of their original quality and power, up from ${strength(prev)}%. They also return sooner.")
+                make(strength(prev), strength(next), "Returning famous weapons keep ${strength(next)}% of their original quality and power, up from ${strength(prev)}%. They also return sooner.")
             }
         }
     }

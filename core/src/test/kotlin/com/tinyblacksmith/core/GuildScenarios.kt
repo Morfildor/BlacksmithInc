@@ -151,7 +151,7 @@ object GuildScenarios {
             "A siege comes tonight and the Guardian is reserved for the wall. A quest on the board would take the others away: plan it and the wall's forecast names who is left; press End Day and the siege card says who stood.",
             "Played: $TLH, SYNERGY, seed $SIEGE_EVE_SEED, stopped on the morning of day ${config.siegeInterval} (the siege day); a blessing on offer was taken, the Guardian rested by hand and reserved by a real command.", endDay = false) { siegeEve() },
         Scenario("guild_captive", "Guild: a member held, a rescue posted",
-            "A member is in enemy hands with a deadline, and the Rescue quest for them is on the board. Send a party: a won rescue brings them home, a missed deadline does not.",
+            "A member has been captured and has a deadline, and the Rescue quest for them is on the board. Send a party: a won rescue brings them home, a missed deadline does not.",
             "Played: $TLH, GREEDY_DIVER, seed $CAPTIVE_SEED, stopped on the morning of day $CAPTIVE_DAY; a blessing on offer was taken.", endDay = false) { morning(CAPTIVE_SEED, GuildPolicy.GREEDY_DIVER, CAPTIVE_DAY).settled() },
         Scenario("guild_charter_eve", "Guild: the charter siege, a strong roster",
             "The morning of day ${config.guild.charterDay}: the warlord leads tonight's siege. Press End Day: the wall holds, the charter is secured, and the run can go on or be closed with it.",

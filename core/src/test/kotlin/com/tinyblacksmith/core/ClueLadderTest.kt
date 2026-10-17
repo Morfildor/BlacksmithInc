@@ -63,7 +63,7 @@ class ClueLadderTest {
         assertEquals(ClueRung.CATALYST.name, second.events.single { it.data["key"] == sunlance.journalKey }.data["rung"])
         // With the oil but the wrong temper: the temper rung. Then, right in everything it knows, the last rung.
         s = s.forge(base(sunlance, catalyst = true)).state
-        assertEquals("A signature recipe is hidden here. This recipe needs a catalyst from dragon fire. Use Reckless forging.", hint(s, sunlance))
+        assertEquals("A signature recipe is hidden here. This recipe needs a catalyst from dragon fire. Forge with Daring risk.", hint(s, sunlance))
         s = s.forge(base(sunlance, catalyst = true, risk = Risk.RECKLESS)).state
         assertEquals(ClueRung.entries.toSet(), rungs(s, sunlance))
         assertTrue(hint(s, sunlance).endsWith("Reach superb quality or better."), hint(s, sunlance))
@@ -80,7 +80,7 @@ class ClueLadderTest {
         // A recipe that takes no catalyst says so when its turn comes.
         var w = fresh()
         repeat(4) { w = w.forge(base(winterwake, risk = Risk.SAFE)).state }
-        assertEquals("A signature recipe is hidden here. This recipe needs no specific catalyst. Use Safe forging. Reach fine quality or better.", hint(w, winterwake))
+        assertEquals("A signature recipe is hidden here. This recipe needs no specific catalyst. Forge with Careful risk. Reach fine quality or better.", hint(w, winterwake))
     }
 
     @Test

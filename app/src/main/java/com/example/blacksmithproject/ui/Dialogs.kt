@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -63,12 +62,20 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.graphics.drawscope.Stroke
 import com.example.blacksmithproject.ui.detail.ItemDetail
 import com.example.blacksmithproject.ui.detail.affordLine
-import com.example.blacksmithproject.ui.detail.WeaponStatBody
 import com.example.blacksmithproject.ui.detail.itemDetail
+import com.example.blacksmithproject.ui.detail.rarityColor
 import com.example.blacksmithproject.ui.detail.shelfFullLine
+import com.example.blacksmithproject.ui.theme.Bronze
 import com.example.blacksmithproject.ui.theme.BronzeDeep
+import com.example.blacksmithproject.ui.theme.CreamMuted
+import com.example.blacksmithproject.ui.theme.ForgeSlot
+import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.ForgePanel
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.PaperInk
@@ -109,9 +116,10 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
     }
     // The card draws under the system bars and the keyboard and pads itself clear of both, so the price and the
     // buttons stay above the keyboard.
+    val recipe = "${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}."
     Dialog(onDismissRequest = vm::storeForged, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
         ForgeResultCard(
-            detail, "${content.family(w.familyId).name} of ${content.material(w.coreId).name} and ${content.material(w.augmentId).name}.", request,
+            detail, recipe, request,
             enabled = !s.busy, onStore = vm::storeForged, onList = { vm.listForged(w.id, it) }, onSetPrice = { vm.priceForged(w.id) },
             // Only a guild has members to lend to; the blade goes nowhere until one is chosen.
             onLoan = if (s.state.guild != null) { heroId -> vm.loanForged(w.id, heroId) } else null,
@@ -124,6 +132,8 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
             explainRarity = teach != false,
             // The guided first day: its step is said at the head of the card, which covers the strip, and can be skipped from here too.
             guide = s.intro?.result?.let { line -> { IntroCardLine(line, onSkip = { vm.skipIntro() }) } },
+            // V3: the weapon's own card, what it is made of and what rarity buys; "Full details" is its sheet (as "Set price" is).
+            inspect = { resultTip(detail, vm.engine.config, recipe, rarityRule = true, actions = listOf(TipAction("Full details", "reveal_full_details") { vm.priceForged(w.id) })) },
         )
     }
 }
@@ -131,8 +141,16 @@ fun ForgeResultDialog(s: UiState.Playing, weaponId: WeaponId, vm: GameViewModel,
 /** The card of a blade just made: a number without a ceiling that is still zero and never was anything else (renown) says nothing yet. */
 internal fun ItemDetail.withoutEmptyStats(): ItemDetail = copy(stats = stats.filter { it.max != null || it.value != 0 || it.was != null })
 
+/**
+ * The card of a blade just made, as the result shows it: [withoutEmptyStats], and a condition at its ceiling that never
+ * moved (100 of 100 on a fresh weapon) as one fact beside power instead of a full bar.
+ */
+internal fun ItemDetail.forResult(): ItemDetail = withoutEmptyStats().let { d ->
+    d.copy(stats = d.stats.map { if (it.label == "Condition" && it.value == it.max && it.was == null) it.copy(max = null) else it })
+}
+
 /** What a rarity word buys, as `Forge.kt` grants base property slots. */
-internal const val RARITY_RULE = "Rarity sets how many properties it holds: none below Rare, Rare one, Epic two, Legendary three. Some forging choices add more."
+internal const val RARITY_RULE = "At the forge, rarity sets how many properties a weapon gets: none below Rare, 1 at Rare, 2 at Epic, 3 at Legendary. Some forging choices add more. A weapon that becomes rarer later keeps the properties it has."
 
 // The reveal's two lengths at normal motion: how long the sprite and name stand alone, and the fade that follows.
 private const val REVEAL_HOLD_MS = 700L
@@ -153,8 +171,11 @@ private const val REVEAL_FADE_MS = 250
  *
  * [guide] is the guided first day's line, at the head of the card's scrolling part: never pinned over the blade's numbers.
  *
- * The blade comes first, with what the forge discovered, then what it is made of and what rarity means ([explainRarity]:
- * in full the first time, behind a tap after), with its purpose assessment beside its identity. Purpose details open on demand.
+ * V3, an item reveal: the weapon's art, its name in the rarity's colour, rarity and kind, its purpose assessment, then
+ * its power and quality, every buff and flaw by name, and what the notebook took from it in one line. [inspect] opens
+ * the weapon's card (what each property and effect does, what it is made of, what rarity buys) from the ringed "i"
+ * beside its name; the card's "Full details" is the weapon's sheet. What rarity means is also said in full under the
+ * numbers the first time ([explainRarity]). Purpose details open on demand.
  *
  * With [onLoan] (a guild run) a third way on, "Loan", opens the members the blade could go to; nothing is lent until
  * one is chosen.
@@ -180,41 +201,61 @@ fun ForgeResultCard(
     guide: (@Composable () -> Unit)? = null,
     explainRarity: Boolean = true,
     assessment: PurposeAssessmentUi? = request?.let { PurposeAssessmentUi(it.title.substringBefore(":") + ": " + it.fit, "${it.terms}. ${it.handover} ${it.reserved}", it.fits) },
+    inspect: (() -> TipUi)? = null,
 ) {
     var revealed by rememberSaveable(detail.weaponId.value) { mutableStateOf(!reveal) }
     LaunchedEffect(detail.weaponId) { if (!revealed) { delay(REVEAL_HOLD_MS); revealed = true } }
     val shown by animateFloatAsState(if (revealed) 1f else 0f, tween(if (reveal) REVEAL_FADE_MS else 0), label = "reveal")
-    val fresh = remember(detail) { detail.withoutEmptyStats() }
+    val lead = remember(detail) { resultLead(detail) }
     val blade: @Composable ColumnScope.() -> Unit = {
-        WeaponStatBody(fresh, overSprite, detailAlpha = { shown }, afterIdentity = {
-            assessment?.let { a ->
-                Column(Modifier.padding(top = Space.sm).testTag("reveal_assessment")) {
-                    Text(a.line, style = MaterialTheme.typography.titleSmall, color = if (a.fits == false) Ember else Cream)
-                    var more by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
-                    InlineActionButton(if (more) "Hide purpose details" else "Purpose details", { more = !more }, Modifier.testTag("reveal_purpose_details"))
-                    if (more) {
-                        if (request == null) Secondary(a.details, Modifier.testTag("reveal_purpose_expanded"))
-                        request?.let { r ->
-                            Column(Modifier.padding(top = Space.sm).testTag("reveal_request")) {
-                                Text(r.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                                Secondary(r.terms)
-                                EffectRow(if (r.fits) EffectKind.BUFF else EffectKind.FLAW, r.fit, r.handover)
-                                if (!r.accepted) SecondaryActionButton("Accept commission", onAccept, Modifier.padding(top = Space.xs).heightIn(min = 48.dp).testTag("reveal_accept"), enabled = enabled)
-                                // Whether this blade is reserved, from the save (`Weapon.promisedTo`, owner decision L).
-                                Secondary(r.reserved, Modifier.testTag("reveal_reserved"))
-                            }
+        // The sprite, the name and the rarity stand alone during the reveal; everything under them fades in.
+        ResultIdentity(detail, overSprite, inspect)
+        assessment?.let { a ->
+            Column(Modifier.padding(top = Space.sm).testTag("reveal_assessment")) {
+                Text(a.line, style = MaterialTheme.typography.titleSmall, color = if (a.fits == false) Ember else Cream)
+                var more by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
+                InlineActionButton(if (more) "Hide purpose details" else "Purpose details", { more = !more }, Modifier.testTag("reveal_purpose_details"))
+                if (more) {
+                    if (request == null) Secondary(a.details, Modifier.testTag("reveal_purpose_expanded"))
+                    request?.let { r ->
+                        Column(Modifier.padding(top = Space.sm).testTag("reveal_request")) {
+                            Text(r.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                            Secondary(r.terms)
+                            EffectRow(if (r.fits) EffectKind.BUFF else EffectKind.FLAW, r.fit, r.handover)
+                            if (!r.accepted) SecondaryActionButton("Accept commission", onAccept, Modifier.padding(top = Space.xs).heightIn(min = 48.dp).testTag("reveal_accept"), enabled = enabled)
+                            // Whether this blade is reserved, from the save (`Weapon.promisedTo`, owner decision L).
+                            Secondary(r.reserved, Modifier.testTag("reveal_reserved"))
                         }
                     }
                 }
             }
-        })
-        // What this forge added to the notebook; absent on a result reopened later, where "new" could no longer be told.
-        learning?.let { LearningCard(it, Modifier.padding(top = Space.sm)) }
-        Secondary(recipe, Modifier.padding(top = Space.md).graphicsLayer { alpha = shown })
-        // What the rarity word buys (`Forge.kt`: the base slots per rarity): in full the first time, then one tap away.
-        var rarity by rememberSaveable(detail.weaponId.value) { mutableStateOf(false) }
-        if (explainRarity || rarity) Secondary(RARITY_RULE, Modifier.padding(top = Space.xs).graphicsLayer { alpha = shown }.testTag("reveal_rarity"))
-        else InlineActionButton("What rarity means", { rarity = true }, Modifier.graphicsLayer { alpha = shown }.testTag("reveal_rarity_more"))
+        }
+        Column(Modifier.fillMaxWidth().padding(top = Space.sm).graphicsLayer { alpha = shown }) {
+            // The numbers worth a glance, bars where core bounds them; the price is pinned under the card.
+            lead.stats.forEach { s ->
+                if (s.max != null) StatBar(s.label, s.value, s.max, Modifier.padding(top = Space.xs), word = s.word, was = s.was)
+                else StatRow(s.label, s.word?.let { "$it (${s.value})" } ?: "${s.value}", delta = s.was?.let { StatDelta("$it", if (s.value > it) EffectKind.BUFF else EffectKind.FLAW) })
+            }
+            // Every buff and flaw by name with its sign: what each does is on the weapon's card.
+            FactLine(lead.properties, Modifier.padding(top = Space.sm).testTag("reveal_properties"), emphasis = true)
+            // A guild run: the effects it fights by, by name with the rule's diamond, as the Forge names them.
+            if (lead.rules.isNotEmpty()) FlowRow(
+                Modifier.padding(top = Space.xs).testTag("reveal_rules").semantics(mergeDescendants = true) { contentDescription = "Effects in a fight: ${lead.rules.joinToString(", ")}" },
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                lead.rules.forEach { r ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(EffectKind.NEUTRAL.sign, style = MaterialTheme.typography.labelMedium, color = EffectKind.NEUTRAL.color, modifier = Modifier.padding(end = 4.dp))
+                        Text(r, style = MaterialTheme.typography.bodyMedium, color = Cream)
+                    }
+                }
+            }
+            detail.dormant?.let { Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs)) }
+            // What this forge added to the notebook; absent on a result reopened later, where "new" could no longer be told.
+            learning?.let { LearningCard(it, Modifier.padding(top = Space.xs)) }
+            // What the rarity word buys (`Forge.kt`: the base slots per rarity): in full the first time, then on the weapon's card.
+            if (explainRarity) Secondary(RARITY_RULE, Modifier.padding(top = Space.xs).testTag("reveal_rarity"))
+        }
         HorizontalDivider(Modifier.padding(vertical = Space.sm), color = BronzeDeep)
     }
     val price: @Composable ColumnScope.() -> Unit = price@{
@@ -264,6 +305,37 @@ fun ForgeResultCard(
             // Measured before the card above it, so it has the room it needs.
             Column(Modifier.verticalScroll(rememberScrollState())) { price() }
         }
+    }
+}
+
+/**
+ * The weapon as it leaves the anvil: its art in a slot (the rarity pip on it, the signature ring round it, [overSprite]
+ * over it), its name in the rarity's colour, the rarity and kind in words, and its title, signature or legend when it
+ * has one. The ringed "i" opens its card ([inspect]).
+ */
+@Composable
+private fun ResultIdentity(detail: ItemDetail, overSprite: @Composable BoxScope.() -> Unit, inspect: (() -> TipUi)?) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+        Box(
+            Modifier.size(88.dp).background(ForgeSlot).border(1.dp, Bronze).drawBehind {
+                if (detail.signature) drawCircle(Sprites.signatureRing, radius = size.minDimension / 2 - 4.dp.toPx(), style = Stroke(2.dp.toPx()))
+            },
+            contentAlignment = Alignment.Center,
+        ) {
+            PixelImage(detail.sprite, 72.dp, description = null)
+            PixelImage(detail.badge, 24.dp, description = null, modifier = Modifier.align(Alignment.TopStart).padding(2.dp))
+            overSprite()
+        }
+        Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
+            Text(detail.name, style = MaterialTheme.typography.titleLarge, color = rarityColor(detail.rarity), modifier = Modifier.semantics { heading() })
+            Text("${Labels.rarity(detail.rarity)} · ${detail.kind}", style = MaterialTheme.typography.bodyMedium, color = CreamMuted)
+            detail.title?.let { Text("\"$it\"", style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic) }
+            if (detail.signature) Text("Signature weapon", style = MaterialTheme.typography.labelMedium, color = Gold)
+            // Why it is Legendary, and what its deeds have earned so far: said under the name, where the rarity is.
+            detail.legend?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = rarityColor(Rarity.LEGENDARY), modifier = Modifier.testTag("card_legend")) }
+            detail.deeds?.let { Text("Deeds toward Legendary: $it", style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.testTag("card_deeds")) }
+        }
+        inspect?.let { InfoButton(detail.name, it, Modifier.align(Alignment.Top), tag = "reveal_inspect") }
     }
 }
 
@@ -387,7 +459,7 @@ internal fun PaperDisclosure(title: String, open: Boolean, onToggle: () -> Unit,
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(title, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-            Text(if (open) "▴" else "▾", style = MaterialTheme.typography.titleMedium)
+            Chevron(if (open) ChevronWay.UP else ChevronWay.DOWN, tint = LocalContentColor.current)
         }
         if (open) content()
     }
@@ -431,21 +503,30 @@ private fun PaperRuleLine(top: Dp, bottom: Dp) {
     HorizontalDivider(color = PaperRule, thickness = 1.dp, modifier = Modifier.padding(top = top, bottom = bottom))
 }
 
+/**
+ * The blessing offer as choice rows, each its name and what it does in one line: a tap marks a blessing (nothing is sent),
+ * and the one gold action takes the marked one. "Decide later" keeps the offer for another day.
+ */
 @Composable
 fun BlessingDialog(s: UiState.Playing, vm: GameViewModel) {
     val content = vm.engine.content
+    var marked by rememberSaveable { mutableStateOf<String?>(null) }
+    val taking = s.state.pendingBlessingOffer.firstOrNull { it.value == marked }?.let(content::blessing)
     ForgeDialog(
         "The town offers a blessing", onDismiss = vm::dismissBlessingOffer, dismissOnClickOutside = false,
         actions = {
             InlineActionButton("Decide later", vm::dismissBlessingOffer, Modifier.testTag("blessing_later"))
+            PrimaryActionButton(taking?.let { "Take ${it.name}" } ?: "Take", { taking?.let { vm.dispatch(Command.ChooseBlessing(it.id)) } }, Modifier.testTag("blessing_take"), enabled = taking != null && !s.busy)
         },
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-            s.state.pendingBlessingOffer.forEach { id ->
-                val b = content.blessing(id)
-                BlessingOption(b.name, b.description, { vm.dispatch(Command.ChooseBlessing(id)) }, Modifier.testTag("blessing_${id.value}")) {
-                    Sprites.blessing(id)?.let { PixelImage(it, 32.dp, description = null); Spacer(Modifier.width(12.dp)) }
-                }
+        s.state.pendingBlessingOffer.forEach { id ->
+            val b = content.blessing(id)
+            ChoiceRow(
+                taking?.id == id, { marked = id.value }, Modifier.testTag("blessing_${id.value}"),
+                leading = { Sprites.blessing(id)?.let { PixelImage(it, 32.dp, description = null) } },
+            ) {
+                Text(b.name, style = MaterialTheme.typography.titleSmall)
+                Text(b.description, style = MaterialTheme.typography.bodySmall)
             }
         }
     }

@@ -39,7 +39,7 @@ class FightStandoutTest {
         assertEquals(StandoutKind.WEAPON_RULE, s.kind)
         assertEquals("bo", s.memberKey); assertEquals("bo's blade", s.weapon); assertEquals("w-bo", s.weaponId)
         // Against the whole of that kind: the party's Guard took 18 here, so all of it is Bo's.
-        assertEquals("Bo's bo's blade: Ward blocked 18 of the 18 damage the party's Guard took, in 2 activations.", s.text)
+        assertEquals("Bo's bo's blade blocked 18 of the 18 damage the party's Armor took with its Ward effect. The effect triggered 2 times.", s.text)
     }
 
     @Test fun `support competes by what the record counted, not by damage alone`() {
@@ -47,7 +47,7 @@ class FightStandoutTest {
         assertEquals("ash", FightAccounting.standout(damage)!!.memberKey)
         val support = account(member("ash", share("t_edge", "Edge", weapon = true, damage = 10)), member("bo", share("t_mend", "Mending", weapon = true, healed = 11)))
         val s = FightAccounting.standout(support)!!
-        assertEquals("bo", s.memberKey); assertTrue("healed 11 of the 11 health the party mended" in s.text, s.text)
+        assertEquals("bo", s.memberKey); assertTrue("healed 11 of the 11 health the party healed" in s.text, s.text)
     }
 
     @Test fun `a tie goes to the defender listed first, whichever way the shares are ordered`() {
@@ -61,7 +61,7 @@ class FightStandoutTest {
         val a = account(member("ash", share(null, damage = 20), share("t_chill", "Chill Edge", weapon = true, applied = 4, times = 2)))
         val s = FightAccounting.standout(a)!!
         assertEquals(StandoutKind.WEAPON_STATES, s.kind)
-        assertEquals("Ash's ash's blade: Chill Edge left 4 of the 4 stacks put on foes, in 2 activations.", s.text)
+        assertEquals("Ash's ash's blade put 4 of the party's 4 statuses on enemies with its Chill Edge effect. The effect triggered 2 times.", s.text)
     }
 
     @Test fun `a defender's own part is named for the defender and never for a blade`() {
@@ -69,14 +69,14 @@ class FightStandoutTest {
         val s = FightAccounting.standout(a)!!
         assertEquals(StandoutKind.HERO_PART, s.kind)
         assertEquals("ash", s.memberKey); assertNull(s.weapon); assertNull(s.weaponId)
-        assertEquals("Ash's own moves dealt 24 of the 24 damage the enemy took.", s.text)
+        assertEquals("Ash's own abilities dealt 24 of the 24 damage the enemies took.", s.text)
         // A kit rule of a defender who does carry a blade is still the defender's, not the blade's.
         val kit = FightAccounting.standout(account(member("bo", share("kit_wall", "Shield Wall", prevented = 9), weapon = "Oak Staff")))!!
         assertEquals(StandoutKind.HERO_PART, kit.kind); assertNull(kit.weapon)
-        assertEquals("Bo: Shield Wall blocked 9 of the 9 damage the party's Guard took.", kit.text)
+        assertEquals("Bo's Shield Wall blocked 9 of the 9 damage the party's Armor took.", kit.text)
         // A small part says so: against the damage the whole party and the shared work made, not alone.
         val small = account(member("ash", share("t_edge", "Edge", weapon = true, damage = 16)), member("bo", share(null, damage = 108)), shared = share("#shared", "Shared", damage = 69))
-        assertEquals("Ash's ash's blade: Edge dealt 16 of the 193 damage the enemy took.", FightAccounting.standout(small)!!.text)
+        assertEquals("Ash's ash's blade dealt 16 of the 193 damage the enemies took with its Edge effect.", FightAccounting.standout(small)!!.text)
     }
 
     @Test fun `work the record cannot give to one hand is never a standout`() {
@@ -109,7 +109,7 @@ class FightStandoutTest {
             if (s.kind == StandoutKind.HERO_PART) assertNull(s.weapon, f.id) else { assertTrue(s.share.weapon, f.id); assertEquals(m.weapon, s.weapon, f.id); assertEquals(m.weaponId, s.weaponId, f.id) }
             // The blade rule is the one the report's first observation names, and the line says how much of the fight it was.
             if (s.kind == StandoutKind.WEAPON_RULE) {
-                assertTrue(account.observations.first().startsWith("${s.memberName}'s ${s.weapon ?: "weapon"}: ${s.share.name} "), f.id)
+                assertTrue(account.observations.first().let { it.startsWith("${s.memberName}'s ${s.weapon ?: "weapon"} ") && "with its ${s.share.name} effect." in it }, f.id)
                 assertTrue(" of the " in s.text, "${f.id}: ${s.text}")
             }
             // Never more than the account counted for that defender.

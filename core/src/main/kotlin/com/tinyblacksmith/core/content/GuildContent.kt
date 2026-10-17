@@ -305,7 +305,7 @@ object GuildContent {
 
     /** Visitors only a guild run can have (`guild.GuildVisitors`). With the eight older ones: twelve scenes. Weights, limits and cooldowns PROPOSED. */
     val encounters = listOf(
-        EncounterDef(COWARD_RETURNS, "The Coward Returns Alone", 6.0, maxPerRun = 4, cooldownDays = 2, description = "One of the party is back without another, who is alive in enemy hands."),
+        EncounterDef(COWARD_RETURNS, "The Coward Returns Alone", 6.0, maxPerRun = 4, cooldownDays = 2, description = "A member brings news of a captured guildmate who is still alive."),
         EncounterDef(SWORD_COMPLAINT, "The Sword Files a Complaint", 2.5, maxPerRun = 3, cooldownDays = 5, description = "A weapon with opinions has one about who carries it."),
         EncounterDef(ACROSS_THE_COUNTER, "Your Best Sword Is Across the Counter", 4.0, maxPerRun = 3, cooldownDays = 3, description = "A dealer knows how to get a weapon of this forge back from the enemy who carries it."),
         EncounterDef(INSURANCE_ADJUSTER, "Insurance Adjuster from the Underworld", 1.5, maxPerRun = 2, cooldownDays = 6, description = "An adjuster will insure one loan against the enemy.", minDay = 4),
@@ -313,7 +313,7 @@ object GuildContent {
 
     /** What a blade that took the oath of `The Sword Files a Complaint` adds while its whole party is inexperienced. */
     val oathEffects = listOf(EffectDef("oath_inexperienced", "Oath of inexperienced company", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.AllAllies, Fixed(3)), Give(Stat.REGEN, Aim.AllAllies)), Limit(perFight = 1),
-        "While everyone in the party is inexperienced, every ally starts a fight with 3 Guard and 1 Regeneration.", listOf(Condition.HolderTagged(TAG_NOVICE_PARTY))))
+        "While the wielder and every ally are level 3 or lower, every ally starts each fight with 3 Armor and 1 Regeneration.", listOf(Condition.HolderTagged(TAG_NOVICE_PARTY))))
 
     private fun roster(a: List<String>, h: List<String>, e: List<String>) = mapOf(A to a, H to h, E to e)
 
@@ -325,9 +325,9 @@ object GuildContent {
             stages = listOf(StageDef(roster(listOf("ashclaw_scout", "ashclaw_scout"), listOf("hollow_shambler", "hollow_shambler"), listOf("ember_whelp", "ember_whelp")), Danger.SAFE, percent = 75,
                 goldMin = 18, goldMax = 30, materials = MaterialDraw(3, 1, 2), suppression = 1))),
         MissionDef(HUNT, MissionArchetype.HUNT, "Hunt", days = 1, fee = 15, weight = 1.2, minDay = 2,
-            description = "One of their named fighters has been seen with a bodyguard. What it carries is worth having.",
-            prep = "A weapon of the element they are weak to, and a way through whatever protects their champion.",
-            failure = "Wounds and no prize. If the whole party goes down, 1 member is captured.",
+            description = "One of their elite fighters has been seen with a single bodyguard. Defeat both for gold, materials and a setback to their faction.",
+            prep = "A weapon of the element they are weak to, and a way through whatever protects that elite.",
+            failure = "Wounds and no reward. If the whole party goes down, 1 member is captured.",
             stages = listOf(StageDef(roster(listOf("ashclaw_warchief", "ashclaw_scout"), listOf("pale_knight", "hollow_shambler"), listOf("ember_drake", "ember_whelp")), Danger.DANGEROUS, percent = 130,
                 goldMin = 55, goldMax = 85, materials = MaterialDraw(2, 3, 4, scarce = true), suppression = 4))),
         // Two days: in past the pickets, then the work itself. Its second day is the preparation's own (`SiegePrepDef.sabotage`); the one written here is for a siege without one.
@@ -342,7 +342,7 @@ object GuildContent {
         // The siege's opportunities: posted with the sabotage, gone with it. One party, one of them.
         MissionDef(STARFALL, MissionArchetype.OPPORTUNITY, "Starfall site", days = 2, fee = 0, weight = 0.0, lifeDays = 2,
             description = "Something fell from the sky inside their lines. The party has two days to reach it and carry out what still burns.",
-            prep = "A party that can win two fights in a row. The second is against one of their best fighters.",
+            prep = "A party that can win two fights in a row. The second is against one of their elite fighters.",
             failure = "No Heartfire. If the whole party goes down on either day, 1 member is captured.",
             stages = listOf(
                 StageDef(roster(listOf("ashclaw_scout", "ashclaw_thief"), listOf("hollow_shambler", "bone_warden"), listOf("ember_whelp", "ember_whelp")), Danger.DANGEROUS, percent = 90, goldMin = 15, goldMax = 25),
@@ -351,7 +351,7 @@ object GuildContent {
         MissionDef(SUPPLIER_ROAD, MissionArchetype.OPPORTUNITY, "The supplier's road", days = 2, fee = 0, weight = 0.0, lifeDays = 2,
             description = "Your supplier has to get a cart through before the siege closes the roads. The party guards it for two days.",
             prep = "A Guardian in front, and a way to stop enemies who get past the front. The cart must survive both days.",
-            failure = "If the party loses or retreats on either day, the cart is lost and the shaken supplier brings less for a few days. Nobody is captured on this road. Leaving this quest on the board costs nothing.",
+            failure = "If the party is defeated or retreats on either day, the cart is lost, and for 5 days the supplier brings 1 fewer of every limited material each morning. Nobody is captured on this road. Leaving this quest on the board costs nothing.",
             stages = listOf(
                 StageDef(roster(listOf("ashclaw_scout", "ashclaw_scout", "ashclaw_thief"), listOf("hollow_shambler", "hollow_shambler", "hollow_shambler"), listOf("ember_whelp", "ember_whelp", "ember_whelp")), Danger.SAFE, percent = 80,
                     objective = ObjectiveKind.HOLD, rounds = 4, protectUnitId = "escort_cart", goldMin = 15, goldMax = 25),
@@ -361,7 +361,7 @@ object GuildContent {
         MissionDef(DEEP_ROAD, MissionArchetype.OPPORTUNITY, "The deep road", days = 2, fee = 0, weight = 0.0, lifeDays = 4,
             description = "The caravan master will bring rare stock down the deep road if her first train gets through. Two days beside it.",
             prep = "A Guardian in front and something for whoever goes past the front. The train has to stand both days.",
-            failure = "The train turns back and the road stays shut. The job goes back on the board, and the road opens anyway after the second siege. Nobody is taken on this road.",
+            failure = "The caravan turns back and the deep road stays shut. The quest returns to the board, and the second siege opens the road anyway. Nobody is captured on this road.",
             stages = listOf(
                 StageDef(roster(listOf("ashclaw_scout", "ashclaw_scout", "ashclaw_thief"), listOf("hollow_shambler", "hollow_shambler", "hollow_shambler"), listOf("ember_whelp", "ember_whelp", "ember_whelp")), Danger.SAFE, percent = 85,
                     objective = ObjectiveKind.HOLD, rounds = 4, protectUnitId = "escort_cart", goldMin = 15, goldMax = 25),
@@ -387,8 +387,8 @@ object GuildContent {
                     goldMin = 60, goldMax = 90, materials = MaterialDraw(2, 4, 6, scarce = true), relicOffer = true, heartfire = 1))),
         // Posted only for a real captive or a real blade; never drawn for the board.
         MissionDef(RESCUE, MissionArchetype.RESCUE, "Rescue", days = 2, fee = 0, weight = 0.0, lifeDays = 9, watchUnitId = "town_watch",
-            description = "One of your members is held by the enemy. On the first day the party breaks in, on the second it brings them out. The watch sends a guard for every empty place in the party.",
-            prep = "Guard and healing. On the way out, the captive must not go down. One member with two guards of the watch can do it.",
+            description = "One of your members has been captured. On the first day the party breaks in, on the second it brings the captive out. The town sends a guard for every empty place in the party.",
+            prep = "Armor and healing. On the way out, the captive must not go down. One member with two town guards can do it.",
             failure = "The captive stays where they are and their deadline does not change. The party comes home hurt. Nobody else is captured.",
             stages = listOf(
                 StageDef(roster(listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_scout"), listOf("bone_warden", "hollow_shambler", "hollow_shambler"), listOf("cinder_knight", "ember_whelp", "ember_whelp")), Danger.SAFE, percent = 60),
@@ -396,13 +396,13 @@ object GuildContent {
                     objective = ObjectiveKind.HOLD, rounds = 3, protectUnitId = "captive"))),
         MissionDef(RECOVERY, MissionArchetype.RECOVERY, "Recovery", days = 1, fee = 10, weight = 0.0, lifeDays = 9,
             description = "One of their fighters carries a weapon from your forge. Defeat that fighter to win it back.",
-            prep = "Prepare as for a hunt. Your own weapon makes its carrier stronger. Winning it back also brings Heartfire.",
+            prep = "Prepare as for a hunt. The enemy who carries your weapon is stronger with it and uses its effects. Winning it back also brings 1 Heartfire.",
             failure = "The weapon stays with them, and you still know where it is. If the whole party goes down, 1 member is captured.",
             stages = listOf(StageDef(roster(listOf("ashclaw_warchief", "ashclaw_brute"), listOf("pale_knight", "bone_warden"), listOf("ember_drake", "cinder_knight")), Danger.DANGEROUS, percent = 85, goldMin = 20, goldMax = 30, suppression = 4, heartfire = 1))),
-        MissionDef(WALL_WORK, MissionArchetype.EMERGENCY, "Work on the wall", days = 1, fee = 0, weight = 0.0,
-            description = "No fight: a day of timber and stone on the forge's own wall.",
-            prep = "Any member who can stand. It always succeeds.",
-            failure = "Nothing can go wrong, and the gain is small: a little wall repair and 1 more militia.",
+        MissionDef(WALL_WORK, MissionArchetype.EMERGENCY, "Restore the forge", days = 1, fee = 0, weight = 0.0,
+            description = "No fight. The members spend the day restoring the forge.",
+            prep = "Any member who can stand.",
+            failure = "It always succeeds: up to 5 forge health and 1 militia. The party is away tonight and cannot defend a siege.",
             stages = listOf(StageDef(emptyMap(), Danger.SAFE, integrity = 5, militia = 1))),
     )
 
@@ -416,44 +416,44 @@ object GuildContent {
         EffectDef("trait_$id", name, trigger, actions, limit, description, conditions)
 
     val traits = listOf(
-        GuildTraitDef("protective", "Protective", false, "When an enemy's hit leaves a party member (this one included) at 50% health or less, gives that member 3 Guard. Once per round.",
-            listOf(t("protective", "Protective", Trigger(EventKind.DAMAGE, Who.ALLY_TARGET), listOf(Guard(Aim.EventTarget, Fixed(3))), Limit(perRound = 1), "When an enemy's hit leaves a party member (this one included) at 50% health or less, gives that member 3 Guard. Once per round.", listOf(Condition.SourceIsFoe, Condition.TargetHealthAtMost(50))))),
-        GuildTraitDef("impatient", "Impatient", false, "At the start of the first round, before anyone acts, deals 65% of their strike damage to the front enemy, or to a marked enemy if there is one. Once per fight.",
-            listOf(t("impatient", "Impatient", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Damage(Aim.Foe, Strike(65))), Limit(perFight = 1), "At the start of the first round, before anyone acts, deals 65% of their strike damage to the front enemy, or to a marked enemy if there is one. Once per fight."))),
-        GuildTraitDef("cowardly", "Cowardly", false, "Keeps hold of the loot on the way out: when the party retreats with this member in it, it still brings home 34% of that stage's gold. Starts every fight with 4 Guard.",
+        GuildTraitDef("protective", "Protective", false, "When an enemy's hit leaves a party member (this one included) at 50% health or less, gives that member 3 Armor. Once per round.",
+            listOf(t("protective", "Protective", Trigger(EventKind.DAMAGE, Who.ALLY_TARGET), listOf(Guard(Aim.EventTarget, Fixed(3))), Limit(perRound = 1), "When an enemy's hit leaves a party member (this one included) at 50% health or less, gives that member 3 Armor. Once per round.", listOf(Condition.SourceIsFoe, Condition.TargetHealthAtMost(50))))),
+        GuildTraitDef("impatient", "Impatient", false, "At the start of the first round, before anyone acts, this member deals 65% of their Attack to the front enemy, or to a marked enemy if there is one. Once per fight.",
+            listOf(t("impatient", "Impatient", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Damage(Aim.Foe, Strike(65))), Limit(perFight = 1), "At the start of the first round, before anyone acts, this member deals 65% of their Attack to the front enemy, or to a marked enemy if there is one. Once per fight."))),
+        GuildTraitDef("cowardly", "Cowardly", false, "Starts every fight with 4 Armor. When the party retreats with this member in it, the party still brings home 34% of that stage's gold.",
             startStats = mapOf(Stat.GUARD to 4), retreatGoldPercent = 34),
-        GuildTraitDef("greedy", "Greedy", false, "Finds more: +20% gold from every stage the party wins with this member in it. Keeps an extra 5% of the quest gold as their own share.", winGoldPercent = 20, shareDelta = 5),
-        GuildTraitDef("methodical", "Methodical", false, "When this member's direct hit consumes a Mark, deals 3 more damage to that enemy, on top of the Mark's own bonus. Once per round.",
-            listOf(t("methodical", "Methodical", Trigger(EventKind.STAT_SPENT, Who.SELF_SOURCE, Stat.MARK), listOf(Damage(Aim.EventTarget, Fixed(3))), Limit(perRound = 1), "When this member's direct hit consumes a Mark, deals 3 more damage to that enemy, on top of the Mark's own bonus. Once per round."))),
-        GuildTraitDef("loyal_guild", "Loyal", false, "When an enemy downs an ally, deals this member's full strike damage to that enemy. Once per fight.",
-            listOf(t("loyal", "Loyal", Trigger(EventKind.DOWNED, Who.ALLY_TARGET), listOf(Damage(Aim.EventSource, Strike())), Limit(perFight = 1), "When an enemy downs an ally, deals this member's full strike damage to that enemy. Once per fight.", listOf(Condition.SourceIsFoe)))),
-        GuildTraitDef("storm_touched", "Storm-Touched", true, "Starts every fight with 1 Charge and can use Charge with any weapon: at 3 Charge, spends all of it to deal 8 storm damage. Once per round.",
+        GuildTraitDef("greedy", "Gold-Hungry", false, "+20% gold from every stage the party wins with this member in it. This member keeps an extra 5% of the quest gold as their own share.", winGoldPercent = 20, shareDelta = 5),
+        GuildTraitDef("methodical", "Methodical", false, "When this member's hit uses up a Mark, this member deals 3 more damage to that enemy, on top of the Mark's own bonus. Once per round.",
+            listOf(t("methodical", "Methodical", Trigger(EventKind.STAT_SPENT, Who.SELF_SOURCE, Stat.MARK), listOf(Damage(Aim.EventTarget, Fixed(3))), Limit(perRound = 1), "When this member's hit uses up a Mark, this member deals 3 more damage to that enemy, on top of the Mark's own bonus. Once per round."))),
+        GuildTraitDef("loyal_guild", "Avenger", false, "When an enemy downs an ally, this member deals 100% of their Attack to that enemy. Once per fight.",
+            listOf(t("loyal", "Avenger", Trigger(EventKind.DOWNED, Who.ALLY_TARGET), listOf(Damage(Aim.EventSource, Strike())), Limit(perFight = 1), "When an enemy downs an ally, this member deals 100% of their Attack to that enemy. Once per fight.", listOf(Condition.SourceIsFoe)))),
+        GuildTraitDef("storm_touched", "Storm-Touched", true, "Starts every fight with 1 Charge and can Discharge with any weapon: at 3 or more Charge, this member spends all of it to deal 8 storm damage. Once per round.",
             listOf(CombatContent.CHARGE_BURST), tags = setOf(CombatContent.TAG_CHARGE), startStats = mapOf(Stat.CHARGE to 1)),
-        GuildTraitDef("pain_collector", "Pain Collector", true, "When an enemy's direct hit damages this member, they gain 2 Thorns. Once per round. The next enemy whose attack hits them takes damage equal to their Thorns.",
-            listOf(t("pain_collector", "Pain Collector", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Give(Stat.THORNS, Aim.Self, Fixed(2))), Limit(perRound = 1), "When an enemy's direct hit damages this member, they gain 2 Thorns. Once per round.", listOf(Condition.SourceIsFoe, Condition.NotTick)))),
-        GuildTraitDef("rust_savant", "Rust Savant", true, "When a party member's weapon cracks (this member's included), deals 6 damage to the front enemy, or to a marked enemy if there is one. Twice per fight.",
-            listOf(t("rust_savant", "Rust Savant", Trigger(EventKind.FRACTURED, Who.ALLY_SOURCE), listOf(Damage(Aim.Foe, Fixed(6))), Limit(perFight = 2), "When a party member's weapon cracks (this member's included), deals 6 damage to the front enemy, or to a marked enemy if there is one. Twice per fight."))),
-        GuildTraitDef("overhealer", "Overhealer", true, "When this member's healing move heals an ally past full health, that ally gains 1 Regeneration. Once per round.",
-            listOf(t("overhealer", "Overhealer", Trigger(EventKind.OVERHEAL, Who.SELF_SOURCE), listOf(Give(Stat.REGEN, Aim.EventTarget)), Limit(perRound = 1), "When this member's healing move heals an ally past full health, that ally gains 1 Regeneration. Once per round.", listOf(Condition.FromAction)))),
+        GuildTraitDef("pain_collector", "Pain Collector", true, "When an enemy's hit damages this member, this member gains 2 Thorns. Once per round. The next enemy whose attack hits them takes damage equal to their Thorns.",
+            listOf(t("pain_collector", "Pain Collector", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Give(Stat.THORNS, Aim.Self, Fixed(2))), Limit(perRound = 1), "When an enemy's hit damages this member, this member gains 2 Thorns. Once per round.", listOf(Condition.SourceIsFoe, Condition.NotTick)))),
+        GuildTraitDef("rust_savant", "Rust Savant", true, "When a party member's weapon cracks (this member's included), this member deals 6 damage to the front enemy, or to a marked enemy if there is one. Twice per fight.",
+            listOf(t("rust_savant", "Rust Savant", Trigger(EventKind.FRACTURED, Who.ALLY_SOURCE), listOf(Damage(Aim.Foe, Fixed(6))), Limit(perFight = 2), "When a party member's weapon cracks (this member's included), this member deals 6 damage to the front enemy, or to a marked enemy if there is one. Twice per fight."))),
+        GuildTraitDef("overhealer", "Overhealer", true, "When this member's healing ability heals an ally past full health, that ally gains 1 Regeneration. Once per round.",
+            listOf(t("overhealer", "Overhealer", Trigger(EventKind.OVERHEAL, Who.SELF_SOURCE), listOf(Give(Stat.REGEN, Aim.EventTarget)), Limit(perRound = 1), "When this member's healing ability heals an ally past full health, that ally gains 1 Regeneration. Once per round.", listOf(Condition.FromAction)))),
         GuildTraitDef("second_wind", "Second Wind", true, "The first time damage leaves this member at 34% health or less, they heal 10. Once per fight. It does not save a member who is already down.",
             listOf(t("second_wind", "Second Wind", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Heal(Aim.Self, Fixed(10))), Limit(perFight = 1), "The first time damage leaves this member at 34% health or less, they heal 10. Once per fight.", listOf(Condition.HolderHealthAtMost(34))))),
-        GuildTraitDef("oathkeeper", "Oathkeeper", true, "While carrying a common or uncommon weapon, or no weapon, gains 2 Guard at the start of every round.",
-            listOf(t("oathkeeper", "Oathkeeper", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(2))), Limit(perRound = 1), "While carrying a common or uncommon weapon, or no weapon, gains 2 Guard at the start of every round.", listOf(Condition.HolderTagged(CombatContent.TAG_COMMON_GEAR))))),
+        GuildTraitDef("oathkeeper", "Oathkeeper", true, "While carrying a common or uncommon weapon, or no weapon, gains 2 Armor at the start of every round.",
+            listOf(t("oathkeeper", "Oathkeeper", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(2))), Limit(perRound = 1), "While carrying a common or uncommon weapon, or no weapon, gains 2 Armor at the start of every round.", listOf(Condition.HolderTagged(CombatContent.TAG_COMMON_GEAR))))),
     )
 
     val charters = listOf(
         CharterDef(TOWNS_LAST_HOPE, "Town's Last Hope", "The council signs your charter because nobody else will hold the wall.",
-            advantage = "A Guardian and a Warden from the first day, 3 more militia, and 1 Binding Salt.",
+            advantage = "A Guardian and a Warden from the first day, a Battlemage for hire on the first morning at half the recruitment fee, 3 more militia, and 1 Binding Salt.",
             constraint = "The council's levy: you start with 40 gold less.",
-            play = "Protect, strike back, rebuild.",
+            play = "Protect, hit back, rebuild.",
             startClasses = listOf(LaunchContent.GUARDIAN, LaunchContent.WARDEN), offeredClass = LaunchContent.BATTLEMAGE, goldDelta = -40, militiaDelta = 3, materials = mapOf(LaunchContent.BINDING_SALT to 1)),
         CharterDef(LICENSED_BAD_IDEAS, "Licensed Bad Ideas", "A charter for experiments, signed by somebody who did not read it.",
-            advantage = "A Duelist and a Battlemage from the first day, a Guardian and a Warden ready to sign on the first morning, 1 Runestone Shard, 1 Void Ink and 2 Silver.",
-            constraint = "You start with 50 gold less, and dangerous quests are posted from the first day.",
+            advantage = "A Duelist and a Battlemage from the first day, a Guardian for hire on the first morning at half the recruitment fee and a Warden at the full fee, 1 Runestone Shard, 1 Void Ink and 2 Silver.",
+            constraint = "You start with 50 gold less, and every kind of quest can be posted from the first day, the dangerous ones included.",
             play = "Invent a build and take the risk it asks for.",
             startClasses = listOf(LaunchContent.DUELIST, LaunchContent.BATTLEMAGE), offeredClass = LaunchContent.GUARDIAN, alsoOffered = LaunchContent.WARDEN, goldDelta = -50, materials = mapOf(LaunchContent.RUNESTONE_SHARD to 1, LaunchContent.VOID_INK to 1, LaunchContent.SILVER to 2), earlyDanger = true),
         CharterDef(HONEST_BUSINESS, "Honest Business, Mostly", "A trading charter with a clause about adventurers that nobody mentions.",
-            advantage = "A Ranger and a Warden from the first day, 1 more quest on the board every day, and +2 reputation: a name that is already known.",
+            advantage = "A Ranger and a Warden from the first day, a Guardian for hire on the first morning at half the recruitment fee, 1 more quest on the board every day, and +2 reputation: a name that is already known.",
             constraint = "The backers take their part: the forge keeps 80% of the quest gold left after the members' shares.",
             play = "Fund specialists through trade and commissions.",
             startClasses = listOf(LaunchContent.RANGER, LaunchContent.WARDEN), offeredClass = LaunchContent.GUARDIAN, reputationDelta = 2, smithGoldPercent = 80, extraOffers = 1),
@@ -461,17 +461,17 @@ object GuildContent {
 
     val specialities = listOf(
         // Three contracts won.
-        SpecialityDef("vanguard", "Vanguard", "veteran", "+10% health. -5% strike damage.", healthPercent = 110, strikePercent = 95),
-        SpecialityDef("striker", "Striker", "veteran", "+10% strike damage. -10% health.", healthPercent = 90, strikePercent = 110),
+        SpecialityDef("vanguard", "Vanguard", "veteran", "+10% Health. -5% Attack.", healthPercent = 110, strikePercent = 95),
+        SpecialityDef("striker", "Striker", "veteran", "+10% Attack. -10% Health.", healthPercent = 90, strikePercent = 110),
         // Went down twice and came back.
-        SpecialityDef("unbroken", "Unbroken", "survivor", "The first time damage leaves this member at 25% health or less, they gain 8 Guard. Once per fight.",
-            listOf(EffectDef("branch_unbroken", "Unbroken", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Guard(Aim.Self, Fixed(8))), Limit(perFight = 1), "The first time damage leaves this member at 25% health or less, they gain 8 Guard. Once per fight.", listOf(Condition.HolderHealthAtMost(25))))),
-        SpecialityDef("careful", "Careful hand", "survivor", "+20% support (the Guard and healing their own move gives). -5% strike damage.", supportPercent = 120, strikePercent = 95),
+        SpecialityDef("unbroken", "Unbroken", "survivor", "The first time damage leaves this member at 25% health or less, they gain 8 Armor. Once per fight.",
+            listOf(EffectDef("branch_unbroken", "Unbroken", Trigger(EventKind.DAMAGE, Who.SELF_TARGET), listOf(Guard(Aim.Self, Fixed(8))), Limit(perFight = 1), "The first time damage leaves this member at 25% health or less, they gain 8 Armor. Once per fight.", listOf(Condition.HolderHealthAtMost(25))))),
+        SpecialityDef("careful", "Careful hand", "survivor", "+20% Support (the Armor and healing their own ability gives). -5% Attack.", supportPercent = 120, strikePercent = 95),
         // Swore to hold the wall, and held it.
-        SpecialityDef("wallwarden", "Wallwarden", "defender", "Starts every fight with 5 Guard.",
-            listOf(EffectDef("branch_wallwarden", "Wallwarden", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(5))), Limit(perFight = 1), "Starts every fight with 5 Guard."))),
-        SpecialityDef("rallier", "Rallier", "defender", "At the start of every fight, gives every ally 2 Guard.",
-            listOf(EffectDef("branch_rallier", "Rallier", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.AllAllies, Fixed(2))), Limit(perFight = 1), "At the start of every fight, gives every ally 2 Guard."))),
+        SpecialityDef("wallwarden", "Wallwarden", "defender", "Starts every fight with 5 Armor.",
+            listOf(EffectDef("branch_wallwarden", "Wallwarden", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(5))), Limit(perFight = 1), "Starts every fight with 5 Armor."))),
+        SpecialityDef("rallier", "Rallier", "defender", "At the start of every fight, this member gives every ally 2 Armor.",
+            listOf(EffectDef("branch_rallier", "Rallier", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.AllAllies, Fixed(2))), Limit(perFight = 1), "At the start of every fight, this member gives every ally 2 Armor."))),
     )
 
     val laws = listOf(
@@ -482,15 +482,15 @@ object GuildContent {
     )
 
     val ranks = listOf(
-        GuildRankDef(1, "Chartered Company", "Every enemy on a quest and at the wall has +15% health, strike damage and support.", enemyPercent = 15, legacyPoints = 2),
-        GuildRankDef(2, "Wardens of the March", "Every enemy on a quest and at the wall has +30% health, strike damage and support, and 1 more enemy comes to every siege.", enemyPercent = 30, extraSiegeUnit = true, legacyPoints = 4),
-        GuildRankDef(3, "The Last Company", "Every enemy on a quest and at the wall has +45% health, strike damage and support, 1 more enemy comes to every siege, and quests stay on the board 1 day less.", enemyPercent = 45, extraSiegeUnit = true, offerLifeDelta = -1, legacyPoints = 6),
+        GuildRankDef(1, "Chartered Company", "Every enemy on quests and at sieges has +15% Health, Attack and Support.", enemyPercent = 15, legacyPoints = 2),
+        GuildRankDef(2, "Wardens of the March", "Every enemy on quests and at sieges has +30% Health, Attack and Support, and 1 more enemy comes to every siege.", enemyPercent = 30, extraSiegeUnit = true, legacyPoints = 4),
+        GuildRankDef(3, "The Last Company", "Every enemy on quests and at sieges has +45% Health, Attack and Support, 1 more enemy comes to every siege, and quest offers stay on the board 1 day less.", enemyPercent = 45, extraSiegeUnit = true, offerLifeDelta = -1, legacyPoints = 6),
     )
 
     val bondEffects = mapOf(
-        "comrades" to listOf(EffectDef("bond_comrades", "Comrades", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Give(Stat.MARK, Aim.PriorityFoe)), Limit(perFight = 1), "When fighting beside a comrade, puts a Mark on the priority target at the start of the fight: the summoner first, else the leader, else the enemy with the most health.")),
+        "comrades" to listOf(EffectDef("bond_comrades", "Comrades", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Give(Stat.MARK, Aim.PriorityFoe)), Limit(perFight = 1), "When fighting beside a comrade, this member puts a Mark on the priority target at the start of the fight. The priority target is an enemy summoner first, then the enemy leader, then the enemy with the most Health. Once per fight.")),
         "protector" to listOf(EffectDef("bond_protector", "Protector", Trigger(EventKind.DAMAGE, Who.ALLY_TARGET), listOf(Guard(Aim.EventTarget, Fixed(4))), Limit(perFight = 1),
-            "When fighting beside the member they rescued, gives 4 Guard to the first party member an enemy's hit leaves at 50% health or less. Once per fight.", listOf(Condition.SourceIsFoe, Condition.TargetHealthAtMost(50)))),
+            "When fighting beside the member they rescued, this member gives 4 Armor to the first party member an enemy's hit leaves at 50% health or less. Once per fight.", listOf(Condition.SourceIsFoe, Condition.TargetHealthAtMost(50)))),
     )
 
     private val SWORD = LaunchContent.SWORD
@@ -506,39 +506,39 @@ object GuildContent {
      * the package (measured, docs/run_variety_evidence/REPORT.md). Names and numbers PROPOSED.
      */
     val openings = listOf(
-        OpeningDef("overflow", "The Overflowing Cup", "Overheal", "Healing past full health is not wasted. It becomes Guard, and the Overhealer's also gives Regeneration.",
-            plan = "Loan the Warden a staff for more healing. Keep the front topped up and let the Basin turn the rest into Guard. Verdant Sap on the front's weapon feeds it.",
+        OpeningDef("overflow", "The Overflowing Cup", "Overheal", "Healing past full health is not wasted. It becomes Armor, and the Overhealer's also gives Regeneration.",
+            plan = "Loan the Warden a staff for more healing. Keep the front topped up and let the Basin turn the rest into Armor. Verdant Sap on the front's weapon feeds it.",
             drawback = "40 gold less to start with.", charters = setOf(TOWNS_LAST_HOPE, HONEST_BUSINESS), traits = mapOf(W to "overhealer"), relicId = CombatContent.OVERFLOW_BASIN,
             materials = mapOf(LaunchContent.VERDANT_SAP to 2), goldDelta = -40),
-        OpeningDef("salvage", "Break It on Purpose", "Breakage", "When a party member's weapon cracks, the Salvage Bell gives every ally Guard and the Rust Savant strikes.",
-            plan = "Loan the Brittle sword to whoever stands in front. When their Guard breaks, the sword cracks, the Bell gives Guard and the Rust Savant strikes. Repair it after every fight. A Runestone Shard makes a second answer.",
-            drawback = "The sword is Brittle and has to be mended after every fight. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS), traits = mapOf(W to "rust_savant", B to "rust_savant"),
+        OpeningDef("salvage", "Break It on Purpose", "Breakage", "When a party member's weapon cracks, the Salvage Bell gives every ally Armor and the Rust Savant member deals damage.",
+            plan = "Loan the Brittle sword to whoever stands in front. When their Armor breaks, the sword cracks, the Bell gives Armor and the Rust Savant member deals damage. Repair it after every fight. A Runestone Shard makes a second answer.",
+            drawback = "The sword is Brittle and has to be repaired after every fight. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS), traits = mapOf(W to "rust_savant", B to "rust_savant"),
             relicId = CombatContent.SALVAGE_BELL, materials = mapOf(LaunchContent.RUNESTONE_SHARD to 1, LaunchContent.IRON to 2), weapon = StartWeaponDef(SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BRITTLE, 45), integrityDelta = -10,
             costNote = "The Brittle sword needs repair after every fight"),
-        OpeningDef("stormwell", "The Stormwell", "Storm and Charge", "One member stores Charge with any weapon and lets it go as a burst. The Ledger turns each burst into Regeneration.",
-            plan = "Forge a Stormglass weapon for the Storm-Touched member. With Binding Salt in an Advanced forge, healing them stores Charge too. Three Charge is one burst.",
+        OpeningDef("stormwell", "The Stormwell", "Storm and Charge", "One member stores Charge with any weapon and spends it in a Discharge. The Ledger turns each Discharge into Regeneration.",
+            plan = "Forge a Stormglass weapon for the Storm-Touched member. With Binding Salt in an Advanced forge, healing them stores Charge too. Three Charge make one Discharge.",
             drawback = "40 gold less to start with.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS), traits = mapOf(G to "storm_touched", D to "storm_touched"), relicId = CombatContent.STORM_LEDGER,
             materials = mapOf(LaunchContent.STORMGLASS to 1, LaunchContent.BINDING_SALT to 1), goldDelta = -40),
-        OpeningDef("furnace", "Borrowed Fire", "Burn into Guard", "Put Burn on the enemies, then take it back off them. Each time, the Furnace Lung gives every ally Guard.",
-            plan = "Forge fire weapons from Ember Resin. Put the Void Ink into an Advanced forge: that weapon takes Burn off the enemy and the Lung gives everybody Guard for it.",
+        OpeningDef("furnace", "Borrowed Fire", "Burn into Armor", "Put Burn on the enemies, then take it back off them. Each time, the Furnace Lung gives every ally Armor.",
+            plan = "Forge fire weapons from Ember Resin. Put the Void Ink into an Advanced forge: that weapon takes Burn off the enemy and the Lung gives everybody Armor for it.",
             drawback = "40 gold less to start with.", charters = setOf(LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(B to "second_wind", W to "protective"), relicId = CombatContent.FURNACE_LUNG,
             materials = mapOf(LaunchContent.VOID_INK to 1, LaunchContent.EMBER_RESIN to 2), goldDelta = -40),
         OpeningDef("marked", "The Marked Card", "Marks and burst", "Mark the most important enemy, and make every Mark the Methodical member consumes hit harder.",
-            plan = "The Methodical member wants marked targets: a Sun Ash weapon marks on its own hit, and the first enemy to fall rises to mark for you. Go for the leader first.",
+            plan = "The Methodical member wants marked targets: a Sun Ash weapon marks on its own hit, and when the first enemy is defeated, a spectral helper joins the party. Go for the leader first.",
             drawback = "50 gold less to start with.", charters = setOf(HONEST_BUSINESS, LICENSED_BAD_IDEAS), traits = mapOf(R to "methodical", D to "methodical"), relicId = CombatContent.BONE_MUSIC_BOX,
             materials = mapOf(LaunchContent.SUN_ASH to 1, LaunchContent.GRAVE_DUST to 1), goldDelta = -50),
-        OpeningDef("blood_price", "Paid in Blood", "Blood price", "The Bloodbound axe spends its wielder's health to strike for twice as much. Heal them afterwards and they gain Guard too.",
-            plan = "Loan the Bloodbound axe to somebody sturdy and keep a healer behind them. The Receipt turns that healing into Guard. Never send it out without the healer.",
+        OpeningDef("blood_price", "Paid in Blood", "Blood price", "The Bloodbound axe spends its wielder's health to deal twice as much damage. Heal them afterwards and they gain Armor too.",
+            plan = "Loan the Bloodbound axe to somebody sturdy and keep a healer behind them. The Receipt turns that healing into Armor. Never send it out without the healer.",
             drawback = "The axe takes health from whoever carries it. The forge starts with 10 less health.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(G to "second_wind", R to "second_wind", D to "second_wind"), relicId = CombatContent.BLOOD_RECEIPT,
             weapon = StartWeaponDef(LaunchContent.AXE, LaunchContent.IRON, LaunchContent.EMBER_RESIN, LaunchContent.BLOODBOUND, 48), integrityDelta = -10,
             costNote = "The axe drains whoever carries it"),
-        OpeningDef("plain_oath", "The Plain Oath", "Common steel", "Plain weapons, sworn to. Whoever carries a common or uncommon one strikes harder and raises Guard.",
-            plan = "Forge iron and bronze for the party on purpose and keep the good metal for the shelf. A rare or finer weapon in a member's hands ends the oath for them.",
-            drawback = "60 gold less to start with. Fine weapons are wasted on the party.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(G to "oathkeeper", D to "oathkeeper", R to "oathkeeper"),
+        OpeningDef("plain_oath", "The Plain Oath", "Common steel", "Plain weapons, carried on purpose. A member with a Common or Uncommon weapon, or none, deals extra damage and gains Armor.",
+            plan = "Forge iron and bronze for the party on purpose and keep the good metal for the shelf. A Rare or better weapon in a member's hands ends the oath for them.",
+            drawback = "60 gold less to start with. A member who carries a Rare or better weapon gets nothing from the Blunt Oath or the Oathkeeper trait.", charters = setOf(TOWNS_LAST_HOPE, LICENSED_BAD_IDEAS, HONEST_BUSINESS), traits = mapOf(G to "oathkeeper", D to "oathkeeper", R to "oathkeeper"),
             relicId = CombatContent.BLUNT_OATH, materials = mapOf(LaunchContent.IRON to 3), goldDelta = -60,
-            costNote = "A rare or finer weapon ends a member's oath"),
+            costNote = "A Rare or better weapon ends a member's oath"),
         OpeningDef("careful_books", "Careful Books", "Take it and run", "A party that knows when to leave, and still gets paid: a retreat brings home part of the stage's gold.",
-            plan = "Take quests a step above your strength with the Cautious retreat rule. A retreat still pays. Spend what it brings on the wall.",
+            plan = "Take quests a step above your strength with the Cautious retreat rule. A retreat still brings home part of the stage's gold. Spend it on the defenders.",
             drawback = "The forge starts with 15 less health.", charters = setOf(HONEST_BUSINESS, LICENSED_BAD_IDEAS), traits = mapOf(R to "cowardly", D to "cowardly"), relicId = CombatContent.COWARDS_MEDAL,
             materials = mapOf(LaunchContent.BRONZE to 2), integrityDelta = -15),
     )
@@ -548,36 +548,36 @@ object GuildContent {
 
     /** Six preparations, two a faction. Each changes what the best wall is, and each has answers besides spoiling it. */
     val preparations = listOf(
-        SiegePrepDef("shield_wall", A, "Shield wall", "The raiders come behind shields. Every one of them starts with 5 Guard.",
-            counters = listOf("A spear's hit still deals half of the damage their Guard blocks.", "Bleed damage ignores Guard.", "They are weak to Frost: Frost weapons deal 30% more damage and break the Guard faster."),
+        SiegePrepDef("shield_wall", A, "Shield wall", "The raiders come behind shields. Every one of them starts with 5 Armor.",
+            counters = listOf("A spear's hit still deals half of the damage their Armor blocks.", "Bleed damage ignores Armor.", "They are weak to Frost: Frost weapons deal 30% more damage and break the Armor faster."),
             sabotageBrief = "Burn the shield carts and hold the fire until they are ash.", sabotage = spoil(listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_scout"), ObjectiveKind.HOLD, rounds = 4), enemyStats = mapOf(Stat.GUARD to 5)),
         SiegePrepDef("cutpurses", A, "Knives for the back", "This time all their ordinary fighters are thieves. Each one attacks the last defender in the line, past the front.",
-            counters = listOf("Put your sturdiest defender last in the line.", "Guard for the whole line also protects the back.", "A bow's second arrow hits the last enemy in their line from the first round."),
+            counters = listOf("Reserve all 3 places for the wall and put your sturdiest member third. Reserved members stand in the order you reserve them.", "Armor for the whole line also protects the back.", "A bow's second arrow hits the last enemy in their line from the first round."),
             sabotageBrief = "Find the thieves in their camp before they find your wall.", sabotage = spoil(listOf("ashclaw_thief", "ashclaw_thief", "ashclaw_thief"), ObjectiveKind.DEFEAT), gruntUnit = "ashclaw_thief"),
-        SiegePrepDef("gravecaller", H, "A gravecaller behind the line", "A gravecaller marches with them. Every round it heals the weakest enemy, and every third round it raises a shambler.",
-            counters = listOf("A Mark on the gravecaller makes the party attack it first.", "A bow or a storm weapon reaches the back of their line.", "Win before the third round, when it raises its first shambler."),
+        SiegePrepDef("gravecaller", H, "A gravecaller behind the line", "A gravecaller marches with them. Every round it heals the weakest enemy, and every third round it summons a shambler.",
+            counters = listOf("A Mark on the gravecaller makes the party attack it first.", "A bow or a storm weapon reaches the back of their line.", "Win before the third round, when it summons its first shambler."),
             sabotageBrief = "Kill the gravecaller before it marches.", sabotage = spoil(listOf("gravecaller", "bone_warden", "hollow_shambler"), ObjectiveKind.DEFEAT), addUnit = "gravecaller"),
         SiegePrepDef("grave_mist", H, "Grave mist", "A mist comes in ahead of them. Every defender starts with 2 Bleed and every enemy with 1 Regeneration.",
             counters = listOf("A healer on the wall outlasts it.", "Verdant weapons give their wielders Regeneration.", "They are weak to Sun: Sun weapons end the fight before the mist matters."),
             sabotageBrief = "Break the censers and hold the hollow until the mist thins.", sabotage = spoil(listOf("bone_warden", "hollow_shambler", "hollow_shambler"), ObjectiveKind.HOLD, rounds = 5), enemyStats = mapOf(Stat.REGEN to 1), partyStats = mapOf(Stat.BLEED to 2)),
         SiegePrepDef("second_drake", E, "A second drake", "They bring a second drake. In the third round, every defender is hit by fire breath twice.",
-            counters = listOf("A drake with Chill deals 35% less damage with its next attack, its breath included.", "Guard for the whole line before the third round.", "Defeat one drake within the first 2 rounds."),
+            counters = listOf("A drake with Chill deals 35% less damage with its next attack, its breath included.", "Armor for the whole line before the third round.", "Defeat one drake within the first 2 rounds."),
             sabotageBrief = "Kill the drake in its pen.", sabotage = spoil(listOf("ember_drake", "ember_whelp"), ObjectiveKind.DEFEAT, percent = 95), addUnit = "ember_drake"),
         SiegePrepDef("banked_fires", E, "Banked fires", "They have fed the fires for days. Every defender starts with 2 Burn and every enemy with 2 Regeneration.",
-            counters = listOf("A healer on the wall, or Verdant weapons.", "Frost hits hard enough to outpace what they mend.", "A weapon made with Void Ink takes their own fire for your Guard."),
+            counters = listOf("A healer on the wall, or Verdant weapons.", "Frost hits hard enough to outpace what they heal.", "A weapon made with Void Ink takes their own fire for your Armor."),
             sabotageBrief = "Douse the banked fires and hold the pits until they are cold.", sabotage = spoil(listOf("cinder_knight", "ember_whelp", "ember_whelp"), ObjectiveKind.HOLD, rounds = 4), enemyStats = mapOf(Stat.REGEN to 2), partyStats = mapOf(Stat.BURN to 2)),
     )
 
     val modifiers = listOf(
-        MissionModifierDef("guarded", "Shields up", "They are expecting somebody. Every enemy starts with 4 Guard. +20% gold reward.", enemyStats = mapOf(Stat.GUARD to 4), goldPercent = 120),
+        MissionModifierDef("guarded", "Shields up", "They are expecting somebody. Every enemy starts with 4 Armor. +20% gold reward.", enemyStats = mapOf(Stat.GUARD to 4), goldPercent = 120),
         MissionModifierDef("reinforced", "One more of them", "Another one joined them on the way: 1 more enemy in every fight. +25% gold reward.", addUnit = mapOf(A to "ashclaw_thief", H to "gravecaller", E to "ember_whelp"), goldPercent = 125),
         MissionModifierDef("tired", "Tired sentries", "They have been awake for days. Every enemy starts with 1 Chill. -15% gold reward.", enemyStats = mapOf(Stat.CHILL to 1), goldPercent = 85),
         // The four that change the decision, not the difficulty.
-        MissionModifierDef("ambush", "Hold the ford", "The watch closes the trap behind them. The party does not have to defeat the enemies: it wins if at least 1 member is still standing after 5 rounds.", archetypes = setOf(MissionArchetype.HUNT), hold = 5),
-        MissionModifierDef("hostage", "One of the watch is held", "They hold a guard of the watch. He stands at the back of your line and must survive: if he goes down, the fight is lost. If the party wins, he returns to the wall as 2 more militia.",
+        MissionModifierDef("ambush", "Hold the ford", "The militia closes the trap behind them. The party does not have to defeat the enemies: it wins if at least 1 member is still standing after 5 rounds.", archetypes = setOf(MissionArchetype.HUNT), hold = 5),
+        MissionModifierDef("hostage", "A captured guard", "They have captured a guard of the militia. He stands at the back of your line and must survive: if he goes down, the fight is lost. If the party wins, he returns to the wall as 2 more militia.",
             archetypes = setOf(MissionArchetype.HUNT), protectUnitId = "captive", militia = 2),
         MissionModifierDef("narrow", "A narrow way", "Two can pass, not three: at most 2 members can go. +50% gold reward.", archetypes = setOf(MissionArchetype.HUNT, MissionArchetype.ESCORT, MissionArchetype.DELVE), partyMax = 2, goldPercent = 150),
-        MissionModifierDef("in_kind", "Paid in metal", "No gold for this one. The last stage pays 1 piece of fine stock instead: Starsteel or Sun Ash.", archetypes = setOf(MissionArchetype.HUNT, MissionArchetype.DELVE), goldPercent = 0,
+        MissionModifierDef("in_kind", "Paid in metal", "No gold for this one. The last stage pays 1 Starsteel or 1 Sun Ash instead.", archetypes = setOf(MissionArchetype.HUNT, MissionArchetype.DELVE), goldPercent = 0,
             payment = MaterialDraw(1, 5, 5)),
     )
 

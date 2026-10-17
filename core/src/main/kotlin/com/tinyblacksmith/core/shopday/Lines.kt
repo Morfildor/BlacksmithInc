@@ -5,6 +5,7 @@ import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.market.Commissions
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.text.LegacyProse
+import com.tinyblacksmith.core.text.Terms
 import com.tinyblacksmith.core.text.joinSentences
 
 /** A lead as the Shop and the Tomorrow card print it: what to do, and the recorded reason (absent when its facts are). */
@@ -21,13 +22,13 @@ object Lines {
     fun reason(reason: VisitReason): String = when (reason) {
         VisitReason.EMPTY_SHELVES -> "found an empty shelf"
         VisitReason.TOO_EXPENSIVE -> "couldn't afford anything"
-        VisitReason.NOT_BETTER -> "found no upgrade for their weapon"
+        VisitReason.NOT_BETTER -> "found nothing better than their weapon"
         VisitReason.OVERPRICED -> "thought the price was too high"
         VisitReason.NOT_SUITED -> "found no weapon that suited them"
         VisitReason.UNDECIDED -> "left undecided"
         VisitReason.WORN_OUT -> "replaced a worn weapon"
         VisitReason.GREAT_FIT -> "found a weapon that suited them"
-        VisitReason.GOOD_ENOUGH -> "bought an upgrade"
+        VisitReason.GOOD_ENOUGH -> "bought a better weapon"
         VisitReason.COMMISSION_DELIVERED -> "collected a commission"
         VisitReason.COLLECTOR_PURCHASE -> "bought a weapon for their collection"
         VisitReason.TASTE_MATCH -> "chose their favorite element"
@@ -221,7 +222,7 @@ object Lines {
             Counterfactual.BARE_HANDED -> "They would have lost this fight without a weapon."
             null -> null
         },
-        card.title?.let { "The weapon earned the name $it." },
+        card.title?.let { "The weapon earned the name $it. The title is an honor only and gives no bonus." },
         card.factionId?.takeIf { card.matchupHelped }?.let { content.factionById[it] }?.let { "Its element helped against the ${it.name}." },
         card.materialId?.let { content.materialById[it] }?.let { "Brought back ${it.name}." }?.takeIf { card.kind == AftermathKind.SCARCE_LOOT || card.kind == AftermathKind.ELITE_SLAIN },
     ).joinToString(" ")
@@ -253,8 +254,8 @@ object Lines {
                 listOfNotNull(lead.count?.let { "${if (evening) "Today" else "Yesterday"}, ${count(it, "customer")} left without buying because of the price" }, lead.gold?.let { "the cheapest weapon costs $it gold" }).joinSentences().ifEmpty { null },
             )
             LeadKind.ARM_DEFENDERS -> LeadLine(
-                "Offer weapons for the defence",
-                listOfNotNull("The town looks outmatched for the siege $days", faction?.let { "The $it are coming" }, lead.element?.let { "weak to ${it.name.lowercase()}" }, "Heroes choose what to buy. More weapons do not guarantee a hold").joinSentences(),
+                "Stock weapons for the siege",
+                listOfNotNull("As things stand, the town's defense falls short of the raid for the siege $days", faction?.let { "The $it are coming" }, lead.element?.let { "they are weak to ${Terms.element(it).lowercase()}" }, "Heroes choose what to buy. More weapons on the shelf do not guarantee that the town holds").joinSentences(),
             )
             LeadKind.REVIEW_WALL -> LeadLine("Review the wall", when (lead.readiness) {
                 ReadinessGap.EMPTY_PLACE -> "Unfilled defender places: ${lead.count ?: 1}. Review who can stay home for the siege $days."
@@ -266,14 +267,14 @@ object Lines {
             LeadKind.GUILD_RESCUE -> LeadLine("Review ${hero?.let { "$it's" } ?: "the"} rescue", "Today is the last day to send the posted rescue party. A rescue is not guaranteed to succeed.")
             LeadKind.GUILD_CHECKPOINT -> LeadLine("Decide at the checkpoint", "The party returns home unless you choose to go deeper. The rewards already won are kept.")
             LeadKind.DAY_SETTLED -> LeadLine("Keep your plan", if (state.guild != null)
-                "The available defenders have weapons in good condition. Keeping members home is a valid plan. Preparation does not guarantee victory."
-                else "The current outlook calls for no urgent weapon advice. Customers still choose for themselves.")
+                "The available defenders have weapons in good condition. Reserving members for the wall is a valid plan. Preparation does not guarantee victory."
+                else "Nothing urgent today. Customers still choose what to buy.")
             LeadKind.ANSWER_WANT -> LeadLine(
                 "Forge ${lead.familyId?.let { content.familyById[it] }?.let { withArticle(it.name.lowercase()) } ?: "a weapon"}${hero?.let { " for $it" }.orEmpty()}",
                 listOfNotNull(
                     lead.power?.let { "They need a weapon with power $it or more" },
                     lead.gold?.let { "their budget is about ${about(it)} gold" },
-                    lead.days?.let { if (it <= 0) "their request ends tomorrow" else "their request lasts ${count(it + 1, "more day")}" },
+                    lead.days?.let { if (it <= 0) "they stop looking after tomorrow" else "they keep looking for ${count(it + 1, "more day")}" },
                 ).joinSentences().ifEmpty { null },
             )
             LeadKind.FORGE_FOR_BUYERS -> LeadLine(
@@ -314,7 +315,7 @@ object Lines {
             entry.catalystId?.let { content.materialById[it] }?.let { "forged with ${it.name}" },
         ).joinSentences().ifEmpty { "A plain weapon with no added properties." }
         return listOf(
-            "${entry.weaponName}, ${entry.title}. Era ${entry.era}. ${entry.kills} ${if (entry.kills == 1) "victory" else "victories"}. Fame ${entry.fame}.",
+            "${entry.weaponName}, ${entry.title}. Era ${entry.era}. ${entry.kills} ${if (entry.kills == 1) "kill" else "kills"}. Fame ${entry.fame}.",
             what,
             if (entry.owners.isEmpty()) "Its past owners are unknown." else "Carried by ${names(entry.owners)}.",
         ) + entry.ownerLine.map { storyLine(it, currentEra) }
@@ -326,7 +327,7 @@ object Lines {
      */
     fun threat(threat: Threat, content: ContentCatalog): String? {
         val name = content.factionById[threat.factionId]?.name ?: return null
-        fun word(e: com.tinyblacksmith.core.content.Element) = e.name.lowercase()
+        fun word(e: com.tinyblacksmith.core.content.Element) = Terms.element(e).lowercase()
         return listOfNotNull(
             threat.weakTo?.let { "The $name are weak to ${word(it)}" },
             threat.resists?.let { if (threat.weakTo == null) "The $name resist ${word(it)}" else "they resist ${word(it)}" },
@@ -335,7 +336,7 @@ object Lines {
 
     /** The label beside one blade or one material of that element. */
     fun threatMark(mark: ThreatMark, threat: Threat, content: ContentCatalog): String {
-        val name = content.factionById[threat.factionId]?.name ?: "besiegers"
+        val name = content.factionById[threat.factionId]?.name ?: "attackers"
         return if (mark == ThreatMark.COUNTERS) "Effective against the $name" else "The $name resist it"
     }
 

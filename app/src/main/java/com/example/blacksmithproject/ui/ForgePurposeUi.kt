@@ -49,7 +49,7 @@ fun GameEngine.assessPurpose(state: GameState, weaponId: WeaponId, purpose: Forg
         }
         val fits = Commissions.fit(weapon, recorded) == Commissions.Fit.OK
         val reason = if (fits) "Meets the commission" else Labels.fit(weapon, recorded, content).replaceFirstChar { it.uppercase() }
-        return PurposeAssessmentUi("For $name: $reason.", "Recorded request: ${Labels.request(recorded, content, config)}. " +
+        return PurposeAssessmentUi("For $name: $reason.", "Recorded commission: ${Labels.request(recorded, content, config)}. " +
             (forgedFor(state, weaponId, id)?.let { "${it.handover} ${it.reserved}" } ?: "Review the commission in the Shop."), fits)
     }
     val hero = state.heroes[purpose.heroId] ?: return gone("This customer is no longer in town.")

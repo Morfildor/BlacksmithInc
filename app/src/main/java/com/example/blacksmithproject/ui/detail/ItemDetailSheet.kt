@@ -37,6 +37,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.BladeRulesUi
+import com.example.blacksmithproject.ui.Disclosure
+import com.example.blacksmithproject.ui.FactLine
+import com.example.blacksmithproject.ui.Fact as V2Fact
 import com.example.blacksmithproject.ui.InlineActionButton
 import com.example.blacksmithproject.ui.LoanPicker
 import com.example.blacksmithproject.ui.LoanUi
@@ -47,6 +50,8 @@ import com.example.blacksmithproject.ui.Labels
 import com.example.blacksmithproject.ui.NoticeLine
 import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.Secondary
+import com.example.blacksmithproject.ui.TipKeyword
+import com.example.blacksmithproject.ui.keywords
 import com.example.blacksmithproject.ui.promisedLine
 import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.Sprites
@@ -54,6 +59,7 @@ import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.engine.Command
 import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.guild.GuildOps
 import com.tinyblacksmith.core.model.AffixId
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
@@ -64,6 +70,7 @@ import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponLocation
 import com.tinyblacksmith.core.model.WeaponSnapshot
 import com.tinyblacksmith.core.shopday.Demand
+import com.tinyblacksmith.core.text.Terms
 import com.tinyblacksmith.core.shopday.Lines as ShopLines
 
 /** An affix or a flaw with the sentence that says what it does. */
@@ -160,8 +167,10 @@ data class ItemDetail(
     val loan: LoanUi? = null,
     /** Why the weapon is Legendary ("Forged with Heartfire", "Legendary by its deeds"); null for any other weapon. */
     val legend: String? = null,
-    /** "Renown 2 of 3": what its recorded deeds have earned toward being Legendary by them; null while it has none. */
+    /** "2 of 3": what its recorded deeds have earned toward being Legendary by them; null while it has none. */
     val deeds: String? = null,
+    /** The statuses its fight rules name, each with what it does (`keywords`); empty without [rules]. */
+    val keywords: List<TipKeyword> = emptyList(),
 )
 
 /** Why [w] is Legendary, in the sheet's words; null when it is not, or came to it before rules 6. */
@@ -185,37 +194,58 @@ fun GameEngine.itemDetail(state: GameState, weaponId: WeaponId, snapshot: Weapon
     val first = snapshot ?: present ?: return null
     val differs = snapshot != null && snapshot != present
     val shown = present ?: first     // properties and the picture follow the blade of today while it exists
-    val family = content.familyById[shown.familyId]?.name ?: shown.familyId.value
     val inShop = weapon != null && (weapon.isListed || weapon.isInStorage)
-    return ItemDetail(
-        weaponId = weaponId,
-        name = shown.name,
-        sprite = Sprites.weapon(shown.familyId, shown.coreId, shown.element, shown.rarity, signature = shown.signatureId != null),
-        badge = Sprites.badge(shown.rarity),
-        signature = shown.signatureId != null,
-        kind = shown.element?.let { "${it.name.lowercase().replaceFirstChar { c -> c.uppercase() }} ${family.lowercase()}" } ?: family,
-        rarity = shown.rarity,
-        element = shown.element,
-        title = shown.title,
-        stats = weaponStats(shown, before = first.takeIf { differs && present != null }),
+    return card(state, weaponId, shown, weapon, weaponStats(shown, before = first.takeIf { differs && present != null })).copy(
         counter = if (differs) facts(first) else emptyList(),
         now = when {
             weapon == null -> listOf(Fact("Where", "No longer in the forge's records"))
             differs -> listOf(whereabouts(state, weapon)) + changed(facts(first), facts(present!!))
             else -> listOf(whereabouts(state, weapon)) + facts(present!!)
         },
-        affixes = shown.affixes.map { property(it) },
-        flaws = shown.flaws.map { property(it) },
-        dormant = ShopLines.dormant(shown.dormantAffixes, content),
         recipe = recipe(shown, weapon),
         story = weapon?.let { ShopLines.story(it, state.era) }.orEmpty(),
         history = weapon?.history?.asReversed()?.map { dated(state, it.era, it.day, it.text) }
             ?: recordsOf(state, weaponId.value).asReversed().map { dated(state, it.era, it.day, it.text) },
         stock = if (inShop) stock(state, weapon!!) else null,
-        rules = weapon?.let { bladeRules(state, it) },
         loan = weapon?.let { loanUi(state, it) },
+    )
+}
+
+/**
+ * The weapon's card alone, as an inspect card reads it: art, name, kind, its numbers (less a renown of nothing, as the
+ * stock rows have them), properties and fight rules. No price, story or history: cheap enough for every row of a storeroom.
+ */
+fun GameEngine.weaponCard(state: GameState, w: Weapon): ItemDetail =
+    WeaponSnapshot.of(w).let { s -> card(state, w.id, s, w, weaponStats(s).filter { it.max != null || it.value > 0 }) }
+
+/** What [itemDetail] and [weaponCard] share: the weapon as its card shows it, every record of the sheet left empty. */
+private fun GameEngine.card(state: GameState, weaponId: WeaponId, shown: WeaponSnapshot, weapon: Weapon?, stats: List<Stat>): ItemDetail {
+    val family = content.familyById[shown.familyId]?.name ?: shown.familyId.value
+    val rules = weapon?.let { bladeRules(state, it) }
+    return ItemDetail(
+        weaponId = weaponId,
+        name = shown.name,
+        sprite = Sprites.weapon(shown.familyId, shown.coreId, shown.element, shown.rarity, signature = shown.signatureId != null),
+        badge = Sprites.badge(shown.rarity),
+        signature = shown.signatureId != null,
+        kind = shown.element?.let { "${Terms.element(it)} ${family.lowercase()}" } ?: family,
+        rarity = shown.rarity,
+        element = shown.element,
+        title = shown.title,
+        stats = stats,
+        counter = emptyList(),
+        now = emptyList(),
+        affixes = shown.affixes.map { property(it) },
+        flaws = shown.flaws.map { property(it) },
+        dormant = ShopLines.dormant(shown.dormantAffixes, content),
+        recipe = emptyList(),
+        story = emptyList(),
+        history = emptyList(),
+        stock = null,
+        rules = rules,
         legend = weapon?.let(::legendLine),
         deeds = weapon?.let { deedsLine(it, config.depth.legend.renownForLegend) },
+        keywords = rules?.let { r -> keywords((r.road + r.homeOnly).flatMap { it.stats }, config) }.orEmpty(),
     )
 }
 
@@ -223,13 +253,13 @@ private fun GameEngine.property(id: AffixId) = content.affixById[id]?.let { Prop
 
 private fun qualityWord(w: WeaponSnapshot) = Labels.quality(w.quality).replaceFirstChar { it.uppercase() }
 private fun conditionWord(w: WeaponSnapshot) = Labels.condition(w.condition)?.replaceFirstChar { it.uppercase() } ?: "Sound"
-private fun renownWord(w: WeaponSnapshot) = Labels.fame(w.fame)?.replaceFirstChar { it.uppercase() } ?: "Unsung"
+private fun fameWord(w: WeaponSnapshot) = Labels.fame(w.fame)?.replaceFirstChar { it.uppercase() } ?: "Unsung"
 
 private fun facts(w: WeaponSnapshot): List<Fact> = listOfNotNull(
     Fact("Rarity", Labels.rarity(w.rarity)),
     Fact("Quality", "${qualityWord(w)} (${w.quality})"),
     Fact("Condition", conditionWord(w)),
-    Fact("Renown", renownWord(w)),
+    Fact("Fame", fameWord(w)),
     w.title?.let { Fact("Title", "\"$it\"") },
 )
 
@@ -242,8 +272,20 @@ internal fun weaponStats(w: WeaponSnapshot, before: WeaponSnapshot? = null): Lis
     Stat("Power", w.power, was = before?.power?.takeIf { it != w.power }),
     Stat("Quality", w.quality, qualityWord(w), QUALITY_MAX, before?.quality?.takeIf { it != w.quality }),
     Stat("Condition", w.condition, conditionWord(w), CONDITION_MAX, before?.condition?.takeIf { it != w.condition }),
-    Stat("Renown", w.fame, renownWord(w), was = before?.fame?.takeIf { it != w.fame }),
+    Stat("Fame", w.fame, fameWord(w), was = before?.fame?.takeIf { it != w.fame }),
 )
+
+/**
+ * Why a weapon is lost, as the sheet says it. The stored reasons are save data and never change; the three a player
+ * would misread are worded here.
+ */
+internal fun lostReason(reason: String): String = when (reason) {
+    GuildOps.LOST_WITH_CAPTIVE -> "With a captured member"
+    GuildOps.LOST_TAKEN -> "Captured from the guild's party"
+    WeaponLocation.Lost.WITH_MERCHANT -> "With a travelling merchant"
+    "given to the town watch" -> "Donated to the armory"
+    else -> reason.replaceFirstChar { it.uppercase() }
+}
 
 /** Where the blade is today; the holder's line opens their sheet while they are still in the save. */
 private fun whereabouts(state: GameState, w: Weapon): Fact = when (val l = w.location) {
@@ -252,7 +294,7 @@ private fun whereabouts(state: GameState, w: Weapon): Fact = when (val l = w.loc
     is WeaponLocation.Owned -> state.heroes[l.heroId].let { h ->
         Fact(if (l.equipped) "Carried by" else "Kept by", h?.fullName ?: "A hero no longer in the records", heroId = h?.id)
     }
-    is WeaponLocation.Lost -> Fact("Where", "${l.reason.replaceFirstChar { it.uppercase() }} since day ${l.day}")
+    is WeaponLocation.Lost -> Fact("Where", "${lostReason(l.reason)} since day ${l.day}")
     is WeaponLocation.Destroyed -> Fact("Where", "Destroyed on day ${l.day}")
     is WeaponLocation.Loaned -> state.heroes[l.heroId].let { h -> Fact("On loan to", h?.fullName ?: "a member of the guild", heroId = h?.id) }
 }
@@ -263,11 +305,11 @@ private fun GameEngine.recipe(shown: WeaponSnapshot, w: Weapon?): List<Fact> {
     return listOfNotNull(
         Fact("Weapon type", content.familyById[shown.familyId]?.name ?: shown.familyId.value),
         Fact("Metal", material(shown.coreId)),
-        Fact("Augment", material(shown.augmentId)),
+        Fact("Infusion", material(shown.augmentId)),
         w?.catalystId?.let { Fact("Catalyst", material(it)) },
-        w?.let { Fact("Method", "${it.mode.name.lowercase().replaceFirstChar { c -> c.uppercase() }} forge, ${it.risk.name.lowercase()} risk" + if (it.honed) ", upgraded" else "") },
+        w?.let { Fact("Method", "${Terms.forgeMode(it.mode)} · Risk: ${Terms.risk(it.risk)}" + if (it.honed) " · Upgraded" else "") },
         w?.let { Fact("Forged", "Era ${it.forgedEra}, day ${it.forgedDay}") },
-        shown.signatureId?.let { Fact("Signature", w?.history?.firstOrNull { it.kind == "SIGNATURE" }?.text ?: "A signature work") },
+        shown.signatureId?.let { Fact("Signature", w?.history?.firstOrNull { it.kind == "SIGNATURE" }?.text ?: "A signature weapon") },
     )
 }
 
@@ -291,9 +333,9 @@ private fun GameEngine.stock(state: GameState, w: Weapon): Stock {
         // The first hone is the upgrade (quality and condition), every later one a repair (condition only): `GameEngine.hone`.
         // A blade already at what its metal holds (`Forge.qualityCap`) gains no quality from it: the button says so.
         hone = if (!w.canBeHoned) "Upgraded" else if (w.honed) "Repair (${config.honeEnergy} energy, 1 $core)" else "Upgrade (${config.honeEnergy} energy, 1 $core" +
-            minOf(config.honeQualityBonus, com.tinyblacksmith.core.crafting.Forge.qualityCap(content.material(w.coreId).tier, config) - w.quality).let { if (it > 0) ", +$it quality)" else ") · repair only, $core holds no more quality" },
+            minOf(config.honeQualityBonus, com.tinyblacksmith.core.crafting.Forge.qualityCap(content.material(w.coreId).tier, config) - w.quality).let { if (it > 0) ", +$it quality)" else ") · condition only, $core stops at quality ${com.tinyblacksmith.core.crafting.Forge.qualityCap(content.material(w.coreId).tier, config)}" },
         canHone = w.canBeHoned,
-        donate = if (room > 0) "Arm the watch (+${minOf(armoryValue(w), room)} defense)" else "Arm the watch (armory full)",
+        donate = if (room > 0) "Donate to the armory (+${minOf(armoryValue(w), room)} defense)" else "Donate to the armory (armory full)",
         canDonate = room > 0,
         promised = promisedLine(state, w),
     )
@@ -333,7 +375,13 @@ fun ItemDetailSheet(
     }
 }
 
-/** The body of the blade sheet: one scrolling column, usable outside a sheet (the shop day's overlay, tests). */
+/**
+ * The body of the blade sheet: one scrolling column, usable outside a sheet (the shop day's overlay, tests). The head
+ * reads like the weapon's inspect card, without a plate of its own: art, name, kind, its numbers, each buff and flaw
+ * with what it does. Then its price and actions, then what it does in a fight (every rule open, as ability rows) with
+ * the practice fight under them, then the recipe as one line of facts, then its story and history: the newest lines of
+ * each on show, the older ones one tap away.
+ */
 @Composable
 fun ItemDetailContent(
     detail: ItemDetail,
@@ -347,9 +395,9 @@ fun ItemDetailContent(
     onBench: (() -> Unit)? = null,
 ) {
     Column(modifier.fillMaxWidth().imePadding().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
-        WeaponStatCard(detail)
-        // Right under the card's "In a fight": the rules above, tried in a rehearsal that changes nothing.
-        if (detail.rules != null && onBench != null) SecondaryActionButton("Try it in a practice fight", onBench, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("card_bench_open"))
+        // The price is said in its own section below, so the head leaves out its "Value". The sheet is the weapon's
+        // plate: no second frame inside it.
+        WeaponStatBody(detail, rules = false, showValue = false)
         FactBlock(AT_THE_COUNTER.takeIf { detail.counter.isNotEmpty() }, detail.counter, "sheet_counter", onOpenHero, onOpenItem = {})
         // The card already says the whole blade; "then and now" in words stays only for a blade that has changed since.
         val onCard = setOf("Rarity", "Title") + detail.stats.map { it.label }
@@ -366,18 +414,36 @@ fun ItemDetailContent(
         }
         if (planning) detail.loan?.let { LoanSection(detail.name, it, enabled, onStock) }
 
-        FactBlock("Recipe", detail.recipe, "sheet_recipe", onOpenHero, onOpenItem = {})
+        detail.rules?.let { WeaponFightRules(it, detail.keywords) }
+        // Right under "Effects in a fight": the rules above, tried in a rehearsal that changes nothing.
+        if (detail.rules != null && onBench != null) SecondaryActionButton("Try it in a practice fight", onBench, Modifier.fillMaxWidth().padding(top = Space.sm).testTag("card_bench_open"))
+
+        if (detail.recipe.isNotEmpty()) Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("sheet_recipe")) {
+            SheetSection("Recipe")
+            FactLine(detail.recipe.map { V2Fact(it.value, it.label) }, emphasis = true)
+        }
 
         // The story is what is worth telling, oldest first; the history under it is every record, newest first.
         if (detail.story.isNotEmpty()) {
             SheetSection("Story")
-            Column(Modifier.testTag("sheet_story")) { Lines(detail.story, "") }
+            Column(Modifier.testTag("sheet_story")) { FoldedLines(detail.story, "", "More of its story", "sheet_story_more_${detail.weaponId.value}") }
         }
 
         SheetSection("History")
-        Column(Modifier.testTag("sheet_history")) { Lines(detail.history, "No history recorded yet.") }
+        Column(Modifier.testTag("sheet_history")) { FoldedLines(detail.history, "No history recorded yet.", "Earlier records", "sheet_history_more_${detail.weaponId.value}") }
         SecondaryActionButton(closeLabel, onDismiss, Modifier.fillMaxWidth().padding(top = Space.md).heightIn(min = 48.dp).testTag("sheet_close"))
     }
+}
+
+/** How many lines of a story or a history are on show before the rest folds under a count. */
+private const val SHOWN_LINES = 5
+
+/** [lines] as [Lines] does, the first [SHOWN_LINES] on show and the others under "[more] · N". */
+@Composable
+private fun FoldedLines(lines: List<String>, empty: String, more: String, key: String) {
+    Lines(lines.take(SHOWN_LINES), empty)
+    val rest = lines.drop(SHOWN_LINES)
+    if (rest.isNotEmpty()) Disclosure("$more · ${rest.size}", key) { Lines(rest, "") }
 }
 
 /**

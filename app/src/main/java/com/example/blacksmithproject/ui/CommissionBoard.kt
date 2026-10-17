@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
@@ -99,24 +100,26 @@ fun CommissionBoard(
         item(key = "commissions") {
             Column {
                 Text("Commissions", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.semantics { heading() }.testTag("board_commissions"))
-                Secondary(if (board.commissions.isEmpty()) "No open commissions. Heroes may ask for one at End Day. You can hold up to $slots at once." else "Accept a commission, then have a matching weapon in storage or on the shelf at End Day.")
+                Secondary(if (board.commissions.isEmpty()) "None open. Heroes may ask at End Day, up to $slots at once." else "Heroes pay for these. A fitting weapon in storage or on the shelf is handed over at End Day.")
             }
         }
+        // V3: each commission is a short card (what it asks as facts, the reward and the due day, where it stands);
+        // the one chosen opens in full, with the buyer, why it was made, the fits and its actions.
         items(board.commissions, key = { "c:${it.id.value}" }) { r ->
             val id = "c:${r.id.value}"
             if (open == id) RequestCard(r, busy, onOpenHero, onAnswer, onForgeThis)
-            else BoardRow("${r.asks} · ${r.reward} gold", "${r.buyer.name} · ${r.due}", r.status, r.ready, "board_commission_${r.id.value}") { open = id }
+            else CommissionRow(r) { open = id }
         }
         item(key = "wants") {
             Column {
                 Text("Customer wants", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.padding(top = Space.lg).semantics { heading() }.testTag("board_wants"))
-                Secondary(if (board.groups.isEmpty()) "No unmet wants yet." else "These heroes left without finding a weapon. Stock something suitable and they may buy it.")
+                Secondary(if (board.groups.isEmpty()) "No unmet wants yet." else "Heroes who left without a weapon. They may buy a suitable one, but nothing is promised.")
             }
         }
         board.groups.forEach { g ->
             val id = "w:${g.familyId.value}"
             item(key = id) {
-                BoardRow(g.title, if (g.answered == g.wants.size) "Suitable weapons are on the shelf" else if (g.answered > 0) "Suitable weapons on the shelf for ${g.answered}" else "No suitable weapons on the shelf", if (open == id) "Hide" else "Show", g.answered == g.wants.size, "board_group_${g.familyId.value}") { open = if (open == id) null else id }
+                WantGroupRow(g.title, if (g.answered == g.wants.size) "Suitable weapons are on the shelf" else if (g.answered > 0) "Suitable weapons on the shelf for ${g.answered}" else "No suitable weapons on the shelf", open == id, g.answered == g.wants.size, "board_group_${g.familyId.value}") { open = if (open == id) null else id }
             }
             if (open == id) items(g.wants, key = { "want_${it.heroId.value}" }) { WantRow(it, onOpenHero, onForgeWant) }
         }
@@ -126,18 +129,43 @@ fun CommissionBoard(
     }
 }
 
-/** One collapsed row of the board: a title, one line under it, and its status at the end. */
+/**
+ * A commission on the board, not chosen: what it asks as short facts (type, element, least quality), the reward, the due
+ * day and the buyer, and where it stands in words at the end (an offer waits for an answer; an accepted one is an
+ * obligation). A tap opens it in full.
+ */
 @Composable
-private fun BoardRow(title: String, detail: String, status: String, good: Boolean, tag: String, onClick: () -> Unit) {
+private fun CommissionRow(r: RequestUi, onClick: () -> Unit) {
     Row(
-        Modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().clickable(role = Role.Button, onClick = onClick).heightIn(min = 56.dp).padding(horizontal = Space.md, vertical = Space.sm).testTag(tag)
-            .semantics(mergeDescendants = true) { contentDescription = "$title. $detail. $status." },
+        Modifier.fillMaxWidth().padding(vertical = Space.xs).forgeRow().clickable(onClickLabel = "Show the commission", role = Role.Button, onClick = onClick).heightIn(min = 56.dp)
+            .padding(horizontal = Space.md, vertical = Space.sm).testTag("board_commission_${r.id.value}")
+            .semantics(mergeDescendants = true) { contentDescription = "${r.asks}. ${r.reward} gold, ${r.due.lowercase()}, for ${r.buyer.name}. ${r.status}." },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            FactLine(r.askFacts(), emphasis = true)
+            FactLine(listOf(Fact("${r.reward} gold", "Reward"), Fact(r.due), Fact(r.buyer.name)))
+        }
+        StatusWord(r)
+    }
+}
+
+/**
+ * A weapon type customers want: its name and count, whether the shelf already answers them ("✓" when it answers all),
+ * and the customers under it once opened. Not an order: a row divided by a hairline, never a commission's plate.
+ */
+@Composable
+private fun WantGroupRow(title: String, detail: String, open: Boolean, good: Boolean, tag: String, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().hairline().clickable(onClickLabel = if (open) "Hide the customers" else "Show the customers", role = Role.Button, onClick = onClick).heightIn(min = 56.dp)
+            .padding(horizontal = Space.xs, vertical = Space.sm).testTag(tag)
+            .semantics(mergeDescendants = true) { contentDescription = "$title. $detail."; stateDescription = if (open) "Expanded" else "Collapsed" },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f).padding(end = Space.sm)) {
             Text(title, style = MaterialTheme.typography.titleSmall, color = Cream)
-            Text(detail, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+            Text((if (good) "✓ " else "") + detail, style = MaterialTheme.typography.bodySmall, color = if (good) BuffGreen else CreamMuted)
         }
-        Text(status, style = MaterialTheme.typography.labelMedium, color = if (good) BuffGreen else Gold)
+        Chevron(if (open) ChevronWay.UP else ChevronWay.DOWN, tint = CreamMuted)
     }
 }

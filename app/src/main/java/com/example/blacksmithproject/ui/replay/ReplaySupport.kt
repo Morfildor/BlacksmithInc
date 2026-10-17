@@ -68,18 +68,23 @@ fun statColor(stat: Stat): Color = when (stat) {
 /** The order states are listed on a portrait: protection first, then what hurts, then stores. */
 val STAT_ORDER = listOf(Stat.GUARD, Stat.THORNS, Stat.BURN, Stat.BLEED, Stat.MARK, Stat.CHILL, Stat.WET, Stat.REGEN, Stat.CHARGE, Stat.SCRAP, Stat.STEAM)
 
-/** What a state does, with the fight's own numbers ([FightRules] is `BalanceConfig.guild.fight`): the same rules the fight ran on. */
+/**
+ * What a status does, with the fight's own numbers ([FightRules] is `BalanceConfig.guild.fight`): the same rules the fight
+ * ran on, in the words of docs/WRITING_GUIDE.md section 2.2. Every status ends with the fight.
+ */
 fun statMeaning(stat: Stat, rules: FightRules): String = when (stat) {
-    Stat.GUARD -> "Blows hit Guard before health."
-    Stat.BURN -> "At the end of each round: loses 1 health per stack, then one stack fades."
-    Stat.BLEED -> "Before acting: loses 1 health per stack, past Guard, then one stack fades."
-    Stat.REGEN -> "At the end of each round: mends ${rules.regenHeal}, then one stack fades."
-    Stat.CHILL -> "Its next strike is ${rules.chillPercent}% weaker and uses up one stack."
-    Stat.MARK -> "The next direct hit on it deals ${rules.markBonus} more and uses the Mark."
-    Stat.WET -> "Storm hits on it deal ${rules.wetStormBonus} more. One stack dries each round."
-    Stat.THORNS -> "The next blow it takes hurts the attacker for this much, once."
-    Stat.CHARGE, Stat.SCRAP, Stat.STEAM -> "Stored for a rule that spends it."
-}
+    Stat.GUARD -> "Absorbs damage before Health, point for point, until it is used up. Blocks Burn. Bleed and damage that ignores Armor pass. Armor breaks when a hit empties it."
+    Stat.CHILL -> "The fighter's next attack deals ${rules.chillPercent}% less damage, then 1 Chill is used up. Only the first damage of that ability is weakened."
+    Stat.BURN -> "At the end of each round the fighter takes 1 damage per Burn (Armor blocks it), then loses 1 Burn."
+    Stat.BLEED -> "Before the fighter acts, it takes 1 damage per Bleed (ignores Armor), then loses 1 Bleed."
+    Stat.REGEN -> "At the end of each round the fighter heals ${rules.regenHeal}, then loses 1 Regeneration. More Regeneration lasts longer, it does not heal more."
+    Stat.MARK -> "The party attacks a marked enemy first. The next hit on it deals ${rules.markBonus} extra damage and removes the Mark."
+    Stat.THORNS -> "The next enemy attack that hits this fighter, even into Armor, takes all the Thorns as damage, and the Thorns are used up. Effects, Burn and Bleed never set it off."
+    Stat.CHARGE -> "Stored energy. A Discharge spends all of it at 3 or more for 8 storm damage."
+    Stat.WET -> "A storm hit on a Wet fighter deals ${rules.wetStormBonus} extra damage and uses up 1 Wet. Loses 1 Wet each round."
+    Stat.STEAM -> "When a fighter puts Burn on an enemy with Chill or Wet, or Chill on an enemy with Burn, they cancel one for one and the giver gains that much Steam."
+    Stat.SCRAP -> "Left (2) when a weapon cracks in a fight. Some relics spend it."
+} + " At most ${rules.cap(stat)}."
 
 /** The short word under a pop's number: what kind of hit or mend it was. The rule's own name is said on the one whose rule it was. */
 fun shortNote(note: String?): String? = note?.substringBefore(" · ")

@@ -37,7 +37,9 @@ object Legends {
         ctx.updateWeapon(w.copy(renown = total))
         ctx.addWeaponHistory(weaponId, HISTORY_DEED, text, subjects)
         if (w.rarity == Rarity.LEGENDARY || total < cfg.renownForLegend) {
-            ctx.emit(EventType.WEAPON_DEED, 5, "${w.name} earned renown. $text", listOf(weaponId.value) + subjects, mapOf("renown" to total.toString(), "needed" to cfg.renownForLegend.toString()))
+            val earned = if (renown == 1) "a deed" else "$renown deeds"
+            val toward = if (w.rarity == Rarity.LEGENDARY) "" else " ($total of ${cfg.renownForLegend} toward Legendary)"
+            ctx.emit(EventType.WEAPON_DEED, 5, "${w.name} earned $earned$toward. $text", listOf(weaponId.value) + subjects, mapOf("renown" to total.toString(), "needed" to cfg.renownForLegend.toString()))
             return
         }
         ctx.updateWeapon(ctx.weapon(weaponId).copy(rarity = Rarity.LEGENDARY, legend = LegendOrigin.DEEDS, power = w.power + cfg.deedPower))

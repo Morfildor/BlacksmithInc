@@ -78,7 +78,7 @@ class DetailBuilderTest {
         assertEquals(f.hero.fullName, d.name)
         assertTrue("no snapshot, no counter block", d.counter.isEmpty())
         val now = d.now.associateBy { it.label }
-        assertEquals(listOf("Health", "Class", "Element taste", "Traits", "Purse", "Standing", "Guild", "Mentor", "Carries"), d.now.map { it.label }.filter { it != "Ambition" })
+        assertEquals(listOf("Health", "Class", "Element taste", "Personality", "Purse", "Standing", "Guild", "Mentor", "Carries"), d.now.map { it.label }.filter { it != "Ambition" })
         assertEquals("Favors frost weapons", now.getValue("Element taste").value)
         assertEquals("77 gold", now.getValue("Purse").value)
         assertEquals("A shop regular", now.getValue("Standing").value)
@@ -103,7 +103,7 @@ class DetailBuilderTest {
         // A snapshot that says what the save says is not a second block.
         val same = engine.heroDetail(f.state.copy(heroes = f.state.heroes + (f.hero.id to f.hero.copy(gold = 120, loyalty = 0)), weapons = emptyMap()), f.hero.id, f.atTheCounter())!!
         assertTrue(same.counter.isEmpty())
-        assertTrue(same.now.any { it.label == "Traits" })
+        assertTrue(same.now.any { it.label == "Personality" })
     }
 
     @Test
@@ -216,7 +216,7 @@ class DetailBuilderTest {
         val worn = f.blade.copy(condition = 20, fame = 4)
         val d = engine.itemDetail(f.state.copy(weapons = mapOf(worn.id to worn)), worn.id, morning)!!
         assertEquals("Sound", d.counter.first { it.label == "Condition" }.value)
-        assertEquals(listOf("Carried by", "Condition", "Renown"), d.now.map { it.label })
+        assertEquals(listOf("Carried by", "Condition", "Fame"), d.now.map { it.label })
         assertEquals("Battered", d.now.first { it.label == "Condition" }.value)
 
         assertTrue("an unchanged blade is told once", engine.itemDetail(f.state, f.blade.id, WeaponSnapshot.of(f.blade))!!.counter.isEmpty())

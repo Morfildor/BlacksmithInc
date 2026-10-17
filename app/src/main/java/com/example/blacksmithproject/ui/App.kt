@@ -94,7 +94,7 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
         kept = play
     }
     // Test tags double as Android resource IDs for uiautomator scripts (tools/emulator).
-    CompositionLocalProvider(LocalHaptics provides haptics) {
+    CompositionLocalProvider(LocalHaptics provides haptics) { ProvideInspector {
         Surface(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }, color = MaterialTheme.colorScheme.background) {
             when (val s = ui) {
                 UiState.Loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
@@ -106,8 +106,8 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
                         onPrimary = { if (vm.engine.content.guild?.charters.isNullOrEmpty()) { leaveMenu(); vm.newRun() } else setup = true },
                         onSettings = { menuSettings = true }, extra = { IntroMenuLine(vm, Modifier.padding(top = Space.md)) },
                     )
-                is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", !s.busy, leaveMenu, { menuSettings = true }, onAbandon = vm::abandonRun) else screens.SaveableStateProvider(play!!) { WorkshopScreen(s, vm, onMainMenu = { menuOpen = true }) }
-                is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue run", "menu_continue", true, leaveMenu, { menuSettings = true }) else screens.SaveableStateProvider(play!!) { ShopDayHost(s, vm, onMainMenu = { menuOpen = true }) }
+                is UiState.Playing -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue", "menu_continue", !s.busy, leaveMenu, { menuSettings = true }, onAbandon = vm::abandonRun) else screens.SaveableStateProvider(play!!) { WorkshopScreen(s, vm, onMainMenu = { menuOpen = true }) }
+                is UiState.ShopDay -> if (menuOpen) MainMenu("Era ${s.state.era} · Day ${s.state.day}", null, "Continue", "menu_continue", true, leaveMenu, { menuSettings = true }) else screens.SaveableStateProvider(play!!) { ShopDayHost(s, vm, onMainMenu = { menuOpen = true }) }
                 is UiState.RunEnded -> if (menuOpen) MainMenu("Era ${s.run.era} has ended", s.legacy, "See how the era ended", "menu_continue", true, leaveMenu, { menuSettings = true }) else RunEndScreen(s, vm)
             }
             val introRow by vm.introRow.collectAsStateWithLifecycle()
@@ -115,7 +115,7 @@ fun TinyBlacksmithApp(vm: GameViewModel) {
             // A save that failed leaves the last saved state on screen under this dialog; nothing is lost by dismissing it.
             (ui.op as? GameSession.Status.Failed)?.let { SaveFailureDialog(it.op, it.unconfirmed, onRetry = vm::retry, onKeepWorking = vm::dismissSaveFailure) }
         }
-    }
+    } }
 }
 
 /** One count of the legacy on the title's plate: the number over what it counts, read as one. */
@@ -130,7 +130,7 @@ private fun LegacyCount(value: Int, label: String, modifier: Modifier = Modifier
 /**
  * Main menu: the game's first screen. The owner's painting of the smithy at night fills it; in its dark lower third the
  * game's name, then the era and, between runs, the legacy as plain lines (nothing on a fresh account), and the actions at
- * the foot within reach of a thumb: one primary action (a new game, or the saved run) and "Abandon run" while a run is
+ * the foot within reach of a thumb: one primary action (a new game, or the saved run) and "End era" while a run is
  * being planned ([onAbandon]); abandoning discards the run after a confirmation. Settings is in the corner, the debug
  * tools inside it. [extra] sits under the buttons: the guided first day's one line. Large text scrolls the upper part.
  */
@@ -160,13 +160,13 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
                     legacy?.takeIf { it.points > 0 || it.eras.isNotEmpty() }?.let {
                         Row(Modifier.fillMaxWidth().padding(top = Space.sm)) {
                             LegacyCount(it.points, "Legacy points", Modifier.weight(1f))
-                            LegacyCount(it.eras.size, "Eras survived", Modifier.weight(1f))
+                            LegacyCount(it.eras.size, "Eras played", Modifier.weight(1f))
                         }
                     }
                 }
                 Column(Modifier.padding(top = Space.lg).widthIn(max = 420.dp).fillMaxWidth()) {
                     PrimaryActionButton(primary, onPrimary, Modifier.fillMaxWidth().testTag(primaryTag), enabled)
-                    if (onAbandon != null) SecondaryActionButton("Abandon run", { confirmAbandon = true }, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("menu_abandon"), enabled = enabled)
+                    if (onAbandon != null) SecondaryActionButton("End era", { confirmAbandon = true }, Modifier.fillMaxWidth().padding(top = Space.sm).heightIn(min = 48.dp).testTag("menu_abandon"), enabled = enabled)
                     extra()
                 }
             }
@@ -175,12 +175,12 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
     }
     // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     if (confirmAbandon && onAbandon != null) ForgeDialog(
-        "Abandon this run?", onDismiss = { confirmAbandon = false },
+        "End this era?", onDismiss = { confirmAbandon = false },
         actions = {
             InlineActionButton("Keep playing", { confirmAbandon = false })
-            InlineActionButton("Abandon run", { confirmAbandon = false; onAbandon() }, Modifier.testTag("menu_abandon_confirm"))
+            InlineActionButton("End era", { confirmAbandon = false; onAbandon() }, Modifier.testTag("menu_abandon_confirm"))
         },
     ) {
-        Text("Ends this run permanently. You earn no legacy points, and its weapons and heroes won't be recorded. Your recipe notes stay.")
+        Text("Ends this era permanently. You earn no legacy points, and its weapons and heroes won't be recorded. Your recipe notes stay.")
     }
 }

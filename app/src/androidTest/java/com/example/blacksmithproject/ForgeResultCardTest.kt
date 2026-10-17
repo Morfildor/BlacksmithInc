@@ -107,7 +107,7 @@ class ForgeResultCardTest {
         compose.onNodeWithTag("reveal_list").assertIsDisplayed().assertIsEnabled().performClick()
         compose.mainClock.advanceTimeByFrame()
         assertEquals(listOf(suggested), listed)
-        compose.onNodeWithText("Renown").assertDoesNotExist()
+        compose.onNodeWithText("Fame").assertDoesNotExist()
         compose.onNodeWithText("Power").assertExists()
         // The layout is the same before and after the fade: nothing a thumb is reaching for moves.
         val before = compose.onNodeWithTag("reveal_list").getUnclippedBoundsInRoot()

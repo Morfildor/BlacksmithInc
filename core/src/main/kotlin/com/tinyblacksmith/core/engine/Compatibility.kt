@@ -56,7 +56,7 @@ object Compatibility {
         val notes = mutableListOf<String>()
         if (ctx.overworkToday > config.maxOverworkPerDay) {
             ctx.overworkToday = config.maxOverworkPerDay
-            notes += "Overwork today is held to ${config.maxOverworkPerDay}."
+            notes += "Today you can borrow at most ${config.maxOverworkPerDay} energy from tomorrow."
         }
         if (ctx.town.armory > config.armoryMax) {
             ctx.town = ctx.town.copy(armory = config.armoryMax)
@@ -74,7 +74,7 @@ object Compatibility {
         }
         if (ctx.town.championIds.size > config.championCount) {
             ctx.town = ctx.town.copy(championIds = ctx.town.championIds.take(config.championCount))
-            notes += "The wall has ${config.championCount} places."
+            notes += "The wall has ${config.championCount} defender places."
         }
         if (ctx.relics.size > config.depth.relicSlots) {
             val gone = ctx.relics.drop(config.depth.relicSlots)
@@ -97,7 +97,7 @@ object Compatibility {
             }
             if (ctx.guild!!.reserved.size > cfg.defenders) {
                 ctx.guild = ctx.guild!!.copy(reserved = ctx.guild!!.reserved.take(cfg.defenders))
-                notes += "The guild keeps ${cfg.defenders} members for the wall."
+                notes += "The guild can reserve at most ${cfg.defenders} members for the wall."
             }
             val over = ctx.guild!!.members.size - cfg.maxMembers
             if (over > 0) {
@@ -108,7 +108,7 @@ object Compatibility {
             }
         }
         if (notes.isEmpty()) return state
-        ctx.emit(EventType.WORLD_EVENT, 5, "This version of the game has new limits, so your run was adjusted to fit them. " + notes.joinToString(" "), data = mapOf("event" to "balance_limits"))
+        ctx.emit(EventType.WORLD_EVENT, 5, "This version of the game has new limits, so your era was adjusted to fit them. " + notes.joinToString(" "), data = mapOf("event" to "balance_limits"))
         return ctx.toState()
     }
 }

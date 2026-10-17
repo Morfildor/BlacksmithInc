@@ -11,6 +11,7 @@ import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.heroes.Heroes
 import com.tinyblacksmith.core.model.*
 import com.tinyblacksmith.core.rng.RngStream
+import com.tinyblacksmith.core.text.Terms
 
 /**
  * The roster of the player's guild: who is contracted, what they carry on loan, who is kept for the wall (spec 4).
@@ -41,9 +42,9 @@ object GuildOps {
         val hero = ctx.heroes[m.heroId]
         return when {
             hero == null || !hero.isAlive -> "is gone"
-            m.status == MemberStatus.CAPTURED -> "is held by the enemy"
+            m.status == MemberStatus.CAPTURED -> "has been captured"
             m.status == MemberStatus.AWAY -> "is away with the party"
-            else -> laidUp(ctx, m)?.let { "is ${it.kind.name.lowercase()} until day ${it.untilDay}" }
+            else -> laidUp(ctx, m)?.let { "is ${Terms.wound(it.kind).lowercase()} until day ${it.untilDay}" }
         }
     }
 
@@ -117,7 +118,7 @@ object GuildOps {
         val offers = ArrayList<OpeningOffer>()
         repeat(minOf(ctx.config.guild.openingsOffered, pool.size)) { val o = rng.pick(pool); pool.remove(o); offers += OpeningOffer(o.id, heroes.map { it.id }, traitsFor(o)) }
         update(ctx) { it.copy(openingOffer = offers) }
-        ctx.emit(EventType.GUILD_CHARTER, 5, "The guild opens under the charter \"${charter.name}\". ${heroes.joinToString(" and ") { it.fullName }} are ready to sign. Choose how the guild begins.", heroes.map { it.id.value }, mapOf("charter" to charter.id))
+        ctx.emit(EventType.GUILD_CHARTER, 5, "The guild opens under the charter \"${charter.name}\". ${heroes.joinToString(" and ") { it.fullName }} are ready to join. Choose the guild's starting kit.", heroes.map { it.id.value }, mapOf("charter" to charter.id))
     }
 
     private fun sign(ctx: ResolutionContext, heroIds: List<HeroId>, traitIds: List<String>) {
@@ -130,7 +131,7 @@ object GuildOps {
 
     private fun announce(ctx: ResolutionContext, charter: CharterDef) {
         val names = ctx.guild!!.members.map { ctx.hero(it.heroId) }.joinToString(" and ") { "${it.fullName} the ${ctx.content.heroClass(it.classId).name}" }
-        ctx.emit(EventType.GUILD_CHARTER, 5, "$names have signed under the charter \"${charter.name}\".", ctx.guild!!.members.map { it.heroId.value }, mapOf("charter" to charter.id))
+        ctx.emit(EventType.GUILD_CHARTER, 5, "$names have joined the guild under the charter \"${charter.name}\".", ctx.guild!!.members.map { it.heroId.value }, mapOf("charter" to charter.id))
     }
 
     /** The smith takes one of the packages offered on the first morning: its members sign, its relic, stock and weapon arrive, its price is paid. Once. */
@@ -152,11 +153,11 @@ object GuildOps {
             val augment = ctx.content.material(w.augmentId)
             Weapon(id, com.tinyblacksmith.core.crafting.Forge.weaponName(ctx.content, w.familyId, w.coreId, emptyList()), w.familyId, w.coreId, w.augmentId, null, ForgeMode.QUICK, Risk.RECKLESS, w.quality,
                 com.tinyblacksmith.core.crafting.Forge.forgedRarity(w.quality, ctx.config, core.tier), com.tinyblacksmith.core.crafting.Forge.powerOf(ctx.content, ctx.config, w.familyId, w.coreId, w.quality, listOf(w.flaw)), augment.element, emptyList(), listOf(w.flaw),
-                WeaponLocation.Storage, ctx.era, ctx.day, history = listOf(HistoryEntry(ctx.era, ctx.day, "FORGED", "Came with the guild's opening: ${core.name} and ${augment.name}, with a flaw put there on purpose.")), craft = com.tinyblacksmith.core.crafting.WeaponRules.CRAFT)
+                WeaponLocation.Storage, ctx.era, ctx.day, history = listOf(HistoryEntry(ctx.era, ctx.day, "FORGED", "Came with the guild's starting kit: ${core.name} and ${augment.name}, with a flaw put there on purpose.")), craft = com.tinyblacksmith.core.crafting.WeaponRules.CRAFT)
                 .also { ctx.updateWeapon(it) }
         }
         announce(ctx, charter)
-        ctx.emit(EventType.OPENING_CHOSEN, 6, "The guild begins with ${def.name}. ${def.pitch} ${def.drawback}", listOfNotNull(weapon?.id?.value), mapOf("opening" to def.id, "build" to def.build))
+        ctx.emit(EventType.OPENING_CHOSEN, 6, "The guild begins with the starting kit ${def.name}. ${def.pitch} ${def.drawback}", listOfNotNull(weapon?.id?.value), mapOf("opening" to def.id, "build" to def.build))
         drawCandidates(ctx, charter)
         return null
     }
@@ -217,13 +218,13 @@ object GuildOps {
         update(ctx) { it.copy(members = it.members + GuildMember(heroId, ctx.day, c.fee, c.sharePercent, c.traitId), candidates = it.candidates.filter { x -> x.heroId != heroId }) }
         ctx.town = ctx.town.copy(championIds = ctx.town.championIds)
         val trait = catalog(ctx).trait(c.traitId)
-        ctx.emit(EventType.GUILD_RECRUITED, 4, "${hero.fullName} the ${ctx.content.heroClass(hero.classId).name} signed with the guild for ${c.fee} gold${trait?.let { " (${it.name})" } ?: ""}.", listOf(heroId.value), mapOf("fee" to c.fee.toString(), "trait" to c.traitId))
+        ctx.emit(EventType.GUILD_RECRUITED, 4, "${hero.fullName} the ${ctx.content.heroClass(hero.classId).name} joined the guild for a recruitment fee of ${c.fee} gold${trait?.let { " (${it.name})" } ?: ""}.", listOf(heroId.value), mapOf("fee" to c.fee.toString(), "trait" to c.traitId))
         return null
     }
 
     fun dismiss(ctx: ResolutionContext, heroId: HeroId): GameError? {
         val m = ctx.guild!!.member(heroId) ?: return GameError.NotAMember(heroId)
-        if (m.status != MemberStatus.HOME) return GameError.MemberUnavailable(heroId, if (m.status == MemberStatus.AWAY) "is away with the party" else "is held by the enemy")
+        if (m.status != MemberStatus.HOME) return GameError.MemberUnavailable(heroId, if (m.status == MemberStatus.AWAY) "is away with the party" else "has been captured")
         // As for the wall: a member of today's plan stays until the plan is cancelled, which gives its fee back.
         if (ctx.guild!!.planned?.heroIds?.contains(heroId) == true) return GameError.MemberUnavailable(heroId, "is in the party you planned for today")
         val hero = ctx.hero(heroId)
@@ -238,7 +239,7 @@ object GuildOps {
         (weapon.location as? WeaponLocation.Loaned)?.let { return if (it.heroId == heroId) null else GameError.WeaponOnLoan(weaponId, it.heroId) }
         if (!weapon.isInStorage && !weapon.isListed) return GameError.WeaponNotAvailable(weaponId, weapon.location)
         weapon.promisedTo?.let { return GameError.WeaponPromised(weaponId, it) }
-        if (m.status != MemberStatus.HOME) return GameError.MemberUnavailable(heroId, if (m.status == MemberStatus.AWAY) "is away with the party" else "is held by the enemy")
+        if (m.status != MemberStatus.HOME) return GameError.MemberUnavailable(heroId, if (m.status == MemberStatus.AWAY) "is away with the party" else "has been captured")
         val hero = ctx.hero(heroId)
         loanOf(ctx, heroId)?.let { old ->
             ctx.updateWeapon(old.copy(location = WeaponLocation.Storage))

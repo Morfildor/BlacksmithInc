@@ -68,9 +68,9 @@ internal object GuildVisitors {
         val blade = ctx.weapons[i.weaponId]?.name
         return when (i.defId) {
             GuildContent.COWARD_RETURNS -> ctx.guild?.captives?.firstOrNull { it.heroId == i.heroId }?.let { c ->
-                "${name(ctx, i.otherHeroId)} came back from ${GuildOps.catalog(ctx).route(c.factionId)?.name ?: "their camp"} without ${name(ctx, i.heroId)}, who was captured and is alive there. A rescue quest can bring them out until day ${c.deadlineDay - 1}." +
+                "${name(ctx, i.otherHeroId)} brings news of ${name(ctx, i.heroId)}, who was captured ${GuildOps.catalog(ctx).route(c.factionId)?.where ?: "in their camp"} and is still alive. A rescue quest can bring ${name(ctx, i.heroId)} home if a party is sent by day ${c.deadlineDay - 1}." +
                     (blade?.let { " The loaned $it is with the captor." } ?: "")
-            } ?: "${name(ctx, i.heroId)} is no longer held."
+            } ?: "${name(ctx, i.heroId)} is no longer captured."
             GuildContent.SWORD_COMPLAINT -> "${blade ?: "A weapon"} has opinions, and this morning it has a complaint: it will not be carried by people who think they know better. It wants inexperienced company."
             GuildContent.ACROSS_THE_COUNTER -> ctx.guild?.nemesis?.let { n -> "A dealer in things found on battlefields can get ${blade ?: "your weapon"} back from ${n.name}: pay ${a["price"]} gold and it is on your counter today. Or he will tell you where ${n.name} sleeps." }
                 ?: "The dealer's news is stale: the weapon is no longer in those hands."
@@ -85,7 +85,7 @@ internal object GuildVisitors {
         return when (i.defId) {
             GuildContent.COWARD_RETURNS -> {
                 val held = g?.captives?.firstOrNull { it.heroId == i.heroId }
-                val gone = if (held == null) "They are no longer held." else null
+                val gone = if (held == null) "They are no longer captured." else null
                 val rescue = g?.offers?.firstOrNull { it.subjectHeroId == i.heroId }
                 listOf(
                     Opt("time", "Pay the captors to wait", "The deadline to bring out ${name(ctx, i.heroId)} moves ${n("days")} days later.", gold = n("ransom"), blocked = gone) { c ->
@@ -93,11 +93,11 @@ internal object GuildVisitors {
                             offers = c.guild!!.offers.map { if (it.subjectHeroId == i.heroId) it.copy(expiresDay = it.expiresDay + n("days")) else it })
                         "The smith paid ${n("ransom")} gold to buy ${name(c, i.heroId)} ${n("days")} more days."
                     },
-                    Opt("question", "Question the survivor", "${name(ctx, i.otherHeroId)} spends today telling what they saw, so they cannot join a party today. On the rescue's first day, the enemies are ${100 - n("ease")}% weaker. The second day is unchanged.",
+                    Opt("question", "Ask ${name(ctx, i.otherHeroId)} for the way in", "${name(ctx, i.otherHeroId)} spends today describing the way in and is exhausted today, so ${name(ctx, i.otherHeroId)} cannot join a quest or stand on the wall today. In the rescue's first fight, every enemy has ${100 - n("ease")}% less Health, Attack and Support. The second fight is unchanged.",
                         blocked = gone ?: (if (rescue == null) "The rescue is already under way." else null) ?: g?.member(i.otherHeroId!!)?.let { GuildOps.unavailable(ctx, it) }?.let { "${name(ctx, i.otherHeroId)} $it." }) { c ->
                         c.guild = c.guild!!.copy(offers = c.guild!!.offers.map { o -> if (o.subjectHeroId == i.heroId) o.copy(stages = o.stages.mapIndexed { s, st -> if (s == 0) st.copy(enemies = st.enemies.map { e -> e.copy(percent = e.percent * n("ease") / 100) }) else st }) else o })
-                        GuildOps.updateMember(c, i.otherHeroId!!) { it.copy(wound = Wound(WoundKind.EXHAUSTED, c.day + 1, "Spent the day telling what they saw.")) }
-                        "${name(c, i.otherHeroId)} told the smith the way in to where ${name(c, i.heroId)} is held."
+                        GuildOps.updateMember(c, i.otherHeroId!!) { it.copy(wound = Wound(WoundKind.EXHAUSTED, c.day + 1, "Spent the day describing the way in.")) }
+                        "${name(c, i.otherHeroId)} told the smith the way in to where ${name(c, i.heroId)} is kept."
                     },
                     pass("Let the trail go cold for today", "The smith did not act on ${name(ctx, i.otherHeroId)}'s news today."),
                 )
@@ -106,7 +106,7 @@ internal object GuildVisitors {
                 val w = ctx.weapons[i.weaponId]
                 val gone = if (w == null || LaunchContent.SENTIENT !in w.flaws || w.location is WeaponLocation.Lost || w.location is WeaponLocation.Destroyed) "The weapon is no longer at the forge." else null
                 listOf(
-                    Opt("oath", "\"It wants inexperienced company.\"", "The weapon takes an oath: while everyone in its party is level ${n("level")} or lower, every ally starts a fight with 3 Guard and 1 Regeneration. In any other party it does nothing more than before.", blocked = gone) { c ->
+                    Opt("oath", "\"It wants inexperienced company.\"", "The weapon swears an oath. While its wielder and every ally in the fight are level ${n("level")} or lower, every ally starts each fight with 3 Armor and 1 Regeneration. If anyone in the fight is above level ${n("level")}, the oath does nothing.", blocked = gone) { c ->
                         c.addWeaponHistory(i.weaponId!!, HISTORY_OATH, "Swore to fight only beside the inexperienced.")
                         "${c.weapon(i.weaponId).name} took its oath: it rallies a party of novices."
                     },
@@ -130,7 +130,7 @@ internal object GuildVisitors {
                         Stories.recovered(c, blade.id)
                         "The smith bought ${blade.name} back for ${n("price")} gold."
                     },
-                    Opt("lead", "Take the lead instead", "The recovery quest for it costs no fee (a fee already paid today stays paid), and the enemies fighting beside ${nem?.name ?: "its bearer"} are ${100 - n("ease")}% weaker.",
+                    Opt("lead", "Take the lead instead", "The recovery quest no longer has a fee, unless you already paid it today. Every enemy fighting beside ${nem?.name ?: "its bearer"} has ${100 - n("ease")}% less Health, Attack and Support.",
                         blocked = gone ?: if (g?.offers?.none { it.subjectWeaponId == i.weaponId } == true) "No recovery quest is on the board." else null) { c ->
                         c.guild = c.guild!!.copy(offers = c.guild!!.offers.map { o -> if (o.subjectWeaponId == i.weaponId) o.copy(fee = if (c.guild!!.planned?.offerId == o.id) o.fee else 0, stages = o.stages.map { st -> st.copy(enemies = st.enemies.mapIndexed { k, e -> if (k == 0) e else e.copy(percent = e.percent * n("ease") / 100) }) }) else o })
                         "The dealer told the smith where ${nem?.name ?: "the bearer"} sleeps."
@@ -161,7 +161,7 @@ internal object GuildVisitors {
         return when (i.defId) {
             Depth.FESTIVAL_CONTRACT -> {
                 val champion = GuildOps.present(ctx).mapNotNull { ctx.heroes[it.heroId] }.maxWithOrNull(compareBy<Hero> { it.level }.thenByDescending(IdOrder.numeric) { it.id.value })
-                val enter = Opt("tournament", "Enter ${champion?.fullName ?: "a member"} in the tournament", "${champion?.name ?: "They"} fights for the crowd today: ${cfg.tournamentGold} gold, +${cfg.tournamentReputation} reputation, and a name. Afterwards they are exhausted for today and tomorrow, and they are no longer reserved for the wall.",
+                val enter = Opt("tournament", "Enter ${champion?.fullName ?: "a member"} in the tournament", "${champion?.name ?: "The member"} fights in the festival tournament today. You gain ${cfg.tournamentGold} gold and +${cfg.tournamentReputation} reputation, and ${champion?.name ?: "the member"} gains ${cfg.tournamentFame} fame and ${cfg.missionXpWin} experience. Afterwards ${champion?.name ?: "the member"} is exhausted today and tomorrow and is no longer reserved for the wall.",
                     blocked = if (champion == null) "No member is fit to enter." else if (ctx.guild!!.planned?.heroIds?.contains(champion.id) == true) "${champion.name} is in the party you planned for today." else null) { c ->
                     val h = c.hero(champion!!.id)
                     c.gold += cfg.tournamentGold
@@ -175,7 +175,7 @@ internal object GuildVisitors {
                 options.dropLast(1) + enter + options.last()
             }
             Depth.CRACKED_FAMILY_BLADE -> options.map { o ->
-                if (o.id != "restore") o else Opt(o.id, o.label, o.effect + " ${name(ctx, i.heroId)} will also be willing to sign with the guild for ${cfg.openingFeePercent}% of the usual fee.", o.gold, o.energy, o.material, o.blocked, o.closes) { c ->
+                if (o.id != "restore") o else Opt(o.id, o.label, o.effect + " ${name(ctx, i.heroId)} will also be willing to join the guild for ${cfg.openingFeePercent}% of the usual recruitment fee.", o.gold, o.energy, o.material, o.blocked, o.closes) { c ->
                     val told = o.apply(c)
                     val heir = c.heroes[i.heroId]?.takeIf { it.isAlive }
                     val g = c.guild!!

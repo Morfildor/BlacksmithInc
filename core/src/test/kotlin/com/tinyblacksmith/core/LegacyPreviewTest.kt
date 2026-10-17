@@ -71,8 +71,8 @@ class LegacyPreviewTest {
         val stock = catalog.upgrades.first { it.effect == UpgradeEffect.CATALOG_ACCESS }
         assertEquals(6, Legacy.preview(stock.id, 3, config = config.copy(legacyTracks = tracks.copy(catalogStockPerLevel = 2)))!!.after)
         val thrifty = catalog.upgrades.first { it.effect == UpgradeEffect.MATERIAL_EFFICIENCY }
-        assertEquals("Next era. The augment is kept now and then after a forge, more often than without it. It is never certain.", Legacy.preview(thrifty.id, 1)!!.text)
-        assertEquals("Next era. The augment is kept often after a forge, more often than at level 2. It is never certain.", Legacy.preview(thrifty.id, 3)!!.text)
+        assertEquals("Next era. The infusion is kept now and then after a forge, more often than without it. It is never certain.", Legacy.preview(thrifty.id, 1)!!.text)
+        assertEquals("Next era. The infusion is kept often after a forge, more often than at level 2. It is never certain.", Legacy.preview(thrifty.id, 3)!!.text)
         assertNull(Legacy.preview(energy.id, 0))
         assertNull(Legacy.preview(energy.id, energy.maxLevel + 1))
         // The slice catalog has shorter tracks; the same function serves it.

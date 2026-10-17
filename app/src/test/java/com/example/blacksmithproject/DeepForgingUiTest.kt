@@ -92,8 +92,8 @@ class DeepForgingUiTest {
     fun aMetalsRuleIsOnTheCardOfAWeaponForgedSinceAndNotOnAnOlderOne() {
         val forgedNow = CombatSandbox.blade("w_new", LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.STORMGLASS, craft = WeaponRules.CRAFT)
         val older = forgedNow.copy(craft = 1)
-        assertEquals(listOf("Iron holds" to "metal", "Arc" to "element"), bladeRules(forgedNow, content).road.map { it.name to it.source })
-        assertEquals(listOf("Arc" to "element"), bladeRules(older, content).road.map { it.name to it.source })
+        assertEquals(listOf("Iron" to "metal", "Storm" to "element"), bladeRules(forgedNow, content).road.map { it.name to it.source })
+        assertEquals(listOf("Storm" to "element"), bladeRules(older, content).road.map { it.name to it.source })
         assertTrue(engine.itemDetail(guild.with(forgedNow), forgedNow.id)!!.rules!!.road.any { it.source == "metal" })
         assertFalse(engine.itemDetail(guild.with(older), older.id)!!.rules!!.road.any { it.source == "metal" })
     }
@@ -102,10 +102,10 @@ class DeepForgingUiTest {
     fun aRuleTwoPartsBringIsListedOnceWithBothAndNotedOnTheCard() {
         val both = CombatSandbox.blade("w_both", LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.STORMGLASS, LaunchContent.BINDING_SALT, affixes = listOf(LaunchContent.STORMCHARGED))
         val rules = bladeRules(both, content)
-        val burst = rules.road.single { it.name == "Charge burst" }
+        val burst = rules.road.single { it.name == "Discharge" }
         assertEquals(1, burst.alsoFrom.size)
-        assertTrue(burst.heading, burst.heading.startsWith("Charge burst · ") && burst.heading.endsWith(", also ${burst.alsoFrom.single()}"))
-        assertTrue(rules.notes.any { "Charge burst" in it && "counts once" in it })
+        assertTrue(burst.heading, burst.heading.startsWith("Discharge · ") && burst.heading.endsWith(", also ${burst.alsoFrom.single()}"))
+        assertTrue(rules.notes.any { "Discharge" in it && "counts once" in it })
     }
 
     @Test
@@ -134,7 +134,7 @@ class DeepForgingUiTest {
     fun aRecipeOnTheBenchSaysItIsNotAWeaponTheSmithOwns() {
         val recipe = engine.forgeWorkbench(guild, draft, emptyList()).outlook!!.demonstration
         val ui = benchUi(Bench.run(recipe, true, Bench.defaultWielder(recipe.familyId, content), "alone", "armoured", content, engine.config))
-        assertTrue(ui.synthetic.any { it.startsWith("A recipe, not a weapon you own") })
+        assertTrue(ui.synthetic.any { it.startsWith("This is a recipe, not a weapon you own") })
         assertFalse(recipe.id in guild.weapons)
     }
 
@@ -142,15 +142,15 @@ class DeepForgingUiTest {
     fun aRuleOnlyForTheWallIsNamedAsNotTested() {
         val sentient = CombatSandbox.blade("w_s", LaunchContent.SWORD, LaunchContent.IRON, LaunchContent.EMBER_RESIN, affixes = listOf(LaunchContent.SENTIENT))
         val ui = benchUi(Bench.run(sentient, false, Bench.defaultWielder(sentient.familyId, content), "alone", "armoured", content, engine.config))
-        assertEquals(listOf("Sentient (at home)"), ui.notTested)
-        assertTrue((ui.fired.map { it.name } + ui.silent.map { it.name }).none { it == "Sentient (at home)" })
-        assertEquals("Only on the town's wall", ui.elsewhere)
+        assertEquals(listOf("Sentient (siege only)"), ui.notTested)
+        assertTrue((ui.fired.map { it.name } + ui.silent.map { it.name }).none { it == "Sentient (siege only)" })
+        assertEquals("Siege only", ui.elsewhere)
         assertTrue("choose The town's wall under Against" in ui.elsewhereNote)
         // On the wall it is the other way round: the home rule is fought and the road rule is the one named.
         val wall = benchUi(Bench.run(sentient, false, Bench.defaultWielder(sentient.familyId, content), "alone", "wall", content, engine.config))
-        assertEquals(listOf("Sentient (on the road)"), wall.notTested)
-        assertEquals("Only on a quest", wall.elsewhere)
-        assertTrue("Sentient (at home)" in wall.fired.map { it.name } + wall.silent.map { it.name })
+        assertEquals(listOf("Sentient (quests only)"), wall.notTested)
+        assertEquals("Quests only", wall.elsewhere)
+        assertTrue("Sentient (siege only)" in wall.fired.map { it.name } + wall.silent.map { it.name })
         assertTrue(wall.synthetic.any { "wall here is made up" in it })
     }
 
@@ -171,11 +171,11 @@ class DeepForgingUiTest {
         assertEquals(all, blank.hidden)
 
         val forged = fightNotes(journal.copy(learnedRules = setOf("core_bronze")), combat)
-        assertEquals(listOf("Bronze rings back"), forged.learned.map { it.name })
+        assertEquals(listOf("Bronze"), forged.learned.map { it.name })
         val path = forged.paths.single()
         assertEquals("guard_answer", path.id)
         assertEquals(FightNoteKind.SUGGESTED, path.kind)
-        assertEquals(listOf("Bronze rings back"), path.known)
+        assertEquals(listOf("Bronze"), path.known)
         assertEquals(combat.interactions.first { it.id == "guard_answer" }.constraint, path.tradeoff)
         assertEquals(all - 1, forged.hidden)
         assertTrue(forged.hiddenLine!!.startsWith("${all - 1} more to find."))
@@ -193,6 +193,6 @@ class DeepForgingUiTest {
         assertNotNull(engine.fightNotes(guild))
         assertNull(engine.fightNotes(classic))
         val carried = classic.copy(legacy = classic.legacy.copy(journal = classic.legacy.journal.copy(learnedRules = setOf("core_bronze"))))
-        assertEquals(listOf("Bronze rings back"), engine.fightNotes(carried)!!.learned.map { it.name })
+        assertEquals(listOf("Bronze"), engine.fightNotes(carried)!!.learned.map { it.name })
     }
 }

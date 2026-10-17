@@ -133,6 +133,8 @@ wait_id guild_list
 tap_id guild_tab_company; $ADB shell sleep 1
 for i in 1 2 3 4 5 6 7 8 9 10; do has "$WHO" && break; swipe_up; done
 tap "$WHO" || exit 1
+# V3: a tap on a member reads their card; its "Full details" opens the sheet with the loans
+wait_id guild_hero_tip && { shot 05a_member_card; tap_id guild_hero_details; }
 wait_id sheet_member; shot 05_member_sheet
 scroll_to_id sheet_loan_ && tap_id sheet_loan_
 $ADB shell sleep 1; shot 06_member_loaned

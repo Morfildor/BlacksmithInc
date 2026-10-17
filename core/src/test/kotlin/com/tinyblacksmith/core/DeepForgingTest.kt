@@ -364,7 +364,7 @@ class DeepForgingTest {
         // A recipe that is not a weapon yet is said to be one, and carries nothing a roll decides.
         val demo = Bench.demonstration(L.SWORD, L.IRON, L.STORMGLASS, L.BINDING_SALT, content, config)
         assertTrue(demo.affixes.isEmpty() && demo.flaws.isEmpty() && demo.signatureId == null)
-        assertTrue(Bench.run(demo, true, L.GUARDIAN, "healer", "attrition", content, config).synthetic.any { it.startsWith("A recipe, not a weapon you own") })
+        assertTrue(Bench.run(demo, true, L.GUARDIAN, "healer", "attrition", content, config).synthetic.any { it.startsWith("This is a recipe, not a weapon you own") })
         // A rule the weapon has only on the wall is named as not tested here.
         val sentient = made(L.SWORD, L.IRON, L.EMBER_RESIN, flaws = listOf(L.SENTIENT))
         assertEquals(listOf("affix_sentient_home"), bench(sentient, L.GUARDIAN).notTested.map { it.id })
@@ -373,11 +373,11 @@ class DeepForgingTest {
     @Test fun `the bench says why a rule stayed silent, in the fight's own terms`() {
         fun why(w: Weapon, cls: HeroClassId, rule: String, companions: String = "alone", target: String = "attrition") = bench(w, cls, companions, target).silent.single { it.rule.id == rule }.why
         assertEquals("Nobody healed Bench Guardian.", why(made(L.SWORD, L.IRON, L.STORMGLASS, L.BINDING_SALT), L.GUARDIAN, "catalyst_capacitor"))
-        assertEquals("Bench Duelist never had Guard for an enemy to break.", why(made(L.SWORD, L.BRONZE, L.EMBER_RESIN), L.DUELIST, "core_bronze"))
+        assertEquals("Bench Duelist never had Armor for an enemy to break.", why(made(L.SWORD, L.BRONZE, L.EMBER_RESIN), L.DUELIST, "core_bronze"))
         assertEquals("No weapon in the party cracked.", why(made(L.STAFF, L.IRON, L.EMBER_RESIN, L.RUNESTONE_SHARD), L.BATTLEMAGE, "catalyst_runed"))
-        assertEquals("There was no Mark for Bench Duelist's hit to consume.", why(made(L.SWORD, L.STARSTEEL, L.FROST_BLOOM), L.DUELIST, "core_starsteel", target = "armoured"))
+        assertEquals("There was no Mark for Bench Duelist's hit to use up.", why(made(L.SWORD, L.STARSTEEL, L.FROST_BLOOM), L.DUELIST, "core_starsteel", target = "armoured"))
         assertEquals("Bench Guardian never got Steam.", why(made(L.SWORD, L.IRON, L.EMBER_RESIN, L.DRAGON_OIL), L.GUARDIAN, "catalyst_steam_lance", target = "armoured"))
-        assertEquals("None of these enemies is an elite or a leader.", why(made(L.SWORD, L.IRON, L.EMBER_RESIN, buffs = listOf(L.GIANT_SLAYER)), L.GUARDIAN, "affix_giant_slayer", target = "armoured"))
+        assertEquals("None of these enemies is an Elite.", why(made(L.SWORD, L.IRON, L.EMBER_RESIN, buffs = listOf(L.GIANT_SLAYER)), L.GUARDIAN, "affix_giant_slayer", target = "armoured"))
     }
 
     // ---- the journal ----
@@ -417,7 +417,7 @@ class DeepForgingTest {
         assertEquals(setOf("charge"), ctx.legacy.journal.witnessed)
         val told = ctx.newEvents.filter { it.type == EventType.DISCOVERY && it.data["interaction"] == "charge" }
         assertEquals(1, told.size)
-        assertTrue(told.single().text.startsWith("Seen in a real fight. Charge and burst."))
+        assertTrue(told.single().text.startsWith("Seen in a real fight. Charge and Discharge."))
         Interactions.witness(ctx, rehearsal.result)
         assertEquals(1, ctx.newEvents.count { it.data["interaction"] == "charge" })
         state = state.copy(legacy = ctx.legacy)

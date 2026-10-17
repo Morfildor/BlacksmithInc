@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Android 12+ launch: the forge-night ground with the workshop's anvil, never the system's default icon. -->
+    <style name="Theme.BlacksmithProject" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/forge_night</item>
+        <item name="android:windowSplashScreenBackground">@color/forge_night</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_anvil</item>
+    </style>
+</resources>

@@ -2,6 +2,7 @@ package com.tinyblacksmith.core.gazette
 
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
+import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.crafting.SignatureCatalog
 import com.tinyblacksmith.core.engine.WorldEvents
 import com.tinyblacksmith.core.market.Commissions
@@ -17,6 +18,7 @@ import com.tinyblacksmith.core.shopday.Advice
 import com.tinyblacksmith.core.shopday.LeadKind
 import com.tinyblacksmith.core.shopday.Lines
 import com.tinyblacksmith.core.text.LegacyProse
+import com.tinyblacksmith.core.text.Terms
 import com.tinyblacksmith.core.text.asSentence
 import com.tinyblacksmith.core.text.joinSentences
 
@@ -165,7 +167,8 @@ object GazetteDigest {
         // Tier 2: a siege warning that is new today, with the besieger's weakness and the siege's trait.
         ev.filter { it.type == EventType.SIEGE_WARNING && it.data["day"] != null && it.data["day"] !in f.warnedBefore }.lastOrNull()?.let { w ->
             val faction = w.data["faction"]
-            val weak = w.data["weak"]
+            // Stored as the element constant in lower case ("frost"); shown through the one display map.
+            val weak = w.data["weak"]?.let { s -> Element.entries.firstOrNull { it.name.lowercase() == s }?.let { Terms.element(it).lowercase() } ?: s }
             val trait = f.content.siegeTrait(w.data["trait"])
             val first = when {
                 faction != null && weak != null -> "Attackers: $faction. They are weak to $weak."
@@ -182,12 +185,12 @@ object GazetteDigest {
             EventType.SIGNATURE_DISCOVERED -> if (e.data["first"] != "false") {
                 val sig = SignatureCatalog.byId[e.data["key"].orEmpty().removePrefix("sig:")]
                 val body = if (sig != null) "${sig.name}. ${sig.flavor}".let { b -> if (b.endsWith(".")) b else "$b." } else LegacyProse.display(e.text)
-                add(3, e, Story(Kind.SIGNATURE, "New recipe discovered", body, subjectIds = e.subjectIds, opensNotebook = true))
+                add(3, e, Story(Kind.SIGNATURE, "Signature discovered", body, subjectIds = e.subjectIds, opensNotebook = true))
             }
             EventType.DISCOVERY -> if (e.data["rung"] != null || e.data["key"]?.startsWith("sig:") == true) {
                 add(3, e, Story(Kind.CLUE, "A recipe clue", LegacyProse.display(e.text), opensNotebook = true))
             } else if (e.priority >= 3) {
-                add(3, e, Story(Kind.PAIRING, "A pairing learned", LegacyProse.display(e.text).removePrefix("Pairing learned. "), opensNotebook = true))
+                add(3, e, Story(Kind.PAIRING, "A combination learned", LegacyProse.display(e.text).removePrefix("Pairing learned. ").removePrefix("Combination learned. "), opensNotebook = true))
             }
             EventType.WEAPON_BROKEN -> {
                 val heroId = e.subjectIds.getOrNull(1)
@@ -202,7 +205,7 @@ object GazetteDigest {
                 val era = e.data["era"]
                 val body = listOfNotNull(era?.let { "Last recorded in era $it." }, "Upgrade or repair it to restore its dormant properties.".takeIf { era != null }).joinToString(" ")
                     .ifEmpty { LegacyProse.display(e.text) }
-                add(3, e, Story(Kind.LEGEND_RETURNED, if (w != null) "$w returned" else "A legend returned", body, subjectIds = e.subjectIds))
+                add(3, e, Story(Kind.LEGEND_RETURNED, if (w != null) "$w returned" else "A famous weapon returned", body, subjectIds = e.subjectIds))
             }
             EventType.WEAPON_INHERITED -> if (e.id !in used) {
                 val (w, heir, former) = Triple(weapon(e.subjectIds.getOrNull(0)), hero(e.subjectIds.getOrNull(1)), hero(e.subjectIds.getOrNull(2)))
@@ -372,7 +375,7 @@ object GazetteDigest {
         if (state.pendingBlessingOffer.isNotEmpty()) out += "The town has offered a blessing for the forge."
         if (state.pendingRelicOffer.isNotEmpty()) out += "A workshop relic is waiting for your choice."
         if (state.encounter?.isOpen == true) out += "A visitor is waiting at the forge."
-        if (state.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == state.day) out += "Caravan delayed. No rare-material delivery tomorrow."
+        if (state.worldFlags[WorldEvents.FLAG_CARAVAN_DELAYED] == state.day) out += "Caravan delayed. No limited materials arrive tomorrow."
         if (state.worldFlags[WorldEvents.FLAG_FESTIVAL] == state.day) out += "Merchant festival tomorrow. Expect more shoppers."
         val lead = Advice.lead(state, content, config)
         if (lead.kind != LeadKind.FORGE_FOR_BUYERS && lead.kind != LeadKind.CHOOSE_BLESSING && lead.kind != LeadKind.FIRST_BLADE) {
@@ -387,7 +390,7 @@ object GazetteDigest {
     /** What an older paper may say about the days ahead: only what its own records announced, by absolute day. */
     private fun recordedNotices(ev: List<EventRecord>): List<String> = buildList {
         for (e in ev.filter { it.type == EventType.WORLD_EVENT }) when (e.data["event"]) {
-            "caravan_delayed" -> add("Caravan delayed. No rare-material delivery on day ${e.day + 1}.")
+            "caravan_delayed" -> add("Caravan delayed. No limited materials arrive on day ${e.day + 1}.")
             "merchant_festival" -> add("Merchant festival on day ${e.day + 1}. Expect more shoppers.")
         }
     }.distinct()

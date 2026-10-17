@@ -75,12 +75,12 @@ private fun blades(n: Int) = if (n == 1) "1 weapon" else "$n weapons"
 internal fun salvageTerms(n: Int, t: BulkTerms): String {
     val cost = n * t.salvageEnergy
     return "Destroys each weapon and returns one unit of its metal. Costs $cost energy. You have ${t.energy}." +
-        if (cost > t.energy) " Extra energy is borrowed from tomorrow. You can borrow ${t.overworkLeft} more today. Salvaging stops when energy and overwork run out." else ""
+        if (cost > t.energy) " Extra energy is borrowed from tomorrow. You can borrow ${t.overworkLeft} more today. Salvaging stops when you can borrow no more energy." else ""
 }
 
 /** The body of "Give n blades to the town watch?". */
 internal fun donateTerms(t: BulkTerms): String =
-    "Gives these weapons to the town watch permanently. The armory can gain ${t.armoryRoom} more defense before it's full."
+    "Donates these weapons to the armory for good. The armory can gain ${t.armoryRoom} more defense before it's full."
 
 private val FilterSaver = listSaver<StorageFilter, String>(
     save = { listOf(it.family.orEmpty(), it.rarity?.name.orEmpty(), it.unsold.toString(), it.sort.name) },
@@ -167,8 +167,9 @@ fun StorageList(
                         when {
                             storage.isEmpty() -> "Storage is empty. Keep forged weapons here until you're ready to sell them."
                             select -> "Tap weapons to select them. ${blades(chosen.size)} selected."
-                            shelfFree <= 0 -> "The shelf is full. Tap a weapon to upgrade, repair, salvage or donate it."
-                            else -> "$shelfFree shelf spaces free. Tap a weapon to see its details and set a price."
+                            shelfFree <= 0 -> "The shelf is full. List a weapon after one sells, or tap it to upgrade, repair, salvage or donate it to the armory."
+                            shelfFree == 1 -> "1 shelf space free."
+                            else -> "$shelfFree shelf spaces free."
                         },
                     )
                     if (storage.size > 1) StorageFilters(storage, filter) { filter = it }
@@ -182,10 +183,13 @@ fun StorageList(
                     if (shown.isEmpty() && storage.isNotEmpty()) Secondary("No stored weapons match these filters.", Modifier.padding(top = Space.sm))
                 }
             }
+            // V3: each weapon is a row divided by a hairline: what it is, its price or "In storage" and the quick "List at".
+            // A tap opens its sheet (in select mode it chooses the weapon); the ringed "i" or a long press its card. While
+            // choosing, the card has no "Full details": leaving the list would let the choice go.
             items(shown, key = { "stock_${it.weapon.id.value}" }) { s ->
                 val id = s.weapon.id
-                if (select) StockRow(s, busy, onOpen = { picked = if (id in picked) picked - id else picked + id }, onList = null, selected = id in picked)
-                else StockRow(s, busy || shelfFree <= 0, onOpen = { onOpenBlade(id) }, onList = { price -> onList(id, price) })
+                if (select) WeaponRow(s, onOpen = { picked = if (id in picked) picked - id else picked + id }, onDetails = null, selected = id in picked)
+                else WeaponRow(s, onOpen = { onOpenBlade(id) }, busy = busy || shelfFree <= 0, onList = { price -> onList(id, price) })
             }
             if (loans.isNotEmpty()) {
                 item(key = "loans") {
@@ -205,30 +209,30 @@ fun StorageList(
                 }
             }
         }
-        if (select) SecondaryActionButton("Scrap ${chosen.size} (no energy)", { scrapping = true }, Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = Space.sm).testTag("storage_bulk_scrap"), enabled = !busy && chosen.isNotEmpty())
+        if (select) SecondaryActionButton("Melt down ${chosen.size} (no energy)", { scrapping = true }, Modifier.fillMaxWidth().padding(horizontal = Space.md).padding(top = Space.sm).testTag("storage_bulk_scrap"), enabled = !busy && chosen.isNotEmpty())
         if (select) Row(Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
             SecondaryActionButton("Salvage ${chosen.size}", { asking = StockAction.Salvage }, Modifier.weight(1f).testTag("storage_bulk_salvage"), enabled = !busy && chosen.isNotEmpty())
-            SecondaryActionButton("Arm the watch ${chosen.size}", { asking = StockAction.Donate }, Modifier.weight(1f).testTag("storage_bulk_donate"), enabled = !busy && chosen.isNotEmpty() && terms!!.armoryRoom > 0)
+            SecondaryActionButton("Donate ${chosen.size} to the armory", { asking = StockAction.Donate }, Modifier.weight(1f).testTag("storage_bulk_donate"), enabled = !busy && chosen.isNotEmpty() && terms!!.armoryRoom > 0)
         }
     }
     if (scrapping) ForgeDialog(
-        "Scrap ${blades(chosen.size)}?", onDismiss = { scrapping = false },
+        "Melt down ${blades(chosen.size)}?", onDismiss = { scrapping = false },
         actions = {
             InlineActionButton("Keep them", { scrapping = false })
-            InlineActionButton("Scrap", { scrapping = false; onScrap(chosen); picked = emptySet() }, Modifier.testTag("storage_scrap_confirm"))
+            InlineActionButton("Melt down", { scrapping = false; onScrap(chosen); picked = emptySet() }, Modifier.testTag("storage_scrap_confirm"))
         },
     ) {
-        Text("Scraps these weapons permanently. Costs no energy. " + scrapBack(chosen))
+        Text("Melts these weapons down for good. Costs no energy. " + scrapBack(chosen))
     }
     val action = asking
     if (action != null && terms != null) {
         val salvage = action == StockAction.Salvage
         // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
         ForgeDialog(
-            if (salvage) "Salvage ${blades(chosen.size)}?" else "Give ${blades(chosen.size)} to the town watch?", onDismiss = { asking = null },
+            if (salvage) "Salvage ${blades(chosen.size)}?" else "Donate ${blades(chosen.size)} to the armory?", onDismiss = { asking = null },
             actions = {
                 InlineActionButton("Keep them", { asking = null })
-                InlineActionButton(if (salvage) "Salvage" else "Arm the watch", { asking = null; onBulk(action, chosen); picked = emptySet() }, Modifier.testTag("storage_bulk_confirm"))
+                InlineActionButton(if (salvage) "Salvage" else "Donate", { asking = null; onBulk(action, chosen); picked = emptySet() }, Modifier.testTag("storage_bulk_confirm"))
             },
         ) {
             Text(if (salvage) salvageTerms(chosen.size, terms) else donateTerms(terms))
@@ -237,25 +241,37 @@ fun StorageList(
 }
 
 /**
- * The filter and order chips: only the families and rarities that are in storage, each row scrolling sideways when it is
- * long. A chosen chip tapped again lets everything through. Drawn at the chip's own 32 dp; Material keeps the touch area at 48.
+ * V2: one row of order chips, led by a "Filter" chip that opens the family, rarity and never-sold rows under it, so a long
+ * storeroom starts with the weapons and not three rows of chips. An active filter keeps its rows open and says itself on
+ * the Filter chip. A chosen chip tapped again lets everything through. Drawn at the chip's own 32 dp; Material keeps the
+ * touch area at 48.
  */
 @Composable
 private fun StorageFilters(storage: List<StockUi>, filter: StorageFilter, onChange: (StorageFilter) -> Unit) {
     val families = remember(storage) { storage.map { it.family }.distinct() }
     val rarities = remember(storage) { storage.map { it.weapon.rarity }.distinct().sorted() }
     val unsold = remember(storage) { storage.count { it.unsold } }
+    val active = listOfNotNull(filter.family, filter.rarity?.let(Labels::rarity), "Never sold".takeIf { filter.unsold })
+    var open by rememberSaveable { mutableStateOf(false) }
+    val showRows = open || active.isNotEmpty()
+    val canFilter = families.size > 1 || rarities.size > 1 || unsold in 1 until storage.size || active.isNotEmpty()
     @Composable
     fun ChipRow(tag: String, content: @Composable () -> Unit) =
         Row(Modifier.horizontalScroll(rememberScrollState()).testTag(tag), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) { content() }
+    ChipRow("storage_order") {
+        if (canFilter) FilterChip(
+            selected = showRows, onClick = { if (active.isNotEmpty()) { open = true; onChange(filter.copy(family = null, rarity = null, unsold = false)) } else open = !open },
+            label = { Text(if (active.isEmpty()) "Filter" else "Clear " + active.joinToString(" · "), style = MaterialTheme.typography.labelMedium) },
+            modifier = Modifier.testTag("storage_filter"),
+        )
+        StorageSort.entries.forEach { o -> FilterChip(selected = filter.sort == o, onClick = { onChange(filter.copy(sort = o)) }, label = { Text(o.label, style = MaterialTheme.typography.labelMedium) }) }
+    }
+    if (!showRows) return
     if (families.size > 1 || filter.family != null) ChipRow("storage_families") {
         families.forEach { f -> FilterChip(selected = filter.family == f, onClick = { onChange(filter.copy(family = f.takeIf { filter.family != f })) }, label = { Text(f, style = MaterialTheme.typography.labelMedium) }) }
     }
-    if (rarities.size > 1 || filter.rarity != null) ChipRow("storage_rarities") {
-        rarities.forEach { r -> FilterChip(selected = filter.rarity == r, onClick = { onChange(filter.copy(rarity = r.takeIf { filter.rarity != r })) }, label = { Text(Labels.rarity(r), style = MaterialTheme.typography.labelMedium) }) }
-    }
-    ChipRow("storage_order") {
+    if (rarities.size > 1 || filter.rarity != null || unsold in 1 until storage.size || filter.unsold) ChipRow("storage_rarities") {
+        rarities.takeIf { it.size > 1 || filter.rarity != null }?.forEach { r -> FilterChip(selected = filter.rarity == r, onClick = { onChange(filter.copy(rarity = r.takeIf { filter.rarity != r })) }, label = { Text(Labels.rarity(r), style = MaterialTheme.typography.labelMedium) }) }
         if (unsold in 1 until storage.size || filter.unsold) FilterChip(selected = filter.unsold, onClick = { onChange(filter.copy(unsold = !filter.unsold)) }, label = { Text("Never sold", style = MaterialTheme.typography.labelMedium) }, modifier = Modifier.testTag("storage_unsold"))
-        StorageSort.entries.forEach { o -> FilterChip(selected = filter.sort == o, onClick = { onChange(filter.copy(sort = o)) }, label = { Text(o.label, style = MaterialTheme.typography.labelMedium) }) }
     }
 }

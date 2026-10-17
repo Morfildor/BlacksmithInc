@@ -8,6 +8,7 @@ import com.tinyblacksmith.core.model.AffixId
 import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.model.Weapon
 import com.tinyblacksmith.core.model.WeaponFamilyId
+import com.tinyblacksmith.core.text.Terms
 
 /**
  * The one place a weapon's parts become the rules it follows in a fight. The fight (`Loadout`), the weapon sheet, the
@@ -28,7 +29,7 @@ object WeaponRules {
     /** From this composition on, the metal has a rule and a share of strike and support, and the catalog's rewritten rules (`CombatCatalog.revisions`) apply. */
     const val CRAFT_CORES = 2
 
-    enum class Source(val word: String) { FAMILY("weapon"), CORE("metal"), ELEMENT("element"), AFFIX("buff"), FLAW("flaw"), CATALYST("catalyst"), SIGNATURE("signature") }
+    enum class Source(val word: String) { FAMILY("weapon type"), CORE("metal"), ELEMENT("element"), AFFIX("bonus"), FLAW("flaw"), CATALYST("catalyst"), SIGNATURE("signature") }
 
     /** Where a rule holds: everywhere, only on a contract, or only on the town's wall. */
     enum class Where { ANYWHERE, ROAD, HOME }
@@ -61,7 +62,7 @@ object WeaponRules {
         fun add(effects: List<EffectDef>?, source: Source, id: String, name: String, where: Where = Where.ANYWHERE) = effects.orEmpty().forEach { listed += Rule(it, source, id, name, where) }
         add(family?.effects, Source.FAMILY, parts.familyId.value, content.familyById[parts.familyId]?.name ?: parts.familyId.value)
         add(core?.effects, Source.CORE, parts.coreId.value, content.materialById[parts.coreId]?.name ?: parts.coreId.value)
-        parts.element?.let { add(combat.elementEffects[it], Source.ELEMENT, it.name, it.name.lowercase().replaceFirstChar { c -> c.uppercase() }) }
+        parts.element?.let { add(combat.elementEffects[it], Source.ELEMENT, it.name, Terms.element(it)) }
         fun affix(a: AffixId, source: Source) {
             val name = content.affixById[a]?.name ?: a.value
             add(combat.affixEffects[a], source, a.value, name)

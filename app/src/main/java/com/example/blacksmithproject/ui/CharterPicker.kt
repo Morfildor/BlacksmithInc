@@ -15,6 +15,7 @@ import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.content.CharterDef
+import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ContentCatalog
 
 /** The picker over the ViewModel's own choice: what "New game" and "Begin era" will start under. Nothing at all for content without a guild. */
@@ -46,12 +47,23 @@ fun CharterPicker(charters: List<CharterDef>, selected: String?, onSelect: (Stri
     val at = ids[ids.indexOf(selected).coerceAtLeast(0)]
     Column(modifier.fillMaxWidth().testTag("charter_picker"), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         title?.let { Caps(it) }
-        ids.forEach { id ->
+        // V2: the kind of run is the first question, asked plainly: the shop alone, or the shop and a guild. Only a
+        // guild run shows the charters, each with what it gives and costs, so they can be compared side by side.
+        ChoiceRow(at == null, { onSelect(null) }, Modifier.testTag("charter_row_none")) {
+            Text("Classic era", style = MaterialTheme.typography.titleMedium, modifier = if (at == null) Modifier.testTag("charter_name") else Modifier)
+            Text("Only the shop: forge, price and sell weapons. The heroes are your customers.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+        }
+        ChoiceRow(at != null, { if (at == null) charters.firstOrNull()?.let { onSelect(it.id) } }, Modifier.testTag("setup_mode_guild")) {
+            Text("Guild era", style = MaterialTheme.typography.titleMedium)
+            Text("The shop and a guild: recruit heroes, lend them weapons and send them on quests. Choose a charter.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+        }
+        if (at != null) Caps("Charter", Modifier.padding(top = Space.sm))
+        if (at != null) ids.filterNotNull().forEach { id ->
             val charter = charters.firstOrNull { it.id == id }
             val chosen = id == at
             ChoiceRow(chosen, { onSelect(id) }, Modifier.testTag("charter_row_${id ?: "none"}")) {
                 Text(charter?.name ?: "No charter", style = MaterialTheme.typography.titleMedium, modifier = if (chosen) Modifier.testTag("charter_name") else Modifier)
-                Text(charter?.let { "Guild run · ${it.play}" } ?: "Classic run · Only the shop: forge, price and sell weapons. No guild.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
+                charter?.let { Text(it.play, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
                 if (charter != null) Column(Modifier.padding(top = Space.sm).let { if (chosen) it.testTag("charter_details") else it }, verticalArrangement = Arrangement.spacedBy(Space.xs)) {
                     EffectBullets(EffectKind.BUFF, charterGains(charter, content))
                     EffectBullets(EffectKind.FLAW, charterCosts(charter))
@@ -61,10 +73,14 @@ fun CharterPicker(charters: List<CharterDef>, selected: String?, onSelect: (Stri
     }
 }
 
-/** What [c] gives, a few words a line, read from its numbers so the card cannot drift from the rules. */
-fun charterGains(c: CharterDef, content: ContentCatalog): List<String> = listOfNotNull(
-    "${c.startClasses.joinToString(" and ") { content.heroClass(it).name }} sign on day 1",
-    "${listOfNotNull(c.offeredClass, c.alsoOffered).joinToString(" and ") { content.heroClass(it).name }} ready to hire on day 1",
+/**
+ * What [c] gives, a few words a line, read from its numbers so the card cannot drift from the rules. [feePercent] is the
+ * share of the recruitment fee the charter's offered class costs on day 1 (`GuildConfig.openingFeePercent`).
+ */
+fun charterGains(c: CharterDef, content: ContentCatalog, feePercent: Int = BalanceConfig.DEFAULT.guild.openingFeePercent): List<String> = listOfNotNull(
+    "${c.startClasses.joinToString(" and ") { content.heroClass(it).name }} join on day 1",
+    "${content.heroClass(c.offeredClass).name} for hire on day 1 at ${if (feePercent == 50) "half" else "$feePercent% of"} the recruitment fee",
+    c.alsoOffered?.let { "${content.heroClass(it).name} for hire on day 1 at the full fee" },
     c.militiaDelta.takeIf { it > 0 }?.let { "$it extra militia on the wall" },
     c.reputationDelta.takeIf { it > 0 }?.let { "A known name: $it more reputation" },
     c.extraOffers.takeIf { it > 0 }?.let { if (it == 1) "1 more quest on the board each day" else "$it more quests on the board each day" },
@@ -75,6 +91,6 @@ fun charterGains(c: CharterDef, content: ContentCatalog): List<String> = listOfN
 fun charterCosts(c: CharterDef): List<String> = listOfNotNull(
     c.goldDelta.takeIf { it < 0 }?.let { "Start with ${-it} less gold" },
     c.militiaDelta.takeIf { it < 0 }?.let { "${-it} fewer militia on the wall" },
-    c.earlyDanger.takeIf { it }?.let { "Dangerous quests from day 1" },
+    c.earlyDanger.takeIf { it }?.let { "Every kind of quest from day 1, the dangerous ones included" },
     c.smithGoldPercent.takeIf { it < 100 }?.let { "The forge keeps only $it% of the quest gold left after the members take their shares" },
 )
