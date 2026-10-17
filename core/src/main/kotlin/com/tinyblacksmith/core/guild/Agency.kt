@@ -4,6 +4,7 @@ import com.tinyblacksmith.core.battle.Battle
 import com.tinyblacksmith.core.battle.Power
 import com.tinyblacksmith.core.combat.EventKind
 import com.tinyblacksmith.core.combat.FightResult
+import com.tinyblacksmith.core.combat.UnitDef
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.content.FactionDef
 import com.tinyblacksmith.core.content.LaunchContent
@@ -70,6 +71,7 @@ object Agency {
             loan == null && own == null -> "unarmed"
             loan == null && own != null && own.condition < ctx.config.wornConditionThreshold -> "worn"
             loan == null && own != null && !oathAllows(hero, own) -> "oath"
+            mendingFoe(ctx, hero, loan ?: own) != null -> "mending"
             hero.want != null -> "want"
             threat != null && threat.weakTo != null && (loan ?: own)?.element != threat.weakTo -> "threat"
             else -> null
@@ -98,8 +100,11 @@ object Agency {
             val friction = attachment(ctx, hero, current)
             val shelf = ctx.weapons.values.filter { it.isListed }.sortedWith(compareBy(IdOrder.numeric) { it.id.value })
             val evaluations = shelf.map { w -> w to Market.evaluate(ctx, hero, current, w, rng.nextDouble()) }.filter { (w, _) -> oathAllows(hero, w) }
-            val best = evaluations.filter { it.second.eligible }.maxByOrNull { it.second.utility - friction }
-            if (best != null && best.second.utility - friction >= cfg.purchaseUtilityThreshold) {
+            // A member who has watched an enemy of tonight's army mend itself values a weapon that stops it.
+            val foe = if (why == "mending") mendingFoe(ctx, hero, GuildOps.weaponOf(ctx, hero.id)) else null
+            fun answer(w: Weapon) = if (foe != null && stopsMending(w, foe)) cfg.living.mendingAnswerUtility else 0.0
+            val best = evaluations.filter { it.second.eligible }.maxByOrNull { it.second.utility - friction + answer(it.first) }
+            if (best != null && best.second.utility - friction + answer(best.first) >= cfg.purchaseUtilityThreshold) {
                 val (w, e) = best
                 val mark = ctx.newEvents.size
                 val sale = Market.purchase(ctx, hero, w, e.pays, asked = w.listedPrice.takeIf { e.offered })
@@ -123,6 +128,7 @@ object Agency {
         "worn" -> "their own weapon was worn out"
         "want" -> "they had been looking for one"
         "threat" -> "against the coming siege"
+        "mending" -> "for a weapon that stops an enemy mending itself"
         else -> "a better fit"
     }
 
@@ -230,18 +236,106 @@ object Agency {
                 if (won && order.size >= 2) add("together")
             }
             bump(ctx, id, keys)
+            if (fight != null) mending(ctx, id, fight)
         }
+    }
+
+    // ---- enemies that mend themselves (opp_troll_test, opp_silver_saving) ----
+
+    /** Whether [w] stops [unit] mending itself: Fire always does, or a metal or weapon type its recovery names (Silver for a werewolf). */
+    fun stopsMending(w: Weapon?, unit: UnitDef): Boolean {
+        val r = unit.recover ?: return false
+        return w != null && (w.element == Element.FIRE || Loadout.metalTag(w.coreId.value) in r.suppressedBy || Loadout.familyTag(w.familyId.value) in r.suppressedBy)
+    }
+
+    private fun stoppedBy(ctx: ResolutionContext, unit: UnitDef): String =
+        (listOf("Fire") + unit.recover!!.suppressedBy.filter { it.startsWith("metal:") }.map { t -> ctx.content.materials.firstOrNull { it.id.value == t.removePrefix("metal:") }?.name ?: t.removePrefix("metal:") }).joinToString(" or ")
+
+    /**
+     * What a fight taught [id] about an enemy that mends itself: that they saw it mend, and what would stop it, or that
+     * their own weapon did. Story only; it makes a counter visit more likely, never a free weapon.
+     */
+    private fun mending(ctx: ResolutionContext, id: HeroId, fight: FightResult) {
+        val units = ctx.content.combat?.unitById ?: return
+        val w = GuildOps.weaponOf(ctx, id)
+        for (e in fight.actors.filter { it.side == com.tinyblacksmith.core.combat.Side.ENEMY }) {
+            val unit = e.unitId?.let { units[it] }?.takeIf { it.recover != null } ?: continue
+            val hero = ctx.hero(id)
+            val known = hero.reasons.filter { it.refs.firstOrNull() == unit.id }
+            if (known.any { it.kind == "mend_stopped" }) continue
+            if (stopsMending(w, unit) && fight.events.any { it.kind == EventKind.DAMAGE && it.source == id.value && it.target == e.key }) {
+                Identity.note(ctx, id, "mend_stopped", "${hero.fullName} stopped the ${unit.name.lowercase()} mending itself with ${w!!.name}.", listOf(unit.id))
+            } else if (known.none { it.kind == "mend_seen" } && fight.events.any { it.kind == EventKind.HEALED && it.source == e.key && it.target == e.key }) {
+                Identity.note(ctx, id, "mend_seen", "${hero.fullName} watched the ${unit.name.lowercase()} mend itself. A ${stoppedBy(ctx, unit)} weapon would stop it.", listOf(unit.id))
+            }
+        }
+    }
+
+    /** A mending enemy in the committed army that [hero] has watched mend and [w] would not stop, or null. */
+    fun mendingFoe(ctx: ResolutionContext, hero: Hero, w: Weapon?): UnitDef? {
+        val plan = ctx.siege?.takeIf { it.siegeDay == ctx.town.nextSiegeDay && it.armyId != null }?.plan ?: return null
+        val units = ctx.content.combat?.unitById ?: return null
+        val seen = hero.reasons.filter { it.kind == "mend_seen" }.mapNotNull { it.refs.firstOrNull() }.toSet() - hero.reasons.filter { it.kind == "mend_stopped" }.mapNotNull { it.refs.firstOrNull() }.toSet()
+        return plan.mapNotNull { units[it.unitId] }.firstOrNull { it.id in seen && !stopsMending(w, it) }
+    }
+
+    /** opp_captains_drill: a deserter or militia veteran at home knows the captain the scouts report, and says what it prepares. */
+    fun drill(ctx: ResolutionContext, army: com.tinyblacksmith.core.content.ArmyDef): String? {
+        if (!on(ctx) || army.kind != com.tinyblacksmith.core.content.ArmyKind.CAPTAIN) return null
+        val units = ctx.content.combat?.unitById ?: return null
+        val captain = army.members.mapNotNull { units[it] }.firstOrNull { com.tinyblacksmith.core.combat.Tags.CAPTAIN in it.tags } ?: return null
+        val tell = captain.kit.moves.firstNotNullOfOrNull { m -> m.telegraph?.takeIf { m.channel != null } } ?: captain.kit.moves.firstNotNullOfOrNull { it.telegraph } ?: return null
+        val vet = members(ctx).filter { it.status == MemberStatus.HOME }.mapNotNull { ctx.heroes[it.heroId] }.firstOrNull { it.isAlive && it.backgroundId in DRILL_BACKGROUNDS } ?: return null
+        val text = "${vet.fullName}, a ${ctx.content.backgroundById[vet.backgroundId]!!.name.lowercase()}, has seen ${captain.name} fight before: \"${tell.trimEnd('.')}.\""
+        Identity.note(ctx, vet.id, "drill", text, listOf(captain.id))
+        return text
+    }
+
+    private val DRILL_BACKGROUNDS = setOf("bg_deserter", "bg_militia")
+    private const val FIRE_ELEMENTAL = "tc_fire_elemental"
+    private const val UNBURIED_KNIGHT = "cap_death_knight"
+    private val PALE_PROCESSION = FactionId("hollowbound")
+
+    /** opp_ash_samples: a field scholar who stayed standing against a Fire Elemental works out the next clue of a signature recipe, if one is open. */
+    private fun ash(ctx: ResolutionContext, id: HeroId): String? {
+        val sig = com.tinyblacksmith.core.engine.WorldEvents.forgeableSignatures(ctx)
+            .filter { ctx.legacy.journal.state(it.journalKey) != KnowledgeState.SIGNATURE_DISCOVERED && com.tinyblacksmith.core.crafting.Journal.nextRung(ctx.legacy.journal, it) != null }
+            .minByOrNull { it.journalKey } ?: return null
+        val rung = com.tinyblacksmith.core.crafting.Journal.nextRung(ctx.legacy.journal, sig)!!
+        com.tinyblacksmith.core.crafting.Journal.earn(ctx, sig, rung)
+        val text = "${ctx.hero(id).fullName} gathered ash where the fire elemental burned and worked out a recipe clue. ${com.tinyblacksmith.core.crafting.Journal.clue(sig, rung, ctx.config).replaceFirstChar { it.uppercase() }}."
+        Identity.note(ctx, id, "ash", text)
+        ctx.emit(EventType.DISCOVERY, 3, text, listOf(id.value), mapOf("key" to sig.journalKey, "rung" to rung.name))
+        return text
     }
 
     /**
      * After a siege (content bible 14.2): bonded members who held the wall side by side are remembered for it
      * (opp_shared_watch), and a member's third siege held with the same weapon is acknowledged (opp_familiar_weapon).
+     * A militia veteran or a mason who stays standing on the wall while the defences are struck learns from it
+     * (opp_gate_practice): evidence toward holding the wall, never free forge health.
      * Story and evidence only, never a reward. Returns the report's lines.
      */
-    fun afterSiege(ctx: ResolutionContext, wall: List<HeroId>, won: Boolean): List<String> {
-        if (!on(ctx) || !won) return emptyList()
+    fun afterSiege(ctx: ResolutionContext, wall: List<HeroId>, won: Boolean, fight: FightResult?): List<String> {
+        if (!on(ctx)) return emptyList()
         val lines = ArrayList<String>()
         val members = wall.filter { ctx.guild!!.member(it) != null && ctx.heroes[it]?.isAlive == true }
+        if (fight != null && fight.events.any { it.kind == EventKind.STRUCTURAL_HIT }) for (id in members) {
+            val hero = ctx.hero(id)
+            if (hero.backgroundId !in GATE_BACKGROUNDS || fight.actor(id.value)?.downed != false) continue
+            bump(ctx, id, setOf("gate"))
+            val text = "${hero.fullName} stood at the gate while it was struck and learned how the defences give."
+            Identity.note(ctx, id, "gate", text)
+            lines += text
+        }
+        val foes = fight?.actors?.filter { it.side == com.tinyblacksmith.core.combat.Side.ENEMY }?.mapNotNull { it.unitId }?.toSet().orEmpty()
+        val standing = members.filter { fight?.actor(it.value)?.downed == false }
+        if (FIRE_ELEMENTAL in foes) standing.firstOrNull { ctx.hero(it).backgroundId == "bg_scholar" }?.let { id -> ash(ctx, id)?.let { lines += it } }
+        if (!won) return lines
+        if (UNBURIED_KNIGHT in foes) for (id in standing) {
+            val h = ctx.hero(id).hook
+            if (h != null && h.isOpen && h.kind == HookKind.GRUDGE && h.factionId == PALE_PROCESSION) lines += Hooks.unburied(ctx, id, ctx.content.combat!!.unit(UNBURIED_KNIGHT).name)
+        }
         for (a in members) for (b in members) if (a.value < b.value && ctx.guild!!.member(a)!!.bonds.any { it.withHeroId == b }) {
             val text = "${ctx.hero(a).fullName} and ${ctx.hero(b).fullName} held the wall side by side."
             Identity.note(ctx, a, "shared_watch", text, listOf(b.value)); Identity.note(ctx, b, "shared_watch", text, listOf(a.value))
@@ -259,6 +353,8 @@ object Agency {
         return lines
     }
 
+    private val GATE_BACKGROUNDS = setOf("bg_militia", "bg_mason")
+
     // ---- Specialities (step 13) ----
 
     private val inclinations: Map<String, Set<TraitId>> = mapOf(
@@ -271,7 +367,7 @@ object Agency {
     )
     private val evidenceFor: Map<String, List<String>> = mapOf(
         "vanguard" to listOf("front", "held"), "striker" to listOf("struck"), "unbroken" to listOf("downed", "front"),
-        "careful" to listOf("shielded"), "wallwarden" to listOf("held", "front"), "rallier" to listOf("together", "shielded"),
+        "careful" to listOf("shielded"), "wallwarden" to listOf("held", "front", "gate"), "rallier" to listOf("together", "shielded"),
     )
 
     /** What [hero]'s record says for [def]: capped evidence, a support weapon for the steady branches, and their Personality. */
@@ -294,6 +390,7 @@ object Agency {
         return when (k) {
             "front" -> "has stood first in the line in $n ${if (n == 1) "fight" else "fights"}"
             "held" -> "has held the wall in $n ${if (n == 1) "siege" else "sieges"}"
+            "gate" -> "has stood at the gate while it was struck in $n ${if (n == 1) "siege" else "sieges"}"
             "struck" -> "has defeated enemies in $n ${if (n == 1) "fight" else "fights"}"
             "won" -> "has won $n ${if (n == 1) "quest" else "quests"}"
             "downed" -> "has gone down and come back $n ${if (n == 1) "time" else "times"}"

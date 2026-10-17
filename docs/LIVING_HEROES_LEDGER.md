@@ -78,22 +78,22 @@ Opportunities (content bible 14.2):
 | ID | Status | Route |
 |---|---|---|
 | opp_powder_trail | implemented | A scout, militia veteran, deserter or mason sponsors the siege's sabotage when the field brings a breach |
-| opp_troll_test | pending | Member want with an element (counter) |
-| opp_silver_saving | pending | Member want for Silver |
+| opp_troll_test | implemented (needs bestiary units) | A member who watched an enemy mend itself notes what stops it; when one comes in the committed army they visit the counter and value a weapon that stops it (+0.4 utility); stopping it later is recorded |
+| opp_silver_saving | implemented (shared route) | Same route as the troll, with Silver among what stops a werewolf; the member buys with their own saved gold. No member commission (adapted) |
 | opp_bone_lesson | implemented (shared route) | The lesson visitor |
 | opp_lantern_hunt | deferred | Enemies have no identity that persists between fights except the nemesis |
-| opp_gate_practice | pending | Evidence after a structural hit (needs the grammar) |
+| opp_gate_practice | implemented | A militia veteran or mason standing on the wall while the defences are struck gains "gate" evidence toward Wallwarden |
 | opp_returned_blade | implemented | Family-weapon recovery card; the weapon goes home to its family |
 | opp_missing_caravan | implemented | `missing_caravan` quest, sponsored by a caravan guard |
-| opp_shared_watch | pending | Evidence when two bonded members hold the wall |
+| opp_shared_watch | implemented | Evidence when two bonded members hold the wall |
 | opp_apprentice_request | implemented | The lesson visitor (costs both members the day) |
 | opp_wounded_friend | implemented | The healer visitor for an injured bonded member |
-| opp_captains_drill | pending | Forecast line by a deserter or militia veteran when a captain is committed |
-| opp_ash_samples | pending | Clue rung after a Fire Elemental siege with a scholar on the wall |
-| opp_unburied_oath | pending | Reputation when a member with a Hollowbound grudge holds against Sir Carrow |
+| opp_captains_drill | implemented (needs bestiary units) | A deserter or militia veteran at home adds the captain's own telegraph to the scouts' report |
+| opp_ash_samples | implemented, adapted | A field scholar standing after a Fire Elemental siege earns the next clue rung of an open signature; no separate assignment step |
+| opp_unburied_oath | implemented (needs bestiary units) | A member with an open Pale Procession grievance holds the wall against Sir Carrow: Hook resolved, +2 reputation, Avenger fulfilled |
 | opp_forests_binding | narrative | The forecast already names every Covenant role |
 | opp_reputation_deed | implemented | A noble's or deserter's sponsored hunt, +2 reputation on a win |
-| opp_familiar_weapon | pending | Acknowledgement at an attachment milestone |
+| opp_familiar_weapon | implemented | Acknowledgement at an attachment milestone |
 | opp_safe_experiment | deferred | No test-commission mechanic for members |
 
 Enemies and armies: 48 definitions and 36 templates extracted (scratchpad `armies_rows.kt`); status filled when the
@@ -102,3 +102,19 @@ bestiary lands.
 ## 6. Evidence and seeds
 
 Tuning seeds 1-600 / 5001-5300. Validation block reserved for this work: 800001-800300 (unseen). Baseline tests: pending.
+
+Paired influence, 2026-10-17 (seeds 1-200, `--living x --personal answer|ignore`, charter towns_last_hope, horizon 30; the
+answer bot takes a member's personal offer first when the party is rested, health 75 or more, and two members are fit):
+
+| Policy | Personal offers | Charter | Defeated | Captured a run | Departures (runs with one) | Concerns a run |
+|---|---|---|---|---|---|---|
+| SYNERGY | answer | 60% | 13% | 0.30 | 5% | 0.37 |
+| SYNERGY | ignore | 54% | 11% | 0.17 | 23% | 1.55 |
+| ADAPTIVE | answer | 38% | 7% | 0.74 | 10% | 1.13 |
+| ADAPTIVE | ignore | 59% | 5% | 0.40 | 17% | 1.52 |
+
+Reading: the members' wishes measurably answer the smith's choices (departures fall by a half to three quarters when
+offers are answered). Answering is a real trade-off for the one party: ADAPTIVE, which otherwise sabotages before each
+siege (37% of its contracts), gives that up and holds fewer sieges. SYNERGY, which hunts anyway, gains. Without the
+readiness gate the answer bot sent hurt parties on grudge hunts (ADAPTIVE captured 2.39 a run). Recorded, not tuned:
+owner decides (no automatic nerf).
