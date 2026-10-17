@@ -98,6 +98,7 @@ data class CombatCatalog(
 
     fun problems(): List<String> = EffectRules.problems(allEffects, kits.map { it.kit }, unitById) +
         relicEffects.values.flatten().filter { !it.party }.map { "Relic rule ${it.id} is not a party rule" } +
+        units.groupBy { it.name }.filterValues { it.size > 1 }.keys.map { "Two units are named $it" } +
         revisions.filter { (old, new) -> old == new.id || allEffects.none { it.id == old } }.keys.map { "Revision of $it needs a known rule and an ID of its own" } +
         allEffects.map { it.id }.toSet().let { known -> interactions.flatMap { i -> (i.pieces + i.shown.flatten()).filter { it !in known }.map { "Interaction ${i.id} names unknown rule $it" } } }
 }
@@ -480,5 +481,6 @@ object CombatContent {
         UnitDef("captive", "The captive", kit("captive", "Captive", Move("stumble", "Keeps moving", Cadence.Always, emptyList())), health = 24, strikeMin = 0),
     )
 
-    val catalog = CombatCatalog(kits, families, elementEffects, affixEffects, affixHomeEffects, affixRoadEffects, catalystEffects, signatureEffects, relicEffects, units, cores = cores, notes = notes, interactions = interactions, revisions = revisions)
+    // The living heroes bestiary stands after the units above: no old ID moves.
+    val catalog = CombatCatalog(kits, families, elementEffects, affixEffects, affixHomeEffects, affixRoadEffects, catalystEffects, signatureEffects, relicEffects, units + Bestiary.units, cores = cores, notes = notes, interactions = interactions, revisions = revisions)
 }

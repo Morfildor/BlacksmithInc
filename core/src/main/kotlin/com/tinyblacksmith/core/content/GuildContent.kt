@@ -295,6 +295,8 @@ data class GuildCatalog(
             if (content.factions.none { it.id == a.factionId }) problems += "Army ${a.id} belongs to unknown faction ${a.factionId.value}"
             if (bestiary.isNotEmpty()) {
                 val profiles = a.members.mapNotNull { profileById[it] }
+                a.members.filter { it !in profileById }.forEach { problems += "Army ${a.id} fields $it, which has no bestiary entry" }
+                profiles.filter { it.factionId != a.factionId }.forEach { problems += "Army ${a.id} of ${a.factionId.value} fields ${it.unitId} of ${it.factionId.value}" }
                 if (profiles.size == a.members.size && profiles.sumOf { it.cost } != a.cost) problems += "Army ${a.id} costs ${a.cost}, its members ${profiles.sumOf { it.cost }}"
                 if (profiles.any { it.earliestSiege > a.firstSiege }) problems += "Army ${a.id} comes before its members may"
             }
@@ -638,5 +640,6 @@ object GuildContent {
         siegeElites = mapOf(A to "ashclaw_warchief", H to "pale_knight", E to "ember_drake"),
         siegeGrunts = mapOf(A to listOf("ashclaw_brute", "ashclaw_scout", "ashclaw_thief"), H to listOf("bone_warden", "hollow_shambler", "gravecaller"), E to listOf("cinder_knight", "ember_whelp", "ember_whelp")),
         rivalNames = listOf("the Gilded Lantern" to "Maren Voss", "the Tallow Street Irregulars" to "Dask Orrin", "the Brass Thimble Company" to "Ilse Varn"),
+        bestiary = Bestiary.profiles, armies = Bestiary.armies,
     )
 }
