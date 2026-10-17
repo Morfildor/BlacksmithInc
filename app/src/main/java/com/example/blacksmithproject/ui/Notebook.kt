@@ -5,11 +5,13 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -33,9 +35,11 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.UiState
@@ -94,18 +98,31 @@ fun LazyListScope.notebookItems(s: UiState.Playing, vm: GameViewModel, chosen: B
                 Text("Notebook", style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() })
                 Secondary("${book.counts}. Your notes carry over to every era.", Modifier.testTag("book_counts"))
             }
-            // Tabs of one width across the page; a label may take two lines, so nothing is cut at a larger text size.
-            // Four of them stand two to a line once the text is enlarged: a quarter of a phone cannot hold "pairings" then.
-            val perRow = if (tabs.size > 3 && LocalDensity.current.fontScale > 1f) 2 else tabs.size
-            tabs.chunked(perRow).forEachIndexed { i, row ->
-                Row(Modifier.fillMaxWidth().padding(top = if (i == 0) 12.dp else Space.sm).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(if (row.size > 3) Space.xs else Space.sm)) {
-                    row.forEach { t ->
-                        val on = t == tab
-                        Box(
-                            Modifier.weight(1f).fillMaxHeight().heightIn(min = 48.dp).clip(Tab).background(if (on) BronzeContainer else ForgePanel).border(1.dp, if (on) Gold else BronzeDeep, Tab).clickable(role = Role.Tab) { onTab(t) }
-                                .padding(horizontal = if (row.size > 3) Space.xs else Space.sm, vertical = 6.dp).testTag("book_tab_${t.name.lowercase()}").semantics { selected = on },
-                            contentAlignment = Alignment.Center,
-                        ) { Text(t.label, style = MaterialTheme.typography.labelMedium, color = if (on) GoldBright else CreamMuted, textAlign = TextAlign.Center) }
+            // Tabs of one width across the page; a label may take two lines between its words, so nothing is cut at a larger
+            // text size. As many stand on a line as leave each tab room for the longest word of any label ("combinations"),
+            // measured on this page's own width: a word is never broken inside.
+            val measurer = rememberTextMeasurer()
+            val density = LocalDensity.current
+            val style = MaterialTheme.typography.labelMedium
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val widest = tabs.flatMap { it.label.split(' ') }.maxOf { measurer.measure(it, style, softWrap = false, maxLines = 1).size.width }.toFloat()
+                // Each tab's gap and inner padding (and its 1 dp border), as the rows below draw them for that many to a line.
+                fun fit(space: Dp) = with(density) { tabsPerRow(constraints.maxWidth.toFloat(), widest, tabs.size, space.toPx(), (space + 1.dp).toPx()) }
+                val perRow = fit(Space.xs).takeIf { it > 3 } ?: fit(Space.sm)
+                Column {
+                    tabs.chunked(perRow).forEachIndexed { i, row ->
+                        Row(Modifier.fillMaxWidth().padding(top = if (i == 0) 12.dp else Space.sm).height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(if (perRow > 3) Space.xs else Space.sm)) {
+                            row.forEach { t ->
+                                val on = t == tab
+                                Box(
+                                    Modifier.weight(1f).fillMaxHeight().heightIn(min = 48.dp).clip(Tab).background(if (on) BronzeContainer else ForgePanel).border(1.dp, if (on) Gold else BronzeDeep, Tab).clickable(role = Role.Tab) { onTab(t) }
+                                        .padding(horizontal = if (perRow > 3) Space.xs else Space.sm, vertical = 6.dp).testTag("book_tab_${t.name.lowercase()}").semantics { selected = on },
+                                    contentAlignment = Alignment.Center,
+                                ) { Text(t.label, style = style, color = if (on) GoldBright else CreamMuted, textAlign = TextAlign.Center) }
+                            }
+                            // An odd last row keeps the tabs' width: an empty share, not one tab across the page.
+                            repeat(perRow - row.size) { Spacer(Modifier.weight(1f)) }
+                        }
                     }
                 }
             }
@@ -190,33 +207,75 @@ private fun pairingArt(p: PairingUi, vm: GameViewModel): List<Int> = listOfNotNu
     p.familyId?.let { Sprites.weapon(it, vm.engine.content.materials(MaterialCategory.CORE).first().id, null).base },
 )
 
+/**
+ * A pairing: the art, its words, and "Use ›". When the words would keep less than their longest word (or 120 dp at this
+ * text size; a 360 dp phone keeps about 142 dp at 1.0, so the row stays as it was there) beside the art and the action,
+ * the action goes under the words; the art goes above them only when their longest word would not fit beside it.
+ */
 @Composable
 private fun PairingRow(p: PairingUi, onBench: Boolean, art: List<Int>, onUse: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().padding(vertical = Space.xs).testTag("book_row_${p.key}"),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    val subjectStyle = MaterialTheme.typography.titleSmall
+    val hintStyle = MaterialTheme.typography.bodySmall
+    val useStyle = MaterialTheme.typography.labelLarge
+    BoxWithConstraints(Modifier.fillMaxWidth().padding(vertical = Space.xs).testTag("book_row_${p.key}")) {
+        val (actionBeside, artBeside) = with(density) {
+            fun widest(text: String, style: androidx.compose.ui.text.TextStyle) =
+                text.split(' ').filter { it.isNotEmpty() }.maxOfOrNull { measurer.measure(it, style, softWrap = false, maxLines = 1).size.width } ?: 0
+            val word = maxOf(widest(p.subject, subjectStyle), widest("${p.stage}: ${p.hint}", hintStyle.copy(fontWeight = FontWeight.SemiBold)))
+            val minText = maxOf(word.toFloat(), 120.dp.toPx() * fontScale)
+            // Fixed: the slot (32 dp a picture and its 2 dp padding) and the words' own start and end padding.
+            val fixed = (art.size * 32 + 4).dp.toPx() + (12.dp + Space.xs).toPx()
+            val use = measurer.measure("Use", useStyle, softWrap = false, maxLines = 1).size.width + (18.dp + Space.sm * 2).toPx()
+            val w = constraints.maxWidth.toFloat()
+            // The floor decides the action; the art moves above only when the longest word itself would not fit beside it.
+            roomBeside(w, fixed, use, minText) to roomBeside(w, fixed, 0f, word.toFloat())
+        }
         // Both ingredients in one dark slot, as the workbench shows them.
-        Row(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(2.dp)) { art.forEach { PixelImage(it, 32.dp, description = null) } }
-        Column(Modifier.weight(1f).padding(start = 12.dp, end = Space.xs).padding(vertical = Space.sm).semantics(mergeDescendants = true) { contentDescription = "${p.subject}, ${p.stage}: ${p.hint}${if (onBench) ". On the workbench now" else ""}" }) {
-            Text(p.subject, style = MaterialTheme.typography.titleSmall, color = Cream)
-            // The stage in its own colour and weight, then the journal's words in the quiet one.
-            Text(
-                buildAnnotatedString {
-                    withStyle(SpanStyle(color = p.state.color(), fontWeight = FontWeight.SemiBold)) { append(p.stage) }
-                    append(": ${p.hint}")
-                },
-                style = MaterialTheme.typography.bodySmall, color = CreamMuted,
-            )
-            if (onBench) Text("◆ On the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
+        val slot = @Composable { Row(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(2.dp)) { art.forEach { PixelImage(it, 32.dp, description = null) } } }
+        val words = @Composable { m: Modifier ->
+            Column(m.padding(vertical = Space.sm).semantics(mergeDescendants = true) { contentDescription = "${p.subject}, ${p.stage}: ${p.hint}${if (onBench) ". On the workbench now" else ""}" }) {
+                Text(p.subject, style = subjectStyle, color = Cream)
+                // The stage in its own colour and weight, then the journal's words in the quiet one.
+                Text(
+                    buildAnnotatedString {
+                        withStyle(SpanStyle(color = p.state.color(), fontWeight = FontWeight.SemiBold)) { append(p.stage) }
+                        append(": ${p.hint}")
+                    },
+                    style = hintStyle, color = CreamMuted,
+                )
+                if (onBench) Text("◆ On the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
+            }
         }
         // A way to the workbench, said in cream with the one chevron, as every door is.
-        Row(
-            Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Put on the workbench", onClick = onUse).padding(horizontal = Space.sm).testTag("book_use_${p.key}"),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("Use", style = MaterialTheme.typography.labelLarge, color = Cream)
-            Chevron(ChevronWay.RIGHT, tint = CreamMuted, size = 18.dp)
+        val action = @Composable {
+            Row(
+                Modifier.heightIn(min = 48.dp).clickable(role = Role.Button, onClickLabel = "Put on the workbench", onClick = onUse).padding(horizontal = Space.sm).testTag("book_use_${p.key}"),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Use", style = useStyle, color = Cream)
+                Chevron(ChevronWay.RIGHT, tint = CreamMuted, size = 18.dp)
+            }
+        }
+        when {
+            actionBeside -> Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                slot()
+                words(Modifier.weight(1f).padding(start = 12.dp, end = Space.xs))
+                action()
+            }
+            artBeside -> Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                slot()
+                Column(Modifier.weight(1f).padding(start = 12.dp, end = Space.xs)) {
+                    words(Modifier.fillMaxWidth())
+                    action()
+                }
+            }
+            else -> Column(Modifier.fillMaxWidth()) {
+                slot()
+                words(Modifier.fillMaxWidth())
+                action()
+            }
         }
     }
 }

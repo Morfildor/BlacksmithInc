@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,8 +26,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -59,6 +63,9 @@ import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponSnapshot
 import kotlinx.coroutines.delay
 
+/** Where the banners cut the tall night-workshop painting: the smith in the lit forge doorway, below its middle. */
+private const val NIGHT_FOCUS = 0.68f
+
 /**
  * The shop day, one beat at a time: the counter with real customers, the tally, the till, what happened beyond the
  * door, then tomorrow's lead (or the blessing, or the fall). Stateless: [position] indexes `model.beats` and every
@@ -66,8 +73,10 @@ import kotlinx.coroutines.delay
  *
  * Nothing advances by itself at [ShopDaySpeed.TAP], with [reducedMotion], while [paused] (a sheet, the Gazette or a
  * replay is open), with TalkBack exploring, or while the activity is not resumed. A tap anywhere is Next, except on
- * the cards that end the day, where only the wide button acts (Begin day, See the legacy, Decide later); Back steps
- * one beat and never closes the day; Skip day is one tap. [onWatchFight] passes the replay's event ID, null for the siege.
+ * the cards that end the day, where only the buttons act (Begin day, See the legacy, a blessing's Take or Decide later);
+ * Back steps one beat and never closes the day; Skip day is one tap. On the blessing a tap on a row only marks it: the
+ * wide button takes the marked one, and stays off while none is marked or while [busy] (a choice is being saved).
+ * [onWatchFight] passes the replay's event ID, null for the siege.
  * [onWatchSiege] opens the wall's fight of a guild run: its replay, or (true) its report.
  * [coach] is the first-run line that says so, shown above the controls while the caller passes it.
  */
@@ -91,11 +100,17 @@ fun ShopDayScreen(
     modifier: Modifier = Modifier,
     coach: String? = null,
     onWatchSiege: (report: Boolean) -> Unit = {},
+    busy: Boolean = false,
 ) {
     val at = position.coerceIn(0, model.beats.lastIndex)
     val beat = model.beats[at]
     val next by rememberUpdatedState(onNext)
     val ending by rememberUpdatedState(beat.isEnding)
+    // The blessing marked on its card: the screen's own state, so the pinned button can take it.
+    var marked by rememberSaveable(at) { mutableStateOf<String?>(null) }
+    val taking = (beat as? Beat.Blessing)?.choices?.firstOrNull { it.id.value == marked }
+    // The day's longest part, so the strip keeps one width on every card.
+    val longest = remember(model) { model.beats.maxByOrNull { it.progress.length }?.progress.orEmpty() }
 
     val haptics = LocalHaptics.current
     LaunchedEffect(at) { if (beat is Beat.Visit && beat.visit.sold) haptics.play(Moment.SALE) }
@@ -121,7 +136,7 @@ fun ShopDayScreen(
         val large = LocalDensity.current.fontScale > 1.3f
         val low = maxHeight < 700.dp
         Column(Modifier.fillMaxSize().statusBarsPadding().pointerInput(Unit) { detectTapGestures { if (!ending) next() } }) {
-            ShopDayTopBar(model.day, beat.progress, speed, reducedMotion, canSkip = at < model.endingIndex, onSpeedChange = onSpeedChange, onSkipDay = onSkipDay)
+            ShopDayTopBar(model.day, beat.progress, speed, reducedMotion, canSkip = at < model.endingIndex, onSpeedChange = onSpeedChange, onSkipDay = onSkipDay, longest = longest)
             when (beat) {
                 is Beat.Open, is Beat.Visit, is Beat.Tally, is Beat.Close, is Beat.Quiet -> {
                     val visit = (beat as? Beat.Visit)?.visit
@@ -136,15 +151,16 @@ fun ShopDayScreen(
                         reducedMotion = reducedMotion, onOpenBlade = { onOpenBlade(it.blade.weaponId, it.blade) },
                     )
                 }
-                is Beat.Contract -> StageBanner("The guild's party", R.drawable.bg_title_workshop_night)
-                is Beat.Fallen -> StageBanner("The forge has fallen", R.drawable.art_day_fallen_forge, vignette = true)
+                // The night workshop is a tall painting: the banner shows the lit forge at its middle, not the sky above it.
+                is Beat.Contract -> StageBanner("The guild's party", R.drawable.bg_title_workshop_night, focusY = NIGHT_FOCUS)
+                is Beat.Fallen -> StageBanner("The forge has fallen", R.drawable.art_day_fallen_forge, height = if (short) 112.dp else 168.dp, vignette = true)
                 is Beat.Aftermath ->
                     // A siege is not one more thing beyond the door: its own name, and a stage half as tall again.
                     when (val siege = beat.card.siege) {
-                        null -> StageBanner("Beyond the door", R.drawable.bg_title_workshop_night)
+                        null -> StageBanner("Beyond the door", R.drawable.bg_title_workshop_night, focusY = NIGHT_FOCUS)
                         else -> StageBanner("Siege · day ${siege.day}", if (siege.held) R.drawable.art_day_siege_victory else Sprites.siegeWall(damaged = true), height = if (short) 112.dp else 168.dp, vignette = true)
                     }
-                is Beat.Blessing -> StageBanner("The town's thanks", R.drawable.bg_title_workshop_night)
+                is Beat.Blessing -> StageBanner("The town's thanks", R.drawable.bg_title_workshop_night, focusY = NIGHT_FOCUS)
                 // Still the evening of the day just watched (the strip says so); the next day is named once here and once on its button.
                 is Beat.Tomorrow -> StageBanner("Tomorrow: day ${beat.day}", R.drawable.art_day_new_dawn, height = dawn, vignette = true)
             }
@@ -153,11 +169,13 @@ fun ShopDayScreen(
                 BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
                     // The room under the stage, less this column's and the frame's padding: the evening card is at least that tall.
                     val room = (maxHeight - 12.dp - Space.md * 3).coerceAtLeast(0.dp)
+                    val narrow = maxWidth < 400.dp
                     Column(
                         Modifier.fillMaxSize().verticalScroll(scroll).padding(start = Space.md, end = Space.md, top = 12.dp, bottom = Space.md)
                             .testTag("shopday_card").semantics { liveRegion = LiveRegionMode.Polite },
                     ) {
-                        FramedPanel(modifier = Modifier.fillMaxWidth()) {
+                        // A narrow screen: the frame pads less across, so the text keeps its width inside the screen's gutter.
+                        FramedPanel(modifier = Modifier.fillMaxWidth(), contentPadding = if (narrow) PaddingValues(horizontal = 12.dp, vertical = Space.md) else PaddingValues(Space.md)) {
                             when (beat) {
                                 is Beat.Contract -> ContractCard(beat.contract, openHero)
                                 is Beat.Open -> ShopOpenCard(beat)
@@ -168,9 +186,9 @@ fun ShopDayScreen(
                                 is Beat.Aftermath ->
                                     if (beat.card.siege != null) SiegeOutcomeCard(beat, beat.card.siege, openHero, onWatchFight = { onWatchFight(it.eventId) }, onWatchSiege = onWatchSiege)
                                     else AftermathCard(beat, openHero, openBlade, onWatchFight = { onWatchFight(it.eventId) }, onOpenGazette = onOpenGazette)
-                                is Beat.Blessing -> BlessingChoices(beat.choices, onChooseBlessing, siege = beat.siege)
+                                is Beat.Blessing -> BlessingChoices(beat.choices, marked, onMark = { marked = it.value }, siege = beat.siege)
                                 is Beat.Tomorrow -> TomorrowCard(beat, onOpenGazette = onOpenGazette, modifier = Modifier.heightIn(min = room))
-                                is Beat.Fallen -> FallenCard(beat, onOpenGazette = onOpenGazette)
+                                is Beat.Fallen -> FallenCard(beat, onOpenGazette = onOpenGazette, modifier = Modifier.heightIn(min = room))
                             }
                         }
                     }
@@ -186,18 +204,27 @@ fun ShopDayScreen(
                     Text(it, style = MaterialTheme.typography.bodySmall, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.weight(1f).testTag("shopday_coach"))
                 }
             }
-            // One wide button is always the way forward; on the last cards it is the choice that ends the day.
+            // One wide button is always the way forward; on the last cards it is the choice that ends the day. On the
+            // blessing it takes the marked blessing, and "Decide later" stands where Back does (the system Back is Decide later there too).
             ShopDayControls(
                 canBack = at > 0,
                 nextLabel = when (beat) {
                     is Beat.Tomorrow -> "Begin day ${beat.day}"
                     is Beat.Fallen -> "See the legacy"
-                    is Beat.Blessing -> "Decide later"
+                    is Beat.Blessing -> taking?.let { "Take ${it.name}" } ?: "Choose a blessing"
                     is Beat.Close, is Beat.Quiet -> "Continue"
                     else -> "Next"
                 },
-                onBack = onBack, onNext = if (beat is Beat.Tomorrow || beat is Beat.Fallen) onClose else onNext, modifier = Modifier.navigationBarsPadding(),
-                nextTag = when (beat) { is Beat.Tomorrow, is Beat.Fallen -> "shopday_close"; is Beat.Blessing -> "shopday_later"; else -> "shopday_next" },
+                onBack = onBack,
+                onNext = when (beat) {
+                    is Beat.Tomorrow, is Beat.Fallen -> onClose
+                    is Beat.Blessing -> ({ if (taking != null) onChooseBlessing(taking.id) })
+                    else -> onNext
+                },
+                modifier = Modifier.navigationBarsPadding(),
+                nextTag = when (beat) { is Beat.Tomorrow, is Beat.Fallen -> "shopday_close"; is Beat.Blessing -> "blessing_take"; else -> "shopday_next" },
+                nextEnabled = beat !is Beat.Blessing || (taking != null && !busy),
+                secondary = if (beat is Beat.Blessing) ShopDaySecondary("Decide later", onNext, "shopday_later") else null,
             )
         }
     }

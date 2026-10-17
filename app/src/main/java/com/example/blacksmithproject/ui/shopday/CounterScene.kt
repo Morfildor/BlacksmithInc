@@ -7,11 +7,13 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -58,6 +60,7 @@ import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.WeaponLook
 import com.example.blacksmithproject.ui.heroUpgraded
+import com.example.blacksmithproject.ui.nearestWholeScale
 import com.example.blacksmithproject.ui.theme.SceneCream
 import com.example.blacksmithproject.ui.theme.SceneDeep
 import com.example.blacksmithproject.ui.theme.SceneGold
@@ -67,10 +70,14 @@ import com.example.blacksmithproject.ui.theme.SceneWood2
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponSnapshot
 import kotlin.math.ceil
+import kotlin.math.roundToInt
+
+/** The lowest room the counter scene paints; below it the room is left out rather than shown as a strip. */
+private val ROOM_MIN = 88.dp
 
 /** The whole number of device pixels per art pixel that comes nearest to [hint]; never below 1. Pixel art is only ever drawn at such a factor. */
 @Composable
-internal fun wholeScale(artPx: Int, hint: Dp): Int = maxOf(1, (with(LocalDensity.current) { hint.toPx() } / artPx + 0.5f).toInt())
+internal fun wholeScale(artPx: Int, hint: Dp): Int = nearestWholeScale(artPx, with(LocalDensity.current) { hint.toPx() })
 
 /** A sprite at a whole-number scale, nearest-neighbour, in a box of exactly that size. Decorative: no semantics. */
 @Composable
@@ -96,21 +103,30 @@ internal fun PixelSprite(look: WeaponLook, scale: Int, modifier: Modifier = Modi
  * A painted backdrop at the whole-number scale that covers the width (`ceil(width / art width)`), centred and anchored
  * to the bottom (or the top), cropped to the box. Never a fractional scale. [sink] lets a share of the art's height
  * drop below the box when the box is lower than the art (the counter stands in front of the floor).
+ * [focusY], when given (and neither [anchorTop] nor [sink] is), is the point of the art's height set at the box's middle,
+ * kept so the art still covers the box; [focusX] does the same across, 0.5 being the centre as before.
  */
 @Composable
-internal fun Backdrop(resId: Int, modifier: Modifier = Modifier, dim: Float = 0f, anchorTop: Boolean = false, sink: Float = 0f) {
+internal fun Backdrop(resId: Int, modifier: Modifier = Modifier, dim: Float = 0f, anchorTop: Boolean = false, sink: Float = 0f, focusX: Float = 0.5f, focusY: Float? = null) {
     val bitmap = ImageBitmap.imageResource(resId)
     Canvas(modifier.clipToBounds()) {
         val s = maxOf(1, ceil(size.width / bitmap.width).toInt())
         val w = bitmap.width * s
         val h = bitmap.height * s
-        drawImage(bitmap, dstOffset = IntOffset(((size.width - w) / 2f).toInt(), if (anchorTop) 0 else (size.height - h).toInt() + minOf((h - size.height).toInt().coerceAtLeast(0), (h * sink).toInt())), dstSize = IntSize(w, h), filterQuality = FilterQuality.None)
+        fun focused(box: Float, art: Int, at: Float) = (box / 2f - art * at).coerceIn(minOf(0f, box - art), 0f).toInt()
+        val x = if (focusX == 0.5f) ((size.width - w) / 2f).toInt() else focused(size.width, w, focusX)
+        val y = when {
+            anchorTop -> 0
+            focusY != null && sink == 0f -> focused(size.height, h, focusY)
+            else -> (size.height - h).toInt() + minOf((h - size.height).toInt().coerceAtLeast(0), (h * sink).toInt())
+        }
+        drawImage(bitmap, dstOffset = IntOffset(x, y), dstSize = IntSize(w, h), filterQuality = FilterQuality.None)
         if (dim > 0f) drawRect(SceneInk.copy(alpha = dim))
     }
 }
 
 @Composable
-private fun faceRes(face: FaceUi): Int? = face.snapshot?.let { Sprites.portrait(it.appearance, it.classId, upgraded = face.hero?.let { h -> heroUpgraded(null, h.kills) } ?: false) } ?: face.hero?.let { Sprites.portrait(it) }
+internal fun faceRes(face: FaceUi): Int? = face.snapshot?.let { Sprites.portrait(it.appearance, it.classId, upgraded = face.hero?.let { h -> heroUpgraded(null, h.kills) } ?: false) } ?: face.hero?.let { Sprites.portrait(it) }
 
 /**
  * A face on its tile: the 64 px portrait at a whole-number [scale] on an ink ground inside a frame ([frame] null draws
@@ -133,6 +149,8 @@ fun PortraitTile(face: FaceUi, scale: Int, modifier: Modifier = Modifier, frame:
  * The counter: the forge backdrop, the customer as a framed bust standing behind the plank counter, and the name plate
  * on the counter front. Text is native; the backdrop is decoration and is hidden from the accessibility tree.
  * [customerKey] changes when another customer steps up (the bust slides in, unless [reducedMotion]).
+ * A room lower than [ROOM_MIN] or text above 1.3x is not shrunk to a sliver: the painted room is left out, the counter
+ * front and the plate stay, and the customer's face leads the plate.
  */
 @Composable
 fun CounterScene(
@@ -145,8 +163,12 @@ fun CounterScene(
     modifier: Modifier = Modifier,
     backdropHeight: Dp = 140.dp,
 ) {
+    val room = backdropHeight >= ROOM_MIN && LocalDensity.current.fontScale <= 1.3f
+    // The face is the hero's way into their sheet wherever it stands: in the room or on the plate.
+    val faceClick = if (customer != null && customer.heroId != null) Modifier.clickable(onClickLabel = "Open ${customer.name}", role = Role.Button) { onOpenHero(customer) }
+        .semantics { contentDescription = "${customer.name}, at the counter" }.testTag("shopday_face") else Modifier
     Column(modifier.fillMaxWidth().background(SceneInk)) {
-        BoxWithConstraints(Modifier.fillMaxWidth().height(backdropHeight).clipToBounds()) {
+        if (room) BoxWithConstraints(Modifier.fillMaxWidth().height(backdropHeight).clipToBounds().testTag("shopday_backdrop")) {
             val s = maxOf(1, ceil(constraints.maxWidth / 540f).toInt())
             Backdrop(R.drawable.bg_counter_forge, Modifier.matchParentSize().clearAndSetSemantics {}, sink = 0.2f)
             if (customer != null) {
@@ -163,11 +185,7 @@ fun CounterScene(
                         customer, scale = bust,
                         modifier = Modifier
                             .graphicsLayer { translationX = enter.value * slide; alpha = 1f - enter.value }
-                            .then(
-                                if (customer.heroId != null) Modifier.clickable(onClickLabel = "Open ${customer.name}", role = Role.Button) { onOpenHero(customer) }
-                                    .semantics { contentDescription = "${customer.name}, at the counter" }.testTag("shopday_face")
-                                else Modifier,
-                            ),
+                            .then(faceClick),
                     )
                 }
             }
@@ -184,9 +202,15 @@ fun CounterScene(
                 drawRect(SceneInk, Offset(0f, 5.dp.toPx()), Size(size.width, 1.dp.toPx()))
             }.padding(start = 8.dp, end = 8.dp, top = 11.dp, bottom = 6.dp),
         ) {
-            Column(Modifier.fillMaxWidth().background(SceneDeep).border(1.dp, SceneInk).padding(horizontal = 10.dp, vertical = 4.dp)) {
-                Text(plate, style = MaterialTheme.typography.titleMedium, color = SceneCream, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() }.testTag("shopday_plate"))
-                if (!detail.isNullOrEmpty()) Text(detail, style = MaterialTheme.typography.bodySmall, color = Color(0xFFE6D9B8))
+            Row(
+                Modifier.fillMaxWidth().background(SceneDeep).border(1.dp, SceneInk).padding(horizontal = 10.dp, vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                if (!room && customer != null) PortraitTile(customer, scale = wholeScale(64, 48.dp), modifier = faceClick.sizeIn(minWidth = 48.dp, minHeight = 48.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(plate, style = MaterialTheme.typography.titleMedium, color = SceneCream, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() }.testTag("shopday_plate"))
+                    if (!detail.isNullOrEmpty()) Text(detail, style = MaterialTheme.typography.bodySmall, color = Color(0xFFE6D9B8))
+                }
             }
         }
     }
@@ -275,17 +299,20 @@ fun ShelfBand(
 
 /**
  * The strip above the cards that are not at the counter (beyond the door, tomorrow, the fall): art and a title.
- * A [vignette] is a cut-out piece (the art_day_ set) drawn centred on the ink ground at the largest whole scale that fits.
+ * A [vignette] is a cut-out piece (the art_day_ set) drawn centred on the ink ground at the largest whole scale that fits
+ * the box, and never coarser than about 2 dp per art pixel. A painting is cropped to the top, or around [focusY] when given.
  */
 @Composable
-fun StageBanner(title: String, art: Int, modifier: Modifier = Modifier, height: Dp = 112.dp, anchorTop: Boolean = true, vignette: Boolean = false) {
-    Box(modifier.fillMaxWidth().height(height).background(SceneInk)) {
+fun StageBanner(title: String, art: Int, modifier: Modifier = Modifier, height: Dp = 112.dp, anchorTop: Boolean = true, vignette: Boolean = false, focusY: Float? = null) {
+    BoxWithConstraints(modifier.fillMaxWidth().height(height).background(SceneInk)) {
         if (vignette) {
-            val artHeight = ImageBitmap.imageResource(art).height
-            val scale = maxOf(1, with(LocalDensity.current) { height.toPx() / artHeight }.toInt())
-            PixelSprite(art, scale, Modifier.align(Alignment.Center).clearAndSetSemantics {})
+            val bitmap = ImageBitmap.imageResource(art)
+            val density = LocalDensity.current.density
+            val scale = minOf(constraints.maxHeight / bitmap.height, constraints.maxWidth / bitmap.width, 2 * density.roundToInt()).coerceAtLeast(1)
+            // In a box of the art's own height: PixelSprite alone boxes it square, which would push wide art off centre.
+            PixelSprite(art, scale, Modifier.align(Alignment.Center).height(with(LocalDensity.current) { (bitmap.height * scale).toDp() }).clearAndSetSemantics {})
         } else {
-            Backdrop(art, Modifier.matchParentSize().clearAndSetSemantics {}, dim = 0.15f, anchorTop = anchorTop)
+            Backdrop(art, Modifier.matchParentSize().clearAndSetSemantics {}, dim = 0.15f, anchorTop = anchorTop && focusY == null, focusY = focusY)
         }
         Text(
             title, style = MaterialTheme.typography.titleLarge, color = SceneCream, maxLines = 1, overflow = TextOverflow.Ellipsis,

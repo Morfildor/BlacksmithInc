@@ -49,6 +49,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
+import com.example.blacksmithproject.ui.shopday.PixelSprite
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Size
@@ -144,6 +147,8 @@ enum class TipTone(val sign: String, val color: Color) {
     val accent: Color? = null,
     /** The one number that matters most, shown large under the name ("20 Power"); it is not repeated in [stats]. */
     val headline: TipStat? = null,
+    /** [icon] is a hero's face: drawn as every face is ([HeroFace]), not as an icon in the card's slot. */
+    val face: Boolean = false,
 )
 
 /** The one open card of the app, or none. */
@@ -286,12 +291,21 @@ fun TipCard(tip: TipUi, onClose: () -> Unit, modifier: Modifier = Modifier) {
             val head: @Composable (Modifier) -> Unit = { m ->
                 Row(m, verticalAlignment = Alignment.Top) {
                     tip.icon?.let { icon ->
-                        val slot = if (pinHead) 52.dp else 40.dp
-                        Box(
-                            Modifier.size(slot).background(Brush.radialGradient(listOf(frame.copy(alpha = 0.22f), ForgeSlot)), RoundedCornerShape(2.dp))
-                                .border(1.dp, frame.copy(alpha = 0.5f), RoundedCornerShape(2.dp)),
-                            contentAlignment = Alignment.Center,
-                        ) { tip.look?.layers?.forEach { PixelIcon(it, if (pinHead) 40.dp else 32.dp) } ?: PixelIcon(icon, if (pinHead) 40.dp else 32.dp) }
+                        if (tip.face) HeroFace(icon, 44.dp)
+                        else {
+                            // The art at the whole scale nearest the hint that stays within a few dp of it; the slot is the art and a 3 dp margin.
+                            val hint = if (pinHead) 40.dp else 32.dp
+                            val (hintPx, maxPx) = with(LocalDensity.current) { hint.toPx() to (hint + 6.dp).toPx() }
+                            val look = tip.look
+                            Box(
+                                Modifier.background(Brush.radialGradient(listOf(frame.copy(alpha = 0.22f), ForgeSlot)), RoundedCornerShape(2.dp))
+                                    .border(1.dp, frame.copy(alpha = 0.5f), RoundedCornerShape(2.dp)).padding(3.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                if (look != null) PixelSprite(look, nearestWholeScale(ImageBitmap.imageResource(look.base).width, hintPx, maxPx))
+                                else PixelSprite(icon, nearestWholeScale(ImageBitmap.imageResource(icon).width, hintPx, maxPx))
+                            }
+                        }
                         Spacer(Modifier.width(12.dp))
                     }
                     Column(Modifier.weight(1f).padding(top = 2.dp)) {

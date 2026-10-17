@@ -1,7 +1,5 @@
 package com.example.blacksmithproject.ui.detail
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +27,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.SecondaryActionButton
+import com.example.blacksmithproject.ui.DestructiveActionButton
+import com.example.blacksmithproject.ui.HeroFace
+import com.example.blacksmithproject.ui.StatBar
+import com.example.blacksmithproject.ui.WeaponLook
 import com.example.blacksmithproject.ui.ForgeDialog
 import com.example.blacksmithproject.ui.InlineActionButton
 import com.example.blacksmithproject.ui.MemberDetailUi
@@ -40,7 +42,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.Role
 import com.example.blacksmithproject.ui.Labels
-import com.example.blacksmithproject.ui.PixelIcon
 import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.Secondary
 import com.example.blacksmithproject.ui.Sprites
@@ -74,11 +75,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.platform.LocalDensity
 import com.tinyblacksmith.core.model.HookKind
-import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.Ember
-import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.heroes.Heroes
@@ -139,6 +138,15 @@ data class HeroDetail(
     val fight: List<TipLine> = emptyList(), val fightKeywords: List<TipKeyword> = emptyList(),
     /** A living era: the member's departure notice, with its date and remedy (`LivingText.departure`), said first under the head. */
     val departure: String? = null,
+    /** The weapon in hand ([equipment] names it): its art and the blade its row opens. Null when they carry nothing. */
+    val equipmentLook: WeaponLook? = null, val equipmentId: WeaponId? = null,
+    /**
+     * The head's "Health" bar: a member's fight health of [healthMax] (the number of their "In a fight" row), anyone
+     * else's health between fights of 100 (no other health is on their sheet), with its band in a word ("Bruised"); null for
+     * one who is no longer alive or in the save.
+     */
+    val health: Int? = null, val healthWord: String? = null,
+    val healthMax: Int = 100,
 )
 
 private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)
@@ -174,6 +182,8 @@ fun GameEngine.heroDetail(state: GameState, heroId: HeroId, snapshot: CustomerSn
     }.orEmpty()
     val dealings = records.filter { it.type in shopTypes }.asReversed().map { it.day to dated(state, it.era, it.day, it.text) }
     val member = memberDetail(state, heroId)
+    // A member's bar is the fight health their "In a fight" row gives (`memberDetail`), so one label holds one number.
+    val fighter = hero?.takeIf { it.isAlive && member != null }?.let { fighterView(state, it.id) }
     return HeroDetail(
         heroId = heroId,
         name = hero?.fullName ?: first.name,
@@ -203,6 +213,12 @@ fun GameEngine.heroDetail(state: GameState, heroId: HeroId, snapshot: CustomerSn
         equipment = hero?.takeIf { it.isAlive }?.let { h ->
             state.loanOf(h.id)?.let { "On loan: ${it.name}" } ?: state.equippedWeapon(h.id)?.let { "Carries ${it.name}" } ?: "Unarmed"
         },
+        // The same blade the line above names: a loan first, else their own.
+        equipmentLook = hero?.takeIf { it.isAlive }?.let { h -> state.loanOf(h.id) ?: state.equippedWeapon(h.id) }?.let(Sprites::weapon),
+        equipmentId = hero?.takeIf { it.isAlive }?.let { h -> state.loanOf(h.id) ?: state.equippedWeapon(h.id) }?.id,
+        health = hero?.takeIf { it.isAlive }?.let { fighter?.health ?: it.health },
+        healthMax = fighter?.maxHealth ?: 100,
+        healthWord = hero?.takeIf { it.isAlive }?.let { h -> Labels.health(h).replaceFirstChar { it.uppercase() } },
         fight = if (member == null && state.guild?.candidates?.any { it.heroId == heroId } == true) heroRules(state, heroId).first else emptyList(),
         departure = hero?.let { h -> state.guild?.member(h.id)?.let { m -> com.tinyblacksmith.core.text.LivingText.departure(h, m) } },
         fightKeywords = if (member == null && state.guild?.candidates?.any { it.heroId == heroId } == true) heroRules(state, heroId).second else emptyList(),
@@ -306,7 +322,7 @@ fun HeroDetailContent(
     member: MemberActions? = null, scroll: ScrollState = rememberScrollState(),
 ) {
     Column(modifier.fillMaxWidth().verticalScroll(scroll).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
-        HeroHead(detail)
+        HeroHead(detail, onOpenItem)
         // A departure notice is the most pressing thing about a member: under the head, with its date, never alarming.
         detail.departure?.let { line ->
             Row(Modifier.fillMaxWidth().padding(top = Space.sm).semantics(mergeDescendants = true) {}.testTag("sheet_departure"), horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
@@ -356,26 +372,24 @@ private const val CLASS = "Class"
 private const val HEALTH = "Health"
 
 /**
- * The face, the full name (wrapping, never cut), people, class and level, and the condition. Beside the face as a rule,
- * under it once the text is so large that a long family name would break inside a word.
+ * The face, the full name (wrapping, never cut), people, class and level, and the condition when it is news (fallen,
+ * retired, a member laid up, away or held). Beside the face as a rule, under it once the text is so large that a long
+ * family name would break inside a word. Under them, full width: health as a bar with its word, and the weapon in hand
+ * with its art, a row that opens the blade.
  */
 @Composable
-private fun HeroHead(detail: HeroDetail) {
-    val face = @Composable {
-        Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(4.dp)) {
-            PixelImage(detail.portrait, 72.dp, description = null)
-            detail.marker?.let { PixelIcon(it, 24.dp, Modifier.align(Alignment.BottomEnd)) }
-        }
-    }
-    // Reading order: name (a byname of residence on a quieter line), condition, people, class and level, what they carry.
+private fun HeroHead(detail: HeroDetail, onOpenItem: (WeaponId) -> Unit) {
+    val face = @Composable { HeroFace(detail.portrait, 88.dp, marker = detail.marker) }
+    // Reading order: name (a byname of residence on a quieter line), condition, people, class and level; health and what they carry follow.
     val words = @Composable { m: Modifier ->
         Column(m.semantics(mergeDescendants = true) {}) {
             Text(detail.shortName, style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() }.testTag("sheet_name"))
             detail.byname?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = CreamMuted, modifier = Modifier.testTag("sheet_byname")) }
-            // A member's condition is news (laid up, away, held); anyone else's is the plain state of their health.
-            detail.condition?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = if (detail.member != null) Ember else Cream, modifier = Modifier.testTag("sheet_condition")) }
+            // A member's condition is news (laid up, away, held), as is a fate; the plain band of anyone's health is the bar's word below.
+            detail.condition?.takeIf { detail.health == null || it != detail.healthWord }?.let {
+                Text(it, style = MaterialTheme.typography.bodyMedium, color = if (detail.member != null) Ember else Cream, modifier = Modifier.testTag("sheet_condition"))
+            }
             detail.kind?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = CreamMuted, modifier = Modifier.testTag("sheet_kind")) }
-            detail.equipment?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.testTag("sheet_equipment")) }
             detail.lineage?.let { Secondary(it) }
             detail.deeds?.let { Secondary(it) }
         }
@@ -386,6 +400,21 @@ private fun HeroHead(detail: HeroDetail) {
     }
     else Row(Modifier.fillMaxWidth().padding(top = Space.sm), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
         face(); words(Modifier.weight(1f))
+    }
+    // The tag on its own box: the bar clears its children's semantics and says itself in one line.
+    detail.health?.let { Box(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("sheet_health")) { StatBar("Health", it, detail.healthMax, word = detail.healthWord) } }
+    detail.equipment?.let { line ->
+        val id = detail.equipmentId
+        Row(
+            Modifier.fillMaxWidth().padding(top = Space.xs)
+                .then(if (id == null) Modifier else Modifier.clickable(onClickLabel = "Open the weapon", role = Role.Button) { onOpenItem(id) })
+                .heightIn(min = 48.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
+        ) {
+            detail.equipmentLook?.let { PixelImage(it, 44.dp, description = null, modifier = Modifier.testTag("sheet_equipment_art")) }
+            Text(line, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.weight(1f, fill = false).testTag("sheet_equipment"))
+            if (id != null) Chevron(ChevronWay.RIGHT, tint = CreamMuted, size = 18.dp)
+        }
     }
 }
 
@@ -493,14 +522,14 @@ private fun MemberSection(m: MemberDetailUi, actions: MemberActions?, onOpenItem
         }
 
         if (actions != null) {
-            SecondaryActionButton("Dismiss from the guild", { confirmDismiss = true }, Modifier.fillMaxWidth().padding(top = Space.md).testTag("sheet_dismiss_member"), enabled = actions.enabled && m.dismissBlocked == null)
+            DestructiveActionButton("Dismiss from the guild", { confirmDismiss = true }, Modifier.fillMaxWidth().padding(top = Space.md).testTag("sheet_dismiss_member"), enabled = actions.enabled && m.dismissBlocked == null)
         }
     }
     if (confirmDismiss && actions != null) ForgeDialog(
         "Let ${m.name} go?", onDismiss = { confirmDismiss = false },
         actions = {
             InlineActionButton("Keep them", { confirmDismiss = false }, Modifier.testTag("sheet_dismiss_no"))
-            InlineActionButton("Dismiss", { confirmDismiss = false; actions.onDismissMember() }, Modifier.testTag("sheet_dismiss_yes"))
+            DestructiveActionButton("Dismiss", { confirmDismiss = false; actions.onDismissMember() }, Modifier.testTag("sheet_dismiss_yes"))
         },
     ) {
         Text("The recruitment fee is not returned. A weapon on loan returns to storage.")

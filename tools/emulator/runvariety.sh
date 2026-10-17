@@ -311,7 +311,7 @@ step_supplier() {
     scroll_to_text "Silver" >/dev/null; $ADB shell input swipe 540 1300 540 1000 600; $ADB shell sleep 1
     shot ${id}_4_day2_stock
     for x in Silver Obsidian Starsteel Moonsteel; do echo "ROW day 2 $x: $(supply_row $x)"; done
-    local want="2 left today"; [ $m = shaken ] && want="0 left today"
+    local want="2 left today"; [ $m = shaken ] && want="Sold out today"
     expect "$id Silver stock on day 2" "$(supply_row Silver)" "$want"
     for i in 1 2 3 4 5 6 7 8; do swipe_up; done; shot ${id}_5_day2_lower
   done

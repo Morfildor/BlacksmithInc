@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
@@ -27,6 +28,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.blacksmithproject.ui.EffectBullets
 import com.example.blacksmithproject.ui.EffectKind
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.StatDelta
@@ -101,19 +103,36 @@ internal fun PersonChip(face: FaceUi, onOpenHero: (FaceUi) -> Unit, modifier: Mo
     }
 }
 
-/** A blade and its name that opens the blade's sheet; at least 48 dp tall. */
+/**
+ * A blade and its name that opens the blade's sheet; at least 48 dp tall. [verticalAlignment] Top sets the tile against
+ * the title line when [below] runs on under it.
+ */
 @Composable
-internal fun BladeChip(blade: WeaponSnapshot, onOpenBlade: (WeaponSnapshot) -> Unit, modifier: Modifier = Modifier, title: String = blade.name, note: String? = null) {
+internal fun BladeChip(
+    blade: WeaponSnapshot, onOpenBlade: (WeaponSnapshot) -> Unit, modifier: Modifier = Modifier, title: String = blade.name, note: String? = null,
+    verticalAlignment: Alignment.Vertical = Alignment.CenterVertically, below: (@Composable () -> Unit)? = null,
+) {
     Row(
         modifier.heightIn(min = 48.dp).clickable(onClickLabel = "Open ${blade.name}", role = Role.Button) { onOpenBlade(blade) }.padding(end = Space.sm),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = verticalAlignment,
     ) {
         BladeTile(blade)
         Spacer(Modifier.width(Space.sm))
-        Column {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(title, style = MaterialTheme.typography.titleSmall)
             if (!note.isNullOrEmpty()) Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            below?.invoke()
         }
+    }
+}
+
+/** What spoke for a weighed blade and what against it, one recorded factor a line. */
+@Composable
+private fun Weighed(item: LookedUi) {
+    // Heard as the recorded sentences ("Reasons to buy. ..."), part of the chip's own reading, not as bare signs.
+    Column(Modifier.clearAndSetSemantics { contentDescription = item.factors }, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        if (item.pros.isNotEmpty()) EffectBullets(EffectKind.BUFF, item.pros)
+        if (item.cons.isNotEmpty()) EffectBullets(EffectKind.FLAW, item.cons)
     }
 }
 
@@ -148,19 +167,23 @@ fun VisitCard(visit: VisitUi, onOpenBlade: (WeaponSnapshot) -> Unit, modifier: M
         Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
             if (visit.sold) CardTitle(visit.outcome, Modifier.testTag("shopday_outcome"))
             else Text(visit.outcome, style = MaterialTheme.typography.titleLarge, modifier = Modifier.testTag("shopday_outcome").semantics { heading() })
-            visit.decision?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("shopday_decision")) }
+            // On a sale the receipt below says what was paid, so the line says only why.
+            visit.reasonLine?.let { Text(it, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.testTag("shopday_decision")) }
             visit.recognition?.let { Text(it, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.testTag("shopday_recognition")) }
         }
         // The blade heads its own receipt, the way a bill names what was bought.
         if (visit.purchased != null || visit.receipt.isNotEmpty()) Column {
             visit.purchased?.let { Text(it.name, style = MaterialTheme.typography.titleSmall) }
-            if (visit.receipt.isNotEmpty()) ReceiptRows(visit.receipt)
+            if (visit.receipt.isNotEmpty()) ReceiptRows(shownReceipt(visit.receipt))
         }
-        if (visit.looked.isNotEmpty()) Column {
+        if (visit.looked.isNotEmpty()) Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
             Overline("Looked at")
             visit.looked.forEach { item ->
-                if (item.blade != null) BladeChip(item.blade, onOpenBlade, Modifier.fillMaxWidth(), title = item.title, note = item.factors)
-                else Text(item.title + if (item.factors.isEmpty()) "" else ": ${item.factors}", style = MaterialTheme.typography.bodySmall)
+                if (item.blade != null) BladeChip(item.blade, onOpenBlade, Modifier.fillMaxWidth(), title = item.title, verticalAlignment = Alignment.Top) { Weighed(item) }
+                else Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(item.title, style = MaterialTheme.typography.titleSmall)
+                    Weighed(item)
+                }
             }
         }
     }

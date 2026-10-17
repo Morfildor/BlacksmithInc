@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasParent
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -50,7 +51,9 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.blacksmithproject.ui.BookTab
 import com.example.blacksmithproject.ui.ForgePanel
+import com.example.blacksmithproject.ui.RecordsPanel
 import com.example.blacksmithproject.ui.ShopPanel
 import com.example.blacksmithproject.ui.detail.ItemDetailContent
 import com.example.blacksmithproject.ui.detail.itemDetail
@@ -130,10 +133,21 @@ class LayoutMatrixTest {
         compose.onNodeWithTag(tag, useUnmergedTree = true).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
         assertTrue("text layout exists for $tag", layouts.isNotEmpty())
         layouts.forEach { layout ->
-            assertFalse("$tag has visual overflow", layout.hasVisualOverflow)
+            assertFalse("$tag has visual overflow", layout.overflowsItsNode())
             for (line in 0 until layout.lineCount) assertFalse("$tag ellipsized", layout.isLineEllipsized(line))
         }
     }
+
+    /**
+     * Whether the text is cut: taller than its node, or a painted line wider than it. Not [TextLayoutResult.hasVisualOverflow]:
+     * the result the semantics action hands back is laid out again at the node's maximum width (Compose 1.10,
+     * `ParagraphLayoutCache.slowCreateTextLayoutResultOrNull`) while it reports the node's real size, which for a one-line
+     * text narrower than its room is its own width, so `didOverflowWidth` is true for any short line that fits. Each line's
+     * own width (right less left, so a centred line counts the same) against the node's width is what is painted; a
+     * centred line's ends come back rounded to whole pixels, hence the pixel and a half of slack.
+     */
+    private fun TextLayoutResult.overflowsItsNode(): Boolean =
+        didOverflowHeight || (0 until lineCount).any { getLineRight(it) - getLineLeft(it) > size.width + 1.5f }
 
     @Test
     fun longTodayRemindersAndActionsRemainReadableAndReachable() {
@@ -245,4 +259,55 @@ class LayoutMatrixTest {
         }
     }
 
+    /**
+     * Records' page tabs and the Notebook's tabs at phone widths and every text size (VA-03, VA-04): each page name
+     * whole inside its own tab, and a notebook label broken only between its words, never inside one.
+     */
+    @Test
+    fun recordsAndNotebookTabsKeepTheirWordsWhole() {
+        val engine = ShopDayFixtures.engine
+        val start = engine.newRun(LegacyProfile(), 42L)
+        val repo = MemoryRepository(SaveCodec.encodeRun(start), SaveCodec.encodeLegacy(start.legacy))
+        lateinit var vm: GameViewModel
+        compose.runOnUiThread { vm = GameViewModel(engine, GameSession(engine, repo), QuietSettings(), SavedStateHandle()) }
+        compose.waitUntil(10_000) { vm.ui.value is UiState.Playing }
+        compose.runOnUiThread { vm.selectDest(Dest.RECORDS); vm.selectRecords(RecordsPage.JOURNAL) }
+        compose.setContent {
+            BlacksmithProjectTheme {
+                val ui by vm.ui.collectAsState()
+                val s = ui as? UiState.Playing ?: return@BlacksmithProjectTheme
+                DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(size) then DeviceConfigurationOverride.FontScale(font)) { RecordsPanel(s, vm) }
+            }
+        }
+        for (w in listOf(320, 360, 393, 412)) for (f in listOf(1f, 1.3f, 1.5f, 2f)) {
+            compose.runOnUiThread { size = DpSize(w.dp, 700.dp); font = f }
+            compose.waitForIdle()
+            val where = "$w dp x font $f"
+            for (p in listOf(RecordsPage.GAZETTE, RecordsPage.JOURNAL, RecordsPage.LEGACY)) {
+                val tag = "page_${p.name.lowercase()}"
+                val tab = compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
+                val text = compose.onNode(hasParent(hasTestTag(tag)), useUnmergedTree = true)
+                val label = text.fetchSemanticsNode().boundsInRoot
+                assertTrue("$where: $tag label ${label.left}..${label.right} inside ${tab.left}..${tab.right}", label.left >= tab.left - 0.5f && label.right <= tab.right + 0.5f)
+                // One line that is not wrapped: its painted line must also fit the label's own width (bounds alone are clamped).
+                val layouts = mutableListOf<TextLayoutResult>()
+                text.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+                layouts.forEach { assertTrue("$where: $tag name is cut (${it.getLineRight(0)} of ${it.size.width})", it.getLineLeft(0) >= -0.5f && it.getLineRight(0) <= it.size.width + 0.5f) }
+            }
+            for (t in BookTab.entries) {
+                val tag = "book_tab_${t.name.lowercase()}"
+                if (compose.onAllNodes(hasTestTag(tag)).fetchSemanticsNodes().isEmpty()) continue
+                val layouts = mutableListOf<TextLayoutResult>()
+                compose.onNode(hasParent(hasTestTag(tag)), useUnmergedTree = true).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+                assertTrue("$where: text layout exists for $tag", layouts.isNotEmpty())
+                layouts.forEach { layout ->
+                    assertFalse("$where: $tag has visual overflow", layout.overflowsItsNode())
+                    for (line in 0 until layout.lineCount - 1) {
+                        val end = layout.getLineEnd(line)
+                        assertTrue("$where: \"${t.label}\" breaks inside a word at $end", t.label.getOrNull(end - 1) == ' ')
+                    }
+                }
+            }
+        }
+    }
 }

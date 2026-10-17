@@ -159,17 +159,18 @@ private val RowShape = RoundedCornerShape(4.dp)
  * One option of a pick-one choice: a quiet plate with a hairline edge; once chosen it is raised, edged in gold and marked
  * with a check, so the choice is never told by colour alone (it stays a radio button to a screen reader). Every
  * choice surface (charter, opening, visitor answer, relic, loan) is made of these, so a choice always looks the same.
- * Choosing does nothing but mark: the one action under the rows commits.
+ * Choosing does nothing but mark: the one action under the rows commits. [unavailable] is an option that cannot be taken
+ * (its reason is said in the row): no ground and a faint edge. It is apart from [enabled], which is also false while saving.
  */
 @Composable
 fun ChoiceRow(
-    selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true,
+    selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, unavailable: Boolean = false,
     leading: (@Composable () -> Unit)? = null, content: @Composable ColumnScope.() -> Unit,
 ) {
     Box(
         modifier.fillMaxWidth()
-            .background(if (selected) ForgePanelRaised else ForgePanel, RowShape)
-            .border(if (selected) 1.5.dp else 1.dp, if (selected) Gold else BronzeDeep, RowShape)
+            .background(if (selected) ForgePanelRaised else if (unavailable) Color.Transparent else ForgePanel, RowShape)
+            .border(if (selected) 1.5.dp else 1.dp, if (selected) Gold else if (unavailable) BronzeDeep.copy(alpha = 0.5f) else BronzeDeep, RowShape)
             .selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick),
     ) {
         Row(
@@ -230,6 +231,18 @@ fun SecondaryActionButton(text: String, onClick: () -> Unit, modifier: Modifier 
             Text(detail, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Normal, color = if (enabled) Cream else LocalContentColor.current, textAlign = TextAlign.Center)
         }
     }
+}
+
+/** An action that ends or destroys something (End era, Melt down, Dismiss): a red outline with red lettering. At least 48 dp tall. */
+@Composable
+fun DestructiveActionButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
+    OutlinedButton(
+        onClick = onClick, enabled = enabled, shape = MaterialTheme.shapes.small,
+        border = BorderStroke(1.dp, if (enabled) FlawRed else BronzeDeep),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = FlawRed),
+        contentPadding = PaddingValues(horizontal = Space.md, vertical = Space.sm),
+        modifier = modifier.heightIn(min = 48.dp),
+    ) { Text(text, textAlign = TextAlign.Center) }
 }
 
 /** An action inside a line or under a paragraph (Read the Gazette, Forge this, Got it): gold lettering, no outline. At least 48 dp tall. */
@@ -405,14 +418,15 @@ fun EffectRow(kind: EffectKind, title: String, detail: String, modifier: Modifie
 /**
  * Gains or costs as short bullets: each line opens with the effect's sign in its colour ("+" a gain, "−" a cost), the
  * words after it in ivory Regular. The sign is a shape as well as a colour, and a list reads faster than a sentence.
+ * [muted] is for an option that cannot be taken: the words in muted cream, the sign dimmed.
  */
 @Composable
-fun EffectBullets(kind: EffectKind, items: List<String>, modifier: Modifier = Modifier) {
+fun EffectBullets(kind: EffectKind, items: List<String>, modifier: Modifier = Modifier, muted: Boolean = false) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         items.forEach { item ->
             Row(Modifier.semantics(mergeDescendants = true) {}) {
-                Text(kind.sign, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = kind.color, modifier = Modifier.padding(end = Space.sm))
-                Text(item, style = MaterialTheme.typography.bodySmall, color = Cream)
+                Text(kind.sign, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = if (muted) kind.color.copy(alpha = 0.6f) else kind.color, modifier = Modifier.padding(end = Space.sm))
+                Text(item, style = MaterialTheme.typography.bodySmall, color = if (muted) CreamMuted else Cream)
             }
         }
     }

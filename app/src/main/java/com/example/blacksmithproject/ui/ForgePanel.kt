@@ -14,6 +14,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.Dp
+import com.example.blacksmithproject.ui.shopday.PixelSprite
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.Column
@@ -189,7 +200,8 @@ fun ForgePanel(
             ForgeBar(
                 d, { change -> vm.updateDraft(change) }, s.shop.requests.size, s.shop.requests.count { it.offered }, endDayNote, onOpenBoard, { onOpenSupplies(null) },
                 { vm.selectRecords(RecordsPage.JOURNAL) }, onEndDay, s.busy, onEndDayPreview.takeIf { endDayHasMore(endDayLines(s)) },
-                onBench = if (tight && bench.outlook != null) { { rehearsing = true } } else null,
+                // In the More menu whenever the link under the anvil is not shown (room short, or a tray open).
+                onBench = if ((tight || open != null) && bench.outlook != null) { { rehearsing = true } } else null,
             )
             bench.brief?.let { b ->
                 Brief(
@@ -261,34 +273,37 @@ fun ForgePanel(
  * One line under the anvil: Quick or Advanced, then the commission board (its count, new offers in gold) and the rarer
  * ways on behind "More" (the supplier, the notebook, what End Day sets in motion, End day itself).
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ForgeBar(
     d: ForgeDraft, onMode: ((ForgeDraft) -> ForgeDraft) -> Unit, commissions: Int, offers: Int, endDayNote: String, onOpenBoard: () -> Unit, onOpenSupplies: () -> Unit,
     onOpenJournal: () -> Unit, onEndDay: () -> Unit, busy: Boolean, onEndDayPreview: (() -> Unit)? = null, onBench: (() -> Unit)? = null,
 ) {
-    Row(Modifier.fillMaxWidth().padding(top = Space.sm), verticalAlignment = Alignment.CenterVertically) {
+    // Two items that wrap as a whole: the toggle, then the board and More together, so a count is never cut letter by letter.
+    FlowRow(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.SpaceBetween, itemVerticalAlignment = Alignment.CenterVertically) {
         ModeToggle(d, onMode)
-        Spacer(Modifier.weight(1f))
-        Row(
-            Modifier.heightIn(min = 48.dp).clip(Chip).clickable(role = Role.Button, onClick = onOpenBoard).padding(horizontal = Space.sm).testTag("forge_commissions")
-                .semantics(mergeDescendants = true) { contentDescription = if (offers > 0) "Commissions, $offers new" else "Commissions, $commissions" },
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            PixelIcon(R.drawable.icon_action_commission, 28.dp)
-            if (commissions > 0) Text(
-                if (offers > 0) "$offers new" else "$commissions", style = MaterialTheme.typography.labelLarge, color = if (offers > 0) Gold else CreamMuted,
-                modifier = Modifier.padding(start = 6.dp),
-            )
-        }
-        Box {
-            var more by remember { mutableStateOf(false) }
-            TextButton(onClick = { more = true }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_more")) { Text("⋯", style = MaterialTheme.typography.titleLarge, color = CreamMuted, modifier = Modifier.semantics { contentDescription = "More" }) }
-            DropdownMenu(expanded = more, onDismissRequest = { more = false }, containerColor = ForgePanel) {
-                onBench?.let { go -> DropdownMenuItem(text = { Text("Practice fight") }, onClick = { more = false; go() }, modifier = Modifier.testTag("forge_bench_open")) }
-                DropdownMenuItem(text = { Text("Supplies") }, onClick = { more = false; onOpenSupplies() }, modifier = Modifier.testTag("forge_supplies"))
-                DropdownMenuItem(text = { Text("Notebook") }, onClick = { more = false; onOpenJournal() }, modifier = Modifier.testTag("forge_journal"))
-                onEndDayPreview?.let { open -> DropdownMenuItem(text = { Text("What happens at End Day") }, onClick = { more = false; open() }, modifier = Modifier.testTag("forge_end_day_preview")) }
-                DropdownMenuItem(text = { Column { Text("End Day"); Text(endDayNote, style = MaterialTheme.typography.bodySmall, color = CreamMuted) } }, enabled = !busy, onClick = { more = false; onEndDay() }, modifier = Modifier.testTag("forge_end_day"))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                Modifier.heightIn(min = 48.dp).clip(Chip).clickable(role = Role.Button, onClick = onOpenBoard).padding(horizontal = Space.sm).testTag("forge_commissions")
+                    .semantics(mergeDescendants = true) { contentDescription = if (offers > 0) "Commissions, $offers new" else "Commissions, $commissions" },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                PixelIcon(R.drawable.icon_action_commission, 28.dp)
+                if (commissions > 0) Text(
+                    if (offers > 0) "$offers new" else "$commissions", style = MaterialTheme.typography.labelLarge, color = if (offers > 0) Gold else CreamMuted,
+                    maxLines = 1, softWrap = false, modifier = Modifier.padding(start = 6.dp),
+                )
+            }
+            Box {
+                var more by remember { mutableStateOf(false) }
+                TextButton(onClick = { more = true }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_more")) { Text("⋯", style = MaterialTheme.typography.titleLarge, color = CreamMuted, modifier = Modifier.semantics { contentDescription = "More" }) }
+                DropdownMenu(expanded = more, onDismissRequest = { more = false }, containerColor = ForgePanel) {
+                    onBench?.let { go -> DropdownMenuItem(text = { Text("Practice fight") }, onClick = { more = false; go() }, modifier = Modifier.testTag("forge_bench_open")) }
+                    DropdownMenuItem(text = { Text("Supplies") }, onClick = { more = false; onOpenSupplies() }, modifier = Modifier.testTag("forge_supplies"))
+                    DropdownMenuItem(text = { Text("Notebook") }, onClick = { more = false; onOpenJournal() }, modifier = Modifier.testTag("forge_journal"))
+                    onEndDayPreview?.let { open -> DropdownMenuItem(text = { Text("What happens at End Day") }, onClick = { more = false; open() }, modifier = Modifier.testTag("forge_end_day_preview")) }
+                    DropdownMenuItem(text = { Column { Text("End Day"); Text(endDayNote, style = MaterialTheme.typography.bodySmall, color = CreamMuted) } }, enabled = !busy, onClick = { more = false; onEndDay() }, modifier = Modifier.testTag("forge_end_day"))
+                }
             }
         }
     }
@@ -314,12 +329,13 @@ private fun ForgeHero(
         Row(verticalAlignment = Alignment.Top) {
             // Very large text: the room gives way to the weapon alone, small, so the name keeps the width.
             if (LocalDensity.current.fontScale >= 1.8f) Box(
-                Modifier.padding(top = 4.dp).size(40.dp).clip(Chip).background(ForgeSlot).testTag("forge_workbench").semantics(mergeDescendants = true) { contentDescription = "On the anvil: ${bench.title}" },
+                Modifier.padding(top = 4.dp).size(48.dp).clip(Chip).background(ForgeSlot).testTag("forge_workbench").semantics(mergeDescendants = true) { contentDescription = "On the anvil: ${bench.title}" },
                 contentAlignment = Alignment.Center,
             ) {
                 val art = d.familyId?.let { f -> Sprites.weapon(f, d.coreId ?: content.materials(MaterialCategory.CORE).first().id, element, catalystId = d.catalystId) }
                 val shade = Modifier.alpha(if (d.familyId == null || d.coreId != null) 1f else 0.55f)
-                if (art != null) PixelImage(art, 32.dp, description = null, modifier = shade) else PixelImage(R.drawable.anvil, 32.dp, description = null, modifier = shade)
+                // 44 dp keeps the weapon at twice its art at every density; the anvil at its own whole scale.
+                if (art != null) PixelImage(art, 44.dp, description = null, modifier = shade) else AnvilArt(44.dp, 44.dp, shade)
             } else {
                 val scene = when { compact -> 56.dp; tight -> 72.dp; else -> 104.dp }
                 AnvilScene(bench.title, d, content, Modifier.size(scene), compact = scene < 80.dp, reducedMotion)
@@ -356,7 +372,8 @@ private fun ForgeHero(
                 FactLine(facts, Modifier.padding(top = 2.dp).testTag("forge_identity"))
             }
         }
-        if (o != null && inspect != null && !compact && !tight) Row(Modifier.fillMaxWidth().padding(start = 104.dp + 12.dp, top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+        // Under the text, past the scene: "Practice fight" wraps under "Effects" rather than being cut at the edge.
+        if (o != null && inspect != null && !compact && !tight) FlowRow(Modifier.fillMaxWidth().padding(start = 104.dp + 12.dp, top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
             ForgeLink("Effects", "forge_inspect_recipe", info = true, onClick = open)
             ForgeLink("Practice fight", "forge_bench_open", onClick = onBench)
         }
@@ -402,7 +419,7 @@ private fun AnvilScene(title: String, d: ForgeDraft, content: ContentCatalog, mo
         contentAlignment = Alignment.BottomCenter,
     ) {
         Backdrop(R.drawable.bg_counter_forge, Modifier.matchParentSize().clearAndSetSemantics {}, dim = 0.35f, sink = 0.2f)
-        PixelImage(R.drawable.anvil, wholePixelDp(109, if (compact) 64.dp else 96.dp), description = null, modifier = Modifier.padding(bottom = 2.dp).height(if (compact) 40.dp else 60.dp))
+        AnvilArt(if (compact) 64.dp else 96.dp, if (compact) 40.dp else 60.dp, Modifier.padding(bottom = 2.dp))
         d.familyId?.let { family ->
             val core = d.coreId ?: content.materials(MaterialCategory.CORE).first().id
             PixelImage(
@@ -411,6 +428,19 @@ private fun AnvilScene(title: String, d: ForgeDraft, content: ContentCatalog, mo
             )
         }
     }
+}
+
+/**
+ * The pixel anvil (109 x 72 art) at the whole scale nearest [hint] for its width, never taller than [maxHeight]:
+ * the same pixels as every other piece of art on the bench, never a fractional enlargement.
+ */
+@Composable
+private fun AnvilArt(hint: Dp, maxHeight: Dp, modifier: Modifier = Modifier) {
+    val art = ImageBitmap.imageResource(R.drawable.anvil)
+    val density = LocalDensity.current
+    val k = with(density) { minOf(nearestWholeScale(art.width, hint.toPx()), (maxHeight.toPx() / art.height).toInt()).coerceAtLeast(1) }
+    // PixelSprite is as tall as it is wide; the anvil is wider than tall, so its own height is set first.
+    PixelSprite(R.drawable.anvil, k, modifier.height(with(density) { (art.height * k).toDp() }))
 }
 
 /**
@@ -483,33 +513,74 @@ private fun slotArt(slot: RecipeSlot, d: ForgeDraft, content: ContentCatalog): I
     RecipeSlot.TECHNIQUE -> null
 }
 
-/** The places of the recipe side by side: the thing chosen as an object, its kind over it, its name under it. */
+/**
+ * The places of the recipe side by side: the thing chosen as an object, its kind over it, its name under it. As many
+ * share a row as keep their widest word whole (at least 96 dp a place, measured, never guessed from the text size); the
+ * rest wrap under them, so every place is on screen without a sideways scroll.
+ */
 @Composable
 private fun SlotRow(slots: List<SlotUi>, d: ForgeDraft, content: ContentCatalog, open: RecipeSlot?, reducedMotion: Boolean, onToggle: (RecipeSlot) -> Unit) {
     val large = LocalDensity.current.fontScale > 1.3f
-    Row(Modifier.fillMaxWidth().then(if (large) Modifier.horizontalScroll(rememberScrollState()) else Modifier).padding(top = Space.sm).height(IntrinsicSize.Min).testTag("forge_slots_${slots.first().slot.name.lowercase()}"), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-        slots.forEach { slot ->
-            val active = open == slot.slot
-            Column(
-                (if (large) Modifier.width(156.dp) else Modifier.weight(1f)).fillMaxHeight().heightIn(min = if (large) 64.dp else 84.dp).clip(Card).background(if (active) BronzeContainer else ForgePanelRaised).border(if (active) 1.5.dp else 1.dp, if (active) Gold else BronzeLine, Card)
-                    .clickable(role = Role.Button) { onToggle(slot.slot) }.padding(horizontal = Space.xs, vertical = 6.dp).testTag("forge_slot_${slot.slot.name.lowercase()}")
-                    .semantics(mergeDescendants = true) { contentDescription = "${slot.slot.label}: ${slot.value ?: "not chosen"}${slot.stock?.let { n -> ", $n in stock" }.orEmpty()}, ${if (active) "choosing" else "tap to change"}" },
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(slot.slot.label, style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
-                if (!large) Box(Modifier.fillMaxWidth().padding(vertical = 2.dp), contentAlignment = Alignment.Center) {
-                    val art = slotArt(slot.slot, d, content)
-                    if (art != null) PixelImage(art, 40.dp, description = null, modifier = Modifier.landing(slot.value, reducedMotion))
-                    else Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) { Text(if (slot.value != null) "✦" else "+", style = MaterialTheme.typography.titleMedium, color = if (slot.value != null) Gold else Bronze) }
-                    slot.stock?.let { Text("×$it", style = MaterialTheme.typography.labelSmall, color = if (it == 0) FlawRed else CreamMuted, modifier = Modifier.align(Alignment.CenterEnd).background(ForgeSlot, Chip).padding(horizontal = 6.dp, vertical = 4.dp)) }
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    val kindStyle = MaterialTheme.typography.labelSmall
+    val nameStyle = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+    val widest = remember(slots, measurer, kindStyle, nameStyle) {
+        slots.flatMap { s -> s.slot.label.split(' ').map { it to kindStyle } + (s.value ?: s.slot.empty).split(' ').map { it to nameStyle } }
+            .maxOfOrNull { (word, style) -> measurer.measure(word, style, softWrap = false, maxLines = 1).size.width } ?: 0
+    }
+    BoxWithConstraints(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("forge_slots_${slots.first().slot.name.lowercase()}")) {
+        // A place is at least 96 dp, and holds its widest word with 8 dp either side.
+        val perRow = with(density) { tabsPerRow(constraints.maxWidth.toFloat(), maxOf(widest.toFloat(), 80.dp.toPx()), slots.size, Space.sm.toPx(), 8.dp.toPx()) }
+        val tile = (maxWidth - Space.sm * (perRow - 1)) / perRow
+        // Large text keeps the art where a place is wide enough to give it room beside its words.
+        val art = !large || tile >= 120.dp
+        Column(verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            slots.chunked(perRow).forEach { row ->
+                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    row.forEach { slot -> SlotTile(slot, d, content, open == slot.slot, large, art, reducedMotion, Modifier.weight(1f).fillMaxHeight(), onToggle) }
+                    // An odd last place keeps the width of the others.
+                    repeat(perRow - row.size) { Spacer(Modifier.weight(1f)) }
                 }
-                if (large) slot.stock?.let { Text(if (it == 0) "None left" else "$it in stock", style = MaterialTheme.typography.labelSmall, color = CreamMuted) }
-                Text(
-                    slot.value ?: slot.slot.empty, style = MaterialTheme.typography.labelMedium, fontWeight = if (slot.value != null) FontWeight.SemiBold else null,
-                    color = if (slot.value != null) Cream else CreamMuted, textAlign = TextAlign.Center,
-                )
             }
         }
+    }
+}
+
+/** One place of the recipe: its kind, the thing chosen in it (or "+"), and its name; gold-edged while its tray is open. */
+@Composable
+private fun SlotTile(slot: SlotUi, d: ForgeDraft, content: ContentCatalog, active: Boolean, large: Boolean, showArt: Boolean, reducedMotion: Boolean, modifier: Modifier, onToggle: (RecipeSlot) -> Unit) {
+    Column(
+        modifier.heightIn(min = if (large) 64.dp else 84.dp).clip(Card).background(if (active) BronzeContainer else ForgePanelRaised).border(if (active) 1.5.dp else 1.dp, if (active) Gold else BronzeLine, Card)
+            .clickable(role = Role.Button) { onToggle(slot.slot) }.padding(horizontal = Space.xs, vertical = 6.dp).testTag("forge_slot_${slot.slot.name.lowercase()}")
+            .semantics(mergeDescendants = true) { contentDescription = "${slot.slot.label}: ${slot.value ?: "not chosen"}${slot.stock?.let { n -> ", $n in stock" }.orEmpty()}, ${if (active) "choosing" else "tap to change"}" },
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(slot.slot.label, style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
+        if (showArt) Box(Modifier.fillMaxWidth().padding(vertical = 2.dp), contentAlignment = Alignment.Center) {
+            val art = slotArt(slot.slot, d, content)
+            if (art != null) WholeArt(art, 44.dp, Modifier.landing(slot.value, reducedMotion))
+            else Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) { Text(if (slot.value != null) "✦" else "+", style = MaterialTheme.typography.titleMedium, color = if (slot.value != null) Gold else Bronze) }
+            if (!large) slot.stock?.let { Text("×$it", style = MaterialTheme.typography.labelSmall, color = if (it == 0) FlawRed else CreamMuted, modifier = Modifier.align(Alignment.CenterEnd).background(ForgeSlot, Chip).padding(horizontal = 6.dp, vertical = 4.dp)) }
+        }
+        if (large) slot.stock?.let { Text(if (it == 0) "None left" else "$it in stock", style = MaterialTheme.typography.labelSmall, color = CreamMuted) }
+        Text(
+            slot.value ?: slot.slot.empty, style = MaterialTheme.typography.labelMedium, fontWeight = if (slot.value != null) FontWeight.SemiBold else null,
+            color = if (slot.value != null) Cream else CreamMuted, textAlign = TextAlign.Center,
+        )
+    }
+}
+
+/**
+ * Interface art (a material, a weapon type) at the largest whole scale that fits a [box] square, centred, so its pixels
+ * stay even. A box smaller than the art shrinks it as [PixelImage] does.
+ */
+@Composable
+private fun WholeArt(res: Int, box: Dp, modifier: Modifier = Modifier) {
+    val px = with(LocalDensity.current) { box.roundToPx() }.toFloat()
+    val width = ImageBitmap.imageResource(res).width
+    Box(modifier.size(box), contentAlignment = Alignment.Center) {
+        if (width <= px) PixelSprite(res, nearestWholeScale(width, px, maxPx = px)) else PixelImage(res, box, description = null)
     }
 }
 
@@ -520,47 +591,105 @@ private fun optionArt(slot: RecipeSlot, option: OptionUi, content: ContentCatalo
 }
 
 /**
- * The choices for one place in a horizontally scrolling row, each a tile: its art, its name, what the smith holds of it
- * and the name of the rule it gives. A tap on a tile that can be used places it and the tray stays open; its ringed "i"
- * (or a long press) opens its card. Stock-empty tiles stay dimmed: a tap says why they cannot be used and where more
- * comes from. Under the options, the choice in focus and how the draft now differs from the one the tray was opened on
- * ([change]), with the way back to it. Choosing is free: nothing is spent and nothing is drawn until "Forge".
+ * The choices for one place as a row of tiles, each its art, its name, what the smith holds of it and the name of the
+ * rule it gives. A tile is at least 96 dp and holds the widest word of any name (measured). When every choice fits they
+ * share the width and nothing scrolls; when not, the row scrolls sideways with a deliberate part of the next tile in
+ * view and a fade at the end while more lies beyond. A tap on a tile that can be used places it and the tray stays
+ * open; its ringed "i" (or a long press) opens its card. Stock-empty tiles stay dimmed: a tap says why they cannot be
+ * used and where more comes from. Under the options, the choice in focus and how the draft now differs from the one the
+ * tray was opened on ([change]), with the way back to it. Choosing is free: nothing is spent and nothing is drawn until "Forge".
  */
 @Composable
 internal fun Tray(
     slot: RecipeSlot, options: List<OptionUi>, content: ContentCatalog, change: TrayChangeUi?, onRestock: (MaterialId?) -> Unit, onDone: () -> Unit, onPutBack: () -> Unit,
     tipFor: ((OptionUi) -> TipUi?)? = null, onPick: (OptionUi) -> Unit,
 ) {
-    val columns = if (LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340) 2 else 3
     var inspected by remember(slot) { mutableStateOf<String?>(null) }
-    Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("forge_tray_${slot.name.lowercase()}")) {
-        // With large text the name takes its own line and the two actions sit under it, so it is never cut letter by letter.
-        @Composable fun actions() {
-            TextButton(onClick = { onRestock(null) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_buy")) { Text("Buy", color = CreamMuted) }
-            TextButton(onClick = onDone, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_done")) { Text("Done", color = Gold) }
-        }
-        if (columns == 2) {
-            Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm).semantics { heading() })
-        } else Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
-            actions()
-        }
-        val choiceScroll = rememberSaveable(slot, saver = androidx.compose.foundation.ScrollState.Saver) { androidx.compose.foundation.ScrollState(0) }
-        Row(Modifier.fillMaxWidth().horizontalScroll(choiceScroll).height(IntrinsicSize.Min).padding(top = Space.xs).testTag("forge_choices"), horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-            options.forEach { o ->
-                OptionTile(
-                    o, if (LocalDensity.current.fontScale > 1.3f) null else optionArt(slot, o, content), Modifier.width(if (columns == 2) 144.dp else 112.dp).fillMaxHeight(),
-                    inspected = o.id != null && o.id == inspected, tip = if (o.id != null && tipFor != null) { { tipFor(o) } } else null,
-                ) {
-                    if (o.usable) { inspected = null; onPick(o) } else inspected = o.id
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    val nameStyle = MaterialTheme.typography.labelMedium
+    val headStyle = MaterialTheme.typography.titleSmall
+    val actionStyle = MaterialTheme.typography.labelLarge
+    val ruleStyle = MaterialTheme.typography.labelSmall
+    // Every word a tile shows (its name, its stock, the names of its rules) stays whole: the widest sets the tile's least width.
+    val widest = remember(options, measurer, nameStyle, ruleStyle) {
+        val names = options.flatMap { it.name.split(' ') }.map { measurer.measure(it, nameStyle, softWrap = false, maxLines = 1).size.width }
+        val small = options.flatMap { o -> o.fightNames().flatMap { it.split(' ') } + listOfNotNull(o.stock?.let { if (it == 0) "None left" else "$it owned" }) }
+            .map { measurer.measure(it, ruleStyle, softWrap = false, maxLines = 1).size.width }
+        (names + small).maxOrNull() ?: 0
+    }
+    // The head and its two actions share a line only while the head keeps its words whole beside them (a text button
+    // is its label with 12 dp either side, at least 58 dp).
+    val headPx = remember(slot, measurer, headStyle, actionStyle) {
+        val actions = listOf("Buy", "Done").sumOf { maxOf(measurer.measure(it, actionStyle, softWrap = false, maxLines = 1).size.width + with(density) { 24.dp.roundToPx() }, with(density) { 58.dp.roundToPx() }) }
+        measurer.measure(slot.choose, headStyle, softWrap = false, maxLines = 1).size.width + actions
+    }
+    BoxWithConstraints(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("forge_tray_${slot.name.lowercase()}")) {
+        val stackedHead = headPx > constraints.maxWidth
+        val gap = Space.sm
+        val tileMin = maxOf(96.dp, with(density) { widest.toDp() } + 16.dp)
+        val fit = maxOf(1, ((maxWidth + gap) / (tileMin + gap)).toInt())
+        val fits = options.size <= fit
+        // Not all fit: k whole tiles and 40 % of the next, each still at least the narrowest tile.
+        var k = fit
+        while (k > 1 && (maxWidth - gap * k) / (k + 0.4f) < tileMin) k--
+        // Room for one tile and its peek only (large text): every tile, "None" too, keeps the least width rather than
+        // one tile stretched across the row, so the next tiles show instead.
+        val tile = if (fits) (maxWidth - gap * (options.size - 1).coerceAtLeast(0)) / options.size.coerceAtLeast(1) else if (k > 1) (maxWidth - gap * k) / (k + 0.4f) else tileMin
+        val viewPx = constraints.maxWidth
+        Column(Modifier.fillMaxWidth()) {
+            @Composable fun actions() {
+                TextButton(onClick = { onRestock(null) }, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_buy")) { Text("Buy", color = CreamMuted) }
+                TextButton(onClick = onDone, modifier = Modifier.heightIn(min = 48.dp).testTag("forge_tray_done")) { Text("Done", color = Gold) }
+            }
+            if (stackedHead) {
+                Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm).semantics { heading() })
+            } else Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(slot.choose, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
+                actions()
+            }
+            val choiceScroll = rememberSaveable(slot, saver = androidx.compose.foundation.ScrollState.Saver) { androidx.compose.foundation.ScrollState(0) }
+            // When the tray opens or the choice changes, the chosen tile comes wholly into view.
+            val chosen = options.indexOfFirst { it.selected }
+            val tilePx = with(density) { tile.roundToPx() }
+            val stepPx = tilePx + with(density) { gap.roundToPx() }
+            LaunchedEffect(chosen, fits, tilePx) {
+                if (fits || chosen < 0) return@LaunchedEffect
+                val start = chosen * stepPx
+                val target = when {
+                    start < choiceScroll.value -> start
+                    start + tilePx > choiceScroll.value + viewPx -> start + tilePx - viewPx
+                    else -> return@LaunchedEffect
+                }
+                choiceScroll.animateScrollTo(target)
+            }
+            Row(
+                Modifier.fillMaxWidth().then(if (fits) Modifier else Modifier.endFade(choiceScroll.canScrollForward).horizontalScroll(choiceScroll))
+                    .height(IntrinsicSize.Min).padding(top = Space.xs).testTag("forge_choices"),
+                horizontalArrangement = Arrangement.spacedBy(gap),
+            ) {
+                options.forEach { o ->
+                    OptionTile(
+                        o, optionArt(slot, o, content), (if (fits) Modifier.weight(1f) else Modifier.width(tile)).fillMaxHeight(), tile,
+                        inspected = o.id != null && o.id == inspected, tip = if (o.id != null && tipFor != null) { { tipFor(o) } } else null,
+                    ) {
+                        if (o.usable) { inspected = null; onPick(o) } else inspected = o.id
+                    }
                 }
             }
+            val focused = staleFree(inspected, options) ?: options.firstOrNull { it.selected }
+            if (focused == null) Text(slot.hint, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
+            else TrayFocus(slot, focused, if (focused.usable) change else null, { onRestock(focused.id?.let(::MaterialId)) }, onPutBack, tip = if (focused.id != null && tipFor != null) { { tipFor(focused) } } else null)
+            if (stackedHead) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { actions() }
         }
-        val focused = staleFree(inspected, options) ?: options.firstOrNull { it.selected }
-        if (focused == null) Text(slot.hint, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = Space.sm))
-        else TrayFocus(slot, focused, if (focused.usable) change else null, { onRestock(focused.id?.let(::MaterialId)) }, onPutBack, tip = if (focused.id != null && tipFor != null) { { tipFor(focused) } } else null)
-        if (columns == 2) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { actions() }
     }
+}
+
+/** A fade into the Forge's ground at the end of a sideways row while more of it lies beyond the edge. */
+private fun Modifier.endFade(more: Boolean): Modifier = if (!more) this else drawWithContent {
+    drawContent()
+    val w = 24.dp.toPx()
+    drawRect(Brush.horizontalGradient(listOf(Color.Transparent, ForgeNight), startX = size.width - w, endX = size.width), Offset(size.width - w, 0f), Size(w, size.height))
 }
 
 /**
@@ -608,9 +737,12 @@ private fun TrayFocus(slot: RecipeSlot, o: OptionUi, change: TrayChangeUi?, onRe
 /** A change of the comparison as a fact: a gain with its "+", a cost with its "−", a plain difference with no sign. */
 private fun changeFact(c: ChangeUi) = Fact(c.text, tone = when (c.good) { true -> FactTone.GOOD; false -> FactTone.WARN; null -> FactTone.PLAIN })
 
-/** One choice of a tray: art, stock, name and the name of its rule; gold-edged once chosen. Long press or "i" inspects. */
+/**
+ * One choice of a tray: art, stock, name and the name of its rule; gold-edged once chosen. Long press or "i" inspects.
+ * The art is kept clear of the "i" on a narrow tile ([width]), and the name always starts under both.
+ */
 @Composable
-private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, inspected: Boolean = false, tip: (() -> TipUi?)? = null, onClick: () -> Unit) {
+private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, width: Dp, inspected: Boolean = false, tip: (() -> TipUi?)? = null, onClick: () -> Unit) {
     val inspector = LocalInspector.current
     val anchor = remember { InspectAnchor() }
     val card: (() -> TipUi)? = tip?.let { t -> { t() ?: TipUi(o.name, "") } }
@@ -627,15 +759,22 @@ private fun OptionTile(o: OptionUi, art: Int?, modifier: Modifier, inspected: Bo
         Column(Modifier.fillMaxWidth().padding(horizontal = Space.xs, vertical = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             // Out of stock or blocked: the art and the name dim, the line that says why stays at full strength.
             val dim = Modifier.alpha(if (o.usable) 1f else 0.5f)
-            if (art != null) PixelImage(art, 36.dp, description = null, modifier = dim)
+            // The ring of the "i" ends 34 dp from the tile's edge: a centred 44 dp art moves left of it on a tile under 112 dp.
+            if (art != null) WholeArt(art, 44.dp, dim.padding(end = if (card != null) (112.dp - width).coerceAtLeast(0.dp) else 0.dp))
+            else if (card != null) Spacer(Modifier.height(30.dp))
             Text(o.name, style = MaterialTheme.typography.labelMedium, color = Cream, textAlign = TextAlign.Center, modifier = dim.padding(top = 2.dp))
             o.stock?.let { Text(if (it == 0) "None left" else "$it owned", style = MaterialTheme.typography.labelSmall, fontWeight = if (it == 0) FontWeight.SemiBold else null, color = if (it == 0) FlawRed else CreamMuted) }
-            if (o.fight.isNotEmpty()) Text(o.fight.joinToString(" · ") { it.substringBefore(":") }, style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
+            // A metal's own rule bears its name (Iron, Silver): the name above already says it, so only other rules are named.
+            val rules = o.fightNames()
+            if (rules.isNotEmpty()) Text(rules.joinToString(" · "), style = MaterialTheme.typography.labelSmall, color = CreamMuted, textAlign = TextAlign.Center)
         }
         o.mark?.let { Text(it.kind.sign, style = MaterialTheme.typography.titleSmall, color = it.kind.color, modifier = Modifier.align(Alignment.TopStart).padding(horizontal = 6.dp)) }
         if (card != null) InfoButton(o.name, card, Modifier.align(Alignment.TopEnd), anchor = anchor, tag = "forge_option_${o.id}_info")
     }
 }
+
+/** The names of the rules a choice gives, less one that only repeats the choice's own name. */
+private fun OptionUi.fightNames() = fight.map { it.substringBefore(":") }.filter { it != name }
 
 private fun KnowledgeState.glyph() = when (this) {
     KnowledgeState.UNKNOWN -> "?"; KnowledgeState.OBSERVED -> "◐"; KnowledgeState.UNDERSTOOD -> "●"; KnowledgeState.SIGNATURE_DISCOVERED -> "✦"
@@ -665,9 +804,24 @@ fun FieldNotes(notes: List<NoteUi>, modifier: Modifier = Modifier, onOpenJournal
     }
     val stacked = LocalDensity.current.fontScale > 1.3f
     Column(modifier.fillMaxWidth().padding(top = Space.sm).clip(Card).background(SceneDeep).border(1.dp, BronzeDeep, Card).padding(horizontal = 12.dp).padding(bottom = 12.dp).testTag("forge_notes")) {
-        Row(Modifier.heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text("Notebook", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
-            if (onOpenJournal != null) Text("Open notebook ›", style = MaterialTheme.typography.labelLarge, color = Gold, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).wrapContentHeight().padding(start = Space.sm).testTag("forge_notes_journal"))
+        val measurer = rememberTextMeasurer()
+        val headStyle = MaterialTheme.typography.titleSmall
+        val linkStyle = MaterialTheme.typography.labelLarge
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            // The link sits beside the heading only while the heading keeps its word whole (measured); else under it.
+            val beside = onOpenJournal == null || (!stacked && with(LocalDensity.current) {
+                roomBeside(
+                    constraints.maxWidth.toFloat(), 0f, measurer.measure("Open notebook ›", linkStyle, softWrap = false, maxLines = 1).size.width + Space.sm.toPx(),
+                    measurer.measure("Notebook", headStyle, softWrap = false, maxLines = 1).size.width.toFloat(),
+                )
+            })
+            if (beside) Row(Modifier.heightIn(min = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text("Notebook", style = headStyle, color = Cream, modifier = Modifier.weight(1f).semantics { heading() })
+                if (onOpenJournal != null) Text("Open notebook ›", style = linkStyle, color = Gold, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).wrapContentHeight().padding(start = Space.sm).testTag("forge_notes_journal"))
+            } else Column {
+                Text("Notebook", style = headStyle, color = Cream, modifier = Modifier.heightIn(min = 40.dp).wrapContentHeight().semantics { heading() })
+                if (onOpenJournal != null) Text("Open notebook ›", style = linkStyle, color = Gold, modifier = Modifier.clickable(role = Role.Button, onClick = onOpenJournal).heightIn(min = 48.dp).wrapContentHeight().testTag("forge_notes_journal"))
+            }
         }
         val pairings = notes.filter { it.label != "Signature" }
         if (stacked) pairings.forEachIndexed { i, n -> FieldNote(i, n, Modifier.fillMaxWidth().padding(top = if (i > 0) Space.sm else 0.dp)) }

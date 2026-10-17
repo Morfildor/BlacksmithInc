@@ -33,8 +33,11 @@ class V2ShellTest {
     @Test
     fun factsAreOneLineWithBoundSeparatorsAndSignedTones() {
         val text = factText(listOf(Fact("20 gold", "Fee"), Fact("day 7", "Back"), Fact("Lethal", tone = FactTone.WARN), Fact("Shields up", tone = FactTone.GOOD))).text
-        assertEquals("Fee 20 gold · Back day 7 · ${EffectKind.FLAW.sign} Lethal · ${EffectKind.BUFF.sign} Shields up", text)
+        assertEquals("Fee 20 gold · Back day 7 · ${EffectKind.FLAW.sign} Lethal · ${EffectKind.BUFF.sign} Shields up", text)
         // A separator never starts a wrapped line: it is bound to the fact before it by a no-break space.
         assertFalse(text.contains(" ·"))
+        // A label is bound to its value the same way, so "Back" never ends a line with "day 7" on the next.
+        assertTrue(text.contains("Back day 7"))
+        assertFalse(text.contains("Fee ") || text.contains("Back "))
     }
 }

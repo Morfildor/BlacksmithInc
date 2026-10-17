@@ -19,12 +19,15 @@ class SiegeHeaderTest : ShopDayTestBase() {
             assertEquals("Siege in 4 days", countdown)
             assertEquals(SiegeTone.CALM, tone)
             assertNull("the wall's places are said only on the eve and the day", defenders)
+            assertEquals("Siege in 4 days", lead)
         }
         siegeHeader(day = 4, siegeDay = 5, interval = 5, besieger = "Ashclaw Raiders", filled = 2, places = 3).run {
             assertEquals("Siege tomorrow", countdown)
             assertEquals(SiegeTone.TOMORROW, tone)
             assertEquals("Ashclaw Raiders", besieger)
             assertEquals("2 of 3 defenders", defenders)
+            // The strip's first part as it is measured against the header's width (no-break spaces, as drawn); the defenders are the second.
+            assertEquals("Siege tomorrow · Ashclaw Raiders ·", lead)
         }
         siegeHeader(day = 5, siegeDay = 5, interval = 5, besieger = null, filled = 3, places = 3).run {
             assertEquals("Siege tonight", countdown)

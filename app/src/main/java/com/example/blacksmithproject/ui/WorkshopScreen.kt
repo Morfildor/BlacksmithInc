@@ -6,6 +6,9 @@ import androidx.compose.foundation.ScrollState
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -14,8 +17,10 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -160,11 +165,24 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
             )
             HorizontalDivider(color = BronzeDeep)
             // The guided first day's one step, in the layout and never over it: nothing under it is covered or blocked.
-            s.intro?.let { IntroStrip(it, onSkip = { vm.skipIntro() }, onDone = { vm.finishIntro() }) }
+            s.intro?.let {
+                IntroStrip(it, onSkip = { vm.skipIntro() }, onDone = { vm.finishIntro() })
+                // A rule under the strip, as under the header: the destination scrolls under it, not into it.
+                HorizontalDivider(color = BronzeDeep)
+            }
             // Each tip belongs to one destination and shows one at a time; dismissal lives in settings. The guided day says
             // what the tips say, so they wait while it runs and count as seen when it ends.
             val tip = Tips.forDest(s.dest).firstOrNull { it.id !in seenTips }.takeIf { s.intro == null }
-            // The notice drops in over the head of the destination: the actions at its foot (Forge, End Day) stay free.
+            // The notice takes a row of its own above the destination, never lies on it: what it would cover (the forge's
+            // preview, the head of a list) moves down while it is said. With reduced motion it comes and goes at once.
+            AnimatedContent(
+                notice, Modifier.fillMaxWidth().clipToBounds(),
+                transitionSpec = {
+                    if (reducedMotion) (EnterTransition.None togetherWith ExitTransition.None) using null
+                    else (slideInVertically { -it } + fadeIn()) togetherWith (slideOutVertically { -it } + fadeOut()) using SizeTransform(clip = true)
+                },
+                label = "notice",
+            ) { said -> if (said != null) NoticeBanner(said, onDismiss = { vm.dismissNotice(said) }) }
             Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
             when (s.dest) {
                 Dest.SHOP -> ShopPanel(
@@ -190,7 +208,15 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                     onOpenNews = { vm.selectRecords(RecordsPage.GAZETTE) },
                     tip = tip?.let { { TipBanner(it, vm) } },
                     // The header owns the day and the countdown; once the siege is warned the Shop keeps who comes and what buyers now weigh.
-                    strip = s.shop.threat?.takeIf { it.warned && it.matchup != null }?.let { t -> { SiegeMatchup(t, "shop_threat", t.note) } },
+                    // On the siege's own day that line becomes the Shop's first block, with who stands on the wall.
+                    strip = s.shop.threat?.let { t ->
+                        val block: (@Composable () -> Unit)? = when {
+                            t.today -> { { SiegeTonight(t, header.defenders, "shop_threat", t.note) } }
+                            t.warned && t.matchup != null -> { { SiegeMatchup(t, "shop_threat", t.note) } }
+                            else -> null
+                        }
+                        block
+                    },
                     // One voice: while the guided first day runs, its strip says what to do next; the lead comes back with the day's outcome.
                     showLead = s.intro?.last ?: true,
                     onOpenSupplies = { suppliesOpen = true },
@@ -204,15 +230,6 @@ fun WorkshopScreen(s: UiState.Playing, vm: GameViewModel, onMainMenu: () -> Unit
                 Dest.RECORDS -> RecordsPanel(s, vm)
                 Dest.TOWN -> TownPanel(s, vm)
             }
-            AnimatedContent(
-                notice, Modifier.align(Alignment.TopCenter),
-                transitionSpec = {
-                    // No size animation: the slide and the fade are the whole of it.
-                    (if (reducedMotion) fadeIn() togetherWith fadeOut()
-                    else (slideInVertically { -it } + fadeIn()) togetherWith (slideOutVertically { -it } + fadeOut())) using null
-                },
-                label = "notice",
-            ) { said -> if (said != null) NoticeBanner(said, onDismiss = { vm.dismissNotice(said) }) }
             }
         }
     } }
@@ -345,7 +362,9 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center,
             ) {
-                PixelIcon(destIcon(d), if (large) 24.dp else 30.dp)
+                // One art pixel per dp at the screen's own whole scale (32 dp at 480 dpi, about 37 at 420): the same size at
+                // every density within a pixel's rounding, never a jump to two thirds of it.
+                PixelIcon(destIcon(d), if (large) 24.dp else nativeScaleDp(32))
                 Text(destName(d, guild), style = MaterialTheme.typography.labelMedium,
                     color = if (on) Gold else CreamMuted, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().testTag("nav_label_${d.name.lowercase()}"))
@@ -354,20 +373,37 @@ fun DestinationBar(selected: Dest, onSelect: (Dest) -> Unit, modifier: Modifier 
     }
 }
 
-/** The pages of Records (Gazette, Notebook, Legacy, and Town in a guild run) as one row of tabs, as the Guild's parts are. */
+/**
+ * The pages of Records (Gazette, Notebook, Legacy, and Town in a guild run) as one row of tabs, as the Guild's parts are;
+ * two to a row when a page's name would not fit its share of one row whole (large text on a phone).
+ */
 @Composable
 fun SegmentRow(selected: RecordsPage, onSelect: (RecordsPage) -> Unit, modifier: Modifier = Modifier, pages: List<RecordsPage> = RecordsPage.entries - RecordsPage.TOWNSFOLK) {
-    Row(modifier.fillMaxWidth().padding(bottom = Space.sm).drawBehind { drawLine(BronzeDeep, Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1.dp.toPx()) }) {
-        pages.forEach { p ->
-            // These are pages, not a setting: the chosen one is underlined in gold, the others plain, and the row says which is selected to a screen reader.
-            val on = selected == p
-            Box(
-                Modifier.weight(1f).heightIn(min = 48.dp)
-                    .drawBehind { if (on) drawRect(Gold, Offset(0f, size.height - 2.dp.toPx()), Size(size.width, 2.dp.toPx())) }
-                    .clickable(role = Role.Tab) { onSelect(p) }.semantics { this.selected = on }.testTag("page_${p.name.lowercase()}"),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(recordsPageName(p), style = if (pages.size > 3) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge, color = if (on) Gold else CreamMuted, maxLines = 1, softWrap = false)
+    val style = if (pages.size > 3) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge
+    val measurer = androidx.compose.ui.text.rememberTextMeasurer()
+    val density = LocalDensity.current
+    BoxWithConstraints(modifier.fillMaxWidth().padding(bottom = Space.sm)) {
+        val widest = pages.maxOf { measurer.measure(recordsPageName(it), style, softWrap = false, maxLines = 1).size.width }.toFloat()
+        val perRow = tabsPerRow(constraints.maxWidth.toFloat(), widest, pages.size, gapPx = 0f, padPx = with(density) { Space.xs.toPx() })
+        Column(Modifier.fillMaxWidth().drawBehind { drawLine(BronzeDeep, Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 1.dp.toPx()) }) {
+            pages.chunked(perRow).forEach { row ->
+                Row(Modifier.fillMaxWidth()) {
+                    row.forEach { p ->
+                        // These are pages, not a setting: the chosen one is underlined in gold, the others plain, and the row says which is selected to a screen reader.
+                        val on = selected == p
+                        Box(
+                            Modifier.weight(1f).heightIn(min = 48.dp)
+                                .drawBehind { if (on) drawRect(Gold, Offset(0f, size.height - 2.dp.toPx()), Size(size.width, 2.dp.toPx())) }
+                                .clickable(role = Role.Tab) { onSelect(p) }.semantics { this.selected = on }.testTag("page_${p.name.lowercase()}")
+                                .padding(horizontal = Space.xs),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(recordsPageName(p), style = style, color = if (on) Gold else CreamMuted, maxLines = 1, softWrap = false)
+                        }
+                    }
+                    // An odd last row keeps the tabs' width: an empty share, not one tab across the page.
+                    repeat(perRow - row.size) { Spacer(Modifier.weight(1f)) }
+                }
             }
         }
     }
@@ -430,8 +466,10 @@ private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean
     val end = { haptics.play(Moment.END_DAY); vm.endDay() }
     // V2: the button carries one sentence, the most pressing; everything End Day sets in motion is one tap away beside
     // it ("What happens", read-only). Clear of the destination bar under it: this is the one tap of the day that cannot be taken back.
-    // Stacked from font 1.3, so the headline is never broken a word a line beside "What happens".
-    val large = LocalDensity.current.fontScale >= 1.3f
+    // Stacked when the measured line and "What happens" cannot share the width, so the headline is never broken a word a line.
+    val measurer = androidx.compose.ui.text.rememberTextMeasurer()
+    val density = LocalDensity.current
+    val typography = MaterialTheme.typography
     val button: @Composable (Modifier) -> Unit = { m ->
         val place = m.testTag("end_day").introMark(s.intro?.mark == IntroMark.END_DAY)
         if (primary) PrimaryActionButton("End Day", end, place, enabled = !s.busy, detail = headline)
@@ -440,10 +478,13 @@ private fun EndDayButton(s: UiState.Playing, vm: GameViewModel, primary: Boolean
     val preview: @Composable (Modifier) -> Unit = { m -> SecondaryActionButton("What happens", onPreview, m.heightIn(min = 52.dp).testTag("end_day_preview")) }
     val more = endDayHasMore(lines)
     val pad = Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.md)
-    when {
-        !more -> button(pad)
-        large -> Column(pad, verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Space.xs)) { button(Modifier.fillMaxWidth()); preview(Modifier.fillMaxWidth()) }
-        else -> Row(pad, horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+    if (!more) { button(pad); return }
+    BoxWithConstraints(pad) {
+        // The gold plate's line (its label or the headline, the wider) beside "What happens" (the outline's own label style), with 80 dp to spare (the two buttons' padding and the gap).
+        fun width(text: String, style: androidx.compose.ui.text.TextStyle) = measurer.measure(text, style, softWrap = false, maxLines = 1).size.width
+        val side = width("End Day", typography.titleMedium).coerceAtLeast(headline?.let { width(it, typography.labelMedium) } ?: 0) + width("What happens", typography.labelLarge)
+        if (side + with(density) { 80.dp.toPx() } > constraints.maxWidth) Column(Modifier.fillMaxWidth(), verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Space.xs)) { button(Modifier.fillMaxWidth()); preview(Modifier.fillMaxWidth()) }
+        else Row(Modifier.fillMaxWidth(), horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
             preview(Modifier)
             button(Modifier.weight(1f))
         }

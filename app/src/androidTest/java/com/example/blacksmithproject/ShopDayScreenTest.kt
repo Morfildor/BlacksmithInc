@@ -6,8 +6,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.test.DeviceConfigurationOverride
+import androidx.compose.ui.test.FontScale
+import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.then
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
+import com.tinyblacksmith.core.model.BlessingId
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
@@ -89,31 +98,39 @@ class ShopDayScreenTest {
     private fun ShopDayFixtures.Day.ui(script: ShopDayScript = this.script): ShopDayUiModel = script.toUi(state, engine.content, engine.config)
     private fun ShopDayUiModel.first(match: (Beat) -> Boolean): Int = beats.indexOfFirst(match).also { assertTrue("no such beat in $beats", it >= 0) }
 
-    /** Hosts the screen the way the session will: position in, events out. */
-    private fun show(m: ShopDayUiModel, at: Int = 0) {
+    private val chosen = mutableListOf<BlessingId>()
+
+    /** Hosts the screen the way the session will: position in, events out. [font] above 1 runs it on a 360 dp phone at that text size. */
+    private fun show(m: ShopDayUiModel, at: Int = 0, font: Float? = null) {
         model = m; position = at
         compose.setContent {
             BlacksmithProjectTheme {
-                val shown = model!!
-                ShopDayScreen(
-                    model = shown, position = position, speed = speed, reducedMotion = reduced, paused = paused,
-                    onNext = { nexts++; position = (position + 1).coerceAtMost(shown.beats.lastIndex) },
-                    onBack = { position = (position - 1).coerceAtLeast(0) },
-                    onSkipDay = { skips++; position = shown.endingIndex },
-                    onSpeedChange = { speed = it },
-                    onOpenHero = { id, _ -> openedHero = id },
-                    onOpenBlade = { id, _ -> openedBlade = id },
-                    onChooseBlessing = {},
-                    onOpenGazette = {},
-                    onWatchFight = { id -> watched += id; replay = resolutionReplays.firstOrNull { if (id == null) it.kind == ReplayKind.SIEGE else it.eventId == id } },
-                    onClose = { closes++ },
-                    coach = coach,
-                    onWatchSiege = { wall += it },
-                )
+                if (font != null) DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(DpSize(360.dp, 780.dp)) then DeviceConfigurationOverride.FontScale(font)) { screen() }
+                else screen()
                 replay?.let { ReplayOverlay(it, onClose = { replay = null }) }
             }
         }
         compose.waitForIdle()
+    }
+
+    @Composable
+    private fun screen() {
+        val shown = model!!
+        ShopDayScreen(
+            model = shown, position = position, speed = speed, reducedMotion = reduced, paused = paused,
+            onNext = { nexts++; position = (position + 1).coerceAtMost(shown.beats.lastIndex) },
+            onBack = { position = (position - 1).coerceAtLeast(0) },
+            onSkipDay = { skips++; position = shown.endingIndex },
+            onSpeedChange = { speed = it },
+            onOpenHero = { id, _ -> openedHero = id },
+            onOpenBlade = { id, _ -> openedBlade = id },
+            onChooseBlessing = { chosen.add(it) },
+            onOpenGazette = {},
+            onWatchFight = { id -> watched += id; replay = resolutionReplays.firstOrNull { if (id == null) it.kind == ReplayKind.SIEGE else it.eventId == id } },
+            onClose = { closes++ },
+            coach = coach,
+            onWatchSiege = { wall += it },
+        )
     }
 
     private fun text(value: String) = compose.onNodeWithText(value, useUnmergedTree = true)
@@ -157,7 +174,8 @@ class ShopDayScreenTest {
         compose.onNodeWithTag("shopday_plate", useUnmergedTree = true).assertTextEquals(visit.face.name)   // who
         compose.onNodeWithTag("shopday_outcome_chip", useUnmergedTree = true).assertTextEquals("SOLD")
         compose.onNodeWithTag("shopday_outcome", useUnmergedTree = true).assertTextEquals(visit.outcome).assertIsDisplayed()
-        compose.onNodeWithTag("shopday_decision", useUnmergedTree = true).assertTextEquals(visit.decision!!).assertIsDisplayed()   // why
+        // Why, without the money: the receipt under it says what was paid.
+        compose.onNodeWithTag("shopday_decision", useUnmergedTree = true).assertTextEquals(visit.why!!).assertIsDisplayed()   // why
         // The money is rows of label and value, each its own pair of nodes; no row is folded into a sentence.
         assertTrue("listed, trade-in and the till: ${visit.receipt}", visit.receipt.size >= 3)
         assertEquals(listOf("Listed price", "Total received"), listOf(visit.receipt.first().label, visit.receipt.last().label))
@@ -355,7 +373,7 @@ class ShopDayScreenTest {
     @Test
     fun outcomeIsVisibleOnTheFirstFrameOfABeat() {
         val m = day("purchase").ui()
-        val at = m.first { it is Beat.Visit && it.visit.sold }
+        val at = m.first { it is Beat.Visit && it.visit.sold && it.visit.reasonLine != null }
         val visit = (m.beats[at] as Beat.Visit).visit
         show(m)
         compose.mainClock.autoAdvance = false
@@ -386,6 +404,48 @@ class ShopDayScreenTest {
         }
         assertEquals("skipping acknowledges nothing", 0, closes)
     }
+
+    /**
+     * The blessing is chosen as every lasting choice is: the pinned wide button is the confirmation, off until a row is
+     * marked; a tap on a row only marks it; the button then sends that one blessing, once. "Decide later" stands beside
+     * (or, with large text, under) it in Back's place and moves on once.
+     */
+    private fun blessingConfirmIsPinnedAndWaitsForAChoice(font: Float?) {
+        val m = day("blessing").ui()
+        val at = m.first { it is Beat.Blessing }
+        val longest = (m.beats[at] as Beat.Blessing).choices.maxBy { it.name.length }
+        show(m, at, font)
+        val take = compose.onNodeWithTag("blessing_take")
+        take.assertIsDisplayed().assertIsNotEnabled().assertTextEquals("Choose a blessing")
+        compose.onNode(hasTestTag("blessing_take") and hasAnyAncestor(hasTestTag("shopday_card"))).assertDoesNotExist()   // pinned, not in the card
+        compose.onNodeWithTag("shopday_later").assertIsDisplayed().assertIsEnabled()
+        compose.onNodeWithTag("shopday_back").assertDoesNotExist()
+        if (font != null && font > 1.3f) assertTrue(
+            "stacked, the confirmation first",
+            take.getUnclippedBoundsInRoot().bottom <= compose.onNodeWithTag("shopday_later").getUnclippedBoundsInRoot().top,
+        )
+        // A tap on a row marks it and nothing more.
+        compose.onNodeWithTag("blessing_${longest.id.value}").performScrollTo().performClick()
+        compose.waitForIdle()
+        compose.onNodeWithTag("blessing_${longest.id.value}").assertIsSelected()
+        assertEquals("marking is not choosing", emptyList<BlessingId>(), chosen)
+        assertEquals(0, nexts)
+        take.assertIsDisplayed().assertIsEnabled().assertTextEquals("Take ${longest.name}")
+        take.performClick()
+        compose.waitForIdle()
+        assertEquals("exactly one choice, the marked one", listOf(longest.id), chosen)
+        assertEquals("taking does not also move on", 0, nexts)
+        compose.onNodeWithTag("shopday_later").performClick()
+        compose.waitForIdle()
+        assertEquals(1, nexts)
+        assertEquals(listOf(longest.id), chosen)
+    }
+
+    @Test
+    fun blessingConfirmIsPinnedAndWaitsForAChoice() = blessingConfirmIsPinnedAndWaitsForAChoice(null)
+
+    @Test
+    fun blessingConfirmIsPinnedAndWaitsForAChoiceAtTwiceTheTextSize() = blessingConfirmIsPinnedAndWaitsForAChoice(2f)
 
     @Test
     fun aftermathNamesHeroAndBlade() {

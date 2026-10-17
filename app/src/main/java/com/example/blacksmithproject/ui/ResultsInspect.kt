@@ -28,15 +28,18 @@ import kotlin.math.roundToInt
  * The lead of a weapon just made, from the result's own [ItemDetail]: power, quality, a condition only once it has
  * moved from full and renown only once earned ([forResult] keeps the rest out), then every buff ("+") and flaw ("−")
  * by name, and in a guild run the name of every effect it fights by. What each does is on the card ([resultTip]).
+ * An effect named exactly as a property ("Flaming") is said once, as the property; the weapon's card keeps both.
  */
 internal fun resultLead(d: ItemDetail): ResultLeadUi {
     val fresh = d.forResult()
+    val properties = d.affixes.map { Fact(it.name, tone = FactTone.GOOD) } + d.flaws.map { Fact(it.name, tone = FactTone.WARN) }
+    val named = properties.map { it.value }.toSet()
     return ResultLeadUi(
         // A full condition that never moved is no news on a new weapon: it waits on the card.
         stats = fresh.stats.filterNot { it.label == "Condition" && it.max == null },
-        properties = d.affixes.map { Fact(it.name, tone = FactTone.GOOD) } + d.flaws.map { Fact(it.name, tone = FactTone.WARN) },
+        properties = properties,
         // A metal's or an element's effect is named after its source, so its name comes with what it does.
-        rules = d.rules?.let { r -> (r.road + r.homeOnly).map { CombatContent.label(it.id, it.name) } }.orEmpty(),
+        rules = d.rules?.let { r -> (r.road + r.homeOnly).map { CombatContent.label(it.id, it.name) } }.orEmpty().filterNot { it in named },
     )
 }
 

@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.unit.dp
@@ -58,7 +59,9 @@ fun SettingsSheet(
         dragHandle = { BottomSheetDefaults.DragHandle(width = 48.dp) },
         modifier = Modifier.semantics { testTagsAsResourceId = true }.testTag("settings_sheet"),
     ) {
-        FramedPanel("Settings", Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = Space.md).padding(bottom = Space.lg)) {
+        // A plain sheet like Supplies and Storage: the heading at the top, no frame inside the sheet.
+        Column(Modifier.fillMaxWidth().navigationBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = Space.md).padding(bottom = Space.lg)) {
+            Text("Settings", style = MaterialTheme.typography.titleLarge, color = Gold, modifier = Modifier.padding(bottom = Space.sm).semantics { heading() })
             SwitchRow("Reduced motion", "Stops animated embers, forge fades and step-by-step battle replays.", reducedMotion, onReducedMotion, "settings_reduced_motion")
             SwitchRow("Haptics", "Short vibrations for forge results, day endings, refused commissions and the end of an era.", haptics, onHaptics, "settings_haptics")
             if (onShopDaySpeed != null) SpeedRow(if (reducedMotion) ShopDaySpeed.TAP else shopDaySpeed, enabled = !reducedMotion, onShopDaySpeed)

@@ -5,6 +5,8 @@ import com.example.blacksmithproject.ui.dangerWord
 import com.example.blacksmithproject.ui.Fact
 import com.example.blacksmithproject.ui.FactTone
 import com.example.blacksmithproject.ui.offerFacts
+import com.example.blacksmithproject.ui.offerRisk
+import com.example.blacksmithproject.ui.replay.enemyFace
 import com.example.blacksmithproject.ui.contractUi
 import com.example.blacksmithproject.ui.destName
 import com.example.blacksmithproject.ui.guildUi
@@ -62,7 +64,10 @@ class GuildUiTest {
         assertTrue(offers.getValue("long").timingNote.contains("cannot defend the wall"))
         assertEquals(encoded, com.tinyblacksmith.core.persistence.SaveCodec.encodeRun(state))
     }
-    /** V3: a board row is one line of facts, the summary first (the reward in a few words, the danger as a warning unless safe, away and back, the fee, the last day); each stage is on the card. */
+    /**
+     * V3: a board row is one line of facts, the summary first (the reward in a few words, away and back, the fee, the last
+     * day); the danger is the title row's chip, the word always and a warning unless safe (VA-38). Each stage is on the card.
+     */
     @Test
     fun aBoardRowIsOneLineOfFactsWithTheDangerAsAWarning() {
         val s = guildRun()
@@ -79,20 +84,24 @@ class GuildUiTest {
         assertEquals("up to 23 gold and 2 more", l.rewardSummary)
         val facts = offerFacts(l)
         assertEquals(Fact(l.rewardSummary, "Reward"), facts[0])
-        assertEquals(Fact("Lethal", tone = FactTone.WARN), facts[1])
-        assertEquals(Fact("2 days, back day ${state.day + 2}", "Away"), facts[2])
-        assertEquals(Fact("43 gold", "Fee"), facts[3])
-        assertEquals(Fact("day ${state.day + 3}", "Send by"), facts[4])
+        assertEquals(Fact("2 days, back day ${state.day + 2}", "Away"), facts[1])
+        assertEquals(Fact("43 gold", "Fee"), facts[2])
+        assertEquals(Fact("day ${state.day + 3}", "Send by"), facts[3])
+        assertEquals(4, facts.size)
+        // The worst stage's danger, once, as the chip; never in the line as well.
+        assertEquals(Fact("Lethal", tone = FactTone.WARN), offerRisk(l))
+        assertTrue(facts.none { it.value == dangerWord(l.danger) })
         // Each stage's reward stays whole for the quest's card and sheet.
         assertTrue(l.reward, l.reward.contains("23 gold") && l.reward.contains("Optional stage 2"))
         val f = offers.getValue("free")
         assertEquals("A relic", f.rewardSummary)
         val ff = offerFacts(f)
-        assertEquals(Fact("Safe"), ff[1])
-        assertEquals(Fact("1 day, back day ${state.day + 1}", "Away"), ff[2])
-        assertEquals(Fact("No fee"), ff[3])
+        // "Safe" is still said, plainly.
+        assertEquals(Fact("Safe"), offerRisk(f))
+        assertEquals(Fact("1 day, back day ${state.day + 1}", "Away"), ff[1])
+        assertEquals(Fact("No fee"), ff[2])
         // The last day to send a party is a warning on that day.
-        assertEquals(Fact("today", "Send by", FactTone.WARN), ff[4])
+        assertEquals(Fact("today", "Send by", FactTone.WARN), ff[3])
         // Work that is always on the board has no last day.
         assertTrue(offerFacts(f.copy(lastDay = null)).none { it.label == "Send by" })
     }
@@ -403,6 +412,7 @@ class GuildUiTest {
 
     @Test
     fun theSiegeStripOfAGuildRunNamesNoOutlook() {
+        var pictured = 0
         for (s in mornings(GuildPolicy.ADAPTIVE, 9, 12)) {
             val classic = engine.shopUi(s, engine.siegeForecast(s)).threat ?: continue
             val ui = engine.guildUi(s)!!
@@ -412,7 +422,12 @@ class GuildUiTest {
             if (ui.wall.committed) assertTrue(strip.matchup, strip.matchup!!.startsWith(ui.wall.besieger)) else assertNull(strip.matchup)
             // The wall never shows a field before the besieger is committed, and always three places at most.
             if (!ui.wall.committed) assertTrue(ui.wall.field.isEmpty())
+            // Each unit on the field carries its picture where it has one (VA-41), the replay's own lookup.
+            ui.wall.field.forEach { e -> assertEquals(e.unitId, enemyFace(e.unitId, engine.content), e.face) }
+            if (ui.wall.field.any { it.face != null }) pictured++
             assertTrue(ui.wall.defenders.size <= ui.wall.places)
         }
+        // A classic-rules besieger's units are its faction's figures: the Wall shows them, not only their names.
+        assertTrue("a committed siege shows its units' pictures", pictured > 0)
     }
 }

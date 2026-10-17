@@ -20,6 +20,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
@@ -68,6 +69,11 @@ class M4ScreensTest {
 
     /** The first morning on seed 42 with blades still on the shelf (a three-day run can sell out) and heroes in town. */
     private val morning: GameState by lazy { ShopDayFixtures.run(42, 30).map { it.state }.first { !it.isEnded && it.listedWeapons().isNotEmpty() } }
+
+    /** The first such morning after the siege warning, when the besieger's matchup is said over the augments (V3). */
+    private val warned: GameState by lazy {
+        ShopDayFixtures.run(42, 30).map { it.state }.first { s -> !s.isEnded && s.listedWeapons().isNotEmpty() && engine.threatUi(s)?.let { it.warned && it.matchup != null && it.marks.isNotEmpty() } == true }
+    }
 
     private var forgedFor: HeroId? = null
 
@@ -150,13 +156,16 @@ class M4ScreensTest {
 
     @Test
     fun theForgeMarksTheElementsTheBesiegerCaresAbout() {
-        val threat = engine.threatUi(morning)!!
-        val vm = showForge(morning)
+        // The line stands only once the siege is warned, so the morning is the first warned one (the first morning of the
+        // run is not, and has no such line).
+        val threat = engine.threatUi(warned)!!
+        val vm = showForge(warned)
         // With a weapon and a metal chosen the augment tray is the open one: its tiles carry the marks, and what tells
         // against the besieger stands over them, where it decides (V3). The besieger's name is the header's, not this line's.
         compose.runOnUiThread { vm.updateDraft { it.copy(familyId = engine.content.families.first().id, coreId = engine.content.materials(MaterialCategory.CORE).first().id) } }
         compose.waitForIdle()
-        compose.onNodeWithTag("forge_threat").assertIsDisplayed().assertTextContains(threat.matchup!!.removePrefix("${threat.besieger} · "), substring = true)
+        // The panel's box is held to the window's height, so the tray under the anvil is scrolled to as a player does.
+        compose.onNodeWithTag("forge_threat").performScrollTo().assertIsDisplayed().assertTextContains(threat.matchup!!.removePrefix("${threat.besieger} · "), substring = true)
         for ((element, mark) in threat.marks) {
             val augment = engine.content.materials(MaterialCategory.AUGMENT).first { it.element == element }
             compose.onNodeWithTag("forge_option_${augment.id.value}").assertContentDescriptionContains(mark.label, substring = true)

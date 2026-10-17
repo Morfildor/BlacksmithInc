@@ -1,5 +1,6 @@
 package com.example.blacksmithproject
 
+import com.example.blacksmithproject.ui.replay.reportLead
 import com.example.blacksmithproject.ui.shopday.Beat
 import com.example.blacksmithproject.ui.shopday.SiegeOutcomeUi
 import com.example.blacksmithproject.ui.shopday.classicContribution
@@ -79,6 +80,12 @@ class SiegeContributionUiTest : ShopDayTestBase() {
             if (expected != null) named++ else omitted++
             // A contribution is what was counted: no sentence of it claims the night or the fight was won by it.
             siege.contribution?.let { text -> listOf("won", "saved", "decided", "victory").forEach { assertFalse("$d: $text", it in text.lowercase()) } }
+            // The report leads with the same line the card names, or with none, and with the siege's own notes.
+            val lead = reportLead(siege)
+            assertEquals("$d", siege.contribution, lead.contribution)
+            assertEquals("$d", siege.notes, lead.notes)
+            assertTrue("$d: ${lead.eyebrow}", lead.eyebrow.startsWith("SIEGE OF EMBERFALL · DAY ${siege.day}"))
+            (listOfNotNull(lead.contribution) + lead.notes).forEach { line -> listOf("mvp", "best defender", "hero of the night").forEach { assertFalse("$d: $line", it in line.lowercase()) } }
         }
         assertTrue("some sieges have a contribution to name", named > 0)
         println("guild sieges: $named with a contribution, $omitted without")
@@ -131,6 +138,7 @@ class SiegeContributionUiTest : ShopDayTestBase() {
         for (d in days.filter { it.resolution.siege!!.fight != null }.take(10)) {
             val old = d.siege(d.with { r -> r.copy(fight = r.fight!!.copy(record = 0)) })
             assertNull("$d: an older record cannot be accounted, so no contribution is invented", old.contribution)
+            assertNull("$d: and the report has no lead line for it", reportLead(old).contribution)
             // The costs the record does say are still said, unchanged.
             assertEquals("$d", d.siege().consequences, old.consequences)
             assertEquals("$d", d.siege().outcome, old.outcome)
@@ -142,6 +150,7 @@ class SiegeContributionUiTest : ShopDayTestBase() {
         val d = days.first()
         val siege = d.siege(d.with { it.copy(fight = null) })
         assertNull(siege.contribution)
+        assertNull(reportLead(siege).contribution)
         assertNull("no fight: who went down is not known, and is not said", siege.wentDown)
         assertFalse(siege.consequences.any { it.label.startsWith("Went down") })
         assertTrue(siege.consequences.any { it.label == "Forge damage" })

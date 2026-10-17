@@ -66,8 +66,9 @@ class NavigationBarTest {
             assertEquals("selecting ${d.name} keeps every label's size", normal.map { it.first }, labels().map { it.first })
         }
 
-        // A larger font scale makes every label taller by the same factor (it is not auto-shrunk) and still on one line.
-        for (scale in listOf(1.3f, 1.5f)) {
+        // 1.3 is the last scale of the normal bar, whose icons now stand at one art pixel per dp (about 37 dp at 420 dpi): the
+        // label must still fit under them. A larger font scale makes every label taller by the same factor (it is not auto-shrunk) and still on one line.
+        for (scale in listOf(1.3f, 1.5f, 2f)) {
             fontScale = scale
             compose.waitForIdle()
             val big = labels()

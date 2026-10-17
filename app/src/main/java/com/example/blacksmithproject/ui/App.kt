@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -42,6 +41,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +55,7 @@ import com.example.blacksmithproject.ui.shopday.ShopDayHost
 import com.example.blacksmithproject.UiState
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
+import com.example.blacksmithproject.ui.theme.ForgeNight
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.model.LegacyProfile
@@ -140,7 +141,7 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
     // A fresh account has no era behind it and no points: saying "Era 1" over nothing only takes room.
     val fresh = legacy != null && legacy.points == 0 && legacy.eras.isEmpty()
     Box(Modifier.fillMaxSize().testTag("main_menu")) {
-        // The owner's painting of the smithy fills the screen; its lower third already fades to night, where the name and
+        // The owner's painting of the smithy fills the screen; the gradient below fades its lower third to night, where the name and
         // the actions stand. A painting, not a sprite: drawn smooth, cropped from the top so the roof and the sky stay.
         Image(painterResource(R.drawable.bg_title_workshop_night), contentDescription = null, contentScale = ContentScale.Crop, alignment = Alignment.TopCenter, modifier = Modifier.fillMaxSize())
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to MaterialTheme.colorScheme.background.copy(alpha = 0.5f), 0.12f to Color.Transparent, 0.5f to Color.Transparent, 0.75f to MaterialTheme.colorScheme.background.copy(alpha = 0.6f), 1f to MaterialTheme.colorScheme.background)))
@@ -171,14 +172,18 @@ fun MainMenu(status: String, legacy: LegacyProfile?, primary: String, primaryTag
                 }
             }
         }
-        IconButton(onClick = onSettings, modifier = Modifier.align(Alignment.TopEnd).safeDrawingPadding().padding(Space.sm).size(48.dp).testTag("menu_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings") }
+        // The pixel gear of the interface set, on a dark disc so it holds against the bright sky of the painting.
+        IconButton(onClick = onSettings, modifier = Modifier.align(Alignment.TopEnd).safeDrawingPadding().padding(Space.sm).size(48.dp).testTag("menu_settings")) {
+            Box(Modifier.size(40.dp).background(ForgeNight.copy(alpha = 0.6f), CircleShape), contentAlignment = Alignment.Center) { PixelIcon(R.drawable.icon_settings, 28.dp, description = "Settings") }
+        }
     }
     // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
     if (confirmAbandon && onAbandon != null) ForgeDialog(
         "End this era?", onDismiss = { confirmAbandon = false },
         actions = {
             InlineActionButton("Keep playing", { confirmAbandon = false })
-            InlineActionButton("End era", { confirmAbandon = false; onAbandon() }, Modifier.testTag("menu_abandon_confirm"))
+            // The one choice here that cannot be taken back, in the destructive style; staying is the plain way out.
+            DestructiveActionButton("End era", { confirmAbandon = false; onAbandon() }, Modifier.testTag("menu_abandon_confirm"))
         },
     ) {
         Text("Ends this era permanently. You earn no legacy points, and its weapons and heroes won't be recorded. Your recipe notes stay.")

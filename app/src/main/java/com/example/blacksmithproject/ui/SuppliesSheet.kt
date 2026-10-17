@@ -2,6 +2,7 @@ package com.example.blacksmithproject.ui
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
@@ -95,6 +95,16 @@ fun GameEngine.supplierMood(state: GameState): String? {
 /** A tool's level and what the next one costs (`GameEngine.toolCost`; null once there is no next level). */
 internal fun toolLine(level: Int, maxLevel: Int, cost: Int?): String = "Level $level of $maxLevel · " + (cost?.let { "$it gold" } ?: "fully built")
 
+/**
+ * What a limited material's row says of today's stock: "Sold out today" (a warning: it is why Buy is grey) or "n left
+ * today". Null for a material that is always in stock, and for one the deep road does not carry yet: its note says when.
+ */
+internal fun stockFact(stock: Int?, onTheRoad: Boolean): Fact? = when {
+    stock == null || !onTheRoad -> null
+    stock == 0 -> Fact("Sold out today", tone = FactTone.WARN)
+    else -> Fact("$stock left today")
+}
+
 /** The test tag of the cards the supplies open, and the prefix of their parts ("supplies_inspect_close"). */
 internal const val SUPPLY_CARD = "supplies_inspect"
 
@@ -127,8 +137,11 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
     val st = s.state
     val groups = MaterialCategory.entries.map { it to content.materials(it) }.filter { it.second.isNotEmpty() }
     val listState = rememberLazyListState()
-    // Narrow or large text: Buy goes under the row's words instead of squeezing them.
-    val stack = LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340
+    // Buy goes under the row's words when beside it the words would keep less than 150 dp (scaled with the text),
+    // measured on each row's own width.
+    val density = LocalDensity.current
+    val buyWidth = buttonWidthPx("Buy")
+    val minText = with(density) { 150.dp.toPx() * fontScale }
     // The asked-for row's place in the list below, by the keys the list gives its items up to the last material.
     LaunchedEffect(focus) {
         val keys = listOf("supplier") + groups.flatMap { (category, group) -> listOf("supplier_${category.name}") + group.map { "material_${it.id.value}" } }
@@ -159,7 +172,7 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                 val stock = st.supplierStock[m.id]
                 val have = st.materials[m.id] ?: 0
                 val needed = m.id == focus
-                // A greyed Buy says why to a screen reader; on screen the row's own lines do (the price, "0 left today").
+                // A greyed Buy says why to a screen reader; on screen the row's own lines do (the price, "Sold out today", the road).
                 val blocked = when { stock == 0 && !vm.engine.onTheRoad(st, m.id) -> "it comes down the deep road later in the era"; stock == 0 -> "none left today"; st.gold < price -> "it costs $price gold and you have ${st.gold}"; else -> null }
                 val buy: @Composable (Modifier) -> Unit = { mod ->
                     SecondaryActionButton(
@@ -175,23 +188,34 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
                     Modifier.fillMaxWidth().then(if (needed) Modifier.padding(vertical = Space.xs).border(1.dp, Gold, MaterialTheme.shapes.small).padding(Space.xs) else Modifier.hairline())
                         .padding(vertical = Space.xs).testTag("material_${m.id.value}"),
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Sprites.material(m.id)?.let { PixelImage(it, wholePixelDp(48, 40.dp), description = null) }
-                        Column(Modifier.weight(1f)) {
-                            if (needed) Text("Needed on the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
-                            Text(m.name, style = MaterialTheme.typography.titleSmall)
-                            FactLine(listOfNotNull(
-                                Fact("$have", "Owned"), Fact("$price gold"),
-                                Fact("${Forge.qualityCap(m.tier, vm.engine.config)}", "Quality cap").takeIf { m.category == MaterialCategory.CORE },
-                                stock?.let { Fact("$it left today", tone = if (it == 0) FactTone.WARN else FactTone.PLAIN) },
-                            ))
-                            // Why a limited material is short or comes later stays on the row: it is why Buy may be grey.
-                            vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
+                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                        val art = Sprites.material(m.id)
+                        val artWidth = if (art != null) wholePixelDp(48, 40.dp) else null
+                        // Fixed: the picture, the "i" and the gaps between them and the words; the trade is Buy and its gap.
+                        val stack = with(density) {
+                            val fixed = (artWidth?.let { it + 12.dp } ?: 0.dp).toPx() + (48 + 12).dp.toPx()
+                            !roomBeside(constraints.maxWidth.toFloat(), fixed, buyWidth + 12.dp.toPx(), minText)
                         }
-                        InfoButton(m.name, { vm.engine.materialTip(st, m.id, s.shop.threat, tag = SUPPLY_CARD) }, tag = "material_${m.id.value}_info")
-                        if (!stack) buy(Modifier)
+                        Column(Modifier.fillMaxWidth()) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                if (art != null && artWidth != null) PixelImage(art, artWidth, description = null)
+                                Column(Modifier.weight(1f)) {
+                                    if (needed) Text("Needed on the workbench", style = MaterialTheme.typography.labelSmall, color = Gold)
+                                    Text(m.name, style = MaterialTheme.typography.titleSmall)
+                                    FactLine(listOfNotNull(
+                                        Fact("$have", "Owned"), Fact("$price gold"),
+                                        Fact("${Forge.qualityCap(m.tier, vm.engine.config)}", "Quality cap").takeIf { m.category == MaterialCategory.CORE },
+                                        stockFact(stock, vm.engine.onTheRoad(st, m.id)),
+                                    ))
+                                    // Why a limited material is short or comes later stays on the row: it is why Buy may be grey.
+                                    vm.engine.supplyNotes(st, m).forEach { Secondary(it) }
+                                }
+                                InfoButton(m.name, { vm.engine.materialTip(st, m.id, s.shop.threat, tag = SUPPLY_CARD) }, tag = "material_${m.id.value}_info")
+                                if (!stack) buy(Modifier)
+                            }
+                            if (stack) buy(Modifier.fillMaxWidth().padding(top = Space.xs))
+                        }
                     }
-                    if (stack) buy(Modifier.fillMaxWidth().padding(top = Space.xs))
                 }
             }
         }
@@ -207,18 +231,24 @@ fun SuppliesList(s: UiState.Playing, vm: GameViewModel, modifier: Modifier = Mod
             // A tool's row is a material's row: the name and its level, what the next level costs, the same "Buy"; what it
             // does is on its card.
             Column(Modifier.fillMaxWidth().hairline().padding(vertical = Space.xs).testTag("tool_${t.id}")) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Column(Modifier.weight(1f)) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                            Text(t.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f, fill = false))
-                            LevelDots(level, t.maxLevel)
+                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    // Fixed: the "i" and its gap; the trade is Buy and its gap.
+                    val stack = with(density) { !roomBeside(constraints.maxWidth.toFloat(), (48 + 12).dp.toPx(), buyWidth + 12.dp.toPx(), minText) }
+                    Column(Modifier.fillMaxWidth()) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Column(Modifier.weight(1f)) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                                    Text(t.name, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f, fill = false))
+                                    LevelDots(level, t.maxLevel)
+                                }
+                                Secondary(toolLine(level, t.maxLevel, cost))
+                            }
+                            InfoButton(t.name, { toolTip(t, level, cost) }, tag = "tool_${t.id}_info")
+                            if (cost != null && !stack) ToolBuy(t, cost, st.gold, s.busy, Modifier) { vm.dispatch(Command.BuyTool(t.id)) }
                         }
-                        Secondary(toolLine(level, t.maxLevel, cost))
+                        if (cost != null && stack) ToolBuy(t, cost, st.gold, s.busy, Modifier.fillMaxWidth().padding(top = Space.xs)) { vm.dispatch(Command.BuyTool(t.id)) }
                     }
-                    InfoButton(t.name, { toolTip(t, level, cost) }, tag = "tool_${t.id}_info")
-                    if (cost != null && !stack) ToolBuy(t, cost, st.gold, s.busy, Modifier) { vm.dispatch(Command.BuyTool(t.id)) }
                 }
-                if (cost != null && stack) ToolBuy(t, cost, st.gold, s.busy, Modifier.fillMaxWidth().padding(top = Space.xs)) { vm.dispatch(Command.BuyTool(t.id)) }
             }
         }
         if (onClose != null) item(key = "close") {

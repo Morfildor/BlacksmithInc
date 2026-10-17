@@ -20,20 +20,34 @@ if m:
   if [ -z "$x" ]; then echo "MISSING: $1"; return 1; fi
   $ADB shell input tap $x; echo "tapped '$1' at $x"; $ADB shell sleep 1.2
 }
+# tap the node whose resource-id (a Compose testTag, exposed through testTagsAsResourceId) is exactly $1
+has_id() { dump | grep -q "resource-id=\"$1\""; }
+tap_id() {
+  local x=$(dump | python -c "
+import sys,re
+s=sys.stdin.read()
+m=re.search(r'resource-id=\"$1\"[^>]*?bounds=\"\[(\d+),(\d+)\]\[(\d+),(\d+)\]', s)
+if m:
+  x1,y1,x2,y2=map(int,m.groups()); print((x1+x2)//2,(y1+y2)//2)
+")
+  if [ -z "$x" ]; then echo "MISSING id: $1"; return 1; fi
+  $ADB shell input tap $x; echo "tapped id '$1' at $x"; $ADB shell sleep 1.2
+}
 shot() { $ADB exec-out screencap -p > "$OUT/$1.png"; echo "screenshot $1"; }
 wait_text() { for i in $(seq 1 20); do if has "$1"; then return 0; fi; $ADB shell sleep 1; done; echo "TIMEOUT waiting for '$1'"; return 1; }
 texts() { dump | grep -o 'text="[^"]\+"' | head -12; }
 
 $ADB shell pm clear $PKG >/dev/null
 $ADB shell am start -n $PKG/.MainActivity >/dev/null
-# A classic run: a guild run (rules 6) opens on its opening packages, which this loop does not answer. Every charter is a
-# row on the run setup; the chosen one carries the id charter_name, so "No charter" is the choice when that node reads it.
-no_charter_chosen() { dump | grep -q 'text="No charter"[^>]*resource-id="charter_name"'; }
+# A classic run: a guild run (rules 6) opens on its opening packages, which this loop does not answer. The run setup's
+# first row (charter_row_none, "Classic era") is the run without a charter: it is chosen when that row is checked, or
+# when its name carries the id charter_name.
+no_charter_chosen() { dump | grep -Eq 'resource-id="charter_row_none"[^>]*checked="true"|text="Classic era"[^>]*resource-id="charter_name"'; }
 wait_text "Tiny Blacksmith" || exit 1
 # A cleared install offers the guided first day, which keeps the relic offer closed on day 1: skipped, so the run opens as it always did.
-has "Skip it" && tap "Skip it"
-tap "New game" && wait_text "How era" || exit 1
-{ no_charter_chosen || tap "No charter"; } && tap "Begin a classic run" || exit 1
+has_id intro_menu_skip && tap_id intro_menu_skip
+tap_id title_new_run && wait_text "How era" || exit 1
+tap_id charter_row_none && tap_id setup_begin || exit 1
 # A new run opens on the relic offer, which hides the workshop from the dump: "Decide later" keeps the offer. The loop
 # below puts it off again each morning.
 wait_text "Decide later" && tap "Decide later"
@@ -53,7 +67,7 @@ shot 00_final_gazette
 tap "See the legacy" || exit 1
 wait_text "Legacy reward" || exit 1
 shot 01_runend_unclaimed
-tap "Claim [0-9]" || exit 1
+tap_id run_claim || exit 1
 wait_text "Legacy claimed" && echo "CHECK claimed: ok" || echo "CHECK claimed: FAIL"
 shot 02_runend_claimed
 # Process death after the claim: the ended run stays saved, so run end reopens, claimed, with upgrades still to buy.
@@ -70,11 +84,11 @@ shot 02b_runend_reopened
 for i in 1 2 3 4 5 6; do has "Begin era" && break; $ADB shell input swipe 540 1500 540 500 400; $ADB shell sleep 1; done
 shot 03_runend_bottom
 # The next era is classic too. The picker at the foot of this screen keeps the charter the run began under ("No
-# charter", kept in settings over the process death above); should it stand on a charter, one step back is "No charter".
+# charter", kept in settings over the process death above): its row is charter_row_none ("Classic era").
 for i in 1 2 3 4 5 6 7 8 9 10 11 12; do dump | grep -q 'resource-id="charter_row_none"' && break; $ADB shell input swipe 540 1500 540 500 400; $ADB shell sleep 1; done
 no_charter_chosen && echo "CHECK next era without a charter chosen: ok" || echo "CHECK next era without a charter chosen: FAIL"
 shot 03b_runend_no_charter
-tap "Begin era" || exit 1
+tap_id run_begin_era || exit 1
 wait_text "Decide later" && tap "Decide later"
 wait_text "DAY 1" && echo "CHECK next era started: ok" || echo "CHECK next era: FAIL"
 shot 04_next_era

@@ -28,6 +28,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import com.example.blacksmithproject.PartyDraft
@@ -41,7 +44,6 @@ import com.example.blacksmithproject.ui.theme.BronzeContainer
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.Ember
-import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.combat.Posture
@@ -81,16 +83,27 @@ fun ContractSheet(
                 if (ui != null) {
                     SectionHeader("Selected party")
                     Secondary(partyIntro(ui.partyMax, draft.members.isEmpty()))
+                    // The chosen in the order they act: the place's number, the face at card size, who they are, then the two
+                    // small reorder buttons beside them (under the name once the text is very large).
+                    val reorderUnder = LocalDensity.current.fontScale > 1.5f
                     ui.picks.filter { it.order != null }.sortedBy { it.order }.forEach { p ->
                         Column(Modifier.fillMaxWidth().padding(top = Space.sm).forgeRow().padding(Space.sm).testTag("contract_selected_${p.heroId.value}")) {
-                            Text("${p.order}. ${p.name}", style = MaterialTheme.typography.titleSmall)
-                            MemberLines(p)
+                            val reorder = @Composable { m: Modifier ->
+                                SecondaryActionButton("↑", { onMove(p.heroId, -1) }, m.heightIn(min = 48.dp).widthIn(min = 48.dp).semantics { contentDescription = "Move ${p.name} up" }.testTag("contract_up_${p.heroId.value}"), enabled = !busy && p.order != 1)
+                                SecondaryActionButton("↓", { onMove(p.heroId, 1) }, m.heightIn(min = 48.dp).widthIn(min = 48.dp).semantics { contentDescription = "Move ${p.name} down" }.testTag("contract_down_${p.heroId.value}"), enabled = !busy && p.order != draft.members.size)
+                            }
+                            Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                                Text("${p.order}", style = MaterialTheme.typography.titleMedium, color = Gold, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 16.dp))
+                                if (p.portrait != 0) HeroFace(p.portrait, 64.dp)
+                                Column(Modifier.weight(1f)) {
+                                    Text(p.name, style = MaterialTheme.typography.titleSmall)
+                                    MemberLines(p)
+                                }
+                                if (!reorderUnder) Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) { reorder(Modifier) }
+                            }
+                            if (reorderUnder) Row(Modifier.padding(top = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm)) { reorder(Modifier.weight(1f)) }
                             p.blocked?.let { Text(it, color = Ember, style = MaterialTheme.typography.bodySmall) }
                             if (p.heroId in changed) Text("Equipment changed: ${p.blade}", color = Ember, style = MaterialTheme.typography.bodySmall)
-                            Row(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                                SecondaryActionButton("↑", { onMove(p.heroId, -1) }, Modifier.weight(1f).heightIn(min = 48.dp).semantics { contentDescription = "Move ${p.name} up" }.testTag("contract_up_${p.heroId.value}"), enabled = !busy && p.order != 1)
-                                SecondaryActionButton("↓", { onMove(p.heroId, 1) }, Modifier.weight(1f).heightIn(min = 48.dp).semantics { contentDescription = "Move ${p.name} down" }.testTag("contract_down_${p.heroId.value}"), enabled = !busy && p.order != draft.members.size)
-                            }
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                                 InlineActionButton("Equipment and details", { onOpenHero(p.heroId) }, Modifier.heightIn(min = 48.dp).testTag("contract_equipment_${p.heroId.value}"), enabled = !busy)
                                 InlineActionButton("Remove", { onToggle(p.heroId) }, Modifier.heightIn(min = 48.dp).testTag("contract_remove_${p.heroId.value}"), enabled = !busy)
@@ -104,7 +117,7 @@ fun ContractSheet(
                         if (i > 0) RowRule()
                         Column(Modifier.fillMaxWidth().padding(vertical = Space.xs)) {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                                if (p.portrait != 0) Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { PixelImage(p.portrait, 44.dp, description = null) }
+                                if (p.portrait != 0) HeroFace(p.portrait, 44.dp)
                                 Column(Modifier.weight(1f)) {
                                     Text(p.name, style = MaterialTheme.typography.titleSmall)
                                     MemberLines(p)

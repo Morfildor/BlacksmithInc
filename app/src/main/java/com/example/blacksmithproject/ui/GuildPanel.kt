@@ -3,21 +3,21 @@ package com.example.blacksmithproject.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -46,6 +46,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.res.imageResource
+import com.example.blacksmithproject.ui.shopday.PixelSprite
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -55,6 +58,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.GuildTab
@@ -66,7 +70,6 @@ import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
 import com.example.blacksmithproject.ui.theme.Ember
 import com.example.blacksmithproject.ui.theme.ForgePanel
-import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.Command
@@ -132,7 +135,9 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
             GuildTab.WALL -> wallRows(ui, actions)
             GuildTab.CHARTER -> charterRows(ui, actions)
         }
-        GuildList(tab, rows, anchor, reducedMotion, ui.today, onToday) { anchor = null }
+        // "Nothing urgent" is said once, on the part the Guild opens on by default; the rows to act on stay on every part.
+        val calm = tab == guildTabFor(null, st.day, ui.wall.daysLeft)
+        GuildList(tab, rows, anchor, reducedMotion, ui.today, calm, onToday) { anchor = null }
     }
     // The ViewModel owns the draft while the existing hero/weapon sheets replace this modal.
     s.partyDraft?.let { draft ->
@@ -149,7 +154,8 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
             c.title, onDismiss = { confirm = null }, tag = "guild_confirm",
             actions = {
                 InlineActionButton("Not now", { confirm = null }, Modifier.testTag("guild_confirm_no"))
-                InlineActionButton(c.action, { confirm = null; vm.dispatch(c.command) }, Modifier.testTag("guild_confirm_yes"))
+                // Retiring, a challenge tier, keeping a party home: chosen steps, not losses, so the gold plate.
+                PrimaryActionButton(c.action, { confirm = null; vm.dispatch(c.command) }, Modifier.testTag("guild_confirm_yes"))
             },
         ) {
             Text(c.body)
@@ -157,12 +163,12 @@ fun GuildPanel(s: UiState.Playing, ui: GuildUi, vm: GameViewModel, modifier: Mod
     }
 }
 
-/** Today scrolls with the part, so full reminders and actions fit even at large font scales. */
+/** Today scrolls with the part, so full reminders and actions fit even at large font scales. [calm]: say when nothing is urgent (the default part only). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-internal fun TodayRows(rows: List<TodayUi>, onAct: (TodayUi) -> Unit) {
+internal fun TodayRows(rows: List<TodayUi>, calm: Boolean = true, onAct: (TodayUi) -> Unit) {
     Column(Modifier.fillMaxWidth().background(ForgePanel).testTag("guild_today")) {
-        if (rows.none { !it.optional }) Secondary("Nothing urgent today.", Modifier.padding(vertical = Space.sm))
+        if (calm && rows.none { !it.optional }) Secondary("Nothing urgent today.", Modifier.padding(vertical = Space.sm))
         rows.forEach { r ->
             Column(Modifier.fillMaxWidth().padding(vertical = Space.xs).testTag("guild_today_${r.key}")) {
                 Text(r.text, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.testTag("guild_today_text_${r.key}"))
@@ -177,30 +183,43 @@ internal fun TodayRows(rows: List<TodayUi>, onAct: (TodayUi) -> Unit) {
 }
 
 /**
- * The four parts as one row of tabs of equal width: the chosen one underlined in gold, a dot where something waits. A narrow screen
- * takes the smaller label; with large text the row scrolls sideways rather than cut a name.
+ * The four parts as tabs of equal width: the chosen one underlined in gold, a dot where something waits. A narrow screen
+ * takes the smaller label; when a name (and its dot) would not fit its share of one row whole, two to a row (large text).
  */
 @Composable
 private fun GuildTabs(selected: GuildTab, dots: Set<GuildTab>, onSelect: (GuildTab) -> Unit) {
-    val scroll = LocalDensity.current.fontScale >= 1.3f
     val label = if (LocalConfiguration.current.screenWidthDp < 400) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge
-    Row(
-        Modifier.fillMaxWidth().background(ForgePanel).then(if (scroll) Modifier.horizontalScroll(rememberScrollState()) else Modifier).padding(horizontal = Space.sm, vertical = Space.xs),
-        horizontalArrangement = Arrangement.spacedBy(Space.xs),
-    ) {
-        GuildTab.entries.forEach { t ->
-            val on = t == selected
-            Row(
-                (if (scroll) Modifier.widthIn(min = 80.dp) else Modifier.weight(1f)).heightIn(min = 44.dp)
-                    // The chosen part underlined in gold, the others plain: tabs, not a row of buttons.
-                    .drawBehind { if (on) drawRect(Gold, Offset(0f, size.height - 2.dp.toPx()), Size(size.width, 2.dp.toPx())) }
-                    .clickable(role = Role.Tab, onClick = { onSelect(t) })
-                    .semantics { this.selected = on; if (t in dots) stateDescription = "Needs you" }
-                    .padding(horizontal = 6.dp).testTag("guild_tab_${t.name.lowercase()}"),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
-            ) {
-                Text(guildTabName(t), style = label, color = if (on) Gold else CreamMuted, maxLines = 1, softWrap = false)
-                if (t in dots) Box(Modifier.padding(start = 6.dp).size(7.dp).background(if (on) Gold else Ember, CircleShape))
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    BoxWithConstraints(Modifier.fillMaxWidth().background(ForgePanel).padding(horizontal = Space.sm, vertical = Space.xs)) {
+        val perRow = with(density) {
+            // A tab holds its name and, when something waits there, the dot and its gap.
+            val widest = GuildTab.entries.maxOf { t ->
+                measurer.measure(guildTabName(t), label, softWrap = false, maxLines = 1).size.width + if (t in dots) (6 + 7).dp.toPx() else 0f
+            }
+            tabsPerRow(constraints.maxWidth.toFloat(), widest, GuildTab.entries.size, Space.xs.toPx(), 6.dp.toPx())
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+            GuildTab.entries.chunked(perRow).forEach { row ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+                    row.forEach { t ->
+                        val on = t == selected
+                        Row(
+                            Modifier.weight(1f).heightIn(min = 48.dp)
+                                // The chosen part underlined in gold, the others plain: tabs, not a row of buttons.
+                                .drawBehind { if (on) drawRect(Gold, Offset(0f, size.height - 2.dp.toPx()), Size(size.width, 2.dp.toPx())) }
+                                .clickable(role = Role.Tab, onClick = { onSelect(t) })
+                                .semantics { this.selected = on; if (t in dots) stateDescription = "Needs you" }
+                                .padding(horizontal = 6.dp).testTag("guild_tab_${t.name.lowercase()}"),
+                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Text(guildTabName(t), style = label, color = if (on) Gold else CreamMuted, maxLines = 1, softWrap = false)
+                            if (t in dots) Box(Modifier.padding(start = 6.dp).size(7.dp).background(if (on) Gold else Ember, CircleShape))
+                        }
+                    }
+                    // An odd last row keeps the tabs' width: an empty share, not one tab across the page.
+                    repeat(perRow - row.size) { Spacer(Modifier.weight(1f)) }
+                }
             }
         }
     }
@@ -208,7 +227,7 @@ private fun GuildTabs(selected: GuildTab, dots: Set<GuildTab>, onSelect: (GuildT
 
 /** One part's rows as one lazy list; a row Today pointed at is scrolled to once. Each part keeps its own scroll. */
 @Composable
-private fun GuildList(tab: GuildTab, rows: List<GuildRow>, anchor: Pair<GuildTab, String>?, reducedMotion: Boolean, today: List<TodayUi>, onToday: (TodayUi) -> Unit, onAnchored: () -> Unit) = androidx.compose.runtime.CompositionLocalProvider(LocalGuildAnchor provides anchor?.takeIf { it.first == tab }?.second) {
+private fun GuildList(tab: GuildTab, rows: List<GuildRow>, anchor: Pair<GuildTab, String>?, reducedMotion: Boolean, today: List<TodayUi>, calm: Boolean, onToday: (TodayUi) -> Unit, onAnchored: () -> Unit) = androidx.compose.runtime.CompositionLocalProvider(LocalGuildAnchor provides anchor?.takeIf { it.first == tab }?.second) {
     val list = key(tab) { rememberLazyListState() }
     // Once the part Today pointed at is the one shown: the save that switches it may land a frame later.
     LaunchedEffect(anchor, tab) {
@@ -221,15 +240,15 @@ private fun GuildList(tab: GuildTab, rows: List<GuildRow>, anchor: Pair<GuildTab
         Modifier.fillMaxSize().bottomFade(list.canScrollForward).testTag("guild_list"), state = list,
         contentPadding = PaddingValues(start = Space.md, end = Space.md, top = Space.sm, bottom = Space.lg),
     ) {
-        item(key = "today") { TodayRows(today, onToday) }
+        item(key = "today") { TodayRows(today, calm, onToday) }
         items(rows, key = { it.key }) { it.content() }
     }
 }
 
-/** A face in its dark slot, as every row of Town has it. */
+/** A face in its dark slot, as every row of Town has it: [HeroFace] at the whole scale nearest [size] dp. */
 @Composable
 internal fun Face(portrait: Int, size: Int = 44) {
-    Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) { PixelImage(portrait, size.dp, description = null) }
+    HeroFace(portrait, size.dp)
 }
 
 /** A short fact on a plate: the word is always there beside the colour. */
@@ -272,14 +291,23 @@ internal fun Collapsible(key: String, title: String, summary: String?, openAtFir
 }
 
 /**
- * The units on a field, each kind once: how many of it, its name and its health as the field scales it. What it does
- * (its moves, its rules, what it is weak to) is on its card, behind the ringed "i".
+ * The units on a field, each kind once: its picture where it has one (whole-scale, decorative: the label names it), how
+ * many of it, its name and its health as the field scales it. What it does (its moves, its rules, what it is weak to) is
+ * on its card, behind the ringed "i".
  */
 @Composable
 internal fun EnemyLines(enemies: List<EnemyUi>, modifier: Modifier = Modifier) {
+    val box = 48.dp
+    val boxPx = with(LocalDensity.current) { box.toPx() }
     Column(modifier) {
         enemies.forEach { e ->
             Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                e.face?.let { res ->
+                    // One column for every picture, so the names line up; the art at the whole scale that fits it.
+                    Box(Modifier.padding(end = Space.sm).size(box), contentAlignment = Alignment.Center) {
+                        PixelSprite(res, nearestWholeScale(ImageBitmap.imageResource(res).width, boxPx, maxPx = boxPx))
+                    }
+                }
                 FactLine(listOfNotNull(Fact(e.label), e.health.takeIf { it.isNotEmpty() }?.let { Fact(it, "Health") }), Modifier.weight(1f), emphasis = true)
                 e.tip?.let { t -> InfoButton(e.name, { t }, tag = "guild_enemy_${e.unitId}_info") }
             }

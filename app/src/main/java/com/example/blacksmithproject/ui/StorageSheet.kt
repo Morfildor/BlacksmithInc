@@ -2,9 +2,10 @@ package com.example.blacksmithproject.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -219,7 +219,8 @@ fun StorageList(
         "Melt down ${blades(chosen.size)}?", onDismiss = { scrapping = false },
         actions = {
             InlineActionButton("Keep them", { scrapping = false })
-            InlineActionButton("Melt down", { scrapping = false; onScrap(chosen); picked = emptySet() }, Modifier.testTag("storage_scrap_confirm"))
+            // Melting destroys the weapons for good: the red action, last, apart from the way back.
+            DestructiveActionButton("Melt down", { scrapping = false; onScrap(chosen); picked = emptySet() }, Modifier.testTag("storage_scrap_confirm"))
         },
     ) {
         Text("Melts these weapons down for good. Costs no energy. " + scrapBack(chosen))
@@ -241,11 +242,12 @@ fun StorageList(
 }
 
 /**
- * V2: one row of order chips, led by a "Filter" chip that opens the family, rarity and never-sold rows under it, so a long
+ * V2: one row of order chips (wrapping when they do not fit), led by a "Filter" chip that opens the family, rarity and never-sold rows under it, so a long
  * storeroom starts with the weapons and not three rows of chips. An active filter keeps its rows open and says itself on
  * the Filter chip. A chosen chip tapped again lets everything through. Drawn at the chip's own 32 dp; Material keeps the
  * touch area at 48.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun StorageFilters(storage: List<StockUi>, filter: StorageFilter, onChange: (StorageFilter) -> Unit) {
     val families = remember(storage) { storage.map { it.family }.distinct() }
@@ -255,9 +257,10 @@ private fun StorageFilters(storage: List<StockUi>, filter: StorageFilter, onChan
     var open by rememberSaveable { mutableStateOf(false) }
     val showRows = open || active.isNotEmpty()
     val canFilter = families.size > 1 || rarities.size > 1 || unsold in 1 until storage.size || active.isNotEmpty()
+    // The chips wrap onto a further line rather than run off the edge, so every chip is read whole at any text size.
     @Composable
     fun ChipRow(tag: String, content: @Composable () -> Unit) =
-        Row(Modifier.horizontalScroll(rememberScrollState()).testTag(tag), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) { content() }
+        FlowRow(Modifier.fillMaxWidth().testTag(tag), horizontalArrangement = Arrangement.spacedBy(Space.sm), itemVerticalAlignment = Alignment.CenterVertically) { content() }
     ChipRow("storage_order") {
         if (canFilter) FilterChip(
             selected = showRows, onClick = { if (active.isNotEmpty()) { open = true; onChange(filter.copy(family = null, rarity = null, unsold = false)) } else open = !open },

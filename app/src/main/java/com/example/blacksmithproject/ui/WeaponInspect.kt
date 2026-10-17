@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,12 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.detail.rarityColor
@@ -106,49 +107,74 @@ internal fun WeaponRow(
     val inspector = LocalInspector.current
     val anchor = remember { InspectAnchor() }
     val card: (() -> TipUi)? = stock.tip?.let { t -> { onDetails?.let(t::withDetails) ?: t } }
-    // Narrow or large text: the price and the action go under the words instead of squeezing them.
-    val stack = LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340
     // Only a free weapon in storage can go on the shelf from here: one kept for an order cannot be listed at all.
     @Suppress("NAME_SHADOWING") val onList = onList.takeIf { stock.promised == null && stock.price == null }
+    // What the trade column needs: the price (or "In storage") and the "List at" button, whichever is wider.
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    val priceStyle = MaterialTheme.typography.titleSmall.copy(fontFeatureSettings = NUMBERS)
+    val storedStyle = MaterialTheme.typography.bodySmall
+    val listWidth = buttonWidthPx("List at ${stock.suggested}")
+    val priceWidth = remember(stock.price, priceStyle, storedStyle, density) {
+        (if (stock.price != null) measurer.measure("${stock.price} gold", priceStyle) else measurer.measure("In storage", storedStyle)).size.width.toFloat()
+    }
     val click = when {
         selected != null -> Modifier.inspectAnchor(anchor).toggleable(selected, enabled = stock.promised == null, role = Role.Checkbox, onValueChange = { onOpen() })
         card != null -> Modifier.inspectable(anchor, inspector, card, onClick = onOpen)
         else -> Modifier.clickable(onClickLabel = "Open ${w.name}", role = Role.Button, onClick = onOpen)
     }
-    val trade: @Composable (Modifier) -> Unit = { m ->
-        Column(m, horizontalAlignment = if (stack) Alignment.Start else Alignment.End) {
+    val trade: @Composable (Modifier, Boolean) -> Unit = { m, under ->
+        Column(m, horizontalAlignment = if (under) Alignment.Start else Alignment.End) {
             if (stock.price != null) Text("${stock.price} gold", style = MaterialTheme.typography.titleSmall.copy(fontFeatureSettings = NUMBERS), color = Cream)
             else Text("In storage", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
             if (onList != null) SecondaryActionButton("List at ${stock.suggested}", { onList(stock.suggested) }, Modifier.padding(top = Space.xs), enabled = !busy)
         }
     }
-    Row(
+    BoxWithConstraints(
         modifier.fillMaxWidth()
             .then(if (divider) Modifier.hairline() else Modifier)
             .then(click).testTag(tag).heightIn(min = 64.dp).padding(vertical = Space.sm)
             .semantics(mergeDescendants = true) { contentDescription = stock.spoken(tap = selected == null) },
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
+        contentAlignment = Alignment.CenterStart,
     ) {
-        if (selected != null) Checkbox(checked = selected, onCheckedChange = null, enabled = stock.promised == null)
-        Box(Modifier.clip(SlotShape).background(ForgeSlot).border(1.dp, BronzeDeep, SlotShape).padding(2.dp)) { WeaponSprite(w, size = 44.dp) }
-        Column(Modifier.weight(1f)) {
-            Text(w.name + (w.title?.let { " · \"$it\"" } ?: ""), style = MaterialTheme.typography.titleSmall, color = rarityColor(w.rarity))
-            // The facts as plain text: the row's own sentence ([spoken]) is what TalkBack reads for it.
-            Text(factText(listOf(Fact(Labels.rarity(w.rarity))) + stock.stats.filter { it.label == "Power" || it.label == "Quality" }.map { Fact("${it.value}", it.label) }), style = MaterialTheme.typography.bodySmall, color = Cream)
-            val traits = stock.buffs.map { Fact(it, tone = FactTone.GOOD) } + stock.flaws.map { Fact(it, tone = FactTone.WARN) }
-            if (traits.isNotEmpty()) Text(factText(traits), style = MaterialTheme.typography.bodySmall, color = Cream)
-            stock.threat?.let { Text("${it.kind.sign} ${it.label}", style = MaterialTheme.typography.bodySmall, color = it.kind.color) }
-            stock.dormant?.let { Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold) }
-            stock.promised?.let {
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
-                    PixelIcon(R.drawable.icon_promised, 20.dp)
-                    Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold, modifier = Modifier.testTag(promisedTag))
-                }
-            }
-            note?.let { Secondary(it) }
-            if (stack) trade(Modifier.padding(top = Space.xs))
+        // The price and the action go under the words when beside them the words would keep less than 150 dp (scaled with
+        // the text): measured on this row, not guessed from the screen. Fixed: the sprite's slot, the "i", the checkbox, their gaps.
+        val stack = with(density) {
+            val fixed = (48 + 12).dp.toPx() + (if (card != null) (48 + 12).dp.toPx() else 0f) + (if (selected != null) (48 + 12).dp.toPx() else 0f)
+            val tradePx = maxOf(priceWidth, if (onList != null) listWidth else 0f) + 12.dp.toPx()
+            !roomBeside(constraints.maxWidth.toFloat(), fixed, tradePx, 150.dp.toPx() * fontScale)
         }
-        if (!stack) trade(Modifier)
-        if (card != null) InfoButton(w.name, card, anchor = anchor, tag = "${tag}_info")
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (selected != null) Checkbox(checked = selected, onCheckedChange = null, enabled = stock.promised == null)
+            Box(Modifier.clip(SlotShape).background(ForgeSlot).border(1.dp, BronzeDeep, SlotShape).padding(2.dp)) { WeaponSprite(w, size = 44.dp) }
+            Column(Modifier.weight(1f)) {
+                Text(w.name + (w.title?.let { " · \"$it\"" } ?: ""), style = MaterialTheme.typography.titleSmall, color = rarityColor(w.rarity))
+                // The facts as plain text: the row's own sentence ([spoken]) is what TalkBack reads for it.
+                Text(factText(listOf(Fact(Labels.rarity(w.rarity))) + stock.stats.filter { it.label == "Power" || it.label == "Quality" }.map { Fact("${it.value}", it.label) }), style = MaterialTheme.typography.bodySmall, color = Cream)
+                val traits = stock.buffs.map { Fact(it, tone = FactTone.GOOD) } + stock.flaws.map { Fact(it, tone = FactTone.WARN) }
+                if (traits.isNotEmpty()) Text(factText(traits), style = MaterialTheme.typography.bodySmall, color = Cream)
+                stock.threat?.let { Text("${it.kind.sign} ${it.label}", style = MaterialTheme.typography.bodySmall, color = it.kind.color) }
+                stock.dormant?.let { Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold) }
+                stock.promised?.let {
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        PixelIcon(R.drawable.icon_promised, 20.dp)
+                        Text("${EffectKind.NEUTRAL.sign} $it", style = MaterialTheme.typography.bodySmall, color = Gold, modifier = Modifier.testTag(promisedTag))
+                    }
+                }
+                note?.let { Secondary(it) }
+                if (stack) trade(Modifier.padding(top = Space.xs), true)
+            }
+            if (!stack) trade(Modifier, false)
+            if (card != null) InfoButton(w.name, card, anchor = anchor, tag = "${tag}_info")
+        }
     }
+}
+
+/** The width in pixels a [SecondaryActionButton] needs for [label]: its labelLarge text between 16 dp each side, at least Material's 58 dp. */
+@Composable
+internal fun buttonWidthPx(label: String): Float {
+    val measurer = rememberTextMeasurer()
+    val style = MaterialTheme.typography.labelLarge
+    val density = LocalDensity.current
+    return remember(label, style, density) { with(density) { maxOf(measurer.measure(label, style).size.width + (Space.md * 2).toPx(), 58.dp.toPx()) } }
 }

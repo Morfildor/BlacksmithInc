@@ -239,6 +239,59 @@ class DetailSheetTest {
         compose.runOnIdle { assertTrue(actions.isEmpty()) }
     }
 
+    /** VA-13: the head shows health as a bar and the weapon in hand with its art, above their story; the weapon's row opens it. */
+    @Test
+    fun theHeadShowsHealthAsABarAndTheWeaponInHandOpensIt() {
+        val detail = engine.heroDetail(state, hero.id)!!
+        assertEquals(hero.health, detail.health)
+        assertEquals(100, detail.healthMax)
+        // A member's bar is their fight health, the number of their "In a fight" row: one label, one meaning.
+        val run = engine.newRun(LegacyProfile(), 7, charterId = com.tinyblacksmith.core.content.GuildContent.TOWNS_LAST_HOPE)
+            .let { s -> engine.handle(s, Command.ChooseOpening(s.guild!!.openingOffer.first().defId)).stateOrThrow() }
+        val member = engine.heroDetail(run, run.guild!!.members.first().heroId)!!
+        val f = engine.fighterView(run, member.heroId)!!
+        assertEquals(f.health to f.maxHealth, member.health to member.healthMax)
+        assertEquals(blade.id, detail.equipmentId)
+        assertEquals(com.example.blacksmithproject.ui.Sprites.weapon(blade), detail.equipmentLook)
+        show { detail }
+        compose.onNodeWithTag("sheet_health", useUnmergedTree = true).assertIsDisplayed()
+        compose.onNodeWithTag("sheet_equipment_art", useUnmergedTree = true).assertIsDisplayed()
+        if (detail.story.isNotEmpty()) {
+            val art = compose.onNodeWithTag("sheet_equipment_art", useUnmergedTree = true).getUnclippedBoundsInRoot()
+            val story = compose.onNodeWithTag("sheet_story", useUnmergedTree = true).getUnclippedBoundsInRoot()
+            assertTrue("the weapon is above the story", art.bottom <= story.top)
+        }
+        compose.onNode(hasText("Carries ${blade.name}", substring = true) and hasClickAction()).performClick()
+        compose.runOnIdle { assertEquals(blade.id, openedItem) }
+        // One who has fallen carries nothing and has no health bar.
+        val fallen = engine.heroDetail(state.copy(heroes = state.heroes + (hero.id to hero.copy(fate = com.tinyblacksmith.core.model.HeroFate.DEAD))), hero.id)!!
+        assertEquals(null, fallen.health)
+        assertEquals(null, fallen.equipmentId)
+    }
+
+    /** VA-58: dismissing a member is a red action and is asked once more; "Keep them" sends nothing. */
+    @Test
+    fun dismissingAMemberIsDestructiveAndAskedOnce() {
+        val run = engine.newRun(LegacyProfile(), 7, charterId = com.tinyblacksmith.core.content.GuildContent.TOWNS_LAST_HOPE)
+            .let { s -> engine.handle(s, Command.ChooseOpening(s.guild!!.openingOffer.first().defId)).stateOrThrow() }
+        val id = run.guild!!.members.first().heroId
+        var dismissed = 0
+        compose.setContent {
+            BlacksmithProjectTheme {
+                HeroDetailSheet(
+                    engine.heroDetail(run, id)!!, onOpenHero = {}, onOpenItem = {}, onDismiss = {},
+                    member = com.example.blacksmithproject.ui.detail.MemberActions(true, {}, {}, {}, { dismissed++ }),
+                )
+            }
+        }
+        compose.onNodeWithTag("sheet_dismiss_member").performScrollTo().performClick()
+        compose.onNodeWithTag("sheet_dismiss_no").performClick()
+        compose.runOnIdle { assertEquals(0, dismissed) }
+        compose.onNodeWithTag("sheet_dismiss_member").performScrollTo().performClick()
+        compose.onNodeWithTag("sheet_dismiss_yes").performClick()
+        compose.runOnIdle { assertEquals(1, dismissed) }
+    }
+
     /** Accessibility floor: at twice the text size both sheets still scroll to their last line, and every target is 48 dp. */
     @Test
     fun atTwiceTheTextSizeTheSheetsScrollToTheirEndAndEveryTargetIsLargeEnough() {

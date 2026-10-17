@@ -41,7 +41,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -51,7 +53,6 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -68,6 +69,7 @@ import androidx.compose.foundation.border
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.drawscope.Stroke
 import com.example.blacksmithproject.ui.detail.ItemDetail
+import com.example.blacksmithproject.ui.shopday.PixelSprite
 import com.example.blacksmithproject.ui.detail.affordLine
 import com.example.blacksmithproject.ui.detail.itemDetail
 import com.example.blacksmithproject.ui.detail.rarityColor
@@ -170,7 +172,8 @@ private const val REVEAL_FADE_MS = 250
  * and live from the first frame, so the reveal never costs a tap or a wait. Without it (reduced motion) the card is
  * whole at once. A brand-new blade has no renown to show, so the zero is left out here; the blade's sheet keeps it.
  *
- * [guide] is the guided first day's line, at the head of the card's scrolling part: never pinned over the blade's numbers.
+ * [guide] is the guided first day's line, under the blade's name and rarity: the reward is seen first, and the line is
+ * never pinned over the blade's numbers.
  *
  * V3, an item reveal: the weapon's art, its name in the rarity's colour, rarity and kind, its purpose assessment, then
  * its power and quality, every buff and flaw by name, and what the notebook took from it in one line. [inspect] opens
@@ -208,9 +211,9 @@ fun ForgeResultCard(
     LaunchedEffect(detail.weaponId) { if (!revealed) { delay(REVEAL_HOLD_MS); revealed = true } }
     val shown by animateFloatAsState(if (revealed) 1f else 0f, tween(if (reveal) REVEAL_FADE_MS else 0), label = "reveal")
     val lead = remember(detail) { resultLead(detail) }
+    // The sprite, the name and the rarity stand alone during the reveal; everything under them fades in.
+    val identity: @Composable ColumnScope.() -> Unit = { ResultIdentity(detail, overSprite, inspect) }
     val blade: @Composable ColumnScope.() -> Unit = {
-        // The sprite, the name and the rarity stand alone during the reveal; everything under them fades in.
-        ResultIdentity(detail, overSprite, inspect)
         assessment?.let { a ->
             Column(Modifier.padding(top = Space.sm).testTag("reveal_assessment")) {
                 Text(a.line, style = MaterialTheme.typography.titleSmall, color = if (a.fits == false) Ember else Cream)
@@ -245,7 +248,8 @@ fun ForgeResultCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 lead.rules.forEach { r ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    // The diamond stays on the rule's first line when the rule wraps, as in the Forge outlook.
+                    Row(verticalAlignment = Alignment.Top) {
                         Text(EffectKind.NEUTRAL.sign, style = MaterialTheme.typography.labelMedium, color = EffectKind.NEUTRAL.color, modifier = Modifier.padding(end = 4.dp))
                         Text(r, style = MaterialTheme.typography.bodyMedium, color = Cream)
                     }
@@ -269,7 +273,7 @@ fun ForgeResultCard(
         }
         val suggested = stock.suggestedPrice
         // The going rate and who could pay it, in two short lines: the decision "List at" makes.
-        Text("Suggested price $suggested gold", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.testTag("reveal_suggested"))
+        Text("Suggested price $suggested gold", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm).testTag("reveal_suggested"))
         Secondary(affordLine(stock.funds, suggested), Modifier.testTag("reveal_afford"))
         // The engine refuses a listing on a full shelf; say so here and leave Store as the way on.
         val full = stock.shelfFree <= 0
@@ -297,12 +301,12 @@ fun ForgeResultCard(
     val large = LocalDensity.current.fontScale > 1.3f
     // No semantics on the tap: it only ends a moment's fade, and the buttons under it keep their own taps.
     FramedPanel("Fresh from the forge", modifier.fillMaxWidth().pointerInput(Unit) { detectTapGestures { revealed = true } }) {
-        // Large text: the card is one long column, so the guided step and its way out come first, where they are seen without a scroll.
-        if (large) Column(Modifier.verticalScroll(rememberScrollState())) { guide?.invoke(); blade(); price() }
+        // Large text: the card is one long column. The blade leads, then the guided step and its way out, without a scroll.
+        if (large) Column(Modifier.verticalScroll(rememberScrollState())) { identity(); guide?.invoke(); blade(); price() }
         else {
-            // The guided step heads the blade's scrolling part, so it is read first and never covers the blade's numbers.
+            // The blade heads the scrolling part, the guided step under it, so the step never covers the blade's numbers.
             val bladeScroll = rememberScrollState()
-            Column(Modifier.weight(1f, fill = false).verticalScroll(bladeScroll).bottomFade(bladeScroll.canScrollForward, ForgePanel)) { guide?.invoke(); blade() }
+            Column(Modifier.weight(1f, fill = false).verticalScroll(bladeScroll).bottomFade(bladeScroll.canScrollForward, ForgePanel)) { identity(); guide?.invoke(); blade() }
             // Measured before the card above it, so it has the room it needs.
             Column(Modifier.verticalScroll(rememberScrollState())) { price() }
         }
@@ -310,26 +314,34 @@ fun ForgeResultCard(
 }
 
 /**
- * The weapon as it leaves the anvil: its art in a slot (the rarity pip on it, the signature ring round it, [overSprite]
- * over it), its name in the rarity's colour, the rarity and kind in words, and its title, signature or legend when it
- * has one. The ringed "i" opens its card ([inspect]).
+ * The weapon as it leaves the anvil: its art in a slot at the whole scale nearest 80 dp (the signature ring round it,
+ * [overSprite] over it), its name in the rarity's colour, the rarity pip and the rarity and kind in words, and its title,
+ * signature or legend when it has one. The ringed "i" opens its card ([inspect]).
  */
 @Composable
 private fun ResultIdentity(detail: ItemDetail, overSprite: @Composable BoxScope.() -> Unit, inspect: (() -> TipUi)?) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
+    val density = LocalDensity.current
+    val art = ImageBitmap.imageResource(detail.sprite.base).width
+    val k = with(density) { nearestWholeScale(art, 80.dp.toPx()) }
+    // The slot is the sprite and 2 dp either side, so the art is never scaled to fit it.
+    val slot = with(density) { (art * k).toDp() } + 4.dp
+    Row(Modifier.fillMaxWidth().testTag("reveal_identity"), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
         Box(
-            Modifier.size(88.dp).background(ForgeSlot).border(1.dp, Bronze).drawBehind {
+            Modifier.size(slot).background(ForgeSlot).border(1.dp, Bronze).drawBehind {
                 if (detail.signature) drawCircle(Sprites.signatureRing, radius = size.minDimension / 2 - 4.dp.toPx(), style = Stroke(2.dp.toPx()))
             },
             contentAlignment = Alignment.Center,
         ) {
-            PixelImage(detail.sprite, 72.dp, description = null)
-            PixelImage(detail.badge, 24.dp, description = null, modifier = Modifier.align(Alignment.TopStart).padding(2.dp))
+            PixelSprite(detail.sprite, k)
             overSprite()
         }
         Column(Modifier.weight(1f).semantics(mergeDescendants = true) {}) {
             Text(detail.name, style = MaterialTheme.typography.titleLarge, color = rarityColor(detail.rarity), modifier = Modifier.semantics { heading() })
-            Text("${Labels.rarity(detail.rarity)} · ${detail.kind}", style = MaterialTheme.typography.bodyMedium, color = CreamMuted)
+            // The pip leads the rarity word it stands for; the kind keeps its words together ("Fire sword").
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                PixelIcon(detail.badge, 16.dp)
+                Text("${Labels.rarity(detail.rarity)} · ${detail.kind.replace(' ', '\u00A0')}", style = MaterialTheme.typography.bodyMedium, color = CreamMuted)
+            }
             detail.title?.let { Text("\"$it\"", style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic) }
             if (detail.signature) Text("Signature weapon", style = MaterialTheme.typography.labelMedium, color = Gold)
             // Why it is Legendary, and what its deeds have earned so far: said under the name, where the rarity is.
@@ -384,7 +396,7 @@ fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reduc
                         r.replays.forEach { replay ->
                             var open by remember(r.commandId, replay.title) { mutableStateOf(false) }
                             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                                Text(replay.title, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f).padding(top = Space.sm))
+                                Text(replay.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f).padding(top = Space.sm))
                                 TextButton(onClick = { open = !open }, colors = ButtonDefaults.textButtonColors(contentColor = PaperInkMuted)) {
                                     Text(if (open) "Hide rounds" else "${replay.rounds.size} rounds")
                                 }
@@ -407,16 +419,18 @@ fun DayReportDialog(state: GameState, r: DayResolution, vm: GameViewModel, reduc
 /**
  * The concise paper under a masthead: the stories that matter, the shop in a line or two and what to do before
  * tomorrow. A section with nothing to say is not drawn. [onOpenNotebook] gives a story about a recipe its button.
+ * The first story (the digest's most important) is the lead, its headline in the heading face; the rest are briefs.
+ * Neighbouring stories under the same headline share it ([mergedStories]), every one of their lines kept.
  */
 @Composable
 fun DigestBody(digest: GazetteDigest.Digest, modifier: Modifier = Modifier, onOpenNotebook: (() -> Unit)? = null) {
     var moreOpen by remember(digest) { mutableStateOf(false) }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(Space.md)) {
-        if (digest.isQuiet) Text(GazetteDigest.QUIET, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
-        digest.stories.forEach { StoryBlock(it, onOpenNotebook) }
+        if (digest.isQuiet) Text(GazetteDigest.QUIET, style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+        mergedStories(digest.stories).forEachIndexed { i, story -> StoryBlock(story, onOpenNotebook, lead = i == 0) }
         if (digest.more.isNotEmpty()) {
             PaperDisclosure("${digest.more.size} more ${if (digest.more.size == 1) "change" else "changes"}", moreOpen, { moreOpen = !moreOpen }, "report_more") {
-                Column(Modifier.padding(top = Space.xs), verticalArrangement = Arrangement.spacedBy(Space.md)) { digest.more.forEach { StoryBlock(it, onOpenNotebook) } }
+                Column(Modifier.padding(top = Space.xs), verticalArrangement = Arrangement.spacedBy(Space.md)) { mergedStories(digest.more).forEach { StoryBlock(it, onOpenNotebook) } }
             }
         }
         if (digest.shop.isNotEmpty()) PaperSection("The shop", digest.shop)
@@ -424,12 +438,27 @@ fun DigestBody(digest: GazetteDigest.Digest, modifier: Modifier = Modifier, onOp
     }
 }
 
+/**
+ * Neighbouring stories of one kind under one headline (two recipe clues of a day) as one story: the headline once, each
+ * body on its own line, every detail, subject and record kept, and a button to the notebook if either had one.
+ */
+internal fun mergedStories(stories: List<GazetteDigest.Story>): List<GazetteDigest.Story> = stories.fold(mutableListOf<GazetteDigest.Story>()) { merged, s ->
+    val last = merged.lastOrNull()
+    if (last != null && last.kind == s.kind && last.heading == s.heading) merged[merged.lastIndex] = last.copy(
+        body = listOf(last.body, s.body).filter { it.isNotEmpty() }.joinToString("\n"),
+        subjectIds = last.subjectIds + s.subjectIds, eventIds = last.eventIds + s.eventIds, details = last.details + s.details,
+        opensNotebook = last.opensNotebook || s.opensNotebook, mandatory = last.mandatory || s.mandatory,
+    ) else merged += s
+    merged
+}
+
+/** One story of the paper: the [lead] in the heading face, a brief in the body's own weight. */
 @Composable
-private fun StoryBlock(story: GazetteDigest.Story, onOpenNotebook: (() -> Unit)?) {
+private fun StoryBlock(story: GazetteDigest.Story, onOpenNotebook: (() -> Unit)?, lead: Boolean = false) {
     Column(Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}) {
-        Text(story.heading, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, modifier = Modifier.semantics { heading() })
-        if (story.body.isNotEmpty()) Text(story.body, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp))
-        story.details.forEach { Text(it, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodySmall, color = PaperInkMuted, modifier = Modifier.padding(top = 2.dp)) }
+        Text(story.heading, style = if (lead) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+        if (story.body.isNotEmpty()) Text(story.body, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp))
+        story.details.forEach { Text(it, style = MaterialTheme.typography.bodySmall, color = PaperInkMuted, modifier = Modifier.padding(top = 2.dp)) }
     }
     if (story.opensNotebook && onOpenNotebook != null) {
         TextButton(onClick = onOpenNotebook, colors = ButtonDefaults.textButtonColors(contentColor = PaperInk), modifier = Modifier.testTag("report_open_notebook")) { Text("Open notebook") }
@@ -445,7 +474,7 @@ private fun PaperSection(title: String, lines: List<String>) {
             Text(title.uppercase(), style = MaterialTheme.typography.labelSmall, letterSpacing = 1.2.sp, modifier = Modifier.semantics { heading() })
             HorizontalDivider(Modifier.weight(1f), color = rule)
         }
-        lines.forEach { Text(it, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 6.dp)) }
+        lines.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 6.dp)) }
     }
 }
 
@@ -459,7 +488,7 @@ internal fun PaperDisclosure(title: String, open: Boolean, onToggle: () -> Unit,
                 .semantics { contentDescription = "$title, ${if (open) "open" else "closed"}. Tap to ${if (open) "close" else "open"}." },
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(title, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+            Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
             Chevron(if (open) ChevronWay.UP else ChevronWay.DOWN, tint = LocalContentColor.current)
         }
         if (open) content()
@@ -471,11 +500,11 @@ internal fun PaperDisclosure(title: String, open: Boolean, onToggle: () -> Unit,
 fun EditionBody(edition: Gazette.Edition, modifier: Modifier = Modifier) {
     val muted = LocalContentColor.current.copy(alpha = 0.7f)
     Column(modifier) {
-        if (edition.lede.isEmpty() && edition.sections.isEmpty() && edition.tally.isEmpty()) Text("Nothing else was recorded.", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium)
+        if (edition.lede.isEmpty() && edition.sections.isEmpty() && edition.tally.isEmpty()) Text("Nothing else was recorded.", style = MaterialTheme.typography.bodyMedium)
         val rule = LocalContentColor.current.copy(alpha = 0.3f)
         // The headline, then a second one in italics under it: a paper's head and its strap.
         edition.lede.forEachIndexed { i, h ->
-            Text(h, fontFamily = FontFamily.Serif, style = if (i == 0) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall, fontStyle = if (i == 0) null else FontStyle.Italic, modifier = Modifier.padding(bottom = Space.sm))
+            Text(h, style = if (i == 0) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleSmall, fontStyle = if (i == 0) null else FontStyle.Italic, modifier = Modifier.padding(bottom = Space.sm))
         }
         // The day's tally as the deck: one line over a hairline, and under one when a headline stands above it.
         if (edition.tally.isNotEmpty()) {
@@ -491,8 +520,8 @@ fun EditionBody(edition: Gazette.Edition, modifier: Modifier = Modifier) {
             }
             section.lines.forEach { line ->
                 Row(Modifier.padding(top = 6.dp)) {
-                    Text("•", fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, color = muted, modifier = Modifier.width(14.dp))
-                    Text(line, fontFamily = FontFamily.Serif, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                    Text("•", style = MaterialTheme.typography.bodyMedium, color = muted, modifier = Modifier.width(14.dp))
+                    Text(line, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                 }
             }
         }

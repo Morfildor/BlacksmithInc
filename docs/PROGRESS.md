@@ -1,5 +1,21 @@
 # Progress — 2026-10-15 (text and header pass; 2026-10-14: deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Visual quality pass (2026-10-17, branch `living-heroes`)
+
+- The external review of the visual audit (`docs/visual_audit_2026-10-17/External review/`) implemented. Plan
+  `docs/superpowers/plans/2026-10-17-visual-quality-pass.md`; every VA-01..58, C1-C9 and R-01..03 with its status and
+  evidence in `docs/VISUAL_PASS_LEDGER_2026-10-17.md`, which also lists the open owner calls.
+- Shape: layout decided by measured width (`ui/Fit.kt`), faces through `HeroFace` and weapons at a whole device-pixel
+  scale (`nearestWholeScale`), blessing confirm pinned, siege-day block on the Shop, bestiary enemies by faction with the
+  owner's six portraits and name plates (`enemyFace`), run end by kind. Core: additive `Lines.why`/`weighedParts` only.
+- Checks: `:app:testDebugUnitTest` 402/402 (baseline 377), `:core:test` 742/742, `:app:connectedDebugAndroidTest` 105
+  tests on emulator-5562 (Pixel_10_Pro read-only, API 36): 99 passed, the 6 failures fixed in the tests (three also
+  failed on untouched HEAD: stale fixtures and an overflow check that flagged fitting one-line text; two needed a scroll
+  now that rows and tiles are taller; one new). Device pass: 360/393/412 dp, 420/440/480 dpi, font 1.0-2.0,
+  three-button navigation, reduced motion, a new-era bestiary siege, retirement and claim.
+- Not verified on device: loading/recovery/save errors, End Day preview, Heartfire, loan picker, relic replace,
+  resume/quiet/tally/contract cards, replay inspector, a TalkBack session, the real legacy screen after a defeat.
+
 ## Content art redrawn with Retro Diffusion (2026-10-17, branch `living-heroes`, after 0.9.0)
 
 - Owner asks: remake the art not updated today with Retro Diffusion, the big pieces first (day, treasure, siege),

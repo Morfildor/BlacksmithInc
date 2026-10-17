@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import com.example.blacksmithproject.data.ShopDaySpeed
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -22,7 +23,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,6 +55,7 @@ fun ShopDayTopBar(
     onSpeedChange: (ShopDaySpeed) -> Unit,
     onSkipDay: () -> Unit,
     modifier: Modifier = Modifier,
+    longest: String = progress,
 ) {
     // The strip takes its own taps: one that misses the chip or the skip must not count as the screen's "tap anywhere".
     // The controls stand beside the day's label while both fit; with large text or a narrow screen they take the line
@@ -61,7 +66,12 @@ fun ShopDayTopBar(
     ) {
         Column(Modifier.align(Alignment.CenterVertically).padding(vertical = 4.dp)) {
             Text("DAY $day", style = MaterialTheme.typography.labelSmall, color = SceneGold, maxLines = 1)
-            Text(progress, style = MaterialTheme.typography.labelLarge, color = SceneCream, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.testTag("shopday_progress"))
+            // The day's longest part, unseen and unread, under the real one: the label is as wide on every card, so the
+            // controls stay on the same line (or under it) all day and the strip does not jump from card to card.
+            Box {
+                Text(longest, style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.alpha(0f).clearAndSetSemantics {})
+                Text(progress, style = MaterialTheme.typography.labelLarge, color = SceneCream, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.testTag("shopday_progress"))
+            }
         }
         val shown = if (reducedMotion) ShopDaySpeed.TAP else speed
         // The cards that end the day wait for a choice at any speed, so they show neither control.
@@ -85,14 +95,31 @@ fun ShopDayTopBar(
     }
 }
 
+/** The quiet action beside the wide button on a card that asks for a choice ("Decide later" on the blessing), in Back's place. */
+data class ShopDaySecondary(val label: String, val onClick: () -> Unit, val tag: String)
+
 /**
  * Back steps one beat and never closes the day. The wide button is the one way forward: Next (the same as a tap
- * anywhere) during the day, and on the last cards the choice that ends it, under its own [nextTag].
+ * anywhere) during the day, and on the last cards the choice that ends it, under its own [nextTag]; [nextEnabled] false
+ * while that choice is not made yet. A [secondary] takes Back's place; with text above 1.3x the two are stacked, the
+ * wide button first, so neither label is squeezed.
  */
 @Composable
-fun ShopDayControls(canBack: Boolean, nextLabel: String, onBack: () -> Unit, onNext: () -> Unit, modifier: Modifier = Modifier, nextTag: String = "shopday_next") {
-    Row(modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
-        SecondaryActionButton("Back", onBack, Modifier.heightIn(min = 52.dp).testTag("shopday_back"), enabled = canBack)
-        PrimaryActionButton(nextLabel, onNext, Modifier.weight(1f).testTag(nextTag))
+fun ShopDayControls(
+    canBack: Boolean, nextLabel: String, onBack: () -> Unit, onNext: () -> Unit, modifier: Modifier = Modifier, nextTag: String = "shopday_next",
+    nextEnabled: Boolean = true, secondary: ShopDaySecondary? = null,
+) {
+    val padded = modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm)
+    if (secondary != null && LocalDensity.current.fontScale > 1.3f) {
+        Column(padded, verticalArrangement = Arrangement.spacedBy(Space.sm)) {
+            PrimaryActionButton(nextLabel, onNext, Modifier.fillMaxWidth().testTag(nextTag), enabled = nextEnabled)
+            SecondaryActionButton(secondary.label, secondary.onClick, Modifier.fillMaxWidth().heightIn(min = 52.dp).testTag(secondary.tag))
+        }
+        return
+    }
+    Row(padded, horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalAlignment = Alignment.CenterVertically) {
+        if (secondary != null) SecondaryActionButton(secondary.label, secondary.onClick, Modifier.heightIn(min = 52.dp).testTag(secondary.tag))
+        else SecondaryActionButton("Back", onBack, Modifier.heightIn(min = 52.dp).testTag("shopday_back"), enabled = canBack)
+        PrimaryActionButton(nextLabel, onNext, Modifier.weight(1f).testTag(nextTag), enabled = nextEnabled)
     }
 }

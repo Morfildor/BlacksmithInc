@@ -2,6 +2,7 @@
 
 package com.example.blacksmithproject.ui.shopday
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -45,6 +47,7 @@ import com.example.blacksmithproject.ui.SKIP_TO_EVENING
 import com.example.blacksmithproject.ui.InlineActionButton
 import com.example.blacksmithproject.ui.SecondaryActionButton
 import com.example.blacksmithproject.ui.FramedPanel
+import com.example.blacksmithproject.ui.HeroFace
 import com.example.blacksmithproject.ui.PixelIcon
 import com.example.blacksmithproject.ui.PixelImage
 import com.example.blacksmithproject.ui.PrimaryActionButton
@@ -191,14 +194,30 @@ fun AftermathCard(
     modifier: Modifier = Modifier,
 ) {
     val card = beat.card
+    val fallen = card.hero?.takeIf { card.kind == AftermathKind.DEATH }
+    val fallenFace = fallen?.let { faceRes(it) }
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
         card.note?.let { Overline(it, Modifier.testTag("shopday_aftermath_note"), strong = true) }
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // A death is a memorial, not a sale: the face large and as painted, the name as the heading, the blade on its own line.
+        if (fallen != null && fallenFace != null) {
+            Row(
+                Modifier.fillMaxWidth().heightIn(min = 48.dp)
+                    .then(if (fallen.heroId != null) Modifier.clickable(onClickLabel = "Open ${fallen.name}", role = Role.Button) { onOpenHero(fallen) } else Modifier),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md),
+            ) {
+                HeroFace(fallenFace, 64.dp, Modifier.clearAndSetSemantics {}, marker = R.drawable.marker_dead)
+                Column(Modifier.weight(1f)) {
+                    Overline(card.title, Modifier.testTag("shopday_aftermath_kind"))
+                    Text(fallen.name, style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() })
+                }
+            }
+            card.blade?.let { BladeChip(it, onOpenBlade, Modifier.fillMaxWidth(), note = fateNote(card.fate)) }
+        } else Row(verticalAlignment = Alignment.CenterVertically) {
             CardTitle(card.title, Modifier.weight(1f).testTag("shopday_aftermath_kind"))
             val art = card.materialId?.let { Sprites.material(it) }?.let { it to 48 } ?: card.factionId?.let { Sprites.faction(it) }?.let { it to 80 }
             art?.let { (res, px) -> PixelSprite(res, wholeScale(px, 56.dp), Modifier.clearAndSetSemantics {}) }
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+        if (fallen == null || fallenFace == null) FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
             card.hero?.let { PersonChip(it, onOpenHero) }
             card.other?.let {
                 PersonChip(it, onOpenHero, note = when (card.kind) { AftermathKind.INHERITED -> "carried it before"; AftermathKind.GUILD_LESSON -> "gave the lesson"; else -> null })
@@ -309,14 +328,20 @@ fun ReplayOverlay(replay: CombatReplay, onClose: () -> Unit, modifier: Modifier 
     }
 }
 
-/** The run is over: the cause as recorded and the day it happened. "See the legacy" is the screen's wide button. */
+/**
+ * The run is over: the cause as recorded is the headline, with the day it happened (said once: in the overline only when
+ * the cause does not name it). The card is at least as tall as the room the screen leaves it ([modifier]), the Gazette
+ * at its foot. "See the legacy" is the screen's wide button.
+ */
 @Composable
 fun FallenCard(fallen: Beat.Fallen, onOpenGazette: () -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.xs)) {
-        fallen.recap?.let { SiegeRecap(it) }
-        Overline("The era ended on day ${fallen.days}", strong = true)
-        fallen.cause?.let { CardTitle(it, Modifier.testTag("shopday_fallen_cause")) }
-        InlineActionButton("Read the Gazette", onOpenGazette, Modifier.heightIn(min = 48.dp).testTag("shopday_gazette"))
+    Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.SpaceBetween) {
+        Column(verticalArrangement = Arrangement.spacedBy(Space.xs)) {
+            fallen.recap?.let { SiegeRecap(it) }
+            Overline(if (fallen.cause?.let { Regex("\\bday ${fallen.days}\\b").containsMatchIn(it) } == true) "The era has ended" else "The era ended on day ${fallen.days}", strong = true)
+            fallen.cause?.let { Text(it, style = MaterialTheme.typography.headlineSmall, color = Cream, modifier = Modifier.semantics { heading() }.testTag("shopday_fallen_cause")) }
+        }
+        InlineActionButton("Read the Gazette", onOpenGazette, Modifier.padding(top = Space.sm).heightIn(min = 48.dp).testTag("shopday_gazette"))
     }
 }
 
@@ -369,25 +394,29 @@ fun TomorrowCard(tomorrow: Beat.Tomorrow, onOpenGazette: () -> Unit, modifier: M
 
 /**
  * The town's thanks after a held siege, chosen as every lasting choice is (the workshop's blessing dialog, a visitor, a
- * relic): a tap marks a blessing, "Take ..." takes it. "Decide later" is the screen's wide button.
+ * relic): a tap only marks a blessing ([marked], [onMark]); "Take ..." is the screen's wide button and takes it, "Decide
+ * later" sits beside it.
  */
 @Composable
-fun BlessingChoices(choices: List<BlessingUi>, onChoose: (BlessingId) -> Unit, modifier: Modifier = Modifier, siege: String? = null) {
-    var marked by rememberSaveable { mutableStateOf<String?>(null) }
-    val taking = choices.firstOrNull { it.id.value == marked }
+fun BlessingChoices(choices: List<BlessingUi>, marked: String?, onMark: (BlessingId) -> Unit, modifier: Modifier = Modifier, siege: String? = null) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         siege?.let { SiegeRecap(it) }
         CardTitle("The town offers a blessing")
+        // Large text: the icon moves beside the name, so the description keeps the row's whole width.
+        val large = LocalDensity.current.fontScale > 1.3f
+        val scale = wholeScale(48, 40.dp)
         choices.forEach { b ->
             ChoiceRow(
-                taking?.id == b.id, { marked = b.id.value }, Modifier.testTag("blessing_${b.id.value}"),
-                leading = { Sprites.blessing(b.id)?.let { PixelSprite(it, wholeScale(48, 40.dp), Modifier.clearAndSetSemantics {}) } },
+                b.id.value == marked, { onMark(b.id) }, Modifier.testTag("blessing_${b.id.value}"),
+                leading = if (large) null else ({ Sprites.blessing(b.id)?.let { PixelSprite(it, scale, Modifier.clearAndSetSemantics {}) } }),
             ) {
-                Text(b.name, style = MaterialTheme.typography.titleSmall)
+                if (large) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                    Sprites.blessing(b.id)?.let { PixelSprite(it, scale, Modifier.clearAndSetSemantics {}) }
+                    Text(b.name, style = MaterialTheme.typography.titleSmall)
+                } else Text(b.name, style = MaterialTheme.typography.titleSmall)
                 Text(b.description, style = MaterialTheme.typography.bodySmall)
             }
         }
-        PrimaryActionButton(taking?.let { "Take ${it.name}" } ?: "Choose a blessing", { taking?.let { onChoose(it.id) } }, Modifier.fillMaxWidth().testTag("blessing_take"), enabled = taking != null)
     }
 }
 

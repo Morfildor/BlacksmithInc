@@ -23,6 +23,7 @@ import com.tinyblacksmith.core.model.MaterialId
 import com.tinyblacksmith.core.model.MissionOutcome
 import com.tinyblacksmith.core.model.SiegeVerdict
 import com.tinyblacksmith.core.model.VisitKind
+import com.tinyblacksmith.core.model.WeaponFate
 import com.tinyblacksmith.core.model.WeaponId
 import com.tinyblacksmith.core.model.WeaponSnapshot
 import com.tinyblacksmith.core.shopday.AftermathKind
@@ -54,8 +55,15 @@ data class FaceUi(val heroId: HeroId?, val name: String, val snapshot: CustomerS
 /** One line of a receipt or of the till: a label and a value, never joined into a sentence. */
 @Immutable data class ReceiptRow(val label: String, val value: String, val total: Boolean = false)
 
-/** A blade the visitor weighed: its name and price, then the recorded factors as sentences. */
-@Immutable data class LookedUi(val blade: WeaponSnapshot?, val title: String, val factors: String)
+/** A blade the visitor weighed: its name and price, then the recorded factors as sentences, and the same factors as the two lists the card shows ([pros] for it, [cons] against it). */
+@Immutable data class LookedUi(val blade: WeaponSnapshot?, val title: String, val factors: String, val pros: List<String> = emptyList(), val cons: List<String> = emptyList())
+
+/**
+ * The receipt as the visit card shows it: a plain sale at the listed price is "Listed price" and "Total received" with
+ * one number, so only the total is shown. Every other receipt is shown whole. The rows themselves are unchanged.
+ */
+internal fun shownReceipt(rows: List<ReceiptRow>): List<ReceiptRow> =
+    if (rows.size == 2 && rows[0].label == "Listed price" && rows[1].total && rows[0].value == rows[1].value) listOf(rows[1]) else rows
 
 @Immutable
 data class VisitUi(
@@ -75,7 +83,12 @@ data class VisitUi(
     val looked: List<LookedUi>,
     val lookedIds: Set<WeaponId>,
     val purchased: WeaponSnapshot?,
-)
+    /** The reason without the money (`Lines.why`), for a sale whose receipt shows what was paid; null when the record holds none. */
+    val why: String? = null,
+) {
+    /** The line under the heading: the reason alone where the receipt below says the money, the whole decision otherwise. */
+    val reasonLine: String? get() = if (sold && receipt.isNotEmpty()) why else decision
+}
 
 /** [seqs] are the visits the line counts, by their order in the day. */
 /** [member]: a member of the guild who bought at the counter with their own gold (living heroes), told apart from customers. */
@@ -96,7 +109,18 @@ data class AftermathUi(
     val replay: CombatReplay?,
     /** Set on the siege's card only. */
     val siege: SiegeOutcomeUi? = null,
+    /** What became of a fallen hero's blade, as the day recorded it (`AftermathCard.fate`); DEATH only. */
+    val fate: WeaponFate? = null,
 )
+
+/** The blade's fate under its name on the death card, in the record's own words; null where another card tells it (inherited, resold). */
+internal fun fateNote(fate: WeaponFate?): String? = when (fate) {
+    WeaponFate.RECOVERED -> "Back at the forge"
+    WeaponFate.SEIZED -> "Taken by the enemy"
+    WeaponFate.MERCHANT -> "Went missing"
+    WeaponFate.LOST -> "Lost with them"
+    WeaponFate.INHERITED, WeaponFate.RESOLD, null -> null
+}
 
 /**
  * A resolved siege as the day recorded it. [forgeDamage] is the day's own record (null when none was written);
@@ -338,9 +362,14 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
             decision = Lines.decision(v, script, content).takeIf { it != "$outcome." },
             receipt = receipt(v),
             looked = v.considered.takeIf { v.kind == VisitKind.BROWSE }.orEmpty().map { k ->
-                LookedUi(script.blade(k.weaponId), listOfNotNull(script.blade(k.weaponId)?.name, "${k.price} gold").joinToString(", "), Lines.weighed(k))
+                val (pros, cons) = Lines.weighedParts(k)
+                LookedUi(
+                    script.blade(k.weaponId), listOfNotNull(script.blade(k.weaponId)?.name, "${k.price} gold").joinToString(", "), Lines.weighed(k),
+                    pros = pros.map { it.replaceFirstChar { c -> c.uppercase() } }, cons = cons.map { it.replaceFirstChar { c -> c.uppercase() } },
+                )
             },
             lookedIds = v.considered.map { it.weaponId }.toSet(), purchased = script.blade(v.purchasedWeaponId),
+            why = Lines.why(v, script, content).ifEmpty { null },
         )
     }
 
@@ -450,6 +479,7 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
                 champions = card.championIds.map { face(it) }, blade = card.weapon, factionId = card.factionId,
                 materialId = card.materialId.takeIf { card.kind == AftermathKind.SCARCE_LOOT || card.kind == AftermathKind.ELITE_SLAIN }, replay = card.replay,
                 siege = siege.takeIf { card.kind == AftermathKind.SIEGE_HELD || card.kind == AftermathKind.SIEGE_LOST },
+                fate = card.fate.takeIf { card.kind == AftermathKind.DEATH },
             ),
             index = i + 1, of = aftermath.size, moreInGazette = if (i == aftermath.lastIndex) moreInGazette else 0,
             // The banner under the strip says "Beyond the door"; the strip says when, and counts only when there is more than one.

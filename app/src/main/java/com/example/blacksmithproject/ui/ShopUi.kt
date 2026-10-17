@@ -22,6 +22,7 @@ import com.tinyblacksmith.core.model.DayResolution
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.IdOrder
+import com.tinyblacksmith.core.model.LivingRevision
 import com.tinyblacksmith.core.model.MarketVisit
 import com.tinyblacksmith.core.model.VisitKind
 import com.tinyblacksmith.core.model.Weapon
@@ -95,6 +96,8 @@ data class ThreatUi(
     val warningFresh: Boolean = false,
     /** The besieger's name alone, for the workshop header (said there only once [warned]). */
     val besieger: String? = null,
+    /** A living era: the authored army committed for this siege (`SiegeScenario.armyId`), for the Shop's siege-day block; null before it is committed and in an older era. */
+    val army: String? = null,
 ) {
     /** When, who and what tells against them, and how the town stands: the one siege line every destination shows. */
     val summary: String get() = listOfNotNull(if (today) "$siege, after today's trading" else siege, matchup, outlook).joinToString(" · ")
@@ -251,6 +254,7 @@ fun GameEngine.threatUi(state: GameState): ThreatUi? = Threats.of(state, content
         marks = Element.entries.mapNotNull { e -> Threats.mark(e, t)?.let { e to MarkUi(Lines.threatMark(it, t, content), it == ThreatMark.COUNTERS) } }.toMap(),
         matchup = content.factionById[t.factionId]?.name?.let { name -> listOfNotNull(name, t.weakTo?.let { "Weak to ${it.word()}" }, t.resists?.let { "Resists ${it.word()}" }).joinToString(" · ") },
         besieger = content.factionById[t.factionId]?.name,
+        army = state.siege?.takeIf { state.livingRevision >= LivingRevision.CURRENT && it.siegeDay == state.town.nextSiegeDay }?.armyId?.let { content.guild?.army(it)?.name },
     )
 }
 

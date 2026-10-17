@@ -100,7 +100,7 @@ fun GameEngine.heroTip(state: GameState, heroId: HeroId, home: Boolean = false, 
         else -> null
     }
     return TipUi(
-        name = h.fullName, kind = "${raceClass(h)}, ${levelWords(h.level)}", icon = Sprites.portrait(h),
+        name = h.fullName, kind = "${raceClass(h)}, ${levelWords(h.level)}", icon = Sprites.portrait(h), face = true,
         meta = when { member != null -> "Guild member"; candidate != null -> "For hire"; else -> "Of the town" },
         stats = fighter?.let { f ->
             listOfNotNull(

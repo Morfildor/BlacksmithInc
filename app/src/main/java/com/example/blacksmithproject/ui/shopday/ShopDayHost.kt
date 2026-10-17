@@ -86,6 +86,7 @@ fun ShopDayHost(s: UiState.ShopDay, vm: GameViewModel, onMainMenu: () -> Unit = 
         onClose = vm::acknowledge,
         coach = Tips.COUNTER.body.takeIf { coaching && atFirstVisit },
         onWatchSiege = { wall = it },
+        busy = s.busy,
     )
     // Opened before the sheets and the Gazette it links to, so those open over it and close back onto it.
     if (wall != null && wallFight != null && wallUi != null) {

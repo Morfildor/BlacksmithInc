@@ -130,12 +130,13 @@ fun EncounterContent(view: Encounters.View, state: GameState, busy: Boolean, onC
         view.options.forEach { o ->
             val open = o.blocked == null
             // A choice row: a tap marks the answer, the gold action sends it. What it brings ("+") and what it costs ("−"),
-            // each on a line of its own, are read before choosing; an answer that cannot be taken says why.
-            ChoiceRow(selected?.id == o.id, { marked = o.id }, Modifier.padding(top = Space.sm).testTag("visitor_option_${o.id}"), enabled = open && !busy) {
+            // each on a line of its own, are read before choosing; an answer that cannot be taken says why, right under its
+            // name, and the row has no ground and dimmed bullets. Saving (busy) only disables the rows; it does not dim them.
+            ChoiceRow(selected?.id == o.id, { marked = o.id }, Modifier.padding(top = Space.sm).testTag("visitor_option_${o.id}"), enabled = open && !busy, unavailable = !open) {
                 Text(o.label, style = MaterialTheme.typography.titleSmall)
-                if (o.effect.isNotEmpty()) EffectBullets(EffectKind.BUFF, listOf(o.effect))
-                if (o.cost == "Free") Secondary("Free") else EffectBullets(EffectKind.FLAW, listOf("Costs ${o.cost}"))
                 o.blocked?.let { Text("Not possible: $it", style = MaterialTheme.typography.bodySmall, color = EffectKind.FLAW.color, modifier = Modifier.testTag("visitor_blocked_${o.id}")) }
+                if (o.effect.isNotEmpty()) EffectBullets(EffectKind.BUFF, listOf(o.effect), muted = !open)
+                if (o.cost == "Free") Secondary("Free") else EffectBullets(EffectKind.FLAW, listOf("Costs ${o.cost}"), muted = !open)
             }
         }
         if (view.options.none { it.id != Encounters.PASS && it.blocked == null }) Secondary("You can't take the other options today. The free option is still available.", Modifier.padding(top = Space.sm))

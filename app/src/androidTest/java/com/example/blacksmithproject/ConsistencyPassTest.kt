@@ -28,9 +28,9 @@ import com.example.blacksmithproject.ui.RecordsPanel
 import com.example.blacksmithproject.ui.TownPanel
 import com.example.blacksmithproject.ui.theme.BlacksmithProjectTheme
 import com.tinyblacksmith.core.engine.GameEngine
+import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.LegacyProfile
 import com.tinyblacksmith.core.persistence.SaveCodec
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -44,8 +44,7 @@ class ConsistencyPassTest {
 
     private val engine = GameEngine()
 
-    private fun show(dest: Dest, panel: @Composable (UiState.Playing, GameViewModel) -> Unit) {
-        val start = engine.newRun(LegacyProfile(), 42L)
+    private fun show(dest: Dest, start: GameState = engine.newRun(LegacyProfile(), 42L), panel: @Composable (UiState.Playing, GameViewModel) -> Unit) {
         val repo = MemoryRepository(SaveCodec.encodeRun(start), SaveCodec.encodeLegacy(start.legacy))
         lateinit var vm: GameViewModel
         compose.runOnUiThread { vm = GameViewModel(engine, GameSession(engine, repo), QuietSettings(), SavedStateHandle()) }
@@ -71,11 +70,15 @@ class ConsistencyPassTest {
     /** An empty champion place says why, by the engine's rule. */
     @Test
     fun townExplainsItsEmptyChampionPlaces() {
-        show(Dest.TOWN) { s, vm -> TownPanel(s, vm) }
-        // The threat, the outlook and the champions are one item of the list, so the slots are composed with the header.
+        // Town shows the forecast's own pick, which on a fresh day 1 is three fit heroes: every hero is wounded here, just
+        // under the line, so all three places are empty by the engine's rule (and not merely because nothing is saved yet).
         val fit = engine.config.heroWoundedThreshold
+        val fresh = engine.newRun(LegacyProfile(), 42L)
+        val wounded = fresh.copy(heroes = fresh.heroes.mapValues { (_, h) -> h.copy(health = fit - 1) })
+        assertTrue("no hero is fit for the wall in the forecast", engine.siegeForecast(wounded)?.champions.isNullOrEmpty())
+        show(Dest.TOWN, wounded) { s, vm -> TownPanel(s, vm) }
+        // The threat, the outlook and the champions are one item of the list, so the slots are composed with the header.
         compose.onNodeWithText("with at least $fit% health, ranked against these attackers.", substring = true).assertExists()
         (0..2).forEach { compose.onNodeWithTag("town_champion_empty_$it", useUnmergedTree = true).assertTextEquals("No other hero has enough health. This place needs at least $fit% health.") }
-        assertEquals("day 1 has no champions in the save", 0, engine.newRun(LegacyProfile(), 42L).town.championIds.size)
     }
 }

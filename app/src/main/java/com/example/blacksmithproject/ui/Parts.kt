@@ -116,7 +116,8 @@ internal fun factText(facts: List<Fact>): AnnotatedString = buildAnnotatedString
     facts.forEachIndexed { i, f ->
         // The separator is bound to the fact before it (no-break space), so a wrapped line never starts with it.
         if (i > 0) withStyle(SpanStyle(color = CreamMuted)) { append(" · ") }
-        f.label?.let { withStyle(SpanStyle(color = CreamMuted)) { append("$it ") } }
+        // The label is bound to its value the same way, so "Quality" never ends a line without its number.
+        f.label?.let { withStyle(SpanStyle(color = CreamMuted)) { append("$it ") } }
         // The value is what the eye looks for: a step heavier than its label, with figures that line up.
         val value = SpanStyle(fontWeight = FontWeight.Medium, fontFeatureSettings = NUMBERS)
         when (f.tone) {

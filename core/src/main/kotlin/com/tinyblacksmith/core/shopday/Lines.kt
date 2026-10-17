@@ -72,12 +72,18 @@ object Lines {
      * "For it: suits their class. Against it: 12 gold beyond their purse." Empty when the visit recorded none.
      */
     fun weighed(item: Considered): String {
+        val (pros, cons) = weighedParts(item)
+        return listOfNotNull(
+            pros.takeIf { it.isNotEmpty() }?.let { "Reasons to buy. ${it.joinSentences()}" },
+            cons.takeIf { it.isNotEmpty() }?.let { "Reasons to pass. ${it.joinSentences()}" },
+        ).joinToString(" ")
+    }
+
+    /** The factors of [weighed] as two lists of clauses, (for it, against it), in the record's order: one bullet each. */
+    fun weighedParts(item: Considered): Pair<List<String>, List<String>> {
         fun words(f: VisitFactor) = if (f == VisitFactor.CANNOT_AFFORD && item.shortBy != null) "${item.shortBy} gold over their budget" else factor(f)
         val (cons, pros) = item.factors.partition { it in against }
-        return listOfNotNull(
-            pros.takeIf { it.isNotEmpty() }?.let { "Reasons to buy. ${it.map { f -> words(f) }.joinSentences()}" },
-            cons.takeIf { it.isNotEmpty() }?.let { "Reasons to pass. ${it.map { f -> words(f) }.joinSentences()}" },
-        ).joinToString(" ")
+        return pros.map { words(it) } to cons.map { words(it) }
     }
 
     /** What a visitor without the price could put down, and the cheapest blade as they found the shelf; either is null when the record lacks it. */
@@ -102,12 +108,29 @@ object Lines {
 
     /** Why they bought or left, with the numbers the visit recorded. */
     fun decision(visit: MarketVisit, day: ShopDayScript, content: ContentCatalog): String {
+        val sale = visit.sale
+        val own = visit.customer?.equipped?.name
+        val trade = sale?.takeIf { it.tradeInWeaponId != null && visit.kind == VisitKind.BROWSE }?.let { "Traded in ${own ?: "their old weapon"} for ${it.tradeInCredit} gold of credit. Paid ${it.cashPaid} gold in cash." }
+        val bonus = sale?.takeIf { it.saleBonus > 0 }?.let { "The blessing added ${it.saleBonus} gold to the sale." }
+        val stipend = sale?.takeIf { it.stipend > 0 }?.let { "Their guild covered ${it.stipend} gold. They paid ${it.cashPaid} gold themselves." }
+        return (clauses(visit, day, content, money = true) + listOfNotNull(trade, stipend, bonus)).joinToString(" ").ifEmpty { reason(visit.reason).replaceFirstChar { it.uppercase() } + "." }
+    }
+
+    /**
+     * The reason of [decision] alone, without what was paid ("Bought ... for N gold", the trade-in, the guild's share,
+     * the blessing): for a card whose receipt already shows the money. Empty when the record holds no reason clause.
+     */
+    fun why(visit: MarketVisit, day: ShopDayScript, content: ContentCatalog): String = clauses(visit, day, content, money = false).joinToString(" ")
+
+    /** The reason clauses of a visit, in [decision]'s order; [money] keeps the clauses that only say what was paid. */
+    private fun clauses(visit: MarketVisit, day: ShopDayScript, content: ContentCatalog, money: Boolean): List<String> {
         val c = visit.customer
         val own = c?.equipped?.name
         val className = c?.let { content.classById[it.classId]?.name }
         val sale = visit.sale
         val blade = day.blade(visit.purchasedWeaponId)?.name
         fun with(f: VisitFactor) = visit.considered.firstOrNull { f in it.factors }
+        fun paid(clause: String?) = clause?.takeIf { money }
         val clauses: List<String?> = when (visit.reason) {
             VisitReason.TOO_EXPENSIVE -> {
                 val (funds, cheapest) = purse(visit, day)
@@ -117,24 +140,21 @@ object Lines {
             VisitReason.NOT_SUITED -> listOf(with(VisitFactor.OFF_CLASS)?.let { k -> day.blade(k.weaponId)?.let { b -> className?.let { "${b.name} doesn't suit a $it." } } })
             VisitReason.NOT_BETTER -> listOf(own?.let { "Nothing on the shelf improved on their $it." })
             VisitReason.EMPTY_SHELVES, VisitReason.UNDECIDED -> emptyList()
-            VisitReason.WORN_OUT -> listOf(own?.let { "Their $it needed replacing." }, bought(blade, sale))
-            VisitReason.GREAT_FIT -> listOf(blade?.let { b -> className?.let { "$b suits a $it well." } }, bought(blade, sale))
+            VisitReason.WORN_OUT -> listOf(own?.let { "Their $it needed replacing." }, paid(bought(blade, sale)))
+            VisitReason.GREAT_FIT -> listOf(blade?.let { b -> className?.let { "$b suits a $it well." } }, paid(bought(blade, sale)))
             VisitReason.GOOD_ENOUGH -> listOf(
                 if (own != null) blade?.let { "$it is stronger than their $own." } else "They came in without a weapon.".takeIf { with(VisitFactor.UNARMED) != null },
-                bought(blade, sale),
+                paid(bought(blade, sale)),
             )
-            VisitReason.COMMISSION_DELIVERED -> listOf(sale?.let { "Collected ${blade ?: "the weapon"} and paid ${it.cashPaid} gold." })
-            VisitReason.COLLECTOR_PURCHASE -> listOf(sale?.let { "Paid ${it.cashPaid} gold for ${blade ?: "a weapon"} for their collection." })
-            VisitReason.TASTE_MATCH -> listOf(sidegrade(blade, own, "it has their favorite element"), bought(blade, sale))
-            VisitReason.PRIZED -> listOf(sidegrade(blade, own, "they collect fine weapons"), bought(blade, sale))
-            VisitReason.STORIED -> listOf(sidegrade(blade, own, "they value its history"), bought(blade, sale))
-            VisitReason.COUNTERS_THREAT -> listOf(blade?.let { "They chose $it for its element before the siege." }, bought(blade, sale))
+            VisitReason.COMMISSION_DELIVERED -> listOf(paid(sale?.let { "Collected ${blade ?: "the weapon"} and paid ${it.cashPaid} gold." }))
+            VisitReason.COLLECTOR_PURCHASE -> listOf(paid(sale?.let { "Paid ${it.cashPaid} gold for ${blade ?: "a weapon"} for their collection." }))
+            VisitReason.TASTE_MATCH -> listOf(sidegrade(blade, own, "it has their favorite element"), paid(bought(blade, sale)))
+            VisitReason.PRIZED -> listOf(sidegrade(blade, own, "they collect fine weapons"), paid(bought(blade, sale)))
+            VisitReason.STORIED -> listOf(sidegrade(blade, own, "they value its history"), paid(bought(blade, sale)))
+            VisitReason.COUNTERS_THREAT -> listOf(blade?.let { "They chose $it for its element before the siege." }, paid(bought(blade, sale)))
             VisitReason.RESISTED -> listOf(with(VisitFactor.THREAT_RESISTS)?.let { k -> day.blade(k.weaponId)?.let { "The attackers resist ${it.name}'s element. They left it on the shelf." } })
         }
-        val trade = sale?.takeIf { it.tradeInWeaponId != null && visit.kind == VisitKind.BROWSE }?.let { "Traded in ${own ?: "their old weapon"} for ${it.tradeInCredit} gold of credit. Paid ${it.cashPaid} gold in cash." }
-        val bonus = sale?.takeIf { it.saleBonus > 0 }?.let { "The blessing added ${it.saleBonus} gold to the sale." }
-        val stipend = sale?.takeIf { it.stipend > 0 }?.let { "Their guild covered ${it.stipend} gold. They paid ${it.cashPaid} gold themselves." }
-        return (clauses + trade + stipend + bonus).filterNotNull().joinToString(" ").ifEmpty { reason(visit.reason).replaceFirstChar { it.uppercase() } + "." }
+        return clauses.filterNotNull()
     }
 
     private fun sidegrade(blade: String?, own: String?, why: String): String? = blade?.let { b -> own?.let { "$b is no stronger than their $it, but $why." } }

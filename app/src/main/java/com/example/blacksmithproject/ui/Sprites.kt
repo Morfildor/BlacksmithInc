@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalDensity
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.R
+import com.example.blacksmithproject.ui.shopday.PixelSprite
 import com.tinyblacksmith.core.content.Element
 import com.tinyblacksmith.core.heroes.Appearance
 import com.tinyblacksmith.core.model.BlessingId
@@ -121,8 +123,8 @@ object Sprites {
     /**
      * Portrait art for a saved appearance key: always a face of [classId] from the hero set (see [heroFaceKey]),
      * [upgraded] picks the hero's advanced look. [secondSet] is for the debug gallery only: it shows a second-set key as
-     * its own rejected tile; everything else leaves it at the switch. [small] is for list rows of about 48 dp or less:
-     * the few heroes whose face is small on the full tile have a tighter one, the others keep the full tile.
+     * its own rejected tile; everything else leaves it at the switch. [small] asks for the tighter tile of a list row of
+     * about 48 dp or less; no hero has one today (`PortraitArt.heroesSmall` is empty), so every face keeps the full tile.
      */
     internal fun portraitArt(
         appearanceKey: String, classId: HeroClassId, upgraded: Boolean = false, secondSet: Boolean = PortraitArt.SECOND_SET_ENABLED, small: Boolean = false,
@@ -257,7 +259,7 @@ fun heroUpgraded(title: String?, kills: Int): Boolean = !title.isNullOrBlank() |
 @Composable
 fun wholePixelDp(artPx: Int, hint: Dp): Dp {
     val density = LocalDensity.current
-    return with(density) { (maxOf(1, (hint.toPx() / artPx).roundToInt()) * artPx).toDp() }
+    return with(density) { (nearestWholeScale(artPx, hint.toPx()) * artPx).toDp() }
 }
 
 /**
@@ -281,10 +283,18 @@ data class WeaponLook(val base: Int, val effect: Int? = null, val charm: Int? = 
     val layers: List<Int> get() = listOfNotNull(base, effect, charm)
 }
 
+/**
+ * A weapon in a [size] box: its layers at the largest whole scale that fits the box ([nearestWholeScale]), centred, so
+ * the footprint is [size] and no pixel column is uneven. A box narrower than the art shrinks it as [PixelImage] does.
+ */
 @Composable
 fun PixelImage(look: WeaponLook, size: Dp, description: String?, modifier: Modifier = Modifier) {
-    Box(modifier.size(size).then(if (description != null) Modifier.semantics { contentDescription = description } else Modifier)) {
-        look.layers.forEach { PixelImage(it, size, description = null) }
+    val artPx = ImageBitmap.imageResource(look.base).width
+    // Whole pixels, as layout sizes the box: a size from [wholePixelDp] then gives back its own scale, never one less.
+    val sizePx = with(LocalDensity.current) { size.roundToPx() }.toFloat()
+    Box(modifier.size(size).then(if (description != null) Modifier.semantics { contentDescription = description } else Modifier), contentAlignment = Alignment.Center) {
+        if (artPx <= sizePx) PixelSprite(look, nearestWholeScale(artPx, sizePx, maxPx = sizePx))
+        else look.layers.forEach { PixelImage(it, size, description = null) }
     }
 }
 
@@ -337,6 +347,10 @@ private const val FRAME_CORNER = 12
 /** Device pixels per frame pixel: the frame is drawn at about one pixel per dp, at a whole scale. */
 @Composable
 private fun frameScale(): Int = maxOf(1, LocalDensity.current.density.roundToInt())
+
+/** The dp size of art [artPx] wide at one art pixel per dp rounded to a whole device-pixel scale (the rule of [frameScale]). */
+@Composable
+fun nativeScaleDp(artPx: Int): Dp = with(LocalDensity.current) { (artPx * frameScale()).toDp() }
 
 /** How far a [pixelFrame] reaches in from each edge: framed content is padded by this much. */
 @Composable

@@ -5,16 +5,18 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,7 +48,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.imageResource
@@ -57,12 +59,23 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
@@ -72,6 +85,8 @@ import com.example.blacksmithproject.ui.FramedPanel
 import com.example.blacksmithproject.ui.InlineActionButton
 import com.example.blacksmithproject.ui.PrimaryActionButton
 import com.example.blacksmithproject.ui.SecondaryActionButton
+import com.example.blacksmithproject.ui.nearestWholeScale
+import com.example.blacksmithproject.ui.shopday.wholeScale
 import com.example.blacksmithproject.ui.theme.Bronze
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.BuffGreen
@@ -98,6 +113,7 @@ import com.tinyblacksmith.core.combat.Replay
 import com.tinyblacksmith.core.combat.ReplayActor
 import com.tinyblacksmith.core.combat.ReplayTimeline
 import com.tinyblacksmith.core.combat.Side
+import com.tinyblacksmith.core.combat.Step
 import com.tinyblacksmith.core.combat.StepKind
 import com.tinyblacksmith.core.content.CombatContent
 import com.tinyblacksmith.core.content.ContentCatalog
@@ -107,6 +123,7 @@ import com.tinyblacksmith.core.model.HeroId
 import com.tinyblacksmith.core.model.WeaponId
 import com.example.blacksmithproject.ui.shopday.SiegeOutcomeUi
 import kotlinx.coroutines.delay
+import kotlin.math.roundToInt
 
 /**
  * The siege as it was fought, played back from its record (`SiegeReport.fight`): defenders at the foot, the besiegers
@@ -186,55 +203,119 @@ private fun ReplayStage(
     }
 
     val density = LocalDensity.current
-    // The lane holds a pop's two short lines and its note at any text size: the faces under it never move.
-    val lane = with(density) { 70.sp.toDp() }
+    val measurer = rememberTextMeasurer()
+    val typography = MaterialTheme.typography
     val party = replay.actors.filter { it.side == Side.PARTY && now[it.key]?.present == true }
     val enemies = replay.actors.filter { it.side == Side.ENEMY && now[it.key]?.present == true }
     val current = frame.pop
     val activeHolder = current?.takeIf { it.rule != null }?.source
 
-    Column(Modifier.fillMaxSize()) {
-        // The head: what this is and where in it we are.
-        Row(Modifier.fillMaxWidth().padding(start = Space.md, end = Space.xs, top = Space.xs), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Text(replay.title, style = MaterialTheme.typography.titleMedium, color = Gold, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() })
-                Text(
-                    listOf("Round ${step.round} of ${replay.rounds}", if (short) "Highlights" else "Full fight", if (fast) "2x" else "1x").joinToString(" · "),
-                    style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.testTag("replay_position"),
-                )
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        // Each side's lane holds the tallest label that side carries anywhere in the fight, measured at its tiles' width and this
+        // text size, so the faces under it never move; its names take the lines the longest of them needs.
+        val rowPx = constraints.maxWidth - with(density) { (Space.md * 2).roundToPx() }
+        val fits = remember(replay, faces, rowPx, density, typography) {
+            Side.entries.associateWith { sideFit(replay, it, faces, rowPx, measurer, density, typography.labelLarge.copy(fontWeight = FontWeight.Bold), typography.labelSmall, typography.labelMedium) }
+        }
+        val enemyFit = fits.getValue(Side.ENEMY)
+        val partyFit = fits.getValue(Side.PARTY)
+        Column(Modifier.fillMaxSize()) {
+            // The head: what this is and where in it we are.
+            Row(Modifier.fillMaxWidth().padding(start = Space.md, end = Space.xs, top = Space.xs), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(replay.title, style = MaterialTheme.typography.titleMedium, color = Gold, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.semantics { heading() })
+                    Text(
+                        listOf("Round ${step.round} of ${replay.rounds}", if (short) "Highlights" else "Full fight", if (fast) "2x" else "1x").joinToString(" · "),
+                        style = MaterialTheme.typography.labelMedium, color = CreamMuted, modifier = Modifier.testTag("replay_position"),
+                    )
+                }
+                InlineActionButton("Close", onClose, Modifier.testTag("replay_close"))
             }
-            InlineActionButton("Close", onClose, Modifier.testTag("replay_close"))
-        }
-        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Space.md)) {
-            SideRow("Attackers", enemies, faces, now, labels, step.actor, activeHolder, current, frame, lane, reducedMotion, towardBelow = true) { inspecting = it; playing = false }
-            NowBanner(replay, frame, Modifier.padding(vertical = Space.sm))
-            SideRow("On the wall", party, faces, now, labels, step.actor, activeHolder, current, frame, lane, reducedMotion, towardBelow = false) { inspecting = it; playing = false }
-            RecentStrip(replay, frames, index, Modifier.padding(top = Space.sm))
-        }
-        // The controls are never covered: the inspected fighter opens over the stage, above them.
-        inspecting?.let { key ->
-            replay.actor(key)?.let { a ->
-                Inspector(a, now[key], replay, content, rules, state, onOpenHero, onOpenBlade, onDismiss = { inspecting = null }, Modifier.padding(horizontal = Space.md).heightIn(max = 360.dp))
+            val recent = recentSteps(replay, frames, index)
+            Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = Space.md)) {
+                SideRow("Attackers", enemies, faces, now, labels, step.actor, activeHolder, current, frame, enemyFit, reducedMotion, towardBelow = true) { inspecting = it; playing = false }
+                NowBanner(replay, frame, Modifier.padding(vertical = Space.xs))
+                SideRow("On the wall", party, faces, now, labels, step.actor, activeHolder, current, frame, partyFit, reducedMotion, towardBelow = false) { inspecting = it; playing = false }
+                EarlierStrip(replay, recent.drop(1), Modifier.padding(top = Space.sm))
             }
-        }
-        FlowRow(
-            Modifier.fillMaxWidth().padding(horizontal = Space.md, vertical = Space.sm),
-            horizontalArrangement = Arrangement.spacedBy(Space.sm, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(Space.xs),
-        ) {
-            PrimaryActionButton(if (playing) "Pause" else "Play", { if (index >= frames.lastIndex && !playing) at = 0; playing = !playing; inspecting = null }, Modifier.testTag("replay_play"))
-            SecondaryActionButton(if (fast) "Speed 2x" else "Speed 1x", { fast = !fast }, Modifier.testTag("replay_speed"))
-            SecondaryActionButton(if (short) "Full fight" else "Highlights", { switchShort(!short) }, Modifier.testTag("replay_mode"))
-            SecondaryActionButton("Replay", { at = 0; playing = true; inspecting = null }, Modifier.testTag("replay_restart"))
-            SecondaryActionButton("Skip to result", { playing = false; onReport() }, Modifier.testTag("replay_skip"))
+            // The newest action stays in sight above the controls, whatever the text size, in two lines at most with no head line
+            // of its own; the two before it scroll with the stage.
+            RecentStrip(replay, recent.firstOrNull(), Modifier.padding(start = Space.md, end = Space.md, top = Space.xs))
+            // The controls are never covered: the inspected fighter opens over the stage, above them.
+            inspecting?.let { key ->
+                replay.actor(key)?.let { a ->
+                    Inspector(a, now[key], replay, content, rules, state, onOpenHero, onOpenBlade, onDismiss = { inspecting = null }, Modifier.padding(horizontal = Space.md).heightIn(max = 360.dp))
+                }
+            }
+            // The three that change how it plays first, Pause the main one; starting over and leaving as lighter text buttons.
+            FlowRow(
+                Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.xs, bottom = Space.sm),
+                horizontalArrangement = Arrangement.spacedBy(Space.sm, Alignment.CenterHorizontally), verticalArrangement = Arrangement.spacedBy(Space.xs),
+            ) {
+                PrimaryActionButton(if (playing) "Pause" else "Play", { if (index >= frames.lastIndex && !playing) at = 0; playing = !playing; inspecting = null }, Modifier.testTag("replay_play"))
+                SecondaryActionButton(if (fast) "Speed 2x" else "Speed 1x", { fast = !fast }, Modifier.testTag("replay_speed"))
+                SecondaryActionButton(if (short) "Full fight" else "Highlights", { switchShort(!short) }, Modifier.testTag("replay_mode"))
+                InlineActionButton("Replay", { at = 0; playing = true; inspecting = null }, Modifier.testTag("replay_restart"))
+                InlineActionButton("Skip to result", { playing = false; onReport() }, Modifier.testTag("replay_skip"))
+            }
         }
     }
+}
+
+/** What one side's tiles reserve for the whole fight: the lane over the faces and the lines of the names under them (0: every tile is a name plate). */
+private class SideFit(val lane: Dp, val nameLines: Int)
+
+/**
+ * [side]'s [SideFit] on a row [rowPx] wide: its tiles at their narrowest (every fighter of the side present), the lane as
+ * tall as the tallest pop plate that side ever carries ([PopPlate]: two lines of [pop], a line of [note], its padding),
+ * and as many name lines as the longest name in [name] needs on a tile that shows a face.
+ */
+private fun sideFit(
+    replay: Replay, side: Side, faces: Map<String, ReplayFace>, rowPx: Int, measurer: TextMeasurer, density: Density,
+    pop: TextStyle, note: TextStyle, name: TextStyle,
+): SideFit {
+    val actors = replay.actors.filter { it.side == side }
+    if (actors.isEmpty()) return SideFit(Space.xs, 0)
+    return with(density) { fitOf(replay, actors, faces, rowPx, measurer, pop, note, name) }
+}
+
+private fun Density.fitOf(replay: Replay, actors: List<ReplayActor>, faces: Map<String, ReplayFace>, rowPx: Int, measurer: TextMeasurer, pop: TextStyle, note: TextStyle, name: TextStyle): SideFit {
+    val n = actors.size
+    val tile = minOf(120.dp.roundToPx(), (rowPx - Space.xs.roundToPx() * (n - 1)) / n).coerceAtLeast(1)
+    val inner = (tile - 8.dp.roundToPx()).coerceAtLeast(1)
+    val keys = actors.map { it.key }.toSet()
+    val tallest = replay.steps.asSequence().flatMap { it.pops.asSequence() }.filter { it.shown && it.target in keys }
+        .distinctBy { it.text to shortNote(it.note) }
+        .maxOfOrNull { p ->
+            measurer.measure(p.text, pop, overflow = TextOverflow.Ellipsis, maxLines = 2, constraints = Constraints(maxWidth = inner)).size.height +
+                (shortNote(p.note)?.let { measurer.measure(it, note, overflow = TextOverflow.Ellipsis, maxLines = 1, constraints = Constraints(maxWidth = inner)).size.height } ?: 0)
+        }
+    // The plate's 2 dp padding above and below, and a 2 dp edge to spare.
+    val lane = tallest?.let { it.toDp() + 6.dp } ?: Space.xs
+    val lines = actors.filter { faces[it.key]?.res != null }
+        .maxOfOrNull { measurer.measure(it.name, name, overflow = TextOverflow.Ellipsis, maxLines = 2, constraints = Constraints(maxWidth = tile)).lineCount } ?: 0
+    return SideFit(lane, lines)
+}
+
+/**
+ * The style a name plate [inner] px wide holds [text] in two lines with: [base], else stepped down (to about three
+ * quarters at most) until its longest word fits a line whole; the smallest step when none does.
+ */
+private fun plateStyle(text: String, base: TextStyle, inner: Int, measurer: TextMeasurer): TextStyle {
+    fun TextUnit.scaled(k: Float) = if (isSpecified) this * k else this
+    val steps = listOf(1f, 0.9f, 0.8f, 0.72f).map { k -> base.copy(fontSize = base.fontSize.scaled(k), lineHeight = base.lineHeight.scaled(k), letterSpacing = base.letterSpacing.scaled(k)) }
+    val words = text.split(' ').filter { it.isNotEmpty() }
+    return steps.firstOrNull { st ->
+        words.all { measurer.measure(it, st, softWrap = false, maxLines = 1).size.width <= inner } &&
+            !measurer.measure(text, st, maxLines = 2, constraints = Constraints(maxWidth = inner)).hasVisualOverflow
+    } ?: steps.last()
 }
 
 /** One side of the field, up to four fighters, each a column of the same height so nothing jumps as numbers change. */
 @Composable
 private fun SideRow(
     label: String, actors: List<ReplayActor>, faces: Map<String, ReplayFace>, now: Map<String, ActorState>, labels: Map<String, Pop>,
-    acting: String?, ruleHolder: String?, current: Pop?, frame: Frame, lane: Dp, reducedMotion: Boolean, towardBelow: Boolean, onInspect: (String) -> Unit,
+    acting: String?, ruleHolder: String?, current: Pop?, frame: Frame, fit: SideFit, reducedMotion: Boolean, towardBelow: Boolean, onInspect: (String) -> Unit,
 ) {
     Column(Modifier.fillMaxWidth()) {
         Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = CreamMuted, modifier = Modifier.padding(top = Space.xs))
@@ -243,7 +324,7 @@ private fun SideRow(
                 ActorTile(
                     a, faces[a.key], now.getValue(a.key), labels[a.key], acting = a.key == acting && frame.kind != FrameKind.ROUND,
                     ruleSource = a.key == ruleHolder, bladeSource = a.key == ruleHolder && current?.weapon == true, struck = current?.target == a.key && current.kind == PopKind.DAMAGE, frame = frame,
-                    lane = lane, reducedMotion = reducedMotion, towardBelow = towardBelow, onInspect = { onInspect(a.key) },
+                    lane = fit.lane, nameLines = fit.nameLines, reducedMotion = reducedMotion, towardBelow = towardBelow, onInspect = { onInspect(a.key) },
                     modifier = Modifier.weight(1f).widthIn(max = 120.dp),
                 )
             }
@@ -255,7 +336,7 @@ private fun SideRow(
 @Composable
 private fun ActorTile(
     a: ReplayActor, face: ReplayFace?, s: ActorState, label: Pop?, acting: Boolean, ruleSource: Boolean, bladeSource: Boolean, struck: Boolean, frame: Frame,
-    lane: Dp, reducedMotion: Boolean, towardBelow: Boolean, onInspect: () -> Unit, modifier: Modifier = Modifier,
+    lane: Dp, nameLines: Int, reducedMotion: Boolean, towardBelow: Boolean, onInspect: () -> Unit, modifier: Modifier = Modifier,
 ) {
     // A restrained lunge toward the other line while the actor steps up, and a short shake on a blow; neither under reduced motion.
     val lunge by animateDpAsState(if (acting && frame.kind == FrameKind.INTRO && !reducedMotion) 6.dp else 0.dp, if (reducedMotion) snap<Dp>() else tween<Dp>(160), label = "lunge")
@@ -263,6 +344,7 @@ private fun ActorTile(
     LaunchedEffect(frame, struck) {
         if (struck && !reducedMotion) { shake.snapTo(0f); for (x in listOf(4f, -4f, 3f, -2f, 0f)) shake.animateTo(x, tween<Float>(40)) }
     }
+    val density = LocalDensity.current
     val share = if (a.maxHealth > 0) s.health.toFloat() / a.maxHealth else 0f
     val bar by animateFloatAsState(share, if (reducedMotion) snap<Float>() else tween<Float>(260), label = "health")
     // Whose rule is landing is ringed: gold for a blade's rule, ivory for any other; the one who moves is ringed in ember.
@@ -291,25 +373,35 @@ private fun ActorTile(
         Box(Modifier.fillMaxWidth().height(lane), contentAlignment = Alignment.BottomCenter) {
             label?.let { PopPlate(it, fresh = it == frame.pop) }
         }
+        // Every tile has the same box: a 64 px face at its whole scale nearest 54 dp.
+        val boxPx = 64 * wholeScale(64, 54.dp)
+        val plate = face?.res == null
         Box(
-            Modifier.padding(vertical = 6.dp).offset(x = shake.value.dp, y = if (towardBelow) lunge else -lunge).size(60.dp)
+            Modifier.padding(vertical = 4.dp).offset(x = shake.value.dp, y = if (towardBelow) lunge else -lunge)
+                .then(if (plate) Modifier.fillMaxWidth() else Modifier)
                 .border(if (acting || ruleSource) 3.dp else 1.5.dp, ring, RoundedCornerShape(6.dp)).padding(3.dp)
                 .alpha(if (s.downed) 0.45f else 1f),
             contentAlignment = Alignment.Center,
         ) {
             if (face?.res != null) {
-                val bmp = ImageBitmap.imageResource(face.res)
-                Image(
-                    BitmapPainter(bmp, filterQuality = FilterQuality.Low), contentDescription = null, modifier = Modifier.fillMaxSize(),
-                    colorFilter = if (s.downed) ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }) else null,
-                )
+                FaceArt(face.res, boxPx, colorFilter = if (s.downed) ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }) else null)
             } else {
-                Box(Modifier.fillMaxSize().background(ForgePanelRaised, RoundedCornerShape(4.dp)), contentAlignment = Alignment.Center) {
-                    Text(face?.initial ?: a.name.take(1), style = MaterialTheme.typography.titleLarge, color = CreamMuted)
+                // No picture that truly shows this fighter: its whole name on the plate, the tile's width at the face's height, in
+                // two lines (a smaller size when a word would not fit a line whole), never an initial and never again under it.
+                val name = face?.name ?: a.name.trim()
+                val measurer = rememberTextMeasurer()
+                val base = MaterialTheme.typography.labelSmall
+                BoxWithConstraints(Modifier.fillMaxWidth().height(with(density) { boxPx.toDp() }).background(ForgePanelRaised, RoundedCornerShape(4.dp)).padding(2.dp), contentAlignment = Alignment.Center) {
+                    val inner = constraints.maxWidth
+                    val style = remember(name, base, inner, density) { plateStyle(name, base, inner, measurer) }
+                    Text(name, style = style, color = CreamMuted, textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
-        Text(a.name, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, color = if (acting) Gold else Cream)
+        // The name under a face, in the lines this side's longest name needs; a plate already holds it, so a plate tile keeps
+        // only the same height beside faces (TalkBack hears the name from the tile either way).
+        if (!plate) Text(a.name, style = MaterialTheme.typography.labelMedium, maxLines = 2, minLines = nameLines.coerceIn(1, 2), overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center, color = if (acting) Gold else Cream)
+        else if (nameLines > 0) Spacer(Modifier.height(with(density) { (MaterialTheme.typography.labelMedium.lineHeight * nameLines.coerceAtMost(2)).toDp() }))
         // Health: the bar and the number, or the word when down. Party green, besiegers red, and the number always says it.
         Box(Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 2.dp).height(8.dp).background(ForgeSlot, RoundedCornerShape(2.dp)).border(1.dp, BronzeDeep, RoundedCornerShape(2.dp))) {
             Box(Modifier.fillMaxHeight().fillMaxWidth(bar.coerceIn(0f, 1f)).background(if (a.side == Side.PARTY) BuffGreen else FlawRed, RoundedCornerShape(2.dp)))
@@ -327,6 +419,37 @@ private fun ActorTile(
                 )
             }
         }
+    }
+}
+
+/**
+ * A face or a faction figure in a [boxPx] square, centred. Nearest-neighbour at the whole scale nearest the box
+ * ([nearestWholeScale], never larger than the box) when that fills at least three quarters of it. Otherwise the art is
+ * first enlarged by whole pixels to the box or past it and then reduced bilinear to fit, so a figure between two scales
+ * keeps its pixel edges; art wider than the box is only reduced. [colorFilter] is the downed fighter's grey.
+ */
+@Composable
+private fun FaceArt(res: Int, boxPx: Int, colorFilter: ColorFilter?) {
+    val bmp = ImageBitmap.imageResource(res)
+    val art = maxOf(bmp.width, bmp.height)
+    val k = nearestWholeScale(art, boxPx.toFloat(), maxPx = boxPx.toFloat())
+    val whole = art <= boxPx && art * k * 4 >= boxPx * 3
+    val up = if (whole) 1 else (boxPx + art - 1) / art
+    // The whole-pixel enlargement is made once per picture and scale, never per frame.
+    val source = remember(bmp, up) {
+        if (up <= 1) bmp else ImageBitmap(bmp.width * up, bmp.height * up).also { big ->
+            androidx.compose.ui.graphics.Canvas(big).drawImageRect(bmp, dstSize = IntSize(bmp.width * up, bmp.height * up), paint = Paint().apply { filterQuality = FilterQuality.None })
+        }
+    }
+    Canvas(Modifier.size(with(LocalDensity.current) { boxPx.toDp() })) {
+        val box = minOf(size.width, size.height)
+        val fit = if (whole) k.toFloat() * art else box
+        val w = (fit * bmp.width / art).roundToInt()
+        val h = (fit * bmp.height / art).roundToInt()
+        drawImage(
+            source, dstOffset = IntOffset(((size.width - w) / 2).roundToInt(), ((size.height - h) / 2).roundToInt()), dstSize = IntSize(w, h),
+            filterQuality = if (whole) FilterQuality.None else FilterQuality.Low, colorFilter = colorFilter,
+        )
     }
 }
 
@@ -367,8 +490,10 @@ private fun NowBanner(replay: Replay, frame: Frame, modifier: Modifier = Modifie
         } ?: "A status takes effect"
         else -> null
     }
+    // At least its two lines tall, at any text size, so the wall's line under it holds still between one and two lines.
+    val twoLines = with(LocalDensity.current) { MaterialTheme.typography.titleMedium.lineHeight.toDp() + MaterialTheme.typography.bodySmall.lineHeight.toDp() } + Space.xs * 2
     Column(
-        modifier.fillMaxWidth().heightIn(min = 64.dp).background(ForgePanel, RoundedCornerShape(4.dp)).border(1.dp, if (pop?.weapon == true) Gold else Bronze, RoundedCornerShape(4.dp))
+        modifier.fillMaxWidth().heightIn(min = twoLines).background(ForgePanel, RoundedCornerShape(4.dp)).border(1.dp, if (pop?.weapon == true) Gold else Bronze, RoundedCornerShape(4.dp))
             .padding(horizontal = Space.sm, vertical = Space.xs).semantics { liveRegion = LiveRegionMode.Polite }.testTag("replay_now"),
         verticalArrangement = Arrangement.Center,
     ) {
@@ -377,16 +502,36 @@ private fun NowBanner(replay: Replay, frame: Frame, modifier: Modifier = Modifie
     }
 }
 
-/** The last three steps played, newest first, each in one line of the record's own numbers. The whole log is on the report. */
-@Composable
-private fun RecentStrip(replay: Replay, frames: List<Frame>, index: Int, modifier: Modifier = Modifier) {
-    val done = frames.take(index).map { it.step }.distinct().filter { it != frames[index].step }
+/** The last three steps played before the one shown, newest first. The whole log is on the report. */
+private fun recentSteps(replay: Replay, frames: List<Frame>, index: Int): List<Step> =
+    frames.take(index).map { it.step }.distinct().filter { it != frames[index].step }
         .map { replay.steps[it] }.filter { it.kind != StepKind.ROUND && it.kind != StepKind.END }.takeLast(3).asReversed()
-    Column(modifier.fillMaxWidth().testTag("replay_recent"), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text("RECENT", style = MaterialTheme.typography.labelSmall, color = CreamMuted)
-        if (done.isEmpty()) Text("Nothing yet.", style = MaterialTheme.typography.bodySmall, color = CreamMuted)
-        done.forEachIndexed { i, s ->
-            Text(ReplayTimeline.summary(replay, s), style = MaterialTheme.typography.bodySmall, color = if (i == 0) Cream else CreamMuted, maxLines = 2, overflow = TextOverflow.Ellipsis)
+
+/**
+ * The newest step played, in the record's own numbers, kept in sight above the controls: two lines at most, its "RECENT"
+ * mark at the start of the first, not a line of its own.
+ */
+@Composable
+private fun RecentStrip(replay: Replay, newest: Step?, modifier: Modifier = Modifier) {
+    val mark = MaterialTheme.typography.labelSmall
+    Text(
+        buildAnnotatedString {
+            withStyle(SpanStyle(color = CreamMuted, fontSize = mark.fontSize, fontWeight = mark.fontWeight, letterSpacing = mark.letterSpacing)) { append("RECENT  ") }
+            append(newest?.let { ReplayTimeline.summary(replay, it) } ?: "Nothing yet.")
+        },
+        style = MaterialTheme.typography.bodySmall, color = if (newest != null) Cream else CreamMuted, maxLines = 2, overflow = TextOverflow.Ellipsis,
+        modifier = modifier.fillMaxWidth().testTag("replay_recent"),
+    )
+}
+
+/** The two steps before the newest, under the stage. Nothing when there are none. */
+@Composable
+private fun EarlierStrip(replay: Replay, earlier: List<Step>, modifier: Modifier = Modifier) {
+    if (earlier.isEmpty()) return
+    Column(modifier.fillMaxWidth().testTag("replay_earlier"), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text("EARLIER", style = MaterialTheme.typography.labelSmall, color = CreamMuted)
+        earlier.forEach { s ->
+            Text(ReplayTimeline.summary(replay, s), style = MaterialTheme.typography.bodySmall, color = CreamMuted, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
     }
 }

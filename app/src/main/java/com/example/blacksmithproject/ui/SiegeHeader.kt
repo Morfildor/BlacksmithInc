@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -15,7 +16,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,11 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -35,7 +36,10 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.UiState
@@ -64,7 +68,10 @@ enum class SiegeTone { CALM, TOMORROW, TONIGHT }
 data class SiegeHeaderUi(
     val day: Int, val siegeDay: Int, val countdown: String, val tone: SiegeTone,
     val besieger: String?, val marks: List<DayMarkUi>, val defenders: String?,
-)
+) {
+    /** The strip's first part as it reads on screen: the countdown and who comes, with the separator before the defenders bound to it (no-break spaces, as drawn). */
+    val lead: String get() = countdown + besieger?.let { " · $it" }.orEmpty() + if (defenders != null) " ·" else ""
+}
 
 /** The most markers the row shows; a longer wait (a schedule this game does not have today) shows the countdown alone. */
 private const val MAX_MARKS = 7
@@ -103,75 +110,74 @@ fun UiState.Playing.siegeHeader(interval: Int, championCount: Int): SiegeHeaderU
 
 /**
  * The day in the heading serif, the strongest text on the screen, with gold, energy and Settings beside it as one smaller
- * group (under it when the text is large); then the siege strip, which opens where the siege is prepared.
+ * group (under it only when they cannot share a line); then the siege strip, which opens where the siege is prepared.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun WorkshopHeader(ui: SiegeHeaderUi, gold: Int, energy: Int, onSettings: () -> Unit, onOpenSiege: () -> Unit, openLabel: String) {
-    val large = LocalDensity.current.fontScale >= 1.3f
-    val stats: @Composable () -> Unit = {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Stat(R.drawable.icon_gold, "Gold", "$gold", Gold)
-            Spacer(Modifier.width(Space.md))
-            Stat(R.drawable.icon_energy, "Energy", "$energy")
-            IconButton(onClick = onSettings, modifier = Modifier.size(48.dp).testTag("nav_settings")) { Icon(painterResource(R.drawable.ic_settings), contentDescription = "Settings", tint = Gold) }
-        }
-    }
-    val day: @Composable () -> Unit = {
-        Text(
-            "Day ${ui.day}", style = MaterialTheme.typography.titleLarge, color = Cream, maxLines = 1,
-            modifier = Modifier.semantics { heading(); contentDescription = "Day ${ui.day}" }.testTag("header_day"),
-        )
-    }
-    // V2: one band. The day and the countdown stack on the left as one tap to where the siege is prepared, the purse
-    // and energy sit on the right, and the cycle is a hairline track along the foot. With large text the purse takes a
-    // row of its own beside the day, as before.
+    val measurer = rememberTextMeasurer()
+    val density = LocalDensity.current
+    // A count keeps at least two digits' room (the figures are tabular), so 10 to 8 energy moves nothing beside it.
+    val digit = with(density) { measurer.measure("8", MaterialTheme.typography.titleSmall, softWrap = false, maxLines = 1).size.width.toDp() }
+    val lineStyle = MaterialTheme.typography.labelLarge
+    // One layout at every size: the day with the purse, then the strip across the whole width, so the band keeps its
+    // height from day to day. The purse wraps under the day only when the two cannot share a line.
     Column(Modifier.fillMaxWidth().background(ForgePanel).testTag("workshop_header")) {
-        if (large) {
-            FlowRow(
-                Modifier.fillMaxWidth().padding(start = Space.md, end = Space.xs),
-                horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.Center,
-                itemVerticalAlignment = Alignment.CenterVertically,
-            ) { day(); stats() }
-            // A short screen with large text keeps only the countdown here: who comes and how many stand are one tap away.
-            val tight = LocalConfiguration.current.screenHeightDp < 700
-            SiegeStrip(ui, onOpenSiege, openLabel, Modifier.padding(start = Space.md, end = Space.sm, bottom = Space.xs), brief = tight)
-        } else Row(Modifier.fillMaxWidth().padding(start = Space.md, end = Space.xs), verticalAlignment = Alignment.CenterVertically) {
-            Column(
-                Modifier.weight(1f).clickable(onClickLabel = openLabel, role = Role.Button, onClick = onOpenSiege).heightIn(min = 48.dp).padding(vertical = 6.dp),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                day()
-                SiegeLine(ui, Modifier.testTag("siege_strip"))
-                // Under the countdown it counts towards, not under the purse: it reads as the days to the siege.
-                if (ui.marks.isNotEmpty()) CycleTrack(ui, Modifier.padding(top = 6.dp))
+        FlowRow(
+            Modifier.fillMaxWidth().padding(start = Space.md, end = Space.xs),
+            horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.Center,
+            itemVerticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "Day ${ui.day}", style = MaterialTheme.typography.titleLarge, color = Cream, maxLines = 1,
+                modifier = Modifier.semantics { heading(); contentDescription = "Day ${ui.day}" }.testTag("header_day"),
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Stat(R.drawable.icon_gold, "Gold", "$gold", digit, Gold)
+                Spacer(Modifier.width(Space.md))
+                Stat(R.drawable.icon_energy, "Energy", "$energy", digit)
+                IconButton(onClick = onSettings, modifier = Modifier.size(48.dp).testTag("nav_settings")) { PixelIcon(R.drawable.icon_settings, 28.dp, description = "Settings") }
             }
-            stats()
         }
-        if (large && ui.marks.isNotEmpty()) CycleTrack(ui, Modifier.padding(start = Space.md, end = Space.md, bottom = 6.dp))
+        // The whole line while each of its two parts (the countdown with who comes, how many stand) fits a line beside the
+        // chevron: at most two lines, which the strip's 48 dp holds at ordinary sizes. Otherwise the countdown alone (who
+        // comes and how many stand are said to a screen reader and are one tap away): the strip never grows a third line.
+        BoxWithConstraints(Modifier.fillMaxWidth().padding(start = Space.md, end = Space.sm, bottom = Space.xs)) {
+            fun width(text: String) = measurer.measure(text, lineStyle, softWrap = false, maxLines = 1).size.width
+            val room = constraints.maxWidth - with(density) { 40.dp.toPx() }
+            val brief = width(ui.lead) > room || (ui.defenders?.let(::width) ?: 0) > room
+            // Brief: who comes stays beside the countdown while both fit one line; how many stand is always its own line.
+            val who = !brief || ui.besieger == null || width(ui.countdown + " · " + ui.besieger) <= room
+            SiegeStrip(ui, onOpenSiege, openLabel, brief = brief, briefWho = who)
+        }
     }
 }
 
 @Composable
-private fun Stat(icon: Int, label: String, value: String, color: Color = Cream) {
+private fun Stat(icon: Int, label: String, value: String, digit: Dp, color: Color = Cream) {
     Row(Modifier.semantics(mergeDescendants = true) { contentDescription = "$label $value" }, verticalAlignment = Alignment.CenterVertically) {
         PixelIcon(icon, 22.dp)
         Spacer(Modifier.width(4.dp))
-        Text(value, style = MaterialTheme.typography.titleSmall, color = color, maxLines = 1)
+        Text(value, style = MaterialTheme.typography.titleSmall, color = color, maxLines = 1, textAlign = TextAlign.End, modifier = Modifier.widthIn(min = digit * maxOf(2, value.length)))
     }
 }
 
 /**
- * The countdown and who comes, then the cycle as a slim track ending at the wall: plain text on the header's ground, no
- * plate or tiles. The tone is said by the countdown's colour alone (cream, gold the day before, ember on the day).
+ * The countdown and who comes, then the cycle as a slim track ending at the wall, all one tap: plain text on the
+ * header's ground, no plate or tiles. The tone is said by the countdown's colour alone (cream, gold the day before,
+ * ember on the day).
  */
 @Composable
-private fun SiegeStrip(ui: SiegeHeaderUi, onOpen: () -> Unit, openLabel: String, modifier: Modifier = Modifier, brief: Boolean = false) {
+private fun SiegeStrip(ui: SiegeHeaderUi, onOpen: () -> Unit, openLabel: String, modifier: Modifier = Modifier, brief: Boolean = false, briefWho: Boolean = true) {
     Row(
         modifier.fillMaxWidth().clickable(onClickLabel = openLabel, role = Role.Button, onClick = onOpen).heightIn(min = 48.dp).testTag("siege_strip"),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        SiegeLine(ui, Modifier.weight(1f), brief)
+        Column(Modifier.weight(1f)) {
+            SiegeLine(ui, brief = brief, briefWho = briefWho)
+            // Under the countdown it counts towards: it reads as the days to the siege.
+            if (ui.marks.isNotEmpty()) CycleTrack(ui, Modifier.padding(top = 6.dp))
+        }
         Chevron(ChevronWay.RIGHT, Modifier.padding(start = Space.sm, end = Space.xs), tint = CreamMuted)
     }
 }
@@ -182,21 +188,25 @@ private fun SiegeStrip(ui: SiegeHeaderUi, onOpen: () -> Unit, openLabel: String,
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SiegeLine(ui: SiegeHeaderUi, modifier: Modifier = Modifier, brief: Boolean = false) {
+private fun SiegeLine(ui: SiegeHeaderUi, modifier: Modifier = Modifier, brief: Boolean = false, briefWho: Boolean = true) {
     val ink = when (ui.tone) { SiegeTone.CALM -> CreamMuted; SiegeTone.TOMORROW -> Gold; SiegeTone.TONIGHT -> Ember }
     val small = MaterialTheme.typography.bodySmall
     if (brief) {
-        // Said whole to a screen reader; on screen, the countdown alone.
-        Text(
-            ui.countdown, style = MaterialTheme.typography.labelLarge, color = ink,
-            modifier = modifier.testTag("siege_countdown").semantics { contentDescription = listOfNotNull(ui.countdown, ui.besieger, ui.defenders).joinToString(", ") },
-        )
+        // Said whole to a screen reader; on screen, the countdown (with who comes when it fits), then how many stand.
+        Column(modifier.semantics(mergeDescendants = true) { contentDescription = listOfNotNull(ui.countdown, ui.besieger, ui.defenders).joinToString(", ") }) {
+            Text(
+                ui.countdown + (ui.besieger?.takeIf { briefWho }?.let { " · $it" } ?: ""), style = MaterialTheme.typography.labelLarge, color = ink, maxLines = 1,
+                modifier = Modifier.testTag("siege_countdown"),
+            )
+            ui.defenders?.let { Text(it, style = MaterialTheme.typography.labelLarge, fontWeight = small.fontWeight, color = CreamMuted, maxLines = 1, modifier = Modifier.testTag("siege_defenders")) }
+        }
         return
     }
     FlowRow(modifier.semantics(mergeDescendants = true) {}, itemVerticalAlignment = Alignment.CenterVertically) {
         // The separator is bound to the word before it (a no-break space), so a wrapped line never starts with it.
         Text(
             buildAnnotatedString {
+                // The same words as [SiegeHeaderUi.lead], which the header measures.
                 append(ui.countdown)
                 ui.besieger?.let { withStyle(SpanStyle(color = CreamMuted, fontWeight = small.fontWeight)) { append(" · $it") } }
                 if (ui.defenders != null) withStyle(SpanStyle(color = CreamMuted)) { append(" ·") }
@@ -241,6 +251,30 @@ fun SiegeMatchup(threat: ThreatUi, tag: String, note: String? = null, inset: Boo
         Modifier.fillMaxWidth().padding(start = if (inset) Space.md else 0.dp, end = if (inset) Space.md else 0.dp, top = Space.sm).semantics(mergeDescendants = true) {}.testTag(tag),
     ) {
         if (facts.isNotEmpty()) Text(facts.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = if (threat.today) Ember else CreamMuted)
+        note?.let { Secondary(it) }
+    }
+}
+
+/**
+ * The siege's own day at the head of the Shop, in place of [SiegeMatchup]: an ember rule, "Siege tonight", who comes (the
+ * army in a living era, else the besieger) once it is known, what tells against them and how many stand on the wall.
+ * The header says the countdown and the defenders too; on this day they are worth saying twice. End Day keeps its label:
+ * the day's trading still comes first.
+ */
+@Composable
+fun SiegeTonight(threat: ThreatUi, defenders: String?, tag: String, note: String? = null) {
+    val who = (threat.army ?: threat.besieger).takeIf { threat.warned }
+    // Under an army's name the besieger stays in the line (what they are weak to is the besieger's); under the besieger's own name it is not said twice.
+    val against = threat.matchup?.takeIf { threat.warned }?.let { m -> if (threat.army == null) threat.besieger?.let { m.removePrefix(it).removePrefix(" · ") } ?: m else m }?.takeIf { it.isNotBlank() }
+    Column(
+        Modifier.fillMaxWidth().padding(start = Space.md, end = Space.md, top = Space.md)
+            .drawBehind { drawRect(Ember, size = Size(3.dp.toPx(), size.height)) }
+            .padding(start = Space.md, top = Space.xs, bottom = Space.xs)
+            .semantics(mergeDescendants = true) {}.testTag(tag),
+    ) {
+        Text("Siege tonight", style = MaterialTheme.typography.titleMedium, color = Ember, modifier = Modifier.semantics { heading() }.testTag("shop_siege_tonight"))
+        who?.let { Text(it, style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.testTag("shop_siege_who")) }
+        listOfNotNull(against, threat.outlook, defenders).takeIf { it.isNotEmpty() }?.let { Text(it.joinToString(" · "), style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
         note?.let { Secondary(it) }
     }
 }

@@ -43,7 +43,7 @@ $ADB shell pm clear $PKG >/dev/null
 start && shot 01_title
 check "title says the game is guided" has_id intro_menu_skip
 tap_id title_new_run || exit 1
-check "a new account starts on the shop alone" charter_is "No charter"
+check "a new account starts on the shop alone" charter_is "Classic era"
 shot 01b_setup
 tap_id setup_begin || exit 1
 wait_id intro_strip && shot 02_step1_shop

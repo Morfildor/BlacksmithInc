@@ -81,6 +81,9 @@ class GuildInspectTest {
             assertEquals(h.fullName, tip.name)
             assertEquals("${engine.raceClass(h)}, level\u00A0${h.level}", tip.kind)
             assertEquals("Guild member", tip.meta)
+            // The card draws the portrait as a face (HeroFace), not as an icon in its slot.
+            assertTrue(tip.face)
+            assertEquals(com.example.blacksmithproject.ui.Sprites.portrait(h), tip.icon)
             // The same numbers as the hero sheet: one read of the fighter, `fighterView`.
             // Health says the fight's number and the health between fights (a percentage) on one line; Support is shown
             // only where an ability reads it, as what it does.
@@ -235,6 +238,8 @@ class GuildInspectTest {
                 val specs = stage.enemies.filter { it.unitId == e.unitId }
                 assertEquals(specs.size, e.count)
                 assertEquals(e.name, e.tip!!.name)
+                // Its picture is the replay's own lookup, or none (the name alone).
+                assertEquals(com.example.blacksmithproject.ui.replay.enemyFace(e.unitId, engine.content), e.face)
                 val healths = specs.map { Loadout.enemy(combat.unit(it.unitId), "x", it.percent).maxHealth }
                 assertEquals(if (healths.min() == healths.max()) "${healths.min()}" else "${healths.min()} to ${healths.max()}", e.health)
             }

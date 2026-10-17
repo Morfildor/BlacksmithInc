@@ -224,7 +224,11 @@ class StorageSheetTest {
         assertTrue(compose.onAllNodes(stockRow, useUnmergedTree = true).fetchSemanticsNodes().size <= 20)
     }
 
-    /** Select three blades, Salvage: one question, and only its answer hands over the three, as one Salvage command each. Tall enough that the filter chips leave all five rows on screen. */
+    /**
+     * Select three blades, Salvage: one question, and only its answer hands over the three, as one Salvage command each.
+     * In choosing mode a row at 360 dp keeps its words room by putting the price and "List at" under them, so the rows are
+     * taller than the window holds five of: each row is scrolled to before it is touched or read.
+     */
     @Test
     fun bulkSalvageAsksOnceAndIssuesOneCommandPerBlade() {
         val forged = ShopDayFixtures.run(42, 3).last().state
@@ -246,13 +250,14 @@ class StorageSheetTest {
                 }
             }
         }
+        fun row(id: String) = compose.onNodeWithTag("storage_list").performScrollToNode(hasTestTag("stock_$id")).let { compose.onNodeWithTag("stock_$id") }
         compose.onNodeWithTag("storage_bulk_salvage").assertDoesNotExist()
         compose.onNodeWithTag("storage_select").performClick()
         compose.onNodeWithTag("storage_bulk_salvage").assertIsNotEnabled()
-        for (id in listOf("t1", "t2", "t3")) compose.onNodeWithTag("stock_$id").performClick()
+        for (id in listOf("t1", "t2", "t3")) row(id).performClick()
         assertTrue("choosing a blade does not open it", opened.isEmpty())
-        compose.onNodeWithTag("stock_t2").assertIsOn()
-        compose.onNodeWithTag("stock_t4").assertIsOff()
+        row("t2").assertIsOn()
+        row("t4").assertIsOff()
         compose.onNodeWithTag("storage_bulk_salvage").assertTextEquals("Salvage 3").performClick()
         assertTrue("nothing is issued before the answer", issued.isEmpty())
         compose.onNodeWithText("Salvage 3 weapons?").assertIsDisplayed()
@@ -263,14 +268,15 @@ class StorageSheetTest {
         compose.onNodeWithTag("storage_bulk_salvage").assertIsNotEnabled()
         // Scrap is one command for the lot, asked once.
         compose.onNodeWithTag("storage_bulk_scrap").assertIsNotEnabled()
-        for (id in listOf("t1", "t4")) compose.onNodeWithTag("stock_$id").performClick()
+        for (id in listOf("t1", "t4")) row(id).performClick()
         compose.onNodeWithTag("storage_bulk_scrap").performClick()
         compose.onNodeWithText("Melt down 2 weapons?").assertIsDisplayed()
         assertTrue(scrapped.isEmpty())
         compose.onNodeWithTag("storage_scrap_confirm").performClick()
         assertEquals(listOf(listOf(WeaponId("t1"), WeaponId("t4"))), scrapped)
 
-        // "Select all shown" then the watch: the same single question.
+        // "Select all shown" then the watch: the same single question. The button is in the list's head, back at the top.
+        compose.onNodeWithTag("storage_list").performScrollToIndex(0)
         compose.onNodeWithTag("storage_select_all").performClick()
         compose.onNodeWithTag("storage_bulk_donate").assertTextEquals("Donate 5 to the armory").performClick()
         compose.onNodeWithText("Donate 5 weapons to the armory?").assertIsDisplayed()

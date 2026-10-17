@@ -20,6 +20,8 @@ import com.example.blacksmithproject.ui.fightNotes
 import com.example.blacksmithproject.ui.learningLine
 import com.example.blacksmithproject.ui.learningTip
 import com.example.blacksmithproject.ui.legendTip
+import com.example.blacksmithproject.ui.mergedStories
+import com.tinyblacksmith.core.gazette.GazetteDigest
 import com.example.blacksmithproject.ui.oddsTone
 import com.example.blacksmithproject.ui.resultLead
 import com.example.blacksmithproject.ui.resultTip
@@ -93,10 +95,45 @@ class ResultsInspectTest {
         val d = engine.itemDetail(guild.copy(weapons = guild.weapons + (weapon.id to weapon)), weapon.id)!!
         val rules = d.rules!!
         assertTrue(resultLead(d).rules.isNotEmpty())
-        // A metal's or an element's effect is named after its source, so it comes with what it does.
-        assertEquals((rules.road + rules.homeOnly).map { com.tinyblacksmith.core.content.CombatContent.label(it.id, it.name) }, resultLead(d).rules)
+        // A metal's or an element's effect is named after its source, so it comes with what it does. One named as a
+        // property is said once, as the property.
+        val named = (d.affixes + d.flaws).map { it.name }.toSet()
+        assertEquals((rules.road + rules.homeOnly).map { com.tinyblacksmith.core.content.CombatContent.label(it.id, it.name) }.filterNot { it in named }, resultLead(d).rules)
         assertTrue(resultLead(d).rules.toString(), "Frost · Chills on hit" in resultLead(d).rules && "Dragon oil" in resultLead(d).rules)
         assertTrue(resultLead(engine.itemDetail(forged, blade.id)!!).rules.isEmpty())
+    }
+
+    /** "Flaming" as a property and as an effect of the same name is one line on the result: the property's, with its sign. */
+    @Test
+    fun anEffectNamedAsAPropertyIsSaidOnceOnTheResult() {
+        val guild = engine.newRun(LegacyProfile(), 42, charterId = GuildContent.TOWNS_LAST_HOPE)
+        val weapon = CombatSandbox.blade("w_g", LaunchContent.SWORD, LaunchContent.BRONZE, LaunchContent.FROST_BLOOM, LaunchContent.DRAGON_OIL, craft = WeaponRules.CRAFT)
+        val d = engine.itemDetail(guild.copy(weapons = guild.weapons + (weapon.id to weapon)), weapon.id)!!
+        val all = resultLead(d.copy(affixes = emptyList(), flaws = emptyList())).rules
+        assertTrue(all.size >= 2)
+        val twin = all.first()
+        val lead = resultLead(d.copy(affixes = listOf(Property(twin, "x")), flaws = emptyList()))
+        assertEquals(listOf(twin to FactTone.GOOD), lead.properties.map { it.value to it.tone })
+        assertEquals(all.drop(1), lead.rules)
+        // Its card still lists the effect: only the result's lead says it once.
+        assertTrue(d.rules!!.let { r -> (r.road + r.homeOnly).any { com.tinyblacksmith.core.content.CombatContent.label(it.id, it.name) == twin } })
+    }
+
+    /** Two recipe clues of one day under one headline share it; each body keeps its own line, and nothing is dropped. */
+    @Test
+    fun neighbouringStoriesUnderOneHeadlineShareIt() {
+        val clueA = GazetteDigest.Story(GazetteDigest.Kind.CLUE, "A recipe clue", "Recipe clue for the Iron sword with Ember Resin. This combination can make a signature weapon.", eventIds = listOf("e1"), opensNotebook = true)
+        val clueB = GazetteDigest.Story(GazetteDigest.Kind.CLUE, "A recipe clue", "Recipe clue for the Iron sword with Ember Resin. This recipe needs a binding catalyst.", eventIds = listOf("e2"), details = listOf("d"))
+        val sale = GazetteDigest.Story(GazetteDigest.Kind.FIRST_SALE, "First sale", "Your first sale. Una Oakley bought Iron Sword.")
+        val merged = mergedStories(listOf(clueA, clueB, sale, clueA))
+        assertEquals(listOf("A recipe clue", "First sale", "A recipe clue"), merged.map { it.heading })
+        assertEquals(clueA.body + "\n" + clueB.body, merged[0].body)
+        assertEquals(listOf("e1", "e2"), merged[0].eventIds)
+        assertEquals(listOf("d"), merged[0].details)
+        assertTrue(merged[0].opensNotebook)
+        // Not neighbours, or another kind under the same words: kept apart.
+        assertEquals(listOf(sale), mergedStories(listOf(sale)))
+        assertEquals(2, mergedStories(listOf(clueA, clueA.copy(kind = GazetteDigest.Kind.PAIRING))).size)
     }
 
     @Test

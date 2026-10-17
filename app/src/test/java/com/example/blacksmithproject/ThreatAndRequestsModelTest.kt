@@ -8,6 +8,8 @@ import com.tinyblacksmith.core.model.Commission
 import com.tinyblacksmith.core.model.CommissionId
 import com.tinyblacksmith.core.model.CommissionKind
 import com.tinyblacksmith.core.model.CommissionStatus
+import com.tinyblacksmith.core.model.LivingRevision
+import com.tinyblacksmith.core.model.SiegeScenario
 import com.tinyblacksmith.core.shopday.Lines
 import com.tinyblacksmith.core.shopday.ThreatMark
 import com.tinyblacksmith.core.shopday.Threats
@@ -81,5 +83,18 @@ class ThreatAndRequestsModelTest : ShopDayTestBase() {
         // An ordinary request has no reason to say.
         val plain = fresh.copy(commissions = mapOf(CommissionId("c1") to request(1, CommissionKind.ORDINARY)))
         assertNull(engine.shopUi(plain).requests.single().why)
+    }
+
+    @Test
+    fun theArmyIsNamedOnlyInALivingEraOnceItIsCommitted() {
+        val army = engine.content.guild!!.armies.first()
+        // The field as `SiegeFight` commits it: the army's ID on this siege's scenario.
+        val committed = SiegeScenario(siegeDay = fresh.town.nextSiegeDay, armyId = army.id)
+        val living = fresh.copy(siege = committed, livingRevision = LivingRevision.CURRENT)
+        assertEquals(army.name, engine.threatUi(living)!!.army)
+        assertNull("an era begun before living heroes has no armies", engine.threatUi(living.copy(livingRevision = LivingRevision.LEGACY))!!.army)
+        assertNull("nothing is committed yet", engine.threatUi(living.copy(siege = committed.copy(armyId = null)))!!.army)
+        assertNull("a field drawn for another siege", engine.threatUi(living.copy(siege = committed.copy(siegeDay = committed.siegeDay + 5)))!!.army)
+        assertNull("a run without a scenario", engine.threatUi(fresh.copy(siege = null))!!.army)
     }
 }

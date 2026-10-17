@@ -55,9 +55,10 @@ import com.tinyblacksmith.core.guild.Stories
 
 /**
  * A unit on a field: how many of it, its [health] as the field scales it ("12", or "12 to 14" when the units differ),
- * and its inspect card ([tip], `enemyTip`), which holds what is known of what it does (its moves, its rules).
+ * and its inspect card ([tip], `enemyTip`), which holds what is known of what it does (its moves, its rules). [face] is its
+ * picture (`enemyFace`, decorative); null where the unit has none, and the row shows its name alone.
  */
-@Immutable data class EnemyUi(val name: String, val count: Int, val unitId: String = "", val health: String = "", val tip: TipUi? = null) {
+@Immutable data class EnemyUi(val name: String, val count: Int, val unitId: String = "", val health: String = "", val tip: TipUi? = null, val face: Int? = null) {
     val label: String get() = if (count > 1) "$count × $name" else name
 }
 
@@ -275,7 +276,10 @@ private fun GameEngine.enemies(specs: List<EnemySpec>, note: String? = null): Li
     return specs.groupBy { it.unitId }.map { (id, all) ->
         combat.unit(id).let { u ->
             val percents = all.map { it.percent }
-            EnemyUi(u.name, all.size, id, unitHealth(u, percents), enemyTip(u, all.size, percents, config, note, tag = "guild_enemy_tip", profile = content.guild?.profileById?.get(id)))
+            EnemyUi(
+                u.name, all.size, id, unitHealth(u, percents), enemyTip(u, all.size, percents, config, note, tag = "guild_enemy_tip", profile = content.guild?.profileById?.get(id)),
+                face = com.example.blacksmithproject.ui.replay.enemyFace(id, content),
+            )
         }
     }
 }
@@ -380,17 +384,19 @@ private fun GameEngine.rewardSummary(state: GameState, offer: MissionOffer): Str
 }
 
 /**
- * The board row's one line of facts, the summary first: the reward, the danger (a warning unless safe), how long the party
- * is away and the morning it is back, the fee, and the last day to send a party (a warning when that is today). What is
- * different about the posting, each stage and what to bring are on the quest's card and sheet.
+ * The board row's one line of facts, the summary first: the reward, how long the party is away and the morning it is
+ * back, the fee, and the last day to send a party (a warning when that is today). The danger is the chip on the title
+ * row ([offerRisk]). What is different about the posting, each stage and what to bring are on the quest's card and sheet.
  */
 internal fun offerFacts(o: OfferUi): List<Fact> = listOfNotNull(
     Fact(o.rewardSummary, "Reward"),
-    Fact(dangerWord(o.danger), tone = if (o.danger == Danger.SAFE) FactTone.PLAIN else FactTone.WARN),
     Fact((if (o.days == 1) "1 day" else "${o.days} days") + ", back day ${o.returnDay}", "Away"),
     if (o.feeGold > 0) Fact("${o.feeGold} gold", "Fee") else Fact("No fee"),
     o.lastDay?.let { Fact(it, "Send by", if (it == "today") FactTone.WARN else FactTone.PLAIN) },
 )
+
+/** The board row's danger chip: the word always ("Safe" too), a warning unless safe. */
+internal fun offerRisk(o: OfferUi): Fact = Fact(dangerWord(o.danger), tone = if (o.danger == Danger.SAFE) FactTone.PLAIN else FactTone.WARN)
 
 private fun bladeLine(state: GameState, heroId: HeroId): String =
     state.loanOf(heroId)?.let { "On loan: ${it.name}" } ?: state.equippedWeapon(heroId)?.let { "Own weapon: ${it.name}" } ?: "Unarmed"

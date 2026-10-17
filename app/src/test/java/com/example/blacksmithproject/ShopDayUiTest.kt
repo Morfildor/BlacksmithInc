@@ -163,8 +163,52 @@ class ShopDayUiTest {
                 assertEquals(Lines.headline(v, day.script).replaceFirstChar { it.uppercase() }, ui.outcome)
                 ui.decision?.let { assertEquals(Lines.decision(v, day.script, day.engine.content), it) }
                 if (v.kind == VisitKind.BROWSE) assertEquals(v.considered.map { Lines.weighed(it) }, ui.looked.map { it.factors })
+                assertEquals(Lines.why(v, day.script, day.engine.content).ifEmpty { null }, ui.why)
             }
         }
+    }
+
+    /**
+     * A sale's card says why under its heading and leaves the money to the receipt: the line is `Lines.why`, which is the
+     * start of the whole decision, and it names no sum the receipt already shows. A visit without a receipt keeps the decision.
+     */
+    @Test
+    fun aSaleSaysWhyAndTheReceiptSaysTheMoney() {
+        var sales = 0; var plain = 0
+        for (day in days()) for (beat in day.ui().beats.filterIsInstance<Beat.Visit>()) {
+            val ui = beat.visit
+            val v = day.script.featured.single { it.seq == ui.seq }
+            if (!ui.sold) { assertEquals(ui.decision, ui.reasonLine); continue }
+            sales++
+            assertEquals(ui.why, ui.reasonLine)
+            val decision = Lines.decision(v, day.script, day.engine.content)
+            ui.why?.let { assertTrue("'$it' starts '$decision'", decision.startsWith(it)) }
+            ui.why?.let { assertTrue("no paid sum in the reason: $it", !Regex("^Bought |Paid \\d+ gold|Traded in|covered \\d+ gold|blessing added").containsMatchIn(it)) }
+            // A plain sale at the tag shows one row, its total; any other receipt is shown whole.
+            val shown = com.example.blacksmithproject.ui.shopday.shownReceipt(ui.receipt)
+            val single = ui.receipt.size == 2 && ui.receipt[0].label == "Listed price" && ui.receipt[0].value == ui.receipt[1].value
+            if (single) { plain++; assertEquals(listOf(ui.receipt.last()), shown) } else assertEquals(ui.receipt, shown)
+            assertTrue("the total is always shown", shown.last().total && shown.last().label == "Total received")
+        }
+        assertTrue("sales=$sales plain=$plain", sales > 40 && plain > 0)
+    }
+
+    /** What the card bullets for a weighed blade is the record's factors, each once: as many lines for and against as it recorded. */
+    @Test
+    fun theLookedAtBulletsAreTheRecordedFactors() {
+        var weighed = 0
+        for (day in days()) for (beat in day.ui().beats.filterIsInstance<Beat.Visit>()) {
+            val v = day.script.featured.single { it.seq == beat.visit.seq }
+            if (v.kind != VisitKind.BROWSE) continue
+            v.considered.zip(beat.visit.looked).forEach { (k, looked) ->
+                val (pros, cons) = Lines.weighedParts(k)
+                assertEquals(k.factors.size, looked.pros.size + looked.cons.size)
+                assertEquals(pros.map { it.replaceFirstChar { c -> c.uppercase() } }, looked.pros)
+                assertEquals(cons.map { it.replaceFirstChar { c -> c.uppercase() } }, looked.cons)
+                if (k.factors.isNotEmpty()) weighed++
+            }
+        }
+        assertTrue("weighed=$weighed", weighed > 20)
     }
 
     private fun gold(text: String) = text.removeSuffix(" gold").replace("−", "-").toInt()

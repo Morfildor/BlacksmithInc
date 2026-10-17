@@ -1,18 +1,12 @@
 package com.example.blacksmithproject.ui
 
-import androidx.compose.foundation.background
 import com.example.blacksmithproject.ui.theme.Bronze
 import com.example.blacksmithproject.R
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -39,10 +32,8 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
-import com.example.blacksmithproject.ui.theme.ForgeSlot
 import com.example.blacksmithproject.ui.theme.Space
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.GameState
@@ -149,7 +140,7 @@ private fun Signers(signers: List<OpeningSignerUi>) {
         Row(Modifier.fillMaxWidth().padding(top = Space.sm), horizontalArrangement = Arrangement.spacedBy(Space.md)) {
             signers.forEach { m ->
                 Row(Modifier.weight(1f).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                    Portrait(m.portrait, 44.dp)
+                    HeroFace(m.portrait, 44.dp)
                     Column {
                         Text(m.firstName, style = MaterialTheme.typography.titleSmall, color = Cream)
                         Text(m.className, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
@@ -160,17 +151,10 @@ private fun Signers(signers: List<OpeningSignerUi>) {
     }
 }
 
-@Composable
-private fun Portrait(res: Int, size: Dp) {
-    Box(Modifier.size(size).background(ForgeSlot, MaterialTheme.shapes.small).border(1.dp, BronzeDeep, MaterialTheme.shapes.small).clip(MaterialTheme.shapes.small), contentAlignment = Alignment.Center) {
-        PixelImage(res, size, description = null)
-    }
-}
-
 /**
  * One package as a selectable card, in the order a choice is read: its playstyle and name, the benefit, the trait each
- * signer gets, the relic, the cost. The relic's effect opens in place on a tap without choosing the card. Chosen, the
- * card adds what it brings and the first days.
+ * signer gets, the relic, what it brings and the cost. The relic's effect opens in place on a tap without choosing the
+ * card; chosen, the card shows it open, with the traits in full and the first days behind their disclosure.
  */
 @Composable
 private fun OpeningCard(o: OpeningUi, chosen: Boolean, enabled: Boolean, showSigners: Boolean, onMark: () -> Unit) {
@@ -179,7 +163,7 @@ private fun OpeningCard(o: OpeningUi, chosen: Boolean, enabled: Boolean, showSig
     ChoiceRow(chosen, onMark, Modifier.testTag("opening_choose_${o.id}"), enabled = enabled) {
         Caps(o.build)
         Text(o.name, style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.padding(top = 2.dp).semantics { heading() })
-        Text(o.pitch, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.padding(top = Space.xs))
+        Text(o.pitch, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.padding(top = Space.xs))
         // The trait each signer gets: one line, the same trait said once for both.
         val traits = o.signers.groupBy { it.traitName }
         Text(
@@ -193,8 +177,11 @@ private fun OpeningCard(o: OpeningUi, chosen: Boolean, enabled: Boolean, showSig
             },
             style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = Space.sm),
         )
+        // Chosen, the effect is always shown: the row is then only a label, with nothing to open.
         Row(
-            Modifier.fillMaxWidth().padding(top = Space.xs).heightIn(min = 40.dp).clickable(role = Role.Button, onClickLabel = if (relic) "Hide the relic's effect" else "Read the relic's effect") { relic = !relic }.testTag("opening_relic_${o.id}"),
+            Modifier.fillMaxWidth().padding(top = Space.xs).heightIn(min = 48.dp)
+                .then(if (chosen) Modifier else Modifier.clickable(role = Role.Button, onClickLabel = if (relic) "Hide the relic's effect" else "Read the relic's effect") { relic = !relic })
+                .testTag("opening_relic_${o.id}"),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm),
         ) {
             PixelIcon(R.drawable.icon_relic, 24.dp)
@@ -202,22 +189,19 @@ private fun OpeningCard(o: OpeningUi, chosen: Boolean, enabled: Boolean, showSig
                 buildAnnotatedString { append("Relic  "); withStyle(SpanStyle(color = Cream, fontWeight = FontWeight.Medium)) { append(o.relic) } },
                 style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.weight(1f),
             )
-            Chevron(if (relic || chosen) ChevronWay.UP else ChevronWay.DOWN, tint = CreamMuted, size = 18.dp)
+            if (!chosen) Chevron(if (relic) ChevronWay.UP else ChevronWay.DOWN, tint = CreamMuted, size = 18.dp)
         }
         if (relic || chosen) Text(o.relicDescription, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(start = 32.dp, bottom = Space.xs))
-        // The cost of the choice is read before it is made, on every card, as plainly as the benefit.
-        // Chosen, what it brings stands over the costs, gains before costs as on the charters.
-        if (chosen) EffectBullets(EffectKind.BUFF, o.brings, Modifier.padding(top = Space.xs))
+        // What it brings and what it costs are read before the choice, on every card, gains before costs as on the charters.
+        EffectBullets(EffectKind.BUFF, o.brings, Modifier.padding(top = Space.xs))
         EffectBullets(EffectKind.FLAW, o.costs, Modifier.padding(top = Space.xs).testTag("opening_drawback_${o.id}"))
         if (chosen) {
             Caps("Traits", Modifier.padding(top = Space.md))
             o.signers.forEach { m ->
                 Text(buildAnnotatedString { withStyle(SpanStyle(color = Cream, fontWeight = FontWeight.Medium)) { append(m.firstName) }; append("  "); append(m.trait) }, style = MaterialTheme.typography.bodySmall, color = CreamMuted, modifier = Modifier.padding(top = Space.xs))
             }
-            Text(
-                if (plan) "The first days ▴" else "The first days ▾", style = MaterialTheme.typography.labelLarge, color = Cream,
-                modifier = Modifier.fillMaxWidth().padding(top = Space.xs).clickable(role = Role.Button) { plan = !plan }.heightIn(min = 48.dp).wrapContentHeight().testTag("opening_plan_${o.id}"),
-            )
+            // The house disclosure: a drawn chevron, "Show" or "Hide" to a screen reader, its open state said.
+            DisclosureHead("The first days", plan, { plan = !plan }, tag = "opening_plan_${o.id}", modifier = Modifier.padding(top = Space.xs))
             if (plan) Text(o.plan, style = MaterialTheme.typography.bodySmall, color = CreamMuted)
         }
     }

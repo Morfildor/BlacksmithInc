@@ -25,7 +25,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -34,6 +33,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
@@ -123,13 +123,21 @@ private fun PartyCard(p: PartyUi, enabled: Boolean, onChoose: (String, Checkpoin
 }
 
 /**
- * One quest on the board, comparable at a glance: its name, then the summary as one line of facts (reward, danger, how
- * long and the morning they are back, the fee, the last day to send), the name of what is different about this posting,
- * a missed siege as its own warning, and the way to the party sheet. Each stage, the modifier's rule, what to bring and
- * what failing costs are on its card (the ringed "i") and in the party sheet. A planned quest says so in a chip.
+ * One quest on the board, comparable at a glance: its name with its danger as a chip (the word always, red unless safe),
+ * then the summary as one line of facts (reward, how long and the morning they are back, the fee, the last day to send),
+ * the name of what is different about this posting, a missed siege as its own warning, and the way to the party sheet.
+ * Each stage, the modifier's rule, what to bring and what failing costs are on its card (the ringed "i") and in the
+ * party sheet. A planned quest says so in a chip. With large text the chips go under the name.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
+    val risk = offerRisk(o)
+    val chips = @Composable {
+        Chip(risk.value, if (risk.tone == FactTone.WARN) EffectKind.FLAW.color else CreamMuted, Modifier.testTag("guild_offer_danger_${o.id}"))
+        if (o.planned) Chip("Planned", EffectKind.BUFF.color)
+    }
+    val under = LocalDensity.current.fontScale > 1.3f
     Column(Modifier.fillMaxWidth()) {
         Column(
             Modifier.fillMaxWidth().clickable(onClickLabel = "Choose a party", role = Role.Button, onClick = onOpen)
@@ -137,9 +145,10 @@ private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                 Text(o.title, style = MaterialTheme.typography.titleMedium, color = Cream, modifier = Modifier.weight(1f))
-                if (o.planned) Chip("Planned", EffectKind.BUFF.color)
+                if (!under) chips()
                 InfoButton(o.title, { offerTip(o, onOpen, tag = "guild_offer_tip") }, tag = "guild_offer_${o.id}_info")
             }
+            if (under) FlowRow(Modifier.padding(bottom = Space.xs), horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) { chips() }
             // A personal offer: who asks for it and why, before the terms. The one-party rule follows the terms, plainly.
             o.sponsor?.let { sp ->
                 Row(Modifier.padding(top = Space.xs, bottom = Space.xs).testTag("guild_offer_sponsor_${o.id}"), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -208,10 +217,13 @@ private fun Modifier.heroInspect(name: String, tip: () -> TipUi?): Modifier {
     return inspectAnchor(anchor).clickable(onClickLabel = "Inspect $name", role = Role.Button) { tip()?.let { inspector?.show(it, anchor.rect) } }
 }
 
-/** The weapon a hero holds as a small sprite (its name is said, the art is decoration), or "Unarmed" in words. */
+/**
+ * The weapon a hero holds as a small sprite (its name is said, the art is decoration), or "Unarmed" in words. 44 dp is
+ * the least box that draws the 56 px art at twice its size on a 420 to 480 dpi phone.
+ */
 @Composable
 private fun HeldWeapon(art: WeaponLook?, name: String) {
-    if (art != null) PixelImage(art, 32.dp, description = name)
+    if (art != null) PixelImage(art, WEAPON_ART, description = name)
     else Text("Unarmed", style = MaterialTheme.typography.labelMedium, color = CreamMuted)
 }
 
@@ -227,13 +239,25 @@ internal fun SignedLine(text: String, color: Color, signColor: Color, modifier: 
     }
 }
 
+/** The weapon in a hero's row: see [HeldWeapon]. */
+private val WEAPON_ART = 44.dp
+
+/** The least text a row keeps beside its fixed parts and its trade, at the default size; it grows with the text. */
+private val MIN_TEXT = 150.dp
+
+/** A face's footprint in a row ([HeroFace] at the whole scale nearest [hint] for the 64 px portraits, and its 1 dp frame). */
+@Composable
+private fun faceFootprint(hint: Dp = 44.dp): Dp = with(LocalDensity.current) { (nearestWholeScale(64, hint.toPx()) * 64).toDp() } + 2.dp
+
 /**
- * Whether a row has room for the weapon beside the identity: the identity keeps about 190 dp of text at the default size
- * once the face (44 dp), the gaps and the weapon (up to 64 dp) are taken. With less (a narrow phone at 1.3x text) the
- * weapon goes under the identity instead of squeezing the name and class into a word a line.
+ * Whether a row of [rowWidth] has room for [trade] (the weapon, a button) beside the identity once [fixed] (the face, the
+ * gaps) is taken: the text keeps at least [MIN_TEXT] times the font scale. Without it the trade goes under the identity
+ * instead of squeezing the name and class into a word a line.
  */
 @Composable
-private fun roomBeside(maxWidth: Dp): Boolean = (maxWidth - 132.dp) / LocalDensity.current.fontScale >= 190.dp
+private fun roomFor(rowWidth: Dp, fixed: Dp, trade: Dp): Boolean = with(LocalDensity.current) {
+    roomBeside(rowWidth.toPx(), fixed.toPx(), trade.toPx(), (MIN_TEXT * fontScale).toPx())
+}
 
 /**
  * A member at a glance, in reading order: the face, the name with one chip (fit, a branch to choose, kept for the wall,
@@ -244,7 +268,8 @@ private fun roomBeside(maxWidth: Dp): Boolean = (maxWidth - 132.dp) / LocalDensi
 @Composable
 private fun MemberRow(m: MemberUi, tip: () -> TipUi?) {
     BoxWithConstraints(Modifier.fillMaxWidth().heroInspect(m.name, tip).testTag("guild_member_${m.heroId.value}").heightIn(min = 64.dp).padding(vertical = Space.sm)) {
-        val beside = roomBeside(maxWidth)
+        // The face and one gap fixed; the weapon and its gap the trade.
+        val beside = roomFor(maxWidth, faceFootprint() + 12.dp, WEAPON_ART + 12.dp)
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Face(m.portrait)
             Column(Modifier.weight(1f)) {
@@ -257,7 +282,7 @@ private fun MemberRow(m: MemberUi, tip: () -> TipUi?) {
                 // A living era: the member's own decision in a few words; a departure in ember. The sheet says it in full.
                 m.notice?.let { SignedLine(it, if (m.urgent) Ember else Cream, if (m.urgent) Ember else TipTone.CONDITION.color, Modifier.testTag("guild_member_notice_${m.heroId.value}")) }
                 if (!beside) Row(Modifier.padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
-                    m.weaponArt?.let { PixelImage(it, 32.dp, description = null) }
+                    m.weaponArt?.let { PixelImage(it, WEAPON_ART, description = null) }
                     Text(m.blade, style = MaterialTheme.typography.bodySmall, color = if (m.weaponArt == null) CreamMuted else Cream)
                 }
             }
@@ -380,50 +405,68 @@ private fun WallHead(w: WallUi) {
 
 /**
  * The three places as rows: the place's number, who stands there (face, name, class and level, of the guild or of the
- * town), the weapon in hand as a sprite and one chip of the wall's own readiness check (armed, a worn weapon, unarmed).
- * A tap reads the defender's card as they would stand on the wall; a member kept for the wall is released on the row.
- * An empty place says so, with the way to fill it. When all are filled and a member could still be kept first, one
- * link to the same sheet.
+ * town), the weapon in hand as a sprite and one chip of the wall's own readiness check (armed, a worn weapon, unarmed;
+ * an unarmed defender has no sprite, the chip says it). A tap reads the defender's card as they would stand on the wall;
+ * a member kept for the wall is released on the row. What does not fit beside the name by the row's measured width
+ * (Release, then the weapon) goes under it. An empty place says so, with the way to fill it. When all are filled and a
+ * member could still be kept first, one link to the same sheet.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Places(ui: GuildUi, a: GuildActions) {
     val w = ui.wall
-    // Large text or a narrow screen: Release goes under the name rather than squeezing it.
-    val stacked = LocalDensity.current.fontScale > 1.3f || LocalConfiguration.current.screenWidthDp < 340
-    Column(Modifier.fillMaxWidth().padding(top = Space.xs).testTag("guild_wall_places")) {
-        (0 until w.places).forEach { i ->
-            val d = w.defenders.getOrNull(i)
-            if (i > 0) RowRule()
-            Row(
-                Modifier.fillMaxWidth().then(if (d == null) Modifier else Modifier.heroInspect(d.name) { a.heroTip(d.heroId, true) })
-                    .heightIn(min = 64.dp).padding(vertical = Space.sm).testTag("guild_place_$i"),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = CreamMuted, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 16.dp))
-                if (d == null) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Empty", style = MaterialTheme.typography.titleSmall, color = Ember)
-                        Secondary("Nobody else fit is free to stand.")
-                    }
-                    SecondaryActionButton("Assign", a.assign, Modifier.testTag("guild_assign_$i"), enabled = a.enabled)
-                } else {
-                    Face(d.portrait)
-                    Column(Modifier.weight(1f)) {
-                        FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(2.dp), itemVerticalAlignment = Alignment.CenterVertically) {
-                            Text(d.name, style = MaterialTheme.typography.titleSmall)
-                            if (d.chip.isNotEmpty()) Chip(d.chip, chipColor(d.chipTone))
+    val measurer = rememberTextMeasurer()
+    val label = MaterialTheme.typography.labelLarge
+    val density = LocalDensity.current
+    // Release as the text button draws it: its word, 12 dp each side, never under the button's 58 dp.
+    val release = with(density) { measurer.measure("Release", label, maxLines = 1, softWrap = false).size.width.toDp() } + 24.dp
+    val releaseWidth = if (release < 58.dp) 58.dp else release
+    // The number (16 dp), the face and the two gaps after them.
+    val fixed = 16.dp + faceFootprint() + 24.dp
+    BoxWithConstraints(Modifier.fillMaxWidth().padding(top = Space.xs).testTag("guild_wall_places")) {
+        val rowWidth = maxWidth
+        Column(Modifier.fillMaxWidth()) {
+            (0 until w.places).forEach { i ->
+                val d = w.defenders.getOrNull(i)
+                if (i > 0) RowRule()
+                Row(
+                    Modifier.fillMaxWidth().then(if (d == null) Modifier else Modifier.heroInspect(d.name) { a.heroTip(d.heroId, true) })
+                        .heightIn(min = 64.dp).padding(vertical = Space.sm).testTag("guild_place_$i"),
+                    verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Text("${i + 1}", style = MaterialTheme.typography.titleMedium, color = CreamMuted, textAlign = TextAlign.Center, modifier = Modifier.widthIn(min = 16.dp))
+                    if (d == null) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Empty", style = MaterialTheme.typography.titleSmall, color = Ember)
+                            Secondary("Nobody else fit is free to stand.")
                         }
-                        Secondary(d.sub + when { d.reserved -> " · reserved for the wall"; d.member -> " · of the guild"; else -> " · of the town" })
-                        if (d.reserved && stacked) InlineActionButton("Release", { a.send(Command.ReserveDefender(d.heroId, false)) }, Modifier.testTag("guild_reserve_${d.heroId.value}"), enabled = a.enabled)
+                        SecondaryActionButton("Assign", a.assign, Modifier.testTag("guild_assign_$i"), enabled = a.enabled)
+                    } else {
+                        val art = d.weaponArt
+                        val weapon = if (art != null) WEAPON_ART + 12.dp else 0.dp
+                        val releaseBeside = !d.reserved || roomFor(rowWidth, fixed, weapon + releaseWidth + 12.dp)
+                        val weaponBeside = roomFor(rowWidth, fixed, weapon)
+                        Face(d.portrait)
+                        Column(Modifier.weight(1f)) {
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(2.dp), itemVerticalAlignment = Alignment.CenterVertically) {
+                                Text(d.name, style = MaterialTheme.typography.titleSmall)
+                                if (d.chip.isNotEmpty()) Chip(d.chip, chipColor(d.chipTone))
+                            }
+                            Secondary(d.sub + when { d.reserved -> " · reserved for the wall"; d.member -> " · of the guild"; else -> " · of the town" })
+                            if (!weaponBeside && art != null) Row(Modifier.padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
+                                PixelImage(art, WEAPON_ART, description = null)
+                                Text(d.blade, style = MaterialTheme.typography.bodySmall, color = Cream)
+                            }
+                            if (!releaseBeside) InlineActionButton("Release", { a.send(Command.ReserveDefender(d.heroId, false)) }, Modifier.testTag("guild_reserve_${d.heroId.value}"), enabled = a.enabled)
+                        }
+                        if (weaponBeside && art != null) HeldWeapon(art, d.blade)
+                        if (d.reserved && releaseBeside) InlineActionButton("Release", { a.send(Command.ReserveDefender(d.heroId, false)) }, Modifier.testTag("guild_reserve_${d.heroId.value}"), enabled = a.enabled)
                     }
-                    HeldWeapon(d.weaponArt, d.blade)
-                    if (d.reserved && !stacked) InlineActionButton("Release", { a.send(Command.ReserveDefender(d.heroId, false)) }, Modifier.testTag("guild_reserve_${d.heroId.value}"), enabled = a.enabled)
                 }
             }
-        }
-        if (w.defenders.size >= w.places && ui.assign.any { it.action == AssignAction.RESERVE }) {
-            InlineActionButton("Reserve a member for the wall  ›", a.assign, Modifier.testTag("guild_keep_open"))
+            if (w.defenders.size >= w.places && ui.assign.any { it.action == AssignAction.RESERVE }) {
+                InlineActionButton("Reserve a member for the wall  ›", a.assign, Modifier.testTag("guild_keep_open"))
+            }
         }
     }
 }

@@ -3,10 +3,13 @@ package com.example.blacksmithproject
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.FontScale
 import androidx.compose.ui.test.ForcedSize
@@ -82,11 +85,11 @@ class ForgeResultCardTest {
 
     private fun afford(price: Int) = "${funds.count { it >= price }} of ${funds.size} heroes in town can afford this price."
 
-    private fun show(detail: ItemDetail, request: ForgedForUi? = null, reveal: Boolean = false) = compose.setContent {
+    private fun show(detail: ItemDetail, request: ForgedForUi? = null, reveal: Boolean = false, guide: (@Composable () -> Unit)? = null) = compose.setContent {
         BlacksmithProjectTheme {
             DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(size) then DeviceConfigurationOverride.FontScale(font)) {
                 Box(Modifier.fillMaxSize()) {
-                    ForgeResultCard(detail, "Sword of Iron and Ember Resin.", request, enabled = true, onStore = { stored++ }, onList = { listed += it }, onSetPrice = { priced++ }, modifier = Modifier.heightIn(max = size.height * 0.92f), reveal = reveal)
+                    ForgeResultCard(detail, "Sword of Iron and Ember Resin.", request, enabled = true, onStore = { stored++ }, onList = { listed += it }, onSetPrice = { priced++ }, modifier = Modifier.heightIn(max = size.height * 0.92f), reveal = reveal, guide = guide)
                 }
             }
         }
@@ -113,6 +116,23 @@ class ForgeResultCardTest {
         val before = compose.onNodeWithTag("reveal_list").getUnclippedBoundsInRoot()
         compose.mainClock.advanceTimeBy(2_000)
         assertEquals(before, compose.onNodeWithTag("reveal_list").getUnclippedBoundsInRoot())
+    }
+
+    /**
+     * The reward first (VA-20): the blade's art, name and rarity head the card, the guided step under them, at every
+     * width and text size the card is tested at. The rarity pip sits in the words, not over the art.
+     */
+    @Test
+    fun theBladeLeadsAboveTheGuidedStep() {
+        show(engine.itemDetail(forged, blade.id)!!, guide = { Text("Guided step", Modifier.testTag("test_guide")) })
+        for (s in listOf(DpSize(411.dp, 731.dp), DpSize(360.dp, 640.dp))) for (f in listOf(1f, 2f)) {
+            compose.runOnUiThread { size = s; font = f }
+            compose.waitForIdle()
+            val identity = compose.onNodeWithTag("reveal_identity").getUnclippedBoundsInRoot()
+            val guide = compose.onNodeWithTag("test_guide").getUnclippedBoundsInRoot()
+            assertTrue("${s.width} at $f: the blade (${identity.top}..${identity.bottom}) is above the guide (${guide.top})", identity.bottom <= guide.top)
+            compose.onNode(hasText(blade.name) and hasAnyAncestor(hasTestTag("reveal_identity"))).assertExists()
+        }
     }
 
     /** Owner decision K: "List at" the suggested price is the one gold action, with who could pay it; "Set price" opens the blade's sheet. */

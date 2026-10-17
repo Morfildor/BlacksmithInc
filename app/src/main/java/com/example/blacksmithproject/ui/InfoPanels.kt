@@ -16,7 +16,6 @@ import androidx.compose.foundation.background
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.text.font.FontFamily
 import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.theme.PaperInk
 import com.example.blacksmithproject.ui.theme.PaperInkMuted
@@ -205,7 +204,7 @@ private fun TownThreat(s: UiState.Playing, vm: GameViewModel) {
             if (h == null) Secondary(empty, Modifier.weight(1f).testTag("town_champion_empty_$i"))
             else {
                 val w = st.equippedWeapon(h.id)
-                SpriteSlot { PixelImage(Sprites.portrait(h), 48.dp, description = null) }
+                HeroFace(Sprites.portrait(h), 48.dp)
                 Column(Modifier.weight(1f)) {
                     Text(h.fullName, style = MaterialTheme.typography.titleSmall)
                     FactLine(listOfNotNull(
@@ -303,10 +302,7 @@ internal fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep)) {
-            PixelImage(Sprites.portrait(h, small = true), 44.dp, description = null)
-            Sprites.marker(h.fate)?.let { PixelIcon(it, 16.dp, Modifier.align(Alignment.BottomEnd)) }
-        }
+        HeroFace(Sprites.portrait(h, small = true), 44.dp, marker = Sprites.marker(h.fate))
         Column(Modifier.weight(1f)) {
             Text(h.fullName + (h.descendantOf?.let { " · descended from $it" } ?: ""), style = MaterialTheme.typography.titleSmall)
             Secondary("${vm.engine.raceClass(h)} ${h.level} · " + (fateLabel ?: Labels.health(h)) + " · " + (w?.let { it.name + (Labels.condition(it)?.let { c -> " ($c)" } ?: "") } ?: "no weapon"))
@@ -398,7 +394,7 @@ fun GazettePanel(s: UiState.Playing, vm: GameViewModel) {
                 Column(Modifier.weight(1f)) {
                     // A sign and a word, so the colour is never the only cue.
                     if (marks.isNotEmpty()) Text(marks.joinToString(" · "), style = MaterialTheme.typography.labelMedium, color = Ember)
-                    Text(first, style = MaterialTheme.typography.bodyMedium, fontFamily = FontFamily.Serif)
+                    Text(first, style = MaterialTheme.typography.bodyMedium)
                 }
                 Chevron(ChevronWay.DOWN, tint = CreamMuted)
             }

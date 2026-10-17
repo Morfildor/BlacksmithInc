@@ -155,7 +155,9 @@ class ForgeComparisonDeviceTest {
             assertEquals(where, b, vm.playing().draft.coreId)
             compose.onNodeWithTag("forge_tray_metal").assertExists()
             compose.onNodeWithTag("forge_choices").performScrollTo().assertIsDisplayed()
-            compose.onNodeWithTag("forge_tray_change").assertIsDisplayed()
+            // The comparison sits under the tiles. With the tiles' art kept at large text (VA-06) it can start under the
+            // fold at 1.5 and 2.0 on an 800 dp screen, so it is scrolled to, as a player scrolls after a tap.
+            compose.onNodeWithTag("forge_tray_change").performScrollTo().assertIsDisplayed()
             textIn("forge_tray_change", "Compared with ${engine.content.material(a).name}")
             assertInside("$where, comparing")
             shot("classic-compare-$w-$f")
