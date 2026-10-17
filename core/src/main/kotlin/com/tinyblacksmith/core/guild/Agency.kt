@@ -335,9 +335,18 @@ object Agency {
 
     // ---- step 13 ----
 
+    /** A return intent whose loan or weapon left the member's hands today (a capture, a seizure) ends with them, even on the day the forge falls. */
+    private fun tidy(ctx: ResolutionContext) {
+        for (m in ctx.guild!!.members) m.loanReturn?.let { i ->
+            if (ctx.weapons[i.loanId]?.loanedTo != m.heroId || ctx.weapons[i.ownedId]?.ownerId != m.heroId) GuildOps.updateMember(ctx, m.heroId) { it.copy(loanReturn = null) }
+        }
+    }
+
     /** End Day step 13 for the members: Hooks and concerns, leans and choices, loan returns, departures. After retirements and reconciliation. */
     fun reconcile(ctx: ResolutionContext) {
-        if (!on(ctx) || ctx.phase == Phase.ENDED) return
+        if (!on(ctx)) return
+        tidy(ctx)
+        if (ctx.phase == Phase.ENDED) return
         Hooks.reconcile(ctx)
         leans(ctx)
         loanReturns(ctx)
