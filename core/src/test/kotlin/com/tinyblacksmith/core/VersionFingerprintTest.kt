@@ -40,7 +40,8 @@ class VersionFingerprintTest {
         6 to "185758a6a844edd1ea4293637a77648709dc0eb63f5b33d261ec6b26deae4baa",
         // 7: living heroes (the twelve peoples, backgrounds, bynames, portrait peoples). Re-pinned inside the unreleased step as the bestiary lands.
         // 7, re-pinned inside the unreleased step (from 4be970f8...): the peoples, the bestiary types, the combat grammar (channels, Poison, returns, structural hits) and the two living-era bonuses, Disrupting and Purifying.
-        7 to "f9f000a698d62f8b101d00fc78c50476801e77169106eb00f8d2bde74836ec0d",
+        // 7, re-pinned inside the unreleased step (from f9f000a6...): the siege bestiary, 48 enemies with their profiles and the 36 armies (content/Bestiary.kt). No balance number moved.
+        7 to "fb8147846a5739638b80c3cfbff60682b787c730a05d6fdeee9c75090e09b6cc",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
