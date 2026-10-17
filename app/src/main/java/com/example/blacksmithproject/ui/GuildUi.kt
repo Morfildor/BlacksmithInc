@@ -94,7 +94,20 @@ data class WallUi(
     val readiness: Lead? = null, val readinessReason: String? = null,
     /** How the wall's fight is run: the Balanced retreat rule, what a retreat there means, the round limit (`SiegeFight.resolve`). */
     val rulesLine: String = "",
+    /** A living era: the army committed for this siege (`SiegeFight.Forecast.army`), its scouts' report and the ways to answer it. */
+    val army: ArmyUi? = null,
 )
+
+/** The committed army as the Wall leads with it: its name, its kind in a word (null for a standard army), the scouts' line and the answers. */
+@Immutable data class ArmyUi(val name: String, val kind: String?, val forecast: String, val counters: List<String>)
+
+/** An army's kind as the player reads it; a standard army has no word. */
+internal fun armyKindWord(kind: com.tinyblacksmith.core.content.ArmyKind): String? = when (kind) {
+    com.tinyblacksmith.core.content.ArmyKind.STANDARD -> null
+    com.tinyblacksmith.core.content.ArmyKind.CAPTAIN -> "Captain"
+    com.tinyblacksmith.core.content.ArmyKind.ENGINE -> "Siege engine"
+    com.tinyblacksmith.core.content.ArmyKind.MONSTER -> "Great monster"
+}
 
 /** The choice at the door of a deeper stage. [chosen] is what the smith has already sent word of today. */
 @Immutable data class CheckpointUi(val instanceId: String, val secured: String, val deeper: String, val danger: String, val enemies: List<EnemyUi>, val chosen: CheckpointChoice?, val note: String)
@@ -442,6 +455,7 @@ private fun GameEngine.wallUi(state: GameState, g: GuildRunState): WallUi {
             })
         },
         missing = f.missing.map { (h, why) -> "${h.fullName}: $why" },
+        army = f.army?.takeIf { f.committed && state.living }?.let { a -> ArmyUi(a.name, armyKindWord(a.kind), a.forecast, a.counters) },
         prep = f.prep?.takeIf { f.committed }?.let { PrepUi(it.name, it.description, it.counters, it.sabotageBrief) },
         spoiled = f.spoiled?.let { "Your party spoiled their preparation: ${it.name}. It will not be used." },
         rulesLine = wallRules(state),

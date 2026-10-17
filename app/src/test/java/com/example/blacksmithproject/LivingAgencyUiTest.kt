@@ -84,4 +84,16 @@ class LivingAgencyUiTest {
         assertTrue("a guild member", "a member of your guild" in member.line)
         assertTrue(groups.filterNot { it.member }.none { "member" in it.line })
     }
+
+    @Test
+    fun theWallLeadsWithTheCommittedArmyAndItsAnswers() {
+        val army = e.content.guild!!.army(s.siege!!.armyId)!!
+        val ui = e.guildUi(s)!!.wall.army!!
+        assertEquals(army.name, ui.name)
+        assertNull("a standard army has no kind word", ui.kind)
+        assertEquals(army.forecast, ui.forecast)
+        assertEquals(army.counters, ui.counters)
+        assertEquals("Captain", com.example.blacksmithproject.ui.armyKindWord(com.tinyblacksmith.core.content.ArmyKind.CAPTAIN))
+        assertNull(e.guildUi(s.copy(livingRevision = LivingRevision.LEGACY))!!.wall.army)
+    }
 }

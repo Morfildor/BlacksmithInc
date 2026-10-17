@@ -295,6 +295,8 @@ private fun CandidateRow(c: CandidateUi, enabled: Boolean, tip: () -> TipUi?, on
 internal fun wallRows(ui: GuildUi, a: GuildActions): List<GuildRow> = buildList {
     val w = ui.wall
     val eve = w.daysLeft <= 1
+    // A living era: the army the scouts report leads the Wall, with the ways to answer it.
+    w.army?.let { army -> add(GuildRow("army") { ArmyHead(army) }) }
     add(GuildRow("readiness") { Readiness(ui, a) })
     add(GuildRow("watch") {
         // Forge health and the watch as one block: the bar, then the watch's worth in the rule's own numbers.
@@ -326,6 +328,20 @@ internal fun wallRows(ui: GuildUi, a: GuildActions): List<GuildRow> = buildList 
     if (w.field.isNotEmpty()) add(GuildRow("field") {
         Collapsible("field", "Battlefield", w.field.joinToString(", ") { it.label }, openAtFirst = eve, tag = "guild_wall_field") { EnemyLines(w.field) }
     })
+}
+
+/** The army coming: its name as the heading, its kind in a quiet word, the scouts' report, then each way to answer it. */
+@Composable
+private fun ArmyHead(army: ArmyUi) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("guild_wall_army")) {
+        SectionTitle(army.name)
+        army.kind?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = Gold, modifier = Modifier.testTag("guild_wall_army_kind")) }
+        Text(army.forecast, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.padding(top = Space.xs))
+        if (army.counters.isNotEmpty()) {
+            Text("Ways to answer it", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm))
+            army.counters.forEach { SignedLine(it, Cream, TipTone.CONDITION.color, Modifier.testTag("guild_wall_army_answer")) }
+        }
+    }
 }
 
 /**
