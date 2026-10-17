@@ -369,6 +369,7 @@ object SiegeFight {
                 notes += "${nemesis.name} came carrying ${blade.name} and was defeated. It is back at the forge."
             } else if (blade != null) notes += "${nemesis.name} fought on their side with ${blade.name}, a weapon of this forge."
         }
+        notes += Agency.afterSiege(ctx, wall.map { it.first.id }, won)
         ctx.guild = ctx.guild!!.copy(lastSiege = SiegeReport(ctx.day, wall.map { it.first.id }, fight?.let { Missions.compact(it) }, verdict, forgeDamage, outer, notes), reserved = emptyList())
 
         if (won) {

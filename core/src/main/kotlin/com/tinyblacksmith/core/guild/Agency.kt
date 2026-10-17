@@ -233,6 +233,32 @@ object Agency {
         }
     }
 
+    /**
+     * After a siege (content bible 14.2): bonded members who held the wall side by side are remembered for it
+     * (opp_shared_watch), and a member's third siege held with the same weapon is acknowledged (opp_familiar_weapon).
+     * Story and evidence only, never a reward. Returns the report's lines.
+     */
+    fun afterSiege(ctx: ResolutionContext, wall: List<HeroId>, won: Boolean): List<String> {
+        if (!on(ctx) || !won) return emptyList()
+        val lines = ArrayList<String>()
+        val members = wall.filter { ctx.guild!!.member(it) != null && ctx.heroes[it]?.isAlive == true }
+        for (a in members) for (b in members) if (a.value < b.value && ctx.guild!!.member(a)!!.bonds.any { it.withHeroId == b }) {
+            val text = "${ctx.hero(a).fullName} and ${ctx.hero(b).fullName} held the wall side by side."
+            Identity.note(ctx, a, "shared_watch", text, listOf(b.value)); Identity.note(ctx, b, "shared_watch", text, listOf(a.value))
+            lines += text
+        }
+        for (id in members) {
+            val hero = ctx.hero(id)
+            val w = GuildOps.weaponOf(ctx, id) ?: continue
+            if (w.history.count { it.kind == "SIEGE" && id.value in it.subjectIds } == ctx.config.living.attachmentSiegeCap && hero.reasons.none { it.kind == "familiar" && w.id.value in it.refs }) {
+                val text = "${hero.fullName} has held ${ctx.config.living.attachmentSiegeCap} sieges with ${w.name}."
+                Identity.note(ctx, id, "familiar", text, listOf(w.id.value))
+                lines += text
+            }
+        }
+        return lines
+    }
+
     // ---- Specialities (step 13) ----
 
     private val inclinations: Map<String, Set<TraitId>> = mapOf(
