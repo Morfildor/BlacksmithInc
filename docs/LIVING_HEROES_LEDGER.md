@@ -78,8 +78,8 @@ Opportunities (content bible 14.2):
 | ID | Status | Route |
 |---|---|---|
 | opp_powder_trail | implemented | A scout, militia veteran, deserter or mason sponsors the siege's sabotage when the field brings a breach |
-| opp_troll_test | pending | Member want with an element (counter) |
-| opp_silver_saving | pending | Member want for Silver |
+| opp_troll_test | implemented (needs bestiary units) | A member who watched an enemy mend itself notes what stops it; when one comes in the committed army they visit the counter and value a weapon that stops it (+0.4 utility); stopping it later is recorded |
+| opp_silver_saving | implemented (shared route) | Same route as the troll, with Silver among what stops a werewolf; the member buys with their own saved gold. No member commission (adapted) |
 | opp_bone_lesson | implemented (shared route) | The lesson visitor |
 | opp_lantern_hunt | deferred | Enemies have no identity that persists between fights except the nemesis |
 | opp_gate_practice | implemented | A militia veteran or mason standing on the wall while the defences are struck gains "gate" evidence toward Wallwarden |
@@ -88,9 +88,9 @@ Opportunities (content bible 14.2):
 | opp_shared_watch | implemented | Evidence when two bonded members hold the wall |
 | opp_apprentice_request | implemented | The lesson visitor (costs both members the day) |
 | opp_wounded_friend | implemented | The healer visitor for an injured bonded member |
-| opp_captains_drill | pending | Forecast line by a deserter or militia veteran when a captain is committed |
-| opp_ash_samples | pending | Clue rung after a Fire Elemental siege with a scholar on the wall |
-| opp_unburied_oath | pending | Reputation when a member with a Hollowbound grudge holds against Sir Carrow |
+| opp_captains_drill | implemented (needs bestiary units) | A deserter or militia veteran at home adds the captain's own telegraph to the scouts' report |
+| opp_ash_samples | implemented, adapted | A field scholar standing after a Fire Elemental siege earns the next clue rung of an open signature; no separate assignment step |
+| opp_unburied_oath | implemented (needs bestiary units) | A member with an open Pale Procession grievance holds the wall against Sir Carrow: Hook resolved, +2 reputation, Avenger fulfilled |
 | opp_forests_binding | narrative | The forecast already names every Covenant role |
 | opp_reputation_deed | implemented | A noble's or deserter's sponsored hunt, +2 reputation on a win |
 | opp_familiar_weapon | implemented | Acknowledgement at an attachment milestone |
