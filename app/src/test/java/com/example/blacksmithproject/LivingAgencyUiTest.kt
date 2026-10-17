@@ -96,4 +96,26 @@ class LivingAgencyUiTest {
         assertEquals("Captain", com.example.blacksmithproject.ui.armyKindWord(com.tinyblacksmith.core.content.ArmyKind.CAPTAIN))
         assertNull(e.guildUi(s.copy(livingRevision = LivingRevision.LEGACY))!!.wall.army)
     }
+
+    @Test
+    fun anEnemyCardSaysItsTraitsJobAndAnswerOnce() {
+        val combat = e.content.combat!!
+        val profiles = e.content.guild!!.profileById
+        fun card(id: String) = com.example.blacksmithproject.ui.enemyTip(combat.unit(id), 1, listOf(100), e.config, profile = profiles[id])
+        fun lines(id: String) = card(id).sections.flatMap { it.lines }
+        val sapper = lines("ib_goblin_sapper")
+        assertTrue(sapper.any { it.title == "Attack on the defences" })
+        assertTrue(sapper.any { it.text == profiles.getValue("ib_goblin_sapper").job })
+        assertEquals(profiles.getValue("ib_goblin_sapper").counter, card("ib_goblin_sapper").sections.single { it.title == "How to answer it" }.lines.single().text)
+        assertTrue("its own telegraph keeps the number", sapper.any { "4 damage to the defences" in it.text })
+        val bones = lines("pp_skeleton_guard")
+        assertTrue(bones.any { it.text == "Poison and Bleed do not affect it." })
+        assertTrue(bones.any { it.text == "Axe attacks deal 30% more damage to it." })
+        // Each trait is said once: never again in the attack's own line.
+        assertEquals(1, bones.count { "do not affect" in it.text || "never affect" in it.text })
+        val wolf = lines("tc_werewolf")
+        assertTrue(wolf.any { it.title == "Recovers" && "a Silver weapon" in it.text })
+        assertTrue(wolf.any { it.text == "Silver weapons deal 30% more damage to it." })
+        assertTrue(lines("tc_dire_wolf").any { it.title == "Pack" })
+    }
 }

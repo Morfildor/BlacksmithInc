@@ -275,7 +275,7 @@ private fun GameEngine.enemies(specs: List<EnemySpec>, note: String? = null): Li
     return specs.groupBy { it.unitId }.map { (id, all) ->
         combat.unit(id).let { u ->
             val percents = all.map { it.percent }
-            EnemyUi(u.name, all.size, id, unitHealth(u, percents), enemyTip(u, all.size, percents, config, note, tag = "guild_enemy_tip"))
+            EnemyUi(u.name, all.size, id, unitHealth(u, percents), enemyTip(u, all.size, percents, config, note, tag = "guild_enemy_tip", profile = content.guild?.profileById?.get(id)))
         }
     }
 }
