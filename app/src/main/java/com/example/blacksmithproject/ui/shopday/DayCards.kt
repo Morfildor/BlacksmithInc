@@ -52,6 +52,7 @@ import com.example.blacksmithproject.R
 import com.example.blacksmithproject.ui.Sprites
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
+import com.example.blacksmithproject.ui.theme.Gold
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import com.example.blacksmithproject.ui.theme.Space
@@ -144,7 +145,9 @@ fun TallyCard(tally: Beat.Tally, onOpenHero: (FaceUi) -> Unit, modifier: Modifie
         CardArt(R.drawable.art_day_till, Modifier.align(Alignment.CenterHorizontally))
         CardTitle(if (tally.featured == 0) "${tally.count} came by" else "${tally.count} more came by", Modifier.testTag("shopday_tally_title"))
         tally.groups.forEach { group ->
-            Body(group.line, Modifier.padding(top = Space.xs))
+            // A guild member's own purchase reads apart from the customers: a quiet gold label over the engine's sentence.
+            if (group.member) Text("Your guild", style = MaterialTheme.typography.labelMedium, color = Gold, modifier = Modifier.padding(top = Space.xs).testTag("shopday_tally_member"))
+            Body(group.line, Modifier.padding(top = if (group.member) 0.dp else Space.xs))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Space.sm), verticalArrangement = Arrangement.spacedBy(Space.xs)) { group.faces.forEach { PersonChip(it, onOpenHero) } }
         }
         if (tally.earnedAfter != tally.earnedBefore) EarnedToday(tally.earnedBefore, tally.earnedAfter, Modifier.padding(top = Space.xs))

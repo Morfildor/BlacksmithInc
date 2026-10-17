@@ -4,6 +4,7 @@ import com.example.blacksmithproject.ui.detail.heroDetail
 import com.example.blacksmithproject.ui.guildUi
 import com.example.blacksmithproject.ui.loanUi
 import com.example.blacksmithproject.ui.memberDetail
+import com.example.blacksmithproject.ui.shopday.toUi
 import com.tinyblacksmith.core.model.Hook
 import com.tinyblacksmith.core.model.HookKind
 import com.tinyblacksmith.core.model.LivingRevision
@@ -70,5 +71,17 @@ class LivingAgencyUiTest {
         assertEquals(s.guild!!.offers.single { it.sponsorHeroId != null }.reason, personal.sponsor!!.why)
         assertTrue(offers.filter { it !== personal }.all { it.sponsor == null })
         assertTrue(e.guildUi(s.copy(livingRevision = LivingRevision.LEGACY))!!.offers.all { it.sponsor == null })
+    }
+
+    @Test
+    fun aMembersCounterPurchaseReadsApartFromTheCustomersInTheEnginesWords() {
+        val r = s.lastResolution!!
+        val model = com.tinyblacksmith.core.shopday.ShopDay.script(r, s, e.content, e.config).toUi(s, e.content, e.config)
+        val groups = model.beats.filterIsInstance<com.example.blacksmithproject.ui.shopday.Beat.Tally>().flatMap { it.groups }
+        val member = groups.single { it.member }
+        val event = s.events.single { it.type == com.tinyblacksmith.core.model.EventType.MEMBER_PURCHASE && it.day == r.day }
+        assertEquals(event.text, member.line)
+        assertTrue("a guild member", "a member of your guild" in member.line)
+        assertTrue(groups.filterNot { it.member }.none { "member" in it.line })
     }
 }

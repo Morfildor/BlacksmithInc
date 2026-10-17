@@ -78,7 +78,8 @@ data class VisitUi(
 )
 
 /** [seqs] are the visits the line counts, by their order in the day. */
-@Immutable data class TallyGroupUi(val line: String, val faces: List<FaceUi>, val seqs: List<Int>)
+/** [member]: a member of the guild who bought at the counter with their own gold (living heroes), told apart from customers. */
+@Immutable data class TallyGroupUi(val line: String, val faces: List<FaceUi>, val seqs: List<Int>, val member: Boolean = false)
 
 @Immutable
 data class AftermathUi(
@@ -277,6 +278,11 @@ internal fun classicContribution(replay: CombatReplay?, townDefense: String?): S
  * The script as immutable UI models: every sentence is a `Lines` template over the day's records or a recorded number
  * under a fixed label. Pure: reads [state] (the state End Day returned), draws nothing, decides nothing.
  */
+/** A member's counter purchase in the engine's own words (the MEMBER_PURCHASE record), or a plain line when the record is gone. */
+internal fun memberPurchaseLine(state: GameState, day: Int, v: MarketVisit): String =
+    state.events.lastOrNull { it.type == EventType.MEMBER_PURCHASE && it.day == day && it.era == state.era && v.heroId?.value in it.subjectIds && v.purchasedWeaponId?.value in it.subjectIds }?.text
+        ?: "${v.heroName}, a member of your guild, bought a weapon with their own gold."
+
 fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: BalanceConfig, contract: Boolean = false): ShopDayUiModel {
     val script = this
     // A guild run's own records of the day; a classic run has neither.
@@ -373,12 +379,19 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
             val rest = tally.sumOf { g -> g.visits.sumOf { coin(it) } }
             beats += Beat.Tally(
                 tally.sumOf { it.visits.size }, featured.size,
-                tally.map { g -> TallyGroupUi(Lines.tally(g, script).replaceFirstChar { it.uppercase() }, g.visits.map { face(it) }, g.visits.map { it.seq }) },
+                tally.flatMap { g ->
+                    // A guild member's purchase is the smith's sale but the member's own gold: a line of its own, in the
+                    // engine's words (MEMBER_PURCHASE), never counted among the customers.
+                    val (members, customers) = g.visits.partition { it.kind == VisitKind.MEMBER }
+                    listOfNotNull(customers.takeIf { it.isNotEmpty() }?.let { c -> TallyGroupUi(Lines.tally(g.copy(visits = c), script).replaceFirstChar { it.uppercase() }, c.map { face(it) }, c.map { it.seq }) }) +
+                        members.map { v -> TallyGroupUi(memberPurchaseLine(state, day, v), listOf(face(v)), listOf(v.seq), member = true) }
+                },
                 earnedBefore = earned, earnedAfter = earned + rest, gone = goneAll,
             )
         }
         ledger?.let { l ->
             val sales = all.count { it.kind == VisitKind.BROWSE && it.purchasedWeaponId != null }
+            val memberSales = all.count { it.kind == VisitKind.MEMBER && it.purchasedWeaponId != null }
             val commissions = all.count { it.kind == VisitKind.COMMISSION }
             val collectors = all.count { it.kind == VisitKind.COLLECTOR }
             val left = all.count { it.purchasedWeaponId == null }
@@ -386,7 +399,8 @@ fun ShopDayScript.toUi(state: GameState, content: ContentCatalog, config: Balanc
                 rows = IncomeKind.entries.mapNotNull { k -> l.income[k]?.takeIf { it != 0 }?.let { ReceiptRow(incomeLabel(k), "$it gold") } } +
                     ReceiptRow("Earned today","${l.goldAtClose - l.goldAtOpen} gold", total = true),
                 counts = listOfNotNull(
-                    plural(sales, "sale", "sales"), plural(commissions, "commission paid", "commissions paid").takeIf { commissions > 0 },
+                    plural(sales, "sale", "sales"), plural(memberSales, "sale to a guild member", "sales to guild members").takeIf { memberSales > 0 },
+                    plural(commissions, "commission paid", "commissions paid").takeIf { commissions > 0 },
                     plural(collectors, "collector", "collectors").takeIf { collectors > 0 }, "$left left without buying",
                     // Willing heroes with no seat left (`DayResolution.turnedAway`): the reason to buy the Signboard.
                     state.lastResolution?.takeIf { it.day == day }?.turnedAway?.size?.takeIf { it > 0 }?.let { "$it found the shop full" },
