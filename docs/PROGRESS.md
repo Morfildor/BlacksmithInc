@@ -1,5 +1,18 @@
 # Progress — 2026-10-15 (text and header pass; 2026-10-14: deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Living heroes and siege variety (2026-10-17, implementing on branch `living-heroes`)
+
+- Spec: `docs/Tiny_Blacksmith_Living_Heroes_Final_Design.md`, content bible `docs/Tiny_Blacksmith_Peoples_Names_and_Siege_Bestiary.md`.
+  Per-task status, coverage and evidence: `docs/LIVING_HEROES_LEDGER.md` (the resume point).
+- Done (core): era revision boundary (legacy eras unchanged, classic RNG parity proven), schema 8 / rules 8 / content 7 /
+  balance 17; 12 peoples and all 1,800 names; Hooks, eight ambitions, counter visits, announced loan returns, autonomous
+  Specialities, personal offers, concerns and departures, creditor / lesson / healer visitors; combat grammar (Poison,
+  preparations and Interrupt, return once, survival, attacks on the defences, Disrupting and Purifying); army-template
+  siege planner; structural forge loss once a siege (cap 12); 16 of 18 opportunities routed (2 deferred).
+- In progress (agents): the 48 enemies and 36 armies; identity UI with the owner's six UI fixes. Next: agency UI,
+  structural and bestiary fixtures, full sims incl. validation block 800001-800300, GDD, device checks.
+- Checks: `:core:test` 725 pass (2026-10-17, before the bestiary). Paired influence evidence in the ledger section 6.
+
 ## Living heroes design review (2026-10-17, review only)
 
 - The owner's ChatGPT proposal "Living Heroes, Autonomous Agendas, and Run Variety" reviewed as a designer / RPG / DM /
