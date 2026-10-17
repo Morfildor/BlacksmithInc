@@ -8,7 +8,11 @@ import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.Concern
 import com.tinyblacksmith.core.model.ConcernKind
 import com.tinyblacksmith.core.model.Departure
+import com.tinyblacksmith.core.model.Bond
+import com.tinyblacksmith.core.model.EncounterInstance
 import com.tinyblacksmith.core.model.EnemySpec
+import com.tinyblacksmith.core.model.Wound
+import com.tinyblacksmith.core.model.WoundKind
 import com.tinyblacksmith.core.model.ForgeMode
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.HeroId
@@ -51,7 +55,8 @@ object LivingAgencyFixtures {
         return s
     }
 
-    fun build(seed: Long = 9): Fixture {
+    /** [visitor]: one of the living visitors (`Hooks.CREDITOR`, `LESSON`, `WOUNDED_FRIEND`) waiting this morning, or none. */
+    fun build(seed: Long = 9, visitor: String? = null): Fixture {
         val fresh = engine.newRun(LegacyProfile(), seed, charterId = GuildContent.TOWNS_LAST_HOPE)
         var s = (engine.handle(fresh, Command.ChooseOpening(fresh.guild!!.openingOffer.first().defId)) as CommandOutcome.Accepted).state
         // Play mornings and End Days, before the first siege, until a member has bought at the counter.
@@ -98,13 +103,35 @@ object LivingAgencyFixtures {
         val personal = g.offers.firstOrNull()?.let { o ->
             o.copy(id = "${o.id}-personal", sponsorHeroId = leaning, opportunityId = "grudge", reason = "${s.heroes.getValue(leaning).name} asks for this one: the raiders who burned a home village are camped on this road.")
         }
-        val scenario = (s.siege?.takeIf { it.siegeDay == s.town.nextSiegeDay } ?: SiegeScenario(s.town.nextSiegeDay))
-            .copy(factionId = army.factionId, plan = army.members.map { EnemySpec(it, 100) }, armyId = army.id)
+        val drawn = s.siege?.takeIf { it.siegeDay == s.town.nextSiegeDay } ?: SiegeScenario(s.town.nextSiegeDay)
+        // A preparation drawn for another besieger does not go with this army.
+        val scenario = drawn.copy(factionId = army.factionId, plan = army.members.map { EnemySpec(it, 100) }, armyId = army.id, prepId = drawn.prepId.takeIf { drawn.factionId == army.factionId })
         s = s.copy(
             heroes = heroes,
             guild = g.copy(members = newMembers, offers = listOfNotNull(personal) + g.offers, armyLog = (g.armyLog + army.id).takeLast(6)),
             siege = scenario,
         )
+        if (visitor != null) {
+            val g2 = s.guild!!
+            val other = g2.members.first { it.heroId != departing }.heroId
+            s = when (visitor) {
+                com.tinyblacksmith.core.guild.Hooks.CREDITOR -> s.copy(encounter = EncounterInstance("fixture-visitor", visitor, s.day, heroId = departing, amounts = mapOf("amount" to 40)))
+                com.tinyblacksmith.core.guild.Hooks.LESSON -> s.copy(
+                    heroes = s.heroes + (other to s.heroes.getValue(other).copy(level = 4)),
+                    encounter = EncounterInstance("fixture-visitor", visitor, s.day, heroId = other, otherHeroId = departing, amounts = mapOf("xp" to engine.config.living.lessonXp)),
+                )
+                else -> s.copy(
+                    guild = g2.copy(members = g2.members.map { m ->
+                        when (m.heroId) {
+                            departing -> m.copy(wound = Wound(WoundKind.INJURED, s.day + 3, "Hurt on the Ashroad."))
+                            other -> m.copy(bonds = m.bonds + Bond(departing, "comrades", s.day - 1, "Came home together."))
+                            else -> m
+                        }
+                    }),
+                    encounter = EncounterInstance("fixture-visitor", visitor, s.day, heroId = other, otherHeroId = departing, amounts = mapOf("fee" to engine.config.living.healerFee)),
+                )
+            }
+        }
         return Fixture(s, buyer, leaning, departing)
     }
 }

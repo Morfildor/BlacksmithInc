@@ -26,4 +26,15 @@ class LivingAgencyFixturesTest {
         assertTrue(g.offers.any { it.sponsorHeroId != null })
         assertTrue("ib_goblin_sapper" in s.siege!!.plan.map { it.unitId })
     }
+
+    @Test
+    fun eachLivingVisitorScenarioIsSound() {
+        val e = LivingAgencyFixtures.engine
+        for (v in listOf("creditor_calls", "a_lesson", "wounded_friend")) {
+            val s = LivingAgencyFixtures.build(visitor = v).state
+            assertEquals(v, emptyList<String>(), Invariants.check(s, e.config, content = e.content))
+            assertEquals(v, s.encounter?.defId)
+            assertTrue(v, Compatibility.admit(SaveCodec.decodeRun(SaveCodec.encodeRun(s)), e.content, e.config) is Compatibility.Result.Admitted)
+        }
+    }
 }
