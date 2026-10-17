@@ -40,7 +40,10 @@ class PortraitArtTest {
         }
         // A live hero draws the stored key; without one (a save older than the field) the face its ID always had.
         for (hero in GameEngine().newRun(LegacyProfile(), 1).heroes.values) {
-            assertEquals(PortraitArt.heroes.getValue(hero.appearance!!).drawable, Sprites.portrait(hero))
+            // A hero of a people with no face of their class wears the class silhouette (core `Appearance.stamp`).
+            val stored = hero.appearance!!
+            val expected = if (Appearance.isSilhouette(stored)) Sprites.silhouettes.getValue(hero.classId.value) else PortraitArt.heroes.getValue(stored)
+            assertEquals(expected.drawable, Sprites.portrait(hero))
             assertEquals(PortraitArt.heroes.getValue(Appearance.legacyKey(hero)).drawable, Sprites.portrait(hero.copy(appearance = null)))
         }
     }
@@ -126,6 +129,26 @@ class PortraitArtTest {
         assertEquals(PortraitArt.heroes.getValue("portrait_hero_01").drawable, Sprites.portrait("portrait_hero_02", HeroClassId("guardian")))
         // An unknown class gets a guardian rather than a crash.
         assertEquals(PortraitArt.heroes.getValue("portrait_hero_01").drawable, Sprites.portrait("portrait_gone_9", HeroClassId("bard")))
+    }
+
+    /** A hero of a people with no face of their class (core: `Appearance.silhouette`) shows the neutral class silhouette, never a face. */
+    @Test
+    fun silhouetteKeysDrawTheClassSilhouetteNeverAFace() {
+        val faces = (PortraitArt.heroes.values + PortraitArt.heroesUpgraded.values + PortraitArt.heroesSmall.values + PortraitArt.heroesUpgradedSmall.values).map { it.drawable }.toSet()
+        assertEquals(classes.toSet(), Sprites.silhouettes.keys)
+        for (cls in classes) {
+            val key = Appearance.silhouette(HeroClassId(cls))
+            val entry = Sprites.silhouettes.getValue(cls)
+            assertEquals("silhouette_$cls", entry.resName)
+            assertTrue("missing drawable ${entry.resName}.png", drawable(entry.resName).isFile)
+            for (upgraded in listOf(false, true)) for (small in listOf(false, true)) {
+                assertEquals(entry.drawable, Sprites.portrait(key, HeroClassId(cls), upgraded = upgraded, small = small))
+            }
+            assertFalse(entry.drawable in faces)
+        }
+        // A silhouette of a class the app does not know is still a silhouette, of the hero's class when it has one.
+        assertEquals(Sprites.silhouettes.getValue("ranger").drawable, Sprites.portrait("silhouette_bard", HeroClassId("ranger")))
+        assertEquals(Sprites.silhouettes.getValue("guardian").drawable, Sprites.portrait("silhouette_bard", HeroClassId("bard")))
     }
 
     @Test

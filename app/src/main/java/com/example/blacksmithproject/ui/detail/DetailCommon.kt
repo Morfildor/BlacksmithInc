@@ -56,17 +56,17 @@ fun DayResolution.weaponSnapshot(id: WeaponId) = shopWeapons.firstOrNull { it.we
 internal fun SheetSection(title: String, modifier: Modifier = Modifier) = SectionHeader(title, modifier)
 
 /**
- * Label and value side by side; stacked once the text is large enough that two columns would wrap every line.
- * A fact that links to another sheet is one 48 dp target that says where it goes.
+ * Label and value side by side; stacked once the text is large enough that two columns would wrap every line, or always
+ * when [stacked] (a value that is a whole sentence). A fact that links to another sheet is one 48 dp target that says where it goes.
  */
 @Composable
-internal fun FactRow(fact: Fact, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, modifier: Modifier = Modifier) {
+internal fun FactRow(fact: Fact, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, modifier: Modifier = Modifier, stacked: Boolean = false) {
     val open: (() -> Unit)? = fact.heroId?.let { { onOpenHero(it) } } ?: fact.weaponId?.let { { onOpenItem(it) } }
     val row = if (open == null) modifier.fillMaxWidth().padding(vertical = 2.dp).semantics(mergeDescendants = true) {}
     else modifier.fillMaxWidth().clickable(onClickLabel = "Open ${fact.value}", role = Role.Button, onClick = open).heightIn(min = 48.dp).padding(vertical = 2.dp)
         .testTag(if (fact.heroId != null) "sheet_open_hero" else "sheet_open_item")
     val valueColor = if (open == null) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
-    if (LocalDensity.current.fontScale > 1.3f) {
+    if (stacked || LocalDensity.current.fontScale > 1.3f) {
         Column(row.padding(vertical = 2.dp), verticalArrangement = Arrangement.Center) {
             Secondary(fact.label)
             Text(fact.value + if (open != null) "  ›" else "", style = MaterialTheme.typography.bodyMedium, color = valueColor)
@@ -85,11 +85,11 @@ internal fun FactRow(fact: Fact, onOpenHero: (HeroId) -> Unit, onOpenItem: (Weap
 
 /** A block of facts under its heading; nothing at all when there are none. */
 @Composable
-internal fun FactBlock(title: String?, facts: List<Fact>, tag: String, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit) {
+internal fun FactBlock(title: String?, facts: List<Fact>, tag: String, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, stacked: Boolean = false) {
     if (facts.isEmpty()) return
     Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag(tag)) {
         title?.let { SheetSection(it) }
-        facts.forEach { FactRow(it, onOpenHero, onOpenItem) }
+        facts.forEach { FactRow(it, onOpenHero, onOpenItem, stacked = stacked) }
     }
 }
 

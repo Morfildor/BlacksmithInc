@@ -171,7 +171,7 @@ internal fun GameEngine.assignRows(state: GameState, g: GuildRunState, places: I
         g.reserved.size >= places -> "All $places places are already reserved" to AssignAction.NONE
         else -> null to AssignAction.RESERVE
     }
-    AssignUi(h.id, Sprites.portrait(h, small = true), h.fullName, "${content.heroClass(h.classId).name} level ${h.level}", reason, action)
+    AssignUi(h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), reason, action)
 }
 
 /**

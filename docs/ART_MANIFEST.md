@@ -69,6 +69,11 @@ Crop boxes: `import_assets.py` and `tools/pixelart/cells/*.json`. Source file ha
 | ember_0 | 32×32 | fx | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | frames=1 |
 | ember_1 | 32×32 | fx | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | frames=1 |
 | ember_2 | 32×32 | fx | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png | frames=1 |
+| silhouette_guardian | 64×64 | portrait | programmatic placeholder | generate_assets.py | anchor=top-left, heroClass=guardian, placeholder=silhouette |
+| silhouette_ranger | 64×64 | portrait | programmatic placeholder | generate_assets.py | anchor=top-left, heroClass=ranger, placeholder=silhouette |
+| silhouette_duelist | 64×64 | portrait | programmatic placeholder | generate_assets.py | anchor=top-left, heroClass=duelist, placeholder=silhouette |
+| silhouette_battlemage | 64×64 | portrait | programmatic placeholder | generate_assets.py | anchor=top-left, heroClass=battlemage, placeholder=silhouette |
+| silhouette_warden | 64×64 | portrait | programmatic placeholder | generate_assets.py | anchor=top-left, heroClass=warden, placeholder=silhouette |
 | tile_wall | 64×64 | background | imported: script-drawn pack | pack:backgrounds | tile=True |
 | tile_floor | 64×32 | background | imported: script-drawn pack | pack:backgrounds | tile=True |
 | tile_paper | 64×64 | ui | imported: AI-generated sheet | ChatGPT Image Oct 8, 2026, 08_29_58 PM-5.png | tile=True |

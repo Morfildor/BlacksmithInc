@@ -1,6 +1,7 @@
 package com.example.blacksmithproject
 
 import com.example.blacksmithproject.ui.ChipTone
+import com.example.blacksmithproject.ui.raceClass
 import com.example.blacksmithproject.ui.FactTone
 import com.example.blacksmithproject.ui.TipLine
 import com.example.blacksmithproject.ui.TipStat
@@ -76,7 +77,7 @@ class GuildInspectTest {
             val tip = engine.heroTip(s, m.heroId)!!
             assertNothingEmptyTitled(tip)
             assertEquals(h.fullName, tip.name)
-            assertEquals("${engine.content.heroClass(h.classId).name} · level ${h.level}", tip.kind)
+            assertEquals("${engine.raceClass(h)} · level ${h.level}", tip.kind)
             assertEquals("Guild member", tip.meta)
             // The same numbers as the hero sheet: one read of the fighter, `fighterView`.
             // Health says the fight's number and the health between fights (a percentage) on one line; Support is shown
@@ -145,7 +146,7 @@ class GuildInspectTest {
         val keptTip = engine.heroTip(kept, m.heroId)!!
         assertNull(keptTip.warning)
         assertTrue(keptTip.lines().contains(TipLine("Reserved for the wall", TipTone.CONDITION)))
-        assertFalse(engine.heroTip(fresh, m.heroId)!!.lines().any { it.tone == TipTone.CONDITION })
+        assertFalse(engine.heroTip(fresh, m.heroId)!!.lines().any { it.tone == TipTone.CONDITION && it.text == "Reserved for the wall" })
     }
 
     @Test

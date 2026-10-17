@@ -151,6 +151,8 @@ data class CandidateUi(
     val heroId: HeroId, val portrait: Int, val name: String, val sub: String, val role: String, val trait: String, val terms: String, val blocked: String?,
     /** The signing fee and the share of quest gold they keep, as numbers for the row's facts; [terms] says both in a sentence. */
     val feeGold: Int = 0, val sharePercent: Int = 0,
+    /** Their Hook in one sentence, shown before the fee is paid (an oath above all); null without one. */
+    val complication: String? = null,
 ) {
     /** Class and the trait's name in one line; what the trait does is on the hero's sheet. */
     val line: String get() = "$sub · ${trait.substringBefore(':')}"
@@ -228,7 +230,8 @@ internal fun missesSiege(day: Int, days: Int, siegeDay: Int): Boolean = siegeDay
 
 private fun names(list: List<String>) = list.joinToString(", ")
 
-private fun GameEngine.classLine(h: Hero) = "${content.heroClass(h.classId).name} level ${h.level}"
+/** "Elf Duelist level 3": people, class and level, as every guild row says them. */
+internal fun GameEngine.classLine(h: Hero) = "${raceClass(h)} level ${h.level}"
 
 /** Each kind of unit on a field once, with its count, its health as the field scales it and its card. [note]: what changes the numbers before the fight. */
 private fun GameEngine.enemies(specs: List<EnemySpec>, note: String? = null): List<EnemyUi> {
@@ -566,7 +569,7 @@ fun GameEngine.guildUi(state: GameState): GuildUi? {
             CandidateUi(
                 h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), combat?.kitByClass?.get(h.classId)?.role.orEmpty(), traitLine(c.traitId),
                 "Recruitment fee: ${c.fee} gold. Keeps ${c.sharePercent}% of the gold from quests they go on.", recruitBlocked(state, g, c.fee),
-                feeGold = c.fee, sharePercent = c.sharePercent,
+                feeGold = c.fee, sharePercent = c.sharePercent, complication = hookSentence(state, h),
             )
         },
         candidatesNote = if (g.candidates.isEmpty()) "Nobody is for hire today. The list is redrawn on the morning of day $refresh." else "The list is redrawn on the morning of day $refresh.",

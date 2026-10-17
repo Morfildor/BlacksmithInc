@@ -79,7 +79,7 @@ fun GameEngine.openingChooser(state: GameState): OpeningChooserUi? {
                     val h = state.heroes[id] ?: return@mapIndexedNotNull null
                     val trait = offer.traitIds.getOrNull(i)?.let(cat::trait)
                     OpeningSignerUi(
-                        h.id, Sprites.portrait(h, small = true), h.fullName, "${content.heroClass(h.classId).name} level ${h.level}", trait?.let { "${it.name}: ${it.description}" } ?: "No trait of note",
+                        h.id, Sprites.portrait(h, small = true), h.fullName, classLine(h), trait?.let { "${it.name}: ${it.description}" } ?: "No trait of note",
                         firstName = h.name, className = content.heroClass(h.classId).name, traitName = trait?.name ?: "no trait",
                     )
                 },

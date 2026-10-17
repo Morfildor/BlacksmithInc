@@ -72,6 +72,18 @@ object Sprites {
     private val heroIdKey = Regex("h\\d+")
 
     /**
+     * The neutral class silhouettes (`silhouette_<class>`, drawn by tools/pixelart/generate_assets.py): the same 64 px opaque
+     * tile and framing as the hero set, no face. One tile serves the base, upgraded and small looks until race art exists.
+     */
+    internal val silhouettes: Map<String, PortraitArt.Entry> = mapOf(
+        "guardian" to PortraitArt.Entry(R.drawable.silhouette_guardian, "silhouette_guardian", 0, 0, 64, 64),
+        "ranger" to PortraitArt.Entry(R.drawable.silhouette_ranger, "silhouette_ranger", 0, 0, 64, 64),
+        "duelist" to PortraitArt.Entry(R.drawable.silhouette_duelist, "silhouette_duelist", 0, 0, 64, 64),
+        "battlemage" to PortraitArt.Entry(R.drawable.silhouette_battlemage, "silhouette_battlemage", 0, 0, 64, 64),
+        "warden" to PortraitArt.Entry(R.drawable.silhouette_warden, "silhouette_warden", 0, 0, 64, 64),
+    )
+
+    /**
      * Slot 0..4 of a key from before the hero set: the variant of a sheet-3 key ("portrait_guardian_3"), the tile of a
      * second-set key ("portrait_v2_guardian_4", counted from 0), or for a hero ID ("h17") the slot its sheet-3 key has.
      */
@@ -103,6 +115,8 @@ object Sprites {
     internal fun portraitArt(
         appearanceKey: String, classId: HeroClassId, upgraded: Boolean = false, secondSet: Boolean = PortraitArt.SECOND_SET_ENABLED, small: Boolean = false,
     ): PortraitArt.Entry {
+        // A hero of a people with no face of their class yet wears the neutral class silhouette, never another people's face.
+        if (Appearance.isSilhouette(appearanceKey)) return silhouettes[appearanceKey.removePrefix(Appearance.SILHOUETTE_PREFIX)] ?: silhouettes[classId.value] ?: silhouettes.getValue("guardian")
         if (secondSet) PortraitArt.secondSet[appearanceKey]?.let { return it }
         val key = heroFaceKey(appearanceKey, classId)
         return (if (!small) null else if (upgraded) PortraitArt.heroesUpgradedSmall[key] else PortraitArt.heroesSmall[key])

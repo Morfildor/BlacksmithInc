@@ -100,7 +100,7 @@ fun GameEngine.heroTip(state: GameState, heroId: HeroId, home: Boolean = false, 
         else -> null
     }
     return TipUi(
-        name = h.fullName, kind = "${content.heroClass(h.classId).name} · level ${h.level}", icon = Sprites.portrait(h),
+        name = h.fullName, kind = "${raceClass(h)} · level ${h.level}", icon = Sprites.portrait(h),
         meta = when { member != null -> "Guild member"; candidate != null -> "For hire"; else -> "Of the town" },
         stats = fighter?.let { f ->
             listOfNotNull(
@@ -116,6 +116,8 @@ fun GameEngine.heroTip(state: GameState, heroId: HeroId, home: Boolean = false, 
                 trait?.let { traitLine(it) },
                 branch?.let { abilityLine(it.name, it.description, "Speciality", TipTone.BONUS) },
                 TipLine("Reserved for the wall", TipTone.CONDITION).takeIf { g != null && heroId in g.reserved },
+                // Their Hook, as the recruit row says it before the fee is paid.
+                hookSentence(state, h)?.let { TipLine(it, TipTone.CONDITION) }.takeIf { h.isAlive },
             )),
             // What a member costs the guild, as terms of their service rather than a fault of theirs.
             TipSection("Terms", listOfNotNull(

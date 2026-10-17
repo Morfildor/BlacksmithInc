@@ -45,6 +45,10 @@ PALETTE = {
     "E": (178, 206, 150), "d": (80, 104, 84),          # grave dust
     "a": (156, 222, 120),                              # verdant sap highlight
     "Q": (48, 24, 72), "J": (96, 56, 140),             # void ink
+    # Neutral class silhouettes (portrait placeholders): the warm vignette of the hero tiles, a slate figure, a dull brass prop.
+    "1": (66, 50, 37), "2": (54, 41, 31), "3": (42, 32, 25), "4": (30, 23, 19),
+    "5": (82, 80, 86), "A": (70, 68, 74), "6": (132, 128, 132), "7": (56, 54, 60), "8": (18, 15, 15),
+    "9": (122, 96, 60), "0": (176, 140, 84),
 }
 
 CORE_RECOLOR = {  # family silhouettes use I/i, recoloured per core material (I = lit face, i = shaded face)
@@ -708,6 +712,90 @@ def panel_journal():
         g[y][x] = "Z"                                             # bronze corner rivets
     return rows(g)
 
+
+def silhouette_portrait(cls: str) -> list[str]:
+    """
+    The neutral stand-in face `silhouette_<class>` (living heroes final design 6.3): a hero of a people that has no portrait
+    of that class yet. Same 64 px opaque tile and framing as the hero set (bust, head in the upper middle, a warm vignette),
+    no face and no skin, one class attribute in dull brass, lit from the upper left. Never a real face.
+    """
+    from PIL import ImageDraw
+    size = 64
+    fig = Image.new("L", (size, size), 0)      # the figure
+    prop = Image.new("L", (size, size), 0)     # the class attribute: 255 brass, 128 its highlight
+    void = Image.new("L", (size, size), 0)     # a hood's opening or a visor's slit, drawn over the figure
+    f, p, v = ImageDraw.Draw(fig), ImageDraw.Draw(prop), ImageDraw.Draw(void)
+    f.polygon([(3, 63), (7, 49), (18, 42), (46, 42), (57, 49), (61, 63)], fill=255)    # shoulders
+    f.rectangle([27, 34, 37, 44], fill=255)                                              # neck
+    f.ellipse([21, 12, 43, 38], fill=255)                                                # head
+    if cls == "guardian":
+        f.ellipse([20, 11, 44, 33], fill=255)                                            # helm
+        f.ellipse([5, 41, 25, 57], fill=255); f.ellipse([39, 41, 59, 57], fill=255)      # pauldrons
+        v.rectangle([25, 23, 39, 24], fill=255)                                          # visor slit
+        p.rectangle([31, 5, 33, 13], fill=255)                                           # crest
+        p.polygon([(3, 44), (21, 44), (21, 55), (12, 63), (3, 55)], fill=255)            # kite shield
+        p.rectangle([11, 47, 13, 57], fill=128); p.rectangle([7, 50, 17, 51], fill=128)  # its cross
+    elif cls == "ranger":
+        f.polygon([(32, 5), (19, 18), (16, 40), (22, 46), (42, 46), (48, 40), (45, 18)], fill=255)  # hood
+        v.ellipse([25, 21, 39, 37], fill=255)                                            # its opening
+        p.arc([30, 4, 62, 64], start=-75, end=75, fill=255, width=2)                     # bow
+        p.line([(50, 7), (50, 61)], fill=128)                                            # string
+        for x in (12, 15, 18):
+            p.line([(x, 30 - (x - 12) // 2), (x + 3, 44)], fill=255)                     # arrows over the shoulder
+    elif cls == "duelist":
+        f.ellipse([12, 17, 52, 25], fill=255)                                            # hat brim
+        f.rounded_rectangle([22, 7, 42, 22], radius=4, fill=255)                         # crown
+        f.polygon([(20, 43), (32, 50), (44, 43), (40, 40), (24, 40)], fill=255)          # collar
+        p.polygon([(41, 9), (58, 2), (52, 9), (44, 15)], fill=255)                       # feather
+        p.line([(7, 62), (54, 25)], fill=128, width=2)                                   # rapier
+        p.line([(9, 52), (19, 61)], fill=255, width=2)                                   # its guard
+    elif cls == "battlemage":
+        f.polygon([(36, 1), (41, 7), (46, 21), (18, 21), (27, 9)], fill=255)             # pointed hat
+        f.ellipse([11, 17, 53, 25], fill=255)                                            # its brim
+        f.polygon([(22, 43), (32, 37), (42, 43)], fill=255)                              # high collar
+        p.line([(54, 13), (54, 63)], fill=255, width=3)                                  # staff
+        p.ellipse([50, 4, 58, 12], fill=128)                                             # orb
+    elif cls == "warden":
+        for s in (1, -1):                                                                # antlers
+            bx = 32 - s * 6
+            f.line([(bx, 16), (bx - s * 6, 4)], fill=255, width=2)
+            f.line([(bx - s * 3, 10), (bx - s * 11, 8)], fill=255, width=2)
+            f.line([(bx - s * 5, 6), (bx - s * 4, 1)], fill=255, width=1)
+        p.line([(9, 9), (9, 63)], fill=255, width=3)                                     # staff
+        for box in ((3, 7, 9, 12), (10, 3, 16, 8), (4, 15, 9, 19)):
+            p.ellipse(box, fill=128)                                                     # its leaves
+        for box in ((14, 45, 22, 50), (42, 45, 50, 50)):
+            p.ellipse(box, fill=255)                                                     # leaves on the mantle
+    F, P, V = fig.load(), prop.load(), void.load()
+    inside = lambda x, y: 0 <= x < size and 0 <= y < size
+    solid = lambda x, y: inside(x, y) and (F[x, y] or P[x, y])
+    grid = blank(size, size)
+    for y in range(size):
+        for x in range(size):
+            if P[x, y]:
+                lit = P[x, y] == 128 or not solid(x - 1, y) or not solid(x, y - 1)
+                grid[y][x] = "0" if lit else "9"
+            elif F[x, y]:
+                if V[x, y]:
+                    grid[y][x] = "8" if cls == "guardian" else "7"
+                elif not solid(x - 1, y) or not solid(x, y - 1):
+                    grid[y][x] = "6"                                                     # rim light, upper left
+                elif not solid(x + 1, y) or not solid(x + 1, y + 1) or x > 48:
+                    grid[y][x] = "7"                                                     # shade, lower right
+                else:
+                    t = x + y * 0.6                                                      # a soft turn away from the light
+                    grid[y][x] = "5" if t < 50 else ("5" if (x + y) % 2 else "A") if t < 62 else "A"
+            elif any(solid(x + dx, y + dy) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                grid[y][x] = "8"                                                         # outline
+            else:
+                d = ((x - 32) ** 2 + (y - 26) ** 2) ** 0.5 + ((x + y) % 2) * 1.5          # vignette with a fine dither
+                grid[y][x] = "1" if d < 18 else "2" if d < 28 else "3" if d < 38 else "4"
+    return rows(grid)
+
+
+# Neutral portrait placeholders for heroes of a people without a matching face (final design 6.3; app: Sprites.portraitArt).
+for _cls in ("guardian", "ranger", "duelist", "battlemage", "warden"):
+    sprite(f"silhouette_{_cls}", silhouette_portrait(_cls), anchor="top-left", layer="portrait", heroClass=_cls, placeholder="silhouette")
 
 sprite("tile_wall", wall_tile(), layer="background", tile=True)
 sprite("tile_floor", floor_tile(), layer="background", tile=True)

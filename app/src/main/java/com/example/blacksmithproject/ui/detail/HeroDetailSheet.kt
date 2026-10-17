@@ -49,6 +49,14 @@ import com.example.blacksmithproject.ui.StatRow
 import com.example.blacksmithproject.ui.TipKeywords
 import com.example.blacksmithproject.ui.TipSection
 import com.example.blacksmithproject.ui.TipSectionBlock
+import com.example.blacksmithproject.ui.backgroundName
+import com.example.blacksmithproject.ui.hookLabel
+import com.example.blacksmithproject.ui.hookSentence
+import com.example.blacksmithproject.ui.kinOf
+import com.example.blacksmithproject.ui.kinSentence
+import com.example.blacksmithproject.ui.raceClass
+import androidx.compose.ui.platform.LocalDensity
+import com.tinyblacksmith.core.model.HookKind
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
 import com.example.blacksmithproject.ui.theme.CreamMuted
@@ -98,8 +106,14 @@ data class HeroDetail(
     val events: List<String>,
     /** What the guild knows of them, when they are one of its members (a guild run only). */
     val member: MemberDetailUi? = null,
-    /** Class and level under the name, as on the hero's card: "Guardian · level 3". */
+    /** People, class and level under the name, as on the hero's card: "Elf Guardian · level 3" ("Guardian · level 3" without a people). */
     val kind: String? = null,
+    /** How they are now, under the name: fallen, retired or gone, a member laid up, away or held, else a word for their health. Null for a member who is well (their numbers say it). */
+    val condition: String? = null,
+    /** Who they are beyond the fight: background, Hook, kin and ambition, each once. */
+    val story: List<Fact> = emptyList(),
+    /** Significant moments of their life, newest first (`Hero.reasons`). Empty shows nothing. */
+    val moments: List<String> = emptyList(),
 )
 
 private val shopTypes = setOf(EventType.WEAPON_SOLD, EventType.COMMISSION_OFFERED, EventType.COMMISSION_COMPLETED, EventType.COMMISSION_EXPIRED)
@@ -134,6 +148,7 @@ fun GameEngine.heroDetail(state: GameState, heroId: HeroId, snapshot: CustomerSn
         }
     }.orEmpty()
     val dealings = records.filter { it.type in shopTypes }.asReversed().map { it.day to dated(state, it.era, it.day, it.text) }
+    val member = memberDetail(state, heroId)
     return HeroDetail(
         heroId = heroId,
         name = hero?.fullName ?: first.name,
@@ -146,10 +161,24 @@ fun GameEngine.heroDetail(state: GameState, heroId: HeroId, snapshot: CustomerSn
         now = now,
         shop = (refusals + dealings).sortedByDescending { it.first }.map { it.second },
         events = records.filter { it.type !in shopTypes }.asReversed().take(RECENT_EVENTS).map { dated(state, it.era, it.day, it.text) },
-        member = memberDetail(state, heroId),
-        kind = "${content.classById[hero?.classId ?: first.classId]?.name ?: first.classId.value} · level ${hero?.level ?: first.level}",
+        member = member,
+        kind = "${raceClass(hero?.raceId, hero?.classId ?: first.classId)} · level ${hero?.level ?: first.level}",
+        condition = hero?.let { h ->
+            fateWord(h) ?: member?.status ?: if (member != null) null else Labels.health(h).replaceFirstChar { it.uppercase() }
+        },
+        story = hero?.let { story(state, it) }.orEmpty(),
+        moments = hero?.reasons.orEmpty().asReversed().map { dated(state, state.era, it.day, it.text) },
     )
 }
+
+/** Background, Hook, kin and ambition as the sheet's first facts; a relative in the save opens their own sheet. */
+private fun GameEngine.story(state: GameState, h: Hero): List<Fact> = listOfNotNull(
+    backgroundName(h)?.let { Fact("Background", it) },
+    h.hook?.let { hook ->
+        hookSentence(state, h)?.let { Fact(hookLabel(hook.kind), it, heroId = hook.kinHeroId?.takeIf { id -> hook.kind == HookKind.KIN && id in state.heroes }) }
+    },
+) + kinOf(state, h).mapNotNull { id -> kinSentence(state, id)?.let { Fact(hookLabel(HookKind.KIN), it, heroId = id) } } +
+    listOfNotNull(Heroes.describeAmbition(h, state.equippedWeapon(h.id), config)?.let { Fact(AMBITION, it) })
 
 private const val PURSE = "Purse"
 private const val CARRIES = "Carries"
@@ -221,28 +250,25 @@ fun HeroDetailSheet(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem
 @Composable
 fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenItem: (WeaponId) -> Unit, onDismiss: () -> Unit, modifier: Modifier = Modifier, closeLabel: String = "Close", member: MemberActions? = null) {
     Column(modifier.fillMaxWidth().verticalScroll(rememberScrollState()).navigationBarsPadding().padding(horizontal = Space.md).padding(bottom = Space.lg)) {
-        Row(Modifier.fillMaxWidth().padding(top = Space.sm).semantics(mergeDescendants = true) {}, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) {
-            Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(4.dp)) {
-                PixelImage(detail.portrait, 72.dp, description = null)
-                detail.marker?.let { PixelImage(it, 24.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
-            }
-            Column(Modifier.weight(1f)) {
-                Text(detail.name, style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() })
-                detail.kind?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = CreamMuted) }
-                detail.lineage?.let { Secondary(it) }
-                detail.deeds?.let { Secondary(it) }
-            }
-        }
+        HeroHead(detail)
         detail.member?.let { MemberHead(it) }
         detail.want?.let { Text(it, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = Space.sm).testTag("hero_want")) }
+        // Their story in sentences, each under its label: full width, so a long label or sentence never breaks inside a word.
+        FactBlock(null, detail.story, "sheet_story", onOpenHero, onOpenItem, stacked = true)
         FactBlock(AT_THE_COUNTER.takeIf { detail.counter.isNotEmpty() }, detail.counter, "sheet_counter", onOpenHero, onOpenItem)
-        // Class and level are under the name, and a member's health is a stat row: the whole hero's facts do not say them
-        // twice. Against a visit snapshot every line stays, since a changed level is news.
-        val shown = if (detail.counter.isNotEmpty()) detail.now else detail.now.filterNot { f ->
-            (f.label == CLASS && detail.kind != null) || (f.label == HEALTH && detail.member?.numbers?.isNotEmpty() == true)
+        // Class and level are under the name with the condition, a member's health is a stat row and the ambition is in
+        // their story: the facts do not say them twice. Against a visit snapshot the class stays, since a changed level is news.
+        val told = detail.story.any { it.label == AMBITION }
+        val shown = detail.now.filterNot { f ->
+            (f.label == HEALTH && (detail.condition != null || detail.member?.numbers?.isNotEmpty() == true)) || (f.label == AMBITION && told) ||
+                (detail.counter.isEmpty() && f.label == CLASS && detail.kind != null)
         }
         FactBlock(NOW.takeIf { detail.counter.isNotEmpty() }, shown, "sheet_now", onOpenHero, onOpenItem)
         detail.member?.let { MemberSection(it, member, onOpenItem) }
+        if (detail.moments.isNotEmpty()) {
+            SheetSection("Moments")
+            Column(Modifier.testTag("sheet_moments")) { Lines(detail.moments, "") }
+        }
         SheetSection("With your shop")
         Lines(detail.shop, "No visits or purchases recorded yet.")
         SheetSection("Recent events")
@@ -254,11 +280,37 @@ fun HeroDetailContent(detail: HeroDetail, onOpenHero: (HeroId) -> Unit, onOpenIt
 private const val CLASS = "Class"
 private const val HEALTH = "Health"
 
-/** A member's card at the top of their sheet: the numbers they would enter a fight with, then what they bring and cost. */
+/**
+ * The face, the full name (wrapping, never cut), people, class and level, and the condition. Beside the face as a rule,
+ * under it once the text is so large that a long family name would break inside a word.
+ */
+@Composable
+private fun HeroHead(detail: HeroDetail) {
+    val face = @Composable {
+        Box(Modifier.background(ForgeSlot).border(1.dp, BronzeDeep).padding(4.dp)) {
+            PixelImage(detail.portrait, 72.dp, description = null)
+            detail.marker?.let { PixelImage(it, 24.dp, description = null, modifier = Modifier.align(Alignment.BottomEnd)) }
+        }
+    }
+    val words = @Composable { m: Modifier ->
+        Column(m) {
+            Text(detail.name, style = MaterialTheme.typography.titleLarge, color = Cream, modifier = Modifier.semantics { heading() }.testTag("sheet_name"))
+            detail.kind?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = CreamMuted, modifier = Modifier.testTag("sheet_kind")) }
+            // A member's condition is news (laid up, away, held); anyone else's is the plain state of their health.
+            detail.condition?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = if (detail.member != null) Ember else Cream, modifier = Modifier.testTag("sheet_condition")) }
+            detail.lineage?.let { Secondary(it) }
+            detail.deeds?.let { Secondary(it) }
+        }
+    }
+    val whole = Modifier.fillMaxWidth().padding(top = Space.sm).semantics(mergeDescendants = true) {}
+    if (LocalDensity.current.fontScale > 1.5f) Column(whole, verticalArrangement = Arrangement.spacedBy(Space.sm)) { face(); words(Modifier.fillMaxWidth()) }
+    else Row(whole, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.md)) { face(); words(Modifier.weight(1f)) }
+}
+
+/** A member's card at the top of their sheet: the numbers they would enter a fight with, then what they bring and cost. Their condition is in the head. */
 @Composable
 private fun MemberHead(m: MemberDetailUi) {
     Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("sheet_member_head"), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
-        m.status?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember, modifier = Modifier.testTag("sheet_member_status")) }
         if (m.numbers.isNotEmpty()) Column { m.numbers.forEach { (label, value) -> StatRow(label, value) } }
         TipSectionBlock(TipSection(null, m.gains))
         TipSectionBlock(TipSection("Terms", m.costs))

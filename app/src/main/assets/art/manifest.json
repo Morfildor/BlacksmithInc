@@ -508,6 +508,61 @@
       "sourceKind": "ai_generated_sheet"
     },
     {
+      "id": "silhouette_guardian",
+      "file": "drawable-nodpi/silhouette_guardian.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "portrait",
+      "heroClass": "guardian",
+      "placeholder": "silhouette",
+      "source": "generated"
+    },
+    {
+      "id": "silhouette_ranger",
+      "file": "drawable-nodpi/silhouette_ranger.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "portrait",
+      "heroClass": "ranger",
+      "placeholder": "silhouette",
+      "source": "generated"
+    },
+    {
+      "id": "silhouette_duelist",
+      "file": "drawable-nodpi/silhouette_duelist.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "portrait",
+      "heroClass": "duelist",
+      "placeholder": "silhouette",
+      "source": "generated"
+    },
+    {
+      "id": "silhouette_battlemage",
+      "file": "drawable-nodpi/silhouette_battlemage.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "portrait",
+      "heroClass": "battlemage",
+      "placeholder": "silhouette",
+      "source": "generated"
+    },
+    {
+      "id": "silhouette_warden",
+      "file": "drawable-nodpi/silhouette_warden.png",
+      "width": 64,
+      "height": 64,
+      "anchor": "top-left",
+      "layer": "portrait",
+      "heroClass": "warden",
+      "placeholder": "silhouette",
+      "source": "generated"
+    },
+    {
       "id": "tile_wall",
       "file": "drawable-nodpi/tile_wall.png",
       "width": 64,

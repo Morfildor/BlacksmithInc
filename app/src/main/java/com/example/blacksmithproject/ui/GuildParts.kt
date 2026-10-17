@@ -28,6 +28,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -233,6 +234,14 @@ private fun CandidateRow(c: CandidateUi, enabled: Boolean, tip: () -> TipUi?, on
                 Text(c.name, style = MaterialTheme.typography.titleSmall)
                 Secondary(c.line)
                 FactLine(listOf(Fact("${c.feeGold} gold", "Fee"), Fact("${c.sharePercent}% of quest gold", "Keeps")))
+                // Their Hook before the fee is paid: what comes with them, an oath above all (final design 20.4). A sign and words, not colour alone.
+                // The sign hangs in its own column so a wrapped sentence lines up under its first word.
+                c.complication?.let { line ->
+                    Row(Modifier.padding(top = 2.dp).semantics(mergeDescendants = true) { contentDescription = line }.testTag("guild_candidate_hook_${c.heroId.value}"), horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+                        Text(TipTone.CONDITION.sign, style = MaterialTheme.typography.bodySmall, color = TipTone.CONDITION.color)
+                        Text(line, style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.weight(1f))
+                    }
+                }
             }
         }
         c.blocked?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.testTag("guild_recruit_blocked_${c.heroId.value}")) }
