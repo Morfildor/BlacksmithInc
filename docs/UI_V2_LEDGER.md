@@ -196,3 +196,32 @@ fails without V3 too (it expects empty champion places on day 1; the Town has sh
 changed (intermittent, not investigated). `M4ScreensTest.theForgeMarksTheElementsTheBesiegerCaresAbout` is open: its
 harness does not find `forge_threat` in the augment tray. `IntroStripTest` passes since the forge result's guided line
 puts "Why?" and "Skip guidance" above the reason it opens.
+
+## 8. Post-terminology polish (2026-10-17, branch `ui-polish-post-terms` from `6e039cc`)
+
+Owner brief "Post-Terminology UI Polish" (handoff zip with three mid-pass screenshots). Treated as a delta on V3: the
+inspect system already had typed rows, tones and keyword glossaries, so only what the current code still showed was
+changed. Every claim below was read from the code (`CombatContent`, `Fight`, `Loadout`, `GuildConfig`, `Forge`).
+
+| Brief item | Found in code | Change |
+|---|---|---|
+| "Hold the line" repeats Riposte | `ClassKitDef.role` ended with the counterattack Riposte owns; the Battlemage's with Echo | both sentences cut from the role (content text, fingerprint unaffected) |
+| "Support 4" lacks meaning | Guardian: `Guard(Self, Support())`, exactly Support per round, cap 14; Warden: `Heal(WeakestAlly, Support())` | `supportValue`: "4 Armor each round" / "6 healing each round", only where an ability reads it (card and sheet) |
+| Health shown twice | fight health = max × health% (`Loadout`) | one line "40/40 (100%)" |
+| 10% share as a bare "−" | `memberSharePercent` 10, real cost; Gold-Hungry `shareDelta` 5 inside a "+" line | "Terms" section (fee, share with its parts); a trait with `shareDelta` gets no "+" |
+| "CLASS"/"TRAIT" labels | source labels in tracked small caps | Ability / Passive / Trait / Speciality / Weapon in sentence case; section headings tracked 0.6 sp |
+| Iron "weakest metal" as "−" | no penalty in code (Attack 100%), a tier comparison; others are conditions; Obsidian, Ember Resin, Grave Dust, Void Ink are real costs | `ConstraintKind` (DRAWBACK, CONDITION, CONTEXT) on `CoreCombatDef`/`IngredientNote`, carried by `ForgeOutlook`; tone from kind on the material card, recipe card, recipe sheet and comparison. Content 6 re-pinned, display only |
+| Quality cap missing | `Forge.qualityCap` (Iron 55 … 100) | "Quality cap" stat on metal cards; "Price 10 gold each" |
+| Recipe reads as a crafted weapon | bare title | "Forge preview" label |
+| Effects / Practice fight look like text | 48 dp text links | dim bronze outline inside the 48 dp target |
+| "None left" dimmed | whole tile at alpha 0.5 | only art and name dim; "None left" full strength, SemiBold |
+| Stock badge "7" | bare number | "×7" |
+| Five header segments | cycle track, decorative, full width under the purse | under the countdown; TalkBack "Siege cycle: day N of M" |
+| Large text | tip banner a one-word column at 2.0 | stacked from font 1.5; card plain lines keep the text column; wrapped forge effect keeps its mark |
+
+Kept on purpose: "Hold the line" still has two sentences (Armor each round, and drawing attacks): both are mechanics.
+The "Untried combinations · Forge to learn" row was checked and left as the terminology pass wrote it. Gold and energy
+icons keep their TalkBack labels ("Gold 388"); no visible label was added (the brief forbids a new HUD).
+
+Evidence: before/after captures on emulator-5556 (Pixel_10_Pro read-only AVD, 1080×1920) at 420 dpi / font 1.0
+(411 dp), 480 / 1.3 (360 dp), 540 / 2.0 (320 dp), scenario `guild_siege_eve`; session scratchpad `before/`, `after/`.

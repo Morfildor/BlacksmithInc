@@ -1,5 +1,19 @@
 # Progress — 2026-10-15 (text and header pass; 2026-10-14: deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Post-terminology UI polish (2026-10-17, branch `ui-polish-post-terms`)
+
+- Owner handoff "Post-Terminology UI Polish Brief". Baseline `6e039cc` (terminology V2 + V3 inspect cards, committed by
+  the other session). State, code findings and evidence: `docs/UI_V2_LEDGER.md` section 8.
+- Done: hero card and sheet (no repeated counterattack, Support in context, one Health line, Terms section, plain type
+  labels), material caveats typed as drawback / condition / comparison (`ConstraintKind`, display only, content 6
+  re-pinned), quality cap on metal cards, "Forge preview", outlined Effects / Practice fight, "×7" badges, readable
+  "None left", cycle track under the countdown, large-text tip and alignment fixes. No rule, number, RNG, save or ID changed.
+- Checks: `:core:test` 686 pass, `:app:testDebugUnitTest` 357 pass, `compileDebugAndroidTestKotlin` and `assembleDebug`
+  pass; emulator-5556 captures at 411/1.0, 360/1.3, 320/2.0. Not run: `connectedDebugAndroidTest`, TalkBack walk,
+  physical device.
+- Open: at 320 dp with font 2.0 the two-row header and the pinned Forge action leave the Forge's work area small
+  (shell layout, not changed here); gold and energy have TalkBack labels but no visible label.
+
 ## RPG terminology and writing overhaul V2, Phase 2 (2026-10-17, implemented)
 
 - Approved with owner amendments (top of `docs/TERMINOLOGY_PROPOSAL.md`), plus a later owner change: the status
