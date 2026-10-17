@@ -71,7 +71,7 @@ object ShopDayFixtures {
     private fun ShopDayScript.sale(tradeIn: Boolean? = null) =
         featured.any { it.kind == VisitKind.BROWSE && it.purchasedWeaponId != null && (tradeIn == null || (it.sale?.tradeInWeaponId != null) == tradeIn) }
 
-    val cases = listOf("member", "first", "purchase", "tradein", "refusal", "notbetter", "commission", "empty", "novisitors", "busy", "siege", "blessing", "fallen") +
+    val cases = listOf("member", "living_siege", "first", "purchase", "tradein", "refusal", "notbetter", "commission", "empty", "novisitors", "busy", "siege", "blessing", "fallen") +
         AftermathKind.entries.map { "aftermath_${it.name.lowercase()}" }
 
     /** The first day on seeds 42 and up that shows [case]; null when the engine never produced one in the search window. */
@@ -80,6 +80,11 @@ object ShopDayFixtures {
         "member" -> LivingAgencyFixtures.build().state.let { s ->
             val e = LivingAgencyFixtures.engine
             s.lastResolution?.let { r -> Day(e, 9, r, s, ShopDay.script(r, s, e.content, e.config)) }
+        }
+        // The same scenario played through its siege night: the army, its attacks on the defences and the verdict.
+        "living_siege" -> LivingAgencyFixtures.siegeDay()?.let { (s, r) ->
+            val e = LivingAgencyFixtures.engine
+            Day(e, 9, r, s, ShopDay.script(r, s, e.content, e.config))
         }
         "first" -> run(42, 1).firstOrNull()
         "purchase" -> search { it.sale(tradeIn = false) }

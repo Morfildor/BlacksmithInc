@@ -55,8 +55,24 @@ object LivingAgencyFixtures {
         return s
     }
 
+    /**
+     * The members-decide scenario played on by the engine through its siege night: the day whose report has the army,
+     * its attacks on the defences and the verdict. The army comes at [armyPercent] strength so its sapper lives to land
+     * its charge. Null when the run ends before the siege.
+     */
+    fun siegeDay(armyPercent: Int = 300): Pair<GameState, com.tinyblacksmith.core.model.DayResolution>? {
+        var s = build(armyPercent = armyPercent).state
+        repeat(4) {
+            val r = s.lastResolution
+            if (r?.siege != null && r.day > 3) return s to r
+            s = s.tryRun(Command.EndDay(com.tinyblacksmith.core.model.CommandId("fixture-siege-${s.day}")))
+            if (s.isEnded) return s.lastResolution?.takeIf { it.siege != null }?.let { s to it }
+        }
+        return s.lastResolution?.takeIf { it.siege != null }?.let { s to it }
+    }
+
     /** [visitor]: one of the living visitors (`Hooks.CREDITOR`, `LESSON`, `WOUNDED_FRIEND`) waiting this morning, or none. */
-    fun build(seed: Long = 9, visitor: String? = null): Fixture {
+    fun build(seed: Long = 9, visitor: String? = null, armyPercent: Int = 100): Fixture {
         val fresh = engine.newRun(LegacyProfile(), seed, charterId = GuildContent.TOWNS_LAST_HOPE)
         var s = (engine.handle(fresh, Command.ChooseOpening(fresh.guild!!.openingOffer.first().defId)) as CommandOutcome.Accepted).state
         // Play mornings and End Days, before the first siege, until a member has bought at the counter.
@@ -105,7 +121,7 @@ object LivingAgencyFixtures {
         }
         val drawn = s.siege?.takeIf { it.siegeDay == s.town.nextSiegeDay } ?: SiegeScenario(s.town.nextSiegeDay)
         // A preparation drawn for another besieger does not go with this army.
-        val scenario = drawn.copy(factionId = army.factionId, plan = army.members.map { EnemySpec(it, 100) }, armyId = army.id, prepId = drawn.prepId.takeIf { drawn.factionId == army.factionId })
+        val scenario = drawn.copy(factionId = army.factionId, plan = army.members.map { EnemySpec(it, armyPercent) }, armyId = army.id, prepId = drawn.prepId.takeIf { drawn.factionId == army.factionId })
         s = s.copy(
             heroes = heroes,
             guild = g.copy(members = newMembers, offers = listOfNotNull(personal) + g.offers, armyLog = (g.armyLog + army.id).takeLast(6)),

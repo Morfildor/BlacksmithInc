@@ -37,4 +37,13 @@ class LivingAgencyFixturesTest {
             assertTrue(v, Compatibility.admit(SaveCodec.decodeRun(SaveCodec.encodeRun(s)), e.content, e.config) is Compatibility.Result.Admitted)
         }
     }
+
+    @Test
+    fun theScenarioPlaysThroughItsSiegeAndHoldsAtACost() {
+        val (_, r) = LivingAgencyFixtures.siegeDay()!!
+        val report = r.siege!!
+        assertEquals(com.tinyblacksmith.core.model.SiegeVerdict.HELD_AT_A_COST, report.verdict)
+        assertTrue((report.fight?.structural ?: 0) > 0)
+        assertTrue(r.events.any { it.type == com.tinyblacksmith.core.model.EventType.STRUCTURAL_DAMAGE })
+    }
 }
