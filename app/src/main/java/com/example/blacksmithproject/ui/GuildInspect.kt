@@ -228,7 +228,7 @@ fun offerTip(o: OfferUi, onOpen: (() -> Unit)? = null, tag: String = "inspect"):
             TipLine("${st.objective}. Reward: ${st.reward}.", TipTone.PLAIN, title = st.label.substringBefore(": "), source = st.danger.substringBefore(":"))
         }),
         TipSection("What is different", listOfNotNull(o.modifier?.let { m -> TipLine(m.substringAfter(": ", m), TipTone.CONDITION, title = o.modifierName) })),
-        TipSection(null, o.specials.map { TipLine(it, TipTone.BONUS) } + listOfNotNull(
+        TipSection(null, listOfNotNull(o.sponsor?.let { sp -> TipLine(listOfNotNull("Asked by ${sp.name}.", sp.why).joinToString(" "), TipTone.PLAIN) }) + o.specials.map { TipLine(it, TipTone.BONUS) } + listOfNotNull(
             TipLine(dangerWords(o.danger), TipTone.DRAWBACK).takeIf { o.danger != Danger.SAFE },
             o.missesSiege?.let { TipLine(it, TipTone.DRAWBACK) },
             o.stake?.let { TipLine(it, TipTone.DRAWBACK) },

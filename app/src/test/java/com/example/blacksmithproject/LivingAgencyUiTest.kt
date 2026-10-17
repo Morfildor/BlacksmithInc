@@ -61,4 +61,14 @@ class LivingAgencyUiTest {
         assertEquals(row.refused, target.reason)
         assertNull(e.memberDetail(withRare, f.departing)!!.loanable.firstOrNull { it.weaponId == rare.id }?.refused)
     }
+
+    @Test
+    fun aPersonalOfferNamesWhoAsksForItAndTheOnePartyRule() {
+        val offers = e.guildUi(s)!!.offers
+        val personal = offers.single { it.sponsor != null }
+        assertEquals(s.heroes.getValue(f.leaning).fullName, personal.sponsor!!.name)
+        assertEquals(s.guild!!.offers.single { it.sponsorHeroId != null }.reason, personal.sponsor!!.why)
+        assertTrue(offers.filter { it !== personal }.all { it.sponsor == null })
+        assertTrue(e.guildUi(s.copy(livingRevision = LivingRevision.LEGACY))!!.offers.all { it.sponsor == null })
+    }
 }

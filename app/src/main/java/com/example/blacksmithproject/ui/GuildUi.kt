@@ -105,6 +105,9 @@ data class WallUi(
 
 @Immutable data class StageUi(val label: String, val objective: String, val danger: String, val enemies: List<EnemyUi>, val reward: String)
 
+/** Who asks for a personal offer: [why] is the offer's own reason (`MissionOffer.reason`); [oneParty] the board's rule, said calmly. */
+@Immutable data class SponsorUi(val heroId: HeroId, val name: String, val portrait: Int, val why: String?, val oneParty: String)
+
 @Immutable
 data class OfferUi(
     val id: String, val title: String, val why: String?, val description: String,
@@ -127,6 +130,8 @@ data class OfferUi(
     val rewardSummary: String = "",
     /** The last day a party can be sent, in a word ("today", "day 9"); null for work that is always on the board. */
     val lastDay: String? = null,
+    /** A living era's personal offer (`Hooks.sponsored`): the member who asks for it, their face, and the board's one-party rule in a plain line. */
+    val sponsor: SponsorUi? = null,
 ) {
     /** "2 days · Fee 20 gold": how long it takes and what it costs, for the board. */
     val terms: String get() = listOf(time.substringBefore(':'), fee).joinToString(" · ")
@@ -334,6 +339,9 @@ private fun GameEngine.offerUi(state: GameState, g: GuildRunState, offer: Missio
         timingNote = (if (offer.optionalPush) "The return day includes the optional deeper stage. Returning at the checkpoint skips that fight, but the party still comes home on the same morning. " else
             if (offer.stages.size > 1) "The return day includes all stages. A defeat or a retreat brings the party home earlier. " else "") +
             "A member who comes back injured cannot defend the wall for ${config.guild.injuredDays} days, an exhausted one for ${config.guild.exhaustedDays} ${if (config.guild.exhaustedDays == 1) "day" else "days"}.",
+        sponsor = offer.sponsorHeroId?.takeIf { state.living && com.tinyblacksmith.core.guild.Hooks.sponsored(offer) }?.let { id -> state.heroes[id] }?.let { h ->
+            SponsorUi(h.id, h.fullName, Sprites.portrait(h, small = true), offer.reason, "One party goes out at a time: while it is away, no other quest can be taken.")
+        },
         stake = "If the cart is lost, the supplier brings ${config.guild.supplierShakenStock} fewer of every limited material each morning for ${config.guild.supplierDays} days. Leaving this quest on the board costs nothing.".takeIf { offer.lapse == GuildContent.LAPSE_SUPPLIER },
     )
 }

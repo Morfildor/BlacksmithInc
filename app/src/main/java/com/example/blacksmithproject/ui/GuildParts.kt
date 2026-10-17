@@ -140,7 +140,18 @@ private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
                 if (o.planned) Chip("Planned", EffectKind.BUFF.color)
                 InfoButton(o.title, { offerTip(o, onOpen, tag = "guild_offer_tip") }, tag = "guild_offer_${o.id}_info")
             }
+            // A personal offer: who asks for it and why, before the terms. The one-party rule follows the terms, plainly.
+            o.sponsor?.let { sp ->
+                Row(Modifier.padding(top = Space.xs, bottom = Space.xs).testTag("guild_offer_sponsor_${o.id}"), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Face(sp.portrait)
+                    Column(Modifier.weight(1f)) {
+                        Text("Asked by ${sp.name}", style = MaterialTheme.typography.titleSmall, color = Cream)
+                        sp.why?.let { Secondary(it) }
+                    }
+                }
+            }
             FactLine(offerFacts(o), Modifier.testTag("guild_offer_terms_${o.id}"), emphasis = true)
+            o.sponsor?.let { Secondary(it.oneParty, Modifier.padding(top = 2.dp).testTag("guild_offer_one_party_${o.id}")) }
             o.modifierName?.let { name ->
                 Text(
                     buildAnnotatedString { withStyle(SpanStyle(color = TipTone.CONDITION.color)) { append("${TipTone.CONDITION.sign} ") }; append(name) },
