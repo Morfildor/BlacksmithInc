@@ -224,7 +224,7 @@ object FightReplay {
                     EventKind.CHANNEL_COMPLETED -> Unit
                     EventKind.CHANNEL_CANCELLED -> if (t != null) pop(e, t, PopKind.SPENT, "${e.ability ?: "Ability"} cancelled", null, emptyMap(), shown = false)
                     EventKind.INTERRUPTED -> if (t != null) pop(e, t, PopKind.SPENT, "Interrupted", listOfNotNull(e.ability, note).joinToString(" · ").ifEmpty { null }, emptyMap())
-                    EventKind.STRUCTURAL_HIT -> e.source?.let { pop(e, it, PopKind.STATUS, "Wall −${e.amount}", null, emptyMap()) }
+                    EventKind.STRUCTURAL_HIT -> e.source?.let { pop(e, it, PopKind.STATUS, "Defences −${e.amount}", null, emptyMap()) }
                     EventKind.NEUTRALIZED -> if (t != null) pop(e, t, PopKind.SPENT, "Neutralized", null, emptyMap())
                     EventKind.RETURNED -> if (t != null) pop(e, t, PopKind.JOINED, "Returned", note, change(t) { it.copy(health = e.amount, downed = false, present = true, stats = emptyMap()) })
                     EventKind.SURVIVED -> if (t != null) pop(e, t, PopKind.STATUS, "Survived at 1 Health", null, emptyMap())

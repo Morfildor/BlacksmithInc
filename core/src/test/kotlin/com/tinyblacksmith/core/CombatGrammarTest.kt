@@ -240,7 +240,7 @@ class CombatGrammarTest {
         assertTrue(r.events.none { it.kind == EventKind.DOWNED && it.target == "cat" })
         assertTrue(r.events.none { it.source == "cat" && it.round > out.round }, "it does nothing more")
         val pops = FightReplay.of(r)!!.steps.flatMap { it.pops }.map { it.text }
-        assertTrue("Wall −3" in pops && "Neutralized" in pops && "Preparing Corpse shot" in pops)
+        assertTrue("Defences −3" in pops && "Neutralized" in pops && "Preparing Corpse shot" in pops)
     }
 
     @Test fun `an engine interrupted on its last use lands no structural hit and is neutralized all the same`() {
