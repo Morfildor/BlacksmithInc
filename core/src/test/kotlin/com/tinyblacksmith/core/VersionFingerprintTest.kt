@@ -35,7 +35,9 @@ class VersionFingerprintTest {
         // 6, re-pinned for the fingerprint only (from d6a80e4e...): the clarity pass (docs/WRITING_GUIDE.md) reworded a siege preparation's
         // `counters` and an opening's `plan`, so those and the other display fields of both (`sabotageBrief`, `build`, `drawback`) are hashed by presence. No number moved.
         // 6, re-pinned while unreleased (from e921ee0c...): owner playtest, the tier-3-and-up materials priced about 2.5 times higher, the caravan master and the deep road contract (rules 7).
-        6 to "dbe74401669d50a063a1886900eb767ab2557f472b2e69547870542398f239e7",
+        // 6, re-pinned for the fingerprint only (from dbe74401...): `constraintKind` marks each metal's and ingredient note's
+        // caveat as a drawback, a condition or a comparison, so a card signs it truly (UI polish). Display only; no number moved.
+        6 to "185758a6a844edd1ea4293637a77648709dc0eb63f5b33d261ec6b26deae4baa",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",

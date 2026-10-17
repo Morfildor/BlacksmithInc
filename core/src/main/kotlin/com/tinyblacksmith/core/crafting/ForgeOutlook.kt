@@ -4,6 +4,7 @@ import com.tinyblacksmith.core.combat.EffectDef
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.AffixKind
 import com.tinyblacksmith.core.content.BlessingEffect
+import com.tinyblacksmith.core.content.ConstraintKind
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.content.UpgradeEffect
 import com.tinyblacksmith.core.engine.Command
@@ -28,12 +29,14 @@ object ForgeOutlook {
     data class Possible(val kind: Kind, val name: String, val text: String, val rules: List<EffectDef> = emptyList())
 
     /** One chosen ingredient: what it is for and what choosing it costs. */
-    data class Part(val source: WeaponRules.Source, val name: String, val role: String, val constraint: String?)
+    data class Part(val source: WeaponRules.Source, val name: String, val role: String, val constraint: String?, val constraintKind: ConstraintKind = ConstraintKind.DRAWBACK)
 
     data class Outlook(
         val role: String, val wielders: List<String>, val parts: List<Part>, val certain: WeaponRules.Composition, val possible: List<Possible>,
         /** By rule ID: what a certain rule still waits for from the company it was asked about. */
         val missing: Map<String, List<Need>>, val notes: List<CompositionNote>, val tradeoff: String?, val qualityLow: Int, val qualityHigh: Int,
+        /** Whether [tradeoff] is a drawback, a condition or a comparison only. */
+        val tradeoffKind: ConstraintKind? = null,
     )
 
     /** The weapon's part in a party, from what its certain rules do. One label, most particular first. */
@@ -113,16 +116,19 @@ object ForgeOutlook {
 
         val rows = buildList {
             add(Part(WeaponRules.Source.FAMILY, family.name, combat.familyById[family.id]?.pattern.orEmpty(), null))
-            combat.coreById[core.id]?.let { add(Part(WeaponRules.Source.CORE, core.name, it.role, it.constraint)) }
-            combat.notes[augment.id]?.let { add(Part(WeaponRules.Source.ELEMENT, augment.name, it.role, it.constraint)) }
-            if (catalyst != null) combat.notes[catalyst.id]?.let { add(Part(WeaponRules.Source.CATALYST, catalyst.name, it.role, it.constraint)) }
+            combat.coreById[core.id]?.let { add(Part(WeaponRules.Source.CORE, core.name, it.role, it.constraint, it.constraintKind)) }
+            combat.notes[augment.id]?.let { add(Part(WeaponRules.Source.ELEMENT, augment.name, it.role, it.constraint, it.constraintKind)) }
+            if (catalyst != null) combat.notes[catalyst.id]?.let { add(Part(WeaponRules.Source.CATALYST, catalyst.name, it.role, it.constraint, it.constraintKind)) }
+        }
+        // The choice that costs most to make says its price first: the catalyst, then the metal, then the augment.
+        val traded = listOf(WeaponRules.Source.CATALYST, WeaponRules.Source.CORE, WeaponRules.Source.ELEMENT).firstNotNullOfOrNull { src ->
+            (if (src == WeaponRules.Source.CATALYST) rows.lastOrNull { it.source == src } else rows.firstOrNull { it.source == src })?.takeIf { it.constraint != null }
         }
         return Outlook(
             role = role(facets),
             wielders = content.classes.filter { (family.classFit[it.id] ?: 0.0) >= 1.0 }.map { it.name },
             parts = rows, certain = certain, possible = possible, missing = Capabilities.missing(certain, company), notes = Capabilities.notes(certain, company.home),
-            // The choice that costs most to make says its price first: the catalyst, then the metal, then the augment.
-            tradeoff = rows.lastOrNull { it.source == WeaponRules.Source.CATALYST }?.constraint ?: rows.firstOrNull { it.source == WeaponRules.Source.CORE }?.constraint ?: rows.firstOrNull { it.source == WeaponRules.Source.ELEMENT }?.constraint,
+            tradeoff = traded?.constraint, tradeoffKind = traded?.constraintKind,
             qualityLow = low, qualityHigh = high,
         )
     }

@@ -385,7 +385,7 @@ private fun numbered(text: String, words: Color, numbers: Color = Cream): Annota
 
 private val NUMBER = Regex("[+−-]?\\d+(?:[.,]\\d+)?%?")
 
-private val TipSectionTitle @Composable get() = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "smcp, lnum", letterSpacing = 1.2.sp)
+private val TipSectionTitle @Composable get() = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "smcp, lnum", letterSpacing = 0.6.sp)
 
 @Composable
 internal fun TipSectionBlock(s: TipSection, frame: Color = Bronze) {
@@ -428,7 +428,9 @@ private fun TipAbility(l: TipLine) {
             val meta = listOfNotNull(shortTrigger, l.limit?.let { if (shortTrigger != null) it.replaceFirstChar { c -> c.lowercase() } else it }).joinToString(" · ")
             FlowRow(itemVerticalAlignment = Alignment.CenterVertically) {
                 Text(l.title.orEmpty(), style = MaterialTheme.typography.titleSmall, color = if (l.tone == TipTone.CHANCE) CreamMuted else Cream, modifier = Modifier.padding(end = Space.sm))
-                l.source?.let { Text(it, style = TipSectionTitle, color = CreamMuted, modifier = Modifier.padding(end = Space.sm)) }
+                // What kind of line it is (Ability, Passive, Trait, where a weapon's effect comes from): a quiet word, never
+                // spaced capitals that compete with the name.
+                l.source?.let { Text(it.replaceFirstChar { c -> c.uppercase() }, style = MaterialTheme.typography.labelMedium, color = CreamMuted.copy(alpha = 0.8f), modifier = Modifier.padding(end = Space.sm)) }
                 if (meta.isNotEmpty()) Text(meta, style = MaterialTheme.typography.labelMedium, color = CreamMuted)
             }
             if (shortTrigger == null) l.trigger?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }

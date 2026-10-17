@@ -774,7 +774,7 @@ fun GameEngine.memberDetail(state: GameState, heroId: HeroId): MemberDetailUi? {
         bonds = m.bonds.map { b -> "${bondWord(b.kind)} with ${state.heroes[b.withHeroId]?.fullName ?: "one who is gone"} since day ${b.sinceDay}. ${b.reason}" },
         share = "Keeps ${m.sharePercent}% of the gold from quests they go on. " + if (m.fee > 0) "Recruited on day ${m.joinedDay} for ${m.fee} gold." else "With the guild since day ${m.joinedDay}.",
         numbers = fighter?.let { f ->
-            listOf("Health" to "${f.health}/${f.maxHealth}", "Attack" to if (f.strikeMax > f.strikeMin) "${f.strikeMin} to ${f.strikeMax}" else "${f.strikeMin}", "Support" to "${f.support}")
+            listOfNotNull("Health" to "${f.health}/${f.maxHealth} (${h.health}%)", "Attack" to if (f.strikeMax > f.strikeMin) "${f.strikeMin} to ${f.strikeMax}" else "${f.strikeMin}", kit?.let { k -> supportValue(k.kit, f.support)?.let { "Support" to it } })
         }.orEmpty(),
         rules = fighter?.let { f -> (f.kit.passives + f.effects).distinctBy { it.id }.map { it.name to it.description } }.orEmpty(),
         branches = openBranches(state, heroId).map { BranchUi(it.id, it.name, it.description, deedWord(it.deed)) },
@@ -784,12 +784,12 @@ fun GameEngine.memberDetail(state: GameState, heroId: HeroId): MemberDetailUi? {
         loanBlocked = away,
         dismissBlocked = away,
         gains = listOfNotNull(
-            traitDef?.let { abilityLine(it.name, it.description, "trait", TipTone.BONUS) },
-            branch?.let { abilityLine(it.name, it.description, "speciality", TipTone.BONUS) },
+            traitDef?.let { traitLine(it) },
+            branch?.let { abilityLine(it.name, it.description, "Speciality", TipTone.BONUS) },
         ),
-        costs = listOf(TipLine("Keeps ${m.sharePercent}% of the gold from quests they go on", TipTone.DRAWBACK)),
-        abilities = if (fighter == null || kit == null) emptyList() else listOf(kitLine(kit)) + fighter.kit.passives.map { it.ability("class") } +
-            carried.map { e -> e.ability(if (e.id in fighter.weaponRules) "weapon" else null) },
+        costs = listOf(TipLine(shareWords(m.sharePercent, traitDef, config), TipTone.DRAWBACK)),
+        abilities = if (fighter == null || kit == null) emptyList() else listOf(kitLine(kit)) + fighter.kit.passives.map { it.ability("Passive") } +
+            carried.map { e -> e.ability(if (e.id in fighter.weaponRules) "Weapon" else null) },
         keywords = if (fighter == null || kit == null) emptyList() else keywords(
             kit.kit.moves.flatMap { it.statuses() } + (fighter.kit.passives + fighter.effects).flatMap { it.statuses() }, config,
         ),

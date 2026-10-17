@@ -255,7 +255,8 @@ private fun MemberHead(m: MemberDetailUi) {
     Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("sheet_member_head"), verticalArrangement = Arrangement.spacedBy(Space.sm)) {
         m.status?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Ember, modifier = Modifier.testTag("sheet_member_status")) }
         if (m.numbers.isNotEmpty()) Column { m.numbers.forEach { (label, value) -> StatRow(label, value) } }
-        TipSectionBlock(TipSection(null, m.gains + m.costs))
+        TipSectionBlock(TipSection(null, m.gains))
+        TipSectionBlock(TipSection("Terms", m.costs))
     }
 }
 

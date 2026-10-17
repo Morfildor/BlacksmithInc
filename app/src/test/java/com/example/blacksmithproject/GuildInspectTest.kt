@@ -79,19 +79,21 @@ class GuildInspectTest {
             assertEquals("${engine.content.heroClass(h.classId).name} · level ${h.level}", tip.kind)
             assertEquals("Guild member", tip.meta)
             // The same numbers as the hero sheet: one read of the fighter, `fighterView`.
-            // The card adds the health between fights as a percentage, and shows Support only where an ability reads it.
+            // Health says the fight's number and the health between fights (a percentage) on one line; Support is shown
+            // only where an ability reads it, as what it does.
             val kit = combat.kitByClass.getValue(h.classId)
-            assertEquals(TipStat("Health %", "${h.health}%"), tip.stats.first())
-            assertEquals(engine.memberDetail(s, m.heroId)!!.numbers.filter { it.first != "Support" || readsSupport(kit.kit) }, tip.stats.drop(1).map { it.label to it.value })
+            assertEquals(engine.memberDetail(s, m.heroId)!!.numbers, tip.stats.map { it.label to it.value })
+            assertTrue(tip.stats.first().value, tip.stats.first().label == "Health" && tip.stats.first().value.endsWith("(${h.health}%)"))
+            assertEquals(readsSupport(kit.kit), tip.stats.any { it.label == "Support" })
             // What the class does every round leads, under its moves' names, then the class's own rules.
             val fight = tip.section("In a fight")
             assertEquals(kitLine(kit), fight.first())
             assertEquals(kit.kit.moves.joinToString(" and ") { it.name }, fight.first().title)
             assertEquals(kit.kit.passives.map { it.name }, fight.drop(1).map { it.title })
-            // The trait is a gain, the share a cost: each with its sign.
+            // The trait is a gain (a mixed one, which also raises the share, carries no sign); the share is a cost, under Terms.
             val trait = engine.content.guild!!.trait(m.traitId)!!
-            assertEquals(TipTone.BONUS, tip.lines().single { it.title == trait.name }.tone)
-            assertEquals(TipTone.DRAWBACK, tip.lines().single { "${m.sharePercent}% of the gold" in it.text }.tone)
+            assertEquals(if (trait.shareDelta > 0) TipTone.ABILITY else TipTone.BONUS, tip.lines().single { it.title == trait.name }.tone)
+            assertEquals(TipTone.DRAWBACK, tip.section("Terms").single { "${m.sharePercent}% of the gold" in it.text }.tone)
             // The card closes and opens the sheet; it is never a command and changes nothing.
             assertTrue(tip.actions.isEmpty())
         }
@@ -107,10 +109,14 @@ class GuildInspectTest {
         // Its typed trigger (Guard broken, by a foe) in a few words, standing for the sentence's own "When ..." clause.
         assertEquals("Enemy breaks Armor", riposte.trigger)
         assertEquals("Once per round", riposte.limit)
-        assertEquals("class", riposte.source)
+        assertEquals("Passive", riposte.source)
+        // The class's own line does not say Riposte's counterattack again.
+        assertFalse(tip.section("In a fight").first().text, "hits back" in tip.section("In a fight").first().text)
         assertTrue(tip.keywords.map { it.name }.toString(), "Armor" in tip.keywords.map { it.name })
-        // The stat Attack is told apart from the action once, and Support is shown because Hold the line reads it.
-        assertEquals(listOf("Attack", "Support"), tip.keywords.take(2).map { it.name })
+        // The stat Attack is told apart from the action once; Support is said as what it does (Hold the line reads it).
+        assertEquals("Attack", tip.keywords.first().name)
+        assertTrue(tip.keywords.none { it.name == "Support" })
+        assertEquals("${engine.fighterView(s, id)!!.support} Armor each round", tip.stats.single { it.label == "Support" }.value)
         assertEquals("The damage of this fighter's attacks.", tip.keywords.first().meaning)
         // A resident who stands in for the guild is of the town, with no share and no trait.
         assertEquals("Of the town", tip.meta)
@@ -172,9 +178,11 @@ class GuildInspectTest {
         val tip = engine.heroTip(s, c.heroId)!!
         assertNothingEmptyTitled(tip)
         assertEquals("For hire", tip.meta)
-        val cost = tip.lines().single { it.tone == TipTone.DRAWBACK && "Recruitment fee" in it.text }
-        assertTrue(cost.text, "${c.fee} gold" in cost.text && "${c.sharePercent}%" in cost.text)
-        assertEquals(TipTone.BONUS, tip.lines().single { it.title == engine.content.guild!!.trait(c.traitId)!!.name }.tone)
+        val terms = tip.section("Terms")
+        assertEquals(TipLine("Recruitment fee ${c.fee} gold", TipTone.DRAWBACK), terms.first())
+        assertTrue(terms.toString(), terms.single { "${c.sharePercent}% of the gold" in it.text }.tone == TipTone.DRAWBACK)
+        val trait = engine.content.guild!!.trait(c.traitId)!!
+        assertEquals(if (trait.shareDelta > 0) TipTone.ABILITY else TipTone.BONUS, tip.lines().single { it.title == trait.name }.tone)
     }
 
     @Test
@@ -279,7 +287,7 @@ class GuildInspectTest {
         val kit = combat.kitByClass.getValue(h.classId)
         assertEquals(kitLine(kit), d.abilities.first())
         val trait = engine.content.guild!!.trait(s.guild!!.member(id)!!.traitId)!!
-        assertEquals(TipTone.BONUS, d.gains.single { it.title == trait.name }.tone)
+        assertEquals(if (trait.shareDelta > 0) TipTone.ABILITY else TipTone.BONUS, d.gains.single { it.title == trait.name }.tone)
         assertEquals(TipTone.DRAWBACK, d.costs.single().tone)
         // The trait's own rules are its + line: the fight list does not say them twice.
         assertTrue(d.abilities.none { a -> trait.effects.any { it.name == a.title } })

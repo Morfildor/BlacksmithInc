@@ -9,6 +9,7 @@ import com.example.blacksmithproject.ui.contractUi
 import com.example.blacksmithproject.ui.destName
 import com.example.blacksmithproject.ui.guildUi
 import com.example.blacksmithproject.ui.memberDetail
+import com.example.blacksmithproject.ui.readsSupport
 import com.example.blacksmithproject.ui.shopUi
 import com.example.blacksmithproject.ui.threat
 import com.tinyblacksmith.core.combat.Posture
@@ -395,7 +396,8 @@ class GuildUiTest {
         val capacitor = com.tinyblacksmith.core.content.CombatContent.CAPACITOR
         assertTrue(detail.rules.toString(), (capacitor.name to capacitor.description) in detail.rules)
         assertEquals(blade.name, detail.loan!!.name)
-        assertEquals(listOf("Health", "Attack", "Support"), detail.numbers.map { it.first })
+        // Support only where an ability of the class reads it.
+        assertEquals(listOf("Health", "Attack") + listOfNotNull("Support".takeIf { readsSupport(com.tinyblacksmith.core.content.CombatContent.kits.single { it.classId == salted.heroes.getValue(bearer).classId }.kit) }), detail.numbers.map { it.first })
         assertNull(engine.memberDetail(salted, salted.residents().first().id))
     }
 

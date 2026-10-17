@@ -695,7 +695,8 @@ private fun RecipeDetailSheet(title: String, o: ForgeOutlookUi, config: BalanceC
             }
             TipSectionBlock(TipSection("Each choice", o.parts.map { TipLine(it.role, TipTone.PLAIN, title = it.name) }))
             Box(Modifier.testTag("forge_outlook_tradeoff")) {
-                TipSectionBlock(TipSection("Drawbacks", o.parts.mapNotNull { p -> p.constraint?.let { TipLine("${p.name}: $it", TipTone.DRAWBACK) } }))
+                // Each caveat marked as what it is: a drawback, a condition its effect waits for, or a comparison only.
+                TipSectionBlock(TipSection("Drawbacks and conditions", o.parts.mapNotNull { p -> p.constraint?.let { TipLine("${p.name}: $it", p.constraintKind.tone()) } }))
             }
             TipSectionBlock(TipSection("Every forge of it has", if (o.certain.isEmpty()) listOf(TipLine("No effect beyond its normal attack", TipTone.PLAIN)) else o.certain.map { it.ability() }))
             if (o.needs.isNotEmpty()) Box(Modifier.testTag("forge_outlook_needs")) {

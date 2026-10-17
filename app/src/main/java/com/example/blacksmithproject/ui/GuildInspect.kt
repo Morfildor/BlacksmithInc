@@ -11,6 +11,7 @@ import com.tinyblacksmith.core.combat.UnitDef
 import com.tinyblacksmith.core.config.BalanceConfig
 import com.tinyblacksmith.core.content.ClassKitDef
 import com.tinyblacksmith.core.content.CombatContent
+import com.tinyblacksmith.core.content.GuildTraitDef
 import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.guild.Loadout
 import com.tinyblacksmith.core.model.Danger
@@ -45,10 +46,31 @@ internal fun rarityWord(r: Rarity): String = Terms.rarity(r)
 internal fun readsSupport(kit: KitDef): Boolean = kit.moves.any { m -> m.actions.any { a -> a is Action.Heal && a.amount is Amount.Support || a is Action.Guard && a.amount is Amount.Support } }
 
 /**
+ * A fighter's Support said as what it does (docs/WRITING_GUIDE.md section 2.1): "4 Armor each round" for a Guardian,
+ * "6 healing each round" for a Warden, from the move that reads it (`Fight.amount`: exactly the Support number). "Each
+ * round" only for a kit whose one move is used every round; null where no ability reads Support.
+ */
+internal fun supportValue(kit: KitDef, support: Int): String? {
+    val move = kit.moves.firstOrNull { m -> m.actions.any { a -> a is Action.Heal && a.amount is Amount.Support || a is Action.Guard && a.amount is Amount.Support } } ?: return null
+    val what = if (move.actions.any { it is Action.Guard && it.amount is Amount.Support }) "Armor" else "healing"
+    return "$support $what" + if (kit.moves.size == 1 && move.cadence == Cadence.Always) " each round" else ""
+}
+
+/**
  * What a class does every round, as its card's first ability: the kit's moves by name, and the catalog's own line of
  * what the class does ([ClassKitDef.role]). Its passive rules follow as abilities of their own.
  */
-internal fun kitLine(kit: ClassKitDef): TipLine = TipLine(kit.role, TipTone.ABILITY, title = kit.kit.moves.joinToString(" and ") { it.name }, source = "class")
+internal fun kitLine(kit: ClassKitDef): TipLine = TipLine(kit.role, TipTone.ABILITY, title = kit.kit.moves.joinToString(" and ") { it.name }, source = "Ability")
+
+/** A guild trait as a gain. One that also raises the member's own share (Gold-Hungry) costs as well, so it carries no "+". */
+internal fun traitLine(t: GuildTraitDef): TipLine = abilityLine(t.name, t.description, "Trait", if (t.shareDelta > 0) TipTone.ABILITY else TipTone.BONUS)
+
+/** The share a member keeps, and the part of it a trait adds: "Keeps 15% of the gold from quests they go on (10% + 5% Gold-Hungry)". */
+internal fun shareWords(percent: Int, trait: GuildTraitDef?, config: BalanceConfig): String {
+    val base = config.guild.memberSharePercent
+    val added = trait?.shareDelta?.takeIf { it > 0 && percent == base + it }
+    return "Keeps $percent% of the gold from quests they go on" + (added?.let { " ($base% + $it% ${trait.name})" } ?: "")
+}
 
 /**
  * A hero of a guild run as a card: class and level, the numbers they would enter a fight with today (`fighterView`, as
@@ -81,21 +103,23 @@ fun GameEngine.heroTip(state: GameState, heroId: HeroId, home: Boolean = false, 
         meta = when { member != null -> "Guild member"; candidate != null -> "For hire"; else -> "Of the town" },
         stats = fighter?.let { f ->
             listOfNotNull(
-                // Between fights a hero's health is a percentage; in a fight it is on the fight's own scale.
-                TipStat("Health %", "${h.health}%"),
-                TipStat("Health", "${f.health}/${f.maxHealth}"),
+                // The fight's health is the hero's health between fights (a percentage) on the fight's scale: one line says both.
+                TipStat("Health", "${f.health}/${f.maxHealth} (${h.health}%)"),
                 TipStat("Attack", if (f.strikeMax > f.strikeMin) "${f.strikeMin} to ${f.strikeMax}" else "${f.strikeMin}"),
-                TipStat("Support", "${f.support}").takeIf { kit != null && readsSupport(kit.kit) },
+                kit?.let { k -> supportValue(k.kit, f.support)?.let { TipStat("Support", it) } },
             )
         } ?: listOf(TipStat("Health", warning ?: Labels.health(h).replaceFirstChar { it.uppercase() })),
         sections = listOf(
-            TipSection("In a fight", if (fighter == null || kit == null) emptyList() else listOf(kitLine(kit)) + kit.kit.passives.map { it.ability("class") }),
+            TipSection("In a fight", if (fighter == null || kit == null) emptyList() else listOf(kitLine(kit)) + kit.kit.passives.map { it.ability("Passive") }),
             TipSection(null, listOfNotNull(
-                trait?.let { abilityLine(it.name, it.description, "trait", TipTone.BONUS) },
-                branch?.let { abilityLine(it.name, it.description, "speciality", TipTone.BONUS) },
-                member?.let { TipLine("Keeps ${it.sharePercent}% of the gold from quests they go on", TipTone.DRAWBACK) },
-                candidate?.let { TipLine("Recruitment fee ${it.fee} gold. Keeps ${it.sharePercent}% of the gold from quests they go on", TipTone.DRAWBACK) },
+                trait?.let { traitLine(it) },
+                branch?.let { abilityLine(it.name, it.description, "Speciality", TipTone.BONUS) },
                 TipLine("Reserved for the wall", TipTone.CONDITION).takeIf { g != null && heroId in g.reserved },
+            )),
+            // What a member costs the guild, as terms of their service rather than a fault of theirs.
+            TipSection("Terms", listOfNotNull(
+                candidate?.let { TipLine("Recruitment fee ${it.fee} gold", TipTone.DRAWBACK) },
+                (member?.sharePercent ?: candidate?.sharePercent)?.let { TipLine(shareWords(it, trait, config), TipTone.DRAWBACK) },
             )),
             TipSection("Weapon", when {
                 !h.isAlive -> emptyList()
@@ -109,7 +133,8 @@ fun GameEngine.heroTip(state: GameState, heroId: HeroId, home: Boolean = false, 
                 )
             }),
         ),
-        keywords = if (fighter == null || kit == null) emptyList() else statKeywords(support = readsSupport(kit.kit)) + keywords(
+        // Support is said as what it does on its own line, so only Attack needs telling apart from the action.
+        keywords = if (fighter == null || kit == null) emptyList() else statKeywords() + keywords(
             kit.kit.moves.flatMap { it.statuses() } + (kit.kit.passives + trait?.effects.orEmpty() + branch?.effects.orEmpty() + weaponRules).flatMap { it.statuses() }, config,
         ),
         warning = warning?.takeIf { fighter != null || member != null },

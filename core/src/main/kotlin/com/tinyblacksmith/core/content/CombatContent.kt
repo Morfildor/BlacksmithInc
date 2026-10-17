@@ -40,10 +40,17 @@ data class FamilyCombatDef(val familyId: WeaponFamilyId, val strikePercent: Int,
  * physical character in one line, [constraint] what choosing it costs. Read only for a weapon of `WeaponRules.CRAFT_CORES`
  * or later: a weapon forged before metals had a rule keeps fighting as it did.
  */
-data class CoreCombatDef(val coreId: MaterialId, val role: String, val constraint: String, val effects: List<EffectDef> = emptyList(), val strikePercent: Int = 100, val supportPercent: Int = 100)
+data class CoreCombatDef(val coreId: MaterialId, val role: String, val constraint: String, val effects: List<EffectDef> = emptyList(), val strikePercent: Int = 100, val supportPercent: Int = 100, val constraintKind: ConstraintKind = ConstraintKind.DRAWBACK)
 
 /** An augment or a catalyst in the smith's words: what it is chosen for ([role]) and what the choice costs ([constraint]). Its rules are the element's or the catalyst's own. */
-data class IngredientNote(val role: String, val constraint: String)
+data class IngredientNote(val role: String, val constraint: String, val constraintKind: ConstraintKind = ConstraintKind.DRAWBACK)
+
+/**
+ * What a material's [CoreCombatDef.constraint] or [IngredientNote.constraint] is, so a screen marks it truly: a
+ * [DRAWBACK] it always costs in a fight (a crack, an enemy that resists it), a [CONDITION] its effect waits for, or
+ * [CONTEXT], a comparison with the other choices that is no penalty of its own (Iron is simply the lowest tier).
+ */
+enum class ConstraintKind { DRAWBACK, CONDITION, CONTEXT }
 
 /**
  * A relationship between rules that a smith can learn and reuse, never one exact recipe. [pieces] are the weapon rules
@@ -165,13 +172,13 @@ object CombatContent {
 
     val kits = listOf(
         ClassKitDef(LaunchContent.GUARDIAN, GUARDIAN_KIT, health = 40, healthPerLevel = 3, strike = 4, strikePerLevel = 1, support = 4, supportPerLevel = 1,
-            role = "Every round, the Guardian gains Armor equal to its Support, then attacks. While the Guardian has Armor, enemy attacks aimed at one member hit the Guardian instead of the front member. When an enemy breaks the Guardian's Armor, the Guardian hits back.",
+            role = "Every round, the Guardian gains Armor equal to its Support, then attacks. While the Guardian has Armor, enemy attacks aimed at one member hit the Guardian instead of the front member.",
             forgeHint = "Weapons that add Armor. Pairs well with effects that trigger when Armor breaks."),
         ClassKitDef(LaunchContent.WARDEN, WARDEN_KIT, health = 32, healthPerLevel = 2, strike = 4, strikePerLevel = 1, support = 6, supportPerLevel = 1,
             role = "Every round, the Warden heals the ally with the lowest health percentage by its Support, then attacks for 60% of its Attack.",
             forgeHint = "Weapons with effects that trigger on healing, and weapons that cost their wielder health."),
         ClassKitDef(LaunchContent.BATTLEMAGE, BATTLEMAGE_KIT, health = 26, healthPerLevel = 2, strike = 6, strikePerLevel = 1, support = 2, supportPerLevel = 0,
-            role = "In round 1, the Battlemage gives 1 Charge to the first ally who has a Discharge (from a weapon or the Storm-Touched trait, the Battlemage included), puts a Mark on ${PRIORITY_TARGET}, then attacks for 70% of its Attack. In later rounds, it attacks for 100% of its Attack. Once per round, when an enemy gains Burn, Chill or Wet, the Battlemage gives that enemy 1 more.",
+            role = "In round 1, the Battlemage gives 1 Charge to the first ally who has a Discharge (from a weapon or the Storm-Touched trait, the Battlemage included), puts a Mark on ${PRIORITY_TARGET}, then attacks for 70% of its Attack. In later rounds, it attacks for 100% of its Attack.",
             forgeHint = "Weapons with an element. When an enemy gains Burn, Chill or Wet, the Battlemage adds 1 more."),
         ClassKitDef(LaunchContent.RANGER, RANGER_KIT, health = 28, healthPerLevel = 2, strike = 6, strikePerLevel = 1, support = 2, supportPerLevel = 0,
             role = "Attacks, then puts a Mark on ${PRIORITY_TARGET}. The party attacks a marked enemy first, and the next hit on it deals ${RULES.markBonus} extra damage.",
@@ -206,21 +213,21 @@ object CombatContent {
 
     fun cores(n: CoreNumbers = CoreNumbers()) = listOf(
         CoreCombatDef(LaunchContent.IRON, "Plain and sturdy. The wielder starts every fight with ${n.ironGuard} Armor.", "The weakest metal. It adds the least to the wielder's Attack.", listOf(
-            e("core_iron", "Iron", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(n.ironGuard))), Limit(perFight = 1), "The wielder starts each fight with ${n.ironGuard} Armor."))),
+            e("core_iron", "Iron", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Guard(Aim.Self, Fixed(n.ironGuard))), Limit(perFight = 1), "The wielder starts each fight with ${n.ironGuard} Armor.")), constraintKind = ConstraintKind.CONTEXT),
         CoreCombatDef(LaunchContent.BRONZE, "Rings when hit. When an enemy breaks the wielder's Armor, the weapon hits back.", "Does nothing for a wielder who never has Armor.", listOf(
             e("core_bronze", "Bronze", Trigger(EventKind.GUARD_BROKEN, Who.SELF_TARGET), listOf(Damage(Aim.EventSource, Fixed(n.bronzeAnswer))), Limit(perRound = 1),
-                "When an enemy breaks the wielder's Armor, the weapon deals ${n.bronzeAnswer} damage to that enemy. Once per round.", listOf(Condition.SourceIsFoe)))),
+                "When an enemy breaks the wielder's Armor, the weapon deals ${n.bronzeAnswer} damage to that enemy. Once per round.", listOf(Condition.SourceIsFoe))), constraintKind = ConstraintKind.CONDITION),
         CoreCombatDef(LaunchContent.SILVER, "Holds a charge. The wielder starts every fight with ${n.silverCharge} Charge. If the weapon or the wielder has a Discharge, it triggers at once, before anyone acts in round 1.", "Charge does nothing unless the weapon or the wielder has a Discharge (Binding Salt, the Stormcharged property or the Storm-Touched trait).", listOf(
-            e("core_silver", "Silver", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Give(Stat.CHARGE, Aim.Self, Fixed(n.silverCharge))), Limit(perFight = 1), "The wielder starts each fight with ${n.silverCharge} Charge."))),
+            e("core_silver", "Silver", Trigger(EventKind.ROUND_START, Who.ANY), listOf(Give(Stat.CHARGE, Aim.Self, Fixed(n.silverCharge))), Limit(perFight = 1), "The wielder starts each fight with ${n.silverCharge} Charge.")), constraintKind = ConstraintKind.CONDITION),
         CoreCombatDef(LaunchContent.OBSIDIAN, "A glass edge. ${if (n.obsidianStrike >= 100) "+" else ""}${n.obsidianStrike - 100}% Attack.", "It cracks the first time an enemy breaks the wielder's Armor. A cracked weapon keeps working, but needs repair after the fight. On a wielder who holds the front line, that happens in most fights.", listOf(
             e("core_obsidian", "Obsidian", Trigger(EventKind.GUARD_BROKEN, Who.SELF_TARGET), listOf(Action.Fracture(2)), Limit(perFight = 1),
                 "The first time an enemy breaks the wielder's Armor, the weapon cracks. The wielder gains 2 Scrap, and the weapon needs repair after the fight. Once per fight.", listOf(Condition.SourceIsFoe))), strikePercent = n.obsidianStrike),
         CoreCombatDef(LaunchContent.STARSTEEL, "Finds the marked place. Deals extra damage when the wielder's attack uses up a Mark.", "Costly. Its effect needs a Mark on the enemy for the wielder's own attack to use up.", listOf(
             e("core_starsteel", "Starsteel", Trigger(EventKind.STAT_SPENT, Who.SELF_SOURCE, Stat.MARK), listOf(Damage(Aim.EventTarget, Fixed(n.starsteelBonus))), Limit(perRound = 1),
-                "When the wielder's own attack uses up a Mark, the weapon deals ${n.starsteelBonus} more damage to that enemy. Once per round.", struck))),
+                "When the wielder's own attack uses up a Mark, the weapon deals ${n.starsteelBonus} more damage to that enemy. Once per round.", struck)), constraintKind = ConstraintKind.CONDITION),
         CoreCombatDef(LaunchContent.MOONSTEEL, "Cold metal. It bites deeper into an enemy that is already chilled.", "The costliest metal. Its effect needs Chill on the target before the hit lands.", listOf(
             e("core_moonsteel", "Moonsteel", onOwnHit, listOf(Damage(Aim.EventTarget, Fixed(n.moonsteelBonus))), Limit(perRound = 1),
-                "When the wielder's attack damages an enemy that already has Chill, the weapon deals ${n.moonsteelBonus} more damage to that enemy. The Chill stays. Once per round.", struck + Condition.TargetHas(Stat.CHILL)))),
+                "When the wielder's attack damages an enemy that already has Chill, the weapon deals ${n.moonsteelBonus} more damage to that enemy. The Chill stays. Once per round.", struck + Condition.TargetHas(Stat.CHILL))), constraintKind = ConstraintKind.CONDITION),
     )
     val cores = cores()
 
@@ -246,14 +253,14 @@ object CombatContent {
     /** Augments and catalysts as a choice at the forge. Their rules are [elementEffects] and [catalystEffects]. */
     val notes: Map<MaterialId, IngredientNote> = mapOf(
         LaunchContent.EMBER_RESIN to IngredientNote("Fire. Once per round, the wielder's attack puts 1 Burn on the enemy it damages. Burn deals damage at the end of each round.", "Ashclaw and Embermaw enemies resist fire, and Embermaw take only half damage from Burn."),
-        LaunchContent.FROST_BLOOM to IngredientNote("Frost. Once per round, the wielder's attack puts 1 Chill on the enemy it damages. A chilled enemy's next attack deals ${RULES.chillPercent}% less damage.", "The attack it weakens uses up the Chill. Chill deals no damage by itself."),
-        LaunchContent.VERDANT_SAP to IngredientNote("Living sap. Once per round, the wielder's attack gives the wielder 1 Regeneration, which heals ${RULES.regenHeal} at the end of the round.", "It heals only the wielder, and only a wielder who has been hurt."),
-        LaunchContent.STORMGLASS to IngredientNote("Storm. Once per round, the wielder's attack also deals 2 storm damage to the back enemy.", "The extra damage is small. Storm damage pays best with a Discharge, or against a Wet enemy."),
+        LaunchContent.FROST_BLOOM to IngredientNote("Frost. Once per round, the wielder's attack puts 1 Chill on the enemy it damages. A chilled enemy's next attack deals ${RULES.chillPercent}% less damage.", "The attack it weakens uses up the Chill. Chill deals no damage by itself.", ConstraintKind.CONDITION),
+        LaunchContent.VERDANT_SAP to IngredientNote("Living sap. Once per round, the wielder's attack gives the wielder 1 Regeneration, which heals ${RULES.regenHeal} at the end of the round.", "It heals only the wielder, and only a wielder who has been hurt.", ConstraintKind.CONDITION),
+        LaunchContent.STORMGLASS to IngredientNote("Storm. Once per round, the wielder's attack also deals 2 storm damage to the back enemy.", "The extra damage is small. Storm damage pays best with a Discharge, or against a Wet enemy.", ConstraintKind.CONDITION),
         LaunchContent.GRAVE_DUST to IngredientNote("Grave. Once per round, the wielder's attack puts 1 Bleed on the enemy it damages. Bleed deals damage before that enemy acts and ignores Armor.", "The Hollowbound resist grave damage and take only half damage from Bleed."),
-        LaunchContent.SUN_ASH to IngredientNote("Sun. Once per round, the wielder's attack puts a Mark on the enemy it damages. The party attacks a marked enemy first, and the next hit on it deals ${RULES.markBonus} extra damage.", "Whoever hits the marked enemy next gets the bonus, and that is not always the wielder."),
-        LaunchContent.BINDING_SALT to IngredientNote("When the wielder is healed, the wielder gains 1 Charge, once per round. At 3 Charge, a Discharge spends it all for 8 storm damage.", "It needs a healer, and healing a wielder at full health stores nothing."),
-        LaunchContent.RUNESTONE_SHARD to IngredientNote("When an enemy breaks an ally's Armor, the weapon deals 5 damage to that enemy.", "Works only after a weapon in the party has cracked in that fight."),
-        LaunchContent.DRAGON_OIL to IngredientNote("Spreads fire. When the wielder puts Burn on an enemy, every enemy gains 1 Burn. When the wielder gains Steam, Steam lance spends 1 Steam to deal 5 damage to the enemy the party is attacking and 5 to the back enemy. Both ignore Armor.", "The spreading needs a fire weapon. The lance needs Steam, which needs fire and cold together, usually from two different members."),
+        LaunchContent.SUN_ASH to IngredientNote("Sun. Once per round, the wielder's attack puts a Mark on the enemy it damages. The party attacks a marked enemy first, and the next hit on it deals ${RULES.markBonus} extra damage.", "Whoever hits the marked enemy next gets the bonus, and that is not always the wielder.", ConstraintKind.CONDITION),
+        LaunchContent.BINDING_SALT to IngredientNote("When the wielder is healed, the wielder gains 1 Charge, once per round. At 3 Charge, a Discharge spends it all for 8 storm damage.", "It needs a healer, and healing a wielder at full health stores nothing.", ConstraintKind.CONDITION),
+        LaunchContent.RUNESTONE_SHARD to IngredientNote("When an enemy breaks an ally's Armor, the weapon deals 5 damage to that enemy.", "Works only after a weapon in the party has cracked in that fight.", ConstraintKind.CONDITION),
+        LaunchContent.DRAGON_OIL to IngredientNote("Spreads fire. When the wielder puts Burn on an enemy, every enemy gains 1 Burn. When the wielder gains Steam, Steam lance spends 1 Steam to deal 5 damage to the enemy the party is attacking and 5 to the back enemy. Both ignore Armor.", "The spreading needs a fire weapon. The lance needs Steam, which needs fire and cold together, usually from two different members.", ConstraintKind.CONDITION),
         LaunchContent.VOID_INK to IngredientNote("After the wielder acts, removes up to 3 Burn from the enemy the party is attacking and gives that much Armor to the weakest ally. When the wielder gains Steam, the wielder spends 1 Steam and every ally gains 3 Armor.", "The removed Burn no longer deals damage."),
     )
 

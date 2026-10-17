@@ -92,8 +92,10 @@ class ForgeV2FactsTest {
         val changes = engine.trayChange(guild, draft, draft.copy(augmentId = other.id), RecipeSlot.AUGMENT, emptyList(), null)!!.changes
         val facts = changes.filter { !it.rule }.map { it.text }
         val rules = changes.filter { it.rule }.map { it.text }
+        // A caveat that is a condition or a comparison, not a drawback, is said in its own words, unlabelled.
+        val caveats = com.tinyblacksmith.core.content.CombatContent.let { c -> c.cores.map { it.constraint } + c.notes.values.map { it.constraint } }.toSet()
         assertTrue(facts.toString(), facts.any { it.startsWith("Costs ") } && facts.any { " element instead of " in it })
-        assertTrue(rules.toString(), rules.all { it.startsWith("Gains the effect") || it.startsWith("Loses the effect") || " needs " in it || it.endsWith("now has what it needs") || it.startsWith("Drawback: ") || it.startsWith("Metal + infusion: ") || it.startsWith("Infusion + weapon: ") || it.startsWith("Signature: ") })
+        assertTrue(rules.toString(), rules.all { it.startsWith("Gains the effect") || it.startsWith("Loses the effect") || " needs " in it || it.endsWith("now has what it needs") || it.startsWith("Drawback: ") || it in caveats || it.startsWith("Metal + infusion: ") || it.startsWith("Infusion + weapon: ") || it.startsWith("Signature: ") })
         assertFalse("nothing is dropped: every change is a fact or a rule line", changes.isEmpty())
     }
 }

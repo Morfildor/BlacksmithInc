@@ -10,6 +10,7 @@ import com.tinyblacksmith.core.combat.Limit
 import com.tinyblacksmith.core.combat.Who
 import com.tinyblacksmith.core.combat.Stat
 import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.content.ConstraintKind
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.crafting.Forge
 import com.tinyblacksmith.core.engine.GameEngine
@@ -130,6 +131,9 @@ internal fun BladeRuleUi.ability(withSource: Boolean = true) =
 
 private fun MaterialCategory.word() = when (this) { MaterialCategory.CORE -> "Metal"; MaterialCategory.AUGMENT -> "Infusion"; MaterialCategory.CATALYST -> "Catalyst" }
 
+/** How a material's caveat reads: a drawback with its "−", a condition with its "◇", a comparison as plain words. */
+internal fun ConstraintKind?.tone(): TipTone = when (this) { ConstraintKind.CONDITION -> TipTone.CONDITION; ConstraintKind.CONTEXT -> TipTone.PLAIN; else -> TipTone.DRAWBACK }
+
 /**
  * A metal, an augment or a catalyst as a card: what it is, what the smith holds and pays, the most a metal can reach,
  * how the besieger takes its element, and (a guild run) the rule it gives a weapon and what choosing it costs.
@@ -141,15 +145,16 @@ fun GameEngine.materialTip(state: GameState, id: MaterialId, threat: ThreatUi?, 
     val owned = state.materials[id] ?: 0
     val mark = m.element?.let { threat?.marks?.get(it) }
     val combat = content.combat
-    val trade = combat?.coreById?.get(id)?.constraint ?: combat?.notes?.get(id)?.constraint
+    val trade = combat?.coreById?.get(id)?.let { it.constraint to it.constraintKind } ?: combat?.notes?.get(id)?.let { it.constraint to it.constraintKind }
     val rules = if (guild) materialRules(content, id) else emptyList()
     return TipUi(
         name = m.name, kind = listOfNotNull(m.category.word(), m.element?.let { Terms.element(it) }).joinToString(" · "), icon = Sprites.material(id),
         accent = m.element?.let { com.example.blacksmithproject.ui.detail.elementColor(it) },
         meta = if (owned == 0) "None owned" else "$owned owned",
         stats = listOfNotNull(
-            TipStat("Price", "${m.price} gold"),
-            // A ceiling, not the weapon's rarity: what the best forge in this metal can reach without Heartfire.
+            TipStat("Price", "${m.price} gold each"),
+            // Ceilings, not the weapon's: the most quality and rarity a forge in this metal can reach without Heartfire.
+            TipStat("Quality cap", "${Forge.qualityCap(m.tier, config)}").takeIf { m.category == MaterialCategory.CORE },
             TipStat("Rarity limit", if (Forge.holdsEpic(m.tier, config)) "Up to Epic" else "Up to Rare").takeIf { m.category == MaterialCategory.CORE },
             mark?.let { TipStat("Against the siege", it.label, if (it.counters) FactTone.GOOD else FactTone.WARN) },
         ),
@@ -157,7 +162,7 @@ fun GameEngine.materialTip(state: GameState, id: MaterialId, threat: ThreatUi?, 
             TipSection(null, rules.map { it.ability() }),
             TipSection(null, listOfNotNull(
                 m.element?.let { TipLine("Adds ${Terms.element(it).lowercase()} to the weapon", TipTone.BONUS) }.takeIf { !guild },
-                trade?.takeIf { guild }?.let { TipLine(it, TipTone.DRAWBACK) },
+                trade?.takeIf { guild }?.let { (text, kind) -> TipLine(text, kind.tone()) },
             )),
         ),
         keywords = keywords(rules.flatMap { it.statuses() }, config),
@@ -208,7 +213,7 @@ fun recipeTip(o: ForgeOutlookUi, title: String, icon: Int?, config: BalanceConfi
     sections = listOf(
         // What every forge of it carries, as ability rows; where each comes from and how they combine are the details' own.
         TipSection(null, if (o.certain.isEmpty()) listOf(TipLine("No effect beyond its normal attack", TipTone.PLAIN)) else o.certain.map { it.ability(withSource = false) }),
-        TipSection(null, o.needs.map { n -> TipLine("${n.rule} needs ${n.needs.joinToString(" or ")}", TipTone.CONDITION) } + listOfNotNull(o.tradeoff?.let { TipLine(it, TipTone.DRAWBACK) })),
+        TipSection(null, o.needs.map { n -> TipLine("${n.rule} needs ${n.needs.joinToString(" or ")}", TipTone.CONDITION) } + listOfNotNull(o.tradeoff?.let { TipLine(it, o.tradeoffKind.tone()) })),
         // What a roll may add, by name only and never as had: when each can come is in the details.
         TipSection(null, o.possible.takeIf { it.isNotEmpty() }?.let { p -> listOf(TipLine("May also get, never certain: ${p.joinToString(", ") { it.name }}", TipTone.CHANCE)) }.orEmpty()),
     ),

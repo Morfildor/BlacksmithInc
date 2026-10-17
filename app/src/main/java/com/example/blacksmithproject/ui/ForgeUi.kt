@@ -6,6 +6,7 @@ import com.tinyblacksmith.core.combat.Action
 import com.tinyblacksmith.core.combat.Amount
 import com.tinyblacksmith.core.combat.EffectDef
 import com.tinyblacksmith.core.config.BalanceConfig
+import com.tinyblacksmith.core.content.ConstraintKind
 import com.tinyblacksmith.core.content.MaterialCategory
 import com.tinyblacksmith.core.crafting.Bench
 import com.tinyblacksmith.core.crafting.Capabilities
@@ -101,7 +102,7 @@ enum class RecipeSlot(val label: String, val empty: String, val choose: String, 
 @Immutable data class ForgeActionUi(val label: String, val enabled: Boolean, val note: String?, val restock: MaterialId? = null, val endDay: Boolean = false)
 
 /** One chosen ingredient of the recipe: what it is for ([role]) and what choosing it costs ([constraint]). */
-@Immutable data class OutlookPartUi(val name: String, val role: String, val constraint: String?)
+@Immutable data class OutlookPartUi(val name: String, val role: String, val constraint: String?, val constraintKind: ConstraintKind = ConstraintKind.DRAWBACK)
 
 /** A rule every forge of the recipe carries that still waits for something: the [rule] by name, what it [needs] in words. */
 @Immutable data class OutlookNeedUi(val rule: String, val needs: List<String>)
@@ -123,6 +124,8 @@ data class ForgeOutlookUi(
     val qualityLow: Int = 0, val qualityHigh: Int = 0,
     /** By rule ID: what a metal's or an element's effect does, in a few words ([effectPhrase]). */
     val phrases: Map<String, String> = emptyMap(),
+    /** Whether [tradeoff] is a drawback, a condition or a comparison only (`ForgeOutlook.Outlook.tradeoffKind`). */
+    val tradeoffKind: ConstraintKind? = null,
 )
 
 /** A certain rule as the Forge names it: its source with what it does ("Iron · Starts each fight with 3 Armor"), else its name. */
@@ -280,9 +283,9 @@ fun GameEngine.forgeOutlook(state: GameState, forge: Command.Forge): ForgeOutloo
     val o = ForgeOutlook.of(state, content, config, forge) ?: return null
     return ForgeOutlookUi(
         role = o.role, suits = o.wielders,
-        parts = o.parts.filter { it.role.isNotEmpty() }.map { OutlookPartUi(it.name, it.role, it.constraint) },
+        parts = o.parts.filter { it.role.isNotEmpty() }.map { OutlookPartUi(it.name, it.role, it.constraint, it.constraintKind) },
         needs = o.missing.map { (id, needs) -> OutlookNeedUi(o.certain.rule(id)?.effect?.name ?: id, needs.map(Capabilities::text)) },
-        tradeoff = o.tradeoff,
+        tradeoff = o.tradeoff, tradeoffKind = o.tradeoffKind,
         possible = o.possible.map { OutlookChanceUi(it.name, it.text) },
         certain = o.certain.rules.map { it.ui() },
         notes = o.notes.map { Capabilities.text(it, o.certain) },
@@ -612,7 +615,11 @@ fun GameEngine.trayChange(state: GameState, baseline: ForgeDraft, draft: ForgeDr
         (rulesWas - rulesNow).forEach { changes += ChangeUi("Loses the effect ${before.outlook.named(it)}", false, rule = true) }
         after.outlook.needs.filter { n -> n !in before.outlook.needs }.forEach { n -> changes += ChangeUi("${n.rule} needs ${n.needs.joinToString(" or ")}", false, rule = true) }
         before.outlook.needs.filter { n -> n.rule in rulesNow && after.outlook.needs.none { it.rule == n.rule } }.forEach { n -> changes += ChangeUi("${n.rule} now has what it needs", true, rule = true) }
-        if (after.outlook.tradeoff != null && after.outlook.tradeoff != before.outlook.tradeoff) changes += ChangeUi("Drawback: ${after.outlook.tradeoff}", false, rule = true)
+        // Only a real drawback is called one and counted against the change; a condition or a comparison is said plainly.
+        if (after.outlook.tradeoff != null && after.outlook.tradeoff != before.outlook.tradeoff) {
+            val drawback = after.outlook.tradeoffKind == ConstraintKind.DRAWBACK
+            changes += ChangeUi((if (drawback) "Drawback: " else "") + after.outlook.tradeoff, if (drawback) false else null, rule = true)
+        }
     }
     // A change no fact above speaks to (Plain for a technique, say) is still a change: never "Unchanged".
     if (changes.isEmpty()) changes += ChangeUi("Now ${nameIn(draft, slot)}")
