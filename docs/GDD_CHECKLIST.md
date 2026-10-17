@@ -243,9 +243,10 @@ Ticked = built and JVM-tested. What was seen on a device is in the ledger.
 - [x] 48 enemies, 36 armies, committed army planner, structural forge loss once (cap 12), sabotage of the charge
 - [x] Opportunities: 16 of 18 routed, 2 deferred (lantern hunt, safe experiment)
 - [x] Identity UI and the owner's six UI fixes (screenshots `docs/living_heroes_evidence/ui_identity/`)
-- [ ] Agency and siege UI (lean, returns, departures, personal offers, counter purchases, army forecast, enemy traits)
-- [ ] Army strength calibrated to the existing bands on tuning seeds, confirmed on validation block 800001-800300
-- [ ] Debug scenario saves regenerated; device pass at 360 dp, 1.0x / 1.3x
+- [x] Agency and siege UI (lean, returns, departures, personal offers, counter purchases, army forecast, enemy traits; `docs/living_heroes_evidence/ui_agency/`)
+- [x] Army strength: calibrated (140, validated on 800001-800300), then escalating by owner ruling (130 + 15 a siege; DECISIONS)
+- [x] Debug scenario saves regenerated; device screenshots at 360 dp, 1.0x / 1.3x of every changed screen
+- [ ] Not yet: replay and battle report of a living siege on a device, instrumented tests, physical device
 
 ## Pipeline (owner requests and review findings, beyond the GDD)
 - [x] Signboard effect (+1 customer a day per level; +0.4 days, +3.5 sales a run for the active smith)

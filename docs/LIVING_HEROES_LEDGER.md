@@ -52,7 +52,7 @@ read it first, then `git log --oneline living-heroes`.
 - [x] M1 core: revision + versions (schema 8, rules 8, content 7, balance 17), peoples and names, Hooks, counter visit,
   loan returns, leans, sponsored offers, concerns and departures, invariants, fixtures 1-14 and 20 (`LivingIdentityTest`,
   `LivingAgencyTest`), guildsim `--living` / `--legacy`. Commits baf7db3, 1f9b8a5, bdb02a9.
-- [x] M1 UI: identity on sheet / roster / recruit card, silhouettes, the owner's six UI fixes (merged; evidence `docs/living_heroes_evidence/ui_identity/`). Agency notices: in progress (agent)
+- [x] M1 UI: identity on sheet / roster / recruit card, silhouettes, the owner's six UI fixes (merged; evidence `docs/living_heroes_evidence/ui_identity/`). Agency and siege UI: merged (evidence `docs/living_heroes_evidence/ui_agency/`)
 - [~] M2: five Hooks done; eight ambitions done (Avenger, Heirloom, Captain, Name wired); 18 opportunities classified
   (section 5); candidate inclination text (`LivingText.inclination`); market attachment done
 - [x] M3-M5: combat grammar (merged 9d79ef5), 48 enemies and 36 armies (`content/Bestiary.kt`, `BestiaryTest`),
