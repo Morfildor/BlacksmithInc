@@ -69,7 +69,7 @@ object Hooks {
     fun powderScout(ctx: ResolutionContext, scenario: SiegeScenario): HeroId? {
         if (!Agency.on(ctx)) return null
         val units = ctx.content.combat?.unitById ?: return null
-        if (scenario.plan.none { "structural" in (units[it.unitId]?.tags ?: emptySet()) }) return null
+        if (scenario.plan.none { SiegeFight.STRUCTURAL in (units[it.unitId]?.tags ?: emptySet()) }) return null
         return GuildOps.present(ctx).mapNotNull { ctx.heroes[it.heroId] }.firstOrNull { it.backgroundId in setOf("bg_scout", "bg_militia", "bg_deserter", "bg_mason") }?.id
     }
 
