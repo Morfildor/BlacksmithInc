@@ -5,6 +5,8 @@ File rules: PNG with a transparent background unless the piece is a full scene o
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
+All 8 redrawn with Retro Diffusion on 2026-10-17 (docs/UI_ART_REVAMP.md, second pass).
+
 DELIVERED AND IN THE GAME (do not resend)
   All 8 blessings (48x48): forgefire, tireless_hands, merchants_favor, runic_insight, stalwart_town, hunters_edge,
   lucky_alloy, guild_patronage.

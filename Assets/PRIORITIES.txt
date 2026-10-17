@@ -5,7 +5,7 @@ Each folder's WANTED.txt has the IDs, sizes and notes. This is the order.
 1. AppIcon      delivered 2026-10-17 (Retro Diffusion).
 2. Audio        none exists yet: about 11 effects (forge_strike, blade_revealed, signature_found, sale, refusal, end_day,
                 siege_horn, siege_won, siege_lost, run_end, button_tap) and one or two looping tracks.
-3. Enemies      the 12 faction portraits: 80x80 and 112x112 (three factions, two ranks each) and 64x64 alternates.
+3. Enemies      the six faction portraits were redrawn 2026-10-17 (Retro Diffusion); the 64x64 alternates are not shown.
    Heroes       NEW: faces for the six peoples with none (dwarf, gnome, goblin, dragonkin, stonekin, catfolk), two each,
                 then a second face for lizardfolk, hornborn and halfling. Until then those heroes show a class silhouette.
    Enemies      NEW: the bestiary, 48 enemies in four batches A to D (8, 8, 20, 12), after the faction portraits.
@@ -17,5 +17,7 @@ Each folder's WANTED.txt has the IDs, sizes and notes. This is the order.
                 16 material icons were redrawn in the weapons' style the same day.
 
 Complete, nothing wanted: Backgrounds, Scene, Materials, Blessings, Relics, Icons.
+Redrawn 2026-10-17 with Retro Diffusion: the title, counter and run-end backgrounds, the shop-day pictures, the siege
+wall, the anvil, blessings and relics (docs/UI_ART_REVAMP.md, second pass).
 Delivered and waiting for a screen (do not resend): art_day_rumour (Scene), icon_action_legacy / icon_action_price /
 icon_action_scrap (Icons).

@@ -88,3 +88,37 @@ flat centre; frames are now generated edge to edge and keyed locally). A paralle
 | icon_nav_forge / town / journal / market / gazette / home / legacy, icon_settings | 32 | anvil and hammer / walled town / leather journal and quill / market stall / newspaper / smithy cottage / blue banner / gear and hammer |
 | icon_purse, icon_trait_long_assault, icon_trait_many_breaches | 40 | coin purse / hourglass and crossed swords / broken wall |
 | icon_visitor | 48 | shop door ajar with lantern and bell |
+
+## Second pass: content art (2026-10-17, evening)
+
+Owner: "Remake any artwork that we didn't update today with Retro Diffusion", then "do the big artworks (day,
+treasure, siege)" and "make sure the big artworks are polished and great looking". Same style as the UI set
+(`rd_pro__fantasy`, thin dark-brown outline, no pure black or white); icons with one reference image (two of the new
+48 px material icons, 28 colours, about 1.3 KB). Every piece keeps its file size, so no code changed, except the
+title painting (RD's largest output is 256 px: drawn at 144x256 and stored at a whole 8x, 1152x2048) and the two
+backdrops (stored at their native 256 px; `Backdrop` enlarges by whole pixels).
+
+| Group | IDs | Takes | Notes |
+|---|---|---|---|
+| Backgrounds | bg_title_workshop_night, bg_counter_forge, bg_run_end_fallen_forge | 1, 2, 1 | counter retaken: the first came back letterboxed with white bars |
+| Shop-day pictures | art_day_till, _sale_receipt, _siege_victory, _fallen_forge, _new_dawn | 1, 2, 2, 1, 1 | victory retaken (the sky filled the canvas: a vignette has to be described as an object, not a scene); receipt retaken (a letter on the seal) |
+| Siege stage | siege_wall, siege_wall_damaged | 2 (one call of 2), 2 (one call of 2) | towers on the outer 16 px, as `SiegeStage` places the formation; the breach drawn with the intact wall as reference (`rd_pro__edit` needs 64 px and moved the wall) |
+| Forge | anvil | 1 | 109x72 kept, the blade still rests on its face (emulator) |
+| Faction portraits | faction_ashclaw_raider, _brute, faction_hollowbound_shade, _wraith, faction_embermaw_whelp, _drake | 4, 2, 1, 2, 1, 1 | new owner pack `Assets/Implemented/enemies`; the raider filled its 80 px canvas edge to edge three times, so it is drawn at 64 px and set on the 80 px canvas (no resampling); the wraith also stands for the lich and the drake for the ash dragon (`BESTIARY_FIGURES`) |
+| Blessings | all 8 | 1 each | |
+| Relics | all 5 | 1, 1, 1, 1, 2 | bellows retaken (background left in) |
+
+Checks: no opaque pixel on a sprite's edge except ground lines and the walls' full width, no key colour left,
+sizes as before; `import_assets.py --accept-changed-sources` then `generate_assets.py` change only these 30
+drawables; `:app:testDebugUnitTest` 402/402; emulator (Pixel_10_Pro read-only, 1080x2400 at 420 dpi): title,
+counter, Forge preview, shop-day sale, tally, fallen, tomorrow, siege lost. Spent about $7.70 of Retro Diffusion
+credit (balance $9.08 to $1.34).
+
+Kept as they were, and why: `art_day_rumour` (no screen), the faction alternates `faction_*_alt_*`, the furnaces,
+tool rack, shelf, wall and floor tiles and embers (the `ForgeScene` that draws them is not called), `bg_forge_night`
+and `splash_anvil` (not referenced), the 50 battle frames (animation, 16 px, out of budget), hero silhouettes and old
+portrait sets (hero art belongs to the portrait work; the old sets are not shown).
+
+For the owner: `blessing_runic_insight` draws rune glyphs (the brief says no letters; runes read as decoration);
+the victory gatehouse fills about half its canvas and reads smaller than the other banners; the intact and breached
+walls differ slightly in tone (never shown together).

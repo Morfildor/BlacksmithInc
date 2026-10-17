@@ -62,8 +62,8 @@
       "layer": "enemy",
       "faction": "ashclaw_raiders",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "faction_ashclaw_brute",
@@ -75,8 +75,8 @@
       "faction": "ashclaw_raiders",
       "variant": "elite",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "faction_hollowbound_shade",
@@ -87,8 +87,8 @@
       "layer": "enemy",
       "faction": "hollowbound",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "faction_hollowbound_wraith",
@@ -100,8 +100,8 @@
       "faction": "hollowbound",
       "variant": "elite",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "faction_embermaw_whelp",
@@ -112,8 +112,8 @@
       "layer": "enemy",
       "faction": "embermaw_brood",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "faction_embermaw_drake",
@@ -125,8 +125,8 @@
       "faction": "embermaw_brood",
       "variant": "elite",
       "source": "imported",
-      "sourceSheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
-      "sourceKind": "ai_generated_sheet"
+      "sourceSheet": "pack:enemies",
+      "sourceKind": "script_drawn_pack"
     },
     {
       "id": "badge_common",
@@ -739,8 +739,8 @@
     {
       "id": "bg_counter_forge",
       "file": "drawable-nodpi/bg_counter_forge.png",
-      "width": 540,
-      "height": 270,
+      "width": 256,
+      "height": 128,
       "layer": "bg",
       "source": "imported",
       "sourceSheet": "pack:backgrounds",
@@ -759,8 +759,8 @@
     {
       "id": "bg_run_end_fallen_forge",
       "file": "drawable-nodpi/bg_run_end_fallen_forge.png",
-      "width": 270,
-      "height": 150,
+      "width": 256,
+      "height": 144,
       "layer": "bg",
       "source": "imported",
       "sourceSheet": "pack:backgrounds",
@@ -769,8 +769,8 @@
     {
       "id": "bg_title_workshop_night",
       "file": "drawable-nodpi/bg_title_workshop_night.png",
-      "width": 941,
-      "height": 1672,
+      "width": 1152,
+      "height": 2048,
       "layer": "bg",
       "source": "imported",
       "sourceSheet": "pack:backgrounds",

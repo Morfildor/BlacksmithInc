@@ -5,7 +5,8 @@ File rules: PNG with a transparent background unless the piece is a full scene o
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
-Status as of 2026-10-10. Pieces already delivered and in the game are not listed as wanted: do not resend them.
+Status as of 2026-10-17. Redrawn with Retro Diffusion on 2026-10-17 (docs/UI_ART_REVAMP.md, second pass): anvil, siege_wall, siege_wall_damaged and the
+five shown art_day_ pictures (same sizes). Pieces already delivered and in the game are not listed as wanted: do not resend them.
 
 DELIVERED AND IN THE GAME (do not resend)
   furnace_cold (77x96), furnace_warm (79x96), furnace_hot (80x96), anvil (109x72), tool_rack (54x88), shelf (122x64),

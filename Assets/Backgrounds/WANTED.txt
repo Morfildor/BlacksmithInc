@@ -5,7 +5,8 @@ File rules: PNG with a transparent background unless the piece is a full scene o
 Name each file <id>.png using the IDs below, or drop a sheet plus a manifest.json that names its cells.
 Any resolution is fine if it is a clean multiple of the listed in-game size; native pixel size is best.
 
-Status as of 2026-10-10.
+Status as of 2026-10-17. Redrawn with Retro Diffusion on 2026-10-17 (docs/UI_ART_REVAMP.md, second pass): bg_title_workshop_night (now 1152x2048, drawn at 144x256),
+bg_counter_forge (256x128), bg_run_end_fallen_forge (256x144). The others are unchanged.
 
 DELIVERED AND IN THE GAME (do not resend)
   bg_counter_forge (540x270), bg_forge_night (232x211), bg_run_end_fallen_forge (270x150),

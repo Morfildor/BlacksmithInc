@@ -4,42 +4,42 @@
   "width": 109,
   "height": 72,
   "sourceKind": "script_drawn_pack",
-  "sha256": "d08e1e6616c677ce8c2ffd7b14ae9627b8a4ad0bab432a369f3addf7b0eb86c1"
+  "sha256": "47af4dad048284749b58eaae9ddbcfd6ef340aa63675e5a0d07fb497cc9d6965"
  },
  "art_day_fallen_forge": {
   "sheet": "pack:day_art",
   "width": 128,
   "height": 64,
   "sourceKind": "script_drawn_pack",
-  "sha256": "19cfa71987e06979f059a4c53cc009e8c5e62ae8248f69dab6193d1368d30316"
+  "sha256": "e97bb259f8faddade37ae75cb191ff19271d08b73efead914ad4782d65e425c9"
  },
  "art_day_new_dawn": {
   "sheet": "pack:day_art",
   "width": 128,
   "height": 64,
   "sourceKind": "script_drawn_pack",
-  "sha256": "435e05c763f38df457312447406a62298e48deae2d0b48f159ad0ede14272a52"
+  "sha256": "4244263330baafc3f80732c5d16729a4b189c4dce4f6682b16c334ad4cde05f7"
  },
  "art_day_sale_receipt": {
   "sheet": "pack:day_art",
   "width": 128,
   "height": 64,
   "sourceKind": "script_drawn_pack",
-  "sha256": "3d260bc0c09301dfaaf4e7062e78668a810eba7edf5d1e357e35471ef5f0f007"
+  "sha256": "3c9254e424ce054afcc3cae88b10b61fee3c3167d565dc7aaab6a9f02fcd30ab"
  },
  "art_day_siege_victory": {
   "sheet": "pack:day_art",
   "width": 128,
   "height": 64,
   "sourceKind": "script_drawn_pack",
-  "sha256": "15ed79b4f5f5626e15e9e707df787e8b7394166f21ad8f509762569c446cf6cf"
+  "sha256": "7780b4bd970e7b46fff357f9c34fef12a83c07d1a55ef073e5366347c8dc0ee9"
  },
  "art_day_till": {
   "sheet": "pack:day_art",
   "width": 128,
   "height": 64,
   "sourceKind": "script_drawn_pack",
-  "sha256": "aa44b495716bfdce6494e2e985d75e0f7c54de7d575f68fe52adf649ccce05b7"
+  "sha256": "3d48414bae9928b3a32c57c6ab4eb10a57e5601d9a82dbee08e2b5186d2283db"
  },
  "badge_common": {
   "sheet": "pack:icons",
@@ -85,10 +85,10 @@
  },
  "bg_counter_forge": {
   "sheet": "pack:backgrounds",
-  "width": 540,
-  "height": 270,
+  "width": 256,
+  "height": 128,
   "sourceKind": "script_drawn_pack",
-  "sha256": "9a17430e175284ccbce9c385326acdeb5d572fb5ed8eb68c61e42ce1bd765fef"
+  "sha256": "512835f786633c15c99b8d8936a2176f081998eef324ed2a5b9129c46f9966b2"
  },
  "bg_forge_night": {
   "sheet": "pack:backgrounds",
@@ -99,73 +99,73 @@
  },
  "bg_run_end_fallen_forge": {
   "sheet": "pack:backgrounds",
-  "width": 270,
-  "height": 150,
+  "width": 256,
+  "height": 144,
   "sourceKind": "script_drawn_pack",
-  "sha256": "ed71da6e3930a0502fee9b1f477d10c637416cf24c1053b01182879f14952d4d"
+  "sha256": "e43dde471947ceabb88667ccf700ac41d90a2660c0c2f5e8703502fcb9851c9b"
  },
  "bg_title_workshop_night": {
   "sheet": "pack:backgrounds",
-  "width": 941,
-  "height": 1672,
+  "width": 1152,
+  "height": 2048,
   "sourceKind": "script_drawn_pack",
-  "sha256": "bfd817f11a9666f5aedfa5113302c27aa9f0f4dc7043d0103ae97bddda7bd103"
+  "sha256": "f03a477d2c7af0d19fbf45dc4174490a084ef298ebb8c41f6359343d51a09de7"
  },
  "blessing_forgefire": {
   "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "69e5dfea734a8532345172fee1ce5de9355a4cd1d2033df2d3f311bfe69eedd6"
+  "sha256": "042fb5f444e2e399d659303211a9692b7173cb0d0ef77fd7b2c3633673c7bd66"
  },
  "blessing_guild_patronage": {
   "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "415efec160568300d34b01574d008e3727c800691921152922e6575c62ace7e1"
+  "sha256": "5843ad6a455bc66b8beea9fbe3615d41c2d53da67265151a562415686dd40a54"
  },
  "blessing_hunters_edge": {
   "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "409a88cbdda6676639c11a0e42cff42ca558aa1876729c940144059da3a28175"
+  "sha256": "47bb243e93c5de02b0aa24544123d7b74df1fc50f333bdf7400cc7d48bc29c9c"
  },
  "blessing_lucky_alloy": {
   "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "f8a7c49997c28e272de237be3a8d1f665bf79907d9c9934e6ca57df5dce6bb2e"
+  "sha256": "0e464bb525e2c82459dd25b10081788a0692ac193e2d04a860bbbe39488ff621"
  },
  "blessing_merchants_favor": {
   "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "49a50ad6ef235ee74020b282b728cad5c500dfa3c493807991f96231c560852e"
+  "sha256": "c5946b0b151569da9a7657471da7865a64d96ea647d18376fe21fea54301e8dc"
  },
  "blessing_runic_insight": {
   "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "e8409fbb9f09650028889f24821f3e1b24c6492613e8872c5b916774650d4a4b"
+  "sha256": "7634580d25b8c259b73342579cb72b09bf50dc794eacb72010e491ed11694848"
  },
  "blessing_stalwart_town": {
   "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "121bd1d4c3dd26bf00fa27413d267c48579aa15672b19501b6267895af6a0b82"
+  "sha256": "147f39aaa27801e892be68d166d4a6ceee015da8bb00630f7a5e21a13c625fed"
  },
  "blessing_tireless_hands": {
   "sheet": "pack:blessings",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "b7b79071d97e0f0a206079a8b1493ca0025839c380c95458b8d8ab3c4d9a86f7"
+  "sha256": "99ee525e37dc3223e321741d340e12a0a45845a0810f71fbcd9879f3131758fa"
  },
  "ember_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_54 PM-1.png",
@@ -210,18 +210,18 @@
   "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_ashclaw_brute": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "sheet": "pack:enemies",
   "width": 112,
   "height": 112,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "e5ad1550a2818e19524901df7e154ce7ee13ae233e5c5c14731635cbddcb1fba"
  },
  "faction_ashclaw_raider": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "sheet": "pack:enemies",
   "width": 80,
   "height": 80,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "3a5d8325556a156fd1e45d71fb5926c1b4526e8aed4dc39a6b2b3062d535d822"
  },
  "faction_embermaw_alt_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
@@ -238,18 +238,18 @@
   "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_embermaw_drake": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "sheet": "pack:enemies",
   "width": 112,
   "height": 112,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "0e32b5bb08296f62b2535f8fda1210bc5a1df71339f870f81475c98ccdde9cb9"
  },
  "faction_embermaw_whelp": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "sheet": "pack:enemies",
   "width": 80,
   "height": 80,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "56931ae6fa84b237bf71b64a1cd855079af68d77a6969179cb57b275acbef608"
  },
  "faction_hollowbound_alt_0": {
   "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
@@ -266,18 +266,18 @@
   "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
  },
  "faction_hollowbound_shade": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "sheet": "pack:enemies",
   "width": 80,
   "height": 80,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "cf3eb6d6d74f66a4cd804f486fc722c9ad127fdeee7fac8a77a9d0a2276d310a"
  },
  "faction_hollowbound_wraith": {
-  "sheet": "ChatGPT Image Oct 8, 2026, 08_29_57 PM-4.png",
+  "sheet": "pack:enemies",
   "width": 112,
   "height": 112,
-  "sourceKind": "ai_generated_sheet",
-  "sha256": "61dcf1b9e2a3e9874bb92941fa04f7fcb925e182bdaa58778ea10605dba6c21c"
+  "sourceKind": "script_drawn_pack",
+  "sha256": "96c01b7895b9a83606877d584f2bfc3182e8ac552fa6cf075d1aac6e6d463f07"
  },
  "furnace_cold": {
   "sheet": "pack:scene",
@@ -3171,35 +3171,35 @@
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "8865668558509db5c0bd2f96b471c0454474113a5b5cea41862e392b92460c21"
+  "sha256": "7719b5fe2ef3feebe617e8ae593563f8b421cdc92769c5f50d1c9fa18e19118f"
  },
  "relic_collectors_seal": {
   "sheet": "pack:relics",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "52fdc7e0e3330f2ccfa8c75b77b675e427ef5deca91e95dbf88e086a3f4c7d56"
+  "sha256": "d87bce47a373a2c63afbbf87a0147cbb949d3d95a9413f9eec514acc22eb0949"
  },
  "relic_salvagers_crucible": {
   "sheet": "pack:relics",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "87a93411fd8cf2239ec470f575a05f7c8492f0314918d7a49c324d5364c589a3"
+  "sha256": "a864b7b1d8a727c0f803d29cae7c7ca065ce60838b4e22f1e0641ede0c714be8"
  },
  "relic_slot_empty": {
   "sheet": "pack:relics",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "64cbacdba1d16c0e2503dfc8743a30533cf9e106655beff173d55482a67b27e4"
+  "sha256": "5f71d8579662a78e97ac0da225e469b35598dd3d20dfed6bed6923d8d6b08565"
  },
  "relic_tempering_ledger": {
   "sheet": "pack:relics",
   "width": 48,
   "height": 48,
   "sourceKind": "script_drawn_pack",
-  "sha256": "86e2ba3c31360167e6b1448ede3ee97944e0c3a67bdc59a6f3facc0d1fa412b6"
+  "sha256": "063d49898bf837d23bf0d8641e6a9811dc91f120d0912d733fe1e0fcecaa3606"
  },
  "shelf": {
   "sheet": "pack:scene",
@@ -3213,14 +3213,14 @@
   "width": 96,
   "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "c668aee08137e935f5f39639b494c9bcdf4ba39064cc0a36d520da9b62e1fe62"
+  "sha256": "bfc148fa8a8a317f7d095de0cce5755f8f2d5e465603bf1e1eccef6108710308"
  },
  "siege_wall_damaged": {
   "sheet": "pack:scene",
   "width": 96,
   "height": 32,
   "sourceKind": "script_drawn_pack",
-  "sha256": "23cc88de91d677ae40c92ad5d9ba4c1efd89bebeb7a403e967ff566ddbc5673b"
+  "sha256": "6784b3c4adb9f54e4bd4b033b461e2ed2d3780ee57ed88b2d715056559035c06"
  },
  "tile_floor": {
   "sheet": "pack:backgrounds",

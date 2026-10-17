@@ -1,5 +1,17 @@
 # Progress — 2026-10-15 (text and header pass; 2026-10-14: deep review and the first UI pass on branch `review-2026-10-14`; before it: run variety, guild evolution 0.8.0)
 
+## Content art redrawn with Retro Diffusion (2026-10-17, branch `living-heroes`, after 0.9.0)
+
+- Owner asks: remake the art not updated today with Retro Diffusion, the big pieces first (day, treasure, siege),
+  polished. Redrawn at their old file sizes: title, counter and run-end backgrounds, the five shown shop-day pictures,
+  siege wall and breach, anvil, six faction portraits (new owner pack `Assets/Implemented/enemies`, one line in
+  `import_assets.py`), eight blessings, five relics. Ledger, takes and what was kept: `docs/UI_ART_REVAMP.md`,
+  "Second pass".
+- Checks: edges, leftover key colour and sizes scripted over every pick; import changes only those 30 drawables;
+  `:app:testDebugUnitTest` 402/402; emulator 5564 (Pixel_10_Pro read-only): title, counter, Forge preview, shop-day
+  cards. RD balance $9.08 to $1.34.
+- Next: battle frames (50 at 16 px) and the bestiary portraits need more credit; owner calls listed in the ledger.
+
 ## Layered weapons and new material icons (2026-10-17, branch `living-heroes`, after 0.9.0)
 
 - Owner asks: every level adds something, every material and infusion shows on the weapon, keep the current weapon
