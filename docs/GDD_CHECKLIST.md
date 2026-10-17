@@ -193,7 +193,8 @@ Per-task status: `docs/GUILD_EVOLUTION_PLAN.md`, `docs/RUN_VARIETY_LEDGER.md`. T
 ## 19 Art and audio
 - [x] Import pipeline (concept sheets, weapon master sheet 336 sprites, production packs, the owner's 20-hero portrait set and title painting), placeholders for the rest (ART_BRIEF "Art sources and provenance")
 - [x] Forge scene, furnace states, weapons by element row, class portraits, faction sprites, materials, blessings, siege diorama, milestone burst
-- [ ] Signature weapon variants (a gold ring stands in); visitor portraits; launcher icon
+- [x] One interface art set (icons, badges, markers, paper, Gazette and Notebook frames) and the launcher icon, Retro Diffusion, drawn at about one pixel per displayed dp and scaled by whole pixels (`docs/UI_ART_REVAMP.md`; `:app:testDebugUnitTest`; emulator at 420 dpi). Embers still wanted
+- [ ] Signature weapon variants (a gold ring stands in); visitor portraits
 - [ ] Audio (11 effects and 1-2 loops wanted; none delivered)
 - [ ] Art-provenance wording for the store listing (owner)
 

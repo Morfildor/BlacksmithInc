@@ -133,9 +133,9 @@ Catalysts: `material_binding_salt` (white crystals), `material_runestone_shard` 
 
 | ID | Size | Notes |
 |---|---|---|
-| `panel_gazette` | 24×24 | Nine-patch newspaper frame: 8 px border, plain centre that stretches |
-| `panel_journal` | 24×24 | Nine-patch leather journal frame, same border rule |
-| `tile_paper` | 16×16 | Seamless paper texture for the Gazette background |
+| `panel_gazette` | 25×25 | Nine-slice newspaper frame: 12 px corners, a 1 px edge profile between them, transparent centre (`pixelFrame`) |
+| `panel_journal` | 25×25 | Nine-slice leather journal frame, same rule |
+| `tile_paper` | 120×120 | Seamless paper texture for the Gazette background, tiled at a whole scale |
 | `icon_nav_forge`, `icon_nav_market`, `icon_nav_town`, `icon_nav_journal`, `icon_nav_gazette`, `icon_nav_legacy` | 12×12 | Bottom navigation icons; must read in one colour too (we tint them) |
 | `icon_energy`, `icon_gold`, `icon_integrity`, `icon_militia`, `icon_reputation`, `icon_day` | 8×8 | Top status strip |
 
