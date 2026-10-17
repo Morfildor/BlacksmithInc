@@ -41,9 +41,7 @@ class VersionFingerprintTest {
         // 7: living heroes (the twelve peoples, backgrounds, bynames, portrait peoples). Re-pinned inside the unreleased step as the bestiary lands.
         // 7, re-pinned inside the unreleased step (from 4be970f8...): the peoples, the bestiary types, the combat grammar (channels, Poison, returns, structural hits) and the two living-era bonuses, Disrupting and Purifying.
         // 7, re-pinned inside the unreleased step (from f9f000a6...): the siege bestiary, 48 enemies with their profiles and the 36 armies (content/Bestiary.kt). No balance number moved.
-        // 7, re-pinned inside the unreleased step (from fb814784...): the first two dwarf faces (portrait_hero_21 Warden, _22 Battlemage) in the class appearances and portrait peoples. No number moved.
-        // 7, re-pinned inside the unreleased step (from f82098d7...): the v2 faces 23-35 (two for every people, docs/HERO_FACES_V2_PLAN.md) in the class appearances and portrait peoples. No number moved.
-        7 to "46f6da1420006db686d9b9793473c16848e6d0a4305062849795628b726cdd2f",
+        7 to "fb8147846a5739638b80c3cfbff60682b787c730a05d6fdeee9c75090e09b6cc",
     )
     private val balancePins = mapOf(
         5 to "34c5343f991c36e71bae17bbdad7c3819b8dad04a325ff96c7bff4e251c24861",
