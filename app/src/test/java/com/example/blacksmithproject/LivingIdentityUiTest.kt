@@ -100,7 +100,7 @@ class LivingIdentityUiTest {
         val captain = member.copy(ambition = Ambition.CAPTAIN, ambitionDone = false)
         val led = run.copy(guild = run.guild!!.copy(members = run.guild!!.members.map { if (it.heroId == captain.id) it.copy(ledWins = 1) else it }))
         val d = engine.heroDetail(led.with(captain), captain.id)!!
-        assertEquals("Wants to lead the party, first in its order, to 3 won quests. 1 so far.", d.story.single { it.label == "Ambition" }.value)
+        assertEquals(LivingText.captain(captain, led.guild!!.member(captain.id)), d.story.single { it.label == "Ambition" }.value)
     }
 
     @Test

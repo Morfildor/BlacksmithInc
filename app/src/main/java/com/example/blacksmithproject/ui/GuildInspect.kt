@@ -163,6 +163,34 @@ internal fun GameEngine.heroRules(state: GameState, heroId: HeroId): Pair<List<T
     return lines to words
 }
 
+/**
+ * The fight rules a unit carries outside its moves (living eras, `UnitDef`), each in the Writing Guide's words with its
+ * own number: an attack on the defences, the states it never receives, surviving at 1 Health, the sources that hurt it
+ * more, its recovery and the pack bonus. Empty for a unit with none.
+ */
+internal fun unitTraits(unit: UnitDef): List<TipLine> = listOfNotNull(
+    TipLine("When its preparation lands, the forge loses health after the siege, whatever the battle's result. The number is on its ability.", TipTone.DRAWBACK, title = "Attack on the defences")
+        .takeIf { com.tinyblacksmith.core.content.Bestiary.STRUCTURAL in unit.tags },
+    unit.immune.takeIf { it.isNotEmpty() }?.let { s -> TipLine("${s.map { Terms.stat(it) }.joinToString(" and ")} ${if (s.size == 1) "does" else "do"} not affect it.", TipTone.PLAIN) },
+    TipLine("The first hit that would down it leaves it at 1 Health instead, once per fight. Fire, Sun, Burn, Bleed and Poison are not stopped by it.", TipTone.DRAWBACK, title = "Survives at 1 Health")
+        .takeIf { unit.surviveOnce },
+) + unit.bonusFrom.map { b -> TipLine("${sourceWords(b.tag)} deal ${b.percent}% more damage to it.", TipTone.BONUS) } + listOfNotNull(
+    unit.recover?.let { r ->
+        val stops = listOf("a Fire hit", "Burn") + r.suppressedBy.map { "a ${sourceWords(it).removeSuffix("s").removeSuffix(" attack")}" }
+        TipLine("Before each of its actions, it heals ${r.amount} Health, unless ${stops.dropLast(1).joinToString(", ")} or ${stops.last()} damaged it since its last action.", TipTone.DRAWBACK, title = "Recovers")
+    },
+    TipLine("Once per round, it deals ${unit.packBonusPercent}% more damage to a defender another beast already damaged this round.", TipTone.DRAWBACK, title = "Pack")
+        .takeIf { unit.packBonusPercent > 0 },
+)
+
+/** A source tag a bonus or a recovery names, as the player reads it: "family:axe" Axe attacks, "metal:silver" Silver weapons, "area" attacks that hit several enemies. */
+private fun sourceWords(tag: String): String = when {
+    tag.startsWith("family:") -> tag.removePrefix("family:").replaceFirstChar { it.uppercase() } + " attacks"
+    tag.startsWith("metal:") -> tag.removePrefix("metal:").replaceFirstChar { it.uppercase() } + " weapons"
+    tag == com.tinyblacksmith.core.combat.Tags.AREA -> "Attacks that hit several enemies"
+    else -> tag
+}
+
 /** "Summoner", "Leader", "Elite": the tags that decide the priority target (summoner, then leader) and that an effect can answer (Giant Slayer), in words. */
 private fun unitKind(unit: UnitDef): String =
     (listOf("Enemy") + listOfNotNull(
@@ -186,7 +214,7 @@ internal fun unitHealth(unit: UnitDef, percents: List<Int>): String = scaled(per
  * with what the board already says of it, and every rule it carries. [count] is how many stand on the field; [note] what
  * changes the numbers before the fight (the watch on the wall).
  */
-fun enemyTip(unit: UnitDef, count: Int, percents: List<Int>, config: BalanceConfig, note: String? = null, tag: String = "inspect"): TipUi {
+fun enemyTip(unit: UnitDef, count: Int, percents: List<Int>, config: BalanceConfig, note: String? = null, tag: String = "inspect", profile: com.tinyblacksmith.core.content.EnemyProfile? = null): TipUi {
     val rules = (unit.kit.passives + unit.effects).distinctBy { it.id }
     return TipUi(
         name = unit.name, kind = unitKind(unit), meta = if (count > 1) "$count on the field" else null, nameColor = Ember,
@@ -198,8 +226,11 @@ fun enemyTip(unit: UnitDef, count: Int, percents: List<Int>, config: BalanceConf
             unit.resists?.let { TipStat("Resists", Terms.element(it), FactTone.WARN) },
         ),
         sections = listOf(
+            // The bestiary's own words for its job in the army (living eras), first and plain.
+            TipSection(null, listOfNotNull(profile?.job?.let { TipLine(it, TipTone.PLAIN) })),
             TipSection("Abilities", unit.kit.moves.map { m -> m.telegraph?.let { abilityLine(m.name, it) } ?: TipLine("", TipTone.ABILITY, title = m.name) }),
-            TipSection("In a fight", rules.map { it.ability() } + unit.tickResist.map { (stat, percent) -> TipLine("Takes $percent% less damage from ${Terms.stat(stat)}.", TipTone.PLAIN) }),
+            TipSection("In a fight", unitTraits(unit) + rules.map { it.ability() } + unit.tickResist.map { (stat, percent) -> TipLine("Takes $percent% less damage from ${Terms.stat(stat)}.", TipTone.PLAIN) }),
+            TipSection("How to answer it", listOfNotNull(profile?.counter?.let { TipLine(it, TipTone.PLAIN) })),
         ),
         keywords = (if (unit.strikeMax > 0) statKeywords(support = readsSupport(unit.kit)) else emptyList()) + keywords(unit.kit.moves.flatMap { it.statuses() } + rules.flatMap { it.statuses() } + unit.tickResist.keys, config),
         note = note, tag = tag,
@@ -228,7 +259,7 @@ fun offerTip(o: OfferUi, onOpen: (() -> Unit)? = null, tag: String = "inspect"):
             TipLine("${st.objective}. Reward: ${st.reward}.", TipTone.PLAIN, title = st.label.substringBefore(": "), source = st.danger.substringBefore(":"))
         }),
         TipSection("What is different", listOfNotNull(o.modifier?.let { m -> TipLine(m.substringAfter(": ", m), TipTone.CONDITION, title = o.modifierName) })),
-        TipSection(null, o.specials.map { TipLine(it, TipTone.BONUS) } + listOfNotNull(
+        TipSection(null, listOfNotNull(o.sponsor?.let { sp -> TipLine(listOfNotNull("Asked by ${sp.name}.", sp.why).joinToString(" "), TipTone.PLAIN) }) + o.specials.map { TipLine(it, TipTone.BONUS) } + listOfNotNull(
             TipLine(dangerWords(o.danger), TipTone.DRAWBACK).takeIf { o.danger != Danger.SAFE },
             o.missesSiege?.let { TipLine(it, TipTone.DRAWBACK) },
             o.stake?.let { TipLine(it, TipTone.DRAWBACK) },

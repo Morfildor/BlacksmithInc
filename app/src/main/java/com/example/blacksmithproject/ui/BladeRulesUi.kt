@@ -92,7 +92,11 @@ fun GameEngine.loanUi(state: GameState, weapon: Weapon): LoanUi? {
         return LoanUi(name, hero?.id, away?.let { "${hero?.name ?: "Its holder"} $it" }, emptyList())
     }
     if (!weapon.isInStorage && !weapon.isListed) return null
-    return LoanUi(null, null, null, loanTargets(state), blocked = promisedLine(state, weapon)?.let { "$it: it stays in storage" })
+    // A member whose oath refuses this weapon is shown with the reason and cannot be picked (the engine would refuse it).
+    val targets = loanTargets(state).map { t ->
+        state.heroes[t.heroId]?.let { oathRefuses(it, weapon) }?.takeIf { t.reason == null }?.let { t.copy(reason = it, enabled = false) } ?: t
+    }
+    return LoanUi(null, null, null, targets, blocked = promisedLine(state, weapon)?.let { "$it: it stays in storage" })
 }
 
 /** Every blade out on loan, in the save's order. */

@@ -181,7 +181,7 @@ object Bestiary {
             counter = "It moves slowly and has little Armor. Interrupt the rush, or bring it down before the rush lands.",
             forecast = "An ogre is carrying a ram toward the gate."),
         enemy("ib_troll", "Troll Mercenary", IB, 78, 12, 0, cost = 9, siege = 3, recover = Recovery(2),
-            moves = listOf(attack(telegraph = "Before each of its actions, it heals 2 Health, unless a Fire hit or Burn damaged it since its last action. Then it attacks.")),
+            moves = listOf(attack(telegraph = "It attacks.")),
             job = "Absorbs the defenders' effort and keeps advancing.",
             counter = "Fire hits and Burn stop its healing. Concentrated heavy attacks also outpace it.",
             forecast = "A troll marches with the mercenaries. Fire will stop it healing.",
@@ -199,23 +199,22 @@ object Bestiary {
     // ---- Pale Procession (Hollowbound): endurance, one return, weaker healing, pressure on fragile defenders ----
     private val bones = setOf(Stat.POISON, Stat.BLEED)
     private val axeWeak = listOf(SourceBonus(AXE, 30))
-    private const val BONES = "Axe attacks deal 30% more damage to it. Poison and Bleed never affect it."
     private val paleProcession = listOf(
         enemy("pp_skeleton_guard", "Skeleton Spearman", PP, 30, 7, 10, cost = 3, siege = 1, tags = setOf(UNDEAD, RAISABLE, STANDARD_UNDEAD),
             immune = bones, bonusFrom = axeWeak,
-            moves = listOf(attack(telegraph = "$BONES It attacks.")),
+            moves = listOf(attack(telegraph = "It attacks.")),
             job = "Tires the defenders and holds a narrow breach.",
             counter = "Fragile bones. Axe attacks, or ordinary concentrated attacks.",
             forecast = "Skeleton spearmen are marching in ranks."),
         enemy("pp_skeleton_archer", "Skeleton Archer", PP, 23, 9, 0, cost = 3, siege = 1, tags = setOf(UNDEAD, RAISABLE, STANDARD_UNDEAD, SPECIALIST),
             immune = bones, bonusFrom = axeWeak,
-            moves = listOf(attack(telegraph = "$BONES It shoots.")),
+            moves = listOf(attack(telegraph = "It shoots.")),
             job = "Tires the defenders with volleys from behind.",
             counter = "Very little Health. Bows and Storm weapons reach it at the back of their line.",
             forecast = "Bone archers are assembling behind the dead."),
         enemy("pp_zombie", "Zombie", PP, 54, 7, 0, cost = 3, siege = 1, tags = setOf(UNDEAD, RAISABLE, STANDARD_UNDEAD),
             immune = setOf(Stat.POISON), surviveOnce = true,
-            moves = listOf(attack(telegraph = "The first hit that would down it leaves it at 1 Health instead, once per fight. Fire and Sun hits are not stopped by it. Poison never affects it.")),
+            moves = listOf(attack(telegraph = "It attacks.")),
             job = "Soaks up damage and drags the defence out.",
             counter = "Its attacks are weak. A second hit after its survival, or a Fire or Sun hit, finishes it.",
             forecast = "The dead are advancing slowly, but some refuse to fall."),
@@ -256,7 +255,7 @@ object Bestiary {
             moves = listOf(
                 move("beam_sweep", "Beam sweep", Cadence.Actions(3, 6), "On its 3rd and 6th actions, hits the first 2 defenders in the line for 70% of its Attack each, past a Guardian.",
                     Damage(Aim.FrontFoes(2), Strike(70))),
-                attack(telegraph = "Poison never affects it. It attacks.")),
+                attack(telegraph = "It attacks.")),
             job = "An immovable mass at the gate.",
             counter = "Very slow, with no Armor and no healing. Concentrated attacks work.",
             forecast = "An ogre corpse carries a beam toward the gate."),
@@ -281,7 +280,7 @@ object Bestiary {
         enemy("pp_black_knight", "Undead Black Knight", PP, 73, 12, 30, cost = 8, siege = 3, tags = setOf(UNDEAD, STANDARD_UNDEAD), immune = bones,
             moves = listOf(
                 move("dark_guard", "Dark guard", Cadence.Actions(2, 5), "On its 2nd and 5th actions, gains 5 Armor, then attacks.", Guard(Aim.Self, Fixed(5)), Damage(Aim.Foe, Strike())),
-                attack(telegraph = "Poison and Bleed never affect it. It attacks.")),
+                attack(telegraph = "It attacks.")),
             job = "Holds the breach while the support works.",
             counter = "Heavy Armor. Spears get past part of it. Defeat its support instead of hitting its plate.",
             forecast = "A black-armored corpse is guarding the procession.",
@@ -297,7 +296,7 @@ object Bestiary {
     // ---- Thorn Covenant (Embermaw Brood): pack focus, Armor stripped away, Poison, large creatures ----
     private val thornCovenant = listOf(
         enemy("tc_dire_wolf", "Dire Wolf", TC, 41, 10, 0, cost = 4, siege = 1, tags = setOf(Tags.BEAST, Tags.PACK, CALLED), pack = 20,
-            moves = listOf(attack(telegraph = "Once per round, it deals 20% more damage to a defender another beast already damaged this round. It attacks.")),
+            moves = listOf(attack(telegraph = "It attacks.")),
             job = "Rushes the breaches and singles out one defender.",
             counter = "No Armor. Defeat one wolf early, or protect the defender the pack is hitting.",
             forecast = "Large wolves are being driven toward the breaches."),
@@ -352,7 +351,7 @@ object Bestiary {
         enemy("tc_earth_elemental", "Earth Elemental", TC, 102, 13, 30, cost = 10, siege = 4, bonusFrom = axeWeak,
             moves = listOf(
                 move("stone_skin", "Stone skin", Cadence.Actions(2, 5), "On its 2nd and 5th actions, gains 6 Armor, then attacks.", Guard(Aim.Self, Fixed(6)), Damage(Aim.Foe, Strike())),
-                attack(telegraph = "Axe attacks deal 30% more damage to it. It attacks.")),
+                attack(telegraph = "It attacks.")),
             job = "Crushes a prepared breach.",
             counter = "Very slow, with no healing. Axe attacks deal 30% more damage, and spears get past part of its Armor.",
             forecast = "Bound stone is moving beneath the hillside."),
@@ -360,7 +359,7 @@ object Bestiary {
             moves = listOf(
                 move("searing_touch", "Searing touch", Cadence.Actions(2, 5), "On its 2nd and 5th actions, attacks with fire and puts 2 Burn on the defender it attacks.",
                     Damage(Aim.Foe, Strike(), Element.FIRE), Give(Stat.BURN, Aim.Foe, Fixed(2))),
-                attack(Element.FIRE, telegraph = "Poison and Bleed never affect it. Its attacks deal fire damage.")),
+                attack(Element.FIRE, telegraph = "Its attacks deal fire damage.")),
             job = "Burns the timber and forces the defenders to protect themselves.",
             counter = "Weak to Frost, resists Fire. Armor blocks its Burn.",
             forecast = "A bound flame is advancing with the beasts."),
@@ -373,7 +372,7 @@ object Bestiary {
             counter = "Little Armor. Concentrated attacks work.",
             forecast = "A giant serpent has been driven toward the gate."),
         enemy("tc_werewolf", "Werewolf", TC, 61, 11, 10, cost = 8, siege = 3, tags = setOf(CALLED), recover = Recovery(2, setOf(SILVER)), bonusFrom = listOf(SourceBonus(SILVER, 30)),
-            moves = listOf(attack(telegraph = "Before each of its actions, it heals 2 Health, unless a Fire hit, Burn or a Silver weapon damaged it since its last action. Silver weapons deal 30% more damage to it. Then it attacks.")),
+            moves = listOf(attack(telegraph = "It attacks.")),
             job = "Rushes the defenders and keeps itself going through a long fight.",
             counter = "Silver weapons, Fire hits and Burn stop its healing. Silver weapons deal 30% more damage to it.",
             forecast = "A werewolf is among the attackers. Silver stops it healing."),
@@ -498,7 +497,7 @@ object Bestiary {
                 "The first time the Colossus is damaged to 50% of its Health or less, its shell cracks and it loses all its Armor. Once per fight.", listOf(Condition.HolderHealthAtMost(50)))),
             moves = listOf(
                 move("bone_shell", "Bone shell", Cadence.Actions(2, 5), "On its 2nd and 5th actions, gains 6 Armor, then attacks.", Guard(Aim.Self, Fixed(6)), Damage(Aim.Foe, Strike())),
-                attack(telegraph = "$BONES It attacks.")),
+                attack(telegraph = "It attacks.")),
             job = "A mass of bound bones shaped into a giant.",
             counter = "Axe attacks deal 30% more damage. Bring it below half Health to crack its shell.",
             forecast = "A giant of bound bones is approaching. Break its outer shell.",

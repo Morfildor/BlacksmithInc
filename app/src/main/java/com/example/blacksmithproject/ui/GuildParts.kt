@@ -38,6 +38,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.blacksmithproject.ui.theme.BronzeDeep
 import com.example.blacksmithproject.ui.theme.Cream
@@ -139,7 +140,18 @@ private fun OfferCard(o: OfferUi, onOpen: () -> Unit) {
                 if (o.planned) Chip("Planned", EffectKind.BUFF.color)
                 InfoButton(o.title, { offerTip(o, onOpen, tag = "guild_offer_tip") }, tag = "guild_offer_${o.id}_info")
             }
+            // A personal offer: who asks for it and why, before the terms. The one-party rule follows the terms, plainly.
+            o.sponsor?.let { sp ->
+                Row(Modifier.padding(top = Space.xs, bottom = Space.xs).testTag("guild_offer_sponsor_${o.id}"), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Face(sp.portrait)
+                    Column(Modifier.weight(1f)) {
+                        Text("Asked by ${sp.name}", style = MaterialTheme.typography.titleSmall, color = Cream)
+                        sp.why?.let { Secondary(it) }
+                    }
+                }
+            }
             FactLine(offerFacts(o), Modifier.testTag("guild_offer_terms_${o.id}"), emphasis = true)
+            o.sponsor?.let { Secondary(it.oneParty, Modifier.padding(top = 2.dp).testTag("guild_offer_one_party_${o.id}")) }
             o.modifierName?.let { name ->
                 Text(
                     buildAnnotatedString { withStyle(SpanStyle(color = TipTone.CONDITION.color)) { append("${TipTone.CONDITION.sign} ") }; append(name) },
@@ -204,6 +216,18 @@ private fun HeldWeapon(art: Int?, name: String) {
 }
 
 /**
+ * A line led by the condition sign (◇), which hangs in its own column so a wrapped sentence lines up under its first
+ * word. The sign and the words carry the meaning, never the colour alone; TalkBack reads the words.
+ */
+@Composable
+internal fun SignedLine(text: String, color: Color, signColor: Color, modifier: Modifier = Modifier) {
+    Row(modifier.padding(top = 2.dp).semantics(mergeDescendants = true) { contentDescription = text }, horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
+        Text(TipTone.CONDITION.sign, style = MaterialTheme.typography.bodySmall, color = signColor)
+        Text(text.keepNumbersTogether(), style = MaterialTheme.typography.bodySmall, color = color, modifier = Modifier.weight(1f))
+    }
+}
+
+/**
  * Whether a row has room for the weapon beside the identity: the identity keeps about 190 dp of text at the default size
  * once the face (44 dp), the gaps and the weapon (up to 64 dp) are taken. With less (a narrow phone at 1.3x text) the
  * weapon goes under the identity instead of squeezing the name and class into a word a line.
@@ -230,6 +254,8 @@ private fun MemberRow(m: MemberUi, tip: () -> TipUi?) {
                 }
                 m.byname?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = CreamMuted) }
                 FactFlow(listOf(Fact(m.sub), Fact(m.health)), Modifier.testTag("guild_member_line_${m.heroId.value}"))
+                // A living era: the member's own decision in a few words; a departure in ember. The sheet says it in full.
+                m.notice?.let { SignedLine(it, if (m.urgent) Ember else Cream, if (m.urgent) Ember else TipTone.CONDITION.color, Modifier.testTag("guild_member_notice_${m.heroId.value}")) }
                 if (!beside) Row(Modifier.padding(top = Space.xs), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Space.sm)) {
                     m.weaponArt?.let { PixelImage(it, 32.dp, description = null) }
                     Text(m.blade, style = MaterialTheme.typography.bodySmall, color = if (m.weaponArt == null) CreamMuted else Cream)
@@ -256,12 +282,7 @@ private fun CandidateRow(c: CandidateUi, enabled: Boolean, tip: () -> TipUi?, on
                 FactFlow(listOf(Fact("${c.feeGold} gold", "Fee"), Fact("${c.sharePercent}% of quest gold", "Keeps")))
                 // Their Hook before the fee is paid: what comes with them, an oath above all (final design 20.4). A sign and words,
                 // not colour alone; the sign hangs in its own column so a wrapped sentence lines up under its first word.
-                c.complication?.let { line ->
-                    Row(Modifier.padding(top = 2.dp).semantics(mergeDescendants = true) { contentDescription = line }.testTag("guild_candidate_hook_${c.heroId.value}"), horizontalArrangement = Arrangement.spacedBy(Space.xs)) {
-                        Text(TipTone.CONDITION.sign, style = MaterialTheme.typography.bodySmall, color = TipTone.CONDITION.color)
-                        Text(line.keepNumbersTogether(), style = MaterialTheme.typography.bodySmall, color = Cream, modifier = Modifier.weight(1f))
-                    }
-                }
+                c.complication?.let { SignedLine(it, Cream, TipTone.CONDITION.color, Modifier.testTag("guild_candidate_hook_${c.heroId.value}")) }
             }
         }
         c.blocked?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Ember, modifier = Modifier.testTag("guild_recruit_blocked_${c.heroId.value}")) }
@@ -274,6 +295,8 @@ private fun CandidateRow(c: CandidateUi, enabled: Boolean, tip: () -> TipUi?, on
 internal fun wallRows(ui: GuildUi, a: GuildActions): List<GuildRow> = buildList {
     val w = ui.wall
     val eve = w.daysLeft <= 1
+    // A living era: the army the scouts report leads the Wall, with the ways to answer it.
+    w.army?.let { army -> add(GuildRow("army") { ArmyHead(army) }) }
     add(GuildRow("readiness") { Readiness(ui, a) })
     add(GuildRow("watch") {
         // Forge health and the watch as one block: the bar, then the watch's worth in the rule's own numbers.
@@ -305,6 +328,20 @@ internal fun wallRows(ui: GuildUi, a: GuildActions): List<GuildRow> = buildList 
     if (w.field.isNotEmpty()) add(GuildRow("field") {
         Collapsible("field", "Battlefield", w.field.joinToString(", ") { it.label }, openAtFirst = eve, tag = "guild_wall_field") { EnemyLines(w.field) }
     })
+}
+
+/** The army coming: its name as the heading, its kind in a quiet word, the scouts' report, then each way to answer it. */
+@Composable
+private fun ArmyHead(army: ArmyUi) {
+    Column(Modifier.fillMaxWidth().padding(top = Space.sm).testTag("guild_wall_army")) {
+        SectionTitle(army.name)
+        army.kind?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = Gold, modifier = Modifier.testTag("guild_wall_army_kind")) }
+        Text(army.forecast, style = MaterialTheme.typography.bodyMedium, color = Cream, modifier = Modifier.padding(top = Space.xs))
+        if (army.counters.isNotEmpty()) {
+            Text("Ways to answer it", style = MaterialTheme.typography.titleSmall, color = Cream, modifier = Modifier.padding(top = Space.sm))
+            army.counters.forEach { SignedLine(it, Cream, TipTone.CONDITION.color, Modifier.testTag("guild_wall_army_answer")) }
+        }
+    }
 }
 
 /**

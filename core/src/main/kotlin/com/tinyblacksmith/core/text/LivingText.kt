@@ -67,6 +67,19 @@ object LivingText {
         return "Hopes you will ${c.remedy}."
     }
 
+    /**
+     * The one short line a roster row carries for a member's own decision, most pressing first: a departure with its date,
+     * a concern, a loan they mean to return, a Speciality lean. The member's sheet says each in full ([departure], [concern],
+     * [loanReturn], [lean]). Null when there is none.
+     */
+    fun marker(m: GuildMember, state: GameState, content: ContentCatalog): String? = when {
+        m.concern?.departure != null -> "Leaves on the morning of day ${m.concern.departure.day}"
+        m.concern != null -> "Has a concern"
+        m.loanReturn != null -> state.weapons[m.loanReturn.loanId]?.let { "Returns your ${it.name} after day ${m.loanReturn.resolveDay}" }
+        m.lean != null -> content.guild?.speciality(m.lean.leaningTo)?.let { "Leaning to ${it.name}" }
+        else -> null
+    }
+
     /** The Captain's ambition with the member's count (`Agency.ledHome`), or null for anyone else. */
     fun captain(hero: Hero, m: GuildMember?): String? {
         if (hero.ambition != Ambition.CAPTAIN || hero.ambitionDone || !hero.isAlive) return null

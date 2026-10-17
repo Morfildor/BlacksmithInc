@@ -29,6 +29,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.blacksmithproject.GameViewModel
 import com.example.blacksmithproject.LivingHeroFixtures
+import com.example.blacksmithproject.LivingAgencyFixtures
 import com.tinyblacksmith.core.persistence.SaveCodec
 import com.example.blacksmithproject.ui.theme.Gold
 import com.example.blacksmithproject.ui.theme.Space
@@ -40,6 +41,9 @@ import kotlinx.serialization.json.jsonPrimitive
 
 /** The one scenario built in the app rather than read from the assets (`LivingHeroFixtures`). */
 private const val LIVING_HEROES = "living_heroes"
+private const val LIVING_AGENCY = "living_agency"
+/** The living visitors (`Hooks.CREDITOR`, `LESSON`, `WOUNDED_FRIEND`), each on the members-decide scenario. */
+private val LIVING_VISITORS = listOf("creditor_calls" to "the creditor calls", "a_lesson" to "a lesson", "wounded_friend" to "a wounded friend")
 
 /** One row of `assets/scenarios/index.json`, written by `./gradlew :core:scenarios` (core test sources, `ScenarioSaves.kt`). */
 private class ScenarioEntry(val id: String, val title: String, val description: String, val built: String, val ownLegacy: Boolean)
@@ -69,7 +73,16 @@ fun ScenarioMenu(vm: GameViewModel, hasRun: Boolean, enabled: Boolean, onLoaded:
                 LIVING_HEROES, "Living heroes: long names and every Hook",
                 "A guild era on day 1. The members, the recruits and one townsperson carry long names from the content pools, peoples without portraits and each kind of Hook.",
                 "Built in the app from seed 41 (LivingHeroFixtures): names, peoples and Hooks are set by hand.", false,
-            )
+            ) + ScenarioEntry(
+                LIVING_AGENCY, "Living heroes: members decide",
+                "A guild era before the first siege. A member bought a weapon at your counter yesterday and means to return your loan, another leans to a Speciality, one has a departure notice, a personal offer is on the board and the army Powder at the Gate is committed.",
+                "Built in the app from seed 9 (LivingAgencyFixtures): days played by the engine, then the lean, the loan return, the notice, the offer and the army set by hand.", false,
+            ) + LIVING_VISITORS.map { (id, title) ->
+                ScenarioEntry(
+                    "living_visitor_$id", "Living heroes: $title", "The members-decide scenario with this living visitor waiting at the forge this morning.",
+                    "Built in the app (LivingAgencyFixtures) with the visitor set by hand.", false,
+                )
+            }
         }
         // A dialog is its own window: it does not inherit the root's resource-id exposure that the emulator scripts rely on.
         Dialog(onDismissRequest = { open = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
@@ -98,6 +111,8 @@ fun ScenarioMenu(vm: GameViewModel, hasRun: Boolean, enabled: Boolean, onLoaded:
                 TextButton(
                     onClick = {
                         val run = if (e.id == LIVING_HEROES) SaveCodec.encodeRun(LivingHeroFixtures.build().state)
+                        else if (e.id == LIVING_AGENCY) SaveCodec.encodeRun(LivingAgencyFixtures.build().state)
+                        else if (e.id.startsWith("living_visitor_")) SaveCodec.encodeRun(LivingAgencyFixtures.build(visitor = e.id.removePrefix("living_visitor_")).state)
                         else assets.open("scenarios/${e.id}.json").bufferedReader().use { it.readText() }
                         chosen = null
                         vm.loadScenario(run, e.ownLegacy) { open = false; onLoaded() }
