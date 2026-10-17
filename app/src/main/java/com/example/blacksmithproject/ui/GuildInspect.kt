@@ -95,6 +95,7 @@ fun GameEngine.heroTip(state: GameState, heroId: HeroId, home: Boolean = false, 
     val warning = when {
         h.fate == HeroFate.DEAD -> "Fallen" + (h.diedOnDay?.let { " on day $it" } ?: "")
         h.fate == HeroFate.RETIRED -> "Retired" + (h.retiredOnDay?.let { " on day $it" } ?: "")
+        h.fate == HeroFate.DEPARTED -> "Left the guild" + (h.departedOnDay?.let { " on day $it" } ?: "")
         member != null && g != null -> memberStatus(state, g, member)
         else -> null
     }

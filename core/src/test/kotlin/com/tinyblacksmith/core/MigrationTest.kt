@@ -121,7 +121,7 @@ class MigrationTest {
         val migrated = SaveCodec.migrate(env, SaveCodec.legacyMigrations)
         assertEquals(env, migrated)
         assertTrue(migrated.payload === payload, "the current schema must not rewrite the payload")
-        assertEquals(7, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")   // schema 6: GuildMigrationTest, schema 7: RunVarietyTest
+        assertEquals(8, SaveCodec.SCHEMA_VERSION, "bumping the schema requires a registered migration step and a fixture test")   // schema 6: GuildMigrationTest, schema 7: RunVarietyTest, schema 8: LivingMigrationTest
     }
 
     private fun v1Fixture(): String = javaClass.getResource("/saves/v1_forced_seed4242_day61.json")?.readText() ?: error("missing v1 fixture")

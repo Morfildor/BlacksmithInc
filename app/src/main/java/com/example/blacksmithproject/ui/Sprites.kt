@@ -196,7 +196,7 @@ object Sprites {
 
     fun siegeWall(damaged: Boolean): Int = if (damaged) R.drawable.siege_wall_damaged else R.drawable.siege_wall
 
-    fun marker(fate: HeroFate): Int? = when (fate) { HeroFate.DEAD -> R.drawable.marker_dead; HeroFate.RETIRED -> R.drawable.marker_retired; HeroFate.ALIVE -> null }
+    fun marker(fate: HeroFate): Int? = when (fate) { HeroFate.DEAD -> R.drawable.marker_dead; HeroFate.RETIRED, HeroFate.DEPARTED -> R.drawable.marker_retired; HeroFate.ALIVE -> null }
 
     val milestoneFrames = listOf(R.drawable.fx_milestone_0, R.drawable.fx_milestone_1, R.drawable.fx_milestone_2, R.drawable.fx_milestone_3)
 

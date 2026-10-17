@@ -296,6 +296,7 @@ internal fun HeroRow(h: Hero, s: UiState.Playing, vm: GameViewModel) {
         HeroFate.ALIVE -> null
         HeroFate.DEAD -> "Fallen" + (h.diedOnDay?.let { " on day $it" } ?: "")
         HeroFate.RETIRED -> "Retired"
+        HeroFate.DEPARTED -> "Left the guild"
     }
     Row(
         Modifier.fillMaxWidth().clickable(onClickLabel = "Open details") { vm.openSheet(Sheet.Hero(h.id)) }.testTag("town_hero_${h.id.value}")

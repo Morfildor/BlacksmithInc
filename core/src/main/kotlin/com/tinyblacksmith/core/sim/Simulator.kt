@@ -198,6 +198,8 @@ data class RunStats(
  */
 class SimulationDriver(
     val engine: GameEngine = GameEngine(),
+    /** The era feature revision new runs start under: living heroes by default, `LivingRevision.LEGACY` for the older tables. */
+    val livingRevision: Int = com.tinyblacksmith.core.model.LivingRevision.CURRENT,
     val maxDays: Int = engine.config.maxSimulatedDays,
     val eventRetentionDays: Int = 0,
     /** Caps forges per day (soak runs keep the weapon count bounded); null = as many as energy allows. */
@@ -256,7 +258,7 @@ class SimulationDriver(
 
     fun playRun(legacy: LegacyProfile, seed: Long, policy: Policy, from: GameState? = null): Pair<RunStats, GameState> {
         heartfireForges = 0; heartfireBreakthroughs = 0
-        var state = from ?: engine.newRun(legacy, seed)
+        var state = from ?: engine.newRun(legacy, seed, livingRevision = livingRevision)
         val policyRng = Rng(seed xor 0x5EEDL)
         val bots = policy.rules?.let { BotPlay(this, policy, it, policyRng) }
         if (bots != null) state = bots.start(state)

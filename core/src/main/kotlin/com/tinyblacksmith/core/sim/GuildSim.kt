@@ -115,8 +115,11 @@ class GuildBot(val engine: GameEngine, val policy: GuildPolicy, val charterId: S
         is CommandOutcome.Rejected -> { rejected++; if (rejections.size < 20) rejections += "day $day ${cmd::class.simpleName}: ${o.error}"; this }
     }
 
+    /** The era feature revision the bot's runs start under. */
+    var livingRevision: Int = com.tinyblacksmith.core.model.LivingRevision.CURRENT
+
     fun play(seed: Long, legacy: LegacyProfile = LegacyProfile(), onDay: (GameState) -> Unit = {}): Pair<GuildRunStats, GameState> {
-        var s = engine.newRun(legacy, seed, charterId = charterId)
+        var s = engine.newRun(legacy, seed, charterId = charterId, livingRevision = livingRevision)
         s.guild?.openingOffer?.let { offer -> if (offer.isNotEmpty()) s = s.send(Command.ChooseOpening((opening?.let { want -> offer.firstOrNull { it.defId == want } } ?: offer.first()).defId)) }
         while (!s.isEnded && s.day <= horizon) {
             s = planDay(s)

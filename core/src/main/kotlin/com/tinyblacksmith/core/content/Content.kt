@@ -71,6 +71,15 @@ data class HeroClassDef(
     val appearances: List<String>,
 )
 
+/** A playable people (content bible 3). Identity and naming only: no fight effect in this version (final design 6). */
+data class RaceDef(val id: String, val name: String, val weight: Int, val defaultCultureId: String, val look: String, val familyLabel: String)
+
+/** A naming culture: the given and family names a hero of it is named from (content bible 5). */
+data class CultureDef(val id: String, val name: String, val given: List<String>, val family: List<String>)
+
+/** Where a hero comes from (content bible 6): opportunity evidence and a shop interest, never a free combat bonus. */
+data class BackgroundDef(val id: String, val name: String, val interest: String, val seed: String, val demand: String)
+
 data class TraitDef(
     val id: TraitId,
     val name: String,
@@ -182,7 +191,17 @@ data class ContentCatalog(
     val combat: CombatCatalog? = null,
     /** Contracts, charters and member traits (rules 5). A catalog without it has no guild runs. */
     val guild: GuildCatalog? = null,
+    /** Living heroes (content 7): the twelve peoples, their cultures, twenty backgrounds and the last-resort bynames. Empty = names come from [firstNames] and [surnames] only. */
+    val races: List<RaceDef> = emptyList(),
+    val cultures: List<CultureDef> = emptyList(),
+    val backgrounds: List<BackgroundDef> = emptyList(),
+    val bynames: List<String> = emptyList(),
+    /** The people an existing portrait shows, by asset ID, where that is certain. A portrait not listed is worn only by a hero of unknown ancestry. */
+    val portraitRaces: Map<String, String> = emptyMap(),
 ) {
+    val raceById: Map<String, RaceDef> = races.associateBy { it.id }
+    val cultureById: Map<String, CultureDef> = cultures.associateBy { it.id }
+    val backgroundById: Map<String, BackgroundDef> = backgrounds.associateBy { it.id }
     val familyById: Map<WeaponFamilyId, WeaponFamilyDef> = families.associateBy { it.id }
     val materialById: Map<MaterialId, MaterialDef> = materials.associateBy { it.id }
     val affixById: Map<AffixId, AffixDef> = affixes.associateBy { it.id }
@@ -227,6 +246,7 @@ data class ContentCatalog(
             if (event == null) problems += "Encounter ${e.id} replaces unknown event $id" else if (e.maxPerRun > event.maxPerRun) problems += "Encounter ${e.id} may come ${e.maxPerRun} times, its event $id only ${event.maxPerRun}"
         } }
         dup("relic effect", relics.map { it.effect }.filter { it != RelicEffect.COMBAT })
+        problems += peopleProblems()
         if (guild != null && combat == null) problems += "Guild content needs combat content"
         if (guild != null && combat != null) problems += guild.problems(this, combat)
         combat?.let { c ->
@@ -275,6 +295,21 @@ data class ContentCatalog(
      * on whatever pools the catalog holds. What needs an ear (pronounceable, the four kinds of surname, no weapon titles)
      * is the author's; the launch counts are pinned by its test.
      */
+    /** The one validator of the peoples (content bible 17.1): every race has its culture, every pool its exact size and no name twice in it (case ignored). */
+    private fun peopleProblems(): List<String> {
+        val problems = mutableListOf<String>()
+        if (races.isEmpty() && cultures.isEmpty()) return problems
+        listOf("race" to races.map { it.id }, "culture" to cultures.map { it.id }, "background" to backgrounds.map { it.id }).forEach { (k, ids) -> ids.groupBy { it }.filterValues { it.size > 1 }.keys.forEach { problems += "Duplicate $k $it" } }
+        races.forEach { r -> if (r.defaultCultureId !in cultureById) problems += "Race ${r.id} has no culture ${r.defaultCultureId}"; if (r.weight <= 0) problems += "Race ${r.id} can never be drawn" }
+        cultures.forEach { c ->
+            if (c.given.size != 100 || c.family.size != 50) problems += "Culture ${c.id} has ${c.given.size} given and ${c.family.size} family names"
+            (c.given.groupBy { it.lowercase() } + c.family.groupBy { it.lowercase() }.mapKeys { "family:" + it.key }).filterValues { it.size > 1 }.keys.forEach { problems += "Culture ${c.id} lists $it twice" }
+        }
+        if (bynames.isEmpty()) problems += "No byname to fall back on"
+        portraitRaces.forEach { (k, r) -> if (r !in raceById) problems += "Portrait $k names unknown race $r"; if (classes.none { k in it.appearances }) problems += "Portrait $k is worn by no class" }
+        return problems
+    }
+
     private fun nameProblems(): List<String> {
         val problems = mutableListOf<String>()
         // 8 + 1 + 11: a full name is at most 20 characters, which fits a Town row and a counter caption at large font.

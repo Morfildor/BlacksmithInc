@@ -79,8 +79,8 @@ object Consequences {
             when {
                 hero == null || hero.fate == HeroFate.DEAD ->
                     ctx.emit(EventType.PLEDGE_RESOLVED, 5, "${hero?.fullName ?: "The defender"} died before paying off the weapon bought on credit. The debt is closed. ${blade?.name ?: "The weapon"} $where.", subjects, mapOf("outcome" to "dead"))
-                hero.fate == HeroFate.RETIRED ->
-                    ctx.emit(EventType.PLEDGE_RESOLVED, 4, "${hero.fullName} retired before paying off the weapon bought on credit. The debt is closed. ${blade?.name ?: "The weapon"} $where.", subjects, mapOf("outcome" to "retired"))
+                hero.fate == HeroFate.RETIRED || hero.fate == HeroFate.DEPARTED ->
+                    ctx.emit(EventType.PLEDGE_RESOLVED, 4, "${hero.fullName} ${if (hero.fate == HeroFate.RETIRED) "retired" else "left the guild"} before paying off the weapon bought on credit. The debt is closed. ${blade?.name ?: "The weapon"} $where.", subjects, mapOf("outcome" to "retired"))
                 blade == null || blade.ownerId != hero.id ->
                     ctx.emit(EventType.PLEDGE_RESOLVED, 3, "${hero.fullName} no longer owns the weapon bought on credit. ${blade?.name ?: "It"} $where. The debt is closed.", subjects, mapOf("outcome" to "parted"))
                 else -> {

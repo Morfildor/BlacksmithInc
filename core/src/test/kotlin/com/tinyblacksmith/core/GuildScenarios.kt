@@ -32,7 +32,8 @@ object GuildScenarios {
     const val CHARTER = GuildContent.TOWNS_LAST_HOPE
 
     /** A new guild run with the first of its offered openings taken. */
-    fun fresh(seed: Long): GameState = with(TestSupport) { engine.guildRun(LegacyProfile(), seed, CHARTER) }
+    // The cases were tuned on runs begun before living heroes; the living cases are `LivingScenarios`.
+    fun fresh(seed: Long): GameState = with(TestSupport) { engine.guildRun(LegacyProfile(), seed, CHARTER, livingRevision = com.tinyblacksmith.core.model.LivingRevision.LEGACY) }
 
     /** The guild run of [seed] as [policy] plays it, up to the morning of [day] with nothing done on it yet. */
     fun morning(seed: Long, policy: GuildPolicy, day: Int): GameState {

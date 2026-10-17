@@ -250,7 +250,8 @@ class HeroDailyLifeTest {
     fun anAmbitionIsPursuedOnlyWhileUnfulfilled() {
         val s0 = fresh().withHeroes { it.copy(health = 100) }
         val hero = s0.aliveHeroes().first()
-        for (ambition in Ambition.entries) {
+        // The four a resident pursues as a day of their own; a guild member's ambitions are met through quests and the wall.
+        for (ambition in Ambition.LEGACY) {
             assertEquals(config.ambitionActivityWeight, weights(s0, hero.copy(ambition = ambition, ambitionDone = false)).getValue(HeroActivity.AMBITION), 1e-9)
             assertTrue(HeroActivity.AMBITION !in weights(s0, hero.copy(ambition = ambition, ambitionDone = true)))
         }
@@ -385,6 +386,6 @@ class HeroDailyLifeTest {
             assertEquals(statsA.mentorings, a.events.count { it.type == EventType.GUILD_MENTORED })
         }
         assertTrue(seen.containsAll(hallAndAmbitionTypes + EventType.GUILD_FOUNDED), "seen: ${seen.intersect(hallAndAmbitionTypes)}")
-        assertTrue(activities.containsAll(listOf("EXPEDITION", "PATROL", "REST", "REST_WOUNDED", "GUILD") + Ambition.entries.map { "AMBITION_${it.name}" }), "activities: $activities")
+        assertTrue(activities.containsAll(listOf("EXPEDITION", "PATROL", "REST", "REST_WOUNDED", "GUILD") + Ambition.LEGACY.map { "AMBITION_${it.name}" }), "activities: $activities")
     }
 }

@@ -53,10 +53,16 @@ class GuildRunTest {
 
     @Test fun `a classic run draws exactly what it drew before the guild stream existed`() {
         // The older streams are seeded by ordinal: a classic run and a guild run of one seed share every hero, faction and world draw of the first morning.
-        val classic = engine.newRun(LegacyProfile(), 11)
-        val guild = engine.newRun(LegacyProfile(), 11, charterId = GuildContent.TOWNS_LAST_HOPE)
+        // In a legacy era the names are the same too; in a living-heroes era a guild era draws its Hooks from five kinds, a classic one from two, and a relative shares a surname.
+        val classic = engine.newRun(LegacyProfile(), 11, livingRevision = com.tinyblacksmith.core.model.LivingRevision.LEGACY)
+        val guild = engine.newRun(LegacyProfile(), 11, charterId = GuildContent.TOWNS_LAST_HOPE, livingRevision = com.tinyblacksmith.core.model.LivingRevision.LEGACY)
         assertEquals(classic.heroes.keys, guild.heroes.keys)
         assertEquals(classic.heroes.values.map { it.fullName to it.classId }, guild.heroes.values.map { it.fullName to it.classId })
+        val livingClassic = engine.newRun(LegacyProfile(), 11)
+        val livingGuild = engine.newRun(LegacyProfile(), 11, charterId = GuildContent.TOWNS_LAST_HOPE)
+        assertEquals(livingClassic.heroes.values.map { it.classId }, livingGuild.heroes.values.filter { it.id in livingClassic.heroes }.map { it.classId })
+        for (stream in listOf(com.tinyblacksmith.core.rng.RngStream.HEROES, com.tinyblacksmith.core.rng.RngStream.WORLD, com.tinyblacksmith.core.rng.RngStream.FACTIONS))
+            assertEquals(classic.rng.stateOf(stream), livingGuild.rng.stateOf(stream), stream.name)
         assertEquals(classic.factions, guild.factions)
         assertEquals(classic.world, guild.world)
         for (stream in com.tinyblacksmith.core.rng.RngStream.entries.filter { it != com.tinyblacksmith.core.rng.RngStream.GUILD && it != com.tinyblacksmith.core.rng.RngStream.ENCOUNTERS })

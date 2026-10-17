@@ -23,7 +23,7 @@ import kotlinx.serialization.json.jsonObject
 data class SaveEnvelope(val schemaVersion: Int, val payload: String)
 
 object SaveCodec {
-    const val SCHEMA_VERSION = 7
+    const val SCHEMA_VERSION = 8
 
     val json: Json = Json {
         encodeDefaults = true
@@ -87,8 +87,13 @@ object SaveCodec {
         // it has, a stored siege plan and a posted contract are played as stored. The number rises so that an older build
         // refuses a save it would read wrongly.
         6 to { it },
+        // Schema 8 (rules 8, content 7): living heroes. `GameState.livingRevision` is absent from every older save and decodes as
+        // 0, the legacy revision: such an era keeps every old behaviour (a pending manual Speciality included) and never grows
+        // the new ones. The new hero, member, offer and guild fields are defaulted; nothing stored is converted, no stream is
+        // added (living heroes draw by key, `rng.Keyed`). The number rises so that an older build refuses a save it would misread.
+        7 to { it },
     )
-    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 4 to { it }, 5 to { it }, 6 to { it }, 3 to { json.parseToJsonElement(it).jsonObject.let { l -> identifyLineages(l).takeIf { n -> n != l }?.toString() ?: it } })
+    internal val legacyMigrations: Map<Int, (String) -> String> = mapOf(1 to { it }, 2 to { it }, 4 to { it }, 5 to { it }, 6 to { it }, 7 to { it }, 3 to { json.parseToJsonElement(it).jsonObject.let { l -> identifyLineages(l).takeIf { n -> n != l }?.toString() ?: it } })
 
     private fun text(o: JsonObject, key: String): String? = (o[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
 

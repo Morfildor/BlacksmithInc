@@ -111,7 +111,7 @@ object LaunchContent {
 
     private object Catalog {
         val value: ContentCatalog = ContentCatalog(
-            version = 6,
+            version = 7,
             families = listOf(
                 // basePower / defensiveWeight are PROPOSED; Sword, Axe and Bow keep their slice values.
                 WeaponFamilyDef(SWORD, "Sword", basePower = 10, classFit = fit(listOf(GUARDIAN, DUELIST, BATTLEMAGE)), defensiveWeight = 1.1),
@@ -303,6 +303,11 @@ object LaunchContent {
             siegeTraits = Depth.siegeTraits,
             combat = CombatContent.catalog,
             guild = GuildContent.catalog,
+            races = Peoples.races, cultures = Peoples.cultures, backgrounds = Peoples.backgrounds, bynames = Peoples.bynames,
+            // The people each imported face reads as (best fit, owner direction 2026-10-17; reviewed with the race art later, docs/LIVING_HEROES_LEDGER.md).
+            portraitRaces = mapOf("01" to "human", "08" to "human", "11" to "human", "12" to "human", "13" to "human", "16" to "human", "19" to "human",
+                "04" to "elf", "05" to "elf", "06" to "elf", "10" to "elf", "14" to "elf", "15" to "elf", "17" to "elf", "20" to "elf",
+                "02" to "lizardfolk", "07" to "orc", "09" to "orc", "03" to "hornborn", "18" to "halfling").mapKeys { "portrait_hero_${it.key}" },
         )
     }
 }

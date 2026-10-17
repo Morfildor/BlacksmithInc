@@ -12,7 +12,8 @@ enum class Rarity { COMMON, UNCOMMON, RARE, EPIC, LEGENDARY }
 /** How a weapon came to be Legendary (rules 6): forged with Heartfire, or carried there by its own deeds. Null on every other weapon and on a Legendary from before rules 6. */
 enum class LegendOrigin { HEARTFIRE, DEEDS }
 enum class HeroActivity { REST, SHOP, EXPEDITION, PATROL, DEFEND, IDLE, GUILD, AMBITION }
-enum class HeroFate { ALIVE, DEAD, RETIRED }
+/** DEPARTED (living heroes): a member who left the guild over a concern. Alive in the story, gone from the town; owns nothing here. */
+enum class HeroFate { ALIVE, DEAD, RETIRED, DEPARTED }
 enum class CommissionStatus { OFFERED, ACCEPTED, COMPLETED, EXPIRED, DECLINED }
 /**
  * Why a commission is asked (plan 4.6 E4), read from the state when it is offered. ORDINARY and NOBLE are the two that
@@ -20,7 +21,16 @@ enum class CommissionStatus { OFFERED, ACCEPTED, COMPLETED, EXPIRED, DECLINED }
  */
 enum class CommissionKind { ORDINARY, NOBLE, REPLACEMENT, SIEGE_PREP, AMBITION, FIRST_BLADE, WALL_PLEDGE, HEIRLOOM }
 /** GDD 6 hero ambitions: a personal goal that shifts daily choices and makes news when fulfilled. */
-enum class Ambition { SLAYER, DEFENDER, COLLECTOR, FORTUNE }
+enum class Ambition {
+    SLAYER, DEFENDER, COLLECTOR, FORTUNE,
+    // Living heroes (final design 7.2): guild members only, each tied to a Hook or the guild's own work. Appended, so a legacy draw never sees them.
+    AVENGER, HEIRLOOM, CAPTAIN, NAME;
+
+    companion object {
+        /** What `Heroes.generate` draws from: the four that existed before living heroes, so a classic draw is the one it always was. */
+        val LEGACY = listOf(SLAYER, DEFENDER, COLLECTOR, FORTUNE)
+    }
+}
 enum class KnowledgeState { UNKNOWN, OBSERVED, UNDERSTOOD, SIGNATURE_DISCOVERED }
 
 /**
@@ -175,6 +185,16 @@ data class Hero(
     val want: Want? = null,
     /** The side reasons (TASTE_MATCH, PRIZED, STORIED) this hero has already bought a near-equal blade for: each once, so no churn. */
     val sideReasons: Set<VisitReason> = emptySet(),
+    /** Living heroes (revision 1): people, naming culture and background (`content.Peoples`); null on a hero of unknown ancestry. */
+    val raceId: String? = null,
+    val cultureId: String? = null,
+    val backgroundId: String? = null,
+    /** Kin share this ID and the surname; nothing else makes two heroes family. */
+    val kinId: String? = null,
+    val hook: Hook? = null,
+    /** The newest significant moments, at most `living.reasonsKept`. */
+    val reasons: List<ReasonRecord> = emptyList(),
+    val departedOnDay: Int? = null,
 ) {
     val fullName: String get() = "$name $surname"
     val isAlive: Boolean get() = fate == HeroFate.ALIVE
@@ -248,6 +268,9 @@ enum class EventType {
     SABOTAGE_DONE, CHARTER_SECURED, GUILD_STORY, COMBO_NOTED, RUN_RETIRED,
     // Schema 7: run variety.
     HEARTFIRE_GAINED, WEAPON_DEED, LEGEND_EARNED, OPENING_CHOSEN, SIEGE_PREPARATION, SUPPLIER_NEWS,
+    // Schema 8: living heroes.
+    HOOK_CHANGED, LOAN_RETURN_ANNOUNCED, LOAN_RETURNED, SPECIALITY_LEAN, SPECIALITY_CHOSEN, MEMBER_PURCHASE, CONCERN_RAISED,
+    DEPARTURE_ANNOUNCED, MEMBER_DEPARTED, OPPORTUNITY_POSTED, STRUCTURAL_DAMAGE,
 }
 
 /** Source of truth for the Gazette and replays (GDD Appendix B). Subjects are real entity IDs. */
@@ -353,7 +376,9 @@ data class LegendEntry(
 
 /** [id] is the era and the hero's ID ("era2-h7"); a lineage written before schema 4 was given "era2" by the migration. Names never identify a lineage. [appearance] is the face the hero wore; a descendant takes it when nobody living wears it. */
 @Serializable
-data class LineageAnchor(val era: Int, val heroName: String, val surname: String, val classId: HeroClassId, val fame: Int, val deed: String, val id: String = "", val appearance: String? = null)
+data class LineageAnchor(val era: Int, val heroName: String, val surname: String, val classId: HeroClassId, val fame: Int, val deed: String, val id: String = "", val appearance: String? = null,
+    /** Living heroes: the ancestor's people and culture when known; null for an anchor of unknown ancestry. */
+    val raceId: String? = null, val cultureId: String? = null)
 
 @Serializable
 data class EraSummary(val era: Int, val daysSurvived: Int, val pointsAwarded: Int, val cause: String)
@@ -442,6 +467,8 @@ data class GameState(
     val heartfire: Int = 0,
     /** Rules 7: the day the deep road opens (`engine.DeepRoad`), set after the first siege by the caravan master or the guild's contract; null while it is shut. */
     val deepRoadOpenDay: Int? = null,
+    /** The era feature revision (`LivingRevision`): 0 for an era begun before living heroes, which keeps every old behaviour. */
+    val livingRevision: Int = LivingRevision.LEGACY,
 ) {
     val isGuildRun: Boolean get() = guild != null
     fun loanOf(heroId: HeroId): Weapon? = weapons.values.firstOrNull { it.loanedTo == heroId }

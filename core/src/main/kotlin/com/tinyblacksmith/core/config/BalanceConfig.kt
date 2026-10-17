@@ -27,8 +27,9 @@ data class BalanceConfig(
      * v14 (2026-10-11): the guild siege base 190 (was 186), with the metals' fight rules in the catalog. Paired runs in docs/DECISIONS.md.
      * v15 (2026-10-14): review fixes. An unanswered blessing offer lapses ([CombatConfig.blessingOfferDays]); a weapon given away earns no sale reputation and only a bounded warmth ([CustomerConfig] gift numbers); a guild run's wall work draws on the daily recovery allowance ([GuildConfig.wallWorkExtraRecovery]). See docs/DECISIONS.md.
      * v16 (2026-10-14): owner playtest. Each core metal holds a most quality ([LegendConfig.qualityCapByCoreTier]: masterwork needs a fine metal); the deep road ([LegendConfig.roadStageByTier], rules 7) replaces the supplier's days; contract gold ×3 ([GuildConfig.contractGoldPercent]). Prices of the tier-3-and-up materials are content. See docs/DECISIONS.md.
+     * v17 (2026-10-17): living heroes ([LivingConfig]): Hooks, member shopping, loan returns, autonomous Specialities, sponsored offers, structural hits. A legacy era reads none of it. See docs/DECISIONS.md.
      */
-    val version: Int = 16,
+    val version: Int = 17,
     // Energy (GDD 4.3). LOCKED: 10 base. PROPOSED: 4 overwork, 1:1 debt.
     val baseDailyEnergy: Int = 10,
     val maxOverworkPerDay: Int = 4,
@@ -292,6 +293,7 @@ data class BalanceConfig(
     val depth: DepthConfig = DepthConfig(),
     // v11: the guild (contracted members, missions, the interaction engine)
     val guild: GuildConfig = GuildConfig(),
+    val living: LivingConfig = LivingConfig(),
 ) {
     companion object {
         val DEFAULT = BalanceConfig()

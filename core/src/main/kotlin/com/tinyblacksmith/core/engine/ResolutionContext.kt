@@ -60,6 +60,12 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
     var guild = base.guild
     var heartfire = base.heartfire
     var deepRoadOpenDay = base.deepRoadOpenDay
+    /** The era feature revision; fixed for the era. */
+    val livingRevision = base.livingRevision
+    /** Living heroes are on in this era (revision 1 or later). */
+    val living: Boolean get() = livingRevision >= LivingRevision.CURRENT
+    /** A guild era, also while `newRun` generates the town before the guild is founded. */
+    var guildEra: Boolean = base.guild != null
 
     // Per-day scratch counters (not persisted).
     var patrolsToday = 0
@@ -206,6 +212,7 @@ class ResolutionContext(val base: GameState, val content: ContentCatalog, val co
             guild = guild,
             heartfire = heartfire,
             deepRoadOpenDay = deepRoadOpenDay,
+            livingRevision = livingRevision,
         )
     }
 }

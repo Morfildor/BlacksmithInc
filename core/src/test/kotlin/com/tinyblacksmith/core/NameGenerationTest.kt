@@ -1,5 +1,7 @@
 package com.tinyblacksmith.core
 
+import com.tinyblacksmith.core.TestSupport.legacyRun
+
 import com.tinyblacksmith.core.TestSupport.engine
 import com.tinyblacksmith.core.content.ContentCatalog
 import com.tinyblacksmith.core.engine.GameEngine
@@ -27,8 +29,8 @@ class NameGenerationTest {
 
     /** The states after each End Day of one run, the new run first. */
     private fun days(seed: Long, legacy: LegacyProfile = LegacyProfile(), maxDays: Int = 60, policy: Policy = Policy.BALANCED_FAIR, e: GameEngine = engine): List<GameState> {
-        val out = arrayListOf(e.newRun(legacy, seed))
-        SimulationDriver(e, maxDays = maxDays, onDayResolved = { s, _ -> out += s }).playRun(legacy, seed, policy)
+        val out = arrayListOf(e.legacyRun(legacy, seed))
+        SimulationDriver(e, livingRevision = com.tinyblacksmith.core.model.LivingRevision.LEGACY, maxDays = maxDays, onDayResolved = { s, _ -> out += s }).playRun(legacy, seed, policy)
         return out
     }
 
@@ -63,7 +65,7 @@ class NameGenerationTest {
     @Test
     fun aFullRunNeverExhaustsTheNames() {
         for (policy in listOf(Policy.BALANCED_FAIR, Policy.EXPERT_ACTIVE)) for (seed in 1L..100L) {
-            val heroes = SimulationDriver(engine).playRun(LegacyProfile(), seed, policy).second.heroes.values
+            val heroes = SimulationDriver(engine, livingRevision = com.tinyblacksmith.core.model.LivingRevision.LEGACY).playRun(LegacyProfile(), seed, policy).second.heroes.values
             assertEquals(heroes.size, heroes.map { it.name }.toSet().size, "$policy seed $seed: a first name came round again")
         }
         val forced = GameEngine(config = Simulator.forcedSurvival())
@@ -86,7 +88,7 @@ class NameGenerationTest {
     fun descendantsCarryTheSurnameAndADifferentFirstName() {
         val a = anchor(1, "Mira Vance", "h3")
         for (seed in 1L..200L) {
-            val s = engine.newRun(LegacyProfile(lineages = listOf(a), eras = listOf(EraSummary(1, 12, 8, "The forge fell."))), seed)
+            val s = engine.legacyRun(LegacyProfile(lineages = listOf(a), eras = listOf(EraSummary(1, 12, 8, "The forge fell."))), seed)
             val d = s.heroes.values.single { it.lineageId == a.id }
             assertEquals("Vance", d.surname)
             assertNotEquals("Mira", d.name)
@@ -105,7 +107,7 @@ class NameGenerationTest {
             val first = anchor(1, "Mira Vance", "h3")
             val later = anchor(2, second, "h3")
             val legacy = LegacyProfile(lineages = listOf(first, later), eras = listOf(EraSummary(1, 12, 8, "The forge fell."), EraSummary(2, 9, 6, "The forge fell.")))
-            val s0 = engine.newRun(legacy, 5)
+            val s0 = engine.legacyRun(legacy, 5)
             assertEquals(later.id, s0.heroes.values.single { it.lineageId != null }.lineageId, "the run opens with a descendant of the latest lineage")
             assertTrue(s0.events.any { it.type == EventType.HERO_ARRIVED && "Their ancestor $second" in it.text })
             assertTrue(eligible(s0), "$second: the older lineage of the same surname is still unclaimed")
@@ -117,7 +119,7 @@ class NameGenerationTest {
             assertEquals(emptyList(), com.tinyblacksmith.core.engine.Invariants.check(s1, engine.config))
         }
         // The anchor a run founds carries the era and the hero's ID, and the next run finds its descendant by it.
-        var s = engine.newRun(LegacyProfile(), 600)
+        var s = engine.legacyRun(LegacyProfile(), 600)
         s = s.copy(town = s.town.copy(integrity = 1), heroes = s.heroes.mapValues { (_, h) -> h.copy(fame = 3) })
         while (!s.isEnded) s = with(TestSupport) { s.endDayAccepted().state }
         val template = s.heroes.values.first()
@@ -125,14 +127,14 @@ class NameGenerationTest {
         val founded = engine.closeRun(s.copy(heroes = twelve)).lineage!!
         assertEquals("era1-h12", founded.id, "of the equally famous the latest arrival founds the line: h12, where text order said h9")
         assertEquals(twelve.getValue(HeroId("h12")).fullName, founded.heroName)
-        val heir = engine.newRun(LegacyProfile(lineages = listOf(founded), eras = listOf(EraSummary(1, s.day, 8, "The forge fell."))), 601).heroes.values.single { it.lineageId == founded.id }
+        val heir = engine.legacyRun(LegacyProfile(lineages = listOf(founded), eras = listOf(EraSummary(1, s.day, 8, "The forge fell."))), 601).heroes.values.single { it.lineageId == founded.id }
         assertEquals(listOf(founded.surname, founded.heroName), listOf(heir.surname, heir.descendantOf))
     }
 
     /** One draw for the class, one per name, then the rest as before: the pools change only what the draws pick from. */
     @Test
     fun sameDrawCountAsToday() {
-        val state = engine.newRun(LegacyProfile(), 3)
+        val state = engine.legacyRun(LegacyProfile(), 3)
         val old = content.copy(firstNames = listOf("Mira", "Aldric", "Tessa"), surnames = listOf("Vance", "Ferris"))  // a pool this small is soon spent
         val a = anchor(1, "Mira Vance", "h3")
         for (ancestor in listOf(null, a)) {
@@ -170,7 +172,7 @@ class NameGenerationTest {
             HeroId("h$n"), name, surname, guardian, 1, 0, 50, 100, emptyList(), null,
             fate = if (died == null) HeroFate.ALIVE else HeroFate.DEAD, diedOnDay = died,
         )
-        val base = engine.newRun(LegacyProfile(), 1)
+        val base = engine.legacyRun(LegacyProfile(), 1)
         // Mira lives; Aldric fell on day 3 and again on day 9; Tessa fell on day 5; Bram on day 5.
         val cast = listOf(hero(1, "Mira", "Vance", null), hero(2, "Aldric", "Ferris", 3), hero(3, "Tessa", "Marrow", 5), hero(4, "Bram", "Quill", 5), hero(5, "Aldric", "Quill", 9))
         val state = base.copy(day = 12, heroes = cast.associateBy { it.id }, nextHeroSerial = 6, town = base.town.copy(championIds = emptyList()))
@@ -200,7 +202,7 @@ class NameGenerationTest {
     fun namesThatLeftThePoolStayOnTheHeroesWhoCarryThem() {
         for (gone in listOf("Ashwood", "Brackenridge", "Holloway", "Mossgrave", "Rooksbane")) assertFalse(gone in content.surnames, gone)
         assertFalse("Nessa" in content.firstNames)
-        val s = engine.newRun(LegacyProfile(), 2)
+        val s = engine.legacyRun(LegacyProfile(), 2)
         val first = s.aliveHeroes().first()
         val old = s.copy(heroes = s.heroes + (first.id to first.copy(name = "Nessa", surname = "Ashwood")))
         var next = old

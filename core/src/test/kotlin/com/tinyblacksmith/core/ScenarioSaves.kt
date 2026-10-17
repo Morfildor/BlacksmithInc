@@ -80,7 +80,7 @@ object ScenarioSaves {
 
     /** Day 1 on [account] with three quick iron swords forged and listed, so the regular has a shelf to come to. */
     private fun knownName(seed: Long): GameState {
-        var s = engine.newRun(account, seed)
+        var s = engine.newRun(account, seed, livingRevision = com.tinyblacksmith.core.model.LivingRevision.LEGACY)
         repeat(3) { s = engine.handle(s, TestSupport.quickSword()).stateOrThrow() }
         for (w in s.storedWeapons()) s = engine.handle(s, Command.ToggleShelf(w.id, listed = true)).stateOrThrow()
         return s

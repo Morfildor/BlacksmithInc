@@ -1,5 +1,7 @@
 package com.tinyblacksmith.core
 
+import com.tinyblacksmith.core.TestSupport.legacyRun
+
 import com.tinyblacksmith.core.TestSupport.endDayAccepted
 import com.tinyblacksmith.core.TestSupport.engine
 import com.tinyblacksmith.core.content.ContentCatalog
@@ -27,8 +29,8 @@ class AppearanceTest {
         LineageAnchor(era, "Mira Vance", "Vance", cls, 5, "died on day 9", id = "era$era-h3", appearance = appearance)
 
     private fun days(seed: Long, maxDays: Int = 60, e: GameEngine = engine): List<GameState> {
-        val out = arrayListOf(e.newRun(LegacyProfile(), seed))
-        SimulationDriver(e, maxDays = maxDays, onDayResolved = { s, _ -> out += s }).playRun(LegacyProfile(), seed, Policy.BALANCED_FAIR)
+        val out = arrayListOf(e.legacyRun(LegacyProfile(), seed))
+        SimulationDriver(e, livingRevision = com.tinyblacksmith.core.model.LivingRevision.LEGACY, maxDays = maxDays, onDayResolved = { s, _ -> out += s }).playRun(LegacyProfile(), seed, Policy.BALANCED_FAIR)
         return out
     }
 
@@ -55,7 +57,7 @@ class AppearanceTest {
             assertTrue(keys(cls.id).containsAll(legacyFaces.getValue(cls.id.value).map { "portrait_hero_$it" }), cls.id.value)
             assertNull(Appearance.legacyFace(cls.id, 5))
         }
-        val hero = engine.newRun(LegacyProfile(), 1).heroes.values.first()
+        val hero = engine.legacyRun(LegacyProfile(), 1).heroes.values.first()
         assertEquals(hero.appearance, Appearance.keyOf(hero))
         assertEquals(Appearance.legacyKey(hero.classId, hero.id.value), Appearance.keyOf(hero.copy(appearance = null)))
     }
@@ -74,7 +76,7 @@ class AppearanceTest {
     fun newHeroesNeverShareAFaceWhileAClassHasNoMoreLivingThanFaces() {
         // A new run: nobody has died, so every class is spread as evenly as its faces allow.
         for (seed in 1L..1000L) {
-            val s = engine.newRun(LegacyProfile(), seed)
+            val s = engine.legacyRun(LegacyProfile(), seed)
             for ((cls, heroes) in s.aliveHeroes().groupBy { it.classId }) {
                 val worn = heroes.groupingBy { it.appearance!! }.eachCount()
                 assertTrue(worn.keys.all { it in keys(cls) }, "seed $seed")
@@ -85,7 +87,7 @@ class AppearanceTest {
         // Arrivals and deaths in any order: a newcomer always takes a face that the fewest living of the class wear, so one
         // nobody wears whenever there is one. (Deaths can leave two alike in a class that is no longer full; nobody is repainted.)
         for (seed in 1L..200L) {
-            val c = ctx(engine.newRun(LegacyProfile(), seed))
+            val c = ctx(engine.legacyRun(LegacyProfile(), seed))
             val rng = Rng(seed)
             repeat(80) { step ->
                 if (rng.chance(0.4)) c.aliveHeroes().takeIf { it.isNotEmpty() }?.let { c.updateHero(rng.pick(it).copy(fate = HeroFate.DEAD)) }
@@ -109,7 +111,7 @@ class AppearanceTest {
     fun aPreUpdateHeroBlocksTheFaceThePlayerSeesOnThem() {
         for (seed in 1L..50L) {
             // A save from before the field: nobody has a stored face, each shows the one their ID always gave them.
-            val old = engine.newRun(LegacyProfile(), seed).let { s -> s.copy(heroes = s.heroes.mapValues { it.value.copy(appearance = null) }) }
+            val old = engine.legacyRun(LegacyProfile(), seed).let { s -> s.copy(heroes = s.heroes.mapValues { it.value.copy(appearance = null) }) }
             for (cls in content.classes) {
                 val c = ctx(old)
                 val shown = old.aliveHeroes().filter { it.classId == cls.id }.map { Appearance.legacyKey(it) }.toMutableSet()
@@ -126,7 +128,7 @@ class AppearanceTest {
     fun assignmentLeavesEveryRngStreamUnchanged() {
         // Other faces, the same heroes: the stream stands where it stood, and only the face differs.
         val other = content.copy(classes = content.classes.map { it.copy(appearances = it.appearances.reversed() + "portrait_new_${it.id.value}") })
-        val state = engine.newRun(LegacyProfile(), 3)
+        val state = engine.legacyRun(LegacyProfile(), 3)
         for (ancestor in listOf(null, anchor(content.classes.first().id, appearance = "portrait_hero_09"))) {
             val rngs = listOf(content, other).map { catalog -> Rng(99).also { Heroes.generate(ctx(state, catalog), it, ancestor) } }
             val heroes = listOf(content, other).map { catalog -> Heroes.generate(ctx(state, catalog), Rng(99), ancestor) }
@@ -153,17 +155,17 @@ class AppearanceTest {
 
     @Test
     fun aDescendantTakesTheAncestorsFaceWhenNobodyLivingWearsIt() {
-        var s = engine.newRun(LegacyProfile(), 600)
+        var s = engine.legacyRun(LegacyProfile(), 600)
         s = s.copy(town = s.town.copy(integrity = 1), heroes = s.heroes.mapValues { (_, h) -> h.copy(fame = 3) })
         while (!s.isEnded) s = s.endDayAccepted().state
         val end = engine.closeRun(s)
         val founder = s.heroes.getValue(HeroId(end.lineage!!.id.substringAfter('-')))
         assertEquals(founder.appearance, assertNotNull(end.lineage.appearance))
         val legacy = (engine.claimLegacy(LegacyProfile(), end) as LegacyOutcome.Updated).legacy
-        for (seed in 601L..620L) assertEquals(founder.appearance, engine.newRun(legacy, seed).heroes.values.first { it.lineageId == end.lineage.id }.appearance)
+        for (seed in 601L..620L) assertEquals(founder.appearance, engine.legacyRun(legacy, seed).heroes.values.first { it.lineageId == end.lineage.id }.appearance)
         // Somebody living already wears it: the descendant takes a free face of the class.
         val cls = content.classes.first().id
-        val c = ctx(engine.newRun(LegacyProfile(), 5))
+        val c = ctx(engine.legacyRun(LegacyProfile(), 5))
         val worn = c.aliveHeroes().filter { it.classId == cls }.map { it.appearance!! }
         assertTrue(worn.isNotEmpty() && worn.size < keys(cls).size)
         val h = Heroes.generate(c, Rng(1), anchor(cls, appearance = worn.first()))
@@ -173,7 +175,7 @@ class AppearanceTest {
     @Test
     fun aMissingAssetFallsBackToTheClass() {
         val cls = content.classes.last()
-        val state = engine.newRun(LegacyProfile(), 5)
+        val state = engine.legacyRun(LegacyProfile(), 5)
         // A face that has left the content: the hero keeps the key (the app draws a face of the class for it) and blocks nothing.
         val gone = state.copy(heroes = state.heroes.mapValues { (_, h) -> if (h.classId == cls.id) h.copy(appearance = "portrait_gone_9") else h })
         assertEquals("portrait_gone_9", Appearance.keyOf(gone.aliveHeroes().first { it.classId == cls.id }))

@@ -18,8 +18,11 @@ object Heroes {
     fun generate(ctx: ResolutionContext, rng: Rng, descendantOf: LineageAnchor? = null, classes: List<HeroClassDef> = ctx.content.classes): Hero {
         val content = ctx.content
         val cls = descendantOf?.let { content.classById[it.classId] } ?: rng.pick(classes)
-        val name = Names.first(ctx, rng, descendantOf)
-        val surname = descendantOf?.surname ?: Names.surname(ctx, rng, name)
+        val id = ctx.newHeroId()
+        // Living heroes: a culture's names, drawn with the same number of draws as the old pool, so no stream moves (final design 6.1).
+        val drawn = if (ctx.living) Identity.draw(ctx, id, descendantOf) else null
+        val (name, surname) = if (drawn != null) Names.living(ctx, rng, drawn.culture, descendantOf, drawn.kin)
+            else Names.first(ctx, rng, descendantOf).let { n -> n to (descendantOf?.surname ?: Names.surname(ctx, rng, n)) }
         val traitCount = rng.nextInt(ctx.config.heroLife.traitsMin, ctx.config.heroLife.traitsMax)
         val traits = mutableListOf<TraitId>()
         val pool = content.traits.map { it.id }.toMutableList()
@@ -27,13 +30,14 @@ object Heroes {
         if (descendantOf != null && TraitId("loyal") in content.traitById && TraitId("loyal") !in traits) traits += TraitId("loyal")
         val tastePool = content.materials.mapNotNull { it.element }.distinct()  // only elements a weapon in this catalog can carry
         val taste: Element? = if (rng.chance(ctx.config.heroLife.classTasteChance)) cls.preferredElement else if (rng.chance(ctx.config.heroLife.otherTasteChance) && tastePool.isNotEmpty()) rng.pick(tastePool) else null
-        return Hero(
-            id = ctx.newHeroId(), name = name, surname = surname, classId = cls.id,
+        val hero = Hero(
+            id = id, name = name, surname = surname, classId = cls.id,
             level = if (descendantOf != null) ctx.config.heroLife.descendantLevel else 1, xp = 0,
             gold = rng.nextInt(cls.startingGoldMin, cls.startingGoldMax), health = 100,
             traits = traits, elementTaste = taste, descendantOf = descendantOf?.heroName, lineageId = descendantOf?.id,
-            ambition = rng.pick(Ambition.entries), arrivedOnDay = ctx.day,
-        ).let { Appearance.stamp(ctx, it, descendantOf) }
+            ambition = rng.pick(Ambition.LEGACY), arrivedOnDay = ctx.day,
+        )
+        return Appearance.stamp(ctx, if (drawn != null) Identity.attach(ctx, hero, drawn) else hero, descendantOf)
     }
 
     fun resolveActivities(ctx: ResolutionContext) {
@@ -88,7 +92,7 @@ object Heroes {
             add(HeroActivity.PATROL to patrol)
             add(HeroActivity.REST to rest)
             if (canTrain(ctx, hero)) add(HeroActivity.GUILD to (config.heroLife.guildBaseWeight + traitDefs.sumOf { it.guildWeight } + (if (setback) config.heroLife.setbackGuildWeight else 0.0)).coerceAtLeast(life.quietWeightFloor))
-            if (hero.ambition != null && !hero.ambitionDone) add(HeroActivity.AMBITION to config.ambitionActivityWeight)
+            if (hero.ambition != null && hero.ambition in Ambition.LEGACY && !hero.ambitionDone) add(HeroActivity.AMBITION to config.ambitionActivityWeight)
         }
     }
 
@@ -176,6 +180,8 @@ object Heroes {
                 ctx.field += FieldResult(hero.id, hero.fullName, FieldOutcome.AMBITION_DAY, eventIds = listOf(e.id))
             }
             // A prized weapon and a fortune both take gold: a day of paid work, and nothing else.
+            // The guild's own ambitions are pursued through quests and the wall, never as a day of their own (`activityWeights`).
+            Ambition.AVENGER, Ambition.HEIRLOOM, Ambition.CAPTAIN, Ambition.NAME -> return
             Ambition.COLLECTOR, Ambition.FORTUNE -> {
                 ctx.updateHero(hero.copy(gold = hero.gold + config.heroLife.ambitionWorkGold))
                 val goal = if (ambition == Ambition.COLLECTOR) "saving for a prized weapon" else "building a fortune"
@@ -264,7 +270,8 @@ object Heroes {
                 Ambition.SLAYER -> h.expeditionWins >= config.ambitionSlayerWins
                 Ambition.COLLECTOR -> (ctx.equippedWeapon(h.id)?.quality ?: 0) >= config.ambitionCollectorQuality
                 Ambition.FORTUNE -> h.gold >= config.ambitionFortuneGold
-                Ambition.DEFENDER, null -> false
+                // DEFENDER is met by a won siege; the guild's ambitions by `guild.Agency`.
+                else -> false
             }
             if (met) fulfilAmbition(ctx, h.id, h.ambition!!)
         }
@@ -282,6 +289,10 @@ object Heroes {
             Ambition.DEFENDER -> "${hero.fullName} kept their promise to defend Emberfall."
             Ambition.COLLECTOR -> "${hero.fullName} finally found a prized weapon. ${weapon?.name ?: "A fine piece of work"}."
             Ambition.FORTUNE -> "${hero.fullName} reached their savings goal."
+            Ambition.AVENGER -> "${hero.fullName} settled an old grudge."
+            Ambition.HEIRLOOM -> "${hero.fullName} has the family weapon back."
+            Ambition.CAPTAIN -> "${hero.fullName} led three won quests without losing anybody."
+            Ambition.NAME -> "${hero.fullName} made a name, carrying ${weapon?.name ?: "a weapon"} to a great deed."
         }
         ctx.emit(EventType.AMBITION_FULFILLED, 6, text, listOfNotNull(hero.id.value, weapon?.id?.value), mapOf("ambition" to ambition.name))
         ctx.milestone("AMBITION_FULFILLED", "An Emberfall hero fulfilled their ambition.")
@@ -296,12 +307,20 @@ object Heroes {
             Ambition.DEFENDER -> "Kept their promise to defend the walls"
             Ambition.COLLECTOR -> "Carries a prized weapon"
             Ambition.FORTUNE -> "Made a fortune"
+            Ambition.AVENGER -> "Settled the grudge"
+            Ambition.HEIRLOOM -> "Recovered the family weapon"
+            Ambition.CAPTAIN -> "Led three quests home whole"
+            Ambition.NAME -> "Made a name"
         }
         return when (a) {
             Ambition.SLAYER -> "Win ${config.ambitionSlayerWins} expeditions. ${minOf(hero.expeditionWins, config.ambitionSlayerWins)} won so far."
             Ambition.DEFENDER -> "Wants to defend the walls during a siege"
             Ambition.COLLECTOR -> "Wants quality ${config.ambitionCollectorQuality} or better. Current weapon quality ${weapon?.quality ?: 0}."
             Ambition.FORTUNE -> "Save ${config.ambitionFortuneGold} gold. Currently ${minOf(hero.gold, config.ambitionFortuneGold)}."
+            Ambition.AVENGER -> "Win a quest against the faction of their grudge, as a member of your guild."
+            Ambition.HEIRLOOM -> "Win back the family weapon, as a member of your guild."
+            Ambition.CAPTAIN -> "Lead the party, first in its order, home from 3 won quests with nobody killed or captured."
+            Ambition.NAME -> "Carry a weapon when it earns a deed."
         }
     }
 

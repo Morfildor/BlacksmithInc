@@ -36,7 +36,7 @@ import com.tinyblacksmith.core.shopday.Recognitions
 class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.LaunchContent.catalog, val config: BalanceConfig = BalanceConfig.DEFAULT) {
 
     companion object {
-        const val RULES_VERSION = 7
+        const val RULES_VERSION = 8
 
         /**
          * The rules version that salts every stream seed ([RngState.seeded]). Rules 2 is a number only (a run now has to be
@@ -54,7 +54,8 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
     }
 
     /** With [charterId] the run is a guild run under that charter (`GuildCatalog.charters`); without one it is a classic run and plays as rules 4 did. */
-    fun newRun(legacy: LegacyProfile, seed: Long, rulesVersion: Int = RULES_VERSION, charterId: String? = null): GameState {
+    /** [livingRevision]: a new era takes the current one (`LivingRevision.CURRENT`); a test of a legacy behaviour passes `LivingRevision.LEGACY`. */
+    fun newRun(legacy: LegacyProfile, seed: Long, rulesVersion: Int = RULES_VERSION, charterId: String? = null, livingRevision: Int = LivingRevision.CURRENT): GameState {
         require(charterId == null || content.guild?.charter(charterId) != null) { "Unknown charter $charterId" }
         val era = legacy.nextEra
         val runId = RunId("era$era-seed$seed")
@@ -72,9 +73,10 @@ class GameEngine(val content: ContentCatalog = com.tinyblacksmith.core.content.L
             town = Town(integrity = startingIntegrity, militia = 5, championIds = emptyList(), nextSiegeDay = config.siegeInterval),
             factions = emptyMap(), commissions = emptyMap(), events = emptyList(), blessings = emptyList(), pendingBlessingOffer = emptyList(),
             milestones = emptySet(), legacy = legacy, discoveriesThisRun = 0, processedEndDayIds = emptySet(), lastResolution = null,
-            nextWeaponSerial = 1, nextHeroSerial = 1, nextCommissionSerial = 1, nextEventSerial = 1,
+            nextWeaponSerial = 1, nextHeroSerial = 1, nextCommissionSerial = 1, nextEventSerial = 1, livingRevision = livingRevision,
         )
         val ctx = ResolutionContext(seedState, content, config)
+        ctx.guildEra = charterId != null
         val world = ctx.rng(RngStream.WORLD)
         ctx.world = when (world.nextInt(3)) {
             0 -> WorldModifiers(1.0, 1.0, "Calm Season")

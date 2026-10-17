@@ -187,12 +187,17 @@ private fun ambitionWord(a: Ambition) = when (a) {
     Ambition.DEFENDER -> "Sworn to defend the walls"
     Ambition.COLLECTOR -> "Wants a prized weapon"
     Ambition.FORTUNE -> "Saving a fortune"
+    Ambition.AVENGER -> "Bent on an old grudge"
+    Ambition.HEIRLOOM -> "Wants the family weapon back"
+    Ambition.CAPTAIN -> "Wants to lead the party"
+    Ambition.NAME -> "Wants to make a name"
 }
 
 private fun fateWord(h: Hero): String? = when (h.fate) {
     HeroFate.ALIVE -> null
     HeroFate.DEAD -> "Fallen" + (h.diedOnDay?.let { " on day $it" } ?: "")
     HeroFate.RETIRED -> "Retired" + (h.retiredOnDay?.let { " on day $it" } ?: "")
+    HeroFate.DEPARTED -> "Left the guild" + (h.departedOnDay?.let { " on day $it" } ?: "")
 }
 
 /** The hero sheet as a modal bottom sheet. Dismissal (scrim, swipe, Back, Close) is reported, never acted on here. */

@@ -1,5 +1,6 @@
 package com.tinyblacksmith.core.heroes
 
+import com.tinyblacksmith.core.content.CultureDef
 import com.tinyblacksmith.core.engine.ResolutionContext
 import com.tinyblacksmith.core.model.Hero
 import com.tinyblacksmith.core.model.LineageAnchor
@@ -31,6 +32,44 @@ object Names {
         val unused: (String) -> Boolean = { s -> heroes.none { it.name == first && it.surname == s } }
         val free = ctx.content.surnames.filter { s -> s !in reserved && unused(s) && heroes.none { it.isAlive && it.surname == s } }
         return rng.pick(free.ifEmpty { reused(ctx.content.surnames, heroes, { it.surname }, unused) })
+    }
+
+    /**
+     * A living-heroes name from [culture] (final design 6.1), two draws on [rng] like the old pair (one for a descendant, whose
+     * surname is the ancestor's), so a classic era moves its stream exactly as before. A given name nobody of the
+     * culture has carried this era comes first; the surname is one no living hero, lineage or company founder holds. Only the
+     * full name is a hard rule: no two living heroes share one. When a culture's pairs are spent the reservations of the gone
+     * are retired, then a byname of residence is used, never a number.
+     */
+    fun living(ctx: ResolutionContext, rng: Rng, culture: CultureDef, ancestor: LineageAnchor?, kin: Hero?): Pair<String, String> {
+        val heroes = ctx.heroes.values
+        val alive = heroes.filter { it.isAlive }
+        val fixed = ancestor?.surname ?: kin?.surname
+        val r1 = rng.nextDouble()
+        // The old pair drew a surname for everybody but a descendant: a relative's surname still spends that draw.
+        val r2 = if (ancestor == null) rng.nextDouble() else 0.0
+        fun at(list: List<String>, r: Double) = list[(r * list.size).toInt().coerceIn(0, list.size - 1)]
+        fun free(first: String, last: String) = alive.none { it.name == first && it.surname == last }
+        val avoid = setOfNotNull(ancestor?.heroName?.substringBefore(' '), kin?.name)
+        val used = heroes.filter { it.cultureId == culture.id }.mapTo(HashSet()) { it.name } + avoid
+        val given = culture.given.filter { it !in used }.ifEmpty { culture.given.filter { it !in avoid } }.ifEmpty { culture.given }
+        if (fixed != null) {
+            val open = given.filter { free(it, fixed) }.ifEmpty { culture.given.filter { free(it, fixed) } }
+            if (open.isNotEmpty()) return at(open, r1) to fixed
+        } else {
+            val first = at(given, r1)
+            val reserved = ctx.town.guilds.mapNotNull { ctx.heroes[it.founderId]?.surname }.toSet() + ctx.legacy.lineages.map { it.surname } + alive.filter { it.kinId != null }.map { it.surname }
+            val last = culture.family.filter { s -> s !in reserved && alive.none { it.surname == s } && free(first, s) }
+                .ifEmpty { culture.family.filter { s -> s !in reserved && free(first, s) } }
+                .ifEmpty { culture.family.filter { free(first, it) } }
+            if (last.isNotEmpty()) return first to at(last, r2)
+            ctx.content.bynames.filter { free(first, it) }.takeIf { it.isNotEmpty() }?.let { return first to at(it, r2) }
+        }
+        // Every pair of this culture is worn by the living: the first free combination in a fixed order, then a byname.
+        val surnames = listOfNotNull(fixed).ifEmpty { culture.family + ctx.content.bynames }
+        for (f in culture.given) for (s in surnames) if (free(f, s)) return f to s
+        for (f in culture.given) for (s in ctx.content.bynames) if (free(f, s)) return f to s
+        error("Every name of ${culture.id} is worn by a living hero")
     }
 
     /**

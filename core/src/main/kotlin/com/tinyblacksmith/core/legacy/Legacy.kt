@@ -100,7 +100,8 @@ object Legacy {
                 HeroFate.ALIVE -> if (state.guild?.retired == true) "saw the charter secured" else "survived the fall of the forge"
                 HeroFate.RETIRED -> "retired on day ${it.retiredOnDay}"
                 HeroFate.DEAD -> "died on day ${it.diedOnDay}"
-            }, id = "era${state.era}-${it.id.value}", appearance = Appearance.keyOf(it))
+                HeroFate.DEPARTED -> "left the guild on day ${it.departedOnDay}"
+            }, id = "era${state.era}-${it.id.value}", appearance = Appearance.keyOf(it), raceId = it.raceId, cultureId = it.cultureId)
         }
         val discovery = minOf(config.legacyDiscoveryPointCap, state.discoveriesThisRun)
         // What a guild run earned for good (the charter, a rank held to the end) counts once, here, however the run ended:

@@ -22,8 +22,11 @@ object TestSupport {
     val engineWithoutOffers = GameEngine(config = engine.config.copy(customers = engine.config.customers.copy(offers = false)))
 
     /** A guild run with the first offered opening taken. */
-    fun GameEngine.guildRun(legacy: LegacyProfile, seed: Long, charterId: String, openingId: String? = null): GameState =
-        newRun(legacy, seed, charterId = charterId).let { s -> handle(s, Command.ChooseOpening(openingId ?: s.guild!!.openingOffer.first().defId)).stateOrThrow() }
+    fun GameEngine.guildRun(legacy: LegacyProfile, seed: Long, charterId: String, openingId: String? = null, livingRevision: Int = LivingRevision.CURRENT): GameState =
+        newRun(legacy, seed, charterId = charterId, livingRevision = livingRevision).let { s -> handle(s, Command.ChooseOpening(openingId ?: s.guild!!.openingOffer.first().defId)).stateOrThrow() }
+
+    /** A run begun before living heroes: for tests of a legacy rule (old name pools, manual Specialities, the old siege roster). */
+    fun GameEngine.legacyRun(legacy: LegacyProfile, seed: Long, charterId: String? = null): GameState = newRun(legacy, seed, charterId = charterId, livingRevision = LivingRevision.LEGACY)
 
     fun quickSword(risk: Risk = Risk.BALANCED, core: MaterialId = LaunchContent.IRON, augment: MaterialId = LaunchContent.EMBER_RESIN) =
         Command.Forge(ForgeMode.QUICK, LaunchContent.SWORD, core, augment, null, risk)

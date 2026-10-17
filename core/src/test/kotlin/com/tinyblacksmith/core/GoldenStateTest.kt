@@ -8,6 +8,7 @@ import com.tinyblacksmith.core.engine.GameEngine
 import com.tinyblacksmith.core.model.CommandId
 import com.tinyblacksmith.core.model.GameState
 import com.tinyblacksmith.core.model.LegacyProfile
+import com.tinyblacksmith.core.model.LivingRevision
 import com.tinyblacksmith.core.model.WeaponLocation
 import java.io.File
 import java.security.MessageDigest
@@ -72,8 +73,9 @@ class GoldenStateTest {
     private fun GameState.tryRun(command: Command): GameState = (engine.handle(this, command) as? CommandOutcome.Accepted)?.state ?: this
 
     /** Each morning: restock iron and ember resin when out, forge up to three quick swords, list every stored blade, end the day. */
-    private fun play(seed: Long, days: Int): List<String> {
-        var s = engine.newRun(LegacyProfile(), seed)
+    /** [revision]: the legacy revision is the recorded projection. A living-heroes classic era names its heroes from cultures, which a lost weapon's reason quotes. */
+    private fun play(seed: Long, days: Int, revision: Int = LivingRevision.LEGACY): List<String> {
+        var s = engine.newRun(LegacyProfile(), seed, livingRevision = revision)
         val out = mutableListOf<String>()
         for (n in 1..days) {
             if (s.isEnded) { out += "$seed:$n:ended:ended"; continue }
@@ -87,6 +89,15 @@ class GoldenStateTest {
             out += "$seed:$n:${sha(streams(s))}:${sha(project(s))}"
         }
         return out
+    }
+
+    /**
+     * Living heroes in a classic era are identity only (final design 4.2): names, peoples and Hooks are drawn by key, a name
+     * still spends its one draw. Every stream moves exactly as in a legacy era, day by day; only text that quotes a name differs.
+     */
+    @Test
+    fun aClassicLivingEraDrawsExactlyWhatALegacyEraDraws() {
+        for (seed in 1L..20L) assertEquals(play(seed, 15).map { it.split(":").take(3) }, play(seed, 15, LivingRevision.CURRENT).map { it.split(":").take(3) }, "seed $seed")
     }
 
     @Test

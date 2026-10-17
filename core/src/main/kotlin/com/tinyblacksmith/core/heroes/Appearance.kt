@@ -54,11 +54,20 @@ object Appearance {
 
     /** [hero] as just generated, with a face. A descendant takes the ancestor's when the lineage stores one and nobody living wears it. */
     fun stamp(ctx: ResolutionContext, hero: Hero, ancestor: LineageAnchor? = null): Hero {
-        val keys = ctx.content.heroClass(hero.classId).appearances
+        val all = ctx.content.heroClass(hero.classId).appearances
+        // A hero of a known people wears a face of that people, or the neutral silhouette of the class until such art exists (final design 6.3).
+        val keys = if (hero.raceId == null) all else all.filter { ctx.content.portraitRaces[it] == hero.raceId }.ifEmpty { return hero.copy(appearance = silhouette(hero.classId)) }
         val worn = ctx.heroes.values.filter { it.isAlive && it.classId == hero.classId && it.id != hero.id }.map { keyOf(it) }
         val inherited = ancestor?.appearance?.takeIf { it in keys && it !in worn }
         return hero.copy(appearance = inherited ?: assign(ctx.base.seed, hero.id, keys, worn))
     }
+
+    const val SILHOUETTE_PREFIX = "silhouette_"
+
+    /** The neutral placeholder of a class: a stable ID the app draws as a silhouette, never a mismatched face. */
+    fun silhouette(classId: HeroClassId): String = SILHOUETTE_PREFIX + classId.value
+
+    fun isSilhouette(key: String?): Boolean = key?.startsWith(SILHOUETTE_PREFIX) == true
 
     /** SplitMix64's finalizer over the three inputs: a fixed arithmetic hash, not a stream. */
     private fun mix(seed: Long, heroId: String, key: String): Long {

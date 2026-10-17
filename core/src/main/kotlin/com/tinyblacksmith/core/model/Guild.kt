@@ -42,6 +42,16 @@ data class GuildMember(
     val specialityId: String? = null,
     /** The deeds this member has been offered a branch for: each once. */
     val deedsOffered: Set<String> = emptySet(),
+    // Living heroes (revision 1), all defaulted.
+    val lean: SpecialityLean? = null,
+    val loanReturn: LoanReturnIntent? = null,
+    val concern: Concern? = null,
+    /** Capped counts of what the member has really done, one per evidence family per quest or siege (`guild.Agency`). */
+    val evidence: Map<String, Int> = emptyMap(),
+    /** The last day this member was considered for the counter: the least recent goes first. */
+    val counterDay: Int = 0,
+    /** Won quests led from the front with nobody killed or captured (the Captain ambition). */
+    val ledWins: Int = 0,
 )
 
 /** A resident who would sign today. Everything about the offer is stored; looking at it draws nothing. */
@@ -111,6 +121,9 @@ data class MissionOffer(
     val modifierId: String? = null,
     /** What happens if nobody takes it before it leaves the board: "supplier" means the supplier is left to the road. */
     val lapse: String? = null,
+    /** Living heroes: the member whose situation this offer serves, and the authored opportunity or hook it answers. */
+    val sponsorHeroId: HeroId? = null,
+    val opportunityId: String? = null,
 )
 
 /** One opening package as it was drawn on the first morning: who would sign and with which defining trait. Looking at it draws nothing. */
@@ -225,6 +238,9 @@ data class GuildRunState(
     val openingId: String? = null,
     /** The days of the last few supply runs: a road worked often carries less. */
     val supplyDays: List<Int> = emptyList(),
+    /** Living heroes: the last day each personal offer family was posted for a hero ("grudge|h4"), bounded; and one waiting for a free slot. */
+    val cooldowns: Map<String, Int> = emptyMap(),
+    val queued: String? = null,
 ) {
     fun member(id: HeroId): GuildMember? = members.firstOrNull { it.heroId == id }
     fun isMember(id: HeroId): Boolean = members.any { it.heroId == id }
